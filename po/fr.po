@@ -3,15 +3,16 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-09 22:31+0200\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"PO-Revision-Date: 2022-07-17 16:25+0200\n"
+"Last-Translator: Manuel PINTOR <manu@lepassepartout.fr>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 2.3\n"
+"X-Poedit-Bookmarks: 288,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -251,11 +252,11 @@ msgstr "max"
 
 #: ../build/bin/conf_gen.h:934
 msgid "select only new pictures"
-msgstr "sélectionner seulement nouvelles images"
+msgstr "sélectionner seulement de nouvelles images"
 
 #: ../build/bin/conf_gen.h:935
 msgid "only select images that have not already been imported"
-msgstr "sélectionner seulement les images qui n'ont pas déjà été imprtées"
+msgstr "sélectionner seulement les images qui n'ont pas déjà été importées"
 
 #: ../build/bin/conf_gen.h:940
 msgid "ignore JPEG images"
@@ -266,13 +267,13 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"lorsque des images raw et jpeg sont présentes ensemble dans un dossier, cela "
+"lorsque des images raw et JPEG sont présentes ensemble dans un dossier, cela "
 "n'a pas de sens d'importer les deux. en activant cette option les fichiers "
 "JPEG sont ignorés."
 
 #: ../build/bin/conf_gen.h:946
 msgid "apply metadata"
-msgstr "appliquer métadonnées"
+msgstr "appliquer les métadonnées"
 
 #: ../build/bin/conf_gen.h:947
 msgid "apply some metadata to all newly imported images."
@@ -306,7 +307,7 @@ msgstr "mots-clés séparés par des virgules à appliquer à l'importation"
 
 #: ../build/bin/conf_gen.h:982
 msgid "import tags from xmp"
-msgstr "importer mots-clés depuis xmp"
+msgstr "importer les mots-clés depuis xmp"
 
 #: ../build/bin/conf_gen.h:1008
 msgid "initial rating"
@@ -330,7 +331,7 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:1020
 msgid "import job"
-msgstr "nom importation"
+msgstr "nom d'importation"
 
 #: ../build/bin/conf_gen.h:1021
 msgid "name of the import job"
@@ -347,7 +348,7 @@ msgid ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "let the field empty otherwise"
 msgstr ""
-"entrer une date/heure valide (format YYYY-MM-DD[Thh:mm:ss]) si vous voulez "
+"entrer une date/heure valide (format AAAA-MM-JJ[hh:mm:ss]) si vous voulez "
 "surcharger la date/heure lors de l'expansion des variables : $(YEAR), "
 "$(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "laisser vide sinon"
@@ -519,16 +520,17 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:1826
 msgid "min images per group"
-msgstr "nombre minimum d'image par groupe"
+msgstr "nombre minimum d'images par groupe"
 
 #: ../build/bin/conf_gen.h:1827
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
 msgstr ""
-"le nombre minimum d'image pour créer un groupe. peut influencer la temps de "
+"le nombre minimum d'images pour créer un groupe. peut influencer le temps de "
 "calcul."
 
+# Est-ce que miniature ou vignette ne serait pas mieux approprié ?
 #: ../build/bin/conf_gen.h:1832
 msgctxt "preferences"
 msgid "thumbnail"
@@ -539,6 +541,7 @@ msgctxt "preferences"
 msgid "count"
 msgstr "nombre"
 
+# Affichage des miniatures (ou vignettes) ?
 #: ../build/bin/conf_gen.h:1836 ../src/libs/map_settings.c:160
 msgid "thumbnail display"
 msgstr "affichage miniatures"
@@ -548,7 +551,7 @@ msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
-"trois options disponibles : les miniatures, seulement le nombre d'image ou "
+"trois options disponibles : les miniatures, seulement le nombre d'images ou "
 "rien"
 
 #: ../build/bin/conf_gen.h:1848
@@ -1003,6 +1006,11 @@ msgstr ""
 msgid "expand a single utility module at a time"
 msgstr "déplier un seul module utilitaire de la table lumineuse à la fois"
 
+# La touche "shift" en français srait "Maj" ou "Majuscule".
+# Cependant, beaucoup d'utilisateurs ne font pas implicitement la différence entre la touche "Maj" et la touche "vérouillage des majuscules" (shift lock / Verr. Maj.)...
+# Mais dans tous ces cas, "shift" leur sera tout autant inconnue.
+# Disons que pour un utilisateur de dt, il saura a priori que "shift" = "Maj"...
+# Ou pas.
 #: ../build/bin/preferences_gen.h:4169
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
@@ -1028,7 +1036,8 @@ msgstr "appliquer une étoile deux fois à une image ne supprimera pas l'étoile
 #: ../build/bin/preferences_gen.h:4241
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
-msgstr "appliquer une étoile deux fois à une image ne supprimera pas l'étoile"
+msgstr ""
+"définit si appliquer une étoile deux fois à une image supprimera l'étoile"
 
 #: ../build/bin/preferences_gen.h:4263 ../build/bin/preferences_gen.h:5031
 msgid "show scrollbars for central view"
@@ -1059,12 +1068,13 @@ msgstr "définit si les barres de défilement doivent apparaître"
 
 #: ../build/bin/preferences_gen.h:4299
 msgid "show image time with milliseconds"
-msgstr "afficher les heures des images avec millisecondes"
+msgstr "afficher les heures des images avec les millisecondes"
 
 #: ../build/bin/preferences_gen.h:4313
 msgid "defines whether time should be displayed with milliseconds"
 msgstr "définit si les heures sont à afficher avec les millisecondes"
 
+# Ici c'est bien miniature qui est choisi... et non aperçu.
 #: ../build/bin/preferences_gen.h:4323
 msgid "thumbnails"
 msgstr "miniatures"
@@ -1082,8 +1092,8 @@ msgid ""
 "(more comments in the manual)"
 msgstr ""
 "si la taille de la miniature est plus grande que cette valeur, elle sera "
-"créée en utilisant le raw à la place de la miniature JPEG embarquée "
-"(meilleur mais plus lent).\n"
+"créée en utilisant le raw à la place de la miniature JPEG embarquée (mieux "
+"mais plus lent).\n"
 "pour avoir des miniatures et le cache des images préparé avec la meilleure "
 "qualité l'option *toujours* devrait être sélectionnée.\n"
 "(plus de détails dans le manuel)"
@@ -1101,7 +1111,7 @@ msgid ""
 "(more comments in the manual)"
 msgstr ""
 "si la taille de la miniature est plus grande que cette valeur, elle sera "
-"créée en utilisant le développement de haute qualité (meilleur mais plus "
+"créée en utilisant le développement de haute qualité (mieux mais plus "
 "lent).\n"
 "pour avoir des miniatures et le cache des images préparé avec la meilleure "
 "qualité l'option *toujours* devrait être sélectionnée.\n"
@@ -1117,7 +1127,7 @@ msgid ""
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
 "means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px"
 msgstr ""
-"les catégories des tailles permettent d'utiliser différentes information en "
+"les catégories des tailles permettent d'utiliser différentes informations en "
 "superposition et présentation graphique en fonction de la taille des "
 "miniatures, séparée par « | ». par exemple, 120|400 défini trois catégories "
 "de miniature : ≤ 120px, 120px → 400px et > 400px"
@@ -1162,8 +1172,8 @@ msgid ""
 "sets level for smoothing of brush strokes. stronger smoothing leads to less "
 "nodes and easier editing but with lower control of accuracy."
 msgstr ""
-"définit le niveau de lissage du pinceau. un lissage haut crée moins de nœud "
-"de contrôle et sera plus facile à éditer mais sera moins précis."
+"définit le niveau de lissage du pinceau. un lissage plus fort crée moins de "
+"nœuds de contrôle et sera plus facile à éditer mais sera moins précis."
 
 #: ../build/bin/preferences_gen.h:4833
 msgid "scroll down to increase mask parameters"
@@ -1228,10 +1238,9 @@ msgid ""
 msgstr ""
 "méthode d'interpolation pour les vues différentes de 1:1 dans la chambre "
 "noire : 'bilinéaire' est rapide mais peu net. 'moyen' utilise RCD plus les "
-"modes d'interpolations spécifiés par l'option \"algorithme "
-"d'interpolation\" (section traitement) . 'full' utilise les réglages de "
-"l'exportation. Les capteurs X-Trans utilisent VNG plutôt que RCD en réglage "
-"moyen."
+"modes d'interpolations spécifiés par l'option \"algorithme d'interpolation"
+"\" (section traitement) . 'full' utilise les réglages de l'exportation. Les "
+"capteurs X-Trans utilisent VNG plutôt que RCD en réglage moyen."
 
 #: ../build/bin/preferences_gen.h:5132
 msgid "reduce resolution of preview image"
@@ -1262,7 +1271,7 @@ msgstr "modules"
 
 #: ../build/bin/preferences_gen.h:5246
 msgid "display of individual color channels"
-msgstr "affiche les différents canaux de couleur"
+msgstr "affichage des canaux de couleur individuels"
 
 #: ../build/bin/preferences_gen.h:5284
 msgid ""
@@ -1282,7 +1291,7 @@ msgid ""
 "menu."
 msgstr ""
 "cacher les préréglages internes des modules de développement dans le menu "
-"des préréglages et les favoris."
+"des préréglages et des favoris."
 
 #: ../build/bin/preferences_gen.h:5342 ../build/bin/preferences_gen.h:5356
 msgid "show the guides widget in modules UI"
@@ -1292,6 +1301,7 @@ msgstr "affiche le widget des guides dans l'interface des modules"
 msgid "expand a single processing module at a time"
 msgstr "déplier un seul module de développement à la fois"
 
+# Même commentaire pour "shift" vs "maj"
 #: ../build/bin/preferences_gen.h:5392
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr "cette option change le comportement du shift-clic de la chambre noire"
@@ -1401,7 +1411,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5778
 msgid "prompt for name on addition of new instance"
-msgstr "active l'édition du nom lors de l'ajout d'une nouvelle instance"
+msgstr "demande de nom lors de l'ajout d'une nouvelle instance"
 
 #: ../build/bin/preferences_gen.h:5792
 msgid ""
@@ -1437,7 +1447,7 @@ msgid ""
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
 "algorithme d'interpolation utilisé pour la rotation, la correction des "
-"objectifs, liquéfié, recadrer et mise à l'échelle finale (bilinéaire, "
+"objectifs, liquéfier, recadrer et mise à l'échelle finale (bilinéaire, "
 "bicubique, lanczos2)"
 
 #: ../build/bin/preferences_gen.h:5944
@@ -1464,19 +1474,19 @@ msgstr "répertoire 3D lut racine"
 #: ../src/libs/import.c:1601 ../src/libs/import.c:1655 ../src/libs/styles.c:376
 #: ../src/lua/preferences.c:667
 msgid "select directory"
-msgstr "sélectionner répertoire"
+msgstr "sélectionner un répertoire"
 
 #: ../build/bin/preferences_gen.h:6035
 msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. "
 "(need a restart)."
 msgstr ""
-"ce répertoire (et sous répertoires) comportent les fichiers Lut utilisés par "
+"ce répertoire (et sous-répertoires) contient les fichiers Lut utilisés par "
 "les modules 3D lut. (nécessite un redémarrage)."
 
 #: ../build/bin/preferences_gen.h:6057
 msgid "auto-apply pixel workflow defaults"
-msgstr "flux de travail par défaut"
+msgstr "applique automatiquement le flux de travail par défaut"
 
 #: ../build/bin/preferences_gen.h:6100
 msgid ""
@@ -1492,7 +1502,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6122
 msgid "auto-apply chromatic adaptation defaults"
-msgstr "appliquer l'adaptation chromatique par défaut"
+msgstr "appliquer automatiquement l'adaptation chromatique par défaut"
 
 #: ../build/bin/preferences_gen.h:6160
 msgid ""
@@ -1501,7 +1511,7 @@ msgid ""
 "modern uses a combination of white balance module and color calibration "
 "module, with improved color science for chromatic adaptation"
 msgstr ""
-"originel applique une adaptation chromatique basique en utilisant uniquement "
+"hérité applique une adaptation chromatique basique en utilisant uniquement "
 "le module balance des blancs\n"
 "moderne utilise une combinaison des modules balance des blancs et "
 "calibration des couleurs, avec une science des couleurs améliorée pour "
@@ -1509,7 +1519,8 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6182
 msgid "auto-apply per camera basecurve presets"
-msgstr "applique le préréglage de la courbe de base pour le boîtier"
+msgstr ""
+"applique automatiquement le préréglage de la courbe de base pour le boîtier"
 
 #: ../build/bin/preferences_gen.h:6196
 msgid ""
@@ -1517,15 +1528,15 @@ msgid ""
 "one if there is one available (needs a restart).\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
-"to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
-"defaults\" should be set to \"none\""
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
+"\" should be set to \"none\""
 msgstr ""
 "utilise la courbe de base spécifique au boîtier à la place de celle "
-"générique à la marque si disponible (nécessite un redémarrage).\n"
+"générique de la marque si disponible (nécessite un redémarrage).\n"
 "cette option est utilisée uniquement lorsque l'option \"flux de travail par "
 "défaut\" est positionnée à \"relatif à l'affichage\".\n"
 "pour ne pas utiliser de courbe de base par défaut, l'option \"flux de "
-"travail par défaut\" doit être positionnée à \"aucun\"."
+"travail par défaut\" doit être positionnée à \"aucun\""
 
 #: ../build/bin/preferences_gen.h:6218
 msgid "auto-apply sharpen"
@@ -1537,10 +1548,9 @@ msgid ""
 "you should disable this option if you use one of those more recent cameras "
 "or sharpen your images with other means."
 msgstr ""
-"ajouter de la netteté n'est pas recommandé pour les appareils photos n'ayant "
-"pas de filtre passe-bas. vous devriez désactiver cette option si vous "
-"utilisez un appareil photo récent ou si vous renforcez la netteté par "
-"d'autres moyens."
+"cette netteté ajoutée n'est pas recommandée pour les appareils photos sans "
+"filtre passe-bas. vous devriez désactiver cette option si vous utilisez un "
+"appareil photo récent ou si vous renforcez la netteté par d'autres moyens."
 
 #: ../build/bin/preferences_gen.h:6254
 msgid "detect monochrome previews"
@@ -1551,10 +1561,10 @@ msgid ""
 "many monochrome images can be identified via EXIF and preview data. beware: "
 "this slows down imports and reading of EXIF data"
 msgstr ""
-"la plupart des images monochromes peuvent être identifiées via les EXIF ou "
-"les données des miniatures.\n"
-"attention : cela réduit les performances lors de l'importation et de la "
-"lecture des données EXIF"
+"beaucoup d'images monochromes peuvent être identifiées via les EXIF ou les "
+"données des miniatures.\n"
+"attention : cela réduit les performances lors de l'importation et la lecture "
+"des données EXIF"
 
 #: ../build/bin/preferences_gen.h:6290
 msgid "show warning messages"
@@ -1568,7 +1578,7 @@ msgid ""
 "what you are doing. this option will hide them all the time."
 msgstr ""
 "afficher les messages dans les modules pour alerter les débutants lorsque "
-"des options non standards et possiblement dangereuses sont active dans le "
+"des options non standards et possiblement dangereuses sont utilisées dans le "
 "développement.\n"
 "ces messages peuvent être des faux-positifs et peuvent être ignorés si vous "
 "savez ce que vous faites. cette option permet de cacher les messages."
@@ -1608,7 +1618,7 @@ msgstr ""
 "systèmes pour la performance.\n"
 "- sans-restriction : devrait être utilisé uniquement lors du développement "
 "de très grandes images car darktable utilisera toutes les ressources "
-"systèmes et ainsi peut entraîner des lenteurs dû à l'utilisation de la "
+"systèmes et ainsi peut entraîner des lenteurs dûes à l'utilisation de la "
 "partition d'échange. à utiliser avec prudence et non recommandé par défaut !"
 
 #: ../build/bin/preferences_gen.h:6405
@@ -1640,13 +1650,13 @@ msgstr ""
 "supprimées de la mémoire. à noter que cela peut prendre beaucoup de mémoire "
 "(plusieurs gigaoctets pour 20 mille images) et ne supprimera jamais les "
 "miniatures du cache. il est possible cependant de les effacer manuellement "
-"si désiré. la table lumineuse serra beaucoup plus fluide lors de navigation "
+"si désiré. la table lumineuse sera beaucoup plus fluide lors de navigation "
 "importante. pour générer toutes les miniatures de toutes les collections "
 "hors-ligne exécuter 'darktable-generate-cache'."
 
 #: ../build/bin/preferences_gen.h:6477
 msgid "enable disk backend for full preview cache"
-msgstr "utilisation du disque pour le cache des images 100%"
+msgstr "utilisation du disque pour le cache des prévisualisations plein écran"
 
 #: ../build/bin/preferences_gen.h:6491
 msgid ""
@@ -1656,12 +1666,12 @@ msgid ""
 "though to delete these manually, if you want. light table performance will "
 "be increased greatly when zooming image in full preview mode."
 msgstr ""
-"si activé, écrit les images 100% sur le disque (.cache/darktable/) lorsque "
-"supprimées de la mémoire. à noter que cela peut prendre beaucoup de mémoire "
-"(plusieurs gigaoctets pour 20 mille images) et ne supprimera jamais les "
-"miniatures du cache. il est possible cependant de les effacer manuellement "
-"si désiré. la table lumineuse serra beaucoup plus fluide lors du zoom 100% "
-"sur les images."
+"si activé, écrit les prévisualisation plein écran sur le disque (.cache/"
+"darktable/) lorsque supprimées de la mémoire. à noter que cela peut prendre "
+"beaucoup de mémoire (plusieurs gigaoctets pour 20 mille images) et ne "
+"supprimera jamais les miniatures du cache. il est possible cependant de les "
+"effacer manuellement si désiré. la table lumineuse serra beaucoup plus "
+"fluide lors du zoom plein écran de prévisualisation d'une image."
 
 #: ../build/bin/preferences_gen.h:6513
 msgid "activate OpenCL support"
@@ -1685,7 +1695,7 @@ msgstr "non disponible"
 #: ../build/bin/preferences_gen.h:6678 ../build/bin/preferences_gen.h:6682
 #: ../build/bin/preferences_gen.h:8054 ../build/bin/preferences_gen.h:8058
 msgid "not available on this system"
-msgstr "non disponible sur cette plateforme"
+msgstr "non disponible sur ce système"
 
 #: ../build/bin/preferences_gen.h:6555
 msgid "OpenCL scheduling profile"
@@ -1703,7 +1713,7 @@ msgstr ""
 "les système avec support OpenCL. par défaut le GPU est utilisé pour le rendu "
 "de l'image complète et le CPU pour la prévisualisation (changeable des les "
 "préférences); les GPU multiples traiteront l'image complète et la "
-"prévisualisation en parallèle sur des GPUs différents.; GPU très rapide - "
+"prévisualisation en parallèle sur des GPUs différents; GPU très rapide - "
 "utilise le GPU séquentiellement pour l'image et la prévisualisation."
 
 #: ../build/bin/preferences_gen.h:6626
@@ -1716,10 +1726,10 @@ msgid ""
 "graphics ram, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
 msgstr ""
-"permet d'optimiser lors de l'exécution les périphériques OpenCL. « taille "
-"mémoire » teste la mémoire disponible sur la carte, « transfert mémoire » "
-"tente un accès rapide à la mémoire (mémoire épinglée) utilisée pour le "
-"tuilage."
+"permet d'optimiser les périphériques OpenCL lors de l'exécution. « taille "
+"mémoire » teste la mémoire disponible sur la carte graphique, « transfert "
+"mémoire » tente un accès rapide à la mémoire (mémoire épinglée) utilisée "
+"pour le tuilage."
 
 #: ../build/bin/preferences_gen.h:6708
 msgid "security"
@@ -1732,8 +1742,8 @@ msgstr "demander avant d'enlever des images de la bibliothèque"
 #: ../build/bin/preferences_gen.h:6745
 msgid "always ask the user before removing image information from the library"
 msgstr ""
-"toujours demander avant d'enlever les informations sur l'image de le "
-"bibliothèque"
+"toujours demander avant d'enlever de la bibliothèque les informations sur "
+"l'image"
 
 #: ../build/bin/preferences_gen.h:6767
 msgid "ask before deleting images from disk"
@@ -1760,8 +1770,8 @@ msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
 msgstr ""
-"déplace les fichiers vers la poubelle au lieu de définitivement les "
-"supprimer sur les système qui le supporte"
+"déplace les fichiers vers la poubelle au lieu de les supprimer "
+"définitivement sur les systèmes qui le permettent"
 
 #: ../build/bin/preferences_gen.h:6875
 msgid "ask before moving images from film roll folder"
@@ -1781,7 +1791,7 @@ msgstr "toujours demander avant de copier une image."
 
 #: ../build/bin/preferences_gen.h:6947
 msgid "ask before removing empty folders"
-msgstr "demander avant d'enlever les répertoires vides"
+msgstr "demander avant de retirer des répertoires vides"
 
 #: ../build/bin/preferences_gen.h:6961
 msgid ""
@@ -1811,12 +1821,12 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7089
 msgid "ask before exporting in overwrite mode"
-msgstr "demander avant d'exporter en mode écraser"
+msgstr "demander avant d'exporter en mode écrasement"
 
 #: ../build/bin/preferences_gen.h:7103
 msgid "will ask for confirmation before exporting files in overwrite mode"
 msgstr ""
-"demandera une confirmation avant d\"exporter des fichiers en mode écraser"
+"demandera une confirmation avant d'exporter des fichiers en mode écrasement"
 
 #. italic
 #: ../build/bin/preferences_gen.h:7113 ../src/libs/tools/viewswitcher.c:149
@@ -2390,7 +2400,7 @@ msgstr "cisaillement"
 #: ../src/gui/presets.c:600 ../src/libs/camera.c:551
 #: ../src/libs/metadata_view.c:143
 msgid "focal length"
-msgstr "focale"
+msgstr "longueur focale"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:154
 #: ../build/lib/darktable/plugins/introspection_ashift.c:295
@@ -2418,7 +2428,7 @@ msgstr "modèle d'objectif"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:244
 #: ../build/lib/darktable/plugins/introspection_clipping.c:371
 msgid "automatic cropping"
-msgstr "recadrage"
+msgstr "recadrage automatique"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:361
 msgid "generic"
@@ -2442,7 +2452,7 @@ msgstr "désactivé(e)"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:367
 msgid "largest area"
-msgstr "plus grand coté"
+msgstr "plus grande surface"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:368
 msgid "original format"
@@ -2656,7 +2666,7 @@ msgstr "gaussien"
 #: ../build/lib/darktable/plugins/introspection_borders.c:251
 #: ../src/common/collection.c:638 ../src/common/collection.c:691
 msgid "aspect ratio"
-msgstr "aspect"
+msgstr "ration d'aspect"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:128
 #: ../build/lib/darktable/plugins/introspection_borders.c:263
@@ -8518,8 +8528,8 @@ msgstr "<b>tourner</b> : ctrl+déplacer"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
-"ctrl+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
+"+scroll (%d%%)"
 msgstr ""
 "<b>mode d'adoucissement</b> : maj+clic, <b>tourner</b> : ctrl+déplacer\n"
 "<b>taille</b> : molette, <b>taille d'adoucissement</b> : maj+molette, "
@@ -8696,7 +8706,7 @@ msgid ""
 "<b>add node</b>: ctrl+click"
 msgstr ""
 "<b>déplacer le segment</b> : déplacer\n"
-"<b>ajouter un nœud</b> : clic droit"
+"<b>ajouter un nœud</b> : ctrl+clic"
 
 #: ../src/develop/pixelpipe_hb.c:394
 msgid "enabled as required"
@@ -13737,8 +13747,8 @@ msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>redimensionner</b> : glisser, <b>conserver les proportions</b> : "
-"shift+glisser\n"
+"<b>redimensionner</b> : glisser, <b>conserver les proportions</b> : shift"
+"+glisser\n"
 "<b>redresser</b> : glisser-droit"
 
 #: ../src/iop/clipping.c:3084
@@ -16798,7 +16808,7 @@ msgid ""
 "large values bring huge performance penalties"
 msgstr ""
 "augmenter pour corriger les larges zones tronquées.\n"
-"les grandes valeurs augmente la pénalité de temps."
+"les grandes valeurs pénalisent fortement les performances"
 
 #: ../src/iop/highpass.c:75
 msgid "highpass"
@@ -17170,8 +17180,8 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer et tracer pour ajouter un point\n"
-"défiler pour changer la taille - shift+défiler pour changer la force - "
-"ctrl+défiler pour changer la direction"
+"défiler pour changer la taille - shift+défiler pour changer la force - ctrl"
+"+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3602
 msgid ""
@@ -17180,8 +17190,8 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer pour ajouter une ligne\n"
-"défiler pour changer la taille - shift+défiler pour changer la force - "
-"ctrl+défiler pour changer la direction"
+"défiler pour changer la taille - shift+défiler pour changer la force - ctrl"
+"+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3606
 msgid ""
@@ -17190,8 +17200,8 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer pour ajouter une courbe\n"
-"défiler pour changer la taille - shift+défiler pour changer la force - "
-"ctrl+défiler pour changer la direction"
+"défiler pour changer la taille - shift+défiler pour changer la force - ctrl"
+"+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3609
 msgid "click to edit nodes"
@@ -19147,7 +19157,7 @@ msgstr ""
 "canaux\n"
 "pour un meilleur contrôle de la correction d'exposition avec les nœuds "
 "disponibles.\n"
-"la baguette magique ajustera automatiquement l'exposition moyenne."
+"la baguette magique ajustera automatiquement l'exposition moyenne"
 
 #: ../src/iop/toneequal.c:3253
 msgid ""
@@ -22631,7 +22641,7 @@ msgid ""
 msgstr ""
 "indique que le mode d'impression sans bordure doit être activé\n"
 "dans le driver d'impression car les marges sélectionnées sont\n"
-"en dessous des marges de l'imprimante."
+"en dessous des marges de l'imprimante"
 
 #. pack image dimension hbox here
 #: ../src/libs/print_settings.c:2493
@@ -24492,7 +24502,6 @@ msgstr "actions souris"
 #~ msgid "exif data"
 #~ msgstr "données EXIF"
 
-#, c-format
 #~ msgid ""
 #~ "no history compression of 1 image.\n"
 #~ "see tag: darktable|problem|history-compress"
@@ -24532,12 +24541,10 @@ msgstr "actions souris"
 #~ msgid "the right margin cannot overlap wit(h the left margin"
 #~ msgstr "la marge droite ne peut pas dépasser la marge gauche"
 
-#, c-format
 #~ msgctxt "accel"
 #~ msgid "styles/apply %s"
 #~ msgstr "styles/appliquer « %s »"
 
-#, c-format
 #~ msgctxt "accel"
 #~ msgid "apply %s"
 #~ msgstr "appliquer « %s »"
@@ -25036,11 +25043,9 @@ msgstr "actions souris"
 #~ msgid "position"
 #~ msgstr "position"
 
-#, c-format
 #~ msgid "%.0f ISO"
 #~ msgstr "%.0f ISO"
 
-#, c-format
 #~ msgid "%.0f mired"
 #~ msgstr "%.0f mired"
 
@@ -25189,7 +25194,6 @@ msgstr "actions souris"
 #~ msgstr ""
 #~ "un changement de vue est nécessaire pour que le changement prenne effet"
 
-#, c-format
 #~ msgid ""
 #~ "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
 #~ "<b>opacity</b>: ctrl+scroll (%d%%)"
@@ -25219,7 +25223,6 @@ msgstr "actions souris"
 #~ msgid "overwrite selected xmp files"
 #~ msgstr "écraser les fichiers xmp selectionnés"
 
-#, c-format
 #~ msgid "no fallback for %s (%s)"
 #~ msgstr "pas de repli pour « %s » (%s)"
 
@@ -25302,7 +25305,6 @@ msgstr "actions souris"
 #~ msgid "today"
 #~ msgstr "aujourd'hui"
 
-#, c-format
 #~ msgid "<u>%d</u> tag will be updated."
 #~ msgid_plural "<u>%d</u> tags will be updated."
 #~ msgstr[0] "<u>%d</u> mot-clé sera mis à jour"
@@ -25444,7 +25446,6 @@ msgstr "actions souris"
 #~ "ces fichiers pourront être réimportés dans une base de données différente "
 #~ "par la suite, tout en préservant les modifications apportées aux images."
 
-#, no-c-format
 #~ msgid ""
 #~ "use `%' as wildcard\n"
 #~ "use `|%' to include all sub-hierarchies (ctrl-click)\n"
@@ -25455,7 +25456,6 @@ msgstr "actions souris"
 #~ "utiliser « * » pour inclure la hiérarchie et les sous-hiérarchies (shift-"
 #~ "clic)"
 
-#, no-c-format
 #~ msgid ""
 #~ "use `%' as wildcard\n"
 #~ "use `|%' to include all sub-locations (ctrl-click)\n"
@@ -25481,7 +25481,6 @@ msgstr "actions souris"
 #~ msgid "linear or non-linear, RGB or Lab, display-referred"
 #~ msgstr "relatif à l'affichage, linéaire ou non-linéaire, RVB ou Lab"
 
-#, c-format
 #~ msgid "edit `%s'"
 #~ msgstr "modifier « %s »"
 
@@ -25668,7 +25667,6 @@ msgstr "actions souris"
 #~ msgid "dynamic"
 #~ msgstr "dynamique"
 
-#, c-format
 #~ msgid ""
 #~ "%s\n"
 #~ "(shortcut: %s)"
@@ -25676,27 +25674,21 @@ msgstr "actions souris"
 #~ "%s\n"
 #~ "(raccourcis: %s)"
 
-#, c-format
 #~ msgid "%s %s / %s: %s"
 #~ msgstr "%s %s / %s : %s"
 
-#, c-format
 #~ msgid "%s / %s: %s"
 #~ msgstr "%s / %s : %s"
 
-#, c-format
 #~ msgid "%s: %s"
 #~ msgstr "%s : %s"
 
-#, c-format
 #~ msgid "%s %s / %s"
 #~ msgstr "%s %s / %s"
 
-#, c-format
 #~ msgid "%s / %s"
 #~ msgstr "%s / %s"
 
-#, c-format
 #~ msgid "scroll to change <b>%s</b> of module %s %s"
 #~ msgstr "utiliser la molette pour changer <b>%s</b> du module %s %s"
 
@@ -25710,7 +25702,6 @@ msgstr "actions souris"
 #~ msgid "press key combination to remap..."
 #~ msgstr "entrer la nouvelle combinaison de touches..."
 
-#, c-format
 #~ msgid ""
 #~ "%s accel is already mapped to\n"
 #~ "%s.\n"
@@ -25913,7 +25904,6 @@ msgstr "actions souris"
 #~ msgid "ProPhoto RGB"
 #~ msgstr "RVB ProPhoto"
 
-#, c-format
 #~ msgid "preset %s was successfully saved"
 #~ msgstr "le préréglage « %s » a été sauvegardé"
 
@@ -25923,13 +25913,11 @@ msgstr "actions souris"
 #~ msgid "do you want to access https://darktable.org/usermanual/?"
 #~ msgstr "voulez-vous accéder à https://darktable.org/usermanual/?"
 
-#, no-c-format
 #~ msgid "type your query, use `%' as wildcard"
 #~ msgstr ""
 #~ "saisissez votre requête,\n"
 #~ "utilisez « % » en caractère joker"
 
-#, c-format
 #~ msgid ""
 #~ "\n"
 #~ " At startup, the database failed to open because at least one of the two "
@@ -26019,7 +26007,6 @@ msgstr "actions souris"
 #~ msgid "darktable cannot be started because the database is locked"
 #~ msgstr "darktable ne peut démarrer car la base de données est verrouillée"
 
-#, c-format
 #~ msgid ""
 #~ "<b>compression</b>: shift+scroll\n"
 #~ "<b>opacity</b>: ctrl+scroll (%d%%)"
@@ -26027,7 +26014,6 @@ msgstr "actions souris"
 #~ "<b>compression</b> : shift+molette\n"
 #~ "<b>opacité</b> : ctrl+molette (%d%%)"
 
-#, c-format
 #~ msgid "do you really want to send %d image to trash?"
 #~ msgid_plural "do you really want to send %d images to trash?"
 #~ msgstr[0] "êtes-vous sûr de vouloir déplacer vers la poubelle %d image ?"
@@ -26176,7 +26162,6 @@ msgstr "actions souris"
 #~ msgid "folder..."
 #~ msgstr "dossier..."
 
-#, c-format
 #~ msgid "tag: %s "
 #~ msgstr "mot-clé : « %s » "
 
