@@ -1365,9 +1365,15 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   double fraction = 0;
 
-  // set up the fdata struct
-  fdata->max_width = (settings->max_width != 0 && w != 0) ? MIN(w, settings->max_width) : MAX(w, settings->max_width);
-  fdata->max_height = (settings->max_height != 0 && h != 0) ? MIN(h, settings->max_height) : MAX(h, settings->max_height);
+  fdata->max_width =
+    (settings->max_width != 0 && w != 0)
+    ? MIN(w, settings->max_width)
+    : MAX(w, settings->max_width);
+  fdata->max_height =
+    (settings->max_height != 0 && h != 0)
+    ? MIN(h, settings->max_height)
+    : MAX(h, settings->max_height);
+
   g_strlcpy(fdata->style, settings->style, sizeof(fdata->style));
   fdata->style_append = settings->style_append;
   // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a
