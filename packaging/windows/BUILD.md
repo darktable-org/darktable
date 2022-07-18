@@ -17,37 +17,37 @@ How to make a darktable Windows installer (x64 only):
 * From the MSYS terminal, install x64 developer tools, x86_64 toolchain and git:
     ```bash
     $ pacman -S --needed base-devel intltool git
-    $ pacman -S --needed mingw-w64-x86_64-{toolchain,cmake,ninja,nsis}
+    $ pacman -S --needed mingw-w64-ucrt-x86_64-{toolchain,cmake,ninja,nsis}
     ```
 
 * Install required libraries and dependencies for darktable:
     ```bash
-    $ pacman -S --needed mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+    $ pacman -S --needed mingw-w64-ucrt-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
     ```
 
 * Install optional libraries and dependencies:
 
     for cLUT
     ```bash
-    $ pacman -S --needed mingw-w64-x86_64-gmic
+    $ pacman -S --needed mingw-w64-ucrt-x86_64-gmic
     ```
     for NG input with midi or gamepad devices
     ```bash
-    $ pacman -S --needed mingw-w64-x86_64-{portmidi,SDL2}
+    $ pacman -S --needed mingw-w64-ucrt-x86_64-{portmidi,SDL2}
     ```
 
 * Install optional libraries required for [testing](../../src/tests/unittests/README.md):
     ```bash
-    $ pacman -S --needed mingw-w64-x86_64-cmocka
+    $ pacman -S --needed mingw-w64-ucrt-x86_64-cmocka
     ```
 
-* Switch to the MINGW64 terminal and update your lensfun database:
+* Switch to the UCRT64 terminal and update your lensfun database:
     ```bash
     $ lensfun-update-data
     ```
 
 * For libgphoto2 tethering:
-    * You might need to restart the MINGW64 terminal to have CAMLIBS and IOLIBS environment variables properly set.
+    * You might need to restart the UCRT64 terminal to have CAMLIBS and IOLIBS environment variables properly set.
     Make sure they aren't pointing into your normal Windows installation in case you already have darktable installed.
     You can check them with:
         ```bash
@@ -56,8 +56,8 @@ How to make a darktable Windows installer (x64 only):
         ```
     * If you have to set them manually you can do so by setting the variables in your `~/.bash_profile`. Example:
         ```bash
-        export CAMLIBS="/mingw64/lib/libgphoto2/2.5.30/"
-        export IOLIBS="/mingw64/lib/libgphoto2_port/0.12.1/"
+        export CAMLIBS="/UCRT64/lib/libgphoto2/2.5.30/"
+        export IOLIBS="/UCRT64/lib/libgphoto2_port/0.12.1/"
         ```
 
     Also use this program to install the USB driver on Windows for your camera:
@@ -68,7 +68,7 @@ How to make a darktable Windows installer (x64 only):
 * Modify the `.bash_profile` file in your `$HOME` directory and add the following lines:
     ```bash
     # Added as per http://wiki.gimp.org/wiki/Hacking:Building/Windows
-    export PREFIX="/mingw64"
+    export PREFIX="/UCRT64"
     export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
     export PATH="$PREFIX/bin:$PATH"
     ```
@@ -120,10 +120,10 @@ How to make a darktable Windows installer (x64 only):
 While Ninja offers advantages of reduced build times for incremental builds (builds on Windows are significantly slower than with linux based systems), you can also fall back to more traditional Makefiles should the need arise. You'll need to install Autotools from an MSYS terminal with:
 
 ```bash
-$ pacman -S --needed mingw-w64-x86_64-autotools
+$ pacman -S --needed mingw-w64-ucrt-x86_64-autotools
 ```
 
-Now return to the MINGW64 terminal and use this sequence instead:
+Now return to the UCRT64 terminal and use this sequence instead:
 
 ```bash
 $ mkdir build
