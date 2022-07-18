@@ -1902,11 +1902,14 @@ static void _add_datetime_offset(const uint32_t imgid, const char *odt,
   if(!datetime_new)
     return;
   gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S,%f");
-  datetime[DT_DATETIME_LENGTH - 1] = '\0';  // limit to milliseconds
-  g_date_time_unref(datetime_new);
 
   if(datetime)
+  {
     g_strlcpy(ndt, datetime, DT_DATETIME_LENGTH);
+    ndt[DT_DATETIME_LENGTH - 1] = '\0';
+  }
+
+  g_date_time_unref(datetime_new);
   g_free(datetime);
 }
 
@@ -2358,4 +2361,3 @@ void dt_control_import(GList *imgs, const char *datetime_override, const gboolea
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
