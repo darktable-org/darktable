@@ -1942,16 +1942,18 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
 
     for(GList *img = t; img; img = g_list_next(img))
     {
+      const uint32_t imgid = GPOINTER_TO_INT(img->data);
+
       char odt[DT_DATETIME_LENGTH] = {0};
-      dt_image_get_datetime(GPOINTER_TO_INT(img->data), odt);
+      dt_image_get_datetime(imgid, odt);
       if(!odt[0]) continue;
 
       char ndt[DT_DATETIME_LENGTH] = {0};
-      _add_datetime_offset(GPOINTER_TO_INT(img->data), odt, offset, ndt);
+      _add_datetime_offset(imgid, odt, offset, ndt);
       if(!ndt[0]) continue;
 
       // takes the option to include the grouped images
-      GList *grps = dt_grouping_get_group_images(GPOINTER_TO_INT(img->data));
+      GList *grps = dt_grouping_get_group_images(imgid);
       for(GList *grp = grps; grp; grp = g_list_next(grp))
       {
         imgs = g_list_prepend(imgs, grp->data);
