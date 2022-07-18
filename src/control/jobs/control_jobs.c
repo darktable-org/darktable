@@ -1878,7 +1878,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->sdata = sdata;
   data->high_quality = high_quality;
   data->export_masks = export_masks;
-  data->upscale = upscale;
+  data->upscale = (max_width == 0 && max_height == 0) ? FALSE : upscale;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
   data->icc_type = icc_type;
