@@ -837,6 +837,8 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dev->proxy.wb_is_D65 = TRUE;
   dev->proxy.wb_coeffs[0] = 0.f;
 
+  memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
+
 #ifdef USE_LUA
 
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
@@ -4564,4 +4566,3 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
