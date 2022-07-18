@@ -1964,6 +1964,8 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
     }
     imgs = g_list_reverse(imgs);
     dt_image_set_datetimes(imgs, dtime, TRUE);
+
+    g_array_unref(dtime);
   }
   else
   {
