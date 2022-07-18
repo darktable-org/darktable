@@ -1902,11 +1902,14 @@ static void _add_datetime_offset(const uint32_t imgid, const char *odt,
   if(!datetime_new)
     return;
   gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S,%f");
-  datetime[DT_DATETIME_LENGTH - 1] = '\0';  // limit to milliseconds
-  g_date_time_unref(datetime_new);
 
   if(datetime)
+  {
     g_strlcpy(ndt, datetime, DT_DATETIME_LENGTH);
+    ndt[DT_DATETIME_LENGTH - 1] = '\0';
+  }
+
+  g_date_time_unref(datetime_new);
   g_free(datetime);
 }
 
@@ -1939,16 +1942,18 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
 
     for(GList *img = t; img; img = g_list_next(img))
     {
+      const uint32_t imgid = GPOINTER_TO_INT(img->data);
+
       char odt[DT_DATETIME_LENGTH] = {0};
-      dt_image_get_datetime(GPOINTER_TO_INT(img->data), odt);
+      dt_image_get_datetime(imgid, odt);
       if(!odt[0]) continue;
 
       char ndt[DT_DATETIME_LENGTH] = {0};
-      _add_datetime_offset(GPOINTER_TO_INT(img->data), odt, offset, ndt);
+      _add_datetime_offset(imgid, odt, offset, ndt);
       if(!ndt[0]) continue;
 
       // takes the option to include the grouped images
-      GList *grps = dt_grouping_get_group_images(GPOINTER_TO_INT(img->data));
+      GList *grps = dt_grouping_get_group_images(imgid);
       for(GList *grp = grps; grp; grp = g_list_next(grp))
       {
         imgs = g_list_prepend(imgs, grp->data);
@@ -1959,6 +1964,8 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
     }
     imgs = g_list_reverse(imgs);
     dt_image_set_datetimes(imgs, dtime, TRUE);
+
+    g_array_unref(dtime);
   }
   else
   {
@@ -2358,4 +2365,3 @@ void dt_control_import(GList *imgs, const char *datetime_override, const gboolea
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
