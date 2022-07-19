@@ -7,7 +7,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-07-03 17:01-0300\n"
 "PO-Revision-Date: 2022-07-18 21:59-0300\n"
-"Last-Translator: Marcus Gama <marcus.gama@gmail.com>
+"Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
