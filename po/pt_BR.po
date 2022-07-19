@@ -1,12 +1,12 @@
 # Copyright (C) 2021 Free Software Foundation, Inc.
 #
-# Marcus Gama <marcus.gama@gmail.com>, 2021.
+# Marcus Gama <marcus.gama@gmail.com>, 2021, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-07-03 17:01-0300\n"
-"PO-Revision-Date: 2022-07-03 17:06-0300\n"
+"PO-Revision-Date: 2022-07-18 21:59-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Lokalize 21.08.3\n"
+"X-Generator: Lokalize 22.04.3\n"
 "X-Poedit-Bookmarks: 722,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
@@ -432,18 +432,18 @@ msgstr "tamanho do pincel (relativo)"
 #: ../build/bin/conf_gen.h:1251 ../build/bin/preferences_gen.h:4779
 msgctxt "preferences"
 msgid "low"
-msgstr "baixo"
+msgstr "baixa"
 
 #: ../build/bin/conf_gen.h:1252 ../build/bin/preferences_gen.h:4784
 #: ../build/bin/preferences_gen.h:4808
 msgctxt "preferences"
 msgid "medium"
-msgstr "médio"
+msgstr "média"
 
 #: ../build/bin/conf_gen.h:1253 ../build/bin/preferences_gen.h:4789
 msgctxt "preferences"
 msgid "high"
-msgstr "alto"
+msgstr "alta"
 
 #: ../build/bin/conf_gen.h:1267 ../build/bin/preferences_gen.h:5257
 #: ../build/bin/preferences_gen.h:5281
@@ -732,7 +732,7 @@ msgstr "polegada"
 #: ../build/bin/preferences_gen.h:8007
 msgctxt "preferences"
 msgid "all"
-msgstr "tudo"
+msgstr "todos"
 
 #: ../build/bin/conf_gen.h:2878 ../build/bin/preferences_gen.h:7983
 msgctxt "preferences"
@@ -1394,7 +1394,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5742
 msgid "show mask indicator in module headers"
-msgstr "mostrar indicador de máscara nos cabeçalhos do módulo"
+msgstr "mostrar indicador de máscara no cabeçalho do módulo"
 
 #: ../build/bin/preferences_gen.h:5756
 msgid ""
@@ -5023,23 +5023,23 @@ msgstr "nome do arquivo"
 
 #: ../src/common/collection.c:612 ../src/common/collection.c:667
 msgid "capture time"
-msgstr "tempo de captura"
+msgstr "data/hora captura"
 
 #: ../src/common/collection.c:614 ../src/common/collection.c:669
 msgid "import time"
-msgstr "tempo de importação"
+msgstr "data/hora importação"
 
 #: ../src/common/collection.c:616 ../src/common/collection.c:671
 msgid "modification time"
-msgstr "tempo da última modificação"
+msgstr "data/hora última modificação"
 
 #: ../src/common/collection.c:618 ../src/common/collection.c:673
 msgid "export time"
-msgstr "exportar hora/data"
+msgstr "data/hora exportação"
 
 #: ../src/common/collection.c:620 ../src/common/collection.c:675
 msgid "print time"
-msgstr "imprimir hora/data"
+msgstr "data/hora impressão"
 
 #: ../src/common/collection.c:622 ../src/common/collection.c:707
 #: ../src/common/ratings.c:321 ../src/develop/lightroom.c:1525
@@ -5741,7 +5741,9 @@ msgstr ""
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
-msgstr "a interface com o usuário e os mecanismos internos para ajuste fino de desempenho do darktable mudaram."
+msgstr ""
+"a interface com o usuário e os mecanismos internos para ajuste fino de"
+" desempenho do darktable mudaram."
 
 #: ../src/common/darktable.c:1739
 msgid ""
@@ -7403,12 +7405,12 @@ msgstr "luz suave"
 #: ../src/develop/blend_gui.c:58
 msgctxt "blendmode"
 msgid "hardlight"
-msgstr "luz direta"
+msgstr "luz dura"
 
 #: ../src/develop/blend_gui.c:59
 msgctxt "blendmode"
 msgid "vividlight"
-msgstr "luz brilhante"
+msgstr "luz intensa"
 
 #: ../src/develop/blend_gui.c:60
 msgctxt "blendmode"
@@ -7547,7 +7549,7 @@ msgstr "RAW"
 
 #: ../src/develop/blend_gui.c:96 ../src/develop/blend_gui.c:1725
 msgid "RGB (display)"
-msgstr "RGB (tela)"
+msgstr "RGB (exibição)"
 
 #: ../src/develop/blend_gui.c:97 ../src/develop/blend_gui.c:1736
 msgid "RGB (scene)"
@@ -9923,7 +9925,7 @@ msgstr "cabeçalho"
 
 #: ../src/gui/gtk.c:1196
 msgid "filmstrip and timeline"
-msgstr "tira de filme e linha do tempo"
+msgstr "rolo de filme e linha do tempo"
 
 #: ../src/gui/gtk.c:1197
 msgid "top toolbar"
@@ -17635,7 +17637,7 @@ msgstr "compensação de verde nas sombras"
 
 #: ../src/iop/negadoctor.c:906
 msgid "shadows blue offset"
-msgstr "compensação azul nas sombras"
+msgstr "compensação de azul nas sombras"
 
 #. WB highlights
 #: ../src/iop/negadoctor.c:913
@@ -17652,7 +17654,7 @@ msgstr "seleciona cor do iluminante a partir da imagem"
 
 #: ../src/iop/negadoctor.c:929
 msgid "illuminant red gain"
-msgstr "ganho vermelho no iluminante"
+msgstr "ganho de vermelho no iluminante"
 
 #: ../src/iop/negadoctor.c:930 ../src/iop/negadoctor.c:937
 #: ../src/iop/negadoctor.c:944
@@ -17669,11 +17671,11 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:936
 msgid "illuminant green gain"
-msgstr "ganho verde no iluminante"
+msgstr "ganho de verde no iluminante"
 
 #: ../src/iop/negadoctor.c:943
 msgid "illuminant blue gain"
-msgstr "ganho azul no iluminante"
+msgstr "ganho de azul no iluminante"
 
 #. Page PRINT PROPERTIES
 #: ../src/iop/negadoctor.c:950
@@ -21479,7 +21481,7 @@ msgstr "remover localização"
 
 #: ../src/libs/map_locations.c:814
 msgid "update filmstrip"
-msgstr "atualizar tira de filme"
+msgstr "atualizar rolo de filme"
 
 #: ../src/libs/map_locations.c:821
 msgid "go to collection (lighttable)"
@@ -21730,19 +21732,19 @@ msgstr "versão"
 
 #: ../src/libs/metadata_view.c:130
 msgid "import timestamp"
-msgstr "tempo de importação"
+msgstr "data/hora importação"
 
 #: ../src/libs/metadata_view.c:131
 msgid "change timestamp"
-msgstr "tempo de modificação"
+msgstr "data/hora modificação"
 
 #: ../src/libs/metadata_view.c:132
 msgid "export timestamp"
-msgstr "tempo de exportação"
+msgstr "data/hora exportação"
 
 #: ../src/libs/metadata_view.c:133
 msgid "print timestamp"
-msgstr "tempo de impressão"
+msgstr "data/hora impressão"
 
 #: ../src/libs/metadata_view.c:134
 msgid "flags"
@@ -23078,7 +23080,7 @@ msgstr ""
 
 #: ../src/libs/tools/filmstrip.c:45
 msgid "filmstrip"
-msgstr "tira de filme"
+msgstr "rolo de filme"
 
 #: ../src/libs/tools/filter.c:41
 msgid "filter"
