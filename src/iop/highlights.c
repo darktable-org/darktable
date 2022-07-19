@@ -117,6 +117,8 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *reconstructing;
   GtkWidget *combine;
   gboolean show_visualize;
+  gboolean show_borders;
+  gboolean show_bads;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -248,7 +250,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+  const gboolean visualizing = (g != NULL) ? (g->show_visualize || g->show_borders || g->show_bads) && fullpipe : FALSE;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_xtrans = NULL;
@@ -2005,8 +2007,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
 
     case DT_IOP_HIGHLIGHTS_RECOVERY:
-      process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data);
+    {
+      int vmode = 0;
+      if(g != NULL) vmode = ((g->show_borders) ? 1 : 0) | ((g->show_bads) ? 2 : 0);
+
+      process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data, vmode);
+      if(vmode)
+      {
+        piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+        piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
+      }
       break;
+    }
 
     case DT_IOP_HIGHLIGHTS_LAPLACIAN:
     {
@@ -2016,6 +2028,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       process_laplacian_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clips);
       break;
     }
+
     default:
     case DT_IOP_HIGHLIGHTS_CLIP:
       process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
@@ -2155,6 +2168,10 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   g->show_visualize = FALSE;
+  dt_bauhaus_widget_set_quad_active(g->reconstructing, FALSE);
+  g->show_bads = FALSE;
+  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+  g->show_borders = FALSE;
   gui_changed(self, NULL, NULL);
 }
 
@@ -2203,14 +2220,36 @@ static void _visualize_callback(GtkWidget *quad, gpointer user_data)
   dt_dev_reprocess_center(self->dev);
 }
 
+static void _bads_callback(GtkWidget *quad, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  g->show_bads = dt_bauhaus_widget_get_quad_active(quad);
+  dt_dev_reprocess_center(self->dev);
+}
+
+static void _borders_callback(GtkWidget *quad, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  g->show_borders = dt_bauhaus_widget_get_quad_active(quad);
+  dt_dev_reprocess_center(self->dev);
+}
+
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(!in)
   {
-    const gboolean was_visualize = g->show_visualize;
+    const gboolean was_visualize = g->show_visualize || g->show_bads || g->show_borders;
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->reconstructing, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
     g->show_visualize = FALSE;
+    g->show_bads = FALSE;
+    g->show_borders = FALSE;
     if(was_visualize) dt_dev_reprocess_center(self->dev);
   }
 }
@@ -2255,13 +2294,20 @@ void gui_init(struct dt_iop_module_t *self)
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
   gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations.")); 
+  dt_bauhaus_widget_set_quad_paint(g->combine, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->combine, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+  g_signal_connect(G_OBJECT(g->combine), "quad-pressed", G_CALLBACK(_borders_callback), self);
 
   g->reconstructing = dt_bauhaus_slider_from_params(self, "reconstructing");
   gtk_widget_set_tooltip_text(g->reconstructing, _("dealing with isolated segments in dark regions.\n"
                                                    "increase to favour candidates found in segmentation analysis,\n"
                                                    "decrease for simple inpainting.\n"));
   dt_bauhaus_slider_set_format(g->reconstructing, "%");
-
+  dt_bauhaus_widget_set_quad_paint(g->reconstructing, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->reconstructing, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->reconstructing, FALSE);
+  g_signal_connect(G_OBJECT(g->reconstructing), "quad-pressed", G_CALLBACK(_bads_callback), self);
 
   GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
   gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
