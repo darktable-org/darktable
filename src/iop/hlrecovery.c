@@ -469,7 +469,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   dt_omp_firstprivate(plane, refavg, isegments, cmask, coeffs) \
-  dt_omp_sharedconst(pheight, pwidth, p_size) \
+  dt_omp_sharedconst(pheight, pwidth, p_size, vmode) \
   schedule(static)
 #endif
   for(int row = HLBORDER; row < pheight - HLBORDER; row++)
@@ -525,7 +525,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
       for(int p = 0; p < HL_SENSOR_PLANES; p++)
       {
-        if(cmask[p][ix] != 0)
+        if((cmask[p][ix] != 0) && (vmode == 0))
         {
           float current_reference = 0.0f;
           float candidate = 0.0f;
@@ -559,8 +559,8 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   reduction(max : max_correction) \
-  dt_omp_firstprivate(out, plane) \
-  dt_omp_sharedconst(width, height, pwidth, p_off, filters) \
+  dt_omp_firstprivate(out, plane, isegments, cmask) \
+  dt_omp_sharedconst(width, height, pwidth, p_off, filters, vmode) \
   schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
@@ -574,6 +574,18 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
       const float ratio = val / fmaxf(1e-12, out[o]);
       out[o] = val;
       max_correction = fmaxf(max_correction, ratio);
+
+      if(vmode)
+      {
+        const int pid = isegments[p].data[i] & (HLMAXSEGMENTS-1);
+        const gboolean iclipped = (cmask[p][i] == 1);
+        const gboolean isegmented = ((pid > 1) && (pid < isegments[p].nr+2));
+        const gboolean badseg = isegmented && (isegments[p].ref[pid] == 0);
+
+        out[o] *= 0.2f;
+        if((vmode & 1) && isegmented && !iclipped) out[o] = 1.0f;
+        if((vmode & 2) && isegmented && badseg)    out[o] = 1.0f;     
+      }
     }
   }
 
