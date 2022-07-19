@@ -66,7 +66,18 @@ gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
   if(exif && *exif && dt)
   {
     char sdt[DT_DATETIME_LENGTH] = DT_DATETIME_ORIGIN;
-    const int len = strlen(exif) > sizeof(sdt) - 1 ? sizeof(sdt) - 1 : strlen(exif);
+    int len = strlen(exif);
+    // If TZ data is found in the datetime string we should discard it.
+    // We will memcpy this string for parsing and we have to know where to stop so that
+    // the TZ tail after shorter XMP date-time string doesn't damage our parsing buffer.
+    // For possible formats see https://developer.adobe.com/xmp/docs/XMPNamespaces/XMPDataTypes/#date
+    if(exif[len-1] == 'Z')
+      len--;
+    else if(exif[len-3] == '+' || exif[len-3] == '-')
+      len -= 3;
+    else if(exif[len-6] == '+' || exif[len-6] == '-')
+      len -= 6;
+    len = len > sizeof(sdt) - 1 ? sizeof(sdt) - 1 : len;
     memcpy(sdt, exif, len);
     sdt[4] = sdt[7] = '-';
     GDateTime *gdt = g_date_time_new_from_iso8601(sdt, darktable.utc_tz);

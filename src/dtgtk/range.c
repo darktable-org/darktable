@@ -760,7 +760,7 @@ static void _popup_date_tree_selection_change(GtkTreeView *self, GtkDarktableRan
   }
   else
   {
-    // intialize value depending of the source widget
+    // initialize value depending of the source widget
     if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_max)
     {
       m = 12;
@@ -1051,7 +1051,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 static void _popup_item_activate(GtkWidget *w, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  // retrive block and source values
+  // retrieve block and source values
   GtkWidget *source = GTK_WIDGET(g_object_get_data(G_OBJECT(w), "source_widget"));
   _range_block *blo = (_range_block *)g_object_get_data(G_OBJECT(w), "range_block");
 
@@ -1318,7 +1318,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
                      range->alloc_margin.height);
 
     // draw the rectangles on the surface
-    // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
+    // we have to do some clever things in order to packed together blocks that will be shown at the same place
     // (see above)
     dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_GRAPH, 1.0);
     bl_min_px = 0;
@@ -1416,7 +1416,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
       last = icon->posx;
     }
     min_percent = MIN(min_percent, (100 - last) * 2);
-    // we want to let some marging between icons
+    // we want to let some margin between icons
     min_percent *= 0.9;
     // and we don't want to exceed 60% of the height
     const int size = MIN(range->alloc_padding.height * 0.6, range->alloc_padding.width * min_percent / 100);
