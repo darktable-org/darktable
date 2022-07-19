@@ -2009,7 +2009,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case DT_IOP_HIGHLIGHTS_RECOVERY:
     {
       int vmode = 0;
-      if(g != NULL) vmode = ((g->show_borders) ? 1 : 0) | ((g->show_bads) ? 2 : 0);
+      if((g != NULL) && fullpipe) vmode = ((g->show_borders) ? 1 : 0) | ((g->show_bads) ? 2 : 0);
 
       process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data, vmode);
       if(vmode)
