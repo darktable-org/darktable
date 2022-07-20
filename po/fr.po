@@ -530,11 +530,10 @@ msgstr ""
 "le nombre minimum d'images pour créer un groupe. peut influencer le temps de "
 "calcul."
 
-# Est-ce que miniature ou vignette ne serait pas mieux approprié ?
 #: ../build/bin/conf_gen.h:1832
 msgctxt "preferences"
 msgid "thumbnail"
-msgstr "aperçu"
+msgstr "miniature"
 
 #: ../build/bin/conf_gen.h:1833
 msgctxt "preferences"
@@ -1006,15 +1005,10 @@ msgstr ""
 msgid "expand a single utility module at a time"
 msgstr "déplier un seul module utilitaire de la table lumineuse à la fois"
 
-# La touche "shift" en français srait "Maj" ou "Majuscule".
-# Cependant, beaucoup d'utilisateurs ne font pas implicitement la différence entre la touche "Maj" et la touche "vérouillage des majuscules" (shift lock / Verr. Maj.)...
-# Mais dans tous ces cas, "shift" leur sera tout autant inconnue.
-# Disons que pour un utilisateur de dt, il saura a priori que "shift" = "Maj"...
-# Ou pas.
 #: ../build/bin/preferences_gen.h:4169
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
-"cette option change le comportement du shift-clic de la table lumineuse"
+"cette option change le comportement de maj-clic dans la table lumineuse"
 
 #: ../build/bin/preferences_gen.h:4191
 msgid "scroll utility modules to the top when expanded"
@@ -1037,7 +1031,7 @@ msgstr "appliquer une étoile deux fois à une image ne supprimera pas l'étoile
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
-"définit si appliquer une étoile deux fois à une image supprimera l'étoile"
+"définit si appliquer une étoile deux fois à une image réinitialisera la notation"
 
 #: ../build/bin/preferences_gen.h:4263 ../build/bin/preferences_gen.h:5031
 msgid "show scrollbars for central view"
@@ -1068,13 +1062,12 @@ msgstr "définit si les barres de défilement doivent apparaître"
 
 #: ../build/bin/preferences_gen.h:4299
 msgid "show image time with milliseconds"
-msgstr "afficher les heures des images avec les millisecondes"
+msgstr "afficher les millisecondes aux heures des images"
 
 #: ../build/bin/preferences_gen.h:4313
 msgid "defines whether time should be displayed with milliseconds"
 msgstr "définit si les heures sont à afficher avec les millisecondes"
 
-# Ici c'est bien miniature qui est choisi... et non aperçu.
 #: ../build/bin/preferences_gen.h:4323
 msgid "thumbnails"
 msgstr "miniatures"
@@ -2666,7 +2659,7 @@ msgstr "gaussien"
 #: ../build/lib/darktable/plugins/introspection_borders.c:251
 #: ../src/common/collection.c:638 ../src/common/collection.c:691
 msgid "aspect ratio"
-msgstr "ration d'aspect"
+msgstr "ratio d'aspect"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:128
 #: ../build/lib/darktable/plugins/introspection_borders.c:263
@@ -8528,8 +8521,8 @@ msgstr "<b>tourner</b> : ctrl+déplacer"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
-"+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>:"
+"ctrl+scroll (%d%%)"
 msgstr ""
 "<b>mode d'adoucissement</b> : maj+clic, <b>tourner</b> : ctrl+déplacer\n"
 "<b>taille</b> : molette, <b>taille d'adoucissement</b> : maj+molette, "
@@ -17180,8 +17173,8 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer et tracer pour ajouter un point\n"
-"défiler pour changer la taille - shift+défiler pour changer la force - ctrl"
-"+défiler pour changer la direction"
+"défiler pour changer la taille - shift+défiler pour changer la force -"
+"ctrl+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3602
 msgid ""
@@ -17190,8 +17183,8 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer pour ajouter une ligne\n"
-"défiler pour changer la taille - shift+défiler pour changer la force - ctrl"
-"+défiler pour changer la direction"
+"défiler pour changer la taille - shift+défiler pour changer la force -"
+"ctrl+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3606
 msgid ""
@@ -17200,8 +17193,8 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer pour ajouter une courbe\n"
-"défiler pour changer la taille - shift+défiler pour changer la force - ctrl"
-"+défiler pour changer la direction"
+"défiler pour changer la taille - shift+défiler pour changer la force -"
+"ctrl+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3609
 msgid "click to edit nodes"
