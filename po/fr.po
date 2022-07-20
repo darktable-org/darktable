@@ -8521,7 +8521,7 @@ msgstr "<b>tourner</b> : ctrl+déplacer"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>:"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
 "ctrl+scroll (%d%%)"
 msgstr ""
 "<b>mode d'adoucissement</b> : maj+clic, <b>tourner</b> : ctrl+déplacer\n"
@@ -17173,7 +17173,7 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer et tracer pour ajouter un point\n"
-"défiler pour changer la taille - shift+défiler pour changer la force -"
+"défiler pour changer la taille - shift+défiler pour changer la force - "
 "ctrl+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3602
@@ -17183,7 +17183,7 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer pour ajouter une ligne\n"
-"défiler pour changer la taille - shift+défiler pour changer la force -"
+"défiler pour changer la taille - shift+défiler pour changer la force - "
 "ctrl+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3606
@@ -17193,7 +17193,7 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer pour ajouter une courbe\n"
-"défiler pour changer la taille - shift+défiler pour changer la force -"
+"défiler pour changer la taille - shift+défiler pour changer la force - "
 "ctrl+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3609
