@@ -42,6 +42,7 @@
 #include <dirent.h>
 #if defined (_WIN32)
 #include "win/getdelim.h"
+#include "win/scandir.h"
 #endif // defined (_WIN32)
 
 DT_MODULE_INTROSPECTION(3, dt_iop_lut3d_params_t)
@@ -1472,26 +1473,22 @@ static void remove_root_from_path(const char *const lutfolder, char *const filep
   filepath[i] = '\0';
 }
 
-gboolean check_extension(char *filename)
+int check_extension(const struct dirent *namestruct)
 {
-  gboolean res = FALSE;
+  const char *filename = namestruct->d_name;
+  int res = 0;
   if (!filename || !filename[0]) return res;
   char *p = g_strrstr(filename,".");
   if (!p) return res;
   char *fext = g_ascii_strdown(g_strdup(p), -1);
 #ifdef HAVE_GMIC
   if (!g_strcmp0(fext, ".png") || !g_strcmp0(fext, ".cube") || !g_strcmp0(fext, ".3dl")
-      || !g_strcmp0(fext, ".gmz")) res = TRUE;
+      || !g_strcmp0(fext, ".gmz")) res = 1;
 #else
-  if (!g_strcmp0(fext, ".png") || !g_strcmp0(fext, ".cube") || !g_strcmp0(fext, ".3dl") ) res = TRUE;
+  if (!g_strcmp0(fext, ".png") || !g_strcmp0(fext, ".cube") || !g_strcmp0(fext, ".3dl") ) res = 1;
 #endif // HAVE_GMIC
   g_free(fext);
   return res;
-}
-
-static gint array_str_cmp(gconstpointer a, gconstpointer b)
-{
-  return g_strcmp0(((dt_bauhaus_combobox_entry_t *)a)->label, ((dt_bauhaus_combobox_entry_t *)b)->label);
 }
 
 // update filepath combobox with all files in the current folder
@@ -1504,29 +1501,24 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
     // new folder -> update the files list
     char *relativepath = g_path_get_dirname(filepath);
     char *folder = g_build_filename(lutfolder, relativepath, NULL);
-    struct dirent *dir;
-    DIR *d = opendir(folder);
-    if (d)
+
+    struct dirent **entries;
+    const int numentries = scandir(folder, &entries, check_extension, alphasort);
+
+    dt_bauhaus_combobox_clear(g->filepath);
+    for (int i = 0; i < numentries; i++)
     {
-      dt_bauhaus_combobox_clear(g->filepath);
-      while ((dir = readdir(d)) != NULL)
-      {
-        char *file = dir->d_name;
-        if (check_extension(file))
-        {
-          char *ofilepath = (strcmp(relativepath, ".") != 0)
-                ? g_build_filename(relativepath, file, NULL)
-                : g_strdup(file);
-          filepath_set_unix_separator(ofilepath);
-          dt_bauhaus_combobox_add(g->filepath, ofilepath);
-          g_free(ofilepath);
-        }
-      }
-      dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g->filepath);
-      dt_bauhaus_combobox_data_t *combo_data = &w->data.combobox;
-      g_ptr_array_sort(combo_data->entries, array_str_cmp);
-      closedir(d);
+      const char *file = entries[i]->d_name;
+      char *ofilepath = (strcmp(relativepath, ".") != 0)
+              ? g_build_filename(relativepath, file, NULL)
+              : g_strdup(file);
+      filepath_set_unix_separator(ofilepath);
+      dt_bauhaus_combobox_add(g->filepath, ofilepath);
+      g_free(ofilepath);
+      free(entries[i]);
     }
+    free(entries);
+
     if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
     { // file may have disappeared - show it
       char *invalidfilepath = g_strconcat(invalid_filepath_prefix, filepath, NULL);
