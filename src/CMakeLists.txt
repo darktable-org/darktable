@@ -186,6 +186,9 @@ if(WIN32)
   list(APPEND SOURCE_FILES "win/filepath.c")
   list(APPEND HEADER_FILES "win/filepath.h")
 
+  list(APPEND SOURCE_FILES "win/scandir.c")
+  list(APPEND HEADER_FILES "win/scandir.h")
+
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
 
