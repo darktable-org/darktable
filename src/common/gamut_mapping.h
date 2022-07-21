@@ -154,8 +154,8 @@ static inline void Ych_to_RGB(const dt_aligned_pixel_t in, const dt_colormatrix_
 }
 
 
-static void prepare_RGB_Yrg_matrices(const dt_iop_order_iccprofile_info_t *const profile,
-                                     dt_colormatrix_t input_matrix, dt_colormatrix_t output_matrix)
+static inline void prepare_RGB_Yrg_matrices(const dt_iop_order_iccprofile_info_t *const profile,
+                                            dt_colormatrix_t input_matrix, dt_colormatrix_t output_matrix)
 {
   dt_colormatrix_t temp_matrix;
 
