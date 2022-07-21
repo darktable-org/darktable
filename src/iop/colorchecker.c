@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1161,18 +1161,21 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     }
   }
 
-  const int draw_i = g->drawn_patch % cells_x;
-  const int draw_j = g->drawn_patch / cells_x;
-  float color = 1.0;
-  if(p->source_L[g->drawn_patch] > 80) color = 0.0;
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-  cairo_set_source_rgb(cr, color, color, color);
-  cairo_rectangle(cr,
-      width * draw_i / (float) cells_x + DT_PIXEL_APPLY_DPI(5),
-      height * draw_j / (float) cells_y + DT_PIXEL_APPLY_DPI(5),
-      width / (float) cells_x - DT_PIXEL_APPLY_DPI(11),
-      height / (float) cells_y - DT_PIXEL_APPLY_DPI(11));
-  cairo_stroke(cr);
+  if(g->drawn_patch != -1)
+  {
+    const int draw_i = g->drawn_patch % cells_x;
+    const int draw_j = g->drawn_patch / cells_x;
+    float color = 1.0;
+    if(p->source_L[g->drawn_patch] > 80) color = 0.0;
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+    cairo_set_source_rgb(cr, color, color, color);
+    cairo_rectangle(cr,
+                    width * draw_i / (float) cells_x + DT_PIXEL_APPLY_DPI(5),
+                    height * draw_j / (float) cells_y + DT_PIXEL_APPLY_DPI(5),
+                    width / (float) cells_x - DT_PIXEL_APPLY_DPI(11),
+                    height / (float) cells_y - DT_PIXEL_APPLY_DPI(11));
+    cairo_stroke(cr);
+  }
 
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
@@ -1404,4 +1407,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
