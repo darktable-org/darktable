@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/colorspaces_inline_conversions.h"
 #include "common/math.h"
 
 typedef enum dt_adaptation_t
@@ -36,13 +37,13 @@ typedef enum dt_adaptation_t
 // but coeffs are wrong in the above, so they come from :
 // http://www2.cmp.uea.ac.uk/Research/compvis/Papers/FinSuss_COL00.pdf
 // At any time, ensure XYZ_to_LMS is the exact matrice inverse of LMS_to_XYZ
-const dt_colormatrix_t XYZ_to_Bradford_LMS = { {  0.8951f,  0.2664f, -0.1614f, 0.f },
-                                               { -0.7502f,  1.7135f,  0.0367f, 0.f },
-                                               {  0.0389f, -0.0685f,  1.0296f, 0.f } };
+static const dt_colormatrix_t XYZ_to_Bradford_LMS = { {  0.8951f,  0.2664f, -0.1614f, 0.f },
+                                                      { -0.7502f,  1.7135f,  0.0367f, 0.f },
+                                                      {  0.0389f, -0.0685f,  1.0296f, 0.f } };
 
-const dt_colormatrix_t Bradford_LMS_to_XYZ = { {  0.9870f, -0.1471f,  0.1600f, 0.f },
-                                               {  0.4323f,  0.5184f,  0.0493f, 0.f },
-                                               { -0.0085f,  0.0400f,  0.9685f, 0.f } };
+static const dt_colormatrix_t Bradford_LMS_to_XYZ = { {  0.9870f, -0.1471f,  0.1600f, 0.f },
+                                                      {  0.4323f,  0.5184f,  0.0493f, 0.f },
+                                                      { -0.0085f,  0.0400f,  0.9685f, 0.f } };
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
@@ -66,13 +67,13 @@ static inline void convert_bradford_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_
 // modified LMS cone response for CAT16, from CIECAM16
 // reference : https://ntnuopen.ntnu.no/ntnu-xmlui/bitstream/handle/11250/2626317/CCIW-23.pdf?sequence=1
 // At any time, ensure XYZ_to_LMS is the exact matrice inverse of LMS_to_XYZ
-const dt_colormatrix_t XYZ_to_CAT16_LMS = { {  0.401288f, 0.650173f, -0.051461f, 0.f },
-                                            { -0.250268f, 1.204414f,  0.045854f, 0.f },
-                                            { -0.002079f, 0.048952f,  0.953127f, 0.f } };
+static const dt_colormatrix_t XYZ_to_CAT16_LMS = { {  0.401288f, 0.650173f, -0.051461f, 0.f },
+                                                   { -0.250268f, 1.204414f,  0.045854f, 0.f },
+                                                   { -0.002079f, 0.048952f,  0.953127f, 0.f } };
 
-const dt_colormatrix_t CAT16_LMS_to_XYZ = { {  1.862068f, -1.011255f,  0.149187f, 0.f },
-                                            {  0.38752f ,  0.621447f, -0.008974f, 0.f },
-                                            { -0.015841f, -0.034123f,  1.049964f, 0.f } };
+static const dt_colormatrix_t CAT16_LMS_to_XYZ = { {  1.862068f, -1.011255f,  0.149187f, 0.f },
+                                                   {  0.38752f ,  0.621447f, -0.008974f, 0.f },
+                                                   { -0.015841f, -0.034123f,  1.049964f, 0.f } };
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
@@ -352,22 +353,22 @@ static inline void XYZ_adapt_D50(const dt_aligned_pixel_t lms_in,
 
 /* Pre-solved matrices to adjust white point for triplets in CIE XYZ 1931 2° observer */
 
-const dt_colormatrix_t XYZ_D50_to_D65_CAT16
+static const dt_colormatrix_t XYZ_D50_to_D65_CAT16
     = { { 9.89466254e-01f, -4.00304626e-02f, 4.40530317e-02f, 0.f },
         { -5.40518733e-03f, 1.00666069e+00f, -1.75551955e-03f, 0.f },
         { -4.03920992e-04f, 1.50768030e-02f, 1.30210211e+00f, 0.f } };
 
-const dt_colormatrix_t XYZ_D50_to_D65_Bradford
+static const dt_colormatrix_t XYZ_D50_to_D65_Bradford
     = { { 0.95547342f, -0.02309845f, 0.06325924f, 0.f },
         { -0.02836971f, 1.00999540f, 0.02104144f, 0.f },
         { 0.01231401f, -0.02050765f, 1.33036593f, 0.f } };
 
-const dt_colormatrix_t XYZ_D65_to_D50_CAT16
+static const dt_colormatrix_t XYZ_D65_to_D50_CAT16
     = { { 1.01085433e+00f, 4.07086103e-02f, -3.41445825e-02f, 0.f },
         { 5.42814201e-03f, 9.93581926e-01f, 1.15592039e-03f, 0.f },
         { 2.50722468e-04f, -1.14918759e-02f, 7.67964947e-01f, 0.f } };
 
-const dt_colormatrix_t XYZ_D65_to_D50_Bradford
+static const dt_colormatrix_t XYZ_D65_to_D50_Bradford
     = { { 1.04792979f, 0.02294687f, -0.05019227f, 0.f },
         { 0.02962781f, 0.99043443f, -0.0170738f, 0.f },
         { -0.00924304f, 0.01505519f, 0.75187428f, 0.f } };

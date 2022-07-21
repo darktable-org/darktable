@@ -3806,7 +3806,7 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     dt_aligned_pixel_t XYZ_output = { 0.f };
     chroma_adapt_pixel(XYZ, XYZ_output, LMS_illuminant, adaptation, pp);
 
-    // Optionaly, apply the channel mixing
+    // Optionally, apply the channel mixing
     if(use_mixing)
     {
       dt_aligned_pixel_t LMS_output = { 0.f };
@@ -3855,7 +3855,7 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     for(int c = 0; c < 3; c++) XYZ_target[c] /= Y_target;
     convert_any_XYZ_to_LMS(XYZ_target, LMS_target, p->adaptation);
 
-    // optionaly, apply the inverse mixing on the target
+    // optionally, apply the inverse mixing on the target
     if(use_mixing)
     {
       // Repack the MIX matrix to 3×3 to support the pseudoinverse function
