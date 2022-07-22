@@ -2989,15 +2989,6 @@ int dt_opencl_update_settings(void)
     dt_opencl_apply_scheduling_profile(profile);
   }
 
-  dt_opencl_sync_cache_t sync = dt_opencl_get_sync_cache();
-
-  if(cl->sync_cache != sync)
-  {
-    const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
-    dt_print(DT_DEBUG_OPENCL, "[opencl_update_synch_cache] sync cache set to %s\n", pstr);
-    cl->sync_cache = sync;
-  }
-
   return (cl->enabled && !cl->stopped);
 }
 
