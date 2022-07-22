@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-07-20 19:37+0200\n"
-"PO-Revision-Date: 2022-07-22 00:52+0900\n"
+"PO-Revision-Date: 2022-07-22 11:01+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -2557,7 +2557,7 @@ msgstr "バイラテラルグリッド"
 
 #: ../build/lib/darktable/plugins/introspection_bilat.c:152
 msgid "local laplacian filter"
-msgstr "ローカルラプラシアンフィルター"
+msgstr "ローカルラプラシアンフィルタ"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:83
 #: ../build/lib/darktable/plugins/introspection_blurs.c:174
@@ -4057,7 +4057,7 @@ msgstr "色を復元"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:277
 #: ../src/iop/highlights.c:2149
 msgid "guided laplacians"
-msgstr "ガイドラプラシアン"
+msgstr "ガイデットラプラシアン"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:281
 msgid "4 px"
@@ -4205,7 +4205,7 @@ msgstr "2次"
 #: ../build/lib/darktable/plugins/introspection_lowpass.c:190
 #: ../build/lib/darktable/plugins/introspection_shadhi.c:268
 msgid "bilateral filter"
-msgstr "バイラテラルフィルター"
+msgstr "バイラテラルフィルタ"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:76
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:163
@@ -4553,23 +4553,23 @@ msgstr "輝度評価方法"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:246
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:357
 msgid "filter diffusion"
-msgstr "フィルター拡散"
+msgstr "フィルタ拡散"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:372
 msgid "averaged guided filter"
-msgstr "平均ガイドフィルター"
+msgstr "平均ガイデットフィルタ"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:373
 msgid "guided filter"
-msgstr "ガイドフィルター"
+msgstr "ガイデットフィルタ"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:374
 msgid "averaged eigf"
-msgstr "平均eigf（露光非依存ガイドフィルター）"
+msgstr "平均eigf（露光非依存ガイデットフィルタ）"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:375
 msgid "eigf"
-msgstr "eigf（露光非依存ガイドフィルター）"
+msgstr "eigf（露光非依存ガイデットフィルタ）"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:379
 msgid "RGB average"
@@ -6079,8 +6079,8 @@ msgid ""
 "fast exposure independent guided filter failed to allocate memory, check "
 "your RAM settings"
 msgstr ""
-"高速露出非依存ガイドフィルターがメモリの割り当てに失敗しました。RAM設定を確認"
-"してください"
+"高速露出非依存ガイデットフィルタがメモリの割り当てに失敗しました。RAM設定を確"
+"認してください"
 
 #: ../src/common/exif.cc:4332
 #, c-format
@@ -6095,8 +6095,8 @@ msgstr "xmpファイル'%s': '%s'を書き込むことが出来ません"
 #: ../src/common/fast_guided_filter.h:316
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
-"高速ガイドフィルターがメモリの割り当てに失敗しました。RAM設定を確認してくださ"
-"い"
+"高速ガイデットフィルタがメモリの割り当てに失敗しました。RAM設定を確認してくだ"
+"さい"
 
 #: ../src/common/film.c:342
 msgid "do you want to remove this empty directory?"
@@ -12346,7 +12346,7 @@ msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
 msgstr ""
-"局所的なコントラスの強調に使用されるフィルター\n"
+"局所的なコントラスの強調に使用されるフィルタ\n"
 "バイラテラルは高速ですが、極端な設定ではエッジの周りにアーティファクトが発生"
 "する可能性があります"
 
@@ -12361,12 +12361,11 @@ msgstr "局所的なコントラストを変更します"
 #: ../src/iop/bilat.c:446
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr ""
-"局所的なディテールのフィーチャーサイズ（バイラテラルフィルターの空間標準偏"
-"差）"
+"局所的なディテールのフィーチャーサイズ（バイラテラルフィルタの空間標準偏差）"
 
 #: ../src/iop/bilat.c:452
 msgid "L difference to detect edges (range sigma of bilateral filter)"
-msgstr "エッジ検出のL差（バイラテラルフィルターのレンジ標準偏差）"
+msgstr "エッジ検出のL差（バイラテラルフィルタのレンジ標準偏差）"
 
 #: ../src/iop/bilat.c:457
 msgid "changes the local contrast of highlights"
@@ -12393,7 +12392,7 @@ msgstr "表面ぼかし"
 
 #: ../src/iop/bilateral.cc:78
 msgid "denoise (bilateral filter)"
-msgstr "ノイズ除去（バイラテラルフィルター）"
+msgstr "ノイズ除去（バイラテラルフィルタ）"
 
 #: ../src/iop/bilateral.cc:98
 msgid "apply edge-aware surface blur to denoise or smoothen textures"
@@ -12410,7 +12409,7 @@ msgstr "リニア、RGB"
 
 #: ../src/iop/bilateral.cc:302
 msgid "spatial extent of the gaussian"
-msgstr "ガウスフィルターの空間的広がり"
+msgstr "ガウスフィルタの空間的広がり"
 
 #: ../src/iop/bilateral.cc:306
 msgid "how much to blur red"
@@ -14435,11 +14434,11 @@ msgstr "ウォームトーン"
 
 #: ../src/iop/colorcorrection.c:115
 msgid "warming filter"
-msgstr "ウォーム化フィルター"
+msgstr "ウォーム化フィルタ"
 
 #: ../src/iop/colorcorrection.c:123
 msgid "cooling filter"
-msgstr "クール化フィルター"
+msgstr "クール化フィルタ"
 
 #: ../src/iop/colorcorrection.c:265
 msgid ""
@@ -16712,8 +16711,8 @@ msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
 "back to clip."
 msgstr ""
-"ハイライト：ガイドラプラシアンモードはX-Transセンサーによる画像には使用するこ"
-"とが出来ません。クリップしてしまいます"
+"ハイライト：ガイデットラプラシアンモードはX-Transセンサーによる画像には使用す"
+"ることが出来ません。クリップしてしまいます"
 
 #: ../src/iop/highlights.c:2184
 msgid "highlight reconstruction method"
@@ -18417,7 +18416,7 @@ msgstr "ホワイトポイントをずらします"
 #: ../src/iop/shadhi.c:696
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr ""
-"ソフト化に使用するフィルター\n"
+"ソフト化に使用するフィルタ\n"
 "バイラテラルを用いると、ハロを防ぐことが出来ます"
 
 #: ../src/iop/shadhi.c:697
@@ -19028,12 +19027,12 @@ msgid ""
 msgstr ""
 "'なし'は全体のコントラストと局所的なコントラストに影響します（コントラストを"
 "加えるだけの場合安全です）\n"
-"'ガイドフィルター'は全体のコントラストにのみ影響し、局所的なコントラストを保"
-"持するよう試みます\n"
-"'平均ガイドフィルター'は'なし'と'ガイドフィルター'の幾何学的平均です\n"
-"'eigf（露光非依存ガイドフィルター）は露出に依存しないガイドフィルターです。"
-"シャドウとハイライトを同じように平滑化します（ハイライトの平滑化が少ないガイ"
-"ドフィルターと対照的です）\n"
+"'ガイデットフィルタ'は全体のコントラストにのみ影響し、局所的なコントラストを"
+"保持するよう試みます\n"
+"'平均ガイデットフィルタ'は'なし'と'ガイデットフィルタ'の幾何学的平均です\n"
+"'eigf（露光非依存ガイデットフィルタ）は露出に依存しないガイデットフィルタで"
+"す。シャドウとハイライトを同じように平滑化します（ハイライトの平滑化が少ない"
+"ガイデットフィルタと対照的です）\n"
 "'平均eigf'は'なし'と'eigf'の幾何学的平均です"
 
 #: ../src/iop/toneequal.c:3205
@@ -19041,8 +19040,8 @@ msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
-"適用するガイドフィルターのパスの数\n"
-"速度を犠牲にして、フィルターのエッジを拡散するのに役立ちます"
+"適用するガイデットフィルタのパスの数\n"
+"速度を犠牲にして、フィルタのエッジを拡散するのに役立ちます"
 
 #: ../src/iop/toneequal.c:3211
 msgid ""
@@ -19112,7 +19111,7 @@ msgid ""
 "for a better control of the exposure correction.\n"
 "the magic wand will auto-adjust the contrast"
 msgstr ""
-"これを使用すると、ガイドフィルターの平均化効果に対抗し、\n"
+"これを使用すると、ガイデットフィルタの平均化効果に対抗し、\n"
 "-4EV付近のマスクのコントラストを膨らませます\n"
 "これにより露出ヒストグラムがより多くのチャンネルへ広がり、露出補正のコント"
 "ロールが向上します\n"
@@ -20101,7 +20100,7 @@ msgstr "追加する"
 
 #: ../src/libs/export_metadata.c:175
 msgid "list filter"
-msgstr "フィルターのリスト"
+msgstr "フィルタのリスト"
 
 #: ../src/libs/export_metadata.c:186
 msgid ""
@@ -20256,7 +20255,7 @@ msgstr "メタデータタグを削除します"
 
 #: ../src/libs/filtering.c:240
 msgid "collection filters"
-msgstr "コレクションフィルター"
+msgstr "コレクションフィルタ"
 
 #: ../src/libs/filtering.c:273
 msgid "initial setting"
@@ -20429,7 +20428,7 @@ msgstr "p"
 
 #: ../src/libs/filters/colors.c:269
 msgid "color filter"
-msgstr "色フィルター"
+msgstr "色フィルタ"
 
 #: ../src/libs/filters/colors.c:294
 msgid ""
@@ -20509,7 +20508,7 @@ msgstr "グループ化していない画像"
 
 #: ../src/libs/filters/grouping.c:167
 msgid "grouping filter"
-msgstr "グループ化フィルター"
+msgstr "グループ化フィルタ"
 
 #: ../src/libs/filters/grouping.c:168
 msgid "select the type of grouped image to filter"
@@ -20526,23 +20525,23 @@ msgstr "全画像"
 
 #: ../src/libs/filters/history.c:153
 msgid "history filter"
-msgstr "履歴フィルター"
+msgstr "履歴フィルタ"
 
 #: ../src/libs/filters/history.c:153
 msgid "filter on history state"
-msgstr "履歴状態フィルター"
+msgstr "履歴状態フィルタ"
 
 #: ../src/libs/filters/local_copy.c:142
 msgid "local_copy filter"
-msgstr "ローカルコピーフィルター"
+msgstr "ローカルコピーフィルタ"
 
 #: ../src/libs/filters/local_copy.c:142
 msgid "local copied state filter"
-msgstr "ローカルコピーした状態フィルター"
+msgstr "ローカルコピーした状態フィルタ"
 
 #: ../src/libs/filters/module_order.c:161
 msgid "module order filter"
-msgstr "モジュールの順序フィルター"
+msgstr "モジュールの順序フィルタ"
 
 #: ../src/libs/filters/module_order.c:161
 msgid "filter images based on their module order"
@@ -20614,7 +20613,7 @@ msgstr "最高"
 
 #: ../src/libs/filters/rating_range.c:303
 msgid "rating filter"
-msgstr "評価フィルター"
+msgstr "評価フィルタ"
 
 #: ../src/libs/filters/ratio.c:70 ../src/libs/filters/ratio.c:82
 msgid "portrait images"
@@ -23667,7 +23666,7 @@ msgstr "クリップしたピクセルをマークする方法を選択してく
 
 #: ../src/views/darkroom.c:2315
 msgid "mark with CFA color"
-msgstr "色フィルターアレイの色でマーク"
+msgstr "色フィルタアレイの色でマーク"
 
 #: ../src/views/darkroom.c:2315
 msgid "mark with solid color"
