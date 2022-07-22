@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-07-20 19:37+0200\n"
-"PO-Revision-Date: 2022-07-20 16:29-0300\n"
+"PO-Revision-Date: 2022-07-22 10:36-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1442,7 +1442,7 @@ msgid ""
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
 "interpolador de pixel usado em módulos para rotação, correção da lente, "
-"dissolver, corte e mudança final de escala (bilinear, bicúbico, lanczos2)."
+"distorcer, corte e mudança final de escala (bilinear, bicúbico, lanczos2)."
 
 #: ../build/bin/preferences_gen.h:5944
 msgid "pixel interpolator (scaling)"
@@ -4247,7 +4247,7 @@ msgstr "trilinear"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:211
 msgid "pyramid"
-msgstr "pirâmide"
+msgstr "piramidal"
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:84
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:199
@@ -4598,15 +4598,15 @@ msgstr "luminosidade HSV"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
-msgstr "HSV valor / RGB max"
+msgstr "valor HSV / RGB max"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:382
 msgid "RGB sum"
-msgstr "RGB soma"
+msgstr "soma RGB"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:385
 msgid "RGB geometric mean"
-msgstr "RGB média geométrica"
+msgstr "média geométrica RGB"
 
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:39
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:88
@@ -7445,7 +7445,7 @@ msgstr "cor"
 #: ../src/develop/blend_gui.c:66
 msgctxt "blendmode"
 msgid "coloradjustment"
-msgstr "ajusta as cores"
+msgstr "ajusta de cores"
 
 #: ../src/develop/blend_gui.c:67
 msgctxt "blendmode"
@@ -11883,7 +11883,7 @@ msgstr "nitidez"
 
 #: ../src/iop/atrous.c:821
 msgid "denoise chroma"
-msgstr "reduz ruido croma"
+msgstr "reduz ruido do croma"
 
 #: ../src/iop/atrous.c:836 ../src/iop/equalizer.c:332
 msgid "denoise"
@@ -11895,7 +11895,7 @@ msgstr "luz suave"
 
 #: ../src/iop/atrous.c:867 ../src/iop/bilat.c:163
 msgid "clarity"
-msgstr "clareza"
+msgstr "claridade"
 
 #: ../src/iop/atrous.c:887
 msgid "deblur: large blur, strength 3"
@@ -14927,13 +14927,13 @@ msgstr ""
 
 #: ../src/iop/defringe.c:424
 msgid "radius for detecting fringe"
-msgstr "raio para detecção de bordas (franja)"
+msgstr "raio para detecção de halo"
 
 #: ../src/iop/defringe.c:427
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
-"limite para defringe (mesclagem de borda), valores altos significam menos "
-"defringing"
+"limite para mesclagem de borda, valores altos significam menos "
+"mesclagem"
 
 #: ../src/iop/demosaic.c:221
 msgid "demosaic"
@@ -15310,7 +15310,7 @@ msgstr "redução de ruído: suave"
 
 #: ../src/iop/diffuse.c:295
 msgid "denoise: medium"
-msgstr "reedução de ruído: médio"
+msgstr "redução de ruído: médio"
 
 #: ../src/iop/diffuse.c:304
 msgid "denoise: coarse"
@@ -15403,7 +15403,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:1506
 msgid "speed (sharpen ↔ diffuse)"
-msgstr "velocidade (tornar nítido tornar ↔ difuso)"
+msgstr "velocidade (nitidez ↔ difusão)"
 
 #: ../src/iop/diffuse.c:1512
 msgid ""
@@ -15527,7 +15527,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:1580
 msgid "edge management"
-msgstr "tratamento de bordas"
+msgstr "tratamento de borda"
 
 #: ../src/iop/diffuse.c:1585
 msgid ""
@@ -15731,7 +15731,7 @@ msgstr ""
 
 #: ../src/iop/exposure.c:1080
 msgid "spot exposure mapping"
-msgstr "mapeamento de exposição"
+msgstr "mapeamento de exposição pontual"
 
 #: ../src/iop/exposure.c:1084
 msgid ""
@@ -17070,7 +17070,7 @@ msgstr "branco percentil"
 
 #: ../src/iop/liquify.c:290
 msgid "liquify"
-msgstr "dissolver"
+msgstr "distorcer"
 
 #: ../src/iop/liquify.c:295
 msgid "distort parts of the image"
@@ -17115,12 +17115,12 @@ msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
 msgstr ""
-"use uma ferramenta para adicionar deformações.\n"
-"clique-direito para remover uma deformação."
+"use uma ferramenta para adicionar distorções.\n"
+"clique-direito para remover uma distorção."
 
 #: ../src/iop/liquify.c:3659
 msgid "warps|nodes count:"
-msgstr "número de deformações|nós:"
+msgstr "número de distorções|nós:"
 
 #: ../src/iop/liquify.c:3667
 msgid "edit, add and delete nodes"
@@ -17183,7 +17183,7 @@ msgstr "arrastar para mudar forma do caminho"
 
 #: ../src/iop/liquify.c:3690
 msgid "drag to adjust warp radius"
-msgstr "arraste para ajustar o raio da deformação"
+msgstr "arraste para ajustar o raio da distorção"
 
 #: ../src/iop/liquify.c:3691
 msgid "drag to adjust hardness (center)"
@@ -17198,7 +17198,7 @@ msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click: linear, grow, and shrink"
 msgstr ""
-"arraste para ajustar força da deformação\n"
+"arraste para ajustar força da distorção\n"
 "ctrl-clique: linear, aumentar, e encolher"
 
 #: ../src/iop/lmmse_demosaic.c:142
