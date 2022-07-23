@@ -1888,7 +1888,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
 }
 
 static void _add_datetime_offset(const uint32_t imgid, const char *odt,
-                                 const long int offset, char *ndt)
+                                 const GTimeSpan offset, char *ndt)
 {
   // get the datetime_taken and calculate the new time
   GDateTime *datetime_original = dt_datetime_exif_to_gdatetime(odt, darktable.utc_tz);
