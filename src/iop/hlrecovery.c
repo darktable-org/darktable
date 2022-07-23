@@ -571,7 +571,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
       const int p = pos2plane(row, col, filters);
 
       const float val = powf(plane[p][i], 3.0f);
-      const float ratio = val / fmaxf(1e-12, out[o]);
+      const float ratio = val / fmaxf(1.0f, out[o]);
       out[o] = val;
       max_correction = fmaxf(max_correction, ratio);
 
@@ -589,7 +589,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
     }
   }
 
-  for(int k = 0; k < 4; k++)
+  for(int k = 0; k < 3; k++)
     piece->pipe->dsc.processed_maximum[k] *= max_correction;
 
   dt_get_times(&time3);
