@@ -2036,9 +2036,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   // update processed maximum
-  if(data->mode !=  DT_IOP_HIGHLIGHTS_LAPLACIAN)
+  if((data->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (data->mode != DT_IOP_HIGHLIGHTS_RECOVERY))
   {
-    // The guided laplacian is the only mode that keeps signal scene-referred and doesn't clip highlights to 1
+    // The guided laplacian and recovery modes keep signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
     const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
                           piece->pipe->dsc.processed_maximum[2]);
