@@ -48,6 +48,10 @@ typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 #define DT_PIXEL_SIMD_CHANNELS 4
 #endif
 
+//https://stackoverflow.com/questions/45762357/how-to-concatenate-strings-in-the-arguments-of-pragma
+#define _DT_Pragma_(x) _Pragma(#x)
+#define _DT_Pragma(x) _DT_Pragma_(x)
+
 // A macro which gives us a configurable shorthand to produce the optimal performance when processing all of the
 // channels in a pixel.  Its first argument is the name of the variable to be used inside the 'for' loop it creates,
 // while the optional second argument is a set of OpenMP directives, typically specifying variable alignment.
@@ -59,9 +63,6 @@ typedef float DT_ALIGNED_ARRAY dt_colormatrix_t[4][4];
 //           src[k] = dest[k] / 3.0f;
 //         }
 #if defined(_OPENMP) && defined(OPENMP_SIMD_) && !defined(DT_NO_SIMD_HINTS)
-//https://stackoverflow.com/questions/45762357/how-to-concatenate-strings-in-the-arguments-of-pragma
-#define _DT_Pragma_(x) _Pragma(#x)
-#define _DT_Pragma(x) _DT_Pragma_(x)
 #define for_each_channel(_var, ...) \
   _DT_Pragma(omp simd __VA_ARGS__) \
   for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)

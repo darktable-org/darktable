@@ -28,7 +28,7 @@
 #include "develop/imageop_math.h"
 
 
-/* NOTE: this code complies with the optimizations in "common/extra_optimizations.h".
+/* NOTE: this code complies with the optimizations in "common/finite_math_only.h".
  * Consider including that at the beginning of a *.c file where you use this
  * header (provided the rest of the code complies).
  **/

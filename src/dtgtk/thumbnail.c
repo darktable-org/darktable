@@ -17,8 +17,6 @@
 */
 /** this is the thumbnail class for the lighttable module.  */
 
-#include "common/extra_optimizations.h"
-
 #include "dtgtk/thumbnail.h"
 
 #include "bauhaus/bauhaus.h"

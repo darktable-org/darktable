@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/finite_math_only.h"
+DT_BEGIN_FINITE_MATH_ONLY
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -30,10 +33,6 @@
 #include "develop/imageop_math.h"
 #if defined(__SSE__)
 #include <xmmintrin.h>
-#endif
-
-#ifdef __GNUC__
-#pragma GCC optimize ("finite-math-only")
 #endif
 
 #if defined(__SSE__)

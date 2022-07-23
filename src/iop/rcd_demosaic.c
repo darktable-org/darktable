@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/finite_math_only.h"
+DT_BEGIN_FINITE_MATH_ONLY
+
 /*
 * RATIO CORRECTED DEMOSAICING
 * Luis Sanz Rodríguez (luis.sanz.rodriguez(at)gmail(dot)com)
@@ -63,11 +66,6 @@
 
    The 'fp-contract=fast' option enables fused multiply&add if available
 */
-
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
-#endif
 
 #ifdef __GNUC__
   #define INLINE __inline
@@ -587,11 +585,6 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   }
 }
 
-// revert rcd specific aggressive optimizing
-#ifdef __GNUC__
-  #pragma GCC pop_options
-#endif
-
 #undef RCD_BORDER
 #undef RCD_MARGIN
 #undef RCD_TILEVALID
@@ -601,6 +594,8 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 #undef w4
 #undef eps
 #undef epssq
+
+DT_END_OPTIMIZATIONS
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

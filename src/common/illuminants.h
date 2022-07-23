@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/chromatic_adaptation.h"
+#include "common/finite_math_only.h"
 #include "common/image.h"
 
 
@@ -391,6 +392,8 @@ static inline void matrice_pseudoinverse(float (*in)[3], float (*out)[3], int si
 }
 
 
+// We need to use isnan() here
+DT_BEGIN_NO_FINITE_MATH_ONLY
 static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_aligned_pixel_t custom_wb,
                                             float *chroma_x, float *chroma_y)
 {
@@ -457,6 +460,7 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_alig
 
   return TRUE;
 }
+DT_END_OPTIMIZATIONS
 
 
 #ifdef _OPENMP

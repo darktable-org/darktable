@@ -16,8 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/extra_optimizations.h"
-
 #include "views/view.h"
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"

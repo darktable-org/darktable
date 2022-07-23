@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/finite_math_only.h"
+DT_BEGIN_FINITE_MATH_ONLY
+
 /*
     The lmmse code base used for the darktable port has been taken from rawtherapee derived librtprocess.
     Adapt for dt and tiling - hanno schwalm 06/2021
@@ -46,11 +49,6 @@
 
 #ifndef LMMSE_GRP
   #define LMMSE_GRP 136
-#endif
-
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
 #endif
 
 #define LMMSE_OVERLAP 8
@@ -581,11 +579,6 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
   }
 }
 
-// revert specific aggressive optimizing
-#ifdef __GNUC__
-  #pragma GCC pop_options
-#endif
-
 #undef LMMSE_TILESIZE
 #undef LMMSE_OVERLAP
 #undef BORDER_AROUND
@@ -594,6 +587,9 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
 #undef w2
 #undef w3
 #undef w4
+
+DT_END_OPTIMIZATIONS
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

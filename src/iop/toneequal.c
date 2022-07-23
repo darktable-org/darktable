@@ -68,7 +68,8 @@
  *
 ***/
 
-#include "common/extra_optimizations.h"
+#include "common/finite_math_only.h"
+DT_BEGIN_FINITE_MATH_ONLY
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1206,6 +1207,7 @@ static void get_channels_factors(float factors[CHANNELS], const dt_iop_toneequal
 }
 
 
+DT_BEGIN_NO_FINITE_MATH_ONLY
 __DT_CLONE_TARGETS__
 static int compute_channels_factors(const float factors[PIXEL_CHAN], float out[CHANNELS], const float sigma)
 {
@@ -1231,6 +1233,7 @@ static int compute_channels_factors(const float factors[PIXEL_CHAN], float out[C
 
   return valid;
 }
+DT_END_OPTIMIZATIONS
 
 
 __DT_CLONE_TARGETS__
@@ -2237,6 +2240,7 @@ static void match_color_to_background(cairo_t *cr, const float exposure, const f
 }
 
 
+DT_BEGIN_NO_FINITE_MATH_ONLY
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
                      int32_t pointerx, int32_t pointery)
 {
@@ -2396,6 +2400,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
   }
 }
+DT_END_OPTIMIZATIONS
 
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
