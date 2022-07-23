@@ -412,9 +412,9 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   dt_omp_sharedconst(pwidth, pheight) \
   schedule(static) collapse(2)
 #endif
-  for(int row = HLBORDER; row < pheight - HLBORDER; row++)
+  for(int row = 4; row < pheight - 4; row++)
   {
-    for(int col = HLBORDER; col < pwidth - HLBORDER; col++)
+    for(int col = 4; col < pwidth - 4; col++)
     {
       const size_t i = row * pwidth + col;
       for(int p = 0; p < HL_REF_PLANES; p++)
