@@ -723,6 +723,7 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
     dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
   }
   dt_get_sysresource_level();
+  dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
 }
 
