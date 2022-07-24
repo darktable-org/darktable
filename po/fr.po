@@ -540,7 +540,6 @@ msgctxt "preferences"
 msgid "count"
 msgstr "nombre"
 
-# Affichage des miniatures (ou vignettes) ?
 #: ../build/bin/conf_gen.h:1836 ../src/libs/map_settings.c:160
 msgid "thumbnail display"
 msgstr "affichage miniatures"
@@ -1030,8 +1029,8 @@ msgstr "appliquer une étoile deux fois à une image ne supprimera pas l'étoile
 #: ../build/bin/preferences_gen.h:4241
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
-msgstr ""
-"définit si appliquer une étoile deux fois à une image réinitialisera la notation"
+msgstr "définit si appliquer une étoile deux fois à une image réinitialisera "
+"la notation"
 
 #: ../build/bin/preferences_gen.h:4263 ../build/bin/preferences_gen.h:5031
 msgid "show scrollbars for central view"
@@ -1294,10 +1293,9 @@ msgstr "affiche le widget des guides dans l'interface des modules"
 msgid "expand a single processing module at a time"
 msgstr "déplier un seul module de développement à la fois"
 
-# Même commentaire pour "shift" vs "maj"
 #: ../build/bin/preferences_gen.h:5392
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
-msgstr "cette option change le comportement du shift-clic de la chambre noire"
+msgstr "cette option change le comportement du maj-clic de la chambre noire"
 
 #: ../build/bin/preferences_gen.h:5414
 msgid "only collapse modules in current group"
@@ -1404,7 +1402,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5778
 msgid "prompt for name on addition of new instance"
-msgstr "demande de nom lors de l'ajout d'une nouvelle instance"
+msgstr "active l'édition du nom lors de l'ajout d'une nouvelle instance"
 
 #: ../build/bin/preferences_gen.h:5792
 msgid ""
@@ -1504,7 +1502,7 @@ msgid ""
 "modern uses a combination of white balance module and color calibration "
 "module, with improved color science for chromatic adaptation"
 msgstr ""
-"hérité applique une adaptation chromatique basique en utilisant uniquement "
+"originel applique une adaptation chromatique basique en utilisant uniquement "
 "le module balance des blancs\n"
 "moderne utilise une combinaison des modules balance des blancs et "
 "calibration des couleurs, avec une science des couleurs améliorée pour "
@@ -1706,7 +1704,7 @@ msgstr ""
 "les système avec support OpenCL. par défaut le GPU est utilisé pour le rendu "
 "de l'image complète et le CPU pour la prévisualisation (changeable des les "
 "préférences); les GPU multiples traiteront l'image complète et la "
-"prévisualisation en parallèle sur des GPUs différents; GPU très rapide - "
+"prévisualisation en parallèle sur des GPUs différents ; GPU très rapide - "
 "utilise le GPU séquentiellement pour l'image et la prévisualisation."
 
 #: ../build/bin/preferences_gen.h:6626
@@ -8180,7 +8178,7 @@ msgid ""
 "display"
 msgstr ""
 "affiche les masques et/ou le canal couleur. ctrl+clic pour afficher le "
-"masque, shift+clic pour afficher le canal. survoler la réglette du masque "
+"masque, maj+clic pour afficher le canal. survoler la réglette du masque "
 "paramétrique pour sélectionner le canal à afficher"
 
 #: ../src/develop/blend_gui.c:3131
@@ -8569,7 +8567,7 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>courbe</b> : molette, <b>compression</b> : shift+molette\n"
+"<b>courbe</b> : molette, <b>compression</b> : maj+molette\n"
 "<b>orientation</b>: clic+déplacer, <b>opacité</b> : ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1467
@@ -8578,7 +8576,7 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>courbe</b> : molette, <b>compression</b> : shift+molette\n"
+"<b>courbe</b> : molette, <b>compression</b> : maj+molette\n"
 "<b>opacité</b> : ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1470
@@ -9323,7 +9321,7 @@ msgstr "page-haut-base"
 
 #: ../src/gui/accelerators.c:89 ../src/views/view.c:1187
 msgid "shift"
-msgstr "shift"
+msgstr "maj"
 
 #: ../src/gui/accelerators.c:90 ../src/views/view.c:1188
 msgid "ctrl"
@@ -9648,7 +9646,7 @@ msgid ""
 "right-click to cancel"
 msgstr ""
 "définir un raccourci en appuyant une touche et optionnellement combiné avec "
-"un modificateur (ctrl/shift/alt)\n"
+"un modificateur (ctrl/maj/alt)\n"
 "une touche peut être appuyée deux ou trois fois, avec un appui long pour "
 "finir\n"
 "pendant que la touche est maintenue, une combinaison de clics (double/triple/"
@@ -11786,7 +11784,7 @@ msgid ""
 msgstr ""
 "correction automatique des distorsions verticales de perspective\n"
 "ctrl+clic pour la correction de rotation seulement\n"
-"shift+clic pour la correction de distorsion uniquement"
+"maj+clic pour la correction de distorsion uniquement"
 
 #: ../src/iop/ashift.c:5805
 msgid ""
@@ -11796,7 +11794,7 @@ msgid ""
 msgstr ""
 "correction automatique des distorsions horizontales de perspective\n"
 "ctrl+clic pour la correction de rotation seulement\n"
-"shift+clic pour la correction de distorsion uniquement"
+"maj+clic pour la correction de distorsion uniquement"
 
 #: ../src/iop/ashift.c:5808
 msgid ""
@@ -11810,8 +11808,8 @@ msgstr ""
 "perspective; ajuste la rotation, l'alignement de l'objectif dans les deux "
 "directions et l'inclinaison\n"
 "ctrl+clic pour la correction de rotation seulement\n"
-"shift+clic pour la correction de distorsion uniquement\n"
-"ctrl+shift-clic pour uniquement la correction de rotation et d'alignement "
+"maj+clic pour la correction de distorsion uniquement\n"
+"ctrl+maj-clic pour uniquement la correction de rotation et d'alignement "
 "d'objectif"
 
 #: ../src/iop/ashift.c:5814
@@ -11823,8 +11821,8 @@ msgid ""
 msgstr ""
 "analyse automatiquement les lignes de structure dans l'image\n"
 "ctrl+clic pour une amélioration des bords accrue\n"
-"shift+clic pour une amélioration des détails accrue\n"
-"ctrl+shift+clic pour une combinaison des deux méthodes"
+"maj+clic pour une amélioration des détails accrue\n"
+"ctrl+maj+clic pour une combinaison des deux méthodes"
 
 #: ../src/iop/ashift.c:5818
 msgid "manually define perspective rectangle"
@@ -13740,8 +13738,8 @@ msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>redimensionner</b> : glisser, <b>conserver les proportions</b> : shift"
-"+glisser\n"
+"<b>redimensionner</b> : glisser, <b>conserver les proportions</b> : "
+"maj+glisser\n"
 "<b>redresser</b> : glisser-droit"
 
 #: ../src/iop/clipping.c:3084
@@ -13767,7 +13765,7 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
-"<b>déplacer</b> : glisser, <b>déplacer verticalement</b> : shift+glisser, "
+"<b>déplacer</b> : glisser, <b>déplacer verticalement</b> : maj+glisser, "
 "<b>déplacer horizontalement</b> : ctrl+glisser\n"
 "<b>redresser</b> : glisser-droit, <b>finaliser</b> : double-clic"
 
@@ -14360,7 +14358,7 @@ msgstr ""
 "cliquer pour sélectionner\n"
 "double-clic pour réinitialiser\n"
 "clic-droit pour supprimer une pastille\n"
-"shift+clic avec la pipette pour remplacer une pastille"
+"maj+clic avec la pipette pour remplacer une pastille"
 
 #: ../src/iop/colorchecker.c:1345
 msgid "patch"
@@ -14865,7 +14863,7 @@ msgstr ""
 "créé une courbe depuis une zone de l'image\n"
 "clic pour créer une courbe plate\n"
 "ctrl+clic pour créer une courbe positive\n"
-"shift-clic pour créer une courbe négative"
+"maj-clic pour créer une courbe négative"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2471
@@ -14946,14 +14944,14 @@ msgstr "valider les changements"
 #: ../src/iop/crop.c:1524
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>retailler</b> : glisser, <b>conserver les proportions</b> : shift+glisser"
+"<b>retailler</b> : glisser, <b>conserver les proportions</b> : maj+glisser"
 
 #: ../src/iop/crop.c:1531
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
 msgstr ""
-"<b>déplacer</b> : glisser, <b>déplacer verticalement</b> : shift+glisser, "
+"<b>déplacer</b> : glisser, <b>déplacer verticalement</b> : maj+glisser, "
 "<b>déplacer horizontalement</b> : ctrl+glisser"
 
 #: ../src/iop/defringe.c:70
@@ -17173,7 +17171,7 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer et tracer pour ajouter un point\n"
-"défiler pour changer la taille - shift+défiler pour changer la force - "
+"défiler pour changer la taille - maj+défiler pour changer la force - "
 "ctrl+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3602
@@ -17183,7 +17181,7 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer pour ajouter une ligne\n"
-"défiler pour changer la taille - shift+défiler pour changer la force - "
+"défiler pour changer la taille - maj+défiler pour changer la force - "
 "ctrl+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3606
@@ -17193,7 +17191,7 @@ msgid ""
 "change direction"
 msgstr ""
 "cliquer pour ajouter une courbe\n"
-"défiler pour changer la taille - shift+défiler pour changer la force - "
+"défiler pour changer la taille - maj+défiler pour changer la force - "
 "ctrl+défiler pour changer la direction"
 
 #: ../src/iop/liquify.c:3609
@@ -18188,7 +18186,7 @@ msgstr "ctrl+clic pour changer l'outil de la forme courante"
 
 #: ../src/iop/retouch.c:2238
 msgid "shift+click to set the tool as default"
-msgstr "shift+clic pour changer l'outil par défaut"
+msgstr "maj+clic pour changer l'outil par défaut"
 
 #: ../src/iop/retouch.c:2257
 msgid "scales:"
@@ -18936,7 +18934,7 @@ msgid ""
 "shift+scroll for large steps; ctrl+scroll for small steps"
 msgstr ""
 "utiliser la molette en survolant l'image pour changer l'exposition\n"
-"shift+défiler pour un changement grossier ; ctrl+défiler pour un changement "
+"maj+défiler pour un changement grossier ; ctrl+défiler pour un changement "
 "précis"
 
 #: ../src/iop/toneequal.c:2071
@@ -19607,7 +19605,7 @@ msgstr ""
 "utiliser « % » comme joker\n"
 "clic pour inclure la hiérarchie courante et les sous-hiérarchies (suffixe « "
 "* »)\n"
-"shift+clic pour inclure seulement la hiérarchie courante (no suffixe)\n"
+"maj+clic pour inclure seulement la hiérarchie courante (no suffixe)\n"
 "ctrl+clic pour inclure les sous-hiérarchies seulement (suffixe « |% »)"
 
 #: ../src/libs/collect.c:2176
@@ -19621,7 +19619,7 @@ msgstr ""
 "utiliser « % » comme joker\n"
 "clic pour inclure l'emplacement courant et les sous-emplacements (suffixe « "
 "* »)\n"
-"shift+clic pour inclure seulement l'emplacement courant (no suffixe)\n"
+"maj+clic pour inclure seulement l'emplacement courant (no suffixe)\n"
 "ctrl+clic pour inclure les sous-emplacements seulement (suffixe « |% »)"
 
 #: ../src/libs/collect.c:2188
@@ -19634,7 +19632,7 @@ msgid ""
 msgstr ""
 "utiliser « % » comme joker\n"
 "clic pour inclure le dossier courant et les sous-dossiers (suffixe « * »)\n"
-"shift+clic pour inclure seulement le dossier courant (no suffixe)\n"
+"maj+clic pour inclure seulement le dossier courant (no suffixe)\n"
 "ctrl+clic pour inclure les sous-dossiers seulement (suffixe « |% »)"
 
 #: ../src/libs/collect.c:2199
@@ -21655,7 +21653,7 @@ msgstr ""
 "liste des emplacements utilisateur,\n"
 "clic pour montrer ou cacher un emplacement sur la carte:\n"
 "- utiliser la molette pour changer la taille\n"
-"- <shift> ou <ctrl> pour modifier la largeur ou la hauteur\n"
+"- <maj> ou <ctrl> pour modifier la largeur ou la hauteur\n"
 "- cliquer + déplacer dans la forme pour changer sa position\n"
 "ctrl+clic pour éditer le nom d'un emplacement\n"
 "- un trait-vertical « | » permet de créer un nom hiérarchique\n"
@@ -23147,7 +23145,7 @@ msgstr ""
 "presser Enter pour créer un nouveau mot-clé et l'attacher aux images "
 "sélectionnées\n"
 "presser Tab ou touche Bas pour aller vers le premier mot-clé affiché\n"
-"presser shift-Tab pour sélectionner le premier mot-clé utilisateur attaché"
+"presser maj+Tab pour sélectionner le premier mot-clé utilisateur attaché"
 
 #: ../src/libs/tagging.c:3160 ../src/libs/tagging.c:3166
 msgid "clear entry"
@@ -23166,10 +23164,10 @@ msgstr ""
 "dictionnaire des mots-clés,\n"
 "presser Enter ou double-clic pour attacher le mot-clé sélectionné aux images "
 "sélectionnées,\n"
-"idem pour Shift-Enter mais donne le focus à la zone de saisie,\n"
-"shift-click pour développer complètement le mot-clé sélectionné,\n"
+"idem pour maj+Enter mais donne le focus à la zone de saisie,\n"
+"maj-click pour développer complètement le mot-clé sélectionné,\n"
 "clic-droit pour les autres actions sur le mot-clé sélectionné,\n"
-"presser shift-Tab pour donner le focus à la zone de saisie,\n"
+"presser maj+Tab pour donner le focus à la zone de saisie,\n"
 "ctrl-molette pour redimensionner la fenêtre"
 
 #: ../src/libs/tagging.c:3249
@@ -24495,6 +24493,7 @@ msgstr "actions souris"
 #~ msgid "exif data"
 #~ msgstr "données EXIF"
 
+#, c-format
 #~ msgid ""
 #~ "no history compression of 1 image.\n"
 #~ "see tag: darktable|problem|history-compress"
@@ -24534,10 +24533,12 @@ msgstr "actions souris"
 #~ msgid "the right margin cannot overlap wit(h the left margin"
 #~ msgstr "la marge droite ne peut pas dépasser la marge gauche"
 
+#, c-format
 #~ msgctxt "accel"
 #~ msgid "styles/apply %s"
 #~ msgstr "styles/appliquer « %s »"
 
+#, c-format
 #~ msgctxt "accel"
 #~ msgid "apply %s"
 #~ msgstr "appliquer « %s »"
@@ -25036,9 +25037,11 @@ msgstr "actions souris"
 #~ msgid "position"
 #~ msgstr "position"
 
+#, c-format
 #~ msgid "%.0f ISO"
 #~ msgstr "%.0f ISO"
 
+#, c-format
 #~ msgid "%.0f mired"
 #~ msgstr "%.0f mired"
 
@@ -25187,6 +25190,7 @@ msgstr "actions souris"
 #~ msgstr ""
 #~ "un changement de vue est nécessaire pour que le changement prenne effet"
 
+#, c-format
 #~ msgid ""
 #~ "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
 #~ "<b>opacity</b>: ctrl+scroll (%d%%)"
@@ -25216,6 +25220,7 @@ msgstr "actions souris"
 #~ msgid "overwrite selected xmp files"
 #~ msgstr "écraser les fichiers xmp selectionnés"
 
+#, c-format
 #~ msgid "no fallback for %s (%s)"
 #~ msgstr "pas de repli pour « %s » (%s)"
 
@@ -25298,6 +25303,7 @@ msgstr "actions souris"
 #~ msgid "today"
 #~ msgstr "aujourd'hui"
 
+#, c-format
 #~ msgid "<u>%d</u> tag will be updated."
 #~ msgid_plural "<u>%d</u> tags will be updated."
 #~ msgstr[0] "<u>%d</u> mot-clé sera mis à jour"
@@ -25310,10 +25316,10 @@ msgstr "actions souris"
 #~ msgstr "tous droits réservés"
 
 #~ msgid "Scroll"
-#~ msgstr "molette"
+#~ msgstr "Molette"
 
 #~ msgid "Action"
-#~ msgstr "action"
+#~ msgstr "Action"
 
 #~ msgid "open folder"
 #~ msgstr "ouvrir le dossier"
@@ -25354,7 +25360,7 @@ msgstr "actions souris"
 #~ msgstr "saturation tons moyens"
 
 #~ msgid "only key + ctrl/shift/alt supported for this shortcut"
-#~ msgstr "seulement touche + ctrl/shift/alt supporté pour ce raccourci"
+#~ msgstr "seulement touche + ctrl/maj/alt supporté pour ce raccourci"
 
 #~ msgid "overwrite existing shortcut?"
 #~ msgstr "redéfinir le raccourci ?"
@@ -25439,6 +25445,7 @@ msgstr "actions souris"
 #~ "ces fichiers pourront être réimportés dans une base de données différente "
 #~ "par la suite, tout en préservant les modifications apportées aux images."
 
+#, no-c-format
 #~ msgid ""
 #~ "use `%' as wildcard\n"
 #~ "use `|%' to include all sub-hierarchies (ctrl-click)\n"
@@ -25446,9 +25453,10 @@ msgstr "actions souris"
 #~ msgstr ""
 #~ "utiliser « % » en caractère joker\n"
 #~ "utiliser « |% » pour inclure toutes les sous-hiérarchies (ctrl-clic)\n"
-#~ "utiliser « * » pour inclure la hiérarchie et les sous-hiérarchies (shift-"
-#~ "clic)"
+#~ "utiliser « * » pour inclure la hiérarchie et les sous-hiérarchies "
+#~ "(maj-clic)"
 
+#, no-c-format
 #~ msgid ""
 #~ "use `%' as wildcard\n"
 #~ "use `|%' to include all sub-locations (ctrl-click)\n"
@@ -25474,6 +25482,7 @@ msgstr "actions souris"
 #~ msgid "linear or non-linear, RGB or Lab, display-referred"
 #~ msgstr "relatif à l'affichage, linéaire ou non-linéaire, RVB ou Lab"
 
+#, c-format
 #~ msgid "edit `%s'"
 #~ msgstr "modifier « %s »"
 
@@ -25660,6 +25669,7 @@ msgstr "actions souris"
 #~ msgid "dynamic"
 #~ msgstr "dynamique"
 
+#, c-format
 #~ msgid ""
 #~ "%s\n"
 #~ "(shortcut: %s)"
@@ -25667,21 +25677,27 @@ msgstr "actions souris"
 #~ "%s\n"
 #~ "(raccourcis: %s)"
 
+#, c-format
 #~ msgid "%s %s / %s: %s"
 #~ msgstr "%s %s / %s : %s"
 
+#, c-format
 #~ msgid "%s / %s: %s"
 #~ msgstr "%s / %s : %s"
 
+#, c-format
 #~ msgid "%s: %s"
 #~ msgstr "%s : %s"
 
+#, c-format
 #~ msgid "%s %s / %s"
 #~ msgstr "%s %s / %s"
 
+#, c-format
 #~ msgid "%s / %s"
 #~ msgstr "%s / %s"
 
+#, c-format
 #~ msgid "scroll to change <b>%s</b> of module %s %s"
 #~ msgstr "utiliser la molette pour changer <b>%s</b> du module %s %s"
 
@@ -25695,6 +25711,7 @@ msgstr "actions souris"
 #~ msgid "press key combination to remap..."
 #~ msgstr "entrer la nouvelle combinaison de touches..."
 
+#, c-format
 #~ msgid ""
 #~ "%s accel is already mapped to\n"
 #~ "%s.\n"
@@ -25897,6 +25914,7 @@ msgstr "actions souris"
 #~ msgid "ProPhoto RGB"
 #~ msgstr "RVB ProPhoto"
 
+#, c-format
 #~ msgid "preset %s was successfully saved"
 #~ msgstr "le préréglage « %s » a été sauvegardé"
 
@@ -25906,11 +25924,13 @@ msgstr "actions souris"
 #~ msgid "do you want to access https://darktable.org/usermanual/?"
 #~ msgstr "voulez-vous accéder à https://darktable.org/usermanual/?"
 
+#, no-c-format
 #~ msgid "type your query, use `%' as wildcard"
 #~ msgstr ""
 #~ "saisissez votre requête,\n"
 #~ "utilisez « % » en caractère joker"
 
+#, c-format
 #~ msgid ""
 #~ "\n"
 #~ " At startup, the database failed to open because at least one of the two "
@@ -26000,13 +26020,15 @@ msgstr "actions souris"
 #~ msgid "darktable cannot be started because the database is locked"
 #~ msgstr "darktable ne peut démarrer car la base de données est verrouillée"
 
+#, c-format
 #~ msgid ""
 #~ "<b>compression</b>: shift+scroll\n"
 #~ "<b>opacity</b>: ctrl+scroll (%d%%)"
 #~ msgstr ""
-#~ "<b>compression</b> : shift+molette\n"
+#~ "<b>compression</b> : maj+molette\n"
 #~ "<b>opacité</b> : ctrl+molette (%d%%)"
 
+#, c-format
 #~ msgid "do you really want to send %d image to trash?"
 #~ msgid_plural "do you really want to send %d images to trash?"
 #~ msgstr[0] "êtes-vous sûr de vouloir déplacer vers la poubelle %d image ?"
@@ -26155,6 +26177,7 @@ msgstr "actions souris"
 #~ msgid "folder..."
 #~ msgstr "dossier..."
 
+#, c-format
 #~ msgid "tag: %s "
 #~ msgstr "mot-clé : « %s » "
 
@@ -26448,21 +26471,21 @@ msgstr "actions souris"
 #~ msgid ""
 #~ "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
 #~ msgstr ""
-#~ "shift+défiler pour changer la dureté, ctrl+défiler pour changer l'opacité "
+#~ "maj+défiler pour changer la dureté, ctrl+défiler pour changer l'opacité "
 #~ "(%d%%)"
 
 #~ msgid ""
 #~ "shift+scroll to change compression\n"
 #~ "ctrl+scroll to set opacity (%d%%)"
 #~ msgstr ""
-#~ "shift+défiler pour changer la dureté,\n"
+#~ "maj+défiler pour changer la dureté,\n"
 #~ "ctrl+défiler pour changer l'opacité (%d%%)"
 
 #~ msgid ""
 #~ "scroll to set curvature, shift+scroll to change compression\n"
 #~ "ctrl+scroll to set shape opacity (%d%%)"
 #~ msgstr ""
-#~ "défiler pour changer la courbure, shift+défiler pour changer la dureté,\n"
+#~ "défiler pour changer la courbure, maj+défiler pour changer la dureté,\n"
 #~ "ctrl+défiler pour changer l'opacité (%d%%)"
 
 #~ msgid "move to rotate shape"
@@ -26472,7 +26495,7 @@ msgstr "actions souris"
 #~ "scroll to set size, shift+scroll to set feather size\n"
 #~ "ctrl+scroll to set shape opacity (%d%%)"
 #~ msgstr ""
-#~ "défiler pour changer la taille, shift+défiler pour changer la dureté,\n"
+#~ "défiler pour changer la taille, maj+défiler pour changer la dureté,\n"
 #~ "ctrl+défiler pour changer l'opacité (%d%%)"
 
 #~ msgid "ctrl+click to rotate"
@@ -26480,17 +26503,17 @@ msgstr "actions souris"
 
 #~ msgid ""
 #~ "shift+click to switch feathering mode, ctrl+click to rotate\n"
-#~ "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
+#~ "shift+scroll to set feather size, ctrl+défiler to set shape opacity (%d%%),"
 #~ msgstr ""
-#~ "shift+clic pour changer le mode de dureté, ctrl+clic pour tourner\n"
-#~ "shift+défiler pour changer le dégradé, ctrl+défiler pour modifier "
+#~ "maj+clic pour changer le mode de dureté, ctrl+clic pour tourner\n"
+#~ "maj+défiler pour changer le dégradé, ctrl+défiler pour modifier "
 #~ "l'opacité (%d%%)"
 
 #~ msgid ""
 #~ "scroll to set brush size, shift+scroll to set hardness,\n"
 #~ "ctrl+scroll to set opacity (%d%%)"
 #~ msgstr ""
-#~ "défiler pour changer la taille du pinceau, shift+défiler pour changer la "
+#~ "défiler pour changer la taille du pinceau, maj+défiler pour changer la "
 #~ "dureté,\n"
 #~ "ctrl+défiler pour changer l'opacité (%d%%)"
 
@@ -28859,7 +28882,7 @@ msgstr "actions souris"
 
 #~ msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
 #~ msgstr ""
-#~ "ctrl-défiler pour modifier l'opacité, shift+défiler pour changer le "
+#~ "ctrl-défiler pour modifier l'opacité, maj+défiler pour changer le "
 #~ "dégradé"
 
 #~ msgid "adjust the black level"
@@ -29106,7 +29129,7 @@ msgstr "actions souris"
 #~ msgstr "applique un style existant"
 
 #~ msgid "clear selection (ctrl-shift-a)"
-#~ msgstr "vide la sélection (Ctrl+Shift+a)"
+#~ msgstr "vide la sélection (Ctrl+maj+a)"
 
 #~ msgid "select text color"
 #~ msgstr "sélectionner la couleur du texte"
