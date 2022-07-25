@@ -17,7 +17,7 @@ TryExec=${CMAKE_INSTALL_PREFIX}/bin/darktable
 Terminal=false
 StartupNotify=true
 
-MimeType=application/x-darktable;image/x-dcraw;image/jpeg;image/jpg;image/png;image/tiff;image/x-portable-floatmap;${DESKTOP_MIME_TYPES}
+MimeType=application/x-darktable;image/x-dcraw;image/x-adobe-dng;image/jpeg;image/png;image/tiff;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-portable-floatmap;image/vnd.radiance;${DESKTOP_MIME_TYPES}
 
 Icon=darktable
 
