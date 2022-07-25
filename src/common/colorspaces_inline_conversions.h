@@ -1326,6 +1326,13 @@ static inline float dt_UCS_L_star_to_Y(const float L_star)
 }
 
 
+// L_star upper limit is 2.098883786377 truncated to 32-bit float and last decimal removed.
+// By clipping L_star to this limit, we ensure dt_UCS_L_star_to_Y() doesn't divide by zero.
+static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
+// Y upper limit is calculated from the above L star upper limit.
+static const float DT_UCS_Y_UPPER_LIMIT = 13237757000.f;
+
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY: 16)
 #endif
@@ -1373,7 +1380,8 @@ static inline void xyY_to_dt_UCS_JCH(const dt_aligned_pixel_t xyY, const float L
   float UV_star_prime[2];
   xyY_to_dt_UCS_UV(xyY, UV_star_prime);
 
-  const float L_star = Y_to_dt_UCS_L_star(xyY[2]);
+  // L_star must be clipped to the valid range of dt UCS
+  const float L_star = Y_to_dt_UCS_L_star(CLAMPF(xyY[2], 0.f, DT_UCS_Y_UPPER_LIMIT));
   const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
 
   // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
@@ -1398,7 +1406,8 @@ static inline void dt_UCS_JCH_to_xyY(const dt_aligned_pixel_t JCH, const float L
   */
 
   // should be L_star = powf(JCH[0], 1.f / cz) * L_white but we treat only the case where cz = 1
-  const float L_star = JCH[0] * L_white;
+  // L_star must be clipped to the valid range of dt UCS
+  const float L_star = CLAMPF(JCH[0] * L_white, 0.f, DT_UCS_L_STAR_UPPER_LIMIT);
   const float M = L_star != 0.f
     ? powf(JCH[1] * L_white / (15.932993652962535f * powf(L_star, 0.6523997524738018f)), 0.8322850678616855f)
     : 0.f;
