@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-07-20 19:37+0200\n"
-"PO-Revision-Date: 2022-07-22 10:36-0300\n"
+"PO-Revision-Date: 2022-07-25 09:16-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -542,7 +542,7 @@ msgstr "contagem"
 
 #: ../build/bin/conf_gen.h:1836 ../src/libs/map_settings.c:160
 msgid "thumbnail display"
-msgstr "mostrar miniaturas"
+msgstr "mostrar nas miniaturas"
 
 #: ../build/bin/conf_gen.h:1837
 msgid ""
@@ -960,7 +960,7 @@ msgstr "ocultar predefinições nativas para módulos utilitários"
 #: ../src/lua/preferences.c:682 ../src/lua/preferences.c:710
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "clique duplo para redefinir para `%s'"
+msgstr "clique-duplo para redefinir para `%s'"
 
 #: ../build/bin/preferences_gen.h:4094 ../build/bin/preferences_gen.h:4130
 #: ../build/bin/preferences_gen.h:4166 ../build/bin/preferences_gen.h:4202
@@ -1205,7 +1205,7 @@ msgstr "borda ao redor da imagem no modo sala escura"
 #: ../build/bin/preferences_gen.h:9185
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "clique duplo para redefinir para `%d'"
+msgstr "clique-duplo para redefinir para `%d'"
 
 #: ../build/bin/preferences_gen.h:5009
 msgid ""
@@ -1286,7 +1286,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5342 ../build/bin/preferences_gen.h:5356
 msgid "show the guides widget in modules UI"
-msgstr "mostrar as ferramentas de guia na interface dos módulos"
+msgstr "mostrar a ferramenta de linhas guia na interface dos módulos"
 
 #: ../build/bin/preferences_gen.h:5378
 msgid "expand a single processing module at a time"
@@ -1711,7 +1711,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6626
 msgid "tune OpenCL performance"
-msgstr "ajustar desempenho OpenCL"
+msgstr "ajustar desempenho do OpenCL"
 
 #: ../build/bin/preferences_gen.h:6674
 msgid ""
@@ -1868,7 +1868,7 @@ msgstr "esta opção indica quando checar a base de dados e realizar manutençã
 
 #: ../build/bin/preferences_gen.h:7359
 msgid "database fragmentation ratio threshold"
-msgstr "limiar de fragmentação da base de dados"
+msgstr "limite de fragmentação da base de dados"
 
 #: ../build/bin/preferences_gen.h:7382
 msgid ""
@@ -2000,7 +2000,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7763
 msgid "scale slider step with min/max"
-msgstr "mudar a escala do passo do deslizador com min/max"
+msgstr "escalonar passo do controle deslizante com mín/máx"
 
 #: ../build/bin/preferences_gen.h:7777
 msgid "vary bauhaus slider step size with min/max range"
@@ -2066,7 +2066,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8032
 msgid "order or exclude midi devices"
-msgstr "ordenar ou excluir dispositivos midi"
+msgstr "carregar ou excluir dispositivos midi"
 
 #: ../build/bin/preferences_gen.h:8050
 msgid ""
@@ -2120,7 +2120,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8131
 msgid "prefer focused instance"
-msgstr "preferir instâncias em foco"
+msgstr "preferir instância em foco"
 
 #: ../build/bin/preferences_gen.h:8145
 msgid ""
@@ -2142,7 +2142,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8203
 msgid "prefer enabled instances"
-msgstr "preferir instâncias habilitadas"
+msgstr "preferir instâncias ativas"
 
 #: ../build/bin/preferences_gen.h:8217
 msgid ""
@@ -2289,13 +2289,12 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8809
 msgid "hide the history button and show a specific module instead"
-msgstr ""
-"esconder o botão de histórico e mostrar um módulo específico ao invés disso"
+msgstr "ocultar o botão de histórico e mostrar um módulo específico"
 
 #: ../build/bin/preferences_gen.h:8823
 msgid "hide the history button and show the recent collections module instead"
 msgstr ""
-"esconder o botão de histórico e mostrar o módulo coleções recentes ao invés "
+"ocultar o botão de histórico e mostrar o módulo coleções recentes ao invés "
 "disso"
 
 #: ../build/bin/preferences_gen.h:8845
@@ -3383,7 +3382,7 @@ msgstr "mistura"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:144
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:237
 msgid "process mode"
-msgstr "modo de processo"
+msgstr "modo de processamento"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1966 ../src/iop/channelmixer.c:624
@@ -3620,7 +3619,7 @@ msgstr "peso do pixel central"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:167
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:328
 msgid "adjust autoset parameters"
-msgstr "ajuste de parâmetros automáticos"
+msgstr "ajuste automático de parâmetros"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:239
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:376
@@ -4031,7 +4030,7 @@ msgstr "granularidade"
 #: ../build/lib/darktable/plugins/introspection_velvia.c:44
 #: ../build/lib/darktable/plugins/introspection_velvia.c:91
 msgid "mid-tones bias"
-msgstr "tendência dos meios-tons"
+msgstr "viés dos meios-tons"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:131
 #: ../build/lib/darktable/plugins/introspection_highlights.c:232
@@ -4074,7 +4073,7 @@ msgstr "reconstruir cor"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:277
 #: ../src/iop/highlights.c:2149
 msgid "guided laplacians"
-msgstr "laplacianos guiados"
+msgstr "laplaciano guiado"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:281
 msgid "4 px"
@@ -4672,7 +4671,7 @@ msgstr "deslocamento y"
 #: ../build/lib/darktable/plugins/introspection_watermark.c:124
 #: ../build/lib/darktable/plugins/introspection_watermark.c:239
 msgid "scale on"
-msgstr "escala ativa"
+msgstr "escala baseada na"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:285
 #: ../src/imageio/format/tiff.c:121 ../src/imageio/format/xcf.c:149
@@ -5031,7 +5030,7 @@ msgstr "data/hora importação"
 
 #: ../src/common/collection.c:616 ../src/common/collection.c:671
 msgid "modification time"
-msgstr "data/hora última modificação"
+msgstr "data/hora modificação"
 
 #: ../src/common/collection.c:618 ../src/common/collection.c:673
 msgid "export time"
@@ -5556,7 +5555,7 @@ msgstr "perfil de exportação"
 #: ../src/common/colorspaces.c:1407 ../src/common/colorspaces.c:1687
 #: ../src/views/darkroom.c:2480
 msgid "softproof profile"
-msgstr "perfil de impressão na tela"
+msgstr "perfil de prova digital"
 
 #: ../src/common/colorspaces.c:1413 ../src/common/colorspaces.c:1669
 msgid "system display profile"
@@ -5759,7 +5758,7 @@ msgstr "1) recursos do darktable"
 
 #: ../src/common/darktable.c:1743
 msgid "2) tune OpenCL performance"
-msgstr "2) ajustar desempenho OpenCL"
+msgstr "2) ajustar desempenho do OpenCL"
 
 #: ../src/common/darktable.c:1750
 msgid ""
@@ -7191,7 +7190,7 @@ msgid_plural ""
 "(all duplicates will be moved along)"
 msgstr[0] ""
 "você realmente deseja mover fisicamente %d imagem  para %s?\n"
-"(todas duplicatas serão movidas também)"
+"(todas as duplicatas serão movidas também)"
 msgstr[1] ""
 "você realmente deseja mover fisicamente as %d imagens para %s?\n"
 "(todas duplicatas serão movidas também)"
@@ -7864,7 +7863,7 @@ msgid ""
 "press 'c' to toggle view of channel data.\n"
 "press 'm' to toggle mask view."
 msgstr ""
-"clique duplo para resetar.\n"
+"clique-duplo para resetar.\n"
 "pressione 'a' para alternar os modos disponíveis de controle deslizante.\n"
 "pressione 'c' para alternar visualização de dados de canal.\n"
 "pressione 'm' para alternar visualização de máscara."
@@ -8322,7 +8321,7 @@ msgstr "novo"
 #: ../src/develop/imageop.c:3225 ../src/libs/duplicate.c:543
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3868
 msgid "duplicate"
-msgstr "duplicar"
+msgstr "criar duplicata"
 
 #: ../src/develop/imageop.c:3230
 msgid "enable"
@@ -8647,7 +8646,7 @@ msgid ""
 "<b>cancel</b>: right-click"
 msgstr ""
 "<b>adicionar nó</b>: clique, <b>adicionar nó nítido</b>:ctrl+clique\n"
-"<b>cancelar</b>: clique direito"
+"<b>cancelar</b>: clique-direito"
 
 #: ../src/develop/masks/path.c:3164
 msgid ""
@@ -8655,7 +8654,7 @@ msgid ""
 "<b>finish path</b>: right-click"
 msgstr ""
 "<b>adicionar nó</b>: clique, <b>adicionar nó nítido</b>:ctrl+clique\n"
-"<b>finalizar caminho</b>: clique direito"
+"<b>finalizar caminho</b>: clique-direito"
 
 #: ../src/develop/masks/path.c:3167
 msgid ""
@@ -8765,7 +8764,7 @@ msgid ""
 msgstr ""
 "entre o valor mínimo\n"
 "use 'min' para nenhum limite\n"
-"clique direito para selecionar de valores existentes"
+"clique-direito para selecionar de valores existentes"
 
 #: ../src/dtgtk/range.c:412
 msgid ""
@@ -8775,7 +8774,7 @@ msgid ""
 msgstr ""
 "entre o valor máximo\n"
 "use 'max' para ilimitado\n"
-"clique direito para selecionar de valores existentes"
+"clique-direito para selecionar de valores existentes"
 
 #: ../src/dtgtk/range.c:418
 msgid ""
@@ -8783,7 +8782,7 @@ msgid ""
 "right-click to select from existing values"
 msgstr ""
 "entre o valor\n"
-"clique direito para selecionar de valores existentes"
+"clique-direito para selecionar de valores existentes"
 
 #: ../src/dtgtk/range.c:423
 msgid ""
@@ -8796,7 +8795,7 @@ msgstr ""
 "entre a data mínima\n"
 "no formato AAAA:MM:DD hh:mm:ss.sss (somente o ano é obrigatório)\n"
 "use 'min' para nenhum limite\n"
-"clique direito para selecionar do calendário ou de valores existentes"
+"clique-direito para selecionar do calendário ou de valores existentes"
 
 #: ../src/dtgtk/range.c:431
 msgid ""
@@ -8810,7 +8809,7 @@ msgstr ""
 "entre a data máxima\n"
 "no formato AAAA:MM:DD hh:mm:ss.sss (somente o ano é obrigatório)\n"
 "use 'max' para nenhum limite\n"
-"clique direito para selecionar do calendário ou de valores existentes"
+"clique-direito para selecionar do calendário ou de valores existentes"
 
 #: ../src/dtgtk/range.c:440
 msgid ""
@@ -8820,7 +8819,7 @@ msgid ""
 msgstr ""
 "entre a data\n"
 "no formato AAAA:MM:DD hh:mm:ss.sss (somente o ano é obrigatório)\n"
-"clique direito para selecionar do calendário ou de valores existentes"
+"clique-direito para selecionar do calendário ou de valores existentes"
 
 #: ../src/dtgtk/range.c:462
 msgid "date-time interval to subtract from the max value"
@@ -8862,8 +8861,8 @@ msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
 msgstr ""
-"clique simples para selecionar a data\n"
-"clique duplo para usar a data diretamente"
+"clique-simples para selecionar a data\n"
+"clique-duplo para usar a data diretamente"
 
 #: ../src/dtgtk/range.c:960
 msgid "years: "
@@ -8920,7 +8919,7 @@ msgstr "tudo"
 
 #: ../src/dtgtk/resetlabel.c:59
 msgid "double-click to reset"
-msgstr "clique duplo para redefinir"
+msgstr "clique-duplo para redefinir"
 
 #: ../src/dtgtk/thumbnail.c:92 ../src/dtgtk/thumbnail.c:122
 msgid "current"
@@ -9455,7 +9454,7 @@ msgstr "longo"
 #: ../src/gui/accelerators.c:544
 msgctxt "accel"
 msgid "double-click"
-msgstr "clique duplo"
+msgstr "clique-duplo"
 
 #: ../src/gui/accelerators.c:545
 msgctxt "accel"
@@ -9490,23 +9489,23 @@ msgid ""
 "start typing for incremental search"
 msgstr ""
 "Pressione Del para remover o atalho selecionado\n"
-"clique duplo para adicionar um novo atalho\n"
+"clique-duplo para adicionar um novo atalho\n"
 "comece a digitar para busca incremental"
 
 #: ../src/gui/accelerators.c:680
 msgid "click to filter shortcut list\n"
-msgstr "clique parafiltrar a lista de atalhos\n"
+msgstr "clique para filtrar a lista de atalhos\n"
 
 #: ../src/gui/accelerators.c:681
 msgid "right click to show action of selected shortcut\n"
-msgstr "clique direito para mostrar a ação do atalho selecionado\n"
+msgstr "clique-direito para mostrar a ação do atalho selecionado\n"
 
 #: ../src/gui/accelerators.c:682
 msgid ""
 "double-click to define new shortcut\n"
 "start typing for incremental search"
 msgstr ""
-"clique duplo para definir um novo atalho\n"
+"clique-duplo para definir um novo atalho\n"
 "comece a digitar para busca incremental"
 
 #: ../src/gui/accelerators.c:701
@@ -9535,7 +9534,7 @@ msgstr "scroll muda velocidade padrão"
 
 #: ../src/gui/accelerators.c:706
 msgid "right click to exit mapping mode"
-msgstr "clique direito para sair do modo de mapeamento"
+msgstr "clique-direito para sair do modo de mapeamento"
 
 #: ../src/gui/accelerators.c:875
 msgid "active view"
@@ -9627,7 +9626,7 @@ msgstr ""
 "dispositivos conectados podem enviar movimentos ou teclas usando seus "
 "controladores físicos\n"
 "\n"
-"clique direito para cancelar"
+"clique-direito para cancelar"
 
 #: ../src/gui/accelerators.c:1488
 msgid "removing shortcut"
@@ -9651,7 +9650,7 @@ msgstr "_ao iniciar"
 
 #: ../src/gui/accelerators.c:1894
 msgid "_edits"
-msgstr "_editados"
+msgstr "_antes do diálogo"
 
 #: ../src/gui/accelerators.c:1899
 msgid ""
@@ -9659,16 +9658,17 @@ msgid ""
 "  or as at startup\n"
 "  or when the configuration dialog was opened\n"
 msgstr ""
-"restaurar atalhos padrão\n"
-"  ou como ao iniciar\n"
-"  ou como quando o diálogo de configuração foi aberto\n"
+"restaurar os atalhos para a configuração padrão do darktable\n"
+"  ou para a configuração existente 'ao iniciar' o darktable\n"
+"  ou para a configuração existente 'antes do diálogo' de configuração ser"
+" aberto\n"
 
 #: ../src/gui/accelerators.c:1902
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
 msgstr ""
-"limpar todos os atalhos mais novos\n"
+"limpar todos os atalhos novos criados\n"
 "(ao invés de simplesmente restaurar os modificados)"
 
 #: ../src/gui/accelerators.c:1956 ../src/gui/preferences.c:877
@@ -9881,7 +9881,7 @@ msgstr "painéis"
 #. an action that does nothing - used for overriding/removing default shortcuts
 #: ../src/gui/gtk.c:1172
 msgid "no-op"
-msgstr "no-op"
+msgstr "nada-faz"
 
 #: ../src/gui/gtk.c:1174
 msgid "switch views"
@@ -10314,7 +10314,7 @@ msgstr "seções da espiral áurea"
 
 #: ../src/gui/guides.c:39
 msgid "golden mean (all guides)"
-msgstr "proporção áurea (todas as guias)"
+msgstr "proporção áurea (todas a linhas guia)"
 
 #: ../src/gui/guides.c:218
 msgid "horizontal lines"
@@ -10343,7 +10343,7 @@ msgstr "número de subdivisões por retângulo da grade"
 #. title
 #: ../src/gui/guides.c:700
 msgid "global guide overlay settings"
-msgstr "configurações globais de sobreposições de linhas-guia"
+msgstr "configurações globais de sobreposições de linhas guia"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
 #: ../src/gui/guides.c:740 ../src/views/darkroom.c:2589
@@ -10356,7 +10356,7 @@ msgstr "espelhar"
 
 #: ../src/gui/guides.c:710
 msgid "flip guides"
-msgstr "espelhar guias"
+msgstr "espelhar linhas guia"
 
 #: ../src/gui/guides.c:713
 msgid "horizontally"
@@ -10403,9 +10403,9 @@ msgid ""
 "note that these settings are applied globally and will impact any module "
 "that shows guide overlays"
 msgstr ""
-"mudar configurações globais de guia\n"
+"mudar configurações globais de linhas guia\n"
 "note que etas configurações são aplicadas globalmente e terão efeito em "
-"qualquer módulo que use sobreposições de guias"
+"qualquer módulo que use sobreposições de linhas guia"
 
 #: ../src/gui/hist_dialog.c:193
 msgid "select parts to copy"
@@ -10486,7 +10486,7 @@ msgstr "idioma da interface"
 
 #: ../src/gui/preferences.c:290
 msgid "double-click to reset to the system language"
-msgstr "clique duplo para voltar para a linguagem do sistema"
+msgstr "clique-duplo para voltar para a linguagem do sistema"
 
 #: ../src/gui/preferences.c:292
 msgid ""
@@ -10514,7 +10514,7 @@ msgstr "tamanho da fonte em pontos"
 
 #: ../src/gui/preferences.c:370
 msgid "GUI controls and text DPI"
-msgstr "controle da interface gráfica e resolução (DPI) do texto"
+msgstr "controles da interface gráfica e resolução (DPI) do texto"
 
 #: ../src/gui/preferences.c:377
 msgid ""
@@ -11141,7 +11141,7 @@ msgstr "inserir o título do pdf"
 #. // papers
 #: ../src/imageio/format/pdf.c:592 ../src/libs/print_settings.c:2357
 msgid "paper size"
-msgstr "tamanho de papel"
+msgstr "tamanho do papel"
 
 #: ../src/imageio/format/pdf.c:597
 msgid ""
@@ -11870,7 +11870,7 @@ msgstr "frequencial, RGB"
 #: ../src/iop/atrous.c:776
 msgctxt "eq_preset"
 msgid "coarse"
-msgstr "grosseiro"
+msgstr "grosso"
 
 #: ../src/iop/atrous.c:791
 msgid "denoise & sharpen"
@@ -11936,7 +11936,7 @@ msgstr "nitidez: desfoque pequeno, força 1"
 #: ../src/iop/atrous.c:1348 ../src/iop/atrous.c:1594
 #: ../src/iop/denoiseprofile.c:3393 ../src/iop/rawdenoise.c:739
 msgid "coarse"
-msgstr "grosseiro"
+msgstr "grosso"
 
 #: ../src/iop/atrous.c:1355 ../src/iop/atrous.c:1595
 #: ../src/iop/denoiseprofile.c:3401 ../src/iop/rawdenoise.c:747
@@ -11979,11 +11979,11 @@ msgstr "baixar"
 
 #: ../src/iop/atrous.c:1592
 msgid "coarsest"
-msgstr "o mais grosseiro"
+msgstr "o mais grosso"
 
 #: ../src/iop/atrous.c:1593
 msgid "coarser"
-msgstr "mais grosseiro"
+msgstr "mais grosso"
 
 #: ../src/iop/atrous.c:1596
 msgid "finer"
@@ -13499,7 +13499,7 @@ msgstr ""
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:453
 msgid "amount"
-msgstr "quantia"
+msgstr "quantidade"
 
 #: ../src/iop/clahe.c:346
 msgid "size of features to preserve"
@@ -13688,7 +13688,7 @@ msgstr "a margem inferior não pode sobrepor a margem superior"
 #: ../src/iop/clipping.c:3037
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
 msgstr ""
-"<b>finalizar</b>: clique duplo, <b>endireitar</b>: arrastar com botão direito"
+"<b>finalizar</b>: clique-duplo, <b>endireitar</b>: arrastar com botão direito"
 
 #: ../src/iop/clipping.c:3041
 msgid ""
@@ -13724,7 +13724,7 @@ msgid ""
 msgstr ""
 "<b>mover</b>: arrastar, <b>mover verticalmente</b>: shift+arrastar, <b>mover "
 "horizontalmente</b>: ctrl+arrastar\n"
-"<b>endireitar</b>: arrastar com botão direito, <b>finalizar</b>: clique duplo"
+"<b>endireitar</b>: arrastar com botão direito, <b>finalizar</b>: clique-duplo"
 
 #: ../src/iop/clipping.c:3358 ../src/iop/crop.c:1638
 #, c-format
@@ -14602,8 +14602,7 @@ msgstr "perfil de saída não encontrado foi substituído por linear sRGB!"
 
 #: ../src/iop/colorout.c:694
 msgid "missing softproof profile has been replaced by sRGB!"
-msgstr ""
-"perfil de impressão na tela não encontrado foi substituído por linear sRGB!"
+msgstr "o perfil de prova digital não encontrado foi substituído pelo sRGB!"
 
 #: ../src/iop/colorout.c:737
 msgid "unsupported output profile has been replaced by sRGB!"
@@ -14887,7 +14886,7 @@ msgid ""
 msgstr ""
 "<b>mover</b>: arrastar, <b>move verticalmente</b>: shift+arrastar, <b>move "
 "horizontalmente</b>: ctrl+arrastar\n"
-"<b>finalizar</b>: clique duplo"
+"<b>finalizar</b>: clique-duplo"
 
 #: ../src/iop/defringe.c:70
 msgid "defringe"
@@ -15205,7 +15204,7 @@ msgid ""
 "does not affect execution time."
 msgstr ""
 "espalhamento na vizinhança para busca por similaridade.\n"
-"aumente para melhor redução de ruídos grosseiros.\n"
+"aumente para melhor redução de ruídos grossos.\n"
 "não afeta o tempo de execução."
 
 #: ../src/iop/denoiseprofile.c:3725
@@ -15314,7 +15313,7 @@ msgstr "redução de ruído: médio"
 
 #: ../src/iop/diffuse.c:304
 msgid "denoise: coarse"
-msgstr "redução de ruído: grosseiro"
+msgstr "redução de ruído: grosso"
 
 #: ../src/iop/diffuse.c:360
 msgid "sharpen demosaicing (no AA filter)"
@@ -16124,9 +16123,9 @@ msgid ""
 "double-click: reset to look view."
 msgstr ""
 "alterna ciclicamente entre visões do gráfico.\n"
-"clique esquerdo: para a frente.\n"
-"clique direito: para trás.\n"
-"clique duplo: volta à visão de aparência."
+"clique-esquerdo: para a frente.\n"
+"clique-direito: para trás.\n"
+"clique-duplo: volta à visão de aparência."
 
 #: ../src/iop/filmicrgb.c:4218
 msgid ""
@@ -16169,7 +16168,7 @@ msgstr "reconstruir"
 
 #: ../src/iop/filmicrgb.c:4267
 msgid "highlights clipping"
-msgstr "corte de realces"
+msgstr "recorte de realces"
 
 #: ../src/iop/filmicrgb.c:4273
 msgid ""
@@ -16487,7 +16486,7 @@ msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
 msgstr ""
-"a tendência para o mapeador tonal controla a linearidade, quanto mais alto "
+"o viés para o mapeador tonal controlar a linearidade, quanto mais alto "
 "mais detalhes nos pretos"
 
 #: ../src/iop/globaltonemap.c:645
@@ -17164,7 +17163,7 @@ msgid ""
 "ctrl+click: add node - right click: remove path\n"
 "ctrl+alt+click: toggle line/curve"
 msgstr ""
-"ctrl-clique: adiciona nó - clique direito: remove caminho\n"
+"ctrl-clique: adiciona nó - clique-direito: remove caminho\n"
 "ctrl-alt-clique: alterna linha/curva"
 
 #: ../src/iop/liquify.c:3685
@@ -17219,15 +17218,15 @@ msgstr "linear, XYZ"
 
 #: ../src/iop/lowlight.c:342
 msgid "indoor bright"
-msgstr "interior claro"
+msgstr "ambiente fechado claro"
 
 #: ../src/iop/lowlight.c:360
 msgid "indoor dim"
-msgstr "interior luz suave"
+msgstr "ambiente fechado com luz suave"
 
 #: ../src/iop/lowlight.c:378
 msgid "indoor dark"
-msgstr "interior escuro"
+msgstr "ambiente fechado escuro"
 
 #: ../src/iop/lowlight.c:396
 msgid "twilight"
@@ -17870,7 +17869,7 @@ msgstr ""
 #: ../src/views/darkroom.c:2312 ../src/views/darkroom.c:2321
 #: ../src/views/darkroom.c:2336
 msgid "raw overexposed"
-msgstr "raw superexposta"
+msgstr "superexposição raw"
 
 #: ../src/iop/rawprepare.c:99
 msgctxt "modulename"
@@ -18517,7 +18516,7 @@ msgid ""
 msgstr ""
 "clique em uma forma e arraste na tela.\n"
 "use a roda do mouse para ajustar o tamanho.\n"
-"clique direito para remover a forma."
+"clique-direito para remover a forma."
 
 #: ../src/iop/spots.c:818
 msgid "show and edit shapes"
@@ -18912,7 +18911,7 @@ msgstr "avançado"
 
 #: ../src/iop/toneequal.c:3174
 msgid "double-click to reset the curve"
-msgstr "clique duplo para redefinir curva"
+msgstr "clique-duplo para redefinir curva"
 
 #: ../src/iop/toneequal.c:3178
 msgid "curve smoothing"
@@ -19689,7 +19688,7 @@ msgstr "adiciona amostra"
 #. Adding the live samples section
 #: ../src/libs/colorpicker.c:633
 msgid "live samples"
-msgstr "amostras em tempo real"
+msgstr "amostras colhidas"
 
 #: ../src/libs/colorpicker.c:641
 msgid "display samples on image/vectorscope"
@@ -19988,13 +19987,13 @@ msgid ""
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
-"• perceptual: move suavemente cores fora-da-gama para dentro da gama, "
-"preservando gradações, mas distorce cores dentro da gama no processo. note "
+"• perceptual: move suavemente cores fora-do-gama para dentro do gama, "
+"preservando gradações, mas distorce cores dentro do gama no processo. note "
 "que perceptual é normalmente um LUT proprietário que depende do espaço de "
 "destino.\n"
 "\n"
 "• colorimétrico relativo: mantém a luminância enquanto reduz tão pouco "
-"quanto possível a saturação até as cores se encaixarem na gama.\n"
+"quanto possível a saturação até as cores se encaixarem no gama.\n"
 "\n"
 "• saturação: projetado para apresentar gráficos de negócios atraentes "
 "preservando a saturação. (não serve para fotografia).\n"
@@ -20017,7 +20016,7 @@ msgstr "substituir histórico"
 
 #: ../src/libs/export.c:1307 ../src/libs/print_settings.c:2710
 msgid "append history"
-msgstr "adicionar histórico ao final"
+msgstr "adicionar ao final do histórico"
 
 #: ../src/libs/export.c:1312 ../src/libs/print_settings.c:2717
 msgid ""
@@ -20139,7 +20138,7 @@ msgstr "exportar etiquetas hierárquicas (para Xmp.lr.Hierarchical Subject)"
 
 #: ../src/libs/export_metadata.c:353
 msgid "develop history"
-msgstr "histórico de desenvolvimento"
+msgstr "histórico de processamento"
 
 #: ../src/libs/export_metadata.c:354
 msgid ""
@@ -20195,7 +20194,7 @@ msgstr "excluir etiqueta de metadados"
 
 #: ../src/libs/filtering.c:240
 msgid "collection filters"
-msgstr "filtros de coleções"
+msgstr "filtros de coleção"
 
 #: ../src/libs/filtering.c:273
 msgid "initial setting"
@@ -20223,7 +20222,7 @@ msgstr "clique ou clique&#38;arraste para selecionar múltiplos valores"
 
 #: ../src/libs/filtering.c:654
 msgid "right-click opens a menu to select the available values"
-msgstr "clique direito abre um menu para selecionar valores disponíveis"
+msgstr "clique-direito abre um menu para selecionar valores disponíveis"
 
 #: ../src/libs/filtering.c:657
 msgid "actual selection"
@@ -20435,7 +20434,7 @@ msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
 msgstr ""
-"clique simples para selecionar o nome de arquivo\n"
+"clique-simples para selecionar o nome de arquivo\n"
 "ctrl-clique para selecionar múltiplos valores"
 
 #: ../src/libs/filters/filename.c:432
@@ -20443,7 +20442,7 @@ msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
 msgstr ""
-"clique simples para selecionar extensão\n"
+"clique-simples para selecionar extensão\n"
 "ctrl-clique para selecionar múltiplos valores"
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
@@ -20763,7 +20762,7 @@ msgid ""
 "ctrl+scroll to change display height"
 msgstr ""
 "arraste para mudar ponto preto,\n"
-"clique duplo reinicializa\n"
+"clique-duplo reinicializa\n"
 "ctrl+scroll muda altura do display"
 
 #: ../src/libs/histogram.c:1318
@@ -20773,7 +20772,7 @@ msgid ""
 "ctrl+scroll to change display height"
 msgstr ""
 "arraste para mudar exposição,\n"
-"clique duplo reinicializa\n"
+"clique-duplo reinicializa\n"
 "ctrl+scroll muda altura do display"
 
 #: ../src/libs/histogram.c:1431 ../src/libs/histogram.c:1471
@@ -21247,7 +21246,7 @@ msgstr "copiar & importar"
 
 #: ../src/libs/import.c:1720
 msgid "select new"
-msgstr "selecionar nova"
+msgstr "selecionar novas"
 
 #: ../src/libs/import.c:1763
 msgid "please wait while prefetching the list of images from camera..."
@@ -21525,7 +21524,7 @@ msgstr ""
 " - um símbolo da pipe '|' quebra o nome em vários níveis\n"
 " - para remover um grupo de localizações, limpe seu nome\n"
 " - pressione enter para validar o novo nome, esc para cancelar a edição\n"
-"clique direito para outras ações: remover a localização e ir para a "
+"clique-direito para outras ações: remover a localização e ir para a "
 "coleção,\n"
 "ctrl-scroll para mudar o tamanho da janela"
 
@@ -21845,7 +21844,7 @@ msgid ""
 "double-click to jump to film roll\n"
 "%s"
 msgstr ""
-"clique duplo para pular para rolo de filme\n"
+"clique-duplo para pular para rolo de filme\n"
 "%s"
 
 #: ../src/libs/metadata_view.c:736
@@ -22379,7 +22378,7 @@ msgstr "mídia"
 
 #: ../src/libs/print_settings.c:2283
 msgid "color management in printer driver"
-msgstr "gerenciamento de cor no driver da impressora"
+msgstr "gerenciamento de cor do driver da impressora"
 
 #: ../src/libs/print_settings.c:2315
 #, c-format
@@ -22456,11 +22455,11 @@ msgstr "visualizar grade"
 
 #: ../src/libs/print_settings.c:2473
 msgid "snap to grid"
-msgstr "alinhar imagens à grade"
+msgstr "alinhar à grade"
 
 #: ../src/libs/print_settings.c:2483
 msgid "borderless mode required"
-msgstr "modo sem borda necessário"
+msgstr "modo sem bordas necessário"
 
 #: ../src/libs/print_settings.c:2486
 msgid ""
@@ -22468,7 +22467,7 @@ msgid ""
 "in the printer driver because the selected margins are\n"
 "below the printer hardware margins"
 msgstr ""
-"indica que o modo sem borda deveria ser habilitado\n"
+"indica que o modo sem bordas deveria ser habilitado\n"
 "no driver da impressora porque as margens selecionadas estão\n"
 "menores que as margens do hardware da impressora."
 
@@ -22479,7 +22478,7 @@ msgstr "disposição da imagem"
 
 #: ../src/libs/print_settings.c:2531
 msgid "new image area"
-msgstr "nova área da imagem"
+msgstr "nova área de imagem"
 
 #: ../src/libs/print_settings.c:2532
 msgid ""
@@ -22493,7 +22492,7 @@ msgstr ""
 
 #: ../src/libs/print_settings.c:2536
 msgid "delete image area"
-msgstr "excluir área da imagem"
+msgstr "excluir área de imagem"
 
 #: ../src/libs/print_settings.c:2537
 msgid "delete the currently selected image area"
@@ -22650,7 +22649,7 @@ msgid ""
 "doubleclick to apply"
 msgstr ""
 "estilos disponíveis,\n"
-"clique duplo para aplicar"
+"clique-duplo para aplicar"
 
 #: ../src/libs/styles.c:805 ../src/libs/styles.c:806
 msgid "filter style names"
@@ -22994,7 +22993,7 @@ msgstr ""
 "imagens selecionadas,\n"
 "item para shift+Enter para também dar o foco à entrada,\n"
 "shift+click para expandir completamente a etiqueta selecionada,\n"
-"clique direito para outras ações na etiqueta selecionada,\n"
+"clique-direito para outras ações na etiqueta selecionada,\n"
 "pressione shift+Tab para dar foco à entrada,\n"
 "ctrl-roda para mudar o tamanho da janela"
 
@@ -23507,7 +23506,7 @@ msgstr "modifica vista"
 #: ../src/lua/preferences.c:694 ../src/lua/preferences.c:774
 #, c-format
 msgid "double-click to reset to `%s'"
-msgstr "clique duplo para redefinir para `%s'"
+msgstr "clique-duplo para redefinir para `%s'"
 
 #: ../src/lua/preferences.c:680
 msgid "select file"
@@ -23516,12 +23515,12 @@ msgstr "selecionar arquivo"
 #: ../src/lua/preferences.c:733
 #, c-format
 msgid "double-click to reset to `%d'"
-msgstr "clique duplo para redefinir para `%d'"
+msgstr "clique-duplo para redefinir para `%d'"
 
 #: ../src/lua/preferences.c:760
 #, c-format
 msgid "double click to reset to `%f'"
-msgstr "clique duplo para redefinir para `%f'"
+msgstr "clique-duplo para redefinir para `%f'"
 
 #: ../src/lua/preferences.c:836
 msgid "lua options"
@@ -23561,7 +23560,7 @@ msgstr "verificação de gama"
 
 #: ../src/views/darkroom.c:767
 msgid "soft proof"
-msgstr "impressão na tela"
+msgstr "prova digital"
 
 #. fail :(
 #: ../src/views/darkroom.c:805 ../src/views/print.c:324
@@ -23611,7 +23610,7 @@ msgid ""
 "right click for options"
 msgstr ""
 "alterna indicação de superexposição\n"
-"clique direito para opções"
+"clique-direito para opções"
 
 #: ../src/views/darkroom.c:2313
 msgid "select how to mark the clipped pixels"
@@ -23677,7 +23676,7 @@ msgid ""
 "right click for options"
 msgstr ""
 "alterna indicação de recorte \n"
-"clique direito para opções"
+"clique-direito para opções"
 
 #: ../src/views/darkroom.c:2367
 msgid "clipping preview mode"
@@ -23689,11 +23688,11 @@ msgid ""
 "full gamut is the combination of all other modes"
 msgstr ""
 "selecione a métrica que quer pré-visualizar\n"
-"gama completa é a combinação de todos os outros modos"
+"gama completo é a combinação de todos os outros modos"
 
 #: ../src/views/darkroom.c:2370
 msgid "full gamut"
-msgstr "gama completa"
+msgstr "gama completo"
 
 #: ../src/views/darkroom.c:2370
 msgid "any RGB channel"
@@ -23758,15 +23757,15 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2415
 msgid "softproof"
-msgstr "impressão na tela"
+msgstr "prova digital"
 
 #: ../src/views/darkroom.c:2418
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
 msgstr ""
-"alterna perfil de impressão na tela\n"
-"clique direito para opções"
+"alterna perfil de prova digital\n"
+"clique-direito para opções"
 
 #: ../src/views/darkroom.c:2429
 msgid ""
@@ -23774,7 +23773,7 @@ msgid ""
 "right click for profile options"
 msgstr ""
 "alterna verificação de gama\n"
-"clique direito para opções"
+"clique-direito para opções"
 
 #: ../src/views/darkroom.c:2452 ../src/views/darkroom.c:2459
 #: ../src/views/darkroom.c:2478 ../src/views/darkroom.c:2479
@@ -23811,7 +23810,7 @@ msgstr "pré-visualização de perfis ICC do monitor em %s ou %s"
 #: ../src/views/darkroom.c:2551
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
-msgstr "perfis ICC impressão na tela em %s ou %s"
+msgstr "perfis ICC de prova digital em %s ou %s"
 
 #: ../src/views/darkroom.c:2554
 #, c-format
@@ -23824,7 +23823,7 @@ msgid ""
 "right click for guides options"
 msgstr ""
 "alterna linhas guia\n"
-"clique direito para opções"
+"clique-direito para opções"
 
 #. Fullscreen preview key
 #: ../src/views/darkroom.c:2609
@@ -24154,11 +24153,11 @@ msgstr "nenhuma câmera com acesso remoto disponível para uso..."
 
 #: ../src/views/view.c:1194
 msgid "left click"
-msgstr "clique esquerdo"
+msgstr "clique-esquerdo"
 
 #: ../src/views/view.c:1197
 msgid "right click"
-msgstr "clique direito"
+msgstr "clique-direito"
 
 #: ../src/views/view.c:1200
 msgid "middle click"
@@ -24166,11 +24165,11 @@ msgstr "clique do meio"
 
 #: ../src/views/view.c:1206
 msgid "left double-click"
-msgstr "clique esquerdo duplo"
+msgstr "clique-esquerdo-duplo"
 
 #: ../src/views/view.c:1209
 msgid "right double-click"
-msgstr "clique direito duplo"
+msgstr "clique-direito duplo"
 
 #: ../src/views/view.c:1212
 msgid "drag and drop"
@@ -24178,11 +24177,11 @@ msgstr "arrastar e soltar"
 
 #: ../src/views/view.c:1215
 msgid "left click+drag"
-msgstr "clique esquerdo+arrastar"
+msgstr "clique-esquerdo+arrastar"
 
 #: ../src/views/view.c:1218
 msgid "right click+drag"
-msgstr "clique direito+arrastar"
+msgstr "clique-direito+arrastar"
 
 #: ../src/views/view.c:1238
 msgid "darktable - accels window"
