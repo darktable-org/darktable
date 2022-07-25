@@ -7,6 +7,11 @@ cmake_policy(SET CMP0048 NEW)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+endif(CCACHE_FOUND)
+
 ### Add defaults for cmake
 # These defaults need to be included before the project() call.
 include(DefineCMakeDefaults)
