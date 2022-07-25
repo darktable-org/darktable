@@ -225,13 +225,13 @@ static inline float4 luma_chroma(const float4 input, const float4 saturation, co
 
 static inline void downscale_vector(float4 *const vector, const float scaling)
 {
-  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
+  const int valid = scaling > NORM_MIN;
   *vector /= (valid) ? (scaling + NORM_MIN) : NORM_MIN;
 }
 
 static inline void upscale_vector(float4 *const vector, const float scaling)
 {
-  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
+  const int valid = scaling > NORM_MIN;
   *vector *= (valid) ? (scaling + NORM_MIN) : NORM_MIN;
 }
 

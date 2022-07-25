@@ -119,8 +119,7 @@ static inline float v_sumf(const float vector[3])
 static inline float fmaxabsf(const float a, const float b)
 {
   // Find the max in absolute value and return it with its sign
-  return (fabsf(a) > fabsf(b) && !isnan(a)) ? a :
-                                            (isnan(b)) ? 0.f : b;
+  return fabsf(a) > fabsf(b) ? a : b;
 }
 
 
@@ -130,8 +129,7 @@ static inline float fmaxabsf(const float a, const float b)
 static inline float fminabsf(const float a, const float b)
 {
   // Find the min in absolute value and return it with its sign
-  return (fabsf(a) < fabsf(b) && !isnan(a)) ? a :
-                                            (isnan(b)) ? 0.f : b;
+  return fabsf(a) < fabsf(b) ? a : b;
 }
 
 
