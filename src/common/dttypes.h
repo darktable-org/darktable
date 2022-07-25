@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <stddef.h>  // for size_t
+
 // When included by a C++ file, restrict qualifiers are not allowed
 #ifdef __cplusplus
 #define DT_RESTRICT
