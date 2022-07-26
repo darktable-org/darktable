@@ -462,7 +462,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   }
 
   for(int p = 0; p < HL_SENSOR_PLANES; p++)
-    calc_plane_candidates(plane[p], cmask[p], refavg[p], &isegments[p], pwidth, pheight, coeffs[p], 1.0f - sqrf(data->reconstructing));
+    calc_plane_candidates(plane[p], cmask[p], refavg[p], &isegments[p], pwidth, pheight, coeffs[p], 1.0f - sqrf(data->candidating));
 
   dt_get_times(&time2);
 
