@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import sys
 import subprocess
 import argparse
+from collections import defaultdict
 from shutil import which
 
 # default name of program to execute, can be overridden by the same-named environment variable or via
@@ -188,6 +190,7 @@ def parse_commandline():
    parser.add_argument("-t","--threads",metavar="N",help="tell darktable-cli to use N threads",default=None)
    parser.add_argument("-C","--cpuonly",action="store_true",help="disable OpenCL GPU acceleration",default=False)
    parser.add_argument("-T","--tempdir",metavar="DIR",help="directory in which to create test data",default=DARKTABLE_TMP)
+   parser.add_argument("-I","--iopstats",metavar="FILE",help="file where per-iop times should be written (as CSV)",default=None)
    parser.add_argument("--verbose",action="store_true")
    if len(sys.argv) < 1:
       parser.print_usage()
@@ -255,6 +258,8 @@ def run_benchmark(program,image,xmp,args):
    loadtime = 0.0
    savetime = -1
    gpu = False
+   iop_result_regex = re.compile(r"took (\d+\.\d+) .+ processed `(.+)'")
+   iop_times = {}
    for t in trace:
       if 'GPU' in t:
          gpu = True
@@ -264,9 +269,15 @@ def run_benchmark(program,image,xmp,args):
          savetime = extract_seconds(t)
       elif 'pipeline processing took' in t:
          pixpipe = extract_seconds(t)
+      else:
+         iop_match = iop_result_regex.search(t)
+         if iop_match:
+            iop_time = float(iop_match.group(1))
+            iop_name = iop_match.group(2)
+            iop_times[iop_name] = iop_time
    if savetime < 0:
       savetime = loadtime	# if no reported save time, assume it's the same as the time to load the image
-   return pixpipe, loadtime+pixpipe+savetime, gpu
+   return pixpipe, loadtime+pixpipe+savetime, gpu, iop_times
 
 def warm_up_caches(program,image,xmp,args):
    xmp = locate_xmp(xmp,'null')
@@ -319,6 +330,15 @@ def cleanup(args):
          pass
    return
 
+def write_iop_stats(iop_times, filename):
+   iop_lines = (
+      f"{iop_name}; {iop_time:.3f}\n" for iop_name, iop_time
+      in sorted(iop_times.items(), key=lambda kv: kv[0])
+   )
+   with open(filename, "w") as fout:
+      fout.write("iop name; iop execution time (s)\n")
+      fout.writelines(iop_lines)
+
 def main():
    args, remargs = parse_commandline()
 
@@ -327,10 +347,13 @@ def main():
    pixpipe = 0.0
    used_gpu = False
    reps_run = 0
+   iop_times = defaultdict(float)
    for rep in range(args.reps):
       if args.reps > 1:
          print('     run #',rep+1,end='')
-      p, t, g = run_benchmark(args.program,args.image,args.xmp,args)
+      p, t, g, iops = run_benchmark(args.program,args.image,args.xmp,args)
+      for iop_name, iop_time in iops.items():
+         iop_times[iop_name] += iop_time
       if p < 0.0:
          continue
       pixpipe += p
@@ -343,6 +366,10 @@ def main():
    total = total / reps_run if reps_run > 0 else 999.9
    pixpipe = pixpipe / reps_run if reps_run > 0 else 999.9
    print_performance(pixpipe,total,get_version(args.program),args.version,args.image_base,args.threads,used_gpu)
+   if args.iopstats:
+      for iop_name, iop_time in iop_times.items():
+         iop_times[iop_name] = iop_time / reps_run if reps_run > 0 else 999.9
+      write_iop_stats(iop_times, args.iopstats)
    cleanup(args)
    return
 
