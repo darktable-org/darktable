@@ -99,8 +99,8 @@ typedef struct dt_iop_highlights_params_t
   float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
   int iterations; // $MIN: 1 $MAX: 64 $DEFAULT: 1 $DESCRIPTION: "iterations"
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
-  float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "candidates"
-  float combine;           // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
+  float candidating;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "candidates"
+  float combine;        // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
   int debugmode;
   // params of v4
   float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
@@ -114,7 +114,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *iterations;
   GtkWidget *scales;
   GtkWidget *solid_color;
-  GtkWidget *reconstructing;
+  GtkWidget *candidating;
   GtkWidget *combine;
   gboolean show_visualize;
   gboolean show_borders;
@@ -186,7 +186,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->clip = 1.0f;
     n->noise_level = 0.0f;
-    n->reconstructing = 0.4f;
+    n->candidating = 0.4f;
     n->combine = 2.f;
     n->debugmode = 0;
     n->iterations = 1;
@@ -201,7 +201,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
         float noise_level;
         int iterations;
         dt_atrous_wavelets_scales_t scales;
-        float reconstructing;
+        float candidating;
         float combine;
         int debugmode;
       + params of v4
@@ -209,7 +209,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->noise_level = 0.0f;
-    n->reconstructing = 0.4f;
+    n->candidating = 0.4f;
     n->combine = 2.f;
     n->debugmode = 0;
     n->iterations = 1;
@@ -453,7 +453,15 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   if(d->mode == DT_IOP_HIGHLIGHTS_RECOVERY && filters && filters != 9u)
   {
-    // not implemented so a dummy for now
+    // even if the algorithm can't tile we want to calculate memory for pixelpipe checks and a possible warning
+    tiling->xalign = 2;
+    tiling->yalign = 2;
+    tiling->overlap = 0;
+    tiling->overhead = 0x4000 * 4 * 10 * sizeof(int);
+    tiling->factor = 5.1f; // in & out plus plane buffers including some border safety plus segment planes
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
+ 
     return;
   }
 
@@ -2145,7 +2153,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->solid_color, use_laplacian);
 
   const gboolean use_recovery = bayer && (mode == DT_IOP_HIGHLIGHTS_RECOVERY);
-  gtk_widget_set_visible(g->reconstructing, use_recovery);
+  gtk_widget_set_visible(g->candidating, use_recovery);
   gtk_widget_set_visible(g->combine, use_recovery);
 
   // If guided laplacian or hl_recovery mode was copied as part of the history of another pic, sanitize it
@@ -2168,7 +2176,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   g->show_visualize = FALSE;
-  dt_bauhaus_widget_set_quad_active(g->reconstructing, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   g->show_bads = FALSE;
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   g->show_borders = FALSE;
@@ -2245,7 +2253,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     const gboolean was_visualize = g->show_visualize || g->show_bads || g->show_borders;
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-    dt_bauhaus_widget_set_quad_active(g->reconstructing, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
     dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
     g->show_visualize = FALSE;
     g->show_bads = FALSE;
@@ -2299,15 +2307,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   g_signal_connect(G_OBJECT(g->combine), "quad-pressed", G_CALLBACK(_borders_callback), self);
 
-  g->reconstructing = dt_bauhaus_slider_from_params(self, "reconstructing");
-  gtk_widget_set_tooltip_text(g->reconstructing, _("dealing with isolated segments in dark regions.\n"
+  g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
+  gtk_widget_set_tooltip_text(g->candidating, _("dealing with isolated segments in dark regions.\n"
                                                    "increase to favour candidates found in segmentation analysis,\n"
                                                    "decrease for simple inpainting.\n"));
-  dt_bauhaus_slider_set_format(g->reconstructing, "%");
-  dt_bauhaus_widget_set_quad_paint(g->reconstructing, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->reconstructing, TRUE);
-  dt_bauhaus_widget_set_quad_active(g->reconstructing, FALSE);
-  g_signal_connect(G_OBJECT(g->reconstructing), "quad-pressed", G_CALLBACK(_bads_callback), self);
+  dt_bauhaus_slider_set_format(g->candidating, "%");
+  dt_bauhaus_widget_set_quad_paint(g->candidating, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->candidating, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
+  g_signal_connect(G_OBJECT(g->candidating), "quad-pressed", G_CALLBACK(_bads_callback), self);
 
   GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
   gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
