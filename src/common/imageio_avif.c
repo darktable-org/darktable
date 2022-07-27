@@ -203,12 +203,9 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
     goto out;
   }
 
-  if(avif_image.icc.size > 0)
+  avifRWData *icc = &avif_image.icc;
+  if(icc->size && icc->data)
   {
-    avifRWData *icc = &avif_image.icc;
-
-    if(icc->data == NULL) goto out;
-
     *out = (uint8_t *)g_malloc0(icc->size);
     memcpy(*out, icc->data, icc->size);
     size = icc->size;
@@ -260,4 +257,3 @@ out:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
