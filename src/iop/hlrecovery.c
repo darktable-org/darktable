@@ -75,11 +75,6 @@ The chosen segmentation algorithm works like this:
 #define HLMAXSEGMENTS 0x4000
 #define HLBORDER 8
 
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("finite-math-only")
-#endif
-
 static size_t plane_size(size_t width, size_t height)
 {
   return (size_t) dt_round_size((width + 4) * (height + 4), 16);
@@ -95,11 +90,6 @@ typedef enum dt_iop_highlights_plane_t
 
 #include "iop/segmentation.h"
 
-static inline float sqrf(const float a)
-{
-  return a*a;
-}
-
 static inline float local_std_deviation(const float *p, const int w)
 {
   const int w2 = 2*w;
@@ -110,16 +100,16 @@ static inline float local_std_deviation(const float *p, const int w)
        p[w-2]   + p[w-1]   + p[w]   + p[w+1]   + p[w+2] +
        p[w2-2]  + p[w2-1]  + p[w2]  + p[w2+1]  + p[w2+2]);
   return sqrtf(0.04f *
-      (sqrf(p[-w2-2]-av) + sqrf(p[-w2-1]-av) + sqrf(p[-w2]-av) + sqrf(p[-w2+1]-av) + sqrf(p[-w2+2]-av) +
-       sqrf(p[-w-2]-av)  + sqrf(p[-w-1]-av)  + sqrf(p[-w]-av)  + sqrf(p[-w+1]-av)  + sqrf(p[-w+2]-av) +
-       sqrf(p[-2]-av)    + sqrf(p[-1]-av)    + sqrf(p[0]-av)   + sqrf(p[1]-av)     + sqrf(p[2]-av) +
-       sqrf(p[w-2]-av)   + sqrf(p[w-1]-av)   + sqrf(p[w]-av)   + sqrf(p[w+1]-av)   + sqrf(p[w+2]-av) +
-       sqrf(p[w2-2]-av)  + sqrf(p[w2-1]-av)  + sqrf(p[w2]-av)  + sqrf(p[w2+1]-av)  + sqrf(p[w2+2]-av)));
+      (sqf(p[-w2-2]-av) + sqf(p[-w2-1]-av) + sqf(p[-w2]-av) + sqf(p[-w2+1]-av) + sqf(p[-w2+2]-av) +
+       sqf(p[-w-2]-av)  + sqf(p[-w-1]-av)  + sqf(p[-w]-av)  + sqf(p[-w+1]-av)  + sqf(p[-w+2]-av) +
+       sqf(p[-2]-av)    + sqf(p[-1]-av)    + sqf(p[0]-av)   + sqf(p[1]-av)     + sqf(p[2]-av) +
+       sqf(p[w-2]-av)   + sqf(p[w-1]-av)   + sqf(p[w]-av)   + sqf(p[w+1]-av)   + sqf(p[w+2]-av) +
+       sqf(p[w2-2]-av)  + sqf(p[w2-1]-av)  + sqf(p[w2]-av)  + sqf(p[w2+1]-av)  + sqf(p[w2+2]-av)));
 }
 
 static inline float local_smoothness(const float *p, const int w)
 {
-  return sqrf(1.0f - fmaxf(0.0f, fminf(1.0f, 2.0f * local_std_deviation(p, w))));
+  return sqf(1.0f - fmaxf(0.0f, fminf(1.0f, 2.0f * local_std_deviation(p, w))));
 }
 
 static float calc_weight(const float *s, const char *lmask, const size_t loc, const int w, const float clipval)
@@ -135,7 +125,7 @@ static float calc_weight(const float *s, const char *lmask, const size_t loc, co
   return smoothness * sval;
 }
 
-static void prepare_smooth_singles(char *lmask, float *src, const float *ref, const size_t width, const size_t height, const float clipval)
+static void prepare_smooth_singles(char *lmask, float * restrict src, const float * restrict ref, const size_t width, const size_t height, const float clipval)
 {
   const size_t p_size = plane_size(width, height);
   float *tmp = dt_alloc_align_float(p_size);
@@ -188,7 +178,7 @@ static void prepare_smooth_singles(char *lmask, float *src, const float *ref, co
   dt_free_align(mtmp);
 }
 
-static void calc_plane_candidates(const float *s, char *lmask, const float *ref, dt_iop_segmentation_t *seg, const int width, const int height, const float clipval, const float refval)
+static void calc_plane_candidates(const float * restrict s, char *lmask, const float * restrict ref, dt_iop_segmentation_t *seg, const int width, const int height, const float clipval, const float refval)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -462,7 +452,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   }
 
   for(int p = 0; p < HL_SENSOR_PLANES; p++)
-    calc_plane_candidates(plane[p], cmask[p], refavg[p], &isegments[p], pwidth, pheight, coeffs[p], 1.0f - sqrf(data->candidating));
+    calc_plane_candidates(plane[p], cmask[p], refavg[p], &isegments[p], pwidth, pheight, coeffs[p], 1.0f - sqf(data->candidating));
 
   dt_get_times(&time2);
 
@@ -559,8 +549,8 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   reduction(max : max_correction) \
-  dt_omp_firstprivate(out, plane, isegments, cmask) \
-  dt_omp_sharedconst(width, height, pwidth, p_off, filters, vmode) \
+  dt_omp_firstprivate(out, plane) \
+  dt_omp_sharedconst(width, height, pwidth, p_off, filters) \
   schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
@@ -574,15 +564,31 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
       const float ratio = val / fmaxf(1.0f, out[o]);
       out[o] = val;
       max_correction = fmaxf(max_correction, ratio);
+    }
+  }
 
-      if(vmode)
+  dt_get_times(&time3);
+
+  if(vmode)
+  {
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(out, in, plane, isegments, cmask) \
+  dt_omp_sharedconst(width, height, pwidth, p_off, filters, vmode) \
+  schedule(static)
+#endif
+    for(size_t row = 0; row < height; row++)
+    {
+      for(size_t col = 0, o = row * width; col < width; col++, o++)
       {
+        const size_t i = (row/2)*pwidth + (col/2) + p_off;
+        const int p = pos2plane(row, col, filters);
         const int pid = isegments[p].data[i] & (HLMAXSEGMENTS-1);
         const gboolean iclipped = (cmask[p][i] == 1);
         const gboolean isegmented = ((pid > 1) && (pid < isegments[p].nr+2));
         const gboolean badseg = isegmented && (isegments[p].ref[pid] == 0);
 
-        out[o] *= 0.2f;
+        out[o] = 0.2f * in[o];
         if((vmode & 1) && isegmented && !iclipped) out[o] = 1.0f;
         if((vmode & 2) && isegmented && badseg)    out[o] = 1.0f;     
       }
@@ -592,7 +598,6 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   for(int k = 0; k < 3; k++)
     piece->pipe->dsc.processed_maximum[k] *= max_correction;
 
-  dt_get_times(&time3);
   dt_print(DT_DEBUG_PERF, "[Highlight recovery] %.1fMpix, max=%1.2f, combine=%i, segs %ir %ig %ig %ib. Times: init %.3fs, segmentize %.3fs, paint %.3fs\n",
        (float) (width * height) / 1.0e6f, max_correction, combining,
        isegments[0].nr, isegments[1].nr, isegments[2].nr, isegments[3].nr, 
@@ -605,10 +610,6 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   dt_free_align(fbuffer);
   dt_free_align(mbuffer);
 }
-
-#ifdef __GNUC__
-  #pragma GCC pop_options
-#endif
 
 #undef HL_SENSOR_PLANES
 #undef HL_REF_PLANES
