@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-07-20 19:37+0200\n"
-"PO-Revision-Date: 2022-07-25 09:16-0300\n"
+"PO-Revision-Date: 2022-07-27 20:23-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -496,7 +496,7 @@ msgstr "imagens filtradas"
 
 #: ../build/bin/conf_gen.h:1803
 msgid "when set limit the images drawn to the current filmstrip"
-msgstr "quando definido, limita as imagens à tira de filme atual"
+msgstr "quando definido, limita as imagens ao rolo de filme atual"
 
 #: ../build/bin/conf_gen.h:1810
 msgid "max images"
@@ -560,7 +560,7 @@ msgstr "máximo de pontos de polígono"
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
-"limitar o número de pontos importados com polígono no módulo encontrar "
+"limita o número de pontos importados com polígono no módulo encontrar "
 "localização"
 
 #: ../build/bin/conf_gen.h:2109 ../build/bin/preferences_gen.h:5078
@@ -1081,10 +1081,10 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"se o tamanho da miniatura é superior a esse valor, ela será processada "
-"utilizando o arquivo RAW ao invés da pré-visualização JPEG (melhor porém "
+"se o tamanho da miniatura for superior a esse valor, ela será processada\n"
+"utilizando o arquivo RAW ao invés da pré-visualização JPEG (melhor porém\n"
 "mais lento).\n"
-"se você quiser que todas as miniaturas e imagens pré-processadas em alta "
+"se você quiser que todas as miniaturas e imagens pré-processadas em alta\n"
 "qualidade você deveria escolher a opção *sempre*.\n"
 "(mais comentários no manual)"
 
@@ -1100,9 +1100,9 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"se o tamanho da miniatura é superior a esse valor, ela será processada "
+"se o tamanho da miniatura for superior a esse valor, ela será processada\n"
 "utilizando a qualidade total de renderização (melhor porém mais lento).\n"
-"se você quiser que todas as miniaturas e imagens pré-processadas em alta "
+"se você quiser que todas as miniaturas e imagens pré-processadas em alta\n "
 "qualidade você deveria escolher a opção *sempre*.\n"
 "(mais comentários no manual)"
 
@@ -1127,7 +1127,7 @@ msgstr "padrão para o texto de informações estendidas nas miniaturas"
 
 #: ../build/bin/preferences_gen.h:4594 ../build/bin/preferences_gen.h:4637
 msgid "see manual to know all the tags you can use."
-msgstr "veja o manual para saber todos as etiquetas que pode usar."
+msgstr "veja o manual para saber todos as etiquetas que pode usar"
 
 #: ../build/bin/preferences_gen.h:4616
 msgid "pattern for the thumbnail tooltip (empty to disable)"
@@ -1188,7 +1188,7 @@ msgstr "padrão para a linha de informações da imagem"
 
 #: ../build/bin/preferences_gen.h:4890
 msgid "see manual for a list of the tags you can use."
-msgstr "veja o manual para uma lista de etiquetas que pode usar."
+msgstr "veja o manual para uma lista de etiquetas que pode usar"
 
 #: ../build/bin/preferences_gen.h:4912
 msgid "position of the image information line"
@@ -2230,7 +2230,7 @@ msgstr "padrão de nomeação de diretório base"
 
 #: ../build/bin/preferences_gen.h:8514 ../build/bin/preferences_gen.h:8554
 msgid "part of full import path for an import session"
-msgstr "parte do caminho completo para importar uma sessão"
+msgstr "parte do caminho completo para uma sessão de importação"
 
 #: ../build/bin/preferences_gen.h:8536
 msgid "sub directory naming pattern"
@@ -7221,7 +7221,7 @@ msgstr[1] "copiar imagens?"
 #: ../src/control/jobs/control_jobs.c:1794
 #: ../src/control/jobs/control_jobs.c:1802
 msgid "local copy images"
-msgstr "copiar imagens localmente"
+msgstr "copia imagens localmente"
 
 #: ../src/control/jobs/control_jobs.c:1809 ../src/libs/image.c:607
 msgid "refresh EXIF"
@@ -8321,7 +8321,7 @@ msgstr "novo"
 #: ../src/develop/imageop.c:3225 ../src/libs/duplicate.c:543
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3868
 msgid "duplicate"
-msgstr "criar duplicata"
+msgstr "duplicar"
 
 #: ../src/develop/imageop.c:3230
 msgid "enable"
@@ -10450,7 +10450,7 @@ msgid ""
 msgstr ""
 "metadados a serem aplicados por padrão\n"
 "clique-duplo em um rótulo para limpar a entrada correspondente\n"
-"clique-duplo em 'predefinição' para limpar todas as entradas"
+"clique-duplo em 'predefinições' para limpar todas as entradas"
 
 #: ../src/gui/import_metadata.c:430
 msgid "from xmp"
@@ -10502,7 +10502,7 @@ msgstr "tema"
 
 #: ../src/gui/preferences.c:329
 msgid "set the theme for the user interface"
-msgstr "escolher o tema para a interface de usuário"
+msgstr "define o tema para a interface de usuário"
 
 #: ../src/gui/preferences.c:342 ../src/gui/preferences.c:349
 msgid "use system font size"
@@ -10548,7 +10548,7 @@ msgstr "salvar CSS e aplicar"
 
 #: ../src/gui/preferences.c:421
 msgid "click to save and apply the CSS tweaks entered in this editor"
-msgstr "clique para gravar e aplicar os ajustes CSS entrados neste editor"
+msgstr "clique para salvar e aplicar os ajustes CSS inseridos neste editor"
 
 #. load default text with some pointers
 #: ../src/gui/preferences.c:439
@@ -12844,9 +12844,9 @@ msgid ""
 "such as white balance, channels mixing\n"
 "and conversions to monochrome emulating film"
 msgstr ""
-"faz correções no espaço de cores\n"
-"como balanço de branco, mistura de canais\n"
-"e conversões para monocromático emulando filme"
+"faz correções no espaço de cor como balanço\n"
+"de branco, mistura de canais e conversões\n"
+"para monocromático emulando filme"
 
 #: ../src/iop/channelmixer.c:621
 msgid "destination"
@@ -14453,8 +14453,8 @@ msgid ""
 "convert any RGB input to pipeline reference RGB\n"
 "using color profiles to remap RGB values"
 msgstr ""
-"converte qualquer entrada RGB para a referência RGB do pipeline\n"
-"usando perfis de cor para remapear valores RGB"
+"converte qualquer entrada RGB para a referência RGB do\n"
+"pipeline usando perfis de cor para remapear valores RGB"
 
 #: ../src/iop/colorin.c:136 ../src/iop/colorout.c:92 ../src/iop/demosaic.c:227
 #: ../src/iop/rawprepare.c:153
@@ -14941,8 +14941,8 @@ msgstr "interpolação cromática"
 #: ../src/iop/demosaic.c:226
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
-"reconstrói pixels RGB completamente de uma leitura de matriz de filtro de "
-"cor do sensor"
+"reconstrói pixels RGB completamente a partir de uma leitura da\n"
+"matriz de filtro de cor do sensor da câmera"
 
 #: ../src/iop/demosaic.c:5288
 msgid "[dual demosaic_cl] internal problem"
@@ -15027,7 +15027,7 @@ msgstr "redução de ruído (perfilado)"
 
 #: ../src/iop/denoiseprofile.c:719
 msgid "denoise using noise statistics profiled on sensors"
-msgstr "remove ruído usando estatística perfilada em sensores."
+msgstr "remove ruído usando estatísticas perfiladas em sensores"
 
 #: ../src/iop/denoiseprofile.c:2714
 #, c-format
@@ -16024,8 +16024,8 @@ msgid ""
 "for display on SDR screens and paper prints\n"
 "while preventing clipping in non-destructive ways"
 msgstr ""
-"aplica uma transformação de visão para preparar o pipeline relativa à cena\n"
-"para exibição em telas SDR e impressão em papel\n"
+"aplica uma transformação para preparar o pipeline relativo\n"
+"à cena para exibição em telas SDR e impressão em papel,\n"
 "prevenindo recorte de forma não-destrutiva"
 
 #: ../src/iop/filmicrgb.c:1212
@@ -16748,7 +16748,9 @@ msgstr "pixels quentes"
 
 #: ../src/iop/hotpixels.c:72
 msgid "remove abnormally bright pixels by dampening them with neighbours"
-msgstr "remove pixels exageradamente brilhantes amortecendo-os com os vizinhos"
+msgstr ""
+"remove pixels exageradamente brilhantes harmonizando-os\n"
+"com os pixels vizinhos"
 
 #: ../src/iop/hotpixels.c:364
 #, c-format
@@ -17881,7 +17883,7 @@ msgid ""
 "sets technical specificities of the raw sensor.\n"
 "touch with great care!"
 msgstr ""
-"modifica especificidades do sensor raw.\n"
+"modifica especificidades técnicas do sensor raw\n"
 "ajuste com muito cuidado!"
 
 #: ../src/iop/rawprepare.c:163
@@ -18381,8 +18383,8 @@ msgstr "melhorar nitidez"
 #: ../src/iop/sharpen.c:93
 msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
 msgstr ""
-"melhora a nitidez dos detalhes na imagem usando uma máscara padrão (UnSharp "
-"Mask, USM)"
+"melhora a nitidez nos detalhes da imagem usando uma\n"
+"máscara padrão (UnSharp Mask, USM)"
 
 #: ../src/iop/sharpen.c:95
 msgid "linear or non-linear, Lab, display or scene-referred"
@@ -18530,8 +18532,8 @@ msgstr "balanço de branco"
 #: ../src/iop/temperature.c:198
 msgid "scale raw RGB channels to balance white and help demosaicing"
 msgstr ""
-"escalona os canais de RGB raw para balancear o branco e ajudar na "
-"interpolação cromática"
+"escalona os canais de RGB raw para balancear o branco\n"
+"e ajudar na interpolação cromática"
 
 #. our second biggest problem : another module is doing CAT elsewhere in the pipe
 #: ../src/iop/temperature.c:1113
@@ -18732,7 +18734,8 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:305
 msgid "relight the scene as if the lighting was done directly on the scene"
-msgstr "reilumina a cena como se a iluminação fosse feita diretamente na cena"
+msgstr ""
+"reilumina a imagem como se a iluminação fosse feita diretamente na cena"
 
 #: ../src/iop/toneequal.c:308
 msgid "quasi-linear, RGB"
@@ -19115,7 +19118,7 @@ msgstr "vinheta"
 
 #: ../src/iop/vignette.c:157
 msgid "simulate a lens fall-off close to edges"
-msgstr "simula o decaimento lento perto das bordas"
+msgstr "simula um suave escurecimento perto das bordas da lente"
 
 #: ../src/iop/vignette.c:951
 msgid "lomo"
@@ -19616,7 +19619,7 @@ msgstr "MAS NÃO"
 
 #: ../src/libs/collect.c:3310 ../src/libs/filtering.c:1987
 msgid "revert to a previous set of rules"
-msgstr "reverter para o conjunto anterior de regras"
+msgstr "reverte para um conjunto de regras anterior"
 
 #: ../src/libs/collect.c:3367
 msgid "jump back to previous collection"
@@ -19747,8 +19750,8 @@ msgid ""
 "copy history stack of\n"
 "first selected image"
 msgstr ""
-"copiar histórico da \n"
-"primeira imagem selecionada"
+"copia histórico da primeira\n"
+"imagem selecionada"
 
 #: ../src/libs/copy_history.c:354
 msgid "selective paste..."
@@ -19767,8 +19770,8 @@ msgid ""
 "paste history stack to\n"
 "all selected images"
 msgstr ""
-"colar histórico para\n"
-"todas as imagens selecionadas"
+"cola histórico para todas\n"
+"as imagens selecionadas"
 
 #: ../src/libs/copy_history.c:366
 msgid "compress history"
@@ -19807,12 +19810,12 @@ msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
 msgstr ""
-"abrir arquivo XMP auxiliar\n"
-"e aplicar nas imagens selecionadas"
+"abre arquivo XMP auxiliar e\n"
+"aplica nas imagens selecionadas"
 
 #: ../src/libs/copy_history.c:387
 msgid "write history stack and tags to XMP sidecar files"
-msgstr "escrever histórico e etiquetas no arquivo XMP auxiliar"
+msgstr "salva histórico e etiquetas no arquivo XMP auxiliar"
 
 #: ../src/libs/duplicate.c:60
 msgid "duplicate manager"
@@ -19956,8 +19959,8 @@ msgstr "armazenar máscaras"
 #: ../src/libs/export.c:1223
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
-"armazena máscaras como camadas nas imagens exportadas. só funciona com "
-"alguns formatos."
+"armazena máscaras como camadas nas imagens exportadas.\n"
+"só funciona com alguns formatos."
 
 #: ../src/libs/export.c:1236 ../src/libs/export.c:1258
 #: ../src/libs/print_settings.c:2607 ../src/libs/print_settings.c:2652
@@ -20309,7 +20312,7 @@ msgstr "ordem de classificação"
 
 #: ../src/libs/filtering.c:1656
 msgid "determine the sort order of shown images"
-msgstr "determine a ordem em que as imagens são mostradas"
+msgstr "determina a ordem em que as imagens são mostradas"
 
 #: ../src/libs/filtering.c:1713
 msgid "sort direction"
@@ -20345,11 +20348,11 @@ msgstr "nova forma de ordenação"
 
 #: ../src/libs/filtering.c:2004
 msgid "append new sort to order images"
-msgstr "adicionar nova forma de ordenação de imagens"
+msgstr "adiciona nova forma de ordenação de imagens"
 
 #: ../src/libs/filtering.c:2007
 msgid "revert to a previous set of sort orders"
-msgstr "reverter ao conjunto anterior de formas de ordenação"
+msgstr "reverte para um conjunto anterior de forma de ordenação"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
 #: ../src/libs/filtering.c:2056
@@ -20579,10 +20582,10 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
-"filtar por metadados da imagem, etiquetas, caminho do arquivo e nome\n"
-"`%` é o caracter curinga\n"
-"por default curingas de início e fim são auto-aplicados\n"
-"começar ou terminar com aspa dupla desabilita o curinga correspondente"
+"filtra por metadados da imagem, etiquetas, caminho do arquivo e nome\n"
+"`%` é o caractere curinga\n"
+"por padrão, curingas de início e fim são auto-aplicados\n"
+"começar ou terminar com aspas duplas desabilita o curinga correspondente"
 
 #: ../src/libs/geotagging.c:369
 msgid "apply offset and geo-location"
@@ -20602,7 +20605,7 @@ msgstr ""
 
 #: ../src/libs/geotagging.c:374 ../src/libs/geotagging.c:1906
 msgid "apply geo-location to matching images"
-msgstr "aplicar geolocalização a imagens que casam com os padrões definidos"
+msgstr "aplica geolocalização a imagens que casam com os padrões definidos"
 
 #: ../src/libs/geotagging.c:811
 msgid "GPX file track segments"
@@ -20648,7 +20651,7 @@ msgid ""
 "enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "key in the new numbers or scroll over the cell"
 msgstr ""
-"entre o novo valor de data/hora (yyyy:mm:dd hh:mm:ss[.sss])\n"
+"insira o novo valor de data/hora (yyyy:mm:dd hh:mm:ss[.sss])\n"
 "digite os novos valores ou use o scroll na célula"
 
 #: ../src/libs/geotagging.c:1733
@@ -20689,8 +20692,8 @@ msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
 "press enter to confirm, so that the asterisk * disappears"
 msgstr ""
-"comece a digitar para mostrar uma lista de valores permitidos e selecione "
-"seu fuso horário.\n"
+"comece a digitar para mostrar uma lista de valores permitidos e\n"
+"selecione seu fuso horário.\n"
 "pressione enter para confirmar, de forma que o asterisco * desapareça"
 
 #. gpx
@@ -20722,10 +20725,10 @@ msgid ""
 msgstr ""
 "lista de segmentos de trilhas no arquivo GPX, para cada segmento:\n"
 "- a data/hora de início em tempo local\n"
-"- o número de pontos de trilha\n"
+"- o número de pontos da trilha\n"
 "- o número de imagens baseando-se na data/hora das imagens, deslocamento e "
 "fuso horário\n"
-"- informação mais detalhada de tempo sobre a linha"
+"- informações mais detalhadas de tempo, passe o mouse sobre a linha"
 
 #: ../src/libs/geotagging.c:1885
 msgid "preview images"
@@ -20741,7 +20744,7 @@ msgstr "selecionar imagens"
 
 #: ../src/libs/geotagging.c:1894
 msgid "select matching images"
-msgstr "selecionar imagens que combinam"
+msgstr "seleciona imagens que combinam"
 
 #: ../src/libs/geotagging.c:1902
 msgid "number of matching images versus selected images"
@@ -20970,7 +20973,7 @@ msgstr "remover (lixeira)"
 
 #: ../src/libs/image.c:288
 msgid "physically delete from disk (using trash if possible)"
-msgstr "excluir fisicamente do disco (usando a lixeira se possível)"
+msgstr "exclui fisicamente do disco (usando a lixeira se possível)"
 
 #: ../src/libs/image.c:289
 msgid "physically delete from disk immediately"
@@ -20984,7 +20987,7 @@ msgstr "remover"
 
 #: ../src/libs/image.c:477
 msgid "remove images from the image library, without deleting"
-msgstr "remover imagens da biblioteca de imagens, sem deletar"
+msgstr "remove imagens da biblioteca de imagens, sem excluí-las"
 
 #: ../src/libs/image.c:485
 msgid "move..."
@@ -20992,7 +20995,7 @@ msgstr "mover..."
 
 #: ../src/libs/image.c:486
 msgid "move to other folder"
-msgstr "mover para outra pasta"
+msgstr "move para outra pasta"
 
 #: ../src/libs/image.c:489
 msgid "copy..."
@@ -21000,7 +21003,7 @@ msgstr "copiar..."
 
 #: ../src/libs/image.c:490
 msgid "copy to other folder"
-msgstr "copiar para outra pasta"
+msgstr "copia para outra pasta"
 
 #: ../src/libs/image.c:493
 msgid "create HDR"
@@ -21008,20 +21011,22 @@ msgstr "criar HDR"
 
 #: ../src/libs/image.c:494
 msgid "create a high dynamic range image from selected shots"
-msgstr "criar imagem de grande alcance dinâmico dos disparos selecionados"
+msgstr ""
+"cria imagem de grande alcance dinâmico (HDR)\n"
+"das fotos selecionadas"
 
 #: ../src/libs/image.c:498
 msgid "add a duplicate to the image library, including its history stack"
 msgstr ""
-"adicionar uma duplicata à biblioteca de imagens, incluindo seu histórico"
+"adiciona uma duplicata à biblioteca de imagens, incluindo seu histórico"
 
 #: ../src/libs/image.c:504 ../src/libs/image.c:507
 msgid "rotate selected images 90 degrees CCW"
-msgstr "girar seleção 90 graus sentido anti-horário"
+msgstr "gira seleção 90 graus sentido anti-horário"
 
 #: ../src/libs/image.c:511 ../src/libs/image.c:514
 msgid "rotate selected images 90 degrees CW"
-msgstr "girar seleção 90 graus sentido horário"
+msgstr "gira seleção 90 graus sentido horário"
 
 #: ../src/libs/image.c:516
 msgid "reset rotation"
@@ -21062,7 +21067,7 @@ msgstr "desagrupar"
 
 #: ../src/libs/image.c:534
 msgid "remove selected images from the group"
-msgstr "remover imagens selecionadas do grupo"
+msgstr "remove imagens selecionadas do grupo"
 
 #: ../src/libs/image.c:546
 msgid "select ratings metadata"
@@ -21094,7 +21099,7 @@ msgstr "determinar a imagem selecionada como fonte de metadados"
 
 #: ../src/libs/image.c:591
 msgid "paste selected metadata on selected images"
-msgstr "escrever metadados para imagens selecionadas"
+msgstr "cola metadados para imagens selecionadas"
 
 #: ../src/libs/image.c:595
 msgid "clear selected metadata on selected images"
@@ -21262,7 +21267,7 @@ msgstr "adicionar à biblioteca..."
 
 #: ../src/libs/import.c:1991
 msgid "add existing images to the library"
-msgstr "adicionar imagens existentes à biblioteca de imagens"
+msgstr "adiciona imagens existentes à biblioteca de imagens"
 
 #: ../src/libs/import.c:1997
 msgid "copy & import..."
@@ -21274,9 +21279,9 @@ msgid ""
 "patterns can be defined to rename the images and specify the destination "
 "folders"
 msgstr ""
-"copiar e opcionalmente renomear imagens antes de adicioná-las à biblioteca\n"
-"padrões podem ser definidos para renomear as imagens e especificar pastas de "
-"destino"
+"copia e, opcionalmente, renomeia imagens antes de adicioná-las à biblioteca\n"
+"padrões podem ser definidos para renomear as imagens e especificar pastas\n"
+"de destino"
 
 #. collapsible section
 #: ../src/libs/import.c:2021
@@ -21540,7 +21545,7 @@ msgstr ""
 
 #: ../src/libs/map_locations.c:992
 msgid "add a new location on the center of the visible map"
-msgstr "adicionar uma nova localização no centro do mapa visível"
+msgstr "adiciona uma nova localização no centro do mapa visível"
 
 #: ../src/libs/map_locations.c:996
 msgid "show all"
@@ -21560,7 +21565,7 @@ msgstr "origem do mapa"
 
 #: ../src/libs/map_settings.c:113
 msgid "select the source of the map. some entries might not work"
-msgstr "selecionar a origem do mapa. algumas entradas podem não funcionar"
+msgstr "seleciona a origem do mapa. algumas entradas podem não funcionar"
 
 #: ../src/libs/masks.c:279
 #, c-format
@@ -21657,16 +21662,19 @@ msgid ""
 "in that case, right-click gives the possibility to choose one of them.\n"
 "press escape to exit the popup window"
 msgstr ""
-"texto de metadado. ctrl-rolar para mudar o tamanho da caixa de texto\n"
-" ctrl-enter insere nova linha (cuidado, pode não ser compatível com "
-"metadados padrão.)\n"
-"se <deixar sem modificações> imagens selecionadas tem diferentes metadados.\n"
-"neste caso, clique-direito dá possibilidade de escolher qual.\n"
+"texto de metadado\n"
+"ctrl-roda para mudar o tamanho da caixa de texto\n"
+"ctrl-enter insere nova linha (cuidado, pode não ser\n"
+"compatível com metadados padrão.)\n"
+"se aparecer <deixar sem modificações>, as imagens\n"
+"selecionadas possuem metadados diferentes.\n"
+"neste caso, clique-direito dá a possibilidade de escolher\n"
+"uma das opções disponíveis.\n"
 "pressione esc para sair da janela pop-up"
 
 #: ../src/libs/metadata.c:759
 msgid "write metadata for selected images"
-msgstr "escrever metadados para imagens selecionadas"
+msgstr "salva os metadados nas imagens selecionadas"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:815
@@ -22486,9 +22494,9 @@ msgid ""
 "click and drag on the page to place the area\n"
 "drag&drop image from film strip on it"
 msgstr ""
-"adicionar uma nova área da imagem na página\n"
+"adiciona uma nova área da imagem na página\n"
 "clique e arraste na página para posicionar a área\n"
-"arraste&solte a imagem da tira de filme nela"
+"arraste&solte a imagem do rolo de filme nela"
 
 #: ../src/libs/print_settings.c:2536
 msgid "delete image area"
@@ -22504,7 +22512,7 @@ msgstr "limpar disposição"
 
 #: ../src/libs/print_settings.c:2541
 msgid "remove all image areas from the page"
-msgstr "remover todas áreas de imagem da página"
+msgstr "remove todas áreas de imagem da página"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
 #: ../src/libs/print_settings.c:2556
@@ -22532,7 +22540,7 @@ msgstr "estilo temporário a ser usado ao imprimir"
 
 #: ../src/libs/print_settings.c:2726
 msgid "print with current settings"
-msgstr "imprimir com configuração atual"
+msgstr "imprime com configuração atual"
 
 #: ../src/libs/select.c:134
 msgid "select all images in current collection"
@@ -22691,7 +22699,7 @@ msgstr "importa estilo de um arquivo de estilo"
 
 #: ../src/libs/styles.c:857
 msgid "export the selected styles into a style files"
-msgstr "exportar os estilos selecionados em um arquivo de estilo"
+msgstr "exporta os estilos selecionados para um arquivo de estilo"
 
 #: ../src/libs/styles.c:861
 msgid "apply the selected styles in list above to selected images"
@@ -22967,12 +22975,12 @@ msgid ""
 "press Tab or Down key to go to the first matching tag\n"
 "press shift+Tab to select the first attached user tag"
 msgstr ""
-"entre o nome da etiqueta\n"
-"pressione Enter para criar uma nova etiqueta e anexá-la às imagens "
-"selecionadas\n"
+"insira o nome da etiqueta\n"
+"pressione Enter para criar uma nova etiqueta e anexá-la às imagens"
+" selecionadas\n"
 "pressione Tab ou seta para baixo para ir à primeira etiqueta que combinar\n"
-"pressione shift+Tab para selecionar somente a primeira etiqueta de usuário "
-"anexada"
+"pressione shift+Tab para selecionar somente a primeira etiqueta de usuário"
+" anexada"
 
 #: ../src/libs/tagging.c:3158 ../src/libs/tagging.c:3164
 msgid "clear entry"
@@ -23002,17 +23010,17 @@ msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr ""
-"criar nova etiqueta com o\n"
-"nome entrado"
+"cria nova etiqueta com o\n"
+"nome inserido"
 
 #: ../src/libs/tagging.c:3250
 msgid "import tags from a Lightroom keyword file"
-msgstr "importar etiquetas de um arquivo de palavras-chave do Lightroom"
+msgstr "importa etiquetas de um arquivo de palavras-chave do Lightroom"
 
 #: ../src/libs/tagging.c:3253
 msgid "export all tags to a Lightroom keyword file"
 msgstr ""
-"exportar todas as etiquetas para um arquivo de palavras-chave do Lightroom"
+"exporta todas as etiquetas para um arquivo de palavras-chave do Lightroom"
 
 #: ../src/libs/tagging.c:3257
 msgid "toggle list / tree view"
@@ -23594,7 +23602,7 @@ msgstr "segunda janela"
 
 #: ../src/views/darkroom.c:2276
 msgid "display a second darkroom image window"
-msgstr "mostrar uma segunda janela da sala escura"
+msgstr "mostra uma segunda janela da sala escura"
 
 #: ../src/views/darkroom.c:2281
 msgid "color assessment"
@@ -24025,7 +24033,7 @@ msgstr "arrastar na visualização principal"
 
 #: ../src/views/lighttable.c:1134
 msgid "set display profile"
-msgstr "definir perfil do monitor"
+msgstr "define perfil do monitor"
 
 #: ../src/views/lighttable.c:1231
 msgid "whole"
