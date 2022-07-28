@@ -1294,6 +1294,15 @@ static GList* _get_profiles()
   prof->ppos = -2;
   list = g_list_prepend(list, prof);
 
+  // chances are this is the working profile, and hence reasonable to
+  // use as the export profile before we convert to printer profile
+  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+  prof->type = DT_COLORSPACE_LIN_REC2020;
+  dt_utf8_strlcpy(prof->name, _("linear Rec2020 RGB"), sizeof(prof->name));
+  prof->pos = -2;
+  prof->ppos = -2;
+  list = g_list_prepend(list, prof);
+
   // add the profiles from datadir/color/out/*.icc
   for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
   {
