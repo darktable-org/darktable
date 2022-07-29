@@ -30,8 +30,6 @@
 #include <strings.h>
 #include <unistd.h>
 
-#define CLAMPI(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-
 
 /* this defines an additional alignment requirement for opencl image width.
    It can have strong effects on processing speed. Reasonable values are a
@@ -186,7 +184,6 @@ static double _nm_fitness(double x[], void *rest[])
  *
  */
 
-#define MAX_IT 1000 /* maximum number of iterations */
 #define ALPHA 1.0   /* reflection coefficient */
 #define BETA 0.5    /* contraction coefficient */
 #define GAMMA 2.0   /* expansion coefficient */
