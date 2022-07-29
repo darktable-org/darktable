@@ -180,6 +180,15 @@ static void prepare_smooth_singles(char *lmask, float * restrict src, const floa
 
 static void calc_plane_candidates(const float * restrict s, char *lmask, const float * restrict ref, dt_iop_segmentation_t *seg, const int width, const int height, const float clipval, const float refval)
 {
+  for(int id = 2; id < seg->nr + 2; id++)
+  {
+    seg->val1[id] = clipval;
+    seg->val2[id] = clipval;
+  }
+
+  // if we disable the candidating by using a high refval we can just keep segment pseudo-candidates right now for performance 
+  if(refval >= 1.0f) return;
+
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   dt_omp_firstprivate(s, lmask, ref, seg) \
@@ -233,33 +242,6 @@ static void calc_plane_candidates(const float * restrict s, char *lmask, const f
       }
       seg->val1[id] = fminf(clipval, sum / fmaxf(1.0f, pix));
       seg->val2[id] = ref[testref];
-    }
-    else
-    {
-#if FALSE
-      float maxval = 0.0f;
-      float msum = 0.0f;
-      float pix  = 0.0f;
-      for(int row = seg->ymin[id]; row < seg->ymax[id] + 1; row++)
-      {
-        for(int col = seg->xmin[id]; col < seg->xmax[id] + 1; col++)
-        {
-          const size_t pos = row * width + col;
-          const int sid = segmap[pos] & (HLMAXSEGMENTS-1);
-          if(id == sid) // we look for all in-segment locations
-          {
-            msum += ref[pos];
-            maxval = fmaxf(maxval, s[pos]);
-            pix  += 1.0;
-          }
-        }
-      }
-      seg->val1[id] = maxval;
-      seg->val2[id] = msum / fmaxf(1.0f, pix);
-#else
-      seg->val1[id] = clipval;
-      seg->val2[id] = clipval;
-#endif
     }
   }
 }
@@ -425,16 +407,12 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
     prepare_smooth_singles(cmask[p], plane[p], refavg[p], pwidth, pheight, coeffs[p]);
 
     // We prefer to have slightly wider segment borders for a possibly better chosen candidate
-#if TRUE
     if(combining > 0)
     {
       dt_image_transform_dilate(isegments[p].data, pwidth, pheight, combining, HLBORDER);
       if(combining > 1)
         dt_image_transform_erode(isegments[p].data, pwidth, pheight, combining-1, HLBORDER);
     }
-#else
-    dt_image_transform_closing(isegments[p].data, pwidth, pheight, combining, HLBORDER);
-#endif
   }
   if(dt_get_num_threads() >= HL_SENSOR_PLANES)
   {
