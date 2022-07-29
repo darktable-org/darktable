@@ -27,7 +27,6 @@
 #include <stdlib.h>
 
 #define EPSILON 2 * FLT_MIN
-#define MAX_ITER 10
 
 static const int curvedata_anchors_max = 20;
 

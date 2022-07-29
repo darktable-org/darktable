@@ -51,8 +51,6 @@
 #include <string.h>
 #include <strings.h>
 
-#define DECORATION_SIZE_LIMIT 40
-
 static void dt_view_manager_load_modules(dt_view_manager_t *vm);
 static int dt_view_load_module(void *v, const char *libname, const char *module_name);
 static void dt_view_unload_module(dt_view_t *view);

@@ -44,8 +44,6 @@
 //#define USE_NEW_CL  //uncomment to use the new, more memory-efficient OpenCL code (not yet finished)
 
 #define INSET DT_PIXEL_APPLY_DPI(5)
-#define INFL .3f
-
 
 DT_MODULE_INTROSPECTION(2, dt_iop_atrous_params_t)
 
