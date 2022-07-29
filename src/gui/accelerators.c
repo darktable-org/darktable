@@ -876,7 +876,6 @@ const gchar *category_label[NUM_CATEGORIES]
       N_("other views"),
       N_("fallbacks"),
       N_("speed") };
-#define CATEGORY_FALLBACKS 2
 
 static void _shortcuts_store_category(GtkTreeIter *category, dt_shortcut_t *s, dt_view_type_flags_t view)
 {

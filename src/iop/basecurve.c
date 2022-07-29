@@ -44,7 +44,6 @@
 #include <string.h>
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
-#define DT_GUI_CURVE_INFL .3f
 #define DT_IOP_TONECURVE_RES 256
 #define MAXNODES 20
 

@@ -42,7 +42,6 @@
 #include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
-#define DT_GUI_CURVE_INFL .3f
 
 DT_MODULE_INTROSPECTION(2, dt_iop_levels_params_t)
 
