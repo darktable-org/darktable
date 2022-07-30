@@ -238,12 +238,13 @@ static inline float lab_f_inv(const float x)
 #endif
 static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
-  const float fy = (Lab[0] + 16.0f) / 116.0f;
-  const float fx = Lab[1] / 500.0f + fy;
-  const float fz = fy - Lab[2] / 200.0f;
-  const dt_aligned_pixel_t f = { fx, fy, fz };
-  for_each_channel(c)
-    XYZ[c] = d50[c] * lab_f_inv(f[c]);
+  dt_aligned_pixel_t f = { Lab[1], Lab[0] + 16.0f, Lab[2] };
+  static const dt_aligned_pixel_t coeff = { 1.0f / 500.0f, 1.0f / 116.0f, -1.0f / 200.0f };
+  static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
+  for_each_channel(c,aligned(Lab,coeff,f))
+    f[c] *= coeff[c];
+  for_each_channel(c,aligned(f,add_coeff,XYZ))
+    XYZ[c] = d50[c] * lab_f_inv(f[c] + f[1] * add_coeff[c]);
 }
 
 
