@@ -40,6 +40,7 @@
 #endif
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
+#include <stdbool.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -266,16 +267,19 @@ static void _signal_profile_changed(gpointer instance, gpointer user_data)
   dt_dev_reprocess_center(dev);
 }
 
+static float interpolate(const float *const lut, const int t, const float lambda)
+{
+  const float lambda_inv = 1.0f - lambda;
+  return lut[t] * lambda_inv + lut[t+1] * lambda;
+}
+
 #if 1
 static float lerp_lut(const float *const lut, const float v)
 {
-  // TODO: check if optimization is worthwhile!
   const float ft = CLAMPS(v * (LUT_SAMPLES - 1), 0, LUT_SAMPLES - 1);
   const int t = ft < LUT_SAMPLES - 2 ? ft : LUT_SAMPLES - 2;
   const float f = ft - t;
-  const float l1 = lut[t];
-  const float l2 = lut[t + 1];
-  return l1 * (1.0f - f) + l2 * f;
+  return interpolate(lut,t,f);
 }
 #endif
 
@@ -346,58 +350,6 @@ error:
 }
 #endif
 
-static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                              const void *const ivoid, void *const ovoid,
-                                              const dt_iop_roi_t *const roi_in,
-                                              const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-
-  if(!isnan(d->cmatrix[0][0]))
-  {
-    const size_t npixels = (size_t)roi_out->width * roi_out->height;
-    float *const restrict out = (float *const)ovoid;
-    // out is already converted to RGB from Lab.
-
-    // do we have any lut to apply, or is this a linear profile?
-    if((d->lut[0][0] >= 0.0f) && (d->lut[1][0] >= 0.0f) && (d->lut[2][0] >= 0.0f))
-    { // apply profile
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(d, out, npixels) \
-      schedule(static)
-#endif
-      for(size_t k = 0; k < 4 * npixels; k += 4)
-      {
-        for(int c = 0; c < 3; c++)
-        {
-          out[k + c] = (out[k + c] < 1.0f) ? lerp_lut(d->lut[c], out[k + c])
-                                           : dt_iop_eval_exp(d->unbounded_coeffs[c], out[k + c]);
-        }
-      }
-    }
-    else if((d->lut[0][0] >= 0.0f) || (d->lut[1][0] >= 0.0f) || (d->lut[2][0] >= 0.0f))
-    { // apply profile
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(d, out, npixels) \
-      schedule(static)
-#endif
-      for(size_t k = 0; k < 4 * npixels; k += 4)
-      {
-        for(int c = 0; c < 3; c++)
-        {
-          if(d->lut[c][0] >= 0.0f)
-          {
-            out[k + c] = (out[k + c] < 1.0f) ? lerp_lut(d->lut[c], out[k + c])
-                                             : dt_iop_eval_exp(d->unbounded_coeffs[c], out[k + c]);
-          }
-        }
-      }
-    }
-  }
-}
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -419,24 +371,88 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_colormatrix_t cmatrix;
     transpose_3xSSE(d->cmatrix, cmatrix);
 
-// fprintf(stderr,"Using cmatrix codepath\n");
-// convert to rgb using matrix
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels) \
-    shared(cmatrix) \
-    schedule(static)
-#endif
-    for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
+    bool all_lut = d->lut[0][0] >= 0.0f && d->lut[1][0] >= 0.0f && d->lut[2][0] >= 0.0f;
+    bool any_lut = d->lut[0][0] >= 0.0f || d->lut[1][0] >= 0.0f || d->lut[2][0] >= 0.0f;
+    const int nthreads = darktable.num_openmp_threads;
+    // oddly, merging the process_fastpath_apply_tonecurves processing into the main pixel loop REDUCES
+    // performance at low thread counts...  So we need to check whether to do it in a separate loop
+    if (all_lut && nthreads > 12)
     {
-      dt_aligned_pixel_t xyz;
-      dt_Lab_to_XYZ(in + k, xyz);
-      dt_aligned_pixel_t rgb; // using an aligned temporary variable lets the compiler optimize away interm. writes
-      dt_apply_transposed_color_matrix(xyz, cmatrix, rgb);
-      copy_pixel(out + k, rgb);
+// fprintf(stderr,"Using cmatrix codepath - merged LUT processing\n"); // convert to rgb using matrix
+      const float *const lut[4] = { d->lut[0], d->lut[1], d->lut[2], d->lut[0] };
+#ifdef _OPENMP
+#pragma omp parallel for default(none)                          \
+  dt_omp_firstprivate(in, out, npixels, d)                      \
+  dt_omp_sharedconst(lut)                                       \
+  shared(cmatrix)                                               \
+  schedule(static)
+#endif
+      for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
+      {
+        dt_aligned_pixel_t xyz;
+        dt_Lab_to_XYZ(in + k, xyz);
+        dt_aligned_pixel_t rgb; // using an aligned temporary variable lets the compiler optimize away interm. writes
+        dt_apply_transposed_color_matrix(xyz, cmatrix, rgb);
+        dt_aligned_pixel_t frac;
+        int whole[4] DT_ALIGNED_ARRAY;
+        for_each_channel(c)
+        {
+          const float ft = CLAMPS(rgb[c] * (LUT_SAMPLES - 1), 0, LUT_SAMPLES - 1);
+          whole[c] = MIN((int)ft, LUT_SAMPLES-2);
+          frac[c] = ft - whole[c];
+        }
+        dt_aligned_pixel_t below, above;
+        for_each_channel(c)
+        {
+          below[c] = lut[c][whole[c]];
+          above[c] = lut[c][whole[c]+1];
+        }
+        for_each_channel(c)
+          out[k+c] = below[c] * (1.0f - frac[c]) + above[c] * frac[c];
+        for(int c = 0; c < 3; c++)
+        {
+          if(rgb[c] >= 1.0f)
+            out[k+c] = dt_iop_eval_exp(d->unbounded_coeffs[c], rgb[c]);
+        }
+        out[k+3] = in[k+3];
+      }
+    } else
+    {
+// fprintf(stderr,"Using cmatrix codepath - separate LUTs\n");  // convert to rgb using matrix
+#ifdef _OPENMP
+#pragma omp parallel for default(none)                          \
+  dt_omp_firstprivate(in, out, npixels)                         \
+  shared(cmatrix)                                               \
+  schedule(static)
+#endif
+      for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
+      {
+        dt_aligned_pixel_t xyz;
+        dt_Lab_to_XYZ(in + k, xyz);
+        dt_aligned_pixel_t rgb;
+        dt_apply_transposed_color_matrix(xyz, cmatrix, rgb);
+        copy_pixel(out + k, rgb);
+      }
+      if (any_lut)
+      { // apply profile in second pass
+#ifdef _OPENMP
+#pragma omp parallel for default(none)          \
+  dt_omp_firstprivate(d, out, npixels)          \
+  schedule(static)
+#endif
+        for(size_t k = 0; k < 4 * npixels; k += 4)
+        {
+          for(int c = 0; c < 3; c++)
+          {
+            if(d->lut[c][0] >= 0.0f)
+            {
+              out[k + c] = (out[k + c] < 1.0f) ? lerp_lut(d->lut[c], out[k + c])
+                                               : dt_iop_eval_exp(d->unbounded_coeffs[c], out[k + c]);
+            }
+          }
+        }
+      }
     }
-
-    process_fastpath_apply_tonecurves(self, piece, in, out, roi_in, roi_out);
   }
   else
   {
@@ -448,6 +464,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
+      static const dt_aligned_pixel_t outofgamutpixel = { 0.0f, 1.0f, 1.0f, 0.0f };
       const float *in = ((float *)ivoid) + (size_t)4 * k * roi_out->width;
       float *const restrict outp = out + (size_t)4 * k * roi_out->width;
 
@@ -459,9 +476,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         {
           if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || out[4*j+2] < 0.0f)
           {
-            outp[4*j+0] = 0.0f;
-            outp[4*j+1] = 1.0f;
-            outp[4*j+2] = 1.0f;
+            copy_pixel(outp + 4*j, outofgamutpixel);
           }
         }
       }
@@ -476,15 +491,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-  const int ch = piece->colors;
   const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   float *const restrict out = (float *)ovoid;
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
   else if(!isnan(d->cmatrix[0][0]))
   {
@@ -494,12 +511,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     const __m128 m2 = _mm_set_ps(0.0f, d->cmatrix[2][2], d->cmatrix[1][2], d->cmatrix[0][2]);
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
+    
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, npixels, m0, m1, m2, in, out)    \
+    dt_omp_firstprivate(npixels, m0, m1, m2, in, out)    \
     schedule(static)
 #endif
-    for(int j = 0; j < ch * npixels; j += ch)
+    for(int j = 0; j < 4 * npixels; j += 4)
     {
       const __m128 xyz = dt_Lab_to_XYZ_sse2(_mm_load_ps(in + j));
       const __m128 t = ((m0 * _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(0, 0, 0, 0))) +
@@ -509,7 +527,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
     _mm_sfence();
 
-    process_fastpath_apply_tonecurves(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_fastpath_apply_tonecurves(piece, ovoid, roi_out);
   }
   else
   {
@@ -517,13 +535,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, d, ivoid, gamutcheck, outofgamutpixel, out, roi_out) \
+    dt_omp_firstprivate(d, ivoid, gamutcheck, outofgamutpixel, out, roi_out) \
     schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
-      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-      float *outp = out + (size_t)ch * k * roi_out->width;
+      const float *in = ((float *)ivoid) + (size_t)4 * k * roi_out->width;
+      float *outp = out + (size_t)4 * k * roi_out->width;
 
       cmsDoTransform(d->xform, in, outp, roi_out->width);
 
