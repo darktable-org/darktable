@@ -208,6 +208,7 @@ static inline float lab_f(const float x)
 
 /** uses D50 white point. */
 static const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
+static const dt_aligned_pixel_t d50_shuf213 = { 1.0f, 0.9642f, 0.8249f };
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
@@ -238,13 +239,17 @@ static inline float lab_f_inv(const float x)
 #endif
 static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
-  dt_aligned_pixel_t f = { Lab[1], Lab[0] + 16.0f, Lab[2] };
-  static const dt_aligned_pixel_t coeff = { 1.0f / 500.0f, 1.0f / 116.0f, -1.0f / 200.0f };
-  static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
-  for_each_channel(c,aligned(Lab,coeff,f))
-    f[c] *= coeff[c];
-  for_each_channel(c,aligned(f,add_coeff,XYZ))
-    XYZ[c] = d50[c] * lab_f_inv(f[c] + f[1] * add_coeff[c]);
+  static const dt_aligned_pixel_t offset = { 16.0f, 0.0f, 0.0f, 0.0f };
+  static const dt_aligned_pixel_t coeff = { 1.0f / 116.0f, 1.0f / 500.0f, -1.0f / 200.0f };
+  static const dt_aligned_pixel_t add_coeff = { 0.0f, 1.0f, 1.0f, 0.0f };
+  dt_aligned_pixel_t f;
+  for_each_channel(c,aligned(Lab,f))
+    f[c] = (Lab[c] + offset[c]) * coeff[c];
+  for_each_channel(c,aligned(f,add_coeff))
+    XYZ[c] = d50_shuf213[c] * lab_f_inv(f[c] + f[0] * add_coeff[c]);
+  const float tmp = XYZ[0];
+  XYZ[0] = XYZ[1];
+  XYZ[1] = tmp;
 }
 
 
