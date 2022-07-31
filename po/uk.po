@@ -1,15 +1,14 @@
 # Ukrainian Translation of darktable.
-# Copyright (C) 2021 darktable's copyright holder
 # This file is distributed under the same license as the darktable package.
-# Victor Forsiuk <vvforce@gmail.com>, 2021-2022.
 # Nazarii Vitak <nazarii.vitak@gmail.com>, 2013-2016.
+# Victor Forsiuk <vvforce@gmail.com>, 2021-2022.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-07-20 19:37+0200\n"
-"PO-Revision-Date: 2022-07-25 12:04+0300\n"
+"PO-Revision-Date: 2022-07-31 20:22+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -15269,7 +15268,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3729
 msgid "finetune denoising strength"
-msgstr "тонка настройка інтенсивності знешумлення"
+msgstr "тонке регулювання інтенсивності знешумлення"
 
 #: ../src/iop/denoiseprofile.c:3730
 msgid ""
@@ -15289,7 +15288,7 @@ msgid ""
 "decrease to denoise more aggressively\n"
 "dark areas of the image."
 msgstr ""
-"тонка настройка знешумлення в тінях.\n"
+"тонке регулювання знешумлення в тінях.\n"
 "зменшуйте, щоб більш агресивно знешумлювати\n"
 "темні ділянки зображення."
 
