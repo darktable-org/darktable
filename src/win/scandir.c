@@ -57,7 +57,11 @@ int scandir(const char *directory_name,
   if(directory == NULL) return -1;
 
   array = (struct dirent **) malloc(allocated * sizeof(struct dirent *));
-  if(array == NULL) return -1;
+  if(array == NULL)
+  {
+    closedir(directory);
+    return -1;
+  }
 
   /* Read entries in the directory.  */
 
