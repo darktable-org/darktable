@@ -46,8 +46,8 @@ static const cmsCIEXYZ d65 = {0.95045471, 1.00000000, 1.08905029};
 //D65 (sRGB, AdobeRGB, Rec2020)
 static const cmsCIExyY D65xyY = {0.312700492, 0.329000939, 1.0};
 
-//D60
-//static const cmsCIExyY d60 = {0.32168, 0.33767, 1.0};
+//D60 (ACES)
+static const cmsCIExyY D60xyY = {0.32168, 0.33767, 1.0};
 
 //D50 (ProPhoto RGB)
 static const cmsCIExyY D50xyY = {0.3457, 0.3585, 1.0};
@@ -85,6 +85,23 @@ static const cmsCIExyYTRIPLE P3_Primaries = {
   {0.680, 0.320, 1.0}, // red
   {0.265, 0.690, 1.0}, // green
   {0.150, 0.060, 1.0}  // blue
+};
+
+// https://en.wikipedia.org/wiki/Academy_Color_Encoding_System#ACES_Color_Spaces
+// D60:
+static const cmsCIExyYTRIPLE AP0_Primaries = {
+  /*     x,       y,      Y */
+  { 0.7347,  0.2653, 1.0000 }, /* red   */
+  { 0.0000,  1.0000, 1.0000 }, /* green */
+  { 0.0001, -0.0770, 1.0000 }, /* blue  */
+};
+
+// D60:
+static const cmsCIExyYTRIPLE AP1_Primaries = {
+  /*     x,      y,      Y */
+  { 0.7130, 0.2930, 1.0000 }, /* red   */
+  { 0.1650, 0.8300, 1.0000 }, /* green */
+  { 0.0128, 0.0440, 1.0000 }, /* blue  */
 };
 
 // https://en.wikipedia.org/wiki/ProPhoto_RGB_color_space
@@ -794,6 +811,30 @@ static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
   return profile;
 }
 
+static cmsHPROFILE dt_colorspaces_create_aces_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
+
+  cmsHPROFILE profile = _create_lcms_profile("ACES2065-1 RGB", "ACES2065-1 RGB",
+                                             &D60xyY,  &AP0_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
+static cmsHPROFILE dt_colorspaces_create_acescg_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
+
+  cmsHPROFILE profile = _create_lcms_profile("ACEScg RGB", "ACEScg RGB",
+                                             &D60xyY,  &AP1_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
 static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
 {
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
@@ -1471,6 +1512,16 @@ dt_colorspaces_t *dt_colorspaces_init()
                                     ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(
+     res->profiles, _create_profile(DT_COLORSPACE_ACES, dt_colorspaces_create_aces_rgb_profile(),
+                                    _("ACES2065-1 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                    ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
+     res->profiles, _create_profile(DT_COLORSPACE_ACESCG, dt_colorspaces_create_acescg_rgb_profile(),
+                                    _("ACEScg RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                    ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
       res->profiles,
       _create_profile(DT_COLORSPACE_XYZ, dt_colorspaces_create_xyz_profile(), _("linear XYZ"), ++in_pos,
                       dt_conf_get_bool("allow_lab_output") ? ++out_pos : -1, -1, -1, -1, -1));
@@ -1701,6 +1752,10 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
        return _("PQ P3");
      case DT_COLORSPACE_HLG_P3:
        return _("HLG P3");
+     case DT_COLORSPACE_ACES:
+       return _("ACES2065-1");
+     case DT_COLORSPACE_ACESCG:
+       return _("ACEScg");
      case DT_COLORSPACE_LAST:
        break;
   }
@@ -2445,4 +2500,3 @@ void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

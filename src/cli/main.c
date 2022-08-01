@@ -119,6 +119,8 @@ static void icc_types()
   fprintf(stderr, " HLG_REC2020\n");
   fprintf(stderr, " PQ_P3\n");
   fprintf(stderr, " HLG_P3\n");
+  fprintf(stderr, " ACES\n");
+  fprintf(stderr, " ACESCG\n");
 }
 
 #define ICC_FROM_STR(name) if(!strcmp(option, #name)) return DT_COLORSPACE_ ## name;
@@ -151,6 +153,8 @@ static dt_colorspaces_color_profile_type_t get_icc_type(const char* option)
   ICC_FROM_STR(HLG_REC2020);
   ICC_FROM_STR(PQ_P3);
   ICC_FROM_STR(HLG_P3);
+  ICC_FROM_STR(ACES);
+  ICC_FROM_STR(ACESCG);
   return DT_COLORSPACE_LAST;
 }
 #undef ICC_FROM_STR
@@ -775,4 +779,3 @@ int main(int argc, char *arg[])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

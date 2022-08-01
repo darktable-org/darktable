@@ -80,7 +80,9 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_HLG_REC2020 = 23,
   DT_COLORSPACE_PQ_P3 = 24,
   DT_COLORSPACE_HLG_P3 = 25,
-  DT_COLORSPACE_LAST = 26
+  DT_COLORSPACE_ACES = 26,
+  DT_COLORSPACE_ACESCG = 27,
+  DT_COLORSPACE_LAST
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t
@@ -298,4 +300,3 @@ void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3]);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
