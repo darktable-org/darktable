@@ -59,6 +59,7 @@ typedef enum dt_iop_lut3d_colorspace_t
   DT_IOP_REC709,      // $DESCRIPTION: "gamma Rec709 RGB"
   DT_IOP_LIN_REC709,  // $DESCRIPTION: "linear Rec709 RGB"
   DT_IOP_LIN_REC2020, // $DESCRIPTION: "linear Rec2020 RGB"
+  DT_IOP_ACESCG,      // $DESCRIPTION: "ACEScg RGB"
 } dt_iop_lut3d_colorspace_t;
 
 typedef enum dt_iop_lut3d_interpolation_t
@@ -984,6 +985,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
     : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
+    : (d->params.colorspace == DT_IOP_ACESCG) ? DT_COLORSPACE_ACESCG
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
@@ -1063,6 +1065,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
     : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
+    : (d->params.colorspace == DT_IOP_ACESCG) ? DT_COLORSPACE_ACESCG
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
@@ -1746,4 +1749,3 @@ void gui_cleanup(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
