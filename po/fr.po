@@ -13233,11 +13233,11 @@ msgstr ""
 #, c-format
 msgid ""
 "L: \t%.1f %%\n"
-"h: \t%.1f °\n"
+"h: \t%.1f °\n"
 "c: \t%.1f"
 msgstr ""
 "L : \t%.1f %%\n"
-"h : \t%.1f °\n"
+"h : \t%.1f °\n"
 "c : \t%.1f"
 
 #. //////////////////////// PAGE SETTINGS
@@ -13370,7 +13370,7 @@ msgstr ""
 "c : \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
-msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
+msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "ces coordonnés LCh sont calculés depuis les coordonnés CIE Lab 1976"
 
 #: ../src/iop/channelmixerrgb.c:4130
@@ -18861,11 +18861,11 @@ msgid "mask blending: people with backlight"
 msgstr "fusion masque : sujets en contre-jour"
 
 #: ../src/iop/toneequal.c:460
-msgid "compress shadows/highlights (eigf): strong"
+msgid "compress shadows/highlights (eigf): strong"
 msgstr "compresser ombres/hautes-lumières (eigf) : fort"
 
 #: ../src/iop/toneequal.c:464
-msgid "compress shadows/highlights (gf): strong"
+msgid "compress shadows/highlights (gf): strong"
 msgstr "compresser ombres/hautes-lumières (gf) : fort"
 
 #: ../src/iop/toneequal.c:472
@@ -18877,7 +18877,7 @@ msgid "compress shadows/highlights (gf): medium"
 msgstr "compresser ombres/hautes-lumières (gf) : moyen"
 
 #: ../src/iop/toneequal.c:484
-msgid "compress shadows/highlights (eigf): soft"
+msgid "compress shadows/highlights (eigf): soft"
 msgstr "compresser ombres/hautes-lumières (eigf) : léger"
 
 #: ../src/iop/toneequal.c:488
@@ -26606,10 +26606,10 @@ msgstr "actions souris"
 #~ msgid "deblur: large blur, strength 4"
 #~ msgstr "défloutage : large, force 4"
 
-#~ msgid "compress shadows/highlights (eigf) : very strong"
+#~ msgid "compress shadows/highlights (eigf) : very strong"
 #~ msgstr "compresser ombres/hautes-lumières 'eigf) : très fort"
 
-#~ msgid "compress shadows/highlights (gf) : very strong"
+#~ msgid "compress shadows/highlights (gf) : very strong"
 #~ msgstr "compresser ombres/hautes-lumières (gf) : très fort"
 
 #~ msgid "tagged%"
