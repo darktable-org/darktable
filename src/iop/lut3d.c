@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@
 #include "win/scandir.h"
 #endif // defined (_WIN32)
 
-DT_MODULE_INTROSPECTION(3, dt_iop_lut3d_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_lut3d_params_t)
 
 #define DT_IOP_LUT3D_MAX_PATHNAME 512
 #define DT_IOP_LUT3D_MAX_LUTNAME 128
@@ -71,7 +71,8 @@ typedef enum dt_iop_lut3d_interpolation_t
 typedef struct dt_iop_lut3d_params_t
 {
   char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
-  dt_iop_lut3d_colorspace_t colorspace; // $DEFAULT: DT_IOP_SRGB $DESCRIPTION: "application color space"
+  dt_iop_lut3d_colorspace_t colorspace_in; // $DEFAULT: DT_IOP_SRGB $DESCRIPTION: "input color space"
+  dt_iop_lut3d_colorspace_t colorspace_out; // $DEFAULT: DT_IOP_SRGB $DESCRIPTION: "output color space"
   dt_iop_lut3d_interpolation_t interpolation; // $DEFAULT: DT_IOP_TETRAHEDRAL
   int nb_keypoints; // $DEFAULT: 0 >0 indicates the presence of compressed lut
   char c_clut[DT_IOP_LUT3D_MAX_KEYPOINTS*2*3];
@@ -82,7 +83,8 @@ typedef struct dt_iop_lut3d_gui_data_t
 {
   GtkWidget *hbox;
   GtkWidget *filepath;
-  GtkWidget *colorspace;
+  GtkWidget *colorspace_in;
+  GtkWidget *colorspace_out;
   GtkWidget *interpolation;
 #ifdef HAVE_GMIC
   GtkWidget *lutentry;
@@ -161,7 +163,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     typedef struct dt_iop_lut3d_params_v1_t
     {
@@ -173,14 +175,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_lut3d_params_v1_t *o = (dt_iop_lut3d_params_v1_t *)old_params;
     dt_iop_lut3d_params_t *n = (dt_iop_lut3d_params_t *)new_params;
     g_strlcpy(n->filepath, o->filepath, sizeof(n->filepath));
-    n->colorspace = o->colorspace;
+    n->colorspace_in = o->colorspace;
+    n->colorspace_out = o->colorspace;
     n->interpolation = o->interpolation;
     n->nb_keypoints = 0;
     memset(&n->c_clut, 0, sizeof(n->c_clut));
     memset(&n->lutname, 0, sizeof(n->lutname));
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
     typedef struct dt_iop_lut3d_params_v2_t
     {
@@ -195,12 +198,42 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     dt_iop_lut3d_params_v2_t *o = (dt_iop_lut3d_params_v2_t *)old_params;
     dt_iop_lut3d_params_t *n = (dt_iop_lut3d_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_lut3d_params_t));
+    g_strlcpy(n->filepath, o->filepath, sizeof(n->filepath));
+    n->colorspace_in = o->colorspace;
+    n->colorspace_out = o->colorspace;
+    n->interpolation = o->interpolation;
+    n->nb_keypoints = o->nb_keypoints;
+    memcpy(&n->c_clut, &o->c_clut, sizeof(n->c_clut));
+    memcpy(&n->lutname, &o->lutname, sizeof(n->lutname));
+    return 0;
+  }
+  if(old_version == 3 && new_version == 4)
+  {
+    typedef struct dt_iop_lut3d_params_v3_t
+    {
+      char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
+      dt_iop_lut3d_colorspace_t colorspace;
+      dt_iop_lut3d_interpolation_t interpolation;
+      int nb_keypoints; // >0 indicates the presence of compressed lut
+      char c_clut[DT_IOP_LUT3D_MAX_KEYPOINTS*2*3];
+      char lutname[DT_IOP_LUT3D_MAX_LUTNAME];
+    } dt_iop_lut3d_params_v3_t;
+
+    dt_iop_lut3d_params_v3_t *o = (dt_iop_lut3d_params_v3_t *)old_params;
+    dt_iop_lut3d_params_t *n = (dt_iop_lut3d_params_t *)new_params;
+    g_strlcpy(n->filepath, o->filepath, sizeof(n->filepath));
+    n->colorspace_in = o->colorspace;
+    n->colorspace_out = o->colorspace;
+    n->interpolation = o->interpolation;
+    n->nb_keypoints = o->nb_keypoints;
+    memcpy(&n->c_clut, &o->c_clut, sizeof(n->c_clut));
+    memcpy(&n->lutname, &o->lutname, sizeof(n->lutname));
     return 0;
   }
 
   return 1;
 }
+
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
 void correct_pixel_trilinear(const float *const in, float *const out,
                              const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
@@ -439,6 +472,7 @@ void correct_pixel_pyramid(const float *const in, float *const out,
   }
 }
 
+#ifdef HAVE_GMIC
 void get_cache_filename(const char *const lutname, char *const cache_filename)
 {
   char *cache_dir = g_build_filename(g_get_user_cache_dir(), "gmic", NULL);
@@ -449,7 +483,6 @@ void get_cache_filename(const char *const lutname, char *const cache_filename)
   g_free(cache_file);
 }
 
-#ifdef HAVE_GMIC
 uint8_t calculate_clut_compressed(dt_iop_lut3d_params_t *const p, const char *const filepath, float **clut)
 {
   uint8_t level = DT_IOP_LUT3D_CLUT_LEVEL;
@@ -979,17 +1012,30 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int kernel = (d->params.interpolation == DT_IOP_TETRAHEDRAL) ? gd->kernel_lut3d_tetrahedral
     : (d->params.interpolation == DT_IOP_TRILINEAR) ? gd->kernel_lut3d_trilinear
     : gd->kernel_lut3d_pyramid;
-  const int colorspace
-    = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
-    : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
-    : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
-    : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
+  const int colorspace_in
+    = (d->params.colorspace_in == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
+    : (d->params.colorspace_in == DT_IOP_REC709) ? DT_COLORSPACE_REC709
+    : (d->params.colorspace_in == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
+    : (d->params.colorspace_in == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
-  const dt_iop_order_iccprofile_info_t *const lut_profile
-    = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
+  const int colorspace_out
+    = (d->params.colorspace_out == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
+    : (d->params.colorspace_out == DT_IOP_REC709) ? DT_COLORSPACE_REC709
+    : (d->params.colorspace_out == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
+    : (d->params.colorspace_out == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
+    : DT_COLORSPACE_LIN_REC2020;
+  const dt_iop_order_iccprofile_info_t *const lut_profile_in
+    = dt_ioppr_add_profile_info_to_list(self->dev, colorspace_in, "", INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const lut_profile_out
+    = dt_ioppr_add_profile_info_to_list(self->dev, colorspace_out, "", INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
-  gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
+  gboolean transform_in
+      = (work_profile != NULL && lut_profile_in != NULL && (work_profile->type != lut_profile_in->type)) ? TRUE
+                                                                                                         : FALSE;
+  const gboolean transform_out
+      = (work_profile != NULL && lut_profile_out != NULL && (work_profile->type != lut_profile_out->type)) ? TRUE
+                                                                                                           : FALSE;
   cl_mem clut_cl = NULL;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -1005,14 +1051,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
-    if (transform)
+    if (transform_in)
     {
       const int success = dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_out, width, height,
-        work_profile, lut_profile, "work profile to LUT profile");
+        work_profile, lut_profile_in, "work profile to LUT input profile");
       if (!success)
-       transform = FALSE;
+       transform_in = FALSE;
     }
-    if (transform)
+    if (transform_in)
       dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_out);
     else
       dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -1022,9 +1068,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&clut_cl);
     dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&level);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-    if (transform)
+    if (transform_out)
       dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,
-        lut_profile, work_profile, "LUT profile to work profile");
+        lut_profile_out, work_profile, "LUT output profile to work profile");
   }
   else
   { // no lut: identity kernel
@@ -1058,43 +1104,46 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const clut = (float *)d->clut;
   const uint16_t level = d->level;
   const int interpolation = d->params.interpolation;
-  const int colorspace
-    = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
-    : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
-    : (d->params.colorspace == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
-    : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
+  const int colorspace_in
+    = (d->params.colorspace_in == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
+    : (d->params.colorspace_in == DT_IOP_REC709) ? DT_COLORSPACE_REC709
+    : (d->params.colorspace_in == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
+    : (d->params.colorspace_in == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
-  const dt_iop_order_iccprofile_info_t *const lut_profile
-    = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
+  const int colorspace_out
+    = (d->params.colorspace_out == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
+    : (d->params.colorspace_out == DT_IOP_REC709) ? DT_COLORSPACE_REC709
+    : (d->params.colorspace_out == DT_IOP_ARGB) ? DT_COLORSPACE_ADOBERGB
+    : (d->params.colorspace_out == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
+    : DT_COLORSPACE_LIN_REC2020;
+  const dt_iop_order_iccprofile_info_t *const lut_profile_in
+    = dt_ioppr_add_profile_info_to_list(self->dev, colorspace_in, "", INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const lut_profile_out
+    = dt_ioppr_add_profile_info_to_list(self->dev, colorspace_out, "", INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
-  const gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
-  if (clut)
+  const gboolean transform_in
+      = (work_profile != NULL && lut_profile_in != NULL && (work_profile->type != lut_profile_in->type)) ? TRUE
+                                                                                                         : FALSE;
+  const gboolean transform_out
+      = (work_profile != NULL && lut_profile_out != NULL && (work_profile->type != lut_profile_out->type)) ? TRUE
+                                                                                                           : FALSE;
+  if(clut)
   {
-    if (transform)
-    {
-      dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height,
-        work_profile, lut_profile, "work profile to LUT profile");
-      if (interpolation == DT_IOP_TETRAHEDRAL)
-        correct_pixel_tetrahedral(obuf, obuf, (size_t)width * height, clut, level);
-      else if (interpolation == DT_IOP_TRILINEAR)
-        correct_pixel_trilinear(obuf, obuf, (size_t)width * height, clut, level);
-      else
-        correct_pixel_pyramid(obuf, obuf, (size_t)width * height, clut, level);
-      dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, width, height,
-        lut_profile, work_profile, "LUT profile to work profile");
-    }
+    if(transform_in)
+      dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height, work_profile, lut_profile_in,
+                                              "work profile to LUT input profile");
+    if(interpolation == DT_IOP_TETRAHEDRAL)
+      correct_pixel_tetrahedral(transform_in ? obuf : ibuf, obuf, (size_t)width * height, clut, level);
+    else if(interpolation == DT_IOP_TRILINEAR)
+      correct_pixel_trilinear(transform_in ? obuf : ibuf, obuf, (size_t)width * height, clut, level);
     else
-    {
-      if (interpolation == DT_IOP_TETRAHEDRAL)
-        correct_pixel_tetrahedral(ibuf, obuf, (size_t)width * height, clut, level);
-      else if (interpolation == DT_IOP_TRILINEAR)
-        correct_pixel_trilinear(ibuf, obuf, (size_t)width * height, clut, level);
-      else
-        correct_pixel_pyramid(ibuf, obuf, (size_t)width * height, clut, level);
-    }
+      correct_pixel_pyramid(transform_in ? obuf : ibuf, obuf, (size_t)width * height, clut, level);
+    if(transform_out)
+      dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, width, height, lut_profile_out, work_profile,
+                                              "LUT output profile to work profile");
   }
-  else  // no clut
+  else // no clut
   {
     dt_iop_image_copy_by_size(obuf, ibuf, width, height, ch);
   }
@@ -1610,11 +1659,13 @@ static void _show_hide_colorspace(dt_iop_module_t *self)
   const int order_colorout = dt_ioppr_get_iop_order(iop_order_list, "colorout", -1);
   if(order_lut3d < order_colorin || order_lut3d > order_colorout)
   {
-    gtk_widget_hide(g->colorspace);
+    gtk_widget_hide(g->colorspace_in);
+    gtk_widget_hide(g->colorspace_out);
   }
   else
   {
-    gtk_widget_show(g->colorspace);
+    gtk_widget_show(g->colorspace_in);
+    gtk_widget_show(g->colorspace_out);
   }
 }
 
@@ -1724,8 +1775,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start((GtkBox *)self->widget, sw , TRUE, TRUE, 0);
 #endif // HAVE_GMIC
 
-  g->colorspace = dt_bauhaus_combobox_from_params(self, "colorspace");
-  gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied"));
+  g->colorspace_in = dt_bauhaus_combobox_from_params(self, "colorspace_in");
+  gtk_widget_set_tooltip_text(g->colorspace_in, _("select the color space in which the LUT takes its input"));
+
+  g->colorspace_out = dt_bauhaus_combobox_from_params(self, "colorspace_out");
+  gtk_widget_set_tooltip_text(g->colorspace_out, _("select the color space in which the LUT provides its output"));
 
   g->interpolation = dt_bauhaus_combobox_from_params(self, N_("interpolation"));
   gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method"));
@@ -1746,4 +1800,3 @@ void gui_cleanup(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
