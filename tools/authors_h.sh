@@ -61,7 +61,7 @@ while IFS="" read -r p || [ -n "$p" ]; do
 
       SECTIONS=$((SECTIONS+1))
       # only select short name
-      SECTION=$(echo "${BASH_REMATCH[1]}" | sed 's/Sub-module //' | sed 's/ (.*)//')
+      SECTION=$(echo "${BASH_REMATCH[1]}" | sed 's/Sub-module \(.\)/\u\1/' | sed 's/ (.*)//')
       CONTENT=""
   else
       # general thanks for previous contributors are hardcoded
