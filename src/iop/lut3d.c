@@ -1513,7 +1513,7 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
               ? g_build_filename(relativepath, file, NULL)
               : g_strdup(file);
       filepath_set_unix_separator(ofilepath);
-      dt_bauhaus_combobox_add(g->filepath, ofilepath);
+      dt_bauhaus_combobox_add_aligned(g->filepath, ofilepath, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
       g_free(ofilepath);
       free(entries[i]);
     }
@@ -1522,7 +1522,7 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
     if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
     { // file may have disappeared - show it
       char *invalidfilepath = g_strconcat(invalid_filepath_prefix, filepath, NULL);
-      dt_bauhaus_combobox_add(g->filepath, invalidfilepath);
+      dt_bauhaus_combobox_add_aligned(g->filepath, invalidfilepath, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
       dt_bauhaus_combobox_set_from_text(g->filepath, invalidfilepath);
       g_free(invalidfilepath);
     }
