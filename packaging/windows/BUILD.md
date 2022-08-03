@@ -56,8 +56,8 @@ How to make a darktable Windows installer (x64 only):
         ```
     * If you have to set them manually you can do so by setting the variables in your `~/.bash_profile`. Example:
         ```bash
-        export CAMLIBS="/UCRT64/lib/libgphoto2/2.5.30/"
-        export IOLIBS="/UCRT64/lib/libgphoto2_port/0.12.1/"
+        export CAMLIBS="/ucrt64/lib/libgphoto2/2.5.30/"
+        export IOLIBS="/ucrt64/lib/libgphoto2_port/0.12.1/"
         ```
 
     Also use this program to install the USB driver on Windows for your camera:
@@ -68,7 +68,7 @@ How to make a darktable Windows installer (x64 only):
 * Modify the `.bash_profile` file in your `$HOME` directory and add the following lines:
     ```bash
     # Added as per http://wiki.gimp.org/wiki/Hacking:Building/Windows
-    export PREFIX="/UCRT64"
+    export PREFIX="/ucrt64"
     export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
     export PATH="$PREFIX/bin:$PATH"
     ```
