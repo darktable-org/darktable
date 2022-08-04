@@ -82,10 +82,11 @@ static size_t plane_size(size_t width, size_t height)
 
 typedef enum dt_iop_highlights_plane_t
 {
-  DT_IO_PLANE_RED = 0,          // $DESCRIPTION: "red"
-  DT_IO_PLANE_GREEN1 = 1,       // $DESCRIPTION: "green1"
-  DT_IO_PLANE_GREEN2 = 2,       // $DESCRIPTION: "green2"
-  DT_IO_PLANE_BLUE = 3,         // $DESCRIPTION: "blue"
+  DT_IO_PLANE_RED = 0,
+  DT_IO_PLANE_GREEN1 = 1,
+  DT_IO_PLANE_GREEN2 = 2,
+  DT_IO_PLANE_BLUE = 3,
+  DT_IO_PLANNE_ALL = 4
 } dt_iop_highlights_plane_t;
 
 #include "iop/segmentation.h"
@@ -264,6 +265,8 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   const float clipval = 0.987f * data->clip;
   const int combining = (int) data->combine;
 
+  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+
   const int width = roi_out->width;
   const int height = roi_out->height;
 
@@ -432,8 +435,6 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   for(int p = 0; p < HL_SENSOR_PLANES; p++)
     calc_plane_candidates(plane[p], cmask[p], refavg[p], &isegments[p], pwidth, pheight, coeffs[p], 1.0f - sqf(data->candidating));
 
-  dt_get_times(&time2);
-
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   dt_omp_firstprivate(plane, refavg, isegments, cmask, coeffs) \
@@ -544,10 +545,11 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
       max_correction = fmaxf(max_correction, ratio);
     }
   }
+  dt_get_times(&time2);
 
   dt_get_times(&time3);
 
-  if(vmode)
+  if(vmode && fullpipe)
   {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -566,17 +568,17 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
         const gboolean isegmented = ((pid > 1) && (pid < isegments[p].nr+2));
         const gboolean badseg = isegmented && (isegments[p].ref[pid] == 0);
 
-        out[o] = 0.2f * in[o];
-        if((vmode & 1) && isegmented && !iclipped) out[o] = 1.0f;
-        if((vmode & 2) && isegmented && badseg)    out[o] = 1.0f;     
-      }
+        out[o] = 0.1f * in[o];
+        if((vmode == 1) && isegmented && !iclipped)      out[o] = 1.0f;
+        else if((vmode == 2) && isegmented && badseg)    out[o] = 1.0f;     
+       }
     }
   }
 
   for(int k = 0; k < 3; k++)
     piece->pipe->dsc.processed_maximum[k] *= max_correction;
 
-  dt_print(DT_DEBUG_PERF, "[Highlight recovery] %.1fMpix, max=%1.2f, combine=%i, segs %ir %ig %ig %ib. Times: init %.3fs, segmentize %.3fs, paint %.3fs\n",
+  dt_print(DT_DEBUG_PERF, "[Highlight recovery] %.1fMpix, max=%1.2f, combine=%i, segs %ir %ig %ig %ib. Times: init %.3fs, segmentize %.3fs, reconstruct %.3fs\n",
        (float) (width * height) / 1.0e6f, max_correction, combining,
        isegments[0].nr, isegments[1].nr, isegments[2].nr, isegments[3].nr, 
        time1.clock - time0.clock, time2.clock - time1.clock, time3.clock - time2.clock);
