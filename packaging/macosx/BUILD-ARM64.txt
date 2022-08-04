@@ -1,0 +1,53 @@
+How to make disk image with darktable application bundle (64 bit ARM only):
+
+1). Install MacPorts (instructions and prerequisites can be found on official website), please use default installation path (/opt/local).
+    They will need some tuning, so before you install anything add this line to /opt/local/etc/macports/variants.conf:
+     +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
+    You will also need to add patches for exiv2 and gnutls
+    (exiv2 patch enables CR3 support, gnutls patch fixes certificate storage):
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/graphics
+     $ cp -R "$(port dir gnutls)" ~/ports/devel
+     $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.patch
+     $ cp -R "$(port dir exiv2)" ~/ports/graphics
+     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/exiv2-BMFF.patch | patch -d ~/ports -p0
+    then append this line:
+     patchfiles-append patch.diff
+    to ~/ports/*/*/Portfile files you just copied (except for exiv2) and run:
+     $ portindex ~/ports
+    Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
+    Install required dependencies:
+     $ sudo port install exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic-lib libheif portmidi libsdl2
+    Clone darktable git repository (in this example into ~/src):
+     $ mkdir ~/src
+     $ cd ~/src
+     $ git clone https://github.com/darktable-org/darktable.git
+     $ cd darktable
+     $ git submodule init
+     $ git config submodule.src/tests/integration.update none
+     $ git submodule update
+    Finally build and install darktable:
+     $ mkdir build
+     $ cd build
+     $ cmake .. -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=OFF -DBUILD_SSE2_CODEPATHS=OFF
+     $ make
+     $ sudo cmake --install .
+    After this darktable will be installed in /usr/local directory and can be started by typing the following command in terminal:
+     $ GSETTINGS_SCHEMA_DIR=/opt/local/share/glib-2.0/schemas/ XDG_DATA_DIRS=/opt/local/share darktable
+
+2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
+     $ cd ~/src
+     $ curl -LO https://download.gnome.org/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
+     $ tar -xf gtk-mac-bundler-0.7.4.tar.xz
+     $ cd gtk-mac-bundler-0.7.4
+     $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.7.4.patch
+     $ make install
+
+3). Now preparation is done, run image creating script, it should create darktable-<VERSION>.dmg in current (packaging/macosx) directory:
+     $ cd ~/src/darktable/packaging/macosx
+     $ ./make-app-bundle
+    If you have an Apple Developer ID Application certificate and want to produce signed app then replace the previous command with this one:
+     $ CODECERT="Developer ID Application" APPLEID="developer@apple.id" APPLEPW="@keychain:DevIDPassword" ./make-app-bundle
+    You may have to provide more specific name for a certificate if you have several matching in your keychain.
+
+4). Assuming that darktable is the only program installed into /usr/local you should remove the install directory before doing next build:
+     $ sudo rm -Rf /usr/local
