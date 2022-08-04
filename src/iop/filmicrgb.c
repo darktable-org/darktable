@@ -4127,7 +4127,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     {
       // we are over the graph area
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("use the parameters below to set the nodes.\n"
-                                                         "the bright curve is the filmic tone mapping curve\n"
+                                                         "the bright curve is the filmic tone mapping curve.\n"
                                                          "the dark curve is the desaturation curve."));
     }
     else if(g->active_button == DT_FILMIC_GUI_BUTTON_LABELS)

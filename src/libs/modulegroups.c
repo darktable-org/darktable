@@ -2793,7 +2793,7 @@ static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *s
       (GTK_LABEL(d->deprecated),
        _("the following modules are deprecated because they have internal design mistakes"
          " which can't be solved and alternative modules which solve them.\n"
-         " they will be removed for new edits in the next release."));
+         "they will be removed for new edits in the next release."));
   }
 
 }

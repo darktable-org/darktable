@@ -2531,7 +2531,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *bnew = dt_action_button_new(self, N_("new image area"), _page_new_area_clicked, self,
                                          _("add a new image area on the page\n"
                                            "click and drag on the page to place the area\n"
-                                           "drag&drop image from film strip on it"), 0, 0);
+                                           "drag and drop image from film strip on it"), 0, 0);
 
   d->del = dt_action_button_new(self, N_("delete image area"), _page_delete_area_clicked, self,
                                 _("delete the currently selected image area"), 0, 0);

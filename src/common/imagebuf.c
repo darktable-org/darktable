@@ -131,7 +131,7 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
       dt_iop_set_module_trouble_message(module, _("insufficient memory"),
                                         _("this module was unable to allocate\n"
                                           "all of the memory required to process\n"
-                                          "the image.  some or all processing\n"
+                                          "the image. some or all processing\n"
                                           "has been skipped."),
                                         "unable to allocate working memory");
   }

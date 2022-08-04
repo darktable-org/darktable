@@ -334,7 +334,7 @@ const char *name()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply a view transform based on personal or camera manufacturer look,\n"
+  return dt_iop_set_description(self, _("apply a view transform based on personal or camera manufacturer look\n"
                                         "for corrective purposes, to prepare images for display"),
                                       _("corrective"),
                                       _("linear, RGB, display-referred"),

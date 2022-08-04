@@ -1896,7 +1896,7 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG (dialog)));
-  GtkWidget *label = gtk_label_new(_("restore default shortcuts\n  or as at startup\n  or when the configuration dialog was opened\n"));
+  GtkWidget *label = gtk_label_new(_("restore default shortcuts\n  either as at startup\n  or when the configuration dialog was opened\n"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_container_add(content_area, label);
   GtkWidget *clear = gtk_check_button_new_with_label(_("clear all newer shortcuts\n(instead of just restoring changed ones)"));

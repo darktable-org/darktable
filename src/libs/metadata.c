@@ -711,7 +711,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
     gtk_widget_set_tooltip_text(GTK_WIDGET(label),
               _("metadata text. ctrl-wheel scroll to resize the text box"
-              "\n ctrl-enter inserts a new line (caution, may not be compatible with standard metadata)."
+              "\nctrl-enter inserts a new line (caution, may not be compatible with standard metadata)."
               "\nif <leave unchanged> selected images have different metadata."
               "\nin that case, right-click gives the possibility to choose one of them."
               "\npress escape to exit the popup window"));

@@ -360,9 +360,9 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_widget_set_label(gui->hint, NULL, N_("image hint"));
   gtk_widget_set_tooltip_text(gui->hint,
                _("image characteristics hint for the underlying encoder.\n"
-               "picture : digital picture, like portrait, inner shot\n"
-               "photo   : outdoor photograph, with natural lighting\n"
-               "graphic : discrete tone image (graph, map-tile etc)"));
+               "picture: digital picture, like portrait, inner shot\n"
+               "photo: outdoor photograph, with natural lighting\n"
+               "graphic: discrete tone image (graph, map-tile etc)"));
   dt_bauhaus_combobox_add(gui->hint, _("default"));
   dt_bauhaus_combobox_add(gui->hint, _("picture"));
   dt_bauhaus_combobox_add(gui->hint, _("photo"));

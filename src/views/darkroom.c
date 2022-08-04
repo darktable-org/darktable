@@ -2383,7 +2383,7 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_slider_set_format(lower, _(" EV"));
     dt_bauhaus_widget_set_label(lower, N_("overexposed"), N_("lower threshold"));
     gtk_widget_set_tooltip_text(lower, _("clipping threshold for the black point,\n"
-                                         "in EV, relatively to white (0 EV).\n"
+                                         "in EV, relative to white (0 EV).\n"
                                          "8 bits sRGB clips blacks at -12.69 EV,\n"
                                          "8 bits Adobe RGB clips blacks at -19.79 EV,\n"
                                          "16 bits sRGB clips blacks at -20.69 EV,\n"

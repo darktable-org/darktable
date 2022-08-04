@@ -996,7 +996,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   {
     if(sel_count == 0)
     {
-      dt_control_log(_("no image selected !"));
+      dt_control_log(_("no image selected!"));
       first_id = -1;
     }
     table->navigate_inside_selection = TRUE;
