@@ -1333,9 +1333,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         // clang-format off
         query = g_strdup_printf("SELECT "
                                 " CASE WHEN mi.longitude IS NULL"
-                                "           OR mi.latitude IS null THEN \'%s\'"
-                                "      ELSE CASE WHEN ta.imgid IS NULL THEN \'%s\'"
-                                "                ELSE \'%s\' || ta.tagname"
+                                "           OR mi.latitude IS null THEN '%s'"
+                                "      ELSE CASE WHEN ta.imgid IS NULL THEN '%s'"
+                                "                ELSE '%s' || ta.tagname"
                                 "                END"
                                 "      END AS name,"
                                 " ta.tagid AS tag_id, COUNT(*) AS count"

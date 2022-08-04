@@ -431,7 +431,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label),
                               _("selected metadata are imported from image and override the default value"
-                                "\n this drives also the \'look for updated xmp files\' and \'load sidecar file\' actions"
+                                "\n this drives also the 'look for updated xmp files' and 'load sidecar file' actions"
                                 "\n CAUTION: not selected metadata are cleaned up when xmp file is updated"
                               ));
   gtk_grid_attach(GTK_GRID(grid), label, 2, DT_META_META_HEADER, 1, 1);

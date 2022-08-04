@@ -383,7 +383,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
                 _("list of calculated metadata\n"
                 "click on '+' button to select and add new metadata\n"
                 "if formula is empty, the corresponding metadata is removed from exported file,\n"
-                "if formula is \'=\', the EXIF metadata is exported even if EXIF data are disabled\n"
+                "if formula is '=', the EXIF metadata is exported even if EXIF data are disabled\n"
                 "otherwise the corresponding metadata is calculated and added to exported file\n"
                 "click on formula cell to edit\n"
                 "type '$(' to activate the completion and see the list of variables"));

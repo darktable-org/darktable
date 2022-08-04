@@ -607,7 +607,7 @@ static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
       }
       else
       {
-        dt_control_log(_("location name \'%s\' already exists"), new_path);
+        dt_control_log(_("location name '%s' already exists"), new_path);
         canceled = TRUE;
       }
       g_free(new_path);
@@ -965,7 +965,7 @@ void gui_init(dt_lib_module_t *self)
                                 "\n - click inside the shape and drag it to change its position"
                                 "\n - ctrl-click to move an image from inside the location"
                                 "\nctrl-click to edit a location name"
-                                "\n - a pipe \'|\' symbol breaks the name into several levels"
+                                "\n - a pipe '|' symbol breaks the name into several levels"
                                 "\n - to remove a group of locations clear its name"
                                 "\n - press enter to validate the new name, escape to cancel the edit"
                                 "\nright-click for other actions: delete location and go to collection,"
@@ -985,7 +985,7 @@ void gui_init(dt_lib_module_t *self)
   d->shape_button_handler = g_signal_connect(G_OBJECT(d->shape_button), "clicked",
                                              G_CALLBACK(_shape_button_clicked), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->shape_button ),
-                              _("select the shape of the location\'s limits on the map, circle or rectangle"
+                              _("select the shape of the location's limits on the map, circle or rectangle"
                                 "\nor even polygon if available (select first a polygon place in 'find location' module)"));
 
   d->new_button = dt_action_button_new(self, N_("new location"), _new_button_clicked, self,

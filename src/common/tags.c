@@ -1105,7 +1105,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
                             "    SELECT tn.id AS tagid2 FROM data.tags AS tn"
                             "    JOIN memory.taglist AS t02"
                             "    ON t02.id = tn.id"
-                            "    WHERE tn.name IN (\'%s\')"
+                            "    WHERE tn.name IN ('%s')"
                             // reject tags attached on all selected images and keep the required number
                             "      AND t02.count2 != %d LIMIT %d)) "
                             "LEFT JOIN memory.taglist AS t21 "
@@ -1121,7 +1121,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
                             "FROM data.tags AS tn "
                             "JOIN memory.taglist AS t02 "
                             "ON t02.id = tn.id "
-                            "WHERE tn.name IN (\'%s\')"
+                            "WHERE tn.name IN ('%s')"
                             // reject tags attached on all selected images and keep the required number
                             "  AND t02.count2 != %d LIMIT %d",
                             slist, nb_selected, nb_recent);
