@@ -385,8 +385,15 @@ void dt_image_transform_erode(int *img, const int width, const int height, const
 void dt_image_transform_closing(int *img, const int width, const int height, const int radius, const int border)
 {
   if(radius < 1) return;
-  dt_image_transform_dilate(img, width, height, radius, border);
-  dt_image_transform_erode(img, width, height, radius, border);
+  int *tmp = dt_alloc_align(64, width * height * sizeof(int));
+  if(!tmp) return;
+
+  _intimage_borderfill(img, width, height, 0, border);
+  _dilating(img, tmp, width, height, border, radius);
+ 
+  _intimage_borderfill(tmp, width, height, 1, border);
+  _eroding(tmp, img, width, height, border, radius);
+  dt_free_align(tmp);
 }
 
 static int floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, const int w, const int h, const int id, dt_ff_stack_t *stack)
