@@ -364,7 +364,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   pair->pos = num;
   d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
-  free(pair);
 
   /* also export thumbnail: */
   // write with reduced resolution:
