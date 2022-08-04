@@ -6,13 +6,11 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      macosx_deployment_target 10.14
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
-    You will also need to add patches for exiv2, gnutls and gtk-osx-application
-    (exiv2 patch enables CR3 support, gnutls patch fixes certificate storage, gtk-osx-application patch fixes a crash):
-     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/devel/gtk-osx-application/files ~/ports/graphics
+    You will also need to add patches for exiv2 and gnutls
+    (exiv2 patch enables CR3 support, gnutls patch fixes certificate storage):
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/graphics
      $ cp -R "$(port dir gnutls)" ~/ports/devel
      $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.patch
-     $ cp -R "$(port dir gtk-osx-application)" ~/ports/devel
-     $ curl -Lo ~/ports/devel/gtk-osx-application/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gtk-osx-application-gettext.patch
      $ cp -R "$(port dir exiv2)" ~/ports/graphics
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/exiv2-BMFF.patch | patch -d ~/ports -p0
     then append this line:
