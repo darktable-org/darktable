@@ -343,7 +343,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     // g_list_free_full(res_subj, &g_free);
     // g_free(tags);
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
-    free(pair);
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
