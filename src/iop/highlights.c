@@ -44,7 +44,6 @@
 
 #define MAX_NUM_SCALES 10
 
-
 // Set to one to output intermediate image steps as PFM in /tmp
 #define DEBUG_DUMP_PFM 0
 
@@ -69,7 +68,7 @@ typedef enum dt_iop_highlights_mode_t
   DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
   DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
   DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
-  DT_IOP_HIGHLIGHTS_RECOVERY = 4, // $DESCRIPTION: "highlights recovery"
+  DT_IOP_HIGHLIGHTS_RECOVERY = 4, // $DESCRIPTION: "segmentation based"
 } dt_iop_highlights_mode_t;
 
 typedef enum dt_atrous_wavelets_scales_t
@@ -99,9 +98,9 @@ typedef struct dt_iop_highlights_params_t
   float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
   int iterations; // $MIN: 1 $MAX: 64 $DEFAULT: 1 $DESCRIPTION: "iterations"
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
-  float candidating;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "candidates"
-  float combine;        // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
-  int debugmode;
+  float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidates"
+  float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
+  int reconstruct;
   // params of v4
   float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
 } dt_iop_highlights_params_t;
@@ -188,7 +187,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.0f;
     n->candidating = 0.4f;
     n->combine = 2.f;
-    n->debugmode = 0;
+    n->reconstruct = 0;
     n->iterations = 1;
     n->scales = 5;
     n->solid_color = 0.f;
@@ -203,7 +202,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
         dt_atrous_wavelets_scales_t scales;
         float candidating;
         float combine;
-        int debugmode;
+        int reconstruct;
       + params of v4
     */
     memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
@@ -211,7 +210,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.0f;
     n->candidating = 0.4f;
     n->combine = 2.f;
-    n->debugmode = 0;
+    n->reconstruct = 0;
     n->iterations = 1;
     n->scales = 5;
     n->solid_color = 0.f;
@@ -250,7 +249,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? (g->show_visualize || g->show_borders || g->show_bads) && fullpipe : FALSE;
+  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_xtrans = NULL;
@@ -2017,7 +2016,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case DT_IOP_HIGHLIGHTS_RECOVERY:
     {
       int vmode = 0;
-      if((g != NULL) && fullpipe) vmode = ((g->show_borders) ? 1 : 0) | ((g->show_bads) ? 2 : 0);
+      if(g != NULL) vmode = ((g->show_borders) ? 1 : 0) | ((g->show_bads) ? 2 : 0);
 
       process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data, vmode);
       if(vmode)
@@ -2308,7 +2307,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->combine), "quad-pressed", G_CALLBACK(_borders_callback), self);
 
   g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
-  gtk_widget_set_tooltip_text(g->candidating, _("dealing with isolated segments in dark regions.\n"
+  gtk_widget_set_tooltip_text(g->candidating, _("dealing with isolated clipped segments in dark regions.\n"
                                                    "increase to favour candidates found in segmentation analysis,\n"
                                                    "decrease for simple inpainting.\n"));
   dt_bauhaus_slider_set_format(g->candidating, "%");
