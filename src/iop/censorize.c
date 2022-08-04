@@ -47,10 +47,10 @@ DT_MODULE_INTROSPECTION(1, dt_iop_censorize_params_t)
 
 typedef struct dt_iop_censorize_params_t
 {
-  float radius_1;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0  $DESCRIPTION: "input blur radius"
-  float pixelate;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0 $DESCRIPTION: "pixellation radius"
-  float radius_2;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0  $DESCRIPTION: "output blur radius"
-  float noise;                 // $MIN: 0.0 $MAX: 1.0   $DEFAULT: 0.0   $DESCRIPTION: "noise level"
+  float radius_1;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0  $DESCRIPTION: "Input blur radius"
+  float pixelate;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0 $DESCRIPTION: "Pixellation radius"
+  float radius_2;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 0.0  $DESCRIPTION: "Output blur radius"
+  float noise;                 // $MIN: 0.0 $MAX: 1.0   $DEFAULT: 0.0   $DESCRIPTION: "Noise level"
 } dt_iop_censorize_params_t;
 
 
@@ -74,16 +74,16 @@ typedef struct point_t
 const char *
 name()
 {
-  return _("censorize");
+  return _("Censorize");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("censorize license plates and body parts for privacy"),
-                                      _("creative"),
-                                      _("linear or non-linear, RGB, scene-referred"),
-                                      _("frequential, RGB"),
-                                      _("special, RGB, scene-referred"));
+  return dt_iop_set_description(self, _("Censorize license plates and body parts for privacy"),
+                                      _("Creative"),
+                                      _("Linear or non-linear, RGB, scene-referred"),
+                                      _("Frequential, RGB"),
+                                      _("Special, RGB, scene-referred"));
 }
 
 int flags()
@@ -416,18 +416,18 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_censorize_gui_data_t *g = IOP_GUI_ALLOC(censorize);
 
-  g->radius_1 = dt_bauhaus_slider_from_params(self, N_("radius_1"));
+  g->radius_1 = dt_bauhaus_slider_from_params(self, N_("Radius_1"));
 
-  g->pixelate = dt_bauhaus_slider_from_params(self, N_("pixelate"));
+  g->pixelate = dt_bauhaus_slider_from_params(self, N_("Pixelate"));
 
-  g->radius_2 = dt_bauhaus_slider_from_params(self, N_("radius_2"));
+  g->radius_2 = dt_bauhaus_slider_from_params(self, N_("Radius_2"));
 
-  g->noise = dt_bauhaus_slider_from_params(self, N_("noise"));
+  g->noise = dt_bauhaus_slider_from_params(self, N_("Noise"));
 
-  gtk_widget_set_tooltip_text(g->radius_1, _("radius of gaussian blur before pixellation"));
-  gtk_widget_set_tooltip_text(g->radius_2, _("radius of gaussian blur after pixellation"));
-  gtk_widget_set_tooltip_text(g->pixelate, _("radius of the intermediate pixellation"));
-  gtk_widget_set_tooltip_text(g->noise, _("amount of noise to add at the end"));
+  gtk_widget_set_tooltip_text(g->radius_1, _("Radius of gaussian blur before pixellation"));
+  gtk_widget_set_tooltip_text(g->radius_2, _("Radius of gaussian blur after pixellation"));
+  gtk_widget_set_tooltip_text(g->pixelate, _("Radius of the intermediate pixellation"));
+  gtk_widget_set_tooltip_text(g->noise, _("Amount of noise to add at the end"));
 }
 
 // clang-format off

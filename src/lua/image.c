@@ -119,7 +119,7 @@ static int generate_cache(lua_State *L)
       {
         if(g_mkdir_with_parents(dirname, 0750))
         {
-          fprintf(stderr, _("could not create directory '%s'!\n"), dirname);
+          fprintf(stderr, _("Could not create directory '%s'!\n"), dirname);
           return 1;
         }
       }

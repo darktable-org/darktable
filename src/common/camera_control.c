@@ -170,8 +170,8 @@ static void _error_func_dispatch25(GPContext *context, const char *text, void *d
     {
       dt_camera_t *cam = (dt_camera_t *)ci->data;
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] PTP error `%s' for camera %s on port %s\n", text, cam->model, cam->port);
-      dt_control_log(_("camera `%s' on port `%s' error %s\n"
-                       "\nmake sure your camera allows access and is not mounted otherwise"), cam->model, cam->port, text);
+      dt_control_log(_("Camera `%s' on port `%s' error %s\n"
+                       "\nMake sure your camera allows access and is not mounted otherwise"), cam->model, cam->port, text);
       cam->ptperror = TRUE;
     }
 
@@ -852,7 +852,7 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
           {
             dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to initialize %s on port %s, likely "
                         "causes are: locked by another application, no access to udev etc.\n", camera->model, camera->port);
-            dt_control_log(_("failed to initialize `%s' on port `%s', likely "
+            dt_control_log(_("Failed to initialize `%s' on port `%s', likely "
                         "causes are: locked by another application, no access to devices etc"), camera->model, camera->port);
             g_free(camera);
             cam->used = TRUE;
@@ -913,15 +913,15 @@ static gboolean dt_camctl_update_cameras(const dt_camctl_t *c)
         dt_camera_t *oldcam = (dt_camera_t *)citem->data;
         camctl->cameras = citem = g_list_delete_link(c->cameras, citem);
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] ERROR: %s on port %s disconnected while mounted\n", cam->model, cam->port);
-        dt_control_log(_("camera `%s' on port `%s' disconnected while mounted"), cam->model, cam->port);
+        dt_control_log(_("Camera `%s' on port `%s' disconnected while mounted"), cam->model, cam->port);
         dt_camctl_camera_destroy_struct(oldcam);
         changed_camera = TRUE;
       }
       else if((cam->ptperror) || (cam->unmount))
       {
         if(cam->ptperror)
-          dt_control_log(_("camera `%s' on port `%s' needs to be remounted\n"
-                         "make sure it allows access and is not mounted otherwise"), cam->model, cam->port);
+          dt_control_log(_("Camera `%s' on port `%s' needs to be remounted\n"
+                         "Make sure it allows access and is not mounted otherwise"), cam->model, cam->port);
 
         dt_camera_unused_t *unused_camera = g_malloc0(sizeof(dt_camera_unused_t));
         unused_camera->model = g_strdup(cam->model);

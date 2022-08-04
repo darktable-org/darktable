@@ -830,7 +830,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   return;
 
 error:
-  dt_control_log(_("tiling failed for module '%s'. output might be garbled."), self->op);
+  dt_control_log(_("Tiling failed for module '%s'. Output might be garbled."), self->op);
 // fall through
 
 fallback:
@@ -1164,7 +1164,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   return;
 
 error:
-  dt_control_log(_("tiling failed for module '%s'. output might be garbled."), self->op);
+  dt_control_log(_("Tiling failed for module '%s'. Output might be garbled."), self->op);
 // fall through
 
 fallback:

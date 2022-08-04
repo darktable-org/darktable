@@ -76,16 +76,16 @@ typedef struct dt_iop_colisa_global_data_t
 
 const char *name()
 {
-  return _("contrast brightness saturation");
+  return _("Contrast brightness saturation");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("adjust the look of the image"),
-                                      _("creative"),
-                                      _("non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Adjust the look of the image"),
+                                      _("Creative"),
+                                      _("Non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int flags()
@@ -302,13 +302,13 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colisa_gui_data_t *g = IOP_GUI_ALLOC(colisa);
 
-  g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
-  g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
-  g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
+  g->contrast = dt_bauhaus_slider_from_params(self, N_("Contrast"));
+  g->brightness = dt_bauhaus_slider_from_params(self, N_("Brightness"));
+  g->saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
 
-  gtk_widget_set_tooltip_text(g->contrast, _("contrast adjustment"));
-  gtk_widget_set_tooltip_text(g->brightness, _("brightness adjustment"));
-  gtk_widget_set_tooltip_text(g->saturation, _("color saturation adjustment"));
+  gtk_widget_set_tooltip_text(g->contrast, _("Contrast adjustment"));
+  gtk_widget_set_tooltip_text(g->brightness, _("Brightness adjustment"));
+  gtk_widget_set_tooltip_text(g->saturation, _("Color saturation adjustment"));
 }
 
 // clang-format off

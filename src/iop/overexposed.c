@@ -70,7 +70,7 @@ typedef struct dt_iop_overexposed_t
 
 const char *name()
 {
-  return _("overexposed");
+  return _("Overexposed");
 }
 
 int default_group()
@@ -129,7 +129,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, ch, &img_tmp, 0))
   {
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
-    dt_control_log(_("module overexposed failed in buffer allocation"));
+    dt_control_log(_("Module overexposed failed in buffer allocation"));
     return;
   }
 
@@ -155,7 +155,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     fprintf(stderr, "[overexposed process] can't create transform profile\n");
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
-    dt_control_log(_("module overexposed failed in color conversion"));
+    dt_control_log(_("Module overexposed failed in color conversion"));
     goto process_finish;
   }
 
@@ -366,7 +366,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     fprintf(stderr, "[overexposed process_cl] error allocating memory for color transformation\n");
-    dt_control_log(_("module overexposed failed in buffer allocation"));
+    dt_control_log(_("Module overexposed failed in buffer allocation"));
     goto error;
   }
 
@@ -376,7 +376,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   else
   {
     fprintf(stderr, "[overexposed process_cl] can't create transform profile\n");
-    dt_control_log(_("module overexposed failed in color conversion"));
+    dt_control_log(_("Module overexposed failed in color conversion"));
     goto error;
   }
 

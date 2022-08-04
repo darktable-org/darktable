@@ -58,7 +58,7 @@ typedef struct dt_lib_metadata_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("metadata editor");
+  return _("Metadata editor");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -502,9 +502,9 @@ static void _private_toggled_callback(GtkCellRendererToggle *cell_renderer, gcha
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
-                                       GTK_DIALOG_DESTROY_WITH_PARENT, _("default"), GTK_RESPONSE_YES,
-                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_ACCEPT, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("Metadata settings"), GTK_WINDOW(win),
+                                       GTK_DIALOG_DESTROY_WITH_PARENT, _("Default"), GTK_RESPONSE_YES,
+                                       _("Cancel"), GTK_RESPONSE_NONE, _("Save"), GTK_RESPONSE_ACCEPT, NULL);
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -545,28 +545,28 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *view = gtk_tree_view_new_with_model(model);
   g_object_unref(model);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("metadata"), renderer,
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Metadata"), renderer,
                                                     "text", DT_METADATA_PREF_COL_NAME, NULL);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
   renderer = gtk_cell_renderer_toggle_new();
   g_signal_connect(renderer, "toggled", G_CALLBACK(_visible_toggled_callback), store);
-  column = gtk_tree_view_column_new_with_attributes(_("visible"), renderer,
+  column = gtk_tree_view_column_new_with_attributes(_("Visible"), renderer,
                                                     "active", DT_METADATA_PREF_COL_VISIBLE, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
   GtkWidget *header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header,
-                _("tick if the corresponding metadata is of interest for you"
-                "\nit will be visible from metadata editor, collection and import module"
-                "\nit will be also exported"));
+                _("Tick if the corresponding metadata is of interest for you"
+                "\nIt will be visible from metadata editor, collection and import module"
+                "\nIt will be also exported"));
   renderer = gtk_cell_renderer_toggle_new();
   g_signal_connect(renderer, "toggled", G_CALLBACK(_private_toggled_callback), store);
-  column = gtk_tree_view_column_new_with_attributes(_("private"), renderer,
+  column = gtk_tree_view_column_new_with_attributes(_("Private"), renderer,
                                                     "active", DT_METADATA_PREF_COL_PRIVATE, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
   header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header,
-                _("tick if you want to keep this information private (not exported with images)"));
+                _("Tick if you want to keep this information private (not exported with images)"));
 
   gtk_container_add(GTK_CONTAINER(w), view);
 
@@ -639,7 +639,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 
 void set_preferences(void *menu, dt_lib_module_t *self)
 {
-  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("Preferences..."));
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
@@ -710,11 +710,11 @@ void gui_init(dt_lib_module_t *self)
     gtk_container_add(GTK_CONTAINER(labelev), label);
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
     gtk_widget_set_tooltip_text(GTK_WIDGET(label),
-              _("metadata text. ctrl-wheel scroll to resize the text box"
-              "\nctrl-enter inserts a new line (caution, may not be compatible with standard metadata)."
-              "\nif <leave unchanged> selected images have different metadata."
-              "\nin that case, right-click gives the possibility to choose one of them."
-              "\npress escape to exit the popup window"));
+              _("Metadata text. Ctrl-wheel scroll to resize the text box"
+              "\nCtrl-enter inserts a new line (caution, may not be compatible with standard metadata)."
+              "\nIf <leave unchanged> selected images have different metadata."
+              "\nIn that case, right-click gives the possibility to choose one of them."
+              "\nPress escape to exit the popup window"));
 
     GtkWidget *textview = gtk_text_view_new();
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
@@ -755,8 +755,8 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // apply button
-  d->apply_button = dt_action_button_new(self, N_("apply"), _apply_button_clicked, self,
-                                         _("write metadata for selected images"), 0, 0);
+  d->apply_button = dt_action_button_new(self, N_("Apply"), _apply_button_clicked, self,
+                                         _("Write metadata for selected images"), 0, 0);
 
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(d->apply_button), 0, DT_METADATA_NUMBER, 2, 1);
 
@@ -820,7 +820,7 @@ void init_presets(dt_lib_module_t *self)
                     _("Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"));
   add_rights_preset(self, _("CC BY-NC-ND"),
                     _("Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"));
-  add_rights_preset(self, _("all rights reserved"), _("all rights reserved"));
+  add_rights_preset(self, _("All rights reserved"), _("All rights reserved"));
 }
 
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,

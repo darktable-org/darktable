@@ -169,7 +169,7 @@ typedef struct dt_lib_import_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("import");
+  return _("Import");
 }
 
 
@@ -261,7 +261,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       }
       else
       {
-        snprintf(buffer, sizeof(buffer), _("device \"%s\" connected on port \"%s\"."), camera->model,
+        snprintf(buffer, sizeof(buffer), _("Device \"%s\" connected on port \"%s\"."), camera->model,
                  camera->port);
         gtk_widget_set_tooltip_text(label, buffer);
       }
@@ -271,7 +271,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
       if(camera->can_import == TRUE)
       {
-        gtk_box_pack_start(GTK_BOX(vbx), (ib = gtk_button_new_with_label(_("copy & import from camera"))), FALSE,
+        gtk_box_pack_start(GTK_BOX(vbx), (ib = gtk_button_new_with_label(_("Copy & import from camera"))), FALSE,
                            FALSE, 0);
         gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(ib))), PANGO_ELLIPSIZE_END);
         d->import_camera = GTK_BUTTON(ib);
@@ -282,14 +282,14 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       }
       if(camera->can_tether == TRUE)
       {
-        gtk_box_pack_start(GTK_BOX(vbx), (tb = gtk_button_new_with_label(_("tethered shoot"))), FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbx), (tb = gtk_button_new_with_label(_("Tethered shoot"))), FALSE, FALSE, 0);
         d->tethered_shoot = GTK_BUTTON(tb);
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(tb, dt_get_help_url("import_camera"));
       }
 
-      gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmount camera"))), FALSE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("Unmount camera"))), FALSE, FALSE, 0);
       d->unmount_camera = GTK_BUTTON(um);
       g_signal_connect(G_OBJECT(um), "clicked", G_CALLBACK(_lib_import_unmount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(um)), GTK_ALIGN_CENTER);
@@ -310,12 +310,12 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       gtk_box_pack_start(GTK_BOX(d->devices), label, FALSE, FALSE, 0);
 
       if(camera->used)
-        gtk_widget_set_tooltip_text(label, _("camera is locked by another application\n"
-                    "make sure it is no longer mounted\nor quit the locking application"));
+        gtk_widget_set_tooltip_text(label, _("Camera is locked by another application\n"
+                    "Make sure it is no longer mounted\nor quit the locking application"));
       else if(camera->boring)
-        gtk_widget_set_tooltip_text(label, _("tethering and importing is disabled for this camera"));
+        gtk_widget_set_tooltip_text(label, _("Tethering and importing is disabled for this camera"));
 
-      GtkWidget *im = gtk_button_new_with_label(_("mount camera"));
+      GtkWidget *im = gtk_button_new_with_label(_("Mount camera"));
       GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
       gtk_box_pack_start(GTK_BOX(vbx), im, FALSE, FALSE, 0);
@@ -332,10 +332,10 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   dt_pthread_mutex_unlock(&camctl->lock);
   gtk_widget_show_all(GTK_WIDGET(d->devices));
 
-  dt_action_define(DT_ACTION(self), NULL, N_("copy & import from camera"), GTK_WIDGET(d->import_camera), &dt_action_def_button);
-  dt_action_define(DT_ACTION(self), NULL, N_("mount camera"), GTK_WIDGET(d->mount_camera), &dt_action_def_button);
-  dt_action_define(DT_ACTION(self), NULL, N_("tethered shoot"), GTK_WIDGET(d->tethered_shoot), &dt_action_def_button);
-  dt_action_define(DT_ACTION(self), NULL, N_("unmount camera"), GTK_WIDGET(d->unmount_camera), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("Copy & import from camera"), GTK_WIDGET(d->import_camera), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("Mount camera"), GTK_WIDGET(d->mount_camera), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("Tethered shoot"), GTK_WIDGET(d->tethered_shoot), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("Unmount camera"), GTK_WIDGET(d->unmount_camera), &dt_action_def_button);
 }
 
 static void _free_camera_files(gpointer data)
@@ -1027,7 +1027,7 @@ static gboolean _places_button_press(GtkWidget *view, GdkEventButton *event, dt_
       if(g_strcmp0(folder_path, dt_conf_get_string_const("ui_last/import_last_place")))
         _remove_place(folder_path, iter, self);
       else
-        dt_toast_log(_("you can't delete the selected place"));
+        dt_toast_log(_("You can't delete the selected place"));
     }
 
     g_free(folder_name);
@@ -1141,28 +1141,28 @@ static void _set_places_list(GtkWidget *places_paned, dt_lib_module_t* self)
 
   GtkWidget *places_top_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *places_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_tooltip_text(places_header, _("choose the root of the folder tree below"));
+  gtk_widget_set_tooltip_text(places_header, _("Choose the root of the folder tree below"));
 
   GtkWidget *places_label = gtk_label_new(NULL);
-  gchar *markup = g_strdup_printf("<b>  %s</b>",_("places"));
+  gchar *markup = g_strdup_printf("<b>  %s</b>",_("Places"));
   gtk_label_set_markup(GTK_LABEL(places_label), markup);
   g_free(markup);
   gtk_box_pack_start(GTK_BOX(places_header), places_label, FALSE, FALSE, 0);
 
   GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
-  gtk_widget_set_tooltip_text(places_reset, _("restore all default places you have removed by right-click"));
+  gtk_widget_set_tooltip_text(places_reset, _("Restore all default places you have removed by right-click"));
   g_signal_connect(places_reset, "clicked", G_CALLBACK(_places_reset_callback), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
 
   GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
-  gtk_widget_set_tooltip_text(places_add, _("add a custom place\n\nright-click on a place to remove it"));
+  gtk_widget_set_tooltip_text(places_add, _("Add a custom place\n\nRight-click on a place to remove it"));
   g_signal_connect(places_add, "clicked", G_CALLBACK(_lib_import_select_folder), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_add, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(places_top_box), places_header, FALSE, FALSE, 0);
 
   GtkWidget *placesWindow = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_tooltip_text(placesWindow, _("you can add custom places using the plus icon"));
+  gtk_widget_set_tooltip_text(placesWindow, _("You can add custom places using the plus icon"));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(placesWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->placesView),FALSE);
@@ -1187,10 +1187,10 @@ static void _set_folders_list(GtkWidget *places_paned, dt_lib_module_t* self)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
   d->from.folderview = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->from.folderview));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->from.folderview), _("select a folder to see the content"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->from.folderview), _("Select a folder to see the content"));
 
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("folders"), renderer, "text",
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Folders"), renderer, "text",
                                                     DT_FOLDER_NAME, NULL);
   gtk_tree_view_append_column(d->from.folderview, column);
   gtk_tree_view_column_set_expand(column, TRUE);
@@ -1260,7 +1260,7 @@ static void _update_places_list(dt_lib_module_t* self)
     if(homedir)
     {
       current_place = homedir;
-      gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), DT_PLACES_PATH,
+      gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("Home"), DT_PLACES_PATH,
                                         current_place, DT_PLACES_TYPE, DT_TYPE_HOME, -1);
       if(!g_strcmp0(current_place, last_place))
         gtk_tree_selection_select_iter(d->placesSelection, &iter);
@@ -1272,7 +1272,7 @@ static void _update_places_list(dt_lib_module_t* self)
   {
     g_free(current_place);
     current_place = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES));
-    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("pictures"), DT_PLACES_PATH,
+    gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("Pictures"), DT_PLACES_PATH,
                                       current_place, DT_PLACES_TYPE, DT_TYPE_PIC, -1);
     if(!g_strcmp0(current_place, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
@@ -1494,7 +1494,7 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
+      _("Select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Open"), _("_Cancel"));
 
   // run the native dialog
   dt_conf_get_folder_to_file_chooser("ui_last/import_last_place", GTK_FILE_CHOOSER(filechooser));
@@ -1536,10 +1536,10 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_tree_view_column_set_alignment(column, 0.5);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(25));
   GtkWidget *header = gtk_tree_view_column_get_button(column);
-  gtk_widget_set_tooltip_text(header, _("mark already imported pictures"));
+  gtk_widget_set_tooltip_text(header, _("Mark already imported pictures"));
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("name"), renderer, "text",
+  column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer, "text",
                                                     DT_IMPORT_UI_FILENAME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
 
@@ -1550,12 +1550,12 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   gtk_tree_view_column_set_sort_column_id(column, DT_IMPORT_FILENAME);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("modified"), renderer, "text",
+  column = gtk_tree_view_column_new_with_attributes(_("Modified"), renderer, "text",
                                                     DT_IMPORT_UI_DATETIME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
   gtk_tree_view_column_set_sort_column_id(column, DT_IMPORT_DATETIME);
   header = gtk_tree_view_column_get_button(column);
-  gtk_widget_set_tooltip_text(header, _("file 'modified date/time', may be different from 'Exif date/time'"));
+  gtk_widget_set_tooltip_text(header, _("File 'modified date/time', may be different from 'Exif date/time'"));
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(d->from.store),
                                        DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
 
@@ -1567,7 +1567,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   dt_gui_add_class(button, "dt_transparent_background");
   gtk_widget_show(button);
   header = gtk_tree_view_column_get_button(column);
-  gtk_widget_set_tooltip_text(header, _("show/hide thumbnails"));
+  gtk_widget_set_tooltip_text(header, _("Show/hide thumbnails"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
   gtk_tree_view_column_set_widget(column, button);
   g_signal_connect(column, "clicked", G_CALLBACK(_all_thumb_toggled), self);
@@ -1598,7 +1598,7 @@ static void _browse_basedir_clicked(GtkWidget *widget, GtkEntry *basedir)
   }
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-      _("select directory"), GTK_WINDOW(topwindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_open"), _("_cancel"));
+      _("Select directory"), GTK_WINDOW(topwindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Open"), _("_Cancel"));
 
   gchar *old = g_strdup(gtk_entry_get_text(basedir));
   char *c = g_strstr_len(old, -1, "$");
@@ -1637,7 +1637,7 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
 
   // collapsible section
   _expander_create(&d->from.cs, GTK_BOX(import_patterns),
-                   _("naming rules"), "ui_last/session_expander_import");
+                   _("Naming rules"), "ui_last/session_expander_import");
 
   // import patterns
   grid = GTK_GRID(gtk_grid_new());
@@ -1652,7 +1652,7 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
   g_object_unref(basedir);
   GtkWidget *browsedir = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(browsedir, "non-flat");
-  gtk_widget_set_tooltip_text(browsedir, _("select directory"));
+  gtk_widget_set_tooltip_text(browsedir, _("Select directory"));
 
   gtk_box_pack_start(GTK_BOX(hbox), browsedir, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(browsedir), "clicked", G_CALLBACK(_browse_basedir_clicked), basedir);
@@ -1678,9 +1678,9 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
 
 static const char *const _import_text[] =
 {
-  N_("add to library"),
-  N_("copy & import"),
-  N_("copy & import from camera")
+  N_("Add to library"),
+  N_("Copy & import"),
+  N_("Copy & import from camera")
 };
 
 static void _import_from_dialog_new(dt_lib_module_t* self)
@@ -1690,7 +1690,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 
   d->from.dialog = gtk_dialog_new_with_buttons
     ( _(_import_text[d->import_case]), NULL, GTK_DIALOG_MODAL,
-      _("cancel"), GTK_RESPONSE_CANCEL,
+      _("Cancel"), GTK_RESPONSE_CANCEL,
       _(_import_text[d->import_case]), GTK_RESPONSE_ACCEPT,
       NULL);
 
@@ -1709,15 +1709,15 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   GtkWidget *box = dt_gui_container_first_child(GTK_CONTAINER(d->from.dialog));
   box = dt_gui_container_first_child(GTK_CONTAINER(box)); // action-box
 
-  GtkWidget *select_all = gtk_button_new_with_label(_("select all"));
+  GtkWidget *select_all = gtk_button_new_with_label(_("Select all"));
   gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 2);
   g_signal_connect(select_all, "clicked", G_CALLBACK(_do_select_all_clicked), self);
 
-  GtkWidget *select_none = gtk_button_new_with_label(_("select none"));
+  GtkWidget *select_none = gtk_button_new_with_label(_("Select none"));
   gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 2);
   g_signal_connect(select_none, "clicked", G_CALLBACK(_do_select_none_clicked), self);
 
-  GtkWidget *select_new = gtk_button_new_with_label(_("select new"));
+  GtkWidget *select_new = gtk_button_new_with_label(_("Select new"));
   gtk_box_pack_start(GTK_BOX(box), select_new, FALSE, FALSE, 2);
   g_signal_connect(select_new, "clicked", G_CALLBACK(_do_select_new_clicked), self);
 
@@ -1760,7 +1760,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 #ifdef HAVE_GPHOTO2
   if(d->import_case == DT_IMPORT_CAMERA)
   {
-    d->from.info = dt_ui_label_new(_("please wait while prefetching the list of images from camera..."));
+    d->from.info = dt_ui_label_new(_("Please wait while prefetching the list of images from camera..."));
     gtk_label_set_single_line_mode(GTK_LABEL(d->from.info), FALSE);
     gtk_box_pack_start(GTK_BOX(rbox), d->from.info, FALSE, FALSE, 0);
   }
@@ -1884,7 +1884,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
         const char *entry = gtk_entry_get_text(GTK_ENTRY(d->from.datetime));
         if(entry[0] && !dt_datetime_entry_to_exif(datetime_override, sizeof(datetime_override), entry))
         {
-          dt_control_log(_("invalid override date/time format"));
+          dt_control_log(_("Invalid override date/time format"));
           break;
         }
         dt_gui_preferences_string_reset(d->from.datetime);
@@ -1987,16 +1987,16 @@ void gui_init(dt_lib_module_t *self)
   // add import buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *widget = dt_action_button_new(self, N_("add to library..."), _lib_import_from_callback, self,
-                                           _("add existing images to the library"), 0, 0);
+  GtkWidget *widget = dt_action_button_new(self, N_("Add to library..."), _lib_import_from_callback, self,
+                                           _("Add existing images to the library"), 0, 0);
   d->import_inplace = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 
-  widget = dt_action_button_new(self, N_("copy & import..."), _lib_import_from_callback, self,
-                                _("copy and optionally rename images before adding them to the library"
-                                  "\npatterns can be defined to rename the images and specify the destination folders"),
+  widget = dt_action_button_new(self, N_("Copy & import..."), _lib_import_from_callback, self,
+                                _("Copy and optionally rename images before adding them to the library"
+                                  "\nPatterns can be defined to rename the images and specify the destination folders"),
                                 GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   d->import_copy = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
@@ -2018,7 +2018,7 @@ void gui_init(dt_lib_module_t *self)
 
   // collapsible section
 
-  _expander_create(&d->cs, GTK_BOX(self->widget), _("parameters"), "ui_last/expander_import");
+  _expander_create(&d->cs, GTK_BOX(self->widget), _("Parameters"), "ui_last/expander_import");
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));

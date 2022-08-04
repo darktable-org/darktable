@@ -63,10 +63,10 @@ typedef struct dt_iop_clipping_aspect_t
 typedef struct dt_iop_clipping_params_t
 {
   float angle; // $MIN: -180.0 $MAX: 180.0
-  float cx;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "left"
-  float cy;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "top"
-  float cw;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "right"
-  float ch;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "bottom"
+  float cx;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "Left"
+  float cy;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "Top"
+  float cw;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "Right"
+  float ch;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "Bottom"
   float k_h, k_v;
   float kxa;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2
   float kya;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2
@@ -78,7 +78,7 @@ typedef struct dt_iop_clipping_params_t
   float kyd;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.8
   int k_type, k_sym;
   int k_apply;   // $DEFAULT: 0
-  gboolean crop_auto; // $DEFAULT: TRUE $DESCRIPTION: "automatic cropping"
+  gboolean crop_auto; // $DEFAULT: TRUE $DESCRIPTION: "Automatic cropping"
   int ratio_n;   // $DEFAULT: -1
   int ratio_d;   // $DEFAULT: -1
 } dt_iop_clipping_params_t;
@@ -301,12 +301,12 @@ static inline void adjust_aabb(const float *p, float *aabb)
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the crop, orientation and/or rotate and perspective modules instead.");
+  return _("This module is deprecated. Please use the crop, orientation and/or rotate and perspective modules instead.");
 }
 
 const char *name()
 {
-  return _("crop and rotate");
+  return _("Crop and rotate");
 }
 
 const char *aliases()
@@ -316,11 +316,11 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("change the framing and correct the perspective"),
-                                      _("corrective or creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("geometric, RGB"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self, _("Change the framing and correct the perspective"),
+                                      _("Corrective or creative"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Geometric, RGB"),
+                                      _("Linear, RGB, scene-referred"));
 }
 
 int default_group()
@@ -1409,7 +1409,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
 
   //retrieve full image dimensions to calculate aspect ratio if "original image" specified
   const char *text = dt_bauhaus_combobox_get_text(combo);
-  if(text && !g_strcmp0(text,_("original image")))
+  if(text && !g_strcmp0(text,_("Original image")))
   {
     int proc_iwd = 0, proc_iht = 0;
     dt_dev_get_processed_size(darktable.develop, &proc_iwd, &proc_iht);
@@ -1713,7 +1713,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
         // some sanity check
         if(nn == 0 || dd == 0)
         {
-          dt_control_log(_("invalid ratio format. it should be \"number:number\""));
+          dt_control_log(_("Invalid ratio format. It should be \"number:number\""));
           dt_bauhaus_combobox_set(combo, 0);
           return;
         }
@@ -1729,7 +1729,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
         // some sanity check
         if(dd == 0 || nn == 0)
         {
-          dt_control_log(_("invalid ratio format. it should be a positive number"));
+          dt_control_log(_("Invalid ratio format. It should be a positive number"));
           dt_bauhaus_combobox_set(combo, 0);
           return;
         }
@@ -1915,12 +1915,12 @@ static void keystone_type_populate(struct dt_iop_module_t *self, gboolean with_a
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   dt_bauhaus_combobox_clear(g->keystone_type);
-  dt_bauhaus_combobox_add(g->keystone_type, _("none"));
-  dt_bauhaus_combobox_add(g->keystone_type, _("vertical"));
-  dt_bauhaus_combobox_add(g->keystone_type, _("horizontal"));
-  dt_bauhaus_combobox_add(g->keystone_type, _("full"));
-  if(p->k_h != 0 || p->k_v != 0) dt_bauhaus_combobox_add(g->keystone_type, _("old system"));
-  if(with_applied) dt_bauhaus_combobox_add(g->keystone_type, _("correction applied"));
+  dt_bauhaus_combobox_add(g->keystone_type, _("None"));
+  dt_bauhaus_combobox_add(g->keystone_type, _("Vertical"));
+  dt_bauhaus_combobox_add(g->keystone_type, _("Horizontal"));
+  dt_bauhaus_combobox_add(g->keystone_type, _("Full"));
+  if(p->k_h != 0 || p->k_v != 0) dt_bauhaus_combobox_add(g->keystone_type, _("Old system"));
+  if(with_applied) dt_bauhaus_combobox_add(g->keystone_type, _("Correction applied"));
 
   if(select < 0) return;
   int sel = 0;
@@ -2102,41 +2102,41 @@ void gui_init(struct dt_iop_module_t *self)
 
   static struct dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
-  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
+  dt_action_define_iop(self, NULL, N_("Page"), GTK_WIDGET(g->notebook), &notebook_def);
 
-  self->widget = dt_ui_notebook_page(g->notebook, N_("main"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, N_("Main"), NULL);
 
   g->hvflip = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->hvflip, NULL, N_("flip"));
-  dt_bauhaus_combobox_add(g->hvflip, _("none"));
-  dt_bauhaus_combobox_add(g->hvflip, _("horizontal"));
-  dt_bauhaus_combobox_add(g->hvflip, _("vertical"));
-  dt_bauhaus_combobox_add(g->hvflip, _("both"));
+  dt_bauhaus_widget_set_label(g->hvflip, NULL, N_("Flip"));
+  dt_bauhaus_combobox_add(g->hvflip, _("None"));
+  dt_bauhaus_combobox_add(g->hvflip, _("Horizontal"));
+  dt_bauhaus_combobox_add(g->hvflip, _("Vertical"));
+  dt_bauhaus_combobox_add(g->hvflip, _("Both"));
   g_signal_connect(G_OBJECT(g->hvflip), "value-changed", G_CALLBACK(hvflip_callback), self);
-  gtk_widget_set_tooltip_text(g->hvflip, _("mirror image horizontally and/or vertically"));
+  gtk_widget_set_tooltip_text(g->hvflip, _("Mirror image horizontally and/or vertically"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->hvflip, TRUE, TRUE, 0);
 
-  g->angle = dt_bauhaus_slider_from_params(self, N_("angle"));
+  g->angle = dt_bauhaus_slider_from_params(self, N_("Angle"));
   dt_bauhaus_slider_set_factor(g->angle, -1.0);
   dt_bauhaus_slider_set_format(g->angle, "°");
-  gtk_widget_set_tooltip_text(g->angle, _("right-click and drag a line on the image to drag a straight line"));
+  gtk_widget_set_tooltip_text(g->angle, _("Right-click and drag a line on the image to drag a straight line"));
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->keystone_type, NULL, N_("keystone"));
-  dt_bauhaus_combobox_add(g->keystone_type, _("none"));
-  dt_bauhaus_combobox_add(g->keystone_type, _("vertical"));
-  dt_bauhaus_combobox_add(g->keystone_type, _("horizontal"));
-  dt_bauhaus_combobox_add(g->keystone_type, _("full"));
-  gtk_widget_set_tooltip_text(g->keystone_type, _("set perspective correction for your image"));
+  dt_bauhaus_widget_set_label(g->keystone_type, NULL, N_("Keystone"));
+  dt_bauhaus_combobox_add(g->keystone_type, _("None"));
+  dt_bauhaus_combobox_add(g->keystone_type, _("Vertical"));
+  dt_bauhaus_combobox_add(g->keystone_type, _("Horizontal"));
+  dt_bauhaus_combobox_add(g->keystone_type, _("Full"));
+  gtk_widget_set_tooltip_text(g->keystone_type, _("Set perspective correction for your image"));
   g_signal_connect(G_OBJECT(g->keystone_type), "value-changed", G_CALLBACK(keystone_type_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->keystone_type, TRUE, TRUE, 0);
 
   g->crop_auto = dt_bauhaus_combobox_from_params(self, "crop_auto");
-  gtk_widget_set_tooltip_text(g->crop_auto, _("automatically crop to avoid black edges"));
+  gtk_widget_set_tooltip_text(g->crop_auto, _("Automatically crop to avoid black edges"));
 
-  dt_iop_clipping_aspect_t aspects[] = { { _("freehand"), 0, 0 },
-                                         { _("original image"), 1, 0 },
-                                         { _("square"), 1, 1 },
+  dt_iop_clipping_aspect_t aspects[] = { { _("Freehand"), 0, 0 },
+                                         { _("Original image"), 1, 0 },
+                                         { _("Square"), 1, 1 },
                                          { _("10:8 in print"), 2445, 2032 },
                                          { _("5:4, 4x5, 8x10"), 5, 4 },
                                          { _("11x14"), 14, 11 },
@@ -2146,13 +2146,13 @@ void gui_init(struct dt_iop_module_t *self)
                                          { _("ISO 216, DIN 476, A4"), 14142136, 10000000 },
                                          { _("3:2, 4x6, 35mm"), 3, 2 },
                                          { _("16:10, 8x5"), 16, 10 },
-                                         { _("golden cut"), 16180340, 10000000 },
+                                         { _("Golden cut"), 16180340, 10000000 },
                                          { _("16:9, HDTV"), 16, 9 },
-                                         { _("widescreen"), 185, 100 },
+                                         { _("Widescreen"), 185, 100 },
                                          { _("2:1, univisium"), 2, 1 },
-                                         { _("cinemascope"), 235, 100 },
+                                         { _("Cinemascope"), 235, 100 },
                                          { _("21:9"), 237, 100 },
-                                         { _("anamorphic"), 239, 100 },
+                                         { _("Anamorphic"), 239, 100 },
                                          { _("3:1, panorama"), 300, 100 },
   };
 
@@ -2185,7 +2185,7 @@ void gui_init(struct dt_iop_module_t *self)
       if(n == 0 || d == 0)
       {
         fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
-        dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
+        dt_control_log(_("Invalid ratio format for `%s'. It should be \"number:number\""), nv->key);
         continue;
       }
       dt_iop_clipping_aspect_t *aspect = g_malloc(sizeof(dt_iop_clipping_aspect_t));
@@ -2197,7 +2197,7 @@ void gui_init(struct dt_iop_module_t *self)
     else
     {
       fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
-      dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
+      dt_control_log(_("Invalid ratio format for `%s'. It should be \"number:number\""), nv->key);
       continue;
     }
 
@@ -2233,7 +2233,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->aspect_presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->aspect_presets, 1);
-  dt_bauhaus_widget_set_label(g->aspect_presets, NULL, N_("aspect"));
+  dt_bauhaus_widget_set_label(g->aspect_presets, NULL, N_("Aspect"));
 
   for(GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
   {
@@ -2244,38 +2244,38 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->aspect_presets, 0);
 
   g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed", G_CALLBACK(aspect_presets_changed), self);
-  gtk_widget_set_tooltip_text(g->aspect_presets, _("set the aspect ratio\n"
-                                                   "the list is sorted: from most square to least square\n"
-                                                   "to enter custom aspect ratio open the combobox and type ratio in x:y or decimal format"));
+  gtk_widget_set_tooltip_text(g->aspect_presets, _("Set the aspect ratio\n"
+                                                   "The list is sorted: from most square to least square\n"
+                                                   "To enter custom aspect ratio open the combobox and type ratio in x:y or decimal format"));
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0, NULL);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
 
-  self->widget = dt_ui_notebook_page(g->notebook, _("margins"), NULL);
+  self->widget = dt_ui_notebook_page(g->notebook, _("Margins"), NULL);
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
   dt_bauhaus_slider_set_digits(g->cx, 4);
   dt_bauhaus_slider_set_format(g->cx, "%");
-  gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
+  gtk_widget_set_tooltip_text(g->cx, _("The left margin cannot overlap with the right margin"));
 
   g->cw = dt_bauhaus_slider_from_params(self, "cw");
   dt_bauhaus_slider_set_digits(g->cw, 4);
   dt_bauhaus_slider_set_factor(g->cw, -100.0);
   dt_bauhaus_slider_set_offset(g->cw, 100.0);
   dt_bauhaus_slider_set_format(g->cw, "%");
-  gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
+  gtk_widget_set_tooltip_text(g->cw, _("The right margin cannot overlap with the left margin"));
 
   g->cy = dt_bauhaus_slider_from_params(self, "cy");
   dt_bauhaus_slider_set_digits(g->cy, 4);
   dt_bauhaus_slider_set_format(g->cy, "%");
-  gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
+  gtk_widget_set_tooltip_text(g->cy, _("The top margin cannot overlap with the bottom margin"));
 
   g->ch = dt_bauhaus_slider_from_params(self, "ch");
   dt_bauhaus_slider_set_digits(g->ch, 4);
   dt_bauhaus_slider_set_factor(g->ch, -100.0);
   dt_bauhaus_slider_set_offset(g->ch, 100.0);
   dt_bauhaus_slider_set_format(g->ch, "%");
-  gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
+  gtk_widget_set_tooltip_text(g->ch, _("The bottom margin cannot overlap with the top margin"));
 
   self->widget = GTK_WIDGET(g->notebook);
 }
@@ -3034,12 +3034,12 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
     else if(grab == GRAB_NONE)
     {
-      dt_control_hinter_message(darktable.control, _("<b>commit</b>: double-click, <b>straighten</b>: right-drag"));
+      dt_control_hinter_message(darktable.control, _("<b>Commit</b>: double-click, <b>Straighten</b>: right-drag"));
       dt_control_change_cursor(GDK_LEFT_PTR);
     }
     if(grab != GRAB_NONE)
-      dt_control_hinter_message(darktable.control, _("<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
-                                                     "<b>straighten</b>: right-drag"));
+      dt_control_hinter_message(darktable.control, _("<b>Resize</b>: drag, <b>Keep aspect ratio</b>: Shift+drag\n"
+                                                     "<b>Straighten</b>: right-drag"));
     dt_control_queue_redraw_center();
   }
   else
@@ -3081,25 +3081,25 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       }
       if(g->k_selected >= 0)
       {
-        dt_control_hinter_message(darktable.control, _("<b>move control point</b>: drag"));
+        dt_control_hinter_message(darktable.control, _("<b>Move control point</b>: drag"));
         dt_control_change_cursor(GDK_CROSS);
       }
       else if(g->k_selected_segment >= 0)
       {
-        dt_control_hinter_message(darktable.control, _("<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"));
+        dt_control_hinter_message(darktable.control, _("<b>Move line</b>: drag, <b>Toggle symmetry</b>: click <tt>ꝏ</tt>"));
         dt_control_change_cursor(GDK_CROSS);
       }
       else
       {
-        dt_control_hinter_message(darktable.control, _("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
-                                                       "<b>move line/control point</b>: drag"));
+        dt_control_hinter_message(darktable.control, _("<b>Apply</b>: click <tt>ok</tt>, <b>Toggle symmetry</b>: click <tt>ꝏ</tt>\n"
+                                                       "<b>Move line/control point</b>: drag"));
         dt_control_change_cursor(GDK_FLEUR);
       }
     }
     else
     {
-      dt_control_hinter_message(darktable.control, _("<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</b>: ctrl+drag\n"
-                                                     "<b>straighten</b>: right-drag, <b>commit</b>: double-click"));
+      dt_control_hinter_message(darktable.control, _("<b>Move</b>: drag, <b>Move vertically</b>: Shift+drag, <b>Move horizontally</b>: Ctrl+drag\n"
+                                                     "<b>Straighten</b>: right-drag, <b>Commit</b>: double-click"));
     }
     dt_control_queue_redraw_center();
   }

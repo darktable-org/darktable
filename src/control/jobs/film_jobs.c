@@ -70,7 +70,7 @@ dt_job_t *dt_film_import1_create(dt_film_t *film)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("import images"), FALSE);
+  dt_control_job_add_progress(job, _("Import images"), FALSE);
   dt_control_job_set_params(job, params, dt_film_import1_cleanup);
   params->film = film;
   dt_pthread_mutex_lock(&film->images_mutex);
@@ -106,7 +106,7 @@ dt_job_t *dt_pathlist_import_create(int argc, char *argv[])
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("import images"), FALSE);
+  dt_control_job_add_progress(job, _("Import images"), FALSE);
   dt_control_job_set_params(job, params, _pathlist_import_cleanup);
   params->film = NULL;
   // now collect all of the images to be imported
@@ -236,7 +236,7 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
     images = _film_recursive_get_files(film->dirname, recursive, &images);
     if(images == NULL)
     {
-      dt_control_log(_("no supported images were found to be imported"));
+      dt_control_log(_("No supported images were found to be imported"));
       return;
     }
   }
@@ -294,7 +294,7 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
   gchar message[512] = { 0 };
   double fraction = 0;
   const guint total = g_list_length(images);
-  g_snprintf(message, sizeof(message) - 1, ngettext("importing %d image", "importing %d images", total), total);
+  g_snprintf(message, sizeof(message) - 1, ngettext("Importing %d image", "Importing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
 
   GList *imgs = NULL;

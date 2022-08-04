@@ -1041,14 +1041,14 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
           float masks_border = dt_conf_get_float("plugins/darkroom/spots/path_border");
           masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/spots/path_border", masks_border);
-          dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size *100.0f);
+          dt_toast_log(_("Feather size: %3.2f%%"), (feather_size - masks_size) / masks_size *100.0f);
         }
         else
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/path/border");
           masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/masks/path/border", masks_border);
-          dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size * 100.0f);
+          dt_toast_log(_("Feather size: %3.2f%%"), (feather_size - masks_size) / masks_size * 100.0f);
         }
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -1104,7 +1104,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
         float masks_size = 0.0f;
         _path_get_sizes(module, form, gui, index, &masks_size, NULL);
 
-        dt_toast_log(_("size: %3.2f%%"), masks_size * 100.0f);
+        dt_toast_log(_("Size: %3.2f%%"), masks_size * 100.0f);
       }
       else
       {
@@ -3151,28 +3151,28 @@ static void _path_sanitize_config(dt_masks_type_t type)
 
 static void _path_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
 {
-  snprintf(form->name, sizeof(form->name), _("path #%d"), (int)nb);
+  snprintf(form->name, sizeof(form->name), _("Path #%d"), (int)nb);
 }
 
 static void _path_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
                                      const int opacity, char *const restrict msgbuf, const size_t msgbuf_len)
 {
   if(gui->creation && g_list_length(form->points) < 4)
-    g_strlcat(msgbuf, _("<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
-                        "<b>cancel</b>: right-click"), msgbuf_len);
+    g_strlcat(msgbuf, _("<b>Add node</b>: click, <b>Add sharp node</b>:Ctrl+click\n"
+                        "<b>Cancel</b>: right-click"), msgbuf_len);
   else if(gui->creation)
-    g_strlcat(msgbuf, _("<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
-                        "<b>finish path</b>: right-click"), msgbuf_len);
+    g_strlcat(msgbuf, _("<b>Add node</b>: click, <b>Add sharp node</b>:Ctrl+click\n"
+                        "<b>Finish path</b>: right-click"), msgbuf_len);
   else if(gui->point_selected >= 0)
-    g_strlcat(msgbuf, _("<b>move node</b>: drag, <b>remove node</b>: right-click\n"
-                        "<b>switch smooth/sharp mode</b>: ctrl+click"), msgbuf_len);
+    g_strlcat(msgbuf, _("<b>Move node</b>: drag, <b>Remove node</b>: right-click\n"
+                        "<b>Switch smooth/sharp mode</b>: Ctrl+click"), msgbuf_len);
   else if(gui->feather_selected >= 0)
-    g_strlcat(msgbuf, _("<b>node curvature</b>: drag\n<b>reset curvature</b>: right-click"), msgbuf_len);
+    g_strlcat(msgbuf, _("<b>Node curvature</b>: drag\n<b>Reset curvature</b>: right-click"), msgbuf_len);
   else if(gui->seg_selected >= 0)
-    g_strlcat(msgbuf, _("<b>move segment</b>: drag\n<b>add node</b>: ctrl+click"), msgbuf_len);
+    g_strlcat(msgbuf, _("<b>Move segment</b>: drag\n<b>Add node</b>: Ctrl+click"), msgbuf_len);
   else if(gui->form_selected)
-    g_snprintf(msgbuf, msgbuf_len, _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-                                     "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+    g_snprintf(msgbuf, msgbuf_len, _("<b>Size</b>: scroll, <b>Feather size</b>: Shift+scroll\n"
+                                     "<b>Opacity</b>: Ctrl+scroll (%d%%)"), opacity);
 }
 
 static void _path_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)

@@ -211,7 +211,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
     goto icc_end;
 
 icc_error:
-    dt_control_log("%s", _("the selected output profile doesn't work well with exr"));
+    dt_control_log("%s", _("The selected output profile doesn't work well with EXR"));
     fprintf(stderr, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong results when opening the image\n");
   }
 icc_end:
@@ -469,7 +469,7 @@ void gui_init(dt_imageio_module_format_t *self)
   const int bpp_last = dt_conf_get_int("plugins/imageio/format/exr/bpp");
 
   gui->bpp = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->bpp, NULL, N_("bit depth"));
+  dt_bauhaus_widget_set_label(gui->bpp, NULL, N_("Bit depth"));
 
   dt_bauhaus_combobox_add(gui->bpp, _("16 bit"));
   dt_bauhaus_combobox_add(gui->bpp, _("32 bit"));
@@ -481,9 +481,9 @@ void gui_init(dt_imageio_module_format_t *self)
   const int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
   gui->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression"));
+  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("Compression"));
 
-  dt_bauhaus_combobox_add(gui->compression, _("uncompressed"));
+  dt_bauhaus_combobox_add(gui->compression, _("Uncompressed"));
   dt_bauhaus_combobox_add(gui->compression, _("RLE"));
   dt_bauhaus_combobox_add(gui->compression, _("ZIPS"));
   dt_bauhaus_combobox_add(gui->compression, _("ZIP"));

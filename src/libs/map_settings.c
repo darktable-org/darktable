@@ -36,7 +36,7 @@ DT_MODULE(1)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("map settings");
+  return _("Map settings");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -105,12 +105,12 @@ void gui_init(dt_lib_module_t *self)
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  label = dt_ui_label_new(_("map source"));
+  label = dt_ui_label_new(_("Map source"));
   gtk_box_pack_start(hbox, label, TRUE, TRUE, 0);
 
   GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
   d->map_source_dropdown = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
-  gtk_widget_set_tooltip_text(d->map_source_dropdown, _("select the source of the map. some entries might not work"));
+  gtk_widget_set_tooltip_text(d->map_source_dropdown, _("Select the source of the map. Some entries might not work"));
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, FALSE);
   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, "text", 0, NULL);
@@ -144,7 +144,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
   d->filtered_images_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/filter_images_drawn", 0, line++, FALSE);
   g_signal_connect(G_OBJECT(d->filtered_images_checkbutton), "toggled", G_CALLBACK(_parameter_changed), NULL);
-  dt_shortcut_register(dt_action_define(DT_ACTION(self), NULL, N_("filtered images"),
+  dt_shortcut_register(dt_action_define(DT_ACTION(self), NULL, N_("Filtered images"),
                                         d->filtered_images_checkbutton, &dt_action_def_button),
                        0, 0, GDK_KEY_s, GDK_CONTROL_MASK);
   d->max_images_entry = dt_gui_preferences_int(grid, "plugins/map/max_images_drawn", 0, line++);
@@ -157,7 +157,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->images_thumb), "changed", G_CALLBACK(_parameter_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), FALSE, FALSE, 0);
 
-  dt_action_register(DT_ACTION(self), N_("thumbnail display"), _thumbnail_change, GDK_KEY_s, GDK_SHIFT_MASK);
+  dt_action_register(DT_ACTION(self), N_("Thumbnail display"), _thumbnail_change, GDK_KEY_s, GDK_SHIFT_MASK);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

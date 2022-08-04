@@ -39,7 +39,7 @@ static void _lib_hinter_set_message(dt_lib_module_t *self, const char *message);
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("hinter");
+  return _("Hinter");
 }
 
 const char **views(dt_lib_module_t *self)

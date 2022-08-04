@@ -47,7 +47,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_lowlight_params_t)
 
 typedef struct dt_iop_lowlight_params_t
 {
-  float blueness; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "blue shift"
+  float blueness; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "Blue shift"
   float transition_x[DT_IOP_LOWLIGHT_BANDS];
   float transition_y[DT_IOP_LOWLIGHT_BANDS]; // $DEFAULT: 0.5
 } dt_iop_lowlight_params_t;
@@ -83,16 +83,16 @@ typedef struct dt_iop_lowlight_global_data_t
 
 const char *name()
 {
-  return _("lowlight vision");
+  return _("Lowlight vision");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("simulate human night vision"),
-                                      _("creative"),
-                                      _("non-linear, Lab, display-referred"),
-                                      _("linear, XYZ"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Simulate human night vision"),
+                                      _("Creative"),
+                                      _("Non-linear, Lab, display-referred"),
+                                      _("Linear, XYZ"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int flags()
@@ -321,7 +321,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.transition_y[5] = 1.000000;
 
   p.blueness = 0.0f;
-  dt_gui_presets_add_generic(_("daylight"), self->op,
+  dt_gui_presets_add_generic(_("Daylight"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
@@ -339,7 +339,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.transition_y[5] = 1.000000;
 
   p.blueness = 30.0f;
-  dt_gui_presets_add_generic(_("indoor bright"), self->op,
+  dt_gui_presets_add_generic(_("Indoor bright"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
@@ -357,7 +357,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.transition_y[5] = 1.000000;
 
   p.blueness = 30.0f;
-  dt_gui_presets_add_generic(_("indoor dim"), self->op,
+  dt_gui_presets_add_generic(_("Indoor dim"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
@@ -375,7 +375,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.transition_y[5] = 1.000000;
 
   p.blueness = 40.0f;
-  dt_gui_presets_add_generic(_("indoor dark"), self->op,
+  dt_gui_presets_add_generic(_("Indoor dark"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
@@ -393,7 +393,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.transition_y[5] = 1.000000;
 
   p.blueness = 50.0f;
-  dt_gui_presets_add_generic(_("twilight"), self->op,
+  dt_gui_presets_add_generic(_("Twilight"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
@@ -411,7 +411,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.transition_y[5] = 1.000000;
 
   p.blueness = 30.0f;
-  dt_gui_presets_add_generic(_("night street lit"), self->op,
+  dt_gui_presets_add_generic(_("Night street lit"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
@@ -429,7 +429,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.transition_y[5] = 1.000000;
 
   p.blueness = 30.0f;
-  dt_gui_presets_add_generic(_("night street"), self->op,
+  dt_gui_presets_add_generic(_("Night street"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
@@ -447,7 +447,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.transition_y[5] = 1.000000;
 
   p.blueness = 40.0f;
-  dt_gui_presets_add_generic(_("night street dark"), self->op,
+  dt_gui_presets_add_generic(_("Night street dark"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.transition_x[0] = 0.000000;
@@ -466,7 +466,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 
   p.blueness = 50.0f;
-  dt_gui_presets_add_generic(_("night"), self->op,
+  dt_gui_presets_add_generic(_("Night"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_database_release_transaction(darktable.db);
@@ -639,7 +639,7 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
 
-  pango_layout_set_text(layout, _("dark"), -1);
+  pango_layout_set_text(layout, _("Dark"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .02 * width - ink.y, .5 * (height + ink.width));
   cairo_save(cr);
@@ -647,7 +647,7 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   pango_cairo_show_layout(cr, layout);
   cairo_restore(cr);
 
-  pango_layout_set_text(layout, _("bright"), -1);
+  pango_layout_set_text(layout, _("Bright"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .98 * width - ink.height, .5 * (height + ink.width));
   cairo_save(cr);
@@ -656,12 +656,12 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_dat
   cairo_restore(cr);
 
 
-  pango_layout_set_text(layout, _("day vision"), -1);
+  pango_layout_set_text(layout, _("Day vision"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .5 * (width - ink.width), .08 * height - ink.height);
   pango_cairo_show_layout(cr, layout);
 
-  pango_layout_set_text(layout, _("night vision"), -1);
+  pango_layout_set_text(layout, _("Night vision"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .5 * (width - ink.width), .97 * height - ink.height);
   pango_cairo_show_layout(cr, layout);
@@ -833,7 +833,7 @@ void gui_init(struct dt_iop_module_t *self)
   const float aspect = dt_conf_get_int("plugins/darkroom/lowlight/aspect_percent") / 100.0;
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(aspect));
   g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
-  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), NULL);
+  dt_action_define_iop(self, NULL, N_("Graph"), GTK_WIDGET(c->area), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
@@ -848,7 +848,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->scale_blueness = dt_bauhaus_slider_from_params(self, "blueness");
   dt_bauhaus_slider_set_format(c->scale_blueness, "%");
-  gtk_widget_set_tooltip_text(c->scale_blueness, _("blueness in shadows"));
+  gtk_widget_set_tooltip_text(c->scale_blueness, _("Blueness in shadows"));
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

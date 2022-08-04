@@ -120,54 +120,54 @@ enum
 
 static const char *_labels[] = {
   /* internal */
-  N_("filmroll"),
-  N_("image id"),
-  N_("group id"),
-  N_("filename"),
-  N_("version"),
-  N_("full path"),
-  N_("local copy"),
-  N_("import timestamp"),
-  N_("change timestamp"),
-  N_("export timestamp"),
-  N_("print timestamp"),
-  N_("flags"),
+  N_("Filmroll"),
+  N_("Image id"),
+  N_("Group id"),
+  N_("Filename"),
+  N_("Version"),
+  N_("Full path"),
+  N_("Local copy"),
+  N_("Import timestamp"),
+  N_("Change timestamp"),
+  N_("Export timestamp"),
+  N_("Print timestamp"),
+  N_("Flags"),
 
   /* exif */
-  N_("model"),
-  N_("maker"),
-  N_("lens"),
-  N_("aperture"),
-  N_("exposure"),
-  N_("exposure bias"),
-  N_("focal length"),
-  N_("focus distance"),
+  N_("Model"),
+  N_("Maker"),
+  N_("Lens"),
+  N_("Aperture"),
+  N_("Exposure"),
+  N_("Exposure bias"),
+  N_("Focal length"),
+  N_("Focus distance"),
   N_("ISO"),
-  N_("datetime"),
-  N_("width"),
-  N_("height"),
-  N_("export width"),
-  N_("export height"),
+  N_("Datetime"),
+  N_("Width"),
+  N_("Height"),
+  N_("Export width"),
+  N_("Export height"),
 
   /* xmp */
   //FIXME: reserve DT_METADATA_NUMBER places
   "","","","","","","","",
 
   /* geotagging */
-  N_("latitude"),
-  N_("longitude"),
-  N_("elevation"),
+  N_("Latitude"),
+  N_("Longitude"),
+  N_("Elevation"),
 
   /* tags */
-  N_("tags"),
-  N_("categories"),
+  N_("Tags"),
+  N_("Categories"),
 };
 
 static gboolean _dndactive = FALSE;
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("image information");
+  return _("Image information");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -327,18 +327,18 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
 #define FLAG_NB 15
 
   char *flags_tooltip = NULL;
-  char *flag_descriptions[] = { N_("unused"),
-                                N_("unused/deprecated"),
-                                N_("ldr"),
-                                N_("raw"),
-                                N_("hdr"),
-                                N_("marked for deletion"),
-                                N_("auto-applying presets applied"),
-                                N_("legacy flag. set for all new images"),
-                                N_("local copy"),
-                                N_("has .txt"),
-                                N_("has .wav"),
-                                N_("monochrome")
+  char *flag_descriptions[] = { N_("Unused"),
+                                N_("Unused/deprecated"),
+                                N_("LDR"),
+                                N_("Raw"),
+                                N_("HDR"),
+                                N_("Marked for deletion"),
+                                N_("Auto-applying presets applied"),
+                                N_("Legacy flag. Set for all new images"),
+                                N_("Local copy"),
+                                N_("Has .txt"),
+                                N_("Has .wav"),
+                                N_("Monochrome")
   };
   char *tooltip_parts[FLAG_NB] = { 0 };
   int next_tooltip_part = 0;
@@ -350,12 +350,12 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
   if(stars == 6)
   {
     value[0] = 'x';
-    tooltip_parts[next_tooltip_part++] = _("image rejected");
+    tooltip_parts[next_tooltip_part++] = _("Image rejected");
   }
   else
   {
     value[0] = '0' + stars;
-    tooltip_parts[next_tooltip_part++] = star_string = g_strdup_printf(ngettext("image has %d star", "image has %d stars", stars), stars);
+    tooltip_parts[next_tooltip_part++] = star_string = g_strdup_printf(ngettext("Image has %d star", "Image has %d stars", stars), stars);
   }
 
 
@@ -437,7 +437,7 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
 
   const int loader = (unsigned int)img->loader < LOADER_COUNT ? img->loader : 0;
   value[13] = loaders_info[loader].flag;
-  char *loader_tooltip = g_strdup_printf(_("loader: %s"), _(loaders_info[loader].tooltip));
+  char *loader_tooltip = g_strdup_printf(_("Loader: %s"), _(loaders_info[loader].tooltip));
   tooltip_parts[next_tooltip_part++] = loader_tooltip;
 
   value[14] = '\0';
@@ -628,7 +628,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       {
         _metadata_update_tooltip(md, NULL, self);
       }
-      _metadata_update_value(md, _("<various values>"), self);
+      _metadata_update_value(md, _("<Various values>"), self);
       _metadata_update_markup(md, "<span style=\"italic\">%s</span>", self);
       continue;
     }
@@ -641,7 +641,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       {
         char tooltip_filmroll[300] = {0};
         dt_image_film_roll(img, text, sizeof(text));
-        snprintf(tooltip_filmroll, sizeof(tooltip_filmroll), _("double-click to jump to film roll\n%s"), text);
+        snprintf(tooltip_filmroll, sizeof(tooltip_filmroll), _("Double-click to jump to film roll\n%s"), text);
         _metadata_update_tooltip(md_internal_filmroll, tooltip_filmroll, self);
         _metadata_update_value(md_internal_filmroll, text, self);
       }
@@ -675,7 +675,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       break;
 
       case md_internal_local_copy:
-        (void)g_strlcpy(text, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"), sizeof(text));
+        (void)g_strlcpy(text, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("Yes") : _("No"), sizeof(text));
         _metadata_update_value(md_internal_local_copy, text, self);
         break;
 
@@ -1181,9 +1181,9 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
-                                       GTK_DIALOG_DESTROY_WITH_PARENT, _("default"), GTK_RESPONSE_YES,
-                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_ACCEPT, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("Metadata settings"), GTK_WINDOW(win),
+                                       GTK_DIALOG_DESTROY_WITH_PARENT, _("Default"), GTK_RESPONSE_YES,
+                                       _("Cancel"), GTK_RESPONSE_NONE, _("Save"), GTK_RESPONSE_ACCEPT, NULL);
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -1215,18 +1215,18 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *view = gtk_tree_view_new_with_model(model);
   g_object_unref(model);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("metadata"), renderer,
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Metadata"), renderer,
                                                     "text", DT_METADATA_PREF_COL_NAME_L, NULL);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
   GtkWidget *header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header,
-                _("drag and drop one row at a time until you get the desired order"
-                "\nuntick to hide metadata which are not of interest for you"
-                "\nif different settings are needed, use presets"));
+                _("Drag and drop one row at a time until you get the desired order"
+                "\nUntick to hide metadata which are not of interest for you"
+                "\nIf different settings are needed, use presets"));
   renderer = gtk_cell_renderer_toggle_new();
   g_signal_connect(renderer, "toggled", G_CALLBACK(_select_toggled_callback), store);
-  column = gtk_tree_view_column_new_with_attributes(_("visible"), renderer,
+  column = gtk_tree_view_column_new_with_attributes(_("Visible"), renderer,
                                                     "active", DT_METADATA_PREF_COL_VISIBLE, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 
@@ -1295,7 +1295,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 
 void set_preferences(void *menu, dt_lib_module_t *self)
 {
-  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("Preferences..."));
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
@@ -1377,7 +1377,7 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_UPDATE,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
-  dt_action_register(DT_ACTION(self), N_("jump to film roll"), _jump_to_accel, GDK_KEY_j, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("Jump to film roll"), _jump_to_accel, GDK_KEY_j, GDK_CONTROL_MASK);
 }
 
 static void _free_metadata_queue(dt_lib_metadata_info_t *m)

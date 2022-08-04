@@ -97,7 +97,7 @@ typedef struct dt_iop_hazeremoval_global_data_t
 
 const char *name()
 {
-  return _("haze removal");
+  return _("Haze removal");
 }
 
 
@@ -108,11 +108,11 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("remove fog and atmospheric hazing from pictures"),
-                                      _("corrective"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("frequential, RGB"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self, _("Remove fog and atmospheric hazing from pictures"),
+                                      _("Corrective"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Frequential, RGB"),
+                                      _("Linear, RGB, scene-referred"));
 }
 
 int flags()
@@ -198,12 +198,12 @@ void gui_init(dt_iop_module_t *self)
   g->A0[2] = NAN;
   g->hash = 0;
 
-  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
-  gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
+  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
+  gtk_widget_set_tooltip_text(g->strength, _("Amount of haze reduction"));
 
-  g->distance = dt_bauhaus_slider_from_params(self, N_("distance"));
+  g->distance = dt_bauhaus_slider_from_params(self, N_("Distance"));
   dt_bauhaus_slider_set_digits(g->distance, 3);
-  gtk_widget_set_tooltip_text(g->distance, _("limit haze removal up to a specific spatial depth"));
+  gtk_widget_set_tooltip_text(g->distance, _("Limit haze removal up to a specific spatial depth"));
 }
 
 
@@ -467,7 +467,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(hash != 0
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                       &self->gui_lock, &g->hash))
-      dt_control_log(_("inconsistent output"));
+      dt_control_log(_("Inconsistent output"));
     dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];
     A0[1] = g->A0[1];
@@ -732,7 +732,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(hash != 0
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
                                       &self->gui_lock, &g->hash))
-      dt_control_log(_("inconsistent output"));
+      dt_control_log(_("Inconsistent output"));
     dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];
     A0[1] = g->A0[1];

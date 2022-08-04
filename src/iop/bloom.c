@@ -72,16 +72,16 @@ typedef struct dt_iop_bloom_global_data_t
 
 const char *name()
 {
-  return _("bloom");
+  return _("Bloom");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply Orton effect for a dreamy aetherical look"),
-                                      _("creative"),
-                                      _("non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Apply Orton effect for a dreamy aetherical look"),
+                                      _("Creative"),
+                                      _("Non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 
@@ -387,17 +387,17 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_bloom_gui_data_t *g = IOP_GUI_ALLOC(bloom);
 
-  g->size = dt_bauhaus_slider_from_params(self, N_("size"));
+  g->size = dt_bauhaus_slider_from_params(self, N_("Size"));
   dt_bauhaus_slider_set_format(g->size, "%");
-  gtk_widget_set_tooltip_text(g->size, _("the size of bloom"));
+  gtk_widget_set_tooltip_text(g->size, _("The size of bloom"));
 
-  g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
+  g->threshold = dt_bauhaus_slider_from_params(self, N_("Threshold"));
   dt_bauhaus_slider_set_format(g->threshold, "%");
-  gtk_widget_set_tooltip_text(g->threshold, _("the threshold of light"));
+  gtk_widget_set_tooltip_text(g->threshold, _("The threshold of light"));
 
-  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
   dt_bauhaus_slider_set_format(g->strength, "%");
-  gtk_widget_set_tooltip_text(g->strength, _("the strength of bloom"));
+  gtk_widget_set_tooltip_text(g->strength, _("The strength of bloom"));
 }
 
 // clang-format off

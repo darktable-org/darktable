@@ -38,7 +38,7 @@ DT_MODULE(1)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("midi");
+  return _("MIDI");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -199,14 +199,14 @@ gint calculate_move(midi_device *midi, gint controller, gint velocity)
         {
           if(velocity != midi->last_received && midi->last_received != -1)
           {
-            dt_control_log(_("using absolute encoding; reinitialise to switch to relative"));
+            dt_control_log(_("Using absolute encoding; reinitialise to switch to relative"));
             midi->num_identical = 0;
           }
           else if(--midi->num_identical)
             dt_control_log(_("%d more identical (down) moves before switching to relative encoding"), midi->num_identical);
           else
           {
-            dt_control_log(_("switching encoding to relative (down = %d)"), velocity);
+            dt_control_log(_("Switching encoding to relative (down = %d)"), velocity);
             midi->encoding = velocity;
           }
         }

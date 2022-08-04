@@ -268,11 +268,11 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
 
   gtk_box_pack_start(GTK_BOX(container), grid, FALSE, FALSE, 0);
 
-  gtk_stack_add_titled(GTK_STACK(stack), container, _("general"), _("general"));
+  gtk_stack_add_titled(GTK_STACK(stack), container, _("General"), _("General"));
 
   // language
 
-  GtkWidget *label = gtk_label_new(_("interface language"));
+  GtkWidget *label = gtk_label_new(_("Interface language"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   GtkWidget *labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
@@ -287,9 +287,9 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), darktable.l10n->selected);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(language_callback), 0);
-  gtk_widget_set_tooltip_text(labelev,  _("double-click to reset to the system language"));
+  gtk_widget_set_tooltip_text(labelev,  _("Double-click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-  gtk_widget_set_tooltip_text(widget, _("set the language of the user interface. the system default is marked with an * (needs a restart)"));
+  gtk_widget_set_tooltip_text(widget, _("Set the language of the user interface. The system default is marked with an * (needs a restart)"));
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
@@ -298,7 +298,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
 
   load_themes();
 
-  label = gtk_label_new(_("theme"));
+  label = gtk_label_new(_("Theme"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   widget = gtk_combo_box_text_new();
   labelev = gtk_event_box_new();
@@ -326,7 +326,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected);
 
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
-  gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
+  gtk_widget_set_tooltip_text(widget, _("Set the theme for the user interface"));
 
   //Font size check and spin buttons
   GtkWidget *usesysfont = gtk_check_button_new();
@@ -339,14 +339,14 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   else
     gtk_widget_set_state_flags(fontsize, GTK_STATE_FLAG_NORMAL, TRUE);
 
-  label = gtk_label_new(_("use system font size"));
+  label = gtk_label_new(_("Use system font size"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, i, i?2:line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), usesysfont, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(usesysfont, _("use system font size"));
+  gtk_widget_set_tooltip_text(usesysfont, _("Use system font size"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(usesysfont), dt_conf_get_bool("use_system_font"));
   g_signal_connect(G_OBJECT(usesysfont), "toggled", G_CALLBACK(use_sys_font_callback), (gpointer)fontsize);
 
@@ -355,14 +355,14 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   if(dt_conf_get_float("font_size") < 5.0f || dt_conf_get_float("font_size") > 20.0f)
     dt_conf_set_float("font_size", 12.0f);
 
-  label = gtk_label_new(_("font size in points"));
+  label = gtk_label_new(_("Font size in points"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, i, i?0:line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), fontsize, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(fontsize, _("font size in points"));
+  gtk_widget_set_tooltip_text(fontsize, _("Font size in points"));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(fontsize), dt_conf_get_float("font_size"));
   g_signal_connect(G_OBJECT(fontsize), "value_changed", G_CALLBACK(font_size_changed_callback), 0);
 
@@ -374,16 +374,16 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, i, i?1:line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), screen_dpi_overwrite, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(screen_dpi_overwrite, _("adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
-                                                      "increase for a magnified GUI, decrease to fit more content in window.\n"
-                                                      "set to -1 to use the system-defined global resolution.\n"
-                                                      "default is 96 DPI on most systems.\n"
+  gtk_widget_set_tooltip_text(screen_dpi_overwrite, _("Adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
+                                                      "Increase for a magnified GUI, decrease to fit more content in window.\n"
+                                                      "Set to -1 to use the system-defined global resolution.\n"
+                                                      "Default is 96 DPI on most systems.\n"
                                                       "(needs a restart)."));
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(screen_dpi_overwrite), dt_conf_get_float("screen_dpi_overwrite"));
   g_signal_connect(G_OBJECT(screen_dpi_overwrite), "value_changed", G_CALLBACK(dpi_scaling_changed_callback), 0);
 
   //checkbox to allow user to modify theme with user.css
-  label = gtk_label_new(_("modify selected theme with CSS tweaks below"));
+  label = gtk_label_new(_("Modify selected theme with CSS tweaks below"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   tw->apply_toggle = gtk_check_button_new();
   labelev = gtk_event_box_new();
@@ -391,7 +391,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), tw->apply_toggle, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_widget_set_tooltip_text(tw->apply_toggle, _("modify theme with CSS keyed below (saved to user.css)"));
+  gtk_widget_set_tooltip_text(tw->apply_toggle, _("Modify theme with CSS keyed below (saved to user.css)"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tw->apply_toggle), dt_conf_get_bool("themes/usercss"));
   g_signal_connect(G_OBJECT(tw->apply_toggle), "toggled", G_CALLBACK(usercss_callback), 0);
 
@@ -412,13 +412,13 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_container_add(GTK_CONTAINER(scroll), tw->css_text_view);
   gtk_box_pack_start(GTK_BOX(usercssbox), scroll, TRUE, TRUE, 0);
 
-  tw->save_button = gtk_button_new_with_label(C_("usercss", "save CSS and apply"));
+  tw->save_button = gtk_button_new_with_label(C_("usercss", "Save CSS and apply"));
   g_signal_connect(G_OBJECT(tw->save_button), "clicked", G_CALLBACK(save_usercss_callback), tw);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(usercss_dialog_callback), tw);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_end(GTK_BOX(hbox), tw->save_button, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(usercssbox), hbox, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(tw->save_button, _("click to save and apply the CSS tweaks entered in this editor"));
+  gtk_widget_set_tooltip_text(tw->save_button, _("Click to save and apply the CSS tweaks entered in this editor"));
 
   //set textarea text from file or default
   char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
@@ -481,7 +481,7 @@ static void _resize_dialog(GtkWidget *widget)
 void dt_gui_preferences_show()
 {
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
-  _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
+  _preferences_dialog = gtk_dialog_new_with_buttons(_("Darktable preferences"), win,
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     NULL, NULL);
 #if 0
@@ -535,7 +535,7 @@ void dt_gui_preferences_show()
 
   //open in the appropriate tab if currently in darkroom or lighttable view
   const gchar *current_view = darktable.view_manager->current_view->name(darktable.view_manager->current_view);
-  if(strcmp(current_view, _("darkroom")) == 0 || strcmp(current_view, _("lighttable")) == 0)
+  if(strcmp(current_view, _("Darkroom")) == 0 || strcmp(current_view, _("Lighttable")) == 0)
   {
     gtk_stack_set_visible_child(GTK_STACK(stack), gtk_stack_get_child_by_name(GTK_STACK(stack), current_view));
   }
@@ -554,7 +554,7 @@ void dt_gui_preferences_show()
   gtk_widget_destroy(_preferences_dialog);
 
   if(restart_required)
-    dt_control_log(_("darktable needs to be restarted for settings to take effect"));
+    dt_control_log(_("Darktable needs to be restarted for settings to take effect"));
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
 }
@@ -771,7 +771,7 @@ static void init_tab_presets(GtkWidget *stack)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_stack_add_titled(GTK_STACK(stack), container, _("presets"), _("presets"));
+  gtk_stack_add_titled(GTK_STACK(stack), container, _("Presets"), _("Presets"));
 
   tree_insert_presets(model);
 
@@ -781,7 +781,7 @@ static void init_tab_presets(GtkWidget *stack)
 
   // Setting up the cell renderers
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("module"), renderer, "text", P_MODULE_COLUMN, NULL);
+  column = gtk_tree_view_column_new_with_attributes(_("Module"), renderer, "text", P_MODULE_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_pixbuf_new();
@@ -789,19 +789,19 @@ static void init_tab_presets(GtkWidget *stack)
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("name"), renderer, "text", P_NAME_COLUMN, NULL);
+  column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer, "text", P_NAME_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("model"), renderer, "text", P_MODEL_COLUMN, NULL);
+  column = gtk_tree_view_column_new_with_attributes(_("Model"), renderer, "text", P_MODEL_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("maker"), renderer, "text", P_MAKER_COLUMN, NULL);
+  column = gtk_tree_view_column_new_with_attributes(_("Maker"), renderer, "text", P_MAKER_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("lens"), renderer, "text", P_LENS_COLUMN, NULL);
+  column = gtk_tree_view_column_new_with_attributes(_("Lens"), renderer, "text", P_LENS_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
@@ -809,20 +809,20 @@ static void init_tab_presets(GtkWidget *stack)
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("exposure"), renderer, "text", P_EXPOSURE_COLUMN, NULL);
+  column = gtk_tree_view_column_new_with_attributes(_("Exposure"), renderer, "text", P_EXPOSURE_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("aperture"), renderer, "text", P_APERTURE_COLUMN, NULL);
+  column = gtk_tree_view_column_new_with_attributes(_("Aperture"), renderer, "text", P_APERTURE_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("focal length"), renderer, "text",
+  column = gtk_tree_view_column_new_with_attributes(_("Focal length"), renderer, "text",
                                                     P_FOCAL_LENGTH_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
   renderer = gtk_cell_renderer_pixbuf_new();
-  column = gtk_tree_view_column_new_with_attributes(_("auto"), renderer, "pixbuf", P_AUTOAPPLY_COLUMN, NULL);
+  column = gtk_tree_view_column_new_with_attributes(_("Auto"), renderer, "pixbuf", P_AUTOAPPLY_COLUMN, NULL);
   gtk_tree_view_append_column(tree, column);
 
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -834,18 +834,18 @@ static void init_tab_presets(GtkWidget *stack)
 
   GtkWidget *search_presets = gtk_search_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox), search_presets, FALSE, TRUE, 0);
-  gtk_entry_set_placeholder_text(GTK_ENTRY(search_presets), _("search presets list"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(search_presets), _("incrementally search the list of presets\npress up or down keys to cycle through matches"));
+  gtk_entry_set_placeholder_text(GTK_ENTRY(search_presets), _("Search presets list"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(search_presets), _("Incrementally search the list of presets\nPress up or down keys to cycle through matches"));
   g_signal_connect(G_OBJECT(search_presets), "activate", G_CALLBACK(dt_gui_search_stop), tree);
   g_signal_connect(G_OBJECT(search_presets), "stop-search", G_CALLBACK(dt_gui_search_stop), tree);
   g_signal_connect(G_OBJECT(tree), "key-press-event", G_CALLBACK(dt_gui_search_start), search_presets);
   gtk_tree_view_set_search_entry(tree, GTK_ENTRY(search_presets));
 
-  GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import..."));
+  GtkWidget *button = gtk_button_new_with_label(C_("preferences", "Import..."));
   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_preset), (gpointer)model);
 
-  button = gtk_button_new_with_label(C_("preferences", "export..."));
+  button = gtk_button_new_with_label(C_("preferences", "Export..."));
   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_preset), (gpointer)model);
 
@@ -874,7 +874,7 @@ static void init_tab_presets(GtkWidget *stack)
 
 static void init_tab_accels(GtkWidget *stack)
 {
-  gtk_stack_add_titled(GTK_STACK(stack), dt_shortcuts_prefs(NULL), _("shortcuts"), _("shortcuts"));
+  gtk_stack_add_titled(GTK_STACK(stack), dt_shortcuts_prefs(NULL), _("Shortcuts"), _("Shortcuts"));
 }
 
 // TODO: remember which sections were collapsed/expanded and where the view was scrolled to and restore that
@@ -982,7 +982,7 @@ static void _import_preset_from_file(const gchar* filename)
 {
   if(!dt_presets_import_from_file(filename))
   {
-    dt_control_log(_("failed to import preset %s"), filename);
+    dt_control_log(_("Failed to import preset %s"), filename);
   }
 }
 
@@ -993,8 +993,8 @@ static void import_preset(GtkButton *button, gpointer data)
 
   // Zero value indicates import
   GtkFileChooserNative *chooser = gtk_file_chooser_native_new(
-        _("select preset(s) to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
-        _("_open"), _("_cancel"));
+        _("Select preset(s) to import"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+        _("_Open"), _("_Cancel"));
 
   dt_conf_get_folder_to_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(chooser));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(chooser), TRUE);
@@ -1003,12 +1003,12 @@ static void import_preset(GtkButton *button, gpointer data)
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.dtpreset");
   gtk_file_filter_add_pattern(filter, "*.DTPRESET");
-  gtk_file_filter_set_name(filter, _("darktable preset files"));
+  gtk_file_filter_set_name(filter, _("Darktable preset files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*");
-  gtk_file_filter_set_name(filter, _("all files"));
+  gtk_file_filter_set_name(filter, _("All files"));
 
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser), filter);
 
@@ -1032,8 +1032,8 @@ static void export_preset(GtkButton *button, gpointer data)
   GtkWindow *win = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button)));
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-        _("_save"), _("_cancel"));
+        _("Select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        _("_Save"), _("_Cancel"));
 
   dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
 

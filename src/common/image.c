@@ -293,7 +293,7 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t pathname_l
   }
   else
   {
-    g_strlcpy(pathname, _("orphaned image"), pathname_len);
+    g_strlcpy(pathname, _("Orphaned image"), pathname_len);
   }
   sqlite3_finalize(stmt);
   pathname[pathname_len - 1] = '\0';
@@ -538,8 +538,8 @@ static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_dat
       i++;
     }
     if(i > 1) dt_control_log((action == DT_ACTION_UNDO)
-                              ? _("geo-location undone for %d images")
-                              : _("geo-location re-applied to %d images"), i);
+                              ? _("Geo-location undone for %d images")
+                              : _("Geo-location re-applied to %d images"), i);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(*imgs), 0);
   }
@@ -558,8 +558,8 @@ static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_dat
       i++;
     }
     if(i > 1) dt_control_log((action == DT_ACTION_UNDO)
-                              ? _("date/time undone for %d images")
-                              : _("date/time re-applied to %d images"), i);
+                              ? _("Date/time undone for %d images")
+                              : _("Date/time re-applied to %d images"), i);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy(*imgs));
   }
@@ -1989,21 +1989,21 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
           if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
           {
             gchar *oldBasename = g_path_get_basename(copysrcpath);
-            dt_control_log(_("cannot access local copy `%s'"), oldBasename);
+            dt_control_log(_("Cannot access local copy `%s'"), oldBasename);
             g_free(oldBasename);
           }
           else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS)
                   || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY))
           {
             gchar *newBasename = g_path_get_basename(copydestpath);
-            dt_control_log(_("cannot write local copy `%s'"), newBasename);
+            dt_control_log(_("Cannot write local copy `%s'"), newBasename);
             g_free(newBasename);
           }
           else
           {
             gchar *oldBasename = g_path_get_basename(copysrcpath);
             gchar *newBasename = g_path_get_basename(copydestpath);
-            dt_control_log(_("error moving local copy `%s' -> `%s'"), oldBasename, newBasename);
+            dt_control_log(_("Error moving local copy `%s' -> `%s'"), oldBasename, newBasename);
             g_free(oldBasename);
             g_free(newBasename);
           }
@@ -2019,7 +2019,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
     {
       if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
       {
-        dt_control_log(_("error moving `%s': file not found"), oldimg);
+        dt_control_log(_("Error moving `%s': file not found"), oldimg);
       }
       // only display error message if newname is set (renaming and
       // not moving) as when moving it can be the case where a
@@ -2029,11 +2029,11 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
               && (g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS)
                   || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY)))
       {
-        dt_control_log(_("error moving `%s' -> `%s': file exists"), oldimg, newimg);
+        dt_control_log(_("Error moving `%s' -> `%s': file exists"), oldimg, newimg);
       }
       else if(newname)
       {
-        dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
+        dt_control_log(_("Error moving `%s' -> `%s'"), oldimg, newimg);
       }
     }
 
@@ -2347,7 +2347,7 @@ int dt_image_local_copy_set(const int32_t imgid)
   // check that the src file is readable
   if(!g_file_test(srcpath, G_FILE_TEST_IS_REGULAR))
   {
-    dt_control_log(_("cannot create local copy when the original file is not accessible."));
+    dt_control_log(_("Cannot create local copy when the original file is not accessible."));
     return 1;
   }
 
@@ -2361,7 +2361,7 @@ int dt_image_local_copy_set(const int32_t imgid)
 
     if(!g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror))
     {
-      dt_control_log(_("cannot create local copy."));
+      dt_control_log(_("Cannot create local copy."));
       g_object_unref(dest);
       g_object_unref(src);
       return 1;
@@ -2435,7 +2435,7 @@ int dt_image_local_copy_reset(const int32_t imgid)
 
   if(g_file_test(locppath, G_FILE_TEST_EXISTS) && !g_file_test(destpath, G_FILE_TEST_EXISTS))
   {
-    dt_control_log(_("cannot remove local copy when the original file is not accessible."));
+    dt_control_log(_("Cannot remove local copy when the original file is not accessible."));
     return 1;
   }
 

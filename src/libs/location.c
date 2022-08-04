@@ -97,7 +97,7 @@ static void clear_search(dt_lib_location_t *lib);
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("find location");
+  return _("Find location");
 }
 
 const char **views(dt_lib_module_t *self)

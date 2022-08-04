@@ -737,7 +737,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   if(!buf.buf || !buf.width || !buf.height)
   {
     fprintf(stderr, "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed\n", filename);
-    dt_control_log(_("image `%s' is not available!"), img->filename);
+    dt_control_log(_("Image `%s' is not available!"), img->filename);
     goto error_early;
   }
 
@@ -755,8 +755,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   if(!res)
   {
     dt_control_log(
-        _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
-        thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
+        _("Failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
+        thumbnail_export ? C_("noun", "Thumbnail export") : C_("noun", "Export"));
     goto error;
   }
 
@@ -768,7 +768,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1);
     if(!style_items)
     {
-      dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
+      dt_control_log(_("Cannot find the style '%s' to apply during export."), format_params->style);
       goto error;
     }
 

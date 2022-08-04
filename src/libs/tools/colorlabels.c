@@ -39,7 +39,7 @@ static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("colorlabels");
+  return _("Colorlabels");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -85,13 +85,13 @@ void gui_init(dt_lib_module_t *self)
     d->buttons[k] = button;
     dt_gui_add_class(d->buttons[k], "dt_no_hover");
     dt_gui_add_class(d->buttons[k], "dt_dimmed");
-    gtk_widget_set_tooltip_text(button, _("toggle color label of selected images"));
+    gtk_widget_set_tooltip_text(button, _("Toggle color label of selected images"));
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback),
                      GINT_TO_POINTER(k));
     g_signal_connect(G_OBJECT(button), "enter-notify-event", G_CALLBACK(_lib_colorlabels_enter_notify_callback),
                      GINT_TO_POINTER(k));
-    ac = dt_action_define(&darktable.control->actions_thumb, NULL, N_("color label"), button, &dt_action_def_color_label);
+    ac = dt_action_define(&darktable.control->actions_thumb, NULL, N_("Color label"), button, &dt_action_def_color_label);
   }
 
   dt_shortcut_register(ac, 1, 0, GDK_KEY_F1, 0);

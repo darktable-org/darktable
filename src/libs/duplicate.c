@@ -57,7 +57,7 @@ typedef struct dt_lib_duplicate_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("duplicate manager");
+  return _("Duplicate manager");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -260,7 +260,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(cur_scale >= 2.0f)
     {
       /* xgettext:no-c-format */
-      dt_control_log(_("preview is only possible for zoom lower than 200%%"));
+      dt_control_log(_("Preview is only possible for zoom lower than 200%%"));
       return;
     }
     nz = cur_scale / min_scale;
@@ -537,11 +537,11 @@ void gui_init(dt_lib_module_t *self)
   d->duplicate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *bt = dt_action_button_new(NULL, N_("original"), _lib_duplicate_new_clicked_callback, self,
-                            _("create a 'virgin' duplicate of the image without any development"), 0, 0);
+  GtkWidget *bt = dt_action_button_new(NULL, N_("Original"), _lib_duplicate_new_clicked_callback, self,
+                            _("Create a 'virgin' duplicate of the image without any development"), 0, 0);
   gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
-  bt = dt_action_button_new(NULL, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
-                            _("create a duplicate of the image with same history stack"), 0, 0);
+  bt = dt_action_button_new(NULL, N_("Duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
+                            _("Create a duplicate of the image with same history stack"), 0, 0);
   gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
 
   /* add duplicate list and buttonbox to widget */

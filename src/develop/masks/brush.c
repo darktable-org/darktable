@@ -1114,7 +1114,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       {
         dt_masks_dynbuf_set(gui->guipoints_payload, -3, masks_hardness);
       }
-      dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
+      dt_toast_log(_("Hardness: %3.2f%%"), masks_hardness*100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
@@ -1138,7 +1138,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       {
         dt_masks_dynbuf_set(gui->guipoints_payload, -4, masks_border);
       }
-      dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
+      dt_toast_log(_("Size: %3.2f%%"), masks_border*2.f*100.f);
     }
     dt_control_queue_redraw_center();
     return 1;
@@ -1171,7 +1171,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
             dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
             const float masks_hardness = point->hardness;
             point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-            dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
+            dt_toast_log(_("Hardness: %3.2f%%"), masks_hardness*100.0f);
           }
           pts_number++;
         }
@@ -1219,14 +1219,14 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
           float masks_border = dt_conf_get_float("plugins/darkroom/spots/brush_border");
           masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
           dt_conf_set_float("plugins/darkroom/spots/brush_border", masks_border);
-          dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
+          dt_toast_log(_("Size: %3.2f%%"), masks_border*2.f*100.f);
         }
         else
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
           masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
           dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
-          dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
+          dt_toast_log(_("Size: %3.2f%%"), masks_border*2.f*100.f);
         }
       }
 
@@ -2948,7 +2948,7 @@ static void _brush_sanitize_config(dt_masks_type_t type)
 
 static void _brush_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
 {
-  snprintf(form->name, sizeof(form->name), _("brush #%d"), (int)nb);
+  snprintf(form->name, sizeof(form->name), _("Brush #%d"), (int)nb);
 }
 
 static void _brush_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
@@ -2957,10 +2957,10 @@ static void _brush_set_hint_message(const dt_masks_form_gui_t *const gui, const 
   // TODO: check if it would be good idea to have same controls on creation and for selected brush
   if(gui->creation || gui->form_selected)
     g_snprintf(msgbuf, msgbuf_len,
-               _("<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
-                 "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+               _("<b>Size</b>: scroll, <b>hardness</b>: Shift+scroll\n"
+                 "<b>Opacity</b>: Ctrl+scroll (%d%%)"), opacity);
   else if(gui->border_selected)
-    g_strlcat(msgbuf, _("<b>size</b>: scroll"), msgbuf_len);
+    g_strlcat(msgbuf, _("<b>Size</b>: scroll"), msgbuf_len);
 }
 
 static void _brush_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)

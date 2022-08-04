@@ -42,44 +42,44 @@ wb_data;
  *
  * WB name is standardized to one of the following: */
 // "Sunlight" and other variation should be switched to this:
-static const char Daylight[] = N_("daylight");
+static const char Daylight[] = N_("Daylight");
 // Probably same as above:
-static const char DirectSunlight[] = N_("direct sunlight");
-static const char Cloudy[] = N_("cloudy");
+static const char DirectSunlight[] = N_("Direct sunlight");
+static const char Cloudy[] = N_("Cloudy");
 // "Shadows" should be switched to this:
-static const char Shade[] = N_("shade");
-static const char Incandescent[] = N_("incandescent");
-static const char IncandescentWarm[] = N_("incandescent warm");
+static const char Shade[] = N_("Shade");
+static const char Incandescent[] = N_("Incandescent");
+static const char IncandescentWarm[] = N_("Incandescent warm");
 // Same as "Incandescent":
-static const char Tungsten[] = N_("tungsten");
-static const char Fluorescent[] = N_("fluorescent");
+static const char Tungsten[] = N_("Tungsten");
+static const char Fluorescent[] = N_("Fluorescent");
 // In Canon cameras and some newer Nikon cameras:
-static const char FluorescentHigh[] = N_("fluorescent high");
-static const char CoolWhiteFluorescent[] = N_("cool white fluorescent");
-static const char WarmWhiteFluorescent[] = N_("warm white fluorescent");
-static const char DaylightFluorescent[] = N_("daylight fluorescent");
-static const char NeutralFluorescent[] = N_("neutral fluorescent");
-static const char WhiteFluorescent[] = N_("white fluorescent");
+static const char FluorescentHigh[] = N_("Fluorescent high");
+static const char CoolWhiteFluorescent[] = N_("Cool white fluorescent");
+static const char WarmWhiteFluorescent[] = N_("Warm white fluorescent");
+static const char DaylightFluorescent[] = N_("Daylight fluorescent");
+static const char NeutralFluorescent[] = N_("Neutral fluorescent");
+static const char WhiteFluorescent[] = N_("White fluorescent");
 // In some newer Nikon cameras:
-static const char SodiumVaporFluorescent[] = N_("sodium-vapor fluorescent");
-static const char DayWhiteFluorescent[] = N_("day white fluorescent");
-static const char HighTempMercuryVaporFluorescent[] = N_("high temp. mercury-vapor fluorescent");
+static const char SodiumVaporFluorescent[] = N_("Sodium-vapor fluorescent");
+static const char DayWhiteFluorescent[] = N_("Day white fluorescent");
+static const char HighTempMercuryVaporFluorescent[] = N_("High temp. mercury-vapor fluorescent");
 // Found in Nikon Coolpix P1000
-static const char HTMercury[] = N_("high temp. mercury-vapor");
+static const char HTMercury[] = N_("High temp. mercury-vapor");
 // On Some Panasonic
 static const char D55[] = N_("D55");
 
-static const char Flash[] = N_("flash");
+static const char Flash[] = N_("Flash");
 // For Olympus with no real "Flash" preset:
-static const char FlashAuto[] = N_("flash (auto mode)");
-static const char EveningSun[] = N_("evening sun");
-static const char Underwater[] = N_("underwater");
-static const char BlackNWhite[] = N_("black & white");
+static const char FlashAuto[] = N_("Flash (auto mode)");
+static const char EveningSun[] = N_("Evening sun");
+static const char Underwater[] = N_("Underwater");
+static const char BlackNWhite[] = N_("Black & white");
 
-const char uf_spot_wb[] = N_("spot WB");
-const char uf_manual_wb[] = N_("manual WB");
-const char uf_camera_wb[] = N_("camera WB");
-const char uf_auto_wb[] = N_("auto WB");
+const char uf_spot_wb[] = N_("Spot WB");
+const char uf_manual_wb[] = N_("Manual WB");
+const char uf_camera_wb[] = N_("Camera WB");
+const char uf_auto_wb[] = N_("Auto WB");
 
 const wb_data wb_preset[] =
 {

@@ -42,8 +42,8 @@ DT_MODULE_INTROSPECTION(2, dt_iop_profilegamma_params_t)
 
 typedef enum dt_iop_profilegamma_mode_t
 {
-  PROFILEGAMMA_LOG = 0,  // $DESCRIPTION: "logarithmic"
-  PROFILEGAMMA_GAMMA = 1 // $DESCRIPTION: "gamma"
+  PROFILEGAMMA_LOG = 0,  // $DESCRIPTION: "Logarithmic"
+  PROFILEGAMMA_GAMMA = 1 // $DESCRIPTION: "Gamma"
 } dt_iop_profilegamma_mode_t;
 
 typedef struct dt_iop_profilegamma_params_t
@@ -51,10 +51,10 @@ typedef struct dt_iop_profilegamma_params_t
   dt_iop_profilegamma_mode_t mode; // $DEFAULT: PROFILEGAMMA_LOG
   float linear;          // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1
   float gamma;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.45
-  float dynamic_range;   // $MIN: 0.01 $MAX: 32.0 $DEFAULT: 10.0 $DESCRIPTION: "dynamic range"
-  float grey_point;      // $MIN: 0.1 $MAX: 100.0 $DEFAULT: 18.0 $DESCRIPTION: "middle gray luma"
-  float shadows_range;   // $MIN: -16.0 $MAX: 16.0 $DEFAULT: -5.0 $DESCRIPTION: "black relative exposure"
-  float security_factor; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "safety factor"
+  float dynamic_range;   // $MIN: 0.01 $MAX: 32.0 $DEFAULT: 10.0 $DESCRIPTION: "Dynamic range"
+  float grey_point;      // $MIN: 0.1 $MAX: 100.0 $DEFAULT: 18.0 $DESCRIPTION: "Middle gray luma"
+  float shadows_range;   // $MIN: -16.0 $MAX: 16.0 $DEFAULT: -5.0 $DESCRIPTION: "Black relative exposure"
+  float security_factor; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "Safety factor"
 } dt_iop_profilegamma_params_t;
 
 typedef struct dt_iop_profilegamma_gui_data_t
@@ -92,16 +92,16 @@ typedef struct dt_iop_profilegamma_global_data_t
 
 const char *name()
 {
-  return _("unbreak input profile");
+  return _("Unbreak input profile");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("correct input color profiles meant to be applied on non-linear RGB"),
-                                      _("corrective"),
-                                      _("linear, RGB, display-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, display-referred"));
+  return dt_iop_set_description(self, _("Correct input color profiles meant to be applied on non-linear RGB"),
+                                      _("Corrective"),
+                                      _("Linear, RGB, display-referred"),
+                                      _("Non-linear, RGB"),
+                                      _("Non-linear, RGB, display-referred"));
 }
 
 int default_group()
@@ -626,13 +626,13 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *vbox_gamma = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->linear = dt_bauhaus_slider_from_params(self, N_("linear"));
+  g->linear = dt_bauhaus_slider_from_params(self, N_("Linear"));
   dt_bauhaus_slider_set_digits(g->linear, 4);
-  gtk_widget_set_tooltip_text(g->linear, _("linear part"));
+  gtk_widget_set_tooltip_text(g->linear, _("Linear part"));
 
-  g->gamma = dt_bauhaus_slider_from_params(self, N_("gamma"));
+  g->gamma = dt_bauhaus_slider_from_params(self, N_("Gamma"));
   dt_bauhaus_slider_set_digits(g->gamma, 4);
-  gtk_widget_set_tooltip_text(g->gamma, _("gamma exponential factor"));
+  gtk_widget_set_tooltip_text(g->gamma, _("Gamma exponential factor"));
 
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_gamma, "gamma");
 
@@ -643,29 +643,29 @@ void gui_init(dt_iop_module_t *self)
   g->grey_point
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_point"));
   dt_bauhaus_slider_set_format(g->grey_point, "%");
-  gtk_widget_set_tooltip_text(g->grey_point, _("adjust to match the average luma of the subject"));
+  gtk_widget_set_tooltip_text(g->grey_point, _("Adjust to match the average luma of the subject"));
 
   g->shadows_range
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "shadows_range"));
   dt_bauhaus_slider_set_soft_max(g->shadows_range, 0.0);
   dt_bauhaus_slider_set_format(g->shadows_range, _(" EV"));
-  gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle gray and pure black\nthis is a reading a posemeter would give you on the scene"));
+  gtk_widget_set_tooltip_text(g->shadows_range, _("Number of stops between middle gray and pure black\nThis is a reading a posemeter would give you on the scene"));
 
   g->dynamic_range
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "dynamic_range"));
   dt_bauhaus_slider_set_soft_range(g->dynamic_range, 0.5, 16.0);
   dt_bauhaus_slider_set_format(g->dynamic_range, _(" EV"));
-  gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a posemeter would give you on the scene"));
+  gtk_widget_set_tooltip_text(g->dynamic_range, _("Number of stops between pure black and pure white\nThis is a reading a posemeter would give you on the scene"));
 
-  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("Optimize automatically")), FALSE, FALSE, 0);
 
   g->security_factor = dt_bauhaus_slider_from_params(self, "security_factor");
   dt_bauhaus_slider_set_format(g->security_factor, "%");
-  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is useful when noise perturbates the measurements"));
+  gtk_widget_set_tooltip_text(g->security_factor, _("Enlarge or shrink the computed dynamic range\nThis is useful when noise perturbates the measurements"));
 
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
-  dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
-  gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
+  dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("Auto tune levels"));
+  gtk_widget_set_tooltip_text(g->auto_button, _("Make an optimization with some guessing"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->auto_button, TRUE, TRUE, 0);
 
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_log, "log");
@@ -673,8 +673,8 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
-  gtk_widget_set_tooltip_text(g->mode, _("tone mapping method"));
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("Mode"));
+  gtk_widget_set_tooltip_text(g->mode, _("Tone mapping method"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode_stack, TRUE, TRUE, 0);
 }

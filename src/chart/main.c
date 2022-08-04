@@ -501,7 +501,7 @@ static char *get_export_filename(dt_lut_t *self, const char *extension, char **n
   GtkWidget *name_entry = NULL, *description_entry = NULL;
   GtkWidget *dialog
       = gtk_file_chooser_dialog_new("save file", GTK_WINDOW(self->window), GTK_FILE_CHOOSER_ACTION_SAVE,
-                                    _("_cancel"), GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT, NULL);
+                                    _("_Cancel"), GTK_RESPONSE_CANCEL, _("_Save"), GTK_RESPONSE_ACCEPT, NULL);
 
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
@@ -1060,7 +1060,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   if (self->result_label != NULL)
   {
     // TODO: is the rank interesting, too?
-    char *result_string = g_strdup_printf(_("average dE: %.02f\nmax dE: %.02f"), avgerr, maxerr);
+    char *result_string = g_strdup_printf(_("Average dE: %.02f\nMax dE: %.02f"), avgerr, maxerr);
     gtk_label_set_text(GTK_LABEL(self->result_label), result_string);
     g_free(result_string);
   }

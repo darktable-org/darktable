@@ -311,7 +311,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     }
     else
     {
-      dt_control_log(_("end of images"));
+      dt_control_log(_("End of images"));
       d->auto_advance = FALSE;
     }
   }
@@ -327,7 +327,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     }
     else
     {
-      dt_control_log(_("end of images. press any key to return to lighttable mode"));
+      dt_control_log(_("End of images. Press any key to return to Lighttable mode"));
       d->auto_advance = FALSE;
     }
   }
@@ -341,7 +341,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 
 const char *name(const dt_view_t *self)
 {
-  return _("slideshow");
+  return _("Slideshow");
 }
 
 uint32_t view(const dt_view_t *self)
@@ -373,7 +373,7 @@ int try_enter(dt_view_t *self)
   }
   else
   {
-    dt_control_log(_("there are no images in this collection"));
+    dt_control_log(_("There are no images in this collection"));
     return 1;
   }
 }
@@ -449,7 +449,7 @@ void enter(dt_view_t *self)
 
   // start first job
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, process_job_create(d));
-  dt_control_log(_("waiting to start slideshow"));
+  dt_control_log(_("Waiting to start slideshow"));
 }
 
 void leave(dt_view_t *self)
@@ -564,7 +564,7 @@ static void _start_stop_callback(dt_action_t *action)
   else
   {
     d->auto_advance = FALSE;
-    dt_control_log(_("slideshow paused"));
+    dt_control_log(_("Slideshow paused"));
   }
 }
 
@@ -572,20 +572,20 @@ static void _slow_down_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, 1);
-  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+  dt_control_log(ngettext("Slideshow delay set to %d second", "Slideshow delay set to %d seconds", d->delay), d->delay);
 }
 
 static void _speed_up_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, -1);
-  dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+  dt_control_log(ngettext("Slideshow delay set to %d second", "Slideshow delay set to %d seconds", d->delay), d->delay);
 }
 
 static void _step_back_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
-  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  if (d->auto_advance) dt_control_log(_("Slideshow paused"));
   d->auto_advance = FALSE;
   _step_state(d, S_REQUEST_STEP_BACK);
 }
@@ -593,7 +593,7 @@ static void _step_back_callback(dt_action_t *action)
 static void _step_forward_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
-  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  if (d->auto_advance) dt_control_log(_("Slideshow paused"));
   d->auto_advance = FALSE;
   _step_state(d, S_REQUEST_STEP);
 }
@@ -608,26 +608,26 @@ static void _exit_callback(dt_action_t *action)
 
 void gui_init(dt_view_t *self)
 {
-  dt_action_register(DT_ACTION(self), N_("start and stop"), _start_stop_callback, GDK_KEY_space, 0);
-  dt_action_register(DT_ACTION(self), N_("exit slideshow"), _exit_callback, GDK_KEY_Escape, 0);
+  dt_action_register(DT_ACTION(self), N_("Start and stop"), _start_stop_callback, GDK_KEY_space, 0);
+  dt_action_register(DT_ACTION(self), N_("Exit slideshow"), _exit_callback, GDK_KEY_Escape, 0);
 
   dt_action_t *ac;
-  ac = dt_action_register(DT_ACTION(self), N_("slow down"), _slow_down_callback, GDK_KEY_Up, 0);
+  ac = dt_action_register(DT_ACTION(self), N_("Slow down"), _slow_down_callback, GDK_KEY_Up, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_KP_Add, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_plus, 0);
-  ac = dt_action_register(DT_ACTION(self), N_("speed up"), _speed_up_callback, GDK_KEY_Down, 0);
+  ac = dt_action_register(DT_ACTION(self), N_("Speed up"), _speed_up_callback, GDK_KEY_Down, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_KP_Subtract, 0);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_minus, 0);
 
-  dt_action_register(DT_ACTION(self), N_("step forward"), _step_forward_callback, GDK_KEY_Right, 0);
-  dt_action_register(DT_ACTION(self), N_("step back"), _step_back_callback, GDK_KEY_Left, 0);
+  dt_action_register(DT_ACTION(self), N_("Step forward"), _step_forward_callback, GDK_KEY_Right, 0);
+  dt_action_register(DT_ACTION(self), N_("Step back"), _step_back_callback, GDK_KEY_Left, 0);
 }
 
 GSList *mouse_actions(const dt_view_t *self)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0, _("go to next image"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("go to previous image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0, _("Go to next image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("Go to previous image"));
   return lm;
 }
 // clang-format off

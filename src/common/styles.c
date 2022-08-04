@@ -222,7 +222,7 @@ static gboolean dt_styles_create_style_header(const char *name, const char *desc
 
   if(dt_styles_get_id_by_name(name) != 0)
   {
-    dt_control_log(_("style with name '%s' already exists"), name);
+    dt_control_log(_("Style with name '%s' already exists"), name);
     return FALSE;
   }
 
@@ -482,10 +482,10 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
     /* backup style to disk */
     dt_styles_save_to_file(newname, NULL, FALSE);
 
-    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
+    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("Styles"));
     dt_action_register(stl, newname, _apply_style_shortcut_callback, 0, 0);
 
-    dt_control_log(_("style named '%s' successfully created"), newname);
+    dt_control_log(_("Style named '%s' successfully created"), newname);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
 }
@@ -559,7 +559,7 @@ gboolean dt_styles_create_from_image(const char *name, const char *description,
     /* backup style to disk */
     dt_styles_save_to_file(name, NULL, FALSE);
 
-    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
+    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("Styles"));
     dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
@@ -617,11 +617,11 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
 
   if(!selected)
   {
-    dt_control_log(_("no image selected!"));
+    dt_control_log(_("No image selected!"));
   }
   else
   {
-    dt_control_log(_("style %s successfully applied!"), name);
+    dt_control_log(_("Style %s successfully applied!"), name);
   }
 }
 
@@ -635,17 +635,17 @@ void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean
 
   if(!styles && !list)
   {
-    dt_control_log(_("no images nor styles selected!"));
+    dt_control_log(_("No images nor styles selected!"));
     return;
   }
   else if(!styles)
   {
-    dt_control_log(_("no styles selected!"));
+    dt_control_log(_("No styles selected!"));
     return;
   }
   else if(!list)
   {
-    dt_control_log(_("no image selected!"));
+    dt_control_log(_("No image selected!"));
     return;
   }
 
@@ -670,7 +670,7 @@ void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   const guint styles_cnt = g_list_length(styles);
-  dt_control_log(ngettext("style successfully applied!", "styles successfully applied!", styles_cnt));
+  dt_control_log(ngettext("Style successfully applied!", "Styles successfully applied!", styles_cnt));
 }
 
 void dt_styles_create_from_list(const GList *list)
@@ -684,7 +684,7 @@ void dt_styles_create_from_list(const GList *list)
     selected = TRUE;
   }
 
-  if(!selected) dt_control_log(_("no image selected!"));
+  if(!selected) dt_control_log(_("No image selected!"));
 }
 
 void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, GList **modules_used, const gboolean append)
@@ -741,7 +741,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
         {
           fprintf(stderr, "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, dt %d.\n",
                   module->op, style_item->module_version, module->version());
-          dt_control_log(_("module `%s' version mismatch: %d != %d"), module->op,
+          dt_control_log(_("Module `%s' version mismatch: %d != %d"), module->op,
                          module->version(), style_item->module_version);
 
           do_merge = FALSE;
@@ -1196,13 +1196,13 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
     {
       if(g_unlink(stylename))
       {
-        dt_control_log(_("failed to overwrite style file for %s"), style_name);
+        dt_control_log(_("Failed to overwrite style file for %s"), style_name);
         return;
       }
     }
     else
     {
-      dt_control_log(_("style file for %s exists"), style_name);
+      dt_control_log(_("Style file for %s exists"), style_name);
       return;
     }
   }
@@ -1454,7 +1454,7 @@ static void dt_style_save(StyleData *style)
   if((id = dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {
     g_list_foreach(style->plugins, (GFunc)dt_style_plugin_save, GINT_TO_POINTER(id));
-    dt_control_log(_("style %s was successfully imported"), style->info->name->str);
+    dt_control_log(_("Style %s was successfully imported"), style->info->name->str);
   }
 }
 
@@ -1498,7 +1498,7 @@ void dt_styles_import_from_file(const char *style_path)
   else
   {
     // Failed to open file, clean up.
-    dt_control_log(_("could not read file `%s'"), style_path);
+    dt_control_log(_("Could not read file `%s'"), style_path);
     g_markup_parse_context_free(parser);
     dt_styles_style_data_free(style, TRUE);
     return;
@@ -1560,7 +1560,7 @@ void dt_init_styles_actions()
   GList *result = dt_styles_get_list("");
   if(result)
   {
-    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
+    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("Styles"));
     for(GList *res_iter = result; res_iter; res_iter = g_list_next(res_iter))
     {
       dt_style_t *style = (dt_style_t *)res_iter->data;

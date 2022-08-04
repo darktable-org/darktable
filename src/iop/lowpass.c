@@ -47,8 +47,8 @@ DT_MODULE_INTROSPECTION(4, dt_iop_lowpass_params_t)
 
 typedef enum dt_iop_lowpass_algo_t
 {
-  LOWPASS_ALGO_GAUSSIAN, // $DESCRIPTION: "gaussian"
-  LOWPASS_ALGO_BILATERAL // $DESCRIPTION: "bilateral filter"
+  LOWPASS_ALGO_GAUSSIAN, // $DESCRIPTION: "Gaussian"
+  LOWPASS_ALGO_BILATERAL // $DESCRIPTION: "Bilateral filter"
 } dt_iop_lowpass_algo_t;
 
 /* legacy version 1 params */
@@ -86,7 +86,7 @@ typedef struct dt_iop_lowpass_params_t
   float contrast;   // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0
   float brightness; // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0
   float saturation; // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0
-  dt_iop_lowpass_algo_t lowpass_algo; // $DEFAULT: LOWPASS_ALGO_GAUSSIAN $DESCRIPTION: "soften with"
+  dt_iop_lowpass_algo_t lowpass_algo; // $DEFAULT: LOWPASS_ALGO_GAUSSIAN $DESCRIPTION: "Soften with"
   int unbound; // $DEFAULT: 1
 } dt_iop_lowpass_params_t;
 
@@ -124,16 +124,16 @@ typedef struct dt_iop_lowpass_global_data_t
 
 const char *name()
 {
-  return _("lowpass");
+  return _("Lowpass");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("isolate low frequencies in the image"),
-                                      _("creative"),
-                                      _("linear or non-linear, Lab, scene-referred"),
-                                      _("frequential, Lab"),
-                                      _("special, Lab, scene-referred"));
+  return dt_iop_set_description(self, _("Isolate low frequencies in the image"),
+                                      _("Creative"),
+                                      _("Linear or non-linear, Lab, scene-referred"),
+                                      _("Frequential, Lab"),
+                                      _("Special, Lab, scene-referred"));
 }
 
 int flags()
@@ -549,7 +549,7 @@ void init_presets(dt_iop_module_so_t *self)
 {
   dt_database_start_transaction(darktable.db);
 
-  dt_gui_presets_add_generic(_("local contrast mask"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Local contrast mask"), self->op, self->version(),
                              &(dt_iop_lowpass_params_t){ 0, 50.0f, -1.0f, 0.0f, 0.0f, LOWPASS_ALGO_GAUSSIAN, 1 },
                              sizeof(dt_iop_lowpass_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -568,17 +568,17 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_lowpass_gui_data_t *g = IOP_GUI_ALLOC(lowpass);
 
-  g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
+  g->radius = dt_bauhaus_slider_from_params(self, N_("Radius"));
   g->lowpass_algo = dt_bauhaus_combobox_from_params(self, "lowpass_algo");
-  g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
-  g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
-  g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
+  g->contrast = dt_bauhaus_slider_from_params(self, N_("Contrast"));
+  g->brightness = dt_bauhaus_slider_from_params(self, N_("Brightness"));
+  g->saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
 
-  gtk_widget_set_tooltip_text(g->radius, _("radius of gaussian/bilateral blur"));
-  gtk_widget_set_tooltip_text(g->contrast, _("contrast of lowpass filter"));
-  gtk_widget_set_tooltip_text(g->brightness, _("brightness adjustment of lowpass filter"));
-  gtk_widget_set_tooltip_text(g->saturation, _("color saturation of lowpass filter"));
-  gtk_widget_set_tooltip_text(g->lowpass_algo, _("which filter to use for blurring"));
+  gtk_widget_set_tooltip_text(g->radius, _("Radius of gaussian/bilateral blur"));
+  gtk_widget_set_tooltip_text(g->contrast, _("Contrast of lowpass filter"));
+  gtk_widget_set_tooltip_text(g->brightness, _("Brightness adjustment of lowpass filter"));
+  gtk_widget_set_tooltip_text(g->saturation, _("Color saturation of lowpass filter"));
+  gtk_widget_set_tooltip_text(g->lowpass_algo, _("Which filter to use for blurring"));
 
 #if 0 // gaussian order not user selectable
   g_signal_connect (G_OBJECT (g->order), "changed",

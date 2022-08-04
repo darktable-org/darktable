@@ -45,10 +45,10 @@ DT_MODULE_INTROSPECTION(1, dt_iop_splittoning_params_t)
 
 typedef struct dt_iop_splittoning_params_t
 {
-  float shadow_hue;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-  float shadow_saturation;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "saturation"
-  float highlight_hue;        // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2 $DESCRIPTION: "hue"
-  float highlight_saturation; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "saturation"
+  float shadow_hue;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Hue"
+  float shadow_saturation;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "Saturation"
+  float highlight_hue;        // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2 $DESCRIPTION: "Hue"
+  float highlight_saturation; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "Saturation"
   float balance;              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 center luminance of gradient
   float compress;             // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 33.0 Compress range
 } dt_iop_splittoning_params_t;
@@ -78,7 +78,7 @@ typedef struct dt_iop_splittoning_global_data_t
 
 const char *name()
 {
-  return _("split-toning");
+  return _("Split-toning");
 }
 
 int flags()
@@ -98,12 +98,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("use two specific colors for shadows and highlights and\n"
+  return dt_iop_set_description(self, _("Use two specific colors for shadows and highlights and\n"
                                         "create a linear toning effect between them up to a pivot."),
-                                      _("creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("linear, RGB"),
-                                      _("linear, RGB, scene-referred"));
+                                      _("Creative"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Linear, RGB"),
+                                      _("Linear, RGB, scene-referred"));
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -115,7 +115,7 @@ void init_presets(dt_iop_module_so_t *self)
   // balance : 63
   // compress : 0
   dt_gui_presets_add_generic(
-      _("authentic sepia"), self->op, self->version(),
+      _("Authentic sepia"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 26.0 / 360.0, 92.0 / 100.0, 40.0 / 360.0, 92.0 / 100.0, 0.63, 0.0 },
       sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -124,7 +124,7 @@ void init_presets(dt_iop_module_so_t *self)
   // balance : 0
   // compress : 5.22
   dt_gui_presets_add_generic(
-      _("authentic cyanotype"), self->op, self->version(),
+      _("Authentic cyanotype"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 220.0 / 360.0, 64.0 / 100.0, 220.0 / 360.0, 64.0 / 100.0, 0.0, 5.22 },
       sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -133,7 +133,7 @@ void init_presets(dt_iop_module_so_t *self)
   // balance : 100
   // compress : 0
   dt_gui_presets_add_generic(
-      _("authentic platinotype"), self->op, self->version(),
+      _("Authentic platinotype"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 13.0 / 360.0, 42.0 / 100.0, 13.0 / 360.0, 42.0 / 100.0, 100.0, 0.0 },
       sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -142,7 +142,7 @@ void init_presets(dt_iop_module_so_t *self)
   // balance : 60
   // compress : 0
   dt_gui_presets_add_generic(
-      _("chocolate brown"), self->op, self->version(),
+      _("Chocolate brown"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 28.0 / 360.0, 39.0 / 100.0, 28.0 / 360.0, 8.0 / 100.0, 0.60, 0.0 },
       sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -468,7 +468,7 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
-  dt_bauhaus_widget_set_label(hue, section, N_("hue"));
+  dt_bauhaus_widget_set_label(hue, section, N_("Hue"));
   dt_bauhaus_slider_set_feedback(hue, 0);
   dt_bauhaus_slider_set_stop(hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.166f, 1.0f, 1.0f, 0.0f);
@@ -477,17 +477,17 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
   dt_bauhaus_slider_set_stop(hue, 0.664f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(hue, 1.0f  , 1.0f, 0.0f, 0.0f);
-  gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
+  gtk_widget_set_tooltip_text(hue, _("Select the hue tone"));
   dt_color_picker_new(self, DT_COLOR_PICKER_POINT, hue);
 
-  dt_bauhaus_widget_set_label(saturation, section, N_("saturation"));
+  dt_bauhaus_widget_set_label(saturation, section, N_("Saturation"));
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
-  gtk_widget_set_tooltip_text(saturation, _("select the saturation tone"));
+  gtk_widget_set_tooltip_text(saturation, _("Select the saturation tone"));
 
   *picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(*picker), FALSE);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(*picker), _("select tone color"));
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(*picker), _("Select tone color"));
   g_signal_connect(G_OBJECT(*picker), "color-set", G_CALLBACK(colorpick_callback), self);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -517,25 +517,25 @@ void gui_init(struct dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  gui_init_section(self, N_("shadows"), shadows_box, g->shadow_hue_gslider, g->shadow_sat_gslider, &g->shadow_colorpick, TRUE);
+  gui_init_section(self, N_("Shadows"), shadows_box, g->shadow_hue_gslider, g->shadow_sat_gslider, &g->shadow_colorpick, TRUE);
 
-  gui_init_section(self, N_("highlights"), highlights_box, g->highlight_hue_gslider, g->highlight_sat_gslider, &g->highlight_colorpick, FALSE);
+  gui_init_section(self, N_("Highlights"), highlights_box, g->highlight_hue_gslider, g->highlight_sat_gslider, &g->highlight_colorpick, FALSE);
 
   // Additional parameters
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("Properties")), FALSE, FALSE, 0);
 
-  g->balance_scale = dt_bauhaus_slider_from_params(self, N_("balance"));
+  g->balance_scale = dt_bauhaus_slider_from_params(self, N_("Balance"));
   dt_bauhaus_slider_set_feedback(g->balance_scale, 0);
   dt_bauhaus_slider_set_digits(g->balance_scale, 4);
   dt_bauhaus_slider_set_factor(g->balance_scale, -100.0);
   dt_bauhaus_slider_set_offset(g->balance_scale, +100.0);
   dt_bauhaus_slider_set_stop(g->balance_scale, 0.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_slider_set_stop(g->balance_scale, 1.0f, 0.5f, 0.5f, 0.5f);
-  gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of split-toning"));
+  gtk_widget_set_tooltip_text(g->balance_scale, _("The balance of center of split-toning"));
 
-  g->compress_scale = dt_bauhaus_slider_from_params(self, N_("compress"));
+  g->compress_scale = dt_bauhaus_slider_from_params(self, N_("Compress"));
   dt_bauhaus_slider_set_format(g->compress_scale, "%");
-  gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve mid-tones"));
+  gtk_widget_set_tooltip_text(g->compress_scale, _("Compress the effect on highlights/shadows and\npreserve mid-tones"));
 }
 
 // clang-format off

@@ -103,7 +103,7 @@ static void overlay_changed(GtkWidget *combo, dt_lib_live_view_t *lib)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("live view");
+  return _("Live view");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -286,41 +286,41 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), data); \
   dt_action_define(DT_ACTION(self), NULL, action, button, *(#type)?&dt_action_def_toggle:&dt_action_def_button);
 
-  lib->live_view = NEW_BUTTON(toggle, dtgtk_cairo_paint_eye, 0, _toggle_live_view_clicked, lib, N_("toggle live view"));
+  lib->live_view = NEW_BUTTON(toggle, dtgtk_cairo_paint_eye, 0, _toggle_live_view_clicked, lib, N_("Toggle live view"));
   dt_shortcut_register(dt_action_section(DT_ACTION(self), "toggle live view"), 0, 0, GDK_KEY_v, 0);
-  lib->live_view_zoom = NEW_BUTTON(, dtgtk_cairo_paint_zoom, 0, _zoom_live_view_clicked, lib, N_("zoom live view")); // TODO: see _zoom_live_view_clicked
+  lib->live_view_zoom = NEW_BUTTON(, dtgtk_cairo_paint_zoom, 0, _zoom_live_view_clicked, lib, N_("Zoom live view")); // TODO: see _zoom_live_view_clicked
   dt_shortcut_register(dt_action_section(DT_ACTION(self), "zoom live view"), 0, 0, GDK_KEY_w, 0);
-  lib->rotate_ccw = NEW_BUTTON(, dtgtk_cairo_paint_refresh, 0, _rotate_ccw, lib, N_("rotate 90 degrees ccw"));
-  lib->rotate_cw = NEW_BUTTON(,dtgtk_cairo_paint_refresh, CPF_DIRECTION_UP, _rotate_cw, lib, N_("rotate 90 degrees cw"));
-  lib->flip = NEW_BUTTON(toggle, dtgtk_cairo_paint_flip, CPF_DIRECTION_UP, _toggle_flip_clicked, lib, N_("flip live view horizontally"));
+  lib->rotate_ccw = NEW_BUTTON(, dtgtk_cairo_paint_refresh, 0, _rotate_ccw, lib, N_("Rotate 90 degrees ccw"));
+  lib->rotate_cw = NEW_BUTTON(,dtgtk_cairo_paint_refresh, CPF_DIRECTION_UP, _rotate_cw, lib, N_("Rotate 90 degrees cw"));
+  lib->flip = NEW_BUTTON(toggle, dtgtk_cairo_paint_flip, CPF_DIRECTION_UP, _toggle_flip_clicked, lib, N_("Flip live view horizontally"));
 
   // focus buttons
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
-  lib->focus_in_big = NEW_BUTTON(,dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_LEFT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_NEARER), N_("move focus point in (big steps)"));
-  lib->focus_in_small = NEW_BUTTON(,dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_NEAR), N_("move focus point in (small steps)"));// TODO icon not centered
-  lib->auto_focus = NEW_BUTTON(,dtgtk_cairo_paint_lock, 0, _auto_focus_button_clicked, GINT_TO_POINTER(1), N_("run autofocus"));
-  lib->focus_out_small = NEW_BUTTON(,dtgtk_cairo_paint_arrow, CPF_DIRECTION_RIGHT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_FAR), N_("move focus point out (small steps)")); // TODO same here
-  lib->focus_out_big = NEW_BUTTON(,dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_RIGHT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_FARTHER), N_("move focus point out (big steps)"));
+  lib->focus_in_big = NEW_BUTTON(,dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_LEFT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_NEARER), N_("Move focus point in (big steps)"));
+  lib->focus_in_small = NEW_BUTTON(,dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_NEAR), N_("Move focus point in (small steps)"));// TODO icon not centered
+  lib->auto_focus = NEW_BUTTON(,dtgtk_cairo_paint_lock, 0, _auto_focus_button_clicked, GINT_TO_POINTER(1), N_("Run autofocus"));
+  lib->focus_out_small = NEW_BUTTON(,dtgtk_cairo_paint_arrow, CPF_DIRECTION_RIGHT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_FAR), N_("Move focus point out (small steps)")); // TODO same here
+  lib->focus_out_big = NEW_BUTTON(,dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_RIGHT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_FARTHER), N_("Move focus point out (big steps)"));
 #undef NEW_BUTTON
 
   lib->overlay = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
-  dt_bauhaus_widget_set_label(lib->overlay, NULL, N_("overlay"));
-  dt_bauhaus_combobox_add(lib->overlay, _("none"));
-  dt_bauhaus_combobox_add(lib->overlay, _("selected image"));
-  dt_bauhaus_combobox_add(lib->overlay, _("id"));
-  gtk_widget_set_tooltip_text(lib->overlay, _("overlay another image over the live view"));
+  dt_bauhaus_widget_set_label(lib->overlay, NULL, N_("Overlay"));
+  dt_bauhaus_combobox_add(lib->overlay, _("None"));
+  dt_bauhaus_combobox_add(lib->overlay, _("Selected image"));
+  dt_bauhaus_combobox_add(lib->overlay, _("Id"));
+  gtk_widget_set_tooltip_text(lib->overlay, _("Overlay another image over the live view"));
   g_signal_connect(G_OBJECT(lib->overlay), "value-changed", G_CALLBACK(overlay_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay, TRUE, TRUE, 0);
 
   lib->overlay_id_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *label = gtk_label_new(_("image id"));
+  GtkWidget *label = gtk_label_new(_("Image id"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   lib->overlay_id = gtk_spin_button_new_with_range(0, 1000000000, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(lib->overlay_id), 0);
-  gtk_widget_set_tooltip_text(lib->overlay_id, _("enter image id of the overlay manually"));
+  gtk_widget_set_tooltip_text(lib->overlay_id, _("Enter image id of the overlay manually"));
   g_signal_connect(G_OBJECT(lib->overlay_id), "value-changed", G_CALLBACK(_overlay_id_changed), lib);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(lib->overlay_id),
                             dt_conf_get_int("plugins/lighttable/live_view/overlay_imgid"));
@@ -331,36 +331,36 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show(label);
 
   lib->overlay_mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(lib->overlay_mode, NULL, N_("overlay mode"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "normal"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "xor"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "add"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "saturate"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "multiply"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "screen"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "overlay"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "darken"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "lighten"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "color dodge"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "color burn"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "hard light"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "soft light"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "difference"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "exclusion"));
+  dt_bauhaus_widget_set_label(lib->overlay_mode, NULL, N_("Overlay mode"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Normal"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Xor"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Add"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Saturate"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Multiply"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Screen"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Overlay"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Darken"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Lighten"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Color dodge"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Color burn"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Hard light"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Soft light"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Difference"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "Exclusion"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL hue"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL saturation"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL color"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL luminosity"));
-  gtk_widget_set_tooltip_text(lib->overlay_mode, _("mode of the overlay"));
+  gtk_widget_set_tooltip_text(lib->overlay_mode, _("Mode of the overlay"));
   dt_bauhaus_combobox_set(lib->overlay_mode, dt_conf_get_int("plugins/lighttable/live_view/overlay_mode"));
   g_signal_connect(G_OBJECT(lib->overlay_mode), "value-changed", G_CALLBACK(_overlay_mode_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_mode, TRUE, TRUE, 0);
 
   lib->overlay_splitline = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(lib->overlay_splitline, NULL, N_("split line"));
-  dt_bauhaus_combobox_add(lib->overlay_splitline, _("off"));
-  dt_bauhaus_combobox_add(lib->overlay_splitline, _("on"));
-  gtk_widget_set_tooltip_text(lib->overlay_splitline, _("only draw part of the overlay"));
+  dt_bauhaus_widget_set_label(lib->overlay_splitline, NULL, N_("Split line"));
+  dt_bauhaus_combobox_add(lib->overlay_splitline, _("Off"));
+  dt_bauhaus_combobox_add(lib->overlay_splitline, _("On"));
+  gtk_widget_set_tooltip_text(lib->overlay_splitline, _("Only draw part of the overlay"));
   dt_bauhaus_combobox_set(lib->overlay_splitline, dt_conf_get_int("plugins/lighttable/live_view/splitline"));
   g_signal_connect(G_OBJECT(lib->overlay_splitline), "value-changed", G_CALLBACK(_overlay_splitline_changed),
                    lib);

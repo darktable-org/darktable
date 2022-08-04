@@ -82,7 +82,7 @@ static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("history");
+  return _("History");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -120,9 +120,9 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  d->compress_button = dt_action_button_new(self, N_("compress history stack"), _lib_history_compress_clicked_callback, self,
-                                            _("create a minimal history stack which produces the same image\n"
-                                              "ctrl+click to truncate history to the selected item"), 0, 0);
+  d->compress_button = dt_action_button_new(self, N_("Compress history stack"), _lib_history_compress_clicked_callback, self,
+                                            _("Create a minimal history stack which produces the same image\n"
+                                              "Ctrl+click to truncate history to the selected item"), 0, 0);
   g_signal_connect(G_OBJECT(d->compress_button), "button-press-event", G_CALLBACK(_lib_history_compress_pressed_callback), self);
 
   /* add toolbar button for creating style */
@@ -130,8 +130,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->create_button), "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   gtk_widget_set_name(d->create_button, "non-flat");
-  gtk_widget_set_tooltip_text(d->create_button, _("create a style from the current history stack"));
-  dt_action_define(DT_ACTION(self), NULL, N_("create style from history"), d->create_button, &dt_action_def_button);
+  gtk_widget_set_tooltip_text(d->create_button, _("Create a style from the current history stack"));
+  dt_action_define(DT_ACTION(self), NULL, N_("Create style from history"), d->create_button, &dt_action_def_button);
 
   /* add buttons to buttonbox */
   gtk_box_pack_start(GTK_BOX(hhbox), d->compress_button, TRUE, TRUE, 0);
@@ -187,20 +187,20 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   {
     onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, 0, NULL);
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
-    gtk_widget_set_tooltip_text(onoff, _("always-on module"));
+    gtk_widget_set_tooltip_text(onoff, _("Always-on module"));
   }
   else if(default_enabled)
   {
     onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, 0, NULL);
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
-    gtk_widget_set_tooltip_text(onoff, _("default enabled module"));
+    gtk_widget_set_tooltip_text(onoff, _("Default enabled module"));
   }
   else
   {
     if(deprecated)
     {
       onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated, 0, NULL);
-      gtk_widget_set_tooltip_text(onoff, _("deprecated module"));
+      gtk_widget_set_tooltip_text(onoff, _("Deprecated module"));
     }
     else
     {
@@ -760,7 +760,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
   case DT_INTROSPECTION_TYPE_ENUM:
     if(*(int*)o != *(int*)p)
     {
-      const char *old_str = N_("unknown"), *new_str = N_("unknown");
+      const char *old_str = N_("Unknown"), *new_str = N_("Unknown");
       for(dt_introspection_type_enum_tuple_t *i = field->Enum.values; i && i->name; i++)
       {
         if(i->value == *(int*)o)
@@ -854,30 +854,30 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
                                                     _(g_dpgettext2(NULL, "blendmode", new_str)));\
       }
 
-    add_blend_history_change_enum(blend_cst, _("colorspace"), dt_develop_blend_colorspace_names);
-    add_blend_history_change_enum(mask_mode, _("mask mode"), dt_develop_mask_mode_names);
-    add_blend_history_change_enum(blend_mode & DEVELOP_BLEND_MODE_MASK, _("blend mode"), dt_develop_blend_mode_names);
-    add_blend_history_change_enum(blend_mode & DEVELOP_BLEND_REVERSE, _("blend operation"), dt_develop_blend_mode_flag_names);
-    add_blend_history_change(blend_parameter, _("%.2f EV"), _("blend fulcrum"));
-    add_blend_history_change(opacity, "%.4f", _("mask opacity"));
-    add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), _("combine masks"), dt_develop_combine_masks_names);
-    add_blend_history_change(feathering_radius, "%.4f", _("feathering radius"));
-    add_blend_history_change_enum(feathering_guide, _("feathering guide"), dt_develop_feathering_guide_names);
-    add_blend_history_change(blur_radius, "%.4f", _("mask blur"));
-    add_blend_history_change(contrast, "%.4f", _("mask contrast"));
-    add_blend_history_change(brightness, "%.4f", _("brightness"));
-    add_blend_history_change(raster_mask_instance, "%d", _("raster mask instance"));
-    add_blend_history_change(raster_mask_id, "%d", _("raster mask id"));
-    add_blend_history_change_enum(raster_mask_invert, _("invert mask"), dt_develop_invert_mask_names);
+    add_blend_history_change_enum(blend_cst, _("Colorspace"), dt_develop_blend_colorspace_names);
+    add_blend_history_change_enum(mask_mode, _("Mask mode"), dt_develop_mask_mode_names);
+    add_blend_history_change_enum(blend_mode & DEVELOP_BLEND_MODE_MASK, _("Blend mode"), dt_develop_blend_mode_names);
+    add_blend_history_change_enum(blend_mode & DEVELOP_BLEND_REVERSE, _("Blend operation"), dt_develop_blend_mode_flag_names);
+    add_blend_history_change(blend_parameter, _("%.2f EV"), _("Blend fulcrum"));
+    add_blend_history_change(opacity, "%.4f", _("Mask opacity"));
+    add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), _("Combine masks"), dt_develop_combine_masks_names);
+    add_blend_history_change(feathering_radius, "%.4f", _("Feathering radius"));
+    add_blend_history_change_enum(feathering_guide, _("Feathering guide"), dt_develop_feathering_guide_names);
+    add_blend_history_change(blur_radius, "%.4f", _("Mask blur"));
+    add_blend_history_change(contrast, "%.4f", _("Mask contrast"));
+    add_blend_history_change(brightness, "%.4f", _("Brightness"));
+    add_blend_history_change(raster_mask_instance, "%d", _("Raster mask instance"));
+    add_blend_history_change(raster_mask_id, "%d", _("Raster mask id"));
+    add_blend_history_change_enum(raster_mask_invert, _("Invert mask"), dt_develop_invert_mask_names);
 
-    add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS ? '-' : '+', "%c", _("drawn mask polarity"));
+    add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS ? '-' : '+', "%c", _("Drawn mask polarity"));
 
     if(hitem->blend_params->mask_id != old_blend->mask_id)
       change_parts[num_parts++] = old_blend->mask_id == 0
-                                ? g_strdup_printf(_("a drawn mask was added"))
+                                ? g_strdup_printf(_("A drawn mask was added"))
                                 : hitem->blend_params->mask_id == 0
-                                ? g_strdup_printf(_("the drawn mask was removed"))
-                                : g_strdup_printf(_("the drawn mask was changed"));
+                                ? g_strdup_printf(_("The drawn mask was removed"))
+                                : g_strdup_printf(_("The drawn mask was changed"));
 
     dt_iop_gui_blend_data_t *bd = hitem->module->blend_data;
 
@@ -907,7 +907,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
         {
           if(first)
           {
-            change_parts[num_parts++] = g_strdup(in_out ? _("parametric output mask:") : _("parametric input mask:"));
+            change_parts[num_parts++] = g_strdup(in_out ? _("Parametric output mask:") : _("Parametric input mask:"));
             first = FALSE;
           }
           char s[4][2][25];
@@ -995,7 +995,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   /* add default which always should be */
   int num = -1;
   GtkWidget *widget =
-    _lib_history_create_button(self, num, _("original"), FALSE, FALSE, TRUE, darktable.develop->history_end == 0, FALSE);
+    _lib_history_create_button(self, num, _("Original"), FALSE, FALSE, TRUE, darktable.develop->history_end == 0, FALSE);
   gtk_box_pack_start(GTK_BOX(d->history_box), widget, FALSE, FALSE, 0);
   num++;
 
@@ -1206,12 +1206,12 @@ void gui_reset(dt_lib_module_t *self)
 
     GtkWidget *dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        _("do you really want to clear history of current image?"));
+        _("Do you really want to clear history of current image?"));
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete image's history?"));
+    gtk_window_set_title(GTK_WINDOW(dialog), _("Delete image's history?"));
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
   }

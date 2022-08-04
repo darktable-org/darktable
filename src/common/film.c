@@ -339,14 +339,14 @@ static gboolean ask_and_delete(gpointer user_data)
 
   dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
                                   GTK_BUTTONS_YES_NO,
-                                  ngettext("do you want to remove this empty directory?",
-                                           "do you want to remove these empty directories?", n_empty_dirs));
+                                  ngettext("Do you want to remove this empty directory?",
+                                           "Do you want to remove these empty directories?", n_empty_dirs));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
 
   gtk_window_set_title(GTK_WINDOW(dialog),
-                       ngettext("remove empty directory?", "remove empty directories?", n_empty_dirs));
+                       ngettext("Remove empty directory?", "Remove empty directories?", n_empty_dirs));
 
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -365,7 +365,7 @@ static gboolean ask_and_delete(gpointer user_data)
   GtkWidget *tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
   gtk_widget_set_name(GTK_WIDGET(tree), "delete-dialog");
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), gtk_cell_renderer_text_new(),
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Name"), gtk_cell_renderer_text_new(),
                                                                        "text", 0, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
@@ -471,7 +471,7 @@ void dt_film_remove(const int id)
 
   if(!remove_ok)
   {
-    dt_control_log(_("cannot remove film roll having local copies with non accessible originals"));
+    dt_control_log(_("Cannot remove film roll having local copies with non accessible originals"));
     return;
   }
 

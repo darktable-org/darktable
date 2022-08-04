@@ -391,9 +391,9 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
       if(piece->enabled != hist->enabled)
       {
         if(piece->enabled)
-          dt_iop_set_module_trouble_message(piece->module, _("enabled as required"), _("history had module disabled but it is required for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
+          dt_iop_set_module_trouble_message(piece->module, _("Enabled as required"), _("History had module disabled but it is required for this type of image.\nLikely introduced by applying a preset, style or history copy&paste"), NULL);
         else
-          dt_iop_set_module_trouble_message(piece->module, _("disabled as not appropriate"), _("history had module enabled but it is not allowed for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
+          dt_iop_set_module_trouble_message(piece->module, _("Disabled as not appropriate"), _("History had module enabled but it is not allowed for this type of image.\nLikely introduced by applying a preset, style or history copy&paste"), NULL);
         dt_print(DT_DEBUG_PARAMS, "[pixelpipe_synch] enabling mismatch for module %s in image %i\n", piece->module->op, imgid);
       }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
@@ -2228,7 +2228,7 @@ restart:
       dt_print(DT_DEBUG_OPENCL,
                "[opencl] frequent opencl errors encountered; disabling opencl for this session!\n");
       dt_control_log(
-          _("darktable discovered problems with your OpenCL setup; disabling OpenCL for this session!"));
+          _("Darktable discovered problems with your OpenCL setup; disabling OpenCL for this session!"));
       // also remove "opencl" from capabilities so that the preference entry is greyed out
       dt_capabilities_remove("opencl");
     }

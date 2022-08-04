@@ -190,12 +190,12 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
   GtkDialog *dialog = GTK_DIALOG(gtk_dialog_new_with_buttons(
-                                   iscopy ? _("select parts to copy") : _("select parts to paste"),
+                                   iscopy ? _("Select parts to copy") : _("Select parts to paste"),
                                    GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                   _("_cancel"),      GTK_RESPONSE_CANCEL,
-                                   _("select _all"),  GTK_RESPONSE_YES,
-                                   _("select _none"), GTK_RESPONSE_NONE,
-                                   _("_ok"),          GTK_RESPONSE_OK,
+                                   _("_Cancel"),      GTK_RESPONSE_CANCEL,
+                                   _("Select _all"),  GTK_RESPONSE_YES,
+                                   _("Select _none"), GTK_RESPONSE_NONE,
+                                   _("_OK"),          GTK_RESPONSE_OK,
                                    NULL));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(GTK_WIDGET(dialog));
@@ -222,7 +222,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_ENABLED);
   g_signal_connect(renderer, "toggled", G_CALLBACK(_gui_hist_item_toggled), d);
 
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("include"), renderer, "active",
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("Include"), renderer, "active",
                                               DT_HIST_ITEMS_COL_ENABLED, NULL);
 
   /* active */
@@ -238,7 +238,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   renderer = gtk_cell_renderer_text_new();
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_NAME);
   g_object_set(renderer, "xalign", 0.0, (gchar *)0);
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("item"), renderer, "text",
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("Item"), renderer, "text",
                                               DT_HIST_ITEMS_COL_NAME, NULL);
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)), GTK_SELECTION_SINGLE);
@@ -277,7 +277,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
     if(iscopy || d->copy_iop_order)
     {
       const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
-      char *label = g_strdup_printf("%s (%s)", _("module order"), dt_iop_order_string(order));
+      char *label = g_strdup_printf("%s (%s)", _("Module order"), dt_iop_order_string(order));
       gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
       gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                          DT_HIST_ITEMS_COL_ENABLED, TRUE,
@@ -290,7 +290,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   }
   else
   {
-    dt_control_log(_("can't copy history out of unaltered image"));
+    dt_control_log(_("Can't copy history out of unaltered image"));
     return GTK_RESPONSE_CANCEL;
   }
 

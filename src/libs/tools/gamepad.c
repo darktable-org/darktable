@@ -34,7 +34,7 @@ DT_MODULE(1)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("gamepad");
+  return _("Gamepad");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -68,17 +68,17 @@ typedef struct gamepad_device
 } gamepad_device;
 
 const char *button_names[]
-  = { N_("button a"), N_("button b"), N_("button x"), N_("button y"),
-      N_("button back"), N_("button guide"), N_("button start"),
-      N_("left stick"), N_("right stick"), N_("left shoulder"), N_("right shoulder"),
-      N_("dpad up"), N_("dpad down"), N_("dpad left"), N_("dpad right"),
-      N_("button misc1"), N_("paddle1"), N_("paddle2"), N_("paddle3"), N_("paddle4"), N_("touchpad"),
-      N_("left trigger"), N_("right trigger"),
+  = { N_("Button a"), N_("Button b"), N_("Button x"), N_("Button y"),
+      N_("Button back"), N_("Button guide"), N_("Button start"),
+      N_("Left stick"), N_("Right stick"), N_("Left shoulder"), N_("Right shoulder"),
+      N_("Dpad up"), N_("Dpad down"), N_("Dpad left"), N_("Dpad right"),
+      N_("Button misc1"), N_("Paddle1"), N_("Paddle2"), N_("Paddle3"), N_("Paddle4"), N_("Touchpad"),
+      N_("Left trigger"), N_("Right trigger"),
       NULL };
 
 gchar *key_to_string(const guint key, const gboolean display)
 {
-  const gchar *name = key < SDL_CONTROLLER_BUTTON_MAX + 2 ? button_names[key] : N_("invalid gamepad button");
+  const gchar *name = key < SDL_CONTROLLER_BUTTON_MAX + 2 ? button_names[key] : N_("Invalid gamepad button");
   return g_strdup(display ? _(name) : name);
 }
 
@@ -95,13 +95,13 @@ gboolean string_to_key(const gchar *string, guint *key)
 }
 
 const char *move_names[]
-  = { N_("left x"), N_("left y"), N_("right x"), N_("right y"),
-      N_("left diagonal"), N_("left skew"), N_("right diagonal"), N_("right skew"),
+  = { N_("Left x"), N_("Left y"), N_("Right x"), N_("Right y"),
+      N_("Left diagonal"), N_("Left skew"), N_("Right diagonal"), N_("Right skew"),
       NULL };
 
 gchar *move_to_string(const guint move, const gboolean display)
 {
-  const gchar *name = move < SDL_CONTROLLER_AXIS_MAX + 4 /* diagonals */ ? move_names[move] : N_("invalid gamepad axis");
+  const gchar *name = move < SDL_CONTROLLER_AXIS_MAX + 4 /* diagonals */ ? move_names[move] : N_("Invalid gamepad axis");
   return g_strdup(display ? _(name) : name);
 }
 

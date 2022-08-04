@@ -86,7 +86,7 @@ typedef struct dt_iop_equalizer_data_t
 
 const char *name()
 {
-  return _("legacy equalizer");
+  return _("Legacy equalizer");
 }
 
 
@@ -107,7 +107,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. better use contrast equalizer module instead.");
+  return _("This module is deprecated. Better use contrast equalizer module instead.");
 }
 
 
@@ -303,7 +303,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
   }
-  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("Sharpen (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++)
   {
     p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
@@ -313,13 +313,13 @@ void init_presets (dt_iop_module_so_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_a][k] = .5f;
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = .5f;
   }
-  dt_gui_presets_add_generic(C_("equalizer", "sharpen"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("equalizer", "Sharpen"), self->op, self->version(), &p, sizeof(p), 1);
   for(int ch=0; ch<3; ch++)
   {
     for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) p.equalizer_x[ch][k] = k/(float)(DT_IOP_EQUALIZER_BANDS-1);
     for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) p.equalizer_y[ch][k] = 0.5f;
   }
-  dt_gui_presets_add_generic(_("null"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("Null"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++)
   {
     p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
@@ -329,7 +329,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.3f*k/(float)DT_IOP_EQUALIZER_BANDS);
   }
-  dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("Denoise"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++)
   {
     p.equalizer_x[DT_IOP_EQUALIZER_L][k] = k/(DT_IOP_EQUALIZER_BANDS-1.0);
@@ -339,7 +339,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.equalizer_y[DT_IOP_EQUALIZER_a][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
     p.equalizer_y[DT_IOP_EQUALIZER_b][k] = fmaxf(0.0f, .5f-.6f*k/(float)DT_IOP_EQUALIZER_BANDS);
   }
-  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("Denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   DT_DEBUG_SQLITE3_EXEC(darktable.db, "commit", NULL, NULL, NULL);
 }
 #endif
@@ -348,7 +348,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(equalizer);
 
-  self->widget = dt_ui_label_new(_("this module will be removed in the future\nand is only here so you can "
+  self->widget = dt_ui_label_new(_("This module will be removed in the future\nand is only here so you can "
                                    "switch it off\nand move to the new equalizer."));
 
 #if 0
@@ -387,8 +387,8 @@ void gui_init(struct dt_iop_module_t *self)
   c->hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
 
-  c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, _("luma")));
-  c->channel_button[1] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("chroma")));
+  c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, _("Luma")));
+  c->channel_button[1] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], _("Chroma")));
   // c->channel_button[2] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label_from_widget(c->channel_button[0], "b"));
 
   g_signal_connect (G_OBJECT (c->channel_button[0]), "toggled",

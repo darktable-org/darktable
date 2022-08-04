@@ -52,7 +52,7 @@ typedef struct dt_lib_masks_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("mask manager");
+  return _("Mask manager");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -276,7 +276,7 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   // we create the new group
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
-  snprintf(grp->name, sizeof(grp->name), _("group #%d"), g_list_length(darktable.develop->forms));
+  snprintf(grp->name, sizeof(grp->name), _("Group #%d"), g_list_length(darktable.develop->forms));
 
   // we add all selected forms to this group
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
@@ -925,19 +925,19 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
 
     if(nb == 0)
     {
-      item = gtk_menu_item_new_with_label(_("add circle"));
+      item = gtk_menu_item_new_with_label(_("Add circle"));
       g_signal_connect(item, "activate", (GCallback)_tree_add_circle, module);
       gtk_menu_shell_append(menu, item);
 
-      item = gtk_menu_item_new_with_label(_("add ellipse"));
+      item = gtk_menu_item_new_with_label(_("Add ellipse"));
       g_signal_connect(item, "activate", (GCallback)_tree_add_ellipse, module);
       gtk_menu_shell_append(menu, item);
 
-      item = gtk_menu_item_new_with_label(_("add path"));
+      item = gtk_menu_item_new_with_label(_("Add path"));
       g_signal_connect(item, "activate", (GCallback)_tree_add_path, module);
       gtk_menu_shell_append(menu, item);
 
-      item = gtk_menu_item_new_with_label(_("add gradient"));
+      item = gtk_menu_item_new_with_label(_("Add gradient"));
       g_signal_connect(item, "activate", (GCallback)_tree_add_gradient, module);
       gtk_menu_shell_append(menu, item);
 
@@ -949,23 +949,23 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grpid);
       if(grp && (grp->type & DT_MASKS_GROUP))
       {
-        item = gtk_menu_item_new_with_label(_("add brush"));
+        item = gtk_menu_item_new_with_label(_("Add brush"));
         g_signal_connect(item, "activate", (GCallback)_tree_add_brush, module);
         gtk_menu_shell_append(menu, item);
 
-        item = gtk_menu_item_new_with_label(_("add circle"));
+        item = gtk_menu_item_new_with_label(_("Add circle"));
         g_signal_connect(item, "activate", (GCallback)_tree_add_circle, module);
         gtk_menu_shell_append(menu, item);
 
-        item = gtk_menu_item_new_with_label(_("add ellipse"));
+        item = gtk_menu_item_new_with_label(_("Add ellipse"));
         g_signal_connect(item, "activate", (GCallback)_tree_add_ellipse, module);
         gtk_menu_shell_append(menu, item);
 
-        item = gtk_menu_item_new_with_label(_("add path"));
+        item = gtk_menu_item_new_with_label(_("Add path"));
         g_signal_connect(item, "activate", (GCallback)_tree_add_path, module);
         gtk_menu_shell_append(menu, item);
 
-        item = gtk_menu_item_new_with_label(_("add gradient"));
+        item = gtk_menu_item_new_with_label(_("Add gradient"));
         g_signal_connect(item, "activate", (GCallback)_tree_add_gradient, module);
         gtk_menu_shell_append(menu, item);
 
@@ -1026,7 +1026,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
 
         if(has_unused_shapes)
         {
-          item = gtk_menu_item_new_with_label(_("add existing shape"));
+          item = gtk_menu_item_new_with_label(_("Add existing shape"));
           gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu0);
           gtk_menu_shell_append(menu, item);
         }
@@ -1040,11 +1040,11 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
       {
         if(nb == 1)
         {
-          item = gtk_menu_item_new_with_label(_("duplicate this shape"));
+          item = gtk_menu_item_new_with_label(_("Duplicate this shape"));
           g_signal_connect(item, "activate", (GCallback)_tree_duplicate_shape, self);
           gtk_menu_shell_append(menu, item);
         }
-        item = gtk_menu_item_new_with_label(_("delete this shape"));
+        item = gtk_menu_item_new_with_label(_("Delete this shape"));
         g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
         gtk_menu_shell_append(menu, item);
       }
@@ -1052,14 +1052,14 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
       {
         // TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
         // we can only do that after 3.8 is released.
-        item = gtk_menu_item_new_with_label(_("delete"));
+        item = gtk_menu_item_new_with_label(_("Delete"));
         g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
         gtk_menu_shell_append(menu, item);
       }
     }
     else if(nb > 0 && depth < 3)
     {
-      item = gtk_menu_item_new_with_label(_("remove from group"));
+      item = gtk_menu_item_new_with_label(_("Remove from group"));
       g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
       gtk_menu_shell_append(menu, item);
     }
@@ -1067,7 +1067,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     if(nb > 1 && !from_group)
     {
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-      item = gtk_menu_item_new_with_label(_("group the forms"));
+      item = gtk_menu_item_new_with_label(_("Group the forms"));
       g_signal_connect(item, "activate", (GCallback)_tree_group, self);
       gtk_menu_shell_append(menu, item);
     }
@@ -1075,36 +1075,36 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     if(from_group && depth < 3)
     {
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-      item = gtk_menu_item_new_with_label(_("use inverted shape"));
+      item = gtk_menu_item_new_with_label(_("Use inverted shape"));
       g_signal_connect(item, "activate", (GCallback)_tree_inverse, self);
       gtk_menu_shell_append(menu, item);
       if(nb == 1)
       {
         gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-        item = gtk_menu_item_new_with_label(_("mode: union"));
+        item = gtk_menu_item_new_with_label(_("Mode: union"));
         g_signal_connect(item, "activate", (GCallback)_tree_union, self);
         gtk_menu_shell_append(menu, item);
-        item = gtk_menu_item_new_with_label(_("mode: intersection"));
+        item = gtk_menu_item_new_with_label(_("Mode: intersection"));
         g_signal_connect(item, "activate", (GCallback)_tree_intersection, self);
         gtk_menu_shell_append(menu, item);
-        item = gtk_menu_item_new_with_label(_("mode: difference"));
+        item = gtk_menu_item_new_with_label(_("Mode: difference"));
         g_signal_connect(item, "activate", (GCallback)_tree_difference, self);
         gtk_menu_shell_append(menu, item);
-        item = gtk_menu_item_new_with_label(_("mode: exclusion"));
+        item = gtk_menu_item_new_with_label(_("Mode: exclusion"));
         g_signal_connect(item, "activate", (GCallback)_tree_exclusion, self);
         gtk_menu_shell_append(menu, item);
       }
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-      item = gtk_menu_item_new_with_label(_("move up"));
+      item = gtk_menu_item_new_with_label(_("Move up"));
       g_signal_connect(item, "activate", (GCallback)_tree_moveup, self);
       gtk_menu_shell_append(menu, item);
-      item = gtk_menu_item_new_with_label(_("move down"));
+      item = gtk_menu_item_new_with_label(_("Move down"));
       g_signal_connect(item, "activate", (GCallback)_tree_movedown, self);
       gtk_menu_shell_append(menu, item);
     }
 
     gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-    item = gtk_menu_item_new_with_label(_("cleanup unused shapes"));
+    item = gtk_menu_item_new_with_label(_("Cleanup unused shapes"));
     g_signal_connect(item, "activate", (GCallback)_tree_cleanup, self);
     gtk_menu_shell_append(menu, item);
 
@@ -1625,37 +1625,37 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *label = gtk_label_new(_("created shapes"));
+  GtkWidget *label = gtk_label_new(_("Created shapes"));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 
   d->bt_gradient = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, 0, NULL);
   g_signal_connect(G_OBJECT(d->bt_gradient), "button-press-event", G_CALLBACK(_bt_add_gradient), self);
-  gtk_widget_set_tooltip_text(d->bt_gradient, _("add gradient"));
+  gtk_widget_set_tooltip_text(d->bt_gradient, _("Add gradient"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_gradient), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_gradient, FALSE, FALSE, 0);
 
   d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, 0, NULL);
   g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_path), self);
-  gtk_widget_set_tooltip_text(d->bt_path, _("add path"));
+  gtk_widget_set_tooltip_text(d->bt_path, _("Add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_path, FALSE, FALSE, 0);
 
   d->bt_ellipse = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, 0, NULL);
   g_signal_connect(G_OBJECT(d->bt_ellipse), "button-press-event", G_CALLBACK(_bt_add_ellipse), self);
-  gtk_widget_set_tooltip_text(d->bt_ellipse, _("add ellipse"));
+  gtk_widget_set_tooltip_text(d->bt_ellipse, _("Add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_ellipse), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_ellipse, FALSE, FALSE, 0);
 
   d->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, 0, NULL);
   g_signal_connect(G_OBJECT(d->bt_circle), "button-press-event", G_CALLBACK(_bt_add_circle), self);
-  gtk_widget_set_tooltip_text(d->bt_circle, _("add circle"));
+  gtk_widget_set_tooltip_text(d->bt_circle, _("Add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_circle), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_circle, FALSE, FALSE, 0);
 
   d->bt_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, 0, NULL);
   g_signal_connect(G_OBJECT(d->bt_brush), "button-press-event", G_CALLBACK(_bt_add_brush), self);
-  gtk_widget_set_tooltip_text(d->bt_brush, _("add brush"));
+  gtk_widget_set_tooltip_text(d->bt_brush, _("Add brush"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_brush), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_brush, FALSE, FALSE, 0);
 

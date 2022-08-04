@@ -331,9 +331,9 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   gui->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression type"));
-  dt_bauhaus_combobox_add(gui->compression, _("lossy"));
-  dt_bauhaus_combobox_add(gui->compression, _("lossless"));
+  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("Compression type"));
+  dt_bauhaus_combobox_add(gui->compression, _("Lossy"));
+  dt_bauhaus_combobox_add(gui->compression, _("Lossless"));
   dt_bauhaus_combobox_set(gui->compression, comp_type);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
 
@@ -343,10 +343,10 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   1,
                                                   dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT),
                                                   0);
-  dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
+  dt_bauhaus_widget_set_label(gui->quality, NULL, N_("Quality"));
   dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT));
   dt_bauhaus_slider_set_format(gui->quality, "%");
-  gtk_widget_set_tooltip_text(gui->quality, _("applies only to lossy setting"));
+  gtk_widget_set_tooltip_text(gui->quality, _("Applies only to lossy setting"));
   if(quality > 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), (gpointer)0);
@@ -357,16 +357,16 @@ void gui_init(dt_imageio_module_format_t *self)
     gtk_widget_set_sensitive(gui->quality, FALSE);
 
   gui->hint = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->hint, NULL, N_("image hint"));
+  dt_bauhaus_widget_set_label(gui->hint, NULL, N_("Image hint"));
   gtk_widget_set_tooltip_text(gui->hint,
-               _("image characteristics hint for the underlying encoder.\n"
-               "picture: digital picture, like portrait, inner shot\n"
-               "photo: outdoor photograph, with natural lighting\n"
-               "graphic: discrete tone image (graph, map-tile etc)"));
-  dt_bauhaus_combobox_add(gui->hint, _("default"));
-  dt_bauhaus_combobox_add(gui->hint, _("picture"));
-  dt_bauhaus_combobox_add(gui->hint, _("photo"));
-  dt_bauhaus_combobox_add(gui->hint, _("graphic"));
+               _("Image characteristics hint for the underlying encoder.\n"
+               "Picture: digital picture, like portrait, inner shot\n"
+               "Photo: outdoor photograph, with natural lighting\n"
+               "Graphic: discrete tone image (graph, map-tile etc)"));
+  dt_bauhaus_combobox_add(gui->hint, _("Default"));
+  dt_bauhaus_combobox_add(gui->hint, _("Picture"));
+  dt_bauhaus_combobox_add(gui->hint, _("Photo"));
+  dt_bauhaus_combobox_add(gui->hint, _("Graphic"));
   dt_bauhaus_combobox_set(gui->hint, hint);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->hint, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->hint), "value-changed", G_CALLBACK(hint_combobox_changed), NULL);

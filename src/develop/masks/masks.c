@@ -388,7 +388,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
   fdest->source[0] = fbase->source[0];
   fdest->source[1] = fbase->source[1];
   fdest->version = fbase->version;
-  snprintf(fdest->name, sizeof(fdest->name), _("copy of %s"), fbase->name);
+  snprintf(fdest->name, sizeof(fdest->name), _("Copy of %s"), fbase->name);
 
   darktable.develop->forms = g_list_append(dev->forms, fdest);
 
@@ -1147,7 +1147,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
       opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
       const int opacitypercent = opacity * 100;
-      dt_toast_log(_("opacity: %d%%"), opacitypercent);
+      dt_toast_log(_("Opacity: %d%%"), opacitypercent);
       ret = 1;
     }
 
@@ -1517,7 +1517,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
     {
       if(nb == 0)
       {
-        dt_bauhaus_combobox_add_section(combo, _("add existing shape"));
+        dt_bauhaus_combobox_add_section(combo, _("Add existing shape"));
         cids[pos++] = 0; // nothing to do
       }
       dt_bauhaus_combobox_add(combo, form->name);
@@ -1539,7 +1539,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
       {
         if(nb == 0)
         {
-          dt_bauhaus_combobox_add_section(combo, _("use same shapes as"));
+          dt_bauhaus_combobox_add_section(combo, _("Use same shapes as"));
           cids[pos++] = 0; // nothing to do
         }
         gchar *module_label = dt_history_item_get_name(other_mod);
@@ -1759,7 +1759,7 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
       const float opacity = CLAMP(fpt->opacity + amount, 0.05f, 1.0f);
       fpt->opacity = opacity;
       const int opacitypercent = opacity * 100;
-      dt_toast_log(_("opacity: %d%%"), opacitypercent);
+      dt_toast_log(_("Opacity: %d%%"), opacitypercent);
       dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
       dt_masks_update_image(darktable.develop);
       break;
@@ -1837,7 +1837,7 @@ dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_f
     return grpt;
   }
 
-  dt_control_log(_("masks can not contain themselves"));
+  dt_control_log(_("Masks can not contain themselves"));
   return NULL;
 }
 

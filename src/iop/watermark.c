@@ -55,9 +55,9 @@ DT_MODULE_INTROSPECTION(5, dt_iop_watermark_params_t)
 
 typedef enum dt_iop_watermark_base_scale_t
 {
-  DT_SCALE_IMAGE = 0,         // $DESCRIPTION: "image"
-  DT_SCALE_LARGER_BORDER = 1, // $DESCRIPTION: "larger border"
-  DT_SCALE_SMALLER_BORDER = 2 // $DESCRIPTION: "smaller border"
+  DT_SCALE_IMAGE = 0,         // $DESCRIPTION: "Image"
+  DT_SCALE_LARGER_BORDER = 1, // $DESCRIPTION: "Larger border"
+  DT_SCALE_SMALLER_BORDER = 2 // $DESCRIPTION: "Smaller border"
 } dt_iop_watermark_base_scale_t;
 
 typedef enum dt_iop_watermark_type_t
@@ -73,14 +73,14 @@ typedef struct dt_iop_watermark_params_t
   /** scale value of rendering watermark */
   float scale;   // $MIN: 1.0 $MAX: 500.0 $DEFAULT: 100.0
   /** Pixel independent xoffset, 0 to 1 */
-  float xoffset; // $MIN: -1.0 $MAX: 1.0, 0.001 $DEFAULT: 0.0 $DESCRIPTION: "x offset"
+  float xoffset; // $MIN: -1.0 $MAX: 1.0, 0.001 $DEFAULT: 0.0 $DESCRIPTION: "X offset"
   /** Pixel independent yoffset, 0 to 1 */
-  float yoffset; // $MIN: -1.0 $MAX: 1.0, 0.001 $DEFAULT: 0.0 $DESCRIPTION: "y offset"
+  float yoffset; // $MIN: -1.0 $MAX: 1.0, 0.001 $DEFAULT: 0.0 $DESCRIPTION: "Y offset"
   /** Alignment value 0-8 3x3 */
   int alignment; // $DEFAULT: 4
   /** Rotation **/
-  float rotate;  // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0 $DESCRIPTION: "rotation"
-  dt_iop_watermark_base_scale_t sizeto; // $DEFAULT: DT_SCALE_IMAGE $DESCRIPTION: "scale on"
+  float rotate;  // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0 $DESCRIPTION: "Rotation"
+  dt_iop_watermark_base_scale_t sizeto; // $DEFAULT: DT_SCALE_IMAGE $DESCRIPTION: "Scale on"
   char filename[64];
   /* simple text */
   char text[512];
@@ -288,16 +288,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 const char *name()
 {
-  return _("watermark");
+  return _("Watermark");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("overlay an SVG watermark like a signature on the picture"),
-                                      _("creative"),
-                                      _("non-linear, RGB, display-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, display-referred"));
+  return dt_iop_set_description(self, _("Overlay an SVG watermark like a signature on the picture"),
+                                      _("Creative"),
+                                      _("Non-linear, RGB, display-referred"),
+                                      _("Non-linear, RGB"),
+                                      _("Non-linear, RGB, display-referred"));
 }
 
 int flags()
@@ -1062,7 +1062,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  GtkWidget *label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
+  GtkWidget *label = dtgtk_reset_label_new(_("Marker"), self, &p->filename, sizeof(p->filename));
   g->watermarks = dt_bauhaus_combobox_new(self);
   gtk_widget_set_hexpand(GTK_WIDGET(g->watermarks), TRUE);
   char *tooltip = g_strdup_printf(_("SVG watermarks in %s/watermarks or %s/watermarks"), configdir, datadir);
@@ -1075,10 +1075,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(grid, g->refresh, g->watermarks, GTK_POS_RIGHT, 1, 1);
 
   // Simple text
-  label = dt_ui_label_new(_("text"));
+  label = dt_ui_label_new(_("Text"));
   g->text = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
-  gtk_widget_set_tooltip_text(g->text, _("text string, tag:\n$(WATERMARK_TEXT)"));
+  gtk_widget_set_tooltip_text(g->text, _("Text string, tag:\n$(WATERMARK_TEXT)"));
   const char *str = dt_conf_get_string_const("plugins/darkroom/watermark/text");
   gtk_entry_set_text(GTK_ENTRY(g->text), str);
 
@@ -1086,12 +1086,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach_next_to(grid, g->text, label, GTK_POS_RIGHT, 2, 1);
 
   // Text font
-  label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font));
+  label = dtgtk_reset_label_new(_("Font"), self, &p->font, sizeof(p->font));
   str = dt_conf_get_string_const("plugins/darkroom/watermark/font");
   g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
   GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
   gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_widget_set_tooltip_text(g->fontsel, _("text font, tags:\n$(WATERMARK_FONT_FAMILY)\n"
+  gtk_widget_set_tooltip_text(g->fontsel, _("Text font, tags:\n$(WATERMARK_FONT_FAMILY)\n"
                                             "$(WATERMARK_FONT_STYLE)\n$(WATERMARK_FONT_WEIGHT)"));
   gtk_font_button_set_show_size (GTK_FONT_BUTTON(g->fontsel), FALSE);
 
@@ -1104,13 +1104,13 @@ void gui_init(struct dt_iop_module_t *self)
   float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
   GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
 
-  label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
+  label = dtgtk_reset_label_new(_("Color"), self, &p->color, 3 * sizeof(float));
   g->colorpick = gtk_color_button_new_with_rgba(&color);
-  gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
+  gtk_widget_set_tooltip_text(g->colorpick, _("Watermark color, tag:\n$(WATERMARK_COLOR)"));
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("Select watermark color"));
   g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("Pick color from image"));
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);
@@ -1119,27 +1119,27 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
-  g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
+  g->opacity = dt_bauhaus_slider_from_params(self, N_("Opacity"));
   dt_bauhaus_slider_set_format(g->opacity, "%");
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("placement")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("Placement")), TRUE, TRUE, 0);
 
   // rotate
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
   dt_bauhaus_slider_set_format(g->rotate, "°");
 
   // scale
-  g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
+  g->scale = dt_bauhaus_slider_from_params(self, N_("Scale"));
   dt_bauhaus_slider_set_soft_max(g->scale, 100.0);
   dt_bauhaus_slider_set_format(g->scale, "%");
 
   // scale-on
   g->sizeto = dt_bauhaus_combobox_from_params(self, "sizeto");
-  gtk_widget_set_tooltip_text(g->sizeto, _("size is relative to"));
+  gtk_widget_set_tooltip_text(g->sizeto, _("Size is relative to"));
 
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();
-  label = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(p->alignment));
+  label = dtgtk_reset_label_new(_("Alignment"), self, &p->alignment, sizeof(p->alignment));
   gtk_grid_attach(GTK_GRID(bat), label, 0, 0, 1, 3);
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_set_row_spacing(GTK_GRID(bat), DT_PIXEL_APPLY_DPI(3));
@@ -1160,9 +1160,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->y_offset, 3);
 
   // Let's add some tooltips and hook up some signals...
-  gtk_widget_set_tooltip_text(g->opacity, _("the opacity of the watermark"));
-  gtk_widget_set_tooltip_text(g->scale, _("the scale of the watermark"));
-  gtk_widget_set_tooltip_text(g->rotate, _("the rotation of the watermark"));
+  gtk_widget_set_tooltip_text(g->opacity, _("The opacity of the watermark"));
+  gtk_widget_set_tooltip_text(g->scale, _("The scale of the watermark"));
+  gtk_widget_set_tooltip_text(g->rotate, _("The rotation of the watermark"));
 
   refresh_watermarks(self);
 

@@ -59,7 +59,7 @@ static void _lib_navigation_set_position(struct dt_lib_module_t *self, double x,
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("navigation");
+  return _("Navigation");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -131,7 +131,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_size_request(self->widget, -1, 175);
   gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
   dt_action_t *ac = dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL,
-                                     N_("hide navigation thumbnail"), self->widget, NULL);
+                                     N_("Hide navigation thumbnail"), self->widget, NULL);
   dt_action_register(ac, NULL, _lib_navigation_collapse_callback, GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
@@ -506,11 +506,11 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
     GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
     GtkWidget *item;
 
-    item = gtk_menu_item_new_with_label(_("small"));
+    item = gtk_menu_item_new_with_label(_("Small"));
     g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)0);
     gtk_menu_shell_append(menu, item);
 
-    item = gtk_menu_item_new_with_label(_("fit to screen"));
+    item = gtk_menu_item_new_with_label(_("Fit to screen"));
     g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)1);
     gtk_menu_shell_append(menu, item);
 

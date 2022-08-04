@@ -62,8 +62,8 @@ DT_MODULE_INTROSPECTION(5, dt_iop_shadhi_params_t)
 
 typedef enum dt_iop_shadhi_algo_t
 {
-  SHADHI_ALGO_GAUSSIAN, // $DESCRIPTION: "gaussian"
-  SHADHI_ALGO_BILATERAL // $DESCRIPTION: "bilateral filter"
+  SHADHI_ALGO_GAUSSIAN, // $DESCRIPTION: "Gaussian"
+  SHADHI_ALGO_BILATERAL // $DESCRIPTION: "Bilateral filter"
 } dt_iop_shadhi_algo_t;
 
 /* legacy version 1 params */
@@ -126,15 +126,15 @@ typedef struct dt_iop_shadhi_params_t
   dt_gaussian_order_t order; // $DEFAULT: DT_IOP_GAUSSIAN_ZERO
   float radius;     // $MIN: 0.1 $MAX: 500.0 $DEFAULT: 100.0
   float shadows;    // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 50.0
-  float whitepoint; // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "white point adjustment"
+  float whitepoint; // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "White point adjustment"
   float highlights; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: -50.0
   float reserved2;
   float compress;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
-  float shadows_ccorrect;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "shadows color adjustment"
-  float highlights_ccorrect; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "highlights color adjustment"
+  float shadows_ccorrect;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "Shadows color adjustment"
+  float highlights_ccorrect; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Highlights color adjustment"
   unsigned int flags;        // $DEFAULT: UNBOUND_DEFAULT
   float low_approximation;   // $DEFAULT: 0.000001
-  dt_iop_shadhi_algo_t shadhi_algo; // $DEFAULT: SHADHI_ALGO_GAUSSIAN $DESCRIPTION: "soften with" $DEFAULT: 0
+  dt_iop_shadhi_algo_t shadhi_algo; // $DEFAULT: SHADHI_ALGO_GAUSSIAN $DESCRIPTION: "Soften with" $DEFAULT: 0
 } dt_iop_shadhi_params_t;
 
 typedef struct dt_iop_shadhi_gui_data_t
@@ -172,7 +172,7 @@ typedef struct dt_iop_shadhi_global_data_t
 
 const char *name()
 {
-  return _("shadows and highlights");
+  return _("Shadows and highlights");
 }
 
 int flags()
@@ -192,12 +192,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("modify the tonal range of the shadows and highlights\n"
+  return dt_iop_set_description(self, _("Modify the tonal range of the shadows and highlights\n"
                                         "of an image by enhancing local contrast."),
-                                      _("corrective and creative"),
-                                      _("linear or non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+                                      _("Corrective and creative"),
+                                      _("Linear or non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -677,26 +677,26 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_shadhi_gui_data_t *g = IOP_GUI_ALLOC(shadhi);
 
-  g->shadows = dt_bauhaus_slider_from_params(self, N_("shadows"));
-  g->highlights = dt_bauhaus_slider_from_params(self, N_("highlights"));
+  g->shadows = dt_bauhaus_slider_from_params(self, N_("Shadows"));
+  g->highlights = dt_bauhaus_slider_from_params(self, N_("Highlights"));
   g->whitepoint = dt_bauhaus_slider_from_params(self, "whitepoint");
   g->shadhi_algo = dt_bauhaus_combobox_from_params(self, "shadhi_algo");
-  g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
-  g->compress = dt_bauhaus_slider_from_params(self, N_("compress"));
+  g->radius = dt_bauhaus_slider_from_params(self, N_("Radius"));
+  g->compress = dt_bauhaus_slider_from_params(self, N_("Compress"));
   dt_bauhaus_slider_set_format(g->compress, "%");
   g->shadows_ccorrect = dt_bauhaus_slider_from_params(self, "shadows_ccorrect");
   dt_bauhaus_slider_set_format(g->shadows_ccorrect, "%");
   g->highlights_ccorrect = dt_bauhaus_slider_from_params(self, "highlights_ccorrect");
   dt_bauhaus_slider_set_format(g->highlights_ccorrect, "%");
 
-  gtk_widget_set_tooltip_text(g->shadows, _("correct shadows"));
-  gtk_widget_set_tooltip_text(g->highlights, _("correct highlights"));
-  gtk_widget_set_tooltip_text(g->whitepoint, _("shift white point"));
-  gtk_widget_set_tooltip_text(g->radius, _("spatial extent"));
-  gtk_widget_set_tooltip_text(g->shadhi_algo, _("filter to use for softening. bilateral avoids halos"));
-  gtk_widget_set_tooltip_text(g->compress, _("compress the effect on shadows/highlights and\npreserve mid-tones"));
-  gtk_widget_set_tooltip_text(g->shadows_ccorrect, _("adjust saturation of shadows"));
-  gtk_widget_set_tooltip_text(g->highlights_ccorrect, _("adjust saturation of highlights"));
+  gtk_widget_set_tooltip_text(g->shadows, _("Correct shadows"));
+  gtk_widget_set_tooltip_text(g->highlights, _("Correct highlights"));
+  gtk_widget_set_tooltip_text(g->whitepoint, _("Shift white point"));
+  gtk_widget_set_tooltip_text(g->radius, _("Spatial extent"));
+  gtk_widget_set_tooltip_text(g->shadhi_algo, _("Filter to use for softening. Bilateral avoids halos"));
+  gtk_widget_set_tooltip_text(g->compress, _("Compress the effect on shadows/highlights and\npreserve mid-tones"));
+  gtk_widget_set_tooltip_text(g->shadows_ccorrect, _("Adjust saturation of shadows"));
+  gtk_widget_set_tooltip_text(g->highlights_ccorrect, _("Adjust saturation of highlights"));
 }
 
 // clang-format off

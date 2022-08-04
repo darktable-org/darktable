@@ -154,7 +154,7 @@ static gchar *_colors_pretty_print(const gchar *raw_txt)
   }
   if(nb == 0)
   {
-    txt = g_strdup(_("all"));
+    txt = g_strdup(_("All"));
   }
   else if(nb > 1)
   {
@@ -256,17 +256,17 @@ static float _action_process_colors(gpointer target, dt_action_element_t element
 #undef CL_GREY_INCLUDED
 
 const dt_action_element_def_t _action_elements_colors[]
-  = { { N_("operator"), dt_action_effect_toggle },
-      { N_("red"     ), dt_action_effect_toggle },
-      { N_("yellow"  ), dt_action_effect_toggle },
-      { N_("green"   ), dt_action_effect_toggle },
-      { N_("blue"    ), dt_action_effect_toggle },
-      { N_("purple"  ), dt_action_effect_toggle },
-      { N_("all"     ), dt_action_effect_toggle },
+  = { { N_("Operator"), dt_action_effect_toggle },
+      { N_("Red"     ), dt_action_effect_toggle },
+      { N_("Yellow"  ), dt_action_effect_toggle },
+      { N_("Green"   ), dt_action_effect_toggle },
+      { N_("Blue"    ), dt_action_effect_toggle },
+      { N_("Purple"  ), dt_action_effect_toggle },
+      { N_("All"     ), dt_action_effect_toggle },
       { NULL } };
 
 const dt_action_def_t dt_action_def_colors_rule
-  = { N_("color filter"),
+  = { N_("Color filter"),
       _action_process_colors,
       _action_elements_colors };
 
@@ -291,25 +291,25 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
     dt_gui_add_class(colors->colors[k], "dt_dimmed");
     g_object_set_data(G_OBJECT(colors->colors[k]), "colors_self", colors);
     gtk_box_pack_start(GTK_BOX(hbox), colors->colors[k], FALSE, FALSE, 0);
-    gtk_widget_set_tooltip_text(colors->colors[k], _("filter by images color label"
-                                                     "\nclick to toggle the color label selection"
-                                                     "\nctrl+click to exclude the color label"
-                                                     "\nthe gray button affects all color labels"));
+    gtk_widget_set_tooltip_text(colors->colors[k], _("Filter by images color label"
+                                                     "\nClick to toggle the color label selection"
+                                                     "\nCtrl+click to exclude the color label"
+                                                     "\nThe gray button affects all color labels"));
     g_signal_connect(G_OBJECT(colors->colors[k]), "button-press-event", G_CALLBACK(_colors_clicked), colors);
     g_signal_connect(G_OBJECT(colors->colors[k]), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
                      GINT_TO_POINTER(k));
-    dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->colors[k], &dt_action_def_colors_rule);
+    dt_action_define(DT_ACTION(self), N_("Rules"), N_("Color label"), colors->colors[k], &dt_action_def_colors_rule);
   }
   colors->operator= dtgtk_button_new(dtgtk_cairo_paint_and, 0, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), colors->operator, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(colors->operator,
-                              _("filter by images color label"
-                                "\nand (∩): images having all selected color labels"
-                                "\nor (∪): images with at least one of the selected color labels"));
+                              _("Filter by images color label"
+                                "\nAnd (∩): images having all selected color labels"
+                                "\nOr (∪): images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(colors->operator), "clicked", G_CALLBACK(_colors_operator_clicked), colors);
   g_signal_connect(G_OBJECT(colors->operator), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
                    GINT_TO_POINTER(-1));
-  dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->operator, &dt_action_def_colors_rule);
+  dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("Rules"), N_("Color label"), colors->operator, &dt_action_def_colors_rule);
 
   if(darktable.control->accel_initialising)
   {

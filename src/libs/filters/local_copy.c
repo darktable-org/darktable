@@ -35,7 +35,7 @@ typedef enum _local_copy_type_t
 } _local_copy_type_t;
 
 static const char *_local_copy_names[]
-    = { N_("all images"), N_("copied locally"), N_("not copied locally"), NULL };
+    = { N_("All images"), N_("Copied locally"), N_("Not copied locally"), NULL };
 
 static void _local_copy_synchronise(_widgets_local_copy_t *source)
 {
@@ -139,7 +139,7 @@ static void _local_copy_widget_init(dt_lib_filtering_rule_t *rule, const dt_coll
   local_copy->rule = rule;
 
   local_copy->combo = dt_bauhaus_combobox_new_full(
-      DT_ACTION(self), NULL, N_("local_copy filter"), _("local copied state filter"), 0,
+      DT_ACTION(self), NULL, N_("Local_copy filter"), _("Local copied state filter"), 0,
       (GtkCallback)_local_copy_changed, local_copy, _local_copy_names);
   DT_BAUHAUS_WIDGET(local_copy->combo)->show_label = FALSE;
 

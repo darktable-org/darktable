@@ -102,7 +102,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float 
   if(rgb_profile == NULL)
   {
     rgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_WORK)->profile;
-    fprintf(stderr, _("unsupported working profile %s has been replaced by Rec2020 RGB!\n"), filename);
+    fprintf(stderr, _("Unsupported working profile %s has been replaced by Rec2020 RGB!\n"), filename);
   }
 
   lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;

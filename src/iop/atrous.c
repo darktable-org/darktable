@@ -125,7 +125,7 @@ typedef struct dt_iop_atrous_data_t
 
 const char *name()
 {
-  return _("contrast equalizer");
+  return _("Contrast equalizer");
 }
 
 const char *aliases()
@@ -135,11 +135,11 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("add or remove local contrast, sharpness, acutance"),
-                                      _("corrective and creative"),
-                                      _("linear, Lab, scene-referred"),
-                                      _("frequential, RGB"),
-                                      _("linear, Lab, scene-referred"));
+  return dt_iop_set_description(self, _("Add or remove local contrast, sharpness, acutance"),
+                                      _("Corrective and creative"),
+                                      _("Linear, Lab, scene-referred"),
+                                      _("Frequential, RGB"),
+                                      _("Linear, Lab, scene-referred"));
 }
 
 int default_group()
@@ -773,7 +773,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(C_("eq_preset", "coarse"), self->op,
+  dt_gui_presets_add_generic(C_("eq_preset", "Coarse"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -788,7 +788,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f * k / (float)BANDS;
     p.y[atrous_ct][k] = .3f * k / (float)BANDS;
   }
-  dt_gui_presets_add_generic(_("denoise & sharpen"), self->op,
+  dt_gui_presets_add_generic(_("Denoise & sharpen"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -803,7 +803,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(C_("atrous", "sharpen"), self->op,
+  dt_gui_presets_add_generic(C_("atrous", "Sharpen"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -818,7 +818,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .0f;
     p.y[atrous_ct][k] = fmaxf(0.0f, (.60f * k / (float)BANDS) - 0.30f);
   }
-  dt_gui_presets_add_generic(_("denoise chroma"), self->op,
+  dt_gui_presets_add_generic(_("Denoise chroma"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -833,7 +833,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f * k / (float)BANDS;
     p.y[atrous_ct][k] = .3f * k / (float)BANDS;
   }
-  dt_gui_presets_add_generic(_("denoise"), self->op,
+  dt_gui_presets_add_generic(_("Denoise"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -849,7 +849,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   p.y[atrous_L][0] = .5f;
-  dt_gui_presets_add_generic(_("bloom"), self->op,
+  dt_gui_presets_add_generic(_("Bloom"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
@@ -864,7 +864,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("clarity"), self->op,
+  dt_gui_presets_add_generic(_("Clarity"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   float sigma = 3.f / (float)(BANDS - 1);
@@ -884,7 +884,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 3"), self->op,
+  dt_gui_presets_add_generic(_("Deblur: large blur, strength 3"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -901,7 +901,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 3"), self->op,
+  dt_gui_presets_add_generic(_("Deblur: medium blur, strength 3"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -917,7 +917,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 3"), self->op,
+  dt_gui_presets_add_generic(_("Deblur: fine blur, strength 3"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -935,7 +935,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 2"), self->op,
+  dt_gui_presets_add_generic(_("Deblur: large blur, strength 2"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -952,7 +952,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 2"), self->op,
+  dt_gui_presets_add_generic(_("Deblur: medium blur, strength 2"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -968,7 +968,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 2"), self->op,
+  dt_gui_presets_add_generic(_("Deblur: fine blur, strength 2"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -986,7 +986,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 1"), self->op,
+  dt_gui_presets_add_generic(_("Deblur: large blur, strength 1"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -1003,7 +1003,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 1"), self->op,
+  dt_gui_presets_add_generic(_("Deblur: medium blur, strength 1"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
@@ -1019,7 +1019,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 1"), self->op,
+  dt_gui_presets_add_generic(_("Deblur: fine blur, strength 1"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_database_release_transaction(darktable.db);
@@ -1345,14 +1345,14 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
     //cairo_select_font_face(cr, "Roboto", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, .06 * height);
-    pango_layout_set_text(layout, _("coarse"), -1);
+    pango_layout_set_text(layout, _("Coarse"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, .02 * width - ink.y, .14 * height + ink.width);
     cairo_save(cr);
     cairo_rotate(cr, -M_PI * .5f);
     pango_cairo_show_layout(cr, layout);
     cairo_restore(cr);
-    pango_layout_set_text(layout, _("fine"), -1);
+    pango_layout_set_text(layout, _("Fine"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, .98 * width - ink.height, .14 * height + ink.width);
     cairo_save(cr);
@@ -1364,17 +1364,17 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     {
       case atrous_L:
       case atrous_c:
-        dt_atrous_show_upper_label(cr, _("contrasty"), layout, ink);
-        dt_atrous_show_lower_label(cr, _("smooth"), layout, ink);
+        dt_atrous_show_upper_label(cr, _("Contrasty"), layout, ink);
+        dt_atrous_show_lower_label(cr, _("Smooth"), layout, ink);
         break;
       case atrous_Lt:
       case atrous_ct:
-        dt_atrous_show_upper_label(cr, _("smooth"), layout, ink);
-        dt_atrous_show_lower_label(cr, _("noisy"), layout, ink);
+        dt_atrous_show_upper_label(cr, _("Smooth"), layout, ink);
+        dt_atrous_show_lower_label(cr, _("Noisy"), layout, ink);
         break;
       default: // case atrous_s:
-        dt_atrous_show_upper_label(cr, _("bold"), layout, ink);
-        dt_atrous_show_lower_label(cr, _("dull"), layout, ink);
+        dt_atrous_show_upper_label(cr, _("Bold"), layout, ink);
+        dt_atrous_show_lower_label(cr, _("Dull"), layout, ink);
         break;
     }
     pango_font_description_free(desc);
@@ -1578,23 +1578,23 @@ enum
 };
 
 const gchar *dt_action_effect_equalizer[]
-  = { N_("reset"),
-      N_("boost"),
-      N_("reduce"),
-      N_("raise"),
-      N_("lower"),
-      N_("right"),
-      N_("left"),
+  = { N_("Reset"),
+      N_("Boost"),
+      N_("Reduce"),
+      N_("Raise"),
+      N_("Lower"),
+      N_("Right"),
+      N_("Left"),
       NULL };
 
 const dt_action_element_def_t _action_elements_equalizer[]
-  = { { N_("radius"  ), dt_action_effect_value     },
-      { N_("coarsest"), dt_action_effect_equalizer },
-      { N_("coarser" ), dt_action_effect_equalizer },
-      { N_("coarse"  ), dt_action_effect_equalizer },
-      { N_("fine"    ), dt_action_effect_equalizer },
-      { N_("finer"   ), dt_action_effect_equalizer },
-      { N_("finest"  ), dt_action_effect_equalizer },
+  = { { N_("Radius"  ), dt_action_effect_value     },
+      { N_("Coarsest"), dt_action_effect_equalizer },
+      { N_("Coarser" ), dt_action_effect_equalizer },
+      { N_("Coarse"  ), dt_action_effect_equalizer },
+      { N_("Fine"    ), dt_action_effect_equalizer },
+      { N_("Finer"   ), dt_action_effect_equalizer },
+      { N_("Finest"  ), dt_action_effect_equalizer },
       { } };
 
 static float _action_process_equalizer(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -1630,7 +1630,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
         get_params(p, ch1, p->x[ch1][node], p->y[ch1][node] + move_size / 100, c->mouse_radius);
 
         toast = g_strdup_printf("%s, %s %+.2f", _action_elements_equalizer[element].name,
-                                ch1 == atrous_s ? _("sharpness") : _("boost"), p->y[ch1][node] * 2. - 1.);
+                                ch1 == atrous_s ? _("Sharpness") : _("Boost"), p->y[ch1][node] * 2. - 1.);
         break;
       case DT_ACTION_EFFECT_LOWER:
         move_size *= -1;
@@ -1638,7 +1638,7 @@ static float _action_process_equalizer(gpointer target, dt_action_element_t elem
         get_params(p, ch2, p->x[ch2][node], p->y[ch2][node] + move_size / 100, c->mouse_radius);
 
         toast = g_strdup_printf("%s, %s %.2f", _action_elements_equalizer[element].name,
-                                _("threshold"), p->y[ch2][node]);
+                                _("Threshold"), p->y[ch2][node]);
         break;
       case DT_ACTION_EFFECT_LEFT:
         move_size *= -1;
@@ -1704,7 +1704,7 @@ static const dt_shortcut_fallback_t _action_fallbacks_equalizer[]
       { } };
 
 const dt_action_def_t _action_def_equalizer
-  = { N_("contrast equalizer"),
+  = { N_("Contrast equalizer"),
       _action_process_equalizer,
       _action_elements_equalizer,
       _action_fallbacks_equalizer };
@@ -1732,10 +1732,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   static struct dt_action_def_t notebook_def = { };
   c->channel_tabs = dt_ui_notebook_new(&notebook_def);
-  dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(c->channel_tabs), &notebook_def);
-  dt_ui_notebook_page(c->channel_tabs, N_("luma"), _("change lightness at each feature size"));
-  dt_ui_notebook_page(c->channel_tabs, N_("chroma"), _("change color saturation at each feature size"));
-  dt_ui_notebook_page(c->channel_tabs, N_("edges"), _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
+  dt_action_define_iop(self, NULL, N_("Channel"), GTK_WIDGET(c->channel_tabs), &notebook_def);
+  dt_ui_notebook_page(c->channel_tabs, N_("Luma"), _("Change lightness at each feature size"));
+  dt_ui_notebook_page(c->channel_tabs, N_("Chroma"), _("Change color saturation at each feature size"));
+  dt_ui_notebook_page(c->channel_tabs, N_("Edges"), _("Change edge halos at each feature size\nOnly changes results of luma and chroma tabs"));
   gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
   gtk_notebook_set_current_page(c->channel_tabs, c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
@@ -1752,7 +1752,7 @@ void gui_init(struct dt_iop_module_t *self)
                         | GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
                         | darktable.gui->scroll_mask);
   g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
-  dt_action_define_iop(self, NULL, N_("graph"), GTK_WIDGET(c->area), &_action_def_equalizer);
+  dt_action_define_iop(self, NULL, N_("Graph"), GTK_WIDGET(c->area), &_action_def_equalizer);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(area_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(area_button_release), self);
@@ -1762,8 +1762,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(area_scrolled), self);
 
   // mix slider
-  c->mix = dt_bauhaus_slider_from_params(self, N_("mix"));
-  gtk_widget_set_tooltip_text(c->mix, _("make effect stronger or weaker"));
+  c->mix = dt_bauhaus_slider_from_params(self, N_("Mix"));
+  gtk_widget_set_tooltip_text(c->mix, _("Make effect stronger or weaker"));
   g_signal_connect(G_OBJECT(c->mix), "value-changed", G_CALLBACK(mix_callback), self);
 }
 

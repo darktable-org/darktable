@@ -361,10 +361,10 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   filename->name = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(filename->name), (top) ? 10 : 0);
   gtk_widget_set_can_default(filename->name, TRUE);
-  gtk_entry_set_placeholder_text(GTK_ENTRY(filename->name), _("filename"));
-  gtk_widget_set_tooltip_text(filename->name, _("enter filename to search.\n"
-                                                "multiple values can be separated by ','\n"
-                                                "\nright-click to get existing filenames"));
+  gtk_entry_set_placeholder_text(GTK_ENTRY(filename->name), _("Filename"));
+  gtk_widget_set_tooltip_text(filename->name, _("Enter filename to search.\n"
+                                                "Multiple values can be separated by ','\n"
+                                                "\nRight-click to get existing filenames"));
   gtk_box_pack_start(GTK_BOX(hb), filename->name, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->name), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->name), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
@@ -373,11 +373,11 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   filename->ext = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(filename->ext), (top) ? 5 : 0);
   gtk_widget_set_can_default(filename->ext, TRUE);
-  gtk_entry_set_placeholder_text(GTK_ENTRY(filename->ext), _("extension"));
-  gtk_widget_set_tooltip_text(filename->ext, _("enter extension to search with starting dot\n"
-                                               "multiple values can be separated by ','\n"
-                                               "handled keywords: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
-                                               "\nright-click to get existing extensions"));
+  gtk_entry_set_placeholder_text(GTK_ENTRY(filename->ext), _("Extension"));
+  gtk_widget_set_tooltip_text(filename->ext, _("Enter extension to search with starting dot\n"
+                                               "Multiple values can be separated by ','\n"
+                                               "Handled keywords: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
+                                               "\nRight-click to get existing extensions"));
   gtk_box_pack_start(GTK_BOX(hb), filename->ext, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->ext), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->ext), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
@@ -402,8 +402,8 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   filename->name_tree = gtk_tree_view_new_with_model(model);
   gtk_widget_show(filename->name_tree);
-  gtk_widget_set_tooltip_text(filename->name_tree, _("simple click to select filename\n"
-                                                     "ctrl-click to select multiple values"));
+  gtk_widget_set_tooltip_text(filename->name_tree, _("Simple click to select filename\n"
+                                                     "Ctrl-click to select multiple values"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(filename->name_tree), FALSE);
   GtkTreeSelection *sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(filename->name_tree));
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
@@ -429,8 +429,8 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   filename->ext_tree = gtk_tree_view_new_with_model(model);
   gtk_widget_show(filename->ext_tree);
-  gtk_widget_set_tooltip_text(filename->ext_tree, _("simple click to select extension\n"
-                                                    "ctrl-click to select multiple values"));
+  gtk_widget_set_tooltip_text(filename->ext_tree, _("Simple click to select extension\n"
+                                                    "Ctrl-click to select multiple values"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(filename->ext_tree), FALSE);
   sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(filename->ext_tree));
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
@@ -449,7 +449,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_container_add(GTK_CONTAINER(sw), filename->ext_tree);
 
   // the button to close the popup
-  GtkWidget *btn = gtk_button_new_with_label(_("ok"));
+  GtkWidget *btn = gtk_button_new_with_label(_("OK"));
   gtk_box_pack_start(GTK_BOX(hb), btn, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_filename_ok_clicked), filename);
 

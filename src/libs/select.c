@@ -36,7 +36,7 @@ DT_MODULE(1)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("select");
+  return _("Select");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -130,24 +130,24 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 
-  d->select_all_button = dt_action_button_new(self, N_("select all"), button_clicked, GINT_TO_POINTER(0),
-                                              _("select all images in current collection"), GDK_KEY_a, GDK_CONTROL_MASK);
+  d->select_all_button = dt_action_button_new(self, N_("Select all"), button_clicked, GINT_TO_POINTER(0),
+                                              _("Select all images in current collection"), GDK_KEY_a, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->select_all_button, 0, line, 1, 1);
 
-  d->select_none_button = dt_action_button_new(self, N_("select none"), button_clicked, GINT_TO_POINTER(1),
-                                              _("clear selection"), GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  d->select_none_button = dt_action_button_new(self, N_("Select none"), button_clicked, GINT_TO_POINTER(1),
+                                              _("Clear selection"), GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_grid_attach(grid, d->select_none_button, 1, line++, 1, 1);
 
-  d->select_invert_button = dt_action_button_new(self, N_("invert selection"), button_clicked, GINT_TO_POINTER(2),
-                                              _("select unselected images\nin current collection"), GDK_KEY_i, GDK_CONTROL_MASK);
+  d->select_invert_button = dt_action_button_new(self, N_("Invert selection"), button_clicked, GINT_TO_POINTER(2),
+                                              _("Select unselected images\nin current collection"), GDK_KEY_i, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->select_invert_button, 0, line, 1, 1);
 
-  d->select_film_roll_button = dt_action_button_new(self, N_("select film roll"), button_clicked, GINT_TO_POINTER(3),
-                                              _("select all images which are in the same\nfilm roll as the selected images"), 0, 0);
+  d->select_film_roll_button = dt_action_button_new(self, N_("Select film roll"), button_clicked, GINT_TO_POINTER(3),
+                                              _("Select all images which are in the same\nfilm roll as the selected images"), 0, 0);
   gtk_grid_attach(grid, d->select_film_roll_button, 1, line++, 1, 1);
 
-  d->select_untouched_button = dt_action_button_new(self, N_("select untouched"), button_clicked, GINT_TO_POINTER(4),
-                                              _("select untouched images in\ncurrent collection"), 0, 0);
+  d->select_untouched_button = dt_action_button_new(self, N_("Select untouched"), button_clicked, GINT_TO_POINTER(4),
+                                              _("Select untouched images in\ncurrent collection"), 0, 0);
   gtk_grid_attach(grid, d->select_untouched_button, 0, line, 2, 1);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,

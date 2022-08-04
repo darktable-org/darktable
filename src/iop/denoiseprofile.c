@@ -198,63 +198,63 @@ typedef struct dt_iop_denoiseprofile_params_v9_t
 typedef struct dt_iop_denoiseprofile_params_v10_t
 {
   float radius;     /* patch size
-                       $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "patch size" */
+                       $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "Patch size" */
   float nbhood;     /* search radius
-                       $MIN: 1.0 $MAX: 30.0 $DEFAULT: 7.0 $DESCRIPTION: "search radius" */
+                       $MIN: 1.0 $MAX: 30.0 $DEFAULT: 7.0 $DESCRIPTION: "Search radius" */
   float strength;   /* noise level after equalization
                        $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 */
   float shadows;    /* control the impact on shadows
-                       $MIN: 0.0 $MAX: 1.8 $DEFAULT: 1.0 $DESCRIPTION: "preserve shadows" */
+                       $MIN: 0.0 $MAX: 1.8 $DEFAULT: 1.0 $DESCRIPTION: "Preserve shadows" */
   float bias;       /* allows to reduce backtransform bias
-                       $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "bias correction" */
+                       $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "Bias correction" */
   float scattering; /* spread the patch search zone without increasing number of patches
-                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering" */
+                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "Scattering" */
   float central_pixel_weight; /* increase central pixel's weight in patch comparison
-                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight" */
+                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "Central pixel weight" */
   float overshooting; /* adjusts the way parameters are autoset
-                         $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
+                         $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "Adjust autoset parameters" */
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; /* switch between nlmeans and wavelets
                                         $DEFAULT: MODE_NLMEANS */
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; /* values to change wavelet force by frequency
                                                                      $DEFAULT: 0.5 */
-  gboolean wb_adaptive_anscombe; // $DEFAULT: TRUE $DESCRIPTION: "whitebalance-adaptive transform" whether to adapt anscombe transform to wb coeffs
-  gboolean fix_anscombe_and_nlmeans_norm; // $DEFAULT: TRUE $DESCRIPTION: "fix various bugs in algorithm" backward compatibility options
-  gboolean use_new_vst; // $DEFAULT: TRUE $DESCRIPTION: "upgrade profiled transform" backward compatibility options
+  gboolean wb_adaptive_anscombe; // $DEFAULT: TRUE $DESCRIPTION: "Whitebalance-adaptive transform" whether to adapt anscombe transform to wb coeffs
+  gboolean fix_anscombe_and_nlmeans_norm; // $DEFAULT: TRUE $DESCRIPTION: "Fix various bugs in algorithm" backward compatibility options
+  gboolean use_new_vst; // $DEFAULT: TRUE $DESCRIPTION: "Upgrade profiled transform" backward compatibility options
   dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
-                                                              $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
+                                                              $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "Color mode"*/
 } dt_iop_denoiseprofile_params_v10_t;
 
 typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;     /* patch size
-                       $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "patch size" */
+                       $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "Patch size" */
   float nbhood;     /* search radius
-                       $MIN: 1.0 $MAX: 30.0 $DEFAULT: 7.0 $DESCRIPTION: "search radius" */
+                       $MIN: 1.0 $MAX: 30.0 $DEFAULT: 7.0 $DESCRIPTION: "Search radius" */
   float strength;   /* noise level after equalization
                        $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 */
   float shadows;    /* control the impact on shadows
-                       $MIN: 0.0 $MAX: 1.8 $DEFAULT: 1.0 $DESCRIPTION: "preserve shadows" */
+                       $MIN: 0.0 $MAX: 1.8 $DEFAULT: 1.0 $DESCRIPTION: "Preserve shadows" */
   float bias;       /* allows to reduce backtransform bias
-                       $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "bias correction" */
+                       $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "Bias correction" */
   float scattering; /* spread the patch search zone without increasing number of patches
-                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering" */
+                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "Scattering" */
   float central_pixel_weight; /* increase central pixel's weight in patch comparison
-                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight" */
+                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "Central pixel weight" */
   float overshooting; /* adjusts the way parameters are autoset
-                         $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
+                         $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "Adjust autoset parameters" */
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; /* switch between nlmeans and wavelets
                                         $DEFAULT: MODE_WAVELETS */
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; /* values to change wavelet force by frequency
                                                                      $DEFAULT: 0.5 */
-  gboolean wb_adaptive_anscombe; // $DEFAULT: TRUE $DESCRIPTION: "whitebalance-adaptive transform" whether to adapt anscombe transform to wb coeffs
-  gboolean fix_anscombe_and_nlmeans_norm; // $DEFAULT: TRUE $DESCRIPTION: "fix various bugs in algorithm" backward compatibility options
-  gboolean use_new_vst; // $DEFAULT: TRUE $DESCRIPTION: "upgrade profiled transform" backward compatibility options
+  gboolean wb_adaptive_anscombe; // $DEFAULT: TRUE $DESCRIPTION: "Whitebalance-adaptive transform" whether to adapt anscombe transform to wb coeffs
+  gboolean fix_anscombe_and_nlmeans_norm; // $DEFAULT: TRUE $DESCRIPTION: "Fix various bugs in algorithm" backward compatibility options
+  gboolean use_new_vst; // $DEFAULT: TRUE $DESCRIPTION: "Upgrade profiled transform" backward compatibility options
   dt_iop_denoiseprofile_wavelet_mode_t wavelet_color_mode; /* switch between RGB and Y0U0V0 modes.
-                                                              $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "color mode"*/
+                                                              $DEFAULT: MODE_Y0U0V0 $DESCRIPTION: "Color mode"*/
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -704,23 +704,23 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[DT_DENOISE_PROFILE_Y0][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
     p.y[DT_DENOISE_PROFILE_Y0][b] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, 11, &p,
+  dt_gui_presets_add_generic(_("Wavelets: chroma only"), self->op, 11, &p,
                              sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 const char *name()
 {
-  return _("denoise (profiled)");
+  return _("Denoise (profiled)");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("denoise using noise statistics profiled on sensors"),
-                                _("corrective"),
-                                _("linear, RGB, scene-referred"),
-                                _("linear, RGB"),
-                                _("linear, RGB, scene-referred"));
+                                _("Denoise using noise statistics profiled on sensors"),
+                                _("Corrective"),
+                                _("Linear, RGB, scene-referred"),
+                                _("Linear, RGB"),
+                                _("Linear, RGB, scene-referred"));
 }
 
 int default_group()
@@ -2711,7 +2711,7 @@ void reload_defaults(dt_iop_module_t *module)
         g->interpolated = *current;
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0f;
-        snprintf(name, sizeof(name), _("found match for ISO %d"), iso);
+        snprintf(name, sizeof(name), _("Found match for ISO %d"), iso);
         break;
       }
       if(last && last->iso < iso && current->iso > iso)
@@ -2720,7 +2720,7 @@ void reload_defaults(dt_iop_module_t *module)
         dt_noiseprofile_interpolate(last, current, &g->interpolated);
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0f;
-        snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"), last->iso, current->iso);
+        snprintf(name, sizeof(name), _("Interpolated from ISO %d and %d"), last->iso, current->iso);
         break;
       }
       last = current;
@@ -3089,7 +3089,7 @@ void gui_update(dt_iop_module_t *self)
       gtk_widget_show_all(g->box_variance);
       if(dt_bauhaus_combobox_length(g->mode) == 4)
       {
-        dt_bauhaus_combobox_add(g->mode, _("compute variance"));
+        dt_bauhaus_combobox_add(g->mode, _("Compute variance"));
       }
       break;
   }
@@ -3390,7 +3390,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   pango_layout_set_font_description(layout, desc);
   cairo_set_source_rgb(cr, .1, .1, .1);
 
-  pango_layout_set_text(layout, _("coarse"), -1);
+  pango_layout_set_text(layout, _("Coarse"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .02 * width - ink.y, .5 * (height + ink.width));
   cairo_save(cr);
@@ -3398,7 +3398,7 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   pango_cairo_show_layout(cr, layout);
   cairo_restore(cr);
 
-  pango_layout_set_text(layout, _("fine"), -1);
+  pango_layout_set_text(layout, _("Fine"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .98 * width - ink.height, .5 * (height + ink.width));
   cairo_save(cr);
@@ -3407,12 +3407,12 @@ static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer us
   cairo_restore(cr);
 
 
-  pango_layout_set_text(layout, _("smooth"), -1);
+  pango_layout_set_text(layout, _("Smooth"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .5 * (width - ink.width), .08 * height - ink.height);
   pango_cairo_show_layout(cr, layout);
 
-  pango_layout_set_text(layout, _("noisy"), -1);
+  pango_layout_set_text(layout, _("Noisy"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, .5 * (width - ink.width), .97 * height - ink.height);
   pango_cairo_show_layout(cr, layout);
@@ -3577,8 +3577,8 @@ void gui_init(dt_iop_module_t *self)
   g->wavelet_color_mode = dt_bauhaus_combobox_from_params(self, "wavelet_color_mode");
 
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-  dt_action_define_iop(self, NULL, N_("channel"), GTK_WIDGET(g->channel_tabs), &dt_action_def_tabs_rgb);
-  dt_ui_notebook_page(g->channel_tabs, N_("all"), NULL);
+  dt_action_define_iop(self, NULL, N_("Channel"), GTK_WIDGET(g->channel_tabs), &dt_action_def_tabs_rgb);
+  dt_ui_notebook_page(g->channel_tabs, N_("All"), NULL);
   dt_ui_notebook_page(g->channel_tabs, N_("R"), NULL);
   dt_ui_notebook_page(g->channel_tabs, N_("G"), NULL);
   dt_ui_notebook_page(g->channel_tabs, N_("B"), NULL);
@@ -3620,32 +3620,32 @@ void gui_init(dt_iop_module_t *self)
 
   g->box_variance = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->label_var = GTK_LABEL(dt_ui_label_new(_("use only with a perfectly\n"
+  g->label_var = GTK_LABEL(dt_ui_label_new(_("Use only with a perfectly\n"
                                              "uniform image if you want to\n"
                                              "estimate the noise variance.")));
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(g->label_var), TRUE, TRUE, 0);
 
   GtkBox *hboxR = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelR = GTK_LABEL(dt_ui_label_new(_("variance red: ")));
+  GtkLabel *labelR = GTK_LABEL(dt_ui_label_new(_("Variance red: ")));
   gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(labelR), FALSE, FALSE, 0);
   g->label_var_R = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_R), _("variance computed on the red channel"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_R), _("Variance computed on the red channel"));
   gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(g->label_var_R), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxR), TRUE, TRUE, 0);
 
   GtkBox *hboxG = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelG = GTK_LABEL(dt_ui_label_new(_("variance green: ")));
+  GtkLabel *labelG = GTK_LABEL(dt_ui_label_new(_("Variance green: ")));
   gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(labelG), FALSE, FALSE, 0);
   g->label_var_G = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_G), _("variance computed on the green channel"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_G), _("Variance computed on the green channel"));
   gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(g->label_var_G), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxG), TRUE, TRUE, 0);
 
   GtkBox *hboxB = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkLabel *labelB = GTK_LABEL(dt_ui_label_new(_("variance blue: ")));
+  GtkLabel *labelB = GTK_LABEL(dt_ui_label_new(_("Variance blue: ")));
   gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(labelB), FALSE, FALSE, 0);
   g->label_var_B = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_B), _("variance computed on the blue channel"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_B), _("Variance computed on the blue channel"));
   gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(g->label_var_B), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxB), TRUE, TRUE, 0);
 
@@ -3655,20 +3655,20 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->profile = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->profile, NULL, N_("profile"));
+  dt_bauhaus_widget_set_label(g->profile, NULL, N_("Profile"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
 
   g->wb_adaptive_anscombe = dt_bauhaus_toggle_from_params(self, "wb_adaptive_anscombe");
 
   g->mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->mode, NULL, N_("mode"));
-  dt_bauhaus_combobox_add(g->mode, _("non-local means"));
-  dt_bauhaus_combobox_add(g->mode, _("non-local means auto"));
-  dt_bauhaus_combobox_add(g->mode, _("wavelets"));
-  dt_bauhaus_combobox_add(g->mode, _("wavelets auto"));
+  dt_bauhaus_widget_set_label(g->mode, NULL, N_("Mode"));
+  dt_bauhaus_combobox_add(g->mode, _("Non-local means"));
+  dt_bauhaus_combobox_add(g->mode, _("Non-local means auto"));
+  dt_bauhaus_combobox_add(g->mode, _("Wavelets"));
+  dt_bauhaus_combobox_add(g->mode, _("Wavelets auto"));
   const gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
-  if(compute_variance) dt_bauhaus_combobox_add(g->mode, _("compute variance"));
+  if(compute_variance) dt_bauhaus_combobox_add(g->mode, _("Compute variance"));
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
 
@@ -3677,7 +3677,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->overshooting = dt_bauhaus_slider_from_params(self, "overshooting");
   dt_bauhaus_slider_set_soft_max(g->overshooting, 4.0f);
-  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
   dt_bauhaus_slider_set_soft_max(g->strength, 4.0f);
   dt_bauhaus_slider_set_digits(g->strength, 3);
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
@@ -3690,56 +3690,56 @@ void gui_init(dt_iop_module_t *self)
 
   g->use_new_vst = dt_bauhaus_toggle_from_params(self, "use_new_vst");
 
-  gtk_widget_set_tooltip_text(g->wb_adaptive_anscombe, _("adapt denoising according to the\n"
+  gtk_widget_set_tooltip_text(g->wb_adaptive_anscombe, _("Adapt denoising according to the\n"
                                                          "white balance coefficients.\n"
-                                                         "should be enabled on a first instance\n"
+                                                         "Should be enabled on a first instance\n"
                                                          "for better denoising.\n"
-                                                         "should be disabled if an earlier instance\n"
+                                                         "Should be disabled if an earlier instance\n"
                                                          "has been used with a color blending mode."));
-  gtk_widget_set_tooltip_text(g->fix_anscombe_and_nlmeans_norm, _("fix bugs in anscombe transform resulting\n"
+  gtk_widget_set_tooltip_text(g->fix_anscombe_and_nlmeans_norm, _("Fix bugs in anscombe transform resulting\n"
                                                  "in undersmoothing of the green channel in\n"
                                                  "wavelets mode, combined with a bad handling\n"
                                                  "of white balance coefficients, and a bug in\n"
                                                  "non local means normalization resulting in\n"
                                                  "undersmoothing when patch size was increased.\n"
-                                                 "enabling this option will change the denoising\n"
-                                                 "you get. once enabled, you won't be able to\n"
+                                                 "Enabling this option will change the denoising\n"
+                                                 "you get. Once enabled, you won't be able to\n"
                                                  "return back to old algorithm."));
-  gtk_widget_set_tooltip_text(g->profile, _("profile used for variance stabilization"));
-  gtk_widget_set_tooltip_text(g->mode, _("method used in the denoising core.\n"
-                                         "non-local means works best for `lightness' blending,\n"
+  gtk_widget_set_tooltip_text(g->profile, _("Profile used for variance stabilization"));
+  gtk_widget_set_tooltip_text(g->mode, _("Method used in the denoising core.\n"
+                                         "Non-local means works best for `lightness' blending,\n"
                                          "wavelets work best for `color' blending"));
-  gtk_widget_set_tooltip_text(g->wavelet_color_mode, _("color representation used within the algorithm.\n"
+  gtk_widget_set_tooltip_text(g->wavelet_color_mode, _("Color representation used within the algorithm.\n"
                                                        "RGB keeps the RGB channels separated,\n"
                                                        "while Y0U0V0 combine the channels to\n"
                                                        "denoise chroma and luma separately."));
-  gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match.\n"
-                                           "increase for more sharpness on strong edges, and better denoising of smooth areas.\n"
-                                           "if details are oversmoothed, reduce this value or increase the central pixel weight slider."));
-  gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighbourhood to search patches in. "
-                                           "increase for better denoising performance, but watch the long runtimes! "
-                                           "large radii can be very slow. you have been warned"));
-  gtk_widget_set_tooltip_text(g->scattering, _("scattering of the neighbourhood to search patches in.\n"
-                                               "increase for better coarse-grain noise reduction.\n"
-                                               "does not affect execution time."));
-  gtk_widget_set_tooltip_text(g->central_pixel_weight, _("increase the weight of the central pixel\n"
+  gtk_widget_set_tooltip_text(g->radius, _("Radius of the patches to match.\n"
+                                           "Increase for more sharpness on strong edges, and better denoising of smooth areas.\n"
+                                           "If details are oversmoothed, reduce this value or increase the central pixel weight slider."));
+  gtk_widget_set_tooltip_text(g->nbhood, _("Emergency use only: radius of the neighbourhood to search patches in. "
+                                           "Increase for better denoising performance, but watch the long runtimes! "
+                                           "Large radii can be very slow. You have been warned"));
+  gtk_widget_set_tooltip_text(g->scattering, _("Scattering of the neighbourhood to search patches in.\n"
+                                               "Increase for better coarse-grain noise reduction.\n"
+                                               "Does not affect execution time."));
+  gtk_widget_set_tooltip_text(g->central_pixel_weight, _("Increase the weight of the central pixel\n"
                                                          "of the patch in the patch comparison.\n"
-                                                         "useful to recover details when patch size\n"
+                                                         "Useful to recover details when patch size\n"
                                                          "is quite big."));
-  gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
-  gtk_widget_set_tooltip_text(g->overshooting, _("controls the way parameters are autoset.\n"
-                                                 "increase if shadows are not denoised enough\n"
+  gtk_widget_set_tooltip_text(g->strength, _("Finetune denoising strength"));
+  gtk_widget_set_tooltip_text(g->overshooting, _("Controls the way parameters are autoset.\n"
+                                                 "Increase if shadows are not denoised enough\n"
                                                  "or if chroma noise remains.\n"
-                                                 "this can happen if your picture is underexposed."));
-  gtk_widget_set_tooltip_text(g->shadows, _("finetune shadows denoising.\n"
-                                            "decrease to denoise more aggressively\n"
+                                                 "This can happen if your picture is underexposed."));
+  gtk_widget_set_tooltip_text(g->shadows, _("Finetune shadows denoising.\n"
+                                            "Decrease to denoise more aggressively\n"
                                             "dark areas of the image."));
-  gtk_widget_set_tooltip_text(g->bias, _("correct color cast in shadows.\n"
-                                         "decrease if shadows are too purple.\n"
-                                         "increase if shadows are too green."));
-  gtk_widget_set_tooltip_text(g->use_new_vst, _("upgrade the variance stabilizing algorithm.\n"
-                                                "new algorithm extends the current one.\n"
-                                                "it is more flexible but could give small\n"
+  gtk_widget_set_tooltip_text(g->bias, _("Correct color cast in shadows.\n"
+                                         "Decrease if shadows are too purple.\n"
+                                         "Increase if shadows are too green."));
+  gtk_widget_set_tooltip_text(g->use_new_vst, _("Upgrade the variance stabilizing algorithm.\n"
+                                                "New algorithm extends the current one.\n"
+                                                "It is more flexible but could give small\n"
                                                 "differences in the images already processed."));
 
 }

@@ -63,7 +63,7 @@ static float _action_process_accels_show(gpointer target, dt_action_element_t el
 }
 
 const dt_action_def_t dt_action_def_accels_show
-  = { N_("hold"),
+  = { N_("Hold"),
       _action_process_accels_show,
       dt_action_elements_hold,
       NULL, TRUE };
@@ -99,21 +99,21 @@ const dt_action_element_def_t _action_elements_modifiers[]
       { NULL } };
 
 const dt_action_def_t dt_action_def_modifiers
-  = { N_("modifiers"),
+  = { N_("Modifiers"),
       _action_process_modifiers,
       _action_elements_modifiers,
       NULL, TRUE };
 
 void dt_control_init(dt_control_t *s)
 {
-  s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL, "global", C_("accel", "global"), .next = &s->actions_views };
-  s->actions_views = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "views", C_("accel", "views"), .next = &s->actions_libs, .target = &s->actions_thumb };
-  s->actions_thumb = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "thumbtable", C_("accel", "thumbtable"), .owner = &s->actions_views };
-  s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lib", C_("accel", "utility modules"), .next = &s->actions_iops };
-  s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "iop", C_("accel", "processing modules"), .next = &s->actions_lua, .target = &s->actions_blend };
-  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND, "blend", C_("accel", "blending"), .owner = &s->actions_iops };
-  s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lua", C_("accel", "lua scripts"), .next = &s->actions_fallbacks };
-  s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "fallbacks", C_("accel", "fallbacks") };
+  s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL, "global", C_("accel", "Global"), .next = &s->actions_views };
+  s->actions_views = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "views", C_("accel", "Views"), .next = &s->actions_libs, .target = &s->actions_thumb };
+  s->actions_thumb = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "thumbtable", C_("accel", "Thumbtable"), .owner = &s->actions_views };
+  s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lib", C_("accel", "Utility modules"), .next = &s->actions_iops };
+  s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "iop", C_("accel", "Processing modules"), .next = &s->actions_lua, .target = &s->actions_blend };
+  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND, "blend", C_("accel", "Blending"), .owner = &s->actions_iops };
+  s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lua", C_("accel", "Lua scripts"), .next = &s->actions_fallbacks };
+  s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "fallbacks", C_("accel", "Fallbacks") };
   s->actions = &s->actions_global;
 
   s->widgets = g_hash_table_new(NULL, NULL);
@@ -130,10 +130,10 @@ void dt_control_init(dt_control_t *s)
   dt_action_define_fallback(DT_ACTION_TYPE_LIB, &dt_action_def_lib);
   dt_action_define_fallback(DT_ACTION_TYPE_VALUE_FALLBACK, &dt_action_def_value);
 
-  dt_action_t *ac = dt_action_define(&s->actions_global, NULL, N_("show accels window"), NULL, &dt_action_def_accels_show);
+  dt_action_t *ac = dt_action_define(&s->actions_global, NULL, N_("Show accels window"), NULL, &dt_action_def_accels_show);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_h, 0);
 
-  s->actions_modifiers = dt_action_define(&s->actions_global, NULL, N_("modifiers"), NULL, &dt_action_def_modifiers);
+  s->actions_modifiers = dt_action_define(&s->actions_global, NULL, N_("Modifiers"), NULL, &dt_action_def_modifiers);
 
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
@@ -291,7 +291,7 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
   pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
-  pango_layout_set_text(layout, _("working..."), -1);
+  pango_layout_set_text(layout, _("Working..."), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   if(ink.width > width * 0.98)
   {

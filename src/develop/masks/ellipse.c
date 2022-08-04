@@ -488,7 +488,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       else
         dt_conf_set_float("plugins/darkroom/masks/ellipse/rotation", rotation);
 
-      dt_toast_log(_("rotation: %3.f°"), rotation);
+      dt_toast_log(_("Rotation: %3.f°"), rotation);
     }
     else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
@@ -524,7 +524,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       else
         dt_conf_set_float("plugins/darkroom/masks/ellipse/border", masks_border);
 
-      dt_toast_log(_("feather size: %3.2f%%"), (masks_border/fmaxf(radius_a, radius_b))*100.0f);
+      dt_toast_log(_("Feather size: %3.2f%%"), (masks_border/fmaxf(radius_a, radius_b))*100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
@@ -552,7 +552,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_a", radius_a);
         dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_b", radius_b);
       }
-      dt_toast_log(_("size: %3.2f%%"), fmaxf(radius_a, radius_b)*100);
+      dt_toast_log(_("Size: %3.2f%%"), fmaxf(radius_a, radius_b)*100);
     }
     return 1;
   }
@@ -590,7 +590,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
           dt_conf_set_float("plugins/darkroom/spots/ellipse_rotation", ellipse->rotation);
         else
           dt_conf_set_float("plugins/darkroom/masks/ellipse/rotation", ellipse->rotation);
-        dt_toast_log(_("rotation: %3.f°"), ellipse->rotation);
+        dt_toast_log(_("Rotation: %3.f°"), ellipse->rotation);
       }
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
@@ -609,7 +609,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
           dt_conf_set_float("plugins/darkroom/spots/ellipse_border", ellipse->border);
         else
           dt_conf_set_float("plugins/darkroom/masks/ellipse/border", ellipse->border);
-        dt_toast_log(_("feather size: %3.2f%%"), ellipse->border*100.0f);
+        dt_toast_log(_("Feather size: %3.2f%%"), ellipse->border*100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL && dt_modifier_is(state, 0))
       {
@@ -639,7 +639,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
           dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_a", ellipse->radius[0]);
           dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_b", ellipse->radius[1]);
         }
-        dt_toast_log(_("size: %3.2f%%"), fmaxf(ellipse->radius[0], ellipse->radius[1])*100);
+        dt_toast_log(_("Size: %3.2f%%"), fmaxf(ellipse->radius[0], ellipse->radius[1])*100);
       }
       else if (!dt_modifier_is(state, 0))
       {
@@ -2154,7 +2154,7 @@ static GSList *_ellipse_setup_mouse_actions(const struct dt_masks_form_t *const 
 
 static void _ellipse_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
 {
-  snprintf(form->name, sizeof(form->name), _("ellipse #%d"), (int)nb);
+  snprintf(form->name, sizeof(form->name), _("Ellipse #%d"), (int)nb);
 }
 
 static void _ellipse_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
@@ -2183,14 +2183,14 @@ static void _ellipse_set_hint_message(const dt_masks_form_gui_t *const gui, cons
 {
   if(gui->creation)
     g_snprintf(msgbuf, msgbuf_len,
-               _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-                 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+               _("<b>Size</b>: scroll, <b>Feather size</b>: Shift+scroll\n"
+                 "<b>Rotation</b>: Ctrl+Shift+scroll, <b>Opacity</b>: Ctrl+scroll (%d%%)"), opacity);
   else if(gui->point_selected >= 0)
-    g_strlcat(msgbuf, _("<b>rotate</b>: ctrl+drag"), msgbuf_len);
+    g_strlcat(msgbuf, _("<b>Rotate</b>: Ctrl+drag"), msgbuf_len);
   else if(gui->form_selected)
     g_snprintf(msgbuf, msgbuf_len,
-               _("<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-                 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+               _("<b>Feather mode</b>: Shift+click, <b>Rotate</b>: Ctrl+drag\n"
+                 "<b>Size</b>: scroll, <b>Feather size</b>: Shift+scroll, <b>Opacity</b>: Ctrl+scroll (%d%%)"), opacity);
 }
 
 static void _ellipse_sanitize_config(dt_masks_type_t type)

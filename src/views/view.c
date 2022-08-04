@@ -1184,38 +1184,38 @@ GSList *dt_mouse_action_create_format(GSList *actions, dt_mouse_action_type_t ty
 static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
 {
   gchar *atxt = NULL;
-  if(ma->mods & GDK_SHIFT_MASK  ) atxt = dt_util_dstrcat(atxt, "%s+", _("shift"));
-  if(ma->mods & GDK_CONTROL_MASK) atxt = dt_util_dstrcat(atxt, "%s+", _("ctrl"));
-  if(ma->mods & GDK_MOD1_MASK   ) atxt = dt_util_dstrcat(atxt, "%s+", _("alt"));
+  if(ma->mods & GDK_SHIFT_MASK  ) atxt = dt_util_dstrcat(atxt, "%s+", _("Shift"));
+  if(ma->mods & GDK_CONTROL_MASK) atxt = dt_util_dstrcat(atxt, "%s+", _("Ctrl"));
+  if(ma->mods & GDK_MOD1_MASK   ) atxt = dt_util_dstrcat(atxt, "%s+", _("Alt"));
 
   switch(ma->action)
   {
     case DT_MOUSE_ACTION_LEFT:
-      atxt = dt_util_dstrcat(atxt, _("left click"));
+      atxt = dt_util_dstrcat(atxt, _("Left click"));
       break;
     case DT_MOUSE_ACTION_RIGHT:
-      atxt = dt_util_dstrcat(atxt, _("right click"));
+      atxt = dt_util_dstrcat(atxt, _("Right click"));
       break;
     case DT_MOUSE_ACTION_MIDDLE:
-      atxt = dt_util_dstrcat(atxt, _("middle click"));
+      atxt = dt_util_dstrcat(atxt, _("Middle click"));
       break;
     case DT_MOUSE_ACTION_SCROLL:
-      atxt = dt_util_dstrcat(atxt, _("scroll"));
+      atxt = dt_util_dstrcat(atxt, _("Scroll"));
       break;
     case DT_MOUSE_ACTION_DOUBLE_LEFT:
-      atxt = dt_util_dstrcat(atxt, _("left double-click"));
+      atxt = dt_util_dstrcat(atxt, _("Left double-click"));
       break;
     case DT_MOUSE_ACTION_DOUBLE_RIGHT:
-      atxt = dt_util_dstrcat(atxt, _("right double-click"));
+      atxt = dt_util_dstrcat(atxt, _("Right double-click"));
       break;
     case DT_MOUSE_ACTION_DRAG_DROP:
-      atxt = dt_util_dstrcat(atxt, _("drag and drop"));
+      atxt = dt_util_dstrcat(atxt, _("Drag and drop"));
       break;
     case DT_MOUSE_ACTION_LEFT_DRAG:
-      atxt = dt_util_dstrcat(atxt, _("left click+drag"));
+      atxt = dt_util_dstrcat(atxt, _("Left click+drag"));
       break;
     case DT_MOUSE_ACTION_RIGHT_DRAG:
-      atxt = dt_util_dstrcat(atxt, _("right click+drag"));
+      atxt = dt_util_dstrcat(atxt, _("Right click+drag"));
       break;
   }
 
@@ -1235,7 +1235,7 @@ static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_v
   // creating new window
   GtkWindow *win = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   dt_gui_add_class(GTK_WIDGET(win), "dt_accels_window");
-  gtk_window_set_title(win, _("darktable - accels window"));
+  gtk_window_set_title(win, _("Darktable - accels window"));
   GtkAllocation alloc;
   gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
 
@@ -1283,7 +1283,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   vm->accels_window.sticky_btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, 0, NULL);
   g_object_set(G_OBJECT(vm->accels_window.sticky_btn), "tooltip-text",
-               _("switch to a classic window which will stay open after key release"), (char *)NULL);
+               _("Switch to a classic window which will stay open after key release"), (char *)NULL);
   g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "button-press-event", G_CALLBACK(_accels_window_sticky),
                    vm);
   dt_gui_add_class(vm->accels_window.sticky_btn, "dt_accels_stick");
@@ -1342,7 +1342,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
   dt_action_t *first_category = darktable.control->actions;
 
   // we add the mouse actions too
-  dt_action_t mouse_actions = { .label = _("mouse actions"),
+  dt_action_t mouse_actions = { .label = _("Mouse actions"),
                                 .next = first_category };
   if(cv->mouse_actions)
   {
@@ -1381,9 +1381,9 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
       GtkWidget *list = gtk_tree_view_new_with_model(model);
       g_object_unref(model);
       GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-      GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("shortcut"), renderer, "text", 0, NULL);
+      GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Shortcut"), renderer, "text", 0, NULL);
       gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-      column = gtk_tree_view_column_new_with_attributes(_("action"), renderer, "text", 1, NULL);
+      column = gtk_tree_view_column_new_with_attributes(_("Action"), renderer, "text", 1, NULL);
       gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
       gtk_box_pack_start(GTK_BOX(box), list, FALSE, FALSE, 0);

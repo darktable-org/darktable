@@ -64,7 +64,7 @@ typedef struct dt_lib_recentcollect_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("recently used collections");
+  return _("Recently used collections");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -291,9 +291,9 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
   char confname[200];
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("recent collections settings"), GTK_WINDOW(win),
-                                                  GTK_DIALOG_DESTROY_WITH_PARENT, _("cancel"), GTK_RESPONSE_NONE,
-                                                  _("save"), GTK_RESPONSE_ACCEPT, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("Recent collections settings"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT, _("Cancel"), GTK_RESPONSE_NONE,
+                                                  _("Save"), GTK_RESPONSE_ACCEPT, NULL);
   dt_prefs_init_dialog_recentcollect(dialog);
   g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
 
@@ -360,7 +360,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 
 void set_preferences(void *menu, dt_lib_module_t *self)
 {
-  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("Preferences..."));
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }

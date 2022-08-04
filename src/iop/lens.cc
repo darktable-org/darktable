@@ -83,13 +83,13 @@ typedef struct dt_iop_lensfun_modifier_t
 typedef struct dt_iop_lensfun_params_t
 {
   int modify_flags;
-  int inverse; // $MIN: 0 $MAX: 1 $DEFAULT: 0 $DESCRIPTION: "mode"
+  int inverse; // $MIN: 0 $MAX: 1 $DEFAULT: 0 $DESCRIPTION: "Mode"
   float scale; // $MIN: 0.1 $MAX: 2.0 $DEFAULT: 1.0
   float crop;
   float focal;
   float aperture;
   float distance;
-  lfLensType target_geom; // $DEFAULT: LF_RECTILINEAR $DESCRIPTION: "geometry"
+  lfLensType target_geom; // $DEFAULT: LF_RECTILINEAR $DESCRIPTION: "Geometry"
   char camera[128];
   char lens[128];
   gboolean tca_override; // $DEFAULT: FALSE $DESCRIPTION: "TCA overwrite"
@@ -145,7 +145,7 @@ typedef struct dt_iop_lensfun_data_t
 
 const char *name()
 {
-  return _("lens correction");
+  return _("Lens correction");
 }
 
 const char *aliases()
@@ -155,11 +155,11 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("correct lenses optical flaws"),
-                                      _("corrective"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("geometric and reconstruction, RGB"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self, _("Correct lenses optical flaws"),
+                                      _("Corrective"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Geometric and reconstruction, RGB"),
+                                      _("Linear, RGB, scene-referred"));
 }
 
 
@@ -1584,10 +1584,10 @@ static void camera_set(dt_iop_module_t *self, const lfCamera *cam)
   else
     _variant[0] = 0;
 
-  fm = g_strdup_printf(_("maker:\t\t%s\n"
-                         "model:\t\t%s%s\n"
-                         "mount:\t\t%s\n"
-                         "crop factor:\t%.1f"),
+  fm = g_strdup_printf(_("Maker:\t\t%s\n"
+                         "Model:\t\t%s%s\n"
+                         "Mount:\t\t%s\n"
+                         "Crop factor:\t%.1f"),
                        maker, model, _variant, cam->Mount, cam->CropFactor);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->camera_model), fm);
   g_free(fm);
@@ -1765,9 +1765,9 @@ static void _display_lens_error(struct dt_iop_module_t *self)
 
   if(g->trouble && self->enabled)
   {
-    dt_iop_set_module_trouble_message(self, _("camera/lens not found"),
-                                      _("please select your lens manually\n"
-                                        "you might also want to check if your lensfun database is up-to-date\n"
+    dt_iop_set_module_trouble_message(self, _("Camera/lens not found"),
+                                      _("Please select your lens manually\n"
+                                        "You might also want to check if your lensfun database is up-to-date\n"
                                         "by running lensfun_update_data"),
                                       "camera/lens not found");
 
@@ -1868,13 +1868,13 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
       g_strlcat(mounts, lens->Mounts[i], sizeof(mounts));
     }
 #endif
-  fm = g_strdup_printf(_("maker:\t\t%s\n"
-                         "model:\t\t%s\n"
-                         "focal range:\t%s\n"
-                         "aperture:\t%s\n"
-                         "crop factor:\t%.1f\n"
-                         "type:\t\t%s\n"
-                         "mounts:\t%s"),
+  fm = g_strdup_printf(_("Maker:\t\t%s\n"
+                         "Model:\t\t%s\n"
+                         "Focal range:\t%s\n"
+                         "Aperture:\t%s\n"
+                         "Crop factor:\t%.1f\n"
+                         "Type:\t\t%s\n"
+                         "Mounts:\t%s"),
                        maker ? maker : "?", model ? model : "?", focal, aperture,
 #ifdef LF_0395
                        g->camera->CropFactor,
@@ -1914,7 +1914,7 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
   // focal length
   w = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(w, NULL, N_("mm"));
-  gtk_widget_set_tooltip_text(w, _("focal length (mm)"));
+  gtk_widget_set_tooltip_text(w, _("Focal length (mm)"));
   snprintf(txt, sizeof(txt), "%.*f", precision(p->focal, 10.0), p->focal);
   dt_bauhaus_combobox_add(w, txt);
   for(int k = 0; k < fli - ffi; k++)
@@ -1938,8 +1938,8 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
   }
 
   w = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(w, NULL, N_("f/"));
-  gtk_widget_set_tooltip_text(w, _("f-number (aperture)"));
+  dt_bauhaus_widget_set_label(w, NULL, N_("F/"));
+  gtk_widget_set_tooltip_text(w, _("F-number (aperture)"));
   snprintf(txt, sizeof(txt), "%.*f", precision(p->aperture, 10.0), p->aperture);
   dt_bauhaus_combobox_add(w, txt);
   for(int k = 0; k < fli - ffi; k++)
@@ -1953,8 +1953,8 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
   g->cbe[1] = w;
 
   w = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(w, NULL, N_("d"));
-  gtk_widget_set_tooltip_text(w, _("distance to subject"));
+  dt_bauhaus_widget_set_label(w, NULL, N_("D"));
+  gtk_widget_set_tooltip_text(w, _("Distance to subject"));
   snprintf(txt, sizeof(txt), "%.*f", precision(p->distance, 10.0), p->distance);
   dt_bauhaus_combobox_add(w, txt);
   float val = 0.25f;
@@ -2265,25 +2265,25 @@ void gui_init(struct dt_iop_module_t *self)
   int pos = -1;
   dt_iop_lensfun_modifier_t *modifier;
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("none"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("None"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_NONE;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("all"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("All"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_ALL;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("distortion & TCA"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("Distortion & TCA"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_DIST_TCA;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("distortion & vignetting"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("Distortion & vignetting"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_DIST_VIGN;
   modifier->pos = ++pos;
@@ -2295,19 +2295,19 @@ void gui_init(struct dt_iop_module_t *self)
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("only distortion"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("Only distortion"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_DIST;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("only TCA"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("Only TCA"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_TCA;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  dt_utf8_strlcpy(modifier->name, _("only vignetting"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("Only vignetting"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_VIGN;
   modifier->pos = ++pos;
@@ -2317,10 +2317,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   // camera selector
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  g->camera_model = dt_iop_button_new(self, N_("camera model"),
+  g->camera_model = dt_iop_button_new(self, N_("Camera model"),
                                       G_CALLBACK(camera_menusearch_clicked), FALSE, 0, (GdkModifierType)0,
                                       NULL, 0, hbox);
-  g->find_camera_button = dt_iop_button_new(self, N_("find camera"),
+  g->find_camera_button = dt_iop_button_new(self, N_("Find camera"),
                                             G_CALLBACK(camera_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
                                             dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
   dt_gui_add_class(g->find_camera_button, "dt_big_btn_canvas");
@@ -2329,10 +2329,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   // lens selector
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  g->lens_model = dt_iop_button_new(self, N_("lens model"),
+  g->lens_model = dt_iop_button_new(self, N_("Lens model"),
                                     G_CALLBACK(lens_menusearch_clicked), FALSE, 0, (GdkModifierType)0,
                                     NULL, 0, hbox);
-  g->find_lens_button = dt_iop_button_new(self, N_("find lens"),
+  g->find_lens_button = dt_iop_button_new(self, N_("Find lens"),
                                           G_CALLBACK(lens_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
                                           dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
   dt_gui_add_class(g->find_lens_button, "dt_big_btn_canvas");
@@ -2362,9 +2362,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   // selector for correction type (modflags): one or more out of distortion, TCA, vignetting
   g->modflags = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->modflags, NULL, N_("corrections"));
+  dt_bauhaus_widget_set_label(g->modflags, NULL, N_("Corrections"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->modflags, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->modflags, _("which corrections to apply"));
+  gtk_widget_set_tooltip_text(g->modflags, _("Which corrections to apply"));
   GList *l = g->modifiers;
   while(l)
   {
@@ -2377,34 +2377,34 @@ void gui_init(struct dt_iop_module_t *self)
 
   // target geometry
   g->target_geom = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->target_geom, NULL, N_("geometry"));
+  dt_bauhaus_widget_set_label(g->target_geom, NULL, N_("Geometry"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_geom, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->target_geom, _("target geometry"));
-  dt_bauhaus_combobox_add(g->target_geom, _("rectilinear"));
-  dt_bauhaus_combobox_add(g->target_geom, _("fish-eye"));
-  dt_bauhaus_combobox_add(g->target_geom, _("panoramic"));
-  dt_bauhaus_combobox_add(g->target_geom, _("equirectangular"));
+  gtk_widget_set_tooltip_text(g->target_geom, _("Target geometry"));
+  dt_bauhaus_combobox_add(g->target_geom, _("Rectilinear"));
+  dt_bauhaus_combobox_add(g->target_geom, _("Fish-eye"));
+  dt_bauhaus_combobox_add(g->target_geom, _("Panoramic"));
+  dt_bauhaus_combobox_add(g->target_geom, _("Equirectangular"));
 #if LF_VERSION >= ((0 << 24) | (2 << 16) | (6 << 8) | 0)
-  dt_bauhaus_combobox_add(g->target_geom, _("orthographic"));
-  dt_bauhaus_combobox_add(g->target_geom, _("stereographic"));
-  dt_bauhaus_combobox_add(g->target_geom, _("equisolid angle"));
-  dt_bauhaus_combobox_add(g->target_geom, _("thoby fish-eye"));
+  dt_bauhaus_combobox_add(g->target_geom, _("Orthographic"));
+  dt_bauhaus_combobox_add(g->target_geom, _("Stereographic"));
+  dt_bauhaus_combobox_add(g->target_geom, _("Equisolid angle"));
+  dt_bauhaus_combobox_add(g->target_geom, _("Thoby fish-eye"));
 #endif
   g_signal_connect(G_OBJECT(g->target_geom), "value-changed", G_CALLBACK(target_geometry_changed),
                    (gpointer)self);
 
   // scale
-  g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
+  g->scale = dt_bauhaus_slider_from_params(self, N_("Scale"));
   dt_bauhaus_slider_set_digits(g->scale, 3);
   dt_bauhaus_widget_set_quad_paint(g->scale, dtgtk_cairo_paint_refresh, 0, NULL);
   g_signal_connect(G_OBJECT(g->scale), "quad-pressed", G_CALLBACK(autoscale_pressed), self);
-  gtk_widget_set_tooltip_text(g->scale, _("auto scale"));
+  gtk_widget_set_tooltip_text(g->scale, _("Auto scale"));
 
   // reverse direction
   g->reverse = dt_bauhaus_combobox_from_params(self, "inverse");
-  dt_bauhaus_combobox_add(g->reverse, _("correct"));
-  dt_bauhaus_combobox_add(g->reverse, _("distort"));
-  gtk_widget_set_tooltip_text(g->reverse, _("correct distortions or apply them"));
+  dt_bauhaus_combobox_add(g->reverse, _("Correct"));
+  dt_bauhaus_combobox_add(g->reverse, _("Distort"));
+  gtk_widget_set_tooltip_text(g->reverse, _("Correct distortions or apply them"));
 
   g->tca_override = dt_bauhaus_toggle_from_params(self, "tca_override");
 
@@ -2420,9 +2420,9 @@ void gui_init(struct dt_iop_module_t *self)
   // message box to inform user what corrections have been done. this is useful as depending on lensfuns
   // profile only some of the lens flaws can be corrected
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  GtkWidget *label = gtk_label_new(_("corrections done: "));
+  GtkWidget *label = gtk_label_new(_("Corrections done: "));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_widget_set_tooltip_text(label, _("which corrections have actually been done"));
+  gtk_widget_set_tooltip_text(label, _("Which corrections have actually been done"));
   gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
   gtk_label_set_ellipsize(GTK_LABEL(g->message), PANGO_ELLIPSIZE_MIDDLE);

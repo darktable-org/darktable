@@ -1518,9 +1518,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // query for all modules at once:
   sqlite3_stmt *stmt;
   const char *workflow_preset = has_matrix && is_display_referred
-                                ? _("display-referred default")
+                                ? _("Display-referred default")
                                 : (has_matrix && is_scene_referred
-                                   ?_("scene-referred default")
+                                   ?_("Scene-referred default")
                                    :"\t\n");
   int iformat = 0;
   if(dt_image_is_rawprepare_supported(image)) iformat |= FOR_RAW;
@@ -2245,7 +2245,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt)
 {
   gchar *module_label = dt_history_item_get_name(hist->module);
-  g_snprintf(label, cnt, "%s (%s)", module_label, hist->enabled ? _("on") : _("off"));
+  g_snprintf(label, cnt, "%s (%s)", module_label, hist->enabled ? _("On") : _("Off"));
   g_free(module_label);
 }
 

@@ -152,13 +152,13 @@ static void _module_order_widget_init(dt_lib_filtering_rule_t *rule, const dt_co
   if(!_module_order_names)
   {
     _module_order_names = g_malloc0_n(DT_IOP_ORDER_LAST + 3, sizeof(char *));
-    _module_order_names[0] = g_strdup(N_("all images"));
+    _module_order_names[0] = g_strdup(N_("All images"));
     for(int i = 0; i < DT_IOP_ORDER_LAST; i++) _module_order_names[i + 1] = g_strdup(N_(dt_iop_order_string(i)));
 
-    _module_order_names[DT_IOP_ORDER_LAST + 1] = g_strdup(N_("none"));
+    _module_order_names[DT_IOP_ORDER_LAST + 1] = g_strdup(N_("None"));
   }
   module_order->combo = dt_bauhaus_combobox_new_full(
-      DT_ACTION(self), NULL, N_("module order filter"), _("filter images based on their module order"), 0,
+      DT_ACTION(self), NULL, N_("Module order filter"), _("Filter images based on their module order"), 0,
       (GtkCallback)_module_order_changed, module_order, (const char **)_module_order_names);
   DT_BAUHAUS_WIDGET(module_order->combo)->show_label = FALSE;
 

@@ -64,10 +64,10 @@ DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
 
 typedef enum dt_iop_highlights_mode_t
 {
-  DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "clip highlights"
-  DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
-  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
-  DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
+  DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "Clip highlights"
+  DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "Reconstruct in LCh"
+  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "Reconstruct color"
+  DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "Guided laplacians"
 } dt_iop_highlights_mode_t;
 
 typedef enum dt_atrous_wavelets_scales_t
@@ -87,21 +87,21 @@ typedef enum dt_atrous_wavelets_scales_t
 typedef struct dt_iop_highlights_params_t
 {
   // params of v1
-  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
+  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "Method"
   float blendL; // unused $DEFAULT: 1.0
   float blendC; // unused $DEFAULT: 0.0
   float blendh; // unused $DEFAULT: 0.0
   // params of v2
-  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
+  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "Clipping threshold"
   // params of v3
-  float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
-  int iterations; // $MIN: 1 $MAX: 64 $DEFAULT: 1 $DESCRIPTION: "iterations"
-  dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
-  float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast balance"
-  float combine;           // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
+  float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "Noise level"
+  int iterations; // $MIN: 1 $MAX: 64 $DEFAULT: 1 $DESCRIPTION: "Iterations"
+  dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "Diameter of reconstruction"
+  float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "Cast balance"
+  float combine;           // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "Combine segments"
   int debugmode;
   // params of v4
-  float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
+  float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Inpaint a flat color"
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -138,16 +138,16 @@ typedef struct dt_iop_highlights_global_data_t
 
 const char *name()
 {
-  return _("highlight reconstruction");
+  return _("Highlight reconstruction");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("avoid magenta highlights and try to recover highlights colors"),
-                                      _("corrective"),
-                                      _("linear, raw, scene-referred"),
-                                      _("reconstruction, raw"),
-                                      _("linear, raw, scene-referred"));
+  return dt_iop_set_description(self, _("Avoid magenta highlights and try to recover highlights colors"),
+                                      _("Corrective"),
+                                      _("Linear, raw, scene-referred"),
+                                      _("Reconstruction, raw"),
+                                      _("Linear, raw, scene-referred"));
 }
 
 int default_group()
@@ -2108,7 +2108,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     p->mode = DT_IOP_HIGHLIGHTS_CLIP;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
-    dt_control_log(_("highlights: guided laplacian mode not available for X-Trans sensors. falling back to clip."));
+    dt_control_log(_("Highlights: guided laplacian mode not available for X-Trans sensors. Falling back to clip."));
   }
 }
 
@@ -2146,7 +2146,7 @@ void reload_defaults(dt_iop_module_t *module)
     if(bayer)
     {
       if(dt_bauhaus_combobox_length(g->mode) < DT_IOP_HIGHLIGHTS_LAPLACIAN + 1)
-        dt_bauhaus_combobox_add_full(g->mode, _("guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+        dt_bauhaus_combobox_add_full(g->mode, _("Guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
     }
     else
@@ -2181,13 +2181,13 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
-  gtk_widget_set_tooltip_text(g->mode, _("highlight reconstruction method"));
+  gtk_widget_set_tooltip_text(g->mode, _("Highlight reconstruction method"));
 
   g->clip = dt_bauhaus_slider_from_params(self, "clip");
   dt_bauhaus_slider_set_digits(g->clip, 3);
   gtk_widget_set_tooltip_text(g->clip,
-                              _("manually adjust the clipping threshold against "
-                                "magenta highlights\nthe mask icon shows the clipped area\n"
+                              _("Manually adjust the clipping threshold against "
+                                "magenta highlights\nThe mask icon shows the clipped area\n"
                                 "(you shouldn't ever need to touch this)"));
   dt_bauhaus_widget_set_quad_paint(g->clip, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->clip, TRUE);
@@ -2195,24 +2195,24 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->clip), "quad-pressed", G_CALLBACK(_visualize_callback), self);
 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
-  gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
-                                                "into the rest of the noisy image. useful at high ISO."));
+  gtk_widget_set_tooltip_text(g->noise_level, _("Add noise to visually blend the reconstructed areas\n"
+                                                "into the rest of the noisy image. Useful at high ISO."));
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
-  gtk_widget_set_tooltip_text(g->iterations, _("increase if magenta highlights don't get fully corrected\n"
-                                               "each new iteration brings a performance penalty."));
+  gtk_widget_set_tooltip_text(g->iterations, _("Increase if magenta highlights don't get fully corrected\n"
+                                               "Each new iteration brings a performance penalty."));
 
   g->solid_color = dt_bauhaus_slider_from_params(self, "solid_color");
   dt_bauhaus_slider_set_format(g->solid_color, "%");
-  gtk_widget_set_tooltip_text(g->solid_color, _("increase if magenta highlights don't get fully corrected.\n"
-                                                "this may produce non-smooth boundaries between valid and clipped regions."));
+  gtk_widget_set_tooltip_text(g->solid_color, _("Increase if magenta highlights don't get fully corrected.\n"
+                                                "This may produce non-smooth boundaries between valid and clipped regions."));
 
   g->scales = dt_bauhaus_combobox_from_params(self, "scales");
-  gtk_widget_set_tooltip_text(g->scales, _("increase to correct larger clipped areas.\n"
-                                           "large values bring huge performance penalties"));
+  gtk_widget_set_tooltip_text(g->scales, _("Increase to correct larger clipped areas.\n"
+                                           "Large values bring huge performance penalties"));
 
-  GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
-  gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
+  GtkWidget *monochromes = dt_ui_label_new(_("Not applicable"));
+  gtk_widget_set_tooltip_text(monochromes, _("No highlights reconstruction for monochrome images"));
 
   // start building top level widget
   self->widget = gtk_stack_new();

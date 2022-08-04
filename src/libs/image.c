@@ -69,7 +69,7 @@ typedef enum dt_lib_metadata_id
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("selected image[s]");
+  return _("Selected image[s]");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -282,11 +282,11 @@ static void _image_preference_changed(gpointer instance, gpointer user_data)
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   gboolean trash = dt_conf_get_bool("send_to_trash");
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->delete_button))),
-                     trash ? _("delete (trash)")
-                           : _("delete"));
+                     trash ? _("Delete (trash)")
+                           : _("Delete"));
   gtk_widget_set_tooltip_text(d->delete_button,
-                     trash ? _("physically delete from disk (using trash if possible)")
-                           : _("physically delete from disk immediately"));
+                     trash ? _("Physically delete from disk (using trash if possible)")
+                           : _("Physically delete from disk immediately"));
 }
 
 int position()
@@ -459,11 +459,11 @@ void gui_init(dt_lib_module_t *self)
 
   static struct dt_action_def_t notebook_def = { };
   self->widget = GTK_WIDGET(dt_ui_notebook_new(&notebook_def));
-  dt_action_define(DT_ACTION(self), NULL, N_("page"), GTK_WIDGET(self->widget), &notebook_def);
+  dt_action_define(DT_ACTION(self), NULL, N_("Page"), GTK_WIDGET(self->widget), &notebook_def);
   dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
 
-  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("images"), NULL);
-  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("metadata"), NULL);
+  GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("Images"), NULL);
+  GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("Metadata"), NULL);
 
   // images operations
   d->page1 = gtk_grid_new();
@@ -473,65 +473,65 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 
-  d->remove_button = dt_action_button_new(self, N_("remove"), button_clicked, GINT_TO_POINTER(0),
-                                          _("remove images from the image library, without deleting"),
+  d->remove_button = dt_action_button_new(self, N_("Remove"), button_clicked, GINT_TO_POINTER(0),
+                                          _("Remove images from the image library, without deleting"),
                                           GDK_KEY_Delete, 0);
   gtk_grid_attach(grid, d->remove_button, 0, line, 2, 1);
 
   // delete button label and tooltip will be updated based on trash pref
-  d->delete_button = dt_action_button_new(self, N_("delete"), button_clicked, GINT_TO_POINTER(1), NULL, 0, 0);
+  d->delete_button = dt_action_button_new(self, N_("Delete"), button_clicked, GINT_TO_POINTER(1), NULL, 0, 0);
   gtk_grid_attach(grid, d->delete_button, 2, line++, 2, 1);
 
-  d->move_button = dt_action_button_new(self, N_("move..."), button_clicked, GINT_TO_POINTER(8),
-                                        _("move to other folder"), 0, 0);
+  d->move_button = dt_action_button_new(self, N_("Move..."), button_clicked, GINT_TO_POINTER(8),
+                                        _("Move to other folder"), 0, 0);
   gtk_grid_attach(grid, d->move_button, 0, line, 2, 1);
 
-  d->copy_button = dt_action_button_new(self, N_("copy..."), button_clicked, GINT_TO_POINTER(9),
-                                        _("copy to other folder"), 0, 0);
+  d->copy_button = dt_action_button_new(self, N_("Copy..."), button_clicked, GINT_TO_POINTER(9),
+                                        _("Copy to other folder"), 0, 0);
   gtk_grid_attach(grid, d->copy_button, 2, line++, 2, 1);
 
-  d->create_hdr_button = dt_action_button_new(self, N_("create HDR"), button_clicked, GINT_TO_POINTER(7),
-                                              _("create a high dynamic range image from selected shots"), 0, 0);
+  d->create_hdr_button = dt_action_button_new(self, N_("Create HDR"), button_clicked, GINT_TO_POINTER(7),
+                                              _("Create a high dynamic range image from selected shots"), 0, 0);
   gtk_grid_attach(grid, d->create_hdr_button, 0, line, 2, 1);
 
-  d->duplicate_button = dt_action_button_new(self, N_("duplicate"), button_clicked, GINT_TO_POINTER(3),
-                                             _("add a duplicate to the image library, including its history stack"),
+  d->duplicate_button = dt_action_button_new(self, N_("Duplicate"), button_clicked, GINT_TO_POINTER(3),
+                                             _("Add a duplicate to the image library, including its history stack"),
                                              GDK_KEY_d, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->duplicate_button, 2, line++, 2, 1);
 
   d->rotate_ccw_button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);;
   gtk_widget_set_name(d->rotate_ccw_button, "non-flat");
-  gtk_widget_set_tooltip_text(d->rotate_ccw_button, _("rotate selected images 90 degrees CCW"));
+  gtk_widget_set_tooltip_text(d->rotate_ccw_button, _("Rotate selected images 90 degrees CCW"));
   gtk_grid_attach(grid, d->rotate_ccw_button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(d->rotate_ccw_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
-  dt_action_define(DT_ACTION(self), NULL, N_("rotate selected images 90 degrees CCW"), d->rotate_ccw_button, &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("Rotate selected images 90 degrees CCW"), d->rotate_ccw_button, &dt_action_def_button);
 
   d->rotate_cw_button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1 | CPF_NONE, NULL);
   gtk_widget_set_name(d->rotate_cw_button, "non-flat");
-  gtk_widget_set_tooltip_text(d->rotate_cw_button, _("rotate selected images 90 degrees CW"));
+  gtk_widget_set_tooltip_text(d->rotate_cw_button, _("Rotate selected images 90 degrees CW"));
   gtk_grid_attach(grid, d->rotate_cw_button, 1, line, 1, 1);
   g_signal_connect(G_OBJECT(d->rotate_cw_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(5));
-  dt_action_define(DT_ACTION(self), NULL, N_("rotate selected images 90 degrees CW"), d->rotate_cw_button, &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("Rotate selected images 90 degrees CW"), d->rotate_cw_button, &dt_action_def_button);
 
-  d->reset_button = dt_action_button_new(self, N_("reset rotation"), button_clicked, GINT_TO_POINTER(6),
-                                         _("reset rotation to EXIF data"), 0, 0);
+  d->reset_button = dt_action_button_new(self, N_("Reset rotation"), button_clicked, GINT_TO_POINTER(6),
+                                         _("Reset rotation to EXIF data"), 0, 0);
   gtk_grid_attach(grid, d->reset_button, 2, line++, 2, 1);
 
-  d->cache_button = dt_action_button_new(self, N_("copy locally"), button_clicked, GINT_TO_POINTER(12),
-                                         _("copy the image locally"), 0, 0);
+  d->cache_button = dt_action_button_new(self, N_("Copy locally"), button_clicked, GINT_TO_POINTER(12),
+                                         _("Copy the image locally"), 0, 0);
   gtk_grid_attach(grid, d->cache_button, 0, line, 2, 1);
 
-  d->uncache_button = dt_action_button_new(self, N_("resync local copy"), button_clicked, GINT_TO_POINTER(13),
-                                           _("synchronize the image's XMP and remove the local copy"), 0, 0);
+  d->uncache_button = dt_action_button_new(self, N_("Resync local copy"), button_clicked, GINT_TO_POINTER(13),
+                                           _("Synchronize the image's XMP and remove the local copy"), 0, 0);
   gtk_grid_attach(grid, d->uncache_button, 2, line++, 2, 1);
 
-  d->group_button = dt_action_button_new(self, C_("selected images action", "group"), button_clicked, GINT_TO_POINTER(10),
-                                         _("add selected images to expanded group or create a new one"),
+  d->group_button = dt_action_button_new(self, C_("selected images action", "Group"), button_clicked, GINT_TO_POINTER(10),
+                                         _("Add selected images to expanded group or create a new one"),
                                          GDK_KEY_g, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->group_button, 0, line, 2, 1);
 
-  d->ungroup_button = dt_action_button_new(self, N_("ungroup"), button_clicked, GINT_TO_POINTER(11),
-                                           _("remove selected images from the group"),
+  d->ungroup_button = dt_action_button_new(self, N_("Ungroup"), button_clicked, GINT_TO_POINTER(11),
+                                           _("Remove selected images from the group"),
                                            GDK_KEY_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_grid_attach(grid, d->ungroup_button, 2, line++, 2, 1);
 
@@ -541,79 +541,79 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_homogeneous(grid, TRUE);
   line = 0;
 
-  GtkWidget *flag = gtk_check_button_new_with_label(_("ratings"));
+  GtkWidget *flag = gtk_check_button_new_with_label(_("Ratings"));
   d->ratings_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select ratings metadata"));
+  gtk_widget_set_tooltip_text(flag, _("Select ratings metadata"));
   ellipsize_button(flag);
   gtk_grid_attach(grid, flag, 0, line, 3, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/rating"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(ratings_flag_callback), self);
 
-  flag = gtk_check_button_new_with_label(_("colors"));
+  flag = gtk_check_button_new_with_label(_("Colors"));
   d->colors_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select colors metadata"));
+  gtk_widget_set_tooltip_text(flag, _("Select colors metadata"));
   ellipsize_button(flag);
   gtk_grid_attach(grid, flag, 3, line++, 3, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/colors"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(colors_flag_callback), self);
 
-  flag = gtk_check_button_new_with_label(_("tags"));
+  flag = gtk_check_button_new_with_label(_("Tags"));
   d->tags_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select tags metadata"));
+  gtk_widget_set_tooltip_text(flag, _("Select tags metadata"));
   ellipsize_button(flag);
   gtk_grid_attach(grid, flag, 0, line, 3, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/tags"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(tags_flag_callback), self);
 
-  flag = gtk_check_button_new_with_label(_("geo tags"));
+  flag = gtk_check_button_new_with_label(_("Geo tags"));
   d->geotags_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select geo tags metadata"));
+  gtk_widget_set_tooltip_text(flag, _("Select geo tags metadata"));
   ellipsize_button(flag);
   gtk_grid_attach(grid, flag, 3, line++, 3, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(geotags_flag_callback), self);
 
-  flag = gtk_check_button_new_with_label(_("metadata"));
+  flag = gtk_check_button_new_with_label(_("Metadata"));
   d->metadata_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select dt metadata (from metadata editor module)"));
+  gtk_widget_set_tooltip_text(flag, _("Select dt metadata (from metadata editor module)"));
   ellipsize_button(flag);
   gtk_grid_attach(grid, flag, 0, line++, 3, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(metadata_flag_callback), self);
 
-  dt_lib_module_t *meta = (dt_lib_module_t *) dt_action_section(DT_ACTION(self), N_("metadata"));
-  d->copy_metadata_button = dt_action_button_new(meta, N_("copy"), copy_metadata_callback, self,
-                                                 _("set the selected image as source of metadata"), 0, 0);
+  dt_lib_module_t *meta = (dt_lib_module_t *) dt_action_section(DT_ACTION(self), N_("Metadata"));
+  d->copy_metadata_button = dt_action_button_new(meta, N_("Copy"), copy_metadata_callback, self,
+                                                 _("Set the selected image as source of metadata"), 0, 0);
   gtk_grid_attach(grid, d->copy_metadata_button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->copy_metadata_button), "clicked", G_CALLBACK(copy_metadata_callback), self);
 
-  d->paste_metadata_button = dt_action_button_new(meta, N_("paste"), paste_metadata_callback, self,
-                                                  _("paste selected metadata on selected images"), 0, 0);
+  d->paste_metadata_button = dt_action_button_new(meta, N_("Paste"), paste_metadata_callback, self,
+                                                  _("Paste selected metadata on selected images"), 0, 0);
   gtk_grid_attach(grid, d->paste_metadata_button, 2, line, 2, 1);
 
-  d->clear_metadata_button = dt_action_button_new(meta, N_("clear"), clear_metadata_callback, self,
-                                                  _("clear selected metadata on selected images"), 0, 0);
+  d->clear_metadata_button = dt_action_button_new(meta, N_("Clear"), clear_metadata_callback, self,
+                                                  _("Clear selected metadata on selected images"), 0, 0);
   gtk_grid_attach(grid, d->clear_metadata_button, 4, line++, 2, 1);
 
   GtkWidget *pastemode = dt_bauhaus_combobox_new_action(DT_ACTION(meta));
-  dt_bauhaus_widget_set_label(pastemode, NULL, N_("mode"));
-  dt_bauhaus_combobox_add(pastemode, _("merge"));
-  dt_bauhaus_combobox_add(pastemode, _("overwrite"));
-  gtk_widget_set_tooltip_text(pastemode, _("how to handle existing metadata"));
+  dt_bauhaus_widget_set_label(pastemode, NULL, N_("Mode"));
+  dt_bauhaus_combobox_add(pastemode, _("Merge"));
+  dt_bauhaus_combobox_add(pastemode, _("Overwrite"));
+  gtk_widget_set_tooltip_text(pastemode, _("How to handle existing metadata"));
   gtk_grid_attach(grid, pastemode, 0, line++, 6, 1);
   dt_bauhaus_combobox_set(pastemode, dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"));
   g_signal_connect(G_OBJECT(pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), self);
 
-  d->refresh_button = dt_action_button_new(self, N_("refresh EXIF"), button_clicked, GINT_TO_POINTER(14),
-                                           _("update image information to match changes to file"), 0, 0);
+  d->refresh_button = dt_action_button_new(self, N_("Refresh EXIF"), button_clicked, GINT_TO_POINTER(14),
+                                           _("Update image information to match changes to file"), 0, 0);
   gtk_grid_attach(grid, d->refresh_button, 0, line++, 6, 1);
 
-  d->set_monochrome_button = dt_action_button_new(self, N_("monochrome"), set_monochrome_callback, self,
-                                                  _("set selection as monochrome images and activate monochrome workflow"), 0, 0);
+  d->set_monochrome_button = dt_action_button_new(self, N_("Monochrome"), set_monochrome_callback, self,
+                                                  _("Set selection as monochrome images and activate monochrome workflow"), 0, 0);
   gtk_grid_attach(grid, d->set_monochrome_button, 0, line, 3, 1);
 
-  d->set_color_button = dt_action_button_new(self, N_("color"), set_color_callback, self,
-                                             _("set selection as color images"), 0, 0);
+  d->set_color_button = dt_action_button_new(self, N_("Color"), set_color_callback, self,
+                                             _("Set selection as color images"), 0, 0);
   gtk_grid_attach(grid, d->set_color_button, 3, line++, 3, 1);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
@@ -625,7 +625,7 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
-  dt_action_register(DT_ACTION(self), N_("duplicate virgin"), _duplicate_virgin, GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_action_register(DT_ACTION(self), N_("Duplicate virgin"), _duplicate_virgin, GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   d->imageid = 0;
   _update(self);

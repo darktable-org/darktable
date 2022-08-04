@@ -77,7 +77,7 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
   double fraction = 0;
 
   total = params->brackets ? params->count * params->brackets : params->count;
-  snprintf(message, sizeof(message), ngettext("capturing %d image", "capturing %d images", total), total);
+  snprintf(message, sizeof(message), ngettext("Capturing %d image", "Capturing %d images", total), total);
 
   dt_control_job_set_progress_message(job, message);
 
@@ -111,7 +111,7 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
     /* if this was an intended bracket capture bail out */
     if(params->brackets)
     {
-      dt_control_log(_("please set your camera to manual mode first!"));
+      dt_control_log(_("Please set your camera to manual mode first!"));
       return 1;
     }
   }
@@ -208,7 +208,7 @@ dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("capture images"), FALSE);
+  dt_control_job_add_progress(job, _("Capture images"), FALSE);
   dt_control_job_set_params(job, params, dt_camera_capture_cleanup);
 
   dt_import_session_set_name(params->shared.session, jobcode);
@@ -297,7 +297,7 @@ static const char *_camera_request_image_path(const dt_camera_t *camera, char *e
 static int32_t dt_camera_import_job_run(dt_job_t *job)
 {
   dt_camera_import_t *params = dt_control_job_get_params(job);
-  dt_control_log(_("starting to import images from camera"));
+  dt_control_log(_("Starting to import images from camera"));
 
   if(!dt_import_session_ready(params->shared.session))
   {
@@ -308,7 +308,7 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
   guint total = g_list_length(params->images);
   char message[512] = { 0 };
   snprintf(message, sizeof(message),
-           ngettext("importing %d image from camera", "importing %d images from camera", total), total);
+           ngettext("Importing %d image from camera", "Importing %d images from camera", total), total);
   dt_control_job_set_progress_message(job, message);
 
   // Switch to new filmroll
@@ -368,7 +368,7 @@ dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
     return NULL;
   }
   camera->is_importing = TRUE;
-  dt_control_job_add_progress(job, _("import images from camera"), FALSE);
+  dt_control_job_add_progress(job, _("Import images from camera"), FALSE);
   dt_control_job_set_params(job, params, dt_camera_import_cleanup);
 
   /* initialize import session for camera import job */

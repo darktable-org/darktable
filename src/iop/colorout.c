@@ -81,18 +81,18 @@ typedef struct dt_iop_colorout_gui_data_t
 
 const char *name()
 {
-  return _("output color profile");
+  return _("Output color profile");
 }
 
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("convert pipeline reference RGB to any display RGB\n"
+  return dt_iop_set_description(self, _("Convert pipeline reference RGB to any display RGB\n"
                                         "using color profiles to remap RGB values"),
-                                      _("mandatory"),
-                                      _("linear or non-linear, Lab, display-referred"),
-                                      _("defined by profile"),
-                                      _("non-linear, RGB or Lab, display-referred"));
+                                      _("Mandatory"),
+                                      _("Linear or non-linear, Lab, display-referred"),
+                                      _("Defined by profile"),
+                                      _("Non-linear, RGB or Lab, display-referred"));
 }
 
 
@@ -669,7 +669,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                         | DT_PROFILE_DIRECTION_DISPLAY
                                         | DT_PROFILE_DIRECTION_DISPLAY2)
                  ->profile;
-    dt_control_log(_("missing output profile has been replaced by sRGB!"));
+    dt_control_log(_("Missing output profile has been replaced by sRGB!"));
     fprintf(stderr, "missing output profile `%s' has been replaced by sRGB!\n",
             dt_colorspaces_get_name(out_type, out_filename));
   }
@@ -691,7 +691,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                              | DT_PROFILE_DIRECTION_DISPLAY
                                              | DT_PROFILE_DIRECTION_DISPLAY2)
                       ->profile;
-      dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
+      dt_control_log(_("Missing softproof profile has been replaced by sRGB!"));
       fprintf(stderr, "missing softproof profile `%s' has been replaced by sRGB!\n",
               dt_colorspaces_get_name(darktable.color_profiles->softproof_type,
                                       darktable.color_profiles->softproof_filename));
@@ -734,7 +734,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // user selected a non-supported output profile, check that:
   if(!d->xform && isnan(d->cmatrix[0][0]))
   {
-    dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
+    dt_control_log(_("Unsupported output profile has been replaced by sRGB!"));
     fprintf(stderr, "unsupported output profile `%s' has been replaced by sRGB!\n", out_profile->name);
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
 
@@ -863,11 +863,11 @@ void gui_init(struct dt_iop_module_t *self)
   // TODO:
   g->output_intent = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_intent, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->output_intent, NULL, N_("output intent"));
-  dt_bauhaus_combobox_add(g->output_intent, _("perceptual"));
-  dt_bauhaus_combobox_add(g->output_intent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(g->output_intent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(g->output_intent, _("absolute colorimetric"));
+  dt_bauhaus_widget_set_label(g->output_intent, NULL, N_("Output intent"));
+  dt_bauhaus_combobox_add(g->output_intent, _("Perceptual"));
+  dt_bauhaus_combobox_add(g->output_intent, _("Relative colorimetric"));
+  dt_bauhaus_combobox_add(g->output_intent, C_("rendering intent", "Saturation"));
+  dt_bauhaus_combobox_add(g->output_intent, _("Absolute colorimetric"));
 
   if(!force_lcms2)
   {
@@ -876,7 +876,7 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   g->output_profile = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->output_profile, NULL, N_("export profile"));
+  dt_bauhaus_widget_set_label(g->output_profile, NULL, N_("Export profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
@@ -884,7 +884,7 @@ void gui_init(struct dt_iop_module_t *self)
     if(prof->out_pos > -1) dt_bauhaus_combobox_add(g->output_profile, prof->name);
   }
 
-  gtk_widget_set_tooltip_text(g->output_intent, _("rendering intent"));
+  gtk_widget_set_tooltip_text(g->output_intent, _("Rendering intent"));
   char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
   char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
   char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);

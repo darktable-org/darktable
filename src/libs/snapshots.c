@@ -78,7 +78,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("snapshots");
+  return _("Snapshots");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -366,8 +366,8 @@ void gui_init(dt_lib_module_t *self)
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* create take snapshot button */
-  d->take_button = dt_action_button_new(self, N_("take snapshot"), _lib_snapshots_add_button_clicked_callback, self,
-                                        _("take snapshot to compare with another image "
+  d->take_button = dt_action_button_new(self, N_("Take snapshot"), _lib_snapshots_add_button_clicked_callback, self,
+                                        _("Take snapshot to compare with another image "
                                           "or the same image at another stage of development"), 0, 0);
 
   /*
@@ -408,7 +408,7 @@ void gui_init(dt_lib_module_t *self)
                      dt_ui_scroll_wrap(d->snapshots_box, 1, "plugins/darkroom/snapshots/windowheight"), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
 
-  dt_action_register(DT_ACTION(self), N_("toggle last snapshot"), _lib_snapshots_toggle_last, 0, 0);
+  dt_action_register(DT_ACTION(self), N_("Toggle last snapshot"), _lib_snapshots_toggle_last, 0, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -444,7 +444,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   GtkWidget *b = d->snapshot[0].button;
   d->snapshot[0] = last;
   d->snapshot[0].button = b;
-  const gchar *name = _("original");
+  const gchar *name = _("Original");
   if(darktable.develop->history_end > 0)
   {
     dt_dev_history_item_t *history_item = g_list_nth_data(darktable.develop->history,
@@ -452,7 +452,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
     if(history_item && history_item->module)
       name = history_item->module->name();
     else
-      name = _("unknown");
+      name = _("Unknown");
   }
   g_snprintf(label, sizeof(label), "%s (%d)", name, darktable.develop->history_end);
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[0].button))), label);

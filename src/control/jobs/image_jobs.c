@@ -73,7 +73,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
   char message[512] = { 0 };
   dt_image_import_t *params = dt_control_job_get_params(job);
 
-  snprintf(message, sizeof(message), _("importing image %s"), params->filename);
+  snprintf(message, sizeof(message), _("Importing image %s"), params->filename);
   dt_control_job_set_progress_message(job, message);
 
   const int id = dt_image_import(params->film_id, params->filename, TRUE, TRUE);
@@ -107,7 +107,7 @@ dt_job_t *dt_image_import_job_create(uint32_t filmid, const char *filename)
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("import image"), FALSE);
+  dt_control_job_add_progress(job, _("Import image"), FALSE);
   dt_control_job_set_params(job, params, dt_image_import_job_cleanup);
   params->filename = g_strdup(filename);
   params->film_id = filmid;

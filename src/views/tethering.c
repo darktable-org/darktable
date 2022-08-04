@@ -99,7 +99,7 @@ static int32_t _capture_view_get_selected_imgid(const dt_view_t *view);
 
 const char *name(const dt_view_t *self)
 {
-  return _("tethering");
+  return _("Tethering");
 }
 
 uint32_t view(const dt_view_t *self)
@@ -154,7 +154,7 @@ static void _capture_view_set_jobcode(const dt_view_t *view, const char *name)
   dt_capture_t *cv = (dt_capture_t *)view->data;
   dt_import_session_set_name(cv->session, name);
   dt_film_open(dt_import_session_film_id(cv->session));
-  dt_control_log(_("new session initiated '%s'"), name);
+  dt_control_log(_("New session initiated '%s'"), name);
 }
 
 static const char *_capture_view_get_jobcode(const dt_view_t *view)
@@ -445,7 +445,7 @@ int try_enter(dt_view_t *self)
   /* verify that camera supports tethering and is available */
   if(dt_camctl_can_enter_tether_mode(darktable.camctl, NULL)) return 0;
 
-  dt_control_log(_("no camera with tethering support available for use..."));
+  dt_control_log(_("No camera with tethering support available for use..."));
   return 1;
 }
 

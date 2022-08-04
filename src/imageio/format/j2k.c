@@ -648,8 +648,8 @@ void gui_init(dt_imageio_module_format_t *self)
   const int quality_last = dt_conf_get_int("plugins/imageio/format/j2k/quality");
 
   gui->format = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->format, NULL, N_("format"));
-  dt_bauhaus_combobox_add(gui->format, _("J2K"));
+  dt_bauhaus_widget_set_label(gui->format, NULL, N_("Format"));
+  dt_bauhaus_combobox_add(gui->format, _("j2k"));
   dt_bauhaus_combobox_add(gui->format, _("jp2"));
   dt_bauhaus_combobox_set(gui->format, format_last);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->format, TRUE, TRUE, 0);
@@ -661,7 +661,7 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   1,
                                                   dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_DEFAULT),
                                                   0);
-  dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
+  dt_bauhaus_widget_set_label(gui->quality, NULL, N_("Quality"));
   dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_DEFAULT));
   if(quality_last > 0 && quality_last <= 100) dt_bauhaus_slider_set(gui->quality, quality_last);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
@@ -669,7 +669,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   gui->preset = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gui->preset, NULL, N_("DCP mode"));
-  dt_bauhaus_combobox_add(gui->preset, _("off"));
+  dt_bauhaus_combobox_add(gui->preset, _("Off"));
   dt_bauhaus_combobox_add(gui->preset, _("Cinema2K, 24FPS"));
   dt_bauhaus_combobox_add(gui->preset, _("Cinema2K, 48FPS"));
   dt_bauhaus_combobox_add(gui->preset, _("Cinema4K, 24FPS"));

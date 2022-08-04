@@ -38,7 +38,7 @@ typedef struct dt_lib_tool_filter_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("filter");
+  return _("Filter");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -97,7 +97,7 @@ void gui_init(dt_lib_module_t *self)
   d->sort_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(d->sort_box, "header-sort-box");
   gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, TRUE, TRUE, 0);
-  GtkWidget *label = gtk_label_new(_("sort by"));
+  GtkWidget *label = gtk_label_new(_("Sort by"));
   gtk_box_pack_start(GTK_BOX(d->sort_box), label, TRUE, TRUE, 0);
 
   /* initialize proxy */

@@ -3270,7 +3270,7 @@ static void _action_process_button(GtkWidget *widget, dt_action_effect_t effect)
   if(effect != (w->quad_paint_flags & CPF_ACTIVE ? DT_ACTION_EFFECT_ON : DT_ACTION_EFFECT_OFF))
     dt_bauhaus_widget_press_quad(widget);
 
-  gchar *text = w->quad_paint_flags & CPF_ACTIVE ? _("button on") : _("button off");
+  gchar *text = w->quad_paint_flags & CPF_ACTIVE ? _("Button on") : _("Button off");
   dt_action_widget_toast(w->module, widget, text);
 
   gtk_widget_queue_draw(widget);
@@ -3439,14 +3439,14 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
 }
 
 const dt_action_element_def_t _action_elements_slider[]
-  = { { N_("value"), dt_action_effect_value },
-      { N_("button"), dt_action_effect_toggle },
-      { N_("force"), dt_action_effect_value },
-      { N_("zoom"), dt_action_effect_value },
+  = { { N_("Value"), dt_action_effect_value },
+      { N_("Button"), dt_action_effect_toggle },
+      { N_("Force"), dt_action_effect_value },
+      { N_("Zoom"), dt_action_effect_value },
       { NULL } };
 const dt_action_element_def_t _action_elements_combo[]
-  = { { N_("selection"), dt_action_effect_selection },
-      { N_("button"), dt_action_effect_toggle },
+  = { { N_("Selection"), dt_action_effect_selection },
+      { N_("Button"), dt_action_effect_toggle },
       { NULL } };
 
 static const dt_shortcut_fallback_t _action_fallbacks_slider[]
@@ -3464,12 +3464,12 @@ static const dt_shortcut_fallback_t _action_fallbacks_combo[]
       { } };
 
 const dt_action_def_t dt_action_def_slider
-  = { N_("slider"),
+  = { N_("Slider"),
       _action_process_slider,
       _action_elements_slider,
       _action_fallbacks_slider };
 const dt_action_def_t dt_action_def_combo
-  = { N_("dropdown"),
+  = { N_("Dropdown"),
       _action_process_combo,
       _action_elements_combo,
       _action_fallbacks_combo };

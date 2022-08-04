@@ -208,12 +208,12 @@ static gchar *_default_print_date_func(const double value, const gboolean detail
     if(dt_datetime_gtimespan_to_exif(txt, sizeof(txt), value))
       return g_strdup(txt);
     else
-      return g_strdup(_("invalid"));
+      return g_strdup(_("Invalid"));
   }
   else
   {
     GDateTime *dt = dt_datetime_gtimespan_to_gdatetime(value);
-    if(!dt) return g_strdup(_("invalid"));
+    if(!dt) return g_strdup(_("Invalid"));
 
     gchar *txt = g_date_time_format(dt, "%x %X");
     g_date_time_unref(dt);
@@ -325,7 +325,7 @@ static void _popup_date_recreate_model(GtkDarktableRangeSelect *range)
       if(common_length == 0)
       {
         name = g_date_time_format(dt, "%Y");
-        tooltip = g_strdup_printf(_("year %s"), name);
+        tooltip = g_strdup_printf(_("Year %s"), name);
         gtk_tree_store_insert_with_values(GTK_TREE_STORE(model), &iter, NULL, nb_predefined, DATETIME_COL_TEXT,
                                           name, DATETIME_COL_TOOLTIP, tooltip, DATETIME_COL_PATH, name,
                                           DATETIME_COL_COUNT, 0, DATETIME_COL_INDEX, index, -1);
@@ -403,43 +403,43 @@ static void _entry_set_tooltip(GtkWidget *entry, const _range_bound bound, const
 {
   if(range_type == DT_RANGE_TYPE_NUMERIC && bound == BOUND_MIN)
   {
-    gtk_widget_set_tooltip_text(entry, _("enter the minimal value\n"
-                                         "use 'min' if no bound\n"
-                                         "right-click to select from existing values"));
+    gtk_widget_set_tooltip_text(entry, _("Enter the minimal value\n"
+                                         "Use 'Min' if no bound\n"
+                                         "Right-click to select from existing values"));
   }
   else if(range_type == DT_RANGE_TYPE_NUMERIC && bound == BOUND_MAX)
   {
-    gtk_widget_set_tooltip_text(entry, _("enter the maximal value\n"
-                                         "use 'max' if no bound\n"
-                                         "right-click to select from existing values"));
+    gtk_widget_set_tooltip_text(entry, _("Enter the maximal value\n"
+                                         "Use 'Max' if no bound\n"
+                                         "Right-click to select from existing values"));
   }
   else if(range_type == DT_RANGE_TYPE_NUMERIC && bound == BOUND_MIDDLE)
   {
-    gtk_widget_set_tooltip_text(entry, _("enter the value\n"
-                                         "right-click to select from existing values"));
+    gtk_widget_set_tooltip_text(entry, _("Enter the value\n"
+                                         "Right-click to select from existing values"));
   }
   else if(range_type == DT_RANGE_TYPE_DATETIME && bound == BOUND_MIN)
   {
-    gtk_widget_set_tooltip_text(entry, _("enter the minimal date\n"
+    gtk_widget_set_tooltip_text(entry, _("Enter the minimal date\n"
                                          "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
-                                         "use 'min' if no bound\n"
-                                         "use '-' prefix for relative date\n"
-                                         "right-click to select from calendar or existing values"));
+                                         "Use 'Min' if no bound\n"
+                                         "Use '-' prefix for relative date\n"
+                                         "Right-click to select from calendar or existing values"));
   }
   else if(range_type == DT_RANGE_TYPE_DATETIME && bound == BOUND_MAX)
   {
-    gtk_widget_set_tooltip_text(entry, _("enter the maximal date\n"
+    gtk_widget_set_tooltip_text(entry, _("Enter the maximal date\n"
                                          "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
-                                         "use 'max' if no bound\n"
-                                         "'now' keyword is handled\n"
-                                         "use '-' prefix for relative date\n"
-                                         "right-click to select from calendar or existing values"));
+                                         "Use 'Max' if no bound\n"
+                                         "'Now' keyword is handled\n"
+                                         "Use '-' prefix for relative date\n"
+                                         "Right-click to select from calendar or existing values"));
   }
   else if(range_type == DT_RANGE_TYPE_DATETIME && bound == BOUND_MIDDLE)
   {
-    gtk_widget_set_tooltip_text(entry, _("enter the date\n"
+    gtk_widget_set_tooltip_text(entry, _("Enter the date\n"
                                          "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
-                                         "right-click to select from calendar or existing values"));
+                                         "Right-click to select from calendar or existing values"));
   }
 }
 
@@ -459,11 +459,11 @@ static void _popup_date_update_widget_visibility(GtkDarktableRangeSelect *range)
     // set the label
     if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_min)
     {
-      gtk_label_set_text(GTK_LABEL(pop->relative_label), _("date-time interval to subtract from the max value"));
+      gtk_label_set_text(GTK_LABEL(pop->relative_label), _("Date-time interval to subtract from the max value"));
     }
     else
     {
-      gtk_label_set_text(GTK_LABEL(pop->relative_label), _("date-time interval to add to the min value"));
+      gtk_label_set_text(GTK_LABEL(pop->relative_label), _("Date-time interval to add to the min value"));
     }
   }
 
@@ -484,8 +484,8 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
   pop->internal_change++;
 
   dt_bauhaus_combobox_clear(pop->type);
-  dt_bauhaus_combobox_add(pop->type, _("fixed"));
-  if(w == range->entry_min || w == range->entry_max) dt_bauhaus_combobox_add(pop->type, _("relative"));
+  dt_bauhaus_combobox_add(pop->type, _("Fixed"));
+  if(w == range->entry_min || w == range->entry_max) dt_bauhaus_combobox_add(pop->type, _("Relative"));
   gtk_widget_set_sensitive(pop->type, (w == range->entry_min || w == range->entry_max));
 
   int datetype = 0;
@@ -608,13 +608,13 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
 static void _bound_change(GtkDarktableRangeSelect *range, const gchar *val, const _range_bound bound)
 {
   gchar *txt = g_strstrip(g_utf8_strdown(val, -1));
-  if(bound == BOUND_MIN && !g_strcmp0(txt, _("min")))
+  if(bound == BOUND_MIN && !g_strcmp0(txt, _("Min")))
   {
     range->bounds |= DT_RANGE_BOUND_MIN;
     range->bounds &= ~DT_RANGE_BOUND_MIN_RELATIVE;
     range->bounds &= ~DT_RANGE_BOUND_FIXED;
   }
-  else if(bound == BOUND_MAX && !g_strcmp0(txt, _("max")))
+  else if(bound == BOUND_MAX && !g_strcmp0(txt, _("Max")))
   {
     range->bounds |= DT_RANGE_BOUND_MAX;
     range->bounds &= ~DT_RANGE_BOUND_MAX_RELATIVE;
@@ -928,7 +928,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 
   // the type of date selection
   pop->type = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(pop->type, NULL, _("date type"));
+  dt_bauhaus_widget_set_label(pop->type, NULL, _("Date type"));
   g_signal_connect(G_OBJECT(pop->type), "value-changed", G_CALLBACK(_popup_date_type_changed), range);
   gtk_box_pack_start(GTK_BOX(vbox), pop->type, FALSE, TRUE, 0);
 
@@ -939,15 +939,15 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_box_pack_start(GTK_BOX(vbox), pop->relative_label, FALSE, TRUE, 0);
 
   // the date section
-  GtkWidget *lb = gtk_label_new(_("date"));
+  GtkWidget *lb = gtk_label_new(_("Date"));
   dt_gui_add_class(lb, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
 
   // the calendar
   pop->calendar = gtk_calendar_new();
   gtk_widget_set_no_show_all(pop->calendar, TRUE);
-  gtk_widget_set_tooltip_text(pop->calendar, _("simple click to select date\n"
-                                               "double click to use the date directly"));
+  gtk_widget_set_tooltip_text(pop->calendar, _("Simple click to select date\n"
+                                               "Double click to use the date directly"));
   g_signal_connect(G_OBJECT(pop->calendar), "day_selected", G_CALLBACK(_popup_date_changed), range);
   g_signal_connect(G_OBJECT(pop->calendar), "day_selected-double-click",
                    G_CALLBACK(_popup_date_day_selected_2click), range);
@@ -957,7 +957,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   pop->relative_date_box = gtk_grid_new();
   gtk_grid_set_column_homogeneous(GTK_GRID(pop->relative_date_box), TRUE);
   gtk_box_pack_start(GTK_BOX(vbox), pop->relative_date_box, FALSE, TRUE, 0);
-  lb = gtk_label_new(_("years: "));
+  lb = gtk_label_new(_("Years: "));
   gtk_label_set_xalign(GTK_LABEL(lb), 1.0);
   gtk_grid_attach(GTK_GRID(pop->relative_date_box), lb, 0, 0, 1, 1);
   pop->years = gtk_entry_new();
@@ -965,7 +965,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_widget_set_halign(pop->years, GTK_ALIGN_START);
   g_signal_connect(G_OBJECT(pop->years), "changed", G_CALLBACK(_popup_date_changed), range);
   gtk_grid_attach(GTK_GRID(pop->relative_date_box), pop->years, 1, 0, 1, 1);
-  lb = gtk_label_new(_("months: "));
+  lb = gtk_label_new(_("Months: "));
   gtk_label_set_xalign(GTK_LABEL(lb), 1.0);
   gtk_grid_attach(GTK_GRID(pop->relative_date_box), lb, 0, 1, 1, 1);
   pop->months = gtk_entry_new();
@@ -973,7 +973,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_widget_set_halign(pop->months, GTK_ALIGN_START);
   g_signal_connect(G_OBJECT(pop->months), "changed", G_CALLBACK(_popup_date_changed), range);
   gtk_grid_attach(GTK_GRID(pop->relative_date_box), pop->months, 1, 1, 1, 1);
-  lb = gtk_label_new(_("days: "));
+  lb = gtk_label_new(_("Days: "));
   gtk_label_set_xalign(GTK_LABEL(lb), 1.0);
   gtk_grid_attach(GTK_GRID(pop->relative_date_box), lb, 0, 2, 1, 1);
   pop->days = gtk_entry_new();
@@ -985,7 +985,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   gtk_widget_set_no_show_all(pop->relative_date_box, TRUE);
 
   // the time section
-  lb = gtk_label_new(_("time"));
+  lb = gtk_label_new(_("Time"));
   dt_gui_add_class(lb, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
 
@@ -1012,8 +1012,8 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(DATETIME_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT,
                                                           G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT));
   pop->treeview = gtk_tree_view_new_with_model(model);
-  gtk_widget_set_tooltip_text(pop->calendar, _("simple click to select date\n"
-                                               "double click to use the date directly"));
+  gtk_widget_set_tooltip_text(pop->calendar, _("Simple click to select date\n"
+                                               "Double click to use the date directly"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(pop->treeview), FALSE);
   g_signal_connect(G_OBJECT(pop->treeview), "row-activated", G_CALLBACK(_popup_date_tree_row_activated), range);
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(pop->treeview))), "changed",
@@ -1033,17 +1033,17 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   // the select line
   hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox0), hbox2, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(_("current date: ")), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(_("Current date: ")), FALSE, TRUE, 0);
   pop->selection = gtk_entry_new();
   gtk_entry_set_alignment(GTK_ENTRY(pop->selection), 0.5);
   gtk_box_pack_start(GTK_BOX(hbox2), pop->selection, TRUE, TRUE, 0);
-  pop->now_btn = gtk_button_new_with_label(_("now"));
+  pop->now_btn = gtk_button_new_with_label(_("Now"));
   gtk_widget_set_no_show_all(pop->now_btn, TRUE);
-  gtk_widget_set_tooltip_text(pop->now_btn, _("set the value to always match current datetime"));
+  gtk_widget_set_tooltip_text(pop->now_btn, _("Set the value to always match current datetime"));
   g_signal_connect(G_OBJECT(pop->now_btn), "clicked", G_CALLBACK(_popup_date_now_clicked), range);
   gtk_box_pack_start(GTK_BOX(hbox2), pop->now_btn, FALSE, TRUE, 0);
-  pop->ok_btn = gtk_button_new_with_label(_("apply"));
-  gtk_widget_set_tooltip_text(pop->ok_btn, _("set the range bound with this value"));
+  pop->ok_btn = gtk_button_new_with_label(_("Apply"));
+  gtk_widget_set_tooltip_text(pop->ok_btn, _("Set the range bound with this value"));
   g_signal_connect(G_OBJECT(pop->ok_btn), "clicked", G_CALLBACK(_popup_date_ok_clicked), range);
   gtk_box_pack_start(GTK_BOX(hbox2), pop->ok_btn, FALSE, TRUE, 0);
 }
@@ -1715,12 +1715,12 @@ GType dtgtk_range_select_get_type()
 gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
 {
   // get nice text for bounds
-  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all"));
+  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("All"));
 
   gchar *txt = NULL;
 
   if(range->bounds & DT_RANGE_BOUND_MIN)
-    txt = g_strdup(_("min"));
+    txt = g_strdup(_("Min"));
   else if(range->bounds & DT_RANGE_BOUND_MIN_RELATIVE)
     txt = g_strdup_printf("-%04d:%02d:%02d %02d:%02d:%02d", range->select_relative_date_r.year,
                           range->select_relative_date_r.month, range->select_relative_date_r.day,
@@ -1732,14 +1732,14 @@ gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
   txt = dt_util_dstrcat(txt, " → ");
 
   if(range->bounds & DT_RANGE_BOUND_MAX)
-    txt = dt_util_dstrcat(txt, _("max"));
+    txt = dt_util_dstrcat(txt, _("Max"));
   else if(range->bounds & DT_RANGE_BOUND_MAX_RELATIVE)
     txt = dt_util_dstrcat(txt, "+%04d:%02d:%02d %02d:%02d:%02d", range->select_relative_date_r.year,
                           range->select_relative_date_r.month, range->select_relative_date_r.day,
                           range->select_relative_date_r.hour, range->select_relative_date_r.minute,
                           range->select_relative_date_r.second);
   else if(range->bounds & DT_RANGE_BOUND_MAX_NOW)
-    txt = dt_util_dstrcat(txt, _("now"));
+    txt = dt_util_dstrcat(txt, _("Now"));
   else
     txt = dt_util_dstrcat(txt, "%s", range->print(range->select_max_r, TRUE));
 
@@ -1771,7 +1771,7 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
   {
     gchar *txt = NULL;
     if(range->bounds & DT_RANGE_BOUND_MIN)
-      txt = g_strdup(_("min"));
+      txt = g_strdup(_("Min"));
     else if(range->bounds & DT_RANGE_BOUND_MIN_RELATIVE)
       txt = g_strdup_printf("-%04d:%02d:%02d %02d:%02d:%02d", range->select_relative_date_r.year,
                             range->select_relative_date_r.month, range->select_relative_date_r.day,
@@ -1783,14 +1783,14 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
     g_free(txt);
 
     if(range->bounds & DT_RANGE_BOUND_MAX)
-      txt = g_strdup(_("max"));
+      txt = g_strdup(_("Max"));
     else if(range->bounds & DT_RANGE_BOUND_MAX_RELATIVE)
       txt = g_strdup_printf("+%04d:%02d:%02d %02d:%02d:%02d", range->select_relative_date_r.year,
                             range->select_relative_date_r.month, range->select_relative_date_r.day,
                             range->select_relative_date_r.hour, range->select_relative_date_r.minute,
                             range->select_relative_date_r.second);
     else if(range->bounds & DT_RANGE_BOUND_MAX_NOW)
-      txt = g_strdup(_("now"));
+      txt = g_strdup(_("Now"));
     else
       txt = range->print(range->select_max_r, FALSE);
     gtk_entry_set_text(GTK_ENTRY(range->entry_max), txt);

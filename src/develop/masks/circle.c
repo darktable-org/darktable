@@ -106,7 +106,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         dt_conf_set_float("plugins/darkroom/spots/circle_border", masks_border);
       else
         dt_conf_set_float("plugins/darkroom/masks/circle/border", masks_border);
-      dt_toast_log(_("feather size: %3.2f%%"), (masks_border / masks_size)*100.0f);
+      dt_toast_log(_("Feather size: %3.2f%%"), (masks_border / masks_size)*100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
@@ -119,7 +119,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         dt_conf_set_float("plugins/darkroom/spots/circle_size", masks_size);
       else
         dt_conf_set_float("plugins/darkroom/masks/circle/size", masks_size);
-      dt_toast_log(_("size: %3.2f%%"), masks_size*100.0f);
+      dt_toast_log(_("Size: %3.2f%%"), masks_size*100.0f);
     }
     return 1;
   }
@@ -156,7 +156,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
           dt_conf_set_float("plugins/darkroom/spots/circle_border", circle->border);
         else
           dt_conf_set_float("plugins/darkroom/masks/circle/border", circle->border);
-        dt_toast_log(_("feather size: %3.2f%%"), (circle->border/circle->radius)*100.0f);
+        dt_toast_log(_("Feather size: %3.2f%%"), (circle->border/circle->radius)*100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -173,7 +173,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
           dt_conf_set_float("plugins/darkroom/spots/circle_size", circle->radius);
         else
           dt_conf_set_float("plugins/darkroom/masks/circle/size", circle->radius);
-        dt_toast_log(_("size: %3.2f%%"), circle->radius*100.0f);
+        dt_toast_log(_("Size: %3.2f%%"), circle->radius*100.0f);
       }
       else
       {
@@ -1350,7 +1350,7 @@ static void _circle_sanitize_config(dt_masks_type_t type)
 
 static void _circle_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
 {
-  snprintf(form->name, sizeof(form->name), _("circle #%d"), (int)nb);
+  snprintf(form->name, sizeof(form->name), _("Circle #%d"), (int)nb);
 }
 
 static void _circle_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
@@ -1358,8 +1358,8 @@ static void _circle_set_hint_message(const dt_masks_form_gui_t *const gui, const
 {
   // circle has same controls on creation and on edit
   g_snprintf(msgbuf, msgbuf_len,
-             _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
-               "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+             _("<b>Size</b>: scroll, <b>Feather size</b>: Shift+scroll\n"
+               "<b>Opacity</b>: Ctrl+scroll (%d%%)"), opacity);
 }
 
 static void _circle_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)

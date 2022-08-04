@@ -1108,14 +1108,14 @@ finally:
         cl->enabled = FALSE;
         dt_conf_set_bool("opencl", FALSE);
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
-        dt_control_log(_("due to a slow GPU hardware acceleration via opencl has been de-activated"));
+        dt_control_log(_("Due to a slow GPU hardware acceleration via OpenCL has been de-activated"));
       }
       else if((cl->num_devs >= 2) && ((tgpumax / tgpumin) < 1.1f))
       {
         // set scheduling profile to "multiple GPUs" if more than one device has been found and they are equally fast
         dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for multiple GPUs.\n");
-        dt_control_log(_("multiple GPUs detected - opencl scheduling profile has been set accordingly"));
+        dt_control_log(_("Multiple GPUs detected - OpenCL scheduling profile has been set accordingly"));
       }
       else if((tcpu >= 2.0f * tgpumin) && (cl->num_devs == 1))
       {
@@ -1123,14 +1123,14 @@ finally:
         // We might want a better benchmark but even with the current result (underestimates real world performance) this is safe.
         dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
-        dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly"));
+        dt_control_log(_("Very fast GPU detected - OpenCL scheduling profile has been set accordingly"));
       }
       else
       {
         // set scheduling profile to "default"
         dt_conf_set_string("opencl_scheduling_profile", "default");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile to default.\n");
-        dt_control_log(_("opencl scheduling profile set to default"));
+        dt_control_log(_("OpenCL scheduling profile set to default"));
       }
     }
     // apply config settings for scheduling profile: sets device priorities and pixelpipe synchronization timeout

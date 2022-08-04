@@ -54,7 +54,7 @@ typedef struct dt_iop_soften_params_t
   float size;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
   float saturation; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0
   float brightness; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.33
-  float amount;     // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "mix"
+  float amount;     // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Mix"
 } dt_iop_soften_params_t;
 
 typedef struct dt_iop_soften_gui_data_t
@@ -81,7 +81,7 @@ typedef struct dt_iop_soften_global_data_t
 
 const char *name()
 {
-  return _("soften");
+  return _("Soften");
 }
 
 int flags()
@@ -101,11 +101,11 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("create a softened image using the Orton effect"),
-                                      _("creative"),
-                                      _("linear, RGB, display-referred"),
-                                      _("linear, RGB"),
-                                      _("linear, RGB, display-referred"));
+  return dt_iop_set_description(self, _("Create a softened image using the Orton effect"),
+                                      _("Creative"),
+                                      _("Linear, RGB, display-referred"),
+                                      _("Linear, RGB"),
+                                      _("Linear, RGB, display-referred"));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -392,21 +392,21 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_soften_gui_data_t *g = IOP_GUI_ALLOC(soften);
 
-  g->size = dt_bauhaus_slider_from_params(self, N_("size"));
+  g->size = dt_bauhaus_slider_from_params(self, N_("Size"));
   dt_bauhaus_slider_set_format(g->size, "%");
-  gtk_widget_set_tooltip_text(g->size, _("the size of blur"));
+  gtk_widget_set_tooltip_text(g->size, _("The size of blur"));
 
-  g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
+  g->saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
   dt_bauhaus_slider_set_format(g->saturation, "%");
-  gtk_widget_set_tooltip_text(g->saturation, _("the saturation of blur"));
+  gtk_widget_set_tooltip_text(g->saturation, _("The saturation of blur"));
 
-  g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
+  g->brightness = dt_bauhaus_slider_from_params(self, N_("Brightness"));
   dt_bauhaus_slider_set_format(g->brightness, _(" EV"));
-  gtk_widget_set_tooltip_text(g->brightness, _("the brightness of blur"));
+  gtk_widget_set_tooltip_text(g->brightness, _("The brightness of blur"));
 
   g->amount = dt_bauhaus_slider_from_params(self, "amount");
   dt_bauhaus_slider_set_format(g->amount, "%");
-  gtk_widget_set_tooltip_text(g->amount, _("the mix of effect"));
+  gtk_widget_set_tooltip_text(g->amount, _("The mix of effect"));
 }
 
 // clang-format off

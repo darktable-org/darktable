@@ -108,7 +108,7 @@ typedef struct dt_iop_zonesystem_gui_data_t
 
 const char *name()
 {
-  return _("zone system");
+  return _("Zone system");
 }
 
 int flags()
@@ -119,7 +119,7 @@ int flags()
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the tone equalizer module instead.");
+  return _("This module is deprecated. Please use the tone equalizer module instead.");
 }
 
 int default_group()
@@ -495,9 +495,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* create the zonesystem bar widget */
   g->zones = gtk_drawing_area_new();
-  gtk_widget_set_tooltip_text(g->zones, _("lightness zones\nuse mouse scrollwheel to change the number of zones\n"
-                                          "left-click on a border to create a marker\n"
-                                          "right-click on a marker to delete it"));
+  gtk_widget_set_tooltip_text(g->zones, _("Lightness zones\nUse mouse scrollwheel to change the number of zones\n"
+                                          "Left-click on a border to create a marker\n"
+                                          "Right-click on a marker to delete it"));
   g_signal_connect(G_OBJECT(g->zones), "draw", G_CALLBACK(dt_iop_zonesystem_bar_draw), self);
   g_signal_connect(G_OBJECT(g->zones), "motion-notify-event", G_CALLBACK(dt_iop_zonesystem_bar_motion_notify),
                    self);

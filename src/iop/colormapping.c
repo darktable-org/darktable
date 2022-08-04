@@ -82,20 +82,20 @@ typedef struct dt_iop_colormapping_flowback_t
   float2 var[MAXN];
   float weight[MAXN];
   // number of gaussians used.
-  int n; // $MIN: 1 $MAX: 5 $DEFAULT: 1 $DESCRIPTION: "number of clusters"
+  int n; // $MIN: 1 $MAX: 5 $DEFAULT: 1 $DESCRIPTION: "Number of clusters"
 } dt_iop_colormapping_flowback_t;
 
 typedef struct dt_iop_colormapping_params_t
 {
   dt_iop_colormapping_flags_t flag; // $DEFAULT: NEUTRAL
   // number of gaussians used.
-  int n; // $MIN: 1 $MAX: 5 $DEFAULT: 3 $DESCRIPTION: "number of clusters"
+  int n; // $MIN: 1 $MAX: 5 $DEFAULT: 3 $DESCRIPTION: "Number of clusters"
 
   // relative importance of color dominance vs. color proximity
-  float dominance; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "color dominance"
+  float dominance; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "Color dominance"
 
   // level of histogram equalization
-  float equalization; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "histogram equalization"
+  float equalization; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Histogram equalization"
 
   // hist matching table for source image
   float source_ihist[HISTN];
@@ -144,16 +144,16 @@ typedef struct dt_iop_colormapping_global_data_t
 
 const char *name()
 {
-  return _("color mapping");
+  return _("Color mapping");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("transfer a color palette and tonal repartition from one image to another"),
-                                      _("creative"),
-                                      _("linear or non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Transfer a color palette and tonal repartition from one image to another"),
+                                      _("Creative"),
+                                      _("Linear or non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int default_group()
@@ -1038,13 +1038,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("source clusters:")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("Source clusters:")), TRUE, TRUE, 0);
 
   g->source_area = dtgtk_drawing_area_new_with_aspect_ratio(1.0 / 3.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->source_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->source_area), "draw", G_CALLBACK(cluster_preview_draw), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("target clusters:")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("Target clusters:")), TRUE, TRUE, 0);
 
   g->target_area = dtgtk_drawing_area_new_with_aspect_ratio(1.0 / 3.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_area, TRUE, TRUE, 0);
@@ -1053,28 +1053,28 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
-  g->acquire_source_button = dt_iop_button_new(self, N_("acquire as source"),
+  g->acquire_source_button = dt_iop_button_new(self, N_("Acquire as source"),
                                                G_CALLBACK(acquire_source_button_pressed), FALSE, 0, 0,
                                                NULL, 0, box);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->acquire_source_button))), PANGO_ELLIPSIZE_START);
-  gtk_widget_set_tooltip_text(g->acquire_source_button, _("analyze this image as a source image"));
+  gtk_widget_set_tooltip_text(g->acquire_source_button, _("Analyze this image as a source image"));
 
-  g->acquire_target_button = dt_iop_button_new(self, N_("acquire as target"),
+  g->acquire_target_button = dt_iop_button_new(self, N_("Acquire as target"),
                                                G_CALLBACK(acquire_target_button_pressed), FALSE, 0, 0,
                                                NULL, 0, box);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->acquire_target_button))), PANGO_ELLIPSIZE_START);
-  gtk_widget_set_tooltip_text(g->acquire_target_button, _("analyze this image as a target image"));
+  gtk_widget_set_tooltip_text(g->acquire_target_button, _("Analyze this image as a target image"));
 
   g->clusters = dt_bauhaus_slider_from_params(self, "n");
-  gtk_widget_set_tooltip_text(g->clusters, _("number of clusters to find in image. value change resets all clusters"));
+  gtk_widget_set_tooltip_text(g->clusters, _("Number of clusters to find in image. Value change resets all clusters"));
 
   g->dominance = dt_bauhaus_slider_from_params(self, "dominance");
-  gtk_widget_set_tooltip_text(g->dominance, _("how clusters are mapped. low values: based on color "
+  gtk_widget_set_tooltip_text(g->dominance, _("How clusters are mapped. Low values: based on color "
                                               "proximity, high values: based on color dominance"));
   dt_bauhaus_slider_set_format(g->dominance, "%");
 
   g->equalization = dt_bauhaus_slider_from_params(self, "equalization");
-  gtk_widget_set_tooltip_text(g->equalization, _("level of histogram equalization"));
+  gtk_widget_set_tooltip_text(g->equalization, _("Level of histogram equalization"));
   dt_bauhaus_slider_set_format(g->equalization, "%");
 
   /* add signal handler for preview pipe finished: process clusters if requested */

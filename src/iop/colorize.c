@@ -55,7 +55,7 @@ typedef struct dt_iop_colorize_params_t
 {
   float hue;                  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0
   float saturation;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5
-  float source_lightness_mix; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "source mix"
+  float source_lightness_mix; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Source mix"
   float lightness;            // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
   int version;
 } dt_iop_colorize_params_t;
@@ -81,7 +81,7 @@ typedef struct dt_iop_colorize_global_data_t
 
 const char *name()
 {
-  return _("colorize");
+  return _("Colorize");
 }
 
 int flags()
@@ -101,11 +101,11 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("overlay a solid color on the image"),
-                                      _("creative"),
-                                      _("linear or non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Overlay a solid color on the image"),
+                                      _("Creative"),
+                                      _("Linear or non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -341,7 +341,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colorize_gui_data_t *g = IOP_GUI_ALLOC(colorize);
 
-  g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, N_("hue")));
+  g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, N_("Hue")));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);
   dt_bauhaus_slider_set_format(g->hue, "°");
@@ -352,21 +352,21 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->hue, 0.664f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->hue, 1.0f  , 1.0f, 0.0f, 0.0f);
-  gtk_widget_set_tooltip_text(g->hue, _("select the hue tone"));
+  gtk_widget_set_tooltip_text(g->hue, _("Select the hue tone"));
 
-  g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
+  g->saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
   dt_bauhaus_slider_set_format(g->saturation, "%");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
-  gtk_widget_set_tooltip_text(g->saturation, _("select the saturation shadow tone"));
+  gtk_widget_set_tooltip_text(g->saturation, _("Select the saturation shadow tone"));
 
-  g->lightness = dt_bauhaus_slider_from_params(self, N_("lightness"));
+  g->lightness = dt_bauhaus_slider_from_params(self, N_("Lightness"));
   dt_bauhaus_slider_set_format(g->lightness, "%");
-  gtk_widget_set_tooltip_text(g->lightness, _("lightness of color"));
+  gtk_widget_set_tooltip_text(g->lightness, _("Lightness of color"));
 
   g->source_mix = dt_bauhaus_slider_from_params(self, "source_lightness_mix");
   dt_bauhaus_slider_set_format(g->source_mix, "%");
-  gtk_widget_set_tooltip_text(g->source_mix, _("mix value of source lightness"));
+  gtk_widget_set_tooltip_text(g->source_mix, _("Mix value of source lightness"));
 }
 
 // clang-format off

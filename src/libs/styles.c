@@ -49,7 +49,7 @@ typedef struct dt_lib_styles_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("styles");
+  return _("Styles");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -299,13 +299,13 @@ gboolean _ask_before_delete_style(const gint style_cnt)
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     GtkWidget *dialog = gtk_message_dialog_new
       (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-       ngettext("do you really want to remove %d style?", "do you really want to remove %d styles?", style_cnt),
+       ngettext("Do you really want to remove %d style?", "Do you really want to remove %d styles?", style_cnt),
        style_cnt);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("remove style?", "remove styles?", style_cnt));
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("Remove style?", "Remove styles?", style_cnt));
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
   }
@@ -373,8 +373,8 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-        _("_save"), _("_cancel"));
+        _("Select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        _("_Save"), _("_Cancel"));
 
   dt_conf_get_folder_to_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
@@ -419,16 +419,16 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 
           if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
           {
-            GtkWidget *dialog_overwrite_export = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                _("cancel"), GTK_RESPONSE_CANCEL,
-                _("skip"), GTK_RESPONSE_NONE,
-                _("overwrite"), GTK_RESPONSE_ACCEPT, NULL);
+            GtkWidget *dialog_overwrite_export = gtk_dialog_new_with_buttons(_("Overwrite style?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+                _("Cancel"), GTK_RESPONSE_CANCEL,
+                _("Skip"), GTK_RESPONSE_NONE,
+                _("Overwrite"), GTK_RESPONSE_ACCEPT, NULL);
 
             // contents for dialog
             GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
-            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), (char*)style->data);
+            sprintf(overwrite_str, _("Style `%s' already exists.\nDo you want to overwrite existing style?\n"), (char*)style->data);
             GtkWidget *label = gtk_label_new(overwrite_str);
-            GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
+            GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("Apply this option to all existing styles"));
 
             gtk_container_add(GTK_CONTAINER(content_area), label);
             gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
@@ -491,7 +491,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
       {
         dt_styles_save_to_file((char*)style->data, filedir, FALSE);
       }
-      dt_control_log(_("style %s was successfully exported"), (char*)style->data);
+      dt_control_log(_("Style %s was successfully exported"), (char*)style->data);
     }
     dt_conf_set_folder_from_file_chooser("ui_last/export_path", GTK_FILE_CHOOSER(filechooser));
     g_free(filedir);
@@ -508,8 +508,8 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select style"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
-        _("_open"), _("_cancel"));
+        _("Select style"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+        _("_Open"), _("_Cancel"));
 
   dt_conf_get_folder_to_file_chooser("ui_last/import_path", GTK_FILE_CHOOSER(filechooser));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
@@ -518,12 +518,12 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.dtstyle");
   gtk_file_filter_add_pattern(filter, "*.DTSTYLE");
-  gtk_file_filter_set_name(filter, _("darktable style files"));
+  gtk_file_filter_set_name(filter, _("Darktable style files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*");
-  gtk_file_filter_set_name(filter, _("all files"));
+  gtk_file_filter_set_name(filter, _("All files"));
 
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
@@ -602,16 +602,16 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
           // use security check/option
           if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
           {
-            GtkWidget *dialog_overwrite_import = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                _("cancel"), GTK_RESPONSE_CANCEL,
-                _("skip"), GTK_RESPONSE_NONE,
-                _("overwrite"), GTK_RESPONSE_ACCEPT, NULL);
+            GtkWidget *dialog_overwrite_import = gtk_dialog_new_with_buttons(_("Overwrite style?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+                _("Cancel"), GTK_RESPONSE_CANCEL,
+                _("Skip"), GTK_RESPONSE_NONE,
+                _("Overwrite"), GTK_RESPONSE_ACCEPT, NULL);
 
             // contents for dialog
             GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_import));
-            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), (char*)filename->data);
+            sprintf(overwrite_str, _("Style `%s' already exists.\nDo you want to overwrite existing style?\n"), (char*)filename->data);
             GtkWidget *label = gtk_label_new(overwrite_str);
-            GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
+            GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("Apply this option to all existing styles"));
 
             gtk_container_add(GTK_CONTAINER(content_area), label);
             gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
@@ -795,15 +795,15 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->tree), GTK_TREE_MODEL(treestore));
   g_object_unref(treestore);
 
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->tree), _("available styles,\ndouble-click to apply"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->tree), _("Available styles,\ndouble-click to apply"));
   g_signal_connect(d->tree, "row-activated", G_CALLBACK(_styles_row_activated_callback), d);
   g_signal_connect(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree)), "changed", G_CALLBACK(_tree_selection_changed), self);
 
   /* filter entry */
   w = gtk_entry_new();
   d->entry = GTK_ENTRY(w);
-  gtk_entry_set_placeholder_text(GTK_ENTRY(d->entry), _("filter style names"));
-  gtk_widget_set_tooltip_text(w, _("filter style names"));
+  gtk_entry_set_placeholder_text(GTK_ENTRY(d->entry), _("Filter style names"));
+  gtk_widget_set_tooltip_text(w, _("Filter style names"));
   gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   g_signal_connect(d->entry, "changed", G_CALLBACK(entry_callback), d);
   g_signal_connect(d->entry, "activate", G_CALLBACK(entry_activated), d);
@@ -814,20 +814,20 @@ void gui_init(dt_lib_module_t *self)
                      dt_ui_scroll_wrap(GTK_WIDGET(d->tree), 250, "plugins/lighttable/style/windowheight"),
                      FALSE, FALSE, 0);
 
-  d->duplicate = gtk_check_button_new_with_label(_("create duplicate"));
+  d->duplicate = gtk_check_button_new_with_label(_("Create duplicate"));
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->duplicate))), PANGO_ELLIPSIZE_START);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->duplicate), TRUE, FALSE, 0);
   g_signal_connect(d->duplicate, "toggled", G_CALLBACK(duplicate_callback), d);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->duplicate),
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
-  gtk_widget_set_tooltip_text(d->duplicate, _("creates a duplicate of the image before applying style"));
+  gtk_widget_set_tooltip_text(d->duplicate, _("Creates a duplicate of the image before applying style"));
 
   d->applymode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->applymode), TRUE, FALSE, 0);
-  dt_bauhaus_widget_set_label(d->applymode, NULL, N_("mode"));
-  dt_bauhaus_combobox_add(d->applymode, _("append"));
-  dt_bauhaus_combobox_add(d->applymode, _("overwrite"));
-  gtk_widget_set_tooltip_text(d->applymode, _("how to handle existing history"));
+  dt_bauhaus_widget_set_label(d->applymode, NULL, N_("Mode"));
+  dt_bauhaus_combobox_add(d->applymode, _("Append"));
+  dt_bauhaus_combobox_add(d->applymode, _("Overwrite"));
+  gtk_widget_set_tooltip_text(d->applymode, _("How to handle existing history"));
   dt_bauhaus_combobox_set(d->applymode, dt_conf_get_int("plugins/lighttable/style/applymode"));
 
   GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -838,27 +838,27 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox3, TRUE, FALSE, 0);
 
   // create
-  d->create_button = dt_action_button_new(self, N_("create..."), create_clicked, d, _("create styles from history stack of selected images"), 0, 0);
+  d->create_button = dt_action_button_new(self, N_("Create..."), create_clicked, d, _("Create styles from history stack of selected images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox1), d->create_button, TRUE, TRUE, 0);
 
   // edit
-  d->edit_button = dt_action_button_new(self, N_("edit..."), edit_clicked, d, _("edit the selected styles in list above"), 0, 0);
+  d->edit_button = dt_action_button_new(self, N_("Edit..."), edit_clicked, d, _("Edit the selected styles in list above"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox1), d->edit_button, TRUE, TRUE, 0);
 
   // delete
-  d->delete_button = dt_action_button_new(self, N_("remove"), delete_clicked, d, _("removes the selected styles in list above"), 0, 0);
+  d->delete_button = dt_action_button_new(self, N_("Remove"), delete_clicked, d, _("Removes the selected styles in list above"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox1), d->delete_button, TRUE, TRUE, 0);
 
   // import button
-  d->import_button = dt_action_button_new(self, N_("import..."), import_clicked, d, _("import styles from a style files"), 0, 0);
+  d->import_button = dt_action_button_new(self, N_("Import..."), import_clicked, d, _("Import styles from a style files"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), d->import_button, TRUE, TRUE, 0);
 
   // export button
-  d->export_button = dt_action_button_new(self, N_("export..."), export_clicked, d, _("export the selected styles into a style files"), 0, 0);
+  d->export_button = dt_action_button_new(self, N_("Export..."), export_clicked, d, _("Export the selected styles into a style files"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), d->export_button, TRUE, TRUE, 0);
 
   // apply button
-  d->apply_button = dt_action_button_new(self, N_("apply"), apply_clicked, d, _("apply the selected styles in list above to selected images"), 0, 0);
+  d->apply_button = dt_action_button_new(self, N_("Apply"), apply_clicked, d, _("Apply the selected styles in list above to selected images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox3), d->apply_button, TRUE, TRUE, 0);
 
   // add entry completion

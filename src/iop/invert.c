@@ -108,21 +108,21 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 const char *name()
 {
-  return _("invert");
+  return _("Invert");
 }
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the negadoctor module instead.");
+  return _("This module is deprecated. Please use the negadoctor module instead.");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("invert film negatives"),
-                                      _("corrective"),
-                                      _("linear, raw, display-referred"),
-                                      _("linear, raw"),
-                                      _("linear, raw, display-referred"));
+  return dt_iop_set_description(self, _("Invert film negatives"),
+                                      _("Corrective"),
+                                      _("Linear, raw, display-referred"),
+                                      _("Linear, raw"),
+                                      _("Linear, raw, display-referred"));
 }
 
 
@@ -509,11 +509,11 @@ void reload_defaults(dt_iop_module_t *self)
     {
       // Here we could provide more for monochrome special cases. As no monochrome camera
       // has a bayer sensor we don't need g->RGB_to_CAM and g->CAM_to_RGB corrections
-      dtgtk_reset_label_set_text(g->label, _("brightness of film material"));
+      dtgtk_reset_label_set_text(g->label, _("Brightness of film material"));
     }
     else
     {
-      dtgtk_reset_label_set_text(g->label, _("color of film material"));
+      dtgtk_reset_label_set_text(g->label, _("Color of film material"));
 
       if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
       {
@@ -597,9 +597,9 @@ void gui_init(dt_iop_module_t *self)
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   g->colorpicker = gtk_color_button_new_with_rgba(&color);
-  dt_action_define(DT_ACTION(self), NULL, N_("pick color of film material from image"), g->colorpicker, &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("Pick color of film material from image"), g->colorpicker, &dt_action_def_button);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpicker), FALSE);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpicker), _("select color of film material"));
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpicker), _("Select color of film material"));
   g_signal_connect(G_OBJECT(g->colorpicker), "color-set", G_CALLBACK(colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
 

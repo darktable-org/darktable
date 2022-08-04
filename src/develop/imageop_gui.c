@@ -193,8 +193,8 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
 
     if(f->header.type == DT_INTROSPECTION_TYPE_BOOL)
     {
-      dt_bauhaus_combobox_add(combobox, _("no"));
-      dt_bauhaus_combobox_add(combobox, _("yes"));
+      dt_bauhaus_combobox_add(combobox, _("No"));
+      dt_bauhaus_combobox_add(combobox, _("Yes"));
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_ENUM)
     {
@@ -278,7 +278,7 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
     gtk_widget_set_tooltip_text(w, _(label));
   else
   {
-    gchar *tooltip = g_strdup_printf(_("%s\nctrl+click to %s"), _(label), _(ctrl_label));
+    gchar *tooltip = g_strdup_printf(_("%s\nCtrl+click to %s"), _(label), _(ctrl_label));
     gtk_widget_set_tooltip_text(w, tooltip);
     g_free(tooltip);
   }

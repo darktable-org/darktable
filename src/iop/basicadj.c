@@ -41,15 +41,15 @@ DT_MODULE_INTROSPECTION(2, dt_iop_basicadj_params_t)
 typedef struct dt_iop_basicadj_params_t
 {
   float black_point;    /* $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
-                           $DESCRIPTION:"black level correction" */
+                           $DESCRIPTION:"Black level correction" */
   float exposure;       // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
   float hlcompr;        /* $MIN: 0 $MAX: 500.0 $DEFAULT: 0.0
-                           $DESCRIPTION:"highlight compression" */
+                           $DESCRIPTION:"Highlight compression" */
   float hlcomprthresh;
   float contrast;       // $MIN: -1.0 $MAX: 5.0 $DEFAULT: 0.0
   dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE
-                                         $DESCRIPTION:"preserve colors" */
-  float middle_grey;    // $MIN: 0.05 $MAX: 100 $DEFAULT: 18.42 $DESCRIPTION: "middle gray"
+                                         $DESCRIPTION:"Preserve colors" */
+  float middle_grey;    // $MIN: 0.05 $MAX: 100 $DEFAULT: 18.42 $DESCRIPTION: "Middle gray"
   float brightness;     // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0
   float saturation;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
   float vibrance;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
@@ -133,21 +133,21 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the quick access panel instead.");
+  return _("This module is deprecated. Please use the quick access panel instead.");
 }
 
 const char *name()
 {
-  return _("basic adjustments");
+  return _("Basic adjustments");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply usual image adjustments"),
-                                      _("creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, scene-referred"));
+  return dt_iop_set_description(self, _("Apply usual image adjustments"),
+                                      _("Creative"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Non-linear, RGB"),
+                                      _("Non-linear, RGB, scene-referred"));
 }
 
 int default_group()
@@ -590,63 +590,63 @@ void gui_init(struct dt_iop_module_t *self)
   g->sl_black_point = dt_bauhaus_slider_from_params(self, "black_point");
   dt_bauhaus_slider_set_soft_range(g->sl_black_point, -0.1, 0.1);
   dt_bauhaus_slider_set_digits(g->sl_black_point, 4);
-  gtk_widget_set_tooltip_text(g->sl_black_point, _("adjust the black level to unclip negative RGB values.\n"
-                                                    "you should never use it to add more density in blacks!\n"
-                                                    "if poorly set, it will clip near-black colors out of gamut\n"
+  gtk_widget_set_tooltip_text(g->sl_black_point, _("Adjust the black level to unclip negative RGB values.\n"
+                                                    "You should never use it to add more density in blacks!\n"
+                                                    "If poorly set, it will clip near-black colors out of gamut\n"
                                                     "by pushing RGB values into negatives"));
 
-  g->sl_exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
+  g->sl_exposure = dt_bauhaus_slider_from_params(self, N_("Exposure"));
   dt_bauhaus_slider_set_soft_range(g->sl_exposure, -4.0, 4.0);
   dt_bauhaus_slider_set_format(g->sl_exposure, _(" EV"));
-  gtk_widget_set_tooltip_text(g->sl_exposure, _("adjust the exposure correction"));
+  gtk_widget_set_tooltip_text(g->sl_exposure, _("Adjust the exposure correction"));
 
   g->sl_hlcompr = dt_bauhaus_slider_from_params(self, "hlcompr");
   dt_bauhaus_slider_set_soft_max(g->sl_hlcompr, 100.0);
-  gtk_widget_set_tooltip_text(g->sl_hlcompr, _("highlight compression adjustment"));
+  gtk_widget_set_tooltip_text(g->sl_hlcompr, _("Highlight compression adjustment"));
 
-  g->sl_contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
+  g->sl_contrast = dt_bauhaus_slider_from_params(self, N_("Contrast"));
   dt_bauhaus_slider_set_soft_range(g->sl_contrast, -1.0, 1.0);
-  gtk_widget_set_tooltip_text(g->sl_contrast, _("contrast adjustment"));
+  gtk_widget_set_tooltip_text(g->sl_contrast, _("Contrast adjustment"));
 
   g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors") ;
-  gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
+  gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("Method to preserve colors when applying contrast"));
 
   g->sl_middle_grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                       dt_bauhaus_slider_from_params(self, "middle_grey"));
   dt_bauhaus_slider_set_format(g->sl_middle_grey, "%");
-  gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle gray adjustment"));
+  gtk_widget_set_tooltip_text(g->sl_middle_grey, _("Middle gray adjustment"));
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 
-  g->sl_brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
+  g->sl_brightness = dt_bauhaus_slider_from_params(self, N_("Brightness"));
   dt_bauhaus_slider_set_soft_range(g->sl_brightness, -1.0, 1.0);
-  gtk_widget_set_tooltip_text(g->sl_brightness,_("brightness adjustment"));
+  gtk_widget_set_tooltip_text(g->sl_brightness,_("Brightness adjustment"));
 
-  g->sl_saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
-  gtk_widget_set_tooltip_text(g->sl_saturation,_("saturation adjustment"));
+  g->sl_saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
+  gtk_widget_set_tooltip_text(g->sl_saturation,_("Saturation adjustment"));
 
-  g->sl_vibrance = dt_bauhaus_slider_from_params(self, N_("vibrance"));
-  gtk_widget_set_tooltip_text(g->sl_vibrance, _("vibrance adjustment"));
+  g->sl_vibrance = dt_bauhaus_slider_from_params(self, N_("Vibrance"));
+  gtk_widget_set_tooltip_text(g->sl_vibrance, _("Vibrance adjustment"));
 
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
 
-  g->bt_auto_levels = dt_action_button_new(NULL, N_("auto"), _auto_levels_callback, self, _("apply auto exposure based on the entire image"), 0, 0);
+  g->bt_auto_levels = dt_action_button_new(NULL, N_("Auto"), _auto_levels_callback, self, _("Apply auto exposure based on the entire image"), 0, 0);
   gtk_widget_set_size_request(g->bt_auto_levels, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
 
   g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
   dt_gui_add_class(g->bt_select_region, "dt_transparent_background");
   gtk_widget_set_tooltip_text(g->bt_select_region,
-                              _("apply auto exposure based on a region defined by the user\n"
-                                "click and drag to draw the area\n"
-                                "right click to cancel"));
+                              _("Apply auto exposure based on a region defined by the user\n"
+                                "Click and drag to draw the area\n"
+                                "Right click to cancel"));
   g_signal_connect(G_OBJECT(g->bt_select_region), "toggled", G_CALLBACK(_select_region_toggled_callback), self);
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_select_region, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
 
-  g->sl_clip = dt_bauhaus_slider_from_params(self, N_("clip"));
+  g->sl_clip = dt_bauhaus_slider_from_params(self, N_("Clip"));
   dt_bauhaus_slider_set_digits(g->sl_clip, 3);
-  gtk_widget_set_tooltip_text(g->sl_clip, _("adjusts clipping value for auto exposure calculation"));
+  gtk_widget_set_tooltip_text(g->sl_clip, _("Adjusts clipping value for auto exposure calculation"));
 
   // add signal handler for preview pipe finish
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,

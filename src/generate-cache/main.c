@@ -47,16 +47,16 @@
 
 static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mipmap_size_t max_mip, const int32_t min_imgid, const int32_t max_imgid)
 {
-  fprintf(stderr, _("creating cache directories\n"));
+  fprintf(stderr, _("Creating cache directories\n"));
   for(dt_mipmap_size_t k = min_mip; k <= max_mip; k++)
   {
     char dirname[PATH_MAX] = { 0 };
     snprintf(dirname, sizeof(dirname), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
 
-    fprintf(stderr, _("creating cache directory '%s'\n"), dirname);
+    fprintf(stderr, _("Creating cache directory '%s'\n"), dirname);
     if(g_mkdir_with_parents(dirname, 0750))
     {
-      fprintf(stderr, _("could not create directory '%s'!\n"), dirname);
+      fprintf(stderr, _("Could not create directory '%s'!\n"), dirname);
       return 1;
     }
   }
@@ -80,10 +80,10 @@ static int generate_thumbnail_cache(const dt_mipmap_size_t min_mip, const dt_mip
 
   if(!image_count)
   {
-    fprintf(stderr, _("warning: no images are matching the requested image id range\n"));
+    fprintf(stderr, _("Warning: no images are matching the requested image id range\n"));
     if(min_imgid > max_imgid)
     {
-      fprintf(stderr, _("warning: did you want to swap these boundaries?\n"));
+      fprintf(stderr, _("Warning: did you want to swap these boundaries?\n"));
     }
   }
 
@@ -224,9 +224,9 @@ int main(int argc, char *arg[])
 
   if(!dt_conf_get_bool("cache_disk_backend"))
   {
-    fprintf(stderr, _("warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\nif you want "
-                      "to pre-generate thumbnails and for darktable to use them, you need to enable disk backend "
-                      "for thumbnail cache\nno thumbnails to be generated, done.\n"));
+    fprintf(stderr, _("Warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\nIf you want "
+                      "to pre-generate thumbnails and for Darktable to use them, you need to enable disk backend "
+                      "for thumbnail cache\nNo thumbnails to be generated, done.\n"));
     dt_cleanup();
     free(m_arg);
     exit(EXIT_FAILURE);
@@ -235,9 +235,9 @@ int main(int argc, char *arg[])
   if(max_mip == 8 && !dt_conf_get_bool("cache_disk_backend_full"))
   {
     fprintf(stderr,
-            _("warning: disk backend for full preview cache is disabled (cache_disk_backend_full)\nif you want "
-              "to pre-generate full previews and for darktable to use them, you need to enable disk backend "
-              "for full preview cache\nno full previews to be generated, done.\n"));
+            _("Warning: disk backend for full preview cache is disabled (cache_disk_backend_full)\nIf you want "
+              "to pre-generate full previews and for Darktable to use them, you need to enable disk backend "
+              "for full preview cache\nNo full previews to be generated, done.\n"));
     dt_cleanup();
     free(m_arg);
     exit(EXIT_FAILURE);
@@ -245,12 +245,12 @@ int main(int argc, char *arg[])
 
   if(min_mip > max_mip)
   {
-    fprintf(stderr, _("error: ensure that min_mip <= max_mip\n"));
+    fprintf(stderr, _("Error: ensure that min_mip <= max_mip\n"));
     free(m_arg);
     exit(EXIT_FAILURE);
   }
 
-  fprintf(stderr, _("creating complete lighttable thumbnail cache\n"));
+  fprintf(stderr, _("Creating complete Lighttable thumbnail cache\n"));
 
   if(generate_thumbnail_cache(min_mip, max_mip, min_imgid, max_imgid))
   {

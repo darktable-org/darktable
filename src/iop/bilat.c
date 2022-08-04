@@ -42,8 +42,8 @@ DT_MODULE_INTROSPECTION(3, dt_iop_bilat_params_t)
 
 typedef enum dt_iop_bilat_mode_t
 {
-  s_mode_bilateral = 0,       // $DESCRIPTION: "bilateral grid"
-  s_mode_local_laplacian = 1, // $DESCRIPTION: "local laplacian filter"
+  s_mode_bilateral = 0,       // $DESCRIPTION: "Bilateral grid"
+  s_mode_local_laplacian = 1, // $DESCRIPTION: "Local laplacian filter"
 }
 dt_iop_bilat_mode_t;
 
@@ -53,7 +53,7 @@ typedef struct dt_iop_bilat_params_t
   float sigma_r; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5 highlights 100 & range
   float sigma_s; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5 shadows 100 & spatial 1 100 50
   float detail;  // $MIN: -1.0 $MAX: 4.0 $DEFAULT: 0.25
-  float midtone; // $MIN: 0.001 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "midtone range"
+  float midtone; // $MIN: 0.001 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "Midtone range"
 }
 dt_iop_bilat_params_t;
 
@@ -91,16 +91,16 @@ dt_iop_bilat_gui_data_t;
 // this returns a translatable name
 const char *name()
 {
-  return _("local contrast");
+  return _("Local contrast");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("manipulate local and global contrast separately"),
-                                      _("creative"),
-                                      _("non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Manipulate local and global contrast separately"),
+                                      _("Creative"),
+                                      _("Non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 // some additional flags (self explanatory i think):
@@ -160,7 +160,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.detail = 0.33f;
   p.midtone = 0.5f;
 
-  dt_gui_presets_add_generic(_("clarity"), self->op,
+  dt_gui_presets_add_generic(_("Clarity"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.mode = s_mode_local_laplacian;
@@ -424,13 +424,13 @@ void gui_init(dt_iop_module_t *self)
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   dt_iop_bilat_gui_data_t *g = IOP_GUI_ALLOC(bilat);
 
-  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
-  gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("Mode"));
+  gtk_widget_set_tooltip_text(g->mode, _("The filter used for local contrast enhancement. Bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
-  g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));
+  g->detail = dt_bauhaus_slider_from_params(self, N_("Detail"));
   dt_bauhaus_slider_set_offset(g->detail, 100);
   dt_bauhaus_slider_set_format(g->detail, "%");
-  gtk_widget_set_tooltip_text(g->detail, _("changes the local contrast"));
+  gtk_widget_set_tooltip_text(g->detail, _("Changes the local contrast"));
 
   ++darktable.bauhaus->skip_accel;
   g->spatial = dt_bauhaus_slider_from_params(self, "sigma_s");
@@ -442,28 +442,28 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_hard_min(g->spatial, 3.0);
   dt_bauhaus_slider_set_default(g->spatial, 50.0);
   dt_bauhaus_slider_set_digits(g->spatial, 0);
-  dt_bauhaus_widget_set_label(g->spatial, NULL, N_("coarseness"));
-  gtk_widget_set_tooltip_text(g->spatial, _("feature size of local details (spatial sigma of bilateral filter)"));
+  dt_bauhaus_widget_set_label(g->spatial, NULL, N_("Coarseness"));
+  gtk_widget_set_tooltip_text(g->spatial, _("Feature size of local details (spatial sigma of bilateral filter)"));
 
   dt_bauhaus_slider_set_hard_min(g->range, 1.0);
   dt_bauhaus_slider_set_default(g->range, 20.0);
   dt_bauhaus_slider_set_digits(g->range, 0);
-  dt_bauhaus_widget_set_label(g->range, NULL, N_("contrast"));
+  dt_bauhaus_widget_set_label(g->range, NULL, N_("Contrast"));
   gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
-  dt_bauhaus_widget_set_label(g->highlights, NULL, N_("highlights"));
+  dt_bauhaus_widget_set_label(g->highlights, NULL, N_("Highlights"));
   dt_bauhaus_slider_set_hard_max(g->highlights, 2.0);
   dt_bauhaus_slider_set_format(g->highlights, "%");
-  gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
+  gtk_widget_set_tooltip_text(g->highlights, _("Changes the local contrast of highlights"));
 
-  dt_bauhaus_widget_set_label(g->shadows, NULL, N_("shadows"));
+  dt_bauhaus_widget_set_label(g->shadows, NULL, N_("Shadows"));
   dt_bauhaus_slider_set_hard_max(g->shadows, 2.0);
   dt_bauhaus_slider_set_format(g->shadows, "%");
-  gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
+  gtk_widget_set_tooltip_text(g->shadows, _("Changes the local contrast of shadows"));
 
   g->midtone = dt_bauhaus_slider_from_params(self, "midtone");
   dt_bauhaus_slider_set_digits(g->midtone, 3);
-  gtk_widget_set_tooltip_text(g->midtone, _("defines what counts as mid-tones. lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
+  gtk_widget_set_tooltip_text(g->midtone, _("Defines what counts as mid-tones. Lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
 
   // work around multi-instance issue which calls show all a fair bit:
   g_object_set(G_OBJECT(g->highlights), "no-show-all", TRUE, NULL);

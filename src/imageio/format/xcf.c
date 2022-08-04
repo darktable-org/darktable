@@ -146,7 +146,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   xcf_add_layer(xcf);
   xcf_set(xcf, XCF_WIDTH, d->global.width);
   xcf_set(xcf, XCF_HEIGHT, d->global.height);
-  xcf_set(xcf, XCF_NAME, _("image"));
+  xcf_set(xcf, XCF_NAME, _("Image"));
   // we only add one layer and omit its alpha channel. thus we can just pass ivoid and ignore its 4th channel!
   xcf_add_data(xcf, ivoid, 4);
 
@@ -296,7 +296,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("xcf");
+  return _("XCF");
 }
 
 void init(dt_imageio_module_format_t *self)
@@ -337,7 +337,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // Bit depth combo box
   gui->bpp = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->bpp, NULL, N_("bit depth"));
+  dt_bauhaus_widget_set_label(gui->bpp, NULL, N_("Bit depth"));
   dt_bauhaus_combobox_add(gui->bpp, _("8 bit"));
   dt_bauhaus_combobox_add(gui->bpp, _("16 bit"));
   dt_bauhaus_combobox_add(gui->bpp, _("32 bit (float)"));

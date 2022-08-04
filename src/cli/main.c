@@ -256,7 +256,7 @@ int main(int argc, char *arg[])
           high_quality = TRUE;
         else
         {
-          fprintf(stderr, "%s: %s\n", _("unknown option for --hq"), arg[k]);
+          fprintf(stderr, "%s: %s\n", _("Unknown option for --hq"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
@@ -272,7 +272,7 @@ int main(int argc, char *arg[])
           export_masks = TRUE;
         else
         {
-          fprintf(stderr, "%s: %s\n", _("unknown option for --export_masks"), arg[k]);
+          fprintf(stderr, "%s: %s\n", _("Unknown option for --export_masks"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
@@ -288,7 +288,7 @@ int main(int argc, char *arg[])
           upscale= TRUE;
         else
         {
-          fprintf(stderr, "%s: %s\n", _("unknown option for --upscale"), arg[k]);
+          fprintf(stderr, "%s: %s\n", _("Unknown option for --upscale"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
@@ -313,7 +313,7 @@ int main(int argc, char *arg[])
           custom_presets = TRUE;
         else
         {
-          fprintf(stderr, "%s: %s\n", _("unknown option for --apply-custom-presets"), arg[k]);
+          fprintf(stderr, "%s: %s\n", _("Unknown option for --apply-custom-presets"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
@@ -324,7 +324,7 @@ int main(int argc, char *arg[])
         k++;
         if(strlen(arg[k])> DT_MAX_OUTPUT_EXT_LENGTH)
         {
-          fprintf(stderr, "%s: %s\n", _("too long ext for --out-ext"), arg[k]);
+          fprintf(stderr, "%s: %s\n", _("Too long ext for --out-ext"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
@@ -341,7 +341,7 @@ int main(int argc, char *arg[])
         if(g_file_test(arg[k], G_FILE_TEST_EXISTS))
           inputs = g_list_prepend(inputs, g_strdup(arg[k]));
         else
-          fprintf(stderr, _("notice: input file or dir '%s' doesn't exist, skipping\n"), arg[k]);
+          fprintf(stderr, _("Notice: input file or dir '%s' doesn't exist, skipping\n"), arg[k]);
       }
       else if(!strcmp(arg[k], "--icc-type") && argc > k + 1)
       {
@@ -350,7 +350,7 @@ int main(int argc, char *arg[])
         icc_type = get_icc_type(str);
         g_free(str);
         if(icc_type >= DT_COLORSPACE_LAST){
-          fprintf(stderr, _("incorrect ICC type for --icc-type: '%s'\n"), arg[k]);
+          fprintf(stderr, _("Incorrect ICC type for --icc-type: '%s'\n"), arg[k]);
           icc_types();
           usage(arg[0]);
           exit(1);
@@ -366,7 +366,7 @@ int main(int argc, char *arg[])
           icc_filename = g_strdup(arg[k]);
         }
         else
-          fprintf(stderr, _("notice: ICC file '%s' doesn't exist, skipping\n"), arg[k]);
+          fprintf(stderr, _("Notice: ICC file '%s' doesn't exist, skipping\n"), arg[k]);
       }
       else if(!strcmp(arg[k], "--icc-intent") && argc > k + 1)
       {
@@ -375,7 +375,7 @@ int main(int argc, char *arg[])
         icc_intent = get_icc_intent(str);
         g_free(str);
         if(icc_intent >= DT_INTENT_LAST){
-          fprintf(stderr, _("incorrect ICC intent for --icc-intent: '%s'\n"), arg[k]);
+          fprintf(stderr, _("Incorrect ICC intent for --icc-intent: '%s'\n"), arg[k]);
           icc_intents();
           usage(arg[0]);
           exit(1);
@@ -393,7 +393,7 @@ int main(int argc, char *arg[])
       }
       else
       {
-        fprintf(stderr, _("warning: unknown option '%s'\n"), arg[k]);
+        fprintf(stderr, _("Warning: unknown option '%s'\n"), arg[k]);
       }
     }
     else
@@ -451,7 +451,7 @@ int main(int argc, char *arg[])
   }
   else if (inputs && file_counter == 3)
   {
-    fprintf(stderr, _("error: input file and import opts specified! that's not supported!\n"));
+    fprintf(stderr, _("Error: input file and import opts specified! That's not supported!\n"));
     usage(arg[0]);
     free(m_arg);
     if(output_filename)
@@ -484,7 +484,7 @@ int main(int argc, char *arg[])
     {
       output_ext = g_strdup("jpg");
     }
-    fprintf(stderr, _("notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output pattern"), output_filename, output_ext);
+    fprintf(stderr, _("Notice: output location is a directory. Assuming '%s/$(FILE_NAME).%s' output pattern"), output_filename, output_ext);
     fprintf(stderr, "\n");
     gchar* temp_of = g_strdup(output_filename);
     g_free(output_filename);
@@ -499,7 +499,7 @@ int main(int argc, char *arg[])
   {
     if(!output_ext || (output_ext && g_str_has_suffix(output_filename, output_ext) && !g_strcmp0(output_ext,strrchr(output_filename, '.')+1))){
       //output file exists or there's output ext specified and it's same as file...
-      fprintf(stderr, "%s\n", _("output file already exists, it will get renamed"));
+      fprintf(stderr, "%s\n", _("Output file already exists, it will get renamed"));
     }
     //TODO: test if file with replaced ext exists
     // or not if we decide we don't replace file ext with output ext specified
@@ -529,7 +529,7 @@ int main(int argc, char *arg[])
       if(!filmid)
       {
         // one of inputs was a failure, no prob
-        fprintf(stderr, _("error: can't open folder %s"), input);
+        fprintf(stderr, _("Error: can't open folder %s"), input);
         fprintf(stderr, "\n");
         continue;
       }
@@ -546,7 +546,7 @@ int main(int argc, char *arg[])
       g_free(directory);
       if(!id)
       {
-        fprintf(stderr, _("error: can't open file %s"), input);
+        fprintf(stderr, _("Error: can't open file %s"), input);
         fprintf(stderr, "\n");
         continue;
       }
@@ -563,7 +563,7 @@ int main(int argc, char *arg[])
 
   if(total == 0)
   {
-    fprintf(stderr, _("no images to export, aborting\n"));
+    fprintf(stderr, _("No images to export, aborting\n"));
     free(m_arg);
     g_free(output_filename);
     if(output_ext)
@@ -580,7 +580,7 @@ int main(int argc, char *arg[])
       dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
       if(dt_exif_xmp_read(image, xmp_filename, 1) != 0)
       {
-        fprintf(stderr, _("error: can't open xmp file %s"), xmp_filename);
+        fprintf(stderr, _("Error: can't open xmp file %s"), xmp_filename);
         fprintf(stderr, "\n");
         free(m_arg);
         g_free(output_filename);
@@ -601,7 +601,7 @@ int main(int argc, char *arg[])
     if(history)
       printf("%s\n", history);
     else
-      printf("[%s]\n", _("empty history stack"));
+      printf("[%s]\n", _("Empty history stack"));
   }
 
   if(!output_ext)
@@ -613,7 +613,7 @@ int main(int argc, char *arg[])
     if(ext && strlen(ext) > DT_MAX_OUTPUT_EXT_LENGTH)
     {
       // too long ext, no point in wasting time
-      fprintf(stderr, _("too long output file extension: %s\n"), ext);
+      fprintf(stderr, _("Too long output file extension: %s\n"), ext);
       usage(arg[0]);
       g_free(output_filename);
       exit(1);
@@ -621,7 +621,7 @@ int main(int argc, char *arg[])
     else if(!ext || strlen(ext) <= 1)
     {
       // no ext or empty ext, no point in wasting time
-      fprintf(stderr, _("no output file extension given\n"));
+      fprintf(stderr, _("No output file extension given\n"));
       usage(arg[0]);
       g_free(output_filename);
       exit(1);
@@ -660,7 +660,7 @@ int main(int argc, char *arg[])
   {
     fprintf(
         stderr, "%s\n",
-        _("cannot find disk storage module. please check your installation, something seems to be broken."));
+        _("Cannot find disk storage module. Please check your installation, something seems to be broken."));
     free(m_arg);
     g_free(output_filename);
     g_free(output_ext);
@@ -670,7 +670,7 @@ int main(int argc, char *arg[])
   sdata = storage->get_params(storage);
   if(sdata == NULL)
   {
-    fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
+    fprintf(stderr, "%s\n", _("Failed to get parameters from storage module, aborting export ..."));
     free(m_arg);
     g_free(output_filename);
     g_free(output_ext);
@@ -686,7 +686,7 @@ int main(int argc, char *arg[])
   format = dt_imageio_get_format_by_name(output_ext);
   if(format == NULL)
   {
-    fprintf(stderr, _("unknown extension '.%s'"), output_ext);
+    fprintf(stderr, _("Unknown extension '.%s'"), output_ext);
     fprintf(stderr, "\n");
     free(m_arg);
     g_free(output_ext);
@@ -696,7 +696,7 @@ int main(int argc, char *arg[])
   fdata = format->get_params(format);
   if(fdata == NULL)
   {
-    fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
+    fprintf(stderr, "%s\n", _("Failed to get parameters from format module, aborting export ..."));
     free(m_arg);
     g_free(output_ext);
     exit(1);

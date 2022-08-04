@@ -35,7 +35,7 @@ static void _paint_battery(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("battery indicator");
+  return _("Battery indicator");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -68,7 +68,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = d->icon = dtgtk_icon_new(_paint_battery, 0, d);
   gtk_widget_set_size_request(d->icon, DT_PIXEL_APPLY_DPI(23), -1);
-  gtk_widget_set_tooltip_text(d->icon, _("battery indicator"));
+  gtk_widget_set_tooltip_text(d->icon, _("Battery indicator"));
 
   g_timeout_add_seconds(60, _check_fill, d); // TODO: is checking the battery status once per minute fine?
 }

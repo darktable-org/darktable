@@ -331,7 +331,7 @@ typedef struct dt_knight_t
 
 const char *name(const dt_view_t *self)
 {
-  return _("good knight");
+  return _("Good knight");
 }
 
 uint32_t view(const dt_view_t *self)

@@ -80,7 +80,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
   else if(strcmp(_backend_str, "gnome keyring") == 0)
   {
     fprintf(stderr, "[pwstorage_new] GNOME Keyring backend is no longer supported.\n");
-    dt_control_log(_("GNOME Keyring backend is no longer supported. configure a different one"));
+    dt_control_log(_("GNOME Keyring backend is no longer supported. Configure a different one"));
     _backend = PW_STORAGE_BACKEND_NONE;
   }
 

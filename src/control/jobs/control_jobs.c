@@ -141,7 +141,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
 
   if(film_id <= 0)
   {
-    dt_control_log(_("failed to create film roll for destination directory, aborting move.."));
+    dt_control_log(_("Failed to create film roll for destination directory, aborting move.."));
     return -1;
   }
 
@@ -374,14 +374,14 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
 
   if(image.buf_dsc.filters == 0u || image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16)
   {
-    dt_control_log(_("exposure bracketing only works on raw images."));
+    dt_control_log(_("Exposure bracketing only works on raw images."));
     d->abort = TRUE;
     return 1;
   }
   else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != image.buf_dsc.filters
           || d->orientation != image.orientation)
   {
-    dt_control_log(_("images have to be of same size and orientation!"));
+    dt_control_log(_("Images have to be of same size and orientation!"));
     d->abort = TRUE;
     return 1;
   }
@@ -476,7 +476,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   const guint total = g_list_length(t);
   char message[512] = { 0 };
   double fraction = 0;
-  snprintf(message, sizeof(message), ngettext("merging %d image", "merging %d images", total), total);
+  snprintf(message, sizeof(message), ngettext("Merging %d image", "Merging %d images", total), total);
 
   dt_control_job_set_progress_message(job, message);
 
@@ -550,7 +550,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   dt_control_job_set_progress(job, 1.0);
 
   while(*c != '/' && c > pathname) c--;
-  dt_control_log(_("wrote merged HDR `%s'"), c + 1);
+  dt_control_log(_("Wrote merged HDR `%s'"), c + 1);
 
   // import new image
   gchar *directory = g_path_get_dirname((const gchar *)pathname);
@@ -582,7 +582,7 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 
   dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
 
-  snprintf(message, sizeof(message), ngettext("duplicating %d image", "duplicating %d images", total), total);
+  snprintf(message, sizeof(message), ngettext("Duplicating %d image", "Duplicating %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   while(t)
   {
@@ -623,7 +623,7 @@ static int32_t dt_control_flip_images_job_run(dt_job_t *job)
 
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
-  snprintf(message, sizeof(message), ngettext("flipping %d image", "flipping %d images", total), total);
+  snprintf(message, sizeof(message), ngettext("Flipping %d image", "Flipping %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   while(t)
   {
@@ -654,9 +654,9 @@ static int32_t dt_control_monochrome_images_job_run(dt_job_t *job)
   dt_undo_start_group(darktable.undo, DT_UNDO_FLAGS);
 
   if(mode == 0)
-    snprintf(message, sizeof(message), ngettext("set %d color image", "setting %d color images", total), total);
+    snprintf(message, sizeof(message), ngettext("Set %d color image", "Setting %d color images", total), total);
   else
-    snprintf(message, sizeof(message), ngettext("set %d monochrome image", "setting %d monochrome images", total), total);
+    snprintf(message, sizeof(message), ngettext("Set %d monochrome image", "Setting %d monochrome images", total), total);
 
   dt_control_job_set_progress_message(job, message);
   while(t)
@@ -741,7 +741,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   char *imgs = _get_image_list(t);
   const guint total = g_list_length(t);
   char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("removing %d image", "removing %d images", total), total);
+  snprintf(message, sizeof(message), ngettext("Removing %d image", "Removing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   sqlite3_stmt *stmt = NULL;
 
@@ -765,7 +765,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   if(!remove_ok)
   {
-    dt_control_log(_("cannot remove local copy when the original file is not accessible."));
+    dt_control_log(_("Cannot remove local copy when the original file is not accessible."));
     free(imgs);
     return 0;
   }
@@ -845,8 +845,8 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
       GTK_MESSAGE_QUESTION,
       GTK_BUTTONS_NONE,
       modal_dialog->send_to_trash
-        ? _("could not send %s to trash%s%s")
-        : _("could not physically delete %s%s%s"),
+        ? _("Could not send %s to trash%s%s")
+        : _("Could not physically delete %s%s%s"),
       modal_dialog->filename,
       modal_dialog->error_message != NULL ? ": " : "",
       modal_dialog->error_message != NULL ? modal_dialog->error_message : "");
@@ -856,18 +856,18 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
 
   if(modal_dialog->send_to_trash)
   {
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete all files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("Physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("Physically delete all files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
   }
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the image library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("Only remove from the image library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("Skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("Stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
 
   gtk_window_set_title(
       GTK_WINDOW(dialog),
       modal_dialog->send_to_trash
-        ? _("trashing error")
-        : _("deletion error"));
+        ? _("Trashing error")
+        : _("Deletion error"));
   modal_dialog->dialog_result = gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
 
@@ -1009,9 +1009,9 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   char message[512] = { 0 };
   gboolean delete_on_trash_error = FALSE;
   if(dt_conf_get_bool("send_to_trash"))
-    snprintf(message, sizeof(message), ngettext("trashing %d image", "trashing %d images", total), total);
+    snprintf(message, sizeof(message), ngettext("Trashing %d image", "Trashing %d images", total), total);
   else
-    snprintf(message, sizeof(message), ngettext("deleting %d image", "deleting %d images", total), total);
+    snprintf(message, sizeof(message), ngettext("Deleting %d image", "Deleting %d images", total), total);
   dt_control_job_set_progress_message(job, message);
 
   sqlite3_stmt *stmt;
@@ -1137,7 +1137,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   gpx = dt_gpx_new(filename);
   if(!gpx)
   {
-    dt_control_log(_("failed to parse GPX file"));
+    dt_control_log(_("Failed to parse GPX file"));
     goto bail_out;
   }
 
@@ -1184,8 +1184,8 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 
   dt_image_set_images_locations(imgs, gloc, TRUE);
 
-  dt_control_log(ngettext("applied matched GPX location onto %d image",
-                          "applied matched GPX location onto %d images", cntr), cntr);
+  dt_control_log(ngettext("Applied matched GPX location onto %d image",
+                          "Applied matched GPX location onto %d images", cntr), cntr);
 
   g_time_zone_unref(tz_camera);
   dt_gpx_destroy(gpx);
@@ -1201,14 +1201,14 @@ bail_out:
 
 static int32_t dt_control_move_images_job_run(dt_job_t *job)
 {
-  return _generic_dt_control_fileop_images_job_run(job, &dt_image_move, _("moving %d image"),
-                                                   _("moving %d images"));
+  return _generic_dt_control_fileop_images_job_run(job, &dt_image_move, _("Moving %d image"),
+                                                   _("Moving %d images"));
 }
 
 static int32_t dt_control_copy_images_job_run(dt_job_t *job)
 {
-  return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy, _("copying %d image"),
-                                                   _("copying %d images"));
+  return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy, _("Copying %d image"),
+                                                   _("Copying %d images"));
 }
 
 static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
@@ -1223,10 +1223,10 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 
   if(is_copy)
     snprintf(message, sizeof(message),
-             ngettext("creating local copy of %d image", "creating local copies of %d images", total), total);
+             ngettext("Creating local copy of %d image", "Creating local copies of %d images", total), total);
   else
     snprintf(message, sizeof(message),
-             ngettext("removing local copy of %d image", "removing local copies of %d images", total), total);
+             ngettext("Removing local copy of %d image", "Removing local copies of %d images", total), total);
 
   dt_control_log("%s", message);
   dt_control_job_set_progress_message(job, message);
@@ -1273,7 +1273,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   const guint total = g_list_length(t);
   double fraction = 0.0f;
   char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("refreshing info for %d image", "refreshing info for %d images", total), total);
+  snprintf(message, sizeof(message), ngettext("Refreshing info for %d image", "Refreshing info for %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   while(t)
   {
@@ -1359,9 +1359,9 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   const guint total = g_list_length(t);
   if(total > 0)
-    dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
+    dt_control_log(ngettext("Exporting %d image..", "Exporting %d images..", total), total);
   else
-    dt_control_log(_("no image to export"));
+    dt_control_log(_("No image to export"));
 
   double fraction = 0;
 
@@ -1399,7 +1399,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
     // progress message
     char message[512] = { 0 };
-    snprintf(message, sizeof(message), _("exporting %d / %d to %s"), num, total, mstorage->name(mstorage));
+    snprintf(message, sizeof(message), _("Exporting %d / %d to %s"), num, total, mstorage->name(mstorage));
     // update the message. initialize_store() might have changed the number of images
     dt_control_job_set_progress_message(job, message);
 
@@ -1420,7 +1420,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       dt_image_full_path(image->id, imgfilename, sizeof(imgfilename), &from_cache);
       if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
       {
-        dt_control_log(_("image `%s' is currently unavailable"), image->filename);
+        dt_control_log(_("Image `%s' is currently unavailable"), image->filename);
         fprintf(stderr, "image `%s' is currently unavailable\n", imgfilename);
         // dt_image_remove(imgid);
         dt_image_cache_read_release(darktable.image_cache, image);
@@ -1512,7 +1512,7 @@ static dt_job_t *_control_gpx_apply_job_create(const gchar *filename, int32_t fi
 void dt_control_merge_hdr()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_merge_hdr_job_run, N_("merge hdr image"), 0,
+                     dt_control_generic_images_job_create(&dt_control_merge_hdr_job_run, N_("Merge HDR image"), 0,
                                                           NULL, PROGRESS_CANCELLABLE, TRUE));
 }
 
@@ -1526,27 +1526,27 @@ void dt_control_duplicate_images(gboolean virgin)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_duplicate_images_job_run,
-                                                          N_("duplicate images"), 0, GINT_TO_POINTER(virgin), PROGRESS_SIMPLE, TRUE));
+                                                          N_("Duplicate images"), 0, GINT_TO_POINTER(virgin), PROGRESS_SIMPLE, TRUE));
 }
 
 void dt_control_flip_images(const int32_t cw)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_flip_images_job_run, N_("flip images"), cw,
+                     dt_control_generic_images_job_create(&dt_control_flip_images_job_run, N_("Flip images"), cw,
                                                           NULL, PROGRESS_SIMPLE, TRUE));
 }
 
 void dt_control_monochrome_images(const int32_t mode)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_monochrome_images_job_run, N_("set monochrome images"), mode,
+                     dt_control_generic_images_job_create(&dt_control_monochrome_images_job_run, N_("Set monochrome images"), mode,
                                                           NULL, PROGRESS_SIMPLE, TRUE));
 }
 
 gboolean dt_control_remove_images()
 {
   // get all selected images now, to avoid the set changing during ui interaction
-  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_remove_images_job_run, N_("remove images"), 0,
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_remove_images_job_run, N_("Remove images"), 0,
                                                        NULL, PROGRESS_SIMPLE, FALSE);
   if(dt_conf_get_bool("ask_before_remove"))
   {
@@ -1563,14 +1563,14 @@ gboolean dt_control_remove_images()
 
     dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to remove %d image from darktable\n(without deleting file on disk)?",
-                 "do you really want to remove %d images from darktable\n(without deleting files on disk)?", number),
+        ngettext("Do you really want to remove %d image from Darktable\n(without deleting file on disk)?",
+                 "Do you really want to remove %d images from Darktable\n(without deleting files on disk)?", number),
         number);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext(_("remove image?"), _("remove images?"), number));
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext(_("Remove image?"), _("Remove images?"), number));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
     if(res != GTK_RESPONSE_YES)
@@ -1586,7 +1586,7 @@ gboolean dt_control_remove_images()
 void dt_control_delete_images()
 {
   // first get all selected images, to avoid the set changing during ui interaction
-  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_delete_images_job_run, N_("delete images"), 0,
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_delete_images_job_run, N_("Delete images"), 0,
                                                        NULL, PROGRESS_SIMPLE, FALSE);
   int send_to_trash = dt_conf_get_bool("send_to_trash");
   if(dt_conf_get_bool("ask_before_delete"))
@@ -1606,16 +1606,16 @@ void dt_control_delete_images()
 
     dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        send_to_trash ? ngettext("do you really want to physically delete %d image\n(using trash if possible)?",
-                                 "do you really want to physically delete %d images\n(using trash if possible)?", number)
-                      : ngettext("do you really want to physically delete %d image from disk?",
-                                 "do you really want to physically delete %d images from disk?", number),
+        send_to_trash ? ngettext("Do you really want to physically delete %d image\n(using trash if possible)?",
+                                 "Do you really want to physically delete %d images\n(using trash if possible)?", number)
+                      : ngettext("Do you really want to physically delete %d image from disk?",
+                                 "Do you really want to physically delete %d images from disk?", number),
         number);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext(_("delete image?"), _("delete images?"), number));
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext(_("Delete image?"), _("Delete images?"), number));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
     if(res != GTK_RESPONSE_YES)
@@ -1630,7 +1630,7 @@ void dt_control_delete_images()
 void dt_control_delete_image(int imgid)
 {
   // first get all selected images, to avoid the set changing during ui interaction
-  dt_job_t *job = dt_control_generic_image_job_create(&dt_control_delete_images_job_run, N_("delete images"), 0,
+  dt_job_t *job = dt_control_generic_image_job_create(&dt_control_delete_images_job_run, N_("Delete images"), 0,
                                                       NULL, PROGRESS_SIMPLE, imgid);
   int send_to_trash = dt_conf_get_bool("send_to_trash");
   if(dt_conf_get_bool("ask_before_delete"))
@@ -1647,13 +1647,13 @@ void dt_control_delete_image(int imgid)
 
     dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        send_to_trash ? _("do you really want to physically delete selected image (using trash if possible)?")
-                      : _("do you really want to physically delete selected image from disk?"));
+        send_to_trash ? _("Do you really want to physically delete selected image (using trash if possible)?")
+                      : _("Do you really want to physically delete selected image from disk?"));
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete image?"));
+    gtk_window_set_title(GTK_WINDOW(dialog), _("Delete image?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
     if(res != GTK_RESPONSE_YES)
@@ -1671,7 +1671,7 @@ void dt_control_move_images()
   gchar *dir = NULL;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_move_images_job_run, N_("move images"), 0, dir,
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_move_images_job_run, N_("Move images"), 0, dir,
                                                        PROGRESS_CANCELLABLE, FALSE);
   const dt_control_image_enumerator_t *e = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   const int number = g_list_length(e->index);
@@ -1682,8 +1682,8 @@ void dt_control_move_images()
   }
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-        _("_select as destination"), _("_cancel"));
+        _("Select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        _("_Select as destination"), _("_Cancel"));
 
   dt_conf_get_folder_to_file_chooser("ui_last/move_path", GTK_FILE_CHOOSER(filechooser));
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1703,16 +1703,16 @@ void dt_control_move_images()
   {
     GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
                                                GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                               ngettext("do you really want to physically move %d image to %s?\n"
+                                               ngettext("Do you really want to physically move %d image to %s?\n"
                                                         "(all duplicates will be moved along)",
-                                                        "do you really want to physically move %d images to %s?\n"
+                                                        "Do you really want to physically move %d images to %s?\n"
                                                         "(all duplicates will be moved along)",
                                                         number),
                                                number, dir);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("move image?", "move images?", number));
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("Move image?", "Move images?", number));
 
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -1733,7 +1733,7 @@ void dt_control_copy_images()
   // Open file chooser dialog
   gchar *dir = NULL;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_copy_images_job_run, N_("copy images"), 0, dir,
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_copy_images_job_run, N_("Copy images"), 0, dir,
                                                        PROGRESS_CANCELLABLE, FALSE);
   const dt_control_image_enumerator_t *e = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   const int number = g_list_length(e->index);
@@ -1744,8 +1744,8 @@ void dt_control_copy_images()
   }
 
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-        _("_select as destination"), _("_cancel"));
+        _("Select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        _("_Select as destination"), _("_Cancel"));
 
   dt_conf_get_folder_to_file_chooser("ui_last/copy_path", GTK_FILE_CHOOSER(filechooser));
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1765,13 +1765,13 @@ void dt_control_copy_images()
   {
     GtkWidget *dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to physically copy %d image to %s?",
-                 "do you really want to physically copy %d images to %s?", number),
+        ngettext("Do you really want to physically copy %d image to %s?",
+                 "Do you really want to physically copy %d images to %s?", number),
         number, dir);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("copy image?", "copy images?", number));
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("Copy image?", "Copy images?", number));
 
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -1791,7 +1791,7 @@ void dt_control_set_local_copy_images()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run,
-                                                          N_("local copy images"), 1, NULL, PROGRESS_CANCELLABLE,
+                                                          N_("Local copy images"), 1, NULL, PROGRESS_CANCELLABLE,
                                                           FALSE));
 }
 
@@ -1799,14 +1799,14 @@ void dt_control_reset_local_copy_images()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run,
-                                                          N_("local copy images"), 0, NULL, PROGRESS_CANCELLABLE,
+                                                          N_("Local copy images"), 0, NULL, PROGRESS_CANCELLABLE,
                                                           FALSE));
 }
 
 void dt_control_refresh_exif()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_refresh_exif_run, N_("refresh EXIF"), 0,
+                     dt_control_generic_images_job_create(&dt_control_refresh_exif_run, N_("Refresh EXIF"), 0,
                                                           NULL, PROGRESS_CANCELLABLE, FALSE));
 }
 
@@ -1870,7 +1870,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
   if(sdata == NULL)
   {
-    dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."),
+    dt_control_log(_("Failed to get parameters from storage module `%s', aborting export.."),
                    mstorage->name(mstorage));
     dt_control_job_dispose(job);
     return;
@@ -1886,7 +1886,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->icc_intent = icc_intent;
   data->metadata_export = g_strdup(metadata_export);
 
-  dt_control_job_add_progress(job, _("export images"), TRUE);
+  dt_control_job_add_progress(job, _("Export images"), TRUE);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);
 
   // tell the storage that we got its params for an export so it can reset itself to a safe state
@@ -1936,8 +1936,8 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
 
   const guint total = g_list_length(t);
 
-  const char *mes11 = offset ? N_("adding time offset to %d image") : N_("setting date/time of %d image");
-  const char *mes12 = offset ? N_("adding time offset to %d images") : N_("setting date/time of %d images");
+  const char *mes11 = offset ? N_("Adding time offset to %d image") : N_("Setting date/time of %d image");
+  const char *mes12 = offset ? N_("Adding time offset to %d images") : N_("Setting date/time of %d images");
   snprintf(message, sizeof(message), ngettext(mes11, mes12, total), total);
   dt_control_job_set_progress_message(job, message);
 
@@ -1982,8 +1982,8 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
     dt_image_set_datetime(imgs, datetime, TRUE);
   }
 
-  const char *mes21 = offset ? N_("added time offset to %d image") : N_("set date/time of %d image");
-  const char *mes22 = offset ? N_("added time offset to %d images") : N_("set date/time of %d images");
+  const char *mes21 = offset ? N_("Added time offset to %d image") : N_("Set date/time of %d image");
+  const char *mes22 = offset ? N_("Added time offset to %d images") : N_("Set date/time of %d images");
   dt_control_log(ngettext(mes21, mes22, cntr), cntr);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
@@ -2024,7 +2024,7 @@ static dt_job_t *dt_control_datetime_job_create(const GTimeSpan offset, const ch
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("time offset"), FALSE);
+  dt_control_job_add_progress(job, _("Time offset"), FALSE);
   dt_control_job_set_params(job, params, dt_control_datetime_job_cleanup);
 
   if(imgs)
@@ -2052,7 +2052,7 @@ void dt_control_write_sidecar_files()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_write_sidecar_files_job_run,
-                                                          N_("write sidecar files"), 0, NULL, PROGRESS_NONE,
+                                                          N_("Write sidecar files"), 0, NULL, PROGRESS_NONE,
                                                           FALSE));
 }
 
@@ -2106,7 +2106,7 @@ static int _control_import_image_copy(const char *filename,
   else
   {
     const int32_t imgid = dt_image_import(dt_import_session_film_id(session), output, FALSE, FALSE);
-    if(!imgid) dt_control_log(_("error loading file `%s'"), output);
+    if(!imgid) dt_control_log(_("Error loading file `%s'"), output);
     else
     {
       GError *error = NULL;
@@ -2165,7 +2165,7 @@ static int _control_import_image_insitu(const char *filename, GList **imgs, doub
   dt_film_t film;
   const int filmid = dt_film_new(&film, dirname);
   const int32_t imgid = dt_image_import(filmid, filename, FALSE, FALSE);
-  if(!imgid) dt_control_log(_("error loading file `%s'"), filename);
+  if(!imgid) dt_control_log(_("Error loading file `%s'"), filename);
   else
   {
     *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
@@ -2244,7 +2244,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
 
   GList *t = params->index;
   const guint total = g_list_length(t);
-  snprintf(message, sizeof(message), ngettext("importing %d image", "importing %d images", total), total);
+  snprintf(message, sizeof(message), ngettext("Importing %d image", "Importing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
 
   GList *imgs = NULL;
@@ -2280,7 +2280,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
     if(currtime - last_prog_update > PROGRESS_UPDATE_INTERVAL)
     {
       last_prog_update = currtime;
-      snprintf(message, sizeof(message), ngettext("importing %d/%d image", "importing %d/%d images", cntr), cntr, total);
+      snprintf(message, sizeof(message), ngettext("Importing %d/%d image", "Importing %d/%d images", cntr), cntr, total);
       dt_control_job_set_progress_message(job, message);
       dt_control_job_set_progress(job, fraction);
       g_usleep(100);
@@ -2288,7 +2288,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
   }
   g_free(prev_output);
 
-  dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
+  dt_control_log(ngettext("Imported %d image", "Imported %d images", cntr), cntr);
   dt_control_queue_redraw_center();
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
@@ -2335,7 +2335,7 @@ static dt_job_t *_control_import_job_create(GList *imgs, const char *datetime_ov
     dt_control_job_dispose(job);
     return NULL;
   }
-  dt_control_job_add_progress(job, _("import"), FALSE);
+  dt_control_job_add_progress(job, _("Import"), FALSE);
   dt_control_job_set_params(job, params, _control_import_job_cleanup);
 
   params->index = g_list_sort(imgs, (GCompareFunc)_sort_filename);

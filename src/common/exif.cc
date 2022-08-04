@@ -4329,7 +4329,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       else
       {
         fprintf(stderr, "cannot read xmp file '%s': '%s'\n", filename, strerror(errno));
-        dt_control_log(_("cannot read xmp file '%s': '%s'"), filename, strerror(errno));
+        dt_control_log(_("Cannot read XMP file '%s': '%s'"), filename, strerror(errno));
       }
 
       Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
@@ -4381,7 +4381,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       else
       {
         fprintf(stderr, "cannot write xmp file '%s': '%s'\n", filename, strerror(errno));
-        dt_control_log(_("cannot write xmp file '%s': '%s'"), filename, strerror(errno));
+        dt_control_log(_("Cannot write XMP file '%s': '%s'"), filename, strerror(errno));
         return -1;
       }
     }

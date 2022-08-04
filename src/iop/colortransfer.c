@@ -100,7 +100,7 @@ typedef struct dt_iop_colortransfer_data_t
 
 const char *name()
 {
-  return _("color transfer");
+  return _("Color transfer");
 }
 
 int default_group()
@@ -115,7 +115,7 @@ int flags()
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. better use color mapping module instead.");
+  return _("This module is deprecated. Better use color mapping module instead.");
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -126,8 +126,8 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #if 0
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "acquire"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "apply"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "Acquire"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "Apply"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -632,7 +632,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(colortransfer);
 
-  self->widget = dt_ui_label_new(_("this module will be removed in the future\nand is only here so you can "
+  self->widget = dt_ui_label_new(_("This module will be removed in the future\nand is only here so you can "
                                    "switch it off\nand move to the new color mapping module."));
 
 #if 0
@@ -657,18 +657,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   GtkWidget *button;
   g->spinbutton = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, MAXN, 1));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->spinbutton), _("number of clusters to find in image"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->spinbutton), _("Number of clusters to find in image"));
   gtk_box_pack_start(box, GTK_WIDGET(g->spinbutton), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->spinbutton), "value-changed", G_CALLBACK(spinbutton_changed), (gpointer)self);
 
-  button = gtk_button_new_with_label(_("acquire"));
+  button = gtk_button_new_with_label(_("Acquire"));
   g->acquire_button = button;
-  gtk_widget_set_tooltip_text(button, _("analyze this image"));
+  gtk_widget_set_tooltip_text(button, _("Analyze this image"));
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_button_pressed), (gpointer)self);
 
-  g->apply_button = gtk_button_new_with_label(_("apply"));
-  gtk_widget_set_tooltip_text(g->apply_button, _("apply previously analyzed image look to this image"));
+  g->apply_button = gtk_button_new_with_label(_("Apply"));
+  gtk_widget_set_tooltip_text(g->apply_button, _("Apply previously analyzed image look to this image"));
   gtk_box_pack_start(box, g->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->apply_button), "clicked", G_CALLBACK(apply_button_pressed), (gpointer)self);
   FILE *f = g_fopen("/tmp/dt_colortransfer_loaded", "rb");

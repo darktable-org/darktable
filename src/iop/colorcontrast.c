@@ -50,9 +50,9 @@ typedef struct dt_iop_colorcontrast_params1_t
 
 typedef struct dt_iop_colorcontrast_params_t
 {
-  float a_steepness; // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "green-magenta contrast"
+  float a_steepness; // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "Green-magenta contrast"
   float a_offset;
-  float b_steepness; // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "blue-yellow contrast"
+  float b_steepness; // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "Blue-yellow contrast"
   float b_offset;
   int unbound;       // $DEFAULT: 1
 } dt_iop_colorcontrast_params_t;
@@ -86,22 +86,22 @@ typedef struct dt_iop_colorcontrast_global_data_t
 
 const char *name()
 {
-  return _("color contrast");
+  return _("Color contrast");
 }
 
 const char *aliases()
 {
-  return _("saturation");
+  return _("Saturation");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("increase saturation and separation between\n"
+  return dt_iop_set_description(self, _("Increase saturation and separation between\n"
                                         "opposite colors"),
-                                      _("creative"),
-                                      _("non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+                                      _("Creative"),
+                                      _("Non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int flags()
@@ -348,10 +348,10 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorcontrast_gui_data_t *g = IOP_GUI_ALLOC(colorcontrast);
 
   g->a_scale = dt_bauhaus_slider_from_params(self, "a_steepness");
-  gtk_widget_set_tooltip_text(g->a_scale, _("steepness of the a* curve in Lab\nlower values desaturate greens and magenta while higher saturate them"));
+  gtk_widget_set_tooltip_text(g->a_scale, _("Steepness of the a* curve in Lab\nLower values desaturate greens and magenta while higher saturate them"));
 
   g->b_scale = dt_bauhaus_slider_from_params(self, "b_steepness");
-  gtk_widget_set_tooltip_text(g->b_scale, _("steepness of the b* curve in Lab\nlower values desaturate blues and yellows while higher saturate them"));
+  gtk_widget_set_tooltip_text(g->b_scale, _("Steepness of the b* curve in Lab\nLower values desaturate blues and yellows while higher saturate them"));
 }
 
 // clang-format off

@@ -237,7 +237,7 @@ static _filter_t *_filters_get(const dt_collection_properties_t prop)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("collection filters");
+  return _("Collection filters");
 }
 
 void init_presets(dt_lib_module_t *self)
@@ -270,41 +270,41 @@ void init_presets(dt_lib_module_t *self)
   params.rule[2].mode = 0;
   params.rule[2].off = 0;
   params.rule[2].topbar = 1;
-  dt_lib_presets_add(_("initial setting"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("Initial setting"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
   // based on aspect-ratio
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[1;1]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("square"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("Square"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, ">=1.01", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("landscape"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("Landscape"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "<=0.99", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("portrait"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("Portrait"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
   // presets based on import
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
                DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, "[-0000:00:01 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("imported: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("Imported: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
                DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, "[-0000:00:30 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("imported: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params),
+  dt_lib_presets_add(_("Imported: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params),
                      TRUE);
 
   // presets based on image metadata (image taken)
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_TIME, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[-0000:00:01 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("taken: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("Taken: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_TIME, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[-0000:00:30 00:00:00;now]", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+  dt_lib_presets_add(_("Taken: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
 #undef CLEAR_PARAMS
 }
@@ -650,11 +650,11 @@ static void _range_set_tooltip(_widgets_range_t *special)
   gchar *val = dtgtk_range_select_get_bounds_pretty(DTGTK_RANGE_SELECT(special->range_select));
   gchar *txt = g_strdup_printf("<b>%s</b>\n%s\n%s",
                                dt_collection_name(special->rule->prop),
-                               _("click or click&#38;drag to select one or multiple values"),
-                               _("right-click opens a menu to select the available values"));
+                               _("Click or click&#38;drag to select one or multiple values"),
+                               _("Right-click opens a menu to select the available values"));
 
   if(special->rule->prop != DT_COLLECTION_PROP_RATING_RANGE)
-    txt = g_strdup_printf("%s\n<b><i>%s:</i></b> %s", txt, _("actual selection"), val);
+    txt = g_strdup_printf("%s\n<b><i>%s:</i></b> %s", txt, _("Actual selection"), val);
   gtk_widget_set_tooltip_markup(special->range_select, txt);
   g_free(txt);
   g_free(val);
@@ -842,12 +842,12 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
 
   // the different categories
-  _popup_add_item(spop, _("files"), 0, TRUE, NULL, NULL, self, 0.0);
+  _popup_add_item(spop, _("Files"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FILMROLL);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FOLDERS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FILENAME);
 
-  _popup_add_item(spop, _("metadata"), 0, TRUE, NULL, NULL, self, 0.0);
+  _popup_add_item(spop, _("Metadata"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TAG);
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -868,7 +868,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GEOTAGGING);
 
-  _popup_add_item(spop, _("times"), 0, TRUE, NULL, NULL, self, 0.0);
+  _popup_add_item(spop, _("Times"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_DAY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TIME);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
@@ -876,7 +876,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_PRINT_TIMESTAMP);
 
-  _popup_add_item(spop, _("capture details"), 0, TRUE, NULL, NULL, self, 0.0);
+  _popup_add_item(spop, _("Capture details"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_CAMERA);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_APERTURE);
@@ -885,7 +885,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ASPECT_RATIO);
 
-  _popup_add_item(spop, _("darktable"), 0, TRUE, NULL, NULL, self, 0.0);
+  _popup_add_item(spop, _("Darktable"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GROUPING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_HISTORY);
@@ -915,21 +915,21 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
   {
     ADD_COLLECT_ENTRY(rule->prop);
     gtk_widget_set_tooltip_text(w,
-                                _("rule property\nthis can't be changed as the rule is pinned into the toolbar"));
+                                _("Rule property\nThis can't be changed as the rule is pinned into the toolbar"));
     rule->manual_widget_set++;
     dt_bauhaus_combobox_set_from_value(rule->w_prop, rule->prop);
     rule->manual_widget_set--;
     return;
   }
   // otherwise we add all implemented rules
-  gtk_widget_set_tooltip_text(w, _("rule property"));
+  gtk_widget_set_tooltip_text(w, _("Rule property"));
 
-  dt_bauhaus_combobox_add_section(w, _("files"));
+  dt_bauhaus_combobox_add_section(w, _("Files"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILMROLL);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOLDERS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILENAME);
 
-  dt_bauhaus_combobox_add_section(w, _("metadata"));
+  dt_bauhaus_combobox_add_section(w, _("Metadata"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -950,7 +950,7 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
 
-  dt_bauhaus_combobox_add_section(w, _("times"));
+  dt_bauhaus_combobox_add_section(w, _("Times"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
@@ -958,7 +958,7 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);
 
-  dt_bauhaus_combobox_add_section(w, _("capture details"));
+  dt_bauhaus_combobox_add_section(w, _("Capture details"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
@@ -967,7 +967,7 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
 
-  dt_bauhaus_combobox_add_section(w, _("darktable"));
+  dt_bauhaus_combobox_add_section(w, _("Darktable"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
@@ -1015,7 +1015,7 @@ static void _topbar_update(dt_lib_module_t *self)
       // we add the filter label if it's the first filter
       if(nb == 0)
       {
-        GtkWidget *label = gtk_label_new(C_("quickfilter", "filter"));
+        GtkWidget *label = gtk_label_new(C_("quickfilter", "Filter"));
         gtk_box_pack_start(GTK_BOX(fbox), label, TRUE, TRUE, 0);
         gtk_widget_show(label);
       }
@@ -1041,18 +1041,18 @@ static void _widget_header_update(dt_lib_filtering_rule_t *rule)
 
   if(rule->topbar)
   {
-    gtk_widget_set_tooltip_text(rule->w_pin, _("this rule is pinned into the top toolbar\nclick to un-pin"));
-    gtk_widget_set_tooltip_text(rule->w_off, _("you can't disable the rule as it is pinned into the toolbar"));
-    gtk_widget_set_tooltip_text(rule->w_close, _("you can't remove the rule as it is pinned into the toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_pin, _("This rule is pinned into the top toolbar\nClick to un-pin"));
+    gtk_widget_set_tooltip_text(rule->w_off, _("You can't disable the rule as it is pinned into the toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_close, _("You can't remove the rule as it is pinned into the toolbar"));
   }
   else
   {
-    gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule into the top toolbar"));
-    gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
+    gtk_widget_set_tooltip_text(rule->w_pin, _("Click to pin this rule into the top toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_close, _("Remove this collect rule"));
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
-      gtk_widget_set_tooltip_text(rule->w_off, _("this rule is enabled"));
+      gtk_widget_set_tooltip_text(rule->w_off, _("This rule is enabled"));
     else
-      gtk_widget_set_tooltip_text(rule->w_off, _("this rule is disabled"));
+      gtk_widget_set_tooltip_text(rule->w_off, _("This rule is disabled"));
   }
 
   _rule_populate_prop_combo(rule);
@@ -1169,7 +1169,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     dt_bauhaus_combobox_add_aligned(rule->w_operator, _("or"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     dt_bauhaus_combobox_add_aligned(rule->w_operator, _("and not"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     dt_bauhaus_combobox_set_selected_text_align(rule->w_operator, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
-    gtk_widget_set_tooltip_text(rule->w_operator, _("define how this rule should interact with the previous one"));
+    gtk_widget_set_tooltip_text(rule->w_operator, _("Define how this rule should interact with the previous one"));
     gtk_box_pack_start(GTK_BOX(hbox), rule->w_operator, FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(rule->w_operator), "value-changed", G_CALLBACK(_event_rule_changed), rule);
   }
@@ -1421,7 +1421,7 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
       if(item == DT_COLLECTION_PROP_COLORLABEL)
         pretty = _colors_pretty_print(str);
       else if(!g_strcmp0(str, "%"))
-        pretty = g_strdup(_("all"));
+        pretty = g_strdup(_("All"));
       else
         pretty = g_markup_escape_text(str, -1);
 
@@ -1651,9 +1651,9 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
       sort->sort = dt_bauhaus_combobox_new_action(DT_ACTION(self));
     else
       sort->sort = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(sort->sort, NULL, _("sort order"));
+    dt_bauhaus_widget_set_label(sort->sort, NULL, _("Sort order"));
     DT_BAUHAUS_WIDGET(sort->sort)->show_label = FALSE;
-    gtk_widget_set_tooltip_text(sort->sort, _("determine the sort order of shown images"));
+    gtk_widget_set_tooltip_text(sort->sort, _("Determine the sort order of shown images"));
     g_signal_connect(G_OBJECT(sort->sort), "value-changed", G_CALLBACK(_sort_combobox_changed), sort);
 
 #define ADD_SORT_ENTRY(value)                                                                                     \
@@ -1709,14 +1709,14 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     dt_gui_add_class(sort->direction, "dt_ignore_fg_state");
     if(num == 0)
     {
-      dt_action_t *toggle = dt_action_section(DT_ACTION(self), N_("toggle"));
-      dt_action_define(toggle, NULL, _("sort direction"), sort->direction, &dt_action_def_toggle);
+      dt_action_t *toggle = dt_action_section(DT_ACTION(self), N_("Toggle"));
+      dt_action_define(toggle, NULL, _("Sort direction"), sort->direction, &dt_action_def_toggle);
     }
 
     sort->close = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
     gtk_widget_set_no_show_all(sort->close, TRUE);
     g_object_set_data(G_OBJECT(sort->close), "sort", sort);
-    gtk_widget_set_tooltip_text(sort->close, _("remove this sort order"));
+    gtk_widget_set_tooltip_text(sort->close, _("Remove this sort order"));
     g_signal_connect(G_OBJECT(sort->close), "button-press-event", G_CALLBACK(_sort_close), self);
     gtk_box_pack_start(GTK_BOX(sort->box), sort->close, FALSE, FALSE, 0);
   }
@@ -1980,11 +1980,11 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  GtkWidget *btn = dt_action_button_new(self, _("new rule"), G_CALLBACK(_event_rule_append), self,
-                                        _("append new rule to collect images"), 0, 0);
+  GtkWidget *btn = dt_action_button_new(self, _("New rule"), G_CALLBACK(_event_rule_append), self,
+                                        _("Append new rule to collect images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_action_button_new(self, _("history"), G_CALLBACK(_event_history_show), self,
-                             _("revert to a previous set of rules"), 0, 0);
+  btn = dt_action_button_new(self, _("History"), G_CALLBACK(_event_history_show), self,
+                             _("Revert to a previous set of rules"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
 
@@ -1992,7 +1992,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), spacer, TRUE, TRUE, 0);
   d->sort_box = gtk_grid_new();
-  gtk_grid_attach(GTK_GRID(d->sort_box), gtk_label_new(_("sort by")), 0, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(d->sort_box), gtk_label_new(_("Sort by")), 0, 0, 1, 1);
   gtk_widget_set_name(d->sort_box, "filter-sort-box");
   gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, TRUE, TRUE, 0);
 
@@ -2000,11 +2000,11 @@ void gui_init(dt_lib_module_t *self)
   bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  btn = dt_action_button_new(self, _("new sort"), G_CALLBACK(_sort_show_add_popup), self,
-                             _("append new sort to order images"), 0, 0);
+  btn = dt_action_button_new(self, _("New sort"), G_CALLBACK(_sort_show_add_popup), self,
+                             _("Append new sort to order images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_action_button_new(self, _("history"), G_CALLBACK(_sort_history_show), self,
-                             _("revert to a previous set of sort orders"), 0, 0);
+  btn = dt_action_button_new(self, _("History"), G_CALLBACK(_sort_history_show), self,
+                             _("Revert to a previous set of sort orders"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
 
@@ -2053,7 +2053,7 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   _topbar_update(self);
 
   // we change the tooltip of the reset button here, as we are sure the header is defined now
-  gtk_widget_set_tooltip_text(self->reset_button, _("reset\nctrl-click to remove pinned rules too"));
+  gtk_widget_set_tooltip_text(self->reset_button, _("Reset\nCtrl-click to remove pinned rules too"));
 }
 
 void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)

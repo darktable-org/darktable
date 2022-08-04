@@ -39,8 +39,8 @@ typedef struct dt_iop_hotpixels_params_t
 {
   float strength;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.25
   float threshold; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.05
-  gboolean markfixed;  // $DEFAULT: FALSE $DESCRIPTION: "mark fixed pixels"
-  gboolean permissive; // $DEFAULT: FALSE $DESCRIPTION: "detect by 3 neighbors"
+  gboolean markfixed;  // $DEFAULT: FALSE $DESCRIPTION: "Mark fixed pixels"
+  gboolean permissive; // $DEFAULT: FALSE $DESCRIPTION: "Detect by 3 neighbors"
 } dt_iop_hotpixels_params_t;
 
 typedef struct dt_iop_hotpixels_gui_data_t
@@ -64,16 +64,16 @@ typedef struct dt_iop_hotpixels_data_t
 
 const char *name()
 {
-  return _("hot pixels");
+  return _("Hot pixels");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("remove abnormally bright pixels by dampening them with neighbours"),
-                                      _("corrective"),
-                                      _("linear, raw, scene-referred"),
-                                      _("reconstruction, raw"),
-                                      _("linear, raw, scene-referred"));
+  return dt_iop_set_description(self, _("Remove abnormally bright pixels by dampening them with neighbours"),
+                                      _("Corrective"),
+                                      _("Linear, raw, scene-referred"),
+                                      _("Reconstruction, raw"),
+                                      _("Linear, raw, scene-referred"));
 }
 
 
@@ -361,7 +361,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   if(g->pixels_fixed < 0) return FALSE;
 
-  char *str = g_strdup_printf(ngettext("fixed %d pixel", "fixed %d pixels", g->pixels_fixed), g->pixels_fixed);
+  char *str = g_strdup_printf(ngettext("Fixed %d pixel", "Fixed %d pixels", g->pixels_fixed), g->pixels_fixed);
   g->pixels_fixed = -1;
 
   ++darktable.gui->reset;
@@ -382,13 +382,13 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(box_raw), "draw", G_CALLBACK(draw), self);
 
-  g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
+  g->threshold = dt_bauhaus_slider_from_params(self, N_("Threshold"));
   dt_bauhaus_slider_set_digits(g->threshold, 4);
-  gtk_widget_set_tooltip_text(g->threshold, _("lower threshold for hot pixel"));
+  gtk_widget_set_tooltip_text(g->threshold, _("Lower threshold for hot pixel"));
 
-  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
   dt_bauhaus_slider_set_digits(g->strength, 4);
-  gtk_widget_set_tooltip_text(g->strength, _("strength of hot pixel correction"));
+  gtk_widget_set_tooltip_text(g->strength, _("Strength of hot pixel correction"));
 
   // 3 neighbours
   g->permissive = GTK_TOGGLE_BUTTON(dt_bauhaus_toggle_from_params(self, "permissive"));
@@ -404,7 +404,7 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
 
-  GtkWidget *label_non_raw = dt_ui_label_new(_("hot pixel correction\nonly works for raw images."));
+  GtkWidget *label_non_raw = dt_ui_label_new(_("Hot pixel correction\nOnly works for raw images."));
 
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");

@@ -414,12 +414,12 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   _import_tags_presets_update(metadata);
 
   // grid headers
-  GtkWidget *label = gtk_label_new(_("metadata presets"));
+  GtkWidget *label = gtk_label_new(_("Metadata presets"));
   gtk_widget_set_name(label, "import-presets");
   GtkWidget *labelev =_set_up_label(label, GTK_ALIGN_START, DT_META_META_HEADER, metadata);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"
-                                                   "\ndouble-click on a label to clear the corresponding entry"
-                                                   "\ndouble-click on 'preset' to clear all entries"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("Metadata to be applied per default"
+                                                   "\nDouble-click on a label to clear the corresponding entry"
+                                                   "\nDouble-click on 'preset' to clear all entries"));
   g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
                    G_CALLBACK(_import_metadata_reset_all), metadata);
 
@@ -427,12 +427,12 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   GtkWidget *presets = _set_up_combobox(metadata->m_model, DT_META_META_HEADER, metadata);
   g_signal_connect(presets, "changed", G_CALLBACK(_import_metadata_presets_changed), metadata);
 
-  label = gtk_label_new(_("from xmp"));
+  label = gtk_label_new(_("From XMP"));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label),
-                              _("selected metadata are imported from image and override the default value"
-                                "\n this drives also the 'look for updated xmp files' and 'load sidecar file' actions"
-                                "\n CAUTION: not selected metadata are cleaned up when xmp file is updated"
+                              _("Selected metadata are imported from image and override the default value"
+                                "\n This drives also the 'Look for updated XMP files' and 'Load sidecar file' actions"
+                                "\n CAUTION: not selected metadata are cleaned up when XMP file is updated"
                               ));
   gtk_grid_attach(GTK_GRID(grid), label, 2, DT_META_META_HEADER, 1, 1);
 
@@ -466,21 +466,21 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   }
 
   // tags
-  label = gtk_label_new(_("tag presets"));
+  label = gtk_label_new(_("Tag presets"));
   gtk_widget_set_name(label, "import-presets");
   labelev =_set_up_label(label, GTK_ALIGN_START, DT_META_TAGS_HEADER, metadata);
 
   presets = _set_up_combobox(metadata->t_model, DT_META_TAGS_HEADER, metadata);
   g_signal_connect(presets, "changed", G_CALLBACK(_import_tags_presets_changed), metadata);
 
-  label = gtk_label_new(_("tags"));
+  label = gtk_label_new(_("Tags"));
   labelev = _set_up_label(label, GTK_ALIGN_START, DT_META_TAGS_VALUE, metadata);
 
   GtkWidget *entry = gtk_entry_new();
   gtk_widget_set_visible(entry, TRUE);
   const char *str = dt_conf_get_string_const("ui_last/import_last_tags");
   _set_up_entry(entry, str, "tags", DT_META_TAGS_VALUE, metadata);
-  gtk_widget_set_tooltip_text(entry, _("comma separated list of tags"));
+  gtk_widget_set_tooltip_text(entry, _("Comma separated list of tags"));
   g_signal_connect(GTK_ENTRY(entry), "changed",
                    G_CALLBACK(_import_tags_changed), metadata);
   g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",

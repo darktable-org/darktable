@@ -202,9 +202,9 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
     {
       const guint count = g_list_length(imgs);
       if(new_rating == DT_VIEW_REJECT)
-        dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
+        dt_control_log(ngettext("Rejecting %d image", "Rejecting %d images", count), count);
       else
-        dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count),
+        dt_control_log(ngettext("Applying rating %d to %d image", "Applying rating %d to %d images", count),
                        new_rating, count);
     }
 
@@ -218,7 +218,7 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
     g_list_free(imgs);
   }
   else
-    dt_control_log(_("no images selected to apply rating"));
+    dt_control_log(_("No images selected to apply rating"));
 }
 
 enum
@@ -271,16 +271,16 @@ static float _action_process_rating(gpointer target, dt_action_element_t element
 
           // translate in human readable value
           if(r == DT_VIEW_REJECT)
-            dt_toast_log(_("image rejected"));
+            dt_toast_log(_("Image rejected"));
           else if(r == 0)
-            dt_toast_log(_("image rated to 0 star"));
+            dt_toast_log(_("Image rated to 0 star"));
           else
-            dt_toast_log(_("image rated to %s"), r == 1 ? "★" :
+            dt_toast_log(_("Image rated to %s"), r == 1 ? "★" :
                                                  r == 2 ? "★★" :
                                                  r == 3 ? "★★★" :
                                                  r == 4 ? "★★★★" :
                                                  r == 5 ? "★★★★★" :
-                                                 _("unknown"));
+                                                 _("Unknown"));
           return_value = - r + (r >= element ? DT_VALUE_PATTERN_ACTIVE : 0);
         }
       }
@@ -302,23 +302,23 @@ static float _action_process_rating(gpointer target, dt_action_element_t element
 }
 
 const gchar *dt_action_effect_rating[]
-  = { N_("select"),
-      N_("upgrade"),
-      N_("downgrade"),
+  = { N_("Select"),
+      N_("Upgrade"),
+      N_("Downgrade"),
       NULL };
 
 const dt_action_element_def_t _action_elements_rating[]
-  = { { N_("zero"  ), dt_action_effect_rating },
-      { N_("one"   ), dt_action_effect_rating },
-      { N_("two"   ), dt_action_effect_rating },
-      { N_("three" ), dt_action_effect_rating },
-      { N_("four"  ), dt_action_effect_rating },
-      { N_("five"  ), dt_action_effect_rating },
-      { N_("reject"), dt_action_effect_activate },
+  = { { N_("Zero"  ), dt_action_effect_rating },
+      { N_("One"   ), dt_action_effect_rating },
+      { N_("Two"   ), dt_action_effect_rating },
+      { N_("Three" ), dt_action_effect_rating },
+      { N_("Four"  ), dt_action_effect_rating },
+      { N_("Five"  ), dt_action_effect_rating },
+      { N_("Reject"), dt_action_effect_activate },
       { NULL } };
 
 const dt_action_def_t dt_action_def_rating
-  = { N_("rating"),
+  = { N_("Rating"),
       _action_process_rating,
       _action_elements_rating };
 

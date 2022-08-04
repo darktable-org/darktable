@@ -417,7 +417,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
 
   if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_control_log(_("file `%s' to print not found for image %d on `%s'"), filename, imgid, pinfo->printer.name);
+    dt_control_log(_("File `%s' to print not found for image %d on `%s'"), filename, imgid, pinfo->printer.name);
     return;
   }
 
@@ -436,7 +436,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
     gint fd = g_mkstemp(tmpfile);
     if(fd == -1)
     {
-      dt_control_log(_("failed to create temporary file for printing options"));
+      dt_control_log(_("Failed to create temporary file for printing options"));
       fprintf(stderr, "failed to create temporary pdf for printing options\n");
       return;
     }
@@ -505,7 +505,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
     }
     else
     {
-      dt_control_log(_("printing on `%s' cancelled"), pinfo->printer.name);
+      dt_control_log(_("Printing on `%s' cancelled"), pinfo->printer.name);
       dt_print(DT_DEBUG_PRINT, "[print]   command fails with %d, cancel printing\n", exit_status);
       return;
     }
@@ -569,9 +569,9 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
   const int job_id = cupsPrintFile(pinfo->printer.name, filename, job_title, num_options, options);
 
   if (job_id == 0)
-    dt_control_log(_("error while printing `%s' on `%s'"), job_title, pinfo->printer.name);
+    dt_control_log(_("Error while printing `%s' on `%s'"), job_title, pinfo->printer.name);
   else
-    dt_control_log(_("printing `%s' on `%s'"), job_title, pinfo->printer.name);
+    dt_control_log(_("Printing `%s' on `%s'"), job_title, pinfo->printer.name);
 
   cupsFreeOptions (num_options, options);
 }

@@ -138,16 +138,16 @@ static gboolean _grouping_update(dt_lib_filtering_rule_t *rule)
   }
   sqlite3_finalize(stmt);
 
-  gchar *item = g_strdup_printf("%s (%d)", _("ungrouped images"), nb_no_group);
+  gchar *item = g_strdup_printf("%s (%d)", _("Ungrouped images"), nb_no_group);
   dt_bauhaus_combobox_set_entry_label(grouping->combo, 1, item);
   g_free(item);
-  item = g_strdup_printf("%s (%d)", _("grouped images"), nb_group);
+  item = g_strdup_printf("%s (%d)", _("Grouped images"), nb_group);
   dt_bauhaus_combobox_set_entry_label(grouping->combo, 2, item);
   g_free(item);
-  item = g_strdup_printf("%s (%d)", _("group leaders"), nb_leader);
+  item = g_strdup_printf("%s (%d)", _("Group leaders"), nb_leader);
   dt_bauhaus_combobox_set_entry_label(grouping->combo, 3, item);
   g_free(item);
-  item = g_strdup_printf("%s (%d)", _("group followers"), nb_follower);
+  item = g_strdup_printf("%s (%d)", _("Group followers"), nb_follower);
   dt_bauhaus_combobox_set_entry_label(grouping->combo, 4, item);
   g_free(item);
 
@@ -164,10 +164,10 @@ static void _grouping_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   _widgets_grouping_t *grouping = (_widgets_grouping_t *)g_malloc0(sizeof(_widgets_grouping_t));
   grouping->rule = rule;
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(grouping->combo, self, NULL, N_("grouping filter"),
-                               _("select the type of grouped image to filter"), 0, (GtkCallback)_grouping_changed,
-                               grouping, N_("all images"), N_("ungrouped images"), N_("grouped images"),
-                               N_("group leaders"), N_("group followers"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(grouping->combo, self, NULL, N_("Grouping filter"),
+                               _("Select the type of grouped image to filter"), 0, (GtkCallback)_grouping_changed,
+                               grouping, N_("All images"), N_("Ungrouped images"), N_("Grouped images"),
+                               N_("Group leaders"), N_("Group followers"));
   DT_BAUHAUS_WIDGET(grouping->combo)->show_label = FALSE;
 
   if(top)

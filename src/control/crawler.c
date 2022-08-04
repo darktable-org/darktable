@@ -357,7 +357,7 @@ static void sync_xmp_to_db(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
   if(error)
   {
     _log_synchronization(gui, _("ERROR: %s NOT synced XMP → DB"), entry.image_path);
-    _log_synchronization(gui, _("ERROR: cannot write the database. the destination may be full, offline or read-only."), NULL);
+    _log_synchronization(gui, _("ERROR: cannot write the database. The destination may be full, offline or read-only."), NULL);
   }
   else
   {
@@ -380,7 +380,7 @@ static void sync_db_to_xmp(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
   if(error)
   {
     _log_synchronization(gui, _("ERROR: %s NOT synced DB → XMP"), entry.image_path);
-    _log_synchronization(gui, _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."), entry.xmp_path);
+    _log_synchronization(gui, _("ERROR: cannot write %s \nThe destination may be full, offline or read-only."), entry.xmp_path);
   }
   else
   {
@@ -408,7 +408,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     if(error)
     {
       _log_synchronization(gui, _("ERROR: %s NOT synced new (XMP) → old (DB)"), entry.image_path);
-      _log_synchronization(gui, _("ERROR: cannot write the database. the destination may be full, offline or read-only."), NULL);
+      _log_synchronization(gui, _("ERROR: cannot write the database. The destination may be full, offline or read-only."), NULL);
     }
     else
     {
@@ -423,7 +423,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     if(error)
     {
       _log_synchronization(gui, _("ERROR: %s NOT synced new (DB) → old (XMP)"), entry.image_path);
-      _log_synchronization(gui, _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."), entry.xmp_path);
+      _log_synchronization(gui, _("ERROR: cannot write %s \nThe destination may be full, offline or read-only."), entry.xmp_path);
     }
     else
     {
@@ -460,7 +460,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     if(error)
     {
       _log_synchronization(gui, _("ERROR: %s NOT synced old (XMP) → new (DB)"), entry.image_path);
-    _log_synchronization(gui, _("ERROR: cannot write the database. the destination may be full, offline or read-only."), NULL);
+    _log_synchronization(gui, _("ERROR: cannot write the database. The destination may be full, offline or read-only."), NULL);
     }
     else
     {
@@ -474,7 +474,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     if(error)
     {
       _log_synchronization(gui, _("ERROR: %s NOT synced old (DB) → new (XMP)"), entry.image_path);
-      _log_synchronization(gui, _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."), entry.xmp_path);
+      _log_synchronization(gui, _("ERROR: cannot write %s \nThe destination may be full, offline or read-only."), entry.xmp_path);
     }
     else
     {
@@ -605,8 +605,8 @@ void dt_control_crawler_show_image_list(GList *images)
                        DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
                        DT_CONTROL_CRAWLER_COL_TS_XMP_INT, item->timestamp_xmp,
                        DT_CONTROL_CRAWLER_COL_TS_DB_INT, item->timestamp_db,
-                       DT_CONTROL_CRAWLER_COL_REPORT, (item->timestamp_xmp > item->timestamp_db) ? _("xmp")
-                                                                                                 : _("database"),
+                       DT_CONTROL_CRAWLER_COL_REPORT, (item->timestamp_xmp > item->timestamp_db) ? _("XMP")
+                                                                                                 : _("Database"),
                        DT_CONTROL_CRAWLER_COL_TIME_DELTA, timestamp_delta,
                        -1);
     g_free(item->image_path);
@@ -622,7 +622,7 @@ void dt_control_crawler_show_image_list(GList *images)
   gui->tree = GTK_TREE_VIEW(tree); // FIXME: do we need to free that later ?
 
   GtkCellRenderer *renderer_text = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("path"), renderer_text, "text",
+  column = gtk_tree_view_column_new_with_attributes(_("Path"), renderer_text, "text",
                                                     DT_CONTROL_CRAWLER_COL_IMAGE_PATH, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
   gtk_tree_view_column_set_expand(column, TRUE);
@@ -630,20 +630,20 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
   g_object_set(renderer_text, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
 
-  column = gtk_tree_view_column_new_with_attributes(_("xmp timestamp"), gtk_cell_renderer_text_new(), "text",
+  column = gtk_tree_view_column_new_with_attributes(_("XMP timestamp"), gtk_cell_renderer_text_new(), "text",
                                                     DT_CONTROL_CRAWLER_COL_TS_XMP, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  column = gtk_tree_view_column_new_with_attributes(_("database timestamp"), gtk_cell_renderer_text_new(), "text",
+  column = gtk_tree_view_column_new_with_attributes(_("Database timestamp"), gtk_cell_renderer_text_new(), "text",
                                                     DT_CONTROL_CRAWLER_COL_TS_DB, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
-  column = gtk_tree_view_column_new_with_attributes(_("newest"), gtk_cell_renderer_text_new(), "text",
+  column = gtk_tree_view_column_new_with_attributes(_("Newest"), gtk_cell_renderer_text_new(), "text",
                                                     DT_CONTROL_CRAWLER_COL_REPORT, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
   GtkCellRenderer *renderer_date = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(_("time difference"), renderer_date, "text",
+  column = gtk_tree_view_column_new_with_attributes(_("Time difference"), renderer_date, "text",
                                                     DT_CONTROL_CRAWLER_COL_TIME_DELTA, NULL);
   g_object_set(renderer_date, "xalign", 1., NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
@@ -653,8 +653,8 @@ void dt_control_crawler_show_image_list(GList *images)
 
   // build a dialog window that contains the list of images
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("updated xmp sidecar files found"), GTK_WINDOW(win),
-                                                  GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_close"),
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("Updated XMP sidecar files found"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_Close"),
                                                   GTK_RESPONSE_CLOSE, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -668,9 +668,9 @@ void dt_control_crawler_show_image_list(GList *images)
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
-  GtkWidget *select_all = gtk_button_new_with_label(_("select all"));
-  GtkWidget *select_none = gtk_button_new_with_label(_("select none"));
-  GtkWidget *select_invert = gtk_button_new_with_label(_("invert selection"));
+  GtkWidget *select_all = gtk_button_new_with_label(_("Select all"));
+  GtkWidget *select_none = gtk_button_new_with_label(_("Select none"));
+  GtkWidget *select_invert = gtk_button_new_with_label(_("Invert selection"));
   gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), select_invert, FALSE, FALSE, 0);
@@ -682,11 +682,11 @@ void dt_control_crawler_show_image_list(GList *images)
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 1);
-  GtkWidget *label = gtk_label_new_with_mnemonic(_("on the selection:"));
-  GtkWidget *reload_button = gtk_button_new_with_label(_("keep the xmp edit"));
-  GtkWidget *overwrite_button = gtk_button_new_with_label(_("keep the database edit"));
-  GtkWidget *newest_button = gtk_button_new_with_label(_("keep the newest edit"));
-  GtkWidget *oldest_button = gtk_button_new_with_label(_("keep the oldest edit"));
+  GtkWidget *label = gtk_label_new_with_mnemonic(_("On the selection:"));
+  GtkWidget *reload_button = gtk_button_new_with_label(_("Keep the XMP edit"));
+  GtkWidget *overwrite_button = gtk_button_new_with_label(_("Keep the database edit"));
+  GtkWidget *newest_button = gtk_button_new_with_label(_("Keep the newest edit"));
+  GtkWidget *oldest_button = gtk_button_new_with_label(_("Keep the oldest edit"));
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), reload_button, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), overwrite_button, FALSE, FALSE, 0);
@@ -708,7 +708,7 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_container_add(GTK_CONTAINER(scroll), gui->log);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-  gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(gui->log), -1, _("synchronization log"), renderer_text,
+  gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(gui->log), -1, _("Synchronization log"), renderer_text,
                                                "text", 0, NULL);
   GtkListStore *store_log = gtk_list_store_new (1, G_TYPE_STRING);
   GtkTreeModel *model_log = GTK_TREE_MODEL(store_log);

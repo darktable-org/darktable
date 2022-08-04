@@ -42,7 +42,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_relight_params_t)
 
 typedef struct dt_iop_relight_params_t
 {
-  float ev;     // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.33 $DESCRIPTION: "exposure"
+  float ev;     // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.33 $DESCRIPTION: "Exposure"
   float center; // $DEFAULT: 0.0
   float width; // $MIN: 2.0 $MAX: 10.0 $DEFAULT: 4.0
 } dt_iop_relight_params_t;
@@ -51,11 +51,11 @@ void init_presets(dt_iop_module_so_t *self)
 {
   dt_database_start_transaction(darktable.db);
 
-  dt_gui_presets_add_generic(_("fill-light 0.25EV with 4 zones"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Fill-light 0.25EV with 4 zones"), self->op, self->version(),
                              &(dt_iop_relight_params_t){ 0.25, 0.25, 4.0 }, sizeof(dt_iop_relight_params_t),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  dt_gui_presets_add_generic(_("fill-shadow -0.25EV with 4 zones"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Fill-shadow -0.25EV with 4 zones"), self->op, self->version(),
                              &(dt_iop_relight_params_t){ -0.25, 0.25, 4.0 }, sizeof(dt_iop_relight_params_t),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -84,7 +84,7 @@ typedef struct dt_iop_relight_global_data_t
 
 const char *name()
 {
-  return _("fill light");
+  return _("Fill light");
 }
 
 int flags()
@@ -94,7 +94,7 @@ int flags()
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the tone equalizer module instead.");
+  return _("This module is deprecated. Please use the tone equalizer module instead.");
 }
 
 int default_group()
@@ -265,7 +265,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->exposure = dt_bauhaus_slider_from_params(self, "ev");
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
-  gtk_widget_set_tooltip_text(g->exposure, _("the fill-light in EV"));
+  gtk_widget_set_tooltip_text(g->exposure, _("The fill-light in EV"));
 
   /* lightnessslider */
   GtkBox *sliderbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -274,15 +274,15 @@ void gui_init(struct dt_iop_module_t *self)
       = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
 
   g->center = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color_and_name(_gradient_L[0], _gradient_L[1], "gslider-relight"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->center), _("select the center of fill-light\nctrl+click to select an area"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->center), _("Select the center of fill-light\nCtrl+click to select an area"));
   g_signal_connect(G_OBJECT(g->center), "value-changed", G_CALLBACK(center_callback), self);
   gtk_box_pack_start(sliderbox, GTK_WIDGET(g->center), TRUE, TRUE, 0);
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, GTK_WIDGET(sliderbox));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->colorpicker), _("toggle tool for picking median lightness in image"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->colorpicker), _("Toggle tool for picking median lightness in image"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sliderbox), TRUE, FALSE, 0);
 
-  g->width = dt_bauhaus_slider_from_params(self, N_("width"));
-  gtk_widget_set_tooltip_text(g->width, _("width of fill-light area defined in zones"));
+  g->width = dt_bauhaus_slider_from_params(self, N_("Width"));
+  gtk_widget_set_tooltip_text(g->width, _("Width of fill-light area defined in zones"));
 }
 
 // clang-format off

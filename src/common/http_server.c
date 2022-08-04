@@ -92,7 +92,7 @@ static void _new_connection(SoupServer *server, SoupMessage *msg, const char *pa
     goto end;
   }
 
-  char *page_title = g_strdup_printf(_("darktable » %s"), params->id);
+  char *page_title = g_strdup_printf(_("Darktable » %s"), params->id);
   const char *title = _(params->id);
   const char *body = _("<h1>Sorry,</h1><p>something went wrong. Please try again.</p>");
 
@@ -100,7 +100,7 @@ static void _new_connection(SoupServer *server, SoupMessage *msg, const char *pa
 
   if(res)
     body = _("<h1>Thank you,</h1><p>everything should have worked, you can <b>close</b> your browser now and "
-             "<b>go back</b> to darktable.</p>");
+             "<b>go back</b> to Darktable.</p>");
 
 
   char *resp_body = g_strdup_printf(reply, page_title, res ? 0 : 1, title, body);

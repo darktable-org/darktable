@@ -36,7 +36,7 @@ typedef dt_iop_finalscale_params_t dt_iop_finalscale_data_t;
 
 const char *name()
 {
-  return C_("modulename", "scale into final size");
+  return C_("modulename", "Scale into final size");
 }
 
 int flags()

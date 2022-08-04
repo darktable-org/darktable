@@ -76,14 +76,14 @@ DT_MODULE_INTROSPECTION(2, dt_iop_negadoctor_params_t)
 typedef enum dt_iop_negadoctor_filmstock_t
 {
   // What kind of emulsion are we working on ?
-  DT_FILMSTOCK_NB = 0,   // $DESCRIPTION: "black and white film"
-  DT_FILMSTOCK_COLOR = 1 // $DESCRIPTION: "color film"
+  DT_FILMSTOCK_NB = 0,   // $DESCRIPTION: "Black and white film"
+  DT_FILMSTOCK_COLOR = 1 // $DESCRIPTION: "Color film"
 } dt_iop_negadoctor_filmstock_t;
 
 
 typedef struct dt_iop_negadoctor_params_t
 {
-  dt_iop_negadoctor_filmstock_t film_stock; /* $DEFAULT: DT_FILMSTOCK_COLOR $DESCRIPTION: "film stock" */
+  dt_iop_negadoctor_filmstock_t film_stock; /* $DEFAULT: DT_FILMSTOCK_COLOR $DESCRIPTION: "Film stock" */
   float Dmin[4];                            /* color of film substrate
                                                $MIN: 0.00001 $MAX: 1.5 $DEFAULT: 1.0 */
   float wb_high[4];                         /* white balance RGB coeffs (illuminant)
@@ -93,15 +93,15 @@ typedef struct dt_iop_negadoctor_params_t
   float D_max;                              /* max density of film
                                                $MIN: 0.1 $MAX: 6 $DEFAULT: 2.046 */
   float offset;                             /* inversion offset
-                                               $MIN: -1.0 $MAX: 1.0 $DEFAULT: -0.05 $DESCRIPTION: "scan exposure bias" */
+                                               $MIN: -1.0 $MAX: 1.0 $DEFAULT: -0.05 $DESCRIPTION: "Scan exposure bias" */
   float black;                              /* display black level
-                                               $MIN: -0.5 $MAX: 0.5 $DEFAULT: 0.0755 $DESCRIPTION: "paper black (density correction)" */
+                                               $MIN: -0.5 $MAX: 0.5 $DEFAULT: 0.0755 $DESCRIPTION: "Paper black (density correction)" */
   float gamma;                              /* display gamma
-                                               $MIN: 1.0 $MAX: 8.0 $DEFAULT: 4.0 $DESCRIPTION: "paper grade (gamma)" */
+                                               $MIN: 1.0 $MAX: 8.0 $DEFAULT: 4.0 $DESCRIPTION: "Paper grade (gamma)" */
   float soft_clip;                          /* highlights roll-off
-                                               $MIN: 0.0001 $MAX: 1.0 $DEFAULT: 0.75 $DESCRIPTION: "paper gloss (specular highlights)" */
+                                               $MIN: 0.0001 $MAX: 1.0 $DEFAULT: 0.75 $DESCRIPTION: "Paper gloss (specular highlights)" */
   float exposure;                           /* extra exposure
-                                               $MIN: 0.5 $MAX: 2.0 $DEFAULT: 0.9245 $DESCRIPTION: "print exposure adjustment" */
+                                               $MIN: 0.5 $MAX: 2.0 $DEFAULT: 0.9245 $DESCRIPTION: "Print exposure adjustment" */
 } dt_iop_negadoctor_params_t;
 
 
@@ -142,7 +142,7 @@ typedef struct dt_iop_negadoctor_global_data_t
 
 const char *name()
 {
-  return _("negadoctor");
+  return _("Negadoctor");
 }
 
 const char *aliases()
@@ -152,11 +152,11 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("invert film negative scans and simulate printing on paper"),
-                                      _("corrective and creative"),
-                                      _("linear, RGB, display-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, display-referred"));
+  return dt_iop_set_description(self, _("Invert film negative scans and simulate printing on paper"),
+                                      _("Corrective and creative"),
+                                      _("Linear, RGB, display-referred"),
+                                      _("Non-linear, RGB"),
+                                      _("Non-linear, RGB, display-referred"));
 }
 
 int flags()
@@ -372,7 +372,7 @@ void init_presets(dt_iop_module_so_t *self)
                                                                  .black = 0.0755f };
 
 
-  dt_gui_presets_add_generic(_("color film"), self->op,
+  dt_gui_presets_add_generic(_("Color film"), self->op,
                              self->version(), &tmp, sizeof(tmp), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_iop_negadoctor_params_t tmq = (dt_iop_negadoctor_params_t){ .film_stock = DT_FILMSTOCK_NB,
@@ -387,7 +387,7 @@ void init_presets(dt_iop_module_so_t *self)
                                                                  .black = 0.0755f };
 
 
-  dt_gui_presets_add_generic(_("black and white film"), self->op,
+  dt_gui_presets_add_generic(_("Black and white film"), self->op,
                              self->version(), &tmq, sizeof(tmq), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
@@ -799,25 +799,25 @@ void gui_init(dt_iop_module_t *self)
 
   static dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
-  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
+  dt_action_define_iop(self, NULL, N_("Page"), GTK_WIDGET(g->notebook), &notebook_def);
 
   // Page FILM PROPERTIES
-  GtkWidget *page1 = self->widget = dt_ui_notebook_page(g->notebook, N_("film properties"), NULL);
+  GtkWidget *page1 = self->widget = dt_ui_notebook_page(g->notebook, N_("Film properties"), NULL);
 
   // Dmin
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("color of the film base")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("Color of the film base")), FALSE, FALSE, 0);
 
   GtkWidget *row1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   g->Dmin_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->Dmin_picker), FALSE);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->Dmin_picker), _("select color of film material from a swatch"));
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->Dmin_picker), _("Select color of film material from a swatch"));
   gtk_box_pack_start(GTK_BOX(row1), GTK_WIDGET(g->Dmin_picker), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->Dmin_picker), "color-set", G_CALLBACK(Dmin_picker_callback), self);
 
   g->Dmin_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row1);
-  gtk_widget_set_tooltip_text(g->Dmin_sampler , _("pick color of film material from image"));
+  gtk_widget_set_tooltip_text(g->Dmin_sampler , _("Pick color of film material from image"));
 
   gtk_box_pack_start(GTK_BOX(page1), GTK_WIDGET(row1), FALSE, FALSE, 0);
 
@@ -826,8 +826,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->Dmin_R, "%");
   dt_bauhaus_slider_set_factor(g->Dmin_R, 100);
   dt_bauhaus_widget_set_label(g->Dmin_R, NULL, N_("D min red component"));
-  gtk_widget_set_tooltip_text(g->Dmin_R, _("adjust the color and shade of the film transparent base.\n"
-                                           "this value depends on the film material, \n"
+  gtk_widget_set_tooltip_text(g->Dmin_R, _("Adjust the color and shade of the film transparent base.\n"
+                                           "This value depends on the film material, \n"
                                            "the chemical fog produced while developing the film,\n"
                                            "and the scanner white balance."));
 
@@ -836,8 +836,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->Dmin_G, "%");
   dt_bauhaus_slider_set_factor(g->Dmin_G, 100);
   dt_bauhaus_widget_set_label(g->Dmin_G, NULL, N_("D min green component"));
-  gtk_widget_set_tooltip_text(g->Dmin_G, _("adjust the color and shade of the film transparent base.\n"
-                                           "this value depends on the film material, \n"
+  gtk_widget_set_tooltip_text(g->Dmin_G, _("Adjust the color and shade of the film transparent base.\n"
+                                           "This value depends on the film material, \n"
                                            "the chemical fog produced while developing the film,\n"
                                            "and the scanner white balance."));
 
@@ -846,134 +846,134 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->Dmin_B, "%");
   dt_bauhaus_slider_set_factor(g->Dmin_B, 100);
   dt_bauhaus_widget_set_label(g->Dmin_B, NULL, N_("D min blue component"));
-  gtk_widget_set_tooltip_text(g->Dmin_B, _("adjust the color and shade of the film transparent base.\n"
-                                           "this value depends on the film material, \n"
+  gtk_widget_set_tooltip_text(g->Dmin_B, _("Adjust the color and shade of the film transparent base.\n"
+                                           "This value depends on the film material, \n"
                                            "the chemical fog produced while developing the film,\n"
                                            "and the scanner white balance."));
 
   // D max and scanner bias
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("dynamic range of the film")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("Dynamic range of the film")), FALSE, FALSE, 0);
 
   g->D_max = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "D_max"));
   dt_bauhaus_slider_set_format(g->D_max, " dB");
-  gtk_widget_set_tooltip_text(g->D_max, _("maximum density of the film, corresponding to white after inversion.\n"
-                                          "this value depends on the film specifications, the developing process,\n"
+  gtk_widget_set_tooltip_text(g->D_max, _("Maximum density of the film, corresponding to white after inversion.\n"
+                                          "This value depends on the film specifications, the developing process,\n"
                                           "the dynamic range of the scene and the scanner exposure settings."));
 
-  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("scanner exposure settings")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("Scanner exposure settings")), FALSE, FALSE, 0);
 
   g->offset = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "offset"));
   dt_bauhaus_slider_set_format(g->offset, " dB");
   dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->offset);
-  gtk_widget_set_tooltip_text(g->offset, _("correct the exposure of the scanner, for all RGB channels,\n"
+  gtk_widget_set_tooltip_text(g->offset, _("Correct the exposure of the scanner, for all RGB channels,\n"
                                            "before the inversion, so blacks are neither clipped or too pale."));
 
   // Page CORRECTIONS
-  GtkWidget *page2 = self->widget = dt_ui_notebook_page(g->notebook, N_("corrections"), NULL);
+  GtkWidget *page2 = self->widget = dt_ui_notebook_page(g->notebook, N_("Corrections"), NULL);
 
   // WB shadows
-  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(_("shadows color cast")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(_("Shadows color cast")), FALSE, FALSE, 0);
 
   GtkWidget *row3 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   g->WB_low_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->WB_low_picker), FALSE);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_low_picker), _("select color of shadows from a swatch"));
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_low_picker), _("Select color of shadows from a swatch"));
   gtk_box_pack_start(GTK_BOX(row3), GTK_WIDGET(g->WB_low_picker), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->WB_low_picker), "color-set", G_CALLBACK(WB_low_picker_callback), self);
 
   g->WB_low_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row3);
-  gtk_widget_set_tooltip_text(g->WB_low_sampler, _("pick shadows color from image"));
+  gtk_widget_set_tooltip_text(g->WB_low_sampler, _("Pick shadows color from image"));
 
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row3), FALSE, FALSE, 0);
 
   g->wb_low_R = dt_bauhaus_slider_from_params(self, "wb_low[0]");
-  dt_bauhaus_widget_set_label(g->wb_low_R, NULL, N_("shadows red offset"));
-  gtk_widget_set_tooltip_text(g->wb_low_R, _("correct the color cast in shadows so blacks are\n"
+  dt_bauhaus_widget_set_label(g->wb_low_R, NULL, N_("Shadows red offset"));
+  gtk_widget_set_tooltip_text(g->wb_low_R, _("Correct the color cast in shadows so blacks are\n"
                                              "truly achromatic. Setting this value before\n"
                                              "the highlights illuminant white balance will help\n"
                                              "recovering the global white balance in difficult cases."));
 
   g->wb_low_G = dt_bauhaus_slider_from_params(self, "wb_low[1]");
-  dt_bauhaus_widget_set_label(g->wb_low_G, NULL, N_("shadows green offset"));
-  gtk_widget_set_tooltip_text(g->wb_low_G, _("correct the color cast in shadows so blacks are\n"
+  dt_bauhaus_widget_set_label(g->wb_low_G, NULL, N_("Shadows green offset"));
+  gtk_widget_set_tooltip_text(g->wb_low_G, _("Correct the color cast in shadows so blacks are\n"
                                              "truly achromatic. Setting this value before\n"
                                              "the highlights illuminant white balance will help\n"
                                              "recovering the global white balance in difficult cases."));
 
   g->wb_low_B = dt_bauhaus_slider_from_params(self, "wb_low[2]");
-  dt_bauhaus_widget_set_label(g->wb_low_B, NULL, N_("shadows blue offset"));
-  gtk_widget_set_tooltip_text(g->wb_low_B, _("correct the color cast in shadows so blacks are\n"
+  dt_bauhaus_widget_set_label(g->wb_low_B, NULL, N_("Shadows blue offset"));
+  gtk_widget_set_tooltip_text(g->wb_low_B, _("Correct the color cast in shadows so blacks are\n"
                                              "truly achromatic. Setting this value before\n"
                                              "the highlights illuminant white balance will help\n"
                                              "recovering the global white balance in difficult cases."));
 
   // WB highlights
-  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(_("highlights white balance")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page2), dt_ui_section_label_new(_("Highlights white balance")), FALSE, FALSE, 0);
 
   GtkWidget *row2 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   g->WB_high_picker = gtk_color_button_new();
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->WB_high_picker), FALSE);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_high_picker), _("select color of illuminant from a swatch"));
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->WB_high_picker), _("Select color of illuminant from a swatch"));
   gtk_box_pack_start(GTK_BOX(row2), GTK_WIDGET(g->WB_high_picker), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->WB_high_picker), "color-set", G_CALLBACK(WB_high_picker_callback), self);
 
   g->WB_high_sampler = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, row2);
-  gtk_widget_set_tooltip_text(g->WB_high_sampler , _("pick illuminant color from image"));
+  gtk_widget_set_tooltip_text(g->WB_high_sampler , _("Pick illuminant color from image"));
 
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(row2), FALSE, FALSE, 0);
 
   g->wb_high_R = dt_bauhaus_slider_from_params(self, "wb_high[0]");
-  dt_bauhaus_widget_set_label(g->wb_high_R, NULL, N_("illuminant red gain"));
-  gtk_widget_set_tooltip_text(g->wb_high_R, _("correct the color of the illuminant so whites are\n"
+  dt_bauhaus_widget_set_label(g->wb_high_R, NULL, N_("Illuminant red gain"));
+  gtk_widget_set_tooltip_text(g->wb_high_R, _("Correct the color of the illuminant so whites are\n"
                                               "truly achromatic. Setting this value after\n"
                                               "the shadows color cast will help\n"
                                               "recovering the global white balance in difficult cases."));
 
   g->wb_high_G = dt_bauhaus_slider_from_params(self, "wb_high[1]");
-  dt_bauhaus_widget_set_label(g->wb_high_G, NULL, N_("illuminant green gain"));
-  gtk_widget_set_tooltip_text(g->wb_high_G, _("correct the color of the illuminant so whites are\n"
+  dt_bauhaus_widget_set_label(g->wb_high_G, NULL, N_("Illuminant green gain"));
+  gtk_widget_set_tooltip_text(g->wb_high_G, _("Correct the color of the illuminant so whites are\n"
                                               "truly achromatic. Setting this value after\n"
                                               "the shadows color cast will help\n"
                                               "recovering the global white balance in difficult cases."));
 
   g->wb_high_B = dt_bauhaus_slider_from_params(self, "wb_high[2]");
-  dt_bauhaus_widget_set_label(g->wb_high_B, NULL, N_("illuminant blue gain"));
-  gtk_widget_set_tooltip_text(g->wb_high_B, _("correct the color of the illuminant so whites are\n"
+  dt_bauhaus_widget_set_label(g->wb_high_B, NULL, N_("Illuminant blue gain"));
+  gtk_widget_set_tooltip_text(g->wb_high_B, _("Correct the color of the illuminant so whites are\n"
                                               "truly achromatic. Setting this value after\n"
                                               "the shadows color cast will help\n"
                                               "recovering the global white balance in difficult cases."));
 
   // Page PRINT PROPERTIES
-  GtkWidget *page3 = self->widget = dt_ui_notebook_page(g->notebook, N_("print properties"), NULL);
+  GtkWidget *page3 = self->widget = dt_ui_notebook_page(g->notebook, N_("Print properties"), NULL);
 
   // print corrections
-  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual paper properties")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("Virtual paper properties")), FALSE, FALSE, 0);
 
   g->black = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "black"));
   dt_bauhaus_slider_set_digits(g->black, 4);
   dt_bauhaus_slider_set_factor(g->black, 100);
   dt_bauhaus_slider_set_format(g->black, "%");
-  gtk_widget_set_tooltip_text(g->black, _("correct the density of black after the inversion,\n"
+  gtk_widget_set_tooltip_text(g->black, _("Correct the density of black after the inversion,\n"
                                           "to adjust the global contrast while avoiding clipping shadows."));
 
   g->gamma = dt_bauhaus_slider_from_params(self, "gamma");
-  dt_bauhaus_widget_set_label(g->gamma, NULL, N_("paper grade (gamma)"));
-  gtk_widget_set_tooltip_text(g->gamma, _("select the grade of the virtual paper, which is actually\n"
-                                          "equivalent to applying a gamma. it compensates the film D max\n"
-                                          "and recovers the contrast. use a high grade for high D max."));
+  dt_bauhaus_widget_set_label(g->gamma, NULL, N_("Paper grade (gamma)"));
+  gtk_widget_set_tooltip_text(g->gamma, _("Select the grade of the virtual paper, which is actually\n"
+                                          "equivalent to applying a gamma. It compensates the film D max\n"
+                                          "and recovers the contrast. Use a high grade for high D max."));
 
   g->soft_clip = dt_bauhaus_slider_from_params(self, "soft_clip");
   dt_bauhaus_slider_set_factor(g->soft_clip, 100);
   dt_bauhaus_slider_set_digits(g->soft_clip, 4);
   dt_bauhaus_slider_set_format(g->soft_clip, "%");
-  gtk_widget_set_tooltip_text(g->soft_clip, _("gradually compress specular highlights past this value\n"
+  gtk_widget_set_tooltip_text(g->soft_clip, _("Gradually compress specular highlights past this value\n"
                                               "to avoid clipping while pushing the exposure for mid-tones.\n"
-                                              "this somewhat reproduces the behaviour of matte paper."));
+                                              "This somewhat reproduces the behaviour of matte paper."));
 
-  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual print emulation")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("Virtual print emulation")), FALSE, FALSE, 0);
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "exposure"));
   dt_bauhaus_slider_set_hard_min(g->exposure, -1.0);
@@ -981,7 +981,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_hard_max(g->exposure, 1.0);
   dt_bauhaus_slider_set_default(g->exposure, 0.0);
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
-  gtk_widget_set_tooltip_text(g->exposure, _("correct the printing exposure after inversion to adjust\n"
+  gtk_widget_set_tooltip_text(g->exposure, _("Correct the printing exposure after inversion to adjust\n"
                                              "the global contrast and avoid clipping highlights."));
 
   // start building top level widget
@@ -989,7 +989,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Film emulsion
   g->film_stock = dt_bauhaus_combobox_from_params(self, "film_stock");
-  gtk_widget_set_tooltip_text(g->film_stock, _("toggle on or off the color controls"));
+  gtk_widget_set_tooltip_text(g->film_stock, _("Toggle on or off the color controls"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 }
