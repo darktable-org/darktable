@@ -131,7 +131,7 @@ static void set_widget_label_default(GtkWidget *widget, const char *confstr, Gtk
   {
     // replace space with *
     gtk_label_set_text(GTK_LABEL(label), NON_DEF_CHAR);
-    g_object_set(label, "tooltip-text", _("this setting has been modified"), (gchar *)0);
+    g_object_set(label, "tooltip-text", _("This setting has been modified"), (gchar *)0);
   }
 }
 
@@ -189,12 +189,12 @@ gboolean restart_required = FALSE;
 
   <!-- lighttable -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_lighttable</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("lighttable"), _("lighttable"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_lighttable</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Lighttable"), _("Lighttable"));&#xA;</xsl:text>
 
   <!-- general section -->
   <xsl:text>
     {
-      GtkWidget *seclabel = gtk_label_new(_("general"));
+      GtkWidget *seclabel = gtk_label_new(_("General"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -210,7 +210,7 @@ gboolean restart_required = FALSE;
 
   <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("thumbnails"));
+      GtkWidget *seclabel = gtk_label_new(_("Thumbnails"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -226,12 +226,12 @@ gboolean restart_required = FALSE;
 
   <!-- darkroom -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_darkroom</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("darkroom"), _("darkroom"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_darkroom</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Darkroom"), _("Darkroom"));&#xA;</xsl:text>
 
   <!-- general section -->
   <xsl:text>
     {
-      GtkWidget *seclabel = gtk_label_new(_("general"));
+      GtkWidget *seclabel = gtk_label_new(_("General"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -247,7 +247,7 @@ gboolean restart_required = FALSE;
 
   <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("modules"));
+      GtkWidget *seclabel = gtk_label_new(_("Modules"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -267,7 +267,7 @@ gboolean restart_required = FALSE;
 
   <xsl:text>
     {
-      GtkWidget *seclabel = gtk_label_new(_("image processing"));
+      GtkWidget *seclabel = gtk_label_new(_("Image processing"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -283,7 +283,7 @@ gboolean restart_required = FALSE;
 
   <xsl:text>
     {
-      GtkWidget *seclabel = gtk_label_new(_("cpu / gpu / memory"));
+      GtkWidget *seclabel = gtk_label_new(_("CPU / GPU / Memory"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -300,12 +300,12 @@ gboolean restart_required = FALSE;
 
   <!-- security -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_security</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("security"), _("security"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_security</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Security"), _("Security"));&#xA;</xsl:text>
 
   <!-- general (confirmations) section -->
   <xsl:text>
     {
-      GtkWidget *seclabel = gtk_label_new(_("general"));
+      GtkWidget *seclabel = gtk_label_new(_("General"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -320,7 +320,7 @@ gboolean restart_required = FALSE;
   <!-- others section -->
   <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("other"));
+      GtkWidget *seclabel = gtk_label_new(_("Other"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -335,11 +335,11 @@ gboolean restart_required = FALSE;
 
   <!-- storage -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_storage</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("storage"), _("storage"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_storage</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Storage"), _("Storage"));&#xA;</xsl:text>
 
 <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("database"));
+      GtkWidget *seclabel = gtk_label_new(_("Database"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -352,7 +352,7 @@ gboolean restart_required = FALSE;
   </xsl:for-each>
 <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("xmp"));
+      GtkWidget *seclabel = gtk_label_new(_("XMP"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -367,10 +367,10 @@ gboolean restart_required = FALSE;
 
   <!-- miscellaneous -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_misc</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("miscellaneous"), _("miscellaneous"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_misc</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Miscellaneous"), _("Miscellaneous"));&#xA;</xsl:text>
 <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("interface"));
+      GtkWidget *seclabel = gtk_label_new(_("Interface"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -383,7 +383,7 @@ gboolean restart_required = FALSE;
   </xsl:for-each>
 <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("tags"));
+      GtkWidget *seclabel = gtk_label_new(_("Tags"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -397,12 +397,12 @@ gboolean restart_required = FALSE;
 
 <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("shortcuts with multiple instances"));
+      GtkWidget *seclabel = gtk_label_new(_("Shortcuts with multiple instances"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
-      g_object_set(lbox,  "tooltip-text", _("where multiple module instances are present, these preferences control rules that are applied (in order) to decide which module instance shortcuts will be applied to"), (gchar *)0);
+      g_object_set(lbox,  "tooltip-text", _("Where multiple module instances are present, these preferences control rules that are applied (in order) to decide which module instance shortcuts will be applied to"), (gchar *)0);
    }
 </xsl:text>
 
@@ -414,7 +414,7 @@ gboolean restart_required = FALSE;
 
   <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("map / geolocalization view"));
+      GtkWidget *seclabel = gtk_label_new(_("Map / geolocalization view"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -429,7 +429,7 @@ gboolean restart_required = FALSE;
   <!-- slideshow section -->
   <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("slideshow view"));
+      GtkWidget *seclabel = gtk_label_new(_("Slideshow view"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -444,14 +444,14 @@ gboolean restart_required = FALSE;
 
   <!-- import -->
 
-  <xsl:text>&#xA;static void&#xA;init_tab_import</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("import"), _("import"));&#xA;</xsl:text>
+  <xsl:text>&#xA;static void&#xA;init_tab_import</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("Import"), _("Import"));&#xA;</xsl:text>
 
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='import' and @section='import']">
           <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
 <xsl:text>
    {
-      GtkWidget *seclabel = gtk_label_new(_("session options"));
+      GtkWidget *seclabel = gtk_label_new(_("Session options"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
       gtk_widget_set_name(lbox, "pref_section");
@@ -536,14 +536,14 @@ gboolean restart_required = FALSE;
         <xsl:choose>
                 <xsl:when test="@capability">
                         <xsl:text>
-    GtkWidget *notavailable = gtk_label_new(_("not available"));
+    GtkWidget *notavailable = gtk_label_new(_("Not available"));
     gtk_widget_set_halign(notavailable, GTK_ALIGN_START);
     gtk_widget_set_sensitive(notavailable, FALSE);
-    g_object_set(notavailable, "tooltip-text", _("not available on this system"), (gchar *)0);
+    g_object_set(notavailable, "tooltip-text", _("Not available on this system"), (gchar *)0);
     gtk_widget_set_sensitive(labelev, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));
     gtk_widget_set_sensitive(widget, dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"));
     if(!dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>"))
-      g_object_set(labelev, "tooltip-text", _("not available on this system"), (gchar *)0);
+      g_object_set(labelev, "tooltip-text", _("Not available on this system"), (gchar *)0);
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>") ? box : notavailable, 2, line++, 1, 1);
     g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
@@ -680,7 +680,7 @@ gboolean restart_required = FALSE;
     g_free(setting);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(handle_enter_key), NULL);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    snprintf(tooltip, 1024, _("Double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
   </xsl:template>
@@ -697,13 +697,13 @@ gboolean restart_required = FALSE;
     <xsl:text>g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);</xsl:text>
     <xsl:text>
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    snprintf(tooltip, 1024, _("Double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
   </xsl:template>
 
   <xsl:template match="dtconfig[type='dir']" mode="tab">
-    <xsl:text>    widget = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+    <xsl:text>    widget = gtk_file_chooser_button_new(_("Select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
     gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(widget), 20);
@@ -717,7 +717,7 @@ gboolean restart_required = FALSE;
     <xsl:text>
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     gchar *default_path = dt_conf_expand_default_dir("</xsl:text><xsl:value-of select="default"/><xsl:text>");
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), default_path);
+    snprintf(tooltip, 1024, _("Double click to reset to `%s'"), default_path);
     g_free(default_path);
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
     </xsl:text>
@@ -740,7 +740,7 @@ gboolean restart_required = FALSE;
     <xsl:text>g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);</xsl:text>
     <xsl:text>
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%d'"), (int)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
+    snprintf(tooltip, 1024, _("Double click to reset to `%d'"), (int)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
   </xsl:template>
@@ -762,7 +762,7 @@ gboolean restart_required = FALSE;
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     char value[100];
     snprintf(value, 100, "%"G_GINT64_FORMAT"",(gint64)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), value);
+    snprintf(tooltip, 1024, _("Double click to reset to `%s'"), value);
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
   </xsl:template>
@@ -782,7 +782,7 @@ gboolean restart_required = FALSE;
     <xsl:text>g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);</xsl:text>
     <xsl:text>
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%.03f'"), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);
+    snprintf(tooltip, 1024, _("Double click to reset to `%.03f'"), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
   </xsl:template>
@@ -796,7 +796,7 @@ gboolean restart_required = FALSE;
     <xsl:text>g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);</xsl:text>
     <xsl:text>
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="translate(default, $lowercase, $uppercase)"/><xsl:text>"));
+    snprintf(tooltip, 1024, _("Double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="translate(default, $lowercase, $uppercase)"/><xsl:text>"));
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
   </xsl:template>
@@ -840,7 +840,7 @@ gboolean restart_required = FALSE;
     <xsl:text> g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);</xsl:text>
     <xsl:text>
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="default"/><xsl:text>"));
+    snprintf(tooltip, 1024, _("Double click to reset to `%s'"), C_("preferences", "</xsl:text><xsl:value-of select="default"/><xsl:text>"));
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
   </xsl:template>
