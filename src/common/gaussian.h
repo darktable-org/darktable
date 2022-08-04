@@ -24,9 +24,9 @@
 
 typedef enum dt_gaussian_order_t
 {
-  DT_IOP_GAUSSIAN_ZERO = 0, // $DESCRIPTION: "order 0"
-  DT_IOP_GAUSSIAN_ONE = 1,  // $DESCRIPTION: "order 1"
-  DT_IOP_GAUSSIAN_TWO = 2   // $DESCRIPTION: "order 2"
+  DT_IOP_GAUSSIAN_ZERO = 0, // $DESCRIPTION: "Order 0"
+  DT_IOP_GAUSSIAN_ONE = 1,  // $DESCRIPTION: "Order 1"
+  DT_IOP_GAUSSIAN_TWO = 2   // $DESCRIPTION: "Order 2"
 } dt_gaussian_order_t;
 
 

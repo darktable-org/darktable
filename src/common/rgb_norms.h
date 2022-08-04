@@ -20,13 +20,13 @@
 
  typedef enum dt_iop_rgb_norms_t
  {
-   DT_RGB_NORM_NONE = 0,      // $DESCRIPTION: "none"
-   DT_RGB_NORM_LUMINANCE = 1, // $DESCRIPTION: "luminance"
-   DT_RGB_NORM_MAX = 2,       // $DESCRIPTION: "max RGB"
-   DT_RGB_NORM_AVERAGE = 3,   // $DESCRIPTION: "average RGB"
-   DT_RGB_NORM_SUM = 4,       // $DESCRIPTION: "sum RGB"
-   DT_RGB_NORM_NORM = 5,      // $DESCRIPTION: "norm RGB"
-   DT_RGB_NORM_POWER = 6,     // $DESCRIPTION: "basic power"
+   DT_RGB_NORM_NONE = 0,      // $DESCRIPTION: "None"
+   DT_RGB_NORM_LUMINANCE = 1, // $DESCRIPTION: "Luminance"
+   DT_RGB_NORM_MAX = 2,       // $DESCRIPTION: "Max RGB"
+   DT_RGB_NORM_AVERAGE = 3,   // $DESCRIPTION: "Average RGB"
+   DT_RGB_NORM_SUM = 4,       // $DESCRIPTION: "Sum RGB"
+   DT_RGB_NORM_NORM = 5,      // $DESCRIPTION: "Norm RGB"
+   DT_RGB_NORM_POWER = 6,     // $DESCRIPTION: "Basic power"
  } dt_iop_rgb_norms_t;
 
 static inline float dt_rgb_norm(const float *in, const int norm, const dt_iop_order_iccprofile_info_t *const work_profile)

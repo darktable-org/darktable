@@ -25,17 +25,17 @@
 /* Standard CIE illuminants */
 typedef enum dt_illuminant_t
 {
-  DT_ILLUMINANT_PIPE            = 0, // $DESCRIPTION: "same as pipeline (D50)"
+  DT_ILLUMINANT_PIPE            = 0, // $DESCRIPTION: "Same as pipeline (D50)"
   DT_ILLUMINANT_A               = 1, // $DESCRIPTION: "A (incandescent)"
   DT_ILLUMINANT_D               = 2, // $DESCRIPTION: "D (daylight)"
   DT_ILLUMINANT_E               = 3, // $DESCRIPTION: "E (equi-energy)" (x = y)
   DT_ILLUMINANT_F               = 4, // $DESCRIPTION: "F (fluorescent)"
   DT_ILLUMINANT_LED             = 5, // $DESCRIPTION: "LED (LED light)"
   DT_ILLUMINANT_BB              = 6, // $DESCRIPTION: "Planckian (black body)" general black body radiator - not CIE standard
-  DT_ILLUMINANT_CUSTOM          = 7, // $DESCRIPTION: "custom" input x and y directly - bypass search
+  DT_ILLUMINANT_CUSTOM          = 7, // $DESCRIPTION: "Custom" input x and y directly - bypass search
   DT_ILLUMINANT_DETECT_SURFACES = 8, // $DESCRIPTION: "(AI) detect from image surfaces..." auto-detection in image from grey world model
   DT_ILLUMINANT_DETECT_EDGES    = 9, // $DESCRIPTION: "(AI) detect from image edges..."auto-detection in image from grey edges model
-  DT_ILLUMINANT_CAMERA          = 10,// $DESCRIPTION: "as shot in camera" read RAW EXIF for WB
+  DT_ILLUMINANT_CAMERA          = 10,// $DESCRIPTION: "As shot in camera" read RAW EXIF for WB
   DT_ILLUMINANT_LAST
 } dt_illuminant_t;
 

@@ -21,19 +21,19 @@
 
 typedef enum dt_iop_channelmixer_rgb_version_t
 {
-  CHANNELMIXERRGB_V_1 = 0, // $DESCRIPTION: "version 1 (2020)"
-  CHANNELMIXERRGB_V_2 = 1, // $DESCRIPTION: "version 2 (2021)"
-  CHANNELMIXERRGB_V_3 = 2, // $DESCRIPTION: "version 3 (Apr 2021)"
+  CHANNELMIXERRGB_V_1 = 0, // $DESCRIPTION: "Version 1 (2020)"
+  CHANNELMIXERRGB_V_2 = 1, // $DESCRIPTION: "Version 2 (2021)"
+  CHANNELMIXERRGB_V_3 = 2, // $DESCRIPTION: "Version 3 (Apr 2021)"
 } dt_iop_channelmixer_rgb_version_t;
 
 
 typedef enum dt_adaptation_t
 {
-  DT_ADAPTATION_LINEAR_BRADFORD = 0, // $DESCRIPTION: "linear Bradford (ICC v4)"
+  DT_ADAPTATION_LINEAR_BRADFORD = 0, // $DESCRIPTION: "Linear Bradford (ICC v4)"
   DT_ADAPTATION_CAT16           = 1, // $DESCRIPTION: "CAT16 (CIECAM16)"
-  DT_ADAPTATION_FULL_BRADFORD   = 2, // $DESCRIPTION: "non-linear Bradford"
+  DT_ADAPTATION_FULL_BRADFORD   = 2, // $DESCRIPTION: "Non-linear Bradford"
   DT_ADAPTATION_XYZ             = 3, // $DESCRIPTION: "XYZ "
-  DT_ADAPTATION_RGB             = 4, // $DESCRIPTION: "none (bypass)"
+  DT_ADAPTATION_RGB             = 4, // $DESCRIPTION: "None (bypass)"
   DT_ADAPTATION_LAST
 } dt_adaptation_t;
 
