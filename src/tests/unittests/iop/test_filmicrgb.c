@@ -64,7 +64,7 @@ void __wrap_dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean update)
 
 static void test_name(void **state)
 {
-  assert_string_equal(name(), "filmic rgb");
+  assert_string_equal(name(), "Filmic rgb");
 }
 
 static void test_default_group(void **state)
