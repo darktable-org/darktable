@@ -233,7 +233,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   float nbhood;     /* search radius
                        $MIN: 1.0 $MAX: 30.0 $DEFAULT: 7.0 $DESCRIPTION: "Search radius" */
   float strength;   /* noise level after equalization
-                       $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 */
+                       $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "Strength" */
   float shadows;    /* control the impact on shadows
                        $MIN: 0.0 $MAX: 1.8 $DEFAULT: 1.0 $DESCRIPTION: "Preserve shadows" */
   float bias;       /* allows to reduce backtransform bias
@@ -3677,7 +3677,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->overshooting = dt_bauhaus_slider_from_params(self, "overshooting");
   dt_bauhaus_slider_set_soft_max(g->overshooting, 4.0f);
-  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_soft_max(g->strength, 4.0f);
   dt_bauhaus_slider_set_digits(g->strength, 3);
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");

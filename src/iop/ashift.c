@@ -333,7 +333,7 @@ typedef struct dt_iop_ashift_params4_t
 
 typedef struct dt_iop_ashift_params_t
 {
-  float rotation;    // $MIN: -ROTATION_RANGE_SOFT $MAX: ROTATION_RANGE_SOFT $DEFAULT: 0.0
+  float rotation;    // $MIN: -ROTATION_RANGE_SOFT $MAX: ROTATION_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "Rotation"
   float lensshift_v; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "Lens shift (vertical)"
   float lensshift_h; // $MIN: -LENSSHIFT_RANGE_SOFT $MAX: LENSSHIFT_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "Lens shift (horizontal)"
   float shear;       // $MIN: -SHEAR_RANGE_SOFT $MAX: SHEAR_RANGE_SOFT $DEFAULT: 0.0 $DESCRIPTION: "Shear"
@@ -5689,7 +5689,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->draw_near_point = -1;
   g->draw_line_move = -1;
 
-  g->rotation = dt_bauhaus_slider_from_params(self, N_("Rotation"));
+  g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
   dt_bauhaus_slider_set_format(g->rotation, "°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 

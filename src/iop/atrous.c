@@ -82,7 +82,7 @@ typedef struct dt_iop_atrous_params_t
   int32_t octaves;             // $DEFAULT: 3
   float x[atrous_none][BANDS];
   float y[atrous_none][BANDS]; // $DEFAULT: 0.5
-  float mix;                   // $DEFAULT: 1.0 $MIN: -2.0 $MAX: 2.0
+  float mix;                   // $DEFAULT: 1.0 $MIN: -2.0 $MAX: 2.0 $DESCRIPTION: "Mix"
 } dt_iop_atrous_params_t;
 
 typedef struct dt_iop_atrous_gui_data_t
@@ -1762,7 +1762,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(area_scrolled), self);
 
   // mix slider
-  c->mix = dt_bauhaus_slider_from_params(self, N_("Mix"));
+  c->mix = dt_bauhaus_slider_from_params(self, "mix");
   gtk_widget_set_tooltip_text(c->mix, _("Make effect stronger or weaker"));
   g_signal_connect(G_OBJECT(c->mix), "value-changed", G_CALLBACK(mix_callback), self);
 }

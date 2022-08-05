@@ -84,7 +84,7 @@ typedef struct dt_iop_lensfun_params_t
 {
   int modify_flags;
   int inverse; // $MIN: 0 $MAX: 1 $DEFAULT: 0 $DESCRIPTION: "Mode"
-  float scale; // $MIN: 0.1 $MAX: 2.0 $DEFAULT: 1.0
+  float scale; // $MIN: 0.1 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "Scale"
   float crop;
   float focal;
   float aperture;
@@ -2394,7 +2394,7 @@ void gui_init(struct dt_iop_module_t *self)
                    (gpointer)self);
 
   // scale
-  g->scale = dt_bauhaus_slider_from_params(self, N_("Scale"));
+  g->scale = dt_bauhaus_slider_from_params(self, "scale");
   dt_bauhaus_slider_set_digits(g->scale, 3);
   dt_bauhaus_widget_set_quad_paint(g->scale, dtgtk_cairo_paint_refresh, 0, NULL);
   g_signal_connect(G_OBJECT(g->scale), "quad-pressed", G_CALLBACK(autoscale_pressed), self);

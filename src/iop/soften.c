@@ -51,9 +51,9 @@ DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)
 
 typedef struct dt_iop_soften_params_t
 {
-  float size;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
-  float saturation; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0
-  float brightness; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.33
+  float size;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Size"
+  float saturation; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "Saturation"
+  float brightness; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.33 $DESCRIPTION: "Brightness"
   float amount;     // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Mix"
 } dt_iop_soften_params_t;
 
@@ -392,15 +392,15 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_soften_gui_data_t *g = IOP_GUI_ALLOC(soften);
 
-  g->size = dt_bauhaus_slider_from_params(self, N_("Size"));
+  g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_format(g->size, "%");
   gtk_widget_set_tooltip_text(g->size, _("The size of blur"));
 
-  g->saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_format(g->saturation, "%");
   gtk_widget_set_tooltip_text(g->saturation, _("The saturation of blur"));
 
-  g->brightness = dt_bauhaus_slider_from_params(self, N_("Brightness"));
+  g->brightness = dt_bauhaus_slider_from_params(self, "brightness");
   dt_bauhaus_slider_set_format(g->brightness, _(" EV"));
   gtk_widget_set_tooltip_text(g->brightness, _("The brightness of blur"));
 

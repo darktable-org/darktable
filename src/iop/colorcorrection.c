@@ -44,7 +44,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_colorcorrection_params_t)
 typedef struct dt_iop_colorcorrection_params_t
 {
   float hia, hib, loa, lob;  // directly manipulated from gui; don't follow normal gui_update etc
-  float saturation;          // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0
+  float saturation;          // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0 $DESCRIPTION: "Saturation"
 } dt_iop_colorcorrection_params_t;
 
 typedef struct dt_iop_colorcorrection_gui_data_t
@@ -280,7 +280,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_colorcorrection_scrolled), self);
   g_signal_connect(G_OBJECT(g->area), "key-press-event", G_CALLBACK(dt_iop_colorcorrection_key_press), self);
 
-  g->slider = dt_bauhaus_slider_from_params(self, N_("Saturation"));
+  g->slider = dt_bauhaus_slider_from_params(self, "saturation");
   gtk_widget_set_tooltip_text(g->slider, _("Set the global saturation"));
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;

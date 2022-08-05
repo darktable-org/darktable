@@ -96,12 +96,12 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   float lightness[CHANNEL_SIZE];   // $MIN: -1.0 $MAX: 1.0
   float grey[CHANNEL_SIZE];        // $MIN: 0.0 $MAX: 1.0
   gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "Normalize channels"
-  dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
+  dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D $DESCRIPTION: "Illuminant"
   dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
   dt_illuminant_led_t illum_led;   // $DEFAULT: DT_ILLUMINANT_LED_B5 $DESCRIPTION: "LED source"
-  dt_adaptation_t adaptation;      // $DEFAULT: DT_ADAPTATION_CAT16
+  dt_adaptation_t adaptation;      // $DEFAULT: DT_ADAPTATION_CAT16 $DESCRIPTION: "Adaptation"
   float x, y;                      // $DEFAULT: 0.333
-  float temperature;               // $MIN: TEMP_MIN $MAX: TEMP_MAX $DEFAULT: 5003.
+  float temperature;               // $MIN: TEMP_MIN $MAX: TEMP_MAX $DEFAULT: 5003. $DESCRIPTION: "Temperature"
   float gamut;                     // $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "Gamut compression"
   gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "Clip negative RGB from gamut"
 
@@ -4006,7 +4006,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Page CAT
   self->widget = dt_ui_notebook_page(g->notebook, N_("CAT"), _("Chromatic adaptation transform"));
 
-  g->adaptation = dt_bauhaus_combobox_from_params(self, N_("Adaptation"));
+  g->adaptation = dt_bauhaus_combobox_from_params(self, "adaptation");
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),
                               _("Choose the method to adapt the illuminant\n"
                                 "and the colorspace in which the module works: \n"
@@ -4038,13 +4038,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
 
-  g->illuminant = dt_bauhaus_combobox_from_params(self, N_("Illuminant"));
+  g->illuminant = dt_bauhaus_combobox_from_params(self, "illuminant");
 
   g->illum_fluo = dt_bauhaus_combobox_from_params(self, "illum_fluo");
 
   g->illum_led = dt_bauhaus_combobox_from_params(self, "illum_led");
 
-  g->temperature = dt_bauhaus_slider_from_params(self, N_("Temperature"));
+  g->temperature = dt_bauhaus_slider_from_params(self, "temperature");
   dt_bauhaus_slider_set_soft_range(g->temperature, 3000., 7000.);
   dt_bauhaus_slider_set_digits(g->temperature, 0);
   dt_bauhaus_slider_set_format(g->temperature, " K");

@@ -37,8 +37,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_hotpixels_params_t)
 
 typedef struct dt_iop_hotpixels_params_t
 {
-  float strength;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.25
-  float threshold; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.05
+  float strength;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.25 $DESCRIPTION: "Strength"
+  float threshold; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.05 $DESCRIPTION: "Threshold"
   gboolean markfixed;  // $DEFAULT: FALSE $DESCRIPTION: "Mark fixed pixels"
   gboolean permissive; // $DEFAULT: FALSE $DESCRIPTION: "Detect by 3 neighbors"
 } dt_iop_hotpixels_params_t;
@@ -382,11 +382,11 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(box_raw), "draw", G_CALLBACK(draw), self);
 
-  g->threshold = dt_bauhaus_slider_from_params(self, N_("Threshold"));
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_digits(g->threshold, 4);
   gtk_widget_set_tooltip_text(g->threshold, _("Lower threshold for hot pixel"));
 
-  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_digits(g->strength, 4);
   gtk_widget_set_tooltip_text(g->strength, _("Strength of hot pixel correction"));
 

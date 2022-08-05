@@ -193,8 +193,8 @@ typedef struct dt_iop_filmicrgb_params_t
   float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "Target black luminance"
   float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "Target white luminance"
   float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "Hardness"
-  float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 50.0
-  float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.1
+  float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 50.0 $DESCRIPTION: "Latitude"
+  float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.1 $DESCRIPTION: "Contrast"
   float saturation;         // $MIN: -200 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "Extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "Shadows ↔ highlights balance"
   float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "Add noise in highlights"
@@ -4334,7 +4334,7 @@ void gui_init(dt_iop_module_t *self)
   // Page LOOK
   self->widget = dt_ui_notebook_page(g->notebook, N_("Look"), NULL);
 
-  g->contrast = dt_bauhaus_slider_from_params(self, N_("Contrast"));
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
   dt_bauhaus_slider_set_soft_range(g->contrast, 0.5, 3.0);
   dt_bauhaus_slider_set_digits(g->contrast, 3);
   gtk_widget_set_tooltip_text(g->contrast, _("Slope of the linear part of the curve\n"
@@ -4346,7 +4346,7 @@ void gui_init(dt_iop_module_t *self)
                                                  "Increase to make highlights brighter and less compressed.\n"
                                                  "Decrease to mute highlights."));
 
-  g->latitude = dt_bauhaus_slider_from_params(self, N_("Latitude"));
+  g->latitude = dt_bauhaus_slider_from_params(self, "latitude");
   dt_bauhaus_slider_set_soft_range(g->latitude, 0.1, 90.0);
   dt_bauhaus_slider_set_format(g->latitude, "%");
   gtk_widget_set_tooltip_text(g->latitude,

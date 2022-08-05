@@ -45,9 +45,9 @@ DT_MODULE_INTROSPECTION(1, dt_iop_sharpen_params_t)
 
 typedef struct dt_iop_sharpen_params_t
 {
-  float radius;    // $MIN: 0.0 $MAX: 99.0 $DEFAULT: 2.0
-  float amount;    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.5
-  float threshold; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5
+  float radius;    // $MIN: 0.0 $MAX: 99.0 $DEFAULT: 2.0 $DESCRIPTION: "Radius"
+  float amount;    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.5 $DESCRIPTION: "Amount"
+  float threshold; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5 $DESCRIPTION: "Threshold"
 } dt_iop_sharpen_params_t;
 
 typedef struct dt_iop_sharpen_gui_data_t
@@ -446,16 +446,16 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_sharpen_gui_data_t *g = IOP_GUI_ALLOC(sharpen);
 
-  g->radius = dt_bauhaus_slider_from_params(self, N_("Radius"));
+  g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_max(g->radius, 8.0);
   dt_bauhaus_slider_set_digits(g->radius, 3);
   gtk_widget_set_tooltip_text(g->radius, _("Spatial extent of the unblurring"));
 
-  g->amount = dt_bauhaus_slider_from_params(self, N_("Amount"));
+  g->amount = dt_bauhaus_slider_from_params(self, "amount");
   dt_bauhaus_slider_set_digits(g->amount, 3);
   gtk_widget_set_tooltip_text(g->amount, _("Strength of the sharpen"));
 
-  g->threshold = dt_bauhaus_slider_from_params(self, N_("Threshold"));
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_digits(g->threshold, 3);
   gtk_widget_set_tooltip_text(g->threshold, _("Threshold to activate sharpen"));
 }

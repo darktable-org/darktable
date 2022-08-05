@@ -71,11 +71,11 @@ typedef struct dt_iop_colorreconstruct_params2_t
 
 typedef struct dt_iop_colorreconstruct_params_t
 {
-  float threshold; // $MIN: 50.0 $MAX: 150.0 $DEFAULT: 100.0
+  float threshold; // $MIN: 50.0 $MAX: 150.0 $DEFAULT: 100.0 $DESCRIPTION: "Threshold"
   float spatial;   // $MIN: 0.0 $MAX: 1000.0 $DEFAULT: 400.0 $DESCRIPTION: "Spatial extent"
   float range;     // $MIN: 0.0 $MAX: 50.0 $DEFAULT: 10.0 $DESCRIPTION: "Range extent"
-  float hue;       // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.66
-  dt_iop_colorreconstruct_precedence_t precedence; // $DEFAULT: 0 COLORRECONSTRUCT_PRECEDENCE_NONE
+  float hue;       // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.66 $DESCRIPTION: "Hue"
+  dt_iop_colorreconstruct_precedence_t precedence; // $DEFAULT: 0 COLORRECONSTRUCT_PRECEDENCE_NONE $DESCRIPTION: "Predecence"
 } dt_iop_colorreconstruct_params_t;
 
 typedef struct dt_iop_colorreconstruct_Lab_t
@@ -1281,11 +1281,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *box_enabled = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->threshold = dt_bauhaus_slider_from_params(self, N_("Threshold"));
-  g->spatial = dt_bauhaus_slider_from_params(self, N_("Spatial"));
-  g->range = dt_bauhaus_slider_from_params(self, N_("Range"));
-  g->precedence = dt_bauhaus_combobox_from_params(self, N_("Precedence"));
-  g->hue = dt_bauhaus_slider_from_params(self, N_("Hue"));
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
+  g->spatial = dt_bauhaus_slider_from_params(self, "spatial");
+  g->range = dt_bauhaus_slider_from_params(self, "range");
+  g->precedence = dt_bauhaus_combobox_from_params(self, "precedence");
+  g->hue = dt_bauhaus_slider_from_params(self, "hue");
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);
   dt_bauhaus_slider_set_format(g->hue, "°");
   dt_bauhaus_slider_set_feedback(g->hue, 0);

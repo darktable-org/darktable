@@ -72,7 +72,7 @@ typedef struct dt_iop_lut3d_params_t
 {
   char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
   dt_iop_lut3d_colorspace_t colorspace; // $DEFAULT: DT_IOP_SRGB $DESCRIPTION: "Application color space"
-  dt_iop_lut3d_interpolation_t interpolation; // $DEFAULT: DT_IOP_TETRAHEDRAL
+  dt_iop_lut3d_interpolation_t interpolation; // $DEFAULT: DT_IOP_TETRAHEDRAL $DESCRIPTION: "Interpolation"
   int nb_keypoints; // $DEFAULT: 0 >0 indicates the presence of compressed lut
   char c_clut[DT_IOP_LUT3D_MAX_KEYPOINTS*2*3];
   char lutname[DT_IOP_LUT3D_MAX_LUTNAME];
@@ -1727,7 +1727,7 @@ void gui_init(dt_iop_module_t *self)
   g->colorspace = dt_bauhaus_combobox_from_params(self, "colorspace");
   gtk_widget_set_tooltip_text(g->colorspace, _("Select the color space in which the LUT has to be applied"));
 
-  g->interpolation = dt_bauhaus_combobox_from_params(self, N_("Interpolation"));
+  g->interpolation = dt_bauhaus_combobox_from_params(self, "interpolation");
   gtk_widget_set_tooltip_text(g->interpolation, _("Select the interpolation method"));
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED,

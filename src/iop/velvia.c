@@ -42,7 +42,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_velvia_params_t)
 
 typedef struct dt_iop_velvia_params_t
 {
-  float strength; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
+  float strength; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0 $DESCRIPTION: "Strength"
   float bias;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "Mid-tones bias"
 } dt_iop_velvia_params_t;
 
@@ -263,7 +263,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_velvia_gui_data_t *g = IOP_GUI_ALLOC(velvia);
 
-  g->strength_scale = dt_bauhaus_slider_from_params(self, N_("Strength"));
+  g->strength_scale = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_format(g->strength_scale, "%");
   gtk_widget_set_tooltip_text(g->strength_scale, _("The strength of saturation boost"));
 

@@ -67,8 +67,8 @@ typedef float rgb_pixel[3];
 
 typedef struct dt_iop_hazeremoval_params_t
 {
-  float strength; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.2
-  float distance; // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.2
+  float strength; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.2 $DESCRIPTION: "Strength"
+  float distance; // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.2 $DESCRIPTION: "Distance"
 } dt_iop_hazeremoval_params_t;
 
 // types  dt_iop_hazeremoval_params_t and dt_iop_hazeremoval_data_t are
@@ -198,10 +198,10 @@ void gui_init(dt_iop_module_t *self)
   g->A0[2] = NAN;
   g->hash = 0;
 
-  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
   gtk_widget_set_tooltip_text(g->strength, _("Amount of haze reduction"));
 
-  g->distance = dt_bauhaus_slider_from_params(self, N_("Distance"));
+  g->distance = dt_bauhaus_slider_from_params(self, "distance");
   dt_bauhaus_slider_set_digits(g->distance, 3);
   gtk_widget_set_tooltip_text(g->distance, _("Limit haze removal up to a specific spatial depth"));
 }

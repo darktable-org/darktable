@@ -69,9 +69,9 @@ typedef enum dt_iop_watermark_type_t
 typedef struct dt_iop_watermark_params_t
 {
   /** opacity value of rendering watermark */
-  float opacity; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0
+  float opacity; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "Opacity"
   /** scale value of rendering watermark */
-  float scale;   // $MIN: 1.0 $MAX: 500.0 $DEFAULT: 100.0
+  float scale;   // $MIN: 1.0 $MAX: 500.0 $DEFAULT: 100.0 $DESCRIPTION: "Scale"
   /** Pixel independent xoffset, 0 to 1 */
   float xoffset; // $MIN: -1.0 $MAX: 1.0, 0.001 $DEFAULT: 0.0 $DESCRIPTION: "X offset"
   /** Pixel independent yoffset, 0 to 1 */
@@ -1119,7 +1119,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
-  g->opacity = dt_bauhaus_slider_from_params(self, N_("Opacity"));
+  g->opacity = dt_bauhaus_slider_from_params(self, "opacity");
   dt_bauhaus_slider_set_format(g->opacity, "%");
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("Placement")), TRUE, TRUE, 0);
@@ -1129,7 +1129,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->rotate, "°");
 
   // scale
-  g->scale = dt_bauhaus_slider_from_params(self, N_("Scale"));
+  g->scale = dt_bauhaus_slider_from_params(self, "scale");
   dt_bauhaus_slider_set_soft_max(g->scale, 100.0);
   dt_bauhaus_slider_set_format(g->scale, "%");
 

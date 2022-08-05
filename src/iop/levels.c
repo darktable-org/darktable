@@ -64,10 +64,10 @@ typedef enum dt_iop_levels_mode_t
 
 typedef struct dt_iop_levels_params_t
 {
-  dt_iop_levels_mode_t mode; // $DEFAULT: LEVELS_MODE_MANUAL
-  float black; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0
-  float gray;  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
-  float white; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0
+  dt_iop_levels_mode_t mode; // $DEFAULT: LEVELS_MODE_MANUAL $DESCRIPTION: "Mode"
+  float black; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "Black"
+  float gray;  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Gray"
+  float white; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "White"
   float levels[3];
 } dt_iop_levels_params_t;
 
@@ -660,15 +660,15 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *vbox_automatic = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
-  c->percentile_black = dt_bauhaus_slider_from_params(self, N_("Black"));
+  c->percentile_black = dt_bauhaus_slider_from_params(self, "black");
   gtk_widget_set_tooltip_text(c->percentile_black, _("Black percentile"));
   dt_bauhaus_slider_set_format(c->percentile_black, "%");
 
-  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("Gray"));
+  c->percentile_grey = dt_bauhaus_slider_from_params(self, "gray");
   gtk_widget_set_tooltip_text(c->percentile_grey, _("Gray percentile"));
   dt_bauhaus_slider_set_format(c->percentile_grey, "%");
 
-  c->percentile_white = dt_bauhaus_slider_from_params(self, N_("White"));
+  c->percentile_white = dt_bauhaus_slider_from_params(self, "white");
   gtk_widget_set_tooltip_text(c->percentile_white, _("White percentile"));
   dt_bauhaus_slider_set_format(c->percentile_white, "%");
 
@@ -677,7 +677,7 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
-  c->mode = dt_bauhaus_combobox_from_params(self, N_("Mode"));
+  c->mode = dt_bauhaus_combobox_from_params(self, "mode");
 
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 }

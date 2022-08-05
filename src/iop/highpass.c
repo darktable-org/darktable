@@ -46,7 +46,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_highpass_params_t)
 
 typedef struct dt_iop_highpass_params_t
 {
-  float sharpness; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
+  float sharpness; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Sharpness"
   float contrast;  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Contrast boost"
 } dt_iop_highpass_params_t;
 
@@ -391,7 +391,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_highpass_gui_data_t *g = IOP_GUI_ALLOC(highpass);
 
-  g->sharpness = dt_bauhaus_slider_from_params(self, N_("Sharpness"));
+  g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
   dt_bauhaus_slider_set_format(g->sharpness, "%");
   gtk_widget_set_tooltip_text(g->sharpness, _("The sharpness of highpass filter"));
 

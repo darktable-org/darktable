@@ -62,7 +62,7 @@ typedef struct dt_iop_clipping_aspect_t
 
 typedef struct dt_iop_clipping_params_t
 {
-  float angle; // $MIN: -180.0 $MAX: 180.0
+  float angle; // $MIN: -180.0 $MAX: 180.0 $DESCRIPTION: "Angle"
   float cx;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "Left"
   float cy;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "Top"
   float cw;    // $MIN: 0.0 $MAX: 1.0 $DESCRIPTION: "Right"
@@ -2116,7 +2116,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hvflip, _("Mirror image horizontally and/or vertically"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->hvflip, TRUE, TRUE, 0);
 
-  g->angle = dt_bauhaus_slider_from_params(self, N_("Angle"));
+  g->angle = dt_bauhaus_slider_from_params(self, "angle");
   dt_bauhaus_slider_set_factor(g->angle, -1.0);
   dt_bauhaus_slider_set_format(g->angle, "°");
   gtk_widget_set_tooltip_text(g->angle, _("Right-click and drag a line on the image to drag a straight line"));

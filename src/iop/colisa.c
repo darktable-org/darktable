@@ -45,9 +45,9 @@ DT_MODULE_INTROSPECTION(1, dt_iop_colisa_params_t)
 
 typedef struct dt_iop_colisa_params_t
 {
-  float contrast;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
-  float brightness; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
-  float saturation; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
+  float contrast;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Contrast"
+  float brightness; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Brightness"
+  float saturation; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Saturation"
 } dt_iop_colisa_params_t;
 
 typedef struct dt_iop_colisa_gui_data_t
@@ -302,9 +302,9 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colisa_gui_data_t *g = IOP_GUI_ALLOC(colisa);
 
-  g->contrast = dt_bauhaus_slider_from_params(self, N_("Contrast"));
-  g->brightness = dt_bauhaus_slider_from_params(self, N_("Brightness"));
-  g->saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  g->brightness = dt_bauhaus_slider_from_params(self, "brightness");
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
 
   gtk_widget_set_tooltip_text(g->contrast, _("Contrast adjustment"));
   gtk_widget_set_tooltip_text(g->brightness, _("Brightness adjustment"));

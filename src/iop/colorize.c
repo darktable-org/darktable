@@ -53,10 +53,10 @@ typedef struct dt_iop_colorize_params1_t
 
 typedef struct dt_iop_colorize_params_t
 {
-  float hue;                  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0
-  float saturation;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5
+  float hue;                  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Hue"
+  float saturation;           // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "Saturation"
   float source_lightness_mix; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Source mix"
-  float lightness;            // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
+  float lightness;            // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Lightness"
   int version;
 } dt_iop_colorize_params_t;
 
@@ -341,7 +341,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colorize_gui_data_t *g = IOP_GUI_ALLOC(colorize);
 
-  g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, N_("Hue")));
+  g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, "hue"));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);
   dt_bauhaus_slider_set_format(g->hue, "°");
@@ -354,13 +354,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->hue, 1.0f  , 1.0f, 0.0f, 0.0f);
   gtk_widget_set_tooltip_text(g->hue, _("Select the hue tone"));
 
-  g->saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_format(g->saturation, "%");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(g->saturation, _("Select the saturation shadow tone"));
 
-  g->lightness = dt_bauhaus_slider_from_params(self, N_("Lightness"));
+  g->lightness = dt_bauhaus_slider_from_params(self, "lightness");
   dt_bauhaus_slider_set_format(g->lightness, "%");
   gtk_widget_set_tooltip_text(g->lightness, _("Lightness of color"));
 

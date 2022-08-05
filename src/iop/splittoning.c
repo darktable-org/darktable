@@ -49,8 +49,8 @@ typedef struct dt_iop_splittoning_params_t
   float shadow_saturation;    // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "Saturation"
   float highlight_hue;        // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2 $DESCRIPTION: "Hue"
   float highlight_saturation; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "Saturation"
-  float balance;              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 center luminance of gradient
-  float compress;             // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 33.0 Compress range
+  float balance;              // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "Balance" center luminance of gradient
+  float compress;             // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 33.0 $DESCRIPTION: "Compress" Compress range
 } dt_iop_splittoning_params_t;
 
 typedef struct dt_iop_splittoning_gui_data_t
@@ -524,7 +524,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Additional parameters
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("Properties")), FALSE, FALSE, 0);
 
-  g->balance_scale = dt_bauhaus_slider_from_params(self, N_("Balance"));
+  g->balance_scale = dt_bauhaus_slider_from_params(self, "balance");
   dt_bauhaus_slider_set_feedback(g->balance_scale, 0);
   dt_bauhaus_slider_set_digits(g->balance_scale, 4);
   dt_bauhaus_slider_set_factor(g->balance_scale, -100.0);
@@ -533,7 +533,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->balance_scale, 1.0f, 0.5f, 0.5f, 0.5f);
   gtk_widget_set_tooltip_text(g->balance_scale, _("The balance of center of split-toning"));
 
-  g->compress_scale = dt_bauhaus_slider_from_params(self, N_("Compress"));
+  g->compress_scale = dt_bauhaus_slider_from_params(self, "compress");
   dt_bauhaus_slider_set_format(g->compress_scale, "%");
   gtk_widget_set_tooltip_text(g->compress_scale, _("Compress the effect on highlights/shadows and\npreserve mid-tones"));
 }

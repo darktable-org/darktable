@@ -71,9 +71,9 @@ typedef enum dt_spot_mode_t
 
 typedef struct dt_iop_exposure_params_t
 {
-  dt_iop_exposure_mode_t mode; // $DEFAULT: EXPOSURE_MODE_MANUAL
+  dt_iop_exposure_mode_t mode; // $DEFAULT: EXPOSURE_MODE_MANUAL $DESCRIPTION: "Mode"
   float black;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Black level correction"
-  float exposure; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
+  float exposure; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0 $DESCRIPTION: "Exposure"
   float deflicker_percentile;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Percentile"
   float deflicker_target_level; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: -4.0 $DESCRIPTION: "Target level"
   gboolean compensate_exposure_bias; // $DEFAULT: FALSE $DESCRIPTION: "Compensate exposure bias"
@@ -1026,8 +1026,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->compensate_exposure_bias, _("Automatically remove the camera exposure bias.\n"
                                                              "This is useful if you exposed the image to the right."));
 
-  g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-                                    dt_bauhaus_slider_from_params(self, N_("Exposure")));
+  g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "exposure"));
   gtk_widget_set_tooltip_text(g->exposure, _("Adjust the exposure correction"));
   dt_bauhaus_slider_set_digits(g->exposure, 3);
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
@@ -1062,7 +1061,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->mode = dt_bauhaus_combobox_from_params(self, N_("Mode"));
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode_stack), TRUE, TRUE, 0);
 

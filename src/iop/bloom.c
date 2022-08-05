@@ -45,9 +45,9 @@ DT_MODULE_INTROSPECTION(1, dt_iop_bloom_params_t)
 
 typedef struct dt_iop_bloom_params_t
 {
-  float size;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 20.0
-  float threshold;  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 90.0
-  float strength;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
+  float size;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 20.0 $DESCRIPTION: "Size"
+  float threshold;  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 90.0 $DESCRIPTION: "Threshold"
+  float strength;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0 $DESCRIPTION: "Strength"
 } dt_iop_bloom_params_t;
 
 typedef struct dt_iop_bloom_gui_data_t
@@ -387,15 +387,15 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_bloom_gui_data_t *g = IOP_GUI_ALLOC(bloom);
 
-  g->size = dt_bauhaus_slider_from_params(self, N_("Size"));
+  g->size = dt_bauhaus_slider_from_params(self, "size");
   dt_bauhaus_slider_set_format(g->size, "%");
   gtk_widget_set_tooltip_text(g->size, _("The size of bloom"));
 
-  g->threshold = dt_bauhaus_slider_from_params(self, N_("Threshold"));
+  g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
   dt_bauhaus_slider_set_format(g->threshold, "%");
   gtk_widget_set_tooltip_text(g->threshold, _("The threshold of light"));
 
-  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_format(g->strength, "%");
   gtk_widget_set_tooltip_text(g->strength, _("The strength of bloom"));
 }

@@ -49,10 +49,10 @@ dt_iop_bilat_mode_t;
 
 typedef struct dt_iop_bilat_params_t
 {
-  dt_iop_bilat_mode_t mode; // $DEFAULT: 1
+  dt_iop_bilat_mode_t mode; // $DEFAULT: 1 $DESCRIPTION: "Mode"
   float sigma_r; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5 highlights 100 & range
   float sigma_s; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.5 shadows 100 & spatial 1 100 50
-  float detail;  // $MIN: -1.0 $MAX: 4.0 $DEFAULT: 0.25
+  float detail;  // $MIN: -1.0 $MAX: 4.0 $DEFAULT: 0.25 $DESCRIPTION: "Detail"
   float midtone; // $MIN: 0.001 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "Midtone range"
 }
 dt_iop_bilat_params_t;
@@ -424,10 +424,10 @@ void gui_init(dt_iop_module_t *self)
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   dt_iop_bilat_gui_data_t *g = IOP_GUI_ALLOC(bilat);
 
-  g->mode = dt_bauhaus_combobox_from_params(self, N_("Mode"));
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("The filter used for local contrast enhancement. Bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
-  g->detail = dt_bauhaus_slider_from_params(self, N_("Detail"));
+  g->detail = dt_bauhaus_slider_from_params(self, "detail");
   dt_bauhaus_slider_set_offset(g->detail, 100);
   dt_bauhaus_slider_set_format(g->detail, "%");
   gtk_widget_set_tooltip_text(g->detail, _("Changes the local contrast"));

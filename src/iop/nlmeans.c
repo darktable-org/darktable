@@ -57,9 +57,9 @@ typedef struct dt_iop_nlmeans_params_t
 {
   // these are stored in db.
   float radius;   // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "Patch size"
-  float strength; // $MIN: 0.0 $MAX: 100000.0 $DEFAULT: 50.0
-  float luma;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5
-  float chroma;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0
+  float strength; // $MIN: 0.0 $MAX: 100000.0 $DEFAULT: 50.0 $DESCRIPTION: "Strength"
+  float luma;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5 $DESCRIPTION: "Luma"
+  float chroma;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "Chroma"
 } dt_iop_nlmeans_params_t;
 
 typedef struct dt_iop_nlmeans_gui_data_t
@@ -511,15 +511,15 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_max(g->radius, 4.0f);
   dt_bauhaus_slider_set_digits(g->radius, 0);
   gtk_widget_set_tooltip_text(g->radius, _("Radius of the patches to match"));
-  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_soft_max(g->strength, 100.0f);
   dt_bauhaus_slider_set_digits(g->strength, 0);
   dt_bauhaus_slider_set_format(g->strength, "%");
   gtk_widget_set_tooltip_text(g->strength, _("Strength of the effect"));
-  g->luma = dt_bauhaus_slider_from_params(self, N_("Luma"));
+  g->luma = dt_bauhaus_slider_from_params(self, "luma");
   dt_bauhaus_slider_set_format(g->luma, "%");
   gtk_widget_set_tooltip_text(g->luma, _("How much to smooth brightness"));
-  g->chroma = dt_bauhaus_slider_from_params(self, N_("Chroma"));
+  g->chroma = dt_bauhaus_slider_from_params(self, "chroma");
   dt_bauhaus_slider_set_format(g->chroma, "%");
   gtk_widget_set_tooltip_text(g->chroma, _("How much to smooth colors"));
 }

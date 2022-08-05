@@ -123,13 +123,13 @@ typedef struct dt_iop_shadhi_params4_t
 
 typedef struct dt_iop_shadhi_params_t
 {
-  dt_gaussian_order_t order; // $DEFAULT: DT_IOP_GAUSSIAN_ZERO
-  float radius;     // $MIN: 0.1 $MAX: 500.0 $DEFAULT: 100.0
-  float shadows;    // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 50.0
+  dt_gaussian_order_t order; // $DEFAULT: DT_IOP_GAUSSIAN_ZERO $DESCRIPTION: "Order"
+  float radius;     // $MIN: 0.1 $MAX: 500.0 $DEFAULT: 100.0 $DESCRIPTION: "Radius"
+  float shadows;    // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Shadows"
   float whitepoint; // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "White point adjustment"
-  float highlights; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: -50.0
+  float highlights; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: -50.0 $DESCRIPTION: "Highlights"
   float reserved2;
-  float compress;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
+  float compress;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Compress"
   float shadows_ccorrect;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "Shadows color adjustment"
   float highlights_ccorrect; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Highlights color adjustment"
   unsigned int flags;        // $DEFAULT: UNBOUND_DEFAULT
@@ -677,12 +677,12 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_shadhi_gui_data_t *g = IOP_GUI_ALLOC(shadhi);
 
-  g->shadows = dt_bauhaus_slider_from_params(self, N_("Shadows"));
-  g->highlights = dt_bauhaus_slider_from_params(self, N_("Highlights"));
+  g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
+  g->highlights = dt_bauhaus_slider_from_params(self, "highlights");
   g->whitepoint = dt_bauhaus_slider_from_params(self, "whitepoint");
   g->shadhi_algo = dt_bauhaus_combobox_from_params(self, "shadhi_algo");
-  g->radius = dt_bauhaus_slider_from_params(self, N_("Radius"));
-  g->compress = dt_bauhaus_slider_from_params(self, N_("Compress"));
+  g->radius = dt_bauhaus_slider_from_params(self, "radius");
+  g->compress = dt_bauhaus_slider_from_params(self, "compress");
   dt_bauhaus_slider_set_format(g->compress, "%");
   g->shadows_ccorrect = dt_bauhaus_slider_from_params(self, "shadows_ccorrect");
   dt_bauhaus_slider_set_format(g->shadows_ccorrect, "%");

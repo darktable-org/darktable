@@ -416,13 +416,13 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_censorize_gui_data_t *g = IOP_GUI_ALLOC(censorize);
 
-  g->radius_1 = dt_bauhaus_slider_from_params(self, N_("Radius_1"));
+  g->radius_1 = dt_bauhaus_slider_from_params(self, "radius_1");
 
-  g->pixelate = dt_bauhaus_slider_from_params(self, N_("Pixelate"));
+  g->pixelate = dt_bauhaus_slider_from_params(self, "pixelate");
 
-  g->radius_2 = dt_bauhaus_slider_from_params(self, N_("Radius_2"));
+  g->radius_2 = dt_bauhaus_slider_from_params(self, "radius_2");
 
-  g->noise = dt_bauhaus_slider_from_params(self, N_("Noise"));
+  g->noise = dt_bauhaus_slider_from_params(self, "noise");
 
   gtk_widget_set_tooltip_text(g->radius_1, _("Radius of gaussian blur before pixellation"));
   gtk_widget_set_tooltip_text(g->radius_2, _("Radius of gaussian blur after pixellation"));

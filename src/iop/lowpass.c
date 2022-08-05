@@ -82,10 +82,10 @@ typedef struct dt_iop_lowpass_params3_t
 typedef struct dt_iop_lowpass_params_t
 {
   dt_gaussian_order_t order; // $DEFAULT: 0
-  float radius;     // $MIN: 0.1 $MAX: 500.0 $DEFAULT: 10.0
-  float contrast;   // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0
-  float brightness; // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0
-  float saturation; // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0
+  float radius;     // $MIN: 0.1 $MAX: 500.0 $DEFAULT: 10.0 $DESCRIPTION: "Radius"
+  float contrast;   // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0 $DESCRIPTION: "Contrast"
+  float brightness; // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0 $DESCRIPTION: "Brightness"
+  float saturation; // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0 $DESCRIPTION: "Saturation"
   dt_iop_lowpass_algo_t lowpass_algo; // $DEFAULT: LOWPASS_ALGO_GAUSSIAN $DESCRIPTION: "Soften with"
   int unbound; // $DEFAULT: 1
 } dt_iop_lowpass_params_t;
@@ -568,11 +568,11 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_lowpass_gui_data_t *g = IOP_GUI_ALLOC(lowpass);
 
-  g->radius = dt_bauhaus_slider_from_params(self, N_("Radius"));
+  g->radius = dt_bauhaus_slider_from_params(self, "radius");
   g->lowpass_algo = dt_bauhaus_combobox_from_params(self, "lowpass_algo");
-  g->contrast = dt_bauhaus_slider_from_params(self, N_("Contrast"));
-  g->brightness = dt_bauhaus_slider_from_params(self, N_("Brightness"));
-  g->saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  g->brightness = dt_bauhaus_slider_from_params(self, "brightness");
+  g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
 
   gtk_widget_set_tooltip_text(g->radius, _("Radius of gaussian/bilateral blur"));
   gtk_widget_set_tooltip_text(g->contrast, _("Contrast of lowpass filter"));
