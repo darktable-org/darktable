@@ -3845,7 +3845,7 @@ static void _remove_widget_from_hashtable(GtkWidget *widget, gpointer user_data)
 
 static inline gchar *path_without_symbols(const gchar *path)
 {
-  return g_strdelimit(g_strndup(path, strlen(path) - (g_str_has_suffix(path, "...")?3:0)), "=,/.;", '-');
+  return g_ascii_strdown(g_strdelimit(g_strndup(path, strlen(path) - (g_str_has_suffix(path, "...")?3:0)), "=,/.;", '-'), -1);
 }
 
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
