@@ -3,16 +3,14 @@ How to make disk image with darktable application bundle (64 bit ARM only):
 1). Install MacPorts (instructions and prerequisites can be found on official website), please use default installation path (/opt/local).
     They will need some tuning, so before you install anything add this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
-    You will also need to add patches for exiv2 and gnutls
-    (exiv2 patch enables CR3 support, gnutls patch fixes certificate storage):
-     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/graphics
+    You will also need to add a patch for gnutls
+    (that patch fixes certificate storage):
+     $ mkdir -p ~/ports/devel/gnutls/files
      $ cp -R "$(port dir gnutls)" ~/ports/devel
      $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.patch
-     $ cp -R "$(port dir exiv2)" ~/ports/graphics
-     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/exiv2-BMFF.patch | patch -d ~/ports -p0
     then append this line:
      patchfiles-append patch.diff
-    to ~/ports/*/*/Portfile files you just copied (except for exiv2) and run:
+    to ~/ports/*/*/Portfile file you just copied and run:
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
