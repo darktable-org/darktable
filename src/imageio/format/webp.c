@@ -262,6 +262,15 @@ void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *par
   free(params);
 }
 
+int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data, uint32_t *width,
+              uint32_t *height)
+{
+  /* maximum dimensions supported by WebP images */
+  *width = 16383U;
+  *height = 16383U;
+  return 1;
+}
+
 int bpp(dt_imageio_module_data_t *p)
 {
   return 8;
@@ -381,8 +390,8 @@ void gui_reset(dt_imageio_module_format_t *self)
 
 int flags(dt_imageio_module_data_t *data)
 {
-  // TODO(jinxos): support embedded XMP/ICC
-  return 0;
+  // TODO(jinxos): support embedded ICC
+  return FORMAT_FLAGS_SUPPORT_XMP;
 }
 
 // clang-format off
@@ -390,4 +399,3 @@ int flags(dt_imageio_module_data_t *data)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

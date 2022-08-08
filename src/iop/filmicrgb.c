@@ -24,6 +24,7 @@
 #include "common/darktable.h"
 #include "common/bspline.h"
 #include "common/dwt.h"
+#include "common/gamut_mapping.h"
 #include "common/image.h"
 #include "common/iop_profile.h"
 #include "common/opencl.h"
@@ -1503,43 +1504,6 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in, float *co
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(matrix) aligned(in, out:16) aligned(matrix:64)
-#endif
-static inline void pipe_RGB_to_Ych(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix, dt_aligned_pixel_t out)
-{
-  dt_aligned_pixel_t LMS = { 0.f };
-  dt_aligned_pixel_t Yrg = { 0.f };
-
-  // go from pipeline RGB to CIE 2006 LMS D65
-  dot_product(in, matrix, LMS);
-
-  // go from CIE LMS 2006 to Kirk/Filmlight Yrg
-  LMS_to_Yrg(LMS, Yrg);
-
-  // rewrite in polar coordinates
-  Yrg_to_Ych(Yrg, out);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd uniform(matrix) aligned(in, out:16) aligned(matrix:64)
-#endif
-static inline void Ych_to_pipe_RGB(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix, dt_aligned_pixel_t out)
-{
-  dt_aligned_pixel_t LMS = { 0.f };
-  dt_aligned_pixel_t Yrg = { 0.f };
-
-  // rewrite in cartesian coordinates
-  Ych_to_Yrg(in, Yrg);
-
-  // go from Kirk/Filmlight Yrg to CIE LMS 2006
-  Yrg_to_LMS(Yrg, LMS);
-
-  // go from CIE LMS 2006 to pipeline RGB
-  dot_product(LMS, matrix, out);
-}
-
 static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, dt_aligned_pixel_t Ych_final, const float saturation)
 {
   // Note : Ych is normalized trough the LMS conversion,
@@ -1575,112 +1539,6 @@ static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, d
   Ych_final[1] = fmaxf(chroma_final / Ych_final[0], 0.f);
 }
 
-// Pipeline and ICC luminance is CIE Y 1931
-// Kirk Ych/Yrg uses CIE Y 2006
-// 1 CIE Y 1931 = 1.05785528 CIE Y 2006, so we need to adjust that.
-// This also accounts for the CAT16 D50->D65 adaptation that has to be done
-// to go from RGB to CIE LMS 2006.
-// Warning: only applies to achromatic pixels.
-#define CIE_Y_1931_to_CIE_Y_2006(x) (1.05785528f * (x))
-
-
-static inline float clip_chroma_white_raw(const float coeffs[3], const float target_white, const float Y,
-                                          const float cos_h, const float sin_h)
-{
-  const float denominator_Y_coeff = coeffs[0] * (0.979381443298969f * cos_h + 0.391752577319588f * sin_h)
-                                    + coeffs[1] * (0.0206185567010309f * cos_h + 0.608247422680412f * sin_h)
-                                    - coeffs[2] * (cos_h + sin_h);
-  const float denominator_target_term = target_white * (0.68285981628866f * cos_h + 0.482137060515464f * sin_h);
-
-  // this channel won't limit the chroma
-  if(denominator_Y_coeff == 0.f) return FLT_MAX;
-
-  // The equation for max chroma has an asymptote at this point (zero of denominator).
-  // Any Y below that value won't give us sensible results for the upper bound
-  // and we should consider the lower bound instead.
-  const float Y_asymptote = denominator_target_term / denominator_Y_coeff;
-  if(Y <= Y_asymptote) return FLT_MAX;
-
-  // Get chroma that brings one component of target RGB to the given target_rgb value.
-  // coeffs are the transformation coeffs to get one components (R, G or B) from input LMS.
-  // i.e. it is a row of the LMS -> RGB transformation matrix.
-  // See tools/derive_filmic_v6_gamut_mapping.py for derivation of these equations.
-  const float denominator = Y * denominator_Y_coeff - denominator_target_term;
-  const float numerator = -0.427506877216495f
-                          * (Y * (coeffs[0] + 0.856492345150334f * coeffs[1] + 0.554995960637719f * coeffs[2])
-                             - 0.988237752433297f * target_white);
-
-  return numerator / denominator;
-}
-
-
-static inline float clip_chroma_white(const float coeffs[3], const float target_white, const float Y,
-                                      const float cos_h, const float sin_h)
-{
-  // Due to slight numerical inaccuracies in color matrices,
-  // the chroma clipping curves for each RGB channel may be
-  // slightly at the max luminance. Thus we linearly interpolate
-  // each clipping line to zero chroma near max luminance.
-  const float eps = 1e-3f;
-  const float max_Y = CIE_Y_1931_to_CIE_Y_2006(target_white);
-  const float delta_Y = MAX(max_Y - Y, 0.f);
-  float max_chroma;
-  if(delta_Y < eps)
-  {
-    max_chroma = delta_Y / (eps * max_Y) * clip_chroma_white_raw(coeffs, target_white, (1.f - eps) * max_Y, cos_h, sin_h);
-  }
-  else
-  {
-    max_chroma = clip_chroma_white_raw(coeffs, target_white, Y, cos_h, sin_h);
-  }
-  return max_chroma >= 0.f ? max_chroma : FLT_MAX;
-}
-
-
-static inline float clip_chroma_black(const float coeffs[3], const float cos_h, const float sin_h)
-{
-  // N.B. this is the same as clip_chroma_white_raw() but with target value = 0.
-  // This allows eliminating some computation.
-
-  // Get chroma that brings one component of target RGB to zero.
-  // coeffs are the transformation coeffs to get one components (R, G or B) from input LMS.
-  // i.e. it is a row of the LMS -> RGB transformation matrix.
-  // See tools/derive_filmic_v6_gamut_mapping.py for derivation of these equations.
-  const float denominator = coeffs[0] * (0.979381443298969f * cos_h + 0.391752577319588f * sin_h)
-                            + coeffs[1] * (0.0206185567010309f * cos_h + 0.608247422680412f * sin_h)
-                            - coeffs[2] * (cos_h + sin_h);
-
-  // this channel won't limit the chroma
-  if(denominator == 0.f) return FLT_MAX;
-
-  const float numerator = -0.427506877216495f * (coeffs[0] + 0.856492345150334f * coeffs[1] + 0.554995960637719f * coeffs[2]);
-  const float max_chroma = numerator / denominator;
-  return max_chroma >= 0.f ? max_chroma : FLT_MAX;
-}
-
-
-static inline float clip_chroma(const dt_colormatrix_t matrix_out, const float target_white, const float Y,
-                                const float cos_h, const float sin_h, const float chroma)
-{
-  // Note: ideally we should figure out in advance which channel is going to clip first
-  // (either go negative or over maximum allowed value) and calculate chroma clipping
-  // curves only for those channels. That would avoid some ambiguities
-  // (what do negative chroma values mean etc.) and reduce computation. However this
-  // "brute-force" approach seems to work fine for now.
-
-  const float chroma_R_white = clip_chroma_white(matrix_out[0], target_white, Y, cos_h, sin_h);
-  const float chroma_G_white = clip_chroma_white(matrix_out[1], target_white, Y, cos_h, sin_h);
-  const float chroma_B_white = clip_chroma_white(matrix_out[2], target_white, Y, cos_h, sin_h);
-  const float max_chroma_white = MIN(MIN(chroma_R_white, chroma_G_white), chroma_B_white);
-
-  const float chroma_R_black = clip_chroma_black(matrix_out[0], cos_h, sin_h);
-  const float chroma_G_black = clip_chroma_black(matrix_out[1], cos_h, sin_h);
-  const float chroma_B_black = clip_chroma_black(matrix_out[2], cos_h, sin_h);
-  const float max_chroma_black = MIN(MIN(chroma_R_black, chroma_G_black), chroma_B_black);
-
-  return MIN(MIN(chroma, max_chroma_black), max_chroma_white);
-}
-
 
 static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_colormatrix_t matrix_out,
                                    const float display_black, const float display_white,
@@ -1689,26 +1547,26 @@ static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_co
   // Heuristic: if there are negatives, calculate the amount (luminance) of white light that
   // would need to be mixed in to bring the pixel back in gamut.
   dt_aligned_pixel_t RGB_brightened = { 0.f };
-  Ych_to_pipe_RGB(Ych_in, matrix_out, RGB_brightened);
+  Ych_to_RGB(Ych_in, matrix_out, RGB_brightened);
   const float min_pix = MIN(MIN(RGB_brightened[0], RGB_brightened[1]), RGB_brightened[2]);
   const float black_offset = MAX(-min_pix, 0.f);
   for_each_channel(c) RGB_brightened[c] += black_offset;
   dt_aligned_pixel_t Ych_brightened = { 0.f };
-  pipe_RGB_to_Ych(RGB_brightened, matrix_in, Ych_brightened);
+  RGB_to_Ych(RGB_brightened, matrix_in, Ych_brightened);
 
   // Increase the input luminance a little by the value we calculated above.
   // Note, however, that this doesn't actually desaturate the color like mixing
   // white would do. We will next find the chroma change needed to bring the pixel
   // into gamut.
   const float Y = CLAMP((Ych_in[0] + Ych_brightened[0]) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_black), CIE_Y_1931_to_CIE_Y_2006(display_white));
-  // Precompute sin and cos of hue for reuse
-  const float cos_h = cosf(Ych_in[2]);
-  const float sin_h = sinf(Ych_in[2]);
-  const float new_chroma = clip_chroma(matrix_out, display_white, Y, cos_h, sin_h, Ych_in[1]);
+
+  const float cos_h = Ych_in[2];
+  const float sin_h = Ych_in[3];
+  const float new_chroma = MIN(Ych_in[1], Ych_max_chroma(matrix_out, display_white, Y, cos_h, sin_h));
 
   // Go to RGB, using existing luminance and hue and the new chroma
-  const dt_aligned_pixel_t Ych = { Y, new_chroma, Ych_in[2], 0.f };
-  Ych_to_pipe_RGB(Ych, matrix_out, RGB_out);
+  const dt_aligned_pixel_t Ych = { Y, new_chroma, cos_h, sin_h };
+  Ych_to_RGB(Ych, matrix_out, RGB_out);
 
   // Clamp in target RGB as a final catch-all
   for_each_channel(c, aligned(RGB_out)) RGB_out[c] = CLAMP(RGB_out[c], 0.f, display_white);
@@ -1727,6 +1585,7 @@ static inline void gamut_mapping(dt_aligned_pixel_t Ych_final, dt_aligned_pixel_
 {
   // Force final hue to original
   Ych_final[2] = Ych_original[2];
+  Ych_final[3] = Ych_original[3];
 
   // Clip luminance
   Ych_final[0] = CLAMP(Ych_final[0],
@@ -1765,27 +1624,13 @@ static int filmic_v4_prepare_matrices(dt_colormatrix_t input_matrix, dt_colormat
                                        const dt_iop_order_iccprofile_info_t *const export_profile)
 
 {
-  dt_colormatrix_t temp_matrix;
-
-  // Prepare the pipeline RGB (D50) -> XYZ D50 -> XYZ D65 -> LMS 2006 matrix
-  dt_colormatrix_mul(temp_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
-  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, temp_matrix);
-
-  // Prepare the LMS 2006 -> XYZ D65 -> XYZ D50 -> pipeline RGB matrix (D50)
-  dt_colormatrix_mul(temp_matrix, XYZ_D65_to_D50_CAT16, LMS_2006_D65_to_XYZ_D65);
-  dt_colormatrix_mul(output_matrix, work_profile->matrix_out, temp_matrix);
+  prepare_RGB_Yrg_matrices(work_profile, input_matrix, output_matrix);
 
   // If the pipeline output profile is supported (matrix profile), we gamut map against it
   const int use_output_profile = (export_profile != NULL);
   if(use_output_profile)
   {
-    // Prepare the LMS 2006 -> XYZ D65 -> XYZ D50 -> output RGB (D50) matrix
-    dt_colormatrix_mul(temp_matrix, XYZ_D65_to_D50_CAT16, LMS_2006_D65_to_XYZ_D65);
-    dt_colormatrix_mul(export_output_matrix, export_profile->matrix_out, temp_matrix);
-
-    // Prepare the output RGB (D50) -> XYZ D50 -> XYZ D65 -> LMS 2006 matrix
-    dt_colormatrix_mul(temp_matrix, XYZ_D50_to_D65_CAT16, export_profile->matrix_in);
-    dt_colormatrix_mul(export_input_matrix, XYZ_D65_to_LMS_2006_D65, temp_matrix);
+    prepare_RGB_Yrg_matrices(export_profile, export_input_matrix, export_output_matrix);
   }
 
   return use_output_profile;
@@ -1851,11 +1696,11 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
 
     // Save Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_original = { 0.f };
-    pipe_RGB_to_Ych(pix_in, input_matrix, Ych_original);
+    RGB_to_Ych(pix_in, input_matrix, Ych_original);
 
     // Get final Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_final = { 0.f };
-    pipe_RGB_to_Ych(pix_out, input_matrix, Ych_final);
+    RGB_to_Ych(pix_out, input_matrix, Ych_final);
 
     gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix, output_matrix, export_input_matrix,
                   export_output_matrix, display_black, display_white, data->saturation, use_output_profile);
@@ -1907,11 +1752,11 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
 
     // Save Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_original = { 0.f };
-    pipe_RGB_to_Ych(pix_in, input_matrix, Ych_original);
+    RGB_to_Ych(pix_in, input_matrix, Ych_original);
 
     // Get final Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_final = { 0.f };
-    pipe_RGB_to_Ych(pix_out, input_matrix, Ych_final);
+    RGB_to_Ych(pix_out, input_matrix, Ych_final);
 
     Ych_final[1] = fminf(Ych_original[1], Ych_final[1]);
 

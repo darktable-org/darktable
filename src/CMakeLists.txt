@@ -36,7 +36,6 @@ FILE(GLOB SOURCE_FILES
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
-  "common/fswatch.c"
   "common/gaussian.c"
   "common/grouping.c"
   "common/guided_filter.c"
@@ -186,6 +185,9 @@ if(WIN32)
 
   list(APPEND SOURCE_FILES "win/filepath.c")
   list(APPEND HEADER_FILES "win/filepath.h")
+
+  list(APPEND SOURCE_FILES "win/scandir.c")
+  list(APPEND HEADER_FILES "win/scandir.h")
 
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
@@ -379,7 +381,7 @@ if(USE_HEIF)
       endif()
     endforeach()
   endmacro()
-  
+
   find_libheif(1.12.0;1.11.0;1.10.0;1.9.0)
   if(TARGET heif)
     list(APPEND LIBS heif)
@@ -473,6 +475,7 @@ if(USE_OPENJPEG)
 
     include_directories(SYSTEM ${OpenJPEG_INCLUDE_DIRS})
     list(APPEND LIBS ${OpenJPEG_LIBRARIES})
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
   endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
 
@@ -580,7 +583,7 @@ endif(LensFun_FOUND)
 
 if(OpenEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
-  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
+  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} exr CACHE INTERNAL "")
 endif(OpenEXR_FOUND)
 
 if(USE_OPENCL)
@@ -683,6 +686,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 #
 # Generate config.h
 #
+list(REMOVE_DUPLICATES DT_SUPPORTED_EXTENSIONS)
 string(REPLACE ";" "\", \"" DT_SUPPORTED_EXTENSIONS_STRING "${DT_SUPPORTED_EXTENSIONS}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${DARKTABLE_BINDIR}/config.h" @ONLY)
 

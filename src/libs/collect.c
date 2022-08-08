@@ -69,7 +69,10 @@ typedef struct dt_lib_collect_rule_t
   GtkWidget *button;
   gboolean typing;
   gchar *searchstring;
+  gboolean startwildcard;
+  gboolean sensitive;
   _datetime_range_t datetime_range;
+  GtkTreePath *expanded_path;
 } dt_lib_collect_rule_t;
 
 typedef struct dt_lib_collect_t
@@ -751,76 +754,51 @@ gboolean _combo_set_active_collection(GtkWidget *combo, const int property)
 static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
-  dt_lib_collect_t *d = get_collect(dr);
   gchar *str = NULL;
-  gchar *txt = NULL;
-  gboolean startwildcard = FALSE;
   gboolean expanded = FALSE;
 
-  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_TEXT, &txt, -1);
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+  gchar *haystack = dr->sensitive ? g_strdup(str) : g_utf8_strdown(str, -1);
+  gchar *needle = g_strdup(dr->searchstring);
 
-  gchar *haystack = g_utf8_strdown(str, -1);
-  gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
-  gchar *txt2 = g_utf8_strdown(txt, -1);
-
-  if(g_str_has_prefix(needle, "%")) startwildcard = TRUE;
-  if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
-  if(g_str_has_suffix(haystack, "%")) haystack[strlen(haystack) - 1] = '\0';
-  if(_combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_TAG
-     || _combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_GEOTAGGING)
+  int collection = _combo_get_active_collection(dr->combo);
+  switch(collection)
   {
-    if(g_str_has_suffix(needle, "|")) needle[strlen(needle) - 1] = '\0';
-    if(g_str_has_suffix(haystack, "|")) haystack[strlen(haystack) - 1] = '\0';
-  }
-  else if(_combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_FOLDERS)
-  {
-    if(g_str_has_suffix(needle, "*")) needle[strlen(needle) - 1] = '\0';
-    if(g_str_has_suffix(needle, "/")) needle[strlen(needle) - 1] = '\0';
-    if(g_str_has_suffix(haystack, "/")) haystack[strlen(haystack) - 1] = '\0';
-  }
-  else
-  {
-    const int temp = _combo_get_active_collection(dr->combo);
-    if(DT_COLLECTION_PROP_DAY == temp || is_time_property(temp))
-    {
+    case DT_COLLECTION_PROP_TAG:
+    case DT_COLLECTION_PROP_GEOTAGGING:
+      if(g_str_has_suffix(needle, "*")) needle[strlen(needle) - 1] = '\0';
+      if(g_str_has_suffix(needle, "|")) needle[strlen(needle) - 1] = '\0';
+      if(g_str_has_suffix(haystack, "|")) haystack[strlen(haystack) - 1] = '\0';
+      break;
+    case DT_COLLECTION_PROP_FOLDERS:
+      if(g_str_has_suffix(needle, "*")) needle[strlen(needle) - 1] = '\0';
+      if(g_str_has_suffix(needle, "/")) needle[strlen(needle) - 1] = '\0';
+      if(g_str_has_suffix(haystack, "/")) haystack[strlen(haystack) - 1] = '\0';
+      break;
+    case DT_COLLECTION_PROP_DAY:
+    case DT_COLLECTION_PROP_TIME:
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
       if(g_str_has_suffix(needle, ":")) needle[strlen(needle) - 1] = '\0';
       if(g_str_has_suffix(haystack, ":")) haystack[strlen(haystack) - 1] = '\0';
-    }
-  }
-  if(dr->typing && g_strrstr(txt2, needle) != NULL)
-  {
-    gtk_tree_view_expand_to_path(d->view, path);
-    expanded = TRUE;
+      break;
   }
 
-  if(strlen(needle)==0)
+  if(!needle || !needle[0])
   {
     //nothing to do, we keep the tree collapsed
   }
-  else if(strcmp(haystack, needle) == 0)
+  else if((dr->startwildcard && g_strrstr(haystack, needle))
+          || (!dr->startwildcard && g_str_has_prefix(haystack, needle)))
   {
-    gtk_tree_view_expand_to_path(d->view, path);
-    gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
-    gtk_tree_view_scroll_to_cell(d->view, path, NULL, FALSE, 0.2, 0);
+    dr->expanded_path = gtk_tree_path_copy(path);
     expanded = TRUE;
   }
-  else if(startwildcard && g_strrstr(haystack, needle+1) != NULL)
-  {
-    gtk_tree_view_expand_to_path(d->view, path);
-    expanded = TRUE;
-  }
-  else if((dr->typing || _combo_get_active_collection(dr->combo) != DT_COLLECTION_PROP_FOLDERS)
-          && g_str_has_prefix(haystack, needle))
-  {
-    gtk_tree_view_expand_to_path(d->view, path);
-    expanded = TRUE;
-  }
-
   g_free(haystack);
   g_free(needle);
-  g_free(txt2);
   g_free(str);
-  g_free(txt);
 
   return expanded; // if we expanded the path, we can stop iteration (saves half on average)
 }
@@ -939,7 +917,7 @@ static gboolean tree_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   }
   else
   {
-    gchar *haystack = g_utf8_strdown(str, -1);
+    gchar *haystack = dr->sensitive ? g_strdup(str) : g_utf8_strdown(str, -1);
     const int property = _combo_get_active_collection(dr->combo);
     if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
     {
@@ -964,8 +942,12 @@ static gboolean tree_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
           visible = (nb >= dr->datetime_range.nb1 && nb <= dr->datetime_range.nb2);
       }
     }
+    else if(!dr->searchstring || !dr->searchstring[0])
+      visible = TRUE;
+    else if (dr->startwildcard)
+      visible = g_strrstr(haystack, dr->searchstring) != NULL;
     else
-      visible = (g_strrstr(haystack, dr->searchstring) != NULL);
+      visible = g_str_has_prefix(haystack, dr->searchstring);
     g_free(haystack);
   }
 
@@ -1211,6 +1193,31 @@ void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeM
   }
 
   g_free(name);
+}
+
+static void _expand_select_tree_path(GtkTreePath *path1, GtkTreePath *path2, dt_lib_collect_t *d)
+{
+  GtkTreePath *p1 = gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter), path1);
+  GtkTreePath *p2 = path2 ? gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter), path2) : NULL;
+  GtkTreePath *p3 = NULL;
+  GtkTreeIter iter;
+  if(gtk_tree_model_get_iter(d->treefilter, &iter, p1))
+  {
+    GtkTreeIter parent;
+    if(gtk_tree_model_iter_parent(d->treefilter, &parent, &iter))
+      p3 = gtk_tree_model_get_path(d->treefilter, &parent);
+  }
+  gtk_tree_view_expand_to_path(d->view, p3 ? p3 : p1);
+  gtk_tree_view_scroll_to_cell(d->view, p1, NULL, TRUE, 0.5, 0.5);
+  if(path2)
+    gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), p1, p2);
+  else
+    gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), p1);
+  gtk_tree_path_free(p1);
+  if(p2)
+    gtk_tree_path_free(p2);
+  if(p3)
+    gtk_tree_path_free(p3);
 }
 
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
@@ -1616,23 +1623,22 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     g_free(number2);
   }
 
+  dr->sensitive = (property == DT_COLLECTION_PROP_TAG &&
+     dt_conf_is_equal("plugins/lighttable/tagging/case_sensitivity", "sensitive"));
+  gchar *needle = dr->sensitive ? g_strdup(gtk_entry_get_text(GTK_ENTRY(dr->text)))
+                                : g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+  if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
+  dr->startwildcard = needle[0] == '%';
+  dr->searchstring =  needle[0] == '%' ? &needle[1] : needle;
+  dr->expanded_path = NULL;
+
   // if needed, we restrict the tree to matching entries
   if(dr->typing)
-  {
-    if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
-    {
-      tree_set_visibility(model, dr);
-    }
-    else
-    {
-      gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
-      tree_set_visibility(model, dr);
-      g_free(needle);
-    }
-  }
+    tree_set_visibility(model, dr);
 
+  if(!needle[0]) {} // do nothing
   // select/expand items corresponding to entry
-  if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
+  else if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
     if(strcmp(dr->datetime_range.operator, "[]") == 0)
     {
@@ -1640,36 +1646,26 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       dr->datetime_range.path2 = NULL;
       gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)_datetime_range_select, dr);
       if(dr->datetime_range.path1 && dr->datetime_range.path2)
-      {
-        GtkTreePath *path1 = gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter), dr->datetime_range.path1);
-        GtkTreePath *path2 = gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter), dr->datetime_range.path2);
-        GtkTreePath *path3 = NULL;
-        GtkTreeIter iter;
-        if(gtk_tree_model_get_iter(d->treefilter, &iter, path1))
-        {
-          GtkTreeIter parent;
-          if(gtk_tree_model_iter_parent(d->treefilter, &parent, &iter))
-            path3 = gtk_tree_model_get_path(d->treefilter, &parent);
-        }
-        gtk_tree_view_expand_to_path(d->view, path3 ? path3 : path1);
-        gtk_tree_view_scroll_to_cell(d->view, path1, NULL, TRUE, 0.5, 0.5);
-        gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), path1, path2);
-        gtk_tree_path_free(path1);
-        gtk_tree_path_free(path2);
-        if(path3)
-          gtk_tree_path_free(path3);
-      }
+        _expand_select_tree_path(dr->datetime_range.path1, dr->datetime_range.path2, d);
       if(dr->datetime_range.path1)
         gtk_tree_path_free(dr->datetime_range.path1);
       if(dr->datetime_range.path2)
         gtk_tree_path_free(dr->datetime_range.path2);
     }
     else
-      gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
+      gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_expand, dr);
     g_free(dr->datetime_range.operator);
   }
   else
-    gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
+    gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)tree_expand, dr);
+
+  if(dr->expanded_path)
+  {
+    _expand_select_tree_path(dr->expanded_path, NULL, d);
+    gtk_tree_path_free(dr->expanded_path);
+  }
+  dr->searchstring = NULL;
+  g_free(needle);
 }
 
 static void list_view(dt_lib_collect_rule_t *dr)

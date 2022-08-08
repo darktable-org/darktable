@@ -105,8 +105,7 @@ typedef enum dt_opencl_pinmode_t
 {
   DT_OPENCL_PINNING_OFF = 0,
   DT_OPENCL_PINNING_ON = 1,
-  DT_OPENCL_PINNING_DISABLED = 2,
-  DT_OPENCL_PINNING_ERROR = 4
+  DT_OPENCL_PINNING_DISABLED = 2
 } dt_opencl_pinmode_t;
 
 /**
@@ -150,7 +149,10 @@ typedef struct dt_opencl_device_t
   size_t peak_memory;
   size_t tuned_available;
   size_t used_available;
-
+  // flags what tuning modes should be used
+  int tuneactive; 
+  // flags detected errors
+  int runtime_error;
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
   // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
@@ -458,8 +460,9 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
                                 const float factor, const size_t overhead);
 /** get available memory for the device */
 cl_ulong dt_opencl_get_device_available(const int devid);
-/** check available memory for the device */
-void dt_opencl_check_device_available(const int devid);
+
+/** check tuning settings and available memory for the device */
+void dt_opencl_check_tuning(const int devid);
 
 /** get size of allocatable single buffer */
 cl_ulong dt_opencl_get_device_memalloc(const int devid);
@@ -493,7 +496,7 @@ void dt_opencl_write_device_config(const int devid);
 gboolean dt_opencl_read_device_config(const int devid);
 int dt_opencl_avoid_atomics(const int devid);
 int dt_opencl_micro_nap(const int devid);
-int dt_opencl_pinned_memory(const int devid);
+gboolean dt_opencl_use_pinned_memory(const int devid);
 
 #else
 #include "control/conf.h"
@@ -607,7 +610,7 @@ static inline size_t dt_opencl_get_device_available(const int devid)
 {
   return 0;
 }
-static inline void dt_opencl_check_device_available(const int devid)
+static inline void dt_opencl_check_tuning(const int devid)
 {
   return;
 }

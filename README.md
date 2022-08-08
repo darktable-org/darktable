@@ -87,10 +87,10 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-3.8.1 (stable)
+4.0.0 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.8.1/darktable-3.8.1-win64.exe)
-* [Download executable for mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.8.1/darktable-3.8.1.dmg)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.0.0/darktable-4.0.0-win64.exe)
+* [Download executable for mac OS](https://github.com/darktable-org/darktable/releases/download/release-4.0.0/darktable-4.0.0.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -149,33 +149,40 @@ Building
 ### Dependencies
 
 Compatible compilers:
-* Clang: 8, 9, 10
-* GCC: 8, 9, 10
-* Mingw64: 6, 7
+* Clang: 8 and later
+* GCC: 8 and later
+* MinGW-w64: 6 and later
 
 Required dependencies (minimum version):
 * CMake 3.10
 * Gtk 3.22
 * Glib 2.40
-* SQLite 3.15 (but 3.24 strongly recommended)
+* SQLite 3.15 *(but 3.24 or newer strongly recommended)*
+* Exiv2 0.24 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
+
+Required dependencies (no version requirement):
+* Lcms2
 
 Optional dependencies (minimum version):
 * OpenMP 4.5 *(for CPU multi-threading and SIMD vectorization)*
 * LLVM 3.9 *(for OpenCL checks at compilation time)*
 * OpenCL 1.2 *(for GPU-accelerated computing)*
 * Lua 5.4 *(for plugins and extension scripting)*
-* libavif 0.7.2 *(for AVIF import/export)*
-* WebP 0.3.0 *(for WebP exports)*
+* libavif 0.8.2 *(for AVIF import/export)*
+* libheif 1.9.0 *(for HEIF/HEIC/HIF import)*
+* WebP 0.3.0 *(for WebP export)*
+* libgphoto2 2.5 *(for camera tethering)*
 
 Optional dependencies (no version requirement):
-* Gphoto2 *(for camera tethering)*
 * Lensfun *(for automatic lens correction)*
 * OpenEXR *(for EXR import and export)*
 * OpenJPEG *(for Jpeg2000 export)*
 * Colord, Xatom *(for fetching the system display color profile)*
-* G'Mic *(for gmz compressed lut support)*
+* G'Mic *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*
 * SDL2 *(for gamepad input support)*
+* Cups *(for print mode support)*
+* GraphicsMagick or ImageMagick *(for misc image format import)*
 
 To install all the dependencies on Linux systems, you may use the source repositories of your distribution
 (provided they are up-to-date):
@@ -251,7 +258,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-3.8.1
+4.0.0
 
 The darktable project releases two major versions every year, in mid-Summer and at Christmas, tagged with even numbers (e.g. 3.0, 3.2, 3.4, 3.6).
 Minor revisions are tagged with a third digit (e.g. 3.0.1, 3.0.2) and mostly provide bug fixes and camera support.
@@ -261,7 +268,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-3.8.1
+git checkout tags/release-4.0.0
 ```
 
 ### Get submodules

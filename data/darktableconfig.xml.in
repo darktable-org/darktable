@@ -309,7 +309,7 @@
     </type>
     <default>insensitive</default>
     <shortdescription>tags case sensitivity</shortdescription>
-    <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 26 latin letters</longdescription>
+    <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensitivity works only for the 26 latin letters</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl</name>

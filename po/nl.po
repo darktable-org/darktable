@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-10 10:56+0200\n"
+"PO-Revision-Date: 2022-06-22 14:37+0200\n"
 "Last-Translator: Nick Alderweireldt>\n"
 "Language-Team: Nick Alderweireldt\n"
 "Language: nl_NL\n"
@@ -38,14 +38,14 @@ msgstr "nooit"
 #: ../build/bin/conf_gen.h:215 ../build/bin/preferences_gen.h:7290
 msgctxt "preferences"
 msgid "on startup"
-msgstr "bij de opstart"
+msgstr "bij opstarten"
 
 #: ../build/bin/conf_gen.h:216 ../build/bin/conf_gen.h:238
 #: ../build/bin/preferences_gen.h:7295 ../build/bin/preferences_gen.h:7334
 #: ../build/bin/preferences_gen.h:7435
 msgctxt "preferences"
 msgid "on close"
-msgstr "bij het afsluiten"
+msgstr "bij afsluiten"
 
 #: ../build/bin/conf_gen.h:217 ../build/bin/preferences_gen.h:7300
 msgctxt "preferences"
@@ -55,12 +55,12 @@ msgstr "op beide"
 #: ../build/bin/conf_gen.h:218 ../build/bin/preferences_gen.h:7305
 msgctxt "preferences"
 msgid "on startup (don't ask)"
-msgstr "bij de opstarten (niet vragen)"
+msgstr "bij opstarten (niet vragen)"
 
 #: ../build/bin/conf_gen.h:219 ../build/bin/preferences_gen.h:7310
 msgctxt "preferences"
 msgid "on close (don't ask)"
-msgstr "bij het afsluiten (vraag niet)"
+msgstr "bij afsluiten (niet vragen)"
 
 #: ../build/bin/conf_gen.h:220 ../build/bin/preferences_gen.h:7315
 msgctxt "preferences"
@@ -327,7 +327,7 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:1020
 msgid "import job"
-msgstr "taak importeren"
+msgstr "importeer taak"
 
 #: ../build/bin/conf_gen.h:1021
 msgid "name of the import job"
@@ -747,12 +747,12 @@ msgstr "colord"
 #: ../build/bin/preferences_gen.h:6097
 msgctxt "preferences"
 msgid "scene-referred"
-msgstr "scène-verwezen"
+msgstr "scene-gerefereerd"
 
 #: ../build/bin/conf_gen.h:2916 ../build/bin/preferences_gen.h:6073
 msgctxt "preferences"
 msgid "display-referred"
-msgstr "scherm-verwezen"
+msgstr "scherm-gerefereerd"
 
 #: ../build/bin/conf_gen.h:2925 ../build/bin/preferences_gen.h:6133
 msgctxt "preferences"
@@ -1486,10 +1486,10 @@ msgid ""
 "display-referred workflow is based on Lab modules and will auto-apply base "
 "curve and the legacy module pipe order."
 msgstr ""
-"scène-verwezen workflow is gebaseerd op lineaire modules en zal automatisch "
-"filmisch en blootstelling toepassen,\n"
-"display-verwezen workflow is gebaseerd op Lab modules en zal automatisch "
-"basiscurve en de legacy module pipe order toepassen."
+"scene-gerefereerde werkvolgorde is gebaseerd op lineaire modules en zal "
+"automatisch filmisch en blootstelling toepassen,\n"
+"scherm-gerefereerde werkvolgorde is gebaseerd op Lab modules en zal "
+"automatisch basiscurve en de legacy module pipe order toepassen."
 
 #: ../build/bin/preferences_gen.h:6122
 msgid "auto-apply chromatic adaptation defaults"
@@ -1524,7 +1524,7 @@ msgstr ""
 "gebruik standaard de basiscurve per camera in plaats van de generieke van de "
 "fabrikant als die beschikbaar is (darktable moet opnieuw opstarten).\n"
 "met deze optie wordt rekening gehouden wanneer de “automatisch toepassen "
-"pixel workflow-standaardinstellingen” is ingesteld op “display-verwezen”.\n"
+"pixel workflow-standaardinstellingen” is ingesteld op “scherm-gerefereerd”.\n"
 "om automatisch toepassen van basiscurve-voorinstellingen te voorkomen, moet "
 "“automatisch toepassen pixel workflow-standaardinstellingen” worden "
 "ingesteld op “geen”"
@@ -1906,7 +1906,7 @@ msgstr ""
 "sinds de laatste momentopname\n"
 "eenmaal per dag - maak een momentopname als er meer dan 24 uur zijn "
 "verstreken sinds de laatste momentopname\n"
-"bij sluiten - maak een momentopname elke keer darktable wordt gesloten"
+"bij afsluiten - maak een momentopname elke keer darktable wordt gesloten"
 
 #: ../build/bin/preferences_gen.h:7479
 msgid "how many snapshots to keep"
@@ -1931,7 +1931,7 @@ msgstr "xmp"
 
 #: ../build/bin/preferences_gen.h:7532
 msgid "write sidecar file for each image"
-msgstr "maak voor elke afbeelding een xmp-bestand aan"
+msgstr "maak voor elke afbeelding een sidecar-bestand aan"
 
 #: ../build/bin/preferences_gen.h:7575
 msgid ""
@@ -1943,11 +1943,12 @@ msgid ""
 " - on import: immediately after importing the image\n"
 " - after edit: after any user change on the image"
 msgstr ""
-"de nevenbestanden bevatten informatie over al jouw ontwikkelingsstappen om "
-"het probleemloos opnieuw importeren van afbeeldingsbestanden mogelijk te "
+"de sidecar-bestanden bevatten informatie over al jouw ontwikkelingsstappen "
+"om het probleemloos opnieuw importeren van afbeeldingsbestanden mogelijk te "
 "maken.\n"
 "\n"
-"nevenbestanden worden geschreven afhankelijk van de geselecteerde modus :\n"
+"sidecar-bestanden worden geschreven afhankelijk van de geselecteerde "
+"modus :\n"
 "  - nooit\n"
 "  - bij importeren: direct na het importeren van de afbeelding\n"
 "  - na bewerking: na elke wijziging van de gebruiker op de afbeelding"
@@ -2265,14 +2266,14 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8703
 msgid "tags case sensitivity"
-msgstr "labelt hoofdlettergevoeligheid"
+msgstr "labels hoofdlettergevoelig"
 
 #: ../build/bin/preferences_gen.h:8741
 msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensivity works "
 "only for the 26 latin letters"
 msgstr ""
-"labelt hoofdlettergevoeligheid. zonder de Sqlite ICU-extensie werkt "
+"labelt hoofdlettergevoelig. zonder de Sqlite ICU-extensie werkt "
 "ongevoeligheid alleen voor de 26 Latijnse letters"
 
 #: ../build/bin/preferences_gen.h:8763 ../build/bin/preferences_gen.h:9003
@@ -5159,7 +5160,7 @@ msgstr "module volgorde"
 
 #: ../src/common/collection.c:705
 msgid "range rating"
-msgstr "bereik beoordelen"
+msgstr "bereik beoordeling"
 
 #: ../src/common/collection.c:709
 msgid "search"
@@ -6813,7 +6814,7 @@ msgstr "tijdsverschil"
 
 #: ../src/control/crawler.c:656
 msgid "updated xmp sidecar files found"
-msgstr "bijgewerkt xmp bestand gevonden"
+msgstr "bijgewerkte xmp sidecar-bestanden gevonden"
 
 #: ../src/control/crawler.c:657
 msgid "_close"
@@ -7112,8 +7113,12 @@ msgid ""
 msgid_plural ""
 "do you really want to remove %d images from darktable\n"
 "(without deleting files on disk)?"
-msgstr[0] "wilt u echt %d afbeelding verwijderen uit darktable?"
-msgstr[1] "wilt u echt %d afbeeldingen verwijderen uit darktable?"
+msgstr[0] ""
+"wilt u echt %d afbeelding verwijderen uit darktable\n"
+"(zonder bestand op schijf te verwijderen)?"
+msgstr[1] ""
+"wilt u echt %d afbeeldingen verwijderen uit darktable\n"
+"(zonder bestanden op schijf te verwijderen)?"
 
 #: ../src/control/jobs/control_jobs.c:1567
 msgid "remove image?"
@@ -7286,7 +7291,7 @@ msgstr "tijdsverschil"
 
 #: ../src/control/jobs/control_jobs.c:2042 ../src/libs/copy_history.c:386
 msgid "write sidecar files"
-msgstr "schrijf xmp bestanden"
+msgstr "schrijf sidecar-bestanden"
 
 #: ../src/control/jobs/control_jobs.c:2234 ../src/control/jobs/film_jobs.c:297
 #, c-format
@@ -7396,7 +7401,7 @@ msgstr "scherm"
 #: ../src/develop/blend_gui.c:56 ../src/libs/live_view.c:341
 msgctxt "blendmode"
 msgid "overlay"
-msgstr "bedekken"
+msgstr "overlay"
 
 #: ../src/develop/blend_gui.c:57
 msgctxt "blendmode"
@@ -8180,7 +8185,7 @@ msgstr ""
 
 #: ../src/develop/develop.c:1521 ../src/gui/presets.c:960
 msgid "display-referred default"
-msgstr "display-verwezen standaard"
+msgstr "scherm-gerefereerd standaard"
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
@@ -8188,7 +8193,7 @@ msgstr "display-verwezen standaard"
 #: ../src/develop/develop.c:1523 ../src/gui/presets.c:962
 #: ../src/iop/exposure.c:278 ../src/iop/exposure.c:287
 msgid "scene-referred default"
-msgstr "scène-verwezen standaard"
+msgstr "scene-gerefereerde standaard"
 
 #: ../src/develop/develop.c:2002
 #, c-format
@@ -11408,7 +11413,7 @@ msgstr "bij conflicten"
 
 #: ../src/imageio/storage/disk.c:194
 msgid "create unique filename"
-msgstr "creëer unieke naam"
+msgstr "creëer unieke bestandsnaam"
 
 #: ../src/imageio/storage/disk.c:195 ../src/libs/copy_history.c:378
 #: ../src/libs/image.c:601 ../src/libs/styles.c:425 ../src/libs/styles.c:608
@@ -11652,7 +11657,7 @@ msgstr "corrigerend of creatief"
 #: ../src/iop/splittoning.c:106 ../src/iop/spots.c:68 ../src/iop/spots.c:70
 #: ../src/iop/toneequal.c:307 ../src/iop/velvia.c:106 ../src/iop/velvia.c:108
 msgid "linear, RGB, scene-referred"
-msgstr "lineair, RGB, scène-verwezen"
+msgstr "lineair, RGB, scene-gerefereerd"
 
 #: ../src/iop/ashift.c:134 ../src/iop/borders.c:189 ../src/iop/clipping.c:322
 #: ../src/iop/crop.c:139 ../src/iop/flip.c:106 ../src/iop/liquify.c:298
@@ -11876,7 +11881,7 @@ msgstr "correctief en creatief"
 #: ../src/iop/atrous.c:140 ../src/iop/atrous.c:142
 #: ../src/iop/colorbalance.c:160
 msgid "linear, Lab, scene-referred"
-msgstr "lineair, Lab, scène verwezen"
+msgstr "lineair, Lab, scene-gerefereerd"
 
 #: ../src/iop/atrous.c:141 ../src/iop/censorize.c:85
 #: ../src/iop/hazeremoval.c:114
@@ -12154,7 +12159,7 @@ msgstr "corrigerend"
 #: ../src/iop/rgbcurve.c:143 ../src/iop/rgbcurve.c:145
 #: ../src/iop/rgblevels.c:123 ../src/iop/soften.c:106 ../src/iop/soften.c:108
 msgid "linear, RGB, display-referred"
-msgstr "lineair, RGB, display-verwezen"
+msgstr "lineair, RGB, scherm-gerefereerd"
 
 #: ../src/iop/basecurve.c:341 ../src/iop/basicadj.c:149
 #: ../src/iop/colorbalance.c:161 ../src/iop/colorbalancergb.c:184
@@ -12173,7 +12178,7 @@ msgstr "niet-lineair, RGB"
 #: ../src/iop/vignette.c:161 ../src/iop/watermark.c:298
 #: ../src/iop/watermark.c:300
 msgid "non-linear, RGB, display-referred"
-msgstr "niet-lineair, RGB, display-verwezen"
+msgstr "niet-lineair, RGB, scherm-gerefereerd"
 
 #: ../src/iop/basecurve.c:2073
 msgid "abscissa: input, ordinate: output. works on RGB channels"
@@ -12247,7 +12252,7 @@ msgstr "creatief"
 
 #: ../src/iop/basicadj.c:150 ../src/iop/colorbalancergb.c:185
 msgid "non-linear, RGB, scene-referred"
-msgstr "niet-lineair, RGB, scène-verwezen"
+msgstr "niet-lineair, RGB, scene-gerefereerd"
 
 #: ../src/iop/basicadj.c:593
 msgid ""
@@ -12334,7 +12339,7 @@ msgstr "manipuleer lokaal en globaal contrast afzonderlijk"
 #: ../src/iop/nlmeans.c:102 ../src/iop/shadhi.c:200 ../src/iop/tonecurve.c:216
 #: ../src/iop/vibrance.c:98
 msgid "non-linear, Lab, display-referred"
-msgstr "niet-lineair, Lab, display-verwezen"
+msgstr "niet-lineair, Lab, scherm-gerefereerd"
 
 #: ../src/iop/bilat.c:102 ../src/iop/bloom.c:83 ../src/iop/colisa.c:87
 #: ../src/iop/colorcontrast.c:103 ../src/iop/colorcorrection.c:79
@@ -12396,7 +12401,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:73 ../src/iop/diffuse.c:324
 msgid "surface blur"
-msgstr "niet-lineair, Lab, display-verwezen"
+msgstr "oppervlakteonscherpte"
 
 #: ../src/iop/bilateral.cc:78
 msgid "denoise (bilateral filter)"
@@ -12473,7 +12478,7 @@ msgstr "voeg effen randen of marges toe rond de afbeelding"
 
 #: ../src/iop/borders.c:188 ../src/iop/borders.c:190 ../src/iop/lut3d.c:142
 msgid "linear or non-linear, RGB, display-referred"
-msgstr "lineair of niet-lineair, RGB, display-verwezen"
+msgstr "lineair of niet-lineair, RGB, scherm-gerefereerd"
 
 #: ../src/iop/borders.c:724
 msgid "15:10 postcard white"
@@ -12657,7 +12662,7 @@ msgstr "corrigeer chromatische afwijkingen voor Bayersensoren"
 #: ../src/iop/rawprepare.c:156 ../src/iop/temperature.c:200
 #: ../src/iop/temperature.c:202
 msgid "linear, raw, scene-referred"
-msgstr "lineair, raw, scène-verwezen"
+msgstr "lineair, raw, scene-gerefereerd"
 
 #: ../src/iop/cacorrect.c:90 ../src/iop/cacorrectrgb.c:172
 #: ../src/iop/demosaic.c:229 ../src/iop/invert.c:124
@@ -12813,11 +12818,11 @@ msgstr "censureer kentekenplaten en lichaamsdelen voor privacy"
 #: ../src/iop/censorize.c:84 ../src/iop/colorin.c:137
 #: ../src/iop/filmicrgb.c:355 ../src/iop/graduatednd.c:151
 msgid "linear or non-linear, RGB, scene-referred"
-msgstr "lineair of niet-lineair, RGB, scène-verwezen"
+msgstr "lineair of niet-lineair, RGB, scene-gerefereerd"
 
 #: ../src/iop/censorize.c:86
 msgid "special, RGB, scene-referred"
-msgstr "speciaal, RGB, scène-verwezen"
+msgstr "speciaal, RGB, scene-gerefereerd"
 
 #: ../src/iop/censorize.c:419
 msgid "radius_1"
@@ -13793,7 +13798,7 @@ msgstr "invloed op kleur, helderheid en contrast"
 
 #: ../src/iop/colorbalance.c:162
 msgid "non-linear, Lab, scene-referred"
-msgstr "non-linear, Lab, scene-referred"
+msgstr "non-linear, Lab, scene-gerefereerd"
 
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:273
@@ -14279,7 +14284,7 @@ msgstr "voer kleurruimtecorrecties uit en pas looks toe"
 #: ../src/iop/monochrome.c:99 ../src/iop/shadhi.c:198
 #: ../src/iop/tonecurve.c:214 ../src/iop/vibrance.c:96
 msgid "linear or non-linear, Lab, display-referred"
-msgstr "lineair of niet-lineair, Lab, display-verwezen"
+msgstr "lineair of niet-lineair, Lab, scherm-gerefereerd"
 
 #: ../src/iop/colorchecker.c:128
 msgid "defined by profile, Lab"
@@ -14628,7 +14633,7 @@ msgstr ""
 
 #: ../src/iop/colorout.c:95
 msgid "non-linear, RGB or Lab, display-referred"
-msgstr "niet-lineair, RGB of Lab, scherm-gerelateerd"
+msgstr "niet-lineair, RGB of Lab, scherm-gerefereerd"
 
 #: ../src/iop/colorout.c:672
 msgid "missing output profile has been replaced by sRGB!"
@@ -15800,7 +15805,7 @@ msgstr "de gewenste doel belichting na mapping"
 #: ../src/iop/filmic.c:179
 msgid "this module is deprecated. better use filmic rgb module instead."
 msgstr ""
-"deze module is verouderd. gebruik in plaats daarvan de filmische rgb module."
+"deze module is verouderd. gebruik in plaats daarvan de filmisch rgb module."
 
 #: ../src/iop/filmic.c:306
 msgid "09 EV (low-key)"
@@ -15905,7 +15910,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1644
 msgid "filmic S curve"
-msgstr "filmische S curve"
+msgstr "filmisch S curve"
 
 #: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4495
 msgid ""
@@ -16057,7 +16062,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:341
 msgid "filmic rgb"
-msgstr "filmische rgb"
+msgstr "filmisch rgb"
 
 #: ../src/iop/filmicrgb.c:346
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
@@ -16071,7 +16076,7 @@ msgid ""
 "for display on SDR screens and paper prints\n"
 "while preventing clipping in non-destructive ways"
 msgstr ""
-"pas een weergavetransformatie toe om de naar een scène verwezen pijplijn "
+"pas een weergavetransformatie toe om de naar een scene-gerefereerde pijplijn "
 "voor te bereiden\n"
 "voor weergave op SDR-schermen en papieren afdrukken\n"
 "terwijl het clippen op niet-destructieve manieren wordt voorkomen"
@@ -16081,7 +16086,7 @@ msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
 msgstr ""
-"filmische hooglichten reconstructie kon geen geheugen toewijzen, controleer "
+"filmisch hooglichten reconstructie kon geen geheugen toewijzen, controleer "
 "uw RAM instellingen"
 
 #: ../src/iop/filmicrgb.c:1999 ../src/iop/filmicrgb.c:2288
@@ -16090,8 +16095,7 @@ msgstr "filmisch werkt alleen op RGB invoer"
 
 #: ../src/iop/filmicrgb.c:2143
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
-msgstr ""
-"filmische hoogtepuntenreconstructie kon geen geheugen toewijzen aan GPU"
+msgstr "filmisch hoogtepuntenreconstructie kon geen geheugen toewijzen aan GPU"
 
 #: ../src/iop/filmicrgb.c:3387
 msgid "look only"
@@ -16131,7 +16135,7 @@ msgstr "% camera"
 #. Page DISPLAY
 #: ../src/iop/filmicrgb.c:3828 ../src/iop/filmicrgb.c:4528
 msgid "display"
-msgstr "display"
+msgstr "scherm"
 
 #. axis legend
 #: ../src/iop/filmicrgb.c:3837
@@ -16141,7 +16145,7 @@ msgstr "(%)"
 #. Page SCENE
 #: ../src/iop/filmicrgb.c:3846 ../src/iop/filmicrgb.c:4366
 msgid "scene"
-msgstr "decor"
+msgstr "scene"
 
 #. axis legend
 #: ../src/iop/filmicrgb.c:3855
@@ -16156,7 +16160,7 @@ msgid ""
 "the dark curve is the desaturation curve."
 msgstr ""
 "gebruik de onderstaande parameters om de knooppunten in te stellen\n"
-"de heldere curve is de filmische tonemapping curve\n"
+"de heldere curve is de filmisch tonemapping curve\n"
 "de donkere curve is de desaturatiecurve."
 
 #: ../src/iop/filmicrgb.c:4290
@@ -16373,7 +16377,7 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
-"kies de gewenste kromming van de filmische spline in hooglichten.\n"
+"kies de gewenste kromming van de filmisch spline in hooglichten.\n"
 "hard gebruikt een hoge kromming wat resulteert in meer tonale compressie.\n"
 "zacht gebruikt een lage kromming, wat resulteert in minder tonale compressie."
 
@@ -16383,7 +16387,7 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
-"kies de gewenste kromming van de filmische spline in schaduwen.\n"
+"kies de gewenste kromming van de filmisch spline in schaduwen.\n"
 "hard gebruikt een hoge kromming wat resulteert in meer tonale compressie.\n"
 "Zacht gebruikt een lage kromming, wat resulteert in minder tonale compressie."
 
@@ -16525,7 +16529,7 @@ msgstr "globale tonemap"
 #: ../src/iop/globaltonemap.c:105
 msgid "this module is deprecated. please use the filmic rgb module instead."
 msgstr ""
-"deze module is verouderd. gebruik in plaats daarvan de filmische rgb module."
+"deze module is verouderd. gebruik in plaats daarvan de filmisch rgb module."
 
 #: ../src/iop/globaltonemap.c:637 ../src/libs/filters/colors.c:259
 msgid "operator"
@@ -16778,7 +16782,7 @@ msgstr "isoleer hoge frequenties in de afbeelding"
 
 #: ../src/iop/highpass.c:82 ../src/iop/lowpass.c:134
 msgid "linear or non-linear, Lab, scene-referred"
-msgstr "lineair of niet-lineair, Lab, scène-verwezen"
+msgstr "lineair of niet-lineair, Lab, scene-gerefereerd"
 
 #: ../src/iop/highpass.c:83 ../src/iop/lowpass.c:135 ../src/iop/sharpen.c:96
 msgid "frequential, Lab"
@@ -16786,7 +16790,7 @@ msgstr "frequent, Lab"
 
 #: ../src/iop/highpass.c:84 ../src/iop/lowpass.c:136
 msgid "special, Lab, scene-referred"
-msgstr "speciaal, Lab, scene-verwezen"
+msgstr "speciaal, Lab, scene-gerefereerd"
 
 #: ../src/iop/highpass.c:396
 msgid "the sharpness of highpass filter"
@@ -16847,7 +16851,7 @@ msgstr "filmnegatieven omkeren"
 
 #: ../src/iop/invert.c:123 ../src/iop/invert.c:125
 msgid "linear, raw, display-referred"
-msgstr "lineair, raw, display-verwezen"
+msgstr "lineair, raw, scherm-gerefereerd"
 
 #. Here we could provide more for monochrome special cases. As no monochrome camera
 #. has a bayer sensor we don't need g->RGB_to_CAM and g->CAM_to_RGB corrections
@@ -18447,11 +18451,11 @@ msgstr ""
 
 #: ../src/iop/sharpen.c:95
 msgid "linear or non-linear, Lab, display or scene-referred"
-msgstr "lineair of niet-lineair, Lab, display of scene-verwezen"
+msgstr "lineair of niet-lineair, Lab, scherm of scene-gerefereerd"
 
 #: ../src/iop/sharpen.c:97
 msgid "quasi-linear, Lab, display or scene-referred"
-msgstr "quasi-lineair, Lab, display of scene-verwezen"
+msgstr "quasi-lineair, Lab, scherm of scene-gerefereerd"
 
 #. add the preset.
 #. restrict to raw images
@@ -18803,7 +18807,7 @@ msgstr "quasi-lineair, RGB"
 
 #: ../src/iop/toneequal.c:309
 msgid "quasi-linear, RGB, scene-referred"
-msgstr "quasi-lineair, RGB, scène-verwezen"
+msgstr "quasi-lineair, RGB, scene-gerefereerd"
 
 #. No blending
 #: ../src/iop/toneequal.c:425
@@ -19657,7 +19661,7 @@ msgstr "darktable"
 
 #: ../src/libs/collect.c:3009
 msgid "collections settings"
-msgstr "collecties instellingen"
+msgstr "instellingen collecties"
 
 #: ../src/libs/collect.c:3012 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
@@ -19776,11 +19780,11 @@ msgstr "bewerkingsstappen"
 
 #: ../src/libs/copy_history.c:106
 msgid "open sidecar file"
-msgstr "open xmp bestand"
+msgstr "open sidecar-bestand"
 
 #: ../src/libs/copy_history.c:139
 msgid "XMP sidecar files"
-msgstr "XMP-bestanden"
+msgstr "XMP sidecar-bestanden"
 
 #: ../src/libs/copy_history.c:154
 #, c-format
@@ -19873,23 +19877,23 @@ msgstr "toevoegen"
 
 #: ../src/libs/copy_history.c:382
 msgid "load sidecar file..."
-msgstr "laad xmp bestand ..."
+msgstr "laad sidecar-bestand ..."
 
 #: ../src/libs/copy_history.c:383
 msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
 msgstr ""
-"open xmp bestand en pas het toe\n"
+"open xmp sidecar-bestand en pas het toe\n"
 "op geselecteerde afbeelding(en)"
 
 #: ../src/libs/copy_history.c:387
 msgid "write history stack and tags to XMP sidecar files"
-msgstr "bewerkingsstappen en labelingen opslaan in xmp bestanden"
+msgstr "bewerkingsstappen en labelingen opslaan in xmp sidecar-bestanden"
 
 #: ../src/libs/duplicate.c:60
 msgid "duplicate manager"
-msgstr "duplicaat beheerder"
+msgstr "duplicaat beheer"
 
 #: ../src/libs/duplicate.c:263
 #, no-c-format
@@ -20310,7 +20314,7 @@ msgid ""
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
 "regel instellingen\n"
-"deze kunnen niet gewijzigd worden omdat deze zijn vast gepind in het paneel"
+"deze kunnen niet gewijzigd worden omdat deze is vastgepind in het paneel"
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:925
@@ -21267,7 +21271,7 @@ msgstr "kies de root van de map boom hieronder"
 
 #: ../src/libs/import.c:1147
 msgid "places"
-msgstr "plaatsen"
+msgstr "locaties"
 
 #: ../src/libs/import.c:1153
 msgid "restore all default places you have removed by right-click"
@@ -21324,7 +21328,7 @@ msgstr "miniaturen tonen/verbergen"
 
 #: ../src/libs/import.c:1640
 msgid "naming rules"
-msgstr "naamgevingsregels"
+msgstr "naamgeving regels"
 
 #: ../src/libs/import.c:1681
 msgid "add to library"
@@ -21456,7 +21460,7 @@ msgstr "verplaats focuspunt naar buiten (snel)"
 
 #: ../src/libs/live_view.c:310
 msgid "overlay"
-msgstr "bedekken"
+msgstr "overlay"
 
 #: ../src/libs/live_view.c:312
 msgid "selected image"
@@ -21536,7 +21540,7 @@ msgstr "HSL helderheid"
 
 #: ../src/libs/live_view.c:354
 msgid "mode of the overlay"
-msgstr "modus van bedekken"
+msgstr "modus van overlay"
 
 #: ../src/libs/live_view.c:360
 msgid "split line"
@@ -21545,7 +21549,7 @@ msgstr "splitsing"
 # Ik heb deze niet gewijzigd, maar heb het gevoel dat het wat vreemd overkomt. Is 'overlay' niet in dit geval zelfs een beter woord in het Nederlands vraag ik me af
 #: ../src/libs/live_view.c:363
 msgid "only draw part of the overlay"
-msgstr "teken alleen op het deel van bedekken"
+msgstr "teken alleen op het deel van overlay"
 
 #: ../src/libs/location.c:100
 msgid "find location"
@@ -22096,11 +22100,11 @@ msgstr "workflow: beginner"
 
 #: ../src/libs/modulegroups.c:1743
 msgid "workflow: display-referred"
-msgstr "workflow: display-verwezen"
+msgstr "workflow: scherm-gerefereerd"
 
 #: ../src/libs/modulegroups.c:1786
 msgid "workflow: scene-referred"
-msgstr "workflow: scène verwezen"
+msgstr "workflow: scene-gerefereerd"
 
 #: ../src/libs/modulegroups.c:1792
 msgctxt "modulegroup"
@@ -23326,7 +23330,7 @@ msgstr "ongeldig game pad as"
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:217
 msgid "thumbnails overlays for size"
-msgstr "miniaturenoverlay voor maat"
+msgstr "miniaturenoverlay voor afmeting"
 
 #: ../src/libs/tools/global_toolbox.c:251
 #: ../src/libs/tools/global_toolbox.c:314
