@@ -18,9 +18,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-// our includes go first:
+
 #include "bauhaus/bauhaus.h"
-#include "common/rgb_norms.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/openmp_maths.h"
