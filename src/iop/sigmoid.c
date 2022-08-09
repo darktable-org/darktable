@@ -31,19 +31,11 @@
 #include <stdlib.h>
 
 
-// To have your module compile and appear in darkroom, add it to CMakeLists.txt, with
-//  add_iop(sigmoid "sigmoid.c")
-// and to iop_order.c, in the initialisation of legacy_order & v30_order with:
-//  { {XX.0f }, "sigmoid", 0},
-
-// Module version number
 DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
 
-// Enums used in params_t can have $DESCRIPTIONs that will be used to
-// automatically populate a combobox with dt_bauhaus_combobox_from_params.
-// They are also used in the history changes tooltip.
-// Combobox options will be presented in the same order as defined here.
-// These numbers must not be changed when a new version is introduced.
+
+#define MIDDLE_GREY 0.1845f
+
 
 typedef enum dt_iop_sigmoid_methods_type_t
 {
@@ -51,26 +43,9 @@ typedef enum dt_iop_sigmoid_methods_type_t
   DT_SIGMOID_METHOD_RGB_RATIO = 1,     // $DESCRIPTION: "rgb ratio"
 } dt_iop_sigmoid_methods_type_t;
 
-#define INVERSE_SQRT_3 0.5773502691896258f
-#define MIDDLE_GREY 0.1845f
 
 typedef struct dt_iop_sigmoid_params_t
 {
-  // The parameters defined here fully record the state of the module and are stored
-  // (as a serialized binary blob) into the db.
-  // Make sure everything is in here does not depend on temporary memory (pointers etc).
-  // This struct defines the layout of self->params and self->default_params.
-  // You should keep changes to this struct to a minimum.
-  // If you have to change this struct, it will break
-  // user data bases, and you have to increment the version
-  // of DT_MODULE_INTROSPECTION(VERSION) above and provide a legacy_params upgrade path!
-  //
-  // Tags in the comments get picked up by the introspection framework and are
-  // used in gui_init to set range and labels (for widgets and history)
-  // and value checks before commit_params.
-  // If no explicit init() is specified, the default implementation uses $DEFAULT tags
-  // to initialise self->default_params, which is then used in gui_init to set widget defaults.
-
   float middle_grey_contrast;  // $MIN: 0.1  $MAX: 10.0 $DEFAULT: 1.6 $DESCRIPTION: "contrast"
   float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "skew"
   float display_white_target;  // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
@@ -97,18 +72,13 @@ typedef struct dt_iop_sigmoid_global_data_t
 
 typedef struct dt_iop_sigmoid_gui_data_t
 {
-  // Whatever you need to make your gui happy and provide access to widgets between gui_init, gui_update etc.
-  // Stored in self->gui_data while in darkroom.
-  // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
   GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *hue_preservation_slider,
       *display_black_slider, *display_white_slider;
 } dt_iop_sigmoid_gui_data_t;
 
 
-// this returns a translatable name
 const char *name()
 {
-  // make sure you put all your translatable strings into _() !
   return _("sigmoid");
 }
 
@@ -117,7 +87,6 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-// where does it appear in the gui?
 int default_group()
 {
   return IOP_GROUP_TONE | IOP_GROUP_TECHNICAL;
@@ -128,26 +97,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RGB;
 }
 
-// Whenever new fields are added to (or removed from) dt_iop_..._params_t or when their meaning
-// changes, a translation from the old to the new version must be added here.
-// A verbatim copy of the old struct definition should be copied into the routine with a _v?_t ending.
-// Since this will get very little future testing (because few developers still have very
-// old versions lying around) existing code should be changed as little as possible, if at all.
-//
-// Upgrading from an older version than the previous one should always go through all in between versions
-// (unless there was a bug) so that the end result will always be the same.
-//
-// Be careful with changes to structs that are included in _params_t
-//
-// Individually copy each existing field that is still in the new version. This is robust even if reordered.
-// If only new fields were added at the end, one call can be used:
-//   memcpy(n, o, sizeof *o);
-//
-// Hardcode the default values for new fields that were added, rather than referring to default_params;
-// in future, the field may not exist anymore or the default may change. The best default for a new version
-// to replicate a previous version might not be the optimal default for a fresh image.
-//
-// FIXME: the calling logic needs to be improved to call upgrades from consecutive version in sequence.
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -691,32 +640,6 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  // Allocates memory for the module's user interface in the darkroom and
-  // sets up the widgets in it.
-  //
-  // self->widget needs to be set to the top level widget.
-  // This can be a (vertical) box, a grid or even a notebook. Modules that are
-  // disabled for certain types of images (for example non-raw) may use a stack
-  // where one of the pages contains just a label explaining why it is disabled.
-  //
-  // Widgets that are directly linked to a field in params_t may be set up using the
-  // dt_bauhaus_..._from_params family. They take a string with the field
-  // name in the params_t struct definition. The $MIN, $MAX and $DEFAULT tags will be
-  // used to set up the widget (slider) ranges and default values and the $DESCRIPTION
-  // is used as the widget label.
-  //
-  // The _from_params calls also set up an automatic callback that updates the field in params
-  // whenever the widget is changed. In addition, gui_changed is called, if it exists,
-  // so that any other required changes, to dependent fields or to gui widgets, can be made.
-  //
-  // Whenever self->params changes (switching images or history) the widget values have to
-  // be updated in gui_update.
-  //
-  // Do not set the value of widgets or configure them depending on field values here;
-  // this should be done in gui_update (or gui_changed or individual widget callbacks)
-  //
-  // If any default values for (slider) widgets or options (in comboboxes) depend on the
-  // type of image, then the widgets have to be updated in reload_params.
   dt_iop_sigmoid_gui_data_t *g = IOP_GUI_ALLOC(sigmoid);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -748,23 +671,12 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  // This only needs to be provided if gui_init allocates any memory or resources besides
-  // self->widget and gui_data_t. The default function (if an explicit one isn't provided here)
-  // takes care of gui_data_t (and gtk destroys the widget anyway). If you override the default,
-  // you have to do whatever you have to do, and also call IOP_GUI_FREE to clean up gui_data_t.
-
   IOP_GUI_FREE;
 }
 
-/** additional, optional callbacks to capture darkroom center events. */
-// void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-// int32_t pointery);
-// int mouse_moved(dt_iop_module_t *self, double x, double y, double pressure, int which);
-// int button_pressed(dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
-// uint32_t state);
-// int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-// int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
