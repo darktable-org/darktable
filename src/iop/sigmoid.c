@@ -102,6 +102,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+// Declared here as it is used in the commit params function
 #ifdef _OPENMP
 #pragma omp declare simd uniform(magnitude, paper_exp, film_fog, film_power, paper_power)
 #endif
@@ -110,9 +111,9 @@ static inline float generalized_loglogistic_sigmoid(const float value, const flo
 {
   // The following equation can be derived as a model for film + paper but it has a pole at 0
   // magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -film_power), -paper_power);
-  // Rewritten on a stable and with a check for negative values.
-  const float film = film_fog + value > 0.0f ? pow(film_fog + value, film_power) : 0.0f;
-  return magnitude * pow(film / (paper_exp + film), paper_power);
+  // Rewritten on a stable form including a check for negative values:
+  const float film_response = film_fog + value > 0.0f ? pow(film_fog + value, film_power) : 0.0f;
+  return magnitude * pow(film_response / (paper_exp + film_response), paper_power);
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -167,14 +168,14 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void negative_values(const float pix_in[4], float pix_out[4])
+static inline void desaturate_negative_values(const float pix_in[4], float pix_out[4])
 {
-  const float average = fmaxf((pix_in[0] + pix_in[1] + pix_in[2]) / 3.0f, 0.0f);
+  const float pixel_average = fmaxf((pix_in[0] + pix_in[1] + pix_in[2]) / 3.0f, 0.0f);
   const float min_value = fminf(fminf(pix_in[0], pix_in[1]), pix_in[2]);
-  const float saturation_factor = min_value < 0.0f ? -average / (min_value - average) : 1.0f;
+  const float saturation_factor = min_value < 0.0f ? -pixel_average / (min_value - pixel_average) : 1.0f;
   for(size_t c = 0; c < 3; c++)
   {
-    pix_out[c] = average + saturation_factor * (pix_in[c] - average);
+    pix_out[c] = pixel_average + saturation_factor * (pix_in[c] - pixel_average);
   }
 }
 
@@ -185,7 +186,7 @@ typedef struct dt_iop_sigmoid_value_order_t
   size_t max;
 } dt_iop_sigmoid_value_order_t;
 
-static void pixel_order(const float pix_in[4], dt_iop_sigmoid_value_order_t *pixel_value_order)
+static void pixel_channel_order(const float pix_in[4], dt_iop_sigmoid_value_order_t *pixel_value_order)
 {
   if (pix_in[0] >= pix_in[1])
   {
@@ -237,30 +238,6 @@ static void pixel_order(const float pix_in[4], dt_iop_sigmoid_value_order_t *pix
   }
 }
 
-/*
-// Return the middle value hue compensated such that the new color is only exposure and linear saturation change.
-static inline float preserve_hue(const float maxval, const float maxvalold,
-    const float medvalold, const float minval, const float minvalold)
-{
-  return minval + ((maxval - minval) * (medvalold - minvalold) / (maxvalold - minvalold));
-}
-
-// Linear interpolation for both hue and chroma preservation
-// Assumes hue_preservation and chroma_presevation strictly in range [0, 1]
-static inline void preserve_hue_interpolated(const float pix_in[4], float pix_out[4], const dt_iop_sigmoid_value_order_t order, const float hue_preservation)
-{
-  const float energy = pix_out[order.mid] + pix_out[order.min];
-  const float midscale = (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]);
-
-  const float corrected_mid = ((1.0 - hue_preservation) * pix_out[order.mid] + hue_preservation * (midscale * pix_out[order.max] + (1.0 - midscale) * energy))
-                              / (1.0 + hue_preservation * (1.0 - midscale));
-  const float corrected_min = energy - corrected_mid;
-
-  pix_out[order.mid] = corrected_mid;
-  pix_out[order.min] = corrected_min;
-}
-*/
-
 
 void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -290,7 +267,7 @@ void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *
     float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
 
     // Force negative values to zero
-    negative_values(pix_in, pix_in_strict_positive);
+    desaturate_negative_values(pix_in, pix_in_strict_positive);
 
     for(size_t c = 0; c < 3; c++)
     {
@@ -331,7 +308,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
     float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
 
     // Force negative values to zero
-    negative_values(pix_in, pix_in_strict_positive);
+    desaturate_negative_values(pix_in, pix_in_strict_positive);
 
     // Preserve color ratios by applying the tone curve on a luma estimate and then scale the RGB tripplet uniformly
     const float luma = (pix_in_strict_positive[0] + pix_in_strict_positive[1] + pix_in_strict_positive[2]) / 3.0f;
@@ -355,7 +332,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
 
     // RGB index order sorted by value;
     dt_iop_sigmoid_value_order_t pixel_value_order;
-    pixel_order(pre_out, &pixel_value_order);
+    pixel_channel_order(pre_out, &pixel_value_order);
     const float pixel_min = pre_out[pixel_value_order.min];
     const float pixel_max = pre_out[pixel_value_order.max];
 
@@ -385,84 +362,6 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
     pix_out[3] = pix_in[3];
   }
 }
-
-/*
-void process_loglogistic_hue(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-                             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
-
-  const float *const in = (const float *)ivoid;
-  float *const out = (float *)ovoid;
-  const size_t npixels = (size_t)roi_in->width * roi_in->height;
-
-  const float white_target = module_data->white_target;
-  const float paper_exp = module_data->paper_exposure;
-  const float film_fog = module_data->film_fog;
-  const float contrast_power = module_data->film_power;
-  const float skew_power = module_data->paper_power;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, white_target, paper_exp, film_fog, contrast_power, skew_power) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
-  for(size_t k = 0; k < 4 * npixels; k += 4)
-  { 
-    const float *const restrict pix_in = in + k;
-    float *const restrict pix_out = out + k;
-    float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
-
-    // Force negative values to zero
-    negative_values(pix_in, pix_in_strict_positive);
-
-    // Apply per channel
-    for(size_t c = 0; c < 3; c++)
-    {
-      pix_out[c] = generalized_loglogistic_sigmoid(pix_in_strict_positive[c], white_target, paper_exp, film_fog, contrast_power, skew_power);
-    }
-
-    // Hue correction by scaling the middle value relative to the max and min values.
-    if (pix_in[0] >= pix_in[1])
-    {
-      if (pix_in[1] > pix_in[2])
-      {  // Case 1: r >= g >  b
-        pix_out[1] = preserve_hue(pix_out[0], pix_in[0], pix_in[1], pix_out[2], pix_in[2]);
-      }
-      else if (pix_in[2] > pix_in[0])
-      {  // Case 2: b >  r >= g
-        pix_out[0] = preserve_hue(pix_out[2], pix_in[2], pix_in[0], pix_out[1], pix_in[1]);
-      }
-      else if (pix_in[2] > pix_in[1])
-      {  // Case 3: r >= b >  g
-        pix_out[2] = preserve_hue(pix_out[0], pix_in[0], pix_in[2], pix_out[1], pix_in[1]);
-      } else
-      {  // Case 4: r == g == b
-         // No change of the middle value.
-      }
-    }
-    else
-    {
-      if (pix_in[0] >= pix_in[2])
-      {  // Case 5: g >  r >= b
-        pix_out[0] = preserve_hue(pix_out[1], pix_in[1], pix_in[0], pix_out[2], pix_in[2]);
-      }
-      else if (pix_in[2] > pix_in[1])
-      {  // Case 6: b >  g >  r
-        pix_out[1] = preserve_hue(pix_out[2], pix_in[2], pix_in[1], pix_out[0], pix_in[0]);
-      }
-      else
-      {  // Case 7: g >= b >  r
-        pix_out[2] = preserve_hue(pix_out[1], pix_in[1], pix_in[2], pix_out[0], pix_in[0]);
-      }
-    }
-
-    // Copy over the alpha channel
-    pix_out[3] = pix_in[3];
-  }
-}
-*/
 
 // Linear interpolation of hue that also preserve sum of channels
 // Assumes hue_preservation strictly in range [0, 1]
@@ -537,7 +436,7 @@ void process_loglogistic_per_channel_interpolated(dt_dev_pixelpipe_iop_t *piece,
     float DT_ALIGNED_ARRAY per_channel[4];
 
     // Force negative values to zero
-    negative_values(pix_in, pix_in_strict_positive);
+    desaturate_negative_values(pix_in, pix_in_strict_positive);
 
     for(size_t c = 0; c < 3; c++)
     {
@@ -546,7 +445,7 @@ void process_loglogistic_per_channel_interpolated(dt_dev_pixelpipe_iop_t *piece,
 
     // Hue correction by scaling the middle value relative to the max and min values.
     dt_iop_sigmoid_value_order_t pixel_value_order;
-    pixel_order(pix_in_strict_positive, &pixel_value_order);
+    pixel_channel_order(pix_in_strict_positive, &pixel_value_order);
     preserve_hue_and_energy(pix_in_strict_positive, per_channel, pix_out, pixel_value_order, hue_preservation);
 
     // Copy over the alpha channel
