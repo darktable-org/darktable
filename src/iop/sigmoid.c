@@ -49,7 +49,6 @@ typedef struct dt_iop_sigmoid_params_t
   float middle_grey_contrast;  // $MIN: 0.1  $MAX: 10.0 $DEFAULT: 1.6 $DESCRIPTION: "contrast"
   float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "skew"
   float display_white_target;  // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
-  float display_grey_target;   // $MIN: 0.1  $MAX: 0.2 $DEFAULT: 0.1845 $DESCRIPTION: "target grey"
   float display_black_target;  // $MIN: 0.0  $MAX: 15.0 $DEFAULT: 0.0152 $DESCRIPTION: "target black"
   dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_PER_CHANNEL $DESCRIPTION: "color processing"
   float hue_preservation;                          // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "preserve hue"
@@ -122,7 +121,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
   /* Calculate actual skew log logistic parameters to fulfill the following:
    * f(scene_zero) = display_black_target 
-   * f(scene_grey) = display_grey_target
+   * f(scene_grey) = MIDDLE_GREY
    * f(scene_inf)  = display_white_target
    * Slope at scene_grey independet of skewness i.e. only changed by the contrast parameter.
    */
@@ -143,7 +142,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // Slope at low film power
   const float temp_film_power = 1.0f;
   const float temp_white_target = 0.01f * params->display_white_target;
-  const float temp_white_grey_relation = powf(temp_white_target / params->display_grey_target, 1.0f / module_data->paper_power) - 1.0f;
+  const float temp_white_grey_relation = powf(temp_white_target / MIDDLE_GREY, 1.0f / module_data->paper_power) - 1.0f;
   const float temp_paper_exposure = powf(MIDDLE_GREY, temp_film_power) * temp_white_grey_relation;
   const float temp_slope = (generalized_loglogistic_sigmoid(MIDDLE_GREY + delta, temp_white_target, temp_paper_exposure, ref_film_fog, temp_film_power, module_data->paper_power) -
                             generalized_loglogistic_sigmoid(MIDDLE_GREY - delta, temp_white_target, temp_paper_exposure, ref_film_fog, temp_film_power, module_data->paper_power)) / 2.0f / delta;
@@ -155,7 +154,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // Calculate the other parameters now that both film and paper power is known
   module_data->white_target = 0.01f * params->display_white_target;
   module_data->black_target = 0.01f * params->display_black_target;
-  const float white_grey_relation = powf(module_data->white_target / params->display_grey_target, 1.0f / module_data->paper_power) - 1.0f;
+  const float white_grey_relation = powf(module_data->white_target / MIDDLE_GREY, 1.0f / module_data->paper_power) - 1.0f;
   const float white_black_relation = powf(module_data->black_target / module_data->white_target, -1.0f / module_data->paper_power) - 1.0f;
 
   module_data->film_fog = MIDDLE_GREY * powf(white_grey_relation, 1.0f / module_data->film_power) / (powf(white_black_relation, 1.0f / module_data->film_power) - powf(white_grey_relation, 1.0f / module_data->film_power));
