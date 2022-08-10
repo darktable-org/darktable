@@ -1414,6 +1414,29 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 }
 
 
+static void _YchToRGB(dt_aligned_pixel_t *RGB_out, float chroma, float hue,
+                      const dt_iop_order_iccprofile_info_t *output_profile,
+                      const dt_colormatrix_t output_matrix_LMS_to_RGB)
+{
+  dt_aligned_pixel_t RGB_linear = { 0.f };
+  dt_aligned_pixel_t Ych;
+  make_Ych(0.75f, chroma, hue, Ych);
+  dt_aligned_pixel_t XYZ_D65 = { 0.f };
+  dt_aligned_pixel_t XYZ_D50 = { 0.f };
+  Ych_to_XYZ(Ych, XYZ_D65);
+  XYZ_D65_to_D50(XYZ_D65, XYZ_D50);
+  dt_apply_transposed_color_matrix(XYZ_D50, output_profile->matrix_out_transposed, RGB_linear);
+  // normalize to the brightest value available at this hue and chroma
+  const float max_RGB = fmaxf(fmaxf(RGB_linear[0], RGB_linear[1]), RGB_linear[2]);
+  for_each_channel(c) RGB_linear[c] = MAX(RGB_linear[c] / max_RGB, 0.f);
+  // Apply nonlinear LUT if necessary
+  if(output_profile->nonlinearlut)
+    dt_ioppr_apply_trc(RGB_linear, *RGB_out, output_profile->lut_out, output_profile->unbounded_coeffs_out,
+                       output_profile->lutsize);
+  else
+    memcpy(*RGB_out, RGB_linear, sizeof(RGB_linear));
+}
+
 static void paint_chroma_slider(const dt_iop_order_iccprofile_info_t *output_profile,
                                 const dt_colormatrix_t output_matrix_LMS_to_RGB,
                                 GtkWidget *w, const float hue)
@@ -1434,22 +1457,8 @@ static void paint_chroma_slider(const dt_iop_order_iccprofile_info_t *output_pro
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float x = MIN(x_min + stop * x_range, max_chroma);
 
-    dt_aligned_pixel_t RGB = { 0.f };
-    dt_aligned_pixel_t RGB_linear = { 0.f };
-    dt_aligned_pixel_t Ych;
-    make_Ych(0.75f, x, h, Ych);
-    dt_aligned_pixel_t XYZ_D65 = { 0.f };
-    dt_aligned_pixel_t XYZ_D50 = { 0.f };
-    Ych_to_XYZ(Ych, XYZ_D65);
-    XYZ_D65_to_D50(XYZ_D65, XYZ_D50);
-    dt_apply_transposed_color_matrix(XYZ_D50, output_profile->matrix_out_transposed, RGB_linear);
-    // normalize to the brightest value available at this hue and chroma
-    const float max_RGB = fmaxf(fmaxf(RGB_linear[0], RGB_linear[1]), RGB_linear[2]);
-    for_each_channel(c) RGB_linear[c] = MAX(RGB_linear[c] / max_RGB, 0.f);
-    // Apply nonlinear LUT if necessary
-    if(output_profile->nonlinearlut)
-      dt_ioppr_apply_trc(RGB_linear, RGB, output_profile->lut_out,
-                         output_profile->unbounded_coeffs_out, output_profile->lutsize);
+    dt_aligned_pixel_t RGB;
+    _YchToRGB(&RGB, x, h, output_profile, output_matrix_LMS_to_RGB);
     dt_bauhaus_slider_set_stop(w, stop, RGB[0], RGB[1], RGB[2]);
   }
 
@@ -1466,22 +1475,8 @@ static void paint_hue_sliders(const dt_iop_order_iccprofile_info_t *output_profi
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float h = DEG_TO_RAD(stop * (360.f));
     const float max_chroma = Ych_max_chroma_without_negatives(output_matrix_LMS_to_RGB, cosf(h), sinf(h));
-    dt_aligned_pixel_t RGB_linear = { 0.f };
-    dt_aligned_pixel_t RGB = { 0.f };
-    dt_aligned_pixel_t Ych;
-    make_Ych(0.75f, MIN(0.2f, max_chroma), h, Ych);
-    dt_aligned_pixel_t XYZ_D65 = { 0.f };
-    dt_aligned_pixel_t XYZ_D50 = { 0.f };
-    Ych_to_XYZ(Ych, XYZ_D65);
-    XYZ_D65_to_D50(XYZ_D65, XYZ_D50);
-    dt_apply_transposed_color_matrix(XYZ_D50, output_profile->matrix_out_transposed, RGB_linear);
-    // normalize to the brightest value available at this hue and chroma
-    const float max_RGB = fmaxf(fmaxf(RGB_linear[0], RGB_linear[1]), RGB_linear[2]);
-    for_each_channel(c) RGB_linear[c] = MAX(RGB_linear[c] / max_RGB, 0.f);
-    // Apply nonlinear LUT if necessary
-    if(output_profile->nonlinearlut)
-      dt_ioppr_apply_trc(RGB_linear, RGB, output_profile->lut_out,
-                         output_profile->unbounded_coeffs_out, output_profile->lutsize);
+    dt_aligned_pixel_t RGB;
+    _YchToRGB(&RGB, MIN(0.2f, max_chroma), h, output_profile, output_matrix_LMS_to_RGB);
     dt_bauhaus_slider_set_stop(g->global_H, stop, RGB[0], RGB[1], RGB[2]);
     dt_bauhaus_slider_set_stop(g->shadows_H, stop, RGB[0], RGB[1], RGB[2]);
     dt_bauhaus_slider_set_stop(g->highlights_H, stop, RGB[0], RGB[1], RGB[2]);
