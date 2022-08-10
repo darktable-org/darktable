@@ -59,32 +59,28 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   uint32_t profile_len = 0;
   gboolean profile_is_linear = TRUE;
 
-  if(imgid > 0)
+  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  cmsSaveProfileToMem(out_profile, NULL, &profile_len);
+  if(profile_len > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
-    cmsSaveProfileToMem(out_profile, 0, &profile_len);
-    if(profile_len > 0)
+    profile = malloc(profile_len);
+    if(!profile)
     {
-      profile = malloc(profile_len);
-      if(!profile)
-      {
-        fprintf(stderr, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
-        return 1;
-      }
-      cmsSaveProfileToMem(out_profile, profile, &profile_len);
+      fprintf(stderr, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
+      return 1;
+    }
+    cmsSaveProfileToMem(out_profile, profile, &profile_len);
 
-      // try to figure out if the profile is linear
-      if(cmsIsMatrixShaper(out_profile))
+    // try to figure out if the profile is linear
+    if(cmsIsMatrixShaper(out_profile))
+    {
+      const cmsToneCurve *red_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigRedTRCTag);
+      const cmsToneCurve *green_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigGreenTRCTag);
+      const cmsToneCurve *blue_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigBlueTRCTag);
+      if(red_curve && green_curve && blue_curve)
       {
-        const cmsToneCurve *red_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigRedTRCTag);
-        const cmsToneCurve *green_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigGreenTRCTag);
-        const cmsToneCurve *blue_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigBlueTRCTag);
-        if(red_curve && green_curve && blue_curve)
-        {
-          profile_is_linear = cmsIsToneCurveLinear(red_curve)
-                              && cmsIsToneCurveLinear(green_curve)
-                              && cmsIsToneCurveLinear(blue_curve);
-        }
+        profile_is_linear = cmsIsToneCurveLinear(red_curve) && cmsIsToneCurveLinear(green_curve)
+                            && cmsIsToneCurveLinear(blue_curve);
       }
     }
   }

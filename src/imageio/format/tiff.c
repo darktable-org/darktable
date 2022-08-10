@@ -78,20 +78,17 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 #endif
   int rc = 1; // default to error
 
-  if(imgid > 0)
+  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  cmsSaveProfileToMem(out_profile, NULL, &profile_len);
+  if(profile_len > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
-    cmsSaveProfileToMem(out_profile, 0, &profile_len);
-    if(profile_len > 0)
+    profile = malloc(profile_len);
+    if(!profile)
     {
-      profile = malloc(profile_len);
-      if(!profile)
-      {
-        rc = 1;
-        goto exit;
-      }
-      cmsSaveProfileToMem(out_profile, profile, &profile_len);
+      rc = 1;
+      goto exit;
     }
+    cmsSaveProfileToMem(out_profile, profile, &profile_len);
   }
 
   uint16_t n_pages = 1;
