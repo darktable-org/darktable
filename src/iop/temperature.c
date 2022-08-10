@@ -541,20 +541,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   { // non-mosaiced
-    const size_t ch = piece->colors;
-
+    const size_t npixels = roi_out->width * (size_t)roi_out->height;
+ 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, d, in, out, roi_out) \
-    schedule(static) \
-    collapse(2)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, out, npixels)     \
+    dt_omp_sharedconst(d_coeffs)              \
+    schedule(static)
 #endif
-    for(size_t k = 0; k < ch * roi_out->width * roi_out->height; k += ch)
+    for(size_t k = 0; k < 4*npixels; k += 4)
     {
-      for(ptrdiff_t c = 0; c < 3; c++)
+      for_each_channel(c,aligned(in,out))
       {
-        const size_t p = k + c;
-        out[p] = in[p] * d->coeffs[c];
+        out[k+c] = in[k+c] * d_coeffs[c];
       }
     }
 
