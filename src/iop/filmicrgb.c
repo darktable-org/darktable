@@ -4251,7 +4251,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("auto tune levels")), TRUE, TRUE, 0);
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), g->auto_button, FALSE, FALSE, 0);
-  dt_action_define_iop(self, NULL, N_("auto tune levels"), GTK_WIDGET(g->auto_button), &dt_action_def_button);
+  dt_action_define_iop(self, NULL, N_("auto tune levels"), GTK_WIDGET(g->auto_button), &dt_action_def_toggle);
   dt_gui_add_class(g->auto_button, "dt_bauhaus_alignment");
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
