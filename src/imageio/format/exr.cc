@@ -151,39 +151,33 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
   }
 
   // try to add the chromaticities
-  if(imgid > 0)
+  cmsToneCurve *red_curve = NULL, *green_curve = NULL, *blue_curve = NULL;
+  cmsCIEXYZ *red_color = NULL, *green_color = NULL, *blue_color = NULL;
+  Imf::Chromaticities chromaticities; // initialzed w/ Rec709 primaries and D65 white
+
+  // determine the actual (export vs colorout) color profile used
+  const dt_colorspaces_color_profile_t *cp = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
+
+  if(!cmsIsMatrixShaper(cp->profile)) goto icc_error;
+
+  red_curve = (cmsToneCurve *)cmsReadTag(cp->profile, cmsSigRedTRCTag);
+  green_curve = (cmsToneCurve *)cmsReadTag(cp->profile, cmsSigGreenTRCTag);
+  blue_curve = (cmsToneCurve *)cmsReadTag(cp->profile, cmsSigBlueTRCTag);
+
+  red_color = (cmsCIEXYZ *)cmsReadTag(cp->profile, cmsSigRedColorantTag);
+  green_color = (cmsCIEXYZ *)cmsReadTag(cp->profile, cmsSigGreenColorantTag);
+  blue_color = (cmsCIEXYZ *)cmsReadTag(cp->profile, cmsSigBlueColorantTag);
+
+  if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color) goto icc_error;
+
+  if(!cmsIsToneCurveLinear(red_curve) || !cmsIsToneCurveLinear(green_curve) || !cmsIsToneCurveLinear(blue_curve))
+    goto icc_error;
+
+  // calculate primaries only if white point is not D65
+  if(cp->type != DT_COLORSPACE_LIN_REC709 && cp->type != DT_COLORSPACE_LIN_REC2020)
   {
-    cmsToneCurve *red_curve = NULL,
-                 *green_curve = NULL,
-                 *blue_curve = NULL;
-    cmsCIEXYZ *red_color = NULL,
-              *green_color = NULL,
-              *blue_color = NULL;
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
-    float r[2], g[2], b[2], w[2];
-    float sum;
-    Imf::Chromaticities chromaticities;
-
-    if(!cmsIsMatrixShaper(out_profile)) goto icc_error;
-
-    red_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigRedTRCTag);
-    green_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigGreenTRCTag);
-    blue_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigBlueTRCTag);
-
-    red_color = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigRedColorantTag);
-    green_color = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigGreenColorantTag);
-    blue_color = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigBlueColorantTag);
-
-    if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color)
-      goto icc_error;
-
-    if(!cmsIsToneCurveLinear(red_curve) || !cmsIsToneCurveLinear(green_curve) || !cmsIsToneCurveLinear(blue_curve))
-      goto icc_error;
-
-//     printf("r: %f %f %f\n", red_color->X, red_color->Y, red_color->Z);
-//     printf("g: %f %f %f\n", green_color->X, green_color->Y, green_color->Z);
-//     printf("b: %f %f %f\n", blue_color->X, blue_color->Y, blue_color->Z);
-//     printf("w: %f %f %f\n", white_point->X, white_point->Y, white_point->Z);
+    float r[2], g[2], b[2];
+    double sum;
 
     sum = red_color->X + red_color->Y + red_color->Z;
     r[0] = red_color->X / sum;
@@ -196,24 +190,29 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
     b[1] = blue_color->Y / sum;
 
     // hard code the white point to D50 as the primaries from the ICC should be adapted to that
-    // calculated from D50 illuminant XYZ values in ICC specs
-    w[0] = 0.345702915;
-    w[1] = 0.358538597;
+    chromaticities.white = Imath::V2f(cmsD50_xyY()->x, cmsD50_xyY()->y);
 
     chromaticities.red = Imath::V2f(r[0], r[1]);
     chromaticities.green = Imath::V2f(g[0], g[1]);
     chromaticities.blue = Imath::V2f(b[0], b[1]);
-    chromaticities.white = Imath::V2f(w[0], w[1]);
+  }
+  else if(cp->type == DT_COLORSPACE_LIN_REC2020)
+  {
+    chromaticities.red = Imath::V2f(0.7080f, 0.2920f);
+    chromaticities.green = Imath::V2f(0.1700f, 0.7970f);
+    chromaticities.blue = Imath::V2f(0.1310f, 0.0460f);
+  }
+  // else use Rec709 default
 
-    Imf::addChromaticities(header, chromaticities);
-    Imf::addWhiteLuminance(header, 1.0); // just assume 1 here
+  Imf::addChromaticities(header, chromaticities);
+  Imf::addWhiteLuminance(header, 1.0); // just assume 1 here
 
-    goto icc_end;
+  goto icc_end;
 
 icc_error:
-    dt_control_log("%s", _("the selected output profile doesn't work well with exr"));
-    fprintf(stderr, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong results when opening the image\n");
-  }
+  dt_control_log("%s", _("the selected output profile doesn't work well with exr"));
+  fprintf(stderr, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong "
+                  "results when opening the image\n");
 icc_end:
 
   Imf::PixelType pixel_type = (Imf::PixelType)exr->pixel_type;
