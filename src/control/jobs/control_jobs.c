@@ -1562,10 +1562,18 @@ gboolean dt_control_remove_images()
     }
 
     dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_NONE,
         ngettext("do you really want to remove %d image from darktable\n(without deleting file on disk)?",
                  "do you really want to remove %d images from darktable\n(without deleting files on disk)?", number),
         number);
+    gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+                           _("yes"), GTK_RESPONSE_YES,
+                           _("no"), GTK_RESPONSE_NO,
+                           NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NO);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -1605,12 +1613,20 @@ void dt_control_delete_images()
     }
 
     dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_NONE,
         send_to_trash ? ngettext("do you really want to physically delete %d image\n(using trash if possible)?",
                                  "do you really want to physically delete %d images\n(using trash if possible)?", number)
                       : ngettext("do you really want to physically delete %d image from disk?",
                                  "do you really want to physically delete %d images from disk?", number),
         number);
+    gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+                           _("yes"), GTK_RESPONSE_YES,
+                           _("no"), GTK_RESPONSE_NO,
+                           NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NO);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -1646,9 +1662,17 @@ void dt_control_delete_image(int imgid)
     }
 
     dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_NONE,
         send_to_trash ? _("do you really want to physically delete selected image (using trash if possible)?")
                       : _("do you really want to physically delete selected image from disk?"));
+    gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+                           _("yes"), GTK_RESPONSE_YES,
+                           _("no"), GTK_RESPONSE_NO,
+                           NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NO);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -1701,14 +1725,22 @@ void dt_control_move_images()
 
   if(dt_conf_get_bool("ask_before_move"))
   {
-    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                               GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                               ngettext("do you really want to physically move %d image to %s?\n"
-                                                        "(all duplicates will be moved along)",
-                                                        "do you really want to physically move %d images to %s?\n"
-                                                        "(all duplicates will be moved along)",
-                                                        number),
-                                               number, dir);
+    GtkWidget *dialog = gtk_message_dialog_new(
+        GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_NONE,
+        ngettext("do you really want to physically move %d image to %s?\n"
+                 "(all duplicates will be moved along)",
+                 "do you really want to physically move %d images to %s?\n"
+                 "(all duplicates will be moved along)",
+                 number),
+        number, dir);
+    gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+                           _("yes"), GTK_RESPONSE_YES,
+                           _("no"), GTK_RESPONSE_NO,
+                           NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NO);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -1764,10 +1796,18 @@ void dt_control_copy_images()
   if(dt_conf_get_bool("ask_before_copy"))
   {
     GtkWidget *dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        GTK_WINDOW(win),
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_QUESTION,
+        GTK_BUTTONS_NONE,
         ngettext("do you really want to physically copy %d image to %s?",
                  "do you really want to physically copy %d images to %s?", number),
         number, dir);
+    gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+                           _("yes"), GTK_RESPONSE_YES,
+                           _("no"), GTK_RESPONSE_NO,
+                           NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NO);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
