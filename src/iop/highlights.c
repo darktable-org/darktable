@@ -68,7 +68,7 @@ typedef enum dt_iop_highlights_mode_t
   DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
   DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
   DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
-  DT_IOP_HIGHLIGHTS_RECOVERY = 4, // $DESCRIPTION: "segmentation based"
+  DT_IOP_HIGHLIGHTS_SEGMENTS = 4, // $DESCRIPTION: "segmentation based"
 } dt_iop_highlights_mode_t;
 
 typedef enum dt_atrous_wavelets_scales_t
@@ -98,7 +98,7 @@ typedef struct dt_iop_highlights_params_t
   float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
   int iterations; // $MIN: 1 $MAX: 64 $DEFAULT: 1 $DESCRIPTION: "iterations"
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
-  float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidates"
+  float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidating"
   float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
   int reconstruct;
   // params of v4
@@ -116,8 +116,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *candidating;
   GtkWidget *combine;
   gboolean show_visualize;
-  gboolean show_borders;
-  gboolean show_bads;
+  int show_segmentation;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -450,7 +449,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     return;
   }
 
-  if(d->mode == DT_IOP_HIGHLIGHTS_RECOVERY && filters && filters != 9u)
+  if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS && filters && filters != 9u)
   {
     // even if the algorithm can't tile we want to calculate memory for pixelpipe checks and a possible warning
     tiling->xalign = 2;
@@ -2013,10 +2012,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         process_lch_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
 
-    case DT_IOP_HIGHLIGHTS_RECOVERY:
+    case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
       int vmode = 0;
-      if(g != NULL) vmode = ((g->show_borders) ? 1 : 0) | ((g->show_bads) ? 2 : 0);
+      if(g != NULL) vmode = g->show_segmentation;
 
       process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data, vmode);
       if(vmode)
@@ -2043,7 +2042,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   // update processed maximum
-  if((data->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (data->mode != DT_IOP_HIGHLIGHTS_RECOVERY))
+  if((data->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (data->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
   {
     // The guided laplacian and recovery modes keep signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
@@ -2063,18 +2062,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   memcpy(d, p, sizeof(*p));
 
+  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT or DT_IOP_HIGHLIGHTS_SEGMENTS
+  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)) ? 0 : 1;
+  if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) piece->process_tiling_ready = 0;
+
   // check for heavy computing here to give an iop cache hint
   const gboolean heavy = ((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256));
-
-  self->cache_next_important = heavy; 
-=======
-  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT or DT_IOP_HIGHLIGHTS_RECOVERY
-  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_RECOVERY)) ? 0 : 1;
-  if(d->mode == DT_IOP_HIGHLIGHTS_RECOVERY) piece->process_tiling_ready = 0;
->>>>>>> 32b67622a (Integrate hlrecovery in highlights module)
-  // check for heavy computing here to give an iop cache hint
-  const gboolean heavy = ((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256));
-
   self->cache_next_important = heavy; 
 }
 
@@ -2099,7 +2092,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_filmic_bspline_horizontal = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_horizontal");
   gd->kernel_filmic_bspline_vertical = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_vertical");
   gd->kernel_filmic_wavelets_detail = dt_opencl_create_kernel(wavelets, "wavelets_detail_level");
-
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -2151,13 +2143,13 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->scales, use_laplacian);
   gtk_widget_set_visible(g->solid_color, use_laplacian);
 
-  const gboolean use_recovery = bayer && (mode == DT_IOP_HIGHLIGHTS_RECOVERY);
+  const gboolean use_recovery = bayer && (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   gtk_widget_set_visible(g->candidating, use_recovery);
   gtk_widget_set_visible(g->combine, use_recovery);
 
   // If guided laplacian or hl_recovery mode was copied as part of the history of another pic, sanitize it
   // guided laplacian and hl_recovery are not available for XTrans
-  if(!bayer && ((mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) || (mode == DT_IOP_HIGHLIGHTS_RECOVERY)) )
+  if(!bayer && ((mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) || (mode == DT_IOP_HIGHLIGHTS_SEGMENTS)) )
   {
     p->mode = DT_IOP_HIGHLIGHTS_CLIP;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
@@ -2176,9 +2168,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   g->show_visualize = FALSE;
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-  g->show_bads = FALSE;
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-  g->show_borders = FALSE;
+  g->show_segmentation = 0;
   gui_changed(self, NULL, NULL);
 }
 
@@ -2207,12 +2198,12 @@ void reload_defaults(dt_iop_module_t *module)
         dt_bauhaus_combobox_add_full(g->mode, _("guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
         dt_bauhaus_combobox_add_full(g->mode, _("highlights recovery"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_RECOVERY), NULL, TRUE);
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
       }
     }
     else
     {
-      dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_RECOVERY);
+      dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_SEGMENTS);
       dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_LAPLACIAN);
     }
   }
@@ -2224,24 +2215,33 @@ static void _visualize_callback(GtkWidget *quad, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   g->show_visualize = dt_bauhaus_widget_get_quad_active(quad);
+  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+  g->show_segmentation = 0;
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _bads_callback(GtkWidget *quad, gpointer user_data)
+static void _candidating_callback(GtkWidget *quad, gpointer user_data)
 {
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->show_bads = dt_bauhaus_widget_get_quad_active(quad);
+  g->show_segmentation = (dt_bauhaus_widget_get_quad_active(quad)) ? 2 : 0;
+  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+  g->show_visualize = FALSE;
   dt_dev_reprocess_center(self->dev);
 }
 
-static void _borders_callback(GtkWidget *quad, gpointer user_data)
+static void _combine_callback(GtkWidget *quad, gpointer user_data)
 {
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->show_borders = dt_bauhaus_widget_get_quad_active(quad);
+  g->show_segmentation = (dt_bauhaus_widget_get_quad_active(quad)) ? 1 : 0;
+  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
+  g->show_visualize = FALSE;
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -2250,13 +2250,12 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(!in)
   {
-    const gboolean was_visualize = g->show_visualize || g->show_bads || g->show_borders;
+    const gboolean was_visualize = g->show_visualize || g->show_segmentation;
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
     dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
     dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
     g->show_visualize = FALSE;
-    g->show_bads = FALSE;
-    g->show_borders = FALSE;
+    g->show_segmentation = 0;
     if(was_visualize) dt_dev_reprocess_center(self->dev);
   }
 }
@@ -2304,7 +2303,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_paint(g->combine, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->combine, TRUE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
-  g_signal_connect(G_OBJECT(g->combine), "quad-pressed", G_CALLBACK(_borders_callback), self);
+  g_signal_connect(G_OBJECT(g->combine), "quad-pressed", G_CALLBACK(_combine_callback), self);
 
   g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
   gtk_widget_set_tooltip_text(g->candidating, _("dealing with isolated clipped segments in dark regions.\n"
@@ -2314,7 +2313,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_paint(g->candidating, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->candidating, TRUE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-  g_signal_connect(G_OBJECT(g->candidating), "quad-pressed", G_CALLBACK(_bads_callback), self);
+  g_signal_connect(G_OBJECT(g->candidating), "quad-pressed", G_CALLBACK(_candidating_callback), self);
 
   GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
   gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
