@@ -1888,6 +1888,7 @@ static void _preference_changed(gpointer instance, gpointer user_data)
     gtk_widget_set_visible(display_intent, FALSE);
   }
   dt_get_sysresource_level();
+  dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
 }
 

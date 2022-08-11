@@ -362,8 +362,11 @@ void dt_opencl_disable(void);
 /** get OpenCL tuning mode flags */
 int dt_opencl_get_tuning_mode(void);
 
-/** update enabled flag and profile with value from preferences, returns enabled flag */
-int dt_opencl_update_settings(void);
+/** runtime check for cl system running */
+gboolean dt_opencl_running(void);
+
+/** update enabled flag and profile with value from preferences */
+void dt_opencl_update_settings(void);
 
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width,
@@ -597,9 +600,13 @@ static inline int dt_opencl_get_tuning_mode(void)
 {
   return 0;
 }
-static inline int dt_opencl_update_settings(void)
+static inline gboolean dt_opencl_running(void)
 {
-  return 0;
+  return FALSE;
+}
+static inline void dt_opencl_update_settings(void)
+{
+  return ;
 }
 static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
                                               const unsigned bpp, const float factor, const size_t overhead)

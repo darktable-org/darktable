@@ -2963,42 +2963,30 @@ void dt_opencl_disable(void)
   dt_conf_set_bool("opencl", FALSE);
 }
 
-
-/** update enabled flag and profile with value from preferences, returns enabled flag */
-int dt_opencl_update_settings(void)
+/** runtime check for cl system running */
+gboolean dt_opencl_running(void)
 {
   dt_opencl_t *cl = darktable.opencl;
-  // FIXME: This pulls in prefs every time the pixelpipe runs. Instead have a callback for DT_SIGNAL_PREFERENCES_CHANGE?
+  if(!cl) return FALSE;
   if(!cl->inited) return FALSE;
-  const int prefs = dt_conf_get_bool("opencl");
+  return (cl->enabled && !cl->stopped);
+}
 
-  if(cl->enabled != prefs)
-  {
-    cl->enabled = prefs;
-    cl->stopped = 0;
-    cl->error_count = 0;
-    dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");
-  }
+/** update enabled flag and profile with value from preferences */
+void dt_opencl_update_settings(void)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl) return;
+  if(!cl->inited) return;
+
+  cl->enabled = dt_conf_get_bool("opencl");
+  cl->stopped = 0;
+  cl->error_count = 0;
 
   dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
-
-  if(cl->scheduling_profile != profile)
-  {
-    const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
-    dt_print(DT_DEBUG_OPENCL, "[opencl_update_scheduling_profile] scheduling profile set to %s\n", pstr);
-    dt_opencl_apply_scheduling_profile(profile);
-  }
-
-  dt_opencl_sync_cache_t sync = dt_opencl_get_sync_cache();
-
-  if(cl->sync_cache != sync)
-  {
-    const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
-    dt_print(DT_DEBUG_OPENCL, "[opencl_update_synch_cache] sync cache set to %s\n", pstr);
-    cl->sync_cache = sync;
-  }
-
-  return (cl->enabled && !cl->stopped);
+  dt_opencl_apply_scheduling_profile(profile);
+  const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
+  dt_vprint(DT_DEBUG_OPENCL, "[opencl_update_settings] scheduling profile set to %s\n", pstr);
 }
 
 /** read scheduling profile for config variables */
