@@ -521,9 +521,6 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
     }
   }
 
-  for(int i = 0; i < HL_SENSOR_PLANES; i++)
-    dt_masks_extend_border(plane[i], pwidth, pheight, HLBORDER);
-
   float max_correction = 1.0f;
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
