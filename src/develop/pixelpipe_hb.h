@@ -137,6 +137,9 @@ typedef struct dt_dev_pixelpipe_t
   struct dt_iop_roi_t rawdetail_mask_roi;
   int want_detail_mask;
 
+  // we have to keep track of the next processing module to use an iop cacheline with high priority
+  gboolean next_important_module;
+
   int output_imgid;
   // working?
   int processing;
@@ -192,7 +195,7 @@ int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int
 // distortions)
 int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
-int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries);
+int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries, size_t memlimit);
 // constructs a new input buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
                                 int height, float iscale);
