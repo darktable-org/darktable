@@ -350,6 +350,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_stats.pixels = 0;
   module->multi_priority = 0;
   module->iop_order = 0;
+  module->cache_next_important = FALSE;
   for(int k = 0; k < 3; k++)
   {
     module->picked_color[k] = module->picked_output_color[k] = 0.0f;

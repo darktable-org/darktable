@@ -1347,7 +1347,7 @@ void dt_get_sysresource_level()
   res->level = oldlevel = level;
   oldtunecl = tunecl;
   res->tunemode = tunecl;
-  if(mod && (darktable.unmuted & (DT_DEBUG_MEMORY | DT_DEBUG_OPENCL)))
+  if(mod && (darktable.unmuted & (DT_DEBUG_MEMORY | DT_DEBUG_OPENCL | DT_DEBUG_DEV)))
   {
     const int oldgrp = res->group;
     res->group = 4 * level;
@@ -1356,6 +1356,7 @@ void dt_get_sysresource_level()
     fprintf(stderr,"  mipmap cache:    %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
     fprintf(stderr,"  available mem:   %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
     fprintf(stderr,"  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+    fprintf(stderr,"  iop cache:       %luMB\n", dt_get_iopcache_mem() / 1024lu / 1024lu);
 #ifdef HAVE_OPENCL
     fprintf(stderr,"  OpenCL tune mem: %s\n", ((tunecl & DT_OPENCL_TUNE_MEMSIZE) && (level >= 0)) ? "WANTED" : "OFF");
     fprintf(stderr,"  OpenCL pinned:   %s\n", ((tunecl & DT_OPENCL_TUNE_PINNED) && (level >= 0)) ? "WANTED" : "OFF");
@@ -1660,6 +1661,13 @@ size_t dt_get_singlebuffer_mem()
 
   const int fraction = res->fractions[res->group + 1];
   return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
+}
+
+size_t dt_get_iopcache_mem()
+{
+  dt_sys_resources_t *res = &darktable.dtresources;
+  const size_t cachemb = res->total_memory / 1024lu / 1024lu / 20lu;
+  return MIN(6000lu, MAX(400lu, cachemb)) * 1024lu * 1024lu;
 }
 
 void dt_configure_runtime_performance(const int old, char *info)
