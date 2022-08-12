@@ -708,7 +708,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   gtk_widget_set_no_show_all(gw->g_widgets, TRUE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gw->g_flip, self, N_("guide lines"), N_("flip"), _("flip guides"),
-                               0, (GtkCallback)_settings_flip_changed, gw,
+                               0, _settings_flip_changed, gw,
                                N_("none"),
                                N_("horizontally"),
                                N_("vertically"),
@@ -725,7 +725,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(darktable.view_manager->guides_colors, self, N_("guide lines"), N_("overlay color"), _("set overlay color"),
-                               dt_conf_get_int("darkroom/ui/overlay_color"), (GtkCallback)_settings_colors_changed, gw,
+                               dt_conf_get_int("darkroom/ui/overlay_color"), _settings_colors_changed, gw,
                                N_("gray"),
                                N_("red"),
                                N_("green"),

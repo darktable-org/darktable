@@ -941,8 +941,8 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const c
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
-  if(label) g_strlcpy(w->label, _(label), sizeof(w->label));
-  if(section) w->section = g_strdup(_(section));
+  if(label) g_strlcpy(w->label, Q_(label), sizeof(w->label));
+  if(section) w->section = g_strdup(Q_(section));
 
   if(w->module)
   {
@@ -1275,7 +1275,7 @@ void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const 
     g_hash_table_insert(darktable.control->combo_list, action, texts);
 
   while(texts && *texts)
-    dt_bauhaus_combobox_add_full(widget, _(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);
+    dt_bauhaus_combobox_add_full(widget, Q_(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);
 }
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)

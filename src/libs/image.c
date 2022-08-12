@@ -525,7 +525,7 @@ void gui_init(dt_lib_module_t *self)
                                            _("synchronize the image's XMP and remove the local copy"), 0, 0);
   gtk_grid_attach(grid, d->uncache_button, 2, line++, 2, 1);
 
-  d->group_button = dt_action_button_new(self, C_("selected images action", "group"), button_clicked, GINT_TO_POINTER(10),
+  d->group_button = dt_action_button_new(self, NC_("selected images action", "group"), button_clicked, GINT_TO_POINTER(10),
                                          _("add selected images to expanded group or create a new one"),
                                          GDK_KEY_g, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->group_button, 0, line, 2, 1);

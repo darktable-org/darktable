@@ -165,7 +165,7 @@ static void _grouping_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   grouping->rule = rule;
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(grouping->combo, self, NULL, N_("grouping filter"),
-                               _("select the type of grouped image to filter"), 0, (GtkCallback)_grouping_changed,
+                               _("select the type of grouped image to filter"), 0, _grouping_changed,
                                grouping, N_("all images"), N_("ungrouped images"), N_("grouped images"),
                                N_("group leaders"), N_("group followers"));
   DT_BAUHAUS_WIDGET(grouping->combo)->show_label = FALSE;

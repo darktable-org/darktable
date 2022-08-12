@@ -1121,7 +1121,7 @@ void gui_init(dt_lib_module_t *self)
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->dimensions_type, self, NULL, N_("set size"),
                                _("choose a method for setting the output size"),
                                dt_conf_get_int(CONFIG_PREFIX "dimensions_type"),
-                               (GtkCallback)_dimensions_type_changed, d,
+                               _dimensions_type_changed, d,
                                N_("in pixels (for file)"),
                                N_("in cm (for print)"),
                                N_("in inch (for print)"),

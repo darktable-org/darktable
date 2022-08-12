@@ -217,7 +217,7 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *min
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
 
-  dt_action_define_preset(&minfo->module->actions, "new preset");
+  dt_action_define_preset(&minfo->module->actions, _("new preset"));
 
   // then show edit dialog
   edit_preset(_("new preset"), minfo);

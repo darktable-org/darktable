@@ -200,6 +200,17 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
 {
   if(response_id == GTK_RESPONSE_OK)
   {
+    // find the module action list this preset belongs to
+    dt_action_t *module_actions = g->iop ? &g->iop->so->actions : NULL;
+
+    for(GList *libs = darktable.lib->plugins; !module_actions && libs; libs = g_list_next(libs))
+    {
+      dt_lib_module_t *lib = libs->data;
+
+      if(!strcmp(lib->plugin_name, g->operation))
+        module_actions = &lib->actions;
+    }
+
     // we want to save the preset in the database
     sqlite3_stmt *stmt;
 
@@ -262,7 +273,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
           // we remove the preset that will be overwrite
           dt_lib_presets_remove(name, g->operation, g->op_version);
 
-          if(g->iop) dt_action_rename_preset(&g->iop->so->actions, name, NULL);
+          dt_action_rename_preset(module_actions, name, NULL);
         }
         else
           return;
@@ -306,7 +317,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     }
 
     // rename accelerators
-    if(g->iop) dt_action_rename_preset(&g->iop->so->actions, g->original_name, name);
+    dt_action_rename_preset(module_actions, g->original_name, name);
 
     // commit all the user input fields
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -856,7 +867,7 @@ static void _menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   dt_lib_presets_remove(_("new preset"), module->op, module->version());
 
   // create a shortcut for the new entry
-  dt_action_define_preset(&module->so->actions, "new preset");
+  dt_action_define_preset(&module->so->actions, _("new preset"));
 
   // then show edit dialog
   _edit_preset(_("new preset"), module);
