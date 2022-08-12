@@ -35,6 +35,9 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <stdbool.h>
@@ -483,6 +486,87 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+
+#if defined(__SSE__)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
+  const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+  const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  float *const restrict out = (float *)ovoid;
+
+  if(d->type == DT_COLORSPACE_LAB)
+  {
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
+  }
+  else if(!isnan(d->cmatrix[0][0]))
+  {
+    const float *const restrict in = (const float *const)ivoid;
+    const __m128 m0 = _mm_set_ps(0.0f, d->cmatrix[2][0], d->cmatrix[1][0], d->cmatrix[0][0]);
+    const __m128 m1 = _mm_set_ps(0.0f, d->cmatrix[2][1], d->cmatrix[1][1], d->cmatrix[0][1]);
+    const __m128 m2 = _mm_set_ps(0.0f, d->cmatrix[2][2], d->cmatrix[1][2], d->cmatrix[0][2]);
+// fprintf(stderr,"Using cmatrix codepath\n");
+// convert to rgb using matrix
+    
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(npixels, m0, m1, m2, in, out)    \
+    schedule(static)
+#endif
+    for(int j = 0; j < 4 * npixels; j += 4)
+    {
+      const __m128 xyz = dt_Lab_to_XYZ_sse2(_mm_load_ps(in + j));
+      const __m128 t = ((m0 * _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(0, 0, 0, 0))) +
+                        ((m1 * _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(1, 1, 1, 1))) +
+                         (m2 * _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(2, 2, 2, 2)))));
+      _mm_stream_ps(out + j, t);
+    }
+    _mm_sfence();
+
+    process_fastpath_apply_tonecurves(piece, ovoid, roi_out);
+  }
+  else
+  {
+    // fprintf(stderr,"Using xform codepath\n");
+    const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(d, ivoid, gamutcheck, outofgamutpixel, out, roi_out) \
+    schedule(static)
+#endif
+    for(int k = 0; k < roi_out->height; k++)
+    {
+      const float *in = ((float *)ivoid) + (size_t)4 * k * roi_out->width;
+      float *outp = out + (size_t)4 * k * roi_out->width;
+
+      cmsDoTransform(d->xform, in, outp, roi_out->width);
+
+      if(gamutcheck)
+      {
+        for(int j = 0; j < roi_out->width; j++)
+        {
+          const __m128 pixel = _mm_load_ps(outp + 4*j);
+          __m128 ingamut = _mm_cmplt_ps(pixel, _mm_set_ps(-FLT_MAX, 0.0f, 0.0f, 0.0f));
+
+          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
+          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
+
+          const __m128 result
+              = _mm_or_ps(_mm_and_ps(ingamut, outofgamutpixel), _mm_andnot_ps(ingamut, pixel));
+          _mm_stream_ps(outp + 4*j, result);
+        }
+      }
+    }
+    _mm_sfence();
+  }
+
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+}
+#endif
 
 static cmsHPROFILE _make_clipping_profile(cmsHPROFILE profile)
 {
