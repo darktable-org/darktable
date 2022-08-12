@@ -2545,7 +2545,7 @@ static gboolean _add_blendmode_combo(GtkWidget *combobox, dt_develop_blend_mode_
   {
     if(bm->value == mode)
     {
-      dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "blendmode", bm->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GUINT_TO_POINTER(bm->value), NULL, TRUE);
+      dt_bauhaus_combobox_add_full(combobox, Q_(bm->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GUINT_TO_POINTER(bm->value), NULL, TRUE);
 
       return TRUE;
     }
