@@ -2548,6 +2548,32 @@ void dt_colorspaces_rgb_to_cygm(float *out,
   }
 }
 
+
+void dt_make_transposed_matrices_from_primaries_and_whitepoint(const float primaries[3][2],
+                                                               const float whitepoint[2],
+                                                               dt_colormatrix_t RGB_to_XYZ_transposed)
+{
+  // http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+  dt_colormatrix_t primaries_matrix = { { 0.f } };
+  for(size_t i = 0; i < 3; i++)
+  {
+    // N.B. compared to linked equations, our matrix is transposed
+    primaries_matrix[i][0] = primaries[i][0] / primaries[i][1];
+    primaries_matrix[i][1] = 1.f;
+    primaries_matrix[i][2] = (1.f - primaries[i][0] - primaries[i][1]) / primaries[i][1];
+  }
+
+  dt_colormatrix_t primaries_inverse = { { 0.f } };
+  mat3SSEinv(primaries_inverse, primaries_matrix);
+  dt_aligned_pixel_t scale;
+  const dt_aligned_pixel_t XYZ_white
+      = { whitepoint[0] / whitepoint[1], 1.f, (1.f - whitepoint[0] - whitepoint[1]) / whitepoint[1] };
+  dt_apply_transposed_color_matrix(XYZ_white, primaries_inverse, scale);
+
+  for(size_t i = 0; i < 3; i++)
+    for(size_t j = 0; j < 3; j++) RGB_to_XYZ_transposed[i][j] = scale[i] * primaries_matrix[i][j];
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
