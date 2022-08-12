@@ -243,7 +243,7 @@ static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_
   static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
   for_each_channel(c,aligned(Lab,coeff,f))
     f[c] /= coeff[c];
-  for_each_channel(c,aligned(d50, f,add_coeff,XYZ))
+  for_each_channel(c,aligned(d50,f,add_coeff,XYZ))
     XYZ[c] = d50[c] * lab_f_inv(f[c] + f[1] * add_coeff[c]);
 }
 
