@@ -221,6 +221,7 @@ static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_
   Lab[0] = 116.0f * f[1] - 16.0f;
   Lab[1] = 500.0f * (f[0] - f[1]);
   Lab[2] = 200.0f * (f[1] - f[2]);
+  Lab[3] = 0.0f;
 }
 
 #ifdef _OPENMP
@@ -823,6 +824,7 @@ static inline void dt_Lab_2_LCH(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t
   LCH[0] = Lab[0];
   LCH[1] = hypotf(Lab[1], Lab[2]);
   LCH[2] = var_H;
+  LCH[3] = Lab[3];
 }
 
 
@@ -834,6 +836,7 @@ static inline void dt_LCH_2_Lab(const dt_aligned_pixel_t LCH, dt_aligned_pixel_t
   Lab[0] = LCH[0];
   Lab[1] = cosf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
   Lab[2] = sinf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
+  Lab[3] = LCH[3];
 }
 
 static inline float dt_camera_rgb_luminance(const dt_aligned_pixel_t rgb)

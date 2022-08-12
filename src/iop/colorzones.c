@@ -1468,7 +1468,7 @@ static gboolean _bottom_area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_i
     const float ii = _mouse_to_curve(((float)i + .5f) / (float)(cellsi - 1), c->zoom_factor, c->offset_x);
     const float iih = _mouse_to_curve((float)i / (float)(cellsi - 1), c->zoom_factor, c->offset_x);
 
-    dt_aligned_pixel_t LCh;
+    dt_aligned_pixel_t LCh = { 50.0f };
 
     switch(p.channel)
     {
