@@ -238,15 +238,14 @@ static inline float lab_f_inv(const float x)
 #endif
 static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
-  dt_aligned_pixel_t f = { Lab[1], Lab[0] + 16.0f, Lab[2] };
-  static const dt_aligned_pixel_t coeff = { 1.0f / 500.0f, 1.0f / 116.0f, -1.0f / 200.0f };
+  dt_aligned_pixel_t f = { Lab[1], Lab[0] + 16.0f, -Lab[2], 0.0f };
+  static const dt_aligned_pixel_t coeff = { 500.0f, 116.0f, 200.0f, 1.0f };
   static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
   for_each_channel(c,aligned(Lab,coeff,f))
-    f[c] *= coeff[c];
-  for_each_channel(c,aligned(f,add_coeff,XYZ))
+    f[c] /= coeff[c];
+  for_each_channel(c,aligned(d50, f,add_coeff,XYZ))
     XYZ[c] = d50[c] * lab_f_inv(f[c] + f[1] * add_coeff[c]);
 }
-
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, XYZ:16)
