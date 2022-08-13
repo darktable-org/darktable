@@ -607,7 +607,10 @@ static void _camctl_unlock(const dt_camctl_t *c)
   const dt_camera_t *cam = camctl->active_camera;
   camctl->active_camera = NULL;
   dt_pthread_mutex_BAD_unlock(&camctl->lock);
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for %s\n", cam->model);
+  if(cam)
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for %s\n", cam->model);
+  else
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for unknown camera\n");
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
 }
 
