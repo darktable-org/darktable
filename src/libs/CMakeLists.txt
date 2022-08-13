@@ -150,7 +150,7 @@ foreach(module ${MODULES})
     else()
         set_target_properties(${module}
                               PROPERTIES
-                              INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
+                              INSTALL_RPATH ${RPATH_ORIGIN}/../..)
     endif(WIN32)
     install(TARGETS ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable COMPONENT DTApplication)
 endforeach(module)

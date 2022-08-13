@@ -69,9 +69,9 @@ endif()
 # Whether to use relative paths for the build RPATH
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
-    set(CMAKE_INSTALL_LIBDIR_RPATH @loader_path/../${CMAKE_INSTALL_LIBDIR}/darktable)
+    set(RPATH_ORIGIN @loader_path)
 else()
-    set(CMAKE_INSTALL_LIBDIR_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR}/darktable)
+    set(RPATH_ORIGIN $ORIGIN)
 endif()
 
 if (USE_OPENMP)

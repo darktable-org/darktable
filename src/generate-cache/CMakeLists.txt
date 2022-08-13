@@ -9,7 +9,7 @@ if (WIN32)
 else()
     set_target_properties(darktable-generate-cache
                           PROPERTIES
-                          INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH}
+                          INSTALL_RPATH ${RPATH_ORIGIN}/${REL_BIN_TO_LIBDIR}
                           RUNTIME_OUTPUT_DIRECTORY ${DARKTABLE_BINDIR})
 endif(WIN32)
 
