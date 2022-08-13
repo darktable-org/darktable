@@ -26,7 +26,7 @@ How to make disk image with darktable application bundle (64 bit ARM only):
     Finally build and install darktable:
      $ mkdir build
      $ cd build
-     $ cmake .. -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=OFF -DBUILD_SSE2_CODEPATHS=OFF
+     $ cmake .. -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=OFF
      $ make
      $ sudo cmake --install .
     After this darktable will be installed in /usr/local directory and can be started by typing the following command in terminal:
