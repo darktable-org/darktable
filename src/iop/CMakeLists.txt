@@ -44,7 +44,7 @@ macro (add_iop _lib _src)
   else()
       set_target_properties(${_lib}
                             PROPERTIES
-                            INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
+                            INSTALL_RPATH ${RPATH_ORIGIN}/..)
   endif(WIN32)
 
   install(TARGETS ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins COMPONENT DTApplication)
