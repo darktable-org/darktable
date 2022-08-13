@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2021 darktable developers.
+    Copyright (C) 2018-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,10 +49,10 @@ dt_help_url urls_db[] =
   {"histogram",                  "module-reference/utility-modules/shared/histogram/"},
   {"navigation",                 "module-reference/utility-modules/darkroom/navigation/"},
   {"snapshots",                  "module-reference/utility-modules/darkroom/snapshots/"},
-  {"modulegroups",               "module-reference/utility-modules/darkroom/manage-module-layouts/"},
   {"history",                    "module-reference/utility-modules/darkroom/history-stack/"},
   {"colorpicker",                "module-reference/utility-modules/darkroom/global-color-picker/"},
   {"masks",                      "module-reference/utility-modules/darkroom/mask-manager/"},
+  {"modulegroups",               "darkroom/organization/manage-module-layouts/"},
   {"masks_drawn",                "darkroom/masking-and-blending/masks/drawn/"},
   {"masks_parametric",           "darkroom/masking-and-blending/masks/parametric/"},
   {"masks_raster",               "darkroom/masking-and-blending/masks/raster/"},
