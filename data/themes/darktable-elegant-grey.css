@@ -32,7 +32,7 @@
 @define-color disabled_fg_color @grey_65;       /* disabled controls */
 
 /* Scroll bars (sliders) */
-@define-color scroll_bar_inactive @grey_70;
+@define-color scroll_bar_inactive @grey_60;
 @define-color scroll_bar_active @grey_80;
 @define-color scroll_bar_bg @grey_40;
 
