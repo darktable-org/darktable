@@ -1131,10 +1131,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */
+#ifndef MAGICK_OPT_NO_SIGNAL_HANDER
   InitializeMagick(darktable.progname);
 
   // *SIGH*
   dt_set_signal_handlers();
+#else
+  InitializeMagickEx(darktable.progname, MAGICK_OPT_NO_SIGNAL_HANDER, NULL);
+#endif
 #elif defined HAVE_IMAGEMAGICK
   /* ImageMagick init */
   MagickWandGenesis();
