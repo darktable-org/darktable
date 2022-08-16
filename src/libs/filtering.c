@@ -841,7 +841,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
 
-  // the differents categories
+  // the different categories
   _popup_add_item(spop, _("files"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FILMROLL);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FOLDERS);
@@ -1976,7 +1976,7 @@ void gui_init(dt_lib_module_t *self)
   d->rules_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->rules_box, FALSE, TRUE, 0);
 
-  // the botton buttons for the rules
+  // the bottom buttons for the rules
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
@@ -1996,7 +1996,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(d->sort_box, "filter-sort-box");
   gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, TRUE, TRUE, 0);
 
-  // the botton buttons for the sort
+  // the bottom buttons for the sort
   bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
@@ -2058,9 +2058,12 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 
 void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
-  // we are leaving, so we want to avoid pb with focus and such
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-  d->leaving = TRUE;
+  if(!new_view)
+  {
+    // we are leaving dt, so we want to avoid pb with focus and such
+    dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+    d->leaving = TRUE;
+  }
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

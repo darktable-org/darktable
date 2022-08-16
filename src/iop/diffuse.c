@@ -1082,6 +1082,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
+  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16);
+
   gboolean out_of_memory = FALSE;
 
   // wavelets scales buffers
@@ -1344,6 +1346,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
+  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16);
+
   // wavelets scales buffers
   cl_mem HF[MAX_NUM_SCALES];
   for(int s = 0; s < scales; s++)
@@ -1582,7 +1586,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
   dt_bauhaus_slider_set_format(g->sharpness, "%");
   gtk_widget_set_tooltip_text(g->sharpness,
-                              _("increase or decrease the sharpness of the highest frequencies.\n"                              
+                              _("increase or decrease the sharpness of the highest frequencies.\n"
                               "can be used to keep details after blooming,\n"
                               "for standalone sharpening set speed to negative values."));
 

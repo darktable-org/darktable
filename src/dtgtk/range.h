@@ -76,7 +76,7 @@ struct _GtkDarktableRangeSelect
   double step_bd;        // minimal step value in band reference
 
   double select_min_r;      // low bound of the selection
-  double select_max_r;      // hight bound of the selection
+  double select_max_r;      // high bound of the selection
   dt_datetime_t select_relative_date_r; // relative date
   dt_range_bounds_t bounds; // type of selection bounds
 
@@ -90,7 +90,7 @@ struct _GtkDarktableRangeSelect
   GtkWidget *entry_max;
   GtkWidget *band;
 
-  // fonction used to translate "real" value into band positions
+  // function used to translate "real" value into band positions
   // this allow to have special value repartitions on the band
   // if NULL, band values == real values
   DTGTKTranslateValueFunc value_to_band;
@@ -137,7 +137,7 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
 // directly decode raw_text and apply it to selection
 void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *range, const gchar *txt,
                                                     gboolean signal);
-// get selction range
+// get selection range
 dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *range, double *min_r, double *max_r);
 
 // get the text used for collection queries
@@ -154,7 +154,7 @@ void dtgtk_range_select_add_range_block(GtkDarktableRangeSelect *range, const do
 void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
 
 // set the function to switch from real value to band value
-// this is usefull to have non-linear value repartitions
+// this is useful to have non-linear value repartitions
 void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc value_from_band,
                                       DTGTKTranslateValueFunc value_to_band);
 // set functions to switch between real values and text representation

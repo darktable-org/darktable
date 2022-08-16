@@ -344,14 +344,14 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
 
   jpeg_start_compress(&(jpg->cinfo), TRUE);
 
-  if(imgid > 0)
+  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  uint32_t len = 0;
+  cmsSaveProfileToMem(out_profile, NULL, &len);
+  if(len > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
-    uint32_t len = 0;
-    cmsSaveProfileToMem(out_profile, 0, &len);
-    if(len > 0)
+    unsigned char *buf = malloc(sizeof(unsigned char) * len);
+    if(buf)
     {
-      unsigned char *buf = malloc(sizeof(unsigned char) * len);
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
       free(buf);
@@ -511,6 +511,15 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   return 0;
 }
 
+int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data, uint32_t *width,
+              uint32_t *height)
+{
+  /* maximum dimensions supported by JPEG images */
+  *width = 65535U;
+  *height = 65535U;
+  return 1;
+}
+
 int bpp(dt_imageio_module_data_t *p)
 {
   return 8;
@@ -599,4 +608,3 @@ void gui_reset(dt_imageio_module_format_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

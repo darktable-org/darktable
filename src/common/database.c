@@ -1462,7 +1462,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // note that images without history don't get hash and are considered as basic
     sqlite3_stmt *h_stmt;
     const gboolean basecurve_auto_apply = dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
-    const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
     // clang-format off
     char *query = g_strdup_printf(
                             "SELECT id, CASE WHEN imgid IS NULL THEN 0 ELSE 1 END as altered "
@@ -1471,10 +1470,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
                             "LEFT JOIN (SELECT DISTINCT imgid FROM main.images JOIN main.history ON imgid = id "
                             "           WHERE num < history_end AND enabled = 1"
                             "             AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare', "
-                            "             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)) "
+                            "             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s)) "
                             "ON imgid = id",
-                             basecurve_auto_apply ? ", 'basecurve'" : "",
-                             sharpen_auto_apply ? ", 'sharpen'" : "");
+                             basecurve_auto_apply ? ", 'basecurve'" : "");
     // clang-format on
     TRY_PREPARE(h_stmt, query,
                 "[init] can't prepare selecting history for history_hash migration\n");

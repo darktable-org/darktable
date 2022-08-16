@@ -309,7 +309,7 @@
     </type>
     <default>insensitive</default>
     <shortdescription>tags case sensitivity</shortdescription>
-    <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 26 latin letters</longdescription>
+    <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensitivity works only for the 26 latin letters</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl</name>
@@ -2318,13 +2318,13 @@
     <type>
       <enum>
         <option>always bilinear (fast)</option>
-        <option>at most RCD (reasonable)</option>
+        <option>default</option>
         <option>full (possibly slow)</option>
       </enum>
     </type>
-    <default>at most RCD (reasonable)</default>
+    <default>default</default>
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using RCD + interpolation modes specified on the 'pixel interpolator' option (processing tab), full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than RCD as middle ground.</longdescription>
+    <longdescription>demosaicer when not viewing 1:1 in darkroom mode: 'bilinear' is fast but slightly blurry. 'default' uses the default demosaicer for the used sensor (RCD or Markesteijn). 'full' will use exactly the settings as for full-size export.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>preview_downsampling</name>
@@ -3265,13 +3265,6 @@
     <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs a restart).\nthis option is taken into account when the \"auto-apply pixel workflow defaults\" is set to \"display-referred\".\nto prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults\" should be set to \"none\"</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
-    <name>plugins/darkroom/sharpen/auto_apply</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>auto-apply sharpen</shortdescription>
-    <longdescription>this added sharpen is not recommended on cameras without a low-pass filter. you should disable this option if you use one of those more recent cameras or sharpen your images with other means.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="processing" section="general">
     <name>ui/detect_mono_exif</name>
     <type>bool</type>
     <default>false</default>
@@ -3386,7 +3379,7 @@
     <shortdescription>Geotagging search URL</shortdescription>
     <longdescription>this can be changed when the default OpenStreetMap search URL is broken</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="modules">
+  <dtconfig>
     <name>plugins/darkroom/temperature/colored_sliders</name>
     <type>
       <enum>
@@ -3441,7 +3434,7 @@
     <shortdescription>saturation factor of the color zones background</shortdescription>
     <longdescription>higher value means more saturated backgrounds in color zones</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="modules">
+  <dtconfig>
     <name>plugins/darkroom/colorbalance/layout</name>
     <type>
       <enum>

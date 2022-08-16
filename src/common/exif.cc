@@ -1675,7 +1675,7 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
     read_metadata_threadsafe(image);
     Exiv2::ExifData &imgExifData = image->exifData();
     Exiv2::ExifData blobExifData;
-    Exiv2::ExifParser::decode(blobExifData, blob + 6, size);
+    Exiv2::ExifParser::decode(blobExifData, blob, size);
     Exiv2::ExifData::const_iterator end = blobExifData.end();
     Exiv2::ExifData::iterator it;
     for(Exiv2::ExifData::const_iterator i = blobExifData.begin(); i != end; ++i)
@@ -2035,15 +2035,14 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
 
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
-    const int length = blob.size();
-    *buf = (uint8_t *)malloc(length+6);
+    const size_t length = blob.size();
+    *buf = (uint8_t *)malloc(length);
     if (!*buf)
     {
       return 0;
     }
-    memcpy(*buf, "Exif\000\000", 6);
-    memcpy(*buf + 6, &(blob[0]), length);
-    return length + 6;
+    memcpy(*buf, &(blob[0]), length);
+    return length;
   }
   catch(Exiv2::AnyError &e)
   {
@@ -2883,8 +2882,6 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
   const gboolean basecurve_auto_apply =
     dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
 
-  const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
-
   char query[1024] = { 0 };
 
   // clang-format off
@@ -2893,9 +2890,8 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
            " FROM main.history, main.images"
            " WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1"
            "       AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare',"
-           "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)",
-           basecurve_auto_apply ? ", 'basecurve'" : "",
-           sharpen_auto_apply ? ", 'sharpen'" : "");
+           "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s)",
+           basecurve_auto_apply ? ", 'basecurve'" : "");
   // clang-format on
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);

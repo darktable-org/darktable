@@ -658,7 +658,7 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
 
   int w = 0;
 
-  // if selection start/stop if lower than the begining of the strip
+  // if selection start/stop if lower than the beginning of the strip
   if(_time_compare_at_zoom(strip->start_t, strip->time_pos, strip->zoom) < 0) strip->start_x = -2;
   if(_time_compare_at_zoom(strip->stop_t, strip->time_pos, strip->zoom) < 0) strip->stop_x = -1;
 

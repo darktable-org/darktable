@@ -1,10 +1,7 @@
-How to make disk image with darktable application bundle (64 bit Intel only):
+How to make disk image with darktable application bundle (64 bit ARM only):
 
 1). Install MacPorts (instructions and prerequisites can be found on official website), please use default installation path (/opt/local).
-    They will need some tuning, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
-     buildfromsource always
-     macosx_deployment_target 10.14
-    and this line to /opt/local/etc/macports/variants.conf:
+    They will need some tuning, so before you install anything add this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
     You will also need to add a patch for gnutls
     (that patch fixes certificate storage):
@@ -29,7 +26,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     Finally build and install darktable:
      $ mkdir build
      $ cd build
-     $ cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14 -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=OFF
+     $ cmake .. -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=OFF
      $ make
      $ sudo cmake --install .
     After this darktable will be installed in /usr/local directory and can be started by typing the following command in terminal:

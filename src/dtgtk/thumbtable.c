@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -244,22 +244,33 @@ static int _thumb_get_rowid(int imgid)
 // get the coordinate of the rectangular area used by all the loaded thumbs
 static void _pos_compute_area(dt_thumbtable_t *table)
 {
-  int x1 = INT_MAX;
-  int y1 = INT_MAX;
-  int x2 = INT_MIN;
-  int y2 = INT_MIN;
-  for(const GList *l = table->list; l; l = g_list_next(l))
+  if(table->list)
   {
-    const dt_thumbnail_t *th = (const dt_thumbnail_t *)l->data;
-    x1 = MIN(x1, th->x);
-    y1 = MIN(y1, th->y);
-    x2 = MAX(x2, th->x);
-    y2 = MAX(y2, th->y);
+    int x1 = INT_MAX;
+    int y1 = INT_MAX;
+    int x2 = INT_MIN;
+    int y2 = INT_MIN;
+    for(const GList *l = table->list; l; l = g_list_next(l))
+    {
+      const dt_thumbnail_t *th = (const dt_thumbnail_t *)l->data;
+      x1 = MIN(x1, th->x);
+      y1 = MIN(y1, th->y);
+      x2 = MAX(x2, th->x);
+      y2 = MAX(y2, th->y);
+    }
+
+    table->thumbs_area.x = x1;
+    table->thumbs_area.y = y1;
+    table->thumbs_area.width = x2 + table->thumb_size - x1;
+    table->thumbs_area.height = y2 + table->thumb_size - y1;
   }
-  table->thumbs_area.x = x1;
-  table->thumbs_area.y = y1;
-  table->thumbs_area.width = x2 + table->thumb_size - x1;
-  table->thumbs_area.height = y2 + table->thumb_size - y1;
+  else
+  {
+    table->thumbs_area.x = 0;
+    table->thumbs_area.y = 0;
+    table->thumbs_area.width = 0;
+    table->thumbs_area.height = 0;
+  }
 }
 
 // get the position of the next image after the one at (x,y)
@@ -746,15 +757,17 @@ static dt_thumbnail_t *_thumbtable_get_thumb(dt_thumbtable_t *table, int imgid)
   return NULL;
 }
 
-// change zoom value for the zoomable tumbtable
+// change zoom value for the zoomable thumbtable
 static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 {
+  // nothing to do if thumbtable is empty
+  if(!table->list) return;
   // determine the center of the zoom
   int x = 0;
   int y = 0;
   if(table->mouse_inside)
   {
-    // if the mouse is inside the table, let's use his position
+    // if the mouse is inside the table, let's use its position
     gdk_window_get_origin(gtk_widget_get_window(table->widget), &x, &y);
     x = table->last_x - x;
     y = table->last_y - y;
@@ -808,6 +821,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   if(changed > 0) _pos_compute_area(table);
 
   // we update all the values
+  // chained dereference is dangerous, but there was a check above in the code
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
@@ -823,13 +837,15 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 // change zoom value for the classic thumbtable
 static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 {
-  // we find the image to zoom around
+  // nothing to do if thumbtable is empty
+  if(!table->list) return;
+  // we are looking for the image to zoom around
   int x = 0;
   int y = 0;
   dt_thumbnail_t *thumb = NULL;
   if(table->mouse_inside)
   {
-    // if the mouse is inside the table, let's use his position
+    // if the mouse is inside the table, let's use its position
     gdk_window_get_origin(gtk_widget_get_window(table->widget), &x, &y);
     x = table->last_x - x;
     y = table->last_y - y;
@@ -855,7 +871,8 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
       thumb = _thumb_get_at_pos(table, x, y);
       if(!thumb)
       {
-        // and last, take the first at screen
+        // and lastly, take the first at screen
+        // chained dereference is dangerous, but there was a check above in the code
         thumb = (dt_thumbnail_t *)table->list->data;
         x = thumb->x + thumb->width / 2;
         y = thumb->y + thumb->height / 2;
@@ -1281,6 +1298,7 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   dt_get_sysresource_level();
+  dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
@@ -2665,10 +2683,14 @@ gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t mov
 
 gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table)
 {
+  // nothing to do if thumbtable is empty
+  if(!table->list) return FALSE;
+
   if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER
      && table->mode != DT_THUMBTABLE_MODE_ZOOM)
     return FALSE;
 
+  // chained dereference is dangerous, but there was a check above in the code
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   const int offset = table->thumbs_per_row - ((first->rowid - 1) % table->thumbs_per_row);
   if(offset == 0) return FALSE;
@@ -2683,4 +2705,3 @@ gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

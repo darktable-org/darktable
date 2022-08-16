@@ -876,7 +876,6 @@ const gchar *category_label[NUM_CATEGORIES]
       N_("other views"),
       N_("fallbacks"),
       N_("speed") };
-#define CATEGORY_FALLBACKS 2
 
 static void _shortcuts_store_category(GtkTreeIter *category, dt_shortcut_t *s, dt_view_type_flags_t view)
 {
@@ -3126,9 +3125,9 @@ static float _process_shortcut(float move_size)
 {
   float return_value = NAN;
 
-  dt_print(DT_DEBUG_INPUT,
-           "  [_process_shortcut] processing shortcut: %s\n",
-           _shortcut_description(&_sc));
+  dt_vprint(DT_DEBUG_INPUT,
+            "  [_process_shortcut] processing shortcut: %s\n",
+            _shortcut_description(&_sc));
 
   dt_shortcut_t fsc = _sc;
   fsc.action = NULL;
