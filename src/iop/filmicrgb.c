@@ -4403,9 +4403,9 @@ void gui_init(dt_iop_module_t *self)
                                 "v4 is a newer desaturation method, based on spectral purity of light."));
 
   g->preserve_color = dt_bauhaus_combobox_from_params(self, "preserve_color");
-  gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original color are preserved.\n"
+  gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original colors are preserved.\n"
                                                    "may reinforce chromatic aberrations and chroma noise,\n"
-                                                   "so ensure they are properly corrected elsewhere.\n"));
+                                                   "so ensure they are properly corrected elsewhere."));
 
   // Curve type
   g->highlights = dt_bauhaus_combobox_from_params(self, "highlights");
