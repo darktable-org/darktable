@@ -717,15 +717,16 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
   const dt_action_def_t *def = _action_find_definition(action);
   const gboolean has_fallbacks = def && def->fallbacks;
 
-  if(def && (darktable.control->element || !has_fallbacks) && show_element == 0)
+  const gchar *element_name = NULL;
+  if(def)
   {
-    const gchar *element_name = NULL;
     for(int i = 0; i <= darktable.control->element; i++)
     {
       element_name = def->elements[i].name;
       if(!element_name) break;
     }
-    if(element_name) description = g_markup_escape_text(_(element_name), -1);
+    if(element_name && (darktable.control->element || !has_fallbacks) && show_element == 0)
+      description = g_markup_escape_text(_(element_name), -1);
   }
 
   int num_shortcuts = 0;
@@ -752,6 +753,18 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
 
   if(!num_shortcuts && original_markup && darktable.control->mapping_widget != widget)
     g_clear_pointer(&description, g_free);
+
+#ifdef USE_LUA
+  if(markup_text && (def || (action && action->type == DT_ACTION_TYPE_COMMAND)))
+  {
+    gchar *ac_escaped = g_markup_escape_text(_action_full_id(action), -1);
+    gchar *el_escaped = element_name ? g_markup_escape_text(element_name, -1) : g_strdup("");
+    markup_text = dt_util_dstrcat(markup_text, "\n\nlua: <tt>darktable.gui.action(\"%s\", 0, \"%s\", \"\", 1.0)</tt>",
+                                  ac_escaped, el_escaped);
+    g_free(el_escaped);
+    g_free(ac_escaped);
+  }
+#endif
 
   if(description || original_markup || markup_text)
   {
