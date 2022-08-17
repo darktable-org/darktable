@@ -89,6 +89,7 @@ jobs:
           path: src
       - name: Update lensfun data
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        continue-on-error: true
         run: |
           lensfun-update-data
       - name: Build and Install
