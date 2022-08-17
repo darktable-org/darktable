@@ -1517,7 +1517,7 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
       g_free(ofilepath);
       free(entries[i]);
     }
-    free(entries);
+    if(numentries != -1) free(entries);
 
     if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
     { // file may have disappeared - show it
