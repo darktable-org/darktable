@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-15 08:57+0200\n"
-"PO-Revision-Date: 2022-08-16 17:42+0300\n"
+"POT-Creation-Date: 2022-08-17 09:25+0200\n"
+"PO-Revision-Date: 2022-08-17 11:05+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2435,8 +2435,8 @@ msgstr "немає"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:154
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:271
 #: ../src/develop/blend_gui.c:2007 ../src/develop/blend_gui.c:2026
-#: ../src/iop/colorbalancergb.c:2155 ../src/iop/colorbalancergb.c:2156
-#: ../src/iop/colorbalancergb.c:2157 ../src/iop/colorbalancergb.c:2158
+#: ../src/iop/colorbalancergb.c:2150 ../src/iop/colorbalancergb.c:2151
+#: ../src/iop/colorbalancergb.c:2152 ../src/iop/colorbalancergb.c:2153
 msgid "luminance"
 msgstr "яскравість"
 
@@ -2565,8 +2565,8 @@ msgstr "вигин"
 #: ../build/lib/darktable/plugins/introspection_blurs.c:206
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:148
-#: ../src/iop/colorbalancergb.c:2150 ../src/iop/colorbalancergb.c:2154
-#: ../src/iop/colorbalancergb.c:2158
+#: ../src/iop/colorbalancergb.c:2145 ../src/iop/colorbalancergb.c:2149
+#: ../src/iop/colorbalancergb.c:2153
 msgid "offset"
 msgstr "зміщення"
 
@@ -3292,9 +3292,9 @@ msgstr "насичені кольори"
 #: ../src/develop/blend_gui.c:1980 ../src/develop/blend_gui.c:1999
 #: ../src/develop/blend_gui.c:2034 ../src/iop/channelmixer.c:622
 #: ../src/iop/channelmixerrgb.c:4053 ../src/iop/channelmixerrgb.c:4143
-#: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:2147
-#: ../src/iop/colorbalancergb.c:2148 ../src/iop/colorbalancergb.c:2149
-#: ../src/iop/colorbalancergb.c:2150 ../src/iop/colorize.c:344
+#: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:2142
+#: ../src/iop/colorbalancergb.c:2143 ../src/iop/colorbalancergb.c:2144
+#: ../src/iop/colorbalancergb.c:2145 ../src/iop/colorize.c:344
 #: ../src/iop/colorreconstruction.c:1288 ../src/iop/colorzones.c:2433
 #: ../src/iop/splittoning.c:471
 msgid "hue"
@@ -3336,8 +3336,8 @@ msgstr "світлість"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:1976 ../src/iop/basicadj.c:624
 #: ../src/iop/channelmixer.c:623 ../src/iop/colisa.c:307
-#: ../src/iop/colorbalance.c:2007 ../src/iop/colorbalancergb.c:2165
-#: ../src/iop/colorbalancergb.c:2166 ../src/iop/colorbalancergb.c:2167
+#: ../src/iop/colorbalance.c:2007 ../src/iop/colorbalancergb.c:2160
+#: ../src/iop/colorbalancergb.c:2161 ../src/iop/colorbalancergb.c:2162
 #: ../src/iop/colorchecker.c:1379 ../src/iop/colorcontrast.c:94
 #: ../src/iop/colorcorrection.c:283 ../src/iop/colorize.c:357
 #: ../src/iop/colorzones.c:2432 ../src/iop/lowpass.c:575
@@ -3366,7 +3366,7 @@ msgstr "радіус виявлення контурів"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:224
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:423
 #: ../src/iop/atrous.c:1639 ../src/iop/bloom.c:394
-#: ../src/iop/colorbalancergb.c:2108 ../src/iop/colorreconstruction.c:1284
+#: ../src/iop/colorbalancergb.c:2103 ../src/iop/colorreconstruction.c:1284
 #: ../src/iop/hotpixels.c:385 ../src/iop/sharpen.c:458
 msgid "threshold"
 msgstr "поріг"
@@ -4433,8 +4433,8 @@ msgstr "глибокі тіні"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:156
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:297
 #: ../src/iop/bilat.c:459 ../src/iop/colorbalance.c:2047
-#: ../src/iop/colorbalancergb.c:2163 ../src/iop/colorbalancergb.c:2167
-#: ../src/iop/colorbalancergb.c:2171 ../src/iop/shadhi.c:680
+#: ../src/iop/colorbalancergb.c:2158 ../src/iop/colorbalancergb.c:2162
+#: ../src/iop/colorbalancergb.c:2166 ../src/iop/shadhi.c:680
 #: ../src/iop/splittoning.c:520
 msgid "shadows"
 msgstr "тіні"
@@ -4446,8 +4446,8 @@ msgstr "легкі тіні"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:168
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
-#: ../src/iop/colorbalance.c:2048 ../src/iop/colorbalancergb.c:2162
-#: ../src/iop/colorbalancergb.c:2166 ../src/iop/colorbalancergb.c:2170
+#: ../src/iop/colorbalance.c:2048 ../src/iop/colorbalancergb.c:2157
+#: ../src/iop/colorbalancergb.c:2161 ../src/iop/colorbalancergb.c:2165
 msgid "mid-tones"
 msgstr "середні тони"
 
@@ -4459,8 +4459,8 @@ msgstr "притемнені світлі тони"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:180
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:313
 #: ../src/iop/bilat.c:454 ../src/iop/colorbalance.c:2049
-#: ../src/iop/colorbalancergb.c:2161 ../src/iop/colorbalancergb.c:2165
-#: ../src/iop/colorbalancergb.c:2169 ../src/iop/monochrome.c:576
+#: ../src/iop/colorbalancergb.c:2156 ../src/iop/colorbalancergb.c:2160
+#: ../src/iop/colorbalancergb.c:2164 ../src/iop/monochrome.c:576
 #: ../src/iop/shadhi.c:681 ../src/iop/splittoning.c:522
 msgid "highlights"
 msgstr "світлі тони"
@@ -4915,7 +4915,7 @@ msgstr ""
 "\n"
 "переконайтеся, що ваша камера дозволяє доступ і не змонтована іншою програмою"
 
-#: ../src/common/camera_control.c:855
+#: ../src/common/camera_control.c:858
 #, c-format
 msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
@@ -4924,7 +4924,7 @@ msgstr ""
 "не вдалося ініціалізувати `%s' на порту `%s', ймовірні причини: заблокований "
 "іншою програмою, відсутність доступу до пристроїв тощо"
 
-#: ../src/common/camera_control.c:866
+#: ../src/common/camera_control.c:869
 #, c-format
 msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
@@ -4933,12 +4933,12 @@ msgstr ""
 "пристрій `%s' на порту `%s' нецікавий, оскільки не підтримує ні дистанційне "
 "керування, ні імпорт"
 
-#: ../src/common/camera_control.c:916
+#: ../src/common/camera_control.c:919
 #, c-format
 msgid "camera `%s' on port `%s' disconnected while mounted"
 msgstr "камера `%s' на порту `%s' відключилась, в той час як була змонтована"
 
-#: ../src/common/camera_control.c:923
+#: ../src/common/camera_control.c:926
 #, c-format
 msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
@@ -5649,19 +5649,19 @@ msgstr "файл `%s' має невідомий формат!"
 msgid "error loading file `%s'"
 msgstr "помилка завантаження файлу `%s'"
 
-#: ../src/common/darktable.c:1299
+#: ../src/common/darktable.c:1303
 msgid "configuration information"
 msgstr "інформація щодо налаштування"
 
-#: ../src/common/darktable.c:1301
+#: ../src/common/darktable.c:1305
 msgid "show this information again"
 msgstr "показати це наступного разу"
 
-#: ../src/common/darktable.c:1301
+#: ../src/common/darktable.c:1305
 msgid "understood"
 msgstr "зрозуміло"
 
-#: ../src/common/darktable.c:1747
+#: ../src/common/darktable.c:1751
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -5669,13 +5669,13 @@ msgstr ""
 "метод демозаїки RCD було встановлено за замовчуванням замість PPG через "
 "кращу якість та продуктивність."
 
-#: ../src/common/darktable.c:1749
+#: ../src/common/darktable.c:1753
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "щодо демозаїки масштабованих зображень в режимі темної кімнати перегляньте "
 "відповідний параметр в \"налаштування > темна кімната\""
 
-#: ../src/common/darktable.c:1755
+#: ../src/common/darktable.c:1759
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -5683,7 +5683,7 @@ msgstr ""
 "інтерфейс користувача та базові внутрішні елементи для налаштування "
 "продуктивності darktable змінилися."
 
-#: ../src/common/darktable.c:1757
+#: ../src/common/darktable.c:1761
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5691,15 +5691,15 @@ msgstr ""
 "ви більше не знайдете старих параметрів, замість цього \"в налаштування > "
 "обробка\" використовуйте:"
 
-#: ../src/common/darktable.c:1759
+#: ../src/common/darktable.c:1763
 msgid "1) darktable resources"
 msgstr "1) рівень ресурсів для darktable"
 
-#: ../src/common/darktable.c:1761
+#: ../src/common/darktable.c:1765
 msgid "2) tune OpenCL performance"
 msgstr "2) налаштування продуктивності OpenCL"
 
-#: ../src/common/darktable.c:1768
+#: ../src/common/darktable.c:1772
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
@@ -5707,7 +5707,7 @@ msgstr ""
 "деякі глобальні параметри конфігурації, що мають відношення до "
 "продуктивності OpenCL, більше не використовуються."
 
-#: ../src/common/darktable.c:1770
+#: ../src/common/darktable.c:1774
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
@@ -5715,7 +5715,7 @@ msgstr ""
 "замість цього ви знайдете окремі дані для пристроїв у 'cldevice_v4_canonical-"
 "name'. зміст:"
 
-#: ../src/common/darktable.c:1772
+#: ../src/common/darktable.c:1776
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
@@ -5723,7 +5723,7 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 
-#: ../src/common/darktable.c:1774
+#: ../src/common/darktable.c:1778
 msgid "you may tune as before except 'magic'"
 msgstr "ви можете регулювати ці параметри, як і раніше, за винятком 'magic'"
 
@@ -7729,10 +7729,10 @@ msgstr "повзунки для каналу кольоровості (HSL)"
 
 #: ../src/develop/blend_gui.c:2003 ../src/develop/blend_gui.c:2030
 #: ../src/iop/atrous.c:1735 ../src/iop/channelmixerrgb.c:4059
-#: ../src/iop/channelmixerrgb.c:4150 ../src/iop/colorbalancergb.c:2151
-#: ../src/iop/colorbalancergb.c:2152 ../src/iop/colorbalancergb.c:2153
-#: ../src/iop/colorbalancergb.c:2154 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorbalancergb.c:2162 ../src/iop/colorbalancergb.c:2163
+#: ../src/iop/channelmixerrgb.c:4150 ../src/iop/colorbalancergb.c:2146
+#: ../src/iop/colorbalancergb.c:2147 ../src/iop/colorbalancergb.c:2148
+#: ../src/iop/colorbalancergb.c:2149 ../src/iop/colorbalancergb.c:2156
+#: ../src/iop/colorbalancergb.c:2157 ../src/iop/colorbalancergb.c:2158
 #: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:522
 msgid "chroma"
 msgstr "кольоровість"
@@ -7841,7 +7841,7 @@ msgstr ""
 "натисніть 'm' для перемикання перегляду маски."
 
 #: ../src/develop/blend_gui.c:2228 ../src/develop/blend_gui.c:3056
-#: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2112
+#: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2107
 #: ../src/iop/exposure.c:1033 ../src/iop/exposure.c:1046
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
 #: ../src/iop/filmicrgb.c:4226 ../src/iop/filmicrgb.c:4236
@@ -11997,7 +11997,7 @@ msgstr ""
 "змінити ореоли контурів в кожному частотному діапазоні\n"
 "впливає лише на результати вкладок \"яскравість\" і \"кольоровість\""
 
-#: ../src/iop/atrous.c:1753 ../src/iop/colorbalancergb.c:2078
+#: ../src/iop/atrous.c:1753 ../src/iop/colorbalancergb.c:2073
 #: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4193
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:932
 #: ../src/iop/toneequal.c:3162
@@ -13185,7 +13185,7 @@ msgstr ""
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4004 ../src/iop/clipping.c:2105
-#: ../src/iop/colorbalancergb.c:1895 ../src/iop/filmicrgb.c:4208
+#: ../src/iop/colorbalancergb.c:1890 ../src/iop/filmicrgb.c:4208
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3110
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2351
 #: ../src/views/lighttable.c:1243
@@ -13857,7 +13857,7 @@ msgid "RGBL"
 msgstr "RGBL"
 
 #. Page master
-#: ../src/iop/colorbalance.c:1876 ../src/iop/colorbalancergb.c:1898
+#: ../src/iop/colorbalance.c:1876 ../src/iop/colorbalancergb.c:1893
 msgid "master"
 msgstr "основні параметри"
 
@@ -13982,57 +13982,57 @@ msgstr "базова барвистість: стандарт"
 msgid "colorbalance works only on RGB input"
 msgstr "колірний баланс працює лише з RGB входом"
 
-#: ../src/iop/colorbalancergb.c:1507 ../src/iop/colorzones.c:2203
+#: ../src/iop/colorbalancergb.c:1502 ../src/iop/colorzones.c:2203
 #: ../src/iop/retouch.c:1851 ../src/iop/toneequal.c:1871
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "неможливо відображати маски, коли відображається маска змішування"
 
-#: ../src/iop/colorbalancergb.c:1898
+#: ../src/iop/colorbalancergb.c:1893
 msgid "global grading"
 msgstr "глобальний грейдинг"
 
-#: ../src/iop/colorbalancergb.c:1902
+#: ../src/iop/colorbalancergb.c:1897
 msgid "rotate all hues by an angle, at the same luminance"
 msgstr "обертати всі відтінки на певний кут з однаковою яскравістю"
 
-#: ../src/iop/colorbalancergb.c:1908
+#: ../src/iop/colorbalancergb.c:1903
 msgid "increase colorfulness mostly on low-chroma colors"
 msgstr "збільшити барвистість переважно низькохроматичних відтінків"
 
-#: ../src/iop/colorbalancergb.c:1914
+#: ../src/iop/colorbalancergb.c:1909
 msgid "increase the contrast at constant chromaticity"
 msgstr "збільшити контраст при незмінній хроматичності"
 
-#: ../src/iop/colorbalancergb.c:1918
+#: ../src/iop/colorbalancergb.c:1913
 msgid "linear chroma grading"
 msgstr "лінійний грейдинг кольоровості"
 
-#: ../src/iop/colorbalancergb.c:1924
+#: ../src/iop/colorbalancergb.c:1919
 msgid "increase colorfulness at same luminance globally"
 msgstr "збільшити барвистість при однаковій яскравості глобально"
 
-#: ../src/iop/colorbalancergb.c:1929
+#: ../src/iop/colorbalancergb.c:1924
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr "збільшити барвистість при однаковій яскравості в тінях"
 
-#: ../src/iop/colorbalancergb.c:1934
+#: ../src/iop/colorbalancergb.c:1929
 msgid "increase colorfulness at same luminance mostly in mid-tones"
 msgstr "збільшити барвистість при однаковій яскравості в середніх тонах"
 
-#: ../src/iop/colorbalancergb.c:1939
+#: ../src/iop/colorbalancergb.c:1934
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr "збільшити барвистість при однаковій яскравості в світлих тонах"
 
-#: ../src/iop/colorbalancergb.c:1941
+#: ../src/iop/colorbalancergb.c:1936
 msgid "perceptual saturation grading"
 msgstr "перцепційний грейдинг насиченості"
 
-#: ../src/iop/colorbalancergb.c:1946
+#: ../src/iop/colorbalancergb.c:1941
 msgid "add or remove saturation by an absolute amount"
 msgstr "додати чи прибрати насиченість в абсолютній величині"
 
-#: ../src/iop/colorbalancergb.c:1951 ../src/iop/colorbalancergb.c:1956
-#: ../src/iop/colorbalancergb.c:1961
+#: ../src/iop/colorbalancergb.c:1946 ../src/iop/colorbalancergb.c:1951
+#: ../src/iop/colorbalancergb.c:1956
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
@@ -14040,16 +14040,16 @@ msgstr ""
 "збільшувати або зменшувати насиченість пропорційно оригінальній насиченості "
 "пікселів"
 
-#: ../src/iop/colorbalancergb.c:1963
+#: ../src/iop/colorbalancergb.c:1958
 msgid "perceptual brilliance grading"
 msgstr "перцепційний грейдинг блискучості"
 
-#: ../src/iop/colorbalancergb.c:1968
+#: ../src/iop/colorbalancergb.c:1963
 msgid "add or remove brilliance by an absolute amount"
 msgstr "додати чи прибрати блискучість в абсолютній величині"
 
-#: ../src/iop/colorbalancergb.c:1973 ../src/iop/colorbalancergb.c:1978
-#: ../src/iop/colorbalancergb.c:1983
+#: ../src/iop/colorbalancergb.c:1968 ../src/iop/colorbalancergb.c:1973
+#: ../src/iop/colorbalancergb.c:1978
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
@@ -14058,165 +14058,165 @@ msgstr ""
 "пікселів"
 
 #. Page 4-ways
-#: ../src/iop/colorbalancergb.c:1986
+#: ../src/iop/colorbalancergb.c:1981
 msgid "4 ways"
 msgstr "4 діапазони"
 
-#: ../src/iop/colorbalancergb.c:1986
+#: ../src/iop/colorbalancergb.c:1981
 msgid "selective color grading"
 msgstr "вибірковий грейдинг"
 
-#: ../src/iop/colorbalancergb.c:1988
+#: ../src/iop/colorbalancergb.c:1983
 msgid "global offset"
 msgstr "глобальне зміщення"
 
-#: ../src/iop/colorbalancergb.c:1994
+#: ../src/iop/colorbalancergb.c:1989
 msgid "global luminance offset"
 msgstr "глобальне зміщення яскравості"
 
-#: ../src/iop/colorbalancergb.c:1999
+#: ../src/iop/colorbalancergb.c:1994
 msgid "hue of the global color offset"
 msgstr "глобальне зміщення відтінку"
 
-#: ../src/iop/colorbalancergb.c:2005
+#: ../src/iop/colorbalancergb.c:2000
 msgid "chroma of the global color offset"
 msgstr "глобальне зміщення кольоровості"
 
-#: ../src/iop/colorbalancergb.c:2007
+#: ../src/iop/colorbalancergb.c:2002
 msgid "shadows lift"
 msgstr "підйом тіней"
 
-#: ../src/iop/colorbalancergb.c:2013
+#: ../src/iop/colorbalancergb.c:2008
 msgid "luminance gain in shadows"
 msgstr "посилення яскравості в тінях"
 
-#: ../src/iop/colorbalancergb.c:2018
+#: ../src/iop/colorbalancergb.c:2013
 msgid "hue of the color gain in shadows"
 msgstr "посилення відтінку в тінях"
 
-#: ../src/iop/colorbalancergb.c:2024
+#: ../src/iop/colorbalancergb.c:2019
 msgid "chroma of the color gain in shadows"
 msgstr "посилення кольоровості в тінях"
 
-#: ../src/iop/colorbalancergb.c:2026
+#: ../src/iop/colorbalancergb.c:2021
 msgid "highlights gain"
 msgstr "підсилення світлих тонів"
 
-#: ../src/iop/colorbalancergb.c:2032
+#: ../src/iop/colorbalancergb.c:2027
 msgid "luminance gain in highlights"
 msgstr "посилення яскравості в світлих тонах"
 
-#: ../src/iop/colorbalancergb.c:2037
+#: ../src/iop/colorbalancergb.c:2032
 msgid "hue of the color gain in highlights"
 msgstr "посилення відтінку в світлих тонах"
 
-#: ../src/iop/colorbalancergb.c:2043
+#: ../src/iop/colorbalancergb.c:2038
 msgid "chroma of the color gain in highlights"
 msgstr "посилення кольоровості в світлих тонах"
 
-#: ../src/iop/colorbalancergb.c:2045 ../src/iop/colorbalancergb.c:2148
-#: ../src/iop/colorbalancergb.c:2152 ../src/iop/colorbalancergb.c:2156
+#: ../src/iop/colorbalancergb.c:2040 ../src/iop/colorbalancergb.c:2143
+#: ../src/iop/colorbalancergb.c:2147 ../src/iop/colorbalancergb.c:2151
 msgid "power"
 msgstr "показник степеня"
 
-#: ../src/iop/colorbalancergb.c:2051
+#: ../src/iop/colorbalancergb.c:2046
 msgid "luminance exponent in mid-tones"
 msgstr "експонента яскравості в середніх тонах"
 
-#: ../src/iop/colorbalancergb.c:2056
+#: ../src/iop/colorbalancergb.c:2051
 msgid "hue of the color exponent in mid-tones"
 msgstr "експонента відтінку в середніх тонах"
 
-#: ../src/iop/colorbalancergb.c:2062
+#: ../src/iop/colorbalancergb.c:2057
 msgid "chroma of the color exponent in mid-tones"
 msgstr "експонента кольоровості в середніх тонах"
 
 #. Page masks
-#: ../src/iop/colorbalancergb.c:2067
+#: ../src/iop/colorbalancergb.c:2062
 msgid "masks"
 msgstr "маски"
 
-#: ../src/iop/colorbalancergb.c:2067
+#: ../src/iop/colorbalancergb.c:2062
 msgid "isolate luminances"
 msgstr "ізоляція яскравостей"
 
-#: ../src/iop/colorbalancergb.c:2071
+#: ../src/iop/colorbalancergb.c:2066
 msgid "choose in which uniform color space the saturation is computed"
 msgstr ""
 "вибрати, в якому рівномірному кольоровому просторі обчислюється насиченість"
 
-#: ../src/iop/colorbalancergb.c:2073
+#: ../src/iop/colorbalancergb.c:2068
 msgid "luminance ranges"
 msgstr "діапазони яскравості"
 
-#: ../src/iop/colorbalancergb.c:2087
+#: ../src/iop/colorbalancergb.c:2082
 msgid "weight of the shadows over the whole tonal range"
 msgstr "вага тіней у всьому тональному діапазоні"
 
-#: ../src/iop/colorbalancergb.c:2095
+#: ../src/iop/colorbalancergb.c:2090
 msgid "position of the middle-gray reference for masking"
 msgstr "положення середньо-сірого еталону для маскування"
 
-#: ../src/iop/colorbalancergb.c:2103
+#: ../src/iop/colorbalancergb.c:2098
 msgid "weights of highlights over the whole tonal range"
 msgstr "вага світлих тонів у всьому тональному діапазоні"
 
-#: ../src/iop/colorbalancergb.c:2113
+#: ../src/iop/colorbalancergb.c:2108
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "пікове значення яскравості білого, що використовується для нормалізації "
 "степеневої функції"
 
-#: ../src/iop/colorbalancergb.c:2119
+#: ../src/iop/colorbalancergb.c:2114
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
 "пікове значення яскравості сірого, що використовується для нормалізації "
 "степеневої функції"
 
-#: ../src/iop/colorbalancergb.c:2121
+#: ../src/iop/colorbalancergb.c:2116
 msgid "mask preview settings"
 msgstr "параметри попереднього перегляду маски"
 
-#: ../src/iop/colorbalancergb.c:2124
+#: ../src/iop/colorbalancergb.c:2119
 msgid "checkerboard color 1"
 msgstr "шахівниця, колір 1"
 
-#: ../src/iop/colorbalancergb.c:2127 ../src/iop/colorbalancergb.c:2136
+#: ../src/iop/colorbalancergb.c:2122 ../src/iop/colorbalancergb.c:2131
 msgid "select color of the checkerboard from a swatch"
 msgstr "вибрати колір шахівниці зі зразка"
 
-#: ../src/iop/colorbalancergb.c:2133
+#: ../src/iop/colorbalancergb.c:2128
 msgid "checkerboard color 2"
 msgstr "шахівниця, колір 2"
 
-#: ../src/iop/colorbalancergb.c:2143
+#: ../src/iop/colorbalancergb.c:2138
 msgid "checkerboard size"
 msgstr "розмір шахівниці"
 
-#: ../src/iop/colorbalancergb.c:2147 ../src/iop/colorbalancergb.c:2151
-#: ../src/iop/colorbalancergb.c:2155
+#: ../src/iop/colorbalancergb.c:2142 ../src/iop/colorbalancergb.c:2146
+#: ../src/iop/colorbalancergb.c:2150
 msgid "lift"
 msgstr "підйом"
 
-#: ../src/iop/colorbalancergb.c:2149 ../src/iop/colorbalancergb.c:2153
-#: ../src/iop/colorbalancergb.c:2157
+#: ../src/iop/colorbalancergb.c:2144 ../src/iop/colorbalancergb.c:2148
+#: ../src/iop/colorbalancergb.c:2152
 msgid "gain"
 msgstr "підсилення"
 
-#: ../src/iop/colorbalancergb.c:2160
+#: ../src/iop/colorbalancergb.c:2155
 msgid "global chroma"
 msgstr "глобальна кольоровість"
 
-#: ../src/iop/colorbalancergb.c:2164 ../src/iop/filmic.c:1677
+#: ../src/iop/colorbalancergb.c:2159 ../src/iop/filmic.c:1677
 msgid "global saturation"
 msgstr "глобальна насиченість"
 
-#: ../src/iop/colorbalancergb.c:2168
+#: ../src/iop/colorbalancergb.c:2163
 msgid "global brilliance"
 msgstr "глобальна блискучість"
 
-#: ../src/iop/colorbalancergb.c:2169 ../src/iop/colorbalancergb.c:2170
-#: ../src/iop/colorbalancergb.c:2171
+#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorbalancergb.c:2165
+#: ../src/iop/colorbalancergb.c:2166
 msgid "brilliance"
 msgstr "блискучість"
 
@@ -16310,13 +16310,13 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:4406
 msgid ""
-"ensure the original color are preserved.\n"
+"ensure the original colors are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
-"so ensure they are properly corrected elsewhere.\n"
+"so ensure they are properly corrected elsewhere."
 msgstr ""
-"забезпечити збереження оригінального кольору.\n"
+"забезпечити збереження оригінальних кольорів.\n"
 "може посилити хроматичні аберації та кольоровий шум,\n"
-"тому переконайтеся, що вони правильно виправлені в іншому місці.\n"
+"тому переконайтеся, що вони правильно виправлені в іншому місці."
 
 #: ../src/iop/filmicrgb.c:4412
 msgid ""
