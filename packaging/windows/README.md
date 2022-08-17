@@ -2,8 +2,8 @@ To build darktable for the Windows operating system you have two basic options.
 
 ## Table of Contents
 
-1. [Native build using MSYS2](#native)
-2. [Cross-platform compile on Linux](#cross-platform)
+1. [Native build using MSYS2](#native-build-using-msys2)
+2. [Cross-platform compile on Linux](#cross-platform-compile-on-linux)
 
 Native build using MSYS2
 ------------------------
@@ -62,7 +62,7 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 or earlier will
             export CAMLIBS="/$MINGW_PREFIX/lib/libgphoto2/2.5.30/"
             export IOLIBS="/$MINGW_PREFIX/lib/libgphoto2_port/0.12.1/"
             ```
-        * If you do so, execute the following command to actviate those profile changes:
+        * If you do so, execute the following command to activate those profile changes:
             ```bash
             . .bash_profile
             ```
