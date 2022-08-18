@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-17 09:25+0200\n"
-"PO-Revision-Date: 2022-08-17 09:26+0200\n"
+"POT-Creation-Date: 2022-08-18 08:02+0200\n"
+"PO-Revision-Date: 2022-08-18 08:02+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3195,7 +3195,7 @@ msgstr "pivot du gris du contraste"
 #: ../src/gui/guides.c:740 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
 #: ../src/iop/colisa.c:305 ../src/iop/colorbalance.c:1895
 #: ../src/iop/colorbalance.c:1901 ../src/iop/filmic.c:1649
-#: ../src/iop/filmicrgb.c:4337 ../src/iop/lowpass.c:573
+#: ../src/iop/filmicrgb.c:4338 ../src/iop/lowpass.c:573
 msgid "contrast"
 msgstr "contraste"
 
@@ -3793,7 +3793,7 @@ msgstr "dureté"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:296
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4510
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4513
 msgid "extreme luminance saturation"
 msgstr "saturation luminance extrême"
 
@@ -4762,7 +4762,7 @@ msgstr "menu déroulant"
 #: ../src/gui/preferences.c:1036 ../src/gui/presets.c:376
 #: ../src/gui/presets.c:476 ../src/gui/styles_dialog.c:420
 #: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
-#: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1549
+#: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1551
 #: ../src/libs/collect.c:409 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
@@ -7836,8 +7836,8 @@ msgstr ""
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2107
 #: ../src/iop/exposure.c:1033 ../src/iop/exposure.c:1046
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
-#: ../src/iop/filmicrgb.c:4226 ../src/iop/filmicrgb.c:4236
-#: ../src/iop/filmicrgb.c:4271 ../src/iop/filmicrgb.c:4281
+#: ../src/iop/filmicrgb.c:4227 ../src/iop/filmicrgb.c:4237
+#: ../src/iop/filmicrgb.c:4272 ../src/iop/filmicrgb.c:4282
 #: ../src/iop/graduatednd.c:1098 ../src/iop/negadoctor.c:983
 #: ../src/iop/profile_gamma.c:651 ../src/iop/profile_gamma.c:657
 #: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3117
@@ -10599,7 +10599,7 @@ msgstr "_ouvrir"
 msgid "darktable preset files"
 msgstr "fichiers de préréglage"
 
-#: ../src/gui/preferences.c:1011 ../src/iop/lut3d.c:1580
+#: ../src/gui/preferences.c:1011 ../src/iop/lut3d.c:1582
 #: ../src/libs/copy_history.c:144 ../src/libs/geotagging.c:946
 #: ../src/libs/styles.c:526
 msgid "all files"
@@ -15828,7 +15828,7 @@ msgstr ""
 "ajuster pour correspondre à la luminance moyenne du sujet.\n"
 "sauf pour les scènes sombres, cette valeur devrait être autour de 18%."
 
-#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4228
+#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4229
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15838,7 +15838,7 @@ msgstr ""
 "ceci est la valeur que vous donnerait un posemètre sur la scène.\n"
 "ajuster pour éviter de tronquer les hautes lumières"
 
-#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4238
+#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4239
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15858,8 +15858,8 @@ msgstr ""
 "élargir ou rétrécir la plage dynamique calculée.\n"
 "ceci est utile avec l'utilisation des « niveaux automatiques »."
 
-#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4251
-#: ../src/iop/filmicrgb.c:4254 ../src/iop/profile_gamma.c:667
+#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4252
+#: ../src/iop/filmicrgb.c:4255 ../src/iop/profile_gamma.c:667
 msgid "auto tune levels"
 msgstr "niveaux automatiques"
 
@@ -15879,7 +15879,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "courbe filmique en S"
 
-#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4340
+#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4341
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -15888,7 +15888,7 @@ msgstr ""
 "touche principalement les tons moyens"
 
 #. geotagging
-#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4349
+#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4350
 #: ../src/libs/metadata_view.c:157
 msgid "latitude"
 msgstr "latitude"
@@ -15907,7 +15907,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr "balance ombres/hautes lumières"
 
-#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4360
+#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4361
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -15990,7 +15990,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "destination/affichage"
 
-#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4379
+#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4380
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -15998,7 +15998,7 @@ msgstr ""
 "luminance du noir pur de sortie, devrait être 0%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4386
+#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4387
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -16006,7 +16006,7 @@ msgstr ""
 "valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
 "ne jamais toucher sauf si vous savez ce que vous faites."
 
-#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4393
+#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4394
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -16100,7 +16100,7 @@ msgid "% camera"
 msgstr "% boîtier"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3673 ../src/iop/filmicrgb.c:4373
+#: ../src/iop/filmicrgb.c:3673 ../src/iop/filmicrgb.c:4374
 msgid "display"
 msgstr "affichage"
 
@@ -16146,7 +16146,8 @@ msgstr ""
 "clic droit : pour la vue précédente.\n"
 "double-clic : pour réinitialiser la vue."
 
-#: ../src/iop/filmicrgb.c:4218
+#: ../src/iop/filmicrgb.c:4219
+#, no-c-format
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -16156,7 +16157,7 @@ msgstr ""
 "la valeur entrée ici sera alors ajustée pour correspondre à 18.45%\n"
 "diminuer la valeur augmente la luminosité globale."
 
-#: ../src/iop/filmicrgb.c:4246
+#: ../src/iop/filmicrgb.c:4247
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -16164,7 +16165,7 @@ msgstr ""
 "élargir ou rétrécir la plage dynamique calculée.\n"
 "ceci est utile pour donner une marge de sécurité aux luminances extrêmes."
 
-#: ../src/iop/filmicrgb.c:4256
+#: ../src/iop/filmicrgb.c:4257
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -16182,15 +16183,15 @@ msgstr ""
 "s'assurer de bien comprendre l'analyse avant de l'utiliser."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4265
+#: ../src/iop/filmicrgb.c:4266
 msgid "reconstruct"
 msgstr "reconstruire"
 
-#: ../src/iop/filmicrgb.c:4267
+#: ../src/iop/filmicrgb.c:4268
 msgid "highlights clipping"
 msgstr "hautes-lumières tronquées"
 
-#: ../src/iop/filmicrgb.c:4273
+#: ../src/iop/filmicrgb.c:4274
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -16206,7 +16207,7 @@ msgstr ""
 "diminuer pour inclure plus de zones,\n"
 "augmenter pour exclure plus de zones."
 
-#: ../src/iop/filmicrgb.c:4283
+#: ../src/iop/filmicrgb.c:4284
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -16217,15 +16218,15 @@ msgstr ""
 "diminuer pour une transition plus tranchée et dure,\n"
 "augmenter pour une transition plus douce et floutée."
 
-#: ../src/iop/filmicrgb.c:4289 ../src/iop/filmicrgb.c:4290
+#: ../src/iop/filmicrgb.c:4290 ../src/iop/filmicrgb.c:4291
 msgid "display highlight reconstruction mask"
 msgstr "afficher masque de reconstruction"
 
-#: ../src/iop/filmicrgb.c:4297 ../src/iop/splittoning.c:527
+#: ../src/iop/filmicrgb.c:4298 ../src/iop/splittoning.c:527
 msgid "balance"
 msgstr "répartition"
 
-#: ../src/iop/filmicrgb.c:4304
+#: ../src/iop/filmicrgb.c:4305
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16242,7 +16243,7 @@ msgstr ""
 "augmenter si au moins un canal RVB n'est pas tronqué.\n"
 "diminuer si tous les canaux RVB sont tronqués sur une large zone."
 
-#: ../src/iop/filmicrgb.c:4315
+#: ../src/iop/filmicrgb.c:4316
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16259,7 +16260,7 @@ msgstr ""
 "augmenter pour plus de détails.\n"
 "diminuer pour plus de flou."
 
-#: ../src/iop/filmicrgb.c:4327
+#: ../src/iop/filmicrgb.c:4328
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16277,11 +16278,11 @@ msgstr ""
 "diminuer pour éviter les hautes-lumières magentas ou hors gamut."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4335
+#: ../src/iop/filmicrgb.c:4336
 msgid "look"
 msgstr "look"
 
-#: ../src/iop/filmicrgb.c:4345
+#: ../src/iop/filmicrgb.c:4346
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -16292,7 +16293,7 @@ msgstr ""
 "compressées.\n"
 "diminuer pour contenir les hautes-lumières."
 
-#: ../src/iop/filmicrgb.c:4353
+#: ../src/iop/filmicrgb.c:4354
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -16306,7 +16307,7 @@ msgstr ""
 "latitude.\n"
 "ce réglage n'a aucun effet dans les tons moyens."
 
-#: ../src/iop/filmicrgb.c:4368 ../src/iop/filmicrgb.c:4511
+#: ../src/iop/filmicrgb.c:4369 ../src/iop/filmicrgb.c:4514
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -16317,11 +16318,11 @@ msgstr ""
 "augmenter si les ombres et/ou les hautes lumières sont sous-saturées."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:4397
+#: ../src/iop/filmicrgb.c:4398
 msgid "options"
 msgstr "options"
 
-#: ../src/iop/filmicrgb.c:4402
+#: ../src/iop/filmicrgb.c:4403
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -16331,7 +16332,7 @@ msgstr ""
 "v4 est la nouvelle méthode de désaturation basée sur la pureté du spectre de "
 "la lumière."
 
-#: ../src/iop/filmicrgb.c:4406
+#: ../src/iop/filmicrgb.c:4407
 msgid ""
 "ensure the original colors are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -16341,7 +16342,7 @@ msgstr ""
 "peut renforcer les aberrations chromatiques et le bruit chromatique,\n"
 "il est nécessaire de s'assurer qu'ils sont correctement corrigés avant."
 
-#: ../src/iop/filmicrgb.c:4412
+#: ../src/iop/filmicrgb.c:4413
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16351,7 +16352,7 @@ msgstr ""
 "dur pour une compression tonale plus importante.\n"
 "doux pour une compression tonale plus faible."
 
-#: ../src/iop/filmicrgb.c:4417
+#: ../src/iop/filmicrgb.c:4418
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16361,20 +16362,20 @@ msgstr ""
 "dur pour une compression tonale plus importante.\n"
 "doux pour une compression tonale plus faible."
 
-#: ../src/iop/filmicrgb.c:4422
-#, c-format
+#: ../src/iop/filmicrgb.c:4425
+#, no-c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
 "this is not recommended in general.\n"
 "fix the global exposure in the exposure module instead.\n"
-"disable to use standard 18.45 %% middle gray."
+"disable to use standard 18.45% middle gray."
 msgstr ""
 "active la modification du gris moyen.\n"
 "cela n'est pas recommandé en général.\n"
 "préférez la modification de l'exposition globale dans le module exposition.\n"
-"désactiver pour utiliser un gris moyen standard de 18.45 %%."
+"désactiver pour utiliser un gris moyen standard de 18.45%."
 
-#: ../src/iop/filmicrgb.c:4429
+#: ../src/iop/filmicrgb.c:4432
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -16386,7 +16387,7 @@ msgstr ""
 "cela conserve le gris moyen à l'identique et améliore les réglages rapides.\n"
 "désactiver pour contrôler manuellement."
 
-#: ../src/iop/filmicrgb.c:4435
+#: ../src/iop/filmicrgb.c:4438
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -16399,7 +16400,7 @@ msgstr ""
 "c'est plus lent mais donnera des hautes lumières plus neutres.\n"
 "cela aide aussi dans les cas difficiles de hautes-lumières magenta."
 
-#: ../src/iop/filmicrgb.c:4442
+#: ../src/iop/filmicrgb.c:4445
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -16410,7 +16411,7 @@ msgstr ""
 "cela évite des hautes-lumières lisses alors que l'image est un peu bruitée,\n"
 "alors les hautes-lumières se fondent mieux avec le reste de l'image."
 
-#: ../src/iop/filmicrgb.c:4449
+#: ../src/iop/filmicrgb.c:4452
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -16418,11 +16419,11 @@ msgstr ""
 "sélectionner la distribution statistique du bruit.\n"
 "cela est utile pour se fondre avec le bruit naturel du capteur.\n"
 
-#: ../src/iop/filmicrgb.c:4517
+#: ../src/iop/filmicrgb.c:4520
 msgid "mid-tones saturation"
 msgstr "saturation tons moyens"
 
-#: ../src/iop/filmicrgb.c:4518
+#: ../src/iop/filmicrgb.c:4521
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -17396,7 +17397,7 @@ msgstr "niveaux invalides dans le fichier png %d %d"
 msgid "this darktable build is not compatible with compressed CLUT"
 msgstr "cette version de darktable n'a pas le support des LUT compressées"
 
-#: ../src/iop/lut3d.c:537 ../src/iop/lut3d.c:786
+#: ../src/iop/lut3d.c:537 ../src/iop/lut3d.c:787
 #, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
 msgstr "erreur - la taille 3D LUT de %d dépasse le maximum supporté"
@@ -17414,92 +17415,92 @@ msgstr "erreur - impossible de lire l'image png « %s »"
 msgid "error - allocating buffer for png LUT"
 msgstr "erreur - impossible d'allouer la mémoire pour le png LUT"
 
-#: ../src/iop/lut3d.c:741
+#: ../src/iop/lut3d.c:742
 #, c-format
 msgid "error - invalid cube file: %s"
 msgstr "erreur : fichier cube invalide « %s »"
 
-#: ../src/iop/lut3d.c:755
+#: ../src/iop/lut3d.c:756
 msgid "DOMAIN MIN <> 0.0 is not supported"
 msgstr "DOMAIN MIN <> 0.0 non supporté"
 
-#: ../src/iop/lut3d.c:766
+#: ../src/iop/lut3d.c:767
 msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMAIN MAX <> 1.0 non supporté"
 
-#: ../src/iop/lut3d.c:775
+#: ../src/iop/lut3d.c:776
 msgid "[1D cube LUT is not supported"
 msgstr "[1D LUT cube non supporté"
 
-#: ../src/iop/lut3d.c:797 ../src/iop/lut3d.c:901
+#: ../src/iop/lut3d.c:798 ../src/iop/lut3d.c:903
 msgid "error - allocating buffer for cube LUT"
 msgstr "erreur - impossible d'allouer la mémoire pour le cube LUT"
 
-#: ../src/iop/lut3d.c:808 ../src/iop/lut3d.c:914
+#: ../src/iop/lut3d.c:809 ../src/iop/lut3d.c:916
 msgid "error - cube LUT size is not defined"
 msgstr "erreur - taille LUT cube non définie"
 
-#: ../src/iop/lut3d.c:819
+#: ../src/iop/lut3d.c:820
 #, c-format
 msgid "error - cube LUT invalid number line %d"
 msgstr "erreur - nombre de lignes du LUT cube non valide %d"
 
-#: ../src/iop/lut3d.c:835
+#: ../src/iop/lut3d.c:836
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
 msgstr "erreur - nombre (%d) de lignes du LUT cube non valide, devrait être %d"
 
-#: ../src/iop/lut3d.c:845
+#: ../src/iop/lut3d.c:846
 #, c-format
 msgid "warning - cube LUT %d out of range values [0,1]"
 msgstr "attention - LUT cube %d valeurs hors de la plage [0,1]"
 
-#: ../src/iop/lut3d.c:869
+#: ../src/iop/lut3d.c:871
 #, c-format
 msgid "error - invalid 3dl file: %s"
 msgstr "erreur : fichier 3dl invalide « %s »"
 
-#: ../src/iop/lut3d.c:890
+#: ../src/iop/lut3d.c:892
 #, c-format
 msgid "error - the maximum shaper LUT value %d is too low"
 msgstr ""
 "erreur - la valeur maximum pour la table de transformation LUT %d est trop "
 "petite"
 
-#: ../src/iop/lut3d.c:942
+#: ../src/iop/lut3d.c:944
 msgid "error - cube LUT lines number is not correct"
 msgstr "erreur - nombre de lignes du LUT cube non valide"
 
-#: ../src/iop/lut3d.c:958
+#: ../src/iop/lut3d.c:960
 msgid "error - the maximum LUT value does not match any valid bit depth"
 msgstr ""
 "erreur - la valeur LUT maximum ne correspond à aucune taille de bit valide"
 
-#: ../src/iop/lut3d.c:1542
+#: ../src/iop/lut3d.c:1544
 msgid "LUT root folder not defined"
 msgstr "répertoire racine des fichiers LUT non défini"
 
-#: ../src/iop/lut3d.c:1548
+#: ../src/iop/lut3d.c:1550
 msgid "select LUT file"
 msgstr "sélectionner un fichier"
 
-#: ../src/iop/lut3d.c:1549
+#: ../src/iop/lut3d.c:1551
 msgid "_select"
 msgstr "sélection"
 
-#: ../src/iop/lut3d.c:1569
+#: ../src/iop/lut3d.c:1571
 msgid "hald CLUT (png), 3D LUT (cube or 3dl) or gmic compressed LUT (gmz)"
 msgstr "hald CLUT (png), 3D LUT (cube ou 3dl) ou gmic LUT compressée (gmz)"
 
-#: ../src/iop/lut3d.c:1571
+#: ../src/iop/lut3d.c:1573
 msgid "hald CLUT (png) or 3D LUT (cube or 3dl)"
 msgstr "hald CLUT (png) ou 3D LUT (cube ou 3dl)"
 
-#: ../src/iop/lut3d.c:1595
+#: ../src/iop/lut3d.c:1597
 msgid "select file outside LUT root folder is not allowed"
 msgstr "sélection d'un fichier en dehors du répertoire racine non permise"
 
-#: ../src/iop/lut3d.c:1666
+#: ../src/iop/lut3d.c:1668
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed LUT) file "
 "CAUTION: 3D LUT folder must be set in preferences/processing before choosing "
@@ -17509,7 +17510,7 @@ msgstr ""
 "ATTENTION : le répertoire lut doit être positionné depuis les préférences "
 "(section traitement) avant de choisir un fichier lut"
 
-#: ../src/iop/lut3d.c:1670
+#: ../src/iop/lut3d.c:1672
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D LUT folder must be "
 "set in preferences/processing before choosing the LUT file"
@@ -17518,7 +17519,7 @@ msgstr ""
 "ATTENTION : le répertoire lut doit être positionné depuis les préférences "
 "avant de choisir un fichier LUT"
 
-#: ../src/iop/lut3d.c:1682
+#: ../src/iop/lut3d.c:1684
 msgid ""
 "the file path (relative to LUT folder) is saved with image along with the "
 "LUT data if it's a compressed LUT (gmz)"
@@ -17526,7 +17527,7 @@ msgstr ""
 "le chemin (relatif au répertoire lut) est sauvé avec l'image ainsi que les "
 "données lut pour les LUT compressées (gmz)"
 
-#: ../src/iop/lut3d.c:1685
+#: ../src/iop/lut3d.c:1687
 msgid ""
 "the file path (relative to LUT folder) is saved with image (and not the LUT "
 "data themselves)"
@@ -17534,23 +17535,23 @@ msgstr ""
 "le chemin (relatif au répertoire LUT) est sauvé avec l'image (et pas avec "
 "les données LUT elles mêmes)"
 
-#: ../src/iop/lut3d.c:1694
+#: ../src/iop/lut3d.c:1696
 msgid "enter LUT name"
 msgstr "entrer le nom LUT"
 
-#: ../src/iop/lut3d.c:1715
+#: ../src/iop/lut3d.c:1717
 msgid "select the LUT"
 msgstr "sélectionner la lut"
 
-#: ../src/iop/lut3d.c:1728
+#: ../src/iop/lut3d.c:1730
 msgid "select the color space in which the LUT has to be applied"
 msgstr "sélectionner l'espace couleur pour l'application lut"
 
-#: ../src/iop/lut3d.c:1730
+#: ../src/iop/lut3d.c:1732
 msgid "interpolation"
 msgstr "interpolation"
 
-#: ../src/iop/lut3d.c:1731
+#: ../src/iop/lut3d.c:1733
 msgid "select the interpolation method"
 msgstr "sélectionner la méthode d'interpolation"
 
