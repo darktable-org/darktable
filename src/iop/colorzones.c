@@ -814,9 +814,9 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
                                const float *const picker_color, const float *const picker_min,
                                const float *const picker_max)
 {
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE
+     && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values))))
   {
     // the global live samples ...
     GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
@@ -904,9 +904,9 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
     }
   }
 
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE
+     && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values))))
   {
     // draw marker for currently selected color:
     float picked_i = -1.0f;
@@ -2738,4 +2738,3 @@ void init(dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
