@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-18 08:02+0200\n"
-"PO-Revision-Date: 2022-08-18 08:02+0200\n"
+"POT-Creation-Date: 2022-08-18 08:34+0200\n"
+"PO-Revision-Date: 2022-08-18 08:36+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -20325,6 +20325,11 @@ msgstr ""
 msgid "actual selection"
 msgstr "sélection actuelle"
 
+#: ../src/libs/filtering.c:789
+#, c-format
+msgid "you can't have more than %d rules"
+msgstr "vous ne pouvez pas créer plus de %d règles"
+
 #: ../src/libs/filtering.c:918
 msgid ""
 "rule property\n"
@@ -20411,6 +20416,11 @@ msgstr "direction du tri"
 #: ../src/libs/filtering.c:1719
 msgid "remove this sort order"
 msgstr "supprimer ce tri"
+
+#: ../src/libs/filtering.c:1803
+#, c-format
+msgid "you can't have more than %d sort orders"
+msgstr "vous ne pouvez pas créer plus de %d ordres de tri"
 
 #: ../src/libs/filtering.c:1872
 msgid "DESC"
