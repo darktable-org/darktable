@@ -786,7 +786,7 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     // add an empty rule
     if(d->nb_rules >= DT_COLLECTION_MAX_RULES)
     {
-      dt_control_log("You can't have more than %d rules", DT_COLLECTION_MAX_RULES);
+      dt_control_log(_("you can't have more than %d rules"), DT_COLLECTION_MAX_RULES);
       return;
     }
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", d->nb_rules);
@@ -1800,7 +1800,7 @@ static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)
     // add an empty rule
     if(d->nb_sort >= DT_COLLECTION_MAX_RULES)
     {
-      dt_control_log("You can't have more than %d sort orders", DT_COLLECTION_MAX_RULES);
+      dt_control_log(_("you can't have more than %d sort orders"), DT_COLLECTION_MAX_RULES);
       return;
     }
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", d->nb_sort);
