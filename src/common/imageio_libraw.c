@@ -139,6 +139,13 @@ const model_map_t modelMap[] = {
   },
   {
     .exif_make = "Canon",
+    .exif_model = "Canon EOS 200D II",
+    .clean_make = "Canon",
+    .clean_model = "EOS 250D",
+    .clean_alias = "EOS 200D Mark II"
+  },
+  {
+    .exif_make = "Canon",
     .exif_model = "Canon EOS 850D",
     .clean_make = "Canon",
     .clean_model = "EOS 850D",
