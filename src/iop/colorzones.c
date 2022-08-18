@@ -2374,9 +2374,17 @@ void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
-  dt_iop_color_picker_reset(self, TRUE);
+  dt_iop_color_picker_reset(self, FALSE);
 
   c->zoom_factor = 1.f;
+  c->offset_x = c->offset_y = 0.f;
+  c->selected = -1;
+  c->dragging = 0;
+  c->edit_by_area = 0;
+  c->display_mask = FALSE;
+  self->timeout_handle = 0;
+  c->mouse_radius = 1.f / DT_IOP_COLORZONES_BANDS;
+
   _reset_display_selection(self);
 }
 
