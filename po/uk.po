@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-17 09:25+0200\n"
-"PO-Revision-Date: 2022-08-17 11:05+0300\n"
+"POT-Creation-Date: 2022-08-18 08:34+0200\n"
+"PO-Revision-Date: 2022-08-18 11:44+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -3187,7 +3187,7 @@ msgstr "опорна точка контрасту сірого"
 #: ../src/gui/guides.c:740 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
 #: ../src/iop/colisa.c:305 ../src/iop/colorbalance.c:1895
 #: ../src/iop/colorbalance.c:1901 ../src/iop/filmic.c:1649
-#: ../src/iop/filmicrgb.c:4337 ../src/iop/lowpass.c:573
+#: ../src/iop/filmicrgb.c:4338 ../src/iop/lowpass.c:573
 msgid "contrast"
 msgstr "контраст"
 
@@ -3785,7 +3785,7 @@ msgstr "жорсткість"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:296
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4510
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4513
 msgid "extreme luminance saturation"
 msgstr "насиченість екстремальних яскравостей"
 
@@ -4753,7 +4753,7 @@ msgstr "спадне меню"
 #: ../src/gui/preferences.c:1036 ../src/gui/presets.c:376
 #: ../src/gui/presets.c:476 ../src/gui/styles_dialog.c:420
 #: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
-#: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1549
+#: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1551
 #: ../src/libs/collect.c:409 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
@@ -7844,8 +7844,8 @@ msgstr ""
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2107
 #: ../src/iop/exposure.c:1033 ../src/iop/exposure.c:1046
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
-#: ../src/iop/filmicrgb.c:4226 ../src/iop/filmicrgb.c:4236
-#: ../src/iop/filmicrgb.c:4271 ../src/iop/filmicrgb.c:4281
+#: ../src/iop/filmicrgb.c:4227 ../src/iop/filmicrgb.c:4237
+#: ../src/iop/filmicrgb.c:4272 ../src/iop/filmicrgb.c:4282
 #: ../src/iop/graduatednd.c:1098 ../src/iop/negadoctor.c:983
 #: ../src/iop/profile_gamma.c:651 ../src/iop/profile_gamma.c:657
 #: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3117
@@ -10598,7 +10598,7 @@ msgstr "_відкрити"
 msgid "darktable preset files"
 msgstr "файли пресетів darktable"
 
-#: ../src/gui/preferences.c:1011 ../src/iop/lut3d.c:1580
+#: ../src/gui/preferences.c:1011 ../src/iop/lut3d.c:1582
 #: ../src/libs/copy_history.c:144 ../src/libs/geotagging.c:946
 #: ../src/libs/styles.c:526
 msgid "all files"
@@ -15808,7 +15808,7 @@ msgstr ""
 "відрегулюйте відповідно до середньої яскравості об'єкта.\n"
 "крім ситуацій зі світлом в сторону об'єктива, це має бути близько 18%."
 
-#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4228
+#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4229
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15818,7 +15818,7 @@ msgstr ""
 "це показання, яке експонометр дав би вам для цієї сцени.\n"
 "відрегулюйте, щоб уникнути кліппінгу найсвітліших тонів"
 
-#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4238
+#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4239
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15838,8 +15838,8 @@ msgstr ""
 "збільшити або зменшити обчислений динамічний діапазон.\n"
 "корисно у поєднанні з \"автоналаштуванням рівнів\"."
 
-#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4251
-#: ../src/iop/filmicrgb.c:4254 ../src/iop/profile_gamma.c:667
+#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4252
+#: ../src/iop/filmicrgb.c:4255 ../src/iop/profile_gamma.c:667
 msgid "auto tune levels"
 msgstr "автоналаштування рівнів"
 
@@ -15859,7 +15859,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "S-крива filmic"
 
-#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4340
+#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4341
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -15868,7 +15868,7 @@ msgstr ""
 "впливає переважно на середні тони"
 
 #. geotagging
-#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4349
+#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4350
 #: ../src/libs/metadata_view.c:157
 msgid "latitude"
 msgstr "широта"
@@ -15887,7 +15887,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr "баланс тіней та світлих ділянок"
 
-#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4360
+#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4361
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -15970,7 +15970,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "призначення/дисплей"
 
-#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4379
+#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4380
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -15978,7 +15978,7 @@ msgstr ""
 "яскравість вихідного чистого чорного, вона має бути 0%\n"
 "крім випадків, коли ви хочете вицвілого вигляду"
 
-#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4386
+#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4387
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -15986,7 +15986,7 @@ msgstr ""
 "значення середньо-сірого цільового дисплея або кольорового простору.\n"
 "ніколи не слід змінювати це, якщо не знаєте, що робите."
 
-#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4393
+#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4394
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -16080,7 +16080,7 @@ msgid "% camera"
 msgstr "камера, %"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3673 ../src/iop/filmicrgb.c:4373
+#: ../src/iop/filmicrgb.c:3673 ../src/iop/filmicrgb.c:4374
 msgid "display"
 msgstr "вихід"
 
@@ -16126,17 +16126,18 @@ msgstr ""
 "права кнопка миші: попередній тип.\n"
 "подвійний клік: скинути до типу \"лише крива\"."
 
-#: ../src/iop/filmicrgb.c:4218
+#: ../src/iop/filmicrgb.c:4219
+#, no-c-format
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
 "decrease the value to increase the overall brightness."
 msgstr ""
 "відрегулюйте відповідно до середньої яскравості об'єкта зображення.\n"
-"введене тут значення буде відображено на 18.45%.\n"
+"введене тут значення буде відображено на 18,45%.\n"
 "зменшуйте значення, щоб збільшити загальну яскравість."
 
-#: ../src/iop/filmicrgb.c:4246
+#: ../src/iop/filmicrgb.c:4247
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -16144,7 +16145,7 @@ msgstr ""
 "симетрично збільшити або зменшити обчислений динамічний діапазон.\n"
 "корисно для забезпечення запасу безпеки для екстремальних яскравостей."
 
-#: ../src/iop/filmicrgb.c:4256
+#: ../src/iop/filmicrgb.c:4257
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -16162,15 +16163,15 @@ msgstr ""
 "переконайтеся, що ви розумієте ці припущення перед використанням."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4265
+#: ../src/iop/filmicrgb.c:4266
 msgid "reconstruct"
 msgstr "відновлення"
 
-#: ../src/iop/filmicrgb.c:4267
+#: ../src/iop/filmicrgb.c:4268
 msgid "highlights clipping"
 msgstr "переекспозиція"
 
-#: ../src/iop/filmicrgb.c:4273
+#: ../src/iop/filmicrgb.c:4274
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -16186,7 +16187,7 @@ msgstr ""
 "зменшуйте, щоб включити більше областей,\n"
 "збільшуйте, щоб виключити більше областей."
 
-#: ../src/iop/filmicrgb.c:4283
+#: ../src/iop/filmicrgb.c:4284
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -16196,15 +16197,15 @@ msgstr ""
 "зменшуйте, щоб зробити перехід більш жорстким і різким,\n"
 "збільшуйте, щоб зробити перехід більш м’яким і розмитим."
 
-#: ../src/iop/filmicrgb.c:4289 ../src/iop/filmicrgb.c:4290
+#: ../src/iop/filmicrgb.c:4290 ../src/iop/filmicrgb.c:4291
 msgid "display highlight reconstruction mask"
 msgstr "показати маску відновлення переекспозиції"
 
-#: ../src/iop/filmicrgb.c:4297 ../src/iop/splittoning.c:527
+#: ../src/iop/filmicrgb.c:4298 ../src/iop/splittoning.c:527
 msgid "balance"
 msgstr "баланс"
 
-#: ../src/iop/filmicrgb.c:4304
+#: ../src/iop/filmicrgb.c:4305
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16221,7 +16222,7 @@ msgstr ""
 "збільшити, якщо хоча б один канал RGB не обрізаний.\n"
 "зменшити, якщо всі канали RGB обрізані на великих ділянках."
 
-#: ../src/iop/filmicrgb.c:4315
+#: ../src/iop/filmicrgb.c:4316
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16238,7 +16239,7 @@ msgstr ""
 "збільште, якщо хочете більше деталей.\n"
 "зменште, якщо хочете більше розмиття."
 
-#: ../src/iop/filmicrgb.c:4327
+#: ../src/iop/filmicrgb.c:4328
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16257,11 +16258,11 @@ msgstr ""
 "ділянках."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4335
+#: ../src/iop/filmicrgb.c:4336
 msgid "look"
 msgstr "крива"
 
-#: ../src/iop/filmicrgb.c:4345
+#: ../src/iop/filmicrgb.c:4346
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -16271,7 +16272,7 @@ msgstr ""
 "збільшити, щоб зробити світлі тони яскравішими та менш стиснутими.\n"
 "зменшити для приглушення світлих тонів."
 
-#: ../src/iop/filmicrgb.c:4353
+#: ../src/iop/filmicrgb.c:4354
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -16284,7 +16285,7 @@ msgstr ""
 "в цьому діапазоні широти не відбувається десатурація.\n"
 "це не впливає на середні тони."
 
-#: ../src/iop/filmicrgb.c:4368 ../src/iop/filmicrgb.c:4511
+#: ../src/iop/filmicrgb.c:4369 ../src/iop/filmicrgb.c:4514
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -16295,11 +16296,11 @@ msgstr ""
 "збільште, якщо тіні та/або світлі ділянки недостатньо насичені."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:4397
+#: ../src/iop/filmicrgb.c:4398
 msgid "options"
 msgstr "опції"
 
-#: ../src/iop/filmicrgb.c:4402
+#: ../src/iop/filmicrgb.c:4403
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -16308,7 +16309,7 @@ msgstr ""
 "балансу.\n"
 "v4 - новіший метод десатурації, на основі спектральної чистоти світла."
 
-#: ../src/iop/filmicrgb.c:4406
+#: ../src/iop/filmicrgb.c:4407
 msgid ""
 "ensure the original colors are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -16318,7 +16319,7 @@ msgstr ""
 "може посилити хроматичні аберації та кольоровий шум,\n"
 "тому переконайтеся, що вони правильно виправлені в іншому місці."
 
-#: ../src/iop/filmicrgb.c:4412
+#: ../src/iop/filmicrgb.c:4413
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16330,7 +16331,7 @@ msgstr ""
 "м'який використовує низьку кривизну, що призводить до меншого тонального "
 "стиснення."
 
-#: ../src/iop/filmicrgb.c:4417
+#: ../src/iop/filmicrgb.c:4418
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16342,20 +16343,20 @@ msgstr ""
 "м'який використовує низьку кривизну, що призводить до меншого тонального "
 "стиснення."
 
-#: ../src/iop/filmicrgb.c:4422
-#, c-format
+#: ../src/iop/filmicrgb.c:4425
+#, no-c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
 "this is not recommended in general.\n"
 "fix the global exposure in the exposure module instead.\n"
-"disable to use standard 18.45 %% middle gray."
+"disable to use standard 18.45% middle gray."
 msgstr ""
 "увімкніть, щоб ввести власні значення середньо-сірого.\n"
-"це в загальному випадку не рекомендується.\n"
+"в загальному випадку це не рекомендується.\n"
 "замість цього виправляйте глобальну експозицію в модулі експозиції.\n"
-"вимкніть для використання стандартного 18.45 %% середньо-сірого."
+"вимкніть для використання стандартного 18,45% середньо-сірого."
 
-#: ../src/iop/filmicrgb.c:4429
+#: ../src/iop/filmicrgb.c:4432
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -16368,7 +16369,7 @@ msgstr ""
 "налаштування.\n"
 "вимкніть, якщо хочете управляти цим вручну."
 
-#: ../src/iop/filmicrgb.c:4435
+#: ../src/iop/filmicrgb.c:4438
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -16382,7 +16383,7 @@ msgstr ""
 "це також допомагає при складних випадках мадженти в переекспонованих "
 "ділянках."
 
-#: ../src/iop/filmicrgb.c:4442
+#: ../src/iop/filmicrgb.c:4445
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -16394,7 +16395,7 @@ msgstr ""
 "коли зображення загалом містить шум, що забезпечує більш\n"
 "природне поєднання з рештою зображення."
 
-#: ../src/iop/filmicrgb.c:4449
+#: ../src/iop/filmicrgb.c:4452
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -16402,11 +16403,11 @@ msgstr ""
 "вибрати статистичний розподіл шуму.\n"
 "це корисно, щоб відповідати природній схемі шуму сенсора.\n"
 
-#: ../src/iop/filmicrgb.c:4517
+#: ../src/iop/filmicrgb.c:4520
 msgid "mid-tones saturation"
 msgstr "насиченість середніх тонів"
 
-#: ../src/iop/filmicrgb.c:4518
+#: ../src/iop/filmicrgb.c:4521
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -17372,7 +17373,7 @@ msgstr "недійсний рівень в png файлі %d %d"
 msgid "this darktable build is not compatible with compressed CLUT"
 msgstr "ця збірка darktable несумісна зі стиснутим форматом CLUT"
 
-#: ../src/iop/lut3d.c:537 ../src/iop/lut3d.c:786
+#: ../src/iop/lut3d.c:537 ../src/iop/lut3d.c:787
 #, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
 msgstr "помилка - розмір LUT 3D %d перевищує максимально підтримуваний"
@@ -17390,91 +17391,91 @@ msgstr "помилка - не вдається прочитати png зобра
 msgid "error - allocating buffer for png LUT"
 msgstr "помилка - виділення буфера для png LUT"
 
-#: ../src/iop/lut3d.c:741
+#: ../src/iop/lut3d.c:742
 #, c-format
 msgid "error - invalid cube file: %s"
 msgstr "помилка - недійсний cube файл: %s"
 
-#: ../src/iop/lut3d.c:755
+#: ../src/iop/lut3d.c:756
 msgid "DOMAIN MIN <> 0.0 is not supported"
 msgstr "DOMAIN MIN <> 0.0 не підтримується"
 
-#: ../src/iop/lut3d.c:766
+#: ../src/iop/lut3d.c:767
 msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMAIN MAX <> 1.0 не підтримується"
 
-#: ../src/iop/lut3d.c:775
+#: ../src/iop/lut3d.c:776
 msgid "[1D cube LUT is not supported"
 msgstr "1D cube LUT не підтримується"
 
-#: ../src/iop/lut3d.c:797 ../src/iop/lut3d.c:901
+#: ../src/iop/lut3d.c:798 ../src/iop/lut3d.c:903
 msgid "error - allocating buffer for cube LUT"
 msgstr "помилка - виділення буфера для cube LUT"
 
-#: ../src/iop/lut3d.c:808 ../src/iop/lut3d.c:914
+#: ../src/iop/lut3d.c:809 ../src/iop/lut3d.c:916
 msgid "error - cube LUT size is not defined"
 msgstr "помилка - розмір cube LUT не визначено"
 
-#: ../src/iop/lut3d.c:819
+#: ../src/iop/lut3d.c:820
 #, c-format
 msgid "error - cube LUT invalid number line %d"
 msgstr "помилка - cube LUT: недійсне число в рядку %d"
 
-#: ../src/iop/lut3d.c:835
+#: ../src/iop/lut3d.c:836
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
 msgstr "помилка - cube LUT: кількість рядків %d неправильна, має бути %d"
 
-#: ../src/iop/lut3d.c:845
+#: ../src/iop/lut3d.c:846
 #, c-format
 msgid "warning - cube LUT %d out of range values [0,1]"
 msgstr "попередження - cube LUT: %d значень поза діапазоном [0,1]"
 
-#: ../src/iop/lut3d.c:869
+#: ../src/iop/lut3d.c:871
 #, c-format
 msgid "error - invalid 3dl file: %s"
 msgstr "помилка - недійсний 3dl файл: %s"
 
-#: ../src/iop/lut3d.c:890
+#: ../src/iop/lut3d.c:892
 #, c-format
 msgid "error - the maximum shaper LUT value %d is too low"
 msgstr "помилка - максимальне значення shaper LUT %d занадто низьке"
 
-#: ../src/iop/lut3d.c:942
+#: ../src/iop/lut3d.c:944
 msgid "error - cube LUT lines number is not correct"
 msgstr "помилка - неправильна кількість рядків в cube LUT"
 
-#: ../src/iop/lut3d.c:958
+#: ../src/iop/lut3d.c:960
 msgid "error - the maximum LUT value does not match any valid bit depth"
 msgstr ""
 "помилка - максимальне значення в LUT не відповідає жодній дійсній бітовій "
 "глибині"
 
-#: ../src/iop/lut3d.c:1542
+#: ../src/iop/lut3d.c:1544
 msgid "LUT root folder not defined"
 msgstr "кореневий каталог LUT не визначено"
 
-#: ../src/iop/lut3d.c:1548
+#: ../src/iop/lut3d.c:1550
 msgid "select LUT file"
 msgstr "вибрати LUT файл"
 
-#: ../src/iop/lut3d.c:1549
+#: ../src/iop/lut3d.c:1551
 msgid "_select"
 msgstr "_вибрати"
 
-#: ../src/iop/lut3d.c:1569
+#: ../src/iop/lut3d.c:1571
 msgid "hald CLUT (png), 3D LUT (cube or 3dl) or gmic compressed LUT (gmz)"
 msgstr "hald CLUT (png), 3D LUT (cube чи 3dl) або стиснутий gmic LUT (gmz)"
 
-#: ../src/iop/lut3d.c:1571
+#: ../src/iop/lut3d.c:1573
 msgid "hald CLUT (png) or 3D LUT (cube or 3dl)"
 msgstr "hald CLUT (png) або 3D LUT (cube чи 3dl)"
 
-#: ../src/iop/lut3d.c:1595
+#: ../src/iop/lut3d.c:1597
 msgid "select file outside LUT root folder is not allowed"
 msgstr "вибір файлу поза кореневим каталогом LUT файлів не дозволено"
 
-#: ../src/iop/lut3d.c:1666
+#: ../src/iop/lut3d.c:1668
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed LUT) file "
 "CAUTION: 3D LUT folder must be set in preferences/processing before choosing "
@@ -17484,7 +17485,7 @@ msgstr ""
 "ПОПЕРЕДЖЕННЯ: Перед вибором файлу LUT потрібно встановити кореневий каталог "
 "3D LUT файлів в розділі 'обробка' налаштувань darktable"
 
-#: ../src/iop/lut3d.c:1670
+#: ../src/iop/lut3d.c:1672
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D LUT folder must be "
 "set in preferences/processing before choosing the LUT file"
@@ -17493,7 +17494,7 @@ msgstr ""
 "LUT потрібно встановити кореневий каталог 3D LUT файлів в розділі 'обробка' "
 "налаштувань darktable"
 
-#: ../src/iop/lut3d.c:1682
+#: ../src/iop/lut3d.c:1684
 msgid ""
 "the file path (relative to LUT folder) is saved with image along with the "
 "LUT data if it's a compressed LUT (gmz)"
@@ -17501,7 +17502,7 @@ msgstr ""
 "шлях до файлу (відносно каталогу LUT) зберігається із зображенням разом із "
 "даними LUT, якщо це стиснутий LUT (gmz)"
 
-#: ../src/iop/lut3d.c:1685
+#: ../src/iop/lut3d.c:1687
 msgid ""
 "the file path (relative to LUT folder) is saved with image (and not the LUT "
 "data themselves)"
@@ -17509,23 +17510,23 @@ msgstr ""
 "шлях до файлу (відносно каталогу LUT) зберігається із зображенням (але не "
 "самі дані LUT)"
 
-#: ../src/iop/lut3d.c:1694
+#: ../src/iop/lut3d.c:1696
 msgid "enter LUT name"
 msgstr "вкажіть ім'я LUT"
 
-#: ../src/iop/lut3d.c:1715
+#: ../src/iop/lut3d.c:1717
 msgid "select the LUT"
 msgstr "вибір файлу LUT"
 
-#: ../src/iop/lut3d.c:1728
+#: ../src/iop/lut3d.c:1730
 msgid "select the color space in which the LUT has to be applied"
 msgstr "виберіть колірний простір, в якому має застосовуватися LUT"
 
-#: ../src/iop/lut3d.c:1730
+#: ../src/iop/lut3d.c:1732
 msgid "interpolation"
 msgstr "інтерполяція"
 
-#: ../src/iop/lut3d.c:1731
+#: ../src/iop/lut3d.c:1733
 msgid "select the interpolation method"
 msgstr "виберіть метод інтерполяції"
 
@@ -20279,6 +20280,11 @@ msgstr "клік правою кнопкою миші відкриває мен�
 msgid "actual selection"
 msgstr "поточний вибір"
 
+#: ../src/libs/filtering.c:789
+#, c-format
+msgid "you can't have more than %d rules"
+msgstr "ви не можете мати більше %d правил"
+
 #: ../src/libs/filtering.c:918
 msgid ""
 "rule property\n"
@@ -20368,6 +20374,11 @@ msgstr "напрямок сортування"
 #: ../src/libs/filtering.c:1719
 msgid "remove this sort order"
 msgstr "видалити цей порядок сортування"
+
+#: ../src/libs/filtering.c:1803
+#, c-format
+msgid "you can't have more than %d sort orders"
+msgstr "ви не можете мати більше %d порядків сортування"
 
 #: ../src/libs/filtering.c:1872
 msgid "DESC"
