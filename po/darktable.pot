@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-18 08:02+0200\n"
+"POT-Creation-Date: 2022-08-18 08:34+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18577,6 +18577,11 @@ msgstr ""
 msgid "actual selection"
 msgstr ""
 
+#: ../src/libs/filtering.c:789
+#, c-format
+msgid "you can't have more than %d rules"
+msgstr ""
+
 #: ../src/libs/filtering.c:918
 msgid ""
 "rule property\n"
@@ -18657,6 +18662,11 @@ msgstr ""
 
 #: ../src/libs/filtering.c:1719
 msgid "remove this sort order"
+msgstr ""
+
+#: ../src/libs/filtering.c:1803
+#, c-format
+msgid "you can't have more than %d sort orders"
 msgstr ""
 
 #: ../src/libs/filtering.c:1872
