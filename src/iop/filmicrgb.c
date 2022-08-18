@@ -4215,6 +4215,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->grey_point_source, .1, 36.0);
   dt_bauhaus_slider_set_format(g->grey_point_source, "%");
   gtk_widget_set_tooltip_text(g->grey_point_source,
+                              /* xgettext:no-c-format */
                               _("adjust to match the average luminance of the image's subject.\n"
                                 "the value entered here will then be remapped to 18.45%.\n"
                                 "decrease the value to increase the overall brightness."));
@@ -4419,10 +4420,12 @@ void gui_init(dt_iop_module_t *self)
                                             "soft uses a low curvature resulting in less tonal compression."));
 
   g->custom_grey = dt_bauhaus_toggle_from_params(self, "custom_grey");
-  gtk_widget_set_tooltip_text(g->custom_grey, _("enable to input custom middle-gray values.\n"
-                                                "this is not recommended in general.\n"
-                                                "fix the global exposure in the exposure module instead.\n"
-                                                "disable to use standard 18.45 %% middle gray."));
+  gtk_widget_set_tooltip_text(g->custom_grey,
+                              /* xgettext:no-c-format */
+                              _("enable to input custom middle-gray values.\n"
+                                "this is not recommended in general.\n"
+                                "fix the global exposure in the exposure module instead.\n"
+                                "disable to use standard 18.45% middle gray."));
 
   g->auto_hardness = dt_bauhaus_toggle_from_params(self, "auto_hardness");
   gtk_widget_set_tooltip_text(
