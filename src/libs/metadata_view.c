@@ -745,7 +745,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       case md_exif_focus_distance:
         (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
-        if(!(isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
+        if(img->exif_focus_distance == UINT32_MAX)
+        {
+          (void)g_snprintf(text, sizeof(text), _("infinity"));
+        }
+        else if(!(isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
         {
           (void)g_snprintf(text, sizeof(text), _("%.2f m"), (double)img->exif_focus_distance);
         }
