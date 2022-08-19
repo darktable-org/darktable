@@ -343,7 +343,7 @@
     </type>
     <default>nothing</default>
     <shortdescription>tune OpenCL performance</shortdescription>
-    <longdescription>allows runtime tuning of OpenCL devices. 'memory size' tests for available graphics ram, 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
+    <longdescription>allows runtime tuning of OpenCL devices. 'memory size' uses a fixed 400MB headroom, 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_synch_cache</name>
