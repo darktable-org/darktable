@@ -2064,6 +2064,8 @@ static int _control_import_image_copy(const char *filename,
     return -1;
   }
   char *output = NULL;
+  struct stat statbuf;
+  const int sts = stat(filename, &statbuf);
   if(dt_has_same_path_basename(filename, *prev_filename))
   {
     // make sure we keep the same output filename, changing only the extension
@@ -2074,11 +2076,9 @@ static int _control_import_image_copy(const char *filename,
     char *basename = g_path_get_basename(filename);
     dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
 
-    if(!exif_time[0])
+    if(!exif_time[0] && !sts)
     { // if no exif datetime try file datetime
-      struct stat statbuf;
-      if(!stat(filename, &statbuf))
-        dt_datetime_unix_to_exif(exif_time, sizeof(exif_time), &statbuf.st_mtime);
+      dt_datetime_unix_to_exif(exif_time, sizeof(exif_time), &statbuf.st_mtime);
     }
 
     if(exif_time[0])
@@ -2099,6 +2099,13 @@ static int _control_import_image_copy(const char *filename,
   }
   else
   {
+    struct timeval times[2];
+    times[0].tv_sec = (long)statbuf.st_atim.tv_sec;
+    times[0].tv_usec = statbuf.st_atim.tv_nsec * 0.001;
+    times[1].tv_sec = (long)statbuf.st_mtim.tv_sec;
+    times[1].tv_usec = statbuf.st_mtim.tv_nsec * 0.001;
+    utimes(output, times); // set origin file timestamps
+
     const int32_t imgid = dt_image_import(dt_import_session_film_id(session), output, FALSE, FALSE);
     if(!imgid) dt_control_log(_("error loading file `%s'"), output);
     else
