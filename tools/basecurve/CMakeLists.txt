@@ -1,4 +1,8 @@
-find_package(OpenMP)
+if (USE_OPENMP)
+    find_package(OpenMP)
+else()
+    set(OPENMP_FOUND FALSE)
+endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/modules")
 find_library(M_LIBRARY m)
