@@ -755,7 +755,8 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     g_clear_pointer(&description, g_free);
 
 #ifdef USE_LUA
-  if(markup_text && (def || (action && action->type == DT_ACTION_TYPE_COMMAND)))
+  if(markup_text && action && action->owner != &darktable.control->actions_fallbacks
+     && (def || action->type == DT_ACTION_TYPE_COMMAND || action->type == DT_ACTION_TYPE_PRESET))
   {
     gchar *ac_escaped = g_markup_escape_text(_action_full_id(action), -1);
     gchar *el_escaped = element_name ? g_markup_escape_text(element_name, -1) : g_strdup("");
@@ -1489,20 +1490,36 @@ static void _shortcut_row_activated(GtkTreeView *tree_view, GtkTreePath *path, G
 
 static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-  // GDK_KEY_BackSpace moves to parent in tree
-  if(event->keyval == GDK_KEY_Delete || event->keyval == GDK_KEY_KP_Delete)
+  GtkTreeView *view = GTK_TREE_VIEW(widget);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
+
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
-    GtkTreeView *view = GTK_TREE_VIEW(widget);
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
+    GSequenceIter  *shortcut_iter = NULL;
+    gtk_tree_model_get(model, &iter, 0, &shortcut_iter, -1);
 
-    GtkTreeIter iter;
-    GtkTreeModel *model = NULL;
-    if(gtk_tree_selection_get_selected(selection, &model, &iter))
+    if(GPOINTER_TO_UINT(shortcut_iter) >= NUM_CATEGORIES)
     {
-      GSequenceIter  *shortcut_iter = NULL;
-      gtk_tree_model_get(model, &iter, 0, &shortcut_iter, -1);
+#ifdef USE_LUA
+      // if control key pressed, copy lua command to clipboard (CTRL+C will work)
+      if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+      {
+        dt_shortcut_t *s = g_sequence_get(shortcut_iter);
 
-      if(GPOINTER_TO_UINT(shortcut_iter) >= NUM_CATEGORIES)
+        const dt_action_element_def_t *elements = _action_find_elements(s->action);
+        const gchar *el = elements && elements[s->element].name ? elements[s->element].name : "";
+        const gchar *ef = elements && elements[s->element].effects ? elements[s->element].effects[s->effect] : "";
+
+        gchar *lua_text = g_strdup_printf("dt.gui.action(\"%s\", %d, \"%s\", \"%s\", %f)",
+                                          _action_full_id(s->action), s->instance, el, ef, s->speed);
+        gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), lua_text, -1);
+        g_free(lua_text);
+      }
+#endif
+      // GDK_KEY_BackSpace moves to parent in tree
+      if(event->keyval == GDK_KEY_Delete || event->keyval == GDK_KEY_KP_Delete)
       {
         if(_yes_no_dialog(_("removing shortcut"),
                           _("remove the selected shortcut?")))
@@ -1511,10 +1528,10 @@ static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpo
 
           dt_shortcuts_save(NULL, FALSE);
         }
+
+        return TRUE;
       }
     }
-
-    return TRUE;
   }
 
   return FALSE;
