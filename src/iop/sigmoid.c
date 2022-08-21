@@ -80,6 +80,22 @@ const char *name()
   return _("sigmoid");
 }
 
+const char *aliases()
+{
+  return _("tone mapping|view transform|display transform");
+}
+
+const char **description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("apply a view transform to make a image displayable\n"
+                                        "on a screen or print. Uses a robust and smooth tone\n"
+                                        "tone curve with optional color preservation methods."),
+                                      _("corrective and creative"),
+                                      _("linear RGB, scene-referred"),
+                                      _("non-linear RGB"),
+                                      _("linear RGB, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
@@ -544,12 +560,20 @@ void gui_init(dt_iop_module_t *self)
   g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
   dt_bauhaus_slider_set_soft_range(g->contrast_slider, 0.7f, 3.0f);
   dt_bauhaus_slider_set_digits(g->contrast_slider, 3);
+  gtk_widget_set_tooltip_text(g->contrast_slider, _("Compression of the applied curve\n"
+                                                    "implicitly defines the supported input dynamic range."));
   g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
+  gtk_widget_set_tooltip_text(g->skewness_slider, _("Shift the compression towards shadows or highlights.\n"
+                                                    "Negative values increase contrast in shadows.\n"
+                                                    "Positive values increase contrast in highlights.\n"
+                                                    "The opposite end will see a reduction in contrast."));
 
   // Color handling
   g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
   g->hue_preservation_slider = dt_bauhaus_slider_from_params(self, "hue_preservation");
   dt_bauhaus_slider_set_format(g->hue_preservation_slider, "%");
+  gtk_widget_set_tooltip_text(g->hue_preservation_slider, _("Optional correction of the hue twist introduced by\n"
+                                                            "the per-channel processing method."));
 
   // Target display
   GtkWidget *label = dt_ui_section_label_new(_("display luminance"));
@@ -561,9 +585,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->display_black_slider, 0.0f, 1.0f);
   dt_bauhaus_slider_set_digits(g->display_black_slider, 4);
   dt_bauhaus_slider_set_format(g->display_black_slider, "%");
+  gtk_widget_set_tooltip_text(g->display_black_slider, _("The black luminance of the target display or print.\n"
+                                                         "Can be used creatively for a faded look."));
   g->display_white_slider = dt_bauhaus_slider_from_params(self, "display_white_target");
   dt_bauhaus_slider_set_soft_range(g->display_white_slider, 50.0f, 100.0f);
   dt_bauhaus_slider_set_format(g->display_white_slider, "%");
+  gtk_widget_set_tooltip_text(g->display_white_slider, _("The white luminance of the target display or print.\n"
+                                                         "Can be used creatively for a faded look or blowing out whites earlier."));
 }
 
 void gui_cleanup(dt_iop_module_t *self)
