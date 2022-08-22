@@ -814,9 +814,9 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
                                const float *const picker_color, const float *const picker_min,
                                const float *const picker_max)
 {
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE
+     && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values))))
   {
     // the global live samples ...
     GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
@@ -904,9 +904,9 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
     }
   }
 
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE
+     && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values))))
   {
     // draw marker for currently selected color:
     float picked_i = -1.0f;
@@ -2374,9 +2374,17 @@ void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
-  dt_iop_color_picker_reset(self, TRUE);
+  dt_iop_color_picker_reset(self, FALSE);
 
   c->zoom_factor = 1.f;
+  c->offset_x = c->offset_y = 0.f;
+  c->selected = -1;
+  c->dragging = 0;
+  c->edit_by_area = 0;
+  c->display_mask = FALSE;
+  self->timeout_handle = 0;
+  c->mouse_radius = 1.f / DT_IOP_COLORZONES_BANDS;
+
   _reset_display_selection(self);
 }
 
@@ -2385,6 +2393,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     _reset_display_selection(self);
+    dt_iop_color_picker_reset(self, FALSE);
   }
 }
 
@@ -2738,4 +2747,3 @@ void init(dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
