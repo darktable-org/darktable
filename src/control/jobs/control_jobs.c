@@ -52,6 +52,7 @@
 #endif
 #ifdef _WIN32
 #include "win/dtwin.h"
+#include <utime.h>
 #endif
 
 // Control of the collection updates during an import.  Start with a short interval to feel responsive,
@@ -2070,6 +2071,8 @@ static int _control_import_image_copy(const char *filename,
     return -1;
   }
   char *output = NULL;
+  struct stat statbuf;
+  const int sts = stat(filename, &statbuf);
   if(dt_has_same_path_basename(filename, *prev_filename))
   {
     // make sure we keep the same output filename, changing only the extension
@@ -2080,11 +2083,9 @@ static int _control_import_image_copy(const char *filename,
     char *basename = g_path_get_basename(filename);
     dt_exif_get_basic_data((uint8_t *)data, size, &basic_exif);
 
-    if(!basic_exif.datetime[0])
+    if(!basic_exif.datetime[0] && !sts)
     { // if no exif datetime try file datetime
-      struct stat statbuf;
-      if(!stat(filename, &statbuf))
-        dt_datetime_unix_to_exif(basic_exif.datetime, sizeof(basic_exif.datetime), &statbuf.st_mtime);
+      dt_datetime_unix_to_exif(basic_exif.datetime, sizeof(basic_exif.datetime), &statbuf.st_mtime);
     }
     dt_import_session_set_exif_basic_info(session, &basic_exif);
     dt_import_session_set_filename(session, basename);
@@ -2097,12 +2098,26 @@ static int _control_import_image_copy(const char *filename,
   }
 
   if(!g_file_set_contents(output, data, size, NULL))
-  {
+  { 
     dt_print(DT_DEBUG_CONTROL, "[import_from] failed to write file %s\n", output);
     res = FALSE;
   }
   else
   {
+#ifdef _WIN32
+    struct utimbuf times;
+    times.actime = statbuf.st_atime;
+    times.modtime = statbuf.st_mtime;
+    utime(output, &times); // set origin file timestamps
+#else
+    struct timeval times[2];
+    times[0].tv_sec = (long)statbuf.st_atim.tv_sec;
+    times[0].tv_usec = statbuf.st_atim.tv_nsec * 0.001;
+    times[1].tv_sec = (long)statbuf.st_mtim.tv_sec;
+    times[1].tv_usec = statbuf.st_mtim.tv_nsec * 0.001;
+    utimes(output, times); // set origin file timestamps
+#endif
+
     const int32_t imgid = dt_image_import(dt_import_session_film_id(session), output, FALSE, FALSE);
     if(!imgid) dt_control_log(_("error loading file `%s'"), output);
     else
