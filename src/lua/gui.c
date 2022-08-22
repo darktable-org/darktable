@@ -381,6 +381,7 @@ int dt_lua_init_gui(lua_State *L)
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "current_view");
     lua_pushcfunction(L, _action_cb);
+    dt_lua_gtk_wrap(L);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "action");
     lua_pushcfunction(L, _panel_visible_cb);
