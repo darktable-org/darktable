@@ -305,6 +305,28 @@ static const dt_action_element_def_t *_action_find_elements(dt_action_t *action)
     return definition->elements;
 }
 
+static const gchar *_action_find_effect_combo(dt_action_t *ac, const dt_action_element_def_t *el, dt_action_effect_t ef)
+{
+  if(el->effects == dt_action_effect_selection && ef > DT_ACTION_EFFECT_COMBO_SEPARATOR)
+  {
+    dt_introspection_type_enum_tuple_t *values
+      = g_hash_table_lookup(darktable.control->combo_introspection, ac);
+    if(values)
+      return values[ef - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description;
+    else
+    {
+      gchar **strings
+        = g_hash_table_lookup(darktable.control->combo_list, ac);
+      if(strings)
+        return strings[ef - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1];
+      else
+        return _("combo effect not found");
+    }
+  }
+
+  return NULL;
+}
+
 static gboolean _is_kp_key(guint keycode)
 {
   return keycode >= GDK_KEY_KP_Space && keycode <= GDK_KEY_KP_Equal;
@@ -590,22 +612,9 @@ static gchar *_action_description(dt_shortcut_t *s, int components)
   {
     if(components && (s->element || (!def->fallbacks && def->elements->name)))
       add_hint(", %s", _(def->elements[s->element].name));
-    if(def->elements[s->element].effects == dt_action_effect_selection
-        && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
-    {
-      dt_introspection_type_enum_tuple_t *values
-        = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
-      if(values)
-        add_hint(", %s", _(values[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description));
-      else
-      {
-        gchar **strings
-          = g_hash_table_lookup(darktable.control->combo_list, s->action);
-        if(strings)
-          add_hint(", %s", _(strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]));
-      }
-    }
-    else if(s->effect > 0) add_hint(", %s", _(def->elements[s->element].effects[s->effect]));
+    const gchar *cef = _action_find_effect_combo(s->action, &def->elements[s->element], s->effect);
+    if(cef || s->effect > 0)
+      add_hint(", %s", _(cef ? cef : def->elements[s->element].effects[s->effect]));
   }
 
   if(s->speed != 1.0)
@@ -1211,25 +1220,11 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
     case SHORTCUT_VIEW_EFFECT:
       if(_shortcut_is_speed(s)) break;
       elements = _action_find_elements(s->action);
-      if(elements)
+      if(elements && s->effect >= 0)
       {
-        if(elements[s->element].effects == dt_action_effect_selection
-           && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
-        {
-          dt_introspection_type_enum_tuple_t *values
-            = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
-          if(values)
-            field_text = g_strdup(_(values[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description));
-          else
-          {
-            gchar **strings
-              = g_hash_table_lookup(darktable.control->combo_list, s->action);
-            if(strings)
-              field_text = g_strdup(_(strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]));
-          }
-        }
-        else if(s->effect > 0 || s->action->type != DT_ACTION_TYPE_FALLBACK)
-          field_text = g_strdup(_(elements[s->element].effects[s->effect]));
+        const gchar *cef = _action_find_effect_combo(s->action, &elements[s->element], s->effect);
+        if(cef || s->effect > 0 || s->action->type != DT_ACTION_TYPE_FALLBACK)
+          field_text = g_strdup(_(cef ? cef : elements[s->element].effects[s->effect]));
         if(s->effect == 0) weight = PANGO_WEIGHT_LIGHT;
         editable = TRUE;
       }
@@ -1509,11 +1504,13 @@ static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpo
         dt_shortcut_t *s = g_sequence_get(shortcut_iter);
 
         const dt_action_element_def_t *elements = _action_find_elements(s->action);
-        const gchar *el = elements && elements[s->element].name ? elements[s->element].name : "";
-        const gchar *ef = elements && elements[s->element].effects ? elements[s->element].effects[s->effect] : "";
+        const gchar *cef = _action_find_effect_combo(s->action, &elements[s->element], s->effect);
+        const gchar *el = elements ? elements[s->element].name : NULL;
+        const gchar **ef = elements && s->effect >= 0 ? elements[s->element].effects : NULL;
 
-        gchar *lua_text = g_strdup_printf("dt.gui.action(\"%s\", %d, \"%s\", \"%s\", %f)",
-                                          _action_full_id(s->action), s->instance, el, ef, s->speed);
+        gchar *lua_text = g_strdup_printf("dt.gui.action(\"%s\", %d, \"%s\", \"%s%s\", %f)",
+                                          _action_full_id(s->action), s->instance, el ? el : "",
+                                          cef ? "item:" : "", cef ? cef : ef ? ef[s->effect] : "", s->speed);
         gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), lua_text, -1);
         g_free(lua_text);
       }
@@ -2441,24 +2438,12 @@ static void _shortcuts_save(const gchar *shortcuts_file, const dt_input_device_t
       if(s->effect > (_shortcut_is_move(s) ? DT_ACTION_EFFECT_DEFAULT_MOVE
                                            : DT_ACTION_EFFECT_DEFAULT_KEY))
       {
-        if(elements[s->element].effects == dt_action_effect_selection
-           && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
-        {
-          dt_introspection_type_enum_tuple_t *values
-            = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
-          if(values)
-            fprintf(f, ";item:%s", values[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description);
-          else
-          {
-            gchar **strings
-              = g_hash_table_lookup(darktable.control->combo_list, s->action);
-            if(strings)
-              fprintf(f, ";item:%s", strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]);
-          }
-        }
+        const gchar *cef = _action_find_effect_combo(s->action, &elements[s->element], s->effect);
+        if(cef)
+          fprintf(f, ";item:%s", cef);
         else
           fprintf(f, ";%s", elements[s->element].effects[s->effect]);
-     }
+      }
 
       if(s->instance == -1) fprintf(f, ";last");
       if(s->instance == +1) fprintf(f, ";first");
