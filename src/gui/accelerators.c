@@ -1498,13 +1498,13 @@ static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpo
     if(GPOINTER_TO_UINT(shortcut_iter) >= NUM_CATEGORIES)
     {
 #ifdef USE_LUA
-      // if control key pressed, copy lua command to clipboard (CTRL+C will work)
-      if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-      {
-        dt_shortcut_t *s = g_sequence_get(shortcut_iter);
+      dt_shortcut_t *s = g_sequence_get(shortcut_iter);
 
+      // if control key pressed, copy lua command to clipboard (CTRL+C will work)
+      if(dt_modifier_is(event->state, GDK_CONTROL_MASK) && s->views)
+      {
         const dt_action_element_def_t *elements = _action_find_elements(s->action);
-        const gchar *cef = _action_find_effect_combo(s->action, &elements[s->element], s->effect);
+        const gchar *cef = elements ? _action_find_effect_combo(s->action, &elements[s->element], s->effect) : NULL;
         const gchar *el = elements ? elements[s->element].name : NULL;
         const gchar **ef = elements && s->effect >= 0 ? elements[s->element].effects : NULL;
 
