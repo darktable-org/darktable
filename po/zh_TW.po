@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-18 08:34+0200\n"
-"PO-Revision-Date: 2022-08-20 00:58+0800\n"
+"POT-Creation-Date: 2022-08-22 20:25+0200\n"
+"PO-Revision-Date: 2022-08-23 10:03+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -344,8 +344,7 @@ msgid ""
 "let the field empty otherwise"
 msgstr ""
 "如果要替換為指定的日期和時間，格式如下：YYYY-MM-DD[hh:mm:ss[.sss]]\n"
-"依序為「年：月：日[時：分：秒[毫秒]]"
-"如不更動則讓欄位留空"
+"依序為「年：月：日[時：分：秒[毫秒]]如不更動則讓欄位留空"
 
 #: ../build/bin/conf_gen.h:1032
 msgid "keep this window open"
@@ -1634,8 +1633,8 @@ msgstr "調整 OpenCL 性能"
 
 #: ../build/bin/preferences_gen.h:6386
 msgid ""
-"allows runtime tuning of OpenCL devices. 'memory size' tests for available "
-"graphics ram, 'memory transfer' tries a faster memory access mode (pinned "
+"allows runtime tuning of OpenCL devices. 'memory size' uses a fixed 400MB "
+"headroom, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
 msgstr ""
 "調整 OpenCL 性能\n"
@@ -2499,7 +2498,7 @@ msgstr "旋轉"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:119
 #: ../build/lib/darktable/plugins/introspection_blurs.c:198
-#: ../src/iop/diffuse.c:1549
+#: ../src/iop/diffuse.c:1570
 msgid "direction"
 msgstr "方向"
 
@@ -3242,7 +3241,7 @@ msgstr "飽和色彩"
 #: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:2142
 #: ../src/iop/colorbalancergb.c:2143 ../src/iop/colorbalancergb.c:2144
 #: ../src/iop/colorbalancergb.c:2145 ../src/iop/colorize.c:344
-#: ../src/iop/colorreconstruction.c:1288 ../src/iop/colorzones.c:2433
+#: ../src/iop/colorreconstruction.c:1288 ../src/iop/colorzones.c:2442
 #: ../src/iop/splittoning.c:471
 msgid "hue"
 msgstr "色相"
@@ -3269,8 +3268,8 @@ msgstr "處理模式"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1966 ../src/iop/channelmixer.c:624
 #: ../src/iop/channelmixerrgb.c:4136 ../src/iop/colorchecker.c:1361
-#: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2431
-#: ../src/iop/exposure.c:1129
+#: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2440
+#: ../src/iop/exposure.c:1131
 msgid "lightness"
 msgstr "明度"
 
@@ -3287,7 +3286,7 @@ msgstr "明度"
 #: ../src/iop/colorbalancergb.c:2161 ../src/iop/colorbalancergb.c:2162
 #: ../src/iop/colorchecker.c:1379 ../src/iop/colorcontrast.c:94
 #: ../src/iop/colorcorrection.c:283 ../src/iop/colorize.c:357
-#: ../src/iop/colorzones.c:2432 ../src/iop/lowpass.c:575
+#: ../src/iop/colorzones.c:2441 ../src/iop/lowpass.c:575
 #: ../src/iop/soften.c:399 ../src/iop/splittoning.c:483 ../src/iop/velvia.c:84
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:982
 msgid "saturation"
@@ -3879,7 +3878,7 @@ msgstr "偏移"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:66
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:129
-#: ../src/iop/channelmixerrgb.c:4124 ../src/iop/exposure.c:1117
+#: ../src/iop/channelmixerrgb.c:4124 ../src/iop/exposure.c:1119
 msgid "target"
 msgstr "目標"
 
@@ -4623,8 +4622,8 @@ msgid ""
 "Other modes besides lighttable and darkroom are a map for geotagging, "
 "tethering, print and a slideshow."
 msgstr ""
-"除了「燈箱 LightTable」和「暗房 Darkroom」這兩個主要模式之外，還有地圖、連機拍"
-"攝、列印（不適用於 windows）和影像輪播等功能。"
+"除了「燈箱 LightTable」和「暗房 Darkroom」這兩個主要模式之外，還有地圖、連機"
+"拍攝、列印（不適用於 windows）和影像輪播等功能。"
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
@@ -4653,40 +4652,40 @@ msgstr "在地圖中顯示影像"
 msgid "Print your images"
 msgstr "列印影像"
 
-#: ../src/bauhaus/bauhaus.c:3273
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button on"
 msgstr "按鈕開啟"
 
-#: ../src/bauhaus/bauhaus.c:3273
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button off"
 msgstr "按鈕關閉"
 
-#: ../src/bauhaus/bauhaus.c:3442 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3447 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "值"
 
-#: ../src/bauhaus/bauhaus.c:3443 ../src/bauhaus/bauhaus.c:3449
+#: ../src/bauhaus/bauhaus.c:3448 ../src/bauhaus/bauhaus.c:3454
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "按鈕"
 
-#: ../src/bauhaus/bauhaus.c:3444
+#: ../src/bauhaus/bauhaus.c:3449
 msgid "force"
 msgstr "強度"
 
-#: ../src/bauhaus/bauhaus.c:3445
+#: ../src/bauhaus/bauhaus.c:3450
 msgid "zoom"
 msgstr "縮放"
 
-#: ../src/bauhaus/bauhaus.c:3448
+#: ../src/bauhaus/bauhaus.c:3453
 msgid "selection"
 msgstr "勾選"
 
-#: ../src/bauhaus/bauhaus.c:3467
+#: ../src/bauhaus/bauhaus.c:3472
 msgid "slider"
 msgstr "滑桿"
 
-#: ../src/bauhaus/bauhaus.c:3472
+#: ../src/bauhaus/bauhaus.c:3477
 msgid "dropdown"
 msgstr "下拉選單"
 
@@ -5728,7 +5727,7 @@ msgstr "啟動 darktable 時發生錯誤"
 
 #: ../src/common/database.c:2742 ../src/libs/collect.c:3007
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
-#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1190
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
 #: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568 ../src/libs/tagging.c:1649
@@ -5955,12 +5954,12 @@ msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "「快速無關曝光的導引濾波器」（fast EIGF）無法配置記憶體，請檢查記憶體設定"
 
-#: ../src/common/exif.cc:4329
+#: ../src/common/exif.cc:4333
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "無法讀取 XMP 檔案「%s」：「%s」"
 
-#: ../src/common/exif.cc:4381
+#: ../src/common/exif.cc:4385
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "無法寫入 XMP 檔案「%s」：「%s」"
@@ -6104,8 +6103,7 @@ msgstr ""
 msgid ""
 "for `%s' `%s'\n"
 "in as many format/compression/bit depths as possible"
-msgstr ""
-"盡可能提供更多「%s」「%s」不同格式 / 壓縮 / 位元深度的樣本圖檔"
+msgstr "盡可能提供更多「%s」「%s」不同格式 / 壓縮 / 位元深度的樣本圖檔"
 
 #: ../src/common/image.c:2797
 msgid "or the <b>RAW won't be readable</b> in next version."
@@ -6485,7 +6483,7 @@ msgstr "海拔"
 msgid "below sea level"
 msgstr "海平面下"
 
-#: ../src/common/utility.c:555 ../src/libs/metadata_view.c:875
+#: ../src/common/utility.c:555 ../src/libs/metadata_view.c:879
 msgid "m"
 msgstr "公尺"
 
@@ -7369,7 +7367,7 @@ msgid "reverse"
 msgstr "反轉"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:366
-#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1185
+#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1189
 msgid "default"
 msgstr "預設"
 
@@ -7450,7 +7448,7 @@ msgstr "開啟"
 
 #: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2190
 #: ../src/develop/imageop.c:2380 ../src/iop/channelmixerrgb.c:4104
-#: ../src/iop/exposure.c:1097
+#: ../src/iop/exposure.c:1099
 msgid "input"
 msgstr "輸入"
 
@@ -7652,13 +7650,13 @@ msgid "reset blend mask settings"
 msgstr "重設色版遮罩設定"
 
 #: ../src/develop/blend_gui.c:2143 ../src/iop/atrous.c:1733
-#: ../src/iop/colorzones.c:2429 ../src/iop/denoiseprofile.c:3580
+#: ../src/iop/colorzones.c:2438 ../src/iop/denoiseprofile.c:3580
 #: ../src/iop/rawdenoise.c:902 ../src/iop/rgbcurve.c:1368
 #: ../src/iop/rgblevels.c:1012 ../src/iop/tonecurve.c:1157
 msgid "channel"
 msgstr "色版"
 
-#: ../src/develop/blend_gui.c:2153 ../src/iop/colorzones.c:2443
+#: ../src/develop/blend_gui.c:2153 ../src/iop/colorzones.c:2452
 #: ../src/iop/rgbcurve.c:1378 ../src/iop/tonecurve.c:1166
 msgid ""
 "pick GUI color from image\n"
@@ -10347,7 +10345,8 @@ msgstr "雙擊以重設為系統語言"
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* (needs a restart)"
-msgstr "設置使用者介面的語言，系統預設值標示為 *\n"
+msgstr ""
+"設置使用者介面的語言，系統預設值標示為 *\n"
 "更改設定後需要重新啟動程式才會生效"
 
 #: ../src/gui/preferences.c:301
@@ -11912,13 +11911,13 @@ msgstr ""
 "亮度和彩度對比出現不自然的邊緣時可以使用，調整數值因影像而異必須自行嘗試"
 
 #: ../src/iop/atrous.c:1753 ../src/iop/colorbalancergb.c:2073
-#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4193
+#: ../src/iop/colorzones.c:2516 ../src/iop/filmicrgb.c:4193
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:932
 #: ../src/iop/toneequal.c:3162
 msgid "graph"
 msgstr "圖表"
 
-#: ../src/iop/atrous.c:1764 ../src/iop/colorzones.c:2500
+#: ../src/iop/atrous.c:1764 ../src/iop/colorzones.c:2509
 msgid "make effect stronger or weaker"
 msgstr "調整效果的強弱"
 
@@ -11992,7 +11991,7 @@ msgstr "NOKIA 風格"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:272 ../src/iop/colorzones.c:2531
+#: ../src/iop/basecurve.c:272 ../src/iop/colorzones.c:2540
 #: ../src/iop/rgbcurve.c:1422 ../src/iop/tonecurve.c:1198
 msgid "cubic spline"
 msgstr "三次擬合曲線"
@@ -13256,11 +13255,19 @@ msgstr "色溫"
 msgid "spot color mapping"
 msgstr "點測色色彩對應"
 
-#: ../src/iop/channelmixerrgb.c:4078 ../src/iop/channelmixerrgb.c:4206
-msgid "use a color checker target to autoset CAT and channels"
-msgstr "使用校色卡自動計算調整色彩適應轉換和色版"
+#: ../src/iop/channelmixerrgb.c:4078
+msgid ""
+"define a target chromaticity (hue and chroma) for a particular region of the "
+"image (the control sample), which you then match against the same target "
+"chromaticity in other images. the control sample can either be a critical "
+"part of your subject or a non-moving and consistently-lit surface over your "
+"series of images."
+msgstr ""
+"點測色色彩對應模式用於整批調整同系列影像的色彩\n"
+"依據選擇的影像對照範圍設定目標顏色，然後將此顏色對應至其他影像\n"
+"藉由選擇一系列影像中顏色應保持相同的區域，批次調整多張影像的顏色一致性"
 
-#: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1083
+#: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1085
 msgid "spot mode"
 msgstr "點測對應模式"
 
@@ -13271,18 +13278,14 @@ msgid ""
 "\"measure\" simply shows how an input color is mapped by the CAT\n"
 "and can be used to sample a target."
 msgstr ""
-"點測色色彩對應模式用於整批調整同系列影像的色彩\n"
-"依據上方選擇的影像範圍對應目標顏色，然後將此顏色對應至其他影像\n"
-"藉由選擇一系列影像中顏色應保持不變的區域，批次調整多張影像的顏色一致性\n"
-"\n"
-"「測量」模式用於定義所選範圍的目標顏色\n"
-"「校正」模式將目標顏色映射至所選範圍"
+"「測量」模式藉由選擇範圍定義目標顏色\n"
+"「校正」模式自動調整光源，將顏色映射至所選目標"
 
-#: ../src/iop/channelmixerrgb.c:4086 ../src/iop/exposure.c:1089
+#: ../src/iop/channelmixerrgb.c:4086 ../src/iop/exposure.c:1091
 msgid "correction"
 msgstr "校正"
 
-#: ../src/iop/channelmixerrgb.c:4087 ../src/iop/exposure.c:1090
+#: ../src/iop/channelmixerrgb.c:4087 ../src/iop/exposure.c:1092
 msgid "measure"
 msgstr "測量"
 
@@ -13298,7 +13301,7 @@ msgstr ""
 "計算顏色時將色版混合納入考量\n"
 "如果沒有選取，則僅則僅考慮色彩適應轉換"
 
-#: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1103
+#: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1105
 msgid "the input color that should be mapped to the target"
 msgstr "要對應到目標顏色的輸入顏色"
 
@@ -13312,7 +13315,7 @@ msgstr ""
 "h：\tN/A\n"
 "C：\tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
+#: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1112
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "這些 LCh 座標是從 CIELAB 1976 座標計算出來的"
 
@@ -13363,6 +13366,10 @@ msgstr "使用不同強度的色版混合輸出灰階影像"
 #: ../src/iop/channelmixerrgb.c:4202
 msgid "calibrate with a color checker"
 msgstr "使用校色卡校正"
+
+#: ../src/iop/channelmixerrgb.c:4206
+msgid "use a color checker target to autoset CAT and channels"
+msgstr "使用校色卡自動計算色彩適應轉換和調整色版"
 
 #: ../src/iop/channelmixerrgb.c:4211
 msgid "chart"
@@ -14924,7 +14931,7 @@ msgstr "HSL 基本設定"
 msgid "orange"
 msgstr "橘色"
 
-#: ../src/iop/colorzones.c:2450 ../src/iop/rgbcurve.c:1385
+#: ../src/iop/colorzones.c:2459 ../src/iop/rgbcurve.c:1385
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -14937,47 +14944,47 @@ msgstr ""
 "shift + 點擊除了建立控制點之外，同時調整曲線向下"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2471
+#: ../src/iop/colorzones.c:2480
 msgid "edit by area"
 msgstr "以區域調整"
 
-#: ../src/iop/colorzones.c:2476
+#: ../src/iop/colorzones.c:2485
 msgid "edit the curve nodes by area"
 msgstr ""
 "開啟區域編輯模式\n"
 "以滑鼠拖動區域內的曲線，而非直接控制曲線節點"
 
-#: ../src/iop/colorzones.c:2483
+#: ../src/iop/colorzones.c:2492
 msgid "display selection"
 msgstr "顯示選取範圍"
 
-#: ../src/iop/colorzones.c:2493
+#: ../src/iop/colorzones.c:2502
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr ""
 "定義水平橫座標，也就是控制如何選取要處理的像素範圍\n"
 "可切換依據明度、飽和度、色相選取控制範圍\n"
 "更改此設定會重設曲線，如果要同時使用不同控制方式請建立新的模組實例"
 
-#: ../src/iop/colorzones.c:2496
+#: ../src/iop/colorzones.c:2505
 msgid "choose between a smoother or stronger effect"
 msgstr "選擇調整效果的方式"
 
-#: ../src/iop/colorzones.c:2530 ../src/iop/rgbcurve.c:1421
+#: ../src/iop/colorzones.c:2539 ../src/iop/rgbcurve.c:1421
 #: ../src/iop/tonecurve.c:1197
 msgid "interpolation method"
 msgstr "曲線內插法"
 
-#: ../src/iop/colorzones.c:2532 ../src/iop/rgbcurve.c:1423
+#: ../src/iop/colorzones.c:2541 ../src/iop/rgbcurve.c:1423
 #: ../src/iop/tonecurve.c:1199
 msgid "centripetal spline"
 msgstr "向心擬合曲線"
 
-#: ../src/iop/colorzones.c:2533 ../src/iop/rgbcurve.c:1424
+#: ../src/iop/colorzones.c:2542 ../src/iop/rgbcurve.c:1424
 #: ../src/iop/tonecurve.c:1200
 msgid "monotonic spline"
 msgstr "單調擬合曲線"
 
-#: ../src/iop/colorzones.c:2536 ../src/iop/rgbcurve.c:1427
+#: ../src/iop/colorzones.c:2545 ../src/iop/rgbcurve.c:1427
 #: ../src/iop/tonecurve.c:1202
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -15534,7 +15541,7 @@ msgstr "快速銳利化"
 msgid "fast local contrast"
 msgstr "快速局部對比"
 
-#: ../src/iop/diffuse.c:1106 ../src/iop/diffuse.c:1368
+#: ../src/iop/diffuse.c:1116 ../src/iop/diffuse.c:1389
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
@@ -15542,12 +15549,12 @@ msgstr ""
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/diffuse.c:1480 ../src/iop/splittoning.c:525
+#: ../src/iop/diffuse.c:1501 ../src/iop/splittoning.c:525
 #: ../src/libs/camera.c:487
 msgid "properties"
 msgstr "屬性"
 
-#: ../src/iop/diffuse.c:1485
+#: ../src/iop/diffuse.c:1506
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -15559,7 +15566,7 @@ msgstr ""
 "高迭代次數配合較低的速度，有助於重建細節與去除模糊\n"
 "在物理上的意義類似於更長的漫射擴散時間，時間越久範圍越大"
 
-#: ../src/iop/diffuse.c:1494
+#: ../src/iop/diffuse.c:1515
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -15572,7 +15579,7 @@ msgstr ""
 "若要重建因去馬賽克或鏡頭引起的模糊細節，請使用 0\n"
 "自然漫射只應影響最接近的像素，為了計算效率在此使用小波分析以應用在更大範圍"
 
-#: ../src/iop/diffuse.c:1504
+#: ../src/iop/diffuse.c:1525
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -15585,11 +15592,11 @@ msgstr ""
 "如果是增加局部對比度，最佳數值應為中心半徑的 3/4\n"
 "自然漫射只應影響最接近的像素，為了計算效率在此使用小波分析以應用在更大範圍"
 
-#: ../src/iop/diffuse.c:1510
+#: ../src/iop/diffuse.c:1531
 msgid "speed (sharpen ↔ diffuse)"
 msgstr "速度（銳利 ↔ 漫射）"
 
-#: ../src/iop/diffuse.c:1516
+#: ../src/iop/diffuse.c:1537
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -15604,7 +15611,7 @@ msgstr ""
 "負值：反轉漫射，修復影像細節\n"
 "　零：不執行任何操作"
 
-#: ../src/iop/diffuse.c:1525
+#: ../src/iop/diffuse.c:1546
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -15619,7 +15626,7 @@ msgstr ""
 "負值：反轉漫射，修復影像細節\n"
 "　零：不執行任何操作"
 
-#: ../src/iop/diffuse.c:1534
+#: ../src/iop/diffuse.c:1555
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -15634,7 +15641,7 @@ msgstr ""
 "負值：反轉漫射，修復影像細節\n"
 "　零：不執行任何操作"
 
-#: ../src/iop/diffuse.c:1543
+#: ../src/iop/diffuse.c:1564
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -15649,7 +15656,7 @@ msgstr ""
 "負值：反轉漫射，修復影像細節\n"
 "　零：不執行任何操作"
 
-#: ../src/iop/diffuse.c:1555
+#: ../src/iop/diffuse.c:1576
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -15663,7 +15670,7 @@ msgstr ""
 "負值：強制漫射方向穿越邊緣\n"
 "　零：各向同性，所有方向具有相同的權重"
 
-#: ../src/iop/diffuse.c:1563
+#: ../src/iop/diffuse.c:1584
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -15677,7 +15684,7 @@ msgstr ""
 "負值：強制漫射方向穿越邊緣\n"
 "　零：各向同性，所有方向具有相同的權重"
 
-#: ../src/iop/diffuse.c:1571
+#: ../src/iop/diffuse.c:1592
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -15691,7 +15698,7 @@ msgstr ""
 "負值：強制漫射方向穿越邊緣\n"
 "　零：各向同性，所有方向具有相同的權重"
 
-#: ../src/iop/diffuse.c:1579
+#: ../src/iop/diffuse.c:1600
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -15705,11 +15712,11 @@ msgstr ""
 "負值：強制漫射方向穿越邊緣\n"
 "　零：各向同性，所有方向具有相同的權重"
 
-#: ../src/iop/diffuse.c:1584
+#: ../src/iop/diffuse.c:1605
 msgid "edge management"
 msgstr "邊緣管理"
 
-#: ../src/iop/diffuse.c:1589
+#: ../src/iop/diffuse.c:1610
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
@@ -15719,7 +15726,7 @@ msgstr ""
 "可用於在漫射後保留一些邊緣對比，並在邊緣增加光暈\n"
 "不建議單獨使用此設定做銳化，因為可能出現明顯的邊緣偽影"
 
-#: ../src/iop/diffuse.c:1595
+#: ../src/iop/diffuse.c:1616
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -15729,7 +15736,7 @@ msgstr ""
 "偵測到邊緣時降低漫射速度以避免邊緣光暈\n"
 "如果出現邊緣偽影，如光暈時，可調高此設定值"
 
-#: ../src/iop/diffuse.c:1601
+#: ../src/iop/diffuse.c:1622
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -15740,11 +15747,11 @@ msgstr ""
 "降低數值讓更多區域被視為邊緣，有利於恢復細節或增加局部對比度\n"
 "提高數值有利於去噪或模糊，如果平滑區域出現雜訊或暗部比亮部銳化過多時使用"
 
-#: ../src/iop/diffuse.c:1607
+#: ../src/iop/diffuse.c:1628
 msgid "diffusion spatiality"
 msgstr "漫射空間"
 
-#: ../src/iop/diffuse.c:1612
+#: ../src/iop/diffuse.c:1633
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -15915,7 +15922,19 @@ msgstr ""
 msgid "spot exposure mapping"
 msgstr "點測光曝光對應"
 
-#: ../src/iop/exposure.c:1084
+#: ../src/iop/exposure.c:1083
+msgid ""
+"define a target brightness, in terms of exposure, for a selected region of "
+"the image (the control sample), which you then match against the same target "
+"brightness in other images. the control sample can either be a critical part "
+"of your subject or a non-moving and consistently-lit surface over your "
+"series of images."
+msgstr ""
+"點測光曝光對應模式用於整批調整同系列的影像曝光\n"
+"依據選擇的影像對照範圍設定目標亮度，然後將此亮度對應至其他影像\n"
+"藉由選擇一系列影像中亮度應保持相同的區域，批次調整多張影像的亮度一致性"
+
+#: ../src/iop/exposure.c:1086
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -15923,18 +15942,14 @@ msgid ""
 "compensation\n"
 "and can be used to define a target."
 msgstr ""
-"點測光曝光對應模式用於整批調整同系列的影像曝光\n"
-"依據上方選擇的影像範圍對應目標亮度，然後將此亮度對應至其他影像\n"
-"藉由選擇一系列影像中亮度應保持不變的區域，批次調整多張影像的亮度一致性\n"
-"\n"
-"「測量」模式用於定義所選範圍的亮度目標\n"
-"「校正」模式將亮度目標映射至所選範圍"
+"「測量」模式藉由選擇範圍定義目標亮度\n"
+"「校正」模式自動調整曝光，將亮度映射至所選目標"
 
-#: ../src/iop/exposure.c:1108
+#: ../src/iop/exposure.c:1110
 msgid "L : \tN/A"
 msgstr "L : \t無"
 
-#: ../src/iop/exposure.c:1123
+#: ../src/iop/exposure.c:1125
 msgid "the desired target exposure after mapping"
 msgstr "選取範圍要對應的曝光目標"
 
@@ -17500,8 +17515,8 @@ msgid ""
 "ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
 "拖曳節點以移動，點擊節點顯示羽化半徑，右鍵點擊刪除節點\n"
-"ctrl + 點擊切換節點連接方式（僅限曲線變型有作用）：自動平滑（圓點）、"
-"尖銳轉折（三角形）、手動平滑（菱形）、對稱（方形點）"
+"ctrl + 點擊切換節點連接方式（僅限曲線變型有作用）：自動平滑（圓點）、尖銳轉折"
+"（三角形）、手動平滑（菱形）、對稱（方形點）"
 
 #: ../src/iop/liquify.c:3688 ../src/iop/liquify.c:3689
 msgid "drag to change shape of path"
@@ -20106,7 +20121,7 @@ msgstr "檔案"
 #: ../src/libs/collect.c:2956 ../src/libs/export_metadata.c:310
 #: ../src/libs/filtering.c:850 ../src/libs/filtering.c:932
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
-#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
+#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1222
 msgid "metadata"
 msgstr "詮釋資料"
 
@@ -20130,7 +20145,7 @@ msgid "collections settings"
 msgstr "相冊設定"
 
 #: ../src/libs/collect.c:3008 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1190
 #: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1649
 #: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
 #: ../src/libs/tagging.c:3473
@@ -20138,7 +20153,7 @@ msgid "save"
 msgstr "儲存"
 
 #: ../src/libs/collect.c:3028 ../src/libs/export.c:1059
-#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1298
+#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1302
 #: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3495
 msgid "preferences..."
 msgstr "模組設定"
@@ -22186,11 +22201,11 @@ msgstr "詮釋資料編輯器"
 msgid "<leave unchanged>"
 msgstr "<保持不變>"
 
-#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1184
+#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1188
 msgid "metadata settings"
 msgstr "詮釋資料設定"
 
-#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1229
+#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1233
 msgid "visible"
 msgstr "顯示"
 
@@ -22418,10 +22433,15 @@ msgstr "%+.2f EV"
 
 #: ../src/libs/metadata_view.c:750
 #, c-format
+msgid "infinity"
+msgstr "無限遠"
+
+#: ../src/libs/metadata_view.c:754
+#, c-format
 msgid "%.2f m"
 msgstr "%.2f 公尺"
 
-#: ../src/libs/metadata_view.c:1224
+#: ../src/libs/metadata_view.c:1228
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
@@ -22431,7 +22451,7 @@ msgstr ""
 "取消勾選可隱藏不希望顯示的詮釋資料\n"
 "可儲存成不同設定的預設集"
 
-#: ../src/libs/metadata_view.c:1380
+#: ../src/libs/metadata_view.c:1384
 msgid "jump to film roll"
 msgstr "跳到底片卷"
 
