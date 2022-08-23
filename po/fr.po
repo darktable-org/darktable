@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-18 08:34+0200\n"
-"PO-Revision-Date: 2022-08-18 08:36+0200\n"
+"POT-Creation-Date: 2022-08-22 20:25+0200\n"
+"PO-Revision-Date: 2022-08-22 20:30+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1656,14 +1656,13 @@ msgstr "optimiser les performances OpenCL"
 
 #: ../build/bin/preferences_gen.h:6386
 msgid ""
-"allows runtime tuning of OpenCL devices. 'memory size' tests for available "
-"graphics ram, 'memory transfer' tries a faster memory access mode (pinned "
+"allows runtime tuning of OpenCL devices. 'memory size' uses a fixed 400MB "
+"headroom, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
 msgstr ""
 "permet d'optimiser les périphériques OpenCL lors de l'exécution. « taille "
-"mémoire » teste la mémoire disponible sur la carte graphique, « transfert "
-"mémoire » tente un accès rapide à la mémoire (mémoire épinglée) utilisée "
-"pour le tuilage."
+"mémoire » utilise 400Mo de mémoire de marge, « transfert mémoire » tente un "
+"accès rapide à la mémoire (mémoire épinglée) utilisée pour le tuilage."
 
 #: ../build/bin/preferences_gen.h:6420
 msgid "security"
@@ -2560,7 +2559,7 @@ msgstr "rotation"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:119
 #: ../build/lib/darktable/plugins/introspection_blurs.c:198
-#: ../src/iop/diffuse.c:1549
+#: ../src/iop/diffuse.c:1570
 msgid "direction"
 msgstr "direction"
 
@@ -3303,7 +3302,7 @@ msgstr "couleurs saturées"
 #: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:2142
 #: ../src/iop/colorbalancergb.c:2143 ../src/iop/colorbalancergb.c:2144
 #: ../src/iop/colorbalancergb.c:2145 ../src/iop/colorize.c:344
-#: ../src/iop/colorreconstruction.c:1288 ../src/iop/colorzones.c:2433
+#: ../src/iop/colorreconstruction.c:1288 ../src/iop/colorzones.c:2442
 #: ../src/iop/splittoning.c:471
 msgid "hue"
 msgstr "teinte"
@@ -3330,8 +3329,8 @@ msgstr "mode"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1966 ../src/iop/channelmixer.c:624
 #: ../src/iop/channelmixerrgb.c:4136 ../src/iop/colorchecker.c:1361
-#: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2431
-#: ../src/iop/exposure.c:1129
+#: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2440
+#: ../src/iop/exposure.c:1131
 msgid "lightness"
 msgstr "clarté"
 
@@ -3348,7 +3347,7 @@ msgstr "clarté"
 #: ../src/iop/colorbalancergb.c:2161 ../src/iop/colorbalancergb.c:2162
 #: ../src/iop/colorchecker.c:1379 ../src/iop/colorcontrast.c:94
 #: ../src/iop/colorcorrection.c:283 ../src/iop/colorize.c:357
-#: ../src/iop/colorzones.c:2432 ../src/iop/lowpass.c:575
+#: ../src/iop/colorzones.c:2441 ../src/iop/lowpass.c:575
 #: ../src/iop/soften.c:399 ../src/iop/splittoning.c:483 ../src/iop/velvia.c:84
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:982
 msgid "saturation"
@@ -3940,7 +3939,7 @@ msgstr "biais"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:66
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:129
-#: ../src/iop/channelmixerrgb.c:4124 ../src/iop/exposure.c:1117
+#: ../src/iop/channelmixerrgb.c:4124 ../src/iop/exposure.c:1119
 msgid "target"
 msgstr "cible"
 
@@ -4717,40 +4716,40 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer vos images"
 
-#: ../src/bauhaus/bauhaus.c:3273
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button on"
 msgstr "bouton actif"
 
-#: ../src/bauhaus/bauhaus.c:3273
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button off"
 msgstr "bouton inactif"
 
-#: ../src/bauhaus/bauhaus.c:3442 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3447 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "valeur"
 
-#: ../src/bauhaus/bauhaus.c:3443 ../src/bauhaus/bauhaus.c:3449
+#: ../src/bauhaus/bauhaus.c:3448 ../src/bauhaus/bauhaus.c:3454
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "bouton"
 
-#: ../src/bauhaus/bauhaus.c:3444
+#: ../src/bauhaus/bauhaus.c:3449
 msgid "force"
 msgstr "force"
 
-#: ../src/bauhaus/bauhaus.c:3445
+#: ../src/bauhaus/bauhaus.c:3450
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3448
+#: ../src/bauhaus/bauhaus.c:3453
 msgid "selection"
 msgstr "sélection"
 
-#: ../src/bauhaus/bauhaus.c:3467
+#: ../src/bauhaus/bauhaus.c:3472
 msgid "slider"
 msgstr "réglette"
 
-#: ../src/bauhaus/bauhaus.c:3472
+#: ../src/bauhaus/bauhaus.c:3477
 msgid "dropdown"
 msgstr "menu déroulant"
 
@@ -5811,7 +5810,7 @@ msgstr "erreur de lancement de darktable"
 
 #: ../src/common/database.c:2742 ../src/libs/collect.c:3007
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
-#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1190
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
 #: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568 ../src/libs/tagging.c:1649
@@ -6052,12 +6051,12 @@ msgstr ""
 "le filtre guidé indépendant de l'exposition a échoué lors de l'allocation de "
 "mémoire, vérifiez les préférences RAM"
 
-#: ../src/common/exif.cc:4329
+#: ../src/common/exif.cc:4333
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "impossible de lire le fichier xmp « %s » : « %s »"
 
-#: ../src/common/exif.cc:4381
+#: ../src/common/exif.cc:4385
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "impossible d'écrire le fichier xmp « %s » : « %s »"
@@ -6597,7 +6596,7 @@ msgstr "au dessus du niveau de la mer"
 msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
-#: ../src/common/utility.c:555 ../src/libs/metadata_view.c:875
+#: ../src/common/utility.c:555 ../src/libs/metadata_view.c:879
 msgid "m"
 msgstr "m"
 
@@ -7500,7 +7499,7 @@ msgid "reverse"
 msgstr "inverser"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:366
-#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1185
+#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1189
 msgid "default"
 msgstr "défaut"
 
@@ -7581,7 +7580,7 @@ msgstr "activé(e)"
 
 #: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2190
 #: ../src/develop/imageop.c:2380 ../src/iop/channelmixerrgb.c:4104
-#: ../src/iop/exposure.c:1097
+#: ../src/iop/exposure.c:1099
 msgid "input"
 msgstr "entrée"
 
@@ -7787,13 +7786,13 @@ msgid "reset blend mask settings"
 msgstr "réinitialise les paramètres de fusion conditionnelle"
 
 #: ../src/develop/blend_gui.c:2143 ../src/iop/atrous.c:1733
-#: ../src/iop/colorzones.c:2429 ../src/iop/denoiseprofile.c:3580
+#: ../src/iop/colorzones.c:2438 ../src/iop/denoiseprofile.c:3580
 #: ../src/iop/rawdenoise.c:902 ../src/iop/rgbcurve.c:1368
 #: ../src/iop/rgblevels.c:1012 ../src/iop/tonecurve.c:1157
 msgid "channel"
 msgstr "canal"
 
-#: ../src/develop/blend_gui.c:2153 ../src/iop/colorzones.c:2443
+#: ../src/develop/blend_gui.c:2153 ../src/iop/colorzones.c:2452
 #: ../src/iop/rgbcurve.c:1378 ../src/iop/tonecurve.c:1166
 msgid ""
 "pick GUI color from image\n"
@@ -11997,13 +11996,13 @@ msgstr ""
 "change uniquement les résultats des sections luma et chroma"
 
 #: ../src/iop/atrous.c:1753 ../src/iop/colorbalancergb.c:2073
-#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4193
+#: ../src/iop/colorzones.c:2516 ../src/iop/filmicrgb.c:4193
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:932
 #: ../src/iop/toneequal.c:3162
 msgid "graph"
 msgstr "graphique"
 
-#: ../src/iop/atrous.c:1764 ../src/iop/colorzones.c:2500
+#: ../src/iop/atrous.c:1764 ../src/iop/colorzones.c:2509
 msgid "make effect stronger or weaker"
 msgstr "rend l'effet plus fort ou plus faible"
 
@@ -12077,7 +12076,7 @@ msgstr "similaire nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:272 ../src/iop/colorzones.c:2531
+#: ../src/iop/basecurve.c:272 ../src/iop/colorzones.c:2540
 #: ../src/iop/rgbcurve.c:1422 ../src/iop/tonecurve.c:1198
 msgid "cubic spline"
 msgstr "spline cubique"
@@ -13261,11 +13260,21 @@ msgstr "température"
 msgid "spot color mapping"
 msgstr "mappage des couleurs"
 
-#: ../src/iop/channelmixerrgb.c:4078 ../src/iop/channelmixerrgb.c:4206
-msgid "use a color checker target to autoset CAT and channels"
-msgstr "utiliser une charte couleur pour auto-régler CAT et canaux"
+#: ../src/iop/channelmixerrgb.c:4078
+msgid ""
+"define a target chromaticity (hue and chroma) for a particular region of the "
+"image (the control sample), which you then match against the same target "
+"chromaticity in other images. the control sample can either be a critical "
+"part of your subject or a non-moving and consistently-lit surface over your "
+"series of images."
+msgstr ""
+"définir une chromaticité cible (teinte et chroma) pour une région "
+"particulière de l'image (l'échantillon de contrôle), qui est comparée "
+"ensuite à la même chromaticité cible dans d'autres images. l'échantillon de "
+"contrôle peut être soit une partie essentielle de votre sujet, soit une "
+"surface immobile et éclairée de manière constante sur votre série d'images."
 
-#: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1083
+#: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1085
 msgid "spot mode"
 msgstr "mode ponctuel"
 
@@ -13282,11 +13291,11 @@ msgstr ""
 "CAT\n"
 "et peut être utilisé pour échantillonner la cible."
 
-#: ../src/iop/channelmixerrgb.c:4086 ../src/iop/exposure.c:1089
+#: ../src/iop/channelmixerrgb.c:4086 ../src/iop/exposure.c:1091
 msgid "correction"
 msgstr "correction"
 
-#: ../src/iop/channelmixerrgb.c:4087 ../src/iop/exposure.c:1090
+#: ../src/iop/channelmixerrgb.c:4087 ../src/iop/exposure.c:1092
 msgid "measure"
 msgstr "mesure"
 
@@ -13302,7 +13311,7 @@ msgstr ""
 "calcule la cible en utilisant le mixeur de canaux en compte.\n"
 "if désactivé, seulement le CAT est considéré."
 
-#: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1103
+#: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1105
 msgid "the input color that should be mapped to the target"
 msgstr "la couleur d'entrée à mapper sur la cible"
 
@@ -13316,7 +13325,7 @@ msgstr ""
 "h : \tN/A\n"
 "c : \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
+#: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1112
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "ces coordonnés LCh sont calculés depuis les coordonnés CIE Lab 1976"
 
@@ -13367,6 +13376,10 @@ msgstr "gris sortie"
 #: ../src/iop/channelmixerrgb.c:4202
 msgid "calibrate with a color checker"
 msgstr "calibrer avec une charte couleur"
+
+#: ../src/iop/channelmixerrgb.c:4206
+msgid "use a color checker target to autoset CAT and channels"
+msgstr "utiliser une charte couleur pour auto-régler CAT et canaux"
 
 #: ../src/iop/channelmixerrgb.c:4211
 msgid "chart"
@@ -14800,7 +14813,7 @@ msgstr "TSL neutre"
 msgid "orange"
 msgstr "orange"
 
-#: ../src/iop/colorzones.c:2450 ../src/iop/rgbcurve.c:1385
+#: ../src/iop/colorzones.c:2459 ../src/iop/rgbcurve.c:1385
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -14813,42 +14826,42 @@ msgstr ""
 "maj-clic pour créer une courbe négative"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2471
+#: ../src/iop/colorzones.c:2480
 msgid "edit by area"
 msgstr "éditer par zone"
 
-#: ../src/iop/colorzones.c:2476
+#: ../src/iop/colorzones.c:2485
 msgid "edit the curve nodes by area"
 msgstr "édition de la courbe par zone"
 
-#: ../src/iop/colorzones.c:2483
+#: ../src/iop/colorzones.c:2492
 msgid "display selection"
 msgstr "afficher la sélection"
 
-#: ../src/iop/colorzones.c:2493
+#: ../src/iop/colorzones.c:2502
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "critère de sélection ; correspond à l’abscisse du graphique"
 
-#: ../src/iop/colorzones.c:2496
+#: ../src/iop/colorzones.c:2505
 msgid "choose between a smoother or stronger effect"
 msgstr "choisir entre un effet prononcé ou plus doux"
 
-#: ../src/iop/colorzones.c:2530 ../src/iop/rgbcurve.c:1421
+#: ../src/iop/colorzones.c:2539 ../src/iop/rgbcurve.c:1421
 #: ../src/iop/tonecurve.c:1197
 msgid "interpolation method"
 msgstr "interpolation"
 
-#: ../src/iop/colorzones.c:2532 ../src/iop/rgbcurve.c:1423
+#: ../src/iop/colorzones.c:2541 ../src/iop/rgbcurve.c:1423
 #: ../src/iop/tonecurve.c:1199
 msgid "centripetal spline"
 msgstr "spline centripète"
 
-#: ../src/iop/colorzones.c:2533 ../src/iop/rgbcurve.c:1424
+#: ../src/iop/colorzones.c:2542 ../src/iop/rgbcurve.c:1424
 #: ../src/iop/tonecurve.c:1200
 msgid "monotonic spline"
 msgstr "spline monotone"
 
-#: ../src/iop/colorzones.c:2536 ../src/iop/rgbcurve.c:1427
+#: ../src/iop/colorzones.c:2545 ../src/iop/rgbcurve.c:1427
 #: ../src/iop/tonecurve.c:1202
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -15359,18 +15372,18 @@ msgstr "netteté rapide"
 msgid "fast local contrast"
 msgstr "contraste local rapide"
 
-#: ../src/iop/diffuse.c:1106 ../src/iop/diffuse.c:1368
+#: ../src/iop/diffuse.c:1116 ../src/iop/diffuse.c:1389
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr "diffusion/netteté n'a pas assez de mémoire, vérifier votre RAM"
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/diffuse.c:1480 ../src/iop/splittoning.c:525
+#: ../src/iop/diffuse.c:1501 ../src/iop/splittoning.c:525
 #: ../src/libs/camera.c:487
 msgid "properties"
 msgstr "paramètres"
 
-#: ../src/iop/diffuse.c:1485
+#: ../src/iop/diffuse.c:1506
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -15381,7 +15394,7 @@ msgstr ""
 "ceci est similaire à laisser plus de temps à la réaction de diffusion.\n"
 "pour la netteté ou la reconstruction, plus d'itération peuvent aider."
 
-#: ../src/iop/diffuse.c:1494
+#: ../src/iop/diffuse.c:1515
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -15395,7 +15408,7 @@ msgstr ""
 "pour déflouter et débruiter, règler à zéro.\n"
 "augmenter pour travailler sur le contraste local sinon."
 
-#: ../src/iop/diffuse.c:1504
+#: ../src/iop/diffuse.c:1525
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -15409,11 +15422,11 @@ msgstr ""
 "pour le défloutage, le rayon devrait être environ de la largeur du flou "
 "d'objectif."
 
-#: ../src/iop/diffuse.c:1510
+#: ../src/iop/diffuse.c:1531
 msgid "speed (sharpen ↔ diffuse)"
 msgstr "vitesse (netteté ↔ diffusion)"
 
-#: ../src/iop/diffuse.c:1516
+#: ../src/iop/diffuse.c:1537
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -15429,7 +15442,7 @@ msgstr ""
 "les valeurs positives augmente la diffusion et le flou\n"
 "ne fait rien si zéro."
 
-#: ../src/iop/diffuse.c:1525
+#: ../src/iop/diffuse.c:1546
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -15445,7 +15458,7 @@ msgstr ""
 "les valeurs positives augmente la diffusion et le flou\n"
 "ne fait rien si zéro."
 
-#: ../src/iop/diffuse.c:1534
+#: ../src/iop/diffuse.c:1555
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -15461,7 +15474,7 @@ msgstr ""
 "les valeurs positives augmente la diffusion et le flou\n"
 "ne fait rien si zéro."
 
-#: ../src/iop/diffuse.c:1543
+#: ../src/iop/diffuse.c:1564
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -15477,7 +15490,7 @@ msgstr ""
 "les valeurs positives augmente la diffusion et le flou\n"
 "ne fait rien si zéro."
 
-#: ../src/iop/diffuse.c:1555
+#: ../src/iop/diffuse.c:1576
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -15491,7 +15504,7 @@ msgstr ""
 "les valeurs positives évitent les bords (isophotes),\n"
 "zéro affecte les deux de manière égale (isotropique)."
 
-#: ../src/iop/diffuse.c:1563
+#: ../src/iop/diffuse.c:1584
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -15505,7 +15518,7 @@ msgstr ""
 "les valeurs positives évitent les bords (isophotes),\n"
 "zéro affecte les deux de manière égale (isotropique)."
 
-#: ../src/iop/diffuse.c:1571
+#: ../src/iop/diffuse.c:1592
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -15519,7 +15532,7 @@ msgstr ""
 "les valeurs positives évitent les bords (isophotes),\n"
 "zéro affecte les deux de manière égale (isotropique)."
 
-#: ../src/iop/diffuse.c:1579
+#: ../src/iop/diffuse.c:1600
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -15533,11 +15546,11 @@ msgstr ""
 "les valeurs positives évitent les bords (isophotes),\n"
 "zéro affecte les deux de manière égale (isotropique)."
 
-#: ../src/iop/diffuse.c:1584
+#: ../src/iop/diffuse.c:1605
 msgid "edge management"
 msgstr "gestion des bords"
 
-#: ../src/iop/diffuse.c:1589
+#: ../src/iop/diffuse.c:1610
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
@@ -15548,7 +15561,7 @@ msgstr ""
 "diffusion,\n"
 "pour une netteté autonome utiliser une vitesse négatives."
 
-#: ../src/iop/diffuse.c:1595
+#: ../src/iop/diffuse.c:1616
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -15558,7 +15571,7 @@ msgstr ""
 "augmenter pour exclure plus de bords de la diffusion,\n"
 "si des franges ou des halos apparaissent."
 
-#: ../src/iop/diffuse.c:1601
+#: ../src/iop/diffuse.c:1622
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -15571,11 +15584,11 @@ msgstr ""
 "augmenter si du bruit apparaît des les surfaces lisses ou\n"
 "si les zones sombres semblent trop accentuées par rapport aux zones claires."
 
-#: ../src/iop/diffuse.c:1607
+#: ../src/iop/diffuse.c:1628
 msgid "diffusion spatiality"
 msgstr "spatialité de la diffusion"
 
-#: ../src/iop/diffuse.c:1612
+#: ../src/iop/diffuse.c:1633
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -15746,7 +15759,21 @@ msgstr ""
 msgid "spot exposure mapping"
 msgstr "mappage de l'exposition"
 
-#: ../src/iop/exposure.c:1084
+#: ../src/iop/exposure.c:1083
+msgid ""
+"define a target brightness, in terms of exposure, for a selected region of "
+"the image (the control sample), which you then match against the same target "
+"brightness in other images. the control sample can either be a critical part "
+"of your subject or a non-moving and consistently-lit surface over your "
+"series of images."
+msgstr ""
+"définir une luminosité cible, en termes d'exposition, pour une région "
+"sélectionnée de l'image (l'échantillon de contrôle), qui est comparée "
+"ensuite à la même luminosité cible dans d'autres images. l'échantillon de "
+"contrôle peut être soit une partie essentielle de votre sujet, soit une "
+"surface immobile et éclairée de manière constante sur votre série d'images."
+
+#: ../src/iop/exposure.c:1086
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -15760,11 +15787,11 @@ msgstr ""
 "compensation d'exposition\n"
 "et peut être utilisé pour définir la cible."
 
-#: ../src/iop/exposure.c:1108
+#: ../src/iop/exposure.c:1110
 msgid "L : \tN/A"
 msgstr "L : \tN/A"
 
-#: ../src/iop/exposure.c:1123
+#: ../src/iop/exposure.c:1125
 msgid "the desired target exposure after mapping"
 msgstr "la cible recherchée après le mappage de l'exposition"
 
@@ -19654,7 +19681,7 @@ msgstr "fichiers"
 #: ../src/libs/collect.c:2956 ../src/libs/export_metadata.c:310
 #: ../src/libs/filtering.c:850 ../src/libs/filtering.c:932
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
-#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
+#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1222
 msgid "metadata"
 msgstr "métadonnées"
 
@@ -19678,7 +19705,7 @@ msgid "collections settings"
 msgstr "préférences des collections"
 
 #: ../src/libs/collect.c:3008 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1190
 #: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1649
 #: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
 #: ../src/libs/tagging.c:3473
@@ -19686,7 +19713,7 @@ msgid "save"
 msgstr "enregistrer"
 
 #: ../src/libs/collect.c:3028 ../src/libs/export.c:1059
-#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1298
+#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1302
 #: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3495
 msgid "preferences..."
 msgstr "préférences..."
@@ -21743,11 +21770,11 @@ msgstr "éditeur de métadonnées"
 msgid "<leave unchanged>"
 msgstr "<laisser non modifié>"
 
-#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1184
+#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1188
 msgid "metadata settings"
 msgstr "configurations des métadonnées"
 
-#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1229
+#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1233
 msgid "visible"
 msgstr "visible"
 
@@ -22000,10 +22027,15 @@ msgstr "%+.2f IL"
 
 #: ../src/libs/metadata_view.c:750
 #, c-format
+msgid "infinity"
+msgstr "infini"
+
+#: ../src/libs/metadata_view.c:754
+#, c-format
 msgid "%.2f m"
 msgstr "%.2f m"
 
-#: ../src/libs/metadata_view.c:1224
+#: ../src/libs/metadata_view.c:1228
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
@@ -22013,7 +22045,7 @@ msgstr ""
 "décocher pour masquer les métadonnées qui ne vous intéressent pas\n"
 "si des réglages différents sont nécessaires, utilisez les préréglages"
 
-#: ../src/libs/metadata_view.c:1380
+#: ../src/libs/metadata_view.c:1384
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
 
