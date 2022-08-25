@@ -989,7 +989,8 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
         const float weight = var[0] * var[1] * var[2];
 
         #pragma unroll
-        for(size_t c = 0; c < 2; c++) xyY[c] += central_average[c] * weight / p_norm;
+        // here we use double precision due to a weird issue in windows, maybe due accumulation of rounding errors
+        for(size_t c = 0; c < 2; c++) xyY[c] += (double)central_average[c] * weight / p_norm;
         elements += weight / p_norm;
       }
   }
@@ -1023,7 +1024,8 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
         const float p_norm = powf(powf(fabsf(dd[0]), p) + powf(fabsf(dd[1]), p), 1.f / p) + NORM_MIN;
 
 #pragma unroll
-        for(size_t c = 0; c < 2; c++) xyY[c] -= dd[c] / p_norm;
+        // here we use double precision due to a weird issue in windows, maybe due accumulation of rounding errors
+        for(size_t c = 0; c < 2; c++) xyY[c] -= (double)dd[c] / p_norm;
         elements += 1.f;
       }
   }
