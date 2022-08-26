@@ -305,6 +305,11 @@ static const dt_action_element_def_t *_action_find_elements(dt_action_t *action)
     return definition->elements;
 }
 
+static gboolean _is_kp_key(guint keycode)
+{
+  return keycode >= GDK_KEY_KP_Space && keycode <= GDK_KEY_KP_Equal;
+}
+
 static gboolean _shortcut_is_speed(const dt_shortcut_t *s)
 {
   return !s->key_device && !s->key && !s->press && !s->move_device && !s->move && !s->button && !s->click && !s->mods;
@@ -446,7 +451,7 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
       {
         gchar *key_name = gtk_accelerator_get_label(key_or_move, 0);
         post_name = g_utf8_strdown(key_name, -1);
-        if(strlen(post_name) == 1 && key_or_move >= GDK_KEY_KP_Space && key_or_move <= GDK_KEY_KP_9)
+        if(strlen(post_name) == 1 && _is_kp_key(key_or_move))
           post_name = dt_util_dstrcat(post_name, " %s", _("(keypad)"));
         g_free(key_name);
       }
@@ -4053,7 +4058,7 @@ void dt_shortcut_register(dt_action_t *owner, guint element, guint effect, guint
     {
       gdk_keymap_translate_keyboard_state(keymap, keys[j].keycode, 0, 0, &keys[j].keycode, NULL, NULL, NULL);
 
-      if(keys[j].keycode >= GDK_KEY_KP_Space && keys[j].keycode <= GDK_KEY_KP_9)
+      if(_is_kp_key(keys[j].keycode))
         keys[j].group = 10;
 
       if(keys[j].group < keys[i].group || (keys[j].group == keys[i].group && keys[j].level < keys[i].level))
