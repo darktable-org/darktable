@@ -40,7 +40,7 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule);
 static int _get_mask(const char *text)
 {
   if(g_str_has_prefix(text, "0x"))
-    return strtol(&text[2], NULL, 16);
+    return strtoll(&text[2], NULL, 16);
   else
     return 0;
 }
