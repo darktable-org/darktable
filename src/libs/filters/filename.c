@@ -57,7 +57,7 @@ static void _filename_decode(const gchar *txt, gchar **name, gchar **ext)
   if(!txt || strlen(txt) == 0) return;
 
   // split the path to find filename and extension parts
-  gchar **elems = g_strsplit(txt, "/", -1);
+  gchar **elems = g_strsplit(txt, G_DIR_SEPARATOR_S, -1);
   const unsigned int size = g_strv_length(elems);
   if(size == 2)
   {
