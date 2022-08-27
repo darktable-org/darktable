@@ -868,6 +868,14 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 #define SHF(ii, jj, c) ((i + ii) * width + j + jj) * ch + c
 #define OFF 4
 
+
+#if defined(__GNUC__) && defined(_WIN32)
+  // On Windows there is a rounding issue making the image full black. For a discussion about
+  // the issue and tested solutions see PR #12382).
+  #pragma GCC push_options
+  #pragma GCC optimize ("-fno-finite-math-only")
+#endif
+
 static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_t illuminant,
                                   const size_t width, const size_t height, const size_t ch,
                                   const dt_colormatrix_t RGB_to_XYZ, dt_aligned_pixel_t xyz)
@@ -989,8 +997,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
         const float weight = var[0] * var[1] * var[2];
 
         #pragma unroll
-        // here we use double precision due to a weird issue in windows, maybe due accumulation of rounding errors
-        for(size_t c = 0; c < 2; c++) xyY[c] += (double)central_average[c] * weight / p_norm;
+        for(size_t c = 0; c < 2; c++) xyY[c] += central_average[c] * weight / p_norm;
         elements += weight / p_norm;
       }
   }
@@ -1024,8 +1031,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
         const float p_norm = powf(powf(fabsf(dd[0]), p) + powf(fabsf(dd[1]), p), 1.f / p) + NORM_MIN;
 
 #pragma unroll
-        // here we use double precision due to a weird issue in windows, maybe due accumulation of rounding errors
-        for(size_t c = 0; c < 2; c++) xyY[c] -= (double)dd[c] / p_norm;
+        for(size_t c = 0; c < 2; c++) xyY[c] -= dd[c] / p_norm;
         elements += 1.f;
       }
   }
@@ -1038,6 +1044,10 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
   dt_free_align(temp);
 }
+
+#if defined(__GNUC__) && defined(_WIN32)
+  #pragma GCC pop_options
+#endif
 
 static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
 {
