@@ -305,6 +305,11 @@ static const dt_action_element_def_t *_action_find_elements(dt_action_t *action)
     return definition->elements;
 }
 
+static gboolean _is_kp_key(guint keycode)
+{
+  return keycode >= GDK_KEY_KP_Space && keycode <= GDK_KEY_KP_Equal;
+}
+
 static gboolean _shortcut_is_speed(const dt_shortcut_t *s)
 {
   return !s->key_device && !s->key && !s->press && !s->move_device && !s->move && !s->button && !s->click && !s->mods;
@@ -446,6 +451,8 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
       {
         gchar *key_name = gtk_accelerator_get_label(key_or_move, 0);
         post_name = g_utf8_strdown(key_name, -1);
+        if(strlen(post_name) == 1 && _is_kp_key(key_or_move))
+          post_name = dt_util_dstrcat(post_name, " %s", _("(keypad)"));
         g_free(key_name);
       }
       else
@@ -4048,8 +4055,16 @@ void dt_shortcut_register(dt_action_t *owner, guint element, guint effect, guint
 
     if(!gdk_keymap_get_entries_for_keyval(keymap, accel_key, &keys, &n_keys)) return;
 
-    // find the first key in group 0, if any
-    while(i < n_keys - 1 && (keys[i].group > 0 || keys[i].level > 1)) i++;
+    for(int j = 0; j < n_keys; j++)
+    {
+      gdk_keymap_translate_keyboard_state(keymap, keys[j].keycode, 0, 0, &keys[j].keycode, NULL, NULL, NULL);
+
+      if(_is_kp_key(keys[j].keycode))
+        keys[j].group = 10;
+
+      if(keys[j].group < keys[i].group || (keys[j].group == keys[i].group && keys[j].level < keys[i].level))
+        i = j;
+    }
 
     if(keys[i].level & 1) mods |= GDK_SHIFT_MASK;
     if(keys[i].level & 2) mods |= GDK_MOD5_MASK;
@@ -4057,13 +4072,12 @@ void dt_shortcut_register(dt_action_t *owner, guint element, guint effect, guint
     mods = _mods_fix_primary(mods);
 
     dt_shortcut_t s = { .key_device = DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE,
+                        .key = keys[i].keycode,
                         .mods = mods,
                         .speed = 1.0,
                         .action = owner,
                         .element = element,
                         .effect = effect };
-
-    gdk_keymap_translate_keyboard_state(keymap, keys[i].keycode, 0, 0, &s.key, NULL, NULL, NULL);
 
     _insert_shortcut(&s, FALSE);
 
