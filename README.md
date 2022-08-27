@@ -357,7 +357,7 @@ sudo ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applic
 ```
 
 You may find darktable configuration files in `~/.config/darktable`.
-If you experience crashes at startup, try launching darktable without OpenCL, from a terminal, with `darktable --conf opencl=FALSE`.
+If you experience crashes at startup, try launching darktable from a terminal with OpenCL disabled using `darktable --disable-opencl`.
 
 ### Further reading
 
