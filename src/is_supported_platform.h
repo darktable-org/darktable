@@ -42,14 +42,21 @@
 #define DT_SUPPORTED_PPC64 0
 #endif
 
-#if DT_SUPPORTED_X86 && DT_SUPPORTED_ARMv8A
+#if (defined(__riscv) || defined(__riscv__)) && (__riscv_xlen==64)
+#define DT_SUPPORTED_RISCV64 1
+#else
+#define DT_SUPPORTED_RISCV64 0
+#endif
+
+#if DT_SUPPORTED_X86 && DT_SUPPORTED_ARMv8A && DT_SUPPORTED_PPC64 && DT_SUPPORTED_RISCV64
 #error "Looks like hardware platform detection macros are broken?"
 #endif
 
-#if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A && !DT_SUPPORTED_PPC64
-#error "Unfortunately we only work on amd64, ARMv8-A and PPC64 (64-bit little-endian only)."
+#if !DT_SUPPORTED_X86 && !DT_SUPPORTED_ARMv8A && !DT_SUPPORTED_PPC64 && !DT_SUPPORTED_RISCV64
+#error "Unfortunately we only work on amd64, ARMv8-A, PPC64 (64-bit little-endian only) and riscv64"
 #endif
 
+#undef DT_SUPPORTED_RISCV64
 #undef DT_SUPPORTED_PPC64
 #undef DT_SUPPORTED_ARMv8A
 #undef DT_SUPPORTED_X86
@@ -61,7 +68,7 @@
 
 // double check for 32-bit architecture
 #if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ < 8
-#error "Unfortunately we only work on the 64-bit architectures amd64, ARMv8-A and PPC64."
+#error "Unfortunately we only work on the 64-bit architectures amd64, ARMv8-A, PPC64 and riscv64."
 #endif
 
 // clang-format off
