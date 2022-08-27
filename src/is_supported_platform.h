@@ -30,7 +30,7 @@
 #define DT_SUPPORTED_X86 0
 #endif
 
-#if defined(__aarch64__) && (defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && defined(__ARM_ARCH_8A) || defined(__APPLE__) || defined(__MINGW64__))
+#if defined(__aarch64__) && (defined(__ARM_64BIT_STATE) && defined(__ARM_ARCH) && (defined(__ARM_ARCH_8A) || __ARM_ARCH_PROFILE == 'A') || defined(__APPLE__) || defined(__MINGW64__))
 #define DT_SUPPORTED_ARMv8A 1
 #else
 #define DT_SUPPORTED_ARMv8A 0
