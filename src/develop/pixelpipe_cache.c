@@ -23,7 +23,7 @@
 #include "libs/colorpicker.h"
 #include <stdlib.h>
 
-
+#define VERY_OLD_CACHE_WEIGHT 1000
 // TODO: make cache global (needs to be thread safe then)
 
 gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size, size_t limit)
@@ -196,6 +196,8 @@ static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache)
 
 static int _get_oldest_used_cacheline(dt_dev_pixelpipe_cache_t *cache)
 {
+  // We assume that modern workflows often use more than 8 consective processing modules
+  // so we want to keep recently used cachelines. 16 as a minimum age is a good guess here.  
   int weight = 16;
   int id = -1;
   for(int k = 0; k < cache->entries; k++)
@@ -227,7 +229,7 @@ static int _get_free_cacheline(dt_dev_pixelpipe_cache_t *cache, size_t size)
     cache->data[oldest] = NULL;
     cache->hash[oldest] = -1;
     cache->basichash[oldest] = -1;
-    cache->used[oldest] = 1000;
+    cache->used[oldest] = VERY_OLD_CACHE_WEIGHT;
     oldest = _get_oldest_used_cacheline(cache);
   }
 
@@ -297,7 +299,7 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
   {
     cache->basichash[k] = -1;
     cache->hash[k] = -1;
-    cache->used[k] = 1000;
+    cache->used[k] = VERY_OLD_CACHE_WEIGHT;
     ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
   }
 }
@@ -310,7 +312,7 @@ void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint6
       continue;
     cache->basichash[k] = -1;
     cache->hash[k] = -1;
-    cache->used[k] = 1000;
+    cache->used[k] = VERY_OLD_CACHE_WEIGHT;
     ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
   }
 }
@@ -339,7 +341,7 @@ void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *da
     {
       cache->basichash[k] = -1;
       cache->hash[k] = -1;
-      cache->used[k] = 1000;
+      cache->used[k] = VERY_OLD_CACHE_WEIGHT;
       ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
     }
   }
@@ -360,6 +362,8 @@ void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache, char *pipetyp
     pipetype, cache->allmem / 1024lu / 1024lu, cache->memlimit / 1024lu / 1024lu, 
     (cache->queries - cache->misses) / (float)cache->queries);
 }
+
+#undef VERY_OLD_CACHE_WEIGHT
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
