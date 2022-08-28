@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,18 +25,11 @@
 
 
 // TODO: make cache global (needs to be thread safe then)
-// plan:
-// - look at mipmap_cache.c, for the full buffer allocs
-// - do that, but for `large' and `regular' buffers (full + export/dr mode), so 2 caches
-//   (in fact, maybe 3, one for preview pipes?)
-// - have at most 3 read locks all the time per pipe, get them at create time
-//   ping, pong, and priority buffer (focused plugin)
-// - drop read by the time another is requested (with priority, drop that, or alternating ping and pong?)
 
 gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size, size_t limit)
 {
   cache->entries = entries;
-  cache->allmem = 0;
+  cache->allmem = cache->queries = cache->misses = 0;
   cache->memlimit = limit;
   cache->data = (void **)calloc(entries, sizeof(void *));
   cache->size = (size_t *)calloc(entries, sizeof(size_t));
@@ -48,26 +41,29 @@ gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entrie
   cache->hash = (uint64_t *)calloc(entries, sizeof(uint64_t));
   cache->used = (int32_t *)calloc(entries, sizeof(int32_t));
   cache->modname = (char **)calloc(entries, sizeof(char *));
+
+  for(int k = 0; k < entries; k++)
+  {
+    cache->size[k] = 0;
+    cache->data[k] = NULL;
+    cache->basichash[k] = -1;
+    cache->hash[k] = -1;
+    cache->used[k] = 1;
+    cache->modname[k] = NULL;
+  }
+  if(!size) return TRUE;
+
   for(int k = 0; k < entries; k++)
   {
     cache->size[k] = size;
-    if(size)
-    { // allow 0 initial buffer size (yet unknown dimensions)
-      cache->data[k] = (void *)dt_alloc_align(64, size);
-      if(!cache->data[k]) goto alloc_memory_fail;
+    cache->data[k] = (void *)dt_alloc_align(64, size);
+    if(!cache->data[k]) goto alloc_memory_fail;
 #ifdef _DEBUG
-      memset(cache->data[k], 0x5d, size);
+    memset(cache->data[k], 0x5d, size);
 #endif
-      ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
-    }
-    else cache->data[k] = NULL;
+    ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
     cache->allmem += size;
-    cache->basichash[k] = -1;
-    cache->hash[k] = -1;
-    cache->used[k] = 0;
-    cache->modname[k] = NULL;
   }
-  cache->queries = cache->misses = 0;
   return TRUE;
 
 alloc_memory_fail:
@@ -182,23 +178,11 @@ gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const
   return FALSE;
 }
 
-gboolean dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t basichash,
-                                         const uint64_t hash, const size_t size,
-                                         void **data, dt_iop_buffer_dsc_t **dsc, char *modname)
-{
-  return dt_dev_pixelpipe_cache_get_weighted(cache, basichash, hash, size, data, dsc, -cache->entries, modname);
-}
-
-gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t basichash, const uint64_t hash,
-                               const size_t size, void **data, dt_iop_buffer_dsc_t **dsc, char *modname)
-{
-  return dt_dev_pixelpipe_cache_get_weighted(cache, basichash, hash, size, data, dsc, 0, modname);
-}
-
 static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache)
 {
-  int weight = -1;
-  int id = -1;
+  // we never want the latest used cacheline! It was <= 0 and the weight has increased just now
+  int weight = 1;
+  int id = 0;
   for(int k = 0; k < cache->entries; k++)
   {
     if(cache->used[k] > weight)
@@ -210,87 +194,101 @@ static int _get_oldest_cacheline(dt_dev_pixelpipe_cache_t *cache)
   return id;
 }
 
+static int _get_oldest_used_cacheline(dt_dev_pixelpipe_cache_t *cache)
+{
+  int weight = 16;
+  int id = -1;
+  for(int k = 0; k < cache->entries; k++)
+  {
+    if((cache->used[k] > weight) && (cache->size[k] != 0))
+    {
+      weight = cache->used[k];
+      id = k;
+    }
+  }
+  return id;
+}
+
 static int _get_free_cacheline(dt_dev_pixelpipe_cache_t *cache, size_t size)
 {
   int oldest = _get_oldest_cacheline(cache);
-  if((cache->memlimit == 0) || ((cache->memlimit - cache->allmem) >= size))
+  if((cache->memlimit == 0) || (cache->memlimit > cache->allmem))
     return oldest;
 
-  int cnt = 0;
-   while(((cache->memlimit - cache->allmem) < size) && (cnt < cache->entries))
+  // we have to free & invalidate cachelines until there is enough mem available
+  size_t freed = 0;
+  oldest = _get_oldest_used_cacheline(cache);
+  while((cache->memlimit < cache->allmem) && (oldest >= 0))
   {
-    cnt++;
-    // we have to free & invalidate cachelines until there is enough mem available
     dt_free_align(cache->data[oldest]);
     cache->allmem -= cache->size[oldest];
- 
+    freed += cache->size[oldest];
     cache->size[oldest] = 0;
     cache->data[oldest] = NULL;
     cache->hash[oldest] = -1;
     cache->basichash[oldest] = -1;
-    cache->used[oldest] = 1;
-    oldest = _get_oldest_cacheline(cache);
+    cache->used[oldest] = 1000;
+    oldest = _get_oldest_used_cacheline(cache);
   }
 
-  dt_print(DT_DEBUG_DEV, "[get_free_cachelines] removed %i, ->line %i, cachemem=%luMB, limit=%luMB\n",
-    cnt, oldest, cache->allmem / 1024lu / 1024lu, cache->memlimit / 1024lu / 1024lu); 
+  oldest = _get_oldest_used_cacheline(cache);
+  if(oldest < 0) oldest = _get_oldest_cacheline(cache);
+
+  if(freed) dt_print(DT_DEBUG_DEV, "[get_free_cachelines] freed %luMB\n", freed / 1024lu / 1024lu);
   return oldest;
 }
 
-gboolean dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t basichash, const uint64_t hash,
-                                        const size_t size, void **data, dt_iop_buffer_dsc_t **dsc, int weight, char *name)
+gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t basichash, const uint64_t hash,
+                                        const size_t size, void **data, dt_iop_buffer_dsc_t **dsc, char *name, const gboolean important)
 {
+  const int weight = important ? -cache->entries : 0;
   cache->queries++;
-  *data = NULL;
-  size_t sz = 0;
+  for(int k = 0; k < cache->entries; k++)
+    cache->used[k]++; // age all entries
 
   for(int k = 0; k < cache->entries; k++)
   {
-    // search for hash in cache
-    cache->used[k]++; // age all entries
     if(cache->hash[k] == hash)
     {
       *data = cache->data[k];
       *dsc = &cache->dsc[k];
-      sz = cache->size[k];
-      cache->used[k] = weight; // this is the MRU entry
-
-      ASAN_POISON_MEMORY_REGION(*data, sz);
+      // in case of a hit its always good to keep the cachline as important
+      cache->used[k] = -cache->entries; // this is the MRU entry
+      ASAN_POISON_MEMORY_REGION(*data, cache->size[k]);
       ASAN_UNPOISON_MEMORY_REGION(*data, size);
+      return FALSE;
     }
   }
 
-  if(!*data || sz < size)
+  // We need a fresh buffer as there was no hit.
+  // Either we just toggle cachelines 0/1 in case of cache->entries == 2
+  // or we get an old/free cacheline. As that might have no or not enough memory allocated we have to make sure.
+  const int cline = (cache->entries == 2) ? cache->queries & 1 : _get_free_cacheline(cache, size);
+  if(cache->size[cline] < size)
   {
-    // kill LRU entry
-    const int max = _get_free_cacheline(cache, size);
-    if(cache->size[max] < size)
-    {
-      dt_free_align(cache->data[max]);
-      cache->allmem -= cache->size[max];
-      cache->data[max] = (void *)dt_alloc_align(64, size);
-      cache->size[max] = size;
-      cache->allmem += cache->size[max];
-    }
-    *data = cache->data[max];
-    sz = cache->size[max];
+    dt_free_align(cache->data[cline]);
+    cache->allmem -= cache->size[cline];
 
-    ASAN_POISON_MEMORY_REGION(*data, sz);
-    ASAN_UNPOISON_MEMORY_REGION(*data, size);
-
-    // first, update our copy, then update the pointer to point at our copy
-    cache->dsc[max] = **dsc;
-    *dsc = &cache->dsc[max];
-
-    cache->basichash[max] = basichash;
-    cache->hash[max] = hash;
-    cache->used[max] = weight;
-    cache->modname[max] = name;
-    cache->misses++;
-    return TRUE;
+    cache->data[cline] = (void *)dt_alloc_align(64, size);
+    cache->size[cline] = size;
+    cache->allmem += cache->size[cline];
   }
-  else
-    return FALSE;
+
+  *data = cache->data[cline];
+
+//    ASAN_POISON_MEMORY_REGION(*data, sz);
+  ASAN_UNPOISON_MEMORY_REGION(*data, size);
+
+  // first, update our copy, then update the pointer to point at our copy
+  cache->dsc[cline] = **dsc;
+  *dsc = &cache->dsc[cline];
+
+  cache->basichash[cline] = basichash;
+  cache->hash[cline] = hash;
+  cache->used[cline] = weight;
+  cache->modname[cline] = name;
+  cache->misses++;
+  return TRUE;
 }
 
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
@@ -299,7 +297,7 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
   {
     cache->basichash[k] = -1;
     cache->hash[k] = -1;
-    cache->used[k] = 0;
+    cache->used[k] = 1000;
     ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
   }
 }
@@ -312,7 +310,7 @@ void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint6
       continue;
     cache->basichash[k] = -1;
     cache->hash[k] = -1;
-    cache->used[k] = 0;
+    cache->used[k] = 1000;
     ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
   }
 }
@@ -341,6 +339,7 @@ void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *da
     {
       cache->basichash[k] = -1;
       cache->hash[k] = -1;
+      cache->used[k] = 1000;
       ASAN_POISON_MEMORY_REGION(cache->data[k], cache->size[k]);
     }
   }

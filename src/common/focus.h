@@ -264,7 +264,7 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
     dt_dev_init(&dev, 0);
     dt_dev_load_image(&dev, imgid);
     dt_dev_pixelpipe_t pipe;
-    const int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+    const gboolean res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
     if(res)
     {
       // set mem pointer to 0, won't be used.
