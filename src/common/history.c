@@ -769,6 +769,18 @@ gboolean dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t d
   if(copy_iop_order)
   {
     GList *iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+
+    // but we also want to keep the multi-instance on the destination if merge is active
+    if(merge)
+    {
+      GList *dest_iop_list = dt_ioppr_get_iop_order_list(dest_imgid, FALSE);
+      GList *mi_iop_list = dt_ioppr_extract_multi_instances_list(dest_iop_list);
+
+      if(mi_iop_list) dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi_iop_list);
+
+      g_list_free_full(dest_iop_list, g_free);
+      g_list_free_full(mi_iop_list, g_free);
+    }
     dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
     g_list_free_full(iop_list, g_free);
   }
