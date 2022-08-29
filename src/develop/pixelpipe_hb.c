@@ -1966,7 +1966,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     // give the input buffer to the currently focused plugin more weight.
     // the user is likely to change that one soon, so keep it in cache.
-    dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input, module->so->op);
+    dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input);
   }
 
   // we check for an important hint after processing the module as we want to track a runtime hint too.

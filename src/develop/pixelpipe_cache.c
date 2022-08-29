@@ -255,7 +255,7 @@ gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint6
       *data = cache->data[k];
       *dsc = &cache->dsc[k];
       // in case of a hit its always good to keep the cachline as important
-      cache->used[k] = -cache->entries; // this is the MRU entry
+      cache->used[k] = -cache->entries;
       ASAN_POISON_MEMORY_REGION(*data, cache->size[k]);
       ASAN_UNPOISON_MEMORY_REGION(*data, size);
       return FALSE;
@@ -317,19 +317,12 @@ void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint6
   }
 }
 
-void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data, char *modname)
+void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data)
 {
   for(int k = 0; k < cache->entries; k++)
   {
     if(cache->data[k] == data)
-    {
-      dt_vprint(DT_DEBUG_DEV, "[dt_dev_pixelpipe_cache_reweight] %i->%i, `%s'->`%s'\n",
-        cache->used[k], -cache->entries,
-        cache->modname[k] ? cache->modname[k] : "??",
-        modname ? modname : "??");
       cache->used[k] = -cache->entries;
-      cache->modname[k] = modname;
-    }
   }
 }
 
@@ -354,7 +347,7 @@ void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache, char *pipetyp
     for(int k = 0; k < cache->entries; k++)
     {
       if(cache->size[k])
-        fprintf(stderr, " [%s]%3d,%4luMB, weight%4d, `%s', hash %" PRIu64 " (%" PRIu64 ")\n",
+        fprintf(stderr, " [%s]%3d,%4luMB, weight%5d, %16s, hash %22" PRIu64 ", basic %22" PRIu64 "\n",
           pipetype, k, cache->size[k] / 1024lu / 1024lu, cache->used[k], cache->modname[k] ? cache->modname[k] : "no module name", cache->hash[k], cache->basichash[k]);
     }
   }
