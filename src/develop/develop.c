@@ -1313,21 +1313,21 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   // write history entries
 
   GList *history = dev->history;
-  if (DT_IOP_ORDER_INFO)
+  if(DT_IOP_ORDER_INFO)
     fprintf(stderr,"\n^^^^ Writing history image: %i, iop version: %i",imgid,dev->iop_order_version);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
-    if (DT_IOP_ORDER_INFO)
+    if(DT_IOP_ORDER_INFO)
     {
       fprintf(stderr,"\n%20s, num %i, order %d, v(%i), multiprio %i",
               hist->module->op,i,hist->iop_order,hist->module->version(),hist->multi_priority);
-      if (hist->enabled) fprintf(stderr,", enabled");
+      if(hist->enabled) fprintf(stderr,", enabled");
     }
     history = g_list_next(history);
   }
-  if (DT_IOP_ORDER_INFO)
+  if(DT_IOP_ORDER_INFO)
     fprintf(stderr,"\nvvvv\n");
 
   // update history end
