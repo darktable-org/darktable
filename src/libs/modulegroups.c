@@ -90,9 +90,7 @@ typedef struct dt_lib_modulegroups_basic_item_t
   gboolean fill;
   guint padding;
   GtkPackType packtype;
-  gboolean sensitive;
   gchar *tooltip;
-  gboolean visible;
   int grid_x, grid_y, grid_w, grid_h;
 
   GtkWidget *box;
@@ -343,7 +341,9 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
 {
   if(item->widget && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
   {
-    // put back the widget in its iop at the right place
+    g_signal_handlers_disconnect_by_data(item->widget, item);
+    g_signal_handlers_disconnect_by_data(item->old_parent, item);
+
     if(GTK_IS_CONTAINER(item->old_parent) && gtk_widget_get_parent(item->widget) == item->box)
     {
       g_object_ref(item->widget);
@@ -366,11 +366,9 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
 
       g_object_unref(item->widget);
     }
-    // put back sensitivity, visibility and tooltip
+    // put back tooltip
     if(GTK_IS_WIDGET(item->widget))
     {
-      gtk_widget_set_sensitive(item->widget, item->sensitive);
-      gtk_widget_set_visible(item->widget, item->visible);
       gtk_widget_set_tooltip_text(item->widget, item->tooltip);
       gtk_widget_set_has_tooltip(item->widget, TRUE); // even if no tip, to show shortcuts
     }
@@ -440,6 +438,16 @@ static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_li
   }
 }
 
+static void _sync_visibility(GtkWidget *widget, dt_lib_modulegroups_basic_item_t *item)
+{
+  gtk_widget_set_visible(item->box, gtk_widget_get_visible(item->old_parent));
+
+  if(widget == item->temp_widget)
+    gtk_widget_set_visible(item->widget, gtk_widget_get_visible(item->temp_widget));
+  if(widget == item->widget)
+    gtk_widget_set_visible(item->temp_widget, gtk_widget_get_visible(item->widget));
+}
+
 static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_item_t *item, GtkWidget *w,
                                dt_lib_modulegroups_basic_item_position_t item_pos)
 {
@@ -463,7 +471,6 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     {
       // on-off widgets
       item->widget = GTK_WIDGET(item->module->off);
-      item->sensitive = gtk_widget_get_sensitive(item->widget);
       item->tooltip = gtk_widget_get_tooltip_text(item->widget); // no need to copy, returns a newly-alloced string
 
       // create new basic widget
@@ -539,10 +546,8 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       return;
     }
 
-    // save old values
-    item->sensitive = gtk_widget_get_sensitive(item->widget);
+    // save old tooltip
     item->tooltip = gtk_widget_get_tooltip_text(item->widget);
-    item->visible = gtk_widget_get_visible(item->widget);
 
     // create new quick access widget
     item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -585,28 +590,23 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       }
     }
 
-    // disable widget if needed (multiinstance)
-    if(dt_iop_count_instances(item->module->so) > 1)
-    {
-      gtk_widget_set_sensitive(item->widget, FALSE);
-      gtk_widget_set_tooltip_text(item->widget, _("this quick access widget is disabled as there are multiple instances "
-                                                  "of this module present. Please use the full module to access this widget..."));
-    }
-    else if(!item->visible)
-    {
-      gtk_widget_show_all(item->widget);
-      gtk_widget_set_sensitive(item->widget, FALSE);
-      gtk_widget_set_tooltip_text(item->widget, _("this quick access widget is disabled as it's hidden in the actual "
-                                                  "module configuration. Please use the full module to access this widget..."));
-    }
-    else
-    {
-      gchar *txt = g_strdup_printf("%s (%s)\n\n%s%s%s", item->widget_name, item->module->name(),
-                                   item->tooltip ? item->tooltip : "", item->tooltip ? "\n\n" : "",
-                                   _("(some features may only be available in the full module interface)"));
-      gtk_widget_set_tooltip_text(item->widget, txt);
-      g_free(txt);
-    }
+    gchar *txt = g_strdup_printf("%s (%s)\n\n%s%s%s", item->widget_name, item->module->name(),
+                                  item->tooltip ? item->tooltip : "", item->tooltip ? "\n\n" : "",
+                                  _("(some features may only be available in the full module interface)"));
+    gtk_widget_set_tooltip_text(item->widget, txt);
+    g_free(txt);
+
+    gtk_widget_add_events(item->widget     , GDK_VISIBILITY_NOTIFY_MASK);
+    g_signal_connect(item->widget     , "show", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(item->widget     , "hide", G_CALLBACK(_sync_visibility), item);
+    gtk_widget_add_events(item->old_parent , GDK_VISIBILITY_NOTIFY_MASK);
+    g_signal_connect(item->old_parent , "show", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(item->old_parent , "hide", G_CALLBACK(_sync_visibility), item);
+    gtk_widget_add_events(item->temp_widget, GDK_VISIBILITY_NOTIFY_MASK);
+    g_signal_connect(item->temp_widget, "show", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(item->temp_widget, "hide", G_CALLBACK(_sync_visibility), item);
+
+    _sync_visibility(item->widget, item);
   }
 
   // if it's the first widget of a module, we need to create the module box structure
