@@ -1670,9 +1670,9 @@ size_t dt_get_singlebuffer_mem()
 
 size_t dt_get_iopcache_mem()
 {
-  dt_sys_resources_t *res = &darktable.dtresources;
-  const size_t cachemb = res->total_memory / 1024lu / 1024lu / 20lu;
-  return MIN(6000lu, MAX(400lu, cachemb)) * 1024lu * 1024lu;
+  // use ~half of mipmap size
+  const size_t cachemb = _get_mipmap_size() / 2048lu / 1024lu ;
+  return MIN(3000lu, MAX(300lu, cachemb)) * 1024lu * 1024lu;
 }
 
 void dt_configure_runtime_performance(const int old, char *info)
