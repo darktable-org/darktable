@@ -1139,7 +1139,6 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
 
 void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, gboolean append)
 {
-
   // for each priority list to be checked
   for(GList *e_list = entry_list; e_list; e_list = g_list_next(e_list))
   {
