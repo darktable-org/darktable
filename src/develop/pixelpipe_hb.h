@@ -181,21 +181,21 @@ typedef struct dt_dev_pixelpipe_t
 struct dt_develop_t;
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
-int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
+gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // inits the preview pixelpipe with plain passthrough input/output and empty input and default caching
 // settings.
-int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
-int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe);
+gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
+gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
-int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
+gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks);
 // inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
-int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
+gboolean dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits all but the pixel caches, so you can't actually process an image (just get dimensions and
 // distortions)
-int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
-// inits the pixelpipe with given cacheline size and number of entries.
-int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries, size_t memlimit);
+gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
+// inits the pixelpipe with given cacheline size and number of entries. returns TRUE in case of sucess
+gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries, size_t memlimit);
 // constructs a new input buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
                                 int height, float iscale);

@@ -106,55 +106,55 @@ static char *_pipe_type_to_str(int pipe_type)
   return r;
 }
 
-int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
+gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2, 0);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2, 0);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
   pipe->levels = levels;
   pipe->store_all_raster_masks = store_masks;
   return res;
 }
 
-int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
+gboolean dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2, 0);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
-int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
+gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0, 0);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
-int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
+gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 32, dt_get_iopcache_mem() / 5lu);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 32, dt_get_iopcache_mem() / 5lu);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   return res;
 }
 
-int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
+gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 5, 0);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 5, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
   return res;
 }
 
-int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
+gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, dt_get_iopcache_mem() * 4lu / 5lu);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, dt_get_iopcache_mem() * 4lu / 5lu);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
 
-int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries, size_t memlimit)
+gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries, size_t memlimit)
 {
   pipe->devid = -1;
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
@@ -162,7 +162,6 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = 0;
   pipe->nodes = NULL;
   pipe->backbuf_size = size;
-  if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size, memlimit)) return 0;
   pipe->cache_obsolete = 0;
   pipe->backbuf = NULL;
   pipe->backbuf_scale = 0.0f;
@@ -198,7 +197,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
 
-  return 1;
+  return dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, size, memlimit);
 }
 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height,
@@ -1139,7 +1138,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_print(DT_DEBUG_DEV, "[dt_dev_pixelpipe_process_rec] [%s], cache available for `%s' with hash %lu\n",
        _pipe_type_to_str(pipe->type), (module) ? module->so->op : "buffer", (long unsigned int)hash);
 
-    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, (module) ? module->so->op : NULL);
+    dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, (module) ? module->so->op : NULL, FALSE);
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return 1;
@@ -1176,7 +1175,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       {
         *output = pipe->input;
       }
-      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, NULL))
+      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, NULL, FALSE))
       {
         if(roi_in.scale == 1.0f)
         {
@@ -1278,10 +1277,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     input_important |= check_module_now_important(pipe, module);
 
   important |= input_important;
-  if(important)
-    (void)dt_dev_pixelpipe_cache_get_important(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : NULL);
-  else
-    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : NULL);
+  dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : NULL, important);
 
   if(important && module)
     dt_print(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] reserving high priority cacheline for `%s' (%luMB)\n",
@@ -1970,7 +1966,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     // give the input buffer to the currently focused plugin more weight.
     // the user is likely to change that one soon, so keep it in cache.
-    dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input, module->so->op);
+    dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input);
   }
 
   // we check for an important hint after processing the module as we want to track a runtime hint too.

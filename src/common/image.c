@@ -727,7 +727,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
 
   dt_dev_pixelpipe_t pipe;
   int wd = dev.image_storage.width, ht = dev.image_storage.height;
-  int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+  gboolean res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
   if(res)
   {
     // set mem pointer to 0, won't be used.
