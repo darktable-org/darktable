@@ -2820,6 +2820,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->basic_btn, "button-press-event", G_CALLBACK(_manage_direct_basic_popup), self);
   g_signal_connect(d->basic_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->basic_btn, _("quick access panel"));
+  dt_action_define(DT_ACTION(self), NULL, N_("quick access panel"), d->basic_btn, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->basic_btn, TRUE, TRUE, 0);
 
   d->vbox_basic = NULL;
@@ -2830,6 +2831,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->active_btn, "button-press-event", G_CALLBACK(_manage_direct_active_popup), self);
   g_signal_connect(d->active_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->active_btn, _("show only active modules"));
+  dt_action_define(DT_ACTION(self), NULL, N_("active modules"), d->active_btn, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->active_btn, TRUE, TRUE, 0);
 
   // we load now the presets btn
