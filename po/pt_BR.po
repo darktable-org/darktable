@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-28 18:23-0300\n"
-"PO-Revision-Date: 2022-08-28 18:23-0300\n"
+"POT-Creation-Date: 2022-08-30 12:06-0300\n"
+"PO-Revision-Date: 2022-08-30 12:06-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1212,19 +1212,16 @@ msgid "demosaicing for zoomed out darkroom mode"
 msgstr "interpolação cromática para zoom na sala escura"
 
 #: ../build/bin/preferences_gen.h:4988
-#, fuzzy
 msgid ""
 "demosaicer when not viewing 1:1 in darkroom mode: 'bilinear' is fast but "
 "slightly blurry. 'default' uses the default demosaicer for the used sensor "
 "(RCD or Markesteijn). 'full' will use exactly the settings as for full-size "
 "export."
 msgstr ""
-"interpolação quando não visualizando 1:1 no modo sala escura: bilinear é o "
-"mais rápido, mas não tão nítido. a via intermediária é usando RCD + modos de "
-"interpolação especificados na opção 'interpolador de pixel' (aba "
-"processamento), completo usará exatamente as configurações para exportação "
-"de tamanho grande. Sensores X-Trans usam VNG em vez de RCD como "
-"intermediário."
+"interpolação quando não visualizando 1:1 no modo sala escura: 'bilinear' é o "
+"mais rápido, mas não tão nítido. 'default' usa o interpolador padrão para o "
+"sensor usado (RCD ou Markesteijn). 'cheio' usará exatamente as definições "
+"para exportação em tamanho cheio."
 
 #: ../build/bin/preferences_gen.h:5010
 msgid "reduce resolution of preview image"
@@ -1652,15 +1649,14 @@ msgid "tune OpenCL performance"
 msgstr "ajustar desempenho do OpenCL"
 
 #: ../build/bin/preferences_gen.h:6386
-#, fuzzy
 msgid ""
 "allows runtime tuning of OpenCL devices. 'memory size' uses a fixed 400MB "
 "headroom, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
 msgstr ""
 "permite ajuste dos dispositivos OpenCL durante excução. 'tamanho da memória' "
-"testa a memória ram disponível para gráficos, 'transferência de memória' "
-"tenta um modo mais rápido de acesso à memória usado para ladrilhamento."
+"usa um espaço fixo de 400MB, 'transferência de memória' tenta um modo mais "
+"rápido de acesso à memória (memória fixada) usado para ladrilhamento."
 
 #: ../build/bin/preferences_gen.h:6420
 msgid "security"
@@ -5796,7 +5792,7 @@ msgstr "erro ao iniciar o darktable"
 
 #: ../src/common/database.c:2742 ../src/libs/collect.c:3007
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
-#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1190
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
 #: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568 ../src/libs/tagging.c:1649
@@ -6075,7 +6071,7 @@ msgstr ""
 "não é possível remover rolo de filme contendo cópias locais sem acesso aos "
 "originais"
 
-#: ../src/common/history.c:755
+#: ../src/common/history.c:756
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 
@@ -6280,7 +6276,7 @@ msgstr ""
 msgid "image `%s' is not available!"
 msgstr "imagem `%s' não disponível!"
 
-#: ../src/common/imageio.c:758
+#: ../src/common/imageio.c:755
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -6289,17 +6285,17 @@ msgstr ""
 "falha ao reservar memória para %s, favor reduza as threads usadas para "
 "exportação ou acrescente mais memória."
 
-#: ../src/common/imageio.c:759
+#: ../src/common/imageio.c:756
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "exporta miniatura"
 
-#: ../src/common/imageio.c:759
+#: ../src/common/imageio.c:756
 msgctxt "noun"
 msgid "export"
 msgstr "exporta"
 
-#: ../src/common/imageio.c:771
+#: ../src/common/imageio.c:768
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -6579,7 +6575,7 @@ msgstr "acima do nível do mar"
 msgid "below sea level"
 msgstr "abaixo do nível do mar"
 
-#: ../src/common/utility.c:555 ../src/libs/metadata_view.c:879
+#: ../src/common/utility.c:555 ../src/libs/metadata_view.c:875
 msgid "m"
 msgstr "m"
 
@@ -7481,7 +7477,7 @@ msgid "reverse"
 msgstr "reverter"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:366
-#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1189
+#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1185
 msgid "default"
 msgstr "padrão"
 
@@ -8623,11 +8619,11 @@ msgstr ""
 "<b>mover segmento</b>: arrastar\n"
 "<b>adicionar nó</b>: ctrl+clique"
 
-#: ../src/develop/pixelpipe_hb.c:395
+#: ../src/develop/pixelpipe_hb.c:394
 msgid "enabled as required"
 msgstr "habilitado porque necessário"
 
-#: ../src/develop/pixelpipe_hb.c:395
+#: ../src/develop/pixelpipe_hb.c:394
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -8637,11 +8633,11 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:397
+#: ../src/develop/pixelpipe_hb.c:396
 msgid "disabled as not appropriate"
 msgstr "desabilitado porque não é apropriado"
 
-#: ../src/develop/pixelpipe_hb.c:397
+#: ../src/develop/pixelpipe_hb.c:396
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -8651,7 +8647,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:2265
+#: ../src/develop/pixelpipe_hb.c:2261
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -13225,6 +13221,11 @@ msgid ""
 "part of your subject or a non-moving and consistently-lit surface over your "
 "series of images."
 msgstr ""
+"defina uma cromaticidade alvo (matiz e croma), para uma região específica da "
+"imagem (a amostra de controle), que você então comparará com a mesma "
+"cromaticidade em outras imagens. a amostra de controle pode ser uma parte "
+"crítica de seu objeto ou uma superfície que permameça estática (nos mesmos "
+"locais) e consistentemente iluminada em sua série de imagens"
 
 #: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1085
 msgid "spot mode"
@@ -15695,6 +15696,11 @@ msgid ""
 "of your subject or a non-moving and consistently-lit surface over your "
 "series of images."
 msgstr ""
+"defina um brilho alvo, em termos de exposição, para a região selecionada da "
+"imagem (a amostra de controle), que você então comparará com o mesmo brilho "
+"em outras imagens. a amostra de controle pode ser uma parte crítica de seu "
+"objeto ou uma superfície que permameça estática (nos mesmos locais) e "
+"consistentemente iluminada em sua série de imagens."
 
 #: ../src/iop/exposure.c:1086
 msgid ""
@@ -19555,7 +19561,7 @@ msgstr "arquivos"
 #: ../src/libs/collect.c:2956 ../src/libs/export_metadata.c:310
 #: ../src/libs/filtering.c:850 ../src/libs/filtering.c:932
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
-#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1222
+#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "metadados"
 
@@ -19579,7 +19585,7 @@ msgid "collections settings"
 msgstr "preferências de coleções"
 
 #: ../src/libs/collect.c:3008 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1190
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1649
 #: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
 #: ../src/libs/tagging.c:3473
@@ -19587,7 +19593,7 @@ msgid "save"
 msgstr "salvar"
 
 #: ../src/libs/collect.c:3028 ../src/libs/export.c:1059
-#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1302
+#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1298
 #: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3495
 msgid "preferences..."
 msgstr "preferências..."
@@ -21622,11 +21628,11 @@ msgstr "editor de metadados"
 msgid "<leave unchanged>"
 msgstr "<deixar sem modificações>"
 
-#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1188
+#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1184
 msgid "metadata settings"
 msgstr "configurações de metadados"
 
-#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1233
+#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1229
 msgid "visible"
 msgstr "visível"
 
@@ -21860,15 +21866,10 @@ msgstr "%+.2f EV"
 
 #: ../src/libs/metadata_view.c:750
 #, c-format
-msgid "infinity"
-msgstr "infinito"
-
-#: ../src/libs/metadata_view.c:754
-#, c-format
 msgid "%.2f m"
 msgstr "%.2f m"
 
-#: ../src/libs/metadata_view.c:1228
+#: ../src/libs/metadata_view.c:1224
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
@@ -21878,7 +21879,7 @@ msgstr ""
 "desmarque para esconder metadados que não são de interesse\n"
 "se configurações diferentes forem necessárias, use predefinições"
 
-#: ../src/libs/metadata_view.c:1384
+#: ../src/libs/metadata_view.c:1380
 msgid "jump to film roll"
 msgstr "pula para rolo de filme"
 
@@ -24206,6 +24207,10 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1343
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#, c-format
+#~ msgid "infinity"
+#~ msgstr "infinito"
 
 #~ msgctxt "preferences"
 #~ msgid "at most RCD (reasonable)"
