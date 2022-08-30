@@ -868,6 +868,14 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 #define SHF(ii, jj, c) ((i + ii) * width + j + jj) * ch + c
 #define OFF 4
 
+
+#if defined(__GNUC__) && defined(_WIN32)
+  // On Windows there is a rounding issue making the image full black. For a discussion about
+  // the issue and tested solutions see PR #12382).
+  #pragma GCC push_options
+  #pragma GCC optimize ("-fno-finite-math-only")
+#endif
+
 static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_t illuminant,
                                   const size_t width, const size_t height, const size_t ch,
                                   const dt_colormatrix_t RGB_to_XYZ, dt_aligned_pixel_t xyz)
@@ -1036,6 +1044,10 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
   dt_free_align(temp);
 }
+
+#if defined(__GNUC__) && defined(_WIN32)
+  #pragma GCC pop_options
+#endif
 
 static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
 {
