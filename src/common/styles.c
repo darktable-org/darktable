@@ -837,6 +837,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
       dt_ioppr_write_iop_order_list(iop_list, newimgid);
       g_list_free_full(iop_list, g_free);
       g_list_free_full(img_iop_order_list, g_free);
+      g_list_free_full(mi, g_free);
     }
 
     dt_dev_read_history_ext(dev_dest, newimgid, TRUE);
