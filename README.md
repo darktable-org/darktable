@@ -181,7 +181,7 @@ Optional dependencies (no version requirement):
 * G'Mic *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*
 * SDL2 *(for gamepad input support)*
-* Cups *(for print mode support)*
+* CUPS *(for print mode support)*
 * GraphicsMagick or ImageMagick *(for misc image format import)*
 
 To install all the dependencies on Linux systems, you may use the source repositories of your distribution
