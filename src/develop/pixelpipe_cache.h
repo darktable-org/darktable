@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,9 +27,9 @@ struct dt_iop_roi_t;
 /**
  * implements a simple pixel cache suitable for caching float images
  * corresponding to history items and zoom/pan settings in the develop module.
- * it is optimized for very few entries (~5), so most operations are O(N).
+ * correctness is secured via the hash so make sure everything is included here.
+ * No caching if cl_mem, instead copied cache buffers are used.
  */
-
 typedef struct dt_dev_pixelpipe_cache_t
 {
   int32_t entries;
@@ -41,9 +41,6 @@ typedef struct dt_dev_pixelpipe_cache_t
   uint64_t *basichash;
   uint64_t *hash;
   int32_t *used;
-#ifdef HAVE_OPENCL
-  void **gpu_mem;
-#endif
   // debugging helpers
   char **modname; 
   // profiling:
@@ -69,20 +66,13 @@ void dt_dev_pixelpipe_cache_fullhash(int imgid, const dt_iop_roi_t *roi, struct 
 uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpipe_t *pipe,
                                                 const struct dt_iop_module_t *const module);
 
-/** returns a float data buffer in 'data' for the given hash from the cache.
-  If the hash does not match any cache line, the line with lowest weight will be cleared and an empty buffer is returned.
+/** returns a float data buffer in 'data' for the given hash from the cache, dsc is updated too.
+  If the hash does not match any cache line, use an old buffer or allocate a fresh one.
+  The size of the buffer in 'data' will be at least of size bytes.
   Returned flag is TRUE for a new buffer
 */
 gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t basichash, const uint64_t hash,
-                               const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, char *modname);
-
-gboolean dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t basichash,
-                                         const uint64_t hash, const size_t size,
-                                         void **data, struct dt_iop_buffer_dsc_t **dsc, char *modname);
-
-gboolean dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t basichash,
-                                        const uint64_t hash, const size_t size,
-                                        void **data, struct dt_iop_buffer_dsc_t **dsc, int weight, char *modname);
+                               const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, char *modname, const gboolean important);
 
 /** test availability of a cache line without destroying another, if it is not found. */
 gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash);
@@ -94,7 +84,7 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache);
 void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint64_t basichash);
 
 /** makes this buffer very important after it has been pulled from the cache. */
-void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data, char *modname);
+void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data);
 
 /** mark the given cache line pointer as invalid. */
 void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *data);

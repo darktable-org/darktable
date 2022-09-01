@@ -310,7 +310,8 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
     {
       dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
-      if(strcmp(mod_src->op, mod_dest->op) == 0 && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
+      if(strcmp(mod_src->op, mod_dest->op) == 0
+         && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
       {
         // but only if it hasn't been used already
         if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
@@ -382,7 +383,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   {
     dt_iop_module_t *module_duplicate = NULL;
     // check if there's a module with the same iop_order
-    for( GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
+    for(GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)(modules_dest->data);
 
@@ -521,9 +522,9 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
 
       if(hist)
       {
-        if (!dt_iop_is_hidden(hist->module))
+        if(!dt_iop_is_hidden(hist->module))
         {
-          if (DT_IOP_ORDER_INFO)
+          if(DT_IOP_ORDER_INFO)
             fprintf(stderr,"\n  module %20s, multiprio %i",  hist->module->op, hist->module->multi_priority);
 
           mod_list = g_list_prepend(mod_list, hist->module);
@@ -533,7 +534,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   }
   else
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
+    if(DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
     // we will copy all modules
     for(GList *modules_src = dev_src->iop; modules_src; modules_src = g_list_next(modules_src))
     {
@@ -551,7 +552,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       }
     }
   }
-  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
+  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
 
   mod_list = g_list_reverse(mod_list);   // list was built in reverse order, so un-reverse it
 
@@ -745,8 +746,8 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
 }
 
 gboolean dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_imgid,
-                                       const gboolean merge, GList *ops,
-                                       const gboolean copy_iop_order, const gboolean copy_full)
+                                            const gboolean merge, GList *ops,
+                                            const gboolean copy_iop_order, const gboolean copy_full)
 {
   if(imgid == dest_imgid) return 1;
 
@@ -769,6 +770,18 @@ gboolean dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t d
   if(copy_iop_order)
   {
     GList *iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+
+    // but we also want to keep the multi-instance on the destination if merge is active
+    if(merge)
+    {
+      GList *dest_iop_list = dt_ioppr_get_iop_order_list(dest_imgid, FALSE);
+      GList *mi_iop_list = dt_ioppr_extract_multi_instances_list(dest_iop_list);
+
+      if(mi_iop_list) dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi_iop_list);
+
+      g_list_free_full(dest_iop_list, g_free);
+      g_list_free_full(mi_iop_list, g_free);
+    }
     dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
     g_list_free_full(iop_list, g_free);
   }

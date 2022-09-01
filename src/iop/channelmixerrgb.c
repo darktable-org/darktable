@@ -868,6 +868,14 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 #define SHF(ii, jj, c) ((i + ii) * width + j + jj) * ch + c
 #define OFF 4
 
+
+#if defined(__GNUC__) && defined(_WIN32)
+  // On Windows there is a rounding issue making the image full black. For a discussion about
+  // the issue and tested solutions see PR #12382).
+  #pragma GCC push_options
+  #pragma GCC optimize ("-fno-finite-math-only")
+#endif
+
 static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_t illuminant,
                                   const size_t width, const size_t height, const size_t ch,
                                   const dt_colormatrix_t RGB_to_XYZ, dt_aligned_pixel_t xyz)
@@ -1036,6 +1044,10 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
   dt_free_align(temp);
 }
+
+#if defined(__GNUC__) && defined(_WIN32)
+  #pragma GCC pop_options
+#endif
 
 static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
 {
@@ -4075,7 +4087,7 @@ void gui_init(struct dt_iop_module_t *self)
      _("spot color mapping"),
      GTK_BOX(self->widget));
 
-  gtk_widget_set_tooltip_text(g->csspot.expander, _("use a color checker target to autoset CAT and channels"));
+  gtk_widget_set_tooltip_text(g->csspot.expander, _("define a target chromaticity (hue and chroma) for a particular region of the image (the control sample), which you then match against the same target chromaticity in other images. the control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
                                 _("\"correction\" automatically adjust the illuminant\n"

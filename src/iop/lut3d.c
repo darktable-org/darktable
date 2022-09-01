@@ -321,15 +321,15 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
     const int i011 = (color + level + level2) * 3;  // P011
     const int i111 = i011 + 3;                      // P111
 
-    if (rgbd[0] > rgbd[1])
+    if(rgbd[0] > rgbd[1])
     {
-      if (rgbd[1] > rgbd[2])
+      if(rgbd[1] > rgbd[2])
       {
         output[0] = (1-rgbd[0])*clut[i000] + (rgbd[0]-rgbd[1])*clut[i100] + (rgbd[1]-rgbd[2])*clut[i110] + rgbd[2]*clut[i111];
         output[1] = (1-rgbd[0])*clut[i000+1] + (rgbd[0]-rgbd[1])*clut[i100+1] + (rgbd[1]-rgbd[2])*clut[i110+1] + rgbd[2]*clut[i111+1];
         output[2] = (1-rgbd[0])*clut[i000+2] + (rgbd[0]-rgbd[1])*clut[i100+2] + (rgbd[1]-rgbd[2])*clut[i110+2] + rgbd[2]*clut[i111+2];
       }
-      else if (rgbd[0] > rgbd[2])
+      else if(rgbd[0] > rgbd[2])
       {
         output[0] = (1-rgbd[0])*clut[i000] + (rgbd[0]-rgbd[2])*clut[i100] + (rgbd[2]-rgbd[1])*clut[i101] + rgbd[1]*clut[i111];
         output[1] = (1-rgbd[0])*clut[i000+1] + (rgbd[0]-rgbd[2])*clut[i100+1] + (rgbd[2]-rgbd[1])*clut[i101+1] + rgbd[1]*clut[i111+1];
@@ -344,13 +344,13 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
     }
     else
     {
-      if (rgbd[2] > rgbd[1])
+      if(rgbd[2] > rgbd[1])
       {
         output[0] = (1-rgbd[2])*clut[i000] + (rgbd[2]-rgbd[1])*clut[i001] + (rgbd[1]-rgbd[0])*clut[i011] + rgbd[0]*clut[i111];
         output[1] = (1-rgbd[2])*clut[i000+1] + (rgbd[2]-rgbd[1])*clut[i001+1] + (rgbd[1]-rgbd[0])*clut[i011+1] + rgbd[0]*clut[i111+1];
         output[2] = (1-rgbd[2])*clut[i000+2] + (rgbd[2]-rgbd[1])*clut[i001+2] + (rgbd[1]-rgbd[0])*clut[i011+2] + rgbd[0]*clut[i111+2];
       }
-      else if (rgbd[2] > rgbd[0])
+      else if(rgbd[2] > rgbd[0])
       {
         output[0] = (1-rgbd[1])*clut[i000] + (rgbd[1]-rgbd[2])*clut[i010] + (rgbd[2]-rgbd[0])*clut[i011] + rgbd[0]*clut[i111];
         output[1] = (1-rgbd[1])*clut[i000+1] + (rgbd[1]-rgbd[2])*clut[i010+1] + (rgbd[2]-rgbd[0])*clut[i011+1] + rgbd[0]*clut[i111+1];
@@ -409,7 +409,7 @@ void correct_pixel_pyramid(const float *const in, float *const out,
     const int i011 = (color + level + level2) * 3;  // P011
     const int i111 = i011 + 3;                      // P111
 
-    if (rgbd[1] > rgbd[0] && rgbd[2] > rgbd[0])
+    if(rgbd[1] > rgbd[0] && rgbd[2] > rgbd[0])
     {
       output[0] = clut[i000] + (clut[i111]-clut[i011])*rgbd[0] + (clut[i010]-clut[i000])*rgbd[1] + (clut[i001]-clut[i000])*rgbd[2]
         + (clut[i011]-clut[i001]-clut[i010]+clut[i000])*rgbd[1]*rgbd[2];
@@ -418,7 +418,7 @@ void correct_pixel_pyramid(const float *const in, float *const out,
       output[2] = clut[i000+2] + (clut[i111+2]-clut[i011+2])*rgbd[0] + (clut[i010+2]-clut[i000+2])*rgbd[1] + (clut[i001+2]-clut[i000+2])*rgbd[2]
         + (clut[i011+2]-clut[i001+2]-clut[i010+2]+clut[i000+2])*rgbd[1]*rgbd[2];
     }
-    else if (rgbd[0] > rgbd[1] && rgbd[2] > rgbd[1])
+    else if(rgbd[0] > rgbd[1] && rgbd[2] > rgbd[1])
     {
       output[0] = clut[i000] + (clut[i100]-clut[i000])*rgbd[0] + (clut[i111]-clut[i101])*rgbd[1] + (clut[i001]-clut[i000])*rgbd[2]
         + (clut[i101]-clut[i001]-clut[i100]+clut[i000])*rgbd[0]*rgbd[2];
@@ -470,7 +470,7 @@ uint8_t calculate_clut_compressed(dt_iop_lut3d_params_t *const p, const char *co
   else
   {
     level = lut3d_get_cached_clut(lclut, level, cache_filename);
-    if (!level)
+    if(!level)
     {  //clut not in cache
       char *c_clut = p->c_clut;
       level = DT_IOP_LUT3D_CLUT_LEVEL;
@@ -495,7 +495,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
   }
   dt_print(DT_DEBUG_DEV, "[lut3d] png: width=%d, height=%d, color_type=%d, bit_depth=%d\n", png.width,
            png.height, png.color_type, png.bit_depth);
-  if (png.bit_depth !=8 && png.bit_depth != 16)
+  if(png.bit_depth !=8 && png.bit_depth != 16)
   {
     fprintf(stderr, "[lut3d] png bit-depth %d not supported\n", png.bit_depth);
     dt_control_log(_("png bit-depth %d not supported"), png.bit_depth);
@@ -514,7 +514,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
     fprintf(stderr, "[lut3d] invalid level in png file %d %d\n", level, png.width);
     dt_control_log(_("invalid level in png file %d %d"), level, png.width);
 #else
-    if (png.height == 2)
+    if(png.height == 2)
     {
       fprintf(stderr, "[lut3d] this darktable build is not compatible with compressed CLUT\n");
       dt_control_log(_("this darktable build is not compatible with compressed CLUT"));
@@ -551,7 +551,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
   }
-  if (read_image(&png, buf))
+  if(read_image(&png, buf))
   {
     fprintf(stderr, "[lut3d] error - could not read png image `%s'\n", filepath);
     dt_control_log(_("error - could not read png image %s"), filepath);
@@ -570,14 +570,14 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
   }
   // get clut values
   const float norm = 1.0f / (powf(2.f, png.bit_depth) - 1.0f);
-  if (png.bit_depth == 8)
+  if(png.bit_depth == 8)
   {
-    for (size_t i = 0; i < buf_size_lut; ++i)
+    for(size_t i = 0; i < buf_size_lut; ++i)
       lclut[i] = (float)buf[i] * norm;
   }
   else
   {
-    for (size_t i = 0; i < buf_size_lut; ++i)
+    for(size_t i = 0; i < buf_size_lut; ++i)
       lclut[i] = (256.0f * (float)buf[2*i] + (float)buf[2*i+1]) * norm;
   }
   dt_free_align(buf);
@@ -588,46 +588,46 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
 // provided by @rabauke, atof replaces strtod & sccanf which are locale dependent
 double dt_atof(const char *str)
 {
-  if (strncmp(str, "nan", 3) == 0 || strncmp(str, "NAN", 3) == 0)
+  if(strncmp(str, "nan", 3) == 0 || strncmp(str, "NAN", 3) == 0)
     return NAN;
   double integral_result = 0;
   double fractional_result = 0;
   double sign = 1;
-  if (*str == '+')
+  if(*str == '+')
   {
     str++;
     sign = +1;
-  } else if (*str == '-')
+  } else if(*str == '-')
   {
     str++;
     sign = -1;
   }
-  if (strncmp(str, "inf", 3) == 0 || strncmp(str, "INF", 3) == 0)
+  if(strncmp(str, "inf", 3) == 0 || strncmp(str, "INF", 3) == 0)
     return sign * INFINITY;
   // search for end of integral part and parse from
   // right to left for numerical stability
   const char * istr_back = str;
-  while (*str >= '0' && *str <= '9')
+  while(*str >= '0' && *str <= '9')
     str++;
   const char * istr_2 = str;
   double imultiplier = 1;
-  while (istr_2 != istr_back)
+  while(istr_2 != istr_back)
   {
     --istr_2;
     integral_result += (*istr_2 - '0') * imultiplier;
     imultiplier *= 10;
   }
-  if (*str == '.')
+  if(*str == '.')
   {
     str++;
   // search for end of fractional part and parse from
   // right to left for numerical stability
     const char * fstr_back = str;
-    while (*str >= '0' && *str <= '9')
+    while(*str >= '0' && *str <= '9')
       str++;
     const char * fstr_2 = str;
     double fmultiplier = 1;
-    while (fstr_2 != fstr_back)
+    while(fstr_2 != fstr_back)
     {
       --fstr_2;
       fractional_result += (*fstr_2 - '0') * fmultiplier;
@@ -636,28 +636,28 @@ double dt_atof(const char *str)
     fractional_result /= fmultiplier;
   }
   double result = sign * (integral_result + fractional_result);
-  if (*str == 'e' || *str == 'E')
+  if(*str == 'e' || *str == 'E')
   {
     str++;
     double power_sign = 1;
-    if (*str == '+')
+    if(*str == '+')
     {
       str++;
       power_sign = +1;
     }
-    else if (*str == '-')
+    else if(*str == '-')
     {
       str++;
       power_sign = -1;
     }
     double power = 0;
-    while (*str >= '0' && *str <= '9')
+    while(*str >= '0' && *str <= '9')
     {
       power *= 10;
       power += *str - '0';
       str++;
     }
-    if (power_sign > 0)
+    if(power_sign > 0)
       result *= pow(10, power);
     else
       result /= pow(10, power);
@@ -675,11 +675,11 @@ uint8_t parse_cube_line(char *line, char (*token)[50])
   char *t = &token[0][0];
   char *l = line;
 
-  while (*l != 0 && i < max_token_len)
+  while(*l != 0 && i < max_token_len)
   {
-    if (*l == '#' || *l == '\n' || *l == '\r')
+    if(*l == '#' || *l == '\n' || *l == '\r')
     { // end of useful part of the line
-      if (i > 0)
+      if(i > 0)
       {
         *t = 0;
         c++;
@@ -691,9 +691,9 @@ uint8_t parse_cube_line(char *line, char (*token)[50])
         return c;
       }
     }
-    if (*l == ' ' || *l == '\t')
+    if(*l == ' ' || *l == '\t')
     { // separator
-      if (i > 0)
+      if(i > 0)
       {
         *t = 0;
         c++;
@@ -709,7 +709,7 @@ uint8_t parse_cube_line(char *line, char (*token)[50])
     }
     l++;
     // sometimes the last lf is missing
-    if (*l == 0)
+    if(*l == 0)
     {
       *t = 0;
       c++;
@@ -724,7 +724,6 @@ uint8_t parse_cube_line(char *line, char (*token)[50])
 
 uint16_t calculate_clut_cube(const char *const filepath, float **clut)
 {
-  FILE *cube_file;
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
@@ -735,41 +734,43 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   size_t buf_size = 0;
   uint32_t out_of_range_nb = 0;
 
-  if(!(cube_file = g_fopen(filepath, "r")))
+  FILE *cube_file = g_fopen(filepath, "r");
+
+  if(!cube_file)
   {
     fprintf(stderr, "[lut3d] invalid cube file: %s\n", filepath);
     dt_control_log(_("error - invalid cube file: %s"), filepath);
     return 0;
   }
-  while ((read = getline(&line, &len, cube_file)) != -1)
+  while((read = getline(&line, &len, cube_file)) != -1)
   {
     const uint8_t nb_token = parse_cube_line(line, token);
-    if (nb_token)
+    if(nb_token)
     {
-      if (token[0][0] == 'T') continue;
-      else if (strcmp("DOMAIN_MIN", token[0]) == 0)
+      if(token[0][0] == 'T') continue;
+      else if(strcmp("DOMAIN_MIN", token[0]) == 0)
       {
-        if (strtod(token[1], NULL) != 0.0f)
+        if(strtod(token[1], NULL) != 0.0f)
         {
           fprintf(stderr, "[lut3d] DOMAIN MIN <> 0.0 is not supported\n");
           dt_control_log(_("DOMAIN MIN <> 0.0 is not supported"));
-          if (lclut) dt_free_align(lclut);
+          if(lclut) dt_free_align(lclut);
           free(line);
           fclose(cube_file);
         }
       }
-      else if (strcmp("DOMAIN_MAX", token[0]) == 0)
+      else if(strcmp("DOMAIN_MAX", token[0]) == 0)
       {
-        if (strtod(token[1], NULL) != 1.0f)
+        if(strtod(token[1], NULL) != 1.0f)
         {
           fprintf(stderr, "[lut3d] DOMAIN MAX <> 1.0 is not supported\n");
           dt_control_log(_("DOMAIN MAX <> 1.0 is not supported"));
-          if (lclut) dt_free_align(lclut);
+          if(lclut) dt_free_align(lclut);
           free(line);
           fclose(cube_file);
         }
       }
-      else if (strcmp("LUT_1D_SIZE", token[0]) == 0)
+      else if(strcmp("LUT_1D_SIZE", token[0]) == 0)
       {
         fprintf(stderr, "[lut3d] 1D cube LUT is not supported\n");
         dt_control_log(_("[1D cube LUT is not supported"));
@@ -777,7 +778,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         fclose(cube_file);
         return 0;
       }
-      else if (strcmp("LUT_3D_SIZE", token[0]) == 0)
+      else if(strcmp("LUT_3D_SIZE", token[0]) == 0)
       {
         level = atoll(token[1]);
         if(level > 256)
@@ -800,9 +801,9 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
           return 0;
         }
       }
-      else if (nb_token == 3)
+      else if(nb_token == 3)
       {
-        if (!level)
+        if(!level)
         {
           fprintf(stderr, "[lut3d] error - cube LUT size is not defined\n");
           dt_control_log(_("error - cube LUT size is not defined"));
@@ -810,7 +811,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
           fclose(cube_file);
           return 0;
         }
-        for (int j=0; j < 3; j++)
+        for(int j=0; j < 3; j++)
         {
           lclut[i+j] = dt_atof(token[j]);
           if(isnan(lclut[i+j]))
@@ -828,7 +829,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
       }
     }
   }
-  if (i != buf_size || i == 0)
+  if(i != buf_size || i == 0)
   {
     fprintf(stderr, "[lut3d] error - cube LUT lines number %d is not correct, should be %d\n",
             (int)i/3, (int)buf_size/3);
@@ -852,7 +853,6 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
 
 uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
 {
-  FILE *cube_file;
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
@@ -863,25 +863,27 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
   uint32_t i = 0;
   size_t buf_size = 0;
 
-  if(!(cube_file = g_fopen(filepath, "r")))
+  FILE *cube_file = g_fopen(filepath, "r");
+
+  if(!cube_file)
   {
     fprintf(stderr, "[lut3d] invalid 3dl file: %s\n", filepath);
     dt_control_log(_("error - invalid 3dl file: %s"), filepath);
     return 0;
   }
-  while ((read = getline(&line, &len, cube_file)) != -1)
+  while((read = getline(&line, &len, cube_file)) != -1)
   {
     const uint8_t nb_token = parse_cube_line(line, token);
-    if (nb_token)
+    if(nb_token)
     {
-      if (!level)
+      if(!level)
       {
-        if (nb_token > 3)
+        if(nb_token > 3)
         {
           // we assume the shaper is linear and gives the size of the cube (level)
           const int min_shaper = atoll(token[0]);
           const int max_shaper = atoll(token[2]);
-          if (max_shaper > min_shaper)
+          if(max_shaper > min_shaper)
           {
             level = nb_token; // max nb_token = 50 < 256
             if(max_shaper < 128)
@@ -906,9 +908,9 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
           }
         }
       }
-      else if (nb_token == 3)
+      else if(nb_token == 3)
       {
-        if (!level)
+        if(!level)
         {
           fprintf(stderr, "[lut3d] error - cube LUT size is not defined\n");
           dt_control_log(_("error - cube LUT size is not defined"));
@@ -923,20 +925,20 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
         const uint32_t green = rr / level;
         const uint32_t blue = rr - green * level;
         const uint32_t k = red + level * green + level2 * blue;
-        for (int j=0; j < 3; j++)
+        for(int j=0; j < 3; j++)
         {
           const uint32_t value = atoll(token[j]);
           lclut[k*3+j] = (float)value;
-          if (value > max_value)
+          if(value > max_value)
             max_value = value;
         }
         i++;
-        if (i * 3 > buf_size)
+        if(i * 3 > buf_size)
           break;
       }
     }
   }
-  if (i * 3 != buf_size || i == 0)
+  if(i * 3 != buf_size || i == 0)
   {
     fprintf(stderr, "[lut3d] error - cube LUT lines number is not correct\n");
     dt_control_log(_("error - cube LUT lines number is not correct"));
@@ -950,9 +952,9 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
 
   // search bit depth: min 2^x > max_value
   int inorm = 1;
-  while ((inorm < max_value) && (inorm < 65536))  // bit depth 16
+  while((inorm < max_value) && (inorm < 65536))  // bit depth 16
     inorm <<= 1;
-  if (inorm < 128)  // bit depth 7
+  if(inorm < 128)  // bit depth 7
   {
     fprintf(stderr, "[lut3d] error - the maximum LUT value does not match any valid bit depth\n");
     dt_control_log(_("error - the maximum LUT value does not match any valid bit depth"));
@@ -961,7 +963,7 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
   }
   const float norm = 1.0f / (float)(inorm - 1);
   // normalize the lut
-  for (i =0; i < buf_size; i++)
+  for(i =0; i < buf_size; i++)
     lclut[i] = CLAMP(lclut[i] * norm, 0.0f, 1.0f);
   *clut = lclut;
   return level;
@@ -996,7 +998,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
   const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
-  if (clut && level)
+  if(clut && level)
   {
     clut_cl = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * level * level * level, (void *)clut);
     if(clut_cl == NULL)
@@ -1005,14 +1007,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
-    if (transform)
+    if(transform)
     {
       const int success = dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_out, width, height,
         work_profile, lut_profile, "work profile to LUT profile");
-      if (!success)
+      if(!success)
        transform = FALSE;
     }
-    if (transform)
+    if(transform)
       dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_out);
     else
       dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -1022,7 +1024,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&clut_cl);
     dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&level);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-    if (transform)
+    if(transform)
       dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,
         lut_profile, work_profile, "LUT profile to work profile");
   }
@@ -1069,15 +1071,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   const gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
-  if (clut)
+  if(clut)
   {
-    if (transform)
+    if(transform)
     {
       dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height,
         work_profile, lut_profile, "work profile to LUT profile");
-      if (interpolation == DT_IOP_TETRAHEDRAL)
+      if(interpolation == DT_IOP_TETRAHEDRAL)
         correct_pixel_tetrahedral(obuf, obuf, (size_t)width * height, clut, level);
-      else if (interpolation == DT_IOP_TRILINEAR)
+      else if(interpolation == DT_IOP_TRILINEAR)
         correct_pixel_trilinear(obuf, obuf, (size_t)width * height, clut, level);
       else
         correct_pixel_pyramid(obuf, obuf, (size_t)width * height, clut, level);
@@ -1086,9 +1088,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else
     {
-      if (interpolation == DT_IOP_TETRAHEDRAL)
+      if(interpolation == DT_IOP_TETRAHEDRAL)
         correct_pixel_tetrahedral(ibuf, obuf, (size_t)width * height, clut, level);
-      else if (interpolation == DT_IOP_TRILINEAR)
+      else if(interpolation == DT_IOP_TRILINEAR)
         correct_pixel_trilinear(ibuf, obuf, (size_t)width * height, clut, level);
       else
         correct_pixel_pyramid(ibuf, obuf, (size_t)width * height, clut, level);
@@ -1104,7 +1106,7 @@ void filepath_set_unix_separator(char *filepath)
 { // use the unix separator as it works also on windows
   const int len = strlen(filepath);
   for(int i=0; i<len; ++i)
-    if (filepath[i]=='\\') filepath[i] = '/';
+    if(filepath[i]=='\\') filepath[i] = '/';
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1143,7 +1145,7 @@ static int calculate_clut(dt_iop_lut3d_params_t *const p, float **clut)
   uint16_t level = 0;
   const char *filepath = p->filepath;
 #ifdef HAVE_GMIC
-  if (p->nb_keypoints && filepath[0])
+  if(p->nb_keypoints && filepath[0])
   {
     // compressed in params. no need to read the file
     level = calculate_clut_compressed(p, filepath, clut);
@@ -1152,18 +1154,18 @@ static int calculate_clut(dt_iop_lut3d_params_t *const p, float **clut)
   { // read the file
 #endif  // HAVE_GMIC
     gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-    if (filepath[0] && lutfolder[0])
+    if(filepath[0] && lutfolder[0])
     {
       char *fullpath = g_build_filename(lutfolder, filepath, NULL);
-      if (g_str_has_suffix (filepath, ".png") || g_str_has_suffix (filepath, ".PNG"))
+      if(g_str_has_suffix (filepath, ".png") || g_str_has_suffix (filepath, ".PNG"))
       {
         level = calculate_clut_haldclut(p, fullpath, clut);
       }
-      else if (g_str_has_suffix (filepath, ".cube") || g_str_has_suffix (filepath, ".CUBE"))
+      else if(g_str_has_suffix (filepath, ".cube") || g_str_has_suffix (filepath, ".CUBE"))
       {
         level = calculate_clut_cube(fullpath, clut);
       }
-      else if (g_str_has_suffix (filepath, ".3dl") || g_str_has_suffix (filepath, ".3DL"))
+      else if(g_str_has_suffix (filepath, ".3dl") || g_str_has_suffix (filepath, ".3DL"))
       {
         level = calculate_clut_3dl(fullpath, clut);
       }
@@ -1229,14 +1231,14 @@ static gboolean select_lutname_in_list(dt_iop_lut3d_gui_data_t *g, const char *c
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection((GtkTreeView *)g->lutname);
   GtkTreeModel *model = gtk_tree_view_get_model((GtkTreeView *)g->lutname);
-  if (lutname)
+  if(lutname)
   {
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
-  while (valid)
+  while(valid)
     {
      gchar *name;
      gtk_tree_model_get(model, &iter, DT_LUT3D_COL_NAME, &name, -1);
-     if (!g_strcmp0(lutname, name))
+     if(!g_strcmp0(lutname, name))
      {
        gtk_tree_selection_select_iter(selection, &iter);
        GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
@@ -1252,7 +1254,7 @@ static gboolean select_lutname_in_list(dt_iop_lut3d_gui_data_t *g, const char *c
   }
   else  // select the first in the list
   {
-    if (gtk_tree_model_iter_nth_child(model, &iter, NULL, 0))
+    if(gtk_tree_model_iter_nth_child(model, &iter, NULL, 0))
     {
       gtk_tree_selection_select_iter(selection, &iter);
       return TRUE;
@@ -1269,7 +1271,7 @@ static void get_selected_lutname(dt_iop_lut3d_gui_data_t *g, char *const lutname
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection((GtkTreeView *)g->lutname);
   GtkTreeModel *model = gtk_tree_view_get_model((GtkTreeView *)g->lutname);
-  if (gtk_tree_selection_get_selected(selection, &model, &iter))
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     gchar *name;
     gtk_tree_model_get(model, &iter, DT_LUT3D_COL_NAME, &name, -1);
@@ -1285,27 +1287,27 @@ static void get_compressed_clut(dt_iop_module_t *self, gboolean newlutname)
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   int nb_lut = 0;
   char *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-  if (p->filepath[0] && lutfolder[0])
+  if(p->filepath[0] && lutfolder[0])
   {
-    if (g_str_has_suffix (p->filepath, ".gmz") || g_str_has_suffix (p->filepath, ".GMZ"))
+    if(g_str_has_suffix (p->filepath, ".gmz") || g_str_has_suffix (p->filepath, ".GMZ"))
     {
       char *fullpath = g_build_filename(lutfolder, p->filepath, NULL);
       gboolean lut_found = lut3d_read_gmz(&p->nb_keypoints, (unsigned char *const)p->c_clut, fullpath,
               &nb_lut, (void *)g, p->lutname, newlutname);
       // to be able to fix evolution issue, keep the gmic version with the compressed lut
-      if (lut_found)
+      if(lut_found)
       {
-        if (!newlutname)
+        if(!newlutname)
           select_lutname_in_list(g, p->lutname);
       }
-      else if (nb_lut)
+      else if(nb_lut)
       {
         select_lutname_in_list(g, NULL);
         get_selected_lutname(g, p->lutname);
       }
-      else if (p->lutname[0])
+      else if(p->lutname[0])
       { // read has failed - make sure lutname appear in the list (for user info)
-        if (!select_lutname_in_list(g, p->lutname))
+        if(!select_lutname_in_list(g, p->lutname))
         {
           lut3d_add_lutname_to_list(g, p->lutname);
           select_lutname_in_list(g, p->lutname);
@@ -1322,11 +1324,11 @@ static void show_hide_controls(dt_iop_module_t *self)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   GtkTreeModel *model = gtk_tree_view_get_model((GtkTreeView *)g->lutname);
   const int nb_luts = gtk_tree_model_iter_n_children(model, NULL);
-  if ((nb_luts > 1) || ((nb_luts > 0) &&
+  if((nb_luts > 1) || ((nb_luts > 0) &&
        g_str_has_prefix(dt_bauhaus_combobox_get_text(g->filepath), invalid_filepath_prefix)))
   {
     int nb_pixels = (20*(nb_luts+1) > 200) ? 200 : 20*(nb_luts);
-    if (nb_luts > 100)
+    if(nb_luts > 100)
       gtk_widget_set_visible(g->lutentry, TRUE);
     else
       gtk_widget_set_visible(g->lutentry, FALSE);
@@ -1347,9 +1349,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)p1;
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
 
-  if (strcmp(p->filepath, d->params.filepath) != 0 || strcmp(p->lutname, d->params.lutname) != 0 )
+  if(strcmp(p->filepath, d->params.filepath) != 0 || strcmp(p->lutname, d->params.lutname) != 0 )
   { // new clut file
-    if (d->clut)
+    if(d->clut)
     { // reset current clut if any
       dt_free_align(d->clut);
       d->clut = NULL;
@@ -1373,7 +1375,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;;
-  if (d->clut)
+  if(d->clut)
     dt_free_align(d->clut);
   d->clut = NULL;
   d->level = 0;
@@ -1387,12 +1389,12 @@ static void filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   char filepath[DT_IOP_LUT3D_MAX_PATHNAME];
   g_strlcpy(filepath, dt_bauhaus_combobox_get_text(widget), sizeof(filepath));
-  if (!g_str_has_prefix(filepath, invalid_filepath_prefix))
+  if(!g_str_has_prefix(filepath, invalid_filepath_prefix))
   {
     filepath_set_unix_separator(filepath);
 #ifdef HAVE_GMIC
     dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-    if (strcmp(filepath, p->filepath) != 0 && !(g_str_has_suffix(filepath, ".gmz") || g_str_has_suffix(filepath, ".GMZ")))
+    if(strcmp(filepath, p->filepath) != 0 && !(g_str_has_suffix(filepath, ".gmz") || g_str_has_suffix(filepath, ".GMZ")))
     {
       // if new file is gmz we try to keep the same lut
       p->nb_keypoints = 0;
@@ -1425,10 +1427,10 @@ static void lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self)
   GtkTreeModel *model;
   gchar *lutname;
 
-  if (gtk_tree_selection_get_selected(selection, &model, &iter))
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     gtk_tree_model_get(model, &iter, DT_LUT3D_COL_NAME, &lutname, -1);
-    if (lutname[0] && strcmp(lutname, p->lutname) != 0)
+    if(lutname[0] && strcmp(lutname, p->lutname) != 0)
     {
       g_strlcpy(p->lutname, lutname, sizeof(p->lutname));
       get_compressed_clut(self, TRUE);
@@ -1477,15 +1479,15 @@ int check_extension(const struct dirent *namestruct)
 {
   const char *filename = namestruct->d_name;
   int res = 0;
-  if (!filename || !filename[0]) return res;
+  if(!filename || !filename[0]) return res;
   char *p = g_strrstr(filename,".");
-  if (!p) return res;
+  if(!p) return res;
   char *fext = g_ascii_strdown(g_strdup(p), -1);
 #ifdef HAVE_GMIC
-  if (!g_strcmp0(fext, ".png") || !g_strcmp0(fext, ".cube") || !g_strcmp0(fext, ".3dl")
+  if(!g_strcmp0(fext, ".png") || !g_strcmp0(fext, ".cube") || !g_strcmp0(fext, ".3dl")
       || !g_strcmp0(fext, ".gmz")) res = 1;
 #else
-  if (!g_strcmp0(fext, ".png") || !g_strcmp0(fext, ".cube") || !g_strcmp0(fext, ".3dl") ) res = 1;
+  if(!g_strcmp0(fext, ".png") || !g_strcmp0(fext, ".cube") || !g_strcmp0(fext, ".3dl") ) res = 1;
 #endif // HAVE_GMIC
   g_free(fext);
   return res;
@@ -1494,9 +1496,9 @@ int check_extension(const struct dirent *namestruct)
 // update filepath combobox with all files in the current folder
 static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath, char *lutfolder)
 {
-  if (!filepath[0])
+  if(!filepath[0])
     dt_bauhaus_combobox_clear(g->filepath);
-  else if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
+  else if(!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
   {
     // new folder -> update the files list
     char *relativepath = g_path_get_dirname(filepath);
@@ -1506,7 +1508,7 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
     const int numentries = scandir(folder, &entries, check_extension, alphasort);
 
     dt_bauhaus_combobox_clear(g->filepath);
-    for (int i = 0; i < numentries; i++)
+    for(int i = 0; i < numentries; i++)
     {
       const char *file = entries[i]->d_name;
       char *ofilepath = (strcmp(relativepath, ".") != 0)
@@ -1517,9 +1519,9 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
       g_free(ofilepath);
       free(entries[i]);
     }
-    free(entries);
+    if(numentries != -1) free(entries);
 
-    if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
+    if(!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
     { // file may have disappeared - show it
       char *invalidfilepath = g_strconcat(invalid_filepath_prefix, filepath, NULL);
       dt_bauhaus_combobox_add_aligned(g->filepath, invalidfilepath, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
@@ -1536,7 +1538,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gchar* lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-  if (strlen(lutfolder) == 0)
+  if(strlen(lutfolder) == 0)
   {
     fprintf(stderr, "[lut3d] LUT root folder not defined\n");
     dt_control_log(_("LUT root folder not defined"));
@@ -1550,7 +1552,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   char *composed = g_build_filename(lutfolder, p->filepath, NULL);
-  if (strlen(p->filepath) == 0 || g_access(composed, F_OK) == -1)
+  if(strlen(p->filepath) == 0 || g_access(composed, F_OK) == -1)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), lutfolder);
   else
     gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(filechooser), composed);
@@ -1583,13 +1585,13 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    if (strcmp(lutfolder, filepath) < 0)
+    if(strcmp(lutfolder, filepath) < 0)
     {
       remove_root_from_path(lutfolder, filepath);
       filepath_set_unix_separator(filepath);
       update_filepath_combobox(g, filepath, lutfolder);
     }
-    else if (!filepath[0])// file chosen outside of root folder
+    else if(!filepath[0])// file chosen outside of root folder
     {
       fprintf(stderr, "[lut3d] select file outside LUT root folder is not allowed\n");
       dt_control_log(_("select file outside LUT root folder is not allowed"));
@@ -1623,7 +1625,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-  if (!lutfolder[0])
+  if(!lutfolder[0])
   {
     gtk_widget_set_sensitive(g->hbox, FALSE);
     gtk_widget_set_sensitive(g->filepath, FALSE);
@@ -1640,7 +1642,7 @@ void gui_update(dt_iop_module_t *self)
   _show_hide_colorspace(self);
 
 #ifdef HAVE_GMIC
-  if (p->lutname[0])
+  if(p->lutname[0])
   {
     get_compressed_clut(self, FALSE);
   }
@@ -1746,4 +1748,3 @@ void gui_cleanup(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
