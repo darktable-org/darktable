@@ -239,6 +239,8 @@ static float _action_process_button(gpointer target, dt_action_element_t element
   return NAN;
 }
 
+static const gchar *_entry_set_element = NULL;
+
 static float _action_process_entry(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
   if(!isnan(move_size))
@@ -259,8 +261,14 @@ static float _action_process_entry(gpointer target, dt_action_element_t element,
     case DT_ACTION_EFFECT_CLEAR:
       gtk_editable_delete_text(target, 0, -1);
       break;
+    case DT_ACTION_EFFECT_SET:;
+      gint position = move_size;
+      gtk_editable_insert_text(target, _entry_set_element, -1, &position);
+      break;
     }
   }
+  else if(effect == DT_ACTION_EFFECT_SET)
+    gtk_entry_set_text(target, _entry_set_element);
 
   return NAN;
 }
@@ -3255,6 +3263,9 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
     const dt_action_element_def_t *elements = _action_find_elements(ac);
     if(elements)
     {
+      if(elements == _action_elements_entry && (_entry_set_element = element) && !strcmp("set", effect))
+        return _process_action(ac, instance, 0, DT_ACTION_EFFECT_SET, move_size, NULL);
+
       if(element && *element)
       {
         while(elements[el].name && strcmp(elements[el].name, element)) el++;
