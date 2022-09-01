@@ -3817,8 +3817,8 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db)
 
   const int freepage_ratio = dt_conf_get_int("database/maintenance_freepage_ratio");
 
-  if((main_free_percentage >= freepage_ratio) ||
-     (data_free_percentage >= freepage_ratio))
+  if((main_free_percentage >= freepage_ratio)
+     || (data_free_percentage >= freepage_ratio))
   {
     const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
     dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance, %" G_GUINT64_FORMAT " bytes to free.\n", calc_size);
