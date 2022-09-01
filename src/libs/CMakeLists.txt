@@ -99,12 +99,16 @@ if(PORTMIDI_INCLUDE_DIR)
 endif()
 
 find_package(SDL2)
-if(SDL2_INCLUDE_DIRS)
+if(SDL2_FOUND)
   add_definitions("-DHAVE_SDL")
-  include_directories(${SDL2_INCLUDE_DIRS})
   set(MODULES ${MODULES} gamepad)
   add_library(gamepad MODULE "tools/gamepad.c")
-  target_link_libraries(gamepad ${SDL2_LIBRARIES})
+  if(TARGET SDL2::SDL2)
+    target_link_libraries(gamepad SDL2::SDL2)
+  else()
+    include_directories(${SDL2_INCLUDE_DIRS})
+    target_link_libraries(gamepad ${SDL2_LIBRARIES})
+  endif()
 endif()
 
 if(BUILD_BATTERY_INDICATOR)
@@ -113,9 +117,9 @@ endif()
 
 # check if gphoto2 found and add build of camera modules...
 if(Gphoto2_FOUND)
-	add_library(camera MODULE "camera.c")
-	add_library(live_view MODULE "live_view.c")
-	set(MODULES ${MODULES} camera live_view)
+  add_library(camera MODULE "camera.c")
+  add_library(live_view MODULE "live_view.c")
+  set(MODULES ${MODULES} camera live_view)
 endif(Gphoto2_FOUND)
 
 # the modules specific to map mode
@@ -138,19 +142,19 @@ endif(CUPS_FOUND)
 
 # Add libs references
 foreach(module ${MODULES})
-	target_link_libraries(${module} lib_darktable)
+  target_link_libraries(${module} lib_darktable)
 endforeach(module)
 
 # Add installation target for each module
 # TODO: Modules are now not only lighttable related and should be placed
 #       in a better matching structure then just in lighttable directory.
 foreach(module ${MODULES})
-    if (WIN32)
-      _detach_debuginfo (${module} ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable)
-    else()
-        set_target_properties(${module}
-                              PROPERTIES
-                              INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
-    endif(WIN32)
-    install(TARGETS ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable COMPONENT DTApplication)
+  if(WIN32)
+    _detach_debuginfo (${module} ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable)
+  else()
+    set_target_properties(${module}
+                          PROPERTIES
+                          INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
+  endif()
+  install(TARGETS ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/lighttable COMPONENT DTApplication)
 endforeach(module)
