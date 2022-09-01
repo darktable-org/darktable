@@ -467,6 +467,11 @@ if (USE_ISOBMFF)
   endif()
 endif()
 
+# Optionally enable MIDI support
+if(USE_PORTMIDI)
+  find_package(PortMidi)
+endif(USE_PORTMIDI)
+
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
   if(OpenJPEG_FOUND)
