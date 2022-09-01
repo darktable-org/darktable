@@ -86,10 +86,10 @@ add_library(image_infos MODULE "tools/image_infos.c")
 
 if(PortMidi_FOUND)
   add_definitions("-DHAVE_PORTMIDI")
-  include_directories(${PORTMIDI_INCLUDE_DIRS})
+  include_directories(${PortMidi_INCLUDE_DIR})
   set(MODULES ${MODULES} midi)
   add_library(midi MODULE "tools/midi.c")
-  target_link_libraries (midi ${PORTMIDI_LIBRARY})
+  target_link_libraries (midi ${PortMidi_LIBRARY})
 endif()
 
 find_package(SDL2)
