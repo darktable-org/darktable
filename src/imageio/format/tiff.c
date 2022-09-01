@@ -818,6 +818,8 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(gui->compress, _("uncompressed"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor"));
+  dt_bauhaus_combobox_set_default(gui->compress,
+                                  dt_confgen_get_int("plugins/imageio/format/tiff/compress", DT_DEFAULT));
   dt_bauhaus_combobox_set(gui->compress, compress);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
 
@@ -857,6 +859,7 @@ void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)self->gui_data;
   dt_bauhaus_combobox_set(gui->bpp, 0); //8bpp
+  dt_bauhaus_combobox_set(gui->compress, dt_confgen_get_int("plugins/imageio/format/tiff/compress", DT_DEFAULT));
   dt_bauhaus_slider_set(gui->compresslevel, dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_DEFAULT));
   dt_bauhaus_combobox_set(gui->shortfiles, dt_confgen_get_int("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
 }
