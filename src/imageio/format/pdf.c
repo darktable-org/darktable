@@ -26,6 +26,7 @@
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "gui/gtkentry.h"
+#include "gui/accelerators.h"
 #include "imageio/format/imageio_format_api.h"
 
 #include <strings.h>
@@ -572,18 +573,12 @@ void gui_init(dt_imageio_module_format_t *self)
 
   gtk_grid_attach(grid, dt_ui_label_new(_("title")), 0, ++line, 1, 1);
 
-  d->title = GTK_ENTRY(gtk_entry_new());
+  d->title = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("title"), G_CALLBACK(title_changed_callback), self,
+                                           _("enter the title of the pdf"),
+                                           dt_conf_get_string_const("plugins/imageio/format/pdf/title")));
   gtk_entry_set_placeholder_text(d->title, "untitled");
-  gtk_entry_set_width_chars(d->title, 5);
   gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
   gtk_grid_attach(grid, GTK_WIDGET(d->title), 1, line, 1, 1);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->title), _("enter the title of the pdf"));
-  const char *str = dt_conf_get_string_const("plugins/imageio/format/pdf/title");
-  if(str)
-  {
-    gtk_entry_set_text(GTK_ENTRY(d->title), str);
-  }
-  g_signal_connect(G_OBJECT(d->title), "changed", G_CALLBACK(title_changed_callback), self);
 
   // paper size
 
@@ -613,19 +608,13 @@ void gui_init(dt_imageio_module_format_t *self)
 
   gtk_grid_attach(grid, dt_ui_label_new(_("border")), 0, ++line, 1, 1);
 
-  d->border = GTK_ENTRY(gtk_entry_new());
-  gtk_entry_set_width_chars(d->border, 5);
+  d->border = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("border"), G_CALLBACK(border_changed_callback), self,
+                                           _("empty space around the pdf\n"
+                                             "format: size + unit\nexamples: 10 mm, 1 inch"),
+                                           dt_conf_get_string_const("plugins/imageio/format/pdf/border")));
   gtk_entry_set_max_length(d->border, sizeof(((dt_imageio_pdf_params_t *)NULL)->border) - 1);
   gtk_entry_set_placeholder_text(d->border, "0 mm");
   gtk_grid_attach(grid, GTK_WIDGET(d->border), 1, line, 1, 1);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->border), _("empty space around the pdf\n"
-                                                       "format: size + unit\nexamples: 10 mm, 1 inch"));
-  str = dt_conf_get_string_const("plugins/imageio/format/pdf/border");
-  if(str)
-  {
-    gtk_entry_set_text(GTK_ENTRY(d->border), str);
-  }
-  g_signal_connect(G_OBJECT(d->border), "changed", G_CALLBACK(border_changed_callback), self);
 
   // dpi
 

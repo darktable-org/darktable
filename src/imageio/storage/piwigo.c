@@ -31,6 +31,7 @@
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "imageio/storage/imageio_storage_api.h"
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
@@ -806,13 +807,10 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // server
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ui->server_entry = GTK_ENTRY(gtk_entry_new());
-  gtk_widget_set_tooltip_text(GTK_WIDGET(ui->server_entry),
-                              _("the server name\ndefault protocol is https\nspecify http:// if non secure server"));
+  ui->server_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("server"), G_CALLBACK(_piwigo_server_entry_changed), ui,
+                                                   _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
+                                                   last_account?last_account->server:"piwigo.com"));
   gtk_widget_set_hexpand(GTK_WIDGET(ui->server_entry), TRUE);
-  gtk_entry_set_text(ui->server_entry, last_account?last_account->server:"piwigo.com");
-  g_signal_connect(G_OBJECT(ui->server_entry), "changed", G_CALLBACK(_piwigo_server_entry_changed), (gpointer)ui);
-  gtk_entry_set_width_chars(GTK_ENTRY(ui->server_entry), 0);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("server")), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->server_entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
@@ -820,23 +818,20 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // login
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ui->user_entry = GTK_ENTRY(gtk_entry_new());
+  ui->user_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("user"), G_CALLBACK(_piwigo_entry_changed), ui,
+                                                   _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
+                                                   last_account?last_account->username:""));
   gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
-  gtk_entry_set_text(ui->user_entry, last_account?last_account->username:"");
-  g_signal_connect(G_OBJECT(ui->user_entry), "changed", G_CALLBACK(_piwigo_entry_changed), (gpointer)ui);
-  gtk_entry_set_width_chars(GTK_ENTRY(ui->user_entry), 0);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("user")), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->user_entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // password
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ui->pwd_entry = GTK_ENTRY(gtk_entry_new());
+  ui->pwd_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("password"), G_CALLBACK(_piwigo_entry_changed), ui, NULL,
+                                                   last_account?last_account->password:""));
   gtk_entry_set_visibility(GTK_ENTRY(ui->pwd_entry), FALSE);
   gtk_widget_set_hexpand(GTK_WIDGET(ui->pwd_entry), TRUE);
-  gtk_entry_set_text(ui->pwd_entry, last_account?last_account->password:"");
-  g_signal_connect(G_OBJECT(ui->pwd_entry), "changed", G_CALLBACK(_piwigo_entry_changed), (gpointer)ui);
-  gtk_entry_set_width_chars(GTK_ENTRY(ui->pwd_entry), 0);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("password")), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->pwd_entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);

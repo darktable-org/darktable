@@ -2066,12 +2066,6 @@ static void _darkroom_redo_callback(dt_action_t *action)
   dt_undo_do_redo(darktable.undo, DT_UNDO_DEVELOP);
 }
 
-static void search_callback(dt_action_t *action)
-{
-  // set focus to the search module text box
-  dt_dev_modulegroups_search_text_focus(darktable.develop);
-}
-
 static void change_slider_accel_precision(dt_action_t *action);
 
 static float _action_process_skip_mouse(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -2656,9 +2650,6 @@ void gui_init(dt_view_t *self)
   // undo/redo
   dt_action_register(DT_ACTION(self), N_("undo"), _darkroom_undo_callback, GDK_KEY_z, GDK_CONTROL_MASK);
   dt_action_register(DT_ACTION(self), N_("redo"), _darkroom_redo_callback, GDK_KEY_y, GDK_CONTROL_MASK);
-
-  // set focus to the search modules text box
-  dt_action_register(DT_ACTION(self), N_("search modules"), search_callback, 0, 0);
 
   // change the precision for adjusting sliders with keyboard shortcuts
   dt_action_register(DT_ACTION(self), N_("change keyboard shortcut slider precision"), change_slider_accel_precision, 0, 0);

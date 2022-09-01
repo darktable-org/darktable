@@ -1130,33 +1130,25 @@ void gui_init(dt_lib_module_t *self)
                                N_("in inch (for print)"),
                                N_("by scale (for file)"));
 
-  d->print_width = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->print_width, _("maximum output width limit.\n"
-                                                "click middle mouse button to reset to 0."));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->print_width), 5);
-  d->print_height = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->print_height, _("maximum output height limit.\n"
-                                                 "click middle mouse button to reset to 0."));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->print_height), 5);
-  d->print_dpi = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->print_dpi, _("resolution in dot per inch"));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->print_dpi), 4);
-  const char *dpi = dt_conf_get_string_const(CONFIG_PREFIX "print_dpi");
-  gtk_entry_set_text(GTK_ENTRY(d->print_dpi), dpi);
+  d->print_width = dt_action_entry_new(DT_ACTION(self), N_("print width"), G_CALLBACK(_print_width_changed), d,
+                                       _("maximum output width limit.\n"
+                                         "click middle mouse button to reset to 0."), NULL);
 
+  d->print_height = dt_action_entry_new(DT_ACTION(self), N_("print height"), G_CALLBACK(_print_height_changed), d,
+                                       _("maximum output height limit.\n"
+                                         "click middle mouse button to reset to 0."), NULL);
 
-  d->width = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->width, _("maximum output width limit.\n"
-                                          "click middle mouse button to reset to 0."));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->width), 5);
-  d->height = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->height, _("maximum output height limit.\n"
-                                           "click middle mouse button to reset to 0."));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->height), 5);
+  d->print_dpi = dt_action_entry_new(DT_ACTION(self), N_("dpi"), G_CALLBACK(_print_dpi_changed), d,
+                                     _("resolution in dot per inch"),
+                                     dt_conf_get_string_const(CONFIG_PREFIX "print_dpi"));
 
-  gtk_widget_add_events(d->width, GDK_BUTTON_PRESS_MASK);
-  gtk_widget_add_events(d->height, GDK_BUTTON_PRESS_MASK);
+  d->width = dt_action_entry_new(DT_ACTION(self), N_("width"), G_CALLBACK(_width_changed), d,
+                                 _("maximum output width limit.\n"
+                                   "click middle mouse button to reset to 0."), NULL);
 
+  d->height = dt_action_entry_new(DT_ACTION(self), N_("height"), G_CALLBACK(_height_changed), d,
+                                  _("maximum output height limit.\n"
+                                    "click middle mouse button to reset to 0."), NULL);
 
   d->print_size = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(d->print_size), 5);
@@ -1184,14 +1176,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(d->px_size), GTK_WIDGET(px_box));
   gtk_container_foreach(GTK_CONTAINER(d->px_size), (GtkCallback)gtk_widget_set_can_focus, GINT_TO_POINTER(FALSE));
 
-  d->scale = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(d->scale), 5);
-  gtk_entry_set_text (GTK_ENTRY(d->scale), dt_conf_get_string_const(CONFIG_PREFIX "resizing_factor"));
-  gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal number or simple fraction.\n"
-                                          "zero or empty values are equal to 1.\n"
-                                          "click middle mouse button to reset to 1."));
+  d->scale = dt_action_entry_new(DT_ACTION(self), N_("scale"), G_CALLBACK(_scale_changed), d,
+                                 _("it can be an integer, decimal number or simple fraction.\n"
+                                   "zero or empty values are equal to 1.\n"
+                                   "click middle mouse button to reset to 1."),
+                                 dt_conf_get_string_const(CONFIG_PREFIX "resizing_factor"));
   gtk_widget_set_halign(GTK_WIDGET(d->scale), GTK_ALIGN_END);
-  gtk_widget_add_events(d->scale, GDK_BUTTON_PRESS_MASK);
 
   d->size_in_px = gtk_label_new("");
   gtk_label_set_ellipsize(GTK_LABEL(d->size_in_px), PANGO_ELLIPSIZE_START);
@@ -1339,22 +1329,17 @@ void gui_init(dt_lib_module_t *self)
                                                      _("export with current settings"), GDK_KEY_e, GDK_CONTROL_MASK));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_width), "changed", G_CALLBACK(_print_width_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_height), "changed", G_CALLBACK(_print_height_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_dpi), "changed", G_CALLBACK(_print_dpi_changed), (gpointer)d);
-
-  g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
+  gtk_widget_add_events(d->width, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->height, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->print_width, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->print_height, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->scale, GDK_BUTTON_PRESS_MASK);
 
   g_signal_connect(G_OBJECT(d->width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
-
   g_signal_connect(G_OBJECT(d->scale), "button-press-event", G_CALLBACK(_scale_mdlclick), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->scale), "changed", G_CALLBACK(_scale_changed), (gpointer)d);
 
   // this takes care of keeping hidden widgets hidden
   gtk_widget_show_all(self->widget);
