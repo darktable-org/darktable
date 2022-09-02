@@ -84,18 +84,12 @@ add_library(global_toolbox MODULE "tools/global_toolbox.c")
 add_library(timeline MODULE "tools/timeline.c")
 add_library(image_infos MODULE "tools/image_infos.c")
 
-find_path(PORTMIDI_INCLUDE_DIR NAMES portmidi.h
-          DOC "The Portmidi include directory"
-)
-find_library(PORTMIDI_LIBRARY NAMES portmidi
-          DOC "The Portmidi library"
-)
-if(PORTMIDI_INCLUDE_DIR)
+if(PortMidi_FOUND)
   add_definitions("-DHAVE_PORTMIDI")
-  include_directories(${PORTMIDI_INCLUDE_DIRS})
+  include_directories(${PortMidi_INCLUDE_DIR})
   set(MODULES ${MODULES} midi)
   add_library(midi MODULE "tools/midi.c")
-  target_link_libraries (midi ${PORTMIDI_LIBRARY})
+  target_link_libraries (midi ${PortMidi_LIBRARY})
 endif()
 
 find_package(SDL2)
