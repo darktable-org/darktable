@@ -267,7 +267,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
   // add the icc profile
   int icc_id = 0;
-  if(imgid > 0 && d->params.icc && d->params.mode == MODE_NORMAL)
+  if(d->params.icc && d->params.mode == MODE_NORMAL)
   {
     // get the id of the profile
     const dt_colorspaces_color_profile_t *profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
@@ -285,7 +285,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     if(icc_id == 0)
     {
       uint32_t len = 0;
-      cmsSaveProfileToMem(profile->profile, 0, &len);
+      cmsSaveProfileToMem(profile->profile, NULL, &len);
       if(len > 0)
       {
         unsigned char *buf = malloc(sizeof(unsigned char) * len);
