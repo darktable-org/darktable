@@ -3199,6 +3199,10 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
       }
       break;
     case DT_ACTION_ELEMENT_PRESETS:
+      // FIXME
+      if(effect)
+        fprintf(stderr, "[imageop::_action_process] effects for presets not yet implemented\n");
+
       if(module->presets_button) _presets_popup_callback(NULL, module);
       break;
     }
