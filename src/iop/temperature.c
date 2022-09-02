@@ -28,6 +28,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/opencl.h"
+#include "common/wb_presets.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
@@ -35,7 +36,6 @@
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "dtgtk/expander.h"
-#include "external/wb_presets.c"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/color_picker_proxy.h"
@@ -428,20 +428,6 @@ static void mul2temp(dt_iop_module_t *self, dt_iop_temperature_params_t *p, floa
   XYZ_to_temperature(mul2xyz(self, p), TempK, tint);
 }
 
-/*
- * interpolate values from p1 and p2 into out.
- */
-static void dt_wb_preset_interpolate(const wb_data *const p1, // the smaller tuning
-                                     const wb_data *const p2, // the larger tuning (can't be == p1)
-                                     wb_data *out)            // has tuning initialized
-{
-  const double t = CLAMP((double)(out->tuning - p1->tuning) / (double)(p2->tuning - p1->tuning), 0.0, 1.0);
-  for(int k = 0; k < 3; k++)
-  {
-    out->channel[k] = 1.0 / (((1.0 - t) / p1->channel[k]) + (t / p2->channel[k]));
-  }
-}
-
 #ifdef _OPENMP
 #pragma omp declare simd aligned(inp,outp)
 #endif
@@ -539,7 +525,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   { // non-mosaiced
     const size_t npixels = roi_out->width * (size_t)roi_out->height;
- 
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(in, out, npixels)     \
@@ -690,11 +676,13 @@ int generate_preset_combo(struct dt_iop_module_t *self)
 
   const char *wb_name = NULL;
   if(!dt_image_is_ldr(&self->dev->image_storage))
-    for(int i = 0; i < wb_preset_count; i++)
+    for(int i = 0; i < dt_wb_presets_count(); i++)
     {
       if(presets_found >= 50) break;
-      if(!strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
-         && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model))
+
+      const dt_wb_data *wbp = dt_wb_preset(i);
+      if(!strcmp(wbp->make, self->dev->image_storage.camera_maker)
+         && !strcmp(wbp->model, self->dev->image_storage.camera_model))
       {
         if(!wb_name) // This is first found preset for maker/model. add section.
         {
@@ -703,37 +691,37 @@ int generate_preset_combo(struct dt_iop_module_t *self)
           g_free(section);
           g->preset_cnt++;
         }
-        if(!wb_name || strcmp(wb_name, wb_preset[i].name))
+        if(!wb_name || strcmp(wb_name, wbp->name))
         {
           // new preset found
           dt_iop_temperature_preset_data_t *preset = malloc(sizeof(dt_iop_temperature_preset_data_t));
-          wb_name = wb_preset[i].name;
+          wb_name = wbp->name;
           preset->no_ft_pos = i;
           preset->max_ft_pos = i;
           preset->min_ft_pos = i;
-          if(wb_preset[i].tuning != 0)
+          if(wbp->tuning != 0)
           {
             // finetuning found.
             // min finetuning is always first, since wb_preset is ordered.
             int ft_pos = i;
-            int last_ft = wb_preset[i].tuning;
+            int last_ft = wbp->tuning;
             preset->min_ft_pos = ft_pos++;
-            while(strcmp(wb_name, wb_preset[ft_pos].name) == 0)
+            while(strcmp(wb_name, dt_wb_preset(ft_pos)->name) == 0)
             {
-              if(wb_preset[ft_pos].tuning == 0)
+              if(dt_wb_preset(ft_pos)->tuning == 0)
               {
                 preset->no_ft_pos = ft_pos;
               }
-              if(wb_preset[ft_pos].tuning > last_ft)
+              if(dt_wb_preset(ft_pos)->tuning > last_ft)
               {
                 preset->max_ft_pos = ft_pos;
-                last_ft = wb_preset[ft_pos].tuning;
+                last_ft = dt_wb_preset(ft_pos)->tuning;
               }
               ft_pos++;
             }
 
           }
-          dt_bauhaus_combobox_add_full(g->presets, _(wb_preset[i].name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, preset, free, TRUE);
+          dt_bauhaus_combobox_add_full(g->presets, _(wbp->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, preset, free, TRUE);
           g->preset_num[g->preset_cnt] = i;
           g->preset_cnt++;
           presets_found++;
@@ -761,19 +749,24 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
     double min_tune[3] = {0.0};
     double no_tune[3] = {0.0};
     double max_tune[3] = {0.0};
+
+    const dt_wb_data *wb_min = dt_wb_preset(preset->min_ft_pos);
+    const dt_wb_data *wb_no = dt_wb_preset(preset->no_ft_pos);
+    const dt_wb_data *wb_max = dt_wb_preset(preset->max_ft_pos);
+
     if(!g->blackbody_is_confusing)
     {
       //realistic
       const double neutral[3] = {
-          1 / wb_preset[preset->no_ft_pos].channel[0],
-          1 / wb_preset[preset->no_ft_pos].channel[1],
-          1 / wb_preset[preset->no_ft_pos].channel[2],
+          1 / wb_no->channels[0],
+          1 / wb_no->channels[1],
+          1 / wb_no->channels[2],
       };
       for(int ch=0; ch<3; ch++)
       {
-        min_tune[ch] = neutral[ch] * wb_preset[preset->min_ft_pos].channel[ch];
-        no_tune[ch]  = neutral[ch] * wb_preset[preset->no_ft_pos].channel[ch];
-        max_tune[ch] = neutral[ch] * wb_preset[preset->max_ft_pos].channel[ch];
+        min_tune[ch] = neutral[ch] * wb_min->channels[ch];
+        no_tune[ch]  = neutral[ch] * wb_no->channels[ch];
+        max_tune[ch] = neutral[ch] * wb_max->channels[ch];
       }
 
       const float maxsRGBmin_tune = fmaxf(fmaxf(min_tune[0], min_tune[1]), min_tune[2]);
@@ -797,7 +790,7 @@ void color_finetuning_slider(struct dt_iop_module_t *self)
         max_tune[ch] = 0.5;
       }
 
-      if(wb_preset[preset->min_ft_pos].channel[0] < wb_preset[preset->max_ft_pos].channel[0])
+      if(wb_min->channels[0] < wb_max->channels[0])
       {
         // from blue to red
         min_tune[0] = 0.1;
@@ -1135,15 +1128,17 @@ void gui_update(struct dt_iop_module_t *self)
     {
       // look through all variants of this preset, with different tuning
       for(int i = g->preset_num[j];
-          !found && (i < wb_preset_count) &&
-          !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker) &&
-          !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model) &&
-          !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name);
+          !found
+          && (i < dt_wb_presets_count())
+          && !strcmp(dt_wb_preset(i)->make, self->dev->image_storage.camera_maker)
+          && !strcmp(dt_wb_preset(i)->model, self->dev->image_storage.camera_model)
+          && !strcmp(dt_wb_preset(i)->name, dt_wb_preset(g->preset_num[j])->name);
           i++)
       {
-        if(p->red == (float)wb_preset[i].channel[0] &&
-           p->green == (float)wb_preset[i].channel[1] &&
-           p->blue == (float)wb_preset[i].channel[2])
+        const dt_wb_data *wbp = dt_wb_preset(i);
+        if(p->red == (float)wbp->channels[0] &&
+           p->green == (float)wbp->channels[1] &&
+           p->blue == (float)wbp->channels[2])
         {
           // got exact match!
           dt_bauhaus_combobox_set(g->presets, j);
@@ -1153,13 +1148,17 @@ void gui_update(struct dt_iop_module_t *self)
             show_finetune = preset->min_ft_pos != preset->max_ft_pos;
             if(show_finetune)
             {
-              dt_bauhaus_slider_set_hard_min(g->finetune, wb_preset[preset->min_ft_pos].tuning);
-              dt_bauhaus_slider_set_hard_max(g->finetune, wb_preset[preset->max_ft_pos].tuning);
-              dt_bauhaus_slider_set_default(g->finetune, wb_preset[preset->no_ft_pos].tuning);
+              const dt_wb_data *wb_min = dt_wb_preset(preset->min_ft_pos);
+              const dt_wb_data *wb_no = dt_wb_preset(preset->no_ft_pos);
+              const dt_wb_data *wb_max = dt_wb_preset(preset->max_ft_pos);
+
+              dt_bauhaus_slider_set_hard_min(g->finetune, wb_min->tuning);
+              dt_bauhaus_slider_set_hard_max(g->finetune, wb_max->tuning);
+              dt_bauhaus_slider_set_default(g->finetune, wb_no->tuning);
             }
           }
 
-          dt_bauhaus_slider_set(g->finetune, wb_preset[i].tuning);
+          dt_bauhaus_slider_set(g->finetune, wbp->tuning);
           found = TRUE;
           break;
         }
@@ -1175,12 +1174,14 @@ void gui_update(struct dt_iop_module_t *self)
       {
         // look through all variants of this preset, with different tuning
         int i = g->preset_num[j] + 1;
-        while(!found && (i < wb_preset_count) && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
-              && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
-              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name))
+        while(!found
+              && (i < dt_wb_presets_count())
+              && !strcmp(dt_wb_preset(i)->make, self->dev->image_storage.camera_maker)
+              && !strcmp(dt_wb_preset(i)->model, self->dev->image_storage.camera_model)
+              && !strcmp(dt_wb_preset(i)->name, dt_wb_preset(g->preset_num[j])->name))
         {
           // let's find gaps
-          if(wb_preset[i - 1].tuning + 1 == wb_preset[i].tuning)
+          if(dt_wb_preset(i - 1)->tuning + 1 == dt_wb_preset(i)->tuning)
           {
             i++;
             continue;
@@ -1189,14 +1190,15 @@ void gui_update(struct dt_iop_module_t *self)
           // we have a gap!
 
           // we do not know what finetuning value was set, we need to bruteforce to find it
-          for(int tune = wb_preset[i - 1].tuning + 1; !found && (tune < wb_preset[i].tuning); tune++)
+          for(int tune = dt_wb_preset(i - 1)->tuning + 1; !found && (tune < dt_wb_preset(i)->tuning); tune++)
           {
-            wb_data interpolated = {.tuning = tune };
-            dt_wb_preset_interpolate(&wb_preset[i - 1], &wb_preset[i], &interpolated);
+            dt_wb_data interpolated = {.tuning = tune };
+            dt_wb_preset_interpolate(dt_wb_preset(i - 1),
+                                     dt_wb_preset(i), &interpolated);
 
-            if(p->red == (float)interpolated.channel[0] &&
-               p->green == (float)interpolated.channel[1] &&
-               p->blue == (float)interpolated.channel[2])
+            if(p->red == (float)interpolated.channels[0] &&
+               p->green == (float)interpolated.channels[1] &&
+               p->blue == (float)interpolated.channels[2])
             {
               // got exact match!
 
@@ -1207,9 +1209,13 @@ void gui_update(struct dt_iop_module_t *self)
                 show_finetune = preset->min_ft_pos != preset->max_ft_pos;
                 if(show_finetune)
                 {
-                  dt_bauhaus_slider_set_hard_min(g->finetune, wb_preset[preset->min_ft_pos].tuning);
-                  dt_bauhaus_slider_set_hard_max(g->finetune, wb_preset[preset->max_ft_pos].tuning);
-                  dt_bauhaus_slider_set_default(g->finetune, wb_preset[preset->no_ft_pos].tuning);
+                  const dt_wb_data *wb_min = dt_wb_preset(preset->min_ft_pos);
+                  const dt_wb_data *wb_no = dt_wb_preset(preset->no_ft_pos);
+                  const dt_wb_data *wb_max = dt_wb_preset(preset->max_ft_pos);
+
+                  dt_bauhaus_slider_set_hard_min(g->finetune, wb_min->tuning);
+                  dt_bauhaus_slider_set_hard_max(g->finetune, wb_max->tuning);
+                  dt_bauhaus_slider_set_default(g->finetune, wb_no->tuning);
                 }
               }
               dt_bauhaus_slider_set(g->finetune, tune);
@@ -1355,13 +1361,16 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
   }
 
   // no cam matrix??? try presets:
-  for(int i = 0; i < wb_preset_count; i++)
+  for(int i = 0; i < dt_wb_presets_count(); i++)
   {
-    if(!strcmp(wb_preset[i].make, img->camera_maker)
-       && !strcmp(wb_preset[i].model, img->camera_model))
+    const dt_wb_data *wbp = dt_wb_preset(i);
+
+    if(!strcmp(wbp->make, img->camera_maker)
+       && !strcmp(wbp->model, img->camera_model))
     {
       // just take the first preset we find for this camera
-      for(int k = 0; k < 3; k++) coeffs[k] = wb_preset[i].channel[k];
+      for(int k = 0; k < 3; k++)
+        coeffs[k] = wbp->channels[k];
       return;
     }
   }
@@ -1452,15 +1461,19 @@ void reload_defaults(dt_iop_module_t *module)
     {
       // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
       // we're normalizing that to be D65
-      for(int i = 0; i < wb_preset_count; i++)
+      for(int i = 0; i < dt_wb_presets_count(); i++)
       {
-        if(!strcmp(wb_preset[i].make, module->dev->image_storage.camera_maker)
-           && !strcmp(wb_preset[i].model, module->dev->image_storage.camera_model)
-           && (!strcmp(wb_preset[i].name, Daylight) || !strcmp(wb_preset[i].name, DirectSunlight))
-           && wb_preset[i].tuning == 0)
+        const dt_wb_data *wbp = dt_wb_preset(i);
+
+        if(!strcmp(wbp->make, module->dev->image_storage.camera_maker)
+           && !strcmp(wbp->model, module->dev->image_storage.camera_model)
+           && (!strcmp(wbp->name, "Daylight")  //??? PO
+               || !strcmp(wbp->name, "DirectSunlight"))
+           && wbp->tuning == 0)
         {
 
-          for(int k = 0; k < 4; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
+          for(int k = 0; k < 4; k++)
+            g->daylight_wb[k] = wbp->channels[k];
           break;
         }
       }
@@ -1624,15 +1637,15 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
       // look through all variants of this preset, with different tuning
       for(int i = preset->min_ft_pos;
           (i < (preset->max_ft_pos + 1)) // we can limit search spread thanks to knowing where to look!
-          && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
-          && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
-          && !strcmp(wb_preset[i].name, wb_preset[preset->no_ft_pos].name);
+            && !strcmp(dt_wb_preset(i)->make, self->dev->image_storage.camera_maker)
+            && !strcmp(dt_wb_preset(i)->model, self->dev->image_storage.camera_model)
+            && !strcmp(dt_wb_preset(i)->name, dt_wb_preset(preset->no_ft_pos)->name);
           i++)
       {
-        if(wb_preset[i].tuning == tune)
+        if(dt_wb_preset(i)->tuning == tune)
         {
           // got exact match!
-          _temp_params_from_array(p, wb_preset[i].channel);
+          _temp_params_from_array(p, dt_wb_preset(i)->channels);
           found = TRUE;
           break;
         }
@@ -1648,11 +1661,13 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
         // look through all variants of this preset, with different tuning, starting from second entry (if
         // any)
         int i = preset->min_ft_pos + 1;
-        while((i < preset->max_ft_pos+1) && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
-              && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
-              && !strcmp(wb_preset[i].name, wb_preset[preset->no_ft_pos].name))
+        while((i < preset->max_ft_pos+1)
+              && !strcmp(dt_wb_preset(i)->make, self->dev->image_storage.camera_maker)
+              && !strcmp(dt_wb_preset(i)->model, self->dev->image_storage.camera_model)
+              && !strcmp(dt_wb_preset(i)->name, dt_wb_preset(preset->no_ft_pos)->name))
         {
-          if(wb_preset[i - 1].tuning < tune && wb_preset[i].tuning > tune)
+          if(dt_wb_preset(i - 1)->tuning < tune
+             && dt_wb_preset(i)->tuning > tune)
           {
             min_id = i - 1;
             max_id = i;
@@ -1666,18 +1681,24 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
         if(min_id == INT_MIN || max_id == INT_MIN || min_id == max_id) break; // hysteresis
 
         found = TRUE;
-        wb_data interpolated = {.tuning = tune };
-        dt_wb_preset_interpolate(&wb_preset[min_id], &wb_preset[max_id], &interpolated);
-        _temp_params_from_array(p, interpolated.channel);
+        dt_wb_data interpolated = {.tuning = tune };
+        dt_wb_preset_interpolate(dt_wb_preset(min_id),
+                                 dt_wb_preset(max_id),
+                                 &interpolated);
+        _temp_params_from_array(p, interpolated.channels);
       }
 
       show_finetune = preset->min_ft_pos != preset->max_ft_pos;
       if(show_finetune)
       {
+        const dt_wb_data *wb_min = dt_wb_preset(preset->min_ft_pos);
+        const dt_wb_data *wb_no = dt_wb_preset(preset->no_ft_pos);
+        const dt_wb_data *wb_max = dt_wb_preset(preset->max_ft_pos);
+
         ++darktable.gui->reset;
-        dt_bauhaus_slider_set_hard_min(g->finetune, wb_preset[preset->min_ft_pos].tuning);
-        dt_bauhaus_slider_set_hard_max(g->finetune, wb_preset[preset->max_ft_pos].tuning);
-        dt_bauhaus_slider_set_default(g->finetune, wb_preset[preset->no_ft_pos].tuning);
+        dt_bauhaus_slider_set_hard_min(g->finetune, wb_min->tuning);
+        dt_bauhaus_slider_set_hard_max(g->finetune, wb_max->tuning);
+        dt_bauhaus_slider_set_default(g->finetune, wb_no->tuning);
         --darktable.gui->reset;
       }
     }
@@ -1999,4 +2020,3 @@ void gui_reset(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
