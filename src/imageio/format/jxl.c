@@ -198,12 +198,8 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   LIBJXL_ASSERT(
       JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_DECODING_SPEED, params->tier));
 
-  // Try the settings with default codestream level 5 first, upgrade otherwise
-  if(JXL_ENC_ERROR == JxlEncoderSetBasicInfo(encoder, &basic_info))
-  {
-    LIBJXL_ASSERT(JxlEncoderSetCodestreamLevel(encoder, 10));
-    LIBJXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
-  }
+  // Codestream level should be chosen automatically given the settings
+  LIBJXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
 
   // Determine and set the encoder color space
   const dt_colorspaces_color_profile_t *output_profile
@@ -334,18 +330,17 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
 
   LIBJXL_ASSERT(JxlEncoderAddImageFrame(frame_settings, &pixel_format, pixels, pixels_size));
 
-  // Add the Exif data if it exists
-  if(exif && exif_len > 6)
+  /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and use dt_exif_write_blob() after
+   * closing file instead */
+  if(exif && exif_len > 0)
   {
     // Prepend the 4 byte (zero) offset to the blob before writing
-    // (as required in the equivalent HEIF/JPEG XS Exif box specs).
-    // Also skip the 6-byte "Exif\000\000" JPEG APP1 header
-    // dt_exif_read_blob() assumes.
-    exif_buf = g_malloc0(exif_len - 6 + 4);
-    if(!exif_buf) JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len - 6 + 4));
-    memmove(exif_buf + 4, exif + 6, exif_len - 6);
-    // Exiv2 doesn't support compressed boxes
-    LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len - 6 + 4, JXL_FALSE));
+    // (as required in the equivalent HEIF/JPEG XS Exif box specs)
+    exif_buf = g_malloc0(exif_len + 4);
+    if(!exif_buf) JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len + 4));
+    memmove(exif_buf + 4, exif, exif_len);
+    // Exiv2 doesn't support Brotli compressed boxes yet
+    LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len + 4, JXL_FALSE));
   }
 
   /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and update flags() */
@@ -353,7 +348,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   size_t xmp_len;
   if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
   {
-    // Exiv2 doesn't support compressed boxes
+    // Exiv2 doesn't support Brotli compressed boxes
     LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ", (const uint8_t *)xmp_string, xmp_len, JXL_FALSE));
   }
 
