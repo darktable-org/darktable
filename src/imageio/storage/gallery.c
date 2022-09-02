@@ -285,7 +285,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   char *title = NULL, *description = NULL;
   GList *res_title = NULL, *res_desc = NULL;
 
-  if ((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
+  if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
     res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
     if(res_title)
@@ -597,7 +597,7 @@ int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *
     return 1;
   if(strcmp(mime, "image/webp") == 0)
     return 1;
-  if (strcmp(mime, "image/avif") == 0) return 1;
+  if(strcmp(mime, "image/avif") == 0) return 1;
 
   return 0;
 }

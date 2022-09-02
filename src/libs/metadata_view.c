@@ -924,7 +924,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
           if(tagstring) tagstring[strlen(tagstring)-2] = '\0';
         }
 
-        if (md == md_tag_names)
+        if(md == md_tag_names)
           _metadata_update_value(md_tag_names, tagstring ? tagstring : NODATA_STRING, self);
         else
           _metadata_update_value(md_categories, categoriesstring ? categoriesstring : NODATA_STRING, self);

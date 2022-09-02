@@ -498,14 +498,14 @@ int write_image(struct dt_imageio_module_data_t *data,
       {
         width_tile_size = AVIF_MIN_TILE_SIZE * 4;
       }
-      else if (width >= 8192) {
+      else if(width >= 8192) {
         width_tile_size = AVIF_MAX_TILE_SIZE;
       }
       if(height >= 6144)
       {
         height_tile_size = AVIF_MIN_TILE_SIZE * 4;
       }
-      else if (height >= 8192) {
+      else if(height >= 8192) {
         height_tile_size = AVIF_MAX_TILE_SIZE;
       }
 

@@ -280,7 +280,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
   const dt_iop_sharpen_data_t *const data = (dt_iop_sharpen_data_t *)piece->data;
@@ -296,7 +296,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   float *restrict tmp;	// one row per thread
   size_t padded_size;
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out,
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out,
                                   1 | DT_IMGSZ_WIDTH | DT_IMGSZ_PERTHREAD, &tmp, &padded_size,
                                   0))
   {
@@ -323,7 +323,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     // We skip the top and bottom 'rad' rows because the kernel would extend beyond the edge of the image, resulting
     // in an incomplete summation.
-    if (j < rad || j >= roi_out->height - rad)
+    if(j < rad || j >= roi_out->height - rad)
     {
       // fill in the top/bottom border with unchanged luma values from the input image.
       const float *const restrict row_in = in + (size_t)4 * j * width;

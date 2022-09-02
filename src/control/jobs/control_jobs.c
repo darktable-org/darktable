@@ -894,7 +894,7 @@ static gint _dt_delete_file_display_modal_dialog(int send_to_trash, const char *
   dt_pthread_mutex_lock(&modal_dialog.mutex);
 
   gdk_threads_add_idle(_dt_delete_dialog_main_thread, &modal_dialog);
-  while (modal_dialog.dialog_result == GTK_RESPONSE_NONE)
+  while(modal_dialog.dialog_result == GTK_RESPONSE_NONE)
     dt_pthread_cond_wait(&modal_dialog.cond, &modal_dialog.mutex);
 
   dt_pthread_mutex_unlock(&modal_dialog.mutex);
@@ -911,7 +911,7 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
   GFile *gfile = g_file_new_for_path(filename);
   int send_to_trash = dt_conf_get_bool("send_to_trash");
 
-  while (delete_status == _DT_DELETE_STATUS_UNKNOWN)
+  while(delete_status == _DT_DELETE_STATUS_UNKNOWN)
   {
     gboolean delete_success = FALSE;
     GError *gerror = NULL;

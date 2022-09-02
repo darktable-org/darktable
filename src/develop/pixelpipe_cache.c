@@ -139,7 +139,7 @@ uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpi
   for(int k = 1; modules && pieces; k++)
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
-    if (module == (dt_iop_module_t *)modules->data)
+    if(module == (dt_iop_module_t *)modules->data)
       break;		// we've found the given module, so 'last' now contains the index of the prior active module
     dt_develop_t *dev = piece->module->dev;
     if(piece->enabled
@@ -308,7 +308,7 @@ void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint6
 {
   for(int k = 0; k < cache->entries; k++)
   {
-    if (cache->basichash[k] == basichash)
+    if(cache->basichash[k] == basichash)
       continue;
     cache->basichash[k] = -1;
     cache->hash[k] = -1;

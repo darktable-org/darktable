@@ -247,7 +247,7 @@ static void _delete_selected_rows(dt_control_crawler_gui_t *gui)
     if(path)
     {
       GtkTreeIter  iter;
-      if (gtk_tree_model_get_iter(model, &iter, path))
+      if(gtk_tree_model_get_iter(model, &iter, path))
         gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
     }
   }

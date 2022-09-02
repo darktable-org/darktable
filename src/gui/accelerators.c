@@ -823,7 +823,7 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
       dt_lib_module_t *lib = (dt_lib_module_t *)owner;
 
       const gchar **views = lib->views(lib);
-      while (*views)
+      while(*views)
       {
         if     (strcmp(*views, "lighttable") == 0)
           vws |= DT_VIEW_LIGHTTABLE;
@@ -1823,7 +1823,7 @@ static gboolean _fallback_type_is_relevant(dt_action_t *ac, dt_action_type_t typ
         {
           if(el->effects == dt_action_effect_value) return TRUE;
           el++;
-        } while (el->name);
+        } while(el->name);
       }
     }
   }

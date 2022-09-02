@@ -100,7 +100,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
       dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
       dt_toast_log(_("compression: %3.2f%%"), compression*100.0f);
     }
-    else if (dt_modifier_is(state, 0)) // simple scroll to adjust curvature, calling func adjusts opacity with Ctrl
+    else if(dt_modifier_is(state, 0)) // simple scroll to adjust curvature, calling func adjusts opacity with Ctrl
     {
       float curvature = dt_conf_get_float("plugins/darkroom/masks/gradient/curvature");
       if(up)
@@ -362,7 +362,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2f(pts2[5] - pts2[1], pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-    if (check_angle < 0)
+    if(check_angle < 0)
       gradient->rotation += dv / M_PI * 180.0f;
     else
       gradient->rotation -= dv / M_PI * 180.0f;
@@ -600,7 +600,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
   return 0;
 }
 
-// check if (x,y) lies within reasonable limits relative to image frame
+// check if(x,y) lies within reasonable limits relative to image frame
 static inline int _gradient_is_canonical(const float x, const float y, const float wd, const float ht)
 {
   return (isnormal(x) && isnormal(y) && x >= -wd && x <= 2 * wd && y >= -ht && y <= 2 * ht) ? TRUE : FALSE;

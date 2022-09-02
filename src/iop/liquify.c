@@ -539,7 +539,7 @@ static void _distort_paths(const struct dt_iop_module_t *module,
     if(data->header.type == DT_LIQUIFY_PATH_INVALIDATED)
       break;
 
-    switch (data->header.type)
+    switch(data->header.type)
     {
     case DT_LIQUIFY_PATH_CURVE_TO_V1:
       len += 2;
@@ -564,7 +564,7 @@ static void _distort_paths(const struct dt_iop_module_t *module,
     if(data->header.type == DT_LIQUIFY_PATH_INVALIDATED)
       break;
 
-    switch (data->header.type)
+    switch(data->header.type)
     {
     case DT_LIQUIFY_PATH_CURVE_TO_V1:
       *b++ = crealf(data->node.ctrl1) / params->from_scale;
@@ -619,7 +619,7 @@ static void _distort_paths(const struct dt_iop_module_t *module,
     if(data->header.type == DT_LIQUIFY_PATH_INVALIDATED)
       break;
 
-    switch (data->header.type)
+    switch(data->header.type)
     {
        case DT_LIQUIFY_PATH_CURVE_TO_V1:
          data->node.ctrl1 = (b[0] + b[1] * I) * params->to_scale;
@@ -951,7 +951,7 @@ static void build_round_stamp(float complex **pstamp,
 
       float abs_lookup = abs_strength * lookup_table[idist] / iradius;
 
-      switch (warp->type)
+      switch(warp->type)
       {
          case DT_LIQUIFY_WARP_TYPE_RADIAL_GROW:
            *q1 = abs_lookup * ( x - y * I);
@@ -1125,7 +1125,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
                                                    gboolean inverted)
 {
   const int mapsize = map_extent->width * map_extent->height;
-  if (mapsize == 0)
+  if(mapsize == 0)
   {
     // there are no pixels for which we need distortion info, so return right away
     // caller will see the NULL and bypass any further processing of the points it wants to distort
@@ -1535,7 +1535,7 @@ static cl_int_t apply_global_distortion_map_cl(struct dt_iop_module_t *module,
   dt_liquify_kernel_descriptor_t kdesc = { .size = 0, .resolution = 100 };
   float *k = NULL;
 
-  switch (interpolation->id)
+  switch(interpolation->id)
   {
      case DT_INTERPOLATION_BILINEAR:
        kdesc.size = 1;
@@ -2020,7 +2020,7 @@ static void _draw_paths(dt_iop_module_t *module,
             || data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
           const float w = GET_UI_WIDTH(GIZMO);
-          switch (data->header.node_type)
+          switch(data->header.node_type)
           {
              case DT_LIQUIFY_NODE_TYPE_CUSP:
                draw_triangle(cr, point - w / 2.0 * I, -DT_M_PI / 2.0, w);
@@ -2517,7 +2517,7 @@ static void smooth_path_linsys(size_t n,
 
   for(int i = 0; i < n; i++)
   {
-    switch (equation[i])
+    switch(equation[i])
     {
     #define ABCD(A,B,C,D) { { a[i] = A; b[i] = B; c[i] = C; d[i] = D; continue; } }
        case 1:  ABCD(0, 2, 1,       k[i] + 2 * k[i+1]   ); break;
@@ -2551,7 +2551,7 @@ static void smooth_path_linsys(size_t n,
 
   for(int i = 0; i < n; i++)
   {
-    switch (equation[i])
+    switch(equation[i])
     {
        // keep end: c2 does not change
        case 5:
@@ -2936,10 +2936,10 @@ int mouse_moved(struct dt_iop_module_t *module,
 
     const float complex *start_pt = &d->warp.point;
 
-    switch (g->dragging.layer)
+    switch(g->dragging.layer)
     {
        case DT_LIQUIFY_LAYER_CENTERPOINT:
-         switch (d->header.type)
+         switch(d->header.type)
          {
             case DT_LIQUIFY_PATH_CURVE_TO_V1:
               d->node.ctrl2 += pt - d->warp.point;
@@ -2960,13 +2960,13 @@ int mouse_moved(struct dt_iop_module_t *module,
          break;
 
        case DT_LIQUIFY_LAYER_CTRLPOINT1:
-         switch (d->header.type)
+         switch(d->header.type)
          {
             case DT_LIQUIFY_PATH_CURVE_TO_V1:
               d->node.ctrl1 = pt;
               if(p && p->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
               {
-                switch (p->header.node_type)
+                switch(p->header.node_type)
                 {
                    case DT_LIQUIFY_NODE_TYPE_SMOOTH:
                      p->node.ctrl2 = p->warp.point +
@@ -2987,13 +2987,13 @@ int mouse_moved(struct dt_iop_module_t *module,
          break;
 
        case DT_LIQUIFY_LAYER_CTRLPOINT2:
-         switch (d->header.type)
+         switch(d->header.type)
          {
             case DT_LIQUIFY_PATH_CURVE_TO_V1:
               d->node.ctrl2 = pt;
               if(n && n->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
               {
-                switch (d->header.node_type)
+                switch(d->header.node_type)
                 {
                    case DT_LIQUIFY_NODE_TYPE_SMOOTH:
                      n->node.ctrl1 = d->warp.point +
@@ -3052,7 +3052,7 @@ static float dt_conf_get_sanitize_float(const char *name, float min, float max, 
   const float value = dt_conf_get_float(name);
   float new_value = CLAMP(value, min, max);
 
-  if (default_value != 0.0f && new_value != value) new_value = 0.25f * default_value + 0.75f * value;
+  if(default_value != 0.0f && new_value != value) new_value = 0.25f * default_value + 0.75f * value;
 
   dt_conf_set_float(name, new_value);
   return new_value;

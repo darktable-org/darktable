@@ -73,7 +73,7 @@ void dt_undo_cleanup(dt_undo_t *self)
 static void _free_undo_data(void *p)
 {
   dt_undo_item_t *item = (dt_undo_item_t *)p;
-  if (item->free_data) item->free_data(item->data);
+  if(item->free_data) item->free_data(item->data);
   free(item);
 }
 
@@ -238,8 +238,8 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
           *to = g_list_prepend(*to, item);
 
           l = next;
-          if (l) item = (dt_undo_item_t *)l->data;
-        } while (l && (item->type & filter) && (in_group || (fabs(item->ts - first_item_ts) < MAX_TIME_PERIOD)));
+          if(l) item = (dt_undo_item_t *)l->data;
+        } while(l && (item->type & filter) && (in_group || (fabs(item->ts - first_item_ts) < MAX_TIME_PERIOD)));
       }
 
       break;

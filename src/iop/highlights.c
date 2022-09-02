@@ -511,7 +511,7 @@ static inline float interp_pix_xtrans(const int ratio_next,
   {
     // set this pixel in ratio to the next
     assert(ratio_next != 0);
-    if (ratio_next > 0)
+    if(ratio_next > 0)
       return fminf(in[offset_next] / ratios[ratio_next], clip_val);
     else
       return fminf(in[offset_next] * ratios[-ratio_next], clip_val);
@@ -600,13 +600,13 @@ static inline void interpolate_color_xtrans(const void *const ivoid, void *const
     {
       // ratio to next pixel if this & next are unclamped and not in
       // 2x2 green block
-      if ((f0 != f1) &&
+      if((f0 != f1) &&
           (in[0] < clip0 && in[0] > 1e-5f) &&
           (in[offs] < clip1 && in[offs] > 1e-5f))
       {
         const int r = roff[f0][f1];
         assert(r != 0);
-        if (r > 0)
+        if(r > 0)
           ratios[r] = (3.f * ratios[r] + (in[offs] / in[0])) / 4.f;
         else
           ratios[-r] = (3.f * ratios[-r] + (in[0] / in[offs])) / 4.f;

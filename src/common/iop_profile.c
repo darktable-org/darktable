@@ -870,7 +870,7 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
   {
-    if (type != DT_COLORSPACE_DISPLAY)
+    if(type != DT_COLORSPACE_DISPLAY)
     {
       // ??? this error output has been disabled for a display profile.
       // see discussion in https://github.com/darktable-org/darktable/issues/6774

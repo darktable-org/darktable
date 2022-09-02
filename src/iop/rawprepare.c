@@ -186,7 +186,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values (no top/left crop)
-  if (d->x == 0 && d->y == 0) return 1;
+  if(d->x == 0 && d->y == 0) return 1;
 
   const float scale = piece->buf_in.scale / piece->iscale;
 
@@ -213,7 +213,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values (no top/left crop)
-  if (d->x == 0 && d->y == 0) return 1;
+  if(d->x == 0 && d->y == 0) return 1;
 
   const float scale = piece->buf_in.scale / piece->iscale;
 

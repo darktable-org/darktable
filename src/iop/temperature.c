@@ -718,7 +718,7 @@ int generate_preset_combo(struct dt_iop_module_t *self)
             int ft_pos = i;
             int last_ft = wb_preset[i].tuning;
             preset->min_ft_pos = ft_pos++;
-            while (strcmp(wb_name, wb_preset[ft_pos].name) == 0)
+            while(strcmp(wb_name, wb_preset[ft_pos].name) == 0)
             {
               if(wb_preset[ft_pos].tuning == 0)
               {
@@ -1221,13 +1221,13 @@ void gui_update(struct dt_iop_module_t *self)
         }
       }
     }
-    if (!found) //since we haven't got a match - it's user-set
+    if(!found) //since we haven't got a match - it's user-set
     {
       dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
     }
   }
 
-  if (!found || isnan(g->mod_temp)) // reset or initialize user-defined
+  if(!found || isnan(g->mod_temp)) // reset or initialize user-defined
   {
     g->mod_temp = tempK;
     g->mod_tint = tint;
@@ -1306,7 +1306,7 @@ static void prepare_matrices(dt_iop_module_t *module)
     return;
   }
 
-  if (!dt_colorspaces_conversion_matrices_xyz(module->dev->image_storage.adobe_XYZ_to_CAM,
+  if(!dt_colorspaces_conversion_matrices_xyz(module->dev->image_storage.adobe_XYZ_to_CAM,
                                               module->dev->image_storage.d65_color_matrix,
                                               g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
@@ -1792,7 +1792,7 @@ static void temp_label_click(GtkWidget *label, GdkEventButton *event, gpointer u
     g->colored_sliders = TRUE;
     g->blackbody_is_confusing = FALSE;
   }
-  else if (!g_strcmp0(old_config, "illuminant color"))
+  else if(!g_strcmp0(old_config, "illuminant color"))
   {
     dt_conf_set_string("plugins/darkroom/temperature/colored_sliders", "effect emulation");
     g->colored_sliders = TRUE;

@@ -698,7 +698,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       if(preview) zoom_scale *= ps;
       break;
   }
-  if (preview) zoom_scale /= dev->preview_downsampling;
+  if(preview) zoom_scale /= dev->preview_downsampling;
 
   return zoom_scale;
 }
@@ -793,7 +793,7 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   for(GList *forms = h->forms; forms; forms = g_list_next(forms))
   {
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
-    if (form)
+    if(form)
       dt_masks_write_masks_history_item(imgid, num, form);
   }
 
@@ -839,7 +839,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     history = next;
   }
   // then remove NIL items there
-  while ((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
+  while((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
     dev->history_end--;
 
   dev->history_end += kept_module;
@@ -2498,7 +2498,7 @@ void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
   for(; list; list = g_list_next(list))
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)list->data;
-    if (hitem->module == module)
+    if(hitem->module == module)
     {
       hitem->module = NULL;
     }
@@ -2672,7 +2672,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
   dt_pthread_mutex_lock(&dev->history_mutex);
   const int success = dt_dev_distort_transform_locked(dev,pipe,iop_order,transf_direction,points,points_count);
 
-  if (success
+  if(success
       && (dev->preview_downsampling != 1.0f)
       && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
           || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
@@ -2719,7 +2719,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
                                       float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
+  if((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
       for(size_t idx=0; idx < 2 * points_count; idx++)
@@ -3033,7 +3033,7 @@ float dt_second_window_get_zoom_scale(dt_develop_t *dev, const dt_dev_zoom_t zoo
       if(preview) zoom_scale *= ps;
       break;
   }
-  if (preview) zoom_scale /= dev->preview_downsampling;
+  if(preview) zoom_scale /= dev->preview_downsampling;
   return zoom_scale;
 }
 

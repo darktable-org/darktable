@@ -146,11 +146,11 @@ const dt_input_driver_definition_t driver_definition
 
 void midi_write(midi_device *midi, gint channel, gint type, gint key, gint velocity)
 {
-  if (midi->portmidi_out)
+  if(midi->portmidi_out)
   {
     PmMessage message = Pm_Message((type << 4) + channel, key, velocity);
     PmError pmerror = Pm_WriteShort(midi->portmidi_out, 0, message);
-    if (pmerror != pmNoError)
+    if(pmerror != pmNoError)
     {
       g_print("Portmidi error: %s\n", Pm_GetErrorText(pmerror));
       Pm_Close(midi->portmidi_out);
@@ -321,7 +321,7 @@ static gboolean poll_midi_devices(gpointer user_data)
 
       int event_type = event_status >> 4;
 
-      if (event_type == 0x9 && // note on
+      if(event_type == 0x9 && // note on
           event_data2 == 0) // without volume
       {
         event_type = 0x8; // note off
@@ -331,7 +331,7 @@ static gboolean poll_midi_devices(gpointer user_data)
 
       gboolean x_touch_mini_layer_B = FALSE;
 
-      switch (event_type)
+      switch(event_type)
       {
       case 0x9:  // note on
         dt_print(DT_DEBUG_INPUT, "Note On: Channel %d, Data1 %d\n", midi->channel, event_data1);
@@ -508,7 +508,7 @@ void midi_device_free(midi_device *midi)
 {
   Pm_Close(midi->portmidi_in);
 
-  if (midi->portmidi_out)
+  if(midi->portmidi_out)
   {
     Pm_Close(midi->portmidi_out);
   }

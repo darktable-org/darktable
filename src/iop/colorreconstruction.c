@@ -378,7 +378,7 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
       const float ain = in[index + 1];
       const float bin = in[index + 2];
       // we deliberately ignore pixels above threshold
-      if (Lin > threshold) continue;
+      if(Lin > threshold) continue;
 
       switch(precedence)
       {
@@ -533,7 +533,7 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
       const float bin = out[index + 2] = in[index + 2];
       out[index + 3] = in[index + 3];
       const float blend = CLAMPS(20.0f / threshold * Lin - 19.0f, 0.0f, 1.0f);
-      if (blend == 0.0f) continue;
+      if(blend == 0.0f) continue;
       grid_rescale(b, i, j, roi, rescale, &px, &py);
       image_to_grid(b, px, py, Lin, &x, &y, &z);
       // trilinear lookup:

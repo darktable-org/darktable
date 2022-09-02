@@ -338,7 +338,7 @@ gboolean dt_conf_key_not_empty(const char *name)
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser)
 {
   const gchar *folder = dt_conf_get_string_const(name);
-  if (folder)
+  if(folder)
   {
     gtk_file_chooser_set_current_folder(chooser, folder);
     return TRUE;
@@ -478,7 +478,7 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
     gpointer key, value;
 
     g_hash_table_iter_init (&iter, darktable.conf->x_confgen);
-    while (g_hash_table_iter_next (&iter, &key, &value))
+    while(g_hash_table_iter_next (&iter, &key, &value))
     {
       const char *name = (const char *)key;
       const dt_confgen_value_t *entry = (dt_confgen_value_t *)value;
@@ -629,7 +629,7 @@ int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
   if(!dt_confgen_value_exists(name, kind))
   {
     //early bail
-    switch (kind)
+    switch(kind)
     {
     case DT_MIN:
       return INT_MIN;
@@ -647,7 +647,7 @@ int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
   //if str is NULL or empty, dt_calculator_solve will return NAN
   const float value = dt_calculator_solve(1, str);
 
-  switch (kind)
+  switch(kind)
   {
   case DT_MIN:
     return isnan(value) ? INT_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
@@ -667,7 +667,7 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
   if(!dt_confgen_value_exists(name, kind))
   {
     //early bail
-    switch (kind)
+    switch(kind)
     {
     case DT_MIN:
       return INT64_MIN;
@@ -685,7 +685,7 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
   //if str is NULL or empty, dt_calculator_solve will return NAN
   const float value = dt_calculator_solve(1, str);
 
-  switch (kind)
+  switch(kind)
   {
   case DT_MIN:
     return isnan(value) ? INT64_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
@@ -711,7 +711,7 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
   if(!dt_confgen_value_exists(name, kind))
   {
     //early bail
-    switch (kind)
+    switch(kind)
     {
     case DT_MIN:
       return -FLT_MAX;
@@ -730,7 +730,7 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
   //if str is NULL or empty, dt_calculator_solve will return NAN
   const float value = dt_calculator_solve(1, str);
 
-  switch (kind)
+  switch(kind)
   {
   case DT_MIN:
     // to anyone askig FLT_MIN is superclose to 0, not furthest value from 0 possible in float

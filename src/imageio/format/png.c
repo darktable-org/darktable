@@ -316,7 +316,7 @@ static int __attribute__((__unused__)) read_header(const char *filename, dt_imag
 #if 0
 int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
 {
-  if (setjmp(png_jmpbuf(png->png_ptr)))
+  if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, NULL, NULL);
@@ -324,7 +324,7 @@ int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
   }
   uint32_t bit_depth = png_get_bit_depth(png->png_ptr, png->info_ptr);
   // strip down to 8 bit channels
-  if (bit_depth == 16)
+  if(bit_depth == 16)
     png_set_strip_16(png->png_ptr);
 
   return 0;

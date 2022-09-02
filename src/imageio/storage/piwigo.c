@@ -187,7 +187,7 @@ static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
 
   g_hash_table_iter_init (&iter, table);
 
-  while (g_hash_table_iter_next (&iter, &key, &value))
+  while(g_hash_table_iter_next (&iter, &key, &value))
   {
     if(key && value)
     {

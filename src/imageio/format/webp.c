@@ -87,7 +87,7 @@ static const char *const EncoderError[] = {
 
 const char *get_error_str(int err)
 {
-  if (err < 0 || err >= sizeof(EncoderError)/sizeof(EncoderError[0]))
+  if(err < 0 || err >= sizeof(EncoderError)/sizeof(EncoderError[0]))
   {
     return "unknown error (consider filing a darktable issue to update the WebP error list)";
   }

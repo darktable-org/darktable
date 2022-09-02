@@ -328,7 +328,7 @@ int main(int argc, char *arg[])
           usage(arg[0]);
           exit(1);
         }
-        if (*arg[k] == '.')
+        if(*arg[k] == '.')
         {
           //remove dot ;)
           arg[k]++;
@@ -440,7 +440,7 @@ int main(int argc, char *arg[])
     output_filename = g_strdup(input_filename);
     input_filename = xmp_filename = NULL;
   }
-  else if (inputs && file_counter == 2)
+  else if(inputs && file_counter == 2)
   {
     // inputs as options, xmp & output specified
     if(output_filename)
@@ -449,7 +449,7 @@ int main(int argc, char *arg[])
     xmp_filename = input_filename;
     input_filename = NULL;
   }
-  else if (inputs && file_counter == 3)
+  else if(inputs && file_counter == 3)
   {
     fprintf(stderr, _("error: input file and import opts specified! that's not supported!\n"));
     usage(arg[0]);

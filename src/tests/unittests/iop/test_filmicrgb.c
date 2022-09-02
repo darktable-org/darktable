@@ -74,13 +74,13 @@ static void test_default_group(void **state)
 
 static void test_clamp_simd(void **state)
 {
-  for (float x = -0.5f; x <= 1.5f; x += 0.1f)
+  for(float x = -0.5f; x <= 1.5f; x += 0.1f)
   {
-    if (x < 0.0f)
+    if(x < 0.0f)
     {
       assert_float_equal(clamp_simd(x), 0.0f, E);
     }
-    else if (x > 1.0f)
+    else if(x > 1.0f)
     {
       assert_float_equal(clamp_simd(x), 1.0f, E);
     }
@@ -133,7 +133,7 @@ static void test_pixel_rgb_norm_power(void **state)
   {
     float norm = pixel_rgb_norm_power(p);
     TR_DEBUG("pixel={%e, %e, %e) => norm=%e", p[0], p[1], p[2], norm);
-    if (p[0] > 1e-6 && p[0] < 1e6)
+    if(p[0] > 1e-6 && p[0] < 1e6)
     {
       assert_true(norm > 0.0f);
       assert_true(norm <= FLT_MAX);
@@ -151,12 +151,12 @@ static void test_pixel_rgb_norm_power(void **state)
   {
     float norm = pixel_rgb_norm_power(p);
     TR_DEBUG("pixel={%e, %e, %e) => norm=%e", p[0], p[1], p[2], norm);
-    if (fabsf(p[0]) > 1e-6 && fabsf(p[0]) < 1e6)
+    if(fabsf(p[0]) > 1e-6 && fabsf(p[0]) < 1e6)
     {
       assert_true(norm > 0.0f);
       assert_true(norm <= FLT_MAX);
     }
-    if (p[0] > -FLT_MIN && p[0] < FLT_MIN) // translates to: if(p[0] == 0)
+    if(p[0] > -FLT_MIN && p[0] < FLT_MIN) // translates to: if(p[0] == 0)
     {
       assert_float_equal(norm, 0.0f, FLT_MIN);
     }
@@ -247,7 +247,7 @@ static void test_log_tonemapping_v2(void **state)
     float ret = log_tonemapping_v2(p[0], grey, black, dyn_range);
     TR_DEBUG("%e => %e", p[0], ret);
     float exp = testimg_val_to_log(p[0]);
-    if (exp < MIN)
+    if(exp < MIN)
     {
       assert_float_equal(ret, MIN, E);  // bound to -16EV
     }
@@ -266,11 +266,11 @@ static void test_log_tonemapping_v2(void **state)
     float ret = log_tonemapping_v2(p[0], (grey / 2.0f), black, dyn_range);
     TR_DEBUG("%e => %e", p[0], ret);
     float exp = testimg_val_to_log(p[0] * 2.0f);  // *2.0 means +1EV
-    if (exp < MIN)
+    if(exp < MIN)
     {
       assert_float_equal(ret, MIN, E);  // bound to 2^-16
     }
-    else if (exp > MAX)
+    else if(exp > MAX)
     {
       assert_float_equal(ret, MAX, E);  // bound to 1.0
     }
@@ -352,9 +352,9 @@ static void test_filmic_desaturate_v1(void **state)
   TR_STEP("verify values are correct for different latitudes");
   TR_BUG("values inside latitude are not always 1.0 (but very close), "
     "especially at the borders");
-  for (float latitude_min = 0.1f; latitude_min < 0.5f + E; latitude_min += 0.1f)
+  for(float latitude_min = 0.1f; latitude_min < 0.5f + E; latitude_min += 0.1f)
   {
-    for (float latitude_max = 0.1f; latitude_max < 0.5f + E; latitude_max += 0.1f)
+    for(float latitude_max = 0.1f; latitude_max < 0.5f + E; latitude_max += 0.1f)
     {
       TR_DEBUG("saturation=%e", saturation);
       TR_DEBUG("latitude_min=%e", latitude_min);
@@ -376,7 +376,7 @@ static void test_filmic_desaturate_v1(void **state)
           filmic_desaturate_v1(p[0], sigma_toe, sigma_shoulder, saturation);
         TR_DEBUG("%e => %e", p[0], ret);
 
-        if (lattitude_min == lattitude_max)
+        if(lattitude_min == lattitude_max)
         {
           // values symmetric (due to sigma_shoulder = sigma_toe):
           float *p1 = get_pixel(ti, ti->width - x - 1, y);
@@ -386,13 +386,13 @@ static void test_filmic_desaturate_v1(void **state)
         }
 
         // values correct on extreme borders:
-        if (x == 0 || x == ti->width - 1)
+        if(x == 0 || x == ti->width - 1)
         {
           assert_float_equal(ret, 1.0f - 1.0f / saturation, E);
         }
 
         //bug: values close to 1.0 during latitude, not exactly 1.0:
-        if (x > (lattitude_min * ti->width) &&
+        if(x > (lattitude_min * ti->width) &&
             x < ((1.0f - lattitude_max) * ti->width - 1))
         {
           assert_float_equal(ret, 1.0f, 1e-2);
