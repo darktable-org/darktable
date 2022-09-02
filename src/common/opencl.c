@@ -3426,7 +3426,7 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
 static int nextpow2(int n)
 {
   int k = 1;
-  while (k < n)
+  while(k < n)
     k <<= 1;
   return k;
 }

@@ -930,7 +930,7 @@ static gboolean _window_configure(GtkWidget *da, GdkEvent *event, gpointer user_
 
 guint dt_gui_translated_key_state(GdkEventKey *event)
 {
-  if (gdk_keyval_to_lower(event->keyval) == gdk_keyval_to_upper(event->keyval) )
+  if(gdk_keyval_to_lower(event->keyval) == gdk_keyval_to_upper(event->keyval) )
   {
     //not an alphabetic character
     //find any modifiers consumed to produce keyval
@@ -1274,7 +1274,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   /* start the event loop */
   gtk_main();
 
-  if (darktable.gui->surface)
+  if(darktable.gui->surface)
   {
     cairo_surface_destroy(darktable.gui->surface);
     darktable.gui->surface = NULL;
@@ -1742,7 +1742,7 @@ void dt_ui_restore_panels(dt_ui_t *ui)
 
 void dt_ui_update_scrollbars(dt_ui_t *ui)
 {
-  if (!darktable.gui->scrollbars.visible) return;
+  if(!darktable.gui->scrollbars.visible) return;
 
   /* update scrollbars for current view */
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -1767,7 +1767,7 @@ void dt_ui_scrollbars_show(dt_ui_t *ui, gboolean show)
 {
   darktable.gui->scrollbars.visible = show;
 
-  if (show)
+  if(show)
   {
     dt_ui_update_scrollbars(ui);
   }

@@ -101,7 +101,7 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
     dt_lua_register_format_type(darktable.lua_state.state, module, my_type);
 #endif
     module->init(module);
-    if (!module->ready)
+    if(!module->ready)
     {
       goto api_h_error;
     }
@@ -382,17 +382,17 @@ gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum)
   int i = -1;
   while(scale_str[++i])
   {
-      if ((scale_str[i] == '.') || (scale_str[i] == ',')) scale_str[i] = sep[1];
+      if((scale_str[i] == '.') || (scale_str[i] == ',')) scale_str[i] = sep[1];
   }
 
   gchar *pdiv = strchr(scale_str, '/');
 
-  if (pdiv == NULL)
+  if(pdiv == NULL)
   {
     _num = atof(scale_str);
     _denum = 1;
   }
-  else if (pdiv-scale_str == 0)
+  else if(pdiv-scale_str == 0)
   {
     _num = 1;
     _denum = atof(pdiv + 1);
@@ -403,8 +403,8 @@ gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum)
     _denum = atof(pdiv+1);
   }
 
-  if (_num == 0.0) _num = 1.0;
-  if (_denum == 0.0) _denum = 1.0;
+  if(_num == 0.0) _num = 1.0;
+  if(_denum == 0.0) _denum = 1.0;
 
   *num = _num;
   *denum = _denum;

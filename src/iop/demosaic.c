@@ -2252,7 +2252,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
   // build interpolation lookup table which for a given offset in the sensor
   // lists neighboring pixels from which to interpolate:
   // NUM_PIXELS                 # of neighboring pixels to read
-  // for (1..NUM_PIXELS):
+  // for(1..NUM_PIXELS):
   //   OFFSET                   # in bytes from current pixel
   //   WEIGHT                   # how much weight to give this neighbor
   //   COLOR                    # sensor color
@@ -2879,7 +2879,7 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
                                const dt_iop_roi_t *const roi_out)
 {
   int flags = 0;
-  switch (piece->pipe->type & DT_DEV_PIXELPIPE_ANY)
+  switch(piece->pipe->type & DT_DEV_PIXELPIPE_ANY)
   {
     case DT_DEV_PIXELPIPE_FULL:
     case DT_DEV_PIXELPIPE_PREVIEW2:
@@ -4030,7 +4030,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     // build interpolation lookup table for linear interpolation which for a given offset in the sensor
     // lists neighboring pixels from which to interpolate:
     // NUM_PIXELS                 # of neighboring pixels to read
-    // for (1..NUM_PIXELS):
+    // for(1..NUM_PIXELS):
     //   OFFSET                   # in bytes from current pixel
     //   WEIGHT                   # how much weight to give this neighbor
     //   COLOR                    # sensor color

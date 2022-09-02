@@ -585,7 +585,7 @@ static void _speed_up_callback(dt_action_t *action)
 static void _step_back_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
-  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  if(d->auto_advance) dt_control_log(_("slideshow paused"));
   d->auto_advance = FALSE;
   _step_state(d, S_REQUEST_STEP_BACK);
 }
@@ -593,7 +593,7 @@ static void _step_back_callback(dt_action_t *action)
 static void _step_forward_callback(dt_action_t *action)
 {
   dt_slideshow_t *d = dt_action_view(action)->data;
-  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  if(d->auto_advance) dt_control_log(_("slideshow paused"));
   d->auto_advance = FALSE;
   _step_state(d, S_REQUEST_STEP);
 }

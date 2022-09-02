@@ -360,7 +360,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
-  switch (data->operation_mode)
+  switch(data->operation_mode)
   {
     case OPERATION_MODE_RGB:
       process_rgb(piece, (const float *const restrict)ivoid, (float *const restrict)ovoid, roi_out);

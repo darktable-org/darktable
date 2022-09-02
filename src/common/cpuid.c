@@ -61,10 +61,10 @@ dt_cpu_flags_t dt_detect_cpu_features()
     }
 
     /* Are there extensions? */
-    if (__get_cpuid(0x80000000,&ax,&bx,&cx,&dx))
+    if(__get_cpuid(0x80000000,&ax,&bx,&cx,&dx))
     {
       /* Ask extensions */
-      if (__get_cpuid(0x80000001,&ax,&bx,&cx,&dx))
+      if(__get_cpuid(0x80000001,&ax,&bx,&cx,&dx))
       {
         if(dx & 0x80000000) cpuflags |= CPU_FLAG_3DNOW;
         if(dx & 0x40000000) cpuflags |= CPU_FLAG_3DNOW_EXT;

@@ -787,7 +787,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         A[j*N4+i] = 0;
     // make coefficient matrix triangular
     int *pivot = malloc(sizeof(*pivot) * N4);
-    if (gauss_make_triangular(A, pivot, N4))
+    if(gauss_make_triangular(A, pivot, N4))
     {
       // calculate coefficients for L channel
       for(int i=0;i<N;i++) b[i] = p->target_L[i];

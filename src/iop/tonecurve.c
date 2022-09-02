@@ -369,7 +369,7 @@ static inline float dt_prophoto_rgb_luminance(const float *const rgb)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          i, o, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -631,7 +631,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("exponential (base 2)"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  for (int k=0; k<sizeof(preset_camera_curves)/sizeof(preset_camera_curves[0]); k++)
+  for(int k=0; k<sizeof(preset_camera_curves)/sizeof(preset_camera_curves[0]); k++)
   {
     // insert the preset
     dt_gui_presets_add_generic(preset_camera_curves[k].name, self->op, self->version(),
@@ -935,12 +935,12 @@ static float to_log(const float x, const float base, const int ch, const int sem
   // don't log-encode the a and b channels
   if(base > 0.0f && ch == ch_L)
   {
-    if (semilog == 1 && is_ordinate == 1)
+    if(semilog == 1 && is_ordinate == 1)
     {
       // we don't want log on ordinate axis in semilog x
       return x;
     }
-    else if (semilog == -1 && is_ordinate == 0)
+    else if(semilog == -1 && is_ordinate == 0)
     {
       // we don't want log on abcissa axis in semilog y
       return x;
@@ -961,12 +961,12 @@ static float to_lin(const float x, const float base, const int ch, const int sem
   // don't log-encode the a and b channels
   if(base > 0.0f && ch == ch_L)
   {
-    if (semilog == 1 && is_ordinate == 1)
+    if(semilog == 1 && is_ordinate == 1)
     {
       // we don't want log on ordinate axis in semilog x
       return x;
     }
-    else if (semilog == -1 && is_ordinate == 0)
+    else if(semilog == -1 && is_ordinate == 0)
     {
       // we don't want log on abcissa axis in semilog y
       return x;
@@ -1307,7 +1307,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke_preserve(cr);
 
-  if (ch==ch_L)
+  if(ch==ch_L)
   { // remove below black to white transition to improve readability of the graph
     cairo_set_source_rgb(cr, .3, .3, .3);
     cairo_rectangle(cr, 0, 0, width, height);
@@ -1354,17 +1354,17 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // draw grid
   set_color(cr, darktable.bauhaus->graph_border);
 
-  if (c->loglogscale > 0.0f && ch == ch_L )
+  if(c->loglogscale > 0.0f && ch == ch_L )
   {
-    if (c->semilog == 0)
+    if(c->semilog == 0)
     {
       dt_draw_loglog_grid(cr, 4, 0, height, width, 0, c->loglogscale + 1.0f);
     }
-    else if (c->semilog == 1)
+    else if(c->semilog == 1)
     {
       dt_draw_semilog_x_grid(cr, 4, 0, height, width, 0, c->loglogscale + 1.0f);
     }
-    else if (c->semilog == -1)
+    else if(c->semilog == -1)
     {
       dt_draw_semilog_y_grid(cr, 4, 0, height, width, 0, c->loglogscale + 1.0f);
     }
@@ -1403,7 +1403,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_move_to(cr, 0, height);
       set_color(cr, darktable.bauhaus->inset_histogram);
 
-      if (ch == ch_L && c->loglogscale > 0.0f)
+      if(ch == ch_L && c->loglogscale > 0.0f)
       {
         dt_draw_histogram_8_log_base(cr, hist, 4, ch, is_linear, c->loglogscale + 1.0f);
       }

@@ -409,7 +409,7 @@ static void _create_pdf(dt_job_t *job, dt_images_box imgs, const float width, co
 
 /*
   // ??? should a profile be embedded here?
-  if (*printer_profile)
+  if(*printer_profile)
     icc_id = dt_pdf_add_icc(pdf, printer_profile);
 */
   int32_t count = 0;

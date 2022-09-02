@@ -63,10 +63,10 @@ static void _pop_undo_execute(const int imgid, const uint8_t before, const uint8
   {
     if(after & (1<<color))
     {
-      if (!(before & (1<<color)))
+      if(!(before & (1<<color)))
         dt_colorlabels_set_label(imgid, color);
     }
-    else if (before & (1<<color))
+    else if(before & (1<<color))
       dt_colorlabels_remove_label(imgid, color);
   }
 }
@@ -315,7 +315,7 @@ static float _action_process_color_label(gpointer target, dt_action_element_t el
   else if(darktable.develop && element != 0)
   {
     const int image_id = darktable.develop->image_storage.id;
-    if (image_id != -1)
+    if(image_id != -1)
     {
       return_value = dt_colorlabels_check_label(image_id, element - 1);
     }

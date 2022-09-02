@@ -1906,7 +1906,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       }
     }
     // check if another location is clicked - ctrl gives priority to images
-    if (!dt_modifier_is(e->state, GDK_CONTROL_MASK) &&
+    if(!dt_modifier_is(e->state, GDK_CONTROL_MASK) &&
         dt_conf_get_bool("plugins/map/showalllocations"))
     {
       OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
@@ -2897,7 +2897,7 @@ static int _dbscan_expand(unsigned int index)
   db.seeds->num_members = 0;
   _get_epsilon_neighbours(db.seeds, index);
 
-  if (db.seeds->num_members < db.minpts)
+  if(db.seeds->num_members < db.minpts)
     db.points[index].cluster_id = NOISE;
   else
   {

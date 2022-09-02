@@ -785,10 +785,10 @@ GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
   gchar *entry = g_strdup(text);
   gchar *prev = entry;
   int len = strlen(prev);
-  while (len)
+  while(len)
   {
     gchar *next = g_strstr_len(prev, -1, separator);
-    if (next)
+    if(next)
     {
       const gchar c = next[0];
       next[0] = '\0';
@@ -842,7 +842,7 @@ char *dt_util_format_exposure(const float exposuretime)
 
 char *dt_read_file(const char *const filename, size_t *filesize)
 {
-  if (filesize) *filesize = 0;
+  if(filesize) *filesize = 0;
   FILE *fd = g_fopen(filename, "rb");
   if(!fd) return NULL;
 
@@ -855,9 +855,9 @@ char *dt_read_file(const char *const filename, size_t *filesize)
 
   const size_t count = fread(content, sizeof(char), end, fd);
   fclose(fd);
-  if (count == end)
+  if(count == end)
   {
-    if (filesize) *filesize = end;
+    if(filesize) *filesize = end;
     return content;
   }
   free(content);

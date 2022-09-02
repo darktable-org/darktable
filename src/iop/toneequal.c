@@ -617,7 +617,7 @@ static float get_luminance_from_buffer(const float *const buffer,
                             y };			    // padding for vectorization
 
   float luminance = 0.0f;
-  if (x > 0 && x < width - 2)
+  if(x > 0 && x < width - 2)
   {
     // no clamping needed on x, which allows us to vectorize
     // apply the convolution
@@ -1674,12 +1674,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     invalidate_luminance_cache(self);
   }
-  else if (w == g->details)
+  else if(w == g->details)
   {
     invalidate_luminance_cache(self);
     show_guiding_controls(self);
   }
-  else if (w == g->contrast_boost || w == g->exposure_boost)
+  else if(w == g->contrast_boost || w == g->exposure_boost)
   {
     invalidate_luminance_cache(self);
     dt_bauhaus_widget_set_quad_active(w, FALSE);

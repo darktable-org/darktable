@@ -262,7 +262,7 @@ static void _brush_init_ctrl_points(dt_masks_form_t *form)
   // we need extra points to deal with curve ends
   dt_masks_point_brush_t start_point[2], end_point[2];
 
-  for (GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
+  for(GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
   {
     dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)form_points->data;
     // if the point has not been set manually, we redefine it
@@ -372,7 +372,7 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   float *dborder_ptr = dt_masks_dynbuf_reserve_n(dborder, 2*(l-1));
   // and fill them in: the same center pos for each point in dpoints, and the corresponding border point at
   //  successive angular positions for dborder
-  if (dpoints_ptr && dborder_ptr)
+  if(dpoints_ptr && dborder_ptr)
   {
     for(int i = 1; i < l; i++)
     {
@@ -420,7 +420,7 @@ static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, flo
   float *dborder_ptr = dt_masks_dynbuf_reserve_n(dborder, 2*(l-1));
   // and fill them in: the same center pos for each point in dpoints, and the corresponding border point at
   //  successive angular positions for dborder
-  if (dpoints_ptr && dborder_ptr)
+  if(dpoints_ptr && dborder_ptr)
   {
     for(int i = 1; i < l; i++)
     {
@@ -458,7 +458,7 @@ static void _brush_points_stamp(float *cmax, float *bmin, dt_masks_dynbuf_t *dpo
   float *dborder_ptr = dt_masks_dynbuf_reserve_n(dborder, 2*(l-1));
   // and fill them in: the same center pos for each point in dpoints, and the corresponding border point at
   //  successive angular positions for dborder
-  if (dpoints_ptr && dborder_ptr)
+  if(dpoints_ptr && dborder_ptr)
   {
     for(int i = 0; i < l; i++)
     {
@@ -625,7 +625,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
   {
     const dt_masks_point_brush_t *const pt = (dt_masks_point_brush_t *)form_points->data;
     float *const buf = dt_masks_dynbuf_reserve_n(dpoints, 6);
-    if (buf)
+    if(buf)
     {
       buf[0] = pt->ctrl1[0] * wd - dx;
       buf[1] = pt->ctrl1[1] * ht - dy;
@@ -1002,7 +1002,7 @@ static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t 
     for(int i = corner_count * 3; i < gpt->border_count; i++)
     {
       const float yy = gpt->border[i * 2 + 1];
-      if (((y<=yy && y>last) || (y>=yy && y<last)) && (gpt->border[i * 2] > x)) nb++;
+      if(((y<=yy && y>last) || (y>=yy && y<last)) && (gpt->border[i * 2] > x)) nb++;
       last = yy;
     }
     *inside = *inside_border = (nb & 1);
@@ -2532,10 +2532,10 @@ static void _brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_fo
 
 #if 0
     //we draw the brush segment by segment
-    for (int k=0; k<nb; k++)
+    for(int k=0; k<nb; k++)
     {
       //draw the point
-      if (gui->point_border_selected == k)
+      if(gui->point_border_selected == k)
       {
         anchor_size = 7.0f / zoom_scale;
       }
@@ -2550,7 +2550,7 @@ static void _brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_fo
                       anchor_size, anchor_size);
       cairo_fill_preserve(cr);
 
-      if (gui->point_border_selected == k) cairo_set_line_width(cr, 2.0/zoom_scale);
+      if(gui->point_border_selected == k) cairo_set_line_width(cr, 2.0/zoom_scale);
       else cairo_set_line_width(cr, 1.0/zoom_scale);
       cairo_set_source_rgba(cr, .3, .3, .3, .8);
       cairo_set_dash(cr, dashed, 0, 0);

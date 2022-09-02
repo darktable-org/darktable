@@ -1491,7 +1491,7 @@ static gboolean _toolbar_show_popup(gpointer user_data)
 static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
-  if (!d->gui_attached) return;
+  if(!d->gui_attached) return;
 
   d->iso_12646.enabled = !d->iso_12646.enabled;
   d->width = d->orig_width;
@@ -2137,7 +2137,7 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
         if(darktable.develop->gui_module)
         {
           dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)darktable.develop->gui_module->blend_data;
-          if (bd) lib->full_preview_masks_state = bd->masks_shown;
+          if(bd) lib->full_preview_masks_state = bd->masks_shown;
         }
         // we set the zoom values to "fit"
         lib->full_preview_last_zoom = dt_control_get_dev_zoom();
@@ -3252,7 +3252,7 @@ void leave(dt_view_t *self)
     if(!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
 
     // force refresh if module has mask visualized
-    if (module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
+    if(module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
 
     dt_action_cleanup_instance_iop(module);
     dt_iop_cleanup_module(module);
@@ -3778,13 +3778,13 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       scale = 8.0f / ppd;
   }
 
-  if (fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
+  if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
     scale = fmaxf(scale, 0.5 * fitscale);
   }
-  else if (fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
+  else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
@@ -4112,13 +4112,13 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
     else
       scale = 8.0f / ppd;
   }
-  if (fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
+  if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
     scale = fmaxf(scale, 0.5 * fitscale);
   }
-  else if (fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
+  else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;

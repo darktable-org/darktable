@@ -138,7 +138,7 @@ static void dwt_decompose_vert(float *const restrict out, const float *const res
     const float* const restrict above = in + 4 * above_row * width;
     const float* const restrict below = in + 4 * below_row * width;
     float* const restrict temprow = out + rowstart;
-    for (size_t col = 0; col < 4*width; col += 4)
+    for(size_t col = 0; col < 4*width; col += 4)
     {
       for_each_channel(c,aligned(center, above, below, temprow : 16))
       {
@@ -172,7 +172,7 @@ static void dwt_decompose_horiz(float *const restrict out, float *const restrict
     float* const restrict details = in + rowindex;
     float* const restrict coarse = out + rowindex;
 
-    for (int col = 0; col < width - hscale; col++)
+    for(int col = 0; col < width - hscale; col++)
     {
       const size_t leftpos = (size_t)4*abs(col-hscale);	// the abs() handles reflection at the left edge
       const size_t rightpos = (size_t)4*(col+hscale);
@@ -188,7 +188,7 @@ static void dwt_decompose_horiz(float *const restrict out, float *const restrict
       }
     }
     // handle reflection at right edge
-    for (int col = width - hscale; col < width; col++)
+    for(int col = width - hscale; col < width; col++)
     {
       const size_t leftpos = (size_t)4 * abs(col-hscale); // still need to handle reflection, if hscale>=width/2
       const size_t rightpos = (size_t)4 * (2*width - 2 - (col+hscale));
@@ -410,7 +410,7 @@ static void dwt_denoise_vert_1ch(float *const restrict out, const float *const r
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-    for (int col= 0; col < width; col++)
+    for(int col= 0; col < width; col++)
     {
       outrow[col] = 2.f * center[col] + above[col] + below[col];
     }
@@ -445,7 +445,7 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-    for (int col = 0; col < hscale; col++)
+    for(int col = 0; col < hscale; col++)
     {
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
       const float hat = (2.f * coarse[col] + coarse[hscale-col] + coarse[col+hscale]) / 16.f;
@@ -461,7 +461,7 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-    for (int col = hscale; col < width - hscale; col++)
+    for(int col = hscale; col < width - hscale; col++)
     {
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
       const float hat = (2.f * coarse[col] + coarse[col-hscale] + coarse[col+hscale]) / 16.f;
@@ -478,7 +478,7 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-    for (int col = width - hscale; col < width; col++)
+    for(int col = width - hscale; col < width; col++)
     {
       const float right = coarse[2*width - 2 - (col+hscale)];
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
@@ -489,10 +489,10 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
       details[col] = hat;		// done with original input, so we can overwrite it with 'coarse'
       accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
     }
-    if (last)
+    if(last)
     {
       // add the details to the residue to create the final denoised result
-      for (int col = 0; col < width; col++)
+      for(int col = 0; col < width; col++)
       {
         details[col] += accum_row[col];
       }

@@ -176,7 +176,7 @@ tree_on_row_activated(GtkTreeView        *treeview,
 
   // select now the one that got double-clicked
 
-  if (gtk_tree_model_get_iter(model, &iter, path))
+  if(gtk_tree_model_get_iter(model, &iter, path))
   {
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_HIST_ITEMS_COL_ENABLED, TRUE, -1);
     // and finally close the dialog

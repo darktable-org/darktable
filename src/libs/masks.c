@@ -1365,7 +1365,7 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 
   const int gui_reset = lm->gui_reset;
   lm->gui_reset = 1;
-  // if (lm->treeview) gtk_widget_destroy(lm->treeview);
+  // if(lm->treeview) gtk_widget_destroy(lm->treeview);
 
   // if a treeview is already present, let's get the currently selected items
   // as we are going to recreate the tree.

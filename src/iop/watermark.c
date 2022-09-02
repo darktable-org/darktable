@@ -998,7 +998,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   g_strlcpy(d->filename, p->filename, sizeof(d->filename));
   memset(d->text, 0, sizeof(d->text));
   g_strlcpy(d->text, p->text, sizeof(d->text));
-  for (int k=0; k<3; k++)
+  for(int k=0; k<3; k++)
     d->color[k] = p->color[k];
   memset(d->font, 0, sizeof(d->font));
   g_strlcpy(d->font, p->font, sizeof(d->font));

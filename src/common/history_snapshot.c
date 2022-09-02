@@ -41,7 +41,7 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
                               "SELECT history_end FROM main.images WHERE id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
     *history_end = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
@@ -52,7 +52,7 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
                               "SELECT MAX(id) FROM memory.undo_history WHERE imgid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
     *snap_id = sqlite3_column_int(stmt, 0) + 1;
   sqlite3_finalize(stmt);
 

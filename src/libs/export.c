@@ -382,7 +382,7 @@ static void _scale_changed(GtkEntry *spin, dt_lib_export_t *d)
   int i, j = 0, idec = 0, idiv = 0, pdiv = 0;
   char new_value[30] = "";
 
-  for (i = 0; i < len; i++)
+  for(i = 0; i < len; i++)
   {
     char *val = strchr(validSign, value[i]);
     if(val == NULL)

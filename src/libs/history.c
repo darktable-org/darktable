@@ -1001,7 +1001,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   d->record_history_level -= 1;
 
-  if (d->record_undo == TRUE && (d->record_history_level == 0))
+  if(d->record_undo == TRUE && (d->record_history_level == 0))
   {
     /* record undo/redo history snapshot */
     dt_undo_history_t *hist = malloc(sizeof(dt_undo_history_t));
@@ -1098,7 +1098,7 @@ static void _lib_history_truncate(gboolean compress)
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
     darktable.develop->history_end = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 

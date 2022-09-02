@@ -235,7 +235,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const float adjy = 0.0;
 
   // nothing to be done if parameters are set to neutral values (no pixel shifts)
-  if (adjx == 0.0 && adjy == 0.0) return 1;
+  if(adjx == 0.0 && adjy == 0.0) return 1;
 
   // apply the coordinate adjustment to each provided point
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -258,7 +258,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const float adjy = 0.0;
 
   // nothing to be done if parameters are set to neutral values (no pixel shifts)
-  if (adjx == 0.0 && adjy == 0.0) return 1;
+  if(adjx == 0.0 && adjy == 0.0) return 1;
 
   // apply the inverse coordinate adjustment to each provided point
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -297,7 +297,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // most modules only support a single type of input data, so we can check whether that format has been supplied
   // and simply pass along the data if not (setting a trouble flag to inform the user)
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
 
@@ -308,7 +308,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Attempt to allocate all of the buffers we need.  For this example, we need one buffer that is equal in
     // dimensions to the output buffer, has one color channel, and has been zero'd.  (See common/imagebuf.h for
     // more details on all of the options.)
-    if (!dt_iop_alloc_image_buffers(module, roi_in, roi_out,
+    if(!dt_iop_alloc_image_buffers(module, roi_in, roi_out,
                                     1/*ch per pixel*/ | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL | DT_IMGSZ_CLEARBUF, &mask,
                                     0 /* end of list of buffers to allocate */))
     {
@@ -556,7 +556,7 @@ void gui_init(dt_iop_module_t *self)
   // Do not set the value of widgets or configure them depending on field values here;
   // this should be done in gui_update (or gui_changed or individual widget callbacks)
   //
-  // If any default values for (slider) widgets or options (in comboboxes) depend on the
+  // If any default values for(slider) widgets or options (in comboboxes) depend on the
   // type of image, then the widgets have to be updated in reload_params.
   dt_iop_useless_gui_data_t *g = IOP_GUI_ALLOC(useless);
 

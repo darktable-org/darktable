@@ -253,7 +253,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   // Get profile information from HEIF file
   enum heif_color_profile_type profile_type = heif_image_handle_get_color_profile_type(handle);
 
-  switch (profile_type)
+  switch(profile_type)
   {
     case heif_color_profile_type_nclx:
       dt_print(DT_DEBUG_IMAGEIO,

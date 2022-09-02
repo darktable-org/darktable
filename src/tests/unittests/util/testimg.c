@@ -46,7 +46,7 @@ void testimg_free(Testimg *const ti)
 
 void testimg_print_chan(const Testimg *const ti, int chan_idx)
 {
-  switch (chan_idx) {
+  switch(chan_idx) {
     case 0: TR_DEBUG("RED"); break;
     case 1: TR_DEBUG("GREEN"); break;
     case 2: TR_DEBUG("BLUE"); break;
@@ -56,7 +56,7 @@ void testimg_print_chan(const Testimg *const ti, int chan_idx)
   for_testimg_pixels_p_yx(ti)
   {
     printf(" %+.2e", p[chan_idx]);
-    if (x == ti->width-1) printf("\n");
+    if(x == ti->width-1) printf("\n");
   }
 }
 
@@ -65,7 +65,7 @@ void testimg_print_by_chan(const Testimg *const ti)
   TR_DEBUG("TEST IMAGE");
   TR_DEBUG("name=%s, width=%i, height=%i", ti->name, ti->width, ti->height);
 
-  for (int c = 0; c < 4; c += 1) {
+  for(int c = 0; c < 4; c += 1) {
     testimg_print_chan(ti, c);
   }
 }
@@ -75,12 +75,12 @@ void testimg_print_by_pixel(const Testimg *const ti)
   TR_DEBUG("TEST IMAGE");
   TR_DEBUG("name=%s, width=%i, height=%i", ti->name, ti->width, ti->height);
 
-  for (int y = 0; y < ti->height; y += 1)
+  for(int y = 0; y < ti->height; y += 1)
   {
     printf("y = %i\n", y);
-    for (int c = 0; c < 4; c += 1)
+    for(int c = 0; c < 4; c += 1)
     {
-      for (int x = 0; x < ti->width; x += 1)
+      for(int x = 0; x < ti->width; x += 1)
       {
         float *p = get_pixel(ti, x, y);
         printf(" %+.2e", p[c]);
@@ -94,7 +94,7 @@ Testimg *testimg_to_log(Testimg *ti)
 {
   for_testimg_pixels_p_yx(ti)
   {
-    for (int c = 0; c < 3; c += 1)
+    for(int c = 0; c < 3; c += 1)
     {
       p[c] = testimg_val_to_log(p[c]);
     }
@@ -111,7 +111,7 @@ Testimg *testimg_to_exp(Testimg *ti)
 {
   for_testimg_pixels_p_yx(ti)
   {
-    for (int c = 0; c < 3; c += 1)
+    for(int c = 0; c < 3; c += 1)
     {
       p[c] = testimg_val_to_exp(p[c]);
     }
@@ -200,7 +200,7 @@ Testimg *testimg_gen_rgb_space(const int width)
   ti->name = "rgb space";
   float *tmp = calloc(width, sizeof(float));
 
-  for (int x = 0; x < width; x += 1)
+  for(int x = 0; x < width; x += 1)
   {
     float val = (float)(x) / (float)(width-1);
     tmp[x] = testimg_val_to_exp(val);
@@ -225,7 +225,7 @@ Testimg *testimg_gen_grey_max_dr()
 
   for_testimg_pixels_p_xy(ti)
   {
-    switch (x)
+    switch(x)
     {
       case 0: p[0] = p[1] = p[2] = FLT_MIN; break;
       case 1: p[0] = p[1] = p[2] = 1e-20f; break;

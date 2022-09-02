@@ -113,7 +113,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   const uint8_t *const restrict in = (const uint8_t *)rgb.pixels;
 
-  switch (bit_depth) {
+  switch(bit_depth) {
   case 12:
   case 10: {
 #ifdef _OPENMP
@@ -122,9 +122,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   schedule(simd:static) \
   collapse(2)
 #endif
-    for (size_t y = 0; y < height; y++)
+    for(size_t y = 0; y < height; y++)
     {
-      for (size_t x = 0; x < width; x++)
+      for(size_t x = 0; x < width; x++)
       {
           uint16_t *in_pixel = (uint16_t *)&in[(y * rowbytes) + (3 * sizeof(uint16_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
@@ -145,9 +145,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   schedule(simd:static) \
   collapse(2)
 #endif
-    for (size_t y = 0; y < height; y++)
+    for(size_t y = 0; y < height; y++)
     {
-      for (size_t x = 0; x < width; x++)
+      for(size_t x = 0; x < width; x++)
       {
           uint8_t *in_pixel = (uint8_t *)&in[(y * rowbytes) + (3 * sizeof(uint8_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];

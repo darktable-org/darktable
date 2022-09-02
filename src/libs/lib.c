@@ -1227,7 +1227,7 @@ static gboolean _postponed_update(gpointer data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   self->timeout_handle = 0;
-  if (self->_postponed_update)
+  if(self->_postponed_update)
     self->_postponed_update(self);
 
   return FALSE; // cancel the timer
@@ -1250,7 +1250,7 @@ void dt_lib_queue_postponed_update(dt_lib_module_t *mod, void (*update_fn)(dt_li
 void dt_lib_cancel_postponed_update(dt_lib_module_t *mod)
 {
   mod->_postponed_update = NULL;
-  if (mod->timeout_handle)
+  if(mod->timeout_handle)
   {
     g_source_remove(mod->timeout_handle);
     mod->timeout_handle = 0;

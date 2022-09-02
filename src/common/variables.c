@@ -611,24 +611,24 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->crop_height);
   else if(_has_prefix(variable, "HEIGHT.EXPORT") || _has_prefix(variable, "EXPORT_HEIGHT"))
     result = g_strdup_printf("%d", params->data->export_height);
-  else if (_has_prefix(variable, "CATEGORY"))
+  else if(_has_prefix(variable, "CATEGORY"))
   {
     // CATEGORY should be followed by n [0,9] and "(category)". category can contain 0 or more '|'
-    if (g_ascii_isdigit(*variable[0]))
+    if(g_ascii_isdigit(*variable[0]))
     {
       const uint8_t level = (uint8_t)*variable[0] & 0b1111;
       (*variable) ++;
-      if (*variable[0] == '(')
+      if(*variable[0] == '(')
       {
         char *category = g_strdup(*variable + 1);
         char *end = g_strstr_len(category, -1, ")");
-        if (end)
+        if(end)
         {
           end[0] = '|';
           end[1] = '\0';
           (*variable) += strlen(category) + 1;
           char *tag = dt_tag_get_subtags(params->imgid, category, (int)level);
-          if (tag)
+          if(tag)
           {
             result = g_strdup(tag);
             g_free(tag);

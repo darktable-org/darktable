@@ -232,7 +232,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out, const uint16_t *
         {
           col += in[clut[c][1] + xx + in_stride * yy];
           num++;
-          if (clut[c][0] == 2)
+          if(clut[c][0] == 2)
           { // G in RGGB CFA
             col += in[clut[c][2] + xx + in_stride * yy];
             num++;

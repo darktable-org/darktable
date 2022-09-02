@@ -1067,7 +1067,7 @@ void dt_bauhaus_widget_set_quad_toggle(GtkWidget *widget, int toggle)
 void dt_bauhaus_widget_set_quad_active(GtkWidget *widget, int active)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  if (active)
+  if(active)
     w->quad_paint_flags |= CPF_ACTIVE;
   else
     w->quad_paint_flags &= ~CPF_ACTIVE;
@@ -1090,7 +1090,7 @@ int dt_bauhaus_widget_get_quad_active(GtkWidget *widget)
 void dt_bauhaus_widget_press_quad(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  if (w->quad_toggle)
+  if(w->quad_toggle)
   {
     w->quad_paint_flags ^= CPF_ACTIVE;
   }
@@ -1103,9 +1103,9 @@ void dt_bauhaus_widget_press_quad(GtkWidget *widget)
 void dt_bauhaus_widget_release_quad(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  if (!w->quad_toggle)
+  if(!w->quad_toggle)
   {
-    if (w->quad_paint_flags & CPF_ACTIVE)
+    if(w->quad_paint_flags & CPF_ACTIVE)
       w->quad_paint_flags &= ~CPF_ACTIVE;
     gtk_widget_queue_draw(GTK_WIDGET(w));
   }
@@ -2515,7 +2515,7 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
 
 static void _slider_add_step(GtkWidget *widget, float delta, guint state, gboolean force)
 {
-  if (delta == 0) return;
+  if(delta == 0) return;
 
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   dt_bauhaus_slider_data_t *d = &w->data.slider;

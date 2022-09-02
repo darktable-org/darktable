@@ -93,7 +93,7 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
 {
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
-  if (newid <= 0) return;
+  if(newid <= 0) return;
   dt_history_delete_on_image(newid);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
@@ -103,7 +103,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
 {
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
-  if (newid <= 0) return;
+  if(newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
@@ -205,7 +205,7 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  if (d->imgid == 0) return;
+  if(d->imgid == 0) return;
   dt_develop_t *dev = darktable.develop;
   if(!dev->preview_pipe->backbuf || dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
 
@@ -227,7 +227,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   const int32_t tb = darktable.develop->border_size;
 
   // we rescale the sizes to the screen size
-  if (img_ht * (width - 2 * tb) > img_wd * (height - 2 * tb))
+  if(img_ht * (width - 2 * tb) > img_wd * (height - 2 * tb))
   {
     img_wd = img_wd*(height - 2 * tb)/img_ht;
     img_ht = (height - 2 * tb);
@@ -427,7 +427,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     thumb->disable_actions = TRUE;
     dt_thumbnail_set_mouseover(thumb, imgid == dev->image_storage.id);
 
-    if (imgid != dev->image_storage.id)
+    if(imgid != dev->image_storage.id)
     {
       g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event",
                        G_CALLBACK(_lib_duplicate_thumb_press_callback), self);

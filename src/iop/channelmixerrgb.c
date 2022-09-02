@@ -1872,7 +1872,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const struct dt_iop_order_iccprofile_info_t *const input_profile = dt_ioppr_get_pipe_input_profile_info(piece->pipe);
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -2795,7 +2795,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->MIX[2][i] = p->blue[i] / norm_B;
     d->saturation[i] = -p->saturation[i] + norm_sat;
     d->lightness[i] = p->lightness[i] - norm_light;
-    d->grey[i] = p->grey[i] / norm_grey; // = NaN if (norm_grey == 0.f) but we don't care since (d->apply_grey == FALSE)
+    d->grey[i] = p->grey[i] / norm_grey; // = NaN if(norm_grey == 0.f) but we don't care since (d->apply_grey == FALSE)
   }
 
   if(p->version == CHANNELMIXERRGB_V_1)

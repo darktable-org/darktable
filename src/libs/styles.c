@@ -215,7 +215,7 @@ GList* _get_selected_style_names(GList* selected_styles, GtkTreeModel *model)
 {
   GtkTreeIter iter;
   GList *style_names = NULL;
-  for (const GList *style = selected_styles; style; style = g_list_next(style))
+  for(const GList *style = selected_styles; style; style = g_list_next(style))
   {
     GValue value = {0,};
     gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)style->data);
@@ -270,7 +270,7 @@ static void edit_clicked(GtkWidget *w, gpointer user_data)
   GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
 
   GList *styles = gtk_tree_selection_get_selected_rows(selection, &model);
-  for (const GList *style = styles; style; style = g_list_next(style))
+  for(const GList *style = styles; style; style = g_list_next(style))
   {
     char *name = NULL;
     GValue value = {0,};
@@ -337,7 +337,7 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
   {
     dt_database_start_transaction(darktable.db);
 
-    for (const GList *style = style_names; style; style = g_list_next(style))
+    for(const GList *style = style_names; style; style = g_list_next(style))
     {
       dt_styles_delete_by_name_adv((char*)style->data, single_raise);
     }
@@ -383,7 +383,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
   {
     char *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
-    for (const GList *style = style_names; style; style = g_list_next(style))
+    for(const GList *style = style_names; style; style = g_list_next(style))
     {
       char stylename[520];
 
@@ -915,7 +915,7 @@ void gui_reset(dt_lib_module_t *self)
 
   if(can_delete)
   {
-    for (const GList *result = all_styles; result; result = g_list_next(result))
+    for(const GList *result = all_styles; result; result = g_list_next(result))
     {
       dt_style_t *style = (dt_style_t *)result->data;
       dt_styles_delete_by_name_adv((char*)style->name, FALSE);

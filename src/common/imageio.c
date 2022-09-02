@@ -216,7 +216,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 
     *width = MagickGetImageWidth(image);
     *height = MagickGetImageHeight(image);
-    switch (MagickGetImageColorspace(image)) {
+    switch(MagickGetImageColorspace(image)) {
     case sRGBColorspace:
       *color_space = DT_COLORSPACE_SRGB;
       break;

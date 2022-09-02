@@ -127,7 +127,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
     if(!skip_label)
     {
-      if (*f->header.description)
+      if(*f->header.description)
       {
         // we do not want to support a context as it break all translations see #5498
         // dt_bauhaus_widget_set_label(slider, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
@@ -169,14 +169,14 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
   GtkWidget *combobox = dt_bauhaus_combobox_new(self);
   gchar *str = NULL;
 
-  if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM ||
+  if(f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM ||
             f->header.type == DT_INTROSPECTION_TYPE_INT  ||
             f->header.type == DT_INTROSPECTION_TYPE_UINT ||
             f->header.type == DT_INTROSPECTION_TYPE_BOOL ))
   {
     dt_bauhaus_widget_set_field(combobox, (uint8_t *)p + f->header.offset, f->header.type);
 
-    if (*f->header.description)
+    if(*f->header.description)
     {
       // we do not want to support a context as it break all translations see #5498
       // dt_bauhaus_widget_set_label(combobox, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));

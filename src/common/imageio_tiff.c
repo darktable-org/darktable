@@ -68,9 +68,9 @@ static inline float _half_to_float(uint16_t h)
   o.u += (127 - 15) << 23;        // exponent adjust
 
   // handle exponent special cases
-  if (exp == shifted_exp) // Inf/NaN?
+  if(exp == shifted_exp) // Inf/NaN?
     o.u += (128 - 16) << 23;    // extra exp adjust
-  else if (exp == 0) // Zero/Denormal?
+  else if(exp == 0) // Zero/Denormal?
   {
     o.u += 1 << 23;             // extra exp adjust
     o.f -= magic.f;             // renormalize

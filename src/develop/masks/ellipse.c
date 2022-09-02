@@ -641,7 +641,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         }
         dt_toast_log(_("size: %3.2f%%"), fmaxf(ellipse->radius[0], ellipse->radius[1])*100);
       }
-      else if (!dt_modifier_is(state, 0))
+      else if(!dt_modifier_is(state, 0))
       {
         // user is holding down a modifier key, but we didn't handle that particular combination
         // say we've processed the scroll event so that the image is not zoomed instead
@@ -989,7 +989,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2f(pts2[5] - pts2[1], pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-    if (check_angle < 0)
+    if(check_angle < 0)
       ellipse->rotation -= dv / M_PI * 180.0f;
     else
       ellipse->rotation += dv / M_PI * 180.0f;
@@ -1773,7 +1773,7 @@ static int _ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   size_t point_count = 0;
   float *const restrict points
     = _ellipse_points_to_transform(form->source[0], form->source[1], total[0], total[1], ellipse->rotation, wd, ht, &point_count);
-  if (!points)
+  if(!points)
     return 0;
 
   // and we transform them with all distorted modules
@@ -1804,7 +1804,7 @@ static int _ellipse_get_area(const dt_iop_module_t *const module, const dt_dev_p
   size_t point_count = 0;
   float *const restrict points
     = _ellipse_points_to_transform(ellipse->center[0], ellipse->center[1], total[0], total[1], ellipse->rotation, wd, ht, &point_count);
-  if (!points)
+  if(!points)
     return 0;
 
   // and we transform them with all distorted modules
@@ -2160,7 +2160,7 @@ static void _ellipse_set_form_name(struct dt_masks_form_t *const form, const siz
 static void _ellipse_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
   (void)dev; // unused arg, keep compiler from complaining
-  for (GList *pts = base->points; pts; pts = g_list_next(pts))
+  for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)pts->data;
     dt_masks_point_ellipse_t *npt = (dt_masks_point_ellipse_t *)malloc(sizeof(dt_masks_point_ellipse_t));

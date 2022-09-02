@@ -281,7 +281,7 @@ read_icc_profile (j_decompress_ptr cinfo,
       JOCTET *dst_ptr = icc_data + data_offset[seq_no];
       JOCTET FAR *src_ptr = marker->data + ICC_OVERHEAD_LEN;
       unsigned int length = data_length[seq_no];
-      while (length--)
+      while(length--)
       {
         *dst_ptr++ = *src_ptr++;
       }

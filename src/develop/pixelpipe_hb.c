@@ -616,7 +616,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
                                ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_FORW_INCL
                                : DT_DEV_TRANSFORM_DIR_FORW_EXCL),fbox, 2);
 
-  if (op_after_demosaic || !dt_image_is_rawprepare_supported(&image))
+  if(op_after_demosaic || !dt_image_is_rawprepare_supported(&image))
     for(int idx = 0; idx < 4; idx++) fbox[idx] *= darktable.develop->preview_downsampling;
   fbox[0] -= roi->x;
   fbox[1] -= roi->y;
@@ -1081,7 +1081,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                         void **cl_mem_output, dt_iop_buffer_dsc_t **out_format,
                                         const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
-  if (dt_atomic_get_int(&pipe->shutdown))
+  if(dt_atomic_get_int(&pipe->shutdown))
     return 1;
 
   dt_iop_roi_t roi_in = *roi_out;
@@ -1188,7 +1188,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
 
-          if (cp_width > 0)
+          if(cp_width > 0)
           {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -1343,8 +1343,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   dt_develop_tiling_t tiling = { 0 };
   tiling.factor_cl = tiling.maxbuf_cl = -1;	// set sentinel value to detect whether callback set sizes
   module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
-  if (tiling.factor_cl < 0) tiling.factor_cl = tiling.factor; // default to CPU size if callback didn't set GPU
-  if (tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
+  if(tiling.factor_cl < 0) tiling.factor_cl = tiling.factor; // default to CPU size if callback didn't set GPU
+  if(tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
 
   /* does this module involve blending? */
   if(piece->blendop_data && ((dt_develop_blend_params_t *)piece->blendop_data)->mask_mode != DEVELOP_MASK_DISABLED)
@@ -1667,7 +1667,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         // histogram collection for module
-        if (success_opencl)
+        if(success_opencl)
         {
           collect_histogram_on_CPU(pipe, dev, input, &roi_in, module, piece, &pixelpipe_flow);
         }
@@ -1769,7 +1769,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         return 1;
       }
 
-      // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
+      // if(rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
 
       /* finally check, if we were successful */
       if(success_opencl)
@@ -1867,7 +1867,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           dt_opencl_release_mem_object(cl_mem_input);
           valid_input_on_gpu_only = FALSE;
         }
-        if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
+        if(pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                      module, piece, &tiling, &pixelpipe_flow))
           return 1;
       }
@@ -1891,7 +1891,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       {
         cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height,
                                             in_bpp);
-        // if (rand() % 5 == 0) err = !CL_SUCCESS; // Test code: simulate spurious failures
+        // if(rand() % 5 == 0) err = !CL_SUCCESS; // Test code: simulate spurious failures
         if(err != CL_SUCCESS)
         {
           /* late opencl error */
@@ -1911,7 +1911,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         valid_input_on_gpu_only = FALSE;
       }
 
-      if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
+      if(pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                    module, piece, &tiling, &pixelpipe_flow))
         return 1;
     }
@@ -1923,12 +1923,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     /* opencl is not inited or not enabled or we got no resource/device -> everything runs on cpu */
 
-    if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
+    if(pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                  module, piece, &tiling, &pixelpipe_flow))
       return 1;
   }
 #else // HAVE_OPENCL
-  if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
+  if(pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                module, piece, &tiling, &pixelpipe_flow))
     return 1;
 #endif // HAVE_OPENCL
@@ -2271,7 +2271,7 @@ restart:
   }
 
   // release resources:
-  if (pipe->forms)
+  if(pipe->forms)
   {
     g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
     pipe->forms = NULL;

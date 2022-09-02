@@ -470,7 +470,7 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   // if editing don't lose the current entry
-  if (d->editing) return;
+  if(d->editing) return;
 
   dt_lib_queue_postponed_update(self, _update);
 }
@@ -657,7 +657,7 @@ static void _populate_popup_multi(GtkTextView *textview, GtkWidget *popup, dt_li
   // get grid line number
   const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
 
-  if (!d->metadata_list[i] || !_is_leave_unchanged(GTK_TEXT_VIEW(textview))) return;
+  if(!d->metadata_list[i] || !_is_leave_unchanged(GTK_TEXT_VIEW(textview))) return;
 
   gtk_menu_shell_append(GTK_MENU_SHELL(popup),gtk_separator_menu_item_new());
 

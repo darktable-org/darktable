@@ -44,7 +44,7 @@ char *dt_lib_export_metadata_get_conf(void)
     metadata_presets = dt_conf_get_string(flags_keyword);
     int i = 0;
     char *conf_keyword = g_strdup_printf("%s%d", formula_keyword, i);
-    while (dt_conf_key_exists(conf_keyword))
+    while(dt_conf_key_exists(conf_keyword))
     {
       gchar *nameformula = dt_conf_get_string(conf_keyword);
       g_free(conf_keyword);
@@ -77,19 +77,19 @@ void dt_lib_export_metadata_set_conf(const char *metadata_presets)
   int i = 0;
   char *conf_keyword = NULL;
   char *nameformula = NULL;
-  if (list)
+  if(list)
   {
     char *flags_hexa = list->data;
     dt_conf_set_string(flags_keyword, flags_hexa);
     list = g_list_remove(list, flags_hexa);
     g_free(flags_hexa);
-    if (list)
+    if(list)
     {
-      for (GList *tags = list; tags; tags = g_list_next(tags))
+      for(GList *tags = list; tags; tags = g_list_next(tags))
       {
         const char *tagname = (char *)tags->data;
         tags = g_list_next(tags);
-        if (!tags) break;
+        if(!tags) break;
         const char *formula = (char *)tags->data;
         nameformula = g_strdup_printf("%s;%s", tagname, formula);
         conf_keyword = g_strdup_printf("%s%d", formula_keyword, i);
@@ -105,7 +105,7 @@ void dt_lib_export_metadata_set_conf(const char *metadata_presets)
 
   // clean up deprecated formulas
   conf_keyword = g_strdup_printf("%s%d", formula_keyword, i);
-  while (dt_conf_key_exists(conf_keyword))
+  while(dt_conf_key_exists(conf_keyword))
   {
     dt_conf_set_string(conf_keyword, "");
     g_free(conf_keyword);

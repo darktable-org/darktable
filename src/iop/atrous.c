@@ -286,7 +286,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float *restrict tmp = NULL;
   float *restrict tmp2 = NULL;
 
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &tmp, 4, &tmp2, 4, &detail, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &tmp, 4, &tmp2, 4, &detail, 0))
   {
     dt_iop_copy_image_roi(out, i, piece->colors, roi_in, roi_out, TRUE);
     return;
@@ -314,7 +314,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 #ifdef _OPENMP
 #pragma omp simd aligned(buf1, out : 64)
 #endif
-  for (size_t k = 0; k < (size_t)4 * width * height; k++)
+  for(size_t k = 0; k < (size_t)4 * width * height; k++)
     out[k] += buf1[k];
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -447,7 +447,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_iop_nap(darktable.opencl->micro_nap);
 
     // swap scratch buffers
-    if (scale == 0) dev_buf1 = dev_tmp2;
+    if(scale == 0) dev_buf1 = dev_tmp2;
     void* tmp = dev_buf2;
     dev_buf2 = dev_buf1;
     dev_buf1 = tmp;

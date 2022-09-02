@@ -192,7 +192,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     .kernel_accu = gd->kernel_nlmeans_accu
   };
   cl_int err = nlmeans_denoise_cl(&params, devid, dev_in, dev_U2, roi_in);
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
   {
     // normalize and blend
     size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
@@ -207,7 +207,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   // clean up and check whether all kernels ran successfully
   dt_opencl_release_mem_object(dev_U2);
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
     return TRUE;
   dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
   return FALSE;
@@ -404,7 +404,7 @@ static void process_cpu(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   const dt_iop_nlmeans_params_t *const d = (dt_iop_nlmeans_params_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 

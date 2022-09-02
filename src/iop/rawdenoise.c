@@ -190,7 +190,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 {
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
   float *const restrict fimg = dt_alloc_align_float(size);
-  if (!fimg)
+  if(!fimg)
     return;
 
   const int nc = 4;
@@ -252,31 +252,31 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
   float black = 0.0;		/* FIXME */
   maximum *= BIT16;
   black *= BIT16;
-  for (c=0; c<4; c++)
+  for(c=0; c<4; c++)
     cblack[c] *= BIT16;
-  if (filters && colors == 3)	/* pull G1 and G3 closer together */
+  if(filters && colors == 3)	/* pull G1 and G3 closer together */
   {
     float *window[4];
     int wlast, blk[2];
     float mul[2];
     float thold = threshold/512;
-    for (row=0; row < 2; row++)
+    for(row=0; row < 2; row++)
     {
       mul[row] = 0.125 * pre_mul[FC(row+1,0) | 1] / pre_mul[FC(row,0) | 1];
       blk[row] = cblack[FC(row,0) | 1];
     }
-    for (i=0; i < 4; i++)
+    for(i=0; i < 4; i++)
       window[i] = fimg + width*i;
-    for (wlast=-1, row=1; row < height-1; row++)
+    for(wlast=-1, row=1; row < height-1; row++)
     {
-      while (wlast < row+1)
+      while(wlast < row+1)
       {
-        for (wlast++, i=0; i < 4; i++)
+        for(wlast++, i=0; i < 4; i++)
           window[(i+3) & 3] = window[i];
-        for (col = FC(wlast,1) & 1; col < width; col+=2)
+        for(col = FC(wlast,1) & 1; col < width; col+=2)
           window[2][col] = BAYER(wlast,col);
       }
-      for (col = (FC(row,0) & 1)+1; col < width-1; col+=2)
+      for(col = (FC(row,0) & 1)+1; col < width-1; col+=2)
       {
         float avg = ( window[0][col-1] + window[0][col+1] +
                       window[2][col-1] + window[2][col+1] - blk[~row & 1]*4 )
@@ -284,7 +284,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
         avg = avg > 0 ? sqrtf(avg) : 0;
         float diff = sqrtf(BAYER(row,col)) - avg;
         if      (diff < -thold) diff += thold;
-        else if (diff >  thold) diff -= thold;
+        else if(diff >  thold) diff -= thold;
         else diff = 0;
         BAYER(row,col) = SQR(avg+diff);
       }
@@ -309,7 +309,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
   // allocate a buffer for the particular color channel to be denoise; we add two rows to simplify the
   // channel-extraction code (no special case for top/bottom row)
   float *const img = dt_alloc_align_float((size_t)width * (height+2));
-  if (!img)
+  if(!img)
   {
     // we ran out of memory, so just pass through the image without denoising
     memcpy(out, in, sizeof(float) * size);
@@ -325,7 +325,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
     // ensure a defined value for every pixel in the top and bottom rows, even if they are more than
     // one pixel away from the nearest neighbor of the same color and thus the simple interpolation
     // used in the following loop does not set them
-    for (size_t col = 0; col < width; col++)
+    for(size_t col = 0; col < width; col++)
     {
       fimg[col] = 0.5f;
       fimg[(size_t)(height-1)*width + col] = 0.5f;
@@ -347,7 +347,7 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
         const float *const restrict inp = in + row * width;
         float *const restrict fimgp = fimg + row * width;
         // handle red/blue pixel in first column
-        if (c != 1 && FCxtrans(row, 0, roi, xtrans) == c)
+        if(c != 1 && FCxtrans(row, 0, roi, xtrans) == c)
         {
           // copy to neighbors above and right
           const float d = vstransform(inp[0]);
@@ -355,13 +355,13 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
         }
         for(size_t col = (c != 1); col < width-1; col++)
         {
-          if (FCxtrans(row, col, roi, xtrans) == c)
+          if(FCxtrans(row, col, roi, xtrans) == c)
           {
             // the pixel at the current location has the desired color, so apply sqrt() as a variance-stablizing
             // transform, and then do cheap nearest-neighbor interpolation by copying it to appropriate neighbors
             const float d = vstransform(inp[col]);
             fimgp[col] = d;
-            if (c == 1) // green pixel
+            if(c == 1) // green pixel
             {
               // Copy to the right and down.  The X-Trans color layout is such that copying to those two neighbors
               // results in all positions being filled except in the left-most and right-most columns and sometimes
@@ -377,71 +377,71 @@ static void wavelet_denoise_xtrans(const float *const restrict in, float *const 
               // greens.
               fimgp[col-width-1] = fimgp[col-width] = fimgp[col-width+1] = d; // row above
               fimgp[col-1] = fimgp[col+1] = d;                                // left and right
-              if (row < pastend-1)
+              if(row < pastend-1)
                 fimgp[col+width-1] = fimgp[col+width] = fimgp[col+width+1] = d; // row below
             }
           }
         }
         // leftmost and rightmost pixel in the row may still need to be filled in from a neighbor
-        if (FCxtrans(row, 0, roi, xtrans) != c)
+        if(FCxtrans(row, 0, roi, xtrans) != c)
         {
           int src = 0;	// fallback is current sensel even if it has the wrong color
-          if (row > 1 && FCxtrans(row-1, 0, roi, xtrans) == c)
+          if(row > 1 && FCxtrans(row-1, 0, roi, xtrans) == c)
             src = -width;
-          else if (FCxtrans(row, 1, roi, xtrans) == c)
+          else if(FCxtrans(row, 1, roi, xtrans) == c)
             src = 1;
-          else if (row > 1 && FCxtrans(row-1, 1, roi, xtrans) == c)
+          else if(row > 1 && FCxtrans(row-1, 1, roi, xtrans) == c)
             src = -width + 1;
           fimgp[0] = vstransform(inp[src]);
         }
         // check the right-most pixel; if it's the desired color and not green, copy it to the neighbors
-        if (c != 1 && FCxtrans(row, width-1, roi, xtrans) == c)
+        if(c != 1 && FCxtrans(row, width-1, roi, xtrans) == c)
         {
           // copy to neighbors above and left
           const float d = vstransform(inp[width-1]);
           fimgp[width-2] = fimgp[width-1] = fimgp[-1] = d;
         }
-        else if (FCxtrans(row, width-1, roi, xtrans) != c)
+        else if(FCxtrans(row, width-1, roi, xtrans) != c)
         {
           int src = width-1;	// fallback is current sensel even if it has the wrong color
-          if (FCxtrans(row, width-2, roi, xtrans) == c)
+          if(FCxtrans(row, width-2, roi, xtrans) == c)
             src = width-2;
-          else if (row > 1 && FCxtrans(row-1, width-1, roi, xtrans) == c)
+          else if(row > 1 && FCxtrans(row-1, width-1, roi, xtrans) == c)
             src = -1;
-          else if (row > 1 && FCxtrans(row-1, width-2, roi, xtrans) == c)
+          else if(row > 1 && FCxtrans(row-1, width-2, roi, xtrans) == c)
             src = -2;
           fimgp[width-1] = vstransform(inp[src]);
         }
       }
-      if (pastend < height)
+      if(pastend < height)
       {
         // Another slice follows us, and by updating the last row of our slice, we've clobbered values that
         // were previously written by the other thread.  Restore them.
         const float *const restrict inp = in + pastend * width;
         float *const restrict fimgp = fimg + pastend * width;
-        for (size_t col = 0; col < width-1; col++)
+        for(size_t col = 0; col < width-1; col++)
         {
-          if (FCxtrans(pastend, col, roi, xtrans) == c)
+          if(FCxtrans(pastend, col, roi, xtrans) == c)
           {
             const float d = vstransform(inp[col]);
-            if (c == 1) // green pixel
+            if(c == 1) // green pixel
             {
-              if (FCxtrans(pastend, col+1, roi, xtrans) != c)
+              if(FCxtrans(pastend, col+1, roi, xtrans) != c)
                 fimgp[col] = fimgp[col+1] = d;  // copy to the right
             }
             else // red/blue pixel
             {
               // copy the pixel's adjusted value to the prior row and left and right (if not at edge)
               fimgp[col-width] = fimgp[col-width+1] = d;
-              if (col > 0) fimgp[col-width-1] = d;
+              if(col > 0) fimgp[col-width-1] = d;
             }
           }
           // some red and blue values may need to be restored from the row TWO past the end of our slice
-          if (c != 1 && pastend+1 < height && FCxtrans(pastend+1, col, roi, xtrans) == c)
+          if(c != 1 && pastend+1 < height && FCxtrans(pastend+1, col, roi, xtrans) == c)
           {
             const float d = vstransform(inp[col+width]);
             fimgp[col] = fimgp[col+1] = d;
-            if (col > 0) fimgp[col-1] = d;
+            if(col > 0) fimgp[col-1] = d;
           }
         }
       }
@@ -487,7 +487,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     const uint32_t filters = piece->pipe->dsc.filters;
     const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
-    if (filters != 9u)
+    if(filters != 9u)
       wavelet_denoise(ivoid, ovoid, roi_in, d, filters);
     else
       wavelet_denoise_xtrans(ivoid, ovoid, roi_in, d, xtrans);
@@ -540,7 +540,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     dt_draw_curve_calc_values(d->curve[ch], 0.0, 1.0, DT_IOP_RAWDENOISE_BANDS, NULL, d->force[ch]);
   }
 
-  if (!(dt_image_is_raw(&pipe->image)))
+  if(!(dt_image_is_raw(&pipe->image)))
     piece->enabled = 0;
 }
 

@@ -97,7 +97,7 @@ static int64_t max_image_position()
   const gchar *max_position_query = "SELECT MAX(position) FROM main.images";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), max_position_query, -1, &stmt, NULL);
 
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     max_position = sqlite3_column_int64(stmt, 0);
   }

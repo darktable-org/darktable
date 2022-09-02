@@ -168,7 +168,7 @@ int main(int argc __attribute__((unused)), char *arg[] __attribute__((unused)))
       if((pp = g_strstr_len(pp, -1, ".")) == NULL)
         g_strlcat(disp_name, ".0", sizeof(disp_name));
       else  {
-        if (pp[1] == '\0')
+        if(pp[1] == '\0')
           g_strlcat(disp_name, "0", sizeof(disp_name));
         else
         {
@@ -223,7 +223,7 @@ int main(int argc __attribute__((unused)), char *arg[] __attribute__((unused)))
         XRRFreeCrtcInfo(crtc_info);
       }
     }
-    if (primary_id == -1)
+    if(primary_id == -1)
       printf("couldn't locate primary CRTC!\n");
     else
     {

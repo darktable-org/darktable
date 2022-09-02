@@ -762,7 +762,7 @@ static void _basics_show(dt_lib_module_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
     // we record if it's a new module or not to set css class and box structure
-    if (item_pos != FIRST_MODULE) item_pos = NEW_MODULE;
+    if(item_pos != FIRST_MODULE) item_pos = NEW_MODULE;
 
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->iop_order != INT_MAX)
     {
@@ -825,7 +825,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
-  if (DT_IOP_ORDER_INFO)
+  if(DT_IOP_ORDER_INFO)
     fprintf(stderr,"\n^^^^^ modulegroups");
 
   // update basic button selection too
@@ -974,7 +974,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
   }
-  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
+  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
   // now that visibility has been updated set multi-show
   dt_dev_modules_update_multishow(darktable.develop);
 

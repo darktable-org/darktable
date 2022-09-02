@@ -180,7 +180,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->width = hw[1];
 
   float reduction_ratio = MAX(hw[0] / (piece->buf_in.height * 1.0f), hw[1] / (piece->buf_in.width * 1.0f));
-  if (reduction_ratio > 1.0f)
+  if(reduction_ratio > 1.0f)
   {
     roi_in->height /= reduction_ratio;
     roi_in->width /= reduction_ratio;

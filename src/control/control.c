@@ -185,7 +185,7 @@ void dt_control_allow_change_cursor()
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
-  if (!darktable.control->lock_cursor_shape)
+  if(!darktable.control->lock_cursor_shape)
   {
     GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
     GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), curs);

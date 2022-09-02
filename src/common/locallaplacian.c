@@ -201,7 +201,7 @@ static inline void gauss_reduce_sse2(
 #ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
   // is greater than the time needed to do it sequentially
-#pragma omp parallel for default(none) if (ch*cw>1000)  \
+#pragma omp parallel for default(none) if(ch*cw>1000)  \
       dt_omp_firstprivate(cw, ch, input, wd, coarse) \
       schedule(static)
 #endif
@@ -226,7 +226,7 @@ static inline void gauss_reduce_sse2(
       left = right;
     }
     // handle the left-over pixel if the output size is odd
-    if (cw % 2)
+    if(cw % 2)
     {
       base += 4;
       float right = base[0] + 4*(base[wd]+base[3*wd]) + 6*base[2*wd] + base[4*wd];
@@ -254,7 +254,7 @@ static inline void gauss_reduce(
 #ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
   // is greater than the time needed to do it sequentially
-#pragma omp parallel for default(none) if (ch*cw>500)  \
+#pragma omp parallel for default(none) if(ch*cw>500)  \
   dt_omp_firstprivate(coarse, cw, ch, input, w, wd) \
   schedule(static) \
   collapse(2)

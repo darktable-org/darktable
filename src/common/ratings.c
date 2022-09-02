@@ -291,7 +291,7 @@ static float _action_process_rating(gpointer target, dt_action_element_t element
   else if(darktable.develop)
   {
     const int image_id = darktable.develop->image_storage.id;
-    if (image_id != -1)
+    if(image_id != -1)
     {
       int rating = dt_ratings_get(image_id);
       return_value = - rating + (rating >= element ? DT_VALUE_PATTERN_ACTIVE : 0);

@@ -169,7 +169,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
              void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_defringe_data_t *const d = (dt_iop_defringe_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, module, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, module, piece->colors,
                                          i, o, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 

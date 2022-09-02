@@ -91,7 +91,7 @@ static gboolean _record_point_area(dt_iop_color_picker_t *self)
     else if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
       for(int k = 0; k < 4; k++)
       {
-        if (self->pick_box[k] != sample->box[k])
+        if(self->pick_box[k] != sample->box[k])
         {
           self->pick_box[k] = sample->box[k];
           changed = TRUE;
@@ -174,7 +174,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
   const gboolean ctrl_key_pressed = dt_modifier_is(state, GDK_CONTROL_MASK) || (e != NULL && e->button == 3);
   dt_iop_color_picker_kind_t kind = self->kind;
 
-  if (prior_picker != self || (kind == DT_COLOR_PICKER_POINT_AREA &&
+  if(prior_picker != self || (kind == DT_COLOR_PICKER_POINT_AREA &&
       (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX))))
   {
     darktable.lib->proxy.colorpicker.picker_proxy = self;
@@ -343,7 +343,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker
       color_picker->picker_cst = cst;
     g_signal_connect_data(G_OBJECT(button), "button-press-event",
                           G_CALLBACK(_color_picker_callback_button_press), color_picker, (GClosureNotify)g_free, 0);
-    if (w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
+    if(w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
 
     return button;
   }

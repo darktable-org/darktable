@@ -209,7 +209,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
     dt_image_cache_read_release(darktable.image_cache, img);
 
     gchar *imgbody = g_strdup_printf(imageBodyFormat, filename, exif);
-    if (body != NULL) {
+    if(body != NULL) {
       gchar *body_bak = body;
       body = g_strconcat(body_bak, imgbody, NULL);
       g_free(body_bak);
@@ -235,7 +235,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   argv[argc] = NULL;
 
   fprintf(stderr, "[email] launching '");
-  for (int k=0; k<argc; k++) fprintf(stderr, " %s", argv[k]);
+  for(int k=0; k<argc; k++) fprintf(stderr, " %s", argv[k]);
   fprintf(stderr, "'\n");
 
   gint exit_status = 0;
@@ -243,7 +243,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL | G_SPAWN_STDERR_TO_DEV_NULL,
                 NULL, NULL, NULL, NULL, &exit_status, NULL);
 
-  for (int k=4; k<argc; k++) g_free(argv[k]);
+  for(int k=4; k<argc; k++) g_free(argv[k]);
   g_free(argv);
 
   if(exit_status)
