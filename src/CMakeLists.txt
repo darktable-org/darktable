@@ -91,6 +91,7 @@ FILE(GLOB SOURCE_FILES
   "common/iop_order.c"
   "common/iop_profile.c"
   "common/dng_opcode.c"
+  "common/wb_presets.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
