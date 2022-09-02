@@ -47,6 +47,7 @@
 #include "common/dtpthread.h"
 #include "common/dttypes.h"
 #include "common/utility.h"
+#include "common/wb_presets.h"
 #ifdef _WIN32
 #include "win/getrusage.h"
 #else
@@ -668,4 +669,3 @@ static inline void dt_unreachable_codepath_with_caller(const char *description, 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

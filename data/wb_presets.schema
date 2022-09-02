@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "enum": [
+        1
+      ]
+    },
+    "wb_presets": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "maker": {
+            "type": "string",
+            "pattern": "^[a-zA-Z ]+$",
+            "enum": [
+              "Canon",
+              "DJI",
+              "Fujifilm",
+              "Hasselblad",
+              "LGE",
+              "Leica",
+              "Leica Camera AG",
+              "Kodak",
+              "Minolta",
+              "Nikon",
+              "Olympus",
+              "Panasonic",
+              "Pentax",
+              "Raspberrypi",
+              "Ricoh",
+              "Samsung",
+              "Sony",
+              "YI TECHNOLOGY",
+              "Leaf"
+            ]
+          },
+          "models": {
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "comment": {
+                  "type": "string"
+                },
+                "model": {
+                  "type": "string",
+                  "pattern": "^[a-zA-Z0-9_\\- /()\\*]+$",
+                  "minLength": 1,
+                  "maxLength": 30
+                },
+                "presets": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^(D55|Cloudy|Daylight|Flash( WB| [(]auto mode[)])*|Shade|Shadow|Sunny|Tungsten|Underwater|Direct Sunlight|Evening Sun|Black & White|Incandescent( Warm)*|(Neutral|Day White|Warm White|Cool White|Sodium-Vapor|High Temp. Mercury-Vapor|White|Daylight) Fluorescent|Fluorescent( High)*|High Temp. Mercury-Vapor|[0-9]+K)$"
+                      },
+                      "tuning": {
+                        "type": "integer",
+                        "minimum": -15,
+                        "maximum": 15,
+                        "default": 0
+                      },
+                      "channels": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 4,
+                        "maxItems": 4
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "channels"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "model",
+                "presets"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "maker",
+          "models"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "version",
+    "wb_presets"
+  ],
+  "additionalProperties": false
+}
