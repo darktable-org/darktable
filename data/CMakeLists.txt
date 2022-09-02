@@ -127,6 +127,21 @@ FILE(COPY noiseprofiles.json DESTINATION "${DARKTABLE_DATADIR}")
 install(FILES noiseprofiles.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
 
 #
+# Install wb presets
+#
+if(${VALIDATE_JSON})
+  add_custom_target(
+    validate_wbpresets_json ALL
+    COMMAND ${jsonschema_BIN} -i ${CMAKE_CURRENT_SOURCE_DIR}/wb_presets.json ${CMAKE_CURRENT_SOURCE_DIR}/wb_presets.schema
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/wb_presets.json ${CMAKE_CURRENT_SOURCE_DIR}/wb_presets.schema
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    COMMENT "Checking validity of wb_presets.json"
+  )
+endif()
+FILE(COPY wb_presets.json DESTINATION "${DARKTABLE_DATADIR}")
+install(FILES wb_presets.json DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+
+#
 # Transform darktableconfig.xml into darktablerc
 #
 

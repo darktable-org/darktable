@@ -1153,6 +1153,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
+  dt_wb_presets_init(NULL);
+
   darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
 
   // must come before mipmap_cache, because that one will need to access
