@@ -47,22 +47,6 @@ typedef struct dt_gui_themetweak_widgets_t
   GtkWidget *apply_toggle, *save_button, *css_text_view;
 } dt_gui_themetweak_widgets_t;
 
-typedef struct name_and_operation {
-  gchar *name;
-  gchar *operation;
-} name_and_operation;
-
-typedef struct g_and_pixbuf {
-  dt_gui_presets_edit_dialog_t *g;
-  GdkPixbuf *lock_pixbuf;
-  GdkPixbuf *check_pixbuf;
-} g_and_pixbuf;
-
-typedef struct module_and_parent {
-  gchar *last_module;
-  GtkTreeIter parent;
-} module_and_parent;
-
 // link to values in gui/presets.c
 // move to presets.h if needed elsewhere
 extern const int dt_gui_presets_exposure_value_cnt;
@@ -97,8 +81,6 @@ static void init_tab_accels(GtkWidget *stack);
 static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer data);
 static void import_preset(GtkButton *button, gpointer data);
 static void export_preset(GtkButton *button, gpointer data);
-static void delete_preset_from_view(GtkTreeModel *tree_model, gchar *name, gchar *operation);
-static g_and_pixbuf *_create_check_lock_pixbuf();
 
 // Signal handlers
 static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path, GtkTreeViewColumn *column,
@@ -106,8 +88,6 @@ static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path, Gtk
 static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer data);
 static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gpointer data);
-
-static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, const gchar *module);
 
 static GtkWidget *_preferences_dialog;
 
@@ -582,11 +562,44 @@ static void cairo_destroy_from_pixbuf(guchar *pixels, gpointer data)
   cairo_destroy((cairo_t *)data);
 }
 
-static module_and_parent *_update_tree_model_line(GtkTreeModel *tree_model, GtkTreeIter *iter, sqlite3_stmt *stmt,
-                                    GdkPixbuf *lock_pixbuf, GdkPixbuf *check_pixbuf,
-                                    gchar *last_module, GtkTreeIter parent, gboolean is_insert)
+static void _create_lock_check_pixbuf(GdkPixbuf **lock_pixbuf, GdkPixbuf **check_pixbuf)
 {
+  // Create GdkPixbufs with cairo drawings.
 
+  // lock
+  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                         DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  cairo_t *lock_cr = cairo_create(lock_cst);
+  cairo_set_source_rgb(lock_cr, 0.7, 0.7, 0.7);
+  dtgtk_cairo_paint_lock(lock_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
+  cairo_surface_flush(lock_cst);
+  guchar *data = cairo_image_surface_get_data(lock_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
+                                          DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                          cairo_image_surface_get_stride(lock_cst),
+                                          cairo_destroy_from_pixbuf, lock_cr);
+  cairo_surface_destroy(lock_cst);
+
+  // check mark
+  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                          DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  cairo_t *check_cr = cairo_create(check_cst);
+  cairo_set_source_rgb(check_cr, 0.7, 0.7, 0.7);
+  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
+  cairo_surface_flush(check_cst);
+  data = cairo_image_surface_get_data(check_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  *check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
+                                           DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                           cairo_image_surface_get_stride(check_cst),
+                                           cairo_destroy_from_pixbuf, check_cr);
+  cairo_surface_destroy(check_cst);
+}
+
+static void _update_preset_line(GtkTreeStore *tree_store, GtkTreeIter *iter, sqlite3_stmt *stmt,
+                                GdkPixbuf *lock_pixbuf, GdkPixbuf *check_pixbuf)
+{
   const gint rowid = sqlite3_column_int(stmt, 0);
   const gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
   const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
@@ -652,37 +665,19 @@ static module_and_parent *_update_tree_model_line(GtkTreeModel *tree_model, GtkT
       aperture = g_strdup_printf("%s – %s", dt_gui_presets_aperture_value_str[min],
                                  dt_gui_presets_aperture_value_str[max]);
 
-    if(focal_length_min == 0.0 && focal_length_max == 1000.0)
+    if(focal_length_min == 0.0f && focal_length_max == 1000.0f)
       focal_length = g_strdup("%");
     else
       focal_length = g_strdup_printf("%d – %d", focal_length_min, focal_length_max);
   }
 
-  if(is_insert)
-  {
-    if(g_strcmp0(last_module, operation) != 0)
-    {
-      // the first-level entry (the module) must be added
-      gtk_tree_store_insert_with_values(GTK_TREE_STORE(tree_model), iter, NULL, -1,
-                         P_ROWID_COLUMN, 0, P_OPERATION_COLUMN, "", P_MODULE_COLUMN,
-                         _(module), P_EDITABLE_COLUMN, NULL, P_NAME_COLUMN, "", P_MODEL_COLUMN, "",
-                         P_MAKER_COLUMN, "", P_LENS_COLUMN, "", P_ISO_COLUMN, "", P_EXPOSURE_COLUMN, "",
-                         P_APERTURE_COLUMN, "", P_FOCAL_LENGTH_COLUMN, "", P_AUTOAPPLY_COLUMN, NULL, -1);
-      g_free(last_module);
-      last_module = g_strdup(operation);
-      parent = *iter;
-    }
-
-    gtk_tree_store_insert(GTK_TREE_STORE(tree_model), iter, &parent, -1);
-  }
-
-  gtk_tree_store_set(GTK_TREE_STORE(tree_model), iter,
-                     P_ROWID_COLUMN, rowid, P_OPERATION_COLUMN, operation,
-                     P_MODULE_COLUMN, "", P_EDITABLE_COLUMN, writeprotect ? lock_pixbuf : NULL,
-                     P_NAME_COLUMN, name, P_MODEL_COLUMN, smodel, P_MAKER_COLUMN, smaker, P_LENS_COLUMN, slens,
-                     P_ISO_COLUMN, iso, P_EXPOSURE_COLUMN, exposure, P_APERTURE_COLUMN, aperture,
-                     P_FOCAL_LENGTH_COLUMN, focal_length, P_AUTOAPPLY_COLUMN,
-                     autoapply ? check_pixbuf : NULL, -1);
+  gtk_tree_store_set(GTK_TREE_STORE(tree_store), iter,
+                      P_ROWID_COLUMN, rowid, P_OPERATION_COLUMN, operation,
+                      P_MODULE_COLUMN, "", P_EDITABLE_COLUMN, writeprotect ? lock_pixbuf : NULL,
+                      P_NAME_COLUMN, name, P_MODEL_COLUMN, smodel, P_MAKER_COLUMN, smaker, P_LENS_COLUMN, slens,
+                      P_ISO_COLUMN, iso, P_EXPOSURE_COLUMN, exposure, P_APERTURE_COLUMN, aperture,
+                      P_FOCAL_LENGTH_COLUMN, focal_length, P_AUTOAPPLY_COLUMN,
+                      autoapply ? check_pixbuf : NULL, -1);
 
   g_free(focal_length);
   g_free(aperture);
@@ -692,19 +687,6 @@ static module_and_parent *_update_tree_model_line(GtkTreeModel *tree_model, GtkT
   g_free(smaker);
   g_free(smodel);
   g_free(slens);
-
-  if (is_insert)
-  {
-    module_and_parent *last_module_and_parent = (module_and_parent *)g_malloc0(sizeof(module_and_parent));
-    last_module_and_parent->last_module = last_module;
-    last_module_and_parent->parent = parent;
-
-    return last_module_and_parent;
-  }
-  else
-  {
-    return NULL;
-  }
 }
 
 static void tree_insert_presets(GtkTreeStore *tree_store)
@@ -712,27 +694,33 @@ static void tree_insert_presets(GtkTreeStore *tree_store)
   GtkTreeIter iter, parent;
   sqlite3_stmt *stmt;
   gchar *last_module = NULL;
-  module_and_parent *last_module_and_parent = (module_and_parent *)g_malloc0(sizeof(module_and_parent));
 
-  g_and_pixbuf *g_pixbuf = _create_check_lock_pixbuf();
-  GdkPixbuf *lock_pixbuf = g_pixbuf->lock_pixbuf;
-  GdkPixbuf *check_pixbuf = g_pixbuf->check_pixbuf;
+  GdkPixbuf *lock_pixbuf, *check_pixbuf;
+  _create_lock_check_pixbuf(&lock_pixbuf, &check_pixbuf);
 
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
                               "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-                              "focal_length_min, focal_length_max, writeprotect FROM data.presets ORDER BY "
-                              "operation, name",
+                              "focal_length_min, focal_length_max, writeprotect "
+                              "FROM data.presets "
+                              "ORDER BY operation, name",
                               -1, &stmt, NULL);
   // clang-format on
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    last_module_and_parent = _update_tree_model_line(
-            GTK_TREE_MODEL(tree_store), &iter, stmt, lock_pixbuf, check_pixbuf,
-            last_module, parent, TRUE);
-    last_module = last_module_and_parent->last_module;
-    parent = last_module_and_parent->parent;
+    const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
+    if(g_strcmp0(operation, last_module))
+    {
+      gtk_tree_store_insert_with_values(tree_store, &parent, NULL, -1,
+                                        P_MODULE_COLUMN, operation, -1);
+
+      last_module = g_strdup(operation);
+    }
+
+    gtk_tree_store_insert(tree_store, &iter, &parent, -1);
+
+    _update_preset_line(tree_store, &iter, stmt, lock_pixbuf, check_pixbuf);
   }
   g_free(last_module);
   sqlite3_finalize(stmt);
@@ -901,15 +889,56 @@ static void init_tab_accels(GtkWidget *stack)
   gtk_stack_add_titled(GTK_STACK(stack), dt_shortcuts_prefs(NULL), _("shortcuts"), _("shortcuts"));
 }
 
+static void _delete_line_and_empty_parent(GtkTreeModel *model, GtkTreeIter *iter)
+{
+  GtkTreeIter parent;
+  {
+    gtk_tree_model_iter_parent(model, &parent, iter);
+    gtk_tree_store_remove(GTK_TREE_STORE(model), iter);
+    if(!gtk_tree_model_iter_has_child(model, &parent))
+      gtk_tree_store_remove(GTK_TREE_STORE(model), &parent);
+  }
+}
+
+static GtkTreeIter edited_iter;
+
+static void edit_preset_response(dt_gui_presets_edit_dialog_t *g)
+{
+  if(!g->old_id)
+    _delete_line_and_empty_parent(g->data, &edited_iter);
+  else
+  {
+    GdkPixbuf *lock_pixbuf, *check_pixbuf;
+    _create_lock_check_pixbuf(&lock_pixbuf, &check_pixbuf);
+
+    sqlite3_stmt *stmt;
+
+    // clang-format off
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
+                                "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
+                                "focal_length_min, focal_length_max, writeprotect "
+                                "FROM data.presets "
+                                "WHERE rowid = ?1",
+                                -1, &stmt, NULL);
+    // clang-format on
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, g->old_id);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      _update_preset_line(g->data, &edited_iter, stmt, lock_pixbuf, check_pixbuf);
+
+    sqlite3_finalize(stmt);
+  }
+}
+
 static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path, GtkTreeViewColumn *column,
                                        gpointer data)
 {
-  GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(tree);
 
-  gtk_tree_model_get_iter(model, &iter, path);
+  gtk_tree_model_get_iter(model, &edited_iter, path);
 
-  if(gtk_tree_model_iter_has_child(model, &iter))
+  if(gtk_tree_model_iter_has_child(model, &edited_iter))
   {
     // For branch nodes, toggle expansion on activation
     if(gtk_tree_view_row_expanded(tree, path))
@@ -923,10 +952,11 @@ static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path, Gtk
     gint rowid;
     gchar *name, *operation;
     GdkPixbuf *editable;
-    gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name, P_OPERATION_COLUMN,
+    gtk_tree_model_get(model, &edited_iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name, P_OPERATION_COLUMN,
                        &operation, P_EDITABLE_COLUMN, &editable, -1);
     if(editable == NULL)
-      edit_preset(tree, rowid, name, operation);
+      dt_gui_presets_show_edit_dialog(name, operation, rowid, G_CALLBACK(edit_preset_response), model, FALSE, TRUE, TRUE,
+                                      GTK_WINDOW(_preferences_dialog));
     else
       g_object_unref(editable);
     g_free(name);
@@ -934,11 +964,8 @@ static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path, Gtk
   }
 }
 
-
-
 static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-
   GtkTreeModel *model = (GtkTreeModel *)data;
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
@@ -957,36 +984,20 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
 
     // For leaf nodes, open delete confirmation window if the preset is not writeprotected
     gint rowid;
-    gchar *name;
+    gchar *name, *operation;
     GdkPixbuf *editable;
     gtk_tree_model_get(model, &iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name,
-                       P_EDITABLE_COLUMN, &editable, -1);
+                       P_MODULE_COLUMN, &operation, P_EDITABLE_COLUMN, &editable, -1);
     if(editable == NULL)
     {
-      sqlite3_stmt *stmt;
-      gchar* operation = NULL;
-
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, operation FROM data.presets WHERE rowid = ?1",
-                              -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        operation = g_strdup( (const char*)sqlite3_column_text(stmt,1));
-      }
-      sqlite3_finalize(stmt);
-
-      dt_gui_presets_confirm_and_delete(_preferences_dialog, name, operation, rowid);
-
-      delete_preset_from_view(model, name, operation);
-
-      if(operation)
-        g_free(operation);
+      if(dt_gui_presets_confirm_and_delete(_preferences_dialog, name, operation, rowid))
+        _delete_line_and_empty_parent(model, &iter);
     }
     else
       g_object_unref(editable);
 
     g_free(name);
+    g_free(operation);
 
     return TRUE;
   }
@@ -1113,253 +1124,6 @@ static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
   g_free(b_text);
 
   return res;
-}
-
-static void edit_preset_response(dt_gui_presets_edit_dialog_t *g)
-{
-  GtkTreeStore *tree_store = GTK_TREE_STORE(gtk_tree_view_get_model((GtkTreeView *)g->data));
-  gtk_tree_store_clear(tree_store);
-  tree_insert_presets(tree_store);
-}
-
-static gboolean _delete_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter,
-                                   const gchar *current_name, const gchar *current_operation)
-{
-  gchar *ith_name = NULL, *ith_operation = NULL;
-  gtk_tree_model_get(tree_model, iter, P_NAME_COLUMN, &ith_name, P_OPERATION_COLUMN, &ith_operation, -1);
-  if(*ith_name == *current_name && *ith_operation == *current_operation)
-  {
-    g_free(ith_name);
-    g_free(ith_operation);
-
-    GtkTreeIter parent;
-    gtk_tree_model_iter_parent(tree_model, &parent, iter);
-
-    gtk_tree_store_remove(GTK_TREE_STORE(tree_model), iter);
-
-    // check whether the parent has children; if not, remove the parent
-    gint n_children = gtk_tree_model_iter_n_children (tree_model, &parent);
-    if(! n_children) gtk_tree_store_remove(GTK_TREE_STORE(tree_model), &parent);
-
-    return TRUE;
-  }
-  return FALSE;
-}
-
-static gboolean delete_by_name_and_operation_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer no)
-{
-  const gchar *current_name = ((name_and_operation*)no)->name;
-  const gchar *current_operation = ((name_and_operation*)no)->operation;
-
-  return _delete_if_current(tree_model, path, iter, current_name, current_operation);
-}
-
-static gboolean delete_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer g)
-{
-  const gchar *current_name = gtk_entry_get_text(((dt_gui_presets_edit_dialog_t*)g)->name);
-  const gchar *current_operation = ((dt_gui_presets_edit_dialog_t*)g)->operation;
-
-  return _delete_if_current(tree_model, path, iter, current_name, current_operation);
-}
-
-static gboolean actualize_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer g_pixbuf)
-{
-  GdkPixbuf *check_pixbuf = ((g_and_pixbuf*)g_pixbuf)->check_pixbuf;
-  GdkPixbuf *lock_pixbuf = ((g_and_pixbuf*)g_pixbuf)->lock_pixbuf;
-  dt_gui_presets_edit_dialog_t *g = ((g_and_pixbuf*)g_pixbuf)->g;
-
-  gchar *ith_name = NULL, *ith_operation = NULL;
-  gtk_tree_model_get(tree_model, iter, P_NAME_COLUMN, &ith_name, P_OPERATION_COLUMN, &ith_operation, -1);
-  const gchar *current_name = gtk_entry_get_text(((dt_gui_presets_edit_dialog_t*)g)->name);
-  const gchar *current_operation = ((dt_gui_presets_edit_dialog_t*)g)->operation;
-  if(*ith_name == *current_name && *ith_operation == *current_operation)
-  {
-    g_free(ith_name);
-    g_free(ith_operation);
-    sqlite3_stmt *stmt;
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
-                                "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-                                "focal_length_min, focal_length_max, writeprotect FROM data.presets WHERE "
-                                "operation = ?1 AND name = ?2",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, (char*)current_operation, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, (char*)current_name, -1, SQLITE_TRANSIENT);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      _update_tree_model_line(tree_model, iter, stmt, lock_pixbuf, check_pixbuf, NULL, *iter, FALSE);
-
-      const gint rowid = sqlite3_column_int(stmt, 0);
-      const gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
-      const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
-      const gboolean autoapply = (sqlite3_column_int(stmt, 3) == 0 ? FALSE : TRUE);
-      const gchar *model = (gchar *)sqlite3_column_text(stmt, 4);
-      const gchar *maker = (gchar *)sqlite3_column_text(stmt, 5);
-      const gchar *lens = (gchar *)sqlite3_column_text(stmt, 6);
-      const float iso_min = sqlite3_column_double(stmt, 7);
-      const float iso_max = sqlite3_column_double(stmt, 8);
-      const float exposure_min = sqlite3_column_double(stmt, 9);
-      const float exposure_max = sqlite3_column_double(stmt, 10);
-      const float aperture_min = sqlite3_column_double(stmt, 11);
-      const float aperture_max = sqlite3_column_double(stmt, 12);
-      const int focal_length_min = sqlite3_column_double(stmt, 13);
-      const int focal_length_max = sqlite3_column_double(stmt, 14);
-      const gboolean writeprotect = (sqlite3_column_int(stmt, 15) == 0 ? FALSE : TRUE);
-
-      gchar *iso = NULL, *exposure = NULL, *aperture = NULL, *focal_length = NULL, *smaker = NULL, *smodel = NULL, *slens = NULL;
-      int min, max;
-
-      gchar *module = g_strdup(dt_iop_get_localized_name(operation));
-      if(module == NULL) module = g_strdup(dt_lib_get_localized_name(operation));
-      if(module == NULL) module = g_strdup(operation);
-
-      if(!dt_presets_module_can_autoapply(operation))
-      {
-        iso = g_strdup("");
-        exposure = g_strdup("");
-        aperture = g_strdup("");
-        focal_length = g_strdup("");
-        smaker = g_strdup("");
-        smodel = g_strdup("");
-        slens = g_strdup("");
-      }
-      else
-      {
-        smaker = g_strdup(maker);
-        smodel = g_strdup(model);
-        slens = g_strdup(lens);
-
-        if(iso_min == 0.0 && iso_max == FLT_MAX)
-          iso = g_strdup("%");
-        else
-          iso = g_strdup_printf("%zu – %zu", (size_t)iso_min, (size_t)iso_max);
-
-        for(min = 0; min < dt_gui_presets_exposure_value_cnt && exposure_min > dt_gui_presets_exposure_value[min]; min++)
-          ;
-        for(max = 0; max < dt_gui_presets_exposure_value_cnt && exposure_max > dt_gui_presets_exposure_value[max]; max++)
-          ;
-        if(min == 0 && max == dt_gui_presets_exposure_value_cnt - 1)
-          exposure = g_strdup("%");
-        else
-          exposure = g_strdup_printf("%s – %s", dt_gui_presets_exposure_value_str[min],
-                                     dt_gui_presets_exposure_value_str[max]);
-
-        for(min = 0; min < dt_gui_presets_aperture_value_cnt && aperture_min > dt_gui_presets_aperture_value[min]; min++)
-          ;
-        for(max = 0; max < dt_gui_presets_aperture_value_cnt && aperture_max > dt_gui_presets_aperture_value[max]; max++)
-          ;
-        if(min == 0 && max == dt_gui_presets_aperture_value_cnt - 1)
-          aperture = g_strdup("%");
-        else
-          aperture = g_strdup_printf("%s – %s", dt_gui_presets_aperture_value_str[min],
-                                     dt_gui_presets_aperture_value_str[max]);
-
-        if(focal_length_min == 0.0 && focal_length_max == 1000.0)
-          focal_length = g_strdup("%");
-        else
-          focal_length = g_strdup_printf("%d – %d", focal_length_min, focal_length_max);
-      }
-
-      gtk_tree_store_set(GTK_TREE_STORE(tree_model), iter,
-                         P_ROWID_COLUMN, rowid, P_OPERATION_COLUMN, operation,
-                         P_MODULE_COLUMN, "", P_EDITABLE_COLUMN, writeprotect ? lock_pixbuf : NULL,
-                         P_NAME_COLUMN, name, P_MODEL_COLUMN, smodel, P_MAKER_COLUMN, smaker, P_LENS_COLUMN, slens,
-                         P_ISO_COLUMN, iso, P_EXPOSURE_COLUMN, exposure, P_APERTURE_COLUMN, aperture,
-                         P_FOCAL_LENGTH_COLUMN, focal_length, P_AUTOAPPLY_COLUMN,
-                         autoapply ? check_pixbuf : NULL, -1);
-
-      g_free(focal_length);
-      g_free(aperture);
-      g_free(exposure);
-      g_free(iso);
-      g_free(module);
-      g_free(smaker);
-      g_free(smodel);
-      g_free(slens);
-    }
-    sqlite3_finalize(stmt);
-
-    return TRUE;
-  }
-  return FALSE;
-}
-
-static g_and_pixbuf *_create_check_lock_pixbuf()
-{
-  g_and_pixbuf *g_pixbuf = (g_and_pixbuf *)g_malloc0(sizeof(g_and_pixbuf));
-
-  // Create a GdkPixbuf with a cairo drawing.
-  // lock
-  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                         DT_PIXEL_APPLY_DPI(ICON_SIZE));
-  cairo_t *lock_cr = cairo_create(lock_cst);
-  cairo_set_source_rgb(lock_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_lock(lock_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
-  cairo_surface_flush(lock_cst);
-  guchar *data = cairo_image_surface_get_data(lock_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
-  GdkPixbuf *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
-                                                    DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                    cairo_image_surface_get_stride(lock_cst),
-                                                    cairo_destroy_from_pixbuf, lock_cr);
-  // check mark
-  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                          DT_PIXEL_APPLY_DPI(ICON_SIZE));
-  cairo_t *check_cr = cairo_create(check_cst);
-  cairo_set_source_rgb(check_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
-  cairo_surface_flush(check_cst);
-  data = cairo_image_surface_get_data(check_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
-  GdkPixbuf *check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
-                                                     DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                     cairo_image_surface_get_stride(check_cst),
-                                                     cairo_destroy_from_pixbuf, check_cr);
-
-  cairo_surface_destroy(lock_cst);
-  cairo_surface_destroy(check_cst);
-
-  g_pixbuf->check_pixbuf = check_pixbuf;
-  g_pixbuf->lock_pixbuf = lock_pixbuf;
-
-  return g_pixbuf;
-}
-
-static void actualize_or_delete_preset_in_view(dt_gui_presets_edit_dialog_t *g)
-{
-  GtkTreeModel *tree_model = gtk_tree_view_get_model((GtkTreeView *)g->data);
-
-  if(((dt_gui_presets_edit_dialog_t*)g)->action == DT_ACTION_EFFECT_DELETE)
-  {
-    gtk_tree_model_foreach(tree_model, (GtkTreeModelForeachFunc)delete_if_current, g);
-  }
-  else if(((dt_gui_presets_edit_dialog_t*)g)->action == DT_ACTION_EFFECT_EDIT)
-  {
-    g_and_pixbuf *g_pixbuf = _create_check_lock_pixbuf();
-    g_pixbuf->g = g;
-
-    gtk_tree_model_foreach(tree_model, (GtkTreeModelForeachFunc)actualize_if_current, g_pixbuf);
-
-    g_object_unref(g_pixbuf->lock_pixbuf);
-    g_object_unref(g_pixbuf->check_pixbuf);
-  }
-}
-
-static void delete_preset_from_view(GtkTreeModel *tree_model, gchar *name, gchar *operation)
-{
-  name_and_operation *no
-      = (name_and_operation *)g_malloc0(sizeof(name_and_operation));
-  no->name = name;
-  no->operation = operation;
-
-  gtk_tree_model_foreach(tree_model, (GtkTreeModelForeachFunc)delete_by_name_and_operation_if_current, no);
-}
-
-static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, const gchar *module)
-{
-  dt_gui_presets_show_edit_dialog(name, module, rowid, G_CALLBACK(actualize_or_delete_preset_in_view), tree, FALSE, TRUE, TRUE,
-                                  GTK_WINDOW(_preferences_dialog));
 }
 
 static void
