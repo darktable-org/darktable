@@ -189,14 +189,13 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
-  d->onsave_action = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->onsave_action, NULL, N_("on conflict"));
-  dt_bauhaus_combobox_add(d->onsave_action, _("create unique filename"));
-  dt_bauhaus_combobox_add(d->onsave_action, _("overwrite"));
-  dt_bauhaus_combobox_add(d->onsave_action, _("skip"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->onsave_action, self, NULL, N_("on conflict"), NULL,
+                               dt_conf_get_int("plugins/imageio/storage/disk/overwrite"),
+                               onsave_action_toggle_callback, self,
+                               N_("create unique filename"),
+                               N_("overwrite"),
+                               N_("skip"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->onsave_action, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->onsave_action), "value-changed", G_CALLBACK(onsave_action_toggle_callback), self);
-  dt_bauhaus_combobox_set(d->onsave_action, dt_conf_get_int("plugins/imageio/storage/disk/overwrite"));
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)

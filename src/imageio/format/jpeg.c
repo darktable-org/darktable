@@ -578,7 +578,7 @@ void gui_init(dt_imageio_module_format_t *self)
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   self->widget = box;
   // quality slider
-  g->quality = dt_bauhaus_slider_new_with_range(NULL,
+  g->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
                                                 dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MIN),
                                                 dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MAX),
                                                 1,

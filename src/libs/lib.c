@@ -628,8 +628,7 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
   module->reset_button = NULL;
   module->presets_button = NULL;
 
-  module->actions = (dt_action_t){ DT_ACTION_TYPE_LIB, module->plugin_name, module->name(module),
-                                  .owner = &darktable.control->actions_libs };
+  module->actions = (dt_action_t){ DT_ACTION_TYPE_LIB, module->plugin_name, module->name(module) };
   dt_action_insert_sorted(&darktable.control->actions_libs, &module->actions);
 #ifdef USE_LUA
   dt_lua_lib_register(darktable.lua_state.state, module);
