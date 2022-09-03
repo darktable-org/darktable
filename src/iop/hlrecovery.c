@@ -874,8 +874,8 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(out, gradient) \
-  dt_omp_sharedconst(width, height, pwidth, p_off, max_correction) \
+  dt_omp_firstprivate(out, gradient, max_correction) \
+  dt_omp_sharedconst(width, height, pwidth, p_off) \
   schedule(static) collapse(2)
 #endif
       for(int row = 0; row < height; row++)
