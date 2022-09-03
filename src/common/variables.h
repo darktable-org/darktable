@@ -20,6 +20,7 @@
 
 #include <glib.h>
 #include <stdint.h>
+#include "common/image.h"
 
 typedef struct dt_variables_params_t
 {
