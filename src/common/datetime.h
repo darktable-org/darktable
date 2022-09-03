@@ -20,7 +20,6 @@
 #include <glib.h>
 #include "common/image.h"
 
-#define DT_DATETIME_LENGTH 24       // includes msec
 #define DT_DATETIME_EXIF_LENGTH 20  // exif format string length
 
 // The GTimeSpan saved in db is an offset to datetime_origin (0001:01:01 00:00:00)

@@ -270,9 +270,12 @@ typedef struct dt_image_t
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
 
+// should be in datetime.h, workaround to solve cross references 
+#define DT_DATETIME_LENGTH 24       // includes msec
+
 typedef struct dt_image_basic_exif_t
 {
-  char datetime[24];  // must be equal to DT_DATETIME_LENGTH
+  char datetime[DT_DATETIME_LENGTH];
   char maker[64];
   char model[64];
 } dt_image_basic_exif_t;
