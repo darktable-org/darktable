@@ -3871,6 +3871,8 @@ static inline gchar *path_without_symbols(const gchar *path)
 
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
 {
+  new_action->owner = owner;
+
   dt_action_t **insertion_point = (dt_action_t **)&owner->target;
 
   while(*insertion_point
@@ -3909,7 +3911,6 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
       new_action->id = clean_path;
       new_action->label = g_strdup(Q_(*path));
       new_action->type = DT_ACTION_TYPE_SECTION;
-      new_action->owner = owner;
 
       dt_action_insert_sorted(owner, new_action);
 

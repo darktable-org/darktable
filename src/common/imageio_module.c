@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/signal.h"
+#include "gui/accelerators.h"
 #include <stdlib.h>
 static gint dt_imageio_sort_modules_storage(gconstpointer a, gconstpointer b)
 {
@@ -75,6 +76,9 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
   if(darktable.gui)
   {
     if(!module->gui_init) goto api_h_error;
+
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION, module->plugin_name, module->name(module) };
+    dt_action_insert_sorted(&darktable.control->actions_format, &module->actions);
   }
   else
   {
@@ -184,6 +188,9 @@ static int dt_imageio_load_module_storage(dt_imageio_module_storage_t *module, c
   if(darktable.gui)
   {
     if(!module->gui_init) goto api_h_error;
+
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION, module->plugin_name, module->name(module) };
+    dt_action_insert_sorted(&darktable.control->actions_storage, &module->actions);
   }
   else
   {

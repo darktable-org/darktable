@@ -790,7 +790,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   GtkWidget *hbox, *label, *button;
 
   // account
-  ui->account_list = dt_bauhaus_combobox_new(NULL);
+  ui->account_list = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(ui->account_list, NULL, N_("accounts"));
   int account_index = -1, index=0;
   for(const GList *a = ui->accounts; a; a = g_list_next(a))
@@ -857,20 +857,19 @@ void gui_init(dt_imageio_module_storage_t *self)
   if(account_index != -1) dt_bauhaus_combobox_set(ui->account_list, account_index);
 
   // permissions list
-  ui->permission_list = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(ui->permission_list, NULL, N_("visible to"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("everyone"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("contacts"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("friends"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("family"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("you"));
-  dt_bauhaus_combobox_set(ui->permission_list, 0); // Set default permission to everyone
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(ui->permission_list, self, NULL, N_("visible to"), NULL,
+                               0, NULL, NULL,
+                               N_("everyone"),
+                               N_("contacts"),
+                               N_("friends"),
+                               N_("family"),
+                               N_("you"));
   gtk_box_pack_start(GTK_BOX(self->widget), ui->permission_list, FALSE, FALSE, 0);
 
   // album list
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  ui->album_list = dt_bauhaus_combobox_new(NULL); // Available albums
+  ui->album_list = dt_bauhaus_combobox_new_action(DT_ACTION(self)); // Available albums
   dt_bauhaus_widget_set_label(ui->album_list, NULL, N_("album"));
   g_signal_connect(G_OBJECT(ui->album_list), "value-changed", G_CALLBACK(_piwigo_album_changed), (gpointer)ui);
   gtk_widget_set_sensitive(ui->album_list, FALSE);
@@ -902,7 +901,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(ui->create_box, hbox, FALSE, FALSE, 0);
 
   // parent album list
-  ui->parent_album_list = dt_bauhaus_combobox_new(NULL); // Available albums
+  ui->parent_album_list = dt_bauhaus_combobox_new_action(DT_ACTION(self)); // Available albums
   dt_bauhaus_widget_set_label(ui->parent_album_list, NULL, N_("parent album"));
   gtk_widget_set_sensitive(ui->parent_album_list, TRUE);
   gtk_box_pack_start(ui->create_box, ui->parent_album_list, TRUE, TRUE, 0);
