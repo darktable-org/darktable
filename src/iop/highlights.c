@@ -85,13 +85,25 @@ typedef enum dt_atrous_wavelets_scales_t
   WAVELETS_10_SCALE = 9, // $DESCRIPTION: "2048 px (insanely slow)"
 } dt_atrous_wavelets_scales_t;
 
+typedef enum dt_recovery_mode_t
+{
+  RECOVERY_MODE_OFF = 0,    // $DESCRIPTION: "off" 
+  RECOVERY_MODE_ADAPT = 5,  // $DESCRIPTION: "generic"
+  RECOVERY_MODE_ADAPTF = 6, // $DESCRIPTION: "flat generic"
+  RECOVERY_MODE_SMALL = 1,  // $DESCRIPTION: "small segments" 
+  RECOVERY_MODE_LARGE = 2,  // $DESCRIPTION: "large segments"
+  RECOVERY_MODE_SMALLF = 3, // $DESCRIPTION: "flat small segments"
+  RECOVERY_MODE_LARGEF = 4, // $DESCRIPTION: "flat large segments"
+} dt_recovery_mode_t;
+#define NUM_RECOVERY_MODES 7
+
 typedef struct dt_iop_highlights_params_t
 {
   // params of v1
   dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
   float blendL; // unused $DEFAULT: 1.0
   float blendC; // unused $DEFAULT: 0.0
-  float blendh; // unused $DEFAULT: 0.0
+  float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
   // params of v2
   float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
   // params of v3
@@ -100,7 +112,7 @@ typedef struct dt_iop_highlights_params_t
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
   float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidating"
   float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
-  int reconstruct;
+  dt_recovery_mode_t recovery; // $DEFAULT: RECOVERY_MODE_OFF $DESCRIPTION: "recovery" 
   // params of v4
   float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
 } dt_iop_highlights_params_t;
@@ -115,6 +127,8 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *solid_color;
   GtkWidget *candidating;
   GtkWidget *combine;
+  GtkWidget *recovery;
+  GtkWidget *strength;
   gboolean show_visualize;
   int show_segmentation;
 } dt_iop_highlights_gui_data_t;
@@ -186,10 +200,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.0f;
     n->candidating = 0.4f;
     n->combine = 2.f;
-    n->reconstruct = 0;
+    n->recovery = RECOVERY_MODE_OFF;
     n->iterations = 1;
     n->scales = 5;
     n->solid_color = 0.f;
+    n->strength = 0.0f;
     return 0;
   }
   if(old_version == 2 && new_version == 4)
@@ -201,7 +216,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
         dt_atrous_wavelets_scales_t scales;
         float candidating;
         float combine;
-        int reconstruct;
+        int recovery;
       + params of v4
     */
     memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
@@ -209,10 +224,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.0f;
     n->candidating = 0.4f;
     n->combine = 2.f;
-    n->reconstruct = 0;
+    n->recovery = RECOVERY_MODE_OFF;
     n->iterations = 1;
     n->scales = 5;
     n->solid_color = 0.f;
+    n->strength = 0.0f;
     return 0;
   }
   if(old_version == 3 && new_version == 4)
@@ -224,6 +240,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - sizeof(float));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->solid_color = 0.f;
+    n->strength = 0.0f;
     return 0;
   }
 
@@ -455,8 +472,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->xalign = 2;
     tiling->yalign = 2;
     tiling->overlap = 0;
-    tiling->overhead = 0x4000 * 4 * 10 * sizeof(int);
-    tiling->factor = 5.1f; // in & out plus plane buffers including some border safety plus segment planes
+    tiling->overhead = 0x4000 * 5 * 10 * sizeof(int);
+    tiling->factor = 5.6f; // in & out plus plane buffers including some border safety plus segment planes
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
  
@@ -2138,15 +2155,23 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_bauhaus_widget_set_quad_visibility(g->clip, israw);
 
   const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
-  gtk_widget_set_visible(g->noise_level, use_laplacian);
+  const gboolean use_segmentation = bayer && (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
+  gtk_widget_set_visible(g->noise_level, use_laplacian || (use_segmentation && (p->recovery > 0)));
   gtk_widget_set_visible(g->iterations, use_laplacian);
   gtk_widget_set_visible(g->scales, use_laplacian);
   gtk_widget_set_visible(g->solid_color, use_laplacian);
 
-  const gboolean use_recovery = bayer && (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
-  gtk_widget_set_visible(g->candidating, use_recovery);
-  gtk_widget_set_visible(g->combine, use_recovery);
-
+  gtk_widget_set_visible(g->candidating, use_segmentation);
+  gtk_widget_set_visible(g->combine, use_segmentation);
+  gtk_widget_set_visible(g->recovery, use_segmentation);
+  gtk_widget_set_visible(g->strength, use_segmentation && (p->recovery > 0));
+  
+  // The special case for strength button active needs further care here
+  if((use_segmentation && (p->recovery == 0)) && (g->show_segmentation == 4))
+  {
+    dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
+    g->show_segmentation = 0;
+  }
   // If guided laplacian or hl_recovery mode was copied as part of the history of another pic, sanitize it
   // guided laplacian and hl_recovery are not available for XTrans
   if(!bayer && ((mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) || (mode == DT_IOP_HIGHLIGHTS_SEGMENTS)) )
@@ -2169,6 +2194,7 @@ void gui_update(struct dt_iop_module_t *self)
   g->show_visualize = FALSE;
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g->show_segmentation = 0;
   gui_changed(self, NULL, NULL);
 }
@@ -2217,6 +2243,7 @@ static void _visualize_callback(GtkWidget *quad, gpointer user_data)
   g->show_visualize = dt_bauhaus_widget_get_quad_active(quad);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g->show_segmentation = 0;
   dt_dev_reprocess_center(self->dev);
 }
@@ -2229,6 +2256,7 @@ static void _candidating_callback(GtkWidget *quad, gpointer user_data)
   g->show_segmentation = (dt_bauhaus_widget_get_quad_active(quad)) ? 2 : 0;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g->show_visualize = FALSE;
   dt_dev_reprocess_center(self->dev);
 }
@@ -2240,6 +2268,20 @@ static void _combine_callback(GtkWidget *quad, gpointer user_data)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   g->show_segmentation = (dt_bauhaus_widget_get_quad_active(quad)) ? 1 : 0;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
+  g->show_visualize = FALSE;
+  dt_dev_reprocess_center(self->dev);
+}
+
+static void _strength_callback(GtkWidget *quad, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  g->show_segmentation = (dt_bauhaus_widget_get_quad_active(quad)) ? 4 : 0;
+  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+  dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   g->show_visualize = FALSE;
   dt_dev_reprocess_center(self->dev);
@@ -2254,6 +2296,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
     dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
     dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
     g->show_visualize = FALSE;
     g->show_segmentation = 0;
     if(was_visualize) dt_dev_reprocess_center(self->dev);
@@ -2280,23 +2323,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   g_signal_connect(G_OBJECT(g->clip), "quad-pressed", G_CALLBACK(_visualize_callback), self);
 
-  g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
-  gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
-                                                "into the rest of the noisy image. useful at high ISO."));
-
-  g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
-  gtk_widget_set_tooltip_text(g->iterations, _("increase if magenta highlights don't get fully corrected\n"
-                                               "each new iteration brings a performance penalty."));
-
-  g->solid_color = dt_bauhaus_slider_from_params(self, "solid_color");
-  dt_bauhaus_slider_set_format(g->solid_color, "%");
-  gtk_widget_set_tooltip_text(g->solid_color, _("increase if magenta highlights don't get fully corrected.\n"
-                                                "this may produce non-smooth boundaries between valid and clipped regions."));
-
-  g->scales = dt_bauhaus_combobox_from_params(self, "scales");
-  gtk_widget_set_tooltip_text(g->scales, _("increase to correct larger clipped areas.\n"
-                                           "large values bring huge performance penalties"));
-
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
   gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations.")); 
@@ -2314,6 +2340,37 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->candidating, TRUE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   g_signal_connect(G_OBJECT(g->candidating), "quad-pressed", G_CALLBACK(_candidating_callback), self);
+
+  g->recovery = dt_bauhaus_combobox_from_params(self, "recovery");
+  gtk_widget_set_tooltip_text(g->recovery, _("approximate lost data in regions with all photosites clipped, the effect depends on segment size and border gradients.\n"
+                                             "choose a mode having a better approximation for either rather small or large segments or a generic mode.\n" 
+                                             "the *flat* modes ignore narrow unclipped structures."));
+
+  g->strength = dt_bauhaus_slider_from_params(self, "strength");
+  gtk_widget_set_tooltip_text(g->strength, _("set strenth of reconstruction in regions with all photosites clipped"));
+  dt_bauhaus_slider_set_format(g->strength, "%");
+  dt_bauhaus_slider_set_step(g->strength, 0.1f);
+  dt_bauhaus_widget_set_quad_paint(g->strength, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->strength, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
+  g_signal_connect(G_OBJECT(g->strength), "quad-pressed", G_CALLBACK(_strength_callback), self);
+
+  g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
+  gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
+                                                "into the rest of the noisy image. useful at high ISO."));
+
+  g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
+  gtk_widget_set_tooltip_text(g->iterations, _("increase if magenta highlights don't get fully corrected\n"
+                                               "each new iteration brings a performance penalty."));
+
+  g->solid_color = dt_bauhaus_slider_from_params(self, "solid_color");
+  dt_bauhaus_slider_set_format(g->solid_color, "%");
+  gtk_widget_set_tooltip_text(g->solid_color, _("increase if magenta highlights don't get fully corrected.\n"
+                                                "this may produce non-smooth boundaries between valid and clipped regions."));
+
+  g->scales = dt_bauhaus_combobox_from_params(self, "scales");
+  gtk_widget_set_tooltip_text(g->scales, _("increase to correct larger clipped areas.\n"
+                                           "large values bring huge performance penalties"));
 
   GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
   gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
