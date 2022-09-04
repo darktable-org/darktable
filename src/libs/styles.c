@@ -822,13 +822,12 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate, _("creates a duplicate of the image before applying style"));
 
-  d->applymode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
+                               _("how to handle existing history"),
+                               dt_conf_get_int("plugins/lighttable/style/applymode"),
+                               applymode_combobox_changed, self,
+                               N_("append"), N_("overwrite"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->applymode), TRUE, FALSE, 0);
-  dt_bauhaus_widget_set_label(d->applymode, NULL, N_("mode"));
-  dt_bauhaus_combobox_add(d->applymode, _("append"));
-  dt_bauhaus_combobox_add(d->applymode, _("overwrite"));
-  gtk_widget_set_tooltip_text(d->applymode, _("how to handle existing history"));
-  dt_bauhaus_combobox_set(d->applymode, dt_conf_get_int("plugins/lighttable/style/applymode"));
 
   GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -879,8 +878,6 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
-
-  g_signal_connect(G_OBJECT(d->applymode), "value-changed", G_CALLBACK(applymode_combobox_changed), (gpointer)self);
 
   _update(self);
 }

@@ -2320,18 +2320,15 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add printer intent combo
 
-  d->pintent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->pintent, N_("printer"), N_("intent"));
-  dt_bauhaus_combobox_add(d->pintent, _("perceptual"));
-  dt_bauhaus_combobox_add(d->pintent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(d->pintent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(d->pintent, _("absolute colorimetric"));
+  d->v_pintent = dt_conf_get_int("plugins/print/printer/iccintent");
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->pintent, self, N_("printer"), N_("intent"), NULL,
+                               d->v_pintent, _printer_intent_callback, self,
+                               N_("perceptual"),
+                               N_("relative colorimetric"),
+                               NC_("rendering intent", "saturation"),
+                               N_("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pintent), TRUE, TRUE, 0);
 
-  d->v_pintent = dt_conf_get_int("plugins/print/printer/iccintent");
-  dt_bauhaus_combobox_set(d->pintent, d->v_pintent);
-
-  g_signal_connect (G_OBJECT (d->pintent), "value-changed", G_CALLBACK (_printer_intent_callback), (gpointer)self);
   d->prt.printer.intent = d->v_pintent;
 
   d->black_point_compensation = gtk_check_button_new_with_label(_("black point compensation"));
@@ -2361,12 +2358,9 @@ void gui_init(dt_lib_module_t *self)
 
   //// portrait / landscape
 
-  d->orientation = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->orientation, NULL, N_("orientation"));
-  dt_bauhaus_combobox_add(d->orientation, _("portrait"));
-  dt_bauhaus_combobox_add(d->orientation, _("landscape"));
-  g_signal_connect(G_OBJECT(d->orientation), "value-changed", G_CALLBACK(_orientation_changed), self);
-  dt_bauhaus_combobox_set(d->orientation, d->prt.page.landscape?1:0);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->orientation, self, NULL, N_("orientation"), NULL,
+                               d->prt.page.landscape?1:0, _orientation_changed, self,
+                               N_("portrait"), N_("landscape"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->orientation), TRUE, TRUE, 0);
 
   // NOTE: units has no label, which makes for cleaner UI but means that no action can be assigned
@@ -2646,19 +2640,15 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add export intent combo
 
-  d->intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->intent, NULL, N_("intent"));
-
-  dt_bauhaus_combobox_add(d->intent, _("image settings"));
-  dt_bauhaus_combobox_add(d->intent, _("perceptual"));
-  dt_bauhaus_combobox_add(d->intent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(d->intent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->intent, self, NULL, N_("intent"), NULL,
+                               dt_conf_get_int("plugins/print/print/iccintent") + 1,
+                               _intent_callback, self,
+                               N_("image settings"),
+                               N_("perceptual"),
+                               N_("relative colorimetric"),
+                               NC_("rendering intent", "saturation"),
+                               N_("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->intent), TRUE, TRUE, 0);
-
-  dt_bauhaus_combobox_set(d->intent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
-
-  g_signal_connect (G_OBJECT (d->intent), "value-changed", G_CALLBACK (_intent_callback), (gpointer)self);
 
   //  Add export style combo
 
@@ -2703,22 +2693,14 @@ void gui_init(dt_lib_module_t *self)
 
   //  Whether to add/replace style items
 
-  d->style_mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->style_mode, NULL, N_("mode"));
-
-  dt_bauhaus_combobox_add(d->style_mode, _("replace history"));
-  dt_bauhaus_combobox_add(d->style_mode, _("append history"));
-
   d->v_style_append = dt_conf_get_bool("plugins/print/print/style_append");
-  dt_bauhaus_combobox_set(d->style_mode, d->v_style_append?1:0);
-
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->style_mode, self, NULL, N_("mode"),
+                               _("whether the style items are appended to the history or replacing the history"),
+                               d->v_style_append?1:0, _style_mode_changed, self,
+                               N_("replace history"), N_("append history"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style_mode), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(d->style_mode,
-                              _("whether the style items are appended to the history or replacing the history"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), combo_idx==0?FALSE:TRUE);
-
-  g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_style_mode_changed), (gpointer)self);
 
   // Print button
 
