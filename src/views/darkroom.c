@@ -2316,19 +2316,14 @@ void gui_init(dt_view_t *self)
                                  N_("mark with CFA color"), N_("mark with solid color"), N_("false color"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
 
-    /* color scheme */
-    // FIXME can't use DT_BAUHAUS_COMBOBOX_NEW_FULL because of (unnecessary?) translation context
-    colorscheme = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(colorscheme, N_("raw overexposed"), N_("color scheme"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "red"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "green"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "blue"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "black"));
-    dt_bauhaus_combobox_set(colorscheme, dev->rawoverexposed.colorscheme);
-    gtk_widget_set_tooltip_text(
-        colorscheme,
-        _("select the solid color to indicate over exposure.\nwill only be used if mode = mark with solid color"));
-    g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(rawoverexposed_colorscheme_callback), dev);
+    DT_BAUHAUS_COMBOBOX_NEW_FULL(colorscheme, self, N_("raw overexposed"), N_("color scheme"),
+                                _("select the solid color to indicate over exposure.\nwill only be used if mode = mark with solid color"),
+                                dev->rawoverexposed.colorscheme,
+                                rawoverexposed_colorscheme_callback, dev,
+                                NC_("solidcolor", "red"),
+                                NC_("solidcolor", "green"),
+                                NC_("solidcolor", "blue"),
+                                NC_("solidcolor", "black"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
 
     /* threshold */
@@ -2449,26 +2444,22 @@ void gui_init(dt_view_t *self)
     dt_loc_get_datadir(datadir, sizeof(datadir));
     const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-    GtkWidget *display_intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(display_intent, N_("profiles"), N_("intent"));
-    dt_bauhaus_combobox_add(display_intent, _("perceptual"));
-    dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
-    dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
-    dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
+    static const gchar *intents_list[]
+      = { N_("perceptual"),
+          N_("relative colorimetric"),
+          NC_("rendering intent", "saturation"),
+          N_("absolute colorimetric"),
+          NULL };
 
-    GtkWidget *display2_intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(display2_intent, N_("profiles"), N_("preview intent"));
-    dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
-    dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
-    dt_bauhaus_combobox_add(display2_intent, C_("rendering intent", "saturation"));
-    dt_bauhaus_combobox_add(display2_intent, _("absolute colorimetric"));
+    GtkWidget *display_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("intent"),
+                                                             "", 0, display_intent_callback, dev, intents_list);
+    GtkWidget *display2_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("preview intent"),
+                                                              "", 0, display2_intent_callback, dev, intents_list);
 
     if(!force_lcms2)
     {
       gtk_widget_set_no_show_all(display_intent, TRUE);
-      gtk_widget_set_visible(display_intent, FALSE);
       gtk_widget_set_no_show_all(display2_intent, TRUE);
-      gtk_widget_set_visible(display2_intent, FALSE);
     }
 
     GtkWidget *display_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -2558,9 +2549,7 @@ void gui_init(dt_view_t *self)
     g_free(system_profile_dir);
     g_free(user_profile_dir);
 
-    g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), dev);
     g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_intent), "value-changed", G_CALLBACK(display2_intent_callback), dev);
     g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(display2_profile_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed", G_CALLBACK(softproof_profile_callback), dev);
     g_signal_connect(G_OBJECT(histogram_profile), "value-changed", G_CALLBACK(histogram_profile_callback), dev);
