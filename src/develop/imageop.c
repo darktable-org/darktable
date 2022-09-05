@@ -3199,12 +3199,20 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
       }
       break;
     case DT_ACTION_ELEMENT_PRESETS:
-      // FIXME
-      if(effect)
-        fprintf(stderr, "[imageop::_action_process] effects for presets not yet implemented\n");
-
-      if(module->presets_button) _presets_popup_callback(NULL, module);
-      break;
+      switch(effect)
+      {
+      case DT_ACTION_EFFECT_ACTIVATE:
+        if(module->presets_button) _presets_popup_callback(NULL, module);
+        break;
+      case DT_ACTION_EFFECT_NEXT:
+        move_size *= -1;
+      case DT_ACTION_EFFECT_PREVIOUS:
+        dt_gui_presets_apply_adjacent_preset(module, move_size);
+        return 0; // don't overwrite toast below
+      default:
+        fprintf(stderr, "[imageop::_action_process] effect %d for presets not yet implemented\n", effect);
+        break;
+      }
     }
 
     gchar *text = g_strdup_printf("%s, %s", dt_action_def_iop.elements[element].name,
