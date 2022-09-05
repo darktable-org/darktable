@@ -3567,6 +3567,13 @@ static void _delay_for_double_triple(guint time, guint is_key)
          (is_key ? m->press >= _sc.press :
                    m->press == _sc.press && m->button == _sc.button && m->click >= _sc.click))
         break;
+
+      if(_sc.click && darktable.control->enable_fallbacks)
+      {
+        const dt_action_def_t *def = _action_find_definition(m->action);
+        if(def && def->fallbacks)
+          break;
+      }
     }
     if(!multi) passed_time += delay;
 
