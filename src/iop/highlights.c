@@ -73,29 +73,37 @@ typedef enum dt_iop_highlights_mode_t
 
 typedef enum dt_atrous_wavelets_scales_t
 {
-  WAVELETS_1_SCALE = 0,   // $DESCRIPTION: "4 px"
-  WAVELETS_2_SCALE = 1,   // $DESCRIPTION: "8 px"
-  WAVELETS_3_SCALE = 2,   // $DESCRIPTION: "16 px"
-  WAVELETS_4_SCALE = 3,   // $DESCRIPTION: "32 px"
-  WAVELETS_5_SCALE = 4,   // $DESCRIPTION: "64 px"
-  WAVELETS_6_SCALE = 5,   // $DESCRIPTION: "128 px"
-  WAVELETS_7_SCALE = 6,   // $DESCRIPTION: "256 px (slow)"
-  WAVELETS_8_SCALE = 7,   // $DESCRIPTION: "512 px (slow)"
-  WAVELETS_9_SCALE = 8,   // $DESCRIPTION: "1024 px (very slow)"
-  WAVELETS_10_SCALE = 9, // $DESCRIPTION: "2048 px (insanely slow)"
+  DT_WAVELETS_1_SCALE = 0,   // $DESCRIPTION: "4 px"
+  DT_WAVELETS_2_SCALE = 1,   // $DESCRIPTION: "8 px"
+  DT_WAVELETS_3_SCALE = 2,   // $DESCRIPTION: "16 px"
+  DT_WAVELETS_4_SCALE = 3,   // $DESCRIPTION: "32 px"
+  DT_WAVELETS_5_SCALE = 4,   // $DESCRIPTION: "64 px"
+  DT_WAVELETS_6_SCALE = 5,   // $DESCRIPTION: "128 px"
+  DT_WAVELETS_7_SCALE = 6,   // $DESCRIPTION: "256 px (slow)"
+  DT_WAVELETS_8_SCALE = 7,   // $DESCRIPTION: "512 px (slow)"
+  DT_WAVELETS_9_SCALE = 8,   // $DESCRIPTION: "1024 px (very slow)"
+  DT_WAVELETS_10_SCALE = 9 ,  // $DESCRIPTION: "2048 px (insanely slow)"
 } dt_atrous_wavelets_scales_t;
 
 typedef enum dt_recovery_mode_t
 {
-  RECOVERY_MODE_OFF = 0,    // $DESCRIPTION: "off" 
-  RECOVERY_MODE_ADAPT = 5,  // $DESCRIPTION: "generic"
-  RECOVERY_MODE_ADAPTF = 6, // $DESCRIPTION: "flat generic"
-  RECOVERY_MODE_SMALL = 1,  // $DESCRIPTION: "small segments" 
-  RECOVERY_MODE_LARGE = 2,  // $DESCRIPTION: "large segments"
-  RECOVERY_MODE_SMALLF = 3, // $DESCRIPTION: "flat small segments"
-  RECOVERY_MODE_LARGEF = 4, // $DESCRIPTION: "flat large segments"
+  DT_RECOVERY_MODE_OFF = 0,    // $DESCRIPTION: "off" 
+  DT_RECOVERY_MODE_ADAPT = 5,  // $DESCRIPTION: "generic"
+  DT_RECOVERY_MODE_ADAPTF = 6, // $DESCRIPTION: "flat generic"
+  DT_RECOVERY_MODE_SMALL = 1,  // $DESCRIPTION: "small segments" 
+  DT_RECOVERY_MODE_LARGE = 2,  // $DESCRIPTION: "large segments"
+  DT_RECOVERY_MODE_SMALLF = 3, // $DESCRIPTION: "flat small segments"
+  DT_RECOVERY_MODE_LARGEF = 4, // $DESCRIPTION: "flat large segments"
 } dt_recovery_mode_t;
 #define NUM_RECOVERY_MODES 7
+
+typedef enum dt_segments_mask_t
+{
+  DT_SEGMENTS_MASK_OFF,
+  DT_SEGMENTS_MASK_COMBINE,
+  DT_SEGMENTS_MASK_CANDIDATING,
+  DT_SEGMENTS_MASK_STRENGTH
+} dt_segments_mask_t;
 
 typedef struct dt_iop_highlights_params_t
 {
@@ -109,10 +117,10 @@ typedef struct dt_iop_highlights_params_t
   // params of v3
   float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
   int iterations; // $MIN: 1 $MAX: 64 $DEFAULT: 1 $DESCRIPTION: "iterations"
-  dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
+  dt_atrous_wavelets_scales_t scales; // $DEFAULT: DT_WAVELETS_6_SCALE $DESCRIPTION: "diameter of reconstruction"
   float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidating"
   float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
-  dt_recovery_mode_t recovery; // $DEFAULT: RECOVERY_MODE_OFF $DESCRIPTION: "recovery" 
+  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "recovery" 
   // params of v4
   float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
 } dt_iop_highlights_params_t;
@@ -130,7 +138,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *recovery;
   GtkWidget *strength;
   gboolean show_visualize;
-  int show_segmentation;
+  dt_segments_mask_t segmentation_mask_mode;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -200,7 +208,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.0f;
     n->candidating = 0.4f;
     n->combine = 2.f;
-    n->recovery = RECOVERY_MODE_OFF;
+    n->recovery = DT_RECOVERY_MODE_OFF;
     n->iterations = 1;
     n->scales = 5;
     n->solid_color = 0.f;
@@ -224,7 +232,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.0f;
     n->candidating = 0.4f;
     n->combine = 2.f;
-    n->recovery = RECOVERY_MODE_OFF;
+    n->recovery = DT_RECOVERY_MODE_OFF;
     n->iterations = 1;
     n->scales = 5;
     n->solid_color = 0.f;
@@ -2031,11 +2039,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
-      int vmode = 0;
-      if(g != NULL) vmode = g->show_segmentation;
+      dt_segments_mask_t vmode = DT_SEGMENTS_MASK_OFF;
+      if(g != NULL) vmode = g->segmentation_mask_mode;
 
       process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data, vmode);
-      if(vmode)
+      if(vmode != DT_SEGMENTS_MASK_OFF)
       {
         piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
         piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
@@ -2156,7 +2164,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
   const gboolean use_segmentation = bayer && (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
-  gtk_widget_set_visible(g->noise_level, use_laplacian || (use_segmentation && (p->recovery > 0)));
+  const gboolean use_recovery = use_segmentation && (p->recovery != DT_RECOVERY_MODE_OFF);
+
+  gtk_widget_set_visible(g->noise_level, use_laplacian || use_recovery);
   gtk_widget_set_visible(g->iterations, use_laplacian);
   gtk_widget_set_visible(g->scales, use_laplacian);
   gtk_widget_set_visible(g->solid_color, use_laplacian);
@@ -2164,21 +2174,22 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->candidating, use_segmentation);
   gtk_widget_set_visible(g->combine, use_segmentation);
   gtk_widget_set_visible(g->recovery, use_segmentation);
-  gtk_widget_set_visible(g->strength, use_segmentation && (p->recovery > 0));
-  
+  gtk_widget_set_visible(g->strength, use_recovery);
+  dt_bauhaus_widget_set_quad_visibility(g->strength, use_recovery);
+   
   // The special case for strength button active needs further care here
-  if((use_segmentation && (p->recovery == 0)) && (g->show_segmentation == 4))
+  if((use_segmentation && (p->recovery == DT_RECOVERY_MODE_OFF)) && (g->segmentation_mask_mode == DT_SEGMENTS_MASK_STRENGTH))
   {
     dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-    g->show_segmentation = 0;
+    g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
   }
-  // If guided laplacian or hl_recovery mode was copied as part of the history of another pic, sanitize it
-  // guided laplacian and hl_recovery are not available for XTrans
+  // If guided laplacian or segmentation mode was copied as part of the history of another pic, sanitize it
+  // guided laplacian and segmentation are not available for XTrans
   if(!bayer && ((mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) || (mode == DT_IOP_HIGHLIGHTS_SEGMENTS)) )
   {
     p->mode = DT_IOP_HIGHLIGHTS_CLIP;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
-    dt_control_log(_("highlights: guided laplacian and recovery modes not available for X-Trans sensors. falling back to clip."));
+    dt_control_log(_("highlights: guided laplacian and segmentation modes are not available for X-Trans sensors. falling back to clip."));
   }
 }
 
@@ -2195,7 +2206,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  g->show_segmentation = 0;
+  g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
   gui_changed(self, NULL, NULL);
 }
 
@@ -2244,7 +2255,7 @@ static void _visualize_callback(GtkWidget *quad, gpointer user_data)
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  g->show_segmentation = 0;
+  g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -2253,7 +2264,7 @@ static void _candidating_callback(GtkWidget *quad, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->show_segmentation = (dt_bauhaus_widget_get_quad_active(quad)) ? 2 : 0;
+  g->segmentation_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_SEGMENTS_MASK_CANDIDATING : DT_SEGMENTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
@@ -2266,7 +2277,7 @@ static void _combine_callback(GtkWidget *quad, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->show_segmentation = (dt_bauhaus_widget_get_quad_active(quad)) ? 1 : 0;
+  g->segmentation_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_SEGMENTS_MASK_COMBINE : DT_SEGMENTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
@@ -2279,7 +2290,7 @@ static void _strength_callback(GtkWidget *quad, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->show_segmentation = (dt_bauhaus_widget_get_quad_active(quad)) ? 4 : 0;
+  g->segmentation_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_SEGMENTS_MASK_STRENGTH : DT_SEGMENTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
@@ -2292,13 +2303,13 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(!in)
   {
-    const gboolean was_visualize = g->show_visualize || g->show_segmentation;
+    const gboolean was_visualize = g->show_visualize || g->segmentation_mask_mode;
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
     dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
     dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
     dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
     g->show_visualize = FALSE;
-    g->show_segmentation = 0;
+    g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
     if(was_visualize) dt_dev_reprocess_center(self->dev);
   }
 }

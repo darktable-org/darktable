@@ -411,7 +411,7 @@ static float segment_maxdistance(const int width, const int height, float *restr
 static float segment_attenuation(dt_iop_segmentation_t *seg, const int id, const int mode)
 {
   const float attenuate[NUM_RECOVERY_MODES] = { 0.0f, 1.5f, 0.8f, 1.5f, 0.8f, 1.0f, 1.0f};
-  if(mode < RECOVERY_MODE_ADAPT)
+  if(mode < DT_RECOVERY_MODE_ADAPT)
     return attenuate[mode];
   else
   {
@@ -734,7 +734,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
       for(int p = 0; p < HL_SENSOR_PLANES; p++)
       {
-        if((cmask[p][ix] != 0) && (vmode == 0))
+        if((cmask[p][ix] != 0) && (vmode == DT_SEGMENTS_MASK_OFF))
         {
           float current_reference = 0.0f;
           float candidate = 0.0f;
@@ -795,7 +795,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   const gboolean do_recovery = (recovery_mode > 0) && has_allclipped && (strength > 0.0f);
   const int seg_border = recovery_closing[recovery_mode];
 
-  if(do_recovery || vmode)
+  if(do_recovery || (vmode != DT_SEGMENTS_MASK_OFF))
   {
     dt_image_transform_closing(isegments[DT_IO_PLANNE_ALL].data, pwidth, pheight, seg_border, HLBORDER);
     dt_iop_image_fill(gradient, 0.0f, pwidth, pheight, 1);
@@ -892,7 +892,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
   dt_get_times(&time3);
 
-  if(vmode && fullpipe)
+  if((vmode != DT_SEGMENTS_MASK_OFF) && fullpipe)
   {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -909,13 +909,13 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
         const int p = pos2plane(row, col, filters);
         const int pid = isegments[p].data[i] & (HLMAXSEGMENTS-1);
         const gboolean iclipped = (cmask[p][i] == 1);
-        const gboolean isegmented = ((pid > 1) && (pid < isegments[p].nr+2));
-        const gboolean badseg = isegmented && (isegments[p].ref[pid] == 0);
+        const gboolean isegment = ((pid > 1) && (pid < isegments[p].nr+2));
+        const gboolean badseg = isegment && (isegments[p].ref[pid] == 0);
 
         out[o] = 0.1f * in[o];
-        if((vmode == 1) && isegmented && !iclipped)   out[o] = 1.0f;
-        else if((vmode == 2) && isegmented && badseg) out[o] = 1.0f;     
-        else if(vmode == 4)                           out[o] += gradient[i]; 
+        if((vmode == DT_SEGMENTS_MASK_COMBINE) && isegment && !iclipped)       out[o] = 1.0f;
+        else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && isegment && badseg) out[o] = 1.0f;     
+        else if(vmode == DT_SEGMENTS_MASK_STRENGTH)                            out[o] += gradient[i]; 
       }
     }
   }
