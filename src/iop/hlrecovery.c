@@ -320,9 +320,9 @@ static void calc_distance_ring(const int width, const int xmin, const int xmax, 
   dt_omp_sharedconst(width, xmin, xmax, ymin, ymax, dist, id, attenuate) \
   schedule(simd:static) collapse(2)
 #endif
-  for(int row = ymin; row < ymax; row++)
+  for(size_t row = ymin; row < ymax; row++)
   {
-    for(int col = xmin; col < xmax; col++)
+    for(size_t col = xmin; col < xmax; col++)
     {
       const size_t v = row * width + col;       
       const float dv = distance[v];
@@ -332,8 +332,9 @@ static void calc_distance_ring(const int width, const int xmin, const int xmax, 
         float cnt = 0.0f;
         for(int y = -2; y < 3; y++)
         {
-          for(int x = -2, p = v + x + (width * y); x < 3; x++, p++)
+          for(int x = -2; x < 3; x++)
           {
+            size_t p = v + x + (width * y);
             const float dd = distance[p];
             if((dd >= dist - 1.5f) && (dd < dist))
             {
