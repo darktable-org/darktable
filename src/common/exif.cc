@@ -793,6 +793,61 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
   }
 }
 
+static void _find_exif_maker(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos, char *maker, const size_t m_size)
+{
+  // look for maker & model first so we can use that info later
+  if(FIND_EXIF_TAG("Exif.Image.Make"))
+  {
+    dt_strlcpy_to_utf8(maker, m_size, pos, exifData);
+  }
+  else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Make"))
+  {
+    dt_strlcpy_to_utf8(maker, m_size, pos, exifData);
+  }
+
+  for(char *c = maker + m_size - 1; c > maker; c--)
+    if(*c != ' ' && *c != '\0')
+    {
+      *(c + 1) = '\0';
+      break;
+    }
+}
+
+static void _find_exif_model(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos, char *model, const size_t m_size)
+{
+  if(FIND_EXIF_TAG("Exif.Image.Model"))
+  {
+    dt_strlcpy_to_utf8(model, m_size, pos, exifData);
+  }
+  else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Model"))
+  {
+    dt_strlcpy_to_utf8(model, m_size, pos, exifData);
+  }
+
+  for(char *c = model + m_size - 1; c > model; c--)
+    if(*c != ' ' && *c != '\0')
+    {
+      *(c + 1) = '\0';
+      break;
+    }
+}
+
+static void _find_exif_makermodel(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos, dt_image_basic_exif_t *basic_exif)
+{
+  char exif_maker[sizeof(basic_exif->maker)];
+  char exif_model[sizeof(basic_exif->model)];
+  char model[sizeof(basic_exif->model)];
+  exif_maker[0] = exif_model[0] = basic_exif->maker[0] = model[0] = basic_exif->model[0] = '\0';
+
+  // look for maker & model first so we can use that info later
+  _find_exif_maker(exifData, pos, exif_maker, sizeof(exif_maker));
+  _find_exif_model(exifData, pos, exif_model, sizeof(exif_model));
+  dt_imageio_lookup_makermodel(exif_maker, exif_model,
+                               basic_exif->maker, sizeof(basic_exif->maker),
+                               model, sizeof(model),
+                               basic_exif->model, sizeof(basic_exif->model));
+}
+
 static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 {
   try
@@ -800,38 +855,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /* List of tag names taken from exiv2's printSummary() in actions.cpp */
     Exiv2::ExifData::const_iterator pos;
 
-    // look for maker & model first so we can use that info later
-    if(FIND_EXIF_TAG("Exif.Image.Make"))
-    {
-      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
-    }
-    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Make"))
-    {
-      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
-    }
-
-    for(char *c = img->exif_maker + sizeof(img->exif_maker) - 1; c > img->exif_maker; c--)
-      if(*c != ' ' && *c != '\0')
-      {
-        *(c + 1) = '\0';
-        break;
-      }
-
-    if(FIND_EXIF_TAG("Exif.Image.Model"))
-    {
-      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
-    }
-    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Model"))
-    {
-      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
-    }
-
-    for(char *c = img->exif_model + sizeof(img->exif_model) - 1; c > img->exif_model; c--)
-      if(*c != ' ' && *c != '\0')
-      {
-        *(c + 1) = '\0';
-        break;
-      }
+    _find_exif_maker(exifData, pos, img->exif_maker, sizeof(img->exif_maker));
+    _find_exif_model(exifData, pos, img->exif_model, sizeof(img->exif_model));
 
     // Make sure we copy the exif make and model to the correct place if needed
     dt_image_refresh_makermodel(img);
@@ -4441,7 +4466,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   }
 }
 
-void dt_exif_get_datetime_taken(const uint8_t *data, size_t size, char *datetime_taken)
+void dt_exif_get_basic_data(const uint8_t *data, size_t size, dt_image_basic_exif_t *basic_exif)
 {
   try
   {
@@ -4450,12 +4475,13 @@ void dt_exif_get_datetime_taken(const uint8_t *data, size_t size, char *datetime
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
-    _find_datetime_taken(exifData, pos, datetime_taken);
+    _find_datetime_taken(exifData, pos, basic_exif->datetime);
+    _find_exif_makermodel(exifData, pos, basic_exif);
   }
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_get_datetime_taken] " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_get_basic_data] " << s << std::endl;
   }
 }
 

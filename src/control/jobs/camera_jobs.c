@@ -268,7 +268,7 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_p
 }
 
 static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename,
-                                                  const char *exif_time, void *data)
+                                                  const dt_image_basic_exif_t *basic_exif, void *data)
 {
   const gchar *file;
   struct dt_camera_shared_t *shared;
@@ -276,8 +276,7 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   const gboolean use_filename = dt_conf_get_bool("session/use_filename");
 
   dt_import_session_set_filename(shared->session, filename);
-  if(exif_time && exif_time[0])
-    dt_import_session_set_exif_time(shared->session, exif_time);
+  dt_import_session_set_exif_basic_info(shared->session, basic_exif);
   file = dt_import_session_filename(shared->session, use_filename);
 
   if(file == NULL) return NULL;
@@ -285,12 +284,11 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   return g_strdup(file);
 }
 
-static const char *_camera_request_image_path(const dt_camera_t *camera, char *exif_time, void *data)
+static const char *_camera_request_image_path(const dt_camera_t *camera, const dt_image_basic_exif_t *basic_exif, void *data)
 {
   struct dt_camera_shared_t *shared;
   shared = (struct dt_camera_shared_t *)data;
-  if(exif_time && exif_time[0])
-    dt_import_session_set_exif_time(shared->session, exif_time);
+  dt_import_session_set_exif_basic_info(shared->session, basic_exif);
   return dt_import_session_path(shared->session, FALSE);
 }
 
@@ -389,4 +387,3 @@ dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -38,8 +38,11 @@
 typedef struct dt_variables_data_t
 {
   /** cached values that shouldn't change between variables in the same expansion process */
+  // session data - do not come from image but are set by the application (import mainly)
   GDateTime *time;
-  char exif_time[DT_DATETIME_LENGTH];
+  GDateTime *exif_time;
+  char *exif_maker;
+  char *exif_model;
   guint sequence;
 
   // max image size taken from export module GUI, can be zero
@@ -119,8 +122,6 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   /* image exif time */
   params->data->have_exif_dt = FALSE;
   params->data->exif_iso = 100;
-  params->data->camera_maker = NULL;
-  params->data->camera_alias = NULL;
   params->data->exif_lens = NULL;
   params->data->version = 0;
   params->data->stars = 0;
@@ -135,6 +136,8 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->show_msec = dt_conf_get_bool("lighttable/ui/milliseconds");
   if(params->imgid)
   {
+    params->data->camera_maker = NULL;
+    params->data->camera_alias = NULL;
     const dt_image_t *img = params->img ? (dt_image_t *)params->img
                                         : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
 
@@ -188,25 +191,30 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
 
     if(params->img == NULL) dt_image_cache_read_release(darktable.image_cache, img);
   }
-  else if(params->data->exif_time[0])
-  {
-    params->data->datetime = dt_datetime_exif_to_gdatetime(params->data->exif_time, darktable.utc_tz);
+  else
+  { // session data
+    params->data->datetime = params->data->exif_time;
     if(params->data->datetime)
       params->data->have_exif_dt = TRUE;
+    params->data->camera_maker = params->data->exif_maker;
+    params->data->camera_alias = params->data->exif_model;
   }
 }
 
 static void _cleanup_expansion(dt_variables_params_t *params)
 {
-  if(params->data->datetime)
+  if(params->imgid)
   {
-    g_date_time_unref(params->data->datetime);
-    params->data->datetime = NULL;
+    if(params->data->datetime)
+    {
+      g_date_time_unref(params->data->datetime);
+      params->data->datetime = NULL;
+    }
+    g_free(params->data->camera_maker);
+    g_free(params->data->camera_alias);
   }
   g_free(params->data->homedir);
   g_free(params->data->pictures_folder);
-  g_free(params->data->camera_maker);
-  g_free(params->data->camera_alias);
 }
 
 static inline gboolean _has_prefix(char **str, const char *prefix)
@@ -1032,7 +1040,7 @@ void dt_variables_params_init(dt_variables_params_t **params)
   *params = g_malloc0(sizeof(dt_variables_params_t));
   (*params)->data = g_malloc0(sizeof(dt_variables_data_t));
   (*params)->data->time = g_date_time_new_now_local();
-  (*params)->data->exif_time[0] = 0;
+  (*params)->data->exif_time = NULL;
   (*params)->sequence = -1;
   (*params)->img = NULL;
 }
@@ -1041,6 +1049,10 @@ void dt_variables_params_destroy(dt_variables_params_t *params)
 {
   if(params->data->time)
     g_date_time_unref(params->data->time);
+  if(params->data->exif_time)
+    g_date_time_unref(params->data->exif_time);
+  g_free(params->data->exif_maker);
+  g_free(params->data->exif_model);
   g_free(params->data);
   g_free(params);
 }
@@ -1061,9 +1073,25 @@ void dt_variables_set_time(dt_variables_params_t *params, const char *time)
   params->data->time = dt_datetime_exif_to_gdatetime(time, darktable.utc_tz);
 }
 
-void dt_variables_set_exif_time(dt_variables_params_t *params, const char *exif_time)
+void dt_variables_set_exif_basic_info(dt_variables_params_t *params, const dt_image_basic_exif_t *basic_exif)
 {
-  g_strlcpy(params->data->exif_time, exif_time, sizeof(params->data->exif_time));
+  if(params->data->exif_time)
+  {
+    g_date_time_unref(params->data->exif_time);
+    params->data->exif_time = NULL;
+  }
+  if(basic_exif->datetime[0])
+    params->data->exif_time = dt_datetime_exif_to_gdatetime(basic_exif->datetime, darktable.utc_tz);
+
+  g_free(params->data->exif_maker);
+  params->data->exif_maker = NULL;
+  if(basic_exif->maker[0])
+    params->data->exif_maker = g_strdup(basic_exif->maker);
+
+  g_free(params->data->exif_model);
+  params->data->exif_model = NULL;
+  if(basic_exif->model[0])
+    params->data->exif_model = g_strdup(basic_exif->model);
 }
 
 void dt_variables_reset_sequence(dt_variables_params_t *params)
@@ -1083,4 +1111,3 @@ void dt_variables_set_tags_flags(dt_variables_params_t *params, uint32_t flags)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
