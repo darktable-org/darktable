@@ -919,6 +919,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   table->navigate_inside_selection = FALSE;
   table->selection_sync = FALSE;
   table->zoom_ratio = IMG_TO_FIT;
+  table->view_width = 0; // in order to force a full redraw
 
   // reset remaining zooming values if any
   for(GList *l = table->list; l; l = g_list_next(l))
