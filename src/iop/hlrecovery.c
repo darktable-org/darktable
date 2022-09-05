@@ -450,9 +450,9 @@ static void segment_gradients(const int width, const int height, float *restrict
   dt_omp_sharedconst(width, xmin, xmax, ymin, ymax) \
   schedule(simd:static)
 #endif
-    for(int row = ymin; row < ymax; row++)
+    for(size_t row = ymin; row < ymax; row++)
     {
-      for(int col = xmin, s = row*width + col, d = (row-ymin)*(xmax-xmin) ; col < xmax; col++, s++, d++)
+      for(size_t col = xmin, s = row*width + col, d = (row-ymin)*(xmax-xmin) ; col < xmax; col++, s++, d++)
         tmp[d] = gradient[s];
     }
 
@@ -463,9 +463,9 @@ static void segment_gradients(const int width, const int height, float *restrict
   dt_omp_sharedconst(width, xmin, xmax, ymin, ymax, id) \
   schedule(simd:static)
 #endif
-    for(int row = ymin; row < ymax; row++)
+    for(size_t row = ymin; row < ymax; row++)
     {
-      for(int col = xmin, v = row * width + col, s = (row-ymin)*(xmax-xmin); col < xmax; col++, v++, s++)
+      for(size_t col = xmin, v = row * width + col, s = (row-ymin)*(xmax-xmin); col < xmax; col++, v++, s++)
         if(id == seg->data[v]) gradient[v] = tmp[s];
     }
   }
@@ -475,9 +475,9 @@ static void segment_gradients(const int width, const int height, float *restrict
   dt_omp_sharedconst(width, xmin, xmax, ymin, ymax, id, strength) \
   schedule(simd:static) collapse(2)
 #endif
-  for(int row = ymin; row < ymax; row++)
+  for(size_t row = ymin; row < ymax; row++)
   {
-    for(int col = xmin; col < xmax; col++)
+    for(size_t col = xmin; col < xmax; col++)
     {
       const size_t v = row * width + col;
       if(id == seg->data[v]) gradient[v] *= strength;
@@ -681,9 +681,9 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   dt_omp_sharedconst(pheight, pwidth, p_size, vmode) \
   schedule(static)
 #endif
-  for(int row = HLBORDER; row < pheight - HLBORDER; row++)
+  for(size_t row = HLBORDER; row < pheight - HLBORDER; row++)
   {
-    for(int col = HLBORDER; col < pwidth - HLBORDER; col++)
+    for(size_t col = HLBORDER; col < pwidth - HLBORDER; col++)
     {
       const size_t ix = row * pwidth + col;
 
@@ -810,9 +810,9 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   dt_omp_sharedconst(pheight, pwidth, corr0, corr1, corr2) \
   schedule(static) collapse(2)
 #endif
-    for(int row = HLBORDER; row < pheight - HLBORDER; row++)
+    for(size_t row = HLBORDER; row < pheight - HLBORDER; row++)
     {
-      for(int col = HLBORDER; col < pwidth - HLBORDER; col++)
+      for(size_t col = HLBORDER; col < pwidth - HLBORDER; col++)
       {
         const size_t i = row * pwidth + col;
         // prepare the temporary luminance
@@ -878,9 +878,9 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   dt_omp_sharedconst(width, height, pwidth, p_off) \
   schedule(static) collapse(2)
 #endif
-      for(int row = 0; row < height; row++)
+      for(size_t row = 0; row < height; row++)
       {
-        for(int col = 0; col < width; col++)
+        for(size_t col = 0; col < width; col++)
         {
           const size_t i = (row/2)*pwidth + (col/2) + p_off;
           const size_t o = row * width + col;
@@ -900,9 +900,9 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   dt_omp_sharedconst(width, height, pwidth, p_off, filters, vmode) \
   schedule(static) collapse(2)
 #endif
-    for(int row = 0; row < height; row++)
+    for(size_t row = 0; row < height; row++)
     {
-      for(int col = 0; col < width; col++)
+      for(size_t col = 0; col < width; col++)
       {
         const size_t i = (row/2)*pwidth + (col/2) + p_off;
         const size_t o = row * width + col;
