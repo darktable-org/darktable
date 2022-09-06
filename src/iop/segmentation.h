@@ -396,7 +396,7 @@ void dt_image_transform_closing(int *img, const int width, const int height, con
   dt_free_align(tmp);
 }
 
-static int floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, const int w, const int h, const int id, dt_ff_stack_t *stack)
+static int _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, const int w, const int h, const int id, dt_ff_stack_t *stack)
 {
   if((id < 2) || (id >= HLMAXSEGMENTS - 1)) return 0;
 
@@ -606,7 +606,7 @@ static int floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, co
   return cnt;
 }
 
-static void segmentize_plane(dt_iop_segmentation_t *seg, const int width, const int height)
+static void _segmentize_plane(dt_iop_segmentation_t *seg, const int width, const int height)
 {
   dt_ff_stack_t stack;  
   stack.el = dt_alloc_align(16, width * height * sizeof(int));
@@ -620,7 +620,7 @@ static void segmentize_plane(dt_iop_segmentation_t *seg, const int width, const 
       if(id >= HLMAXSEGMENTS-1) goto finish;
       if(seg->data[width * row + col] == 1)
       {
-        if(floodfill_segmentize(row, col, seg, width, height, id, &stack) > 0) id++;
+        if(_floodfill_segmentize(row, col, seg, width, height, id, &stack) > 0) id++;
       }
     }
   }
