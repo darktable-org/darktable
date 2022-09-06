@@ -2042,7 +2042,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_segments_mask_t vmode = DT_SEGMENTS_MASK_OFF;
       if(g != NULL) vmode = g->segmentation_mask_mode;
 
-      process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data, vmode);
+      _process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data, vmode);
       if(vmode != DT_SEGMENTS_MASK_OFF)
       {
         piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
