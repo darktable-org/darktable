@@ -3076,9 +3076,7 @@ static float _process_action(dt_action_t *action, int instance,
     }
     else if(owner->type == DT_ACTION_TYPE_IOP)
     {
-      gchar *text = g_strdup_printf("\napplying preset '%s'", action->label);
-      dt_action_widget_toast(action_target, NULL, text);
-      g_free(text);
+      dt_action_widget_toast(action_target, NULL, "\napplying preset '%s'", action->label);
 
       dt_gui_presets_apply_preset(action->label, action_target);
     }
@@ -4175,10 +4173,14 @@ void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const g
   }
 }
 
-void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *text)
+void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *msg, ...)
 {
   if(!darktable.gui->reset)
   {
+    va_list ap;
+    va_start(ap, msg);
+    char *text = g_strdup_vprintf(msg, ap);
+
     if(!action)
       action = g_hash_table_lookup(darktable.control->widgets, widget);
     if(action)
@@ -4215,6 +4217,9 @@ void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar 
     }
     else
       dt_toast_log("%s", text);
+
+    g_free(text);
+    va_end(ap);
   }
 }
 

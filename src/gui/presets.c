@@ -925,6 +925,7 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, int direction
 {
   int writeprotect;
   gchar *name = _get_active_preset_name(module, &writeprotect);
+  gchar *extreme = direction < 0 ? _("(first)") : _("(last)");
 
   sqlite3_stmt *stmt;
   // clang-format off
@@ -949,11 +950,15 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, int direction
   {
     g_free(name);
     name = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
-    dt_gui_presets_apply_preset(name, module);
+    extreme = "";
   }
   sqlite3_finalize(stmt);
 
-  dt_action_widget_toast(DT_ACTION(module), NULL, name ? name : _("no presets"));
+  if(!*extreme)
+    dt_gui_presets_apply_preset(name, module);
+
+  dt_action_widget_toast(DT_ACTION(module), NULL, _("preset %s\n%s"),
+                         extreme, name ? name : _("no presets"));
   g_free(name);
 }
 
