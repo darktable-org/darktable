@@ -71,7 +71,7 @@ uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpi
   The size of the buffer in 'data' will be at least of size bytes.
   Returned flag is TRUE for a new buffer
 */
-gboolean dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t basichash, const uint64_t hash,
+gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint64_t basichash, const uint64_t hash,
                                const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, char *modname, const gboolean important);
 
 /** test availability of a cache line without destroying another, if it is not found. */
@@ -89,8 +89,9 @@ void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data
 /** mark the given cache line pointer as invalid. */
 void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *data);
 
-/** print out cache lines/hashes (debug). */
-void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache, char *pipetype);
+/** print out cache lines/hashes and do a cache cleanup */
+void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe);
+void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
