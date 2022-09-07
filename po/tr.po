@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-15 08:57+0200\n"
-"PO-Revision-Date: 2022-08-16 13:39+0300\n"
-"Last-Translator: Serkan ÖNDER <serkanonder@outlook.com>\n"
+"POT-Creation-Date: 2022-08-22 20:25+0200\n"
+"PO-Revision-Date: 2022-09-07 16:19+0300\n"
+"Last-Translator: Serkan Önder <serkanonder@outlook.com>\n"
 "Language-Team: \n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
@@ -1652,12 +1652,12 @@ msgstr "OpenCL performansını ayarla"
 
 #: ../build/bin/preferences_gen.h:6386
 msgid ""
-"allows runtime tuning of OpenCL devices. 'memory size' tests for available "
-"graphics ram, 'memory transfer' tries a faster memory access mode (pinned "
+"allows runtime tuning of OpenCL devices. 'memory size' uses a fixed 400MB "
+"headroom, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
 msgstr ""
-"OpenCL cihazlarının çalışma zamanı ayarına izin verir. 'bellek boyutu' "
-"mevcut grafik ramı için test eder, 'bellek aktarımı' döşeme için kullanılan "
+"OpenCL cihazlarının çalışma zamanı ayarına izin verir. 'bellek boyutu' sabit "
+"bir 400 MB boşluk payı kullanır, 'bellek aktarımı' döşeme için kullanılan "
 "daha hızlı bir bellek erişim modunu (sabitlenmiş bellek) dener."
 
 #: ../build/bin/preferences_gen.h:6420
@@ -2428,8 +2428,8 @@ msgstr "yok"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:154
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:271
 #: ../src/develop/blend_gui.c:2007 ../src/develop/blend_gui.c:2026
-#: ../src/iop/colorbalancergb.c:2155 ../src/iop/colorbalancergb.c:2156
-#: ../src/iop/colorbalancergb.c:2157 ../src/iop/colorbalancergb.c:2158
+#: ../src/iop/colorbalancergb.c:2150 ../src/iop/colorbalancergb.c:2151
+#: ../src/iop/colorbalancergb.c:2152 ../src/iop/colorbalancergb.c:2153
 msgid "luminance"
 msgstr "parlaklık"
 
@@ -2545,7 +2545,7 @@ msgstr "yön"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:119
 #: ../build/lib/darktable/plugins/introspection_blurs.c:198
-#: ../src/iop/diffuse.c:1549
+#: ../src/iop/diffuse.c:1570
 msgid "direction"
 msgstr "yön"
 
@@ -2558,8 +2558,8 @@ msgstr "eğrilik"
 #: ../build/lib/darktable/plugins/introspection_blurs.c:206
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:148
-#: ../src/iop/colorbalancergb.c:2150 ../src/iop/colorbalancergb.c:2154
-#: ../src/iop/colorbalancergb.c:2158
+#: ../src/iop/colorbalancergb.c:2145 ../src/iop/colorbalancergb.c:2149
+#: ../src/iop/colorbalancergb.c:2153
 msgid "offset"
 msgstr "ofset"
 
@@ -3180,7 +3180,7 @@ msgstr "kontrast gri dayanak noktası"
 #: ../src/gui/guides.c:740 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
 #: ../src/iop/colisa.c:305 ../src/iop/colorbalance.c:1895
 #: ../src/iop/colorbalance.c:1901 ../src/iop/filmic.c:1649
-#: ../src/iop/filmicrgb.c:4337 ../src/iop/lowpass.c:573
+#: ../src/iop/filmicrgb.c:4338 ../src/iop/lowpass.c:573
 msgid "contrast"
 msgstr "kontrast"
 
@@ -3285,10 +3285,10 @@ msgstr "doygun renkler"
 #: ../src/develop/blend_gui.c:1980 ../src/develop/blend_gui.c:1999
 #: ../src/develop/blend_gui.c:2034 ../src/iop/channelmixer.c:622
 #: ../src/iop/channelmixerrgb.c:4053 ../src/iop/channelmixerrgb.c:4143
-#: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:2147
-#: ../src/iop/colorbalancergb.c:2148 ../src/iop/colorbalancergb.c:2149
-#: ../src/iop/colorbalancergb.c:2150 ../src/iop/colorize.c:344
-#: ../src/iop/colorreconstruction.c:1288 ../src/iop/colorzones.c:2433
+#: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:2142
+#: ../src/iop/colorbalancergb.c:2143 ../src/iop/colorbalancergb.c:2144
+#: ../src/iop/colorbalancergb.c:2145 ../src/iop/colorize.c:344
+#: ../src/iop/colorreconstruction.c:1288 ../src/iop/colorzones.c:2442
 #: ../src/iop/splittoning.c:471
 msgid "hue"
 msgstr "ton"
@@ -3315,8 +3315,8 @@ msgstr "süreç modu"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1966 ../src/iop/channelmixer.c:624
 #: ../src/iop/channelmixerrgb.c:4136 ../src/iop/colorchecker.c:1361
-#: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2431
-#: ../src/iop/exposure.c:1129
+#: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2440
+#: ../src/iop/exposure.c:1131
 msgid "lightness"
 msgstr "hafiflik"
 
@@ -3329,11 +3329,11 @@ msgstr "hafiflik"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:1976 ../src/iop/basicadj.c:624
 #: ../src/iop/channelmixer.c:623 ../src/iop/colisa.c:307
-#: ../src/iop/colorbalance.c:2007 ../src/iop/colorbalancergb.c:2165
-#: ../src/iop/colorbalancergb.c:2166 ../src/iop/colorbalancergb.c:2167
+#: ../src/iop/colorbalance.c:2007 ../src/iop/colorbalancergb.c:2160
+#: ../src/iop/colorbalancergb.c:2161 ../src/iop/colorbalancergb.c:2162
 #: ../src/iop/colorchecker.c:1379 ../src/iop/colorcontrast.c:94
 #: ../src/iop/colorcorrection.c:283 ../src/iop/colorize.c:357
-#: ../src/iop/colorzones.c:2432 ../src/iop/lowpass.c:575
+#: ../src/iop/colorzones.c:2441 ../src/iop/lowpass.c:575
 #: ../src/iop/soften.c:399 ../src/iop/splittoning.c:483 ../src/iop/velvia.c:84
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:982
 msgid "saturation"
@@ -3359,7 +3359,7 @@ msgstr "kenar algılama yarıçapı"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:224
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:423
 #: ../src/iop/atrous.c:1639 ../src/iop/bloom.c:394
-#: ../src/iop/colorbalancergb.c:2108 ../src/iop/colorreconstruction.c:1284
+#: ../src/iop/colorbalancergb.c:2103 ../src/iop/colorreconstruction.c:1284
 #: ../src/iop/hotpixels.c:385 ../src/iop/sharpen.c:458
 msgid "threshold"
 msgstr "eşik"
@@ -3778,7 +3778,7 @@ msgstr "sertlik"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:296
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4510
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4513
 msgid "extreme luminance saturation"
 msgstr "aşırı parlaklık doygunluğu"
 
@@ -3925,7 +3925,7 @@ msgstr "eğilim"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:66
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:129
-#: ../src/iop/channelmixerrgb.c:4124 ../src/iop/exposure.c:1117
+#: ../src/iop/channelmixerrgb.c:4124 ../src/iop/exposure.c:1119
 msgid "target"
 msgstr "hedef"
 
@@ -4426,8 +4426,8 @@ msgstr "derin gölgeler"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:156
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:297
 #: ../src/iop/bilat.c:459 ../src/iop/colorbalance.c:2047
-#: ../src/iop/colorbalancergb.c:2163 ../src/iop/colorbalancergb.c:2167
-#: ../src/iop/colorbalancergb.c:2171 ../src/iop/shadhi.c:680
+#: ../src/iop/colorbalancergb.c:2158 ../src/iop/colorbalancergb.c:2162
+#: ../src/iop/colorbalancergb.c:2166 ../src/iop/shadhi.c:680
 #: ../src/iop/splittoning.c:520
 msgid "shadows"
 msgstr "gölgeler"
@@ -4439,8 +4439,8 @@ msgstr "hafif gölgeler"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:168
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
-#: ../src/iop/colorbalance.c:2048 ../src/iop/colorbalancergb.c:2162
-#: ../src/iop/colorbalancergb.c:2166 ../src/iop/colorbalancergb.c:2170
+#: ../src/iop/colorbalance.c:2048 ../src/iop/colorbalancergb.c:2157
+#: ../src/iop/colorbalancergb.c:2161 ../src/iop/colorbalancergb.c:2165
 msgid "mid-tones"
 msgstr "orta tonlar"
 
@@ -4452,8 +4452,8 @@ msgstr "karanlık vurgular"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:180
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:313
 #: ../src/iop/bilat.c:454 ../src/iop/colorbalance.c:2049
-#: ../src/iop/colorbalancergb.c:2161 ../src/iop/colorbalancergb.c:2165
-#: ../src/iop/colorbalancergb.c:2169 ../src/iop/monochrome.c:576
+#: ../src/iop/colorbalancergb.c:2156 ../src/iop/colorbalancergb.c:2160
+#: ../src/iop/colorbalancergb.c:2164 ../src/iop/monochrome.c:576
 #: ../src/iop/shadhi.c:681 ../src/iop/splittoning.c:522
 msgid "highlights"
 msgstr "vurgular"
@@ -4701,40 +4701,40 @@ msgstr "Görüntüleri haritada göster"
 msgid "Print your images"
 msgstr "Görüntüleri yazdırın"
 
-#: ../src/bauhaus/bauhaus.c:3273
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button on"
 msgstr "düğme açık"
 
-#: ../src/bauhaus/bauhaus.c:3273
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button off"
 msgstr "düğme kapalı"
 
-#: ../src/bauhaus/bauhaus.c:3442 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3447 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "değer"
 
-#: ../src/bauhaus/bauhaus.c:3443 ../src/bauhaus/bauhaus.c:3449
+#: ../src/bauhaus/bauhaus.c:3448 ../src/bauhaus/bauhaus.c:3454
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "düğme"
 
-#: ../src/bauhaus/bauhaus.c:3444
+#: ../src/bauhaus/bauhaus.c:3449
 msgid "force"
 msgstr "kuvvet"
 
-#: ../src/bauhaus/bauhaus.c:3445
+#: ../src/bauhaus/bauhaus.c:3450
 msgid "zoom"
 msgstr "yakınlaştırma"
 
-#: ../src/bauhaus/bauhaus.c:3448
+#: ../src/bauhaus/bauhaus.c:3453
 msgid "selection"
 msgstr "seçim"
 
-#: ../src/bauhaus/bauhaus.c:3467
+#: ../src/bauhaus/bauhaus.c:3472
 msgid "slider"
 msgstr "kaydırıcı"
 
-#: ../src/bauhaus/bauhaus.c:3472
+#: ../src/bauhaus/bauhaus.c:3477
 msgid "dropdown"
 msgstr "aşağı sürükleme"
 
@@ -4746,7 +4746,7 @@ msgstr "aşağı sürükleme"
 #: ../src/gui/preferences.c:1036 ../src/gui/presets.c:376
 #: ../src/gui/presets.c:476 ../src/gui/styles_dialog.c:420
 #: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
-#: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1549
+#: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1551
 #: ../src/libs/collect.c:409 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
@@ -4915,7 +4915,7 @@ msgstr ""
 "kameranızın erişime izin verdiğinden ve başka şekilde bağlı olmadığından "
 "emin olun"
 
-#: ../src/common/camera_control.c:855
+#: ../src/common/camera_control.c:858
 #, c-format
 msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
@@ -4924,7 +4924,7 @@ msgstr ""
 "`%s' başlatılamadı `%s' bağlantı noktasında, olası nedenler: başka bir "
 "uygulama tarafından kilitlendi, cihazlara erişim yok vb"
 
-#: ../src/common/camera_control.c:866
+#: ../src/common/camera_control.c:869
 #, c-format
 msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
@@ -4933,12 +4933,12 @@ msgstr ""
 "'%s' bağlantı noktasındaki '%s' ilginç değil çünkü ne bağlamayı ne de içe "
 "aktarmayı destekliyor"
 
-#: ../src/common/camera_control.c:916
+#: ../src/common/camera_control.c:919
 #, c-format
 msgid "camera `%s' on port `%s' disconnected while mounted"
 msgstr "'%s' bağlantı noktasındaki '%s' kamerası takılıyken bağlantısı kesildi"
 
-#: ../src/common/camera_control.c:923
+#: ../src/common/camera_control.c:926
 #, c-format
 msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
@@ -5647,19 +5647,19 @@ msgstr "`%s' dosyasının biçimi bilinmiyor!"
 msgid "error loading file `%s'"
 msgstr "`%s' dosyası yüklenirken hata oluştu"
 
-#: ../src/common/darktable.c:1299
+#: ../src/common/darktable.c:1303
 msgid "configuration information"
 msgstr "yapılandırma bilgileri"
 
-#: ../src/common/darktable.c:1301
+#: ../src/common/darktable.c:1305
 msgid "show this information again"
 msgstr "bu bilgiyi tekrar göster"
 
-#: ../src/common/darktable.c:1301
+#: ../src/common/darktable.c:1305
 msgid "understood"
 msgstr "anlaşıldı"
 
-#: ../src/common/darktable.c:1747
+#: ../src/common/darktable.c:1751
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -5667,13 +5667,13 @@ msgstr ""
 "RCD demosaicer, daha iyi kalite ve performans nedeniyle PPG yerine "
 "varsayılan olarak tanımlanmıştır."
 
-#: ../src/common/darktable.c:1749
+#: ../src/common/darktable.c:1753
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "uzaklaştırılmış karanlık oda modu için tercihler/karanlık oda/demozaik'e "
 "bakın"
 
-#: ../src/common/darktable.c:1755
+#: ../src/common/darktable.c:1759
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -5681,7 +5681,7 @@ msgstr ""
 "kullanıcı arabirimi ve darktable performansını ayarlamak için temel alınan "
 "dahili öğeler değişti."
 
-#: ../src/common/darktable.c:1757
+#: ../src/common/darktable.c:1761
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5689,15 +5689,15 @@ msgstr ""
 "tercihler/işleme kullanımı yerine artık boşluk ve arkadaşlar "
 "bulamayacaksınız:"
 
-#: ../src/common/darktable.c:1759
+#: ../src/common/darktable.c:1763
 msgid "1) darktable resources"
 msgstr "1) darktable kaynakları"
 
-#: ../src/common/darktable.c:1761
+#: ../src/common/darktable.c:1765
 msgid "2) tune OpenCL performance"
 msgstr "2) OpenCL performansını ayarla"
 
-#: ../src/common/darktable.c:1768
+#: ../src/common/darktable.c:1772
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
@@ -5705,7 +5705,7 @@ msgstr ""
 "OpenCL performansıyla ilgili bazı genel yapılandırma değerleri artık "
 "kullanılmamaktadır."
 
-#: ../src/common/darktable.c:1770
+#: ../src/common/darktable.c:1774
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
@@ -5713,7 +5713,7 @@ msgstr ""
 "bunun yerine, 'cihaz başına' verilerini 'cl_devıce_v4_canonıcal-name' içinde "
 "bulacaksınız. içerik şu şekildedir:"
 
-#: ../src/common/darktable.c:1772
+#: ../src/common/darktable.c:1776
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
@@ -5721,7 +5721,7 @@ msgstr ""
 " 'atomlardan_kaçının' 'micro_kestirme' 'toparlama' 'yuvarlama' 'olay "
 "tutamaçları ' 'zaman uyumsuz' 'devre dışı' 'sihir'"
 
-#: ../src/common/darktable.c:1774
+#: ../src/common/darktable.c:1778
 msgid "you may tune as before except 'magic'"
 msgstr "'sihir' dışında eskisi gibi ayarlayabilirsiniz"
 
@@ -5790,7 +5790,7 @@ msgstr "darktable başlatma hatası"
 
 #: ../src/common/database.c:2742 ../src/libs/collect.c:3007
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
-#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1190
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
 #: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568 ../src/libs/tagging.c:1649
@@ -6028,12 +6028,12 @@ msgstr ""
 "hızlı pozlamadan bağımsız kılavuzlu filtre bellek ayıramadı, RAM "
 "ayarlarınızı kontrol edin"
 
-#: ../src/common/exif.cc:4329
+#: ../src/common/exif.cc:4333
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "xmp dosyası '%s' okunamıyor: '%s'"
 
-#: ../src/common/exif.cc:4381
+#: ../src/common/exif.cc:4385
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "xmp dosyası '%s' yazılamıyor: '%s'"
@@ -6563,7 +6563,7 @@ msgstr "deniz seviyesinin üzerinde"
 msgid "below sea level"
 msgstr "deniz seviyesinin altında"
 
-#: ../src/common/utility.c:555 ../src/libs/metadata_view.c:875
+#: ../src/common/utility.c:555 ../src/libs/metadata_view.c:879
 msgid "m"
 msgstr "m"
 
@@ -7467,7 +7467,7 @@ msgid "reverse"
 msgstr "ters"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:366
-#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1185
+#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1189
 msgid "default"
 msgstr "öntanımlı"
 
@@ -7548,7 +7548,7 @@ msgstr "açık"
 
 #: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2190
 #: ../src/develop/imageop.c:2380 ../src/iop/channelmixerrgb.c:4104
-#: ../src/iop/exposure.c:1097
+#: ../src/iop/exposure.c:1099
 msgid "input"
 msgstr "girdi"
 
@@ -7685,10 +7685,10 @@ msgstr "renklendirici kanalı için kaydırıcılar (HSL den)"
 
 #: ../src/develop/blend_gui.c:2003 ../src/develop/blend_gui.c:2030
 #: ../src/iop/atrous.c:1735 ../src/iop/channelmixerrgb.c:4059
-#: ../src/iop/channelmixerrgb.c:4150 ../src/iop/colorbalancergb.c:2151
-#: ../src/iop/colorbalancergb.c:2152 ../src/iop/colorbalancergb.c:2153
-#: ../src/iop/colorbalancergb.c:2154 ../src/iop/colorbalancergb.c:2161
-#: ../src/iop/colorbalancergb.c:2162 ../src/iop/colorbalancergb.c:2163
+#: ../src/iop/channelmixerrgb.c:4150 ../src/iop/colorbalancergb.c:2146
+#: ../src/iop/colorbalancergb.c:2147 ../src/iop/colorbalancergb.c:2148
+#: ../src/iop/colorbalancergb.c:2149 ../src/iop/colorbalancergb.c:2156
+#: ../src/iop/colorbalancergb.c:2157 ../src/iop/colorbalancergb.c:2158
 #: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:522
 msgid "chroma"
 msgstr "renklendirici"
@@ -7750,13 +7750,13 @@ msgid "reset blend mask settings"
 msgstr "karışım maskesi ayarlarını sıfırla"
 
 #: ../src/develop/blend_gui.c:2143 ../src/iop/atrous.c:1733
-#: ../src/iop/colorzones.c:2429 ../src/iop/denoiseprofile.c:3580
+#: ../src/iop/colorzones.c:2438 ../src/iop/denoiseprofile.c:3580
 #: ../src/iop/rawdenoise.c:902 ../src/iop/rgbcurve.c:1368
 #: ../src/iop/rgblevels.c:1012 ../src/iop/tonecurve.c:1157
 msgid "channel"
 msgstr "kanal"
 
-#: ../src/develop/blend_gui.c:2153 ../src/iop/colorzones.c:2443
+#: ../src/develop/blend_gui.c:2153 ../src/iop/colorzones.c:2452
 #: ../src/iop/rgbcurve.c:1378 ../src/iop/tonecurve.c:1166
 msgid ""
 "pick GUI color from image\n"
@@ -7798,11 +7798,11 @@ msgstr ""
 "maske görünümünü değiştirmek için 'm' tuşuna basın."
 
 #: ../src/develop/blend_gui.c:2228 ../src/develop/blend_gui.c:3056
-#: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2112
+#: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2107
 #: ../src/iop/exposure.c:1033 ../src/iop/exposure.c:1046
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
-#: ../src/iop/filmicrgb.c:4226 ../src/iop/filmicrgb.c:4236
-#: ../src/iop/filmicrgb.c:4271 ../src/iop/filmicrgb.c:4281
+#: ../src/iop/filmicrgb.c:4227 ../src/iop/filmicrgb.c:4237
+#: ../src/iop/filmicrgb.c:4272 ../src/iop/filmicrgb.c:4282
 #: ../src/iop/graduatednd.c:1098 ../src/iop/negadoctor.c:983
 #: ../src/iop/profile_gamma.c:651 ../src/iop/profile_gamma.c:657
 #: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3117
@@ -10558,7 +10558,7 @@ msgstr "_aç"
 msgid "darktable preset files"
 msgstr "darktable ön ayar dosyaları"
 
-#: ../src/gui/preferences.c:1011 ../src/iop/lut3d.c:1580
+#: ../src/gui/preferences.c:1011 ../src/iop/lut3d.c:1582
 #: ../src/libs/copy_history.c:144 ../src/libs/geotagging.c:946
 #: ../src/libs/styles.c:526
 msgid "all files"
@@ -11946,14 +11946,14 @@ msgstr ""
 "her bir özellik boyutunda kenar halelerini değiştir\n"
 "sadece parlaklık ve renklendirme sekmelerinin sonuçlarını değiştirir"
 
-#: ../src/iop/atrous.c:1753 ../src/iop/colorbalancergb.c:2078
-#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4193
+#: ../src/iop/atrous.c:1753 ../src/iop/colorbalancergb.c:2073
+#: ../src/iop/colorzones.c:2516 ../src/iop/filmicrgb.c:4193
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:932
 #: ../src/iop/toneequal.c:3162
 msgid "graph"
 msgstr "grafik"
 
-#: ../src/iop/atrous.c:1764 ../src/iop/colorzones.c:2500
+#: ../src/iop/atrous.c:1764 ../src/iop/colorzones.c:2509
 msgid "make effect stronger or weaker"
 msgstr "etkiyi daha güçlü veya daha zayıf yapma"
 
@@ -12027,7 +12027,7 @@ msgstr "nokia gibi"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:272 ../src/iop/colorzones.c:2531
+#: ../src/iop/basecurve.c:272 ../src/iop/colorzones.c:2540
 #: ../src/iop/rgbcurve.c:1422 ../src/iop/tonecurve.c:1198
 msgid "cubic spline"
 msgstr "kübik eğri"
@@ -13126,7 +13126,7 @@ msgstr ""
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4004 ../src/iop/clipping.c:2105
-#: ../src/iop/colorbalancergb.c:1895 ../src/iop/filmicrgb.c:4208
+#: ../src/iop/colorbalancergb.c:1890 ../src/iop/filmicrgb.c:4208
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3110
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2351
 #: ../src/views/lighttable.c:1243
@@ -13195,13 +13195,21 @@ msgstr "sıcaklık"
 msgid "spot color mapping"
 msgstr "nokta renk eşleme"
 
-#: ../src/iop/channelmixerrgb.c:4078 ../src/iop/channelmixerrgb.c:4206
-msgid "use a color checker target to autoset CAT and channels"
+#: ../src/iop/channelmixerrgb.c:4078
+msgid ""
+"define a target chromaticity (hue and chroma) for a particular region of the "
+"image (the control sample), which you then match against the same target "
+"chromaticity in other images. the control sample can either be a critical "
+"part of your subject or a non-moving and consistently-lit surface over your "
+"series of images."
 msgstr ""
-"CAT ve kanalları otomatik olarak ayarlamak için bir renk denetleyici hedefi "
-"kullanın"
+"görüntünün belirli bir bölgesi (kontrol örneği) için bir hedef renk alanı "
+"(renk tonu ve parlaklığı) tanımlayın, daha sonra diğer görüntülerde aynı "
+"hedef renk alanına karşı eşleştirin. kontrol örneği, konunuzun kritik bir "
+"parçası olabilir veya görüntü seriniz üzerinde hareket etmeyen ve sürekli "
+"olarak aydınlatılan bir yüzey olabilir."
 
-#: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1083
+#: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1085
 msgid "spot mode"
 msgstr "nokta modu"
 
@@ -13218,11 +13226,11 @@ msgstr ""
 "gösterir\n"
 "ve bir hedefi örneklemek için kullanılabilir."
 
-#: ../src/iop/channelmixerrgb.c:4086 ../src/iop/exposure.c:1089
+#: ../src/iop/channelmixerrgb.c:4086 ../src/iop/exposure.c:1091
 msgid "correction"
 msgstr "düzeltme"
 
-#: ../src/iop/channelmixerrgb.c:4087 ../src/iop/exposure.c:1090
+#: ../src/iop/channelmixerrgb.c:4087 ../src/iop/exposure.c:1092
 msgid "measure"
 msgstr "ölçüm"
 
@@ -13238,7 +13246,7 @@ msgstr ""
 "kanal karıştırmayı hesaba katarak hedefi hesaplayın.\n"
 "devre dışı bırakılırsa, yalnızca CAT dikkate alınır."
 
-#: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1103
+#: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1105
 msgid "the input color that should be mapped to the target"
 msgstr "hedefe eşlenmesi gereken giriş rengi"
 
@@ -13252,7 +13260,7 @@ msgstr ""
 "h: \tN/A\n"
 "c: \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
+#: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1112
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "bu LCh koordinatları, CIE Lab 1976 koordinatlarından hesaplanır"
 
@@ -13303,6 +13311,12 @@ msgstr "çıktı gri"
 #: ../src/iop/channelmixerrgb.c:4202
 msgid "calibrate with a color checker"
 msgstr "renk denetleyicisi ile kalibre edin"
+
+#: ../src/iop/channelmixerrgb.c:4206
+msgid "use a color checker target to autoset CAT and channels"
+msgstr ""
+"CAT ve kanalları otomatik olarak ayarlamak için bir renk denetleyici hedefi "
+"kullanın"
 
 #: ../src/iop/channelmixerrgb.c:4211
 msgid "chart"
@@ -13797,7 +13811,7 @@ msgid "RGBL"
 msgstr "RGBL"
 
 #. Page master
-#: ../src/iop/colorbalance.c:1876 ../src/iop/colorbalancergb.c:1898
+#: ../src/iop/colorbalance.c:1876 ../src/iop/colorbalancergb.c:1893
 msgid "master"
 msgstr "usta"
 
@@ -13922,73 +13936,73 @@ msgstr "temel renklilik: standart"
 msgid "colorbalance works only on RGB input"
 msgstr "renk dengesi yalnızca RGB girişinde çalışır"
 
-#: ../src/iop/colorbalancergb.c:1507 ../src/iop/colorzones.c:2203
+#: ../src/iop/colorbalancergb.c:1502 ../src/iop/colorzones.c:2203
 #: ../src/iop/retouch.c:1851 ../src/iop/toneequal.c:1871
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "karıştırma maskesi görüntülendiğinde maskeler görüntülenemez"
 
-#: ../src/iop/colorbalancergb.c:1898
+#: ../src/iop/colorbalancergb.c:1893
 msgid "global grading"
 msgstr "genel derecelendirme"
 
-#: ../src/iop/colorbalancergb.c:1902
+#: ../src/iop/colorbalancergb.c:1897
 msgid "rotate all hues by an angle, at the same luminance"
 msgstr "tüm tonları aynı parlaklıkta bir açıyla döndürün"
 
-#: ../src/iop/colorbalancergb.c:1908
+#: ../src/iop/colorbalancergb.c:1903
 msgid "increase colorfulness mostly on low-chroma colors"
 msgstr "çoğunlukla düşük renklendirilmiş renklerde renkliliği artırın"
 
-#: ../src/iop/colorbalancergb.c:1914
+#: ../src/iop/colorbalancergb.c:1909
 msgid "increase the contrast at constant chromaticity"
 msgstr "sabit renklilikte kontrastı artırın"
 
-#: ../src/iop/colorbalancergb.c:1918
+#: ../src/iop/colorbalancergb.c:1913
 msgid "linear chroma grading"
 msgstr "doğrusal renk derecelendirme"
 
-#: ../src/iop/colorbalancergb.c:1924
+#: ../src/iop/colorbalancergb.c:1919
 msgid "increase colorfulness at same luminance globally"
 msgstr "genel olarak aynı parlaklıkta renkliliği artırın"
 
-#: ../src/iop/colorbalancergb.c:1929
+#: ../src/iop/colorbalancergb.c:1924
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr "çoğunlukla gölgelerde aynı parlaklıkta renkliliği artırın"
 
-#: ../src/iop/colorbalancergb.c:1934
+#: ../src/iop/colorbalancergb.c:1929
 msgid "increase colorfulness at same luminance mostly in mid-tones"
 msgstr "çoğunlukla orta tonlarda aynı parlaklıkta renkliliği artırın"
 
-#: ../src/iop/colorbalancergb.c:1939
+#: ../src/iop/colorbalancergb.c:1934
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr "çoğunlukla vurgularda aynı parlaklıkta renkliliği artırın"
 
-#: ../src/iop/colorbalancergb.c:1941
+#: ../src/iop/colorbalancergb.c:1936
 msgid "perceptual saturation grading"
 msgstr "algısal doygunluk derecelendirmesi"
 
-#: ../src/iop/colorbalancergb.c:1946
+#: ../src/iop/colorbalancergb.c:1941
 msgid "add or remove saturation by an absolute amount"
 msgstr "mutlak bir miktarda doygunluk ekleyin veya kaldırın"
 
-#: ../src/iop/colorbalancergb.c:1951 ../src/iop/colorbalancergb.c:1956
-#: ../src/iop/colorbalancergb.c:1961
+#: ../src/iop/colorbalancergb.c:1946 ../src/iop/colorbalancergb.c:1951
+#: ../src/iop/colorbalancergb.c:1956
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
 msgstr ""
 "doygunluğu orijinal piksel doygunluğuyla orantılı olarak artırın veya azaltın"
 
-#: ../src/iop/colorbalancergb.c:1963
+#: ../src/iop/colorbalancergb.c:1958
 msgid "perceptual brilliance grading"
 msgstr "algısal parlaklık derecelendirmesi"
 
-#: ../src/iop/colorbalancergb.c:1968
+#: ../src/iop/colorbalancergb.c:1963
 msgid "add or remove brilliance by an absolute amount"
 msgstr "mutlak bir miktarda parlaklık ekleyin veya kaldırın"
 
-#: ../src/iop/colorbalancergb.c:1973 ../src/iop/colorbalancergb.c:1978
-#: ../src/iop/colorbalancergb.c:1983
+#: ../src/iop/colorbalancergb.c:1968 ../src/iop/colorbalancergb.c:1973
+#: ../src/iop/colorbalancergb.c:1978
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
@@ -13996,161 +14010,161 @@ msgstr ""
 "parlaklığı orijinal piksel parlaklığıyla orantılı olarak artırın veya azaltın"
 
 #. Page 4-ways
-#: ../src/iop/colorbalancergb.c:1986
+#: ../src/iop/colorbalancergb.c:1981
 msgid "4 ways"
 msgstr "4 yollu"
 
-#: ../src/iop/colorbalancergb.c:1986
+#: ../src/iop/colorbalancergb.c:1981
 msgid "selective color grading"
 msgstr "seçici renk derecelendirme"
 
-#: ../src/iop/colorbalancergb.c:1988
+#: ../src/iop/colorbalancergb.c:1983
 msgid "global offset"
 msgstr "genel ofset"
 
-#: ../src/iop/colorbalancergb.c:1994
+#: ../src/iop/colorbalancergb.c:1989
 msgid "global luminance offset"
 msgstr "genel parlaklık ofseti"
 
-#: ../src/iop/colorbalancergb.c:1999
+#: ../src/iop/colorbalancergb.c:1994
 msgid "hue of the global color offset"
 msgstr "genel renk ofsetinin tonu"
 
-#: ../src/iop/colorbalancergb.c:2005
+#: ../src/iop/colorbalancergb.c:2000
 msgid "chroma of the global color offset"
 msgstr "genel renk ofsetinin renklendirmesi"
 
-#: ../src/iop/colorbalancergb.c:2007
+#: ../src/iop/colorbalancergb.c:2002
 msgid "shadows lift"
 msgstr "gölgeler kalkar"
 
-#: ../src/iop/colorbalancergb.c:2013
+#: ../src/iop/colorbalancergb.c:2008
 msgid "luminance gain in shadows"
 msgstr "gölgelerde parlaklık kazancı"
 
-#: ../src/iop/colorbalancergb.c:2018
+#: ../src/iop/colorbalancergb.c:2013
 msgid "hue of the color gain in shadows"
 msgstr "gölgelerde renk kazancının tonu"
 
-#: ../src/iop/colorbalancergb.c:2024
+#: ../src/iop/colorbalancergb.c:2019
 msgid "chroma of the color gain in shadows"
 msgstr "gölgelerde renk kazancının renklendirmesi"
 
-#: ../src/iop/colorbalancergb.c:2026
+#: ../src/iop/colorbalancergb.c:2021
 msgid "highlights gain"
 msgstr "vurgular kazanç"
 
-#: ../src/iop/colorbalancergb.c:2032
+#: ../src/iop/colorbalancergb.c:2027
 msgid "luminance gain in highlights"
 msgstr "vurgularda parlaklık kazancı"
 
-#: ../src/iop/colorbalancergb.c:2037
+#: ../src/iop/colorbalancergb.c:2032
 msgid "hue of the color gain in highlights"
 msgstr "vurgularda renk kazancının tonu"
 
-#: ../src/iop/colorbalancergb.c:2043
+#: ../src/iop/colorbalancergb.c:2038
 msgid "chroma of the color gain in highlights"
 msgstr "vurgularda renk kazancının renklendirmesi"
 
-#: ../src/iop/colorbalancergb.c:2045 ../src/iop/colorbalancergb.c:2148
-#: ../src/iop/colorbalancergb.c:2152 ../src/iop/colorbalancergb.c:2156
+#: ../src/iop/colorbalancergb.c:2040 ../src/iop/colorbalancergb.c:2143
+#: ../src/iop/colorbalancergb.c:2147 ../src/iop/colorbalancergb.c:2151
 msgid "power"
 msgstr "güç"
 
-#: ../src/iop/colorbalancergb.c:2051
+#: ../src/iop/colorbalancergb.c:2046
 msgid "luminance exponent in mid-tones"
 msgstr "orta tonlarda parlaklık üssü"
 
-#: ../src/iop/colorbalancergb.c:2056
+#: ../src/iop/colorbalancergb.c:2051
 msgid "hue of the color exponent in mid-tones"
 msgstr "orta tonlarda renk üssünün tonu"
 
-#: ../src/iop/colorbalancergb.c:2062
+#: ../src/iop/colorbalancergb.c:2057
 msgid "chroma of the color exponent in mid-tones"
 msgstr "orta tonlarda renk üssünün renklendirmesi"
 
 #. Page masks
-#: ../src/iop/colorbalancergb.c:2067
+#: ../src/iop/colorbalancergb.c:2062
 msgid "masks"
 msgstr "maskeler"
 
-#: ../src/iop/colorbalancergb.c:2067
+#: ../src/iop/colorbalancergb.c:2062
 msgid "isolate luminances"
 msgstr "parlaklıkları izole et"
 
-#: ../src/iop/colorbalancergb.c:2071
+#: ../src/iop/colorbalancergb.c:2066
 msgid "choose in which uniform color space the saturation is computed"
 msgstr "doygunluğun hangi tekdüze renk boşluğunda hesaplanacağını seçin"
 
-#: ../src/iop/colorbalancergb.c:2073
+#: ../src/iop/colorbalancergb.c:2068
 msgid "luminance ranges"
 msgstr "parlaklık aralıkları"
 
-#: ../src/iop/colorbalancergb.c:2087
+#: ../src/iop/colorbalancergb.c:2082
 msgid "weight of the shadows over the whole tonal range"
 msgstr "tüm ton aralığında gölgelerin ağırlığı"
 
-#: ../src/iop/colorbalancergb.c:2095
+#: ../src/iop/colorbalancergb.c:2090
 msgid "position of the middle-gray reference for masking"
 msgstr "maskeleme için orta gri referansın konumu"
 
-#: ../src/iop/colorbalancergb.c:2103
+#: ../src/iop/colorbalancergb.c:2098
 msgid "weights of highlights over the whole tonal range"
 msgstr "tüm ton aralığında vurguların ağırlıkları"
 
-#: ../src/iop/colorbalancergb.c:2113
+#: ../src/iop/colorbalancergb.c:2108
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "güç işlevini normalleştirmek için kullanılan tepe beyaz parlaklık değeri"
 
-#: ../src/iop/colorbalancergb.c:2119
+#: ../src/iop/colorbalancergb.c:2114
 msgid "peak gray luminance value used to normalize the power function"
 msgstr "güç işlevini normalleştirmek için kullanılan tepe gri parlaklık değeri"
 
-#: ../src/iop/colorbalancergb.c:2121
+#: ../src/iop/colorbalancergb.c:2116
 msgid "mask preview settings"
 msgstr "maske önizleme ayarları"
 
-#: ../src/iop/colorbalancergb.c:2124
+#: ../src/iop/colorbalancergb.c:2119
 msgid "checkerboard color 1"
 msgstr "dama tahtası rengi 1"
 
-#: ../src/iop/colorbalancergb.c:2127 ../src/iop/colorbalancergb.c:2136
+#: ../src/iop/colorbalancergb.c:2122 ../src/iop/colorbalancergb.c:2131
 msgid "select color of the checkerboard from a swatch"
 msgstr "bir renk örneğinden dama tahtasının rengini seçin"
 
-#: ../src/iop/colorbalancergb.c:2133
+#: ../src/iop/colorbalancergb.c:2128
 msgid "checkerboard color 2"
 msgstr "dama tahtası rengi 2"
 
-#: ../src/iop/colorbalancergb.c:2143
+#: ../src/iop/colorbalancergb.c:2138
 msgid "checkerboard size"
 msgstr "dama tahtası boyutu"
 
-#: ../src/iop/colorbalancergb.c:2147 ../src/iop/colorbalancergb.c:2151
-#: ../src/iop/colorbalancergb.c:2155
+#: ../src/iop/colorbalancergb.c:2142 ../src/iop/colorbalancergb.c:2146
+#: ../src/iop/colorbalancergb.c:2150
 msgid "lift"
 msgstr "kaldırma"
 
-#: ../src/iop/colorbalancergb.c:2149 ../src/iop/colorbalancergb.c:2153
-#: ../src/iop/colorbalancergb.c:2157
+#: ../src/iop/colorbalancergb.c:2144 ../src/iop/colorbalancergb.c:2148
+#: ../src/iop/colorbalancergb.c:2152
 msgid "gain"
 msgstr "kazanç"
 
-#: ../src/iop/colorbalancergb.c:2160
+#: ../src/iop/colorbalancergb.c:2155
 msgid "global chroma"
 msgstr "genel renklendirme"
 
-#: ../src/iop/colorbalancergb.c:2164 ../src/iop/filmic.c:1677
+#: ../src/iop/colorbalancergb.c:2159 ../src/iop/filmic.c:1677
 msgid "global saturation"
 msgstr "genel doygunluk"
 
-#: ../src/iop/colorbalancergb.c:2168
+#: ../src/iop/colorbalancergb.c:2163
 msgid "global brilliance"
 msgstr "genel parlaklık"
 
-#: ../src/iop/colorbalancergb.c:2169 ../src/iop/colorbalancergb.c:2170
-#: ../src/iop/colorbalancergb.c:2171
+#: ../src/iop/colorbalancergb.c:2164 ../src/iop/colorbalancergb.c:2165
+#: ../src/iop/colorbalancergb.c:2166
 msgid "brilliance"
 msgstr "parlaklık"
 
@@ -14707,7 +14721,7 @@ msgstr "HSL temel ayarı"
 msgid "orange"
 msgstr "turuncu"
 
-#: ../src/iop/colorzones.c:2450 ../src/iop/rgbcurve.c:1385
+#: ../src/iop/colorzones.c:2459 ../src/iop/rgbcurve.c:1385
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -14720,42 +14734,42 @@ msgstr ""
 "negatif bir eğri oluşturmak için shift+sürükle"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2471
+#: ../src/iop/colorzones.c:2480
 msgid "edit by area"
 msgstr "alana göre düzenle"
 
-#: ../src/iop/colorzones.c:2476
+#: ../src/iop/colorzones.c:2485
 msgid "edit the curve nodes by area"
 msgstr "eğri düğümlerini alana göre düzenle"
 
-#: ../src/iop/colorzones.c:2483
+#: ../src/iop/colorzones.c:2492
 msgid "display selection"
 msgstr "ekran seçimi"
 
-#: ../src/iop/colorzones.c:2493
+#: ../src/iop/colorzones.c:2502
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "seçim kriterini seçin, grafikteki apsis olacaktır"
 
-#: ../src/iop/colorzones.c:2496
+#: ../src/iop/colorzones.c:2505
 msgid "choose between a smoother or stronger effect"
 msgstr "daha yumuşak veya daha güçlü bir efekt arasında seçim yapın"
 
-#: ../src/iop/colorzones.c:2530 ../src/iop/rgbcurve.c:1421
+#: ../src/iop/colorzones.c:2539 ../src/iop/rgbcurve.c:1421
 #: ../src/iop/tonecurve.c:1197
 msgid "interpolation method"
 msgstr "aradeğerleme yöntemi"
 
-#: ../src/iop/colorzones.c:2532 ../src/iop/rgbcurve.c:1423
+#: ../src/iop/colorzones.c:2541 ../src/iop/rgbcurve.c:1423
 #: ../src/iop/tonecurve.c:1199
 msgid "centripetal spline"
 msgstr "merkezcil eğri"
 
-#: ../src/iop/colorzones.c:2533 ../src/iop/rgbcurve.c:1424
+#: ../src/iop/colorzones.c:2542 ../src/iop/rgbcurve.c:1424
 #: ../src/iop/tonecurve.c:1200
 msgid "monotonic spline"
 msgstr "monotonik eğri"
 
-#: ../src/iop/colorzones.c:2536 ../src/iop/rgbcurve.c:1427
+#: ../src/iop/colorzones.c:2545 ../src/iop/rgbcurve.c:1427
 #: ../src/iop/tonecurve.c:1202
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -15266,18 +15280,18 @@ msgstr "hızlı keskinlik"
 msgid "fast local contrast"
 msgstr "hızlı yerel kontrast"
 
-#: ../src/iop/diffuse.c:1106 ../src/iop/diffuse.c:1368
+#: ../src/iop/diffuse.c:1116 ../src/iop/diffuse.c:1389
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr "dağıtma/keskinleştirme bellek ayıramadı, RAM ayarlarınızı kontrol edin"
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/diffuse.c:1480 ../src/iop/splittoning.c:525
+#: ../src/iop/diffuse.c:1501 ../src/iop/splittoning.c:525
 #: ../src/libs/camera.c:487
 msgid "properties"
 msgstr "özellikler"
 
-#: ../src/iop/diffuse.c:1485
+#: ../src/iop/diffuse.c:1506
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -15290,7 +15304,7 @@ msgstr ""
 "keskinleştirme veya iç boyama yapmayı planlıyorsanız,\n"
 "daha fazla yineleme yeniden yapılandırmaya yardımcı olur."
 
-#: ../src/iop/diffuse.c:1494
+#: ../src/iop/diffuse.c:1515
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -15305,7 +15319,7 @@ msgstr ""
 "bulanıklaştırma ve gürültü giderme için sıfıra ayarlayın.\n"
 "bunun yerine yerel kontrast üzerinde hareket etmek için artırın."
 
-#: ../src/iop/diffuse.c:1504
+#: ../src/iop/diffuse.c:1525
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -15319,11 +15333,11 @@ msgstr ""
 "bulanıklaştırmayı planlıyorsanız,\n"
 "yarıçap, mercek bulanıklığınızın genişliği civarında olmalıdır."
 
-#: ../src/iop/diffuse.c:1510
+#: ../src/iop/diffuse.c:1531
 msgid "speed (sharpen ↔ diffuse)"
 msgstr "hız (keskinleştir ↔ dağıt)"
 
-#: ../src/iop/diffuse.c:1516
+#: ../src/iop/diffuse.c:1537
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -15339,7 +15353,7 @@ msgstr ""
 "pozitif değerler dağılır ve bulanıklaşır,\n"
 "sıfır hiçbir şey yapmaz."
 
-#: ../src/iop/diffuse.c:1525
+#: ../src/iop/diffuse.c:1546
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -15355,7 +15369,7 @@ msgstr ""
 "pozitif değerler dağılır ve bulanıklaşır,\n"
 "sıfır hiçbir şey yapmaz."
 
-#: ../src/iop/diffuse.c:1534
+#: ../src/iop/diffuse.c:1555
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -15371,7 +15385,7 @@ msgstr ""
 "pozitif değerler dağılır ve bulanıklaşır,\n"
 "sıfır hiçbir şey yapmaz."
 
-#: ../src/iop/diffuse.c:1543
+#: ../src/iop/diffuse.c:1564
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -15387,7 +15401,7 @@ msgstr ""
 "pozitif değerler dağılır ve bulanıklaşır,\n"
 "sıfır hiçbir şey yapmaz."
 
-#: ../src/iop/diffuse.c:1555
+#: ../src/iop/diffuse.c:1576
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -15401,7 +15415,7 @@ msgstr ""
 "pozitif değerler kenarlardan kaçınır (izofotlar),\n"
 "sıfır her ikisini de eşit olarak etkiler (izotropik)."
 
-#: ../src/iop/diffuse.c:1563
+#: ../src/iop/diffuse.c:1584
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -15415,7 +15429,7 @@ msgstr ""
 "pozitif değerler kenarlardan kaçınır (izofotlar),\n"
 "sıfır her ikisini de eşit olarak etkiler (izotropik)."
 
-#: ../src/iop/diffuse.c:1571
+#: ../src/iop/diffuse.c:1592
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -15429,7 +15443,7 @@ msgstr ""
 "pozitif değerler kenarlardan kaçınır (izofotlar),\n"
 "sıfır her ikisini de eşit olarak etkiler (izotropik)."
 
-#: ../src/iop/diffuse.c:1579
+#: ../src/iop/diffuse.c:1600
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -15443,11 +15457,11 @@ msgstr ""
 "pozitif değerler kenarlardan kaçınır (izofotlar),\n"
 "sıfır her ikisini de eşit olarak etkiler (izotropik)."
 
-#: ../src/iop/diffuse.c:1584
+#: ../src/iop/diffuse.c:1605
 msgid "edge management"
 msgstr "kenar yönetimi"
 
-#: ../src/iop/diffuse.c:1589
+#: ../src/iop/diffuse.c:1610
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
@@ -15457,7 +15471,7 @@ msgstr ""
 "çiçek açtıktan sonra detayları saklamak için kullanılabilir,\n"
 "bağımsız keskinlik için hızı negatif değerlere ayarlayın."
 
-#: ../src/iop/diffuse.c:1595
+#: ../src/iop/diffuse.c:1616
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -15467,7 +15481,7 @@ msgstr ""
 "daha fazla kenarı yayılmasını hariç tutmak için artırın,\n"
 "saçaklar veya haleler belirirse."
 
-#: ../src/iop/diffuse.c:1601
+#: ../src/iop/diffuse.c:1622
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -15479,11 +15493,11 @@ msgstr ""
 "pürüzsüz yüzeylerde parazit görüyorsanız veya\n"
 "karanlık alanlar parlak alanlara kıyasla fazla keskin görünüyorsa."
 
-#: ../src/iop/diffuse.c:1607
+#: ../src/iop/diffuse.c:1628
 msgid "diffusion spatiality"
 msgstr "yayılma uzamsallığı"
 
-#: ../src/iop/diffuse.c:1612
+#: ../src/iop/diffuse.c:1633
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -15652,7 +15666,21 @@ msgstr ""
 msgid "spot exposure mapping"
 msgstr "noktasal maruz kalma eşlemesi"
 
-#: ../src/iop/exposure.c:1084
+#: ../src/iop/exposure.c:1083
+msgid ""
+"define a target brightness, in terms of exposure, for a selected region of "
+"the image (the control sample), which you then match against the same target "
+"brightness in other images. the control sample can either be a critical part "
+"of your subject or a non-moving and consistently-lit surface over your "
+"series of images."
+msgstr ""
+"görüntünün seçilen bir bölgesi (kontrol örneği) için poz açısından bir hedef "
+"parlaklık tanımlayın ve daha sonra diğer görüntülerdeki aynı hedef "
+"parlaklıkla eşleştirin. kontrol örneği, konunuzun kritik bir parçası "
+"olabilir veya görüntü seriniz üzerinde hareket etmeyen ve sürekli olarak "
+"aydınlatılan bir yüzey olabilir."
+
+#: ../src/iop/exposure.c:1086
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -15666,11 +15694,11 @@ msgstr ""
 "eşlendiğini gösterir\n"
 "ve bir hedef tanımlamak için kullanılabilir."
 
-#: ../src/iop/exposure.c:1108
+#: ../src/iop/exposure.c:1110
 msgid "L : \tN/A"
 msgstr "L : \tN/A"
 
-#: ../src/iop/exposure.c:1123
+#: ../src/iop/exposure.c:1125
 msgid "the desired target exposure after mapping"
 msgstr "haritalamadan sonra istenen hedef maruziyet"
 
@@ -15733,7 +15761,7 @@ msgstr ""
 "konunun ortalama parlaklığına uyacak şekilde ayarlayın.\n"
 "arkadan aydınlatma durumları dışında, bu %18 civarında olmalıdır."
 
-#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4228
+#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4229
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15743,7 +15771,7 @@ msgstr ""
 "Bu, bir ışık ölçerin olay yerinde size vereceği bir okumadır.\n"
 "vurguların kırpılmasından kaçınılacak şekilde ayarlayın"
 
-#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4238
+#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4239
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15763,8 +15791,8 @@ msgstr ""
 "hesaplanan dinamik aralığı büyütün veya küçültün.\n"
 "\"otomatik ayar seviyeleri\" ile birlikte kullanışlıdır."
 
-#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4251
-#: ../src/iop/filmicrgb.c:4254 ../src/iop/profile_gamma.c:667
+#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4252
+#: ../src/iop/filmicrgb.c:4255 ../src/iop/profile_gamma.c:667
 msgid "auto tune levels"
 msgstr "otomatik ayar seviyeleri"
 
@@ -15784,7 +15812,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "filmsel S eğrisi"
 
-#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4340
+#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4341
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -15793,7 +15821,7 @@ msgstr ""
 "çoğunlukla orta tonları etkiler"
 
 #. geotagging
-#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4349
+#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4350
 #: ../src/libs/metadata_view.c:157
 msgid "latitude"
 msgstr "enlem"
@@ -15812,7 +15840,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr "gölgeler/vurgular dengesi"
 
-#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4360
+#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4361
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -15893,7 +15921,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "hedef/ekran"
 
-#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4379
+#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4380
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -15901,7 +15929,7 @@ msgstr ""
 "saf siyah çıktının parlaklığı, bu %0 olmalıdır\n"
 "soluk bir görünüm istiyorsanız hariç"
 
-#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4386
+#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4387
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -15909,7 +15937,7 @@ msgstr ""
 "hedef görüntüsünün veya renk uzayının orta gri değeri.\n"
 "ne yaptığınızı bilmiyorsanız buna asla dokunmamalısınız."
 
-#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4393
+#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4394
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -16002,7 +16030,7 @@ msgid "% camera"
 msgstr "% Kamera"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3673 ../src/iop/filmicrgb.c:4373
+#: ../src/iop/filmicrgb.c:3673 ../src/iop/filmicrgb.c:4374
 msgid "display"
 msgstr "ekran"
 
@@ -16048,7 +16076,8 @@ msgstr ""
 "sağ tıklayın: geri gidin.\n"
 "çift tıklayın: görünüme bakmak için sıfırlayın."
 
-#: ../src/iop/filmicrgb.c:4218
+#: ../src/iop/filmicrgb.c:4219
+#, no-c-format
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -16058,7 +16087,7 @@ msgstr ""
 "buraya girilen değer daha sonra %18.45'e yeniden eşlenecektir.\n"
 "genel parlaklığı artırmak için değeri azaltın."
 
-#: ../src/iop/filmicrgb.c:4246
+#: ../src/iop/filmicrgb.c:4247
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -16066,7 +16095,7 @@ msgstr ""
 "hesaplanan dinamik aralığı simetrik olarak büyütür veya küçültür.\n"
 "aşırı parlaklıklara bir güvenlik payı vermek için kullanışlıdır."
 
-#: ../src/iop/filmicrgb.c:4256
+#: ../src/iop/filmicrgb.c:4257
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -16084,15 +16113,15 @@ msgstr ""
 "kullanmadan önce varsayımlarını anladığınızdan emin olun."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4265
+#: ../src/iop/filmicrgb.c:4266
 msgid "reconstruct"
 msgstr "yeniden inşa etmek"
 
-#: ../src/iop/filmicrgb.c:4267
+#: ../src/iop/filmicrgb.c:4268
 msgid "highlights clipping"
 msgstr "kırpmayı vurgular"
 
-#: ../src/iop/filmicrgb.c:4273
+#: ../src/iop/filmicrgb.c:4274
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -16108,7 +16137,7 @@ msgstr ""
 "daha fazla alanı içerecek şekilde azaltmak,\n"
 "daha fazla alanı hariç tutmak için artırın."
 
-#: ../src/iop/filmicrgb.c:4283
+#: ../src/iop/filmicrgb.c:4284
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -16118,15 +16147,15 @@ msgstr ""
 "geçişi daha sert ve keskin hale getirmek için azaltın,\n"
 "geçişi daha yumuşak ve bulanık hale getirmek için artırın."
 
-#: ../src/iop/filmicrgb.c:4289 ../src/iop/filmicrgb.c:4290
+#: ../src/iop/filmicrgb.c:4290 ../src/iop/filmicrgb.c:4291
 msgid "display highlight reconstruction mask"
 msgstr "vurgulanan yeniden yapılandırma maskesini göster"
 
-#: ../src/iop/filmicrgb.c:4297 ../src/iop/splittoning.c:527
+#: ../src/iop/filmicrgb.c:4298 ../src/iop/splittoning.c:527
 msgid "balance"
 msgstr "denge"
 
-#: ../src/iop/filmicrgb.c:4304
+#: ../src/iop/filmicrgb.c:4305
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16143,7 +16172,7 @@ msgstr ""
 "en az bir RGB kanalı kırpılmamışsa artırın.\n"
 "tüm RGB kanalları geniş alanlarda kırpılırsa azalır."
 
-#: ../src/iop/filmicrgb.c:4315
+#: ../src/iop/filmicrgb.c:4316
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16160,7 +16189,7 @@ msgstr ""
 "daha fazla ayrıntı istiyorsanız artırın.\n"
 "daha fazla bulanıklık istiyorsanız azaltın."
 
-#: ../src/iop/filmicrgb.c:4327
+#: ../src/iop/filmicrgb.c:4328
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16178,11 +16207,11 @@ msgstr ""
 "eflatun veya gamut dışı vurgular görürseniz azaltın."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4335
+#: ../src/iop/filmicrgb.c:4336
 msgid "look"
 msgstr "bak"
 
-#: ../src/iop/filmicrgb.c:4345
+#: ../src/iop/filmicrgb.c:4346
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -16192,7 +16221,7 @@ msgstr ""
 "vurguları daha parlak ve daha az sıkıştırılmış hale getirmek için artırın.\n"
 "vurguları kapatmak için azaltın."
 
-#: ../src/iop/filmicrgb.c:4353
+#: ../src/iop/filmicrgb.c:4354
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -16205,7 +16234,7 @@ msgstr ""
 "başka türlü azaltın. enlem aralığında desatürasyon olmaz.\n"
 "bunun orta tonlar üzerinde hiçbir etkisi yoktur."
 
-#: ../src/iop/filmicrgb.c:4368 ../src/iop/filmicrgb.c:4511
+#: ../src/iop/filmicrgb.c:4369 ../src/iop/filmicrgb.c:4514
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -16216,11 +16245,11 @@ msgstr ""
 "gölgeler ve/veya vurgular yeterince doygun değilse artırın."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:4397
+#: ../src/iop/filmicrgb.c:4398
 msgid "options"
 msgstr "seçenekler"
 
-#: ../src/iop/filmicrgb.c:4402
+#: ../src/iop/filmicrgb.c:4403
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -16229,18 +16258,17 @@ msgstr ""
 "v4, ışığın spektral saflığına dayanan daha yeni bir doygunlaştırma "
 "yöntemidir."
 
-#: ../src/iop/filmicrgb.c:4406
+#: ../src/iop/filmicrgb.c:4407
 msgid ""
-"ensure the original color are preserved.\n"
+"ensure the original colors are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
-"so ensure they are properly corrected elsewhere.\n"
+"so ensure they are properly corrected elsewhere."
 msgstr ""
-"orijinal rengin korunduğundan emin olun.\n"
+"orijinal renklerin korunmasını sağlayın.\n"
 "renk sapmalarını ve renk gürültüsünü güçlendirebilir,\n"
-"bu nedenle, başka bir yerde düzgün bir şekilde düzeltildiklerinden emin "
-"olun.\n"
+"bu nedenle, başka bir yerde düzgün bir şekilde düzeltildiklerinden emin olun."
 
-#: ../src/iop/filmicrgb.c:4412
+#: ../src/iop/filmicrgb.c:4413
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16251,7 +16279,7 @@ msgstr ""
 "kullanır.\n"
 "yumuşak, daha az ton sıkıştırmasıyla sonuçlanan düşük bir eğrilik kullanır."
 
-#: ../src/iop/filmicrgb.c:4417
+#: ../src/iop/filmicrgb.c:4418
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16262,20 +16290,20 @@ msgstr ""
 "kullanır.\n"
 "yumuşak, daha az ton sıkıştırmasıyla sonuçlanan düşük bir eğrilik kullanır."
 
-#: ../src/iop/filmicrgb.c:4422
-#, c-format
+#: ../src/iop/filmicrgb.c:4425
+#, no-c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
 "this is not recommended in general.\n"
 "fix the global exposure in the exposure module instead.\n"
-"disable to use standard 18.45 %% middle gray."
+"disable to use standard 18.45% middle gray."
 msgstr ""
 "özel orta gri değerleri girmeyi etkinleştirin.\n"
 "bu genel olarak tavsiye edilmez.\n"
-"bunun yerine global pozlamayı pozlama modülünde düzeltin.\n"
-"standart %% 18.45 orta griyi kullanmayı devre dışı bırakın."
+"bunun yerine genel pozlamayı pozlama modülünde düzeltin.\n"
+"standart % 18.45 orta griyi kullanmayı devre dışı bırakın."
 
-#: ../src/iop/filmicrgb.c:4429
+#: ../src/iop/filmicrgb.c:4432
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -16287,7 +16315,7 @@ msgstr ""
 "bu, orta griyi kimlik çizgisinde tutar ve hızlı ayarlamayı geliştirir.\n"
 "elle kontrol istiyorsanız devre dışı bırakın."
 
-#: ../src/iop/filmicrgb.c:4435
+#: ../src/iop/filmicrgb.c:4438
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -16299,7 +16327,7 @@ msgstr ""
 "bu daha yavaş olacak, ancak daha tarafsız vurgular sağlayacaktır.\n"
 "ayrıca zor eflatun vurgulama durumlarında da yardımcı olur."
 
-#: ../src/iop/filmicrgb.c:4442
+#: ../src/iop/filmicrgb.c:4445
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -16311,7 +16339,7 @@ msgstr ""
 "resim genel olarak gürültülü olduğunda,\n"
 "böylece resmin geri kalanıyla karışırlar."
 
-#: ../src/iop/filmicrgb.c:4449
+#: ../src/iop/filmicrgb.c:4452
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -16319,11 +16347,11 @@ msgstr ""
 "gürültünün istatistiksel dağılımını seçin.\n"
 "bu, doğal sensör gürültü düzenini eşleştirmek için kullanışlıdır.\n"
 
-#: ../src/iop/filmicrgb.c:4517
+#: ../src/iop/filmicrgb.c:4520
 msgid "mid-tones saturation"
 msgstr "orta ton doygunluğu"
 
-#: ../src/iop/filmicrgb.c:4518
+#: ../src/iop/filmicrgb.c:4521
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -17288,7 +17316,7 @@ msgstr "png dosyasında geçersiz seviye %d %d"
 msgid "this darktable build is not compatible with compressed CLUT"
 msgstr "bu darktable yapısı, sıkıştırılmış CLUT ile uyumlu değil"
 
-#: ../src/iop/lut3d.c:537 ../src/iop/lut3d.c:786
+#: ../src/iop/lut3d.c:537 ../src/iop/lut3d.c:787
 #, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
 msgstr "hata - LUT 3D boyutu %d desteklenen azami değeri aşıyor"
@@ -17306,91 +17334,91 @@ msgstr "hata - png resmi %s okunamadı"
 msgid "error - allocating buffer for png LUT"
 msgstr "hata - png LUT için arabellek ayırma"
 
-#: ../src/iop/lut3d.c:741
+#: ../src/iop/lut3d.c:742
 #, c-format
 msgid "error - invalid cube file: %s"
 msgstr "hata - geçersiz küp dosyası: %s"
 
-#: ../src/iop/lut3d.c:755
+#: ../src/iop/lut3d.c:756
 msgid "DOMAIN MIN <> 0.0 is not supported"
 msgstr "ALAN ADI ASG <> 0.0 desteklenmiyor"
 
-#: ../src/iop/lut3d.c:766
+#: ../src/iop/lut3d.c:767
 msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "ALAN ADI AZM <> 1.0 desteklenmiyor"
 
-#: ../src/iop/lut3d.c:775
+#: ../src/iop/lut3d.c:776
 msgid "[1D cube LUT is not supported"
 msgstr "[1D küp LUT desteklenmiyor"
 
-#: ../src/iop/lut3d.c:797 ../src/iop/lut3d.c:901
+#: ../src/iop/lut3d.c:798 ../src/iop/lut3d.c:903
 msgid "error - allocating buffer for cube LUT"
 msgstr "hata - LUT küpü için arabellek ayırma"
 
-#: ../src/iop/lut3d.c:808 ../src/iop/lut3d.c:914
+#: ../src/iop/lut3d.c:809 ../src/iop/lut3d.c:916
 msgid "error - cube LUT size is not defined"
 msgstr "hata - küp LUT boyutu tanımlı değil"
 
-#: ../src/iop/lut3d.c:819
+#: ../src/iop/lut3d.c:820
 #, c-format
 msgid "error - cube LUT invalid number line %d"
 msgstr "hata - küp LUT geçersiz satır sayısı %d"
 
-#: ../src/iop/lut3d.c:835
+#: ../src/iop/lut3d.c:836
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
 msgstr "hata - küp LUT satır sayısı %d doğru değil, %d olmalıdır"
 
-#: ../src/iop/lut3d.c:845
+#: ../src/iop/lut3d.c:846
 #, c-format
 msgid "warning - cube LUT %d out of range values [0,1]"
 msgstr "uyarı - küp LUT %d aralık değerlerinin dışında [0,1]"
 
-#: ../src/iop/lut3d.c:869
+#: ../src/iop/lut3d.c:871
 #, c-format
 msgid "error - invalid 3dl file: %s"
 msgstr "hata - geçersiz 3dl dosyası: %s"
 
-#: ../src/iop/lut3d.c:890
+#: ../src/iop/lut3d.c:892
 #, c-format
 msgid "error - the maximum shaper LUT value %d is too low"
 msgstr "hata - azami şekillendirici LUT değeri %d çok düşük"
 
-#: ../src/iop/lut3d.c:942
+#: ../src/iop/lut3d.c:944
 msgid "error - cube LUT lines number is not correct"
 msgstr "hata - küp LUT satır numarası doğru değil"
 
-#: ../src/iop/lut3d.c:958
+#: ../src/iop/lut3d.c:960
 msgid "error - the maximum LUT value does not match any valid bit depth"
 msgstr ""
 "hata - azami LUT değeri geçerli herhangi bir bit derinliğiyle eşleşmiyor"
 
-#: ../src/iop/lut3d.c:1542
+#: ../src/iop/lut3d.c:1544
 msgid "LUT root folder not defined"
 msgstr "LUT kök klasörü tanımlı değil"
 
-#: ../src/iop/lut3d.c:1548
+#: ../src/iop/lut3d.c:1550
 msgid "select LUT file"
 msgstr "LUT dosyasını seçin"
 
-#: ../src/iop/lut3d.c:1549
+#: ../src/iop/lut3d.c:1551
 msgid "_select"
 msgstr "_seç"
 
-#: ../src/iop/lut3d.c:1569
+#: ../src/iop/lut3d.c:1571
 msgid "hald CLUT (png), 3D LUT (cube or 3dl) or gmic compressed LUT (gmz)"
 msgstr ""
 "hald CLUT (png), 3D LUT (küp veya 3dl) veya gmic sıkıştırılmış LUT (gmz)"
 
-#: ../src/iop/lut3d.c:1571
+#: ../src/iop/lut3d.c:1573
 msgid "hald CLUT (png) or 3D LUT (cube or 3dl)"
 msgstr "hald CLUT (png) veya 3D LUT (küp veya 3dl)"
 
-#: ../src/iop/lut3d.c:1595
+#: ../src/iop/lut3d.c:1597
 msgid "select file outside LUT root folder is not allowed"
 msgstr "LUT kök klasörünün dışında dosya seçmeye izin verilmiyor"
 
-#: ../src/iop/lut3d.c:1666
+#: ../src/iop/lut3d.c:1668
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed LUT) file "
 "CAUTION: 3D LUT folder must be set in preferences/processing before choosing "
@@ -17400,7 +17428,7 @@ msgstr ""
 "dosyası seçin DİKKAT: LUT dosyasını seçmeden önce tercihlerde/işlemede 3D "
 "LUT klasörü ayarlanmalıdır"
 
-#: ../src/iop/lut3d.c:1670
+#: ../src/iop/lut3d.c:1672
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D LUT folder must be "
 "set in preferences/processing before choosing the LUT file"
@@ -17408,7 +17436,7 @@ msgstr ""
 "bir png (haldclut), bir küp veya bir 3dl dosyası seçin DİKKAT: LUT dosyasını "
 "seçmeden önce tercihlerde/işlemede 3D LUT klasörü ayarlanmalıdır"
 
-#: ../src/iop/lut3d.c:1682
+#: ../src/iop/lut3d.c:1684
 msgid ""
 "the file path (relative to LUT folder) is saved with image along with the "
 "LUT data if it's a compressed LUT (gmz)"
@@ -17416,7 +17444,7 @@ msgstr ""
 "dosya yolu (LUT klasörüne göre), sıkıştırılmış bir LUT (gmz) ise, LUT "
 "verileriyle birlikte görüntüyle birlikte kaydedilir"
 
-#: ../src/iop/lut3d.c:1685
+#: ../src/iop/lut3d.c:1687
 msgid ""
 "the file path (relative to LUT folder) is saved with image (and not the LUT "
 "data themselves)"
@@ -17424,23 +17452,23 @@ msgstr ""
 "dosya yolu (LUT klasörüne göre) görüntüyle birlikte kaydedilir (LUT "
 "verilerinin kendileri değil)"
 
-#: ../src/iop/lut3d.c:1694
+#: ../src/iop/lut3d.c:1696
 msgid "enter LUT name"
 msgstr "LUT adını girin"
 
-#: ../src/iop/lut3d.c:1715
+#: ../src/iop/lut3d.c:1717
 msgid "select the LUT"
 msgstr "LUT'u seçin"
 
-#: ../src/iop/lut3d.c:1728
+#: ../src/iop/lut3d.c:1730
 msgid "select the color space in which the LUT has to be applied"
 msgstr "LUT'nin uygulanması gereken renk uzayını seçin"
 
-#: ../src/iop/lut3d.c:1730
+#: ../src/iop/lut3d.c:1732
 msgid "interpolation"
 msgstr "aradeğerleme"
 
-#: ../src/iop/lut3d.c:1731
+#: ../src/iop/lut3d.c:1733
 msgid "select the interpolation method"
 msgstr "aradeğerleme yöntemini seçin"
 
@@ -19519,7 +19547,7 @@ msgstr "dosyalar"
 #: ../src/libs/collect.c:2956 ../src/libs/export_metadata.c:310
 #: ../src/libs/filtering.c:850 ../src/libs/filtering.c:932
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
-#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
+#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1222
 msgid "metadata"
 msgstr "üst veri"
 
@@ -19543,7 +19571,7 @@ msgid "collections settings"
 msgstr "koleksiyon ayarları"
 
 #: ../src/libs/collect.c:3008 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1190
 #: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1649
 #: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
 #: ../src/libs/tagging.c:3473
@@ -19551,7 +19579,7 @@ msgid "save"
 msgstr "kaydet"
 
 #: ../src/libs/collect.c:3028 ../src/libs/export.c:1059
-#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1298
+#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1302
 #: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3495
 msgid "preferences..."
 msgstr "tercihler..."
@@ -20184,6 +20212,11 @@ msgstr "sağ tıklama mevcut değerleri seçmek için bir menü açar"
 msgid "actual selection"
 msgstr "güncel seçim"
 
+#: ../src/libs/filtering.c:789
+#, c-format
+msgid "you can't have more than %d rules"
+msgstr "%d'den fazla kuralınız olamaz"
+
 #: ../src/libs/filtering.c:918
 msgid ""
 "rule property\n"
@@ -20270,6 +20303,11 @@ msgstr "sıralama yönü"
 #: ../src/libs/filtering.c:1719
 msgid "remove this sort order"
 msgstr "bu sıralama düzenini kaldır"
+
+#: ../src/libs/filtering.c:1803
+#, c-format
+msgid "you can't have more than %d sort orders"
+msgstr "%d'den fazla sıralama düzeniniz olamaz"
 
 #: ../src/libs/filtering.c:1872
 msgid "DESC"
@@ -21574,11 +21612,11 @@ msgstr "üst veri düzenleyici"
 msgid "<leave unchanged>"
 msgstr "<degismeden birakilan>"
 
-#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1184
+#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1188
 msgid "metadata settings"
 msgstr "üstveri ayarları"
 
-#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1229
+#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1233
 msgid "visible"
 msgstr "görünür"
 
@@ -21811,10 +21849,15 @@ msgstr "%+.2f EV"
 
 #: ../src/libs/metadata_view.c:750
 #, c-format
+msgid "infinity"
+msgstr "sonsuz"
+
+#: ../src/libs/metadata_view.c:754
+#, c-format
 msgid "%.2f m"
 msgstr "%.2f m"
 
-#: ../src/libs/metadata_view.c:1224
+#: ../src/libs/metadata_view.c:1228
 msgid ""
 "drag and drop one row at a time until you get the desired order\n"
 "untick to hide metadata which are not of interest for you\n"
@@ -21824,7 +21867,7 @@ msgstr ""
 "ilginizi çekmeyen üst verileri gizlemek için işareti kaldırın\n"
 "farklı ayarlar gerekiyorsa ön ayarları kullanın"
 
-#: ../src/libs/metadata_view.c:1380
+#: ../src/libs/metadata_view.c:1384
 msgid "jump to film roll"
 msgstr "film rulosuna atla"
 
