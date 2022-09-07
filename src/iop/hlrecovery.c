@@ -486,7 +486,7 @@ static void _segment_gradients(const int width, const int height, float *restric
   }
 } 
 
-static void _process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                          const uint32_t filters, dt_iop_highlights_data_t *data, const int vmode)
 {
