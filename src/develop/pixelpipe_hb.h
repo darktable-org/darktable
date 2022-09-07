@@ -180,6 +180,9 @@ typedef struct dt_dev_pixelpipe_t
 
 struct dt_develop_t;
 
+// report pipe->type as textual string
+const char *dt_dev_pixelpipe_type_to_str(int pipe_type);
+
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // inits the preview pixelpipe with plain passthrough input/output and empty input and default caching
