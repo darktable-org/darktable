@@ -368,9 +368,19 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->orientation = image.orientation;
     for(int i = 0; i < 3; i++)
       d->wb_coeffs[i] = image.wb_coeffs[i];
-    for(int k=0; k<4; k++)
-      for(int i=0; i<3; i++)
-        d->adobe_XYZ_to_CAM[k][i] = image.adobe_XYZ_to_CAM[k][i];
+    // give priority to DNG embedded matrix: see dt_colorspaces_conversion_matrices_xyz() and its call from
+    // iop/temperature.c with image_storage.adobe_XYZ_to_CAM[][] and image_storage.d65_color_matrix[] as inputs
+    if(!isnan(image.d65_color_matrix[0]))
+    {
+        for(int i = 0; i < 9; ++i)
+          d->adobe_XYZ_to_CAM[i/3][i%3] = image.d65_color_matrix[i];
+        for(int i = 0; i < 3; ++i)
+          d->adobe_XYZ_to_CAM[3][i] = 0.0f;
+    }
+    else
+      for(int k = 0; k < 4; ++k)
+        for(int i = 0; i < 3; ++i)
+          d->adobe_XYZ_to_CAM[k][i] = image.adobe_XYZ_to_CAM[k][i];
   }
 
   if(image.buf_dsc.filters == 0u || image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16)
