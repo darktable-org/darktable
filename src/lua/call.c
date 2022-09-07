@@ -204,7 +204,7 @@ static gboolean stacked_job_dispatch (GSource* source, GSourceFunc callback, gpo
 {
   gpointer message;
   message = g_async_queue_try_pop (darktable.lua_state.stacked_job_queue);
-  if (message == NULL)
+  if(message == NULL)
   {
     return TRUE;
   }
@@ -301,7 +301,7 @@ static gboolean alien_job_dispatch (GSource* source, GSourceFunc callback, gpoin
 {
   gpointer message;
   message = g_async_queue_try_pop (darktable.lua_state.alien_job_queue);
-  if (message == NULL)
+  if(message == NULL)
   {
     return TRUE;
   }
@@ -408,7 +408,7 @@ static gboolean string_job_dispatch (GSource* source, GSourceFunc callback, gpoi
 {
   gpointer message;
   message = g_async_queue_try_pop (darktable.lua_state.string_job_queue);
-  if (message == NULL)
+  if(message == NULL)
   {
     return TRUE;
   }

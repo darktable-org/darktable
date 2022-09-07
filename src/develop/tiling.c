@@ -270,9 +270,9 @@ static int _simplex(double (*objfunc)(double[], void *[]), double start[], int n
 #if 0
   /* print out the initial values */
   printf ("Initial Values\n");
-  for (j = 0; j <= n; j++)
+  for(j = 0; j <= n; j++)
   {
-    for (i = 0; i < n; i++)
+    for(i = 0; i < n; i++)
     {
       printf ("%f %f\n", v[j][i], f[j]);
     }
@@ -463,9 +463,9 @@ static int _simplex(double (*objfunc)(double[], void *[]), double start[], int n
 #if 0
     /* print out the value at each iteration */
     printf ("Iteration %d\n", itr);
-    for (j = 0; j <= n; j++)
+    for(j = 0; j <= n; j++)
     {
-      for (i = 0; i < n; i++)
+      for(i = 0; i < n; i++)
       {
         printf ("%f %f\n", v[j][i], f[j]);
       }
@@ -501,7 +501,7 @@ static int _simplex(double (*objfunc)(double[], void *[]), double start[], int n
 
 #if 0
   printf ("The minimum was found at\n");
-  for (j = 0; j < n; j++)
+  for(j = 0; j < n; j++)
   {
     printf ("%e\n", v[vs][j]);
     start[j] = v[vs][j];

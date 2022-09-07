@@ -264,7 +264,7 @@ try_again:
     {
       // add to the end of the original pattern without caring about a
       // potentially added "_$(SEQUENCE)"
-      if (snprintf(pattern, sizeof(pattern), "%s" G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
+      if(snprintf(pattern, sizeof(pattern), "%s" G_DIR_SEPARATOR_S "$(FILE_NAME)", d->filename) < sizeof(pattern))
         goto try_again;
     }
 

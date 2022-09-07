@@ -223,7 +223,6 @@ int write_image(struct dt_imageio_module_data_t *data,
   avifRGBImage rgb = { .format = AVIF_RGB_FORMAT_RGB, };
   avifEncoder *encoder = NULL;
   uint8_t *icc_profile_data = NULL;
-  uint32_t icc_profile_len;
   avifResult result;
   int rc;
 
@@ -282,93 +281,75 @@ int write_image(struct dt_imageio_module_data_t *data,
            avif_get_compression_string(d->compression_type),
            d->quality);
 
-  if(imgid > 0)
+  /* Determine the actual (export vs colorout) color profile used */
+  const dt_colorspaces_color_profile_t *cp = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
+
+  /*
+   * Set these in advance so any upcoming RGB -> YUV use the proper
+   * coefficients.
+   */
+  switch(cp->type)
   {
-    gboolean use_icc = FALSE;
+    case DT_COLORSPACE_SRGB:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT470BG;
+      break;
+    case DT_COLORSPACE_REC709:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
+      break;
+    case DT_COLORSPACE_LIN_REC709:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
+      break;
+    case DT_COLORSPACE_LIN_REC2020:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
+      break;
+    case DT_COLORSPACE_PQ_REC2020:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
+      break;
+    case DT_COLORSPACE_HLG_REC2020:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
+      break;
+    case DT_COLORSPACE_PQ_P3:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
+      break;
+    case DT_COLORSPACE_HLG_P3:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
+      break;
+    default:
+      break;
+  }
 
-    /*
-     * Set these in advance so any upcoming RGB -> YUV use the proper
-     * coefficients.
-     */
-    switch(over_type)
+  dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]\n", dt_colorspaces_get_name(cp->type, filename));
+
+  /* Compliant AVIF readers should prefer ICC profiles, so always try to include it */
+  uint32_t icc_profile_len;
+  cmsSaveProfileToMem(cp->profile, NULL, &icc_profile_len);
+  if(icc_profile_len > 0)
+  {
+    icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
+    if(icc_profile_data == NULL)
     {
-      case DT_COLORSPACE_SRGB:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT470BG;
-          break;
-      case DT_COLORSPACE_REC709:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
-        break;
-      case DT_COLORSPACE_LIN_REC709:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
-        break;
-      case DT_COLORSPACE_LIN_REC2020:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
-        break;
-      case DT_COLORSPACE_PQ_REC2020:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
-        break;
-      case DT_COLORSPACE_HLG_REC2020:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
-        break;
-      case DT_COLORSPACE_PQ_P3:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
-        break;
-      case DT_COLORSPACE_HLG_P3:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
-        break;
-      default:
-        break;
+      dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate %u bytes for ICC profile\n", icc_profile_len);
+      rc = 1;
+      goto out;
     }
-
-    // no change from default, unspecified CICP (2/2/2)
-    if(image->colorPrimaries == AVIF_COLOR_PRIMARIES_UNSPECIFIED)
-    {
-      use_icc = TRUE;
-    }
-
-    dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s - %s]\n",
-             dt_colorspaces_get_name(over_type, filename),
-             use_icc ? "icc" : "nclx");
-
-    if(use_icc)
-    {
-      const dt_colorspaces_color_profile_t *cp =
-        dt_colorspaces_get_output_profile(imgid,
-                                          over_type,
-                                          over_filename);
-      cmsHPROFILE out_profile = cp->profile;
-
-      cmsSaveProfileToMem(out_profile, 0, &icc_profile_len);
-      if(icc_profile_len > 0)
-      {
-        icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
-        if(icc_profile_data == NULL)
-        {
-          rc = 1;
-          goto out;
-        }
-        cmsSaveProfileToMem(out_profile, icc_profile_data, &icc_profile_len);
-        avifImageSetProfileICC(image,
-                               icc_profile_data,
-                               icc_profile_len);
-      }
-    }
+    cmsSaveProfileToMem(cp->profile, icc_profile_data, &icc_profile_len);
+    avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
   }
 
   /*
@@ -454,6 +435,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   avifImageRGBToYUV(image, &rgb);
 
+  /* TODO: workaround; remove when exiv2 implements AVIF write support and use dt_exif_write_blob() at the end */
   if(exif && exif_len > 0)
     avifImageSetMetadataExif(image, exif, exif_len);
 
@@ -516,14 +498,14 @@ int write_image(struct dt_imageio_module_data_t *data,
       {
         width_tile_size = AVIF_MIN_TILE_SIZE * 4;
       }
-      else if (width >= 8192) {
+      else if(width >= 8192) {
         width_tile_size = AVIF_MAX_TILE_SIZE;
       }
       if(height >= 6144)
       {
         height_tile_size = AVIF_MIN_TILE_SIZE * 4;
       }
-      else if (height >= 8192) {
+      else if(height >= 8192) {
         height_tile_size = AVIF_MAX_TILE_SIZE;
       }
 

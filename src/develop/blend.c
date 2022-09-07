@@ -403,11 +403,11 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask, c
   {
     float x = mask[k] / opacity;
     x = 2.f * x - 1.f;
-    if (1.f - brightness <= 0.f)
+    if(1.f - brightness <= 0.f)
       x = mask[k] <= mask_epsilon ? -1.f : 1.f;
-    else if (1.f + brightness <= 0.f)
+    else if(1.f + brightness <= 0.f)
       x = mask[k] >= 1.f - mask_epsilon ? 1.f : -1.f;
-    else if (brightness > 0.f)
+    else if(brightness > 0.f)
     {
       x = (x + brightness) / (1.f - brightness);
       x = fminf(x, 1.f);
@@ -1085,7 +1085,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
         int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
-        if (w < 1) w = 1;
+        if(w < 1) w = 1;
         const float sqrt_eps = 1.0f;
         const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
@@ -1112,7 +1112,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
         int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
-        if (w < 1) w = 1;
+        if(w < 1) w = 1;
         const float sqrt_eps = 1.0f;
         const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 

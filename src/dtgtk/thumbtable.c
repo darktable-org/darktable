@@ -1627,7 +1627,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
       {
         in_list = FALSE;
         gboolean in_list_next = FALSE;
-        for (const GList *l = table->list; l; l = g_list_next(l))
+        for(const GList *l = table->list; l; l = g_list_next(l))
         {
           dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
           if(thumb->imgid == old_hover) in_list = TRUE;

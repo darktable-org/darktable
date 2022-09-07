@@ -305,6 +305,28 @@ static const dt_action_element_def_t *_action_find_elements(dt_action_t *action)
     return definition->elements;
 }
 
+static const gchar *_action_find_effect_combo(dt_action_t *ac, const dt_action_element_def_t *el, dt_action_effect_t ef)
+{
+  if(el->effects == dt_action_effect_selection && ef > DT_ACTION_EFFECT_COMBO_SEPARATOR)
+  {
+    dt_introspection_type_enum_tuple_t *values
+      = g_hash_table_lookup(darktable.control->combo_introspection, ac);
+    if(values)
+      return values[ef - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description;
+    else
+    {
+      gchar **strings
+        = g_hash_table_lookup(darktable.control->combo_list, ac);
+      if(strings)
+        return strings[ef - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1];
+      else
+        return _("combo effect not found");
+    }
+  }
+
+  return NULL;
+}
+
 static gboolean _is_kp_key(guint keycode)
 {
   return keycode >= GDK_KEY_KP_Space && keycode <= GDK_KEY_KP_Equal;
@@ -590,22 +612,9 @@ static gchar *_action_description(dt_shortcut_t *s, int components)
   {
     if(components && (s->element || (!def->fallbacks && def->elements->name)))
       add_hint(", %s", _(def->elements[s->element].name));
-    if(def->elements[s->element].effects == dt_action_effect_selection
-        && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
-    {
-      dt_introspection_type_enum_tuple_t *values
-        = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
-      if(values)
-        add_hint(", %s", _(values[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description));
-      else
-      {
-        gchar **strings
-          = g_hash_table_lookup(darktable.control->combo_list, s->action);
-        if(strings)
-          add_hint(", %s", _(strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]));
-      }
-    }
-    else if(s->effect > 0) add_hint(", %s", _(def->elements[s->element].effects[s->effect]));
+    const gchar *cef = _action_find_effect_combo(s->action, &def->elements[s->element], s->effect);
+    if(cef || s->effect > 0)
+      add_hint(", %s", _(cef ? cef : def->elements[s->element].effects[s->effect]));
   }
 
   if(s->speed != 1.0)
@@ -717,15 +726,16 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
   const dt_action_def_t *def = _action_find_definition(action);
   const gboolean has_fallbacks = def && def->fallbacks;
 
-  if(def && (darktable.control->element || !has_fallbacks) && show_element == 0)
+  const gchar *element_name = NULL;
+  if(def)
   {
-    const gchar *element_name = NULL;
     for(int i = 0; i <= darktable.control->element; i++)
     {
       element_name = def->elements[i].name;
       if(!element_name) break;
     }
-    if(element_name) description = g_markup_escape_text(_(element_name), -1);
+    if(element_name && (darktable.control->element || !has_fallbacks) && show_element == 0)
+      description = g_markup_escape_text(_(element_name), -1);
   }
 
   int num_shortcuts = 0;
@@ -752,6 +762,19 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
 
   if(!num_shortcuts && original_markup && darktable.control->mapping_widget != widget)
     g_clear_pointer(&description, g_free);
+
+#ifdef USE_LUA
+  if(markup_text && action && action->owner != &darktable.control->actions_fallbacks
+     && (def || action->type == DT_ACTION_TYPE_COMMAND || action->type == DT_ACTION_TYPE_PRESET))
+  {
+    gchar *ac_escaped = g_markup_escape_text(_action_full_id(action), -1);
+    gchar *el_escaped = element_name ? g_markup_escape_text(element_name, -1) : g_strdup("");
+    markup_text = dt_util_dstrcat(markup_text, "\n\nlua: <tt>darktable.gui.action(\"%s\", 0, \"%s\", \"\", 1.0)</tt>",
+                                  ac_escaped, el_escaped);
+    g_free(el_escaped);
+    g_free(ac_escaped);
+  }
+#endif
 
   if(description || original_markup || markup_text)
   {
@@ -823,7 +846,7 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
       dt_lib_module_t *lib = (dt_lib_module_t *)owner;
 
       const gchar **views = lib->views(lib);
-      while (*views)
+      while(*views)
       {
         if     (strcmp(*views, "lighttable") == 0)
           vws |= DT_VIEW_LIGHTTABLE;
@@ -1197,25 +1220,11 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
     case SHORTCUT_VIEW_EFFECT:
       if(_shortcut_is_speed(s)) break;
       elements = _action_find_elements(s->action);
-      if(elements)
+      if(elements && s->effect >= 0)
       {
-        if(elements[s->element].effects == dt_action_effect_selection
-           && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
-        {
-          dt_introspection_type_enum_tuple_t *values
-            = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
-          if(values)
-            field_text = g_strdup(_(values[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description));
-          else
-          {
-            gchar **strings
-              = g_hash_table_lookup(darktable.control->combo_list, s->action);
-            if(strings)
-              field_text = g_strdup(_(strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]));
-          }
-        }
-        else if(s->effect > 0 || s->action->type != DT_ACTION_TYPE_FALLBACK)
-          field_text = g_strdup(_(elements[s->element].effects[s->effect]));
+        const gchar *cef = _action_find_effect_combo(s->action, &elements[s->element], s->effect);
+        if(cef || s->effect > 0 || s->action->type != DT_ACTION_TYPE_FALLBACK)
+          field_text = g_strdup(_(cef ? cef : elements[s->element].effects[s->effect]));
         if(s->effect == 0) weight = PANGO_WEIGHT_LIGHT;
         editable = TRUE;
       }
@@ -1476,20 +1485,38 @@ static void _shortcut_row_activated(GtkTreeView *tree_view, GtkTreePath *path, G
 
 static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-  // GDK_KEY_BackSpace moves to parent in tree
-  if(event->keyval == GDK_KEY_Delete || event->keyval == GDK_KEY_KP_Delete)
+  GtkTreeView *view = GTK_TREE_VIEW(widget);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
+
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
-    GtkTreeView *view = GTK_TREE_VIEW(widget);
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
+    GSequenceIter  *shortcut_iter = NULL;
+    gtk_tree_model_get(model, &iter, 0, &shortcut_iter, -1);
 
-    GtkTreeIter iter;
-    GtkTreeModel *model = NULL;
-    if(gtk_tree_selection_get_selected(selection, &model, &iter))
+    if(GPOINTER_TO_UINT(shortcut_iter) >= NUM_CATEGORIES)
     {
-      GSequenceIter  *shortcut_iter = NULL;
-      gtk_tree_model_get(model, &iter, 0, &shortcut_iter, -1);
+#ifdef USE_LUA
+      dt_shortcut_t *s = g_sequence_get(shortcut_iter);
 
-      if(GPOINTER_TO_UINT(shortcut_iter) >= NUM_CATEGORIES)
+      // if control key pressed, copy lua command to clipboard (CTRL+C will work)
+      if(dt_modifier_is(event->state, GDK_CONTROL_MASK) && s->views)
+      {
+        const dt_action_element_def_t *elements = _action_find_elements(s->action);
+        const gchar *cef = elements ? _action_find_effect_combo(s->action, &elements[s->element], s->effect) : NULL;
+        const gchar *el = elements ? elements[s->element].name : NULL;
+        const gchar **ef = elements && s->effect >= 0 ? elements[s->element].effects : NULL;
+
+        gchar *lua_text = g_strdup_printf("dt.gui.action(\"%s\", %d, \"%s\", \"%s%s\", %f)",
+                                          _action_full_id(s->action), s->instance, el ? el : "",
+                                          cef ? "item:" : "", cef ? cef : ef ? ef[s->effect] : "", s->speed);
+        gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), lua_text, -1);
+        g_free(lua_text);
+      }
+#endif
+      // GDK_KEY_BackSpace moves to parent in tree
+      if(event->keyval == GDK_KEY_Delete || event->keyval == GDK_KEY_KP_Delete)
       {
         if(_yes_no_dialog(_("removing shortcut"),
                           _("remove the selected shortcut?")))
@@ -1498,10 +1525,10 @@ static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpo
 
           dt_shortcuts_save(NULL, FALSE);
         }
+
+        return TRUE;
       }
     }
-
-    return TRUE;
   }
 
   return FALSE;
@@ -1823,7 +1850,7 @@ static gboolean _fallback_type_is_relevant(dt_action_t *ac, dt_action_type_t typ
         {
           if(el->effects == dt_action_effect_value) return TRUE;
           el++;
-        } while (el->name);
+        } while(el->name);
       }
     }
   }
@@ -2411,24 +2438,12 @@ static void _shortcuts_save(const gchar *shortcuts_file, const dt_input_device_t
       if(s->effect > (_shortcut_is_move(s) ? DT_ACTION_EFFECT_DEFAULT_MOVE
                                            : DT_ACTION_EFFECT_DEFAULT_KEY))
       {
-        if(elements[s->element].effects == dt_action_effect_selection
-           && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
-        {
-          dt_introspection_type_enum_tuple_t *values
-            = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
-          if(values)
-            fprintf(f, ";item:%s", values[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description);
-          else
-          {
-            gchar **strings
-              = g_hash_table_lookup(darktable.control->combo_list, s->action);
-            if(strings)
-              fprintf(f, ";item:%s", strings[s->effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1]);
-          }
-        }
+        const gchar *cef = _action_find_effect_combo(s->action, &elements[s->element], s->effect);
+        if(cef)
+          fprintf(f, ";item:%s", cef);
         else
           fprintf(f, ";%s", elements[s->element].effects[s->effect]);
-     }
+      }
 
       if(s->instance == -1) fprintf(f, ";last");
       if(s->instance == +1) fprintf(f, ";first");

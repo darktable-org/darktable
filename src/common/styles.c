@@ -660,7 +660,7 @@ void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean
     if(is_overwrite && !duplicate)
       dt_history_delete_on_image_ext(imgid, FALSE);
 
-    for (GList *style = styles; style; style = g_list_next(style))
+    for(GList *style = styles; style; style = g_list_next(style))
     {
       dt_styles_apply_to_image((char*)style->data, duplicate, is_overwrite, imgid);
     }
@@ -848,7 +848,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
 
-    if (DT_IOP_ORDER_INFO)
+    if(DT_IOP_ORDER_INFO)
       fprintf(stderr,"\n^^^^^ Apply style on image %i, history size %i",imgid,dev_dest->history_end);
 
     // go through all entries in style
@@ -898,7 +898,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
 
     g_list_free_full(si_list, dt_style_item_free);
 
-    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv --> look for written history below\n");
+    if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv --> look for written history below\n");
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 

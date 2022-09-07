@@ -302,11 +302,11 @@ lanczos(float width, float t)
 {
   float r;
 
-  if (t<-width || t>width)
+  if(t<-width || t>width)
   {
     r = 0.f;
   }
-  else if (t>-DT_LANCZOS_EPSILON && t<DT_LANCZOS_EPSILON)
+  else if(t>-DT_LANCZOS_EPSILON && t<DT_LANCZOS_EPSILON)
   {
     r = 1.f;
   }

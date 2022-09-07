@@ -117,7 +117,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -126,7 +126,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = 4;
 
   float *restrict img_tmp = NULL;
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, ch, &img_tmp, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, ch, &img_tmp, 0))
   {
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     dt_control_log(_("module overexposed failed in buffer allocation"));

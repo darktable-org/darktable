@@ -78,20 +78,17 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 #endif
   int rc = 1; // default to error
 
-  if(imgid > 0)
+  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  cmsSaveProfileToMem(out_profile, NULL, &profile_len);
+  if(profile_len > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
-    cmsSaveProfileToMem(out_profile, 0, &profile_len);
-    if(profile_len > 0)
+    profile = malloc(profile_len);
+    if(!profile)
     {
-      profile = malloc(profile_len);
-      if(!profile)
-      {
-        rc = 1;
-        goto exit;
-      }
-      cmsSaveProfileToMem(out_profile, profile, &profile_len);
+      rc = 1;
+      goto exit;
     }
+    cmsSaveProfileToMem(out_profile, profile, &profile_len);
   }
 
   uint16_t n_pages = 1;
@@ -818,6 +815,8 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(gui->compress, _("uncompressed"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate"));
   dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor"));
+  dt_bauhaus_combobox_set_default(gui->compress,
+                                  dt_confgen_get_int("plugins/imageio/format/tiff/compress", DT_DEFAULT));
   dt_bauhaus_combobox_set(gui->compress, compress);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
 
@@ -857,6 +856,7 @@ void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)self->gui_data;
   dt_bauhaus_combobox_set(gui->bpp, 0); //8bpp
+  dt_bauhaus_combobox_set(gui->compress, dt_confgen_get_int("plugins/imageio/format/tiff/compress", DT_DEFAULT));
   dt_bauhaus_slider_set(gui->compresslevel, dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_DEFAULT));
   dt_bauhaus_combobox_set(gui->shortfiles, dt_confgen_get_int("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
 }

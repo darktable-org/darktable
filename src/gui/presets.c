@@ -1002,11 +1002,11 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
 static gboolean _menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventButton *event,
                                                  dt_iop_module_t *module)
 {
-  if (event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
+  if(event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
   {
     _menuitem_pick_preset(menuitem, module);
   }
-  else if (event->button == 3)
+  else if(event->button == 3)
   {
     dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
     if(new_module) _menuitem_pick_preset(menuitem, new_module);
@@ -1523,7 +1523,7 @@ void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const in
       &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, maker, -1, SQLITE_TRANSIENT);
-  if (*model)
+  if(*model)
   {
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, model, -1, SQLITE_TRANSIENT);
   }
@@ -1531,7 +1531,7 @@ void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const in
   {
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, "%", -1, SQLITE_TRANSIENT);
   }
-  if (*lens)
+  if(*lens)
   {
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, lens, -1, SQLITE_TRANSIENT);
   }

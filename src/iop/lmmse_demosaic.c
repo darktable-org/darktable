@@ -247,7 +247,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
         }
 
         // apply low pass filter on differential colors
-        for (int rr = 4; rr < last_rr - 4; rr++)
+        for(int rr = 4; rr < last_rr - 4; rr++)
         {
           for(int cc = 4; cc < last_cc - 4; cc++)
           {

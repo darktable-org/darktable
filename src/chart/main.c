@@ -1057,7 +1057,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   double avgerr, maxerr;
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff, &avgerr, &maxerr);
 
-  if (self->result_label != NULL)
+  if(self->result_label != NULL)
   {
     // TODO: is the rank interesting, too?
     char *result_string = g_strdup_printf(_("average dE: %.02f\nmax dE: %.02f"), avgerr, maxerr);
