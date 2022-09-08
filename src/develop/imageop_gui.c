@@ -300,11 +300,11 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
   if(paint)
   {
     button = dtgtk_button_new(paint, paintflags, NULL);
-    gtk_widget_set_tooltip_text(button, _(label));
+    gtk_widget_set_tooltip_text(button, Q_(label));
   }
   else
   {
-    button = gtk_button_new_with_label(_(label));
+    button = gtk_button_new_with_label(Q_(label));
     gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
   }
 

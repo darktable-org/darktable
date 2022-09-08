@@ -335,10 +335,11 @@ GtkWidget *dt_bauhaus_combobox_new(dt_iop_module_t *self);
 GtkWidget *dt_bauhaus_combobox_new_action(dt_action_t *self);
 GtkWidget *dt_bauhaus_combobox_new_full(dt_action_t *action, const char *section, const char *label, const char *tip,
                                         int pos, GtkCallback callback, gpointer data, const char **texts);
-#define DT_BAUHAUS_COMBOBOX_NEW_FULL(widget, action, section, label, tip, pos, callback, data, ...)          \
-{                                                                                                            \
-  static const gchar *texts[] = { __VA_ARGS__, NULL };                                                       \
-  widget = dt_bauhaus_combobox_new_full(DT_ACTION(action), section, label, tip, pos, callback, data, texts); \
+#define DT_BAUHAUS_COMBOBOX_NEW_FULL(widget, action, section, label, tip, pos, callback, data, ...) \
+{                                                                                                   \
+  static const gchar *texts[] = { __VA_ARGS__, NULL };                                              \
+  widget = dt_bauhaus_combobox_new_full(DT_ACTION(action), section, label, tip, pos,                \
+                                        (GtkCallback)callback, data, texts);                        \
 }
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text);
