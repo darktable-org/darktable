@@ -437,8 +437,6 @@ void dt_masks_calc_rawdetail_mask(float *const src, float *const out, float *con
                                   const int height, const dt_aligned_pixel_t wb);
 void dt_masks_calc_detail_mask(float *const src, float *const out, float *const tmp, const int width, const int height, const float threshold, const gboolean detail);
 
-void dt_masks_blur_approx_weighed(float *const src, float *const out, float *const weight, const int width, const int height);
-
 /** the output data are blurred-val * gain and are clipped to be within 0 to clip
     The returned int might be used to expand the border as this depends on sigma */
 int dt_masks_blur_fast(float *const src, float *const out, const int width, const int height, const float sigma, const float gain, const float clip);

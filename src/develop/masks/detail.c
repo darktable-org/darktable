@@ -85,7 +85,7 @@
 */
 
 // We don't want to use the SIMD version as we might access unaligned memory
-static inline float sqrf(float a)
+static inline float _sqrf(float a)
 {
   return a * a;
 }
@@ -99,10 +99,10 @@ void dt_masks_extend_border(float *const restrict mask, const int width, const i
   dt_omp_sharedconst(width, height, border) \
   schedule(simd:static) aligned(mask : 64)
  #endif
-  for(int row = border; row < height - border; row++)
+  for(size_t row = border; row < height - border; row++)
   {
-    const int idx = row * width;
-    for(int i = 0; i < border; i++)
+    const size_t idx = row * width;
+    for(size_t i = 0; i < border; i++)
     {
       mask[idx + i] = mask[idx + border];
       mask[idx + width - i - 1] = mask[idx + width - border -1];
@@ -114,11 +114,11 @@ void dt_masks_extend_border(float *const restrict mask, const int width, const i
   dt_omp_sharedconst(width, height, border) \
   schedule(simd:static) aligned(mask : 64)
  #endif
-  for(int col = 0; col < width; col++)
+  for(size_t col = 0; col < width; col++)
   {
     const float top = mask[border * width + MIN(width - border - 1, MAX(col, border))];
     const float bot = mask[(height - border - 1) * width + MIN(width - border - 1, MAX(col, border))];
-    for(int i = 0; i < border; i++)
+    for(size_t i = 0; i < border; i++)
     {
       mask[col + i * width] = top;
       mask[col + (height - i - 1) * width] = bot;
@@ -129,16 +129,16 @@ void dt_masks_extend_border(float *const restrict mask, const int width, const i
 void _masks_blur_5x5_coeff(float *c, const float sigma)
 {
   float kernel[5][5];
-  const float temp = -2.0f * sqrf(sigma);
-  const float range = sqrf(3.0f * 0.84f);
+  const float temp = -2.0f * _sqrf(sigma);
+  const float range = _sqrf(3.0f * 0.84f);
   float sum = 0.0f;
   for(int k = -2; k <= 2; k++)
   {
     for(int j = -2; j <= 2; j++)
     {
-      if((sqrf(k) + sqrf(j)) <= range)
+      if((_sqrf(k) + _sqrf(j)) <= range)
       {
-        kernel[k + 2][j + 2] = expf((sqrf(k) + sqrf(j)) / temp);
+        kernel[k + 2][j + 2] = expf((_sqrf(k) + _sqrf(j)) / temp);
         sum += kernel[k + 2][j + 2];
       }
       else
@@ -169,16 +169,16 @@ void _masks_blur_5x5_coeff(float *c, const float sigma)
 void dt_masks_blur_9x9_coeff(float *c, const float sigma)
 {
   float kernel[9][9];
-  const float temp = -2.0f * sqrf(sigma);
-  const float range = sqrf(3.0f * 1.5f);
+  const float temp = -2.0f * _sqrf(sigma);
+  const float range = _sqrf(3.0f * 1.5f);
   float sum = 0.0f;
   for(int k = -4; k <= 4; k++)
   {
     for(int j = -4; j <= 4; j++)
     {
-      if((sqrf(k) + sqrf(j)) <= range)
+      if((_sqrf(k) + _sqrf(j)) <= range)
       {
-        kernel[k + 4][j + 4] = expf((sqrf(k) + sqrf(j)) / temp);
+        kernel[k + 4][j + 4] = expf((_sqrf(k) + _sqrf(j)) / temp);
         sum += kernel[k + 4][j + 4];
       }
       else
@@ -228,22 +228,22 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
   float blurmat[13];
   dt_masks_blur_9x9_coeff(blurmat, sigma);
 
-  const int w1 = width;
-  const int w2 = 2*width;
-  const int w3 = 3*width;
-  const int w4 = 4*width;
+  const size_t w1 = width;
+  const size_t w2 = 2*width;
+  const size_t w3 = 3*width;
+  const size_t w4 = 4*width;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(blurmat, src, out) \
   dt_omp_sharedconst(width, height, w1, w2, w3, w4) \
   schedule(simd:static) aligned(src, out : 64)
  #endif
-  for(int row = 4; row < height - 4; row++)
+  for(size_t row = 4; row < height - 4; row++)
   {
-    for(int col = 4; col < width - 4; col++)
+    for(size_t col = 4; col < width - 4; col++)
     {
-      const int i = row * width + col;
-      out[i] = fminf(1.0f, fmaxf(0.0f, FAST_BLUR_9));
+      const size_t i = row * width + col;
+      out[row * width + col] = fminf(1.0f, fmaxf(0.0f, FAST_BLUR_9));
     }
   }
   dt_masks_extend_border(out, width, height, 4);
@@ -252,16 +252,16 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
 void _masks_blur_13x13_coeff(float *c, const float sigma)
 {
   float kernel[13][13];
-  const float temp = -2.0f * sqrf(sigma);
-  const float range = sqrf(3.0f * 2.0f);
+  const float temp = -2.0f * _sqrf(sigma);
+  const float range = _sqrf(3.0f * 2.0f);
   float sum = 0.0f;
   for(int k = -6; k <= 6; k++)
   {
     for(int j = -6; j <= 6; j++)
     {
-      if((sqrf(k) + sqrf(j)) <= range)
+      if((_sqrf(k) + _sqrf(j)) <= range)
       {
-        kernel[k + 6][j + 6] = expf((sqrf(k) + sqrf(j)) / temp);
+        kernel[k + 6][j + 6] = expf((_sqrf(k) + _sqrf(j)) / temp);
         sum += kernel[k + 6][j + 6];
       }
       else
@@ -321,12 +321,12 @@ void _masks_blur_13x13_coeff(float *c, const float sigma)
 int dt_masks_blur_fast(float *const restrict src, float *const restrict out, const int width, const int height, const float sigma, const float gain, const float clip)
 {
   float blurmat[19];
-  const int w1 = width;
-  const int w2 = 2*width;
-  const int w3 = 3*width;
-  const int w4 = 4*width;
-  const int w5 = 5*width;
-  const int w6 = 6*width;
+  const size_t w1 = width;
+  const size_t w2 = 2*width;
+  const size_t w3 = 3*width;
+  const size_t w4 = 4*width;
+  const size_t w5 = 5*width;
+  const size_t w6 = 6*width;
   if(sigma <= 0.0f)
   {
 #ifdef _OPENMP
@@ -335,7 +335,7 @@ int dt_masks_blur_fast(float *const restrict src, float *const restrict out, con
   dt_omp_sharedconst(gain, width, height, clip) \
   schedule(simd:static) aligned(src, out : 64)
 #endif
-    for(int i = 0; i < width * height; i++)
+    for(size_t i = 0; i < width * height; i++)
       out[i] = fmaxf(0.0f, fminf(clip, gain * src[i]));
     return 0;
   }
@@ -349,10 +349,13 @@ int dt_masks_blur_fast(float *const restrict src, float *const restrict out, con
   shared(blurmat) \
   schedule(simd:static) aligned(src, out : 64)
 #endif
-    for(int row = 2; row < height - 2; row++)
+    for(size_t row = 2; row < height - 2; row++)
     {
-      for(int col = 2, i = row * width + col; col < width - 2; col++, i++)
+      for(size_t col = 2; col < width - 2; col++)
+      {
+        const size_t i = row * width + col;
         out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_5));
+      }
     }
     return 2;
   }
@@ -366,10 +369,13 @@ int dt_masks_blur_fast(float *const restrict src, float *const restrict out, con
   shared(blurmat) \
   schedule(simd:static) aligned(src, out : 64)
  #endif
-    for(int row = 4; row < height - 4; row++)
+    for(size_t row = 4; row < height - 4; row++)
     {
-      for(int col = 4, i = row * width + col; col < width - 4; col++, i++)
+      for(size_t col = 4; col < width - 4; col++)
+      {
+        const size_t i = row * width + col;
         out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_9));
+      }
     }
     return 4;
   }
@@ -381,66 +387,27 @@ int dt_masks_blur_fast(float *const restrict src, float *const restrict out, con
   shared(blurmat) \
   schedule(simd:static) aligned(src, out : 64)
  #endif
-  for(int row = 6; row < height - 6; row++)
+  for(size_t row = 6; row < height - 6; row++)
   {
-    for(int col = 6, i = row * width + col; col < width - 6; col++, i++)
-      out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_13));
-  }
-  return 6;
-}
-
-void dt_masks_blur_approx_weighed(float *const restrict src, float *const restrict out, float *const restrict weight, const int width, const int height)
-{
-  #define maxmat 50
-  // We precalculate the kernel coeffs for all sigmas and will later choose the appropriate kernel & algo for every location in the mask.
-  // sigmas are clipped to be below 5.0
-  float coeffs[maxmat][20];
-
-  for(int i = 1; i < 9; i++)
-    _masks_blur_5x5_coeff(coeffs[i-1], 0.1f * (float) (i));
-  for(int i = 9; i < 16; i++)
-    dt_masks_blur_9x9_coeff(coeffs[i-1], 0.1f * (float) (i));
-  for(int i = 16; i <= maxmat; i++)
-    _masks_blur_13x13_coeff(coeffs[i-1], 0.1f * (float) (i));
-
-  const int w1 = width;
-  const int w2 = 2*width;
-  const int w3 = 3*width;
-  const int w4 = 4*width;
-  const int w5 = 5*width;
-  const int w6 = 6*width;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, out, weight) \
-  dt_omp_sharedconst(width, height, w1, w2, w3, w4, w5, w6) \
-  shared(coeffs) \
-  schedule(simd:static) aligned(src, out, weight : 64)
- #endif
-  for(int row = 6; row < height - 6; row++)
-  {
-    for(int col = 6; col < width - 6; col++)
+    for(size_t col = 6; col < width - 6; col++)
     {
-      const int i = row * width + col;
-      const int d = MIN(maxmat, MAX(0, ((int) (10.0f * weight[i])))) ;
-      float *blurmat = coeffs[d-1];
-      if(d == 0)      out[i] = src[i];
-      else if(d < 9)  out[i] = FAST_BLUR_5;
-      else if(d < 16) out[i] = FAST_BLUR_9;
-      else            out[i] = FAST_BLUR_13;
+      const size_t i = row * width + col;
+      out[i] = fmaxf(0.0f, fminf(clip, gain * FAST_BLUR_13));
     }
   }
+  return 6;
 }
 
 void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restrict mask, float *const restrict tmp,
                                   const int width, const int height, const dt_aligned_pixel_t wb)
 {
-  const int msize = width * height;
+  const size_t msize = width * height;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(tmp, src, msize, wb) \
   schedule(simd:static) aligned(tmp, src : 64)
 #endif
-  for(int idx =0; idx < msize; idx++)
+  for(size_t idx =0; idx < msize; idx++)
   {
     const float val = 0.333333333f * (fmaxf(src[4 * idx], 0.0f) / wb[0] + fmaxf(src[4 * idx + 1], 0.0f) / wb[1] + fmaxf(src[4 * idx + 2], 0.0f) / wb[2]);
     tmp[idx] = sqrtf(val); // add a gamma. sqrtf should make noise variance the same for all image
@@ -452,10 +419,11 @@ void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restri
   dt_omp_firstprivate(mask, tmp, width, height, scale) \
   schedule(simd:static) aligned(mask, tmp : 64)
  #endif
-  for(int row = 1; row < height - 1; row++)
+  for(size_t row = 1; row < height - 1; row++)
   {
-    for(int col = 1, idx = row * width + col; col < width - 1; col++, idx++)
+    for(size_t col = 1; col < width - 1; col++)
     {
+      const size_t idx = row * width + col;
       // scharr operator
       const float gx = 47.0f * (tmp[idx-width-1] - tmp[idx-width+1])
                     + 162.0f * (tmp[idx-1]       - tmp[idx+1])
@@ -463,17 +431,14 @@ void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restri
       const float gy = 47.0f * (tmp[idx-width-1] - tmp[idx+width-1])
                     + 162.0f * (tmp[idx-width]   - tmp[idx+width])
                      + 47.0f * (tmp[idx-width+1] - tmp[idx+width+1]);
-      const float gradient_magnitude = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
+      const float gradient_magnitude = sqrtf(_sqrf(gx / 256.0f) + _sqrf(gy / 256.0f));
       mask[idx] = scale * gradient_magnitude;
-      // Original code from rt
-      // tmp[idx] = scale * sqrtf(sqrf(src[idx+1] - src[idx-1]) + sqrf(src[idx + width]   - src[idx - width]) +
-      //                          sqrf(src[idx+2] - src[idx-2]) + sqrf(src[idx + 2*width] - src[idx - 2*width]));
     }
   }
   dt_masks_extend_border(mask, width, height, 1);
 }
 
-static inline float calcBlendFactor(float val, float threshold)
+static inline float _calcBlendFactor(float val, float threshold)
 {
     // sigmoid function
     // result is in ]0;1] range
@@ -483,15 +448,15 @@ static inline float calcBlendFactor(float val, float threshold)
 
 void dt_masks_calc_detail_mask(float *const restrict src, float *const restrict out, float *const restrict tmp, const int width, const int height, const float threshold, const gboolean detail)
 {
-  const int msize = width * height;
+  const size_t msize = width * height;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(src, tmp, msize, threshold, detail, out) \
   schedule(simd:static) aligned(src, tmp, out : 64)
 #endif
-  for(int idx = 0; idx < msize; idx++)
+  for(size_t idx = 0; idx < msize; idx++)
   {
-    const float blend = calcBlendFactor(src[idx], threshold);
+    const float blend = _calcBlendFactor(src[idx], threshold);
     tmp[idx] = detail ? blend : 1.0f - blend;
   }
   dt_masks_blur_9x9(tmp, out, width, height, 2.0f);
