@@ -525,7 +525,7 @@ void gui_init(dt_lib_module_t *self)
                                            _("synchronize the image's XMP and remove the local copy"), 0, 0);
   gtk_grid_attach(grid, d->uncache_button, 2, line++, 2, 1);
 
-  d->group_button = dt_action_button_new(self, C_("selected images action", "group"), button_clicked, GINT_TO_POINTER(10),
+  d->group_button = dt_action_button_new(self, NC_("selected images action", "group"), button_clicked, GINT_TO_POINTER(10),
                                          _("add selected images to expanded group or create a new one"),
                                          GDK_KEY_g, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->group_button, 0, line, 2, 1);
@@ -595,14 +595,13 @@ void gui_init(dt_lib_module_t *self)
                                                   _("clear selected metadata on selected images"), 0, 0);
   gtk_grid_attach(grid, d->clear_metadata_button, 4, line++, 2, 1);
 
-  GtkWidget *pastemode = dt_bauhaus_combobox_new_action(DT_ACTION(meta));
-  dt_bauhaus_widget_set_label(pastemode, NULL, N_("mode"));
-  dt_bauhaus_combobox_add(pastemode, _("merge"));
-  dt_bauhaus_combobox_add(pastemode, _("overwrite"));
-  gtk_widget_set_tooltip_text(pastemode, _("how to handle existing metadata"));
+  GtkWidget *pastemode = NULL;
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(pastemode, self, NULL, N_("mode"),
+                               _("how to handle existing metadata"),
+                               dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"),
+                               pastemode_combobox_changed, self,
+                               N_("merge"), N_("overwrite"));
   gtk_grid_attach(grid, pastemode, 0, line++, 6, 1);
-  dt_bauhaus_combobox_set(pastemode, dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"));
-  g_signal_connect(G_OBJECT(pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), self);
 
   d->refresh_button = dt_action_button_new(self, N_("refresh EXIF"), button_clicked, GINT_TO_POINTER(14),
                                            _("update image information to match changes to file"), 0, 0);

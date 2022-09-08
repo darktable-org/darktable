@@ -850,8 +850,8 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
                                   ? g_strdup_printf("%s\t%d\t\u2192\t%d", label,                 \
                                                     old_blend->field, hitem->blend_params->field)\
                                   : g_strdup_printf("%s\t%s\t\u2192\t%s", label,                 \
-                                                    _(g_dpgettext2(NULL, "blendmode", old_str)), \
-                                                    _(g_dpgettext2(NULL, "blendmode", new_str)));\
+                                                    Q_(old_str),                                 \
+                                                    Q_(new_str));                                \
       }
 
     add_blend_history_change_enum(blend_cst, _("colorspace"), dt_develop_blend_colorspace_names);
