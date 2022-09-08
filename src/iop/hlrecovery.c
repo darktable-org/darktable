@@ -350,11 +350,6 @@ static void _calc_distance_ring(const int width, const int xmin, const int xmax,
   }
 }
 
-static inline float _intp(float a, float b, float c)
-{
-  return a * (b - c) + c;
-}
-
 static void add_poisson_noise(const int width, const int height, float *restrict lum, dt_iop_segmentation_t *seg, const int id, const float noise_level)
 {
   const int xmin = MAX(seg->xmin[id], HLBORDER);
@@ -373,10 +368,8 @@ static void add_poisson_noise(const int width, const int height, float *restrict
       const size_t v = row * width + col;
       if(seg->data[v] == id)
       {
-        const float ival = lum[v];
-        const float pnoise = poisson_noise(ival * noise_level, noise_level, col & 1, state);
-        const float noise = ival + fabsf(pnoise - ival);
-        lum[v] = _intp(0.40f, noise, ival);
+        const float pnoise = poisson_noise(lum[v] * noise_level, noise_level, col & 1, state);
+        lum[v] += pnoise;
       }
     }
   }
