@@ -2357,7 +2357,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->recovery, _("approximate lost data in regions with all photosites clipped, the effect depends on segment size and border gradients.\n"
                                              "choose a mode tuned for segment size or the generic mode that tries to find best settings for every segment.\n"
                                              "small means areas with a diameter less than 25 pixels, large is best for greater than 100\n"
-                                             "the *flat* modes ignore narrow unclipped structures."));
+                                             "the flat modes ignore narrow unclipped structures."));
 
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
   gtk_widget_set_tooltip_text(g->strength, _("set strenth of reconstruction in regions with all photosites clipped"));
