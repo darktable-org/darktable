@@ -370,7 +370,6 @@ void dt_vprint(dt_debug_thread_t thread, const char *msg, ...) __attribute__((fo
 int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();
-size_t dt_get_iopcache_mem();
 
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline void* dt_calloc_align(size_t alignment, size_t size)
