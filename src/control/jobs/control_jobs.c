@@ -2115,10 +2115,20 @@ static int _control_import_image_copy(const char *filename,
     utime(output, &times); // set origin file timestamps
 #else
     struct timeval times[2];
-    times[0].tv_sec = (long)statbuf.st_atim.tv_sec;
+    times[0].tv_sec = statbuf.st_atime;
+    times[1].tv_sec = statbuf.st_mtime;
+#ifdef __APPLE__
+#ifndef _POSIX_SOURCE
+    times[0].tv_usec = statbuf.st_atimespec.tv_nsec * 0.001;
+    times[1].tv_usec = statbuf.st_mtimespec.tv_nsec * 0.001;
+#else
+    times[0].tv_usec = statbuf.st_atimensec * 0.001;
+    times[1].tv_usec = statbuf.st_mtimensec * 0.001;
+#endif
+#else
     times[0].tv_usec = statbuf.st_atim.tv_nsec * 0.001;
-    times[1].tv_sec = (long)statbuf.st_mtim.tv_sec;
     times[1].tv_usec = statbuf.st_mtim.tv_nsec * 0.001;
+#endif
     utimes(output, times); // set origin file timestamps
 #endif
 
