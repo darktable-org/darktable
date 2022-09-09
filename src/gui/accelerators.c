@@ -2844,12 +2844,12 @@ static void _lookup_mapping_widget()
     _sc.element = darktable.control->element;
 }
 
-static gboolean _widget_invisible(GtkWidget *w)
+gboolean dt_action_widget_invisible(GtkWidget *w)
 {
   GtkWidget *p = gtk_widget_get_parent(w);
   GtkStyleContext *context = gtk_widget_get_style_context(p);
   return (!GTK_IS_WIDGET(w) || !gtk_widget_get_visible(w)
-          || (gtk_style_context_has_class(context, "plugin-ui-main") && !gtk_widget_get_visible(p)));
+          || (!gtk_style_context_has_class(context, "dt_plugin_ui_main") && !gtk_widget_get_visible(p)));
 }
 
 gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboolean *fully_matched, const dt_action_def_t *def, char **fb_log)
@@ -3092,7 +3092,7 @@ static float _process_action(dt_action_t *action, int instance,
     if(definition && definition->process
         && (action->type < DT_ACTION_TYPE_WIDGET
             || definition->no_widget
-            || (action_target && !_widget_invisible(action_target))))
+            || (action_target && !dt_action_widget_invisible(action_target))))
     {
       if(!isnan(move_size) &&
          (definition->elements[element].effects != dt_action_effect_value || effect != DT_ACTION_EFFECT_SET))
