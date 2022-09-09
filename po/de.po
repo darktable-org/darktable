@@ -9425,7 +9425,7 @@ msgstr "aktualisieren"
 #: ../src/gui/accelerators.c:146 ../src/libs/tools/global_toolbox.c:61
 #: ../src/libs/tools/global_toolbox.c:512
 msgid "preferences"
-msgstr "Voreinstellungen"
+msgstr "Einstellungen"
 
 #: ../src/gui/accelerators.c:150
 msgid "apply on new instance"
@@ -10584,7 +10584,7 @@ msgstr "CSS-Anweisungen zur Designanpassung hier eingeben"
 
 #: ../src/gui/preferences.c:484
 msgid "darktable preferences"
-msgstr "darktable-Voreinstellungen"
+msgstr "darktable-Einstellungen"
 
 #: ../src/gui/preferences.c:557
 msgid "darktable needs to be restarted for settings to take effect"
@@ -10882,21 +10882,21 @@ msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"Voreinstellung „%s” existiert bereits.\n"
+"Stil „%s” existiert bereits.\n"
 "Soll sie überschrieben werden?"
 
 #: ../src/gui/styles_dialog.c:213 ../src/libs/styles.c:422
 #: ../src/libs/styles.c:605
 msgid "overwrite style?"
-msgstr "Voreinstellung überschreiben?"
+msgstr "Stil überschreiben?"
 
 #: ../src/gui/styles_dialog.c:242 ../src/gui/styles_dialog.c:301
 msgid "please give style a name"
-msgstr "Gib der Voreinstellung einen Namen"
+msgstr "Gib dem Stil einen Namen"
 
 #: ../src/gui/styles_dialog.c:246 ../src/gui/styles_dialog.c:305
 msgid "unnamed style"
-msgstr "unbenannte Voreinstellung"
+msgstr "unbenannter Stil"
 
 #: ../src/gui/styles_dialog.c:293
 #, c-format
@@ -19766,7 +19766,7 @@ msgstr "Speichern"
 #: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1302
 #: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3495
 msgid "preferences..."
-msgstr "Voreinstellungen"
+msgstr "Einstellungen..."
 
 #: ../src/libs/collect.c:3128 ../src/libs/filtering.c:1397
 msgid "AND"
@@ -22413,35 +22413,35 @@ msgstr "Gruppe nach rechts verschieben"
 
 #: ../src/libs/modulegroups.c:3506
 msgid "rename preset"
-msgstr "Voreinstellung umbenennen"
+msgstr "Modullayout umbenennen"
 
 #: ../src/libs/modulegroups.c:3513
 msgid "new preset name:"
-msgstr "neuer Name der Voreinstellung:"
+msgstr "neuer Name des Modullayouts:"
 
 #: ../src/libs/modulegroups.c:3514
 msgid "a preset with this name already exists!"
-msgstr "Voreinstellung mit dem Namen „%s” existiert bereits!"
+msgstr "Modullayout mit dem Namen „%s” existiert bereits!"
 
 #: ../src/libs/modulegroups.c:3859
 msgid "preset: "
-msgstr "Voreinstellung:"
+msgstr "Modullayout:"
 
 #: ../src/libs/modulegroups.c:3866
 msgid "remove the preset"
-msgstr "Voreinstellung entfernen"
+msgstr "Modullayout entfernen"
 
 #: ../src/libs/modulegroups.c:3868
 msgid "duplicate the preset"
-msgstr "Voreinstellung duplizieren"
+msgstr "Modullayout duplizieren"
 
 #: ../src/libs/modulegroups.c:3870
 msgid "rename the preset"
-msgstr "Voreinstellung umbenennen"
+msgstr "Modullayout umbenennen"
 
 #: ../src/libs/modulegroups.c:3872
 msgid "create a new empty preset"
-msgstr "neue leere Voreinstellung"
+msgstr "neues leeres Modullayout erstellen"
 
 #: ../src/libs/modulegroups.c:3880
 msgid "show search line"
@@ -22457,7 +22457,7 @@ msgstr "alle Verlaufsmodule in Gruppe der aktiven Module anzeigen"
 
 #: ../src/libs/modulegroups.c:3898
 msgid "auto-apply this preset"
-msgstr "Voreinstellung automatisch anwenden"
+msgstr "Modullayout automatisch anwenden"
 
 #: ../src/libs/modulegroups.c:3913
 msgid "module groups"
@@ -22467,7 +22467,7 @@ msgstr "Modulgruppen"
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
-"Dies ist eine eingebaute unveränderbare Voreinstellung, zum Ändern zunächst "
+"Dies ist ein eingebautes unveränderbares Modullayout, zum Ändern zunächst "
 "duplizieren."
 
 #: ../src/libs/navigation.c:62
@@ -23560,7 +23560,7 @@ msgstr ""
 
 #: ../src/libs/tools/global_toolbox.c:514
 msgid "show global preferences"
-msgstr "zeige globale Voreinstellungen"
+msgstr "zeige globale Einstellungen"
 
 #: ../src/libs/tools/global_toolbox.c:646
 #, c-format
