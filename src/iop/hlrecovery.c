@@ -91,7 +91,7 @@ The chosen segmentation algorithm works like this:
 /* Ideas still to be checked 2022/09
    1. can we check for close segments after combining in other ways to find a common best candidate?
    2. the "best candidate" for bad segments is just so-so. Can we look for close segments here too and take that candidate?
-   3. Should the weighing function also take the other planes in account? 
+   3. Should the weighing function also take the other planes in account?
 */
 
 #define HL_SENSOR_PLANES 4
@@ -160,7 +160,7 @@ static void _prepare_smooth_singles(char *lmask, float * restrict src, const flo
   if(tmp == NULL || mtmp == NULL) return;
 
   dt_iop_image_copy(tmp, src, width * height);
-  memcpy(mtmp, lmask, width * height * sizeof (char));   
+  memcpy(mtmp, lmask, width * height * sizeof (char));
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -198,7 +198,7 @@ static void _prepare_smooth_singles(char *lmask, float * restrict src, const flo
       }
     }
   }
-  memcpy(lmask, mtmp, width * height * sizeof(char));   
+  memcpy(lmask, mtmp, width * height * sizeof(char));
   dt_iop_image_copy(src, tmp, width * height);
 
   dt_masks_extend_border(src, width, height, HLBORDER);
@@ -214,7 +214,7 @@ static void _calc_plane_candidates(const float * restrict s, char *lmask, const 
     seg->val2[id] = clipval;
   }
 
-  // if we disable the candidating by using a high refval we can just keep segment pseudo-candidates right now for performance 
+  // if we disable the candidating by using a high refval we can just keep segment pseudo-candidates right now for performance
   if(refval >= 1.0f) return;
 
 #ifdef _OPENMP
@@ -241,7 +241,7 @@ static void _calc_plane_candidates(const float * restrict s, char *lmask, const 
           {
             testweight = wht;
             testref = pos;
-          }        
+          }
         }
       }
     }
@@ -312,7 +312,7 @@ static void _initial_gradients(const size_t w, const size_t height, float *restr
   }
 }
 
-static void _calc_distance_ring(const int width, const int xmin, const int xmax, const int ymin, const int ymax, float *restrict gradient, float *restrict distance, const float attenuate, const float dist, dt_iop_segmentation_t *seg, const int id)  
+static void _calc_distance_ring(const int width, const int xmin, const int xmax, const int ymin, const int ymax, float *restrict gradient, float *restrict distance, const float attenuate, const float dist, dt_iop_segmentation_t *seg, const int id)
 {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
@@ -324,7 +324,7 @@ static void _calc_distance_ring(const int width, const int xmin, const int xmax,
   {
     for(size_t col = xmin; col < xmax; col++)
     {
-      const size_t v = row * width + col;       
+      const size_t v = row * width + col;
       const float dv = distance[v];
       if((dv >= dist) && (dv < dist + 1.5f) && (id == seg->data[v]))
       {
@@ -398,7 +398,7 @@ static float _segment_maxdistance(const int width, const int height, float *rest
       if(id == seg->data[v])
         max_distance = fmaxf(max_distance, distance[v]);
     }
-  }  
+  }
   return max_distance;
 }
 
@@ -410,7 +410,7 @@ static float _segment_attenuation(dt_iop_segmentation_t *seg, const int id, cons
   else
   {
     const float maxdist = fmaxf(1.0f, seg->val1[id]);
-    return fminf(1.5f,  0.8f + (3.0f / maxdist)); 
+    return fminf(1.5f,  0.8f + (3.0f / maxdist));
   }
 }
 
@@ -477,7 +477,7 @@ static void _segment_gradients(const int width, const int height, float *restric
       if(id == seg->data[v]) gradient[v] *= strength;
     }
   }
-} 
+}
 
 static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
@@ -519,7 +519,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   dt_times_t time0 = { 0 }, time1 = { 0 }, time2 = { 0 }, time3 = { 0 };
   dt_get_times(&time0);
 
-  dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2], 0.0f};  
+  dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2], 0.0f};
   // make sure we have wb coeffs
   if((icoeffs[0] < 0.1f) || (icoeffs[1] < 0.1f) || (icoeffs[2] < 0.1f))
   {
@@ -546,7 +546,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
     refavg[i] = plane[HL_SENSOR_PLANES + i];
   }
 
-/* 
+/*
   We fill the planes [0-3] by the data from the photosites.
   These will be modified by the reconstruction algorithm and eventually written to out.
   The size of input rectangle can be odd meaning the planes might be not exactly of equal size
@@ -735,9 +735,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
           if((p == DT_IO_PLANE_GREEN1 || p == DT_IO_PLANE_GREEN2) && (cmask[DT_IO_PLANE_GREEN1][ix] == 1) && (cmask[DT_IO_PLANE_GREEN2][ix] == 1))
           {
-            // we take the median of greens candidates.          
+            // we take the median of greens candidates.
             if((candidates[DT_IO_PLANE_GREEN1] >= 0.0f) && (cand_reference[DT_IO_PLANE_GREEN1] >= 0.0f) &&
-               (candidates[DT_IO_PLANE_GREEN2] >= 0.0f) && (cand_reference[DT_IO_PLANE_GREEN2] >= 0.0f))                  
+               (candidates[DT_IO_PLANE_GREEN2] >= 0.0f) && (cand_reference[DT_IO_PLANE_GREEN2] >= 0.0f))
             {
               candidate = 0.5f * (candidates[DT_IO_PLANE_GREEN1] + candidates[DT_IO_PLANE_GREEN2]);
               current_reference = 0.5f * (cand_reference[DT_IO_PLANE_GREEN1] + cand_reference[DT_IO_PLANE_GREEN2]);
@@ -810,9 +810,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       {
         const size_t i = row * pwidth + col;
         // prepare the temporary luminance
-        tmp[i] = plane[0][i] * corr0 + (plane[1][i] + plane[2][i]) * corr1 + plane[3][i] * corr2; 
+        tmp[i] = plane[0][i] * corr0 + (plane[1][i] + plane[2][i]) * corr1 + plane[3][i] * corr2;
         distance[i] = (isegments[DT_IO_PLANNE_ALL].data[i] == 1) ? DT_DISTANCE_TRANSFORM_MAX : 0.0f;
-      }  
+      }
     }
     dt_masks_extend_border(tmp, pwidth, pheight, HLBORDER);
     dt_masks_blur_fast(tmp, luminance, pwidth, pheight, 1.5f, 1.0f, 20.0f);
@@ -834,7 +834,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       {
         const float seg_dist = _segment_maxdistance(pwidth, pheight, distance, &isegments[DT_IO_PLANNE_ALL], id);
         isegments[DT_IO_PLANNE_ALL].val1[id] = seg_dist;
-        
+
         if(isegments[DT_IO_PLANNE_ALL].val1[id] > 3.0f)
           _segment_gradients(pwidth, pheight, distance, recout, tmp, recovery_mode, &isegments[DT_IO_PLANNE_ALL], id, seg_border);
       }
@@ -908,8 +908,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
         out[o] = 0.1f * in[o];
         if((vmode == DT_SEGMENTS_MASK_COMBINE) && isegment && !iclipped)       out[o] = 1.0f;
-        else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && isegment && badseg) out[o] = 1.0f;     
-        else if(vmode == DT_SEGMENTS_MASK_STRENGTH)                            out[o] += gradient[i]; 
+        else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && isegment && badseg) out[o] = 1.0f;
+        else if(vmode == DT_SEGMENTS_MASK_STRENGTH)                            out[o] += gradient[i];
       }
     }
   }
@@ -936,4 +936,3 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 #undef HLFPLANES
 #undef HLMAXSEGMENTS
 #undef HLBORDER
-

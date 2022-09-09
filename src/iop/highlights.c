@@ -87,10 +87,10 @@ typedef enum dt_atrous_wavelets_scales_t
 
 typedef enum dt_recovery_mode_t
 {
-  DT_RECOVERY_MODE_OFF = 0,    // $DESCRIPTION: "off" 
+  DT_RECOVERY_MODE_OFF = 0,    // $DESCRIPTION: "off"
   DT_RECOVERY_MODE_ADAPT = 5,  // $DESCRIPTION: "generic"
   DT_RECOVERY_MODE_ADAPTF = 6, // $DESCRIPTION: "flat generic"
-  DT_RECOVERY_MODE_SMALL = 1,  // $DESCRIPTION: "small segments" 
+  DT_RECOVERY_MODE_SMALL = 1,  // $DESCRIPTION: "small segments"
   DT_RECOVERY_MODE_LARGE = 2,  // $DESCRIPTION: "large segments"
   DT_RECOVERY_MODE_SMALLF = 3, // $DESCRIPTION: "flat small segments"
   DT_RECOVERY_MODE_LARGEF = 4, // $DESCRIPTION: "flat large segments"
@@ -120,7 +120,7 @@ typedef struct dt_iop_highlights_params_t
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: DT_WAVELETS_6_SCALE $DESCRIPTION: "diameter of reconstruction"
   float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidating"
   float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
-  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "recovery" 
+  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "recovery"
   // params of v4
   float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
 } dt_iop_highlights_params_t;
@@ -484,7 +484,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->factor = 5.6f; // in & out plus plane buffers including some border safety plus segment planes
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
- 
+
     return;
   }
 
@@ -2093,7 +2093,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // check for heavy computing here to give an iop cache hint
   const gboolean heavy = ((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256));
-  self->cache_next_important = heavy; 
+  self->cache_next_important = heavy;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -2176,7 +2176,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->recovery, use_segmentation);
   gtk_widget_set_visible(g->strength, use_recovery);
   dt_bauhaus_widget_set_quad_visibility(g->strength, use_recovery);
-   
+
   // The special case for strength button active needs further care here
   if((use_segmentation && (p->recovery == DT_RECOVERY_MODE_OFF)) && (g->segmentation_mask_mode == DT_SEGMENTS_MASK_STRENGTH))
   {
@@ -2336,7 +2336,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
-  gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations.")); 
+  gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations."));
   dt_bauhaus_widget_set_quad_paint(g->combine, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->combine, TRUE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
