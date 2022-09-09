@@ -146,7 +146,8 @@ gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, dt_get_iopcache_mem());
+  size_t csize = MAX(64*1024*1024, darktable.dtresources.mipmap_memory / 4);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, csize);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
