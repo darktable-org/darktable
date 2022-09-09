@@ -147,7 +147,6 @@ typedef struct dt_opencl_device_t
   float benchmark;
   size_t memory_in_use;
   size_t peak_memory;
-  size_t tuned_available;
   size_t used_available;
   // flags what tuning modes should be used
   int tuneactive; 
