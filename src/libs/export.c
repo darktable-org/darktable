@@ -1261,7 +1261,7 @@ void gui_init(dt_lib_module_t *self)
                               " on the destination space."
                               "\n\n"
 
-                              "• relative colorimetric:"
+                              "• relative colorimetric: "
                               "keeps luminance while reducing as little as possible saturation"
                               " until colors fit in gamut."
                               "\n\n"
@@ -2020,4 +2020,3 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
