@@ -1363,7 +1363,6 @@ void dt_get_sysresource_level()
     fprintf(stderr,"  mipmap cache:    %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
     fprintf(stderr,"  available mem:   %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
     fprintf(stderr,"  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
-    fprintf(stderr,"  iop cache:       %luMB\n", dt_get_iopcache_mem() / 1024lu / 1024lu);
 #ifdef HAVE_OPENCL
     fprintf(stderr,"  OpenCL tune mem: %s\n", ((tunecl & DT_OPENCL_TUNE_MEMSIZE) && (level >= 0)) ? "WANTED" : "OFF");
     fprintf(stderr,"  OpenCL pinned:   %s\n", ((tunecl & DT_OPENCL_TUNE_PINNED) && (level >= 0)) ? "WANTED" : "OFF");
@@ -1668,13 +1667,6 @@ size_t dt_get_singlebuffer_mem()
 
   const int fraction = res->fractions[res->group + 1];
   return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
-}
-
-size_t dt_get_iopcache_mem()
-{
-  // use ~half of mipmap size
-  const size_t cachemb = _get_mipmap_size() / 2048lu / 1024lu ;
-  return MIN(3000lu, MAX(300lu, cachemb)) * 1024lu * 1024lu;
 }
 
 void dt_configure_runtime_performance(const int old, char *info)
