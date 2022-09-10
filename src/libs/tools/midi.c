@@ -233,7 +233,7 @@ gint calculate_move(midi_device *midi, gint controller, gint velocity)
           if(controller == midi->last_controller &&
              diff * midi->last_diff < 0)
           {
-            int diff_received = velocity - midi->last_received;
+            const int diff_received = velocity - midi->last_received;
             if(abs(diff) > abs(diff_received))
               diff = diff_received;
           }
