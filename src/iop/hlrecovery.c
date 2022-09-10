@@ -17,11 +17,11 @@
 */
 
 /*
-Highlights recovery
+Segmentation based highlight reconstruction
 
 ** Overview **
 
-The new highlight recovery algorithm only works for standard bayer sensors.
+The new segmentation based highlight reconstruction algorithm only works for standard bayer sensors.
 It has been developed in collaboration by Iain and garagecoder from the gmic team and Hanno Schwalm from dt.
 
 The original idea was presented by Iain in pixls.us in: https://discuss.pixls.us/t/highlight-recovery-teaser/17670
@@ -510,7 +510,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
   if(!fbuffer || !mbuffer)
   {
-    fprintf(stderr, "[highlights reconstruction in recovery mode] internal buffer allocation problem\n");
+    fprintf(stderr, "[highlights reconstruction in segmentation based mode] internal buffer allocation problem\n");
     dt_free_align(fbuffer);
     dt_free_align(mbuffer);
     return;
@@ -523,7 +523,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   // make sure we have wb coeffs
   if((icoeffs[0] < 0.1f) || (icoeffs[1] < 0.1f) || (icoeffs[2] < 0.1f))
   {
-    fprintf(stderr, "[highlights reconstruction in recovery mode] no white balance coeffs found, choosing stupid defaults\n");
+    fprintf(stderr, "[highlights reconstruction in segmentation based mode] no white balance coeffs found, choosing stupid defaults\n");
     icoeffs[0] = 2.0f;
     icoeffs[1] = 1.0f;
     icoeffs[2] = 1.5f;
