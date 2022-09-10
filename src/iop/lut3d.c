@@ -1045,7 +1045,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 cleanup:
   if(clut_cl) dt_opencl_release_mem_object(clut_cl);
 
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_lut3d] couldn't enqueue kernel! %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_lut3d] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
 #endif

@@ -743,7 +743,7 @@ error:
   dt_opencl_release_mem_object(dev_source_mean);
   dt_opencl_release_mem_object(dev_var_ratio);
   dt_opencl_release_mem_object(dev_mapio);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colormapping] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colormapping] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

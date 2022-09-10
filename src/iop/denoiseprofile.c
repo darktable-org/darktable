@@ -1892,7 +1892,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   dt_opencl_release_mem_object(dev_tmp);
   if(err == CL_SUCCESS)
     return TRUE;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 
 #else
@@ -2117,7 +2117,7 @@ error:
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 #endif /* USE_NEW_IMPL_CL */
 }
@@ -2599,7 +2599,7 @@ error:
     dt_opencl_release_mem_object(dev_detail[k]);
   free(dev_detail);
   dt_free_align(sumsum);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s, devid %d\n", cl_errstr(err), devid);
   return FALSE;
 }
 

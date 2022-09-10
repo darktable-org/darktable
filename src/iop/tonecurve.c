@@ -356,7 +356,7 @@ error:
   dt_opencl_release_mem_object(dev_coeffs_L);
   dt_opencl_release_mem_object(dev_coeffs_ab);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_tonecurve] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_tonecurve] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

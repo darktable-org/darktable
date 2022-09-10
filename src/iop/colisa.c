@@ -160,7 +160,7 @@ error:
   dt_opencl_release_mem_object(dev_lm);
   dt_opencl_release_mem_object(dev_ccoeffs);
   dt_opencl_release_mem_object(dev_cm);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colisa] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colisa] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

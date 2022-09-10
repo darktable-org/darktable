@@ -202,7 +202,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return TRUE;
 error:
     dt_bilateral_free_cl(b);
-    dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] couldn't enqueue kernel! %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] couldn't enqueue kernel! %s\n", cl_errstr(err));
     return FALSE;
   }
   else // mode == s_mode_local_laplacian
