@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019--2020 Diederik ter Rahe.
+    copyright (c) 2019-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -122,7 +122,7 @@ gboolean key_to_move(dt_lib_module_t *self, const dt_input_device_t id, const gu
 {
   for(GSList *devices = self->data; devices; devices = devices->next)
   {
-    midi_device *midi = devices->data;
+    const midi_device *midi = devices->data;
     if(midi->id != id) continue;
 
     if(midi->behringer == 'M')
@@ -254,9 +254,9 @@ void midi_write_bcontrol(midi_device *midi, gchar seq, gchar *str)
 {
   // sysex string contains zeros so can't use standard string handling and Pm_WriteSysEx
   unsigned char sysex[100];
-  int syslen = g_snprintf((gchar *)sysex, sizeof(sysex),
-                          "\xF0%c\x20\x32\x7F\x7F\x20%c%c%s\xF7%c%c%c",
-                          0, 0, seq, str, 0, 0, 0);
+  const int syslen = g_snprintf((gchar *)sysex, sizeof(sysex),
+                                "\xF0%c\x20\x32\x7F\x7F\x20%c%c%s\xF7%c%c%c",
+                                0, 0, seq, str, 0, 0, 0);
   PmEvent buffer[sizeof(sysex)/4] = {0};
   for(int i = 0; i < syslen / 4; i++)
     buffer[i].message = sysex[i*4] | (sysex[i*4+1] << 8) | (sysex[i*4+2] << 16) | (sysex[i*4+3] << 24);
@@ -274,14 +274,16 @@ void update_with_move(midi_device *midi, PmTimestamp timestamp, gint controller,
 {
   float new_position = dt_shortcut_move(midi->id, timestamp, controller, move);
 
-  int new_pattern = isnan(new_position) ? 1
-                  : fmodf(new_position, DT_VALUE_PATTERN_ACTIVE) == DT_VALUE_PATTERN_SUM ? 2
-                  : new_position >= DT_VALUE_PATTERN_PERCENTAGE ? 2
-                  : new_position >= DT_VALUE_PATTERN_PLUS_MINUS ? 3
-                  : 1;
+  const int new_pattern =
+    isnan(new_position) ? 1
+    : fmodf(new_position, DT_VALUE_PATTERN_ACTIVE) == DT_VALUE_PATTERN_SUM ? 2
+    : new_position >= DT_VALUE_PATTERN_PERCENTAGE ? 2
+    : new_position >= DT_VALUE_PATTERN_PLUS_MINUS ? 3
+    : 1;
 
-  if(midi->behringer == 'M' && (midi->first_key == 8 ? controller <  9 /* layer A */
-                                                     : controller > 10 /* layer B */))
+  if(midi->behringer == 'M'
+     && (midi->first_key == 8 ? controller <  9 /* layer A */
+         : controller > 10 /* layer B */))
   {
     static const int light_codes[] = { 1, 1 /* pan */, 2 /* fan */, 4 /* trim */};
 
@@ -321,7 +323,7 @@ void update_with_move(midi_device *midi, PmTimestamp timestamp, gint controller,
   }
   else if(!isnan(new_position))
   {
-    int c = - new_position;
+    const int c = - new_position;
     if(c > 1)
     {
       if(midi->behringer == 'M')
@@ -415,7 +417,8 @@ static gboolean poll_midi_devices(gpointer user_data)
         continue; // x_touch_mini_layer_B has not been set
       }
 
-      if(midi->behringer == 'M' && midi->first_key != (x_touch_mini_layer_B ? 32 : 8))
+      if(midi->behringer == 'M'
+         && midi->first_key != (x_touch_mini_layer_B ? 32 : 8))
       {
         midi->first_key = x_touch_mini_layer_B ? 32 : 8;
 
@@ -630,4 +633,3 @@ void gui_cleanup(dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
