@@ -1509,7 +1509,6 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 
   dt_dev_configure(d, d->width, d->height);
 
-  dt_ui_restore_panels(darktable.gui->ui);
   dt_dev_reprocess_center(d);
 }
 
