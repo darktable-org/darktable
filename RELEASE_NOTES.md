@@ -34,70 +34,66 @@ N/A
 
 ## Other Changes
 
-- Variables $(MAKER) and $(MODEL) are now usable at import time.
+- Variables `$(MAKER)` and `$(MODEL)` can now be used when importing files.
 
 - Display infinity for very large focus distance as supported by the
   exif standard.
 
 ## Bug Fixes
 
-- Fix HDR merge module DNG creation (ColorMatrix could be zero).
+- Fix DNG creation in the HDR merge module (ColorMatrix could be zero).
 
-- Fix culling layout which could be broken after a second use when
-  changing the number of images (rejecting one for example).
+- Fix culling layout, which could be broken after a second use when
+  changing the number of images (e.g. when rejecting an image).
 
-- Fix GUI reset of the export module when using the TIFF format.
+- Fix GUI reset of the export module when using TIFF format.
 
-- Fix copy of iop-order in merge mode when multiple instances are in
+- Fix copy of iop-order in merge mode when multiple instances are used in
   the destination images.
 
 - Fix color filtering issue on Windows.
 
-- Fix possible black screen when using the auto-white balance on
-  Windows.
+- Fix possible black screen when using auto-white balance on Windows.
 
-- Properly keep the access and modified timestamps when using copy and
+- Properly retain the access and modified timestamps when using copy and
   import.
 
-- Fix color picker reset in color-zone module.
+- Fix color picker reset in color zones module.
 
-- Fix help link for the module layout management.
+- Fix help link for module layout management.
 
 - Fix crash after a failed camera tethering attempt.
 
-- Add support for fast pixel-pipe on the diffuse module. In this mode
-  the module is just a pass-though. This mode is triggered by modules
-  that do not need exact image display but need a fast
-  processing. This is mode is used by the crop and perspective
-  correction modules for example.
+- Add support for fast pipe mode on the diffuse module. Fast pipe mode
+  is used to bypass long-running modules while interactively changing another 
+  module's parameters where that module does not require accurate image display.
+  For example, it is used to improve responsiveness of the on-screen display in the
+  crop and rotate/perspective modules.
 
-  This is especially important on such a slow module.
-
-- Fix some color picker button action type.
+- Fix some color picker button action types.
 
 - Fix crash in Latex export.
 
-- Fix web-site gallery support.
+- Fix website gallery export.
 
-- Fix a file handle leak when a dealing with directory and an error
-  occurs.
+- Fix a file-handle leak.
 
 - Fix a memory corruption in sharpen module that could lead to a
   crash.
 
-- Fix vector-scope histogram display to avoid cropping the primary and
+- Fix vectorscope histogram display to avoid cropping the primary and
   secondary nodes (top and bottom).
 
 - Add HEIF media type association for the desktop.
 
-- Fix possible crash when using the color check without a proper
+- Fix possible crash when using the color checker without a properly
   selected patch.
 
-- Fix sorting issue of the LUT 3D files and left align the entries for
+- Fix sorting of LUT 3D files and left-align the entries for
   better readability.
 
-- Disable upscaling when export size is set to max (0) as this does
-  not have meaning and could crash darktable.
+- Disable upscaling when export size is set to original image dimensions (0)
+  as this does not have meaning and could crash darktable.
 
 - Fix possible crash when applying a time-offset to images.
 
@@ -110,15 +106,15 @@ N/A
 - Ensure that external format size limits are enforced during export.
 
 - Some CSS fixes on color, contrast, positioning of combo-boxes,
-  check-boxes' size, scroll-bars and progress-bars.
+  check-box size, scrollbars and progress bars.
 
 - Fix JPEG APP1 header (skip 6-byte header).
 
 - Fix some missing translations in notebook tabs.
 
-- Use a color managed background for colorbalance rgb module sliders.
+- Use a color-managed background for color balance rgb module sliders.
 
-- light up midi modifier keys when shift/ctlr/alt are pressed.
+- Light up midi modifier keys when shift/ctlr/alt are pressed.
 
 - Some speed improvements (tuned compiler options, some optimized
   routines)
