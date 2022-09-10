@@ -2069,7 +2069,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // update processed maximum
   if((data->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (data->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
   {
-    // The guided laplacian and recovery modes keep signal scene-referred and don't clip highlights to 1
+    // The guided laplacian and segmentation modes keep signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
     const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
                           piece->pipe->dsc.processed_maximum[2]);
@@ -2234,7 +2234,7 @@ void reload_defaults(dt_iop_module_t *module)
       {
         dt_bauhaus_combobox_add_full(g->mode, _("guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
-        dt_bauhaus_combobox_add_full(g->mode, _("highlights recovery"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+        dt_bauhaus_combobox_add_full(g->mode, _("segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
       }
     }
