@@ -37,7 +37,7 @@
 // some pseudo error codes in dt opencl usage
 #define DT_OPENCL_DEFAULT_ERROR -999
 #define DT_OPENCL_SYSMEM_ALLOCATION -998
-
+#define DT_OPENCL_PROCESS_CL -997
 #include "common/darktable.h"
 
 #ifdef HAVE_OPENCL
