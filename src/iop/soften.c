@@ -308,7 +308,7 @@ error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_tmp);
   free(mat);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_soften] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_soften] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

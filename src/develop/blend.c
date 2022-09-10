@@ -1263,7 +1263,7 @@ error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_ioppr_free_iccprofile_params_cl(&work_profile_info_cl, &work_profile_lut_cl, &dev_work_profile_info,
                                      &dev_work_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

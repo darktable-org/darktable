@@ -3195,7 +3195,7 @@ static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
 error:
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_color_smoothing] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_color_smoothing] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -3371,7 +3371,7 @@ error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
   dt_free_align(sumsum);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_green_equilibration] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_green_equilibration] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -3711,7 +3711,7 @@ error:
   dt_opencl_release_mem_object(VP_diff);
   dt_opencl_release_mem_object(HQ_diff);
   dev_aux = dev_green_eq = dev_tmp = cfa = rgb0 = rgb1 = rgb2 = VH_dir = PQ_dir = VP_diff = HQ_diff = NULL;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] rcd couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] rcd couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -3967,7 +3967,7 @@ error:
   if(dev_med != dev_in) dt_opencl_release_mem_object(dev_med);
   dt_opencl_release_mem_object(dev_green_eq);
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -4394,7 +4394,7 @@ error:
   dt_opencl_release_mem_object(dev_ips);
   dt_opencl_release_mem_object(dev_green_eq);
   free(ips);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -5129,7 +5129,7 @@ error:
   dt_opencl_release_mem_object(dev_aux);
   dt_opencl_release_mem_object(dev_edge_in);
   dt_opencl_release_mem_object(dev_edge_out);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 

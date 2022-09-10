@@ -341,7 +341,7 @@ int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const
     return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_negadoctor] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_negadoctor] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
