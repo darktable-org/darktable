@@ -712,9 +712,15 @@ static void tree_insert_presets(GtkTreeStore *tree_store)
     const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
     if(g_strcmp0(operation, last_module))
     {
-      gtk_tree_store_insert_with_values(tree_store, &parent, NULL, -1,
-                                        P_MODULE_COLUMN, operation, -1);
+      gchar *module = g_strdup(dt_iop_get_localized_name(operation));
+      if(module == NULL) module = g_strdup(dt_lib_get_localized_name(operation));
+      if(module == NULL) module = g_strdup(operation);
 
+      gtk_tree_store_insert_with_values(tree_store, &parent, NULL, -1,
+                                        P_MODULE_COLUMN, module, -1);
+
+      g_free(module);
+      g_free(last_module);
       last_module = g_strdup(operation);
     }
 
@@ -955,7 +961,7 @@ static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path, Gtk
     gtk_tree_model_get(model, &edited_iter, P_ROWID_COLUMN, &rowid, P_NAME_COLUMN, &name, P_OPERATION_COLUMN,
                        &operation, P_EDITABLE_COLUMN, &editable, -1);
     if(editable == NULL)
-      dt_gui_presets_show_edit_dialog(name, operation, rowid, G_CALLBACK(edit_preset_response), model, FALSE, TRUE, TRUE,
+      dt_gui_presets_show_edit_dialog(name, operation, rowid, G_CALLBACK(edit_preset_response), model, TRUE, TRUE, TRUE,
                                       GTK_WINDOW(_preferences_dialog));
     else
       g_object_unref(editable);
