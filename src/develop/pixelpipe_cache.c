@@ -258,13 +258,13 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
     {
       *data = cache->data[k];
       *dsc = &cache->dsc[k];
-      // in case of a hit its always good to keep the cachline as important
-      cache->used[k] = -cache->entries;
       ASAN_POISON_MEMORY_REGION(*data, cache->size[k]);
       ASAN_UNPOISON_MEMORY_REGION(*data, size);
-      dt_vprint(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s %s HIT, %16s, line%3i, age %4i, at %p, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-        dt_dev_pixelpipe_type_to_str(pipe->type), important ? "important" : "         ", name, k, cache->used[k], cache->data[k],
+      dt_vprint(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s %s HIT %16s, line%3i, age %4i, at %p, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
+        dt_dev_pixelpipe_type_to_str(pipe->type), (cache->used[k] < 0) ? "important" : "         ", name, k, cache->used[k], cache->data[k],
         cache->hash[k], cache->basichash[k]); 
+      // in case of a hit its always good to keep the cachline as important
+      cache->used[k] = -cache->entries;
       return FALSE;
     }
   }
@@ -284,7 +284,7 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
     {
       dt_free_align(cache->data[cline]);
       cache->allmem -= cache->size[cline];
-      dt_print(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s %s CHG, %16s, line%3i, age %4i, was %s, %lu->%luMB\n",
+      dt_print(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s %s CHG %16s, line%3i, age %4i, was %s, %lu->%luMB\n",
         dt_dev_pixelpipe_type_to_str(pipe->type), important ? "important" : "         ", name, cline, cache->used[cline], cache->modname[cline],
         cache->size[cline] / 1024lu / 1024lu, size / 1024lu / 1024lu); 
     }
@@ -303,7 +303,7 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
   *dsc = &cache->dsc[cline];
 
   dt_vprint(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s %s %s %16s, line%3i, age %4i, at %p, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-    dt_dev_pixelpipe_type_to_str(pipe->type), new_cline ? "NEW" : "   ", important ? "important" : "         ", name, cline, cache->used[cline], cache->data[cline],
+    dt_dev_pixelpipe_type_to_str(pipe->type), important ? "important" : "         ", new_cline ? "NEW" : "   ", name, cline, cache->used[cline], cache->data[cline],
     cache->hash[cline], cache->basichash[cline]); 
   cache->basichash[cline] = basichash;
   cache->hash[cline] = hash;
