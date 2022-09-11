@@ -121,6 +121,9 @@ void dt_gui_favorite_presets_menu_show();
 /** apply a preset to the current module **/
 void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module);
 
+/** apply next or previous preset to the current module **/
+void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, int direction);
+
 /** apply any auto presets that are appropriate for the current module **/
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module);
 

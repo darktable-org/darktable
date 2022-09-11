@@ -932,6 +932,48 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
   }
 }
 
+void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, int direction)
+{
+  int writeprotect;
+  gchar *name = _get_active_preset_name(module, &writeprotect);
+  gchar *extreme = direction < 0 ? _("(first)") : _("(last)");
+
+  sqlite3_stmt *stmt;
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT name"
+                                 " FROM data.presets"
+                                 " WHERE operation=?1 AND op_version=?2 AND"
+                                 "       (?3='' OR LOWER(name) %s LOWER(?3))"
+                                 " ORDER BY writeprotect %s, LOWER(name) %s"
+                                 " LIMIT ?4",
+                                 direction < 0 ? "<" : ">",
+                                 direction < 0 ? "ASC" : "DESC",
+                                 direction < 0 ? "DESC" : "ASC");
+  // clang-format on
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name ? name : "", -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, abs(direction));
+  g_free(query);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    g_free(name);
+    name = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
+    extreme = "";
+  }
+  sqlite3_finalize(stmt);
+
+  if(!*extreme)
+    dt_gui_presets_apply_preset(name, module);
+
+  dt_action_widget_toast(DT_ACTION(module), NULL, _("preset %s\n%s"),
+                         extreme, name ? name : _("no presets"));
+  g_free(name);
+}
+
+
 static void _menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
