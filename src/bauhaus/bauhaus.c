@@ -362,9 +362,7 @@ static void _slider_zoom_toast(dt_bauhaus_widget_t *w)
 
   gchar *min_text = dt_bauhaus_slider_get_text(GTK_WIDGET(w), d->factor > 0 ? d->min : d->max);
   gchar *max_text = dt_bauhaus_slider_get_text(GTK_WIDGET(w), d->factor > 0 ? d->max : d->min);
-  gchar *text = g_strdup_printf(("\n[%s , %s]"), min_text, max_text);
-  dt_action_widget_toast(w->module, GTK_WIDGET(w), text);
-  g_free(text);
+  dt_action_widget_toast(w->module, GTK_WIDGET(w), "\n[%s , %s]", min_text, max_text);
   g_free(min_text);
   g_free(max_text);
 }
@@ -3427,9 +3425,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
       break;
     }
 
-    gchar *text = g_strdup_printf("\n%s", dt_bauhaus_combobox_get_text(widget));
-    dt_action_widget_toast(w->module, widget, text);
-    g_free(text);
+    dt_action_widget_toast(w->module, widget, "\n%s", dt_bauhaus_combobox_get_text(widget));
   }
 
   if(element == DT_ACTION_ELEMENT_BUTTON)
