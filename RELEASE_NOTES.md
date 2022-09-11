@@ -25,8 +25,8 @@ You are strongly advised to take a backup first.
 Since darktable 4.0.0:
 
 - Almost 180 commits to darktable+rawspeed
-- 102 pull requests handled
-- 18 issues closed
+- 103 pull requests handled
+- 19 issues closed
 
 ## The Big Ones
 
@@ -40,6 +40,8 @@ N/A
   exif standard.
 
 ## Bug Fixes
+
+- Fix overexposed indicators after cropping.
 
 - Fix DNG creation in the HDR merge module (ColorMatrix could be zero).
 
@@ -65,7 +67,7 @@ N/A
 - Fix crash after a failed camera tethering attempt.
 
 - Add support for fast pipe mode on the diffuse module. Fast pipe mode
-  is used to bypass long-running modules while interactively changing another 
+  is used to bypass long-running modules while interactively changing another
   module's parameters where that module does not require accurate image display.
   For example, it is used to improve responsiveness of the on-screen display in the
   crop and rotate/perspective modules.
