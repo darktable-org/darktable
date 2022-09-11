@@ -3194,7 +3194,7 @@ void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget)
   }
 }
 
-static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+static void _collapse_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
 {
   dt_gui_collapsible_section_t *cs = (dt_gui_collapsible_section_t *)user_data;
 
@@ -3205,7 +3205,7 @@ static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer us
   dt_conf_set_bool(cs->confname, active);
 }
 
-static void _coeffs_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
+static void _collapse_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return;
 
@@ -3222,10 +3222,7 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs)
                                (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), active);
 
-  if(active)
-    gtk_widget_show(GTK_WIDGET(cs->container));
-  else
-    gtk_widget_hide(GTK_WIDGET(cs->container));
+  gtk_widget_set_visible(GTK_WIDGET(cs->container), active);
 }
 
 void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs)
@@ -3266,11 +3263,10 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   gtk_widget_set_name(cs->expander, "collapse-block");
 
   g_signal_connect(G_OBJECT(cs->toggle), "toggled",
-                   G_CALLBACK(_coeffs_button_changed),  (gpointer)cs);
+                   G_CALLBACK(_collapse_button_changed), cs);
 
   g_signal_connect(G_OBJECT(header_evb), "button-release-event",
-                   G_CALLBACK(_coeffs_expander_click),
-                   (gpointer)cs);
+                   G_CALLBACK(_collapse_expander_click), cs);
 }
 
 // clang-format off

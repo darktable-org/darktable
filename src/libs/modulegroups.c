@@ -440,12 +440,12 @@ static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_li
 
 static void _sync_visibility(GtkWidget *widget, dt_lib_modulegroups_basic_item_t *item)
 {
-  gtk_widget_set_visible(item->box, gtk_widget_get_visible(item->old_parent));
-
   if(widget == item->temp_widget)
     gtk_widget_set_visible(item->widget, gtk_widget_get_visible(item->temp_widget));
   if(widget == item->widget)
     gtk_widget_set_visible(item->temp_widget, gtk_widget_get_visible(item->widget));
+
+  gtk_widget_set_visible(item->box, !dt_action_widget_invisible(item->temp_widget));
 }
 
 static gboolean _manage_direct_module_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self);
