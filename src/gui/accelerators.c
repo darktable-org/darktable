@@ -2894,9 +2894,9 @@ static void _lookup_mapping_widget()
 gboolean dt_action_widget_invisible(GtkWidget *w)
 {
   GtkWidget *p = gtk_widget_get_parent(w);
-  GtkStyleContext *context = gtk_widget_get_style_context(p);
-  return (!GTK_IS_WIDGET(w) || !gtk_widget_get_visible(w)
-          || (!gtk_style_context_has_class(context, "dt_plugin_ui_main") && !gtk_widget_get_visible(p)));
+  return (!GTK_IS_WIDGET(w) || !gtk_widget_get_visible(w) || (!gtk_widget_get_visible(p)
+          && strcmp(gtk_widget_get_name(p), "collapsible")
+          && !gtk_style_context_has_class(gtk_widget_get_style_context(p), "dt_plugin_ui_main")));
 }
 
 gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboolean *fully_matched, const dt_action_def_t *def, char **fb_log)
