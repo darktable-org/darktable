@@ -676,8 +676,19 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
 
         if(d) description = g_strdup_printf("%s.%s", d, description);
 
-        if((change_parts[num_parts] = _lib_history_change_text(entry, description, params, oldpar)))
-          num_parts++;
+        gchar *part, *sect = NULL;
+        if((part = _lib_history_change_text(entry, description, params, oldpar)))
+        {
+          GHashTable *sections = field->header.so->get_introspection()->sections;
+          if(sections && (sect = g_hash_table_lookup(sections, GINT_TO_POINTER(entry->header.offset))))
+          {
+            sect = g_strdup_printf("%s/%s", Q_(sect), part);
+            g_free(part);
+            part = sect;
+          }
+
+          change_parts[num_parts++] = part;
+        }
 
         if(d) g_free(description);
       }

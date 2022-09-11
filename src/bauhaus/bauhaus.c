@@ -937,8 +937,9 @@ float dt_bauhaus_slider_get_default(GtkWidget *widget)
 extern const dt_action_def_t dt_action_def_slider;
 extern const dt_action_def_t dt_action_def_combo;
 
-void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
+dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
 {
+  dt_action_t *ac = NULL;
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
   if(label) g_strlcpy(w->label, Q_(label), sizeof(w->label));
@@ -948,8 +949,8 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const c
   {
     if(!darktable.bauhaus->skip_accel || w->module->type != DT_ACTION_TYPE_IOP_INSTANCE)
     {
-      dt_action_t *ac = dt_action_define(w->module, section, label, widget,
-                                         w->type == DT_BAUHAUS_SLIDER ? &dt_action_def_slider : &dt_action_def_combo);
+      ac = dt_action_define(w->module, section, label, widget,
+                            w->type == DT_BAUHAUS_SLIDER ? &dt_action_def_slider : &dt_action_def_combo);
       if(w->module->type != DT_ACTION_TYPE_IOP_INSTANCE) w->module = ac;
     }
 
@@ -980,6 +981,7 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const c
 
     gtk_widget_queue_draw(GTK_WIDGET(w));
   }
+  return ac;
 }
 
 const char* dt_bauhaus_widget_get_label(GtkWidget *widget)
@@ -1221,8 +1223,8 @@ GtkWidget *dt_bauhaus_combobox_new_full(dt_action_t *action, const char *section
                                         int pos, GtkCallback callback, gpointer data, const char **texts)
 {
   GtkWidget *combo = dt_bauhaus_combobox_new_action(action);
-  dt_bauhaus_widget_set_label(combo, section, label);
-  dt_bauhaus_combobox_add_list(combo, (dt_action_t *)(DT_BAUHAUS_WIDGET(combo)->module), texts);
+  dt_action_t *ac = dt_bauhaus_widget_set_label(combo, section, label);
+  dt_bauhaus_combobox_add_list(combo, ac, texts);
   dt_bauhaus_combobox_set(combo, pos);
   gtk_widget_set_tooltip_text(combo, tip ? tip : _(label));
   if(callback) g_signal_connect(G_OBJECT(combo), "value-changed", G_CALLBACK(callback), data);

@@ -468,7 +468,6 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
-  dt_bauhaus_widget_set_label(hue, section, N_("hue"));
   dt_bauhaus_slider_set_feedback(hue, 0);
   dt_bauhaus_slider_set_stop(hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.166f, 1.0f, 1.0f, 0.0f);
@@ -480,7 +479,6 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
   gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
   dt_color_picker_new(self, DT_COLOR_PICKER_POINT, hue);
 
-  dt_bauhaus_widget_set_label(saturation, section, N_("saturation"));
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(saturation, _("select the saturation tone"));
@@ -500,19 +498,19 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_splittoning_gui_data_t *g = IOP_GUI_ALLOC(splittoning);
 
-  ++darktable.bauhaus->skip_accel;
+  dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("shadows"));
   GtkWidget *shadows_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(self, "shadow_hue");
+  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(sect, "shadow_hue");
   dt_bauhaus_slider_set_factor(g->shadow_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->shadow_hue_gslider, "°");
-  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(self, "shadow_saturation");
+  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(sect, "shadow_saturation");
 
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("highlights"));
   GtkWidget *highlights_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(self, "highlight_hue");
+  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(sect, "highlight_hue");
   dt_bauhaus_slider_set_factor(g->highlight_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->highlight_hue_gslider, "°");
-  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(self, "highlight_saturation");
-  --darktable.bauhaus->skip_accel;
+  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(sect, "highlight_saturation");
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

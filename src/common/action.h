@@ -32,6 +32,7 @@ typedef enum dt_action_type_t
   DT_ACTION_TYPE_SECTION,
   // ==== all above split off chains
   DT_ACTION_TYPE_IOP_INSTANCE,
+  DT_ACTION_TYPE_IOP_SECTION,
   DT_ACTION_TYPE_COMMAND,
   DT_ACTION_TYPE_PRESET,
   DT_ACTION_TYPE_FALLBACK,

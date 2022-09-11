@@ -243,6 +243,7 @@ typedef struct dt_introspection_t
   dt_introspection_field_t           *field;           // the type of the params. should always be a DT_INTROSPECTION_TYPE_STRUCT
   size_t                              self_size;       // size of dt_iop_module_t. useful to not need dt headers
   size_t                              default_params;  // offset of the default_params in dt_iop_module_t. useful to not need dt headers
+  GHashTable                         *sections;        // section names associated with parameter offsets
 } dt_introspection_t;
 
 // clang-format on
