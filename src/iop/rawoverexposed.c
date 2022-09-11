@@ -430,11 +430,11 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 {
   dt_develop_t *dev = self->dev;
 
-  if(pipe->type != DT_DEV_PIXELPIPE_FULL || !dev->rawoverexposed.enabled || !dev->gui_attached) piece->enabled = 0;
-
   const dt_image_t *const image = &(dev->image_storage);
-
-  if(image->flags & DT_IMAGE_4BAYER) piece->enabled = 0;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean sensorok = (image->flags & DT_IMAGE_4BAYER) == 0;
+  
+  piece->enabled = dev->rawoverexposed.enabled && fullpipe && dev->gui_attached && sensorok;
 
   if(image->buf_dsc.datatype != TYPE_UINT16 || !image->buf_dsc.filters) piece->enabled = 0;
 }
