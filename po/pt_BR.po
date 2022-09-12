@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-11 00:20-0300\n"
-"PO-Revision-Date: 2022-09-11 00:19-0300\n"
+"POT-Creation-Date: 2022-09-11 22:14-0300\n"
+"PO-Revision-Date: 2022-09-11 22:18-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2150,7 +2150,7 @@ msgstr "vista de apresentação"
 msgid "waiting time between each picture in slideshow"
 msgstr "tempo entre fotos na apresentação"
 
-#: ../build/bin/preferences_gen.h:8185 ../src/control/jobs/control_jobs.c:2361
+#: ../build/bin/preferences_gen.h:8185 ../src/control/jobs/control_jobs.c:2371
 #: ../src/libs/import.c:172
 msgid "import"
 msgstr "importar"
@@ -4021,6 +4021,7 @@ msgid "guided laplacians"
 msgstr "laplaciano guiado"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
+#: ../src/iop/highlights.c:2237
 msgid "segmentation based"
 msgstr "baseado em segmentação"
 
@@ -4739,40 +4740,40 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:3278
+#: ../src/bauhaus/bauhaus.c:3276
 msgid "button on"
 msgstr "botão ligado"
 
-#: ../src/bauhaus/bauhaus.c:3278
+#: ../src/bauhaus/bauhaus.c:3276
 msgid "button off"
 msgstr "botão desligado"
 
-#: ../src/bauhaus/bauhaus.c:3447 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3443 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:3448 ../src/bauhaus/bauhaus.c:3454
+#: ../src/bauhaus/bauhaus.c:3444 ../src/bauhaus/bauhaus.c:3450
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:3449
+#: ../src/bauhaus/bauhaus.c:3445
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:3450
+#: ../src/bauhaus/bauhaus.c:3446
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3453
+#: ../src/bauhaus/bauhaus.c:3449
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:3472
+#: ../src/bauhaus/bauhaus.c:3468
 msgid "slider"
 msgstr "controle deslizante"
 
-#: ../src/bauhaus/bauhaus.c:3477
+#: ../src/bauhaus/bauhaus.c:3473
 msgid "dropdown"
 msgstr "menu flutuante"
 
@@ -5675,8 +5676,8 @@ msgstr "erro carregando pasta `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "arquivo `%s' é de formato desconhecido!"
 
-#: ../src/common/darktable.c:291 ../src/control/jobs/control_jobs.c:2132
-#: ../src/control/jobs/control_jobs.c:2191
+#: ../src/common/darktable.c:291 ../src/control/jobs/control_jobs.c:2142
+#: ../src/control/jobs/control_jobs.c:2201
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
@@ -7256,21 +7257,21 @@ msgstr "intervalo de tempo"
 msgid "write sidecar files"
 msgstr "salvar nos arquivos XMP"
 
-#: ../src/control/jobs/control_jobs.c:2270 ../src/control/jobs/film_jobs.c:297
+#: ../src/control/jobs/control_jobs.c:2280 ../src/control/jobs/film_jobs.c:297
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importando %d imagem"
 msgstr[1] "importando %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:2306
+#: ../src/control/jobs/control_jobs.c:2316
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "importando %d/%d imagem"
 msgstr[1] "importando %d/%d imagens"
 
-#: ../src/control/jobs/control_jobs.c:2314
+#: ../src/control/jobs/control_jobs.c:2324
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -8143,14 +8144,14 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "desliga temporariamente a máscara de mesclagem. apenas para módulo em uso"
 
-#: ../src/develop/develop.c:1519 ../src/gui/presets.c:971
+#: ../src/develop/develop.c:1519 ../src/gui/presets.c:1013
 msgid "display-referred default"
 msgstr "padrão relativo à exibição"
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1521 ../src/gui/presets.c:973
+#: ../src/develop/develop.c:1521 ../src/gui/presets.c:1015
 #: ../src/iop/exposure.c:278 ../src/iop/exposure.c:287
 msgid "scene-referred default"
 msgstr "padrão relativo à cena"
@@ -8168,12 +8169,12 @@ msgstr "nova instância"
 msgid "duplicate instance"
 msgstr "duplicar instância"
 
-#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:3225
+#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:3232
 #: ../src/libs/masks.c:1098
 msgid "move up"
 msgstr "mover para cima"
 
-#: ../src/develop/imageop.c:946 ../src/develop/imageop.c:3226
+#: ../src/develop/imageop.c:946 ../src/develop/imageop.c:3233
 #: ../src/libs/masks.c:1101
 msgid "move down"
 msgstr "mover para baixo"
@@ -8181,14 +8182,14 @@ msgstr "mover para baixo"
 #. delete button label and tooltip will be updated based on trash pref
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
-#: ../src/develop/imageop.c:952 ../src/develop/imageop.c:3228
+#: ../src/develop/imageop.c:952 ../src/develop/imageop.c:3235
 #: ../src/gui/accelerators.c:143 ../src/gui/presets.c:488
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/masks.c:1055
 #: ../src/libs/tagging.c:1480 ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "excluir"
 
-#: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3229
+#: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3236
 #: ../src/libs/modulegroups.c:3553 ../src/libs/modulegroups.c:3916
 msgid "rename"
 msgstr "renomear"
@@ -8277,47 +8278,47 @@ msgstr ""
 "formato de dados não combina\n"
 "com os requisitos."
 
-#: ../src/develop/imageop.c:3224 ../src/develop/imageop.c:3234
+#: ../src/develop/imageop.c:3231 ../src/develop/imageop.c:3241
 #: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1289
 msgid "show"
 msgstr "mostrar"
 
-#: ../src/develop/imageop.c:3227 ../src/libs/modulegroups.c:3399
+#: ../src/develop/imageop.c:3234 ../src/libs/modulegroups.c:3399
 #: ../src/libs/modulegroups.c:3525 ../src/libs/modulegroups.c:3918
 #: ../src/libs/tagging.c:3247
 msgid "new"
 msgstr "novo"
 
-#: ../src/develop/imageop.c:3230 ../src/libs/duplicate.c:543
+#: ../src/develop/imageop.c:3237 ../src/libs/duplicate.c:543
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3914
 msgid "duplicate"
 msgstr "duplicar"
 
-#: ../src/develop/imageop.c:3235
+#: ../src/develop/imageop.c:3242
 msgid "enable"
 msgstr "ativar"
 
-#: ../src/develop/imageop.c:3236
+#: ../src/develop/imageop.c:3243
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3237 ../src/gui/accelerators.c:2261
+#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:2261
 msgid "instance"
 msgstr "instância"
 
-#: ../src/develop/imageop.c:3238 ../src/gui/accelerators.c:105
+#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:105
 #: ../src/gui/accelerators.c:114 ../src/iop/atrous.c:1579
 #: ../src/libs/lib.c:1290 ../src/libs/modulegroups.c:3982
 msgid "reset"
 msgstr "redefinir"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3239 ../src/gui/preferences.c:774
+#: ../src/develop/imageop.c:3246 ../src/gui/preferences.c:774
 #: ../src/libs/lib.c:1291
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:3251
+#: ../src/develop/imageop.c:3258
 msgid "processing module"
 msgstr "módulo de processamento"
 
@@ -9324,7 +9325,7 @@ msgid "relative instance"
 msgstr "instância relativa"
 
 #: ../src/gui/accelerators.c:621 ../src/gui/accelerators.c:908
-#: ../src/gui/accelerators.c:2251 ../src/gui/accelerators.c:3109
+#: ../src/gui/accelerators.c:2251 ../src/gui/accelerators.c:3107
 msgid "speed"
 msgstr "velocidade"
 
@@ -9686,12 +9687,12 @@ msgstr "dispositivos de entrada reinicializados"
 msgid "fallback to move"
 msgstr "alternativo para mover"
 
-#: ../src/gui/accelerators.c:3181
+#: ../src/gui/accelerators.c:3179
 #, c-format
 msgid "%s not assigned"
 msgstr "%s não associado"
 
-#: ../src/gui/accelerators.c:3333
+#: ../src/gui/accelerators.c:3331
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s associado a %s"
@@ -10661,40 +10662,61 @@ msgstr "você realmente deseja atualizar a predefinição `%s'?"
 msgid "update preset?"
 msgstr "atualizar predefinição?"
 
-#: ../src/gui/presets.c:1108 ../src/libs/modulegroups.c:3882
+#: ../src/gui/presets.c:939
+msgid "(first)"
+msgstr "(primeira)"
+
+#: ../src/gui/presets.c:939
+msgid "(last)"
+msgstr "(última)"
+
+#: ../src/gui/presets.c:971
+#, c-format
+msgid ""
+"preset %s\n"
+"%s"
+msgstr ""
+"predefinição %s\n"
+"%s"
+
+#: ../src/gui/presets.c:972
+msgid "no presets"
+msgstr "nenhuma predefinição"
+
+#: ../src/gui/presets.c:1150 ../src/libs/modulegroups.c:3882
 #: ../src/libs/modulegroups.c:3891
 msgid "manage module layouts"
 msgstr "gerenciar disposição dos módulos"
 
-#: ../src/gui/presets.c:1116
+#: ../src/gui/presets.c:1158
 msgid "manage quick presets"
 msgstr "gerenciar predefinições rápidas"
 
-#: ../src/gui/presets.c:1288
+#: ../src/gui/presets.c:1330
 msgid "manage quick presets list..."
 msgstr "gerenciar lista de predefinições..."
 
-#: ../src/gui/presets.c:1423
+#: ../src/gui/presets.c:1465
 msgid "(default)"
 msgstr "(padrão)"
 
-#: ../src/gui/presets.c:1444
+#: ../src/gui/presets.c:1486
 msgid "disabled: wrong module version"
 msgstr "desabilitado: versão do módulo incorreta"
 
-#: ../src/gui/presets.c:1469 ../src/libs/lib.c:531
+#: ../src/gui/presets.c:1511 ../src/libs/lib.c:531
 msgid "edit this preset.."
 msgstr "editar esta predefinição..."
 
-#: ../src/gui/presets.c:1473 ../src/libs/lib.c:535
+#: ../src/gui/presets.c:1515 ../src/libs/lib.c:535
 msgid "delete this preset"
 msgstr "excluir esta predefinição"
 
-#: ../src/gui/presets.c:1479 ../src/libs/lib.c:543
+#: ../src/gui/presets.c:1521 ../src/libs/lib.c:543
 msgid "store new preset.."
 msgstr "armazenar nova predefinição..."
 
-#: ../src/gui/presets.c:1485 ../src/libs/lib.c:555
+#: ../src/gui/presets.c:1527 ../src/libs/lib.c:555
 msgid "update preset"
 msgstr "atualizar predefinição"
 
@@ -14709,15 +14731,12 @@ msgid ""
 "- centripetal is better to avoids cusps and oscillations with close nodes "
 "but is less smooth\n"
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
-"exp)\n"
+"exp)"
 msgstr ""
 "mude este método se vir oscilações ou cúspides (picos) na curva\n"
-"- curva-S cúbica é melhor para produzir curvas suaves mas oscila quando os "
-"nós são muito próximos\n"
-"- centrípeta é melhor para evitar picos e oscilações com nós próximos mas é "
-"menos suave\n"
-"- monotônica é melhor para acurácia de funções puramente analíticas (log, "
-"gama, exp)\n"
+"- spline cúbica é melhor para produzir curvas suaves mas oscila quando os nós são muito próximos\n"
+"- centrípeta é melhor para evitar picos e oscilações com nós próximos mas é menos suave\n"
+"- monotônica é melhor para acurácia de funções puramente analíticas (log, gama, exp)"
 
 #: ../src/iop/crop.c:128 ../src/iop/rawprepare.c:856
 msgid "crop"
@@ -16268,10 +16287,10 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4452
 msgid ""
 "choose the statistical distribution of noise.\n"
-"this is useful to match natural sensor noise pattern.\n"
+"this is useful to match natural sensor noise pattern."
 msgstr ""
 "seleciona a distribuição estatística do ruído.\n"
-"isto é útil para combinar com o padrão natural de ruído do sensor.\n"
+"isto é útil para combinar com o padrão natural de ruído do sensor."
 
 #: ../src/iop/filmicrgb.c:4520
 msgid "mid-tones saturation"
@@ -16548,10 +16567,6 @@ msgstr ""
 "realces: modo laplaciano guiado não está disponível para sensores X-Trans. "
 "revertendo para recorte."
 
-#: ../src/iop/highlights.c:2237
-msgid "highlights recovery"
-msgstr "reconstrução de realces"
-
 #: ../src/iop/highlights.c:2323
 msgid "highlight reconstruction method"
 msgstr "método de reconstrução de realce"
@@ -16579,11 +16594,11 @@ msgstr ""
 msgid ""
 "dealing with isolated clipped segments in dark regions.\n"
 "increase to favour candidates found in segmentation analysis,\n"
-"decrease for simple inpainting.\n"
+"decrease for simple inpainting."
 msgstr ""
 "lidando com segmentos recortados isolados em regiões escuras.\n"
 "aumente para favorecer candidatos encontrados na análise de segmentação,\n"
-"diminua para reconstrução simples.\n"
+"diminua para reconstrução simples."
 
 #: ../src/iop/highlights.c:2357
 msgid ""
@@ -16597,7 +16612,7 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/highlights.c:2363
-msgid "set strenth of reconstruction in regions with all photosites clipped"
+msgid "set strength of reconstruction in regions with all photosites clipped"
 msgstr ""
 
 #: ../src/iop/highlights.c:2372
@@ -24147,6 +24162,9 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1343
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "highlights recovery"
+#~ msgstr "reconstrução de realces"
 
 #~ msgid "direct sunlight"
 #~ msgstr "luz do sol direta"
