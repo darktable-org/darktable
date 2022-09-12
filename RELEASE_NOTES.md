@@ -203,19 +203,20 @@ No samples on raw.pixls.us
 ## Translations
 
 - Czech
-- German
+- Brazilian Portuguese
+- Chinese - China
+- Chinese - Taiwan
+- Dutch
 - Esperanto
 - European Spanish
 - Finnish
 - French
+- German
 - Hebrew
 - Hungarian
 - Italian
 - Japanese
-- Dutch
-- Brazilian Portuguese
 - Russian
 - Slovenian
 - Turkish
 - Ukrainian
-- Chinese - China
