@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-09 19:14+0200\n"
-"PO-Revision-Date: 2022-09-10 23:50+0300\n"
+"POT-Creation-Date: 2022-09-13 08:03+0200\n"
+"PO-Revision-Date: 2022-09-13 12:04+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2156,7 +2156,7 @@ msgstr "режим слайд-шоу"
 msgid "waiting time between each picture in slideshow"
 msgstr "час очікування між кожним знімком у слайд-шоу"
 
-#: ../build/bin/preferences_gen.h:8185 ../src/control/jobs/control_jobs.c:2361
+#: ../build/bin/preferences_gen.h:8185 ../src/control/jobs/control_jobs.c:2371
 #: ../src/libs/import.c:172
 msgid "import"
 msgstr "імпорт"
@@ -4021,6 +4021,7 @@ msgid "guided laplacians"
 msgstr "керовані лапласіани"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
+#: ../src/iop/highlights.c:2237
 msgid "segmentation based"
 msgstr "сегментація"
 
@@ -4739,40 +4740,40 @@ msgstr "Показ зображень на мапі"
 msgid "Print your images"
 msgstr "Друк зображень"
 
-#: ../src/bauhaus/bauhaus.c:3278
+#: ../src/bauhaus/bauhaus.c:3276
 msgid "button on"
 msgstr "кнопка on"
 
-#: ../src/bauhaus/bauhaus.c:3278
+#: ../src/bauhaus/bauhaus.c:3276
 msgid "button off"
 msgstr "кнопка off"
 
-#: ../src/bauhaus/bauhaus.c:3447 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3443 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "значення"
 
-#: ../src/bauhaus/bauhaus.c:3448 ../src/bauhaus/bauhaus.c:3454
+#: ../src/bauhaus/bauhaus.c:3444 ../src/bauhaus/bauhaus.c:3450
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "кнопка"
 
-#: ../src/bauhaus/bauhaus.c:3449
+#: ../src/bauhaus/bauhaus.c:3445
 msgid "force"
 msgstr "необмежено"
 
-#: ../src/bauhaus/bauhaus.c:3450
+#: ../src/bauhaus/bauhaus.c:3446
 msgid "zoom"
 msgstr "масштаб"
 
-#: ../src/bauhaus/bauhaus.c:3453
+#: ../src/bauhaus/bauhaus.c:3449
 msgid "selection"
 msgstr "вибір"
 
-#: ../src/bauhaus/bauhaus.c:3472
+#: ../src/bauhaus/bauhaus.c:3468
 msgid "slider"
 msgstr "повзунок"
 
-#: ../src/bauhaus/bauhaus.c:3477
+#: ../src/bauhaus/bauhaus.c:3473
 msgid "dropdown"
 msgstr "спадне меню"
 
@@ -5674,25 +5675,25 @@ msgstr "помилка завантаження каталогу `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "файл `%s' має невідомий формат!"
 
-#: ../src/common/darktable.c:291 ../src/control/jobs/control_jobs.c:2132
-#: ../src/control/jobs/control_jobs.c:2191
+#: ../src/common/darktable.c:291 ../src/control/jobs/control_jobs.c:2142
+#: ../src/control/jobs/control_jobs.c:2201
 #, c-format
 msgid "error loading file `%s'"
 msgstr "помилка завантаження файлу `%s'"
 
-#: ../src/common/darktable.c:1305
+#: ../src/common/darktable.c:1299
 msgid "configuration information"
 msgstr "інформація щодо налаштування"
 
-#: ../src/common/darktable.c:1307
+#: ../src/common/darktable.c:1301
 msgid "show this information again"
 msgstr "показати це наступного разу"
 
-#: ../src/common/darktable.c:1307
+#: ../src/common/darktable.c:1301
 msgid "understood"
 msgstr "зрозуміло"
 
-#: ../src/common/darktable.c:1745
+#: ../src/common/darktable.c:1739
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -5700,13 +5701,13 @@ msgstr ""
 "метод демозаїки RCD було встановлено за замовчуванням замість PPG через "
 "кращу якість та продуктивність."
 
-#: ../src/common/darktable.c:1747
+#: ../src/common/darktable.c:1741
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "щодо демозаїки масштабованих зображень в режимі темної кімнати перегляньте "
 "відповідний параметр в \"налаштування > темна кімната\""
 
-#: ../src/common/darktable.c:1753
+#: ../src/common/darktable.c:1747
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -5714,7 +5715,7 @@ msgstr ""
 "інтерфейс користувача та базові внутрішні елементи для налаштування "
 "продуктивності darktable змінилися."
 
-#: ../src/common/darktable.c:1755
+#: ../src/common/darktable.c:1749
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5722,15 +5723,15 @@ msgstr ""
 "ви більше не знайдете старих параметрів, замість цього \"в налаштування > "
 "обробка\" використовуйте:"
 
-#: ../src/common/darktable.c:1757
+#: ../src/common/darktable.c:1751
 msgid "1) darktable resources"
 msgstr "1) рівень ресурсів для darktable"
 
-#: ../src/common/darktable.c:1759
+#: ../src/common/darktable.c:1753
 msgid "2) tune OpenCL performance"
 msgstr "2) налаштування продуктивності OpenCL"
 
-#: ../src/common/darktable.c:1766
+#: ../src/common/darktable.c:1760
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
@@ -5738,7 +5739,7 @@ msgstr ""
 "деякі глобальні параметри конфігурації, що мають відношення до "
 "продуктивності OpenCL, більше не використовуються."
 
-#: ../src/common/darktable.c:1768
+#: ../src/common/darktable.c:1762
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
@@ -5746,7 +5747,7 @@ msgstr ""
 "замість цього ви знайдете окремі дані для пристроїв у 'cldevice_v4_canonical-"
 "name'. зміст:"
 
-#: ../src/common/darktable.c:1770
+#: ../src/common/darktable.c:1764
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
@@ -5754,7 +5755,7 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 
-#: ../src/common/darktable.c:1772
+#: ../src/common/darktable.c:1766
 msgid "you may tune as before except 'magic'"
 msgstr "ви можете регулювати ці параметри, як і раніше, за винятком 'magic'"
 
@@ -7287,7 +7288,7 @@ msgstr "зміщення часу"
 msgid "write sidecar files"
 msgstr "записати xmp файли"
 
-#: ../src/control/jobs/control_jobs.c:2270 ../src/control/jobs/film_jobs.c:297
+#: ../src/control/jobs/control_jobs.c:2280 ../src/control/jobs/film_jobs.c:297
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
@@ -7295,7 +7296,7 @@ msgstr[0] "імпортується %d зображення"
 msgstr[1] "імпортується %d зображення"
 msgstr[2] "імпортується %d зображень"
 
-#: ../src/control/jobs/control_jobs.c:2306
+#: ../src/control/jobs/control_jobs.c:2316
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
@@ -7303,7 +7304,7 @@ msgstr[0] "імпортується %d/%d зображення"
 msgstr[1] "імпортується %d/%d зображення"
 msgstr[2] "імпортується %d/%d зображень"
 
-#: ../src/control/jobs/control_jobs.c:2314
+#: ../src/control/jobs/control_jobs.c:2324
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -8174,14 +8175,14 @@ msgstr "тимчасово вимкнути маску змішування"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "тимчасово вимкнути маску змішування. лише для модуля у фокусі"
 
-#: ../src/develop/develop.c:1519 ../src/gui/presets.c:971
+#: ../src/develop/develop.c:1519 ../src/gui/presets.c:1013
 msgid "display-referred default"
 msgstr "display-referred default"
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1521 ../src/gui/presets.c:973
+#: ../src/develop/develop.c:1521 ../src/gui/presets.c:1015
 #: ../src/iop/exposure.c:278 ../src/iop/exposure.c:287
 msgid "scene-referred default"
 msgstr "scene-referred default"
@@ -8199,12 +8200,12 @@ msgstr "новий екземпляр"
 msgid "duplicate instance"
 msgstr "зробити дублікат екземпляра"
 
-#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:3225
+#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:3232
 #: ../src/libs/masks.c:1098
 msgid "move up"
 msgstr "підняти"
 
-#: ../src/develop/imageop.c:946 ../src/develop/imageop.c:3226
+#: ../src/develop/imageop.c:946 ../src/develop/imageop.c:3233
 #: ../src/libs/masks.c:1101
 msgid "move down"
 msgstr "опустити"
@@ -8212,14 +8213,14 @@ msgstr "опустити"
 #. delete button label and tooltip will be updated based on trash pref
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
-#: ../src/develop/imageop.c:952 ../src/develop/imageop.c:3228
+#: ../src/develop/imageop.c:952 ../src/develop/imageop.c:3235
 #: ../src/gui/accelerators.c:143 ../src/gui/presets.c:488
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/masks.c:1055
 #: ../src/libs/tagging.c:1480 ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "видалити"
 
-#: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3229
+#: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3236
 #: ../src/libs/modulegroups.c:3553 ../src/libs/modulegroups.c:3916
 msgid "rename"
 msgstr "перейменувати"
@@ -8308,47 +8309,47 @@ msgstr ""
 "формат даних не відповідає\n"
 "вимогам модуля."
 
-#: ../src/develop/imageop.c:3224 ../src/develop/imageop.c:3234
+#: ../src/develop/imageop.c:3231 ../src/develop/imageop.c:3241
 #: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1289
 msgid "show"
 msgstr "показати"
 
-#: ../src/develop/imageop.c:3227 ../src/libs/modulegroups.c:3399
+#: ../src/develop/imageop.c:3234 ../src/libs/modulegroups.c:3399
 #: ../src/libs/modulegroups.c:3525 ../src/libs/modulegroups.c:3918
 #: ../src/libs/tagging.c:3247
 msgid "new"
 msgstr "новий"
 
-#: ../src/develop/imageop.c:3230 ../src/libs/duplicate.c:543
+#: ../src/develop/imageop.c:3237 ../src/libs/duplicate.c:543
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3914
 msgid "duplicate"
 msgstr "зняти копію"
 
-#: ../src/develop/imageop.c:3235
+#: ../src/develop/imageop.c:3242
 msgid "enable"
 msgstr "вмикаючий елемент"
 
-#: ../src/develop/imageop.c:3236
+#: ../src/develop/imageop.c:3243
 msgid "focus"
 msgstr "фокус"
 
-#: ../src/develop/imageop.c:3237 ../src/gui/accelerators.c:2261
+#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:2261
 msgid "instance"
 msgstr "екземпляр"
 
-#: ../src/develop/imageop.c:3238 ../src/gui/accelerators.c:105
+#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:105
 #: ../src/gui/accelerators.c:114 ../src/iop/atrous.c:1579
 #: ../src/libs/lib.c:1290 ../src/libs/modulegroups.c:3982
 msgid "reset"
 msgstr "скинути"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3239 ../src/gui/preferences.c:774
+#: ../src/develop/imageop.c:3246 ../src/gui/preferences.c:774
 #: ../src/libs/lib.c:1291
 msgid "presets"
 msgstr "пресети"
 
-#: ../src/develop/imageop.c:3251
+#: ../src/develop/imageop.c:3258
 msgid "processing module"
 msgstr "модуль обробки"
 
@@ -9357,7 +9358,7 @@ msgid "relative instance"
 msgstr "відносний екземпляр"
 
 #: ../src/gui/accelerators.c:621 ../src/gui/accelerators.c:908
-#: ../src/gui/accelerators.c:2251 ../src/gui/accelerators.c:3109
+#: ../src/gui/accelerators.c:2251 ../src/gui/accelerators.c:3107
 msgid "speed"
 msgstr "швидкість"
 
@@ -9717,12 +9718,12 @@ msgstr "пристрої введення повторно ініціалізо�
 msgid "fallback to move"
 msgstr "резервна дія з рухом"
 
-#: ../src/gui/accelerators.c:3181
+#: ../src/gui/accelerators.c:3179
 #, c-format
 msgid "%s not assigned"
 msgstr "%s не призначено"
 
-#: ../src/gui/accelerators.c:3333
+#: ../src/gui/accelerators.c:3331
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s призначено на %s"
@@ -10694,40 +10695,61 @@ msgstr "ви дійсно хочете оновити пресет `%s'?"
 msgid "update preset?"
 msgstr "оновити пресет?"
 
-#: ../src/gui/presets.c:1108 ../src/libs/modulegroups.c:3882
+#: ../src/gui/presets.c:939
+msgid "(first)"
+msgstr "(перший)"
+
+#: ../src/gui/presets.c:939
+msgid "(last)"
+msgstr "(останній)"
+
+#: ../src/gui/presets.c:971
+#, c-format
+msgid ""
+"preset %s\n"
+"%s"
+msgstr ""
+"пресет %s\n"
+"%s"
+
+#: ../src/gui/presets.c:972
+msgid "no presets"
+msgstr "немає пресетів"
+
+#: ../src/gui/presets.c:1150 ../src/libs/modulegroups.c:3882
 #: ../src/libs/modulegroups.c:3891
 msgid "manage module layouts"
 msgstr "керування розкладкою модулів"
 
-#: ../src/gui/presets.c:1116
+#: ../src/gui/presets.c:1158
 msgid "manage quick presets"
 msgstr "керування швидкими пресетами"
 
-#: ../src/gui/presets.c:1288
+#: ../src/gui/presets.c:1330
 msgid "manage quick presets list..."
 msgstr "список швидких пресетів..."
 
-#: ../src/gui/presets.c:1423
+#: ../src/gui/presets.c:1465
 msgid "(default)"
 msgstr "(за замовчуванням)"
 
-#: ../src/gui/presets.c:1444
+#: ../src/gui/presets.c:1486
 msgid "disabled: wrong module version"
 msgstr "вимкнено: неправильна версія модуля"
 
-#: ../src/gui/presets.c:1469 ../src/libs/lib.c:531
+#: ../src/gui/presets.c:1511 ../src/libs/lib.c:531
 msgid "edit this preset.."
 msgstr "редагувати цей пресет..."
 
-#: ../src/gui/presets.c:1473 ../src/libs/lib.c:535
+#: ../src/gui/presets.c:1515 ../src/libs/lib.c:535
 msgid "delete this preset"
 msgstr "видалити цей пресет"
 
-#: ../src/gui/presets.c:1479 ../src/libs/lib.c:543
+#: ../src/gui/presets.c:1521 ../src/libs/lib.c:543
 msgid "store new preset.."
 msgstr "зберегти новий пресет..."
 
-#: ../src/gui/presets.c:1485 ../src/libs/lib.c:555
+#: ../src/gui/presets.c:1527 ../src/libs/lib.c:555
 msgid "update preset"
 msgstr "оновити пресет"
 
@@ -14767,15 +14789,14 @@ msgid ""
 "- centripetal is better to avoids cusps and oscillations with close nodes "
 "but is less smooth\n"
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
-"exp)\n"
+"exp)"
 msgstr ""
 "змініть цей метод, якщо на кривій ви бачите коливання або виступи\n"
 "- кубічний сплайн кращий для створення плавних кривих, але коливається, коли "
 "вузли занадто близько\n"
 "- доцентровий кращий для уникнення виступів і коливань із близькими вузлами, "
 "але менш плавний\n"
-"- монотонний краще для точності чистих аналітичних функцій (log, gamma, "
-"exp)\n"
+"- монотонний краще для точності чистих аналітичних функцій (log, gamma, exp)"
 
 #: ../src/iop/crop.c:128 ../src/iop/rawprepare.c:856
 msgid "crop"
@@ -16341,10 +16362,10 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4452
 msgid ""
 "choose the statistical distribution of noise.\n"
-"this is useful to match natural sensor noise pattern.\n"
+"this is useful to match natural sensor noise pattern."
 msgstr ""
 "вибрати статистичний розподіл шуму.\n"
-"це корисно, щоб відповідати природній схемі шуму сенсора.\n"
+"це корисно, щоб відповідати природній схемі шуму сенсора."
 
 #: ../src/iop/filmicrgb.c:4520
 msgid "mid-tones saturation"
@@ -16623,10 +16644,6 @@ msgstr ""
 "відновлення пересвітленого: режими сегментації та керованих лапласіанів "
 "недоступні для сенсорів X-Trans. повертаємось до обрізання."
 
-#: ../src/iop/highlights.c:2237
-msgid "highlights recovery"
-msgstr "відновлення пересвітленого"
-
 #: ../src/iop/highlights.c:2323
 msgid "highlight reconstruction method"
 msgstr "метод відновлення переекспонованих ділянок"
@@ -16656,11 +16673,11 @@ msgstr ""
 msgid ""
 "dealing with isolated clipped segments in dark regions.\n"
 "increase to favour candidates found in segmentation analysis,\n"
-"decrease for simple inpainting.\n"
+"decrease for simple inpainting."
 msgstr ""
 "робота з ізольованими обрізаними сегментами в темних областях.\n"
 "збільште для надання переваги кандидатам, знайденим у аналізі сегментації,\n"
-"зменште для простого домальовування.\n"
+"зменште для простого домальовування."
 
 #: ../src/iop/highlights.c:2357
 msgid ""
@@ -16677,20 +16694,20 @@ msgstr ""
 "виберіть режим, відрегульований по розміру сегмента, або загальний режим, "
 "який намагається знайти найкращі налаштування для кожного сегмента.\n"
 "маленький сегмент означає області з діаметром менше 25 пікселів, великий "
-"найкраще підходить для більш ніж 100\n"
+"найкраще підходить для більш ніж 100.\n"
 "гладкі режими ігнорують вузькі непересвітлені структури."
 
 #: ../src/iop/highlights.c:2363
-msgid "set strenth of reconstruction in regions with all photosites clipped"
+msgid "set strength of reconstruction in regions with all photosites clipped"
 msgstr ""
-"встановити силу реконструкції в регіонах, де всі фотопікселі пересвітлені"
+"встановити силу реконструкції в областях, де всі фотопікселі пересвітлені"
 
 #: ../src/iop/highlights.c:2372
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 msgstr ""
-"додайте шум, щоб візуально змішати реконструйовані області\n"
+"додати шум, щоб візуально змішати реконструйовані області\n"
 "з рештою шумного зображення. корисно при високих ISO."
 
 #: ../src/iop/highlights.c:2376
@@ -23515,18 +23532,18 @@ msgstr "вийти з поточної розкладки"
 msgid "midi"
 msgstr "MIDI"
 
-#: ../src/libs/tools/midi.c:202
+#: ../src/libs/tools/midi.c:204
 msgid "using absolute encoding; reinitialise to switch to relative"
 msgstr ""
 "використання абсолютного кодування; повторно ініціалізуйте, щоб перейти до "
 "відносного"
 
-#: ../src/libs/tools/midi.c:206
+#: ../src/libs/tools/midi.c:208
 #, c-format
 msgid "%d more identical (down) moves before switching to relative encoding"
 msgstr "ще %d ідентичних рухів (униз) перед переходом на відносне кодування"
 
-#: ../src/libs/tools/midi.c:209
+#: ../src/libs/tools/midi.c:211
 #, c-format
 msgid "switching encoding to relative (down = %d)"
 msgstr "перемикання кодування на відносне (вниз = %d)"
@@ -24263,6 +24280,9 @@ msgstr ""
 #: ../src/views/view.c:1343
 msgid "mouse actions"
 msgstr "дії за допомогою миші"
+
+#~ msgid "highlights recovery"
+#~ msgstr "відновлення пересвітленого"
 
 #~ msgid "direct sunlight"
 #~ msgstr "прямі сонячні промені"
