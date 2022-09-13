@@ -15281,7 +15281,7 @@ msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
 "the mask icon shows the clipped areas.\n"
-"you might use this for tuning 'laplacian' or 'segmentation' modes,\n"
+"you might use this for tuning 'laplacian' or 'recovery' modes,\n"
 "especially if camera white point is incorrect."
 msgstr ""
 
