@@ -541,7 +541,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      const double tbw = (float)(tb >> closeup) * 2.0 / 2.5;  
+      const double tbw = (float)(tb >> closeup) * 2.0 / 3.0;  
       cairo_rectangle(cr, -tbw, -tbw, wd + 2.0 * tbw, ht + 2.0 * tbw);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
@@ -591,7 +591,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      const double tbw = (float)(tb >> closeup) / 2.5;
+      const double tbw = (float)(tb >> closeup) / 3.0;
       cairo_rectangle(cr, tbw, tbw, width - 2.0 * tbw, height - 2.0 * tbw);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
@@ -1493,8 +1493,7 @@ static int _iso_12646_get_border(dt_develop_t *d)
 {
   if(d->iso_12646.enabled)
   {
-    // normally the width is defined by dpi, reduced for small monitors or windows
-    return MIN(1.75 * darktable.gui->dpi, 0.4 * MIN(d->width, d->height));
+    return MIN(1.75 * darktable.gui->dpi, 0.3 * MIN(d->width, d->height));
   }
   else
   {
