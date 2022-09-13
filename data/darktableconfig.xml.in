@@ -2878,7 +2878,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/filmicrgb/aspect_percent</name>
-    <type min="50" max="100">int</type>
+    <type min="30" max="100">int</type>
     <default>56</default>
     <shortdescription>aspect ratio of filmic rgb graph in per cent</shortdescription>
     <longdescription>aspect ratio of filmic rgb graph in per cent</longdescription>

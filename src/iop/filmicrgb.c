@@ -4176,6 +4176,17 @@ static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, g
   return FALSE;
 }
 
+static void _tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, dt_iop_filmicrgb_gui_data_t *g)
+{
+  if(page_num == 1 || page_num == 4) return;
+
+  GtkWidget *w = GTK_WIDGET(g->area);
+  g_object_ref(w);
+  gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(w)), w);
+  gtk_box_pack_end(GTK_BOX(page), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+  g_object_unref(w);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = IOP_GUI_ALLOC(filmicrgb);
@@ -4209,6 +4220,8 @@ void gui_init(dt_iop_module_t *self)
 
   // Page SCENE
   self->widget = dt_ui_notebook_page(g->notebook, N_("scene"), NULL);
+
+  gtk_box_pack_end(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   g->grey_point_source
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_point_source"));
@@ -4453,10 +4466,9 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is useful to match natural sensor noise pattern.\n"));
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = GTK_WIDGET(g->notebook);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->notebook), "switch_page", G_CALLBACK(_tab_switch), g);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
