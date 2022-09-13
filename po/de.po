@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-09 19:14+0200\n"
-"PO-Revision-Date: 2022-09-09 19:55+0200\n"
+"POT-Creation-Date: 2022-09-13 08:03+0200\n"
+"PO-Revision-Date: 2022-09-13 19:46+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -2182,7 +2182,7 @@ msgstr "Diashow"
 msgid "waiting time between each picture in slideshow"
 msgstr "Wartezeit zwischen zwei Bildern in der Diashow"
 
-#: ../build/bin/preferences_gen.h:8185 ../src/control/jobs/control_jobs.c:2361
+#: ../build/bin/preferences_gen.h:8185 ../src/control/jobs/control_jobs.c:2371
 #: ../src/libs/import.c:172
 msgid "import"
 msgstr "Importieren"
@@ -4067,6 +4067,7 @@ msgid "guided laplacians"
 msgstr "Geführter Laplacian-Modus"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
+#: ../src/iop/highlights.c:2237
 msgid "segmentation based"
 msgstr "Segmentierungsbasiert"
 
@@ -4789,40 +4790,40 @@ msgstr "Zeige Bilder auf der Karte an"
 msgid "Print your images"
 msgstr "Drucke deine Bilder"
 
-#: ../src/bauhaus/bauhaus.c:3278
+#: ../src/bauhaus/bauhaus.c:3276
 msgid "button on"
 msgstr "Schaltfläche gedrückt"
 
-#: ../src/bauhaus/bauhaus.c:3278
+#: ../src/bauhaus/bauhaus.c:3276
 msgid "button off"
 msgstr "Schaltfläche nicht gedrückt"
 
-#: ../src/bauhaus/bauhaus.c:3447 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3443 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "Wert"
 
-#: ../src/bauhaus/bauhaus.c:3448 ../src/bauhaus/bauhaus.c:3454
+#: ../src/bauhaus/bauhaus.c:3444 ../src/bauhaus/bauhaus.c:3450
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "Schaltfläche"
 
-#: ../src/bauhaus/bauhaus.c:3449
+#: ../src/bauhaus/bauhaus.c:3445
 msgid "force"
 msgstr "Stärke"
 
-#: ../src/bauhaus/bauhaus.c:3450
+#: ../src/bauhaus/bauhaus.c:3446
 msgid "zoom"
 msgstr "Zoom"
 
-#: ../src/bauhaus/bauhaus.c:3453
+#: ../src/bauhaus/bauhaus.c:3449
 msgid "selection"
 msgstr "Auswahl"
 
-#: ../src/bauhaus/bauhaus.c:3472
+#: ../src/bauhaus/bauhaus.c:3468
 msgid "slider"
 msgstr "Regler"
 
-#: ../src/bauhaus/bauhaus.c:3477
+#: ../src/bauhaus/bauhaus.c:3473
 msgid "dropdown"
 msgstr "Dropdown"
 
@@ -5737,25 +5738,25 @@ msgstr "Fehler beim Laden von Verzeichnis „%s”"
 msgid "file `%s' has unknown format!"
 msgstr "Datei „%s” hat ein unbekanntes Format!"
 
-#: ../src/common/darktable.c:291 ../src/control/jobs/control_jobs.c:2132
-#: ../src/control/jobs/control_jobs.c:2191
+#: ../src/common/darktable.c:291 ../src/control/jobs/control_jobs.c:2142
+#: ../src/control/jobs/control_jobs.c:2201
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei „%s”"
 
-#: ../src/common/darktable.c:1305
+#: ../src/common/darktable.c:1299
 msgid "configuration information"
 msgstr "Information zur Konfiguration"
 
-#: ../src/common/darktable.c:1307
+#: ../src/common/darktable.c:1301
 msgid "show this information again"
 msgstr "diese Informationen erneut anzeigen"
 
-#: ../src/common/darktable.c:1307
+#: ../src/common/darktable.c:1301
 msgid "understood"
 msgstr "verstanden"
 
-#: ../src/common/darktable.c:1745
+#: ../src/common/darktable.c:1739
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -5763,13 +5764,13 @@ msgstr ""
 "Der RCD-Demosaicer wurde wegen seiner besseren Qualität und Performance "
 "anstelle von PPG als Standard definiert."
 
-#: ../src/common/darktable.c:1747
+#: ../src/common/darktable.c:1741
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "siehe Einstellungen/Dunkelkammer/Demosaicing für den herausgezoomten "
 "Dunkelkammermodus"
 
-#: ../src/common/darktable.c:1753
+#: ../src/common/darktable.c:1747
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -5777,7 +5778,7 @@ msgstr ""
 "Die Einstellmöglichkeiten und die zugrunde liegenden internen Funktionen zur "
 "Optimierung der darktable Performance haben sich geändert."
 
-#: ../src/common/darktable.c:1755
+#: ../src/common/darktable.c:1749
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5785,15 +5786,15 @@ msgstr ""
 "direkte Einstellung von Headroom und so weiter sind nicht mehr vorgesehen, "
 "dafür gibt es in Voreinstellungen/Bearbeitung:"
 
-#: ../src/common/darktable.c:1757
+#: ../src/common/darktable.c:1751
 msgid "1) darktable resources"
 msgstr "1) darktable Ressourcenzuweisung"
 
-#: ../src/common/darktable.c:1759
+#: ../src/common/darktable.c:1753
 msgid "2) tune OpenCL performance"
 msgstr "2) OpenCL Performance optimieren"
 
-#: ../src/common/darktable.c:1766
+#: ../src/common/darktable.c:1760
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
@@ -5801,7 +5802,7 @@ msgstr ""
 "einige globale Konfigurationswerte, die für die OpenCL-Leistung relevant "
 "sind, werden nicht mehr verwendet."
 
-#: ../src/common/darktable.c:1768
+#: ../src/common/darktable.c:1762
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
@@ -5809,7 +5810,7 @@ msgstr ""
 "Stattdessen stehen die gerätespezifischen Daten in 'cldevice_v4_canonical-"
 "name'. Inhalte sind:"
 
-#: ../src/common/darktable.c:1770
+#: ../src/common/darktable.c:1764
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
@@ -5817,7 +5818,7 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 
-#: ../src/common/darktable.c:1772
+#: ../src/common/darktable.c:1766
 msgid "you may tune as before except 'magic'"
 msgstr "tunen wie zuvor, aber ohne Automagisches Verhalten"
 
@@ -7326,21 +7327,21 @@ msgstr "Zeitversatz"
 msgid "write sidecar files"
 msgstr "XMP schreiben"
 
-#: ../src/control/jobs/control_jobs.c:2270 ../src/control/jobs/film_jobs.c:297
+#: ../src/control/jobs/control_jobs.c:2280 ../src/control/jobs/film_jobs.c:297
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "Importiere %d Bild"
 msgstr[1] "Importiere %d Bilder"
 
-#: ../src/control/jobs/control_jobs.c:2306
+#: ../src/control/jobs/control_jobs.c:2316
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "Importiere %d/%d Bild"
 msgstr[1] "Importiere %d/%d Bilder"
 
-#: ../src/control/jobs/control_jobs.c:2314
+#: ../src/control/jobs/control_jobs.c:2324
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -8217,7 +8218,7 @@ msgstr "Maskierung vorübergehend ausschalten"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "Maskierung des aktiven Moduls vorübergehend ausschalten"
 
-#: ../src/develop/develop.c:1519 ../src/gui/presets.c:971
+#: ../src/develop/develop.c:1519 ../src/gui/presets.c:1013
 msgid "display-referred default"
 msgstr "Vorgabe anzeigebezogene Bearbeitung"
 
@@ -8225,7 +8226,7 @@ msgstr "Vorgabe anzeigebezogene Bearbeitung"
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1521 ../src/gui/presets.c:973
+#: ../src/develop/develop.c:1521 ../src/gui/presets.c:1015
 #: ../src/iop/exposure.c:278 ../src/iop/exposure.c:287
 msgid "scene-referred default"
 msgstr "Vorgabe szenenbezogene Bearbeitung"
@@ -8243,12 +8244,12 @@ msgstr "neue Instanz"
 msgid "duplicate instance"
 msgstr "Instanz duplizieren"
 
-#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:3225
+#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:3232
 #: ../src/libs/masks.c:1098
 msgid "move up"
 msgstr "aufwärtsschieben"
 
-#: ../src/develop/imageop.c:946 ../src/develop/imageop.c:3226
+#: ../src/develop/imageop.c:946 ../src/develop/imageop.c:3233
 #: ../src/libs/masks.c:1101
 msgid "move down"
 msgstr "abwärtsschieben"
@@ -8256,14 +8257,14 @@ msgstr "abwärtsschieben"
 #. delete button label and tooltip will be updated based on trash pref
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
-#: ../src/develop/imageop.c:952 ../src/develop/imageop.c:3228
+#: ../src/develop/imageop.c:952 ../src/develop/imageop.c:3235
 #: ../src/gui/accelerators.c:143 ../src/gui/presets.c:488
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/masks.c:1055
 #: ../src/libs/tagging.c:1480 ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "löschen"
 
-#: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3229
+#: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3236
 #: ../src/libs/modulegroups.c:3553 ../src/libs/modulegroups.c:3916
 msgid "rename"
 msgstr "umbenennen"
@@ -8350,49 +8351,49 @@ msgstr ""
 "das Modul wurde an eine Position verschoben, \n"
 "in dem das Datenformat nicht den Anforderungen genügt."
 
-#: ../src/develop/imageop.c:3224 ../src/develop/imageop.c:3234
+#: ../src/develop/imageop.c:3231 ../src/develop/imageop.c:3241
 #: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1289
 msgid "show"
 msgstr "anzeigen"
 
-#: ../src/develop/imageop.c:3227 ../src/libs/modulegroups.c:3399
+#: ../src/develop/imageop.c:3234 ../src/libs/modulegroups.c:3399
 #: ../src/libs/modulegroups.c:3525 ../src/libs/modulegroups.c:3918
 #: ../src/libs/tagging.c:3247
 msgid "new"
 msgstr "neu"
 
-#: ../src/develop/imageop.c:3230 ../src/libs/duplicate.c:543
+#: ../src/develop/imageop.c:3237 ../src/libs/duplicate.c:543
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3914
 msgid "duplicate"
 msgstr "duplizieren"
 
-#: ../src/develop/imageop.c:3235
+#: ../src/develop/imageop.c:3242
 msgid "enable"
 msgstr "aktivieren"
 
 # keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
-#: ../src/develop/imageop.c:3236
+#: ../src/develop/imageop.c:3243
 msgid "focus"
 msgstr "Fokus"
 
-#: ../src/develop/imageop.c:3237 ../src/gui/accelerators.c:2261
+#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:2261
 msgid "instance"
 msgstr "Instanz"
 
-#: ../src/develop/imageop.c:3238 ../src/gui/accelerators.c:105
+#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:105
 #: ../src/gui/accelerators.c:114 ../src/iop/atrous.c:1579
 #: ../src/libs/lib.c:1290 ../src/libs/modulegroups.c:3982
 msgid "reset"
 msgstr "zurücksetzen"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3239 ../src/gui/preferences.c:774
+#: ../src/develop/imageop.c:3246 ../src/gui/preferences.c:774
 #: ../src/libs/lib.c:1291
 msgid "presets"
 msgstr "Voreinstellungen"
 
 # keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
-#: ../src/develop/imageop.c:3251
+#: ../src/develop/imageop.c:3258
 msgid "processing module"
 msgstr "Bearbeitungsmodule"
 
@@ -9333,7 +9334,6 @@ msgid "combo effect not found"
 msgstr "Kombinationseffekt nicht gefunden"
 
 #: ../src/gui/accelerators.c:477
-#, fuzzy
 msgid "(keypad)"
 msgstr "(Tastenfeld)"
 
@@ -9408,7 +9408,7 @@ msgid "relative instance"
 msgstr "relative Instanz"
 
 #: ../src/gui/accelerators.c:621 ../src/gui/accelerators.c:908
-#: ../src/gui/accelerators.c:2251 ../src/gui/accelerators.c:3109
+#: ../src/gui/accelerators.c:2251 ../src/gui/accelerators.c:3107
 msgid "speed"
 msgstr "Geschwindigkeit"
 
@@ -9769,12 +9769,12 @@ msgstr "Eingabegerät neu initialisiert "
 msgid "fallback to move"
 msgstr "Fallback zur Bewegung"
 
-#: ../src/gui/accelerators.c:3181
+#: ../src/gui/accelerators.c:3179
 #, c-format
 msgid "%s not assigned"
 msgstr "%s nicht zugewiesen"
 
-#: ../src/gui/accelerators.c:3333
+#: ../src/gui/accelerators.c:3331
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s zugewiesen an %s"
@@ -10748,40 +10748,61 @@ msgstr "Soll die Voreinstellung „%s” aktualisiert werden?"
 msgid "update preset?"
 msgstr "Voreinstellung aktualisieren?"
 
-#: ../src/gui/presets.c:1108 ../src/libs/modulegroups.c:3882
+#: ../src/gui/presets.c:939
+msgid "(first)"
+msgstr "(erster)"
+
+#: ../src/gui/presets.c:939
+msgid "(last)"
+msgstr "(letzter)"
+
+#: ../src/gui/presets.c:971
+#, c-format
+msgid ""
+"preset %s\n"
+"%s"
+msgstr ""
+"Voreinstellung %s\n"
+"%s"
+
+#: ../src/gui/presets.c:972
+msgid "no presets"
+msgstr "Keine Voreinstellungen"
+
+#: ../src/gui/presets.c:1150 ../src/libs/modulegroups.c:3882
 #: ../src/libs/modulegroups.c:3891
 msgid "manage module layouts"
 msgstr "Modullayouts verwalten"
 
-#: ../src/gui/presets.c:1116
+#: ../src/gui/presets.c:1158
 msgid "manage quick presets"
 msgstr "Voreinstellungen für Schnellzugriff auswählen"
 
-#: ../src/gui/presets.c:1288
+#: ../src/gui/presets.c:1330
 msgid "manage quick presets list..."
 msgstr "Schnellzugriffliste bearbeiten"
 
-#: ../src/gui/presets.c:1423
+#: ../src/gui/presets.c:1465
 msgid "(default)"
 msgstr "(Standard)"
 
-#: ../src/gui/presets.c:1444
+#: ../src/gui/presets.c:1486
 msgid "disabled: wrong module version"
 msgstr "deaktiviert: falsche Modul-Version"
 
-#: ../src/gui/presets.c:1469 ../src/libs/lib.c:531
+#: ../src/gui/presets.c:1511 ../src/libs/lib.c:531
 msgid "edit this preset.."
 msgstr "Diese Voreinstellung bearbeiten.."
 
-#: ../src/gui/presets.c:1473 ../src/libs/lib.c:535
+#: ../src/gui/presets.c:1515 ../src/libs/lib.c:535
 msgid "delete this preset"
 msgstr "Diese Voreinstellung löschen"
 
-#: ../src/gui/presets.c:1479 ../src/libs/lib.c:543
+#: ../src/gui/presets.c:1521 ../src/libs/lib.c:543
 msgid "store new preset.."
 msgstr "neue Voreinstellung speichern"
 
-#: ../src/gui/presets.c:1485 ../src/libs/lib.c:555
+#: ../src/gui/presets.c:1527 ../src/libs/lib.c:555
 msgid "update preset"
 msgstr "aktualisiere Voreinstellung"
 
@@ -14820,17 +14841,17 @@ msgid ""
 "- centripetal is better to avoids cusps and oscillations with close nodes "
 "but is less smooth\n"
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
-"exp)\n"
+"exp)"
 msgstr ""
 "Ändere die Interpolationsmethode, wenn Du Schwingungen oder Spitzen in der "
 "Kurve siehst.\n"
-"- „kubische Spline” ist besser geeignet, um glatte Kurven zu erzeugen, "
+"- „kubischer Spline” ist besser geeignet, um glatte Kurven zu erzeugen, "
 "oszilliert jedoch, wenn die Knoten zu dicht liegen.\n"
 "- „zentripetaler Spline” ist besser geeignet, um Spitzen und Schwingungen "
 "bei engen Knoten zu vermeiden, ist aber weniger glatt.\n"
 "- „monotoner Spline“ garantiert einen monotonen Verlauf zwischen "
 "benachbarten Knoten und vermeidet so jedes Überschwingen der "
-"Interpolationskurve.\n"
+"Interpolationskurve."
 
 #: ../src/iop/crop.c:128 ../src/iop/rawprepare.c:856
 msgid "crop"
@@ -16406,11 +16427,11 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4452
 msgid ""
 "choose the statistical distribution of noise.\n"
-"this is useful to match natural sensor noise pattern.\n"
+"this is useful to match natural sensor noise pattern."
 msgstr ""
 "Statistische Verteilung des Rauschens wählen.\n"
 "Dies ist nützlich zur Anpassung an das natürliche Rauschverhalten des "
-"Sensors.\n"
+"Sensors."
 
 #: ../src/iop/filmicrgb.c:4520
 msgid "mid-tones saturation"
@@ -16693,10 +16714,6 @@ msgstr ""
 "Highlights: Der geführte Laplacian und Segmentierungsbasierte Modus ist für "
 "X-Trans-Sensoren nicht verfügbar. Fallback auf Spitzlichter abschneiden."
 
-#: ../src/iop/highlights.c:2237
-msgid "highlights recovery"
-msgstr "Spitzlicht-Rekonstruktion"
-
 #: ../src/iop/highlights.c:2323
 msgid "highlight reconstruction method"
 msgstr "Methode zur Rekonstruktion der Spitzlichter"
@@ -16726,12 +16743,12 @@ msgstr ""
 msgid ""
 "dealing with isolated clipped segments in dark regions.\n"
 "increase to favour candidates found in segmentation analysis,\n"
-"decrease for simple inpainting.\n"
+"decrease for simple inpainting."
 msgstr ""
 "Umgang mit isolierten Segmenten mit Clipping in dunklen Regionen.\n"
 "Erhöhung, um bei der Segmentierungsanalyse gefundene Kandidaten zu "
 "bevorzugen,\n"
-"abnehmen für einfaches Inpainting.\n"
+"abnehmen für einfaches Inpainting."
 
 #: ../src/iop/highlights.c:2357
 msgid ""
@@ -16752,7 +16769,7 @@ msgstr ""
 "Die flachen Modi ignorieren schmale Strukturen ohne Clipping."
 
 #: ../src/iop/highlights.c:2363
-msgid "set strenth of reconstruction in regions with all photosites clipped"
+msgid "set strength of reconstruction in regions with all photosites clipped"
 msgstr ""
 "Stärke der Rekonstruktion in Bereichen, in denen alle Kanäle Clipping "
 "aufweisen"
@@ -22202,9 +22219,8 @@ msgid "remove module"
 msgstr "Modul entfernen"
 
 #: ../src/libs/modulegroups.c:2569
-#, fuzzy
 msgid "header needed for other widgets"
-msgstr "header needed for other widgets"
+msgstr "Modulheader für andere Widgets erforderlich"
 
 #: ../src/libs/modulegroups.c:2585 ../src/libs/modulegroups.c:2592
 msgid "add this widget"
@@ -23601,20 +23617,20 @@ msgstr "aktuelle Sicht verlassen"
 msgid "midi"
 msgstr "midi"
 
-#: ../src/libs/tools/midi.c:202
+#: ../src/libs/tools/midi.c:204
 msgid "using absolute encoding; reinitialise to switch to relative"
 msgstr ""
 "Verwendung absoluter Codierung; zur Umstellung auf relative Codierung neu "
 "initialisieren"
 
-#: ../src/libs/tools/midi.c:206
+#: ../src/libs/tools/midi.c:208
 #, c-format
 msgid "%d more identical (down) moves before switching to relative encoding"
 msgstr ""
 "%d weitere identische (Druckgeschwindigkeit) Bewegungen vor dem Wechsel zur "
 "relativen Codierung"
 
-#: ../src/libs/tools/midi.c:209
+#: ../src/libs/tools/midi.c:211
 #, c-format
 msgid "switching encoding to relative (down = %d)"
 msgstr "Umstellung der Codierung auf relativ ( Druckgeschwindigkeit = %d)"
@@ -24355,6 +24371,9 @@ msgstr ""
 #: ../src/views/view.c:1343
 msgid "mouse actions"
 msgstr "Mausaktionen"
+
+#~ msgid "highlights recovery"
+#~ msgstr "Spitzlicht-Rekonstruktion"
 
 #~ msgid "direct sunlight"
 #~ msgstr "direkte Sonneneinstrahlung"
