@@ -2327,7 +2327,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->clip,
                               _("manually adjust the clipping threshold mostly used against "
                                 "magenta highlights\nthe mask icon shows the clipped areas.\n"
-                                "you might use this for tuning 'laplacian' or 'recovery' modes,\n"
+                                "you might use this for tuning 'laplacian' or 'segmentation' modes,\n"
                                 "especially if camera white point is incorrect."));
   dt_bauhaus_widget_set_quad_paint(g->clip, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->clip, TRUE);
