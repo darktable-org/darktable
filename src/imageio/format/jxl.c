@@ -43,7 +43,7 @@ typedef struct dt_imageio_jxl_gui_data_t
 {
   // Int (0:8b, 1:10b, 2:12b, 3:16b, 4:half, 5:float)
   GtkWidget *bpp;
-  // Int (0-100): the quality of the image, roughly corresponding to JPEG quality (100 is lossless)
+  // Int (4-100): the quality of the image, roughly corresponding to JPEG quality (100 is lossless)
   GtkWidget *quality;
   // Bool: whether to encode using the original color profile or the internal XYB one
   GtkWidget *original;
@@ -188,9 +188,9 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   else
   {
     basic_info.uses_original_profile = params->original == FALSE ? JXL_FALSE : JXL_TRUE;
-    float distance = params->quality >= 30 ? 0.1f + (100 - params->quality) * 0.09f
-                                           : 6.4f + powf(2.5f, (30 - params->quality) / 5.0f) / 6.25f;
-    LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, distance));
+    const float distance = params->quality >= 30 ? 0.1f + (100 - params->quality) * 0.09f
+                                           : 6.24f + powf(2.5f, (30 - params->quality) / 5.0f) / 6.25f;
+    LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, MIN(distance, 25.0f)));
   }
 
   LIBJXL_ASSERT(JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_EFFORT, params->effort));
@@ -473,8 +473,8 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   dt_bauhaus_combobox_set(g->bpp, bpp);
 
   int quality = d->quality;
-  if(quality < 0)
-    quality = 0;
+  if(quality < 4)
+    quality = 4;
   else if(quality > 100)
     quality = 100;
   dt_bauhaus_slider_set(g->quality, quality);
