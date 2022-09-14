@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-13 12:29-0300\n"
-"PO-Revision-Date: 2022-09-13 12:30-0300\n"
+"POT-Creation-Date: 2022-09-14 12:06-0300\n"
+"PO-Revision-Date: 2022-09-14 12:06-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -4740,40 +4740,40 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:3276
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button on"
 msgstr "botão ligado"
 
-#: ../src/bauhaus/bauhaus.c:3276
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button off"
 msgstr "botão desligado"
 
-#: ../src/bauhaus/bauhaus.c:3443 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3445 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:3444 ../src/bauhaus/bauhaus.c:3450
+#: ../src/bauhaus/bauhaus.c:3446 ../src/bauhaus/bauhaus.c:3452
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:3445
+#: ../src/bauhaus/bauhaus.c:3447
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:3446
+#: ../src/bauhaus/bauhaus.c:3448
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3449
+#: ../src/bauhaus/bauhaus.c:3451
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:3468
+#: ../src/bauhaus/bauhaus.c:3470
 msgid "slider"
 msgstr "controle deslizante"
 
-#: ../src/bauhaus/bauhaus.c:3473
+#: ../src/bauhaus/bauhaus.c:3475
 msgid "dropdown"
 msgstr "menu flutuante"
 
@@ -16566,7 +16566,9 @@ msgstr "reconstrução, raw"
 msgid ""
 "highlights: guided laplacian and segmentation modes are not available for X-"
 "Trans sensors. falling back to clip."
-msgstr "realces: modos laplaciano guiado e segmentação não estão disponíveis para sensores X-Trans. revertendo para recorte."
+msgstr ""
+"realces: modos laplaciano guiado e segmentação não estão disponíveis para "
+"sensores X-Trans. revertendo para recorte."
 
 #: ../src/iop/highlights.c:2323
 msgid "highlight reconstruction method"
@@ -16608,13 +16610,20 @@ msgid ""
 "choose a mode tuned for segment size or the generic mode that tries to find "
 "best settings for every segment.\n"
 "small means areas with a diameter less than 25 pixels, large is best for "
-"greater than 100\n"
+"greater than 100.\n"
 "the flat modes ignore narrow unclipped structures."
 msgstr ""
+"aproxima dados perditos em regiões com todos os canais truncados, o efeito "
+"depende do tamanho do segmento e gradientes da borda.\n"
+"ecolha um modo ajustado para tamanho de segmento ou o modo genérico que "
+"tenta encontrar a melhor definição para cada segmento.\n"
+"pequeno significa áreas com diâmentro menor que 25 pixels, grande é melhor "
+"para maior que 100.\n"
+"o modo uniforme ignora estruturas truncadas estreitas."
 
 #: ../src/iop/highlights.c:2363
 msgid "set strength of reconstruction in regions with all photosites clipped"
-msgstr ""
+msgstr "dfine a força da reconstrução em regiões com todos os canais truncados"
 
 #: ../src/iop/highlights.c:2372
 msgid ""
