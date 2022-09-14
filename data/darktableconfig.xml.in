@@ -2622,7 +2622,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/jxl/quality</name>
-    <type min="0" max="100">int</type>
+    <type min="4" max="100">int</type>
     <default>95</default>
     <shortdescription/>
     <longdescription/>
