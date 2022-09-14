@@ -56,7 +56,7 @@ Requirements
 ### Supported platforms
 
 * Linux (64 bit)
-* Free BSD (64 bit)
+* FreeBSD (64 bit)
 * Windows 8 (64 bit), Windows 10 (64 bit)
 * macOS
 
@@ -90,7 +90,7 @@ you can build the software yourself following the instructions [below](#building
 4.0.0 (stable)
 
 * [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.0.0/darktable-4.0.0-win64.exe)
-* [Download executable for mac OS](https://github.com/darktable-org/darktable/releases/download/release-4.0.0/darktable-4.0.0.dmg)
+* [Download executable for macOS](https://github.com/darktable-org/darktable/releases/download/release-4.0.0/darktable-4.0.0.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -155,13 +155,13 @@ Compatible compilers:
 
 Required dependencies (minimum version):
 * CMake 3.10
-* Gtk 3.22
-* Glib 2.40
+* GTK 3.22
+* GLib 2.40
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
 * Exiv2 0.24 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
 
 Required dependencies (no version requirement):
-* Lcms2
+* Little CMS 2
 
 Optional dependencies (minimum version):
 * OpenMP 4.5 *(for CPU multi-threading and SIMD vectorization)*
@@ -177,8 +177,8 @@ Optional dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)*
 * OpenEXR *(for EXR import and export)*
 * OpenJPEG *(for Jpeg2000 export)*
-* Colord, Xatom *(for fetching the system display color profile)*
-* G'Mic *(for .gmz compressed LUT support)*
+* colord, Xatom *(for fetching the system display color profile)*
+* G'MIC *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*
 * SDL2 *(for gamepad input support)*
 * CUPS *(for print mode support)*
@@ -273,7 +273,7 @@ git checkout tags/release-4.0.0
 
 ### Get submodules
 
-Note that [LibXCF](https://github.com/houz/libxcf.git), [OpenCL](https://github.com/KhronosGroup/OpenCL-Headers.git), [rawspeed](https://github.com/darktable-org/rawspeed), [whereami](https://github.com/gpakosz/whereami) and [LibRaw](https://github.com/LibRaw/LibRaw) are tracked via git submodules, so after checking-out darktable, you need to update/checkout the submodules too:
+Note that [libxcf](https://github.com/houz/libxcf.git), [OpenCL](https://github.com/KhronosGroup/OpenCL-Headers.git), [RawSpeed](https://github.com/darktable-org/rawspeed), [whereami](https://github.com/gpakosz/whereami) and [LibRaw](https://github.com/LibRaw/LibRaw) are tracked via git submodules, so after checking-out darktable, you need to update/checkout the submodules too:
 
 ```bash
 git submodule update --init
