@@ -728,6 +728,7 @@ int generate_preset_combo(struct dt_iop_module_t *self)
         }
       }
     }
+    
 
   return presets_found;
 }
@@ -1045,7 +1046,7 @@ static void _display_wb_error(struct dt_iop_module_t *self)
 
   ++darktable.gui->reset;
 
-  if(self->dev->proxy.chroma_adaptation != NULL && !self->dev->proxy.wb_is_D65)
+  if(self->dev->proxy.chroma_adaptation != NULL && !self->dev->proxy.wb_is_D65 && !dt_image_is_monochrome(&self->dev->image_storage))
   {
     // our second biggest problem : another module is doing CAT elsewhere in the pipe
     dt_iop_set_module_trouble_message(self, _("white balance applied twice"),
@@ -1076,13 +1077,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
 
-  const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
+  const gboolean true_monochrome = dt_image_monochrome_flags(&self->dev->image_storage) & DT_IMAGE_MONOCHROME;
   const gboolean is_raw = dt_image_is_matrix_correction_supported(&self->dev->image_storage);
-  self->hide_enable_button = monochrome;
+  self->hide_enable_button = true_monochrome;
   self->default_enabled = is_raw;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "disabled" : "enabled");
 
-//  if(self->hide_enable_button) return;
+  if(self->hide_enable_button) return;
 
   dt_iop_color_picker_reset(self, TRUE);
 
@@ -1392,21 +1393,17 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev || module->dev->image_storage.id == -1) return;
 
   const gboolean is_raw = dt_image_is_matrix_correction_supported(&module->dev->image_storage);
-  const gboolean monochrome = dt_image_is_monochrome(&module->dev->image_storage);
+  const gboolean true_monochrome = dt_image_monochrome_flags(&module->dev->image_storage) & DT_IMAGE_MONOCHROME;
   const gboolean is_modern =
     dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
 
   module->default_enabled = 0;
-  module->hide_enable_button = 0;
+  module->hide_enable_button = true_monochrome;
 
-  // White balance module doesn't need to be enabled for monochrome raws (like
+  // White balance module doesn't need to be enabled for true_monochrome raws (like
   // for leica monochrom cameras). prepare_matrices is a noop as well, as there
   // isn't a color matrix, so we can skip that as well.
-  if(monochrome)
-  {
-    module->hide_enable_button = 1;
-  }
-  else
+  if(!true_monochrome)
   {
     if(module->gui_data) prepare_matrices(module);
 
