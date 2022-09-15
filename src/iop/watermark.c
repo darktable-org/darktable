@@ -1076,18 +1076,16 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Simple text
   label = dt_ui_label_new(_("text"));
-  g->text = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(g->text), 1);
-  gtk_widget_set_tooltip_text(g->text, _("text string, tag:\n$(WATERMARK_TEXT)"));
-  const char *str = dt_conf_get_string_const("plugins/darkroom/watermark/text");
-  gtk_entry_set_text(GTK_ENTRY(g->text), str);
-
+  g->text = dt_action_entry_new(DT_ACTION(self), N_("text"), G_CALLBACK(text_callback), self,
+                                _("text string, tag:\n$(WATERMARK_TEXT)"),
+                                dt_conf_get_string_const("plugins/darkroom/watermark/text"));
+  gtk_entry_set_placeholder_text(GTK_ENTRY(g->text), _("content"));
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->text, label, GTK_POS_RIGHT, 2, 1);
 
   // Text font
   label = dtgtk_reset_label_new(_("font"), self, &p->font, sizeof(p->font));
-  str = dt_conf_get_string_const("plugins/darkroom/watermark/font");
+  const char *str = dt_conf_get_string_const("plugins/darkroom/watermark/font");
   g->fontsel = gtk_font_button_new_with_font(str==NULL?"DejaVu Sans 10":str);
   GtkWidget *child = dt_gui_container_first_child(GTK_CONTAINER(gtk_bin_get_child(GTK_BIN(g->fontsel))));
   gtk_label_set_ellipsize(GTK_LABEL(child), PANGO_ELLIPSIZE_MIDDLE);
@@ -1168,7 +1166,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->watermarks), "value-changed", G_CALLBACK(watermark_callback), self);
   g_signal_connect(G_OBJECT(g->refresh), "clicked", G_CALLBACK(refresh_callback), self);
-  g_signal_connect(G_OBJECT(g->text), "changed", G_CALLBACK(text_callback), self);
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(colorpick_color_set), self);
   g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(fontsel_callback), self);
 }

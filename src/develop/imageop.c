@@ -1406,8 +1406,7 @@ static void _init_module_so(void *m)
   // do not init accelerators if there is no gui
   if(darktable.gui)
   {
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_IOP, module->op, module->name(),
-                                     .owner = &darktable.control->actions_iops };
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_IOP, module->op, module->name() };
     dt_action_insert_sorted(&darktable.control->actions_iops, &module->actions);
 
     // Calling the accelerator initialization callback, if present
