@@ -467,34 +467,27 @@ void gui_init(dt_imageio_module_format_t *self)
   // Bit depth combo box
   const int bpp_last = dt_conf_get_int("plugins/imageio/format/exr/bpp");
 
-  gui->bpp = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->bpp, NULL, N_("bit depth"));
-
-  dt_bauhaus_combobox_add(gui->bpp, _("16 bit"));
-  dt_bauhaus_combobox_add(gui->bpp, _("32 bit"));
-  dt_bauhaus_combobox_set(gui->bpp, (bpp_last >> 4) - EXR_PT_HALF);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp,self, NULL, N_("bit depth"), NULL,
+                               (bpp_last >> 4) - EXR_PT_HALF, bpp_combobox_changed, self,
+                               N_("16 bit"), N_("32 bit"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->bpp), "value-changed", G_CALLBACK(bpp_combobox_changed), NULL);
 
   // Compression combo box
   const int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
-  gui->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression"));
-
-  dt_bauhaus_combobox_add(gui->compression, _("uncompressed"));
-  dt_bauhaus_combobox_add(gui->compression, _("RLE"));
-  dt_bauhaus_combobox_add(gui->compression, _("ZIPS"));
-  dt_bauhaus_combobox_add(gui->compression, _("ZIP"));
-  dt_bauhaus_combobox_add(gui->compression, _("PIZ"));
-  dt_bauhaus_combobox_add(gui->compression, _("PXR24"));
-  dt_bauhaus_combobox_add(gui->compression, _("B44"));
-  dt_bauhaus_combobox_add(gui->compression, _("B44A"));
-  dt_bauhaus_combobox_add(gui->compression, _("DWAA"));
-  dt_bauhaus_combobox_add(gui->compression, _("DWAB"));
-  dt_bauhaus_combobox_set(gui->compression, compression_last);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("compression"), NULL,
+                               compression_last, compression_combobox_changed, self,
+                               N_("uncompressed"),
+                               N_("RLE"),
+                               N_("ZIPS"),
+                               N_("ZIP"),
+                               N_("PIZ"),
+                               N_("PXR24"),
+                               N_("B44"),
+                               N_("B44A"),
+                               N_("DWAA"),
+                               N_("DWAB"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_combobox_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

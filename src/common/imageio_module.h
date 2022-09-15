@@ -21,6 +21,7 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/metadata_export.h"
+#include "common/action.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -68,6 +69,8 @@ struct dt_dev_pixelpipe_t;
 /* responsible for image encoding, such as jpg,png,etc */
 typedef struct dt_imageio_module_format_t
 {
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "imageio/format/imageio_format_api.h"
 
@@ -90,6 +93,8 @@ typedef struct dt_imageio_module_format_t
 /* responsible for image storage, such as flickr, harddisk, etc */
 typedef struct dt_imageio_module_storage_t
 {
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "imageio/storage/imageio_storage_api.h"
 
