@@ -1456,7 +1456,7 @@ error:
   if(LF_odd) dt_opencl_release_mem_object(LF_odd);
   for(int s = 0; s < scales; s++) if(HF[s]) dt_opencl_release_mem_object(HF[s]);
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_diffuse] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_diffuse] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 

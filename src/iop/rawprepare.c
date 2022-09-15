@@ -564,7 +564,7 @@ error:
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
   for(int i = 0; i < 4; i++) dt_opencl_release_mem_object(dev_gainmap[i]);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_rawprepare] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_rawprepare] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

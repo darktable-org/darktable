@@ -1650,7 +1650,7 @@ int process_cl(struct dt_iop_module_t *module,
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_liquify] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_liquify] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 

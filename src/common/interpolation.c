@@ -1980,7 +1980,7 @@ error:
   dt_opencl_release_mem_object(dev_vmeta);
   dt_free_align(hlength);
   dt_free_align(vlength);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return err;
 }
 

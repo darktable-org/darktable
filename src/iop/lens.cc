@@ -859,7 +859,7 @@ error:
   dt_opencl_release_mem_object(dev_tmpbuf);
   if(tmpbuf != NULL) dt_free_align(tmpbuf);
   if(modifier != NULL) delete modifier;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_lens] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_lens] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

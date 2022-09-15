@@ -511,7 +511,7 @@ error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
   dt_free_align(maximum);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

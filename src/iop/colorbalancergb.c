@@ -1041,7 +1041,7 @@ error:
   if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
   if(gamut_LUT) dt_opencl_release_mem_object(gamut_LUT);
   if(hue_rotation_matrix_cl) dt_opencl_release_mem_object(hue_rotation_matrix_cl);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalancergb] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalancergb] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 

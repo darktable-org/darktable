@@ -810,7 +810,7 @@ error:
   dt_opencl_release_mem_object(dev_tmp2);
   free(dev_comb);
   free(dev_col);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve_fusion] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve_fusion] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -892,7 +892,7 @@ error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_coeffs);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve_lut] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve_lut] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 

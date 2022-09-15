@@ -473,7 +473,7 @@ error:
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_tmp2);
   dt_opencl_release_mem_object(dev_detail);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -615,7 +615,7 @@ error:
   for(int k = 0; k < max_scale; k++)
     dt_opencl_release_mem_object(dev_detail[k]);
   free(dev_detail);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif // USE_NEW_CL

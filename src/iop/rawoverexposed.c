@@ -387,7 +387,7 @@ error:
   dt_free_align(coordbuf);
   dt_opencl_release_mem_object(dev_raw);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_rawoverexposed] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_rawoverexposed] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
