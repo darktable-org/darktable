@@ -37,7 +37,7 @@
 // some pseudo error codes in dt opencl usage
 #define DT_OPENCL_DEFAULT_ERROR -999
 #define DT_OPENCL_SYSMEM_ALLOCATION -998
-
+#define DT_OPENCL_PROCESS_CL -997
 #include "common/darktable.h"
 
 #ifdef HAVE_OPENCL
@@ -147,7 +147,6 @@ typedef struct dt_opencl_device_t
   float benchmark;
   size_t memory_in_use;
   size_t peak_memory;
-  size_t tuned_available;
   size_t used_available;
   // flags what tuning modes should be used
   int tuneactive; 

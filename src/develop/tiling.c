@@ -1442,8 +1442,12 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process_cl of module */
-      if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
 
+      if(!self->process_cl(self, piece, input, output, &iroi, &oroi))
+      {
+        err = DT_OPENCL_PROCESS_CL;
+        goto error;
+      }
       /* aggregate resulting processed_maximum */
       /* TODO: check if there really can be differences between tiles and take
                appropriate action (calculate minimum, maximum, average, ...?) */
@@ -1898,8 +1902,11 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process_cl of module */
-      if(!self->process_cl(self, piece, input, output, &iroi_full, &oroi_full)) goto error;
-
+      if(!self->process_cl(self, piece, input, output, &iroi_full, &oroi_full))
+      {
+        err = DT_OPENCL_PROCESS_CL;
+        goto error;
+      }
       /* aggregate resulting processed_maximum */
       /* TODO: check if there really can be differences between tiles and take
                appropriate action (calculate minimum, maximum, average, ...?) */

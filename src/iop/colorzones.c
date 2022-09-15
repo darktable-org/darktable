@@ -573,7 +573,7 @@ error:
   dt_opencl_release_mem_object(dev_L);
   dt_opencl_release_mem_object(dev_a);
   dt_opencl_release_mem_object(dev_b);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorzones] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorzones] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
