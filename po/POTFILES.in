@@ -158,7 +158,6 @@ src/dtgtk/resetlabel.c
 src/dtgtk/thumbnail.c
 src/dtgtk/thumbnail_btn.c
 src/dtgtk/thumbtable.c
-src/external/wb_presets.c
 src/generate-cache/main.c
 src/gui/accelerators.c
 src/gui/gtk.c

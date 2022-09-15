@@ -1832,7 +1832,8 @@ static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *
 {
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
   if(self->enabled
-     && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
+     && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
+     && !dt_image_is_monochrome(&self->dev->image_storage))
   {
     // this module instance is doing chromatic adaptation
     if(_is_another_module_cat_on_pipe(self))
@@ -2144,7 +2145,7 @@ error:
   if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
   if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
   if(MIX_cl) dt_opencl_release_mem_object(MIX_cl);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixerrgb] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixerrgb] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 

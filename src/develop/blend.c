@@ -258,7 +258,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   const int oheight = roi_out->height;
   if(info) fprintf(stderr, "[_refine_with_detail_mask] in module %s %ix%i --> %ix%i\n", self->op, iwidth, iheight, owidth, oheight);
 
-  const int bufsize = MAX(iwidth * iheight, owidth * oheight);
+  const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
 
   tmp = dt_alloc_align_float(bufsize);
   lum = dt_alloc_align_float(bufsize);
@@ -275,16 +275,14 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
 
   if(warp_mask == NULL) goto error;
 
-  const int msize = owidth * oheight;
+  const size_t msize = (size_t)owidth * oheight;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask, warp_mask, msize) \
   schedule(simd:static) aligned(mask, warp_mask : 64)
  #endif
-  for(int idx =0; idx < msize; idx++)
-  {
+  for(size_t idx =0; idx < msize; idx++)
     mask[idx] = mask[idx] * warp_mask[idx];
-  }
   dt_free_align(warp_mask);
 
   return;
@@ -1265,7 +1263,7 @@ error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_ioppr_free_iccprofile_params_cl(&work_profile_info_cl, &work_profile_lut_cl, &dev_work_profile_info,
                                      &dev_work_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

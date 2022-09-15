@@ -356,7 +356,7 @@ error:
   dt_opencl_release_mem_object(dev_coeffs_L);
   dt_opencl_release_mem_object(dev_coeffs_ab);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_tonecurve] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_tonecurve] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1202,7 +1202,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(c->interpolator, _("change this method if you see oscillations or cusps in the curve\n"
                                                  "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
                                                  "- centripetal is better to avoids cusps and oscillations with close nodes but is less smooth\n"
-                                                 "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)\n"));
+                                                 "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)"));
   g_signal_connect(G_OBJECT(c->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
 
   c->preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");

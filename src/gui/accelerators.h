@@ -182,7 +182,10 @@ void dt_accel_connect_instance_iop(dt_iop_module_t *module);
 void dt_action_cleanup_instance_iop(dt_iop_module_t *module);
 
 // UX miscellaneous functions
-void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *text);
+void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *msg, ...);
+
+// check if widget intentionally hidden (to disable it)
+gboolean dt_action_widget_invisible(GtkWidget *w);
 
 // Get the speed multiplier for adjusting sliders and other widgets
 float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state);

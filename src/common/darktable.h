@@ -370,7 +370,6 @@ void dt_vprint(dt_debug_thread_t thread, const char *msg, ...) __attribute__((fo
 int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();
-size_t dt_get_iopcache_mem();
 
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline void* dt_calloc_align(size_t alignment, size_t size)
@@ -663,6 +662,34 @@ static inline void dt_unreachable_codepath_with_caller(const char *description, 
  *          created with previous DT_MAX_PATH_FOR_PARAMS.
  */
 #define DT_MAX_PATH_FOR_PARAMS 4096
+
+/*
+ * Helper functions for transition to gnome style xgettext translation context marking
+ *
+ * Many calls expect untranslated strings because they need to store them as ids in a language independent way.
+ * They then internally before displaying call Q_ to translate, which allows an embedded translation context to be specified.
+ * The qnome format "context|string" is used.
+ * Intltool does not support this format when it scans N_, so NC_("context","string") has to be used.
+ * But the standard NC_ does not propagate the context with the string. So here it is overridden to combine both parts.
+ *
+ * A better solution would be to switch to a modern xgettext https://wiki.gnome.org/MigratingFromIntltoolToGettext
+ *
+ *    xgettext --keyword=Q_:1g --keyword=N_:1g would allow using standard N_("context|string") to mark and pass on unchanged.
+ *
+ * This would also enable contextualised strings in introspection markups, like
+ *
+ *    DT_INTENT_SATURATION = INTENT_SATURATION, // $DESCRIPTION: "rendering intent|saturation"
+ *
+ * Before storing in a language-indpendent format, like shortcutsrc, NQ_ should be used to strip any context from the string.
+ */
+#undef NC_
+#define NC_(Context, String) (Context "|" String)
+
+static inline const gchar *NQ_(const gchar *String)
+{
+  const gchar *context_end = strchr(String, '|');
+  return context_end ? context_end + 1 : String;
+}
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

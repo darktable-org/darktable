@@ -590,7 +590,7 @@ void gui_reset(dt_lib_module_t *self)
   // style mode to overwrite as it was the initial behavior
   dt_bauhaus_combobox_set(d->style_mode, dt_confgen_get_bool(CONFIG_PREFIX "style_append", DT_DEFAULT));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
 
   // export metadata presets
   g_free(d->metadata_export);
@@ -968,13 +968,13 @@ static void _style_changed(GtkWidget *widget, dt_lib_export_t *d)
   if(dt_bauhaus_combobox_get(d->style) == 0)
   {
     dt_conf_set_string(CONFIG_PREFIX "style", "");
-    gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), FALSE);
+    gtk_widget_set_visible(GTK_WIDGET(d->style_mode), FALSE);
   }
   else
   {
     const gchar *style = dt_bauhaus_combobox_get_text(d->style);
     dt_conf_set_string(CONFIG_PREFIX "style", style);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), TRUE);
+    gtk_widget_set_visible(GTK_WIDGET(d->style_mode), TRUE);
   }
 }
 
@@ -1121,7 +1121,7 @@ void gui_init(dt_lib_module_t *self)
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->dimensions_type, self, NULL, N_("set size"),
                                _("choose a method for setting the output size"),
                                dt_conf_get_int(CONFIG_PREFIX "dimensions_type"),
-                               (GtkCallback)_dimensions_type_changed, d,
+                               _dimensions_type_changed, d,
                                N_("in pixels (for file)"),
                                N_("in cm (for print)"),
                                N_("in inch (for print)"),
@@ -1203,24 +1203,24 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->scale), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->size_in_px), FALSE, FALSE, 0);
 
-  d->upscale = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->upscale, NULL, N_("allow upscaling"));
-  dt_bauhaus_combobox_add(d->upscale, _("no"));
-  dt_bauhaus_combobox_add(d->upscale, _("yes"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->upscale, self, NULL, N_("allow upscaling"), NULL,
+                               dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0, _callback_bool,
+                               (gpointer)CONFIG_PREFIX "upscale",
+                               N_("no"), N_("yes"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->upscale, FALSE, TRUE, 0);
 
-  d->high_quality = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->high_quality, NULL, N_("high quality resampling"));
-  dt_bauhaus_combobox_add(d->high_quality, _("no"));
-  dt_bauhaus_combobox_add(d->high_quality, _("yes"));
-  gtk_widget_set_tooltip_text(d->high_quality, _("do high quality resampling during export"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->high_quality, self, NULL, N_("high quality resampling"),
+                               _("do high quality resampling during export"),
+                               dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0, _callback_bool,
+                               (gpointer)CONFIG_PREFIX "high_quality_processing",
+                               N_("no"), N_("yes"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->high_quality, FALSE, TRUE, 0);
 
-  d->export_masks = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->export_masks, NULL, N_("store masks"));
-  dt_bauhaus_combobox_add(d->export_masks, _("no"));
-  dt_bauhaus_combobox_add(d->export_masks, _("yes"));
-  gtk_widget_set_tooltip_text(d->export_masks, _("store masks as layers in exported images. only works for some formats."));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->export_masks, self, NULL, N_("store masks"),
+                               _("store masks as layers in exported images. only works for some formats."),
+                               dt_conf_get_bool(CONFIG_PREFIX "export_masks") ? 1 : 0, _callback_bool,
+                               (gpointer)CONFIG_PREFIX "export_masks",
+                               N_("no"), N_("yes"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->export_masks, FALSE, TRUE, 0);
 
   //  Add profile combo
@@ -1253,16 +1253,8 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add intent combo
 
-  d->intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->intent, NULL, N_("intent"));
-  dt_bauhaus_combobox_add(d->intent, _("image settings"));
-  dt_bauhaus_combobox_add(d->intent, _("perceptual"));
-  dt_bauhaus_combobox_add(d->intent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(d->intent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->intent, FALSE, TRUE, 0);
-
-  tooltip = g_strdup_printf(_("• perceptual: "
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->intent, self, NULL, N_("intent"),
+                               _("• perceptual: "
                               "smoothly moves out-of-gamut colors into gamut,"
                               " preserving gradations, but distorts in-gamut colors in the process."
                               " note that perceptual is often a proprietary LUT that depends"
@@ -1282,11 +1274,14 @@ void gui_init(dt_lib_module_t *self)
                               "• absolute colorimetric: "
                               "adapt white point of the image to the white point of the"
                               " destination medium and do nothing else. mainly used when"
-                              " proofing colors. (not suited for photography)."
-                              ""
-                              ));
-  gtk_widget_set_tooltip_text(d->intent, tooltip);
-  g_free(tooltip);
+                              " proofing colors. (not suited for photography)."),
+                               0, _intent_changed, self,
+                               N_("image settings"),
+                               N_("perceptual"),
+                               N_("relative colorimetric"),
+                               NC_("rendering intent", "saturation"),
+                               N_("absolute colorimetric"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->intent, FALSE, TRUE, 0);
 
   //  Add style combo
 
@@ -1298,32 +1293,17 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add check to control whether the style is to replace or append the current module
 
-  d->style_mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->style_mode, NULL, N_("mode"));
-
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->style_mode, self, NULL, N_("mode"),
+                               _("whether the style items are appended to the history or replacing the history"),
+                               dt_conf_get_bool(CONFIG_PREFIX "style_append") ? 1 : 0, _callback_bool,
+                               (gpointer)CONFIG_PREFIX "style_append",
+                               N_("replace history"), N_("append history"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->style_mode, FALSE, TRUE, 0);
-
-  dt_bauhaus_combobox_add(d->style_mode, _("replace history"));
-  dt_bauhaus_combobox_add(d->style_mode, _("append history"));
-
-  dt_bauhaus_combobox_set(d->style_mode, 0);
-
-  gtk_widget_set_tooltip_text(d->style_mode,
-                              _("whether the style items are appended to the history or replacing the history"));
 
   //  Set callback signals
 
-  g_signal_connect(G_OBJECT(d->upscale), "value-changed", G_CALLBACK(_callback_bool),
-                   (gpointer)CONFIG_PREFIX "upscale");
-  g_signal_connect(G_OBJECT(d->high_quality), "value-changed", G_CALLBACK(_callback_bool),
-                   (gpointer)CONFIG_PREFIX "high_quality_processing");
-  g_signal_connect(G_OBJECT(d->export_masks), "value-changed", G_CALLBACK(_callback_bool),
-                   (gpointer)CONFIG_PREFIX "export_masks");
-  g_signal_connect(G_OBJECT(d->intent), "value-changed", G_CALLBACK(_intent_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(_profile_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(_style_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_callback_bool),
-                   (gpointer)CONFIG_PREFIX "style_append");
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
                             G_CALLBACK(_lib_export_styles_changed_callback), self);
@@ -1369,10 +1349,6 @@ void gui_init(dt_lib_module_t *self)
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(setting));
   dt_bauhaus_combobox_set(d->storage, storage_index);
 
-  dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0);
-  dt_bauhaus_combobox_set(d->high_quality, dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0);
-  dt_bauhaus_combobox_set(d->export_masks, dt_conf_get_bool(CONFIG_PREFIX "export_masks") ? 1 : 0);
-
   dt_bauhaus_combobox_set(d->intent, dt_conf_get_int(CONFIG_PREFIX "iccintent") + 1);
 
   // iccprofile
@@ -1410,9 +1386,8 @@ void gui_init(dt_lib_module_t *self)
     dt_bauhaus_combobox_set(d->style, 0);
 
   // style mode to overwrite as it was the initial behavior
-  dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool(CONFIG_PREFIX "style_append"));
-
-  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
+  gtk_widget_set_no_show_all(d->style_mode, TRUE);
+  gtk_widget_set_visible(d->style_mode, dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
 
   // export metadata presets
   d->metadata_export = dt_lib_export_metadata_get_conf();
@@ -2045,4 +2020,3 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -66,7 +66,7 @@ typedef enum dt_pixelpipe_picker_source_t
 static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
                               dt_develop_t *dev, dt_iop_buffer_dsc_t *dsc);
 
-static char *_pipe_type_to_str(int pipe_type)
+const char *dt_dev_pixelpipe_type_to_str(int pipe_type)
 {
   const gboolean fast = (pipe_type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
   char *r = NULL;
@@ -132,15 +132,13 @@ gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, in
 
 gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
-  // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 32, dt_get_iopcache_mem() / 5lu);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 12, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   return res;
 }
 
 gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 {
-  // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
   const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 5, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
   return res;
@@ -148,8 +146,8 @@ gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 
 gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, dt_get_iopcache_mem() * 4lu / 5lu);
+  size_t csize = MAX(64*1024*1024, darktable.dtresources.mipmap_memory / 4);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, csize);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
@@ -412,7 +410,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with defaults_params for [%s]\n", _pipe_type_to_str(pipe->type));
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with defaults_params for [%s]\n", dt_dev_pixelpipe_type_to_str(pipe->type));
 
   // call reset_params on all pieces first. This is mandatory to init utility modules that don't have an history stack
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
@@ -424,7 +422,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
                          pipe, piece);
   }
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for [%s]\n", _pipe_type_to_str(pipe->type));
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for [%s]\n", dt_dev_pixelpipe_type_to_str(pipe->type));
 
   // go through all history items and adjust params
   GList *history = dev->history;
@@ -443,12 +441,12 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   if(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for [%s]\n", hist->module->op, _pipe_type_to_str(pipe->type));
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for [%s]\n", hist->module->op, dt_dev_pixelpipe_type_to_str(pipe->type));
     dt_dev_pixelpipe_synch(pipe, dev, history);
   }
   else
   {
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for [%s]\n", _pipe_type_to_str(pipe->type));
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for [%s]\n", dt_dev_pixelpipe_type_to_str(pipe->type));
   }
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
@@ -457,7 +455,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changing for [%s], flag %i\n", _pipe_type_to_str(pipe->type), pipe->changed);
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changing for [%s], flag %i\n", dt_dev_pixelpipe_type_to_str(pipe->type), pipe->changed);
   // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
   if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
   {
@@ -1135,10 +1133,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   }
   if(cache_available)
   {
-    dt_print(DT_DEBUG_DEV, "[dt_dev_pixelpipe_process_rec] [%s], cache available for `%s' with hash %lu\n",
-       _pipe_type_to_str(pipe->type), (module) ? module->so->op : "buffer", (long unsigned int)hash);
-
-    dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, (module) ? module->so->op : NULL, FALSE);
+    dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, (module) ? module->so->op : NULL, FALSE);
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return 1;
@@ -1175,7 +1170,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       {
         *output = pipe->input;
       }
-      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, NULL, FALSE))
+      else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, NULL, FALSE))
       {
         if(roi_in.scale == 1.0f)
         {
@@ -1215,7 +1210,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       // else found in cache.
     }
 
-    dt_show_times_f(&start, "[dev_pixelpipe]", "initing base buffer [%s]", _pipe_type_to_str(pipe->type));
+    dt_show_times_f(&start, "[dev_pixelpipe]", "initing base buffer [%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return 1;
@@ -1277,11 +1272,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     input_important |= check_module_now_important(pipe, module);
 
   important |= input_important;
-  dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : NULL, important);
-
-  if(important && module)
-    dt_print(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] reserving high priority cacheline for `%s' (%luMB)\n",
-      _pipe_type_to_str(pipe->type), module->op, bufsize / 1024lu / 1024lu);
+  dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, module ? module->so->op : NULL, important);
 
   if(dt_atomic_get_int(&pipe->shutdown))
   {
@@ -1955,7 +1946,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU
           ? "GPU"
           : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "",
-      _pipe_type_to_str(pipe->type));
+      dt_dev_pixelpipe_type_to_str(pipe->type));
   g_free(module_label);
   module_label = NULL;
 
@@ -1972,7 +1963,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   // we check for an important hint after processing the module as we want to track a runtime hint too.
   pipe->next_important_module = check_module_next_important(pipe, module);
   if(pipe->next_important_module)
-    dt_print(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] module %s passing important hint to next module\n", _pipe_type_to_str(pipe->type), module ? module->so->op : NULL);
+    dt_vprint(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] module %s passing important hint to next module\n", dt_dev_pixelpipe_type_to_str(pipe->type), module ? module->so->op : NULL);
 
   // warn on NaN or infinity
 #ifndef _DEBUG
@@ -2014,12 +2005,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       module_label = dt_history_item_get_name(module);
       if(hasnan)
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module_label,
-                _pipe_type_to_str(pipe->type));
+                dt_dev_pixelpipe_type_to_str(pipe->type));
       if(hasinf)
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module_label,
-                _pipe_type_to_str(pipe->type));
+                dt_dev_pixelpipe_type_to_str(pipe->type));
       fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n", module_label,
-              min[0], min[1], min[2], max[0], max[1], max[2], _pipe_type_to_str(pipe->type));
+              min[0], min[1], min[2], max[0], max[1], max[2], dt_dev_pixelpipe_type_to_str(pipe->type));
       g_free(module_label);
     }
     else if((*out_format)->datatype == TYPE_FLOAT && (*out_format)->channels == 1)
@@ -2044,12 +2035,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       module_label = dt_history_item_get_name(module);
       if(hasnan)
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module_label,
-                _pipe_type_to_str(pipe->type));
+                dt_dev_pixelpipe_type_to_str(pipe->type));
       if(hasinf)
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module_label,
-                _pipe_type_to_str(pipe->type));
+                dt_dev_pixelpipe_type_to_str(pipe->type));
       fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f) max: (%f) [%s]\n", module_label, min, max,
-              _pipe_type_to_str(pipe->type));
+              dt_dev_pixelpipe_type_to_str(pipe->type));
       g_free(module_label);
     }
   }
@@ -2187,8 +2178,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->devid = (pipe->opencl_enabled) ? dt_opencl_lock_device(pipe->type)
                                        : -1; // try to get/lock opencl resource
 
-  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_DEV, "[pixelpipe_process] [%s] using device %d\n", _pipe_type_to_str(pipe->type),
-           pipe->devid);
+  dt_dev_pixelpipe_cache_checkmem(pipe);
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
   {
@@ -2266,7 +2256,7 @@ restart:
     dt_dev_pixelpipe_flush_caches(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
     dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n",
-             _pipe_type_to_str(pipe->type));
+             dt_dev_pixelpipe_type_to_str(pipe->type));
     goto restart; // try again (this time without opencl)
   }
 
@@ -2313,8 +2303,7 @@ restart:
   }
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
-  if(darktable.unmuted & DT_DEBUG_DEV)
-     dt_dev_pixelpipe_cache_print(&pipe->cache,  _pipe_type_to_str(pipe->type));
+  dt_dev_pixelpipe_cache_report(pipe);
 
   pipe->processing = 0;
   return 0;

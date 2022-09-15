@@ -289,7 +289,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_save(cri);
     // force middle grey in background
     if(dev->iso_12646.enabled)
-      cairo_set_source_rgb(cri, 0.5, 0.5, 0.5);
+      cairo_set_source_rgb(cri, 0.4663, 0.4663, 0.4663);
     else
       dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
 

@@ -2399,7 +2399,7 @@ error:
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(export_input_matrix_cl);
   dt_opencl_release_mem_object(export_output_matrix_cl);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_filmicrgb] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_filmicrgb] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -4450,7 +4450,7 @@ void gui_init(dt_iop_module_t *self)
   // Noise distribution
   g->noise_distribution = dt_bauhaus_combobox_from_params(self, "noise_distribution");
   gtk_widget_set_tooltip_text(g->noise_distribution, _("choose the statistical distribution of noise.\n"
-                                                       "this is useful to match natural sensor noise pattern.\n"));
+                                                       "this is useful to match natural sensor noise pattern."));
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);

@@ -362,9 +362,7 @@ static void _slider_zoom_toast(dt_bauhaus_widget_t *w)
 
   gchar *min_text = dt_bauhaus_slider_get_text(GTK_WIDGET(w), d->factor > 0 ? d->min : d->max);
   gchar *max_text = dt_bauhaus_slider_get_text(GTK_WIDGET(w), d->factor > 0 ? d->max : d->min);
-  gchar *text = g_strdup_printf(("\n[%s , %s]"), min_text, max_text);
-  dt_action_widget_toast(w->module, GTK_WIDGET(w), text);
-  g_free(text);
+  dt_action_widget_toast(w->module, GTK_WIDGET(w), "\n[%s , %s]", min_text, max_text);
   g_free(min_text);
   g_free(max_text);
 }
@@ -735,6 +733,8 @@ void dt_bauhaus_init()
 
   gtk_window_set_resizable(GTK_WINDOW(darktable.bauhaus->popup_window), FALSE);
   gtk_window_set_default_size(GTK_WINDOW(darktable.bauhaus->popup_window), 260, 260);
+  gtk_window_set_transient_for(GTK_WINDOW(darktable.bauhaus->popup_window),
+                               GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   // gtk_window_set_modal(GTK_WINDOW(c->popup_window), TRUE);
   // gtk_window_set_decorated(GTK_WINDOW(c->popup_window), FALSE);
 
@@ -941,8 +941,8 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const c
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
-  if(label) g_strlcpy(w->label, _(label), sizeof(w->label));
-  if(section) w->section = g_strdup(_(section));
+  if(label) g_strlcpy(w->label, Q_(label), sizeof(w->label));
+  if(section) w->section = g_strdup(Q_(section));
 
   if(w->module)
   {
@@ -1275,7 +1275,7 @@ void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const 
     g_hash_table_insert(darktable.control->combo_list, action, texts);
 
   while(texts && *texts)
-    dt_bauhaus_combobox_add_full(widget, _(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);
+    dt_bauhaus_combobox_add_full(widget, Q_(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);
 }
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
@@ -3427,9 +3427,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
       break;
     }
 
-    gchar *text = g_strdup_printf("\n%s", dt_bauhaus_combobox_get_text(widget));
-    dt_action_widget_toast(w->module, widget, text);
-    g_free(text);
+    dt_action_widget_toast(w->module, widget, "\n%s", dt_bauhaus_combobox_get_text(widget));
   }
 
   if(element == DT_ACTION_ELEMENT_BUTTON)
