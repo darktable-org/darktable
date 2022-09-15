@@ -5745,7 +5745,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
     dt_dev_reload_image(self->dev, self->dev->image_storage.id);
   }
-  // as some modes change behaviour for previous pipeline modules we possible do a reprocess
+  // as some modes change behaviour for previous pipeline modules we possibly do a reprocess
   if((w == g->demosaic_method_bayer) || (w == g->demosaic_method_xtrans))
     dt_dev_reprocess_center(self->dev);
 }
@@ -5830,12 +5830,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
 }
-
-#undef DT_DEMOSAIC_XTRANS
-#undef DT_DEMOSAIC_DUAL
-#undef DT_REDUCESIZE_MIN
-#undef DT_XTRANS_SNAPPER
-#undef DT_BAYER_SNAPPER
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
