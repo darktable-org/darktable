@@ -1831,9 +1831,9 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
     else if(p->algorithm == DT_IOP_RETOUCH_HEAL)
       dt_control_log(N_("default tool changed to %s"), N_("healing"));
     else if(p->algorithm == DT_IOP_RETOUCH_FILL)
-      dt_control_log(N_("default tool changed to %s"), N_("blur"));
-    else if(p->algorithm == DT_IOP_RETOUCH_BLUR)
       dt_control_log(N_("default tool changed to %s"), N_("fill"));
+    else if(p->algorithm == DT_IOP_RETOUCH_BLUR)
+      dt_control_log(N_("default tool changed to %s"), N_("blur"));
   }
 
   return TRUE;
