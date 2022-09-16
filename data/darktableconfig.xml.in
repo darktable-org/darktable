@@ -346,19 +346,6 @@
     <longdescription>allows runtime tuning of OpenCL devices. 'memory size' uses a fixed headroom (400MB as default), 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_synch_cache</name>
-    <type>
-      <enum>
-        <option>true</option>
-        <option>active module</option>
-        <option>false</option>
-      </enum>
-    </type>
-    <default>active module</default>
-    <shortdescription>cache intermediate OpenCL output</shortdescription>
-    <longdescription>active module (default) - cache the input to the currently focused module, which allows for faster response time when making multiple adjustments to that module (though the whole pipeline may need to be reprocessed when another module is changed); true - cache the output after each module, which may improve speed, as the whole pixelpipe won't be reprocessed on every parameter change, though will require more memory transfers from the GPU; false - do not sync the pixelpipe cache from OpenCL, which avoids memory transfers from GPUs fast enough to smoothly reprocess the whole pixelpipe.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>opencl_library</name>
     <type>string</type>
     <default/>
