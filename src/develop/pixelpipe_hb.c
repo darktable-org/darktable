@@ -1768,20 +1768,17 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         /* Nice, everything went fine */
 
         /* Copying device buffers back to host memory is an expensive operation but is required for the iop cache.
-           - this might be reasonable on very slow GPUs, where it's more expensive to reprocess a module than
-             regularly copying device buffers back to host.
-           - But it is worth copying data back from the GPU
+           As the gpu memory is very restricted we can't use that for a cache.
+           The iop cache hit rate is much more important for the UI responsiveness so we make sure relevant cache line buffers
+           are kept. This is true
              a) for the currently focused iop, as that is the iop which is most likely to change next
-             b) if there is a hint for a module doing heavy processing.  
+             b) if there is a hint for a module doing heavy processing.
+             c) only for full or preview pipe  
         */
-        if((darktable.opencl->sync_cache == OPENCL_SYNC_TRUE) ||
-           ((darktable.opencl->sync_cache == OPENCL_SYNC_ACTIVE_MODULE) && (module == darktable.develop->gui_module)) ||
-           input_important)
+        if((module == darktable.develop->gui_module) || input_important)
         {
-          /* write back input into cache for faster re-usal (not for export or thumbnails) */
-          if(cl_mem_input != NULL
-             && (pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT
-             && (pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) != DT_DEV_PIXELPIPE_THUMBNAIL)
+          /* write back input into cache for faster re-usal (full pipe or preview) */
+          if(cl_mem_input != NULL && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW)))
           {
             /* copy input to host memory, so we can find it in cache */
             cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width,
