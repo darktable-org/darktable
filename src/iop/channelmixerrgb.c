@@ -868,6 +868,14 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 #define SHF(ii, jj, c) ((i + ii) * width + j + jj) * ch + c
 #define OFF 4
 
+
+#if defined(__GNUC__) && defined(_WIN32)
+  // On Windows there is a rounding issue making the image full black. For a discussion about
+  // the issue and tested solutions see PR #12382).
+  #pragma GCC push_options
+  #pragma GCC optimize ("-fno-finite-math-only")
+#endif
+
 static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_t illuminant,
                                   const size_t width, const size_t height, const size_t ch,
                                   const dt_colormatrix_t RGB_to_XYZ, dt_aligned_pixel_t xyz)
@@ -1036,6 +1044,10 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
 
   dt_free_align(temp);
 }
+
+#if defined(__GNUC__) && defined(_WIN32)
+  #pragma GCC pop_options
+#endif
 
 static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
 {
@@ -1820,7 +1832,8 @@ static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *
 {
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
   if(self->enabled
-     && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
+     && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB)
+     && !dt_image_is_monochrome(&self->dev->image_storage))
   {
     // this module instance is doing chromatic adaptation
     if(_is_another_module_cat_on_pipe(self))
@@ -1860,7 +1873,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const struct dt_iop_order_iccprofile_info_t *const input_profile = dt_ioppr_get_pipe_input_profile_info(piece->pipe);
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -2132,7 +2145,7 @@ error:
   if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
   if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
   if(MIX_cl) dt_opencl_release_mem_object(MIX_cl);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixerrgb] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixerrgb] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -2783,7 +2796,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->MIX[2][i] = p->blue[i] / norm_B;
     d->saturation[i] = -p->saturation[i] + norm_sat;
     d->lightness[i] = p->lightness[i] - norm_light;
-    d->grey[i] = p->grey[i] / norm_grey; // = NaN if (norm_grey == 0.f) but we don't care since (d->apply_grey == FALSE)
+    d->grey[i] = p->grey[i] / norm_grey; // = NaN if(norm_grey == 0.f) but we don't care since (d->apply_grey == FALSE)
   }
 
   if(p->version == CHANNELMIXERRGB_V_1)
@@ -4075,7 +4088,7 @@ void gui_init(struct dt_iop_module_t *self)
      _("spot color mapping"),
      GTK_BOX(self->widget));
 
-  gtk_widget_set_tooltip_text(g->csspot.expander, _("use a color checker target to autoset CAT and channels"));
+  gtk_widget_set_tooltip_text(g->csspot.expander, _("define a target chromaticity (hue and chroma) for a particular region of the image (the control sample), which you then match against the same target chromaticity in other images. the control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
                                 _("\"correction\" automatically adjust the illuminant\n"

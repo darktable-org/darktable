@@ -32,6 +32,7 @@
 #include "dtgtk/paint.h"
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
+#include "gui/accelerators.h"
 #include "imageio/storage/imageio_storage_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -150,22 +151,12 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   GtkWidget *widget;
 
-  widget = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
-  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  const char *dir = dt_conf_get_string_const("plugins/imageio/storage/gallery/file_directory");
-  if(dir)
-  {
-    gtk_entry_set_text(GTK_ENTRY(widget), dir);
-  }
-  d->entry = GTK_ENTRY(widget);
-
-  dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
-
-  gtk_widget_set_tooltip_text(widget,
-      _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
-        "type '$(' to activate the completion and see the list of variables"));
-  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
+  d->entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(entry_changed_callback), self,
+                                           _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+                                             "type '$(' to activate the completion and see the list of variables"),
+                                           dt_conf_get_string_const("plugins/imageio/storage/gallery/file_directory")));
+  dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->entry), TRUE, TRUE, 0);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
@@ -176,16 +167,10 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("title")), FALSE, FALSE, 0);
-  d->title_entry = GTK_ENTRY(gtk_entry_new());
-  gtk_entry_set_width_chars(d->title_entry, 0);
+  d->title_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("title"), G_CALLBACK(title_changed_callback), self,
+                                                 _("enter the title of the website"),
+                                                 dt_conf_get_string_const("plugins/imageio/storage/gallery/title")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->title_entry), _("enter the title of the website"));
-  dir = dt_conf_get_string_const("plugins/imageio/storage/gallery/title");
-  if(dir)
-  {
-    gtk_entry_set_text(GTK_ENTRY(d->title_entry), dir);
-  }
-  g_signal_connect(G_OBJECT(d->title_entry), "changed", G_CALLBACK(title_changed_callback), self);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
@@ -285,7 +270,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   char *title = NULL, *description = NULL;
   GList *res_title = NULL, *res_desc = NULL;
 
-  if ((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
+  if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
     res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
     if(res_title)
@@ -597,7 +582,7 @@ int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *
     return 1;
   if(strcmp(mime, "image/webp") == 0)
     return 1;
-  if (strcmp(mime, "image/avif") == 0) return 1;
+  if(strcmp(mime, "image/avif") == 0) return 1;
 
   return 0;
 }

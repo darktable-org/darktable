@@ -153,7 +153,7 @@ static void _get_xmp_tags(const char *prefix, GList **taglist)
   const Exiv2::XmpPropertyInfo *pl = Exiv2::XmpProperties::propertyList(prefix);
   if(pl)
   {
-    for (int i = 0; pl[i].name_ != 0; ++i)
+    for(int i = 0; pl[i].name_ != 0; ++i)
     {
       char *tag = dt_util_dstrcat(NULL, "Xmp.%s.%s,%s", prefix, pl[i].name_, _get_exiv2_type(pl[i].typeId_));
       *taglist = g_list_prepend(*taglist, tag);
@@ -702,9 +702,9 @@ static bool dt_check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
   {
     dt_boundingbox_t crop;
     for(int i = 0; i < 4; i++) crop[i] = pos->toFloat(i);
-    if (((crop[0]>0)||(crop[1]>0)||(crop[2]<1)||(crop[3]<1))&&(crop[2]-crop[0]>0.05f)&&(crop[3]-crop[1]>0.05f))
+    if(((crop[0]>0)||(crop[1]>0)||(crop[2]<1)||(crop[3]<1))&&(crop[2]-crop[0]>0.05f)&&(crop[3]-crop[1]>0.05f))
     {
-      for (int i=0; i<4; i++) img->usercrop[i] = crop[i];
+      for(int i=0; i<4; i++) img->usercrop[i] = crop[i];
       return TRUE;
     }
   }
@@ -793,6 +793,61 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
   }
 }
 
+static void _find_exif_maker(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos, char *maker, const size_t m_size)
+{
+  // look for maker & model first so we can use that info later
+  if(FIND_EXIF_TAG("Exif.Image.Make"))
+  {
+    dt_strlcpy_to_utf8(maker, m_size, pos, exifData);
+  }
+  else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Make"))
+  {
+    dt_strlcpy_to_utf8(maker, m_size, pos, exifData);
+  }
+
+  for(char *c = maker + m_size - 1; c > maker; c--)
+    if(*c != ' ' && *c != '\0')
+    {
+      *(c + 1) = '\0';
+      break;
+    }
+}
+
+static void _find_exif_model(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos, char *model, const size_t m_size)
+{
+  if(FIND_EXIF_TAG("Exif.Image.Model"))
+  {
+    dt_strlcpy_to_utf8(model, m_size, pos, exifData);
+  }
+  else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Model"))
+  {
+    dt_strlcpy_to_utf8(model, m_size, pos, exifData);
+  }
+
+  for(char *c = model + m_size - 1; c > model; c--)
+    if(*c != ' ' && *c != '\0')
+    {
+      *(c + 1) = '\0';
+      break;
+    }
+}
+
+static void _find_exif_makermodel(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos, dt_image_basic_exif_t *basic_exif)
+{
+  char exif_maker[sizeof(basic_exif->maker)];
+  char exif_model[sizeof(basic_exif->model)];
+  char model[sizeof(basic_exif->model)];
+  exif_maker[0] = exif_model[0] = basic_exif->maker[0] = model[0] = basic_exif->model[0] = '\0';
+
+  // look for maker & model first so we can use that info later
+  _find_exif_maker(exifData, pos, exif_maker, sizeof(exif_maker));
+  _find_exif_model(exifData, pos, exif_model, sizeof(exif_model));
+  dt_imageio_lookup_makermodel(exif_maker, exif_model,
+                               basic_exif->maker, sizeof(basic_exif->maker),
+                               model, sizeof(model),
+                               basic_exif->model, sizeof(basic_exif->model));
+}
+
 static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 {
   try
@@ -800,38 +855,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /* List of tag names taken from exiv2's printSummary() in actions.cpp */
     Exiv2::ExifData::const_iterator pos;
 
-    // look for maker & model first so we can use that info later
-    if(FIND_EXIF_TAG("Exif.Image.Make"))
-    {
-      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
-    }
-    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Make"))
-    {
-      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
-    }
-
-    for(char *c = img->exif_maker + sizeof(img->exif_maker) - 1; c > img->exif_maker; c--)
-      if(*c != ' ' && *c != '\0')
-      {
-        *(c + 1) = '\0';
-        break;
-      }
-
-    if(FIND_EXIF_TAG("Exif.Image.Model"))
-    {
-      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
-    }
-    else if(FIND_EXIF_TAG("Exif.PanasonicRaw.Model"))
-    {
-      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
-    }
-
-    for(char *c = img->exif_model + sizeof(img->exif_model) - 1; c > img->exif_model; c--)
-      if(*c != ' ' && *c != '\0')
-      {
-        *(c + 1) = '\0';
-        break;
-      }
+    _find_exif_maker(exifData, pos, img->exif_maker, sizeof(img->exif_maker));
+    _find_exif_model(exifData, pos, img->exif_model, sizeof(img->exif_model));
 
     // Make sure we copy the exif make and model to the correct place if needed
     dt_image_refresh_makermodel(img);
@@ -899,7 +924,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       // This works around a bug in exiv2 the developers refuse to fix
       // For details see http://dev.exiv2.org/issues/1083
-      if (pos->key() == "Exif.Canon.FocalLength" && pos->count() == 4)
+      if(pos->key() == "Exif.Canon.FocalLength" && pos->count() == 4)
         img->exif_focal_length = pos->toFloat(1);
       else
         img->exif_focal_length = pos->toFloat();
@@ -915,7 +940,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_crop = 1.0f;
     }
 
-    if (dt_check_usercrop(exifData, img))
+    if(dt_check_usercrop(exifData, img))
       {
         img->flags |= DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS;
         guint tagid = 0;
@@ -997,7 +1022,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       const float focus_position = pos->toFloat();
 
-      if (focus_position && FIND_EXIF_TAG("Exif.Photo.FocalLengthIn35mmFilm")) {
+      if(focus_position && FIND_EXIF_TAG("Exif.Photo.FocalLengthIn35mmFilm")) {
         const float focal_length_35mm = pos->toFloat();
 
         /* http://u88.n24.queensu.ca/exiftool/forum/index.php/topic,3688.msg29653.html#msg29653 */
@@ -1116,10 +1141,14 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
 
-    /* Use pretty name for Canon RF lenses (as exiftool/exiv2/lensfun) */
+    /* Use pretty name for Canon RF & RF-S lenses (as exiftool/exiv2/lensfun) */
     if(g_str_has_prefix(img->exif_lens, "RF"))
     {
-      char *pretty = g_strconcat("Canon RF ", &img->exif_lens[2], (char *)NULL);
+      char *pretty;
+      if(img->exif_lens[2] == '-')
+        pretty = g_strconcat("Canon RF-S ", &img->exif_lens[4], (char *)NULL);
+      else
+        pretty = g_strconcat("Canon RF ", &img->exif_lens[2], (char *)NULL);
       g_strlcpy(img->exif_lens, pretty, sizeof(img->exif_lens));
       g_free(pretty);
     }
@@ -1143,13 +1172,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
 #if 0
     /* Read flash mode */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.Flash")))
+    if( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.Flash")))
          != exifData.end() && pos->size())
     {
       uf_strlcpy_to_utf8(uf->conf->flashText, max_name, pos, exifData);
     }
     /* Read White Balance Setting */
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.WhiteBalance")))
+    if( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.WhiteBalance")))
          != exifData.end() && pos->size())
     {
       uf_strlcpy_to_utf8(uf->conf->whiteBalanceText, max_name, pos, exifData);
@@ -2037,7 +2066,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
     const size_t length = blob.size();
     *buf = (uint8_t *)malloc(length);
-    if (!*buf)
+    if(!*buf)
     {
       return 0;
     }
@@ -2882,8 +2911,6 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
   const gboolean basecurve_auto_apply =
     dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
 
-  const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
-
   char query[1024] = { 0 };
 
   // clang-format off
@@ -2892,9 +2919,8 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
            " FROM main.history, main.images"
            " WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1"
            "       AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare',"
-           "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)",
-           basecurve_auto_apply ? ", 'basecurve'" : "",
-           sharpen_auto_apply ? ", 'sharpen'" : "");
+           "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s)",
+           basecurve_auto_apply ? ", 'basecurve'" : "");
   // clang-format on
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -3864,7 +3890,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
   if(metadata->flags & DT_META_METADATA)
   {
     // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-    if (!(metadata->flags & DT_META_EXIF))
+    if(!(metadata->flags & DT_META_EXIF))
     {
       gchar exif_datetime[DT_DATETIME_LENGTH];
       dt_datetime_gtimespan_to_exif(exif_datetime, sizeof(exif_datetime), gts);
@@ -3880,18 +3906,18 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
   }
 
   // GPS data
-  if (metadata->flags & DT_META_GEOTAG)
+  if(metadata->flags & DT_META_GEOTAG)
     dt_set_xmp_exif_geotag(xmpData, longitude, latitude, altitude);
   else
     dt_remove_xmp_exif_geotag(xmpData);
 
 
   // the meta data
-  if (metadata->flags & DT_META_METADATA)
+  if(metadata->flags & DT_META_METADATA)
     dt_set_xmp_dt_metadata(xmpData, imgid, TRUE);
 
   // tags
-  if (metadata->flags & DT_META_TAG)
+  if(metadata->flags & DT_META_TAG)
   {
     // get tags from db, store in dublin core
     std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpBag));
@@ -3904,7 +3930,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
     g_list_free_full(tags, g_free);
   }
 
-  if (metadata->flags & DT_META_HIERARCHICAL_TAG)
+  if(metadata->flags & DT_META_HIERARCHICAL_TAG)
   {
     std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpBag));
     GList *hierarchical = dt_tag_get_hierarchical_export(imgid, metadata->flags);
@@ -3916,7 +3942,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
     g_list_free_full(hierarchical, g_free);
   }
 
-  if (metadata->flags & DT_META_DT_HISTORY)
+  if(metadata->flags & DT_META_DT_HISTORY)
   {
     xmpData["Xmp.darktable.xmp_version"] = xmp_version;
     xmpData["Xmp.darktable.raw_params"] = raw_params;
@@ -4006,7 +4032,7 @@ static void dt_remove_xmp_key(Exiv2::XmpData &xmp, const char *key)
   try
   {
     Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(key));
-    if (pos != xmp.end())
+    if(pos != xmp.end())
       xmp.erase(pos);
   }
   catch(Exiv2::AnyError &e)
@@ -4037,7 +4063,7 @@ static void dt_remove_exif_key(Exiv2::ExifData &exif, const char *key)
   try
   {
     Exiv2::ExifData::iterator pos = exif.findKey(Exiv2::ExifKey(key));
-    if (pos != exif.end())
+    if(pos != exif.end())
       exif.erase(pos);
   }
   catch(Exiv2::AnyError &e)
@@ -4068,7 +4094,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
 
     std::unique_ptr<Exiv2::Image> img(Exiv2::ImageFactory::open(WIDEN(filename)));
-    // unfortunately it seems we have to read the metadata, to not erase the exif (which we just wrote).
+    // unfortunately it seems we have to read the metadata, to not erase the exif(which we just wrote).
     // will make export slightly slower, oh well.
     // img->clearXmpPacket();
     read_metadata_threadsafe(img);
@@ -4150,13 +4176,13 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       params->imgid = imgid;
 
       dt_variables_set_tags_flags(params, m->flags);
-      for (GList *tags = m->list; tags; tags = g_list_next(tags))
+      for(GList *tags = m->list; tags; tags = g_list_next(tags))
       {
         gchar *tagname = (gchar *)tags->data;
         tags = g_list_next(tags);
-        if (!tags) break;
+        if(!tags) break;
         gchar *formula = (gchar *)tags->data;
-        if (formula[0])
+        if(formula[0])
         {
           if(!(m->flags & DT_META_EXIF) && (formula[0] == '=') && g_str_has_prefix(tagname, "Exif."))
           {
@@ -4249,11 +4275,11 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
         }
         else
         {
-          if (g_str_has_prefix(tagname, "Xmp."))
+          if(g_str_has_prefix(tagname, "Xmp."))
             dt_remove_xmp_key(xmpData, tagname);
-          else if (g_str_has_prefix(tagname, "Exif."))
+          else if(g_str_has_prefix(tagname, "Exif."))
             dt_remove_exif_key(exifData, tagname);
-          else if (g_str_has_prefix(tagname, "Iptc."))
+          else if(g_str_has_prefix(tagname, "Iptc."))
             dt_remove_iptc_key(iptcData, tagname);
         }
       }
@@ -4440,7 +4466,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   }
 }
 
-void dt_exif_get_datetime_taken(const uint8_t *data, size_t size, char *datetime_taken)
+void dt_exif_get_basic_data(const uint8_t *data, size_t size, dt_image_basic_exif_t *basic_exif)
 {
   try
   {
@@ -4449,12 +4475,13 @@ void dt_exif_get_datetime_taken(const uint8_t *data, size_t size, char *datetime
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
-    _find_datetime_taken(exifData, pos, datetime_taken);
+    _find_datetime_taken(exifData, pos, basic_exif->datetime);
+    _find_exif_makermodel(exifData, pos, basic_exif);
   }
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_get_datetime_taken] " << s << std::endl;
+    std::cerr << "[exiv2 dt_exif_get_basic_data] " << s << std::endl;
   }
 }
 

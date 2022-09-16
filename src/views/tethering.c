@@ -465,7 +465,7 @@ static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgi
 
 /** callbacks to deal with images taken in tethering mode */
 static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename,
-                                                  const char *exif_time, void *data)
+                                                  const dt_image_basic_exif_t *basic_exif, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
 
@@ -479,7 +479,7 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   return g_strdup(file);
 }
 
-static const char *_camera_request_image_path(const dt_camera_t *camera, char *exif_time, void *data)
+static const char *_camera_request_image_path(const dt_camera_t *camera, const dt_image_basic_exif_t *basic_exif, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
   return dt_import_session_path(lib->session, FALSE);
@@ -642,4 +642,3 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

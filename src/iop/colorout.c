@@ -341,7 +341,7 @@ error:
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorout] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorout] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -401,7 +401,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
@@ -860,14 +860,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  // TODO:
-  g->output_intent = dt_bauhaus_combobox_new(self);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->output_intent, self, NULL, N_("output intent"),
+                               _("rendering intent"),
+                               0, intent_changed, self,
+                               N_("perceptual"),
+                               N_("relative colorimetric"),
+                               NC_("rendering intent", "saturation"),
+                               N_("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_intent, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->output_intent, NULL, N_("output intent"));
-  dt_bauhaus_combobox_add(g->output_intent, _("perceptual"));
-  dt_bauhaus_combobox_add(g->output_intent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(g->output_intent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(g->output_intent, _("absolute colorimetric"));
 
   if(!force_lcms2)
   {
@@ -884,7 +884,6 @@ void gui_init(struct dt_iop_module_t *self)
     if(prof->out_pos > -1) dt_bauhaus_combobox_add(g->output_profile, prof->name);
   }
 
-  gtk_widget_set_tooltip_text(g->output_intent, _("rendering intent"));
   char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
   char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
   char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
@@ -893,7 +892,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_free(user_profile_dir);
   g_free(tooltip);
 
-  g_signal_connect(G_OBJECT(g->output_intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed", G_CALLBACK(output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!

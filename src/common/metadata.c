@@ -365,7 +365,7 @@ gchar *_cleanup_metadata_value(const gchar *value)
 {
   char *v = NULL;
   char *c = NULL;
-  if (value && value[0])
+  if(value && value[0])
   {
     v = g_strdup(value);
     c = v + strlen(v) - 1;

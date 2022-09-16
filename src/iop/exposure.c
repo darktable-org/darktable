@@ -445,7 +445,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_exposure] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_exposure] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1080,16 +1080,17 @@ void gui_init(struct dt_iop_module_t *self)
      _("spot exposure mapping"),
      GTK_BOX(self->widget));
 
+  gtk_widget_set_tooltip_text(g->cs.expander, _("define a target brightness, in terms of exposure, for a selected region of the image (the control sample), which you then match against the same target brightness in other images. the control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
+
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
                                 _("\"correction\" automatically adjust exposure\n"
                                   "such that the input lightness is mapped to the target.\n"
                                   "\"measure\" simply shows how an input color is mapped by the exposure compensation\n"
                                   "and can be used to define a target."),
-                                0, NULL, self,
+                                0, _spot_settings_changed_callback, self,
                                 N_("correction"),
                                 N_("measure"));
   gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);

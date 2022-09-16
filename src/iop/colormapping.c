@@ -444,7 +444,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int width = roi_in->width;
   const int height = roi_in->height;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          in, out, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -743,7 +743,7 @@ error:
   dt_opencl_release_mem_object(dev_source_mean);
   dt_opencl_release_mem_object(dev_var_ratio);
   dt_opencl_release_mem_object(dev_mapio);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colormapping] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colormapping] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

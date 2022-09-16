@@ -91,6 +91,7 @@ FILE(GLOB SOURCE_FILES
   "common/iop_order.c"
   "common/iop_profile.c"
   "common/dng_opcode.c"
+  "common/wb_presets.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
@@ -466,6 +467,11 @@ if (USE_ISOBMFF)
     message(STATUS "Exiv2 < 0.27.4 found, no support for ISOBMFF files (CR3, AVIF, HEIF)")
   endif()
 endif()
+
+# Optionally enable MIDI support
+if(USE_PORTMIDI)
+  find_package(PortMidi)
+endif(USE_PORTMIDI)
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
@@ -1034,7 +1040,7 @@ if (WIN32)
 else()
     set_target_properties(darktable
                           PROPERTIES
-                          INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
+                          INSTALL_RPATH ${RPATH_ORIGIN}/${REL_BIN_TO_LIBDIR})
 endif(WIN32)
 
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)

@@ -200,6 +200,17 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
 {
   if(response_id == GTK_RESPONSE_OK)
   {
+    // find the module action list this preset belongs to
+    dt_action_t *module_actions = g->iop ? &g->iop->so->actions : NULL;
+
+    for(GList *libs = darktable.lib->plugins; !module_actions && libs; libs = g_list_next(libs))
+    {
+      dt_lib_module_t *lib = libs->data;
+
+      if(!strcmp(lib->plugin_name, g->operation))
+        module_actions = &lib->actions;
+    }
+
     // we want to save the preset in the database
     sqlite3_stmt *stmt;
 
@@ -262,7 +273,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
           // we remove the preset that will be overwrite
           dt_lib_presets_remove(name, g->operation, g->op_version);
 
-          if(g->iop) dt_action_rename_preset(&g->iop->so->actions, name, NULL);
+          dt_action_rename_preset(module_actions, name, NULL);
         }
         else
           return;
@@ -306,7 +317,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     }
 
     // rename accelerators
-    if(g->iop) dt_action_rename_preset(&g->iop->so->actions, g->original_name, name);
+    dt_action_rename_preset(module_actions, g->original_name, name);
 
     // commit all the user input fields
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -856,7 +867,7 @@ static void _menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   dt_lib_presets_remove(_("new preset"), module->op, module->version());
 
   // create a shortcut for the new entry
-  dt_action_define_preset(&module->so->actions, "new preset");
+  dt_action_define_preset(&module->so->actions, _("new preset"));
 
   // then show edit dialog
   _edit_preset(_("new preset"), module);
@@ -920,6 +931,48 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
     dt_iop_connect_accels_multi(module->so);
   }
 }
+
+void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, int direction)
+{
+  int writeprotect;
+  gchar *name = _get_active_preset_name(module, &writeprotect);
+  gchar *extreme = direction < 0 ? _("(first)") : _("(last)");
+
+  sqlite3_stmt *stmt;
+  // clang-format off
+  gchar *query = g_strdup_printf("SELECT name"
+                                 " FROM data.presets"
+                                 " WHERE operation=?1 AND op_version=?2 AND"
+                                 "       (?3='' OR LOWER(name) %s LOWER(?3))"
+                                 " ORDER BY writeprotect %s, LOWER(name) %s"
+                                 " LIMIT ?4",
+                                 direction < 0 ? "<" : ">",
+                                 direction < 0 ? "ASC" : "DESC",
+                                 direction < 0 ? "DESC" : "ASC");
+  // clang-format on
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name ? name : "", -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, abs(direction));
+  g_free(query);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    g_free(name);
+    name = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
+    extreme = "";
+  }
+  sqlite3_finalize(stmt);
+
+  if(!*extreme)
+    dt_gui_presets_apply_preset(name, module);
+
+  dt_action_widget_toast(DT_ACTION(module), NULL, _("preset %s\n%s"),
+                         extreme, name ? name : _("no presets"));
+  g_free(name);
+}
+
 
 static void _menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
@@ -1002,11 +1055,11 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
 static gboolean _menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventButton *event,
                                                  dt_iop_module_t *module)
 {
-  if (event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
+  if(event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
   {
     _menuitem_pick_preset(menuitem, module);
   }
-  else if (event->button == 3)
+  else if(event->button == 3)
   {
     dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
     if(new_module) _menuitem_pick_preset(menuitem, new_module);
@@ -1523,7 +1576,7 @@ void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const in
       &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, maker, -1, SQLITE_TRANSIENT);
-  if (*model)
+  if(*model)
   {
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, model, -1, SQLITE_TRANSIENT);
   }
@@ -1531,7 +1584,7 @@ void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const in
   {
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, "%", -1, SQLITE_TRANSIENT);
   }
-  if (*lens)
+  if(*lens)
   {
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, lens, -1, SQLITE_TRANSIENT);
   }

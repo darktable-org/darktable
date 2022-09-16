@@ -216,7 +216,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 
     *width = MagickGetImageWidth(image);
     *height = MagickGetImageHeight(image);
-    switch (MagickGetImageColorspace(image)) {
+    switch(MagickGetImageColorspace(image)) {
     case sRGBColorspace:
       *color_space = DT_COLORSPACE_SRGB;
       break;
@@ -744,13 +744,10 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   const int wd = img->width;
   const int ht = img->height;
 
-
-  int res = 0;
-
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
+  gboolean res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
                          : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
   if(!res)
   {

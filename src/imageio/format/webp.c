@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 #include <webp/encode.h>
+#include <webp/mux.h>
 
 DT_MODULE(2)
 
@@ -39,7 +40,6 @@ typedef enum
   webp_lossless = 1
 } comp_type_t;
 
-
 typedef enum
 {
   hint_default,
@@ -47,7 +47,6 @@ typedef enum
   hint_photo,
   hint_graphic
 } hint_t;
-
 
 typedef struct dt_imageio_webp_t
 {
@@ -88,9 +87,9 @@ static const char *const EncoderError[] = {
 
 const char *get_error_str(int err)
 {
-  if (err < 0 || err >= sizeof(EncoderError)/sizeof(EncoderError[0]))
+  if(err < 0 || err >= sizeof(EncoderError)/sizeof(EncoderError[0]))
   {
-    return "unknown error (err=%d). consider filling a bug to DT to update the webp error list";
+    return "unknown error (consider filing a darktable issue to update the WebP error list)";
   }
   return EncoderError[err];
 }
@@ -111,14 +110,9 @@ void init(dt_imageio_module_format_t *self)
   dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_webp_t, hint, hint_t);
 #endif
 }
+
 void cleanup(dt_imageio_module_format_t *self)
 {
-}
-
-static int FileWriter(const uint8_t *data, size_t data_size, const WebPPicture *const pic)
-{
-  FILE *const out = (FILE *)pic->custom_ptr;
-  return data_size ? (fwrite(data, data_size, 1, out) == 1) : 1;
 }
 
 int write_image(dt_imageio_module_data_t *webp, const char *filename, const void *in_tmp,
@@ -126,17 +120,22 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
                 void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
+  int res = 1;
   FILE *out = NULL;
+  uint8_t *buf = NULL;
   WebPPicture pic;
-  int pic_init = 0;
+  WebPMemoryWriter writer;
+  WebPMemoryWriterInit(&writer);
+  WebPData icc_profile;
+  WebPDataInit(&icc_profile);
+  WebPData bitstream;
+  WebPDataInit(&bitstream);
+  WebPData assembled_data;
+  WebPDataInit(&assembled_data);
+  WebPMux *mux = WebPMuxNew();
+  WebPMuxError err;
 
   dt_imageio_webp_t *webp_data = (dt_imageio_webp_t *)webp;
-  out = g_fopen(filename, "w+b");
-  if (!out)
-  {
-    fprintf(stderr, "[webp export] error saving to %s\n", filename);
-    goto error;
-  }
 
   // Create, configure and validate a WebPConfig instance
   WebPConfig config;
@@ -157,13 +156,39 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
     goto error;
   }
 
+  // embed ICC profile
+  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  uint32_t len = 0;
+  cmsSaveProfileToMem(out_profile, NULL, &len);
+  if(len > 0)
+  {
+    buf = (uint8_t *)g_malloc(len);
+    if(buf)
+    {
+      cmsSaveProfileToMem(out_profile, buf, &len);
+      icc_profile.bytes = buf;
+      icc_profile.size = len;
+      err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, 0);
+      if(err != WEBP_MUX_OK)
+      {
+        fprintf(stderr, "[webp export] error adding ICC profile to WebP stream\n");
+        goto error;
+      }
+    }
+    else
+    {
+      fprintf(stderr, "[webp export] error allocating ICC profile buffer\n");
+      goto error;
+    }
+  }
+
+  // encode image data to memory and add to mux
   if(!WebPPictureInit(&pic)) goto error;
-  pic_init = 1;
   pic.width = webp_data->global.width;
   pic.height = webp_data->global.height;
   pic.use_argb = !!(config.lossless);
-  pic.writer = FileWriter;
-  pic.custom_ptr = out;
+  pic.writer = WebPMemoryWrite;
+  pic.custom_ptr = &writer;
 
   WebPPictureImportRGBX(&pic, (const uint8_t *)in_tmp, webp_data->global.width * 4);
   if(!config.lossless)
@@ -172,27 +197,57 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
     // let the encoder where best to spend its bits instead of forcing it
     // to spend bits equally on RGB data that doesn't weight the same when
     // considering the human visual system.
-    WebPPictureARGBToYUVA(&pic, WEBP_YUV420A);
+    // use the slower, but better and sharper YUV conversion.
+    WebPPictureSharpARGBToYUVA(&pic);
   }
 
   if(!WebPEncode(&config, &pic))
   {
-    fprintf(stderr, "[webp export] error during encoding (err:%d - %s)\n",
-            pic.error_code, get_error_str(pic.error_code));
+    fprintf(stderr, "[webp export] error (%d) during encoding: %s\n", pic.error_code,
+            get_error_str(pic.error_code));
     goto error;
   }
 
-  WebPPictureFree(&pic);
-  fclose(out);
+  bitstream.bytes = writer.mem;
+  bitstream.size = writer.size;
+  err = WebPMuxSetImage(mux, &bitstream, 0);
+  if(err != WEBP_MUX_OK)
+  {
+    fprintf(stderr, "[webp export] error adding image to WebP stream\n");
+    goto error;
+  }
 
-  dt_exif_write_blob(exif, exif_len, filename, 1);
+  // finally write out assembled data to file
+  err = WebPMuxAssemble(mux, &assembled_data);
+  if(err != WEBP_MUX_OK)
+  {
+    fprintf(stderr, "[webp export] error assembling the WebP file\n");
+    goto error;
+  }
 
-  return 0;
+  out = g_fopen(filename, "w+b");
+  if(!out)
+  {
+    fprintf(stderr, "[webp export] error creating file %s\n", filename);
+    goto error;
+  }
+  if(fwrite(assembled_data.bytes, assembled_data.size, 1, out) != 1)
+  {
+    fprintf(stderr, "[webp export] error writing %zu bytes to file %s\n", assembled_data.size, filename);
+    goto error;
+  }
+
+  res = 0;
 
 error:
-  if (pic_init) WebPPictureFree(&pic);
-  if(out) fclose(out);
-  return 1;
+  WebPPictureFree(&pic);
+  WebPMemoryWriterClear(&writer); // no need to WebPDataClear(&bitstream) as well
+  g_free(buf); // instead of WebPDataClear(&icc_profile)
+  WebPDataClear(&assembled_data);
+  WebPMuxDelete(mux);
+  fclose(out);
+  if(!res) dt_exif_write_blob(exif, exif_len, filename, 1);
+  return res;
 }
 
 size_t params_size(dt_imageio_module_format_t *self)
@@ -238,10 +293,7 @@ void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_webp_t *d = (dt_imageio_webp_t *)calloc(1, sizeof(dt_imageio_webp_t));
   d->comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
-  if(d->comp_type == webp_lossy)
-    d->quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
-  else
-    d->quality = 100;
+  d->quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   d->hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
   return d;
 }
@@ -266,8 +318,8 @@ int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_
               uint32_t *height)
 {
   /* maximum dimensions supported by WebP images */
-  *width = 16383U;
-  *height = 16383U;
+  *width = WEBP_MAX_DIMENSION;
+  *height = WEBP_MAX_DIMENSION;
   return 1;
 }
 
@@ -297,15 +349,12 @@ const char *name()
   return _("WebP (8-bit)");
 }
 
-static void compression_changed(GtkWidget *widget, gpointer user_data)
+static void compression_changed(GtkWidget *widget, dt_imageio_webp_gui_data_t *gui)
 {
   const int comp_type = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/webp/comp_type", comp_type);
 
-  if (comp_type == webp_lossless)
-    gtk_widget_set_sensitive(GTK_WIDGET(user_data), FALSE);
-  else
-    gtk_widget_set_sensitive(GTK_WIDGET(user_data), TRUE);
+  gtk_widget_set_visible(gui->quality, comp_type != webp_lossless);
 }
 
 static void quality_changed(GtkWidget *slider, gpointer user_data)
@@ -330,14 +379,13 @@ void gui_init(dt_imageio_module_format_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  gui->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression type"));
-  dt_bauhaus_combobox_add(gui->compression, _("lossy"));
-  dt_bauhaus_combobox_add(gui->compression, _("lossless"));
-  dt_bauhaus_combobox_set(gui->compression, comp_type);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("compression type"), NULL,
+                               comp_type, compression_changed, gui,
+                               N_("lossy"), N_("lossless"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_changed), NULL);
 
-  gui->quality = dt_bauhaus_slider_new_with_range(NULL,
+  gui->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
                                                   dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_MIN),
                                                   dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_MAX),
                                                   1,
@@ -346,30 +394,24 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
   dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT));
   dt_bauhaus_slider_set_format(gui->quality, "%");
-  gtk_widget_set_tooltip_text(gui->quality, _("applies only to lossy setting"));
-  if(quality > 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
+  gtk_widget_set_tooltip_text(gui->quality, _("for lossy, 0 gives the smallest size and 100 the best quality.\n"
+                                              "for lossless, 0 is the fastest but gives larger files compared\n"
+                                              "to the slowest 100."));
+  if(quality >= 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), (gpointer)0);
+  g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
 
-  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_changed), (gpointer)gui->quality);
+  gtk_widget_set_visible(gui->quality, comp_type != webp_lossless);
+  gtk_widget_set_no_show_all(gui->quality, TRUE);
 
-  if (comp_type == webp_lossless)
-    gtk_widget_set_sensitive(gui->quality, FALSE);
-
-  gui->hint = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->hint, NULL, N_("image hint"));
-  gtk_widget_set_tooltip_text(gui->hint,
-               _("image characteristics hint for the underlying encoder.\n"
-               "picture : digital picture, like portrait, inner shot\n"
-               "photo   : outdoor photograph, with natural lighting\n"
-               "graphic : discrete tone image (graph, map-tile etc)"));
-  dt_bauhaus_combobox_add(gui->hint, _("default"));
-  dt_bauhaus_combobox_add(gui->hint, _("picture"));
-  dt_bauhaus_combobox_add(gui->hint, _("photo"));
-  dt_bauhaus_combobox_add(gui->hint, _("graphic"));
-  dt_bauhaus_combobox_set(gui->hint, hint);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->hint, self, NULL, N_("image hint"),
+                               _("image characteristics hint for the underlying encoder.\n"
+                                 "picture : digital picture, like portrait, inner shot\n"
+                                 "photo   : outdoor photograph, with natural lighting\n"
+                                 "graphic : discrete tone image (graph, map-tile etc)"),
+                               hint, hint_combobox_changed, self,
+                               N_("default"), N_("picture"), N_("photo"), N_("graphic"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->hint, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->hint), "value-changed", G_CALLBACK(hint_combobox_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

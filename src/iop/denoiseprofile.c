@@ -354,7 +354,7 @@ static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece, const char
     char filename[512];
     snprintf(filename, sizeof(filename), namespec, scale);
     FILE *f = g_fopen(filename, "wb");
-    if (f)
+    if(f)
     {
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       const size_t n = (size_t)width * height;
@@ -1308,7 +1308,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float *restrict precond = NULL;
   float *restrict tmp = NULL;
 
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
   {
     dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
     return;
@@ -1396,7 +1396,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #ifdef _OPENMP
 #pragma omp simd aligned(buf1, out : 64)
 #endif
-  for (size_t k = 0; k < 4U * npixels; k++)
+  for(size_t k = 0; k < 4U * npixels; k++)
     out[k] += buf1[k];
 
   if(!d->use_new_vst)
@@ -1580,12 +1580,12 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   const dt_iop_denoiseprofile_data_t *const d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
   float *restrict in;
-  if (!dt_iop_alloc_image_buffers(piece->module, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+  if(!dt_iop_alloc_image_buffers(piece->module, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
   // adjust to zoom size:
@@ -1716,7 +1716,7 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
 
   float *restrict in;
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
   dt_aligned_pixel_t wb;  // the "unused" fourth element enables vectorization
@@ -1835,7 +1835,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
   if(dev_U2 == NULL) err = -999;
 
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
   {
     const dt_aligned_pixel_t norm2 = { 1.0f, 1.0f, 1.0f, 1.0f };
     const dt_nlmeans_param_t params =
@@ -1859,7 +1859,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       };
     err = nlmeans_denoiseprofile_cl(&params, devid, dev_tmp, dev_U2, roi_in);
   }
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
   {
     if(!d->use_new_vst)
     {
@@ -1890,9 +1890,9 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
     return TRUE;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 
 #else
@@ -2117,7 +2117,7 @@ error:
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 #endif /* USE_NEW_IMPL_CL */
 }
@@ -2599,7 +2599,7 @@ error:
     dt_opencl_release_mem_object(dev_detail[k]);
   free(dev_detail);
   dt_free_align(sumsum);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s, devid %d\n", cl_errstr(err), devid);
   return FALSE;
 }
 
@@ -3053,7 +3053,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->profile, -1);
   unsigned combobox_index = 0;
-  switch (p->mode)
+  switch(p->mode)
   {
     case MODE_NLMEANS:
       combobox_index = 0;

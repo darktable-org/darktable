@@ -753,7 +753,7 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
       }
 
       // and we jump to next date
-      // if (i+1 >= bloc->values_count) break;
+      // if(i+1 >= bloc->values_count) break;
       if(strip->zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
         _time_add(&tt, 1, DT_LIB_TIMELINE_ZOOM_MONTH);
       else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_4MONTH || strip->zoom == DT_LIB_TIMELINE_ZOOM_MONTH)

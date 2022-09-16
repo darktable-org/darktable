@@ -42,8 +42,8 @@ void dt_import_session_set_name(struct dt_import_session_t *self, const char *na
 */
 void dt_import_session_set_time(struct dt_import_session_t *self, const char *time);
 
-/** \brief set the timestamp for EXIF variables */
-void dt_import_session_set_exif_time(struct dt_import_session_t *self, const char *exif_time);
+/** \brief set the basic exif info for EXIF variables */
+void dt_import_session_set_exif_basic_info(struct dt_import_session_t *self, const dt_image_basic_exif_t *basic_exif);
 
 /** \brief set the original filename
     \remark This is used to expand $(FILE_X) variables. */
@@ -69,4 +69,3 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean cu
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

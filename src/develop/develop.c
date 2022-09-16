@@ -698,7 +698,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       if(preview) zoom_scale *= ps;
       break;
   }
-  if (preview) zoom_scale /= dev->preview_downsampling;
+  if(preview) zoom_scale /= dev->preview_downsampling;
 
   return zoom_scale;
 }
@@ -793,7 +793,7 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   for(GList *forms = h->forms; forms; forms = g_list_next(forms))
   {
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
-    if (form)
+    if(form)
       dt_masks_write_masks_history_item(imgid, num, form);
   }
 
@@ -839,7 +839,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     history = next;
   }
   // then remove NIL items there
-  while ((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
+  while((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
     dev->history_end--;
 
   dev->history_end += kept_module;
@@ -1313,21 +1313,21 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   // write history entries
 
   GList *history = dev->history;
-  if (DT_IOP_ORDER_INFO)
+  if(DT_IOP_ORDER_INFO)
     fprintf(stderr,"\n^^^^ Writing history image: %i, iop version: %i",imgid,dev->iop_order_version);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
-    if (DT_IOP_ORDER_INFO)
+    if(DT_IOP_ORDER_INFO)
     {
       fprintf(stderr,"\n%20s, num %i, order %d, v(%i), multiprio %i",
               hist->module->op,i,hist->iop_order,hist->module->version(),hist->multi_priority);
-      if (hist->enabled) fprintf(stderr,", enabled");
+      if(hist->enabled) fprintf(stderr,", enabled");
     }
     history = g_list_next(history);
   }
-  if (DT_IOP_ORDER_INFO)
+  if(DT_IOP_ORDER_INFO)
     fprintf(stderr,"\nvvvv\n");
 
   // update history end
@@ -1471,17 +1471,15 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   const gboolean auto_apply_filmic = is_raw && is_scene_referred;
   const gboolean auto_apply_cat = has_matrix && is_modern_chroma;
-  const gboolean auto_apply_sharpen = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
 
-  if(auto_apply_filmic || auto_apply_sharpen || auto_apply_cat)
+  if(auto_apply_filmic || auto_apply_cat)
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-      if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
-          || (auto_apply_sharpen && strcmp(module->op, "sharpen") == 0)
-          || (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
+      if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0) ||
+          (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
          && !dt_history_check_module_exists(imgid, module->op, FALSE)
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
       {
@@ -2360,12 +2358,6 @@ void dt_dev_modulegroups_update_visibility(dt_develop_t *dev)
     dev->proxy.modulegroups.update_visibility(dev->proxy.modulegroups.module);
 }
 
-void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev)
-{
-  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.search_text_focus && dev->first_load == 0)
-    dev->proxy.modulegroups.search_text_focus(dev->proxy.modulegroups.module);
-}
-
 gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test_visible)
@@ -2500,7 +2492,7 @@ void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
   for(; list; list = g_list_next(list))
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)list->data;
-    if (hitem->module == module)
+    if(hitem->module == module)
     {
       hitem->module = NULL;
     }
@@ -2674,7 +2666,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
   dt_pthread_mutex_lock(&dev->history_mutex);
   const int success = dt_dev_distort_transform_locked(dev,pipe,iop_order,transf_direction,points,points_count);
 
-  if (success
+  if(success
       && (dev->preview_downsampling != 1.0f)
       && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
           || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
@@ -2721,7 +2713,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
                                       float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
+  if((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
       for(size_t idx=0; idx < 2 * points_count; idx++)
@@ -3035,7 +3027,7 @@ float dt_second_window_get_zoom_scale(dt_develop_t *dev, const dt_dev_zoom_t zoo
       if(preview) zoom_scale *= ps;
       break;
   }
-  if (preview) zoom_scale /= dev->preview_downsampling;
+  if(preview) zoom_scale /= dev->preview_downsampling;
   return zoom_scale;
 }
 

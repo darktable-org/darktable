@@ -824,7 +824,9 @@ static inline float4 xyY_to_dt_UCS_JCH(const float4 xyY, const float L_white)
   float UV_star_prime[2];
   xyY_to_dt_UCS_UV(xyY, UV_star_prime);
 
-  const float L_star = Y_to_dt_UCS_L_star(xyY.z);
+  // Y upper limit is calculated from the L star upper limit.
+  const float DT_UCS_Y_UPPER_LIMIT = 13237757000.f;
+  const float L_star = Y_to_dt_UCS_L_star(clamp(xyY.z, 0.f, DT_UCS_Y_UPPER_LIMIT));
   const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
 
   // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
@@ -848,7 +850,10 @@ static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
   */
 
   // should be L_star = powf(JCH[0], 1.f / cz) * L_white but we treat only the case where cz = 1
-  const float L_star = JCH.x * L_white;
+  // L_star upper limit is 2.098883786377 truncated to 32-bit float and last decimal removed.
+  // By clipping L_star to this limit, we ensure dt_UCS_L_star_to_Y() doesn't divide by zero.
+  const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
+  const float L_star = clamp(JCH.x * L_white, 0.f, DT_UCS_L_STAR_UPPER_LIMIT);
   const float M = L_star != 0.f
     ? native_powr(JCH.y * L_white / (15.932993652962535f * native_powr(L_star, 0.6523997524738018f)), 0.8322850678616855f)
     : 0.f;

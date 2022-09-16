@@ -51,8 +51,6 @@
 #include <string.h>
 #include <strings.h>
 
-#define DECORATION_SIZE_LIMIT 40
-
 static void dt_view_manager_load_modules(dt_view_manager_t *vm);
 static int dt_view_load_module(void *v, const char *libname, const char *module_name);
 static void dt_view_unload_module(dt_view_t *view);
@@ -175,8 +173,7 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
 
   if(darktable.gui)
   {
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_VIEW, module->module_name, module->name(module),
-                                     .owner = &darktable.control->actions_views };
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_VIEW, module->module_name, module->name(module) };
     dt_action_insert_sorted(&darktable.control->actions_views, &module->actions);
   }
 
@@ -604,7 +601,7 @@ void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm, double x, double y
 void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsize, float hwinsize, float vpos,
                            float vlower, float vsize, float vwinsize)
 {
-  if (view->vscroll_pos == vpos
+  if(view->vscroll_pos == vpos
       && view->vscroll_lower == vlower
       && view->vscroll_size == vsize
       && view->vscroll_viewport_size == vwinsize
@@ -633,7 +630,7 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsiz
   widget = darktable.gui->widgets.top_border;
   gtk_widget_queue_draw(widget);
 
-  if (!darktable.gui->scrollbars.dragging)
+  if(!darktable.gui->scrollbars.dragging)
     dt_ui_update_scrollbars(darktable.gui->ui);
 }
 
@@ -1156,7 +1153,7 @@ void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *cont
 #ifdef HAVE_PRINT
 void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo, dt_images_box *imgs)
 {
-  if (vm->proxy.print.view)
+  if(vm->proxy.print.view)
     vm->proxy.print.print_settings(vm->proxy.print.view, pinfo, imgs);
 }
 #endif

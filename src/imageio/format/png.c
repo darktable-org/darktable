@@ -316,7 +316,7 @@ static int __attribute__((__unused__)) read_header(const char *filename, dt_imag
 #if 0
 int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
 {
-  if (setjmp(png_jmpbuf(png->png_ptr)))
+  if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, NULL, NULL);
@@ -324,7 +324,7 @@ int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
   }
   uint32_t bit_depth = png_get_bit_depth(png->png_ptr, png->info_ptr);
   // strip down to 8 bit channels
-  if (bit_depth == 16)
+  if(bit_depth == 16)
     png_set_strip_16(png->png_ptr);
 
   return 0;
@@ -541,21 +541,15 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // Bit depth combo box
-  gui->bit_depth = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->bit_depth, NULL, N_("bit depth"));
-  dt_bauhaus_combobox_add(gui->bit_depth, _("8 bit"));
-  dt_bauhaus_combobox_add(gui->bit_depth, _("16 bit"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bit_depth, self, NULL, N_("bit depth"), NULL,
+                               0, bit_depth_changed, self,
+                               N_("8 bit"), N_("16 bit"));
   if(bpp == 16)
     dt_bauhaus_combobox_set(gui->bit_depth, 1);
-  else {
-    bpp = 8; // We know only about 8 or 16 bits, at least for now
-    dt_bauhaus_combobox_set(gui->bit_depth, 0);
-  }
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bit_depth, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->bit_depth), "value-changed", G_CALLBACK(bit_depth_changed), NULL);
 
   // Compression level slider
-  gui->compression = dt_bauhaus_slider_new_with_range(NULL,
+  gui->compression = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
                                                       dt_confgen_get_int("plugins/imageio/format/png/compression", DT_MIN),
                                                       dt_confgen_get_int("plugins/imageio/format/png/compression", DT_MAX),
                                                       1,

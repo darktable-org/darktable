@@ -97,7 +97,7 @@ static int64_t max_image_position()
   const gchar *max_position_query = "SELECT MAX(position) FROM main.images";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), max_position_query, -1, &stmt, NULL);
 
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     max_position = sqlite3_column_int64(stmt, 0);
   }
@@ -727,7 +727,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
 
   dt_dev_pixelpipe_t pipe;
   int wd = dev.image_storage.width, ht = dev.image_storage.height;
-  int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+  gboolean res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
   if(res)
   {
     // set mem pointer to 0, won't be used.

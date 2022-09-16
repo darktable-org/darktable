@@ -1622,7 +1622,7 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   }
 
   /* then improve hover effect for same blue icon */
-  if (flags & CPF_PRELIGHT)
+  if(flags & CPF_PRELIGHT)
   {
     cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
   }

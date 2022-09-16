@@ -110,6 +110,8 @@ void dt_control_init(dt_control_t *s)
   s->actions_views = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "views", C_("accel", "views"), .next = &s->actions_libs, .target = &s->actions_thumb };
   s->actions_thumb = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "thumbtable", C_("accel", "thumbtable"), .owner = &s->actions_views };
   s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lib", C_("accel", "utility modules"), .next = &s->actions_iops };
+  s->actions_format = (dt_action_t){ DT_ACTION_TYPE_SECTION, "format", C_("accel", "format") };   // will be placed under lib/export
+  s->actions_storage = (dt_action_t){ DT_ACTION_TYPE_SECTION, "storage", C_("accel", "storage")}; // will be placed under lib/export
   s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "iop", C_("accel", "processing modules"), .next = &s->actions_lua, .target = &s->actions_blend };
   s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND, "blend", C_("accel", "blending"), .owner = &s->actions_iops };
   s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lua", C_("accel", "lua scripts"), .next = &s->actions_fallbacks };
@@ -185,7 +187,7 @@ void dt_control_allow_change_cursor()
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
-  if (!darktable.control->lock_cursor_shape)
+  if(!darktable.control->lock_cursor_shape)
   {
     GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
     GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), curs);

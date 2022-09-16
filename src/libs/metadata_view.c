@@ -745,7 +745,14 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       case md_exif_focus_distance:
         (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
-        if(!(isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
+        // Actually we want to check for 0xFFFFFFFF (this value in the SubjectDistance tag means "infinity").
+        // But we store this tag as a float and there is a concern that the equality check may not be 100% reliable.
+        // See discussion at https://github.com/darktable-org/darktable/pull/12398
+        if(img->exif_focus_distance >= (float)0xFFFFFF00)
+        {
+          (void)g_snprintf(text, sizeof(text), _("infinity"));
+        }
+        else if(!(isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
         {
           (void)g_snprintf(text, sizeof(text), _("%.2f m"), (double)img->exif_focus_distance);
         }
@@ -924,7 +931,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
           if(tagstring) tagstring[strlen(tagstring)-2] = '\0';
         }
 
-        if (md == md_tag_names)
+        if(md == md_tag_names)
           _metadata_update_value(md_tag_names, tagstring ? tagstring : NODATA_STRING, self);
         else
           _metadata_update_value(md_categories, categoriesstring ? categoriesstring : NODATA_STRING, self);

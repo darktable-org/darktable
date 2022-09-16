@@ -825,7 +825,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     else
       hist_max = self->histogram_max[ch];
 
-    if (!is_linear)
+    if(!is_linear)
       hist_max = logf(1.0 + hist_max);
 
     if(hist && hist_max > 0.0f)
@@ -1427,7 +1427,7 @@ void gui_init(struct dt_iop_module_t *self)
       _("change this method if you see oscillations or cusps in the curve\n"
         "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
         "- centripetal is better to avoids cusps and oscillations with close nodes but is less smooth\n"
-        "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)\n"));
+        "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)"));
   g_signal_connect(G_OBJECT(g->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
 
   g->chk_compensate_middle_grey = dt_bauhaus_toggle_from_params(self, "compensate_middle_grey");
@@ -1737,7 +1737,7 @@ cleanup:
   if(dev_coeffs_b) dt_opencl_release_mem_object(dev_coeffs_b);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
 
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_rgbcurve] couldn't enqueue kernel! %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_rgbcurve] couldn't enqueue kernel! %s\n", cl_errstr(err));
 
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
@@ -1750,7 +1750,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          in, out, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 

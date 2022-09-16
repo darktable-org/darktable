@@ -183,7 +183,7 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
 {
   dt_print_t *prt = (dt_print_t *)self->data;
 
-  if (prt->pinfo == NULL)
+  if(prt->pinfo == NULL)
     return;
 
   float px=.0f, py=.0f, pwidth=.0f, pheight=.0f;

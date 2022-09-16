@@ -264,7 +264,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
         if(element_size % sizeof(int))
         {
           int8_t *p = (int8_t *)module->default_params + i->header.offset;
-          for (size_t c = element_size; c < i->header.size; c++, p++)
+          for(size_t c = element_size; c < i->header.size; c++, p++)
             p[element_size] = *p;
         }
         else
@@ -273,7 +273,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
           size_t num_ints = i->header.size / sizeof(int);
 
           int *p = (int *)((uint8_t *)module->default_params + i->header.offset);
-          for (size_t c = element_size; c < num_ints; c++, p++)
+          for(size_t c = element_size; c < num_ints; c++, p++)
             p[element_size] = *p;
         }
       }
@@ -350,6 +350,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_stats.pixels = 0;
   module->multi_priority = 0;
   module->iop_order = 0;
+  module->cache_next_important = FALSE;
   for(int k = 0; k < 3; k++)
   {
     module->picked_color[k] = module->picked_output_color[k] = 0.0f;
@@ -1084,7 +1085,7 @@ static void _iop_panel_label(dt_iop_module_t *module)
 
 void dt_iop_gui_update_header(dt_iop_module_t *module)
 {
-  if (!module->header)                  /* some modules such as overexposed don't actually have a header */
+  if(!module->header)                  /* some modules such as overexposed don't actually have a header */
     return;
 
   // set panel name to display correct multi-instance
@@ -1405,8 +1406,7 @@ static void _init_module_so(void *m)
   // do not init accelerators if there is no gui
   if(darktable.gui)
   {
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_IOP, module->op, module->name(),
-                                     .owner = &darktable.control->actions_iops };
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_IOP, module->op, module->name() };
     dt_action_insert_sorted(&darktable.control->actions_iops, &module->actions);
 
     // Calling the accelerator initialization callback, if present
@@ -2998,7 +2998,7 @@ void dt_iop_refresh_center(dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
   dt_develop_t *dev = module->dev;
-  if (dev && dev->gui_attached)
+  if(dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
     const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
@@ -3013,7 +3013,7 @@ void dt_iop_refresh_preview(dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
   dt_develop_t *dev = module->dev;
-  if (dev && dev->gui_attached)
+  if(dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
     const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
@@ -3028,7 +3028,7 @@ void dt_iop_refresh_preview2(dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
   dt_develop_t *dev = module->dev;
-  if (dev && dev->gui_attached)
+  if(dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
     const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
@@ -3058,13 +3058,13 @@ static gboolean _postponed_history_update(gpointer data)
 /** too often). */
 void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior)
 {
-  if (module->timeout_handle && extend_prior)
+  if(module->timeout_handle && extend_prior)
   {
     // we already queued an update, but we don't want to have the update happen until the timeout expires
     // without any activity, so cancel the queued callback
     g_source_remove(module->timeout_handle);
   }
-  if (!module->timeout_handle || extend_prior)
+  if(!module->timeout_handle || extend_prior)
   {
     // adaptively set the timeout to 150% of the average time the past several pixelpipe runs took, clamped
     //   to keep updates from appearing to be too sluggish (though early iops such as rawdenoise may have
@@ -3076,7 +3076,7 @@ void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior)
 
 void dt_iop_cancel_history_update(dt_iop_module_t *module)
 {
-  if (module->timeout_handle)
+  if(module->timeout_handle)
   {
     g_source_remove(module->timeout_handle);
     module->timeout_handle = 0;
@@ -3109,9 +3109,9 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
                                            const void *const restrict ivoid, void *const restrict ovoid,
                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (ch == req_ch)
+  if(ch == req_ch)
   {
-    if (module)
+    if(module)
       dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
     return TRUE;
   }
@@ -3120,7 +3120,7 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
     // copy the input buffer to the output
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     // and set the module's trouble message
-    if (module)
+    if(module)
       dt_iop_set_module_trouble_message(module, _("unsupported input"),
                                         _("you have placed this module at\n"
                                           "a position in the pipeline where\n"
@@ -3198,14 +3198,25 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
       }
       break;
     case DT_ACTION_ELEMENT_PRESETS:
-      if(module->presets_button) _presets_popup_callback(NULL, module);
-      break;
+      switch(effect)
+      {
+      case DT_ACTION_EFFECT_ACTIVATE:
+        if(module->presets_button) _presets_popup_callback(NULL, module);
+        break;
+      case DT_ACTION_EFFECT_NEXT:
+        move_size *= -1;
+      case DT_ACTION_EFFECT_PREVIOUS:
+        dt_gui_presets_apply_adjacent_preset(module, move_size);
+        return 0; // don't overwrite toast below
+      default:
+        fprintf(stderr, "[imageop::_action_process] effect %d for presets not yet implemented\n", effect);
+        break;
+      }
     }
 
-    gchar *text = g_strdup_printf("%s, %s", dt_action_def_iop.elements[element].name,
-                                  dt_action_def_iop.elements[element].effects[effect]);
-    dt_action_widget_toast(target, NULL, text);
-    g_free(text);
+    dt_action_widget_toast(target, NULL, "%s, %s",
+                           dt_action_def_iop.elements[element].name,
+                           dt_action_def_iop.elements[element].effects[effect]);
   }
 
   return element == DT_ACTION_ELEMENT_FOCUS ? darktable.develop->gui_module == module

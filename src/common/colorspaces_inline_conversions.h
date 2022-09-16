@@ -238,14 +238,14 @@ static inline float lab_f_inv(const float x)
 #endif
 static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
-  const float fy = (Lab[0] + 16.0f) / 116.0f;
-  const float fx = Lab[1] / 500.0f + fy;
-  const float fz = fy - Lab[2] / 200.0f;
-  const dt_aligned_pixel_t f = { fx, fy, fz };
-  for_each_channel(c)
-    XYZ[c] = d50[c] * lab_f_inv(f[c]);
+  dt_aligned_pixel_t f = { Lab[1], Lab[0] + 16.0f, -Lab[2], 0.0f };
+  static const dt_aligned_pixel_t coeff = { 500.0f, 116.0f, 200.0f, 1.0f };
+  static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
+  for_each_channel(c,aligned(Lab,coeff,f))
+    f[c] /= coeff[c];
+  for_each_channel(c,aligned(d50,f,add_coeff,XYZ))
+    XYZ[c] = d50[c] * lab_f_inv(f[c] + f[1] * add_coeff[c]);
 }
-
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, XYZ:16)
@@ -1326,6 +1326,13 @@ static inline float dt_UCS_L_star_to_Y(const float L_star)
 }
 
 
+// L_star upper limit is 2.098883786377 truncated to 32-bit float and last decimal removed.
+// By clipping L_star to this limit, we ensure dt_UCS_L_star_to_Y() doesn't divide by zero.
+static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
+// Y upper limit is calculated from the above L star upper limit.
+static const float DT_UCS_Y_UPPER_LIMIT = 13237757000.f;
+
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY: 16)
 #endif
@@ -1373,7 +1380,8 @@ static inline void xyY_to_dt_UCS_JCH(const dt_aligned_pixel_t xyY, const float L
   float UV_star_prime[2];
   xyY_to_dt_UCS_UV(xyY, UV_star_prime);
 
-  const float L_star = Y_to_dt_UCS_L_star(xyY[2]);
+  // L_star must be clipped to the valid range of dt UCS
+  const float L_star = Y_to_dt_UCS_L_star(CLAMPF(xyY[2], 0.f, DT_UCS_Y_UPPER_LIMIT));
   const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
 
   // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
@@ -1398,7 +1406,8 @@ static inline void dt_UCS_JCH_to_xyY(const dt_aligned_pixel_t JCH, const float L
   */
 
   // should be L_star = powf(JCH[0], 1.f / cz) * L_white but we treat only the case where cz = 1
-  const float L_star = JCH[0] * L_white;
+  // L_star must be clipped to the valid range of dt UCS
+  const float L_star = CLAMPF(JCH[0] * L_white, 0.f, DT_UCS_L_STAR_UPPER_LIMIT);
   const float M = L_star != 0.f
     ? powf(JCH[1] * L_white / (15.932993652962535f * powf(L_star, 0.6523997524738018f)), 0.8322850678616855f)
     : 0.f;

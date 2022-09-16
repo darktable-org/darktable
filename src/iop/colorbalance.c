@@ -321,7 +321,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
   const int run_saturation_out = (d->saturation_out == 1.0f) ? 0: 1;
 
-  switch (d->mode)
+  switch(d->mode)
   {
     case LEGACY:
     {
@@ -415,7 +415,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           // main saturation input
-          if (run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
+          if(run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
 
           // RGB gamma correction
           rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c], 1.0f/2.2f);
@@ -426,7 +426,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
 
         // main saturation output
-        if (run_saturation_out)
+        if(run_saturation_out)
         {
           dt_prophotorgb_to_XYZ(rgb, XYZ);
           luma = XYZ[1];
@@ -434,7 +434,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
 
         // fulcrum contrat
-        if (run_contrast) for(int c = 0; c < 3; c++) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
+        if(run_contrast) for(int c = 0; c < 3; c++) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
 
         // transform the result back to Lab
         // sRGB -> XYZ
@@ -484,14 +484,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           // main saturation input
-          if (run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
+          if(run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
 
           // channel CDL
           rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma[c]);
         }
 
         // main saturation output
-        if (run_saturation_out)
+        if(run_saturation_out)
         {
           dt_prophotorgb_to_XYZ(rgb, XYZ);
           luma = XYZ[1];
@@ -499,7 +499,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
 
         // fulcrum contrat
-        if (run_contrast) for(int c = 0; c < 3; c++) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
+        if(run_contrast) for(int c = 0; c < 3; c++) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
 
         // transform the result back to Lab
         // sRGB -> XYZ
@@ -539,7 +539,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
   const int run_saturation_out = (d->saturation_out == 1.0f) ? 0: 1;
 
-  switch (d->mode)
+  switch(d->mode)
   {
     case LEGACY:
     {
@@ -632,7 +632,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         __m128 luma;
 
         // adjust main saturation input
-        if (run_saturation)
+        if(run_saturation)
         {
           luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
           rgb = luma + saturation * (rgb - luma);
@@ -647,7 +647,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         rgb = _mm_pow_ps(rgb, gamma_inv * gamma_RGB);
 
         // adjust main saturation output
-        if (run_saturation_out)
+        if(run_saturation_out)
         {
           XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
           luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
@@ -655,7 +655,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         }
 
         // fulcrum contrast
-        if (run_contrast)
+        if(run_contrast)
         {
           rgb = _mm_max_ps(rgb, zero);
           rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
@@ -705,7 +705,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         __m128 luma;
 
         // adjust main saturation
-        if (run_saturation)
+        if(run_saturation)
         {
           luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
           rgb = luma + saturation * (rgb - luma);
@@ -719,7 +719,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         rgb = _mm_pow_ps(rgb, gamma);
 
         // adjust main saturation output
-        if (run_saturation_out)
+        if(run_saturation_out)
         {
           XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
           luma = _mm_set1_ps(XYZ[1]); // the Y channel is the relative luminance
@@ -727,7 +727,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         }
 
         // fulcrum contrast
-        if (run_contrast)
+        if(run_contrast)
         {
           rgb = _mm_max_ps(rgb, zero);
           rgb = _mm_pow_ps(rgb / grey, contrast) * grey;
@@ -759,7 +759,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
   size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
-  switch (d->mode)
+  switch(d->mode)
   {
     case LEGACY:
     {
@@ -870,7 +870,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalance] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalance] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1223,7 +1223,7 @@ static void apply_autocolor(dt_iop_module_t *self)
   dt_aligned_pixel_t samples_gamma = { 0.f };
   dt_aligned_pixel_t samples_gain = { 0.f };
 
-  for (int c = 0; c < 3; ++c)
+  for(int c = 0; c < 3; ++c)
   {
     samples_lift[c] = CDL(g->color_patches_lift[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
     samples_gamma[c] = CDL(g->color_patches_gamma[c], p->gain[CHANNEL_FACTOR], p->lift[CHANNEL_FACTOR] - 1.0f, 2.0f - p->gamma[CHANNEL_FACTOR]);
@@ -1257,14 +1257,14 @@ static void apply_autocolor(dt_iop_module_t *self)
   * To avoid divergence, we constrain the parameters between +- 0.25 around the neutral value.
   * Experimentally, nothing good happens out of these bounds.
   */
-  for (int runs = 0 ; runs < 1000 ; ++runs)
+  for(int runs = 0 ; runs < 1000 ; ++runs)
   {
     // compute RGB slope/gain (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
-    for (int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(greys[GAIN], 1.0f / (2.0f - RGB_gamma[c])) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.75f, 1.25f);
+    for(int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(greys[GAIN], 1.0f / (2.0f - RGB_gamma[c])) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.75f, 1.25f);
     // compute RGB offset/lift powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - RGB[c] * p->gain[c+1];
-    for (int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(greys[LIFT], 1.0f / (2.0f - RGB_gamma[c])) - samples_lift[c] * RGB_gain[c], -0.025f, 0.025f);
+    for(int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(greys[LIFT], 1.0f / (2.0f - RGB_gamma[c])) - samples_lift[c] * RGB_gain[c], -0.025f, 0.025f);
     // compute  power/gamma 2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f));
-    for (int c = 0; c < 3; ++c) RGB_gamma[c] = 2.0f - CLAMP(logf(MAX(greys[GAMMA], 0.000001f)) / logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)), 0.75f, 1.25f);
+    for(int c = 0; c < 3; ++c) RGB_gamma[c] = 2.0f - CLAMP(logf(MAX(greys[GAMMA], 0.000001f)) / logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)), 0.75f, 1.25f);
   }
 
   // save
@@ -1335,7 +1335,7 @@ static void apply_autoluma(dt_iop_module_t *self)
   /** Optimization loop :
   * We try to find the CDL curves that neutralize the 3 input luma patches
   */
-  for (int runs = 0 ; runs < 100 ; ++runs)
+  for(int runs = 0 ; runs < 100 ; ++runs)
   {
     p->gain[CHANNEL_FACTOR] = CLAMP(p->lift[CHANNEL_FACTOR] / g->luma_patches[GAIN], 0.0f, 2.0f);
     p->lift[CHANNEL_FACTOR] = CLAMP(-p->gain[CHANNEL_FACTOR] * g->luma_patches[LIFT] + 1.0f, 0.0f, 2.0f);
@@ -1541,7 +1541,7 @@ void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
 
-  for (int k=0; k<LEVELS; k++)
+  for(int k=0; k<LEVELS; k++)
   {
     g->color_patches_flags[k] = INVALID;
     g->luma_patches_flags[k] = INVALID;
@@ -1845,7 +1845,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->mode = NULL;
 
-  for (int k=0; k<LEVELS; k++)
+  for(int k=0; k<LEVELS; k++)
   {
     g->color_patches_flags[k] = INVALID;
     g->luma_patches_flags[k] = INVALID;

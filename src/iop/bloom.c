@@ -104,12 +104,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_bloom_data_t *const data = (dt_iop_bloom_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
   float *restrict blurlightness;
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 1, &blurlightness, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 1, &blurlightness, 0))
   {
     // out of memory, so just copy image through to output
     dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, TRUE);
@@ -314,7 +314,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 error:
   for(int i = 0; i < NUM_BUCKETS; i++)
     dt_opencl_release_mem_object(dev_tmp[i]);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_bloom] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_bloom] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

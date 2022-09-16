@@ -21,7 +21,6 @@ static inline float normalize_laplacian(const float sigma)
 // Normalization scaling of the wavelet to approximate a laplacian
 // from the function above for sigma = B_SPLINE_SIGMA as a constant
 #define B_SPLINE_TO_LAPLACIAN 3.182727439285017f
-#define B_SPLINE_TO_LAPLACIAN_2 10.129753952777762f // square
 
 static inline float equivalent_sigma_at_step(const float sigma, const unsigned int s)
 {

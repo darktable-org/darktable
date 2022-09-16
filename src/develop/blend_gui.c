@@ -474,9 +474,9 @@ static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
 
     changed = (d->blendif != old_blendif);
 
-    for (size_t ch = 0; ch < DEVELOP_BLENDIF_SIZE; ch++)
+    for(size_t ch = 0; ch < DEVELOP_BLENDIF_SIZE; ch++)
     {
-      if ((DEVELOP_BLENDIF_OUTPUT_MASK & (1 << ch))
+      if((DEVELOP_BLENDIF_OUTPUT_MASK & (1 << ch))
           && (   d->blendif_parameters[ch * 4 + 0] != 0.0f
               || d->blendif_parameters[ch * 4 + 1] != 0.0f
               || d->blendif_parameters[ch * 4 + 2] != 1.0f
@@ -1361,7 +1361,7 @@ static gboolean _blendop_masks_add_shape(GtkWidget *widget, GdkEventButton *even
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = self;
 
-  if (continuous)
+  if(continuous)
   {
     darktable.develop->form_gui->creation_continuous = TRUE;
     darktable.develop->form_gui->creation_continuous_module = self;
@@ -2545,7 +2545,7 @@ static gboolean _add_blendmode_combo(GtkWidget *combobox, dt_develop_blend_mode_
   {
     if(bm->value == mode)
     {
-      dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "blendmode", bm->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GUINT_TO_POINTER(bm->value), NULL, TRUE);
+      dt_bauhaus_combobox_add_full(combobox, Q_(bm->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GUINT_TO_POINTER(bm->value), NULL, TRUE);
 
       return TRUE;
     }
@@ -2924,7 +2924,7 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     dt_pthread_mutex_unlock(&bd->lock);
 
     // reprocess main center image if needed
-    if (has_mask_display || suppress)
+    if(has_mask_display || suppress)
       dt_iop_refresh_center(module);
   }
 }

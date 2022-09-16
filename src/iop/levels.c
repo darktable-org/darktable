@@ -42,7 +42,6 @@
 #include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
-#define DT_GUI_CURVE_INFL .3f
 
 DT_MODULE_INTROSPECTION(2, dt_iop_levels_params_t)
 
@@ -445,7 +444,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
 error:
   dt_opencl_release_mem_object(dev_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
