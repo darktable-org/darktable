@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-13 08:03+0200\n"
-"PO-Revision-Date: 2022-09-13 12:04+0300\n"
+"PO-Revision-Date: 2022-09-16 18:24+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -4344,7 +4344,7 @@ msgstr "експозиція"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:267
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
 msgid "fill mode"
-msgstr "режим заповнення"
+msgstr "режим заливки"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
@@ -4380,7 +4380,7 @@ msgstr "розмиття"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:448
 #: ../src/iop/retouch.c:1836
 msgid "fill"
-msgstr "заповнення"
+msgstr "заливка"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:453
 msgid "bilateral"
@@ -18005,7 +18005,7 @@ msgstr "ширина"
 
 #: ../src/iop/relight.c:285
 msgid "width of fill-light area defined in zones"
-msgstr "ширина зони заповнення, визначена в зонах"
+msgstr "ширина області заповнення, визначена в зонах"
 
 #: ../src/iop/retouch.c:197
 msgid "retouch"
@@ -18187,15 +18187,15 @@ msgstr ""
 
 #: ../src/iop/retouch.c:2373
 msgid "erase the detail or fills with chosen color"
-msgstr "стирати або заповнювати вибраним кольором"
+msgstr "стирати або заливати вибраним кольором"
 
 #: ../src/iop/retouch.c:2380
 msgid "fill color: "
-msgstr "колір заповнення: "
+msgstr "колір заливки: "
 
 #: ../src/iop/retouch.c:2385 ../src/iop/retouch.c:2386
 msgid "select fill color"
-msgstr "вибрати колір заповнення"
+msgstr "вибрати колір заливки"
 
 #: ../src/iop/retouch.c:2391
 msgid "pick fill color from image"
