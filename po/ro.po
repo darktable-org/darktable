@@ -42,7 +42,7 @@ msgstr "importă"
 #: ../build/src/preferences_gen.h:2116
 #, fuzzy
 msgid "ignore JPEG images when importing film rolls"
-msgstr "rating-ul inițial la importarea rolelor de film"
+msgstr "ignoră imaginile JPEG la importarea rolelor de film"
 
 #: ../build/src/preferences_gen.h:2125 ../build/src/preferences_gen.h:2145
 #: ../build/src/preferences_gen.h:2168 ../build/src/preferences_gen.h:2191
@@ -101,7 +101,7 @@ msgstr ""
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
-msgstr ""
+msgstr "daca in acelasi director exista imagini in ambele formate, RAW si JPEG, nu are sens sa fie importate ambele. Cu aceasta optiune, puteti dezactiva importarea tuturor imaginilor JPEG."
 
 #: ../build/src/preferences_gen.h:2136
 #, fuzzy
@@ -317,17 +317,17 @@ msgstr ""
 #, fuzzy
 msgctxt "preferences"
 msgid "low"
-msgstr "galben"
+msgstr "scazut"
 
 #: ../build/src/preferences_gen.h:2569 ../build/src/preferences_gen.h:2589
 msgctxt "preferences"
 msgid "medium"
-msgstr ""
+msgstr "mediu"
 
 #: ../build/src/preferences_gen.h:2574
 msgctxt "preferences"
 msgid "high"
-msgstr ""
+msgstr "inalt"
 
 #: ../build/src/preferences_gen.h:2592
 msgid ""
