@@ -2201,7 +2201,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
   const gboolean use_segmentation = bayer && (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   const gboolean use_recovery = use_segmentation && (p->recovery != DT_RECOVERY_MODE_OFF);
-  const gboolean use_balance = (mode == DT_IOP_HIGHLIGHTS_OPPOSED);
+  const gboolean use_balance = FALSE; // (mode == DT_IOP_HIGHLIGHTS_OPPOSED);
   gtk_widget_set_visible(g->noise_level, use_laplacian || use_recovery);
   gtk_widget_set_visible(g->iterations, use_laplacian);
   gtk_widget_set_visible(g->scales, use_laplacian);
