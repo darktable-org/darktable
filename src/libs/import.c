@@ -1802,8 +1802,18 @@ static void _import_set_collection(const char *dirname)
 {
   if(dirname)
   {
+    dt_collection_properties_t property = dt_conf_get_int("plugins/lighttable/collect/item0");
+
+    if(property != DT_COLLECTION_PROP_FOLDERS
+       && property != DT_COLLECTION_PROP_FILMROLL)
+    {
+      // the current collection is not based on filmrolls or folders
+      // fallback to DT_COLLECTION_PROP_FILMROLL. Otherwise we keep
+      // the current property of the collection.
+      property = DT_COLLECTION_PROP_FILMROLL;
+    }
     dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
-    dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+    dt_conf_set_int("plugins/lighttable/collect/item0", property);
     dt_conf_set_string("plugins/lighttable/collect/string0", dirname);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
                                NULL);
@@ -2282,4 +2292,3 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
