@@ -349,7 +349,7 @@ msgstr "selectează nuanţa de culoare"
 #, fuzzy
 msgctxt "preferences"
 msgid "grey scale"
-msgstr "scală"
+msgstr "scală monocroma"
 
 #: ../build/src/preferences_gen.h:2634
 msgid ""
@@ -378,7 +378,7 @@ msgstr ""
 #, fuzzy
 msgctxt "preferences"
 msgid "top right"
-msgstr "drepturi"
+msgstr "sus - dreapta"
 
 #: ../build/src/preferences_gen.h:2687
 #, fuzzy
