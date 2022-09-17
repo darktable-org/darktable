@@ -69,6 +69,7 @@ typedef enum dt_iop_highlights_mode_t
   DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
   DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
   DT_IOP_HIGHLIGHTS_SEGMENTS = 4, // $DESCRIPTION: "segmentation based"
+  DT_IOP_HIGHLIGHTS_OPPOSED = 5,  // $DESCRIPTION: "inpaint opposed"
 } dt_iop_highlights_mode_t;
 
 typedef enum dt_atrous_wavelets_scales_t
@@ -110,7 +111,7 @@ typedef struct dt_iop_highlights_params_t
   // params of v1
   dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
   float blendL; // unused $DEFAULT: 1.0
-  float blendC; // unused $DEFAULT: 0.0
+  float balance; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "cast balance"
   float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
   // params of v2
   float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
@@ -137,6 +138,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *combine;
   GtkWidget *recovery;
   GtkWidget *strength;
+  GtkWidget *balance;
   gboolean show_visualize;
   dt_segments_mask_t segmentation_mask_mode;
 } dt_iop_highlights_gui_data_t;
@@ -213,6 +215,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scales = 5;
     n->solid_color = 0.f;
     n->strength = 0.0f;
+    n->balance = 0.0f;
     return 0;
   }
   if(old_version == 2 && new_version == 4)
@@ -237,6 +240,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scales = 5;
     n->solid_color = 0.f;
     n->strength = 0.0f;
+    n->balance = 0.0f;
     return 0;
   }
   if(old_version == 3 && new_version == 4)
@@ -249,6 +253,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->solid_color = 0.f;
     n->strength = 0.0f;
+    n->balance = 0.0f;
     return 0;
   }
 
@@ -484,7 +489,25 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->overhead = segments * 5 * 5 * sizeof(int); // segmentation stuff
     tiling->factor = 2.0f + 3.3f; // in & out plus planes plus segmentation
     tiling->maxbuf = 1.0f;
+    return;
+  }
 
+  if(d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)
+  {
+    if(filters != 9u)
+    {
+      tiling->xalign = 2;
+      tiling->yalign = 2;
+    }
+    else
+    {
+      tiling->xalign = 3;
+      tiling->yalign = 3;
+    }
+    tiling->overlap = 6;
+    tiling->factor = 3.0f; // in & out plus plane buffers including some border safety
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
     return;
   }
 
@@ -1934,6 +1957,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
 }
 
 #include "iop/hlrecovery.c"
+#include "iop/opposed.c"
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -2051,6 +2075,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
     }
 
+    case DT_IOP_HIGHLIGHTS_OPPOSED:
+    {
+      _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, filters, data);
+      break;
+    }
+
     case DT_IOP_HIGHLIGHTS_LAPLACIAN:
     {
       const dt_aligned_pixel_t clips = { 0.995f * data->clip * piece->pipe->dsc.processed_maximum[0],
@@ -2067,9 +2097,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   // update processed maximum
-  if((data->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (data->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
+  if((data->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (data->mode != DT_IOP_HIGHLIGHTS_SEGMENTS) && (data->mode != DT_IOP_HIGHLIGHTS_OPPOSED))
   {
-    // The guided laplacian and segmentation modes keep signal scene-referred and don't clip highlights to 1
+    // The guided laplacian, inpaint opposed and segmentation modes keep signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
     const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
                           piece->pipe->dsc.processed_maximum[2]);
@@ -2088,7 +2118,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   memcpy(d, p, sizeof(*p));
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT or DT_IOP_HIGHLIGHTS_SEGMENTS
-  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)) ? 0 : 1;
+  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)) ? 0 : 1;
   if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) piece->process_tiling_ready = 0;
 
   // check for heavy computing here to give an iop cache hint
@@ -2165,7 +2195,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
   const gboolean use_segmentation = bayer && (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   const gboolean use_recovery = use_segmentation && (p->recovery != DT_RECOVERY_MODE_OFF);
-
+  const gboolean use_balance = (mode == DT_IOP_HIGHLIGHTS_OPPOSED);
   gtk_widget_set_visible(g->noise_level, use_laplacian || use_recovery);
   gtk_widget_set_visible(g->iterations, use_laplacian);
   gtk_widget_set_visible(g->scales, use_laplacian);
@@ -2175,6 +2205,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->combine, use_segmentation);
   gtk_widget_set_visible(g->recovery, use_segmentation);
   gtk_widget_set_visible(g->strength, use_recovery);
+  gtk_widget_set_visible(g->balance, use_balance);
   dt_bauhaus_widget_set_quad_visibility(g->strength, use_recovery);
 
   // The special case for strength button active needs further care here
@@ -2236,12 +2267,17 @@ void reload_defaults(dt_iop_module_t *module)
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
         dt_bauhaus_combobox_add_full(g->mode, _("segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
+        dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
       }
     }
     else
     {
+      dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_OPPOSED);
       dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_SEGMENTS);
       dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_LAPLACIAN);
+      dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
     }
   }
 }
@@ -2367,6 +2403,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_toggle(g->strength, TRUE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g_signal_connect(G_OBJECT(g->strength), "quad-pressed", G_CALLBACK(_strength_callback), self);
+
+  g->balance = dt_bauhaus_slider_from_params(self, "balance");
+  gtk_widget_set_tooltip_text(g->balance, _("tune the opposed red versus blue balance"));
+  dt_bauhaus_slider_set_format(g->balance, "%");
 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
