@@ -1095,20 +1095,9 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       const float amount = up ? 1.03f : 0.97f;
-      float masks_hardness;
-
-      if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-      {
-        masks_hardness = dt_conf_get_float("plugins/darkroom/spots/brush_hardness");
-        masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-        dt_conf_set_float("plugins/darkroom/spots/brush_hardness", masks_hardness);
-      }
-      else
-      {
-        masks_hardness = dt_conf_get_float("plugins/darkroom/masks/brush/hardness");
-        masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-        dt_conf_set_float("plugins/darkroom/masks/brush/hardness", masks_hardness);
-      }
+      float masks_hardness = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
+      masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+      dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
 
       if(gui->guipoints_count > 0)
       {
@@ -1119,20 +1108,10 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
     else if(dt_modifier_is(state, 0))
     {
       const float amount = up ? 1.03f : 0.97f;
-      float masks_border;
 
-      if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-      {
-        masks_border = dt_conf_get_float("plugins/darkroom/spots/brush_border");
-        masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
-        dt_conf_set_float("plugins/darkroom/spots/brush_border", masks_border);
-      }
-      else
-      {
-        masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
-        masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
-        dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
-      }
+      float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border));
+      masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
+      dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
 
       if(gui->guipoints_count > 0)
       {
@@ -1175,18 +1154,9 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
           }
           pts_number++;
         }
-        if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        {
-          float masks_hardness = dt_conf_get_float("plugins/darkroom/spots/brush_hardness");
-          masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-          dt_conf_set_float("plugins/darkroom/spots/brush_hardness", masks_hardness);
-        }
-        else
-        {
-          float masks_hardness = dt_conf_get_float("plugins/darkroom/masks/brush/hardness");
-          masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-          dt_conf_set_float("plugins/darkroom/masks/brush/hardness", masks_hardness);
-        }
+        float masks_hardness = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
+        masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+        dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
       }
       else
       {
@@ -1214,20 +1184,10 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
           }
           pts_number++;
         }
-        if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        {
-          float masks_border = dt_conf_get_float("plugins/darkroom/spots/brush_border");
-          masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
-          dt_conf_set_float("plugins/darkroom/spots/brush_border", masks_border);
-          dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
-        }
-        else
-        {
-          float masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
-          masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
-          dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
-          dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
-        }
+        float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border));
+        masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
+        dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
+        dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
       }
 
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -1253,17 +1213,9 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
-  float masks_border = 0.0f;
-  if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), BORDER_MAX);
-  else
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
+  float masks_border = MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border)), BORDER_MAX);
 
-  float masks_hardness = 0.0f;
-  if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"), HARDNESS_MAX);
-  else
-    masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"), HARDNESS_MAX);
+  float masks_hardness = MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness)), HARDNESS_MAX);
 
   // always start with a mask density of 100%, it will be adjusted with pen pressure if used.
   const float masks_density = 1.0f;
@@ -1572,11 +1524,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
-  float masks_border = 0.0f;
-  if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), BORDER_MAX);
-  else
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
+  float masks_border = MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border)), BORDER_MAX);
 
   if(gui->creation && which == 1 &&
      (dt_modifier_is(state, GDK_SHIFT_MASK) || dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
@@ -2225,17 +2173,9 @@ static void _brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_fo
       dt_masks_form_t *form = darktable.develop->form_visible;
       if(!form) return;
 
-      float masks_border = 0.0f;
-      if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), BORDER_MAX);
-      else
-        masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
+      float masks_border = MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border)), BORDER_MAX);
 
-      float masks_hardness = 0.0f;
-      if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"), HARDNESS_MAX);
-      else
-        masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"), HARDNESS_MAX);
+      float masks_hardness = MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness)), HARDNESS_MAX);
 
       const float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
 

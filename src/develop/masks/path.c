@@ -1036,20 +1036,10 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
           point->border[0] *= amount;
           point->border[1] *= amount;
         }
-        if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        {
-          float masks_border = dt_conf_get_float("plugins/darkroom/spots/path_border");
-          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
-          dt_conf_set_float("plugins/darkroom/spots/path_border", masks_border);
-          dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size *100.0f);
-        }
-        else
-        {
-          float masks_border = dt_conf_get_float("plugins/darkroom/masks/path/border");
-          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
-          dt_conf_set_float("plugins/darkroom/masks/path/border", masks_border);
-          dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size * 100.0f);
-        }
+        float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, path, border));
+        masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
+        dt_conf_set_float(DT_MASKS_CONF(form->type, path, border), masks_border);
+        dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size * 100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -1134,11 +1124,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
-  float masks_border;
-  if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/path_border"), 0.5f);
-  else
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/path/border"), 0.5f);
+  float masks_border = MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, path, border)), 0.5f);
 
   if(gui->creation && which == 1 && form->points == NULL
      && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
