@@ -272,7 +272,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -474,16 +474,16 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     return;
   }
 
-  if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS && filters && filters != 9u)
+  if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
   {
     // even if the algorithm can't tile we want to calculate memory for pixelpipe checks and a possible warning
+    const int segments = roi_out->width * roi_out->height / 2000; // segments per mpix
     tiling->xalign = 2;
     tiling->yalign = 2;
     tiling->overlap = 0;
-    tiling->overhead = 0x4000 * 5 * 10 * sizeof(int);
-    tiling->factor = 5.6f; // in & out plus plane buffers including some border safety plus segment planes
+    tiling->overhead = segments * 5 * 5 * sizeof(int); // segmentation stuff
+    tiling->factor = 2.0f + 3.3f; // in & out plus planes plus segmentation
     tiling->maxbuf = 1.0f;
-    tiling->overhead = 0;
 
     return;
   }
@@ -1942,7 +1942,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
 
-  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
 
   if(visualizing)

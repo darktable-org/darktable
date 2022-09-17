@@ -483,7 +483,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 {
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
-  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
 
   const float clipval = 0.987f * data->clip;
 
@@ -567,8 +567,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
     dt_masks_extend_border(plane[i], pwidth, pheight, HL_BORDER);
 
   dt_iop_segmentation_t isegments[HL_SENSOR_PLANES +1];
+  const int segmentation_limit = width * height / 2000; // segments per mpix
   for(int i = 0; i < HL_SENSOR_PLANES+1; i++)
-    dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER, 25000);
+    dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER, segmentation_limit);
 
   gboolean has_clipped = FALSE;
   gboolean has_allclipped = FALSE;
@@ -619,11 +620,11 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       const size_t i = row * pwidth + col;
       for(int p = 0; p < HL_REF_PLANES; p++)
       {
-        refavg[p][i] = 0.125f * (
-          weights[p][0] * (4.0f * plane[0][i] + plane[0][i-1] + plane[0][i+1] + plane[0][i-pwidth] + plane[0][i+pwidth]) +
-          weights[p][1] * (4.0f * plane[1][i] + plane[1][i-1] + plane[1][i+1] + plane[1][i-pwidth] + plane[1][i+pwidth]) +
-          weights[p][2] * (4.0f * plane[2][i] + plane[2][i-1] + plane[2][i+1] + plane[2][i-pwidth] + plane[2][i+pwidth]) +
-          weights[p][3] * (4.0f * plane[3][i] + plane[3][i-1] + plane[3][i+1] + plane[3][i-pwidth] + plane[3][i+pwidth]));
+        refavg[p][i] =
+          weights[p][0] * plane[0][i] +
+          weights[p][1] * plane[1][i] +
+          weights[p][2] * plane[2][i] +
+          weights[p][3] * plane[3][i];
       }
     }
   }
@@ -908,10 +909,10 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   for(int k = 0; k < 3; k++)
     piece->pipe->dsc.processed_maximum[k] *= max_correction;
 
-  dt_print(DT_DEBUG_PERF, "[segmentation report] %.1fMpix, max=%1.2f, combine=%i. Segments: %i red, %i green, %i blue, %i all. Times: init %.3fs, segmentize %.3fs, recovery %.3fs\n",
+  dt_print(DT_DEBUG_PERF, "[segmentation report] %.1fMpix, max=%1.2f, combine=%i. Segments: %i red, %i green, %i blue, %i all (%i). Times: init %.3fs, segmentize %.3fs, recovery %.3fs (%.3fs)\n",
        (float) (width * height) / 1.0e6f, max_correction, combining,
-       isegments[0].nr, isegments[1].nr + isegments[2].nr, isegments[3].nr, isegments[DT_IO_PLANNE_ALL].nr,
-       time1.clock - time0.clock, time2.clock - time1.clock, time3.clock - time2.clock);
+       isegments[0].nr, isegments[1].nr + isegments[2].nr, isegments[3].nr, isegments[DT_IO_PLANNE_ALL].nr, segmentation_limit,
+       time1.clock - time0.clock, time2.clock - time1.clock, time3.clock - time2.clock, time3.clock - time0.clock);
 
   finish:
   for(int i = 0; i < HL_SENSOR_PLANES; i++)
