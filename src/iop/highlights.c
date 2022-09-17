@@ -498,14 +498,16 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     {
       tiling->xalign = 2;
       tiling->yalign = 2;
+      tiling->factor = 3.1f; // in & out plus plane buffers including some border safety
+      tiling->overlap = 4;
     }
     else
     {
       tiling->xalign = 3;
       tiling->yalign = 3;
+      tiling->factor = 2.7f; // in & out plus plane buffers including some border safety
+      tiling->overlap = 6;
     }
-    tiling->overlap = 6;
-    tiling->factor = 3.0f; // in & out plus plane buffers including some border safety
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
     return;
@@ -2077,7 +2079,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     case DT_IOP_HIGHLIGHTS_OPPOSED:
     {
-      _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, filters, data);
+      if(filters == 9u)
+        _process_opposed_xtrans(piece, ivoid, ovoid, roi_in, roi_out, data);
+      else
+        _process_opposed_bayer(piece, ivoid, ovoid, roi_in, roi_out, data);
+
       break;
     }
 
