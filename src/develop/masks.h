@@ -633,6 +633,8 @@ int dt_masks_roundup(int num, int mult)
   return (rem == 0) ? num : num + mult - rem;
 }
 
+#define DT_MASKS_CONF(type, shape, param) \
+  (type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? "plugins/darkroom/spots/" #shape "_" #param : "plugins/darkroom/masks/" #shape "/" #param)
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
