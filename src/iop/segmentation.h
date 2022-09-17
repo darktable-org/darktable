@@ -647,7 +647,7 @@ void dt_segmentation_init_struct(dt_iop_segmentation_t *seg, const int width, co
   seg->ref =    dt_alloc_align(64, slots * sizeof(size_t));
   seg->val1 =   dt_alloc_align_float(slots);
   seg->val2 =   dt_alloc_align_float(slots);
-  seg->border = border;
+  seg->border = MAX(border, 8);
   seg->slots = slots;
   seg->width = width;
   seg->height = height;
