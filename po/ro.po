@@ -349,7 +349,7 @@ msgstr "selectează nuanţa de culoare"
 #, fuzzy
 msgctxt "preferences"
 msgid "grey scale"
-msgstr "scală"
+msgstr "scală monocroma"
 
 #: ../build/src/preferences_gen.h:2634
 msgid ""
@@ -378,7 +378,7 @@ msgstr ""
 #, fuzzy
 msgctxt "preferences"
 msgid "top right"
-msgstr "drepturi"
+msgstr "sus - dreapta"
 
 #: ../build/src/preferences_gen.h:2687
 #, fuzzy
@@ -394,7 +394,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:2697
 msgctxt "preferences"
 msgid "hidden"
-msgstr ""
+msgstr "ascuns"
 
 #: ../build/src/preferences_gen.h:2722
 msgid "show search module text entry"
@@ -403,19 +403,19 @@ msgstr ""
 #: ../build/src/preferences_gen.h:2733
 msgctxt "preferences"
 msgid "show search text"
-msgstr ""
+msgstr "arata textul cautarii"
 
 #: ../build/src/preferences_gen.h:2738
 #, fuzzy
 msgctxt "preferences"
 msgid "show groups"
-msgstr "arată %s"
+msgstr "arată grupuri"
 
 #: ../build/src/preferences_gen.h:2743 ../build/src/preferences_gen.h:2758
 #, fuzzy
 msgctxt "preferences"
 msgid "show both"
-msgstr "arată %s"
+msgstr "arată ambele"
 
 #: ../build/src/preferences_gen.h:2768
 msgid "expand a single darkroom module at a time"
@@ -482,7 +482,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2884
 msgid "maximum number of images drawn on map"
-msgstr ""
+msgstr "numarul maxim de imagini pw harta"
 
 #: ../build/src/preferences_gen.h:2903
 msgid ""
@@ -503,7 +503,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:2931
 #, fuzzy
 msgid "security"
-msgstr "claritate"
+msgstr "securitate"
 
 #: ../build/src/preferences_gen.h:2940
 #, fuzzy
@@ -514,12 +514,12 @@ msgstr "întreabă înainte de a elimina imagini"
 #, fuzzy
 msgid "always ask the user before any image is removed from DB."
 msgstr ""
-"întreabă întotdeauna utilizatorul înainte de a elimina orice imagine din db."
+"întreabă întotdeauna utilizatorul înainte de a elimina orice imagine din baza de date."
 
 #: ../build/src/preferences_gen.h:2960
 #, fuzzy
 msgid "ask before erasing images from disk / discarding history stack"
-msgstr "întreabă înainte de a elimina imagini"
+msgstr "întreabă înainte de a elimina imagini / istoric"
 
 #: ../build/src/preferences_gen.h:2972
 #, fuzzy
@@ -527,11 +527,11 @@ msgid ""
 "always ask the user before any image file is deleted / history stack is "
 "discarded."
 msgstr ""
-"întreabă întotdeauna utilizatorul înainte de a şterge orice fişier imagine."
+"întreabă întotdeauna utilizatorul înainte de a şterge orice fişier imagine / istoric."
 
 #: ../build/src/preferences_gen.h:2980
 msgid "send files to trash when erasing images"
-msgstr ""
+msgstr "la stergerea imaginilor, muta fisierele la gunoi"
 
 #: ../build/src/preferences_gen.h:2992
 msgid ""
@@ -552,18 +552,18 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3020
 msgid "ask before copying images to new film roll folder"
-msgstr ""
+msgstr "întreabă inainte de a a copia imaginile in o rola noua "
 
 #: ../build/src/preferences_gen.h:3032
 #, fuzzy
 msgid "always ask the user before any image file is copied."
 msgstr ""
-"întreabă întotdeauna utilizatorul înainte de a şterge orice fişier imagine."
+"întreabă întotdeauna utilizatorul înainte de a copia orice fişier imagine."
 
 #: ../build/src/preferences_gen.h:3040
 #, fuzzy
 msgid "ask before removing empty folders"
-msgstr "întreabă înainte de a elimina imagini"
+msgstr "întreabă înainte de a elimina imagini fara continut"
 
 #: ../build/src/preferences_gen.h:3052
 #, fuzzy
@@ -571,20 +571,20 @@ msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"întreabă întotdeauna utilizatorul înainte de a şterge orice fişier imagine."
+"întreabă întotdeauna utilizatorul înainte de a şterge orice director gol, in urma stergerii sau mutarii imaginilor"
 
 #: ../build/src/preferences_gen.h:3060
 msgid "ask before deleting a tag"
-msgstr "întreaba înainte de a şterge un tag"
+msgstr "întreaba înainte de a şterge o eticheta"
 
 #: ../build/src/preferences_gen.h:3079
 #, fuzzy
 msgid "ask before deleting a style"
-msgstr "întreaba înainte de a şterge un tag"
+msgstr "întreaba înainte de a şterge un stil"
 
 #: ../build/src/preferences_gen.h:3098 ../build/src/preferences_gen.h:3991
 msgid "miscellaneous"
-msgstr ""
+msgstr "diverse"
 
 #: ../build/src/preferences_gen.h:3107
 #, fuzzy
@@ -675,7 +675,7 @@ msgstr "masă luminoasă"
 #, fuzzy
 msgctxt "preferences"
 msgid "lighttable + darkroom"
-msgstr "masă luminoasă"
+msgstr "masă luminoasă + camera obscura"
 
 #: ../build/src/preferences_gen.h:3325
 msgid "defines where scrollbars should be displayed"
@@ -933,7 +933,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3825
 #, fuzzy
 msgid "number of background threads"
-msgstr "numărul de operaţii:"
+msgstr "numărul de fire de executie in fundal"
 
 #: ../build/src/preferences_gen.h:3844
 msgid ""
@@ -1086,7 +1086,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:4118
 #, fuzzy
 msgid "3D lut root folder"
-msgstr "elimină din colecție"
+msgstr "directorul lut parinte 3D"
 
 #: ../build/src/preferences_gen.h:4123 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1616
@@ -1106,7 +1106,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:4164
 #, fuzzy
 msgid "session options"
-msgstr "opţiuni gui"
+msgstr "opţiuni sesiune"
 
 #: ../build/src/preferences_gen.h:4167
 msgid "base directory naming pattern"
@@ -1168,7 +1168,7 @@ msgstr "importă imagini de la cameră"
 #: ../data/darktable.appdata.xml.in.h:9
 #, fuzzy
 msgid "Print your images"
-msgstr "adaugă mai multe imagini"
+msgstr "Listeaza imaginile"
 
 #: ../src/bauhaus/bauhaus.c:2260
 #, c-format
@@ -1194,13 +1194,13 @@ msgstr ""
 #: ../src/libs/tagging.c:2166
 #, fuzzy
 msgid "_cancel"
-msgstr "anulează"
+msgstr "_anulează"
 
 #: ../src/chart/main.c:463 ../src/gui/preferences.c:1156
 #: ../src/gui/preferences.c:1387 ../src/gui/styles_dialog.c:284
 #: ../src/libs/styles.c:301
 msgid "_save"
-msgstr ""
+msgstr "_salveaza"
 
 #. TODO: is the rank interesting, too?
 #: ../src/chart/main.c:967
@@ -1234,27 +1234,27 @@ msgstr ""
 #: ../src/cli/main.c:234
 #, fuzzy, c-format
 msgid "error: can't open folder %s"
-msgstr "eroare la încărcarea fișierului '%s'"
+msgstr "eroare la deschiderea directorului '%s'"
 
 #: ../src/cli/main.c:252
 #, fuzzy, c-format
 msgid "error: can't open file %s"
-msgstr "eroare la încărcarea fișierului '%s'"
+msgstr "eroare la deschiderea fișierului '%s'"
 
 #: ../src/cli/main.c:266
 #, fuzzy, c-format
 msgid "no images to export, aborting\n"
-msgstr "nu sunt imagini selectate!"
+msgstr "nu sunt imagini selectate pentru export, abandonez!"
 
 #: ../src/cli/main.c:280
 #, fuzzy, c-format
 msgid "error: can't open xmp file %s"
-msgstr "eroare la încărcarea fișierului '%s'"
+msgstr "eroare la deschiderea fișierului xmp '%s'"
 
 #: ../src/cli/main.c:298
 #, fuzzy
 msgid "empty history stack"
-msgstr "stiva de istoric"
+msgstr "istoric gol"
 
 #: ../src/cli/main.c:321
 msgid ""
@@ -1351,7 +1351,7 @@ msgstr[1] "selectează toate imaginile din colecția curentă (ctrl-a)"
 #: ../src/common/colorspaces.c:968 ../src/iop/colorin.c:2108
 #: ../src/iop/lut3d.c:1118
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
 #: ../src/common/colorspaces.c:969 ../src/common/colorspaces.c:1274
@@ -1523,7 +1523,7 @@ msgstr ""
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 #, fuzzy
 msgid "no"
-msgstr "niciunul"
+msgstr "nu"
 
 #: ../src/common/darktable.c:806 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
@@ -1531,7 +1531,7 @@ msgstr "niciunul"
 #: ../src/libs/metadata_view.c:279
 #, fuzzy
 msgid "yes"
-msgstr "stiluri"
+msgstr "da"
 
 #: ../src/common/database.c:1605
 #, c-format
@@ -1545,13 +1545,13 @@ msgstr ""
 
 #: ../src/common/database.c:1612
 msgid "darktable - error locking database"
-msgstr ""
+msgstr "darktable - eroare la blocarea bazei de date"
 
 #: ../src/common/database.c:1612 ../src/common/database.c:1783
 #: ../src/common/database.c:1969 ../src/common/database.c:2047
 #, fuzzy
 msgid "close darktable"
-msgstr "despre darktable"
+msgstr "inchide darktable"
 
 #: ../src/common/database.c:1723
 #, c-format
@@ -1579,7 +1579,7 @@ msgid ""
 "<span style=\"italic\">%s</span>\n"
 "\n"
 "do you want to proceed or quit now to do a backup\n"
-msgstr ""
+msgstr "continuati sau anulati si faceti backup"
 
 #: ../src/common/database.c:1782
 msgid "darktable - schema migration"
@@ -1601,16 +1601,19 @@ msgid ""
 "it seems that the database is corrupt.\n"
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or start with a new one?"
-msgstr ""
+msgstr "se pare ca baza de date este corupta.\n" 
+"doriti sa inchideti darktable si sa efectuati o restaurare\n" 
+"manuala a bazei de date, din backup, sau sa initiati o baza de date noua?\n"
+
 
 #: ../src/common/database.c:1968 ../src/common/database.c:2046
 msgid "darktable - error opening database"
-msgstr ""
+msgstr "darktable - erorare la deschiderea bazei de date"
 
 #: ../src/common/database.c:1969 ../src/common/database.c:2047
 #, fuzzy
 msgid "delete database"
-msgstr "şterge tag?"
+msgstr "şterge baza de date"
 
 #: ../src/common/fast_guided_filter.h:456
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -1667,11 +1670,13 @@ msgstr "dezactivat"
 #: ../src/common/http_server.c:95
 #, fuzzy, c-format
 msgid "darktable » %s"
-msgstr "despre darktable"
+msgstr "darktable » %s"
+
 
 #: ../src/common/http_server.c:97
 msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
-msgstr ""
+msgstr "<h1>Ne pare rau,</h1><p>ceva nu a functionat. Va rugam reincercati.</p>"
+ 
 
 #: ../src/common/http_server.c:102
 msgid ""
@@ -1686,12 +1691,13 @@ msgstr "imagine orfană"
 #: ../src/common/image.c:1455
 #, c-format
 msgid "cannot access local copy `%s'"
-msgstr ""
+msgstr "nu pot accesa copia locala `%s'"
+
 
 #: ../src/common/image.c:1461
 #, fuzzy, c-format
 msgid "cannot write local copy `%s'"
-msgstr "nu s-a putut creea directorul `%s'!"
+msgstr "nu pot salva copia locala `%s'"
 
 #: ../src/common/image.c:1468
 #, c-format
@@ -1715,11 +1721,11 @@ msgstr "eroare la încărcarea fișierului '%s'"
 
 #: ../src/common/image.c:1755
 msgid "cannot create local copy when the original file is not accessible."
-msgstr ""
+msgstr "nu pot creaa o copie locala, atat timp cat originalul nu este disponibil."
 
 #: ../src/common/image.c:1769
 msgid "cannot create local copy."
-msgstr ""
+msgstr "nu pot crea copia locala"
 
 #: ../src/common/image.c:1835 ../src/control/jobs/control_jobs.c:665
 msgid "cannot remove local copy when the original file is not accessible."
@@ -1748,7 +1754,7 @@ msgstr ""
 #, fuzzy
 msgctxt "noun"
 msgid "thumbnail export"
-msgstr "thumbnail"
+msgstr "export miniatura"
 
 #: ../src/common/imageio.c:656
 #, fuzzy
@@ -1770,7 +1776,7 @@ msgstr ""
 #: ../src/common/iop_order.c:1893
 #, fuzzy, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
-msgstr "profilul de ieșire nesuportat a fost înlocuit de sRGB!"
+msgstr "profilul de ieșire %s nesuportat a fost înlocuit de Rec2020 RGB!\n"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1807,32 +1813,32 @@ msgstr "mm"
 
 #: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1287
 msgid "cm"
-msgstr ""
+msgstr "cm"
 
 #: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1288
 msgid "inch"
-msgstr ""
+msgstr "inci"
 
 #: ../src/common/pdf.h:91
 msgid "\""
-msgstr ""
+msgstr "\""
 
 #: ../src/common/pdf.h:104
 msgid "a4"
-msgstr ""
+msgstr "a4"
 
 #: ../src/common/pdf.h:105
 msgid "a3"
-msgstr ""
+msgstr "a3"
 
 #: ../src/common/pdf.h:106
 #, fuzzy
 msgid "letter"
-msgstr "baterie"
+msgstr "scrisoare"
 
 #: ../src/common/pdf.h:107
 msgid "legal"
-msgstr ""
+msgstr "formal legal"
 
 #: ../src/common/pwstorage/pwstorage.c:83
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
@@ -1842,8 +1848,8 @@ msgstr ""
 #, fuzzy, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
-msgstr[0] "se șterge %d imagine"
-msgstr[1] "se șterg %d imagini"
+msgstr[0] "se respinge %d imagine"
+msgstr[1] "se resping %d imagini"
 
 #: ../src/common/ratings.c:130 ../src/common/ratings.c:151
 #, fuzzy, c-format
@@ -1905,11 +1911,11 @@ msgstr "stilul %s a fost importat cu suces"
 
 #: ../src/common/utility.c:456
 msgid "above sea level"
-msgstr ""
+msgstr "deasupra nivelului marii"
 
 #: ../src/common/utility.c:457
 msgid "below sea level"
-msgstr ""
+msgstr "sub nivelul marii"
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:775
 #: ../src/libs/metadata_view.c:578
@@ -1932,7 +1938,7 @@ msgstr "selectează"
 
 #: ../src/control/crawler.c:346
 msgid "path"
-msgstr ""
+msgstr "cale"
 
 #: ../src/control/crawler.c:350
 msgid "xmp timestamp"
@@ -1951,7 +1957,7 @@ msgstr "fișiere ataș xmp"
 #: ../src/control/crawler.c:365
 #, fuzzy
 msgid "_close"
-msgstr "închide"
+msgstr "_închide"
 
 #: ../src/control/crawler.c:380 ../src/libs/select.c:101
 msgid "select all"
@@ -2032,7 +2038,7 @@ msgstr[1] "se îmbină %d imagini"
 #: ../src/control/jobs/control_jobs.c:510
 #, fuzzy, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "s-a scris hdr-ul îmbinat `%s'"
+msgstr "s-a scris HDR-ul îmbinat `%s'"
 
 #: ../src/control/jobs/control_jobs.c:536
 #, c-format
@@ -2273,8 +2279,8 @@ msgstr[1] "chiar doreşti să ştergi fizic de pe disc toate imaginile selectate
 #, fuzzy
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "elimină imagini?"
-msgstr[1] "elimină imagini?"
+msgstr[0] "mută imagine?"
+msgstr[1] "mută imagini?"
 
 #: ../src/control/jobs/control_jobs.c:1685
 #, fuzzy
