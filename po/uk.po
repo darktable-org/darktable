@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-17 14:17+0200\n"
-"PO-Revision-Date: 2022-09-17 19:55+0300\n"
+"PO-Revision-Date: 2022-09-18 19:26+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -18063,15 +18063,15 @@ msgstr "неможливо відображати масштаби, коли в�
 #: ../src/iop/retouch.c:1834 ../src/iop/retouch.c:1836
 #, c-format
 msgid "default tool changed to %s"
-msgstr "інструмент за замовчуванням змінено на %s"
+msgstr "інструмент за замовчуванням змінено на '%s'"
 
 #: ../src/iop/retouch.c:1830
 msgid "cloning"
-msgstr "'клонування'"
+msgstr "клонування"
 
 #: ../src/iop/retouch.c:1832
 msgid "healing"
-msgstr "'лікування'"
+msgstr "лікування"
 
 #: ../src/iop/retouch.c:2187
 msgid "shapes:"
