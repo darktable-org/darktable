@@ -379,7 +379,7 @@ static size_t _free_cacheline(dt_dev_pixelpipe_cache_t *cache, const int k, cons
 void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
-  if((cache->memlimit == 0) || ((pipe->type & DT_DEV_PIXELPIPE_FULL) != DT_DEV_PIXELPIPE_FULL))
+  if((cache->memlimit == 0) || !(pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_print(DT_DEBUG_DEV | DT_DEBUG_DEV, "[pixelpipe_process] [%s] using device %d. Cache: used=%luMB\n",
     dt_dev_pixelpipe_type_to_str(pipe->type), pipe->devid, cache->allmem / 1024lu / 1024lu);
