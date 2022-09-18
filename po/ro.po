@@ -1523,7 +1523,7 @@ msgstr ""
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 #, fuzzy
 msgid "no"
-msgstr "niciunul"
+msgstr "nu"
 
 #: ../src/common/darktable.c:806 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
@@ -1531,7 +1531,7 @@ msgstr "niciunul"
 #: ../src/libs/metadata_view.c:279
 #, fuzzy
 msgid "yes"
-msgstr "stiluri"
+msgstr "da"
 
 #: ../src/common/database.c:1605
 #, c-format
@@ -1545,13 +1545,13 @@ msgstr ""
 
 #: ../src/common/database.c:1612
 msgid "darktable - error locking database"
-msgstr ""
+msgstr "darktable - eroare la blocarea bazei de date"
 
 #: ../src/common/database.c:1612 ../src/common/database.c:1783
 #: ../src/common/database.c:1969 ../src/common/database.c:2047
 #, fuzzy
 msgid "close darktable"
-msgstr "despre darktable"
+msgstr "inchide darktable"
 
 #: ../src/common/database.c:1723
 #, c-format
@@ -1579,7 +1579,7 @@ msgid ""
 "<span style=\"italic\">%s</span>\n"
 "\n"
 "do you want to proceed or quit now to do a backup\n"
-msgstr ""
+msgstr "continuati sau anulati si faceti backup"
 
 #: ../src/common/database.c:1782
 msgid "darktable - schema migration"
@@ -1601,16 +1601,19 @@ msgid ""
 "it seems that the database is corrupt.\n"
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or start with a new one?"
-msgstr ""
+msgstr "se pare ca baza de date este corupta.\n" 
+"doriti sa inchideti darktable si sa efectuati o restaurare\n" 
+"manuala a bazei de date, din backup, sau sa initiati o baza de date noua?\n"
+
 
 #: ../src/common/database.c:1968 ../src/common/database.c:2046
 msgid "darktable - error opening database"
-msgstr ""
+msgstr "darktable - erorare la deschiderea bazei de date"
 
 #: ../src/common/database.c:1969 ../src/common/database.c:2047
 #, fuzzy
 msgid "delete database"
-msgstr "şterge tag?"
+msgstr "şterge baza de date"
 
 #: ../src/common/fast_guided_filter.h:456
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -1667,11 +1670,13 @@ msgstr "dezactivat"
 #: ../src/common/http_server.c:95
 #, fuzzy, c-format
 msgid "darktable » %s"
-msgstr "despre darktable"
+msgstr "darktable » %s"
+
 
 #: ../src/common/http_server.c:97
 msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
-msgstr ""
+msgstr "<h1>Ne pare rau,</h1><p>ceva nu a functionat. Va rugam reincercati.</p>"
+ 
 
 #: ../src/common/http_server.c:102
 msgid ""
@@ -1686,12 +1691,13 @@ msgstr "imagine orfană"
 #: ../src/common/image.c:1455
 #, c-format
 msgid "cannot access local copy `%s'"
-msgstr ""
+msgstr "nu pot accesa copia locala `%s'"
+
 
 #: ../src/common/image.c:1461
 #, fuzzy, c-format
 msgid "cannot write local copy `%s'"
-msgstr "nu s-a putut creea directorul `%s'!"
+msgstr "nu pot salva copia locala `%s'"
 
 #: ../src/common/image.c:1468
 #, c-format
@@ -1715,11 +1721,11 @@ msgstr "eroare la încărcarea fișierului '%s'"
 
 #: ../src/common/image.c:1755
 msgid "cannot create local copy when the original file is not accessible."
-msgstr ""
+msgstr "nu pot creaa o copie locala, atat timp cat originalul nu este disponibil."
 
 #: ../src/common/image.c:1769
 msgid "cannot create local copy."
-msgstr ""
+msgstr "nu pot crea copia locala"
 
 #: ../src/common/image.c:1835 ../src/control/jobs/control_jobs.c:665
 msgid "cannot remove local copy when the original file is not accessible."
@@ -1748,7 +1754,7 @@ msgstr ""
 #, fuzzy
 msgctxt "noun"
 msgid "thumbnail export"
-msgstr "thumbnail"
+msgstr "export miniatura"
 
 #: ../src/common/imageio.c:656
 #, fuzzy
@@ -1770,7 +1776,7 @@ msgstr ""
 #: ../src/common/iop_order.c:1893
 #, fuzzy, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
-msgstr "profilul de ieșire nesuportat a fost înlocuit de sRGB!"
+msgstr "profilul de ieșire %s nesuportat a fost înlocuit de Rec2020 RGB!\n"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1807,32 +1813,32 @@ msgstr "mm"
 
 #: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1287
 msgid "cm"
-msgstr ""
+msgstr "cm"
 
 #: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1288
 msgid "inch"
-msgstr ""
+msgstr "inci"
 
 #: ../src/common/pdf.h:91
 msgid "\""
-msgstr ""
+msgstr "\""
 
 #: ../src/common/pdf.h:104
 msgid "a4"
-msgstr ""
+msgstr "a4"
 
 #: ../src/common/pdf.h:105
 msgid "a3"
-msgstr ""
+msgstr "a3"
 
 #: ../src/common/pdf.h:106
 #, fuzzy
 msgid "letter"
-msgstr "baterie"
+msgstr "scrisoare"
 
 #: ../src/common/pdf.h:107
 msgid "legal"
-msgstr ""
+msgstr "formal legal"
 
 #: ../src/common/pwstorage/pwstorage.c:83
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
@@ -1842,8 +1848,8 @@ msgstr ""
 #, fuzzy, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
-msgstr[0] "se șterge %d imagine"
-msgstr[1] "se șterg %d imagini"
+msgstr[0] "se respinge %d imagine"
+msgstr[1] "se resping %d imagini"
 
 #: ../src/common/ratings.c:130 ../src/common/ratings.c:151
 #, fuzzy, c-format
@@ -1905,11 +1911,11 @@ msgstr "stilul %s a fost importat cu suces"
 
 #: ../src/common/utility.c:456
 msgid "above sea level"
-msgstr ""
+msgstr "deasupra nivelului marii"
 
 #: ../src/common/utility.c:457
 msgid "below sea level"
-msgstr ""
+msgstr "sub nivelul marii"
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:775
 #: ../src/libs/metadata_view.c:578
@@ -1932,7 +1938,7 @@ msgstr "selectează"
 
 #: ../src/control/crawler.c:346
 msgid "path"
-msgstr ""
+msgstr "cale"
 
 #: ../src/control/crawler.c:350
 msgid "xmp timestamp"
@@ -1951,7 +1957,7 @@ msgstr "fișiere ataș xmp"
 #: ../src/control/crawler.c:365
 #, fuzzy
 msgid "_close"
-msgstr "închide"
+msgstr "_închide"
 
 #: ../src/control/crawler.c:380 ../src/libs/select.c:101
 msgid "select all"
@@ -2032,7 +2038,7 @@ msgstr[1] "se îmbină %d imagini"
 #: ../src/control/jobs/control_jobs.c:510
 #, fuzzy, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "s-a scris hdr-ul îmbinat `%s'"
+msgstr "s-a scris HDR-ul îmbinat `%s'"
 
 #: ../src/control/jobs/control_jobs.c:536
 #, c-format
