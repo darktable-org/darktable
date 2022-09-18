@@ -1917,7 +1917,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
     if(data->illuminant_type == DT_ILLUMINANT_DETECT_EDGES || data->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES)
     {
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+      if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
       {
         // detection on full image only
         dt_iop_gui_enter_critical_section(self);
@@ -2853,7 +2853,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         (g->run_validation && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || // delta E validation
         ( (d->illuminant_type == DT_ILLUMINANT_DETECT_EDGES ||
            d->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES ) && // WB extraction mode
-           piece->pipe->type == DT_DEV_PIXELPIPE_FULL ) )
+           (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) ) )
     {
       piece->process_cl_ready = 0;
     }
