@@ -289,9 +289,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const uint32_t filters = piece->pipe->dsc.filters;
 
-  const gboolean full_pipe  = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean full_pipe  = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean valid = MAX(width, height) >= CA_SIZE_MINIMUM;
-  const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   dt_iop_cacorrect_data_t     *d = (dt_iop_cacorrect_data_t *)piece->data;
   dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;

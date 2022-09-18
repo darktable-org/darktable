@@ -68,7 +68,7 @@ static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe,
 
 const char *dt_dev_pixelpipe_type_to_str(int pipe_type)
 {
-  const gboolean fast = (pipe_type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  const gboolean fast = pipe_type & DT_DEV_PIXELPIPE_FAST;
   char *r = NULL;
 
   switch(pipe_type & DT_DEV_PIXELPIPE_ANY)
@@ -926,8 +926,7 @@ static void collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev
     *pixelpipe_flow |= (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
-    if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-       && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+    if(piece->histogram && (module->request_histogram & DT_REQUEST_ON) && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
     {
       const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
       module->histogram = realloc(module->histogram, buf_size);
@@ -1058,8 +1057,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
 
 static inline gboolean check_good_pipe(dt_dev_pixelpipe_t *pipe)
 {
-  return (((pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL) ||
-          ((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW));
+  return (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW));
 }
 
 static inline gboolean check_module_next_important(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *module)
@@ -1124,7 +1122,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   uint64_t hash = 0;
   // do not get gamma from cache on preview pipe so we can compute the final scope
   // FIXME: better yet, don't even cache the gamma output in this case -- but then we'd need to allocate a temporary output buffer and garbage collect it
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW
+  if(!(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
      || module == NULL
      || strcmp(module->op, "gamma") != 0)
   {
@@ -1258,7 +1256,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   }
 
   gboolean important = FALSE;
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     important = (strcmp(module->op, "colorout") == 0);
   else
     important = (strcmp(module->op, "gamma") == 0);
@@ -2282,9 +2280,7 @@ restart:
   pipe->backbuf_width = width;
   pipe->backbuf_height = height;
 
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
-     || (pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL
-     || (pipe->type & DT_DEV_PIXELPIPE_PREVIEW2) == DT_DEV_PIXELPIPE_PREVIEW2)
+  if(pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2))
   {
     if(pipe->output_backbuf == NULL || pipe->output_backbuf_width != pipe->backbuf_width || pipe->output_backbuf_height != pipe->backbuf_height)
     {

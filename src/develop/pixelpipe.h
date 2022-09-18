@@ -24,6 +24,7 @@
 #include "config.h"
 #endif
 
+/* The pixelpipe types here are all defined as a bit mask to ensure easy testing via & operator */
 typedef enum dt_dev_pixelpipe_type_t
 {
   DT_DEV_PIXELPIPE_NONE      = 0,
