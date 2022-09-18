@@ -2279,8 +2279,8 @@ msgstr[1] "chiar doreşti să ştergi fizic de pe disc toate imaginile selectate
 #, fuzzy
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "elimină imagini?"
-msgstr[1] "elimină imagini?"
+msgstr[0] "mută imagine?"
+msgstr[1] "mută imagini?"
 
 #: ../src/control/jobs/control_jobs.c:1685
 #, fuzzy
