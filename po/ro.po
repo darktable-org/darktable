@@ -1579,7 +1579,7 @@ msgid ""
 "<span style=\"italic\">%s</span>\n"
 "\n"
 "do you want to proceed or quit now to do a backup\n"
-msgstr "continuati sau anulati si faceti backup"
+msgstr ""
 
 #: ../src/common/database.c:1782
 msgid "darktable - schema migration"
@@ -1601,10 +1601,7 @@ msgid ""
 "it seems that the database is corrupt.\n"
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or start with a new one?"
-msgstr "se pare ca baza de date este corupta.\n" 
-"doriti sa inchideti darktable si sa efectuati o restaurare\n" 
-"manuala a bazei de date, din backup, sau sa initiati o baza de date noua?\n"
-
+msgstr ""
 
 #: ../src/common/database.c:1968 ../src/common/database.c:2046
 msgid "darktable - error opening database"
