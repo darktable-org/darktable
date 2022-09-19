@@ -257,6 +257,7 @@ void dt_wb_presets_init(const char *alternative)
           // increment for 2000 presets
           wb_presets_size +=2000;
           wb_presets = realloc(wb_presets, sizeof(dt_wb_data) * wb_presets_size);
+          memset((void *)&wb_presets[wb_presets_count], 0, sizeof(dt_wb_data) * 2000);
         }
 
         json_reader_end_element(reader);
