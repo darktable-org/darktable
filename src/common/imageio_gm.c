@@ -119,6 +119,15 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
     }
   }
 
+  size_t profile_length;
+  const gchar* profile_data = (gchar*) GetImageProfile(image, "ICM", &profile_length);
+  if(profile_data)
+  {
+    img->profile_size = profile_length;
+    img->profile = (uint8_t *)g_malloc0(profile_length);
+    memcpy(img->profile, profile_data, profile_length);
+  }
+
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
