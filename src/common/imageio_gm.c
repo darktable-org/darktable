@@ -39,7 +39,7 @@
 static gboolean _supported_image(const gchar *filename)
 {
   const char *extensions_whitelist[] = { "tif",  "tiff", "gif", "jpc", "jp2", "bmp", "dcm", "jng",
-                                         "miff", "mng",  "pbm", "pnm", "ppm", "pgm", NULL };
+                                         "miff", "mng",  "pbm", "pnm", "ppm", "pgm", "webp", NULL };
   gboolean supported = FALSE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
