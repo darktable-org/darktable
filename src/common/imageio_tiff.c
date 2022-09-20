@@ -261,8 +261,10 @@ failed:
 static inline int _read_chunky_16_Lab(tiff_t *t, uint16_t photometric)
 {
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
-  const cmsHPROFILE output_profile = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
-  const cmsHTRANSFORM xform = cmsCreateTransform(Lab, TYPE_LabA_FLT, output_profile, TYPE_RGBA_FLT, INTENT_PERCEPTUAL, 0);
+  const cmsHPROFILE output_profile
+      = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_ANY)->profile;
+  const cmsHTRANSFORM xform
+      = cmsCreateTransform(Lab, TYPE_LabA_FLT, output_profile, TYPE_RGBA_FLT, INTENT_PERCEPTUAL, 0);
   const float range = (photometric == PHOTOMETRIC_CIELAB) ? 65535.0f : 65280.0f;
 
   for(uint32_t row = 0; row < t->height; row++)
@@ -379,20 +381,24 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  if(TIFFRasterScanlineSize(t.tiff) != TIFFScanlineSize(t.tiff)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(TIFFRasterScanlineSize(t.tiff) != TIFFScanlineSize(t.tiff))
+  {
+    TIFFClose(t.tiff);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
 
   t.scanlinesize = TIFFScanlineSize(t.tiff);
 
   dt_print(DT_DEBUG_IMAGEIO, "[tiff_open] %dx%d %dbpp, %d samples per pixel.\n", t.width, t.height, t.bpp, t.spp);
 
-  // we only support 8/16 and 32 bits per pixel formats.
+  // we only support 8, 16 and 32 bits per pixel formats.
   if(t.bpp != 8 && t.bpp != 16 && t.bpp != 32)
   {
     TIFFClose(t.tiff);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  /* we only support 1,3 or 4 samples per pixel */
+  /* we only support 1, 3 or 4 samples per pixel */
   if(t.spp != 1 && t.spp != 3 && t.spp != 4)
   {
     TIFFClose(t.tiff);
@@ -446,15 +452,9 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   int ok = 1;
 
   if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
-  {
     ok = _read_chunky_8_Lab(&t, photometric);
-    t.image->buf_dsc.cst = IOP_CS_LAB;
-  }
   else if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
-  {
     ok = _read_chunky_16_Lab(&t, photometric);
-    t.image->buf_dsc.cst = IOP_CS_LAB;
-  }
   else if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
     ok = _read_chunky_8(&t);
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
@@ -504,7 +504,7 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 
   if(photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB)
   {
-    profile = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+    profile = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
     cmsSaveProfileToMem(profile, 0, &profile_len);
     if(profile_len > 0)
@@ -534,4 +534,3 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
