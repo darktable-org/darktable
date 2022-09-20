@@ -195,7 +195,8 @@ static void _ellipse_get_distance(float x, float y, float as, dt_masks_form_gui_
   if(_ellipse_point_close_to_path(x, y, as, gpt->points + 10, gpt->points_count - 5)) *near = 1;
 }
 
-static void _ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected, const float zoom_scale,
+static void _ellipse_draw_shape(gboolean borders, gboolean source, cairo_t *cr, double *dashed, const float len,
+                                const int selected, const float zoom_scale,
                                 const float xref, const float yref, float *points, const int points_count)
 {
   if(points_count <= 10) return;
@@ -207,12 +208,10 @@ static void _ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected,
   float x = 0.0f;
   float y = 0.0f;
 
-  cairo_set_dash(cr, dashed, 0, 0);
-  if(selected)
-    cairo_set_line_width(cr, 5.0 / zoom_scale);
-  else
-    cairo_set_line_width(cr, 3.0 / zoom_scale);
+  cairo_set_line_width(cr, ((borders ? 2.0 : 3.0) + selected ? 2.0 : 0.0) / (borders || source ? 2.0 : 1.0)/zoom_scale);
+
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_set_dash(cr, dashed, len, 0);
 
   _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, &x, &y);
   cairo_move_to(cr, x, y);
@@ -224,49 +223,9 @@ static void _ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected,
   _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, &x, &y);
   cairo_line_to(cr, x, y);
   cairo_stroke_preserve(cr);
-  if(selected)
-    cairo_set_line_width(cr, 2.0 / zoom_scale);
-  else
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
-  dt_draw_set_color_overlay(cr, TRUE, 0.8);
-  cairo_stroke(cr);
-}
 
-static void _ellipse_draw_border(cairo_t *cr, double *dashed, const float len, const int selected,
-                                 const float zoom_scale, const float xref, const float yref, float *border,
-                                 const int border_count)
-{
-  if(border_count <= 10) return;
+  cairo_set_line_width(cr, (source ? 0.5 : 1.0) * (selected ? 2.0 : 1.0) / zoom_scale);
 
-  const float r = atan2f(border[3] - border[1], border[2] - border[0]);
-  const float sinr = sinf(r);
-  const float cosr = cosf(r);
-
-  float x = 0.0f;
-  float y = 0.0f;
-
-  cairo_set_dash(cr, dashed, len, 0);
-  if(selected)
-    cairo_set_line_width(cr, 2.0 / zoom_scale);
-  else
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
-  dt_draw_set_color_overlay(cr, FALSE, 0.8);
-
-  _ellipse_point_transform(xref, yref, border[10], border[11], sinr, cosr, &x, &y);
-  cairo_move_to(cr, x, y);
-  for(int i = 6; i < border_count; i++)
-  {
-    _ellipse_point_transform(xref, yref, border[i * 2], border[i * 2 + 1], sinr, cosr, &x, &y);
-    cairo_line_to(cr, x, y);
-  }
-  _ellipse_point_transform(xref, yref, border[10], border[11], sinr, cosr, &x, &y);
-  cairo_line_to(cr, x, y);
-
-  cairo_stroke_preserve(cr);
-  if(selected)
-    cairo_set_line_width(cr, 2.0 / zoom_scale);
-  else
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_set_dash(cr, dashed, len, 4);
   cairo_stroke(cr);
@@ -419,9 +378,8 @@ static int _ellipse_get_points_border(dt_develop_t *dev, struct dt_masks_form_t 
                                       const dt_iop_module_t *module)
 {
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
-  float x = 0.0f, y = 0.0f, a = 0.0f, b = 0.0f;
-  x = ellipse->center[0], y = ellipse->center[1];
-  a = ellipse->radius[0], b = ellipse->radius[1];
+  const float x = ellipse->center[0], y = ellipse->center[1];
+  const float a = ellipse->radius[0], b = ellipse->radius[1];
 
   if(source)
   {
@@ -555,7 +513,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         else if(up && ellipse->border < radius_limit * reference)
           ellipse->border *= 1.0f/0.97f;
         else return 1;
-        ellipse->border = CLAMP(ellipse->border, 0.001f * reference, reference);
+        ellipse->border = CLAMP(ellipse->border, 0.001f * reference, radius_limit *reference);
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
@@ -607,50 +565,54 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
                                           int index)
 {
   if(!gui) return 0;
-  if(gui->source_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
-  {
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-    // we start the source dragging
-    gui->source_dragging = TRUE;
-    gui->dx = gpt->source[0] - gui->posx;
-    gui->dy = gpt->source[1] - gui->posy;
-    return 1;
-  }
-  else if(gui->point_selected >= 1 && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL
-          && !dt_modifier_is(state, GDK_CONTROL_MASK))
-  {
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-    gui->point_dragging = gui->point_selected;
-    gui->dx = gpt->points[0] - gui->posx;
-    gui->dy = gpt->points[1] - gui->posy;
-    return 1;
-  }
-  else if(gui->form_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL
-          && !dt_modifier_is(state, GDK_SHIFT_MASK))
-  {
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-    // we start the form dragging or rotating
-    if(dt_modifier_is(state, GDK_CONTROL_MASK))
-      gui->form_rotating = TRUE;
-    else
-      gui->form_dragging = TRUE;
-    gui->dx = gpt->points[0] - gui->posx;
-    gui->dy = gpt->points[1] - gui->posy;
-    return 1;
-  }
-  else if(gui->form_selected && !gui->creation && dt_modifier_is(state, GDK_SHIFT_MASK))
+
+  if(!gui->creation)
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
 
-    gui->border_toggling = TRUE;
+    if(gui->form_selected && dt_modifier_is(state, GDK_SHIFT_MASK))
+    {
+      gui->border_toggling = TRUE;
+      return 1;
+    }
+    else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
+    {
+      if(gui->source_selected)
+      {
+        gui->dx = gpt->source[0] - gui->posx;
+        gui->dy = gpt->source[1] - gui->posy;
 
-    return 1;
+        gui->source_dragging = TRUE;
+        return 1;
+      }
+
+      gui->dx = gpt->points[0] - gui->posx;
+      gui->dy = gpt->points[1] - gui->posy;
+
+      if(gui->form_selected && dt_modifier_is(state, GDK_CONTROL_MASK))
+      {
+        gui->form_rotating = TRUE;
+        return 1;
+      }
+      else if(gui->point_selected >= 1)
+      {
+        gui->point_dragging = gui->point_selected;
+        return 1;
+      }
+      else if(gui->point_border_selected >= 1)
+      {
+        gui->point_border_dragging = gui->point_border_selected;
+        return 1;
+      }
+      else if(gui->form_selected)
+      {
+        gui->form_dragging = TRUE;
+        return 1;
+      }
+    }
   }
-  else if(gui->creation && (which == 3))
+  else if(which == 3)
   {
     gui->creation_continuous = FALSE;
     gui->creation_continuous_module = NULL;
@@ -659,7 +621,7 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(gui->creation && which == 1
+  else if(which == 1
           && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK) || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
@@ -667,7 +629,7 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
 
     return 1;
   }
-  else if(gui->creation)
+  else
   {
     dt_iop_module_t *crea_module = gui->creation_module;
     // we create the ellipse
@@ -972,7 +934,52 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
-    // we save the rotation
+    // we save the updated shape
+    dt_masks_update_image(darktable.develop);
+
+    return 1;
+  }
+  else if(gui->point_border_dragging >= 1 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  {
+    // we get the ellipse
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
+
+    const int k = gui->point_border_dragging;
+
+    // we end the point dragging
+    gui->point_border_dragging = -1;
+
+    // we need the reference points
+    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    if(!gpt) return 0;
+
+    const float xref = gpt->points[0];
+    const float yref = gpt->points[1];
+    const float rx = gpt->border[k * 2] - xref;
+    const float ry = gpt->border[k * 2 + 1] - yref;
+    const float deltax = gui->posx + gui->dx - xref;
+    const float deltay = gui->posy + gui->dy - yref;
+
+    const float r = sqrtf(rx * rx + ry * ry);
+    const float d = (rx * deltax + ry * deltay) / r;
+    const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
+
+    const float radius_limit = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
+    const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
+    const float reference = (prop ? 1.0f/fmin(ellipse->radius[0], ellipse->radius[1]) : 1.0f);
+
+    ellipse->border = CLAMP(prop ? (1.0f + ellipse->border) * s - 1.0f
+                                 : ((gui->point_border_dragging >= 3) ^ (ellipse->radius[0] > ellipse->radius[1]))
+                                 ? (ellipse->radius[0] + ellipse->border) * s - ellipse->radius[0]
+                                 : (ellipse->radius[1] + ellipse->border) * s - ellipse->radius[1],
+                            0.001f * reference, radius_limit *reference);
+
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
+
+    // we save the updated shape
     dt_masks_update_image(darktable.develop);
 
     return 1;
@@ -1126,6 +1133,46 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     dt_control_queue_redraw_center();
     return 1;
   }
+  else if(gui->point_border_dragging >= 1)
+  {
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
+    const int k = gui->point_border_dragging;
+
+    // we need the reference points
+    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    if(!gpt) return 0;
+
+    const float xref = gpt->points[0];
+    const float yref = gpt->points[1];
+    const float rx = gpt->border[k * 2] - xref;
+    const float ry = gpt->border[k * 2 + 1] - yref;
+    const float deltax = gui->posx + gui->dx - xref;
+    const float deltay = gui->posy + gui->dy - yref;
+
+    // we remap dx, dy to the right values, as it will be used in next movements
+    gui->dx = xref - gui->posx;
+    gui->dy = yref - gui->posy;
+
+    const float r = sqrtf(rx * rx + ry * ry);
+    const float d = (rx * deltax + ry * deltay) / r;
+    const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
+
+    const float radius_limit = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
+    const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
+    const float reference = (prop ? 1.0f/fmin(ellipse->radius[0], ellipse->radius[1]) : 1.0f);
+
+    ellipse->border = CLAMP(prop ? (1.0f + ellipse->border) * s - 1.0f
+                                 : ((gui->point_border_dragging >= 3) ^ (ellipse->radius[0] > ellipse->radius[1]))
+                                 ? (ellipse->radius[0] + ellipse->border) * s - ellipse->radius[0]
+                                 : (ellipse->radius[1] + ellipse->border) * s - ellipse->radius[1],
+                            0.001f * reference, radius_limit *reference);
+
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
+    dt_control_queue_redraw_center();
+    return 1;
+  }
   else if(gui->form_rotating)
   {
     dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
@@ -1182,9 +1229,7 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
 
     int in = 0, inb = 0, near = 0, ins = 0; // FIXME gcc7 false-positive
     float dist = 0.0f;
-    _ellipse_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
-                          pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, 0,
-                          &in, &inb, &near, &ins, &dist);
+    _ellipse_get_distance(x, y, as, gui, index, 0, &in, &inb, &near, &ins, &dist);
     if(ins)
     {
       gui->form_selected = TRUE;
@@ -1212,11 +1257,19 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
 
     // see if we are close to one of the anchor points
     gui->point_selected = -1;
+    gui->point_border_selected = -1;
     if(gui->form_selected)
     {
       dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
       for(int i = 1; i < 5; i++)
       {
+        // prefer border points over shape itself in case of near overlap for ease of pickup
+        if(x - gpt->border[i * 2] > -as && x - gpt->border[i * 2] < as && y - gpt->border[i * 2 + 1] > -as
+           && y - gpt->border[i * 2 + 1] < as)
+        {
+          gui->point_border_selected = i;
+          break;
+        }
         if(x - gpt->points[i * 2] > -as && x - gpt->points[i * 2] < as && y - gpt->points[i * 2 + 1] > -as
            && y - gpt->points[i * 2 + 1] < as)
         {
@@ -1309,14 +1362,14 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         xref = points[0];
         yref = points[1];
 
-        _ellipse_draw_shape(cr, dashed, 0, zoom_scale, xref, yref, points, points_count);
+        _ellipse_draw_shape(FALSE, FALSE, cr, dashed, len, FALSE, zoom_scale, xref, yref, points, points_count);
       }
       if(draw && border_count >= 2)
       {
         xref = border[0];
         yref = border[1];
 
-        _ellipse_draw_border(cr, dashed, len, 0, zoom_scale, xref, yref, border, border_count);
+        _ellipse_draw_shape(TRUE, FALSE, cr, dashed, len, FALSE, zoom_scale, xref, yref, border, border_count);
       }
 
       // draw a cross where the source will be created
@@ -1349,44 +1402,24 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     yrefs = gpt->source[1];
   }
 
-  float x, y;
-
   // draw shape
-  _ellipse_draw_shape(cr, dashed, 0, zoom_scale, xref, yref, gpt->points, gpt->points_count);
-
-  // draw anchor points
-  if(TRUE)
-  {
-    cairo_set_dash(cr, dashed, 0, 0);
-    float anchor_size;
-
-    for(int i = 1; i < 5; i++)
-    {
-      dt_draw_set_color_overlay(cr, TRUE, 0.8);
-
-      if(i == gui->point_dragging || i == gui->point_selected)
-        anchor_size = 7.0f / zoom_scale;
-      else
-        anchor_size = 5.0f / zoom_scale;
-
-      _ellipse_point_transform(xref, yref, gpt->points[i * 2], gpt->points[i * 2 + 1], sinr, cosr, &x, &y);
-      cairo_rectangle(cr, x - (anchor_size * 0.5), y - (anchor_size * 0.5), anchor_size, anchor_size);
-      cairo_fill_preserve(cr);
-      if((gui->group_selected == index) && (i == gui->point_dragging || i == gui->point_selected))
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      if((gui->group_selected == index) && (gui->form_dragging || gui->form_selected))
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, FALSE, 0.8);
-      cairo_stroke(cr);
-    }
-  }
+  const gboolean selected = (gui->group_selected == index) && (gui->form_selected || gui->form_dragging);
+  _ellipse_draw_shape(FALSE, FALSE, cr, dashed, 0, selected, zoom_scale, xref, yref, gpt->points, gpt->points_count);
 
   // draw border
   if(gui->group_selected == index)
   {
-    _ellipse_draw_border(cr, dashed, len, 0, zoom_scale, xref, yref, gpt->border, gpt->border_count);
+    _ellipse_draw_shape(TRUE, FALSE, cr, dashed, len, gui->border_selected, zoom_scale, xref, yref, gpt->border, gpt->border_count);
+
+    // draw anchor points
+    for(int i = 1; i < 5; i++)
+    {
+      float x, y;
+      _ellipse_point_transform(xref, yref, gpt->points[i * 2], gpt->points[i * 2 + 1], sinr, cosr, &x, &y);
+      dt_masks_draw_anchor(cr, i == gui->point_dragging || i == gui->point_selected, zoom_scale, x, y);
+      _ellipse_point_transform(xref, yref, gpt->border[i * 2], gpt->border[i * 2 + 1], sinr, cosr, &x, &y);
+      dt_masks_draw_anchor(cr, i == gui->point_border_dragging || i == gui->point_border_selected, zoom_scale, x, y);
+    }
   }
 
   // draw the source if any
@@ -1491,29 +1524,8 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     }
 
     // we draw the source
-    cairo_set_dash(cr, dashed, 0, 0);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 2.5 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    _ellipse_point_transform(xrefs, yrefs, gpt->source[10], gpt->source[11], sinr, cosr, &x, &y);
-    cairo_move_to(cr, x, y);
-    for(int i = 6; i < gpt->source_count; i++)
-    {
-      _ellipse_point_transform(xrefs, yrefs, gpt->source[i * 2], gpt->source[i * 2 + 1], sinr, cosr, &x, &y);
-      cairo_line_to(cr, x, y);
-    }
-    _ellipse_point_transform(xrefs, yrefs, gpt->source[10], gpt->source[11], sinr, cosr, &x, &y);
-    cairo_line_to(cr, x, y);
-    cairo_stroke_preserve(cr);
-    if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 0.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_stroke(cr);
-  }
+    _ellipse_draw_shape(FALSE, TRUE, cr, dashed, 0, selected, zoom_scale, xrefs, yrefs, gpt->source, gpt->source_count);
+   }
 }
 
 static void _bounding_box(const float *const points, int num_points, int *width, int *height, int *posx, int *posy)

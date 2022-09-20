@@ -636,6 +636,8 @@ int dt_masks_roundup(int num, int mult)
 #define DT_MASKS_CONF(type, shape, param) \
   (type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? "plugins/darkroom/spots/" #shape "_" #param : "plugins/darkroom/masks/" #shape "/" #param)
 
+void dt_masks_draw_anchor(cairo_t *cr, gboolean selected, const float zoom_scale, const float x, const float y);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

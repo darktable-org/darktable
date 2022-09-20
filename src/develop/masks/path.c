@@ -2029,33 +2029,11 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   }
 
   // draw corners
-  float anchor_size = 0.0f;
   if(gui->group_selected == index && gpt->points_count > nb * 3 + 6)
   {
     for(int k = 0; k < nb; k++)
-    {
-      if(k == gui->point_dragging || k == gui->point_selected)
-      {
-        anchor_size = 7.0f / zoom_scale;
-      }
-      else
-      {
-        anchor_size = 5.0f / zoom_scale;
-      }
-      dt_draw_set_color_overlay(cr, TRUE, 0.8);
-      cairo_rectangle(cr, gpt->points[k * 6 + 2] - (anchor_size * 0.5),
-                      gpt->points[k * 6 + 3] - (anchor_size * 0.5), anchor_size, anchor_size);
-      cairo_fill_preserve(cr);
-
-      if(k == gui->point_dragging || k == gui->point_selected)
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else if((k == 0 || k == nb) && gui->creation && gui->creation_closing_form)
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, FALSE, 0.8);
-      cairo_stroke(cr);
-    }
+      dt_masks_draw_anchor(cr, k == gui->point_dragging || k == gui->point_selected, zoom_scale,
+                           gpt->points[k * 6 + 2], gpt->points[k * 6 + 3]);
   }
 
   // draw feathers
@@ -2131,29 +2109,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
 
     // we draw the path segment by segment
     for(int k = 0; k < nb; k++)
-    {
-      // draw the point
-      if(gui->point_border_selected == k)
-      {
-        anchor_size = 7.0f / zoom_scale;
-      }
-      else
-      {
-        anchor_size = 5.0f / zoom_scale;
-      }
-      dt_draw_set_color_overlay(cr, TRUE, 0.8);
-      cairo_rectangle(cr, gpt->border[k * 6] - (anchor_size * 0.5), gpt->border[k * 6 + 1] - (anchor_size * 0.5),
-                      anchor_size, anchor_size);
-      cairo_fill_preserve(cr);
-
-      if(gui->point_border_selected == k)
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, FALSE, 0.8);
-      cairo_set_dash(cr, dashed, 0, 0);
-      cairo_stroke(cr);
-    }
+      dt_masks_draw_anchor(cr, gui->point_border_selected == k, zoom_scale, gpt->border[k * 6], gpt->border[k * 6 + 1]);
   }
 
   // draw a cross where the source will be created

@@ -169,27 +169,44 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
                                          dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if(!gui) return 0;
-  if(gui->source_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
+
+  if(!gui->creation)
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
-    // we start the form dragging
-    gui->source_dragging = TRUE;
-    gui->dx = gpt->source[0] - gui->posx;
-    gui->dy = gpt->source[1] - gui->posy;
-    return 1;
+
+    if(gui->edit_mode == DT_MASKS_EDIT_FULL)
+    {
+      if(gui->source_selected)
+      {
+        // we start the form dragging
+        gui->source_dragging = TRUE;
+        gui->dx = gpt->source[0] - gui->posx;
+        gui->dy = gpt->source[1] - gui->posy;
+        return 1;
+      }
+
+      gui->dx = gpt->points[0] - gui->posx;
+      gui->dy = gpt->points[1] - gui->posy;
+
+      if(gui->point_selected >= 1)
+      {
+        gui->point_dragging = gui->point_selected;
+        return 1;
+      }
+      else if(gui->point_border_selected >= 1)
+      {
+        gui->point_border_dragging = gui->point_border_selected;
+        return 1;
+      }
+      else if(gui->form_selected)
+      {
+        gui->form_dragging = TRUE;
+        return 1;
+      }
+    }
   }
-  else if(gui->form_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
-  {
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-    // we start the form dragging
-    gui->form_dragging = TRUE;
-    gui->dx = gpt->points[0] - gui->posx;
-    gui->dy = gpt->points[1] - gui->posy;
-    return 1;
-  }
-  else if(gui->creation && (which == 3))
+  else if(which == 3)
   {
     gui->creation_continuous = FALSE;
     gui->creation_continuous_module = NULL;
@@ -198,7 +215,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if(gui->creation && which == 1
+  else if(which == 1
           && ((dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
               || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
@@ -207,7 +224,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
 
     return 1;
   }
-  else if(gui->creation)
+  else
   {
     dt_iop_module_t *crea_module = gui->creation_module;
     // we create the circle
@@ -425,6 +442,16 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
 
     return 1;
   }
+  else if(gui->point_dragging >= 1 || gui->point_border_dragging >= 1)
+  {
+    // we end the point dragging
+    gui->point_dragging = gui->point_border_dragging = -1;
+
+    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
+    // we save the updated shape
+    dt_masks_update_image(darktable.develop);
+  }
+
   return 0;
 }
 
@@ -456,17 +483,67 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
     dt_control_queue_redraw_center();
     return 1;
   }
+  else if(gui->point_dragging >= 1)
+  {
+    const float max_mask_size = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
+
+    dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
+
+    // we need the reference points
+    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    if(!gpt) return 0;
+
+    const int k = gui->point_dragging;
+    const float xref = gpt->points[0];
+    const float rx = gpt->points[k * 2] - xref;
+    const float deltax = gui->posx + gui->dx - xref;
+
+    gui->dx = xref - gui->posx;
+
+    circle->radius = CLAMP(circle->radius * (1.0f + deltax / rx), 0.0005f, max_mask_size);
+
+    // we recreate the form points
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  else if(gui->point_border_dragging >= 1)
+  {
+    const float max_mask_border = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
+
+    dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
+
+
+    // we need the reference points
+    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    if(!gpt) return 0;
+
+    const int k = gui->point_border_dragging;
+    const float xref = gpt->points[0];
+    const float rx = gpt->border[k * 2] - xref;
+    const float deltax = gui->posx + gui->dx - xref;
+
+    gui->dx = xref - gui->posx;
+
+    circle->border = CLAMP((circle->radius + circle->border) * (1.0f + deltax / rx) - circle->radius, 0.001f, max_mask_border);
+
+    dt_masks_gui_form_remove(form, gui, index);
+    dt_masks_gui_form_create(form, gui, index, module);
+    dt_control_queue_redraw_center();
+    return 1;
+  }
   else if(!gui->creation)
   {
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
+    const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
+    const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     int in, inb, near, ins;
     float dist;
-    _circle_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
-                         pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, 0,
-                         &in, &inb, &near, &ins, &dist);
+    _circle_get_distance(x, y, as, gui, index, 0, &in, &inb, &near, &ins, &dist);
     if(ins)
     {
       gui->form_selected = TRUE;
@@ -491,6 +568,27 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
       gui->border_selected = FALSE;
       gui->source_selected = FALSE;
     }
+
+    // see if we are close to the anchor points
+    gui->point_selected = -1;
+    gui->point_border_selected = -1;
+    if(gui->form_selected)
+    {
+      dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+
+      // prefer border point over shape itself in case of near overlap for ease of pickup
+      if(x - gpt->border[2] > -as && x - gpt->border[2] < as &&
+         y - gpt->border[3] > -as && y - gpt->border[3] < as)
+      {
+        gui->point_border_selected = 1;
+      }
+      else if(x - gpt->points[2] > -as && x - gpt->points[2] < as &&
+              y - gpt->points[3] > -as && y - gpt->points[3] < as)
+      {
+        gui->point_selected = 1;
+      }
+    }
+
     dt_control_queue_redraw_center();
     if(!gui->form_selected && !gui->border_selected) return 0;
     if(gui->edit_mode != DT_MASKS_EDIT_FULL) return 0;
@@ -512,29 +610,10 @@ static void _circle_draw_lines(gboolean borders, gboolean source, cairo_t *cr, d
 {
   if(points_count <= 6) return;
 
-  if(borders && !source)
-    cairo_set_dash(cr, dashed, len, 0);
-  else
-    cairo_set_dash(cr, dashed, 0, 0);
-  if(selected)
-  {
-    if(source)
-      cairo_set_line_width(cr, 2.5 / zoom_scale);
-    else if(borders)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 5.0 / zoom_scale);
-  }
-  else
-  {
-    if(source)
-      cairo_set_line_width(cr, 1.5 / zoom_scale);
-    else if(borders)
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 3.0 / zoom_scale);
-  }
+  cairo_set_line_width(cr, ((borders ? 2.0 : 3.0) + selected ? 2.0 : 0.0) / (borders || source ? 2.0 : 1.0)/zoom_scale);
+
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_set_dash(cr, dashed, len, 0);
 
   cairo_move_to(cr, points[2], points[3]);
   for(int i = 2; i < points_count; i++)
@@ -544,21 +623,10 @@ static void _circle_draw_lines(gboolean borders, gboolean source, cairo_t *cr, d
   cairo_line_to(cr, points[2], points[3]);
 
   cairo_stroke_preserve(cr);
-  if(selected)
-  {
-    if(source)
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-  }
-  else
-  {
-    if(source)
-      cairo_set_line_width(cr, 0.5 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-  }
+
+  cairo_set_line_width(cr, (source ? 0.5 : 1.0) * (selected ? 2.0 : 1.0) / zoom_scale);
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  cairo_set_dash(cr, dashed, len, 4);
   cairo_stroke(cr);
 }
 
@@ -747,11 +815,17 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
   if(!gpt) return;
   // we draw the main shape
   const gboolean selected = (gui->group_selected == index) && (gui->form_selected || gui->form_dragging);
-  _circle_draw_lines(FALSE, FALSE, cr, dashed, len, selected, zoom_scale, gpt->points, gpt->points_count);
+  _circle_draw_lines(FALSE, FALSE, cr, dashed, 0, selected, zoom_scale, gpt->points, gpt->points_count);
   // we draw the borders
   if(gui->group_selected == index)
-    _circle_draw_lines(TRUE, FALSE, cr, dashed, len, (gui->border_selected), zoom_scale, gpt->border,
+  {
+    _circle_draw_lines(TRUE, FALSE, cr, dashed, len, gui->border_selected, zoom_scale, gpt->border,
                        gpt->border_count);
+          // _ellipse_point_transform(xref, yref, gpt->points[i * 2], gpt->points[i * 2 + 1], sinr, cosr, &x, &y);
+    dt_masks_draw_anchor(cr, gui->point_dragging > 0 || gui->point_selected > 0, zoom_scale, gpt->points[2], gpt->points[3]);
+      // _ellipse_point_transform(xref, yref, gpt->border[i * 2], gpt->border[i * 2 + 1], sinr, cosr, &x, &y);
+    dt_masks_draw_anchor(cr, gui->point_border_dragging > 0 || gui->point_border_selected > 0, zoom_scale, gpt->border[2], gpt->border[3]);
+  }
 
   // draw the source if any
   if(gpt->source_count > 6)
@@ -805,7 +879,7 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
     }
 
     // we only the main shape for the source, no borders
-    _circle_draw_lines(FALSE, TRUE, cr, dashed, len, selected, zoom_scale, gpt->source, gpt->source_count);
+    _circle_draw_lines(FALSE, TRUE, cr, dashed, 0, selected, zoom_scale, gpt->source, gpt->source_count);
   }
 }
 
