@@ -2391,6 +2391,19 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
   *py = y;
 }
 
+void dt_masks_draw_anchor(cairo_t *cr, gboolean selected, const float zoom_scale, const float x, const float y)
+{
+  float anchor_size = (selected ? 8.0f : 5.0f) / zoom_scale;
+
+  cairo_set_dash(cr, NULL, 0, 0);
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  cairo_rectangle(cr, x - (anchor_size * 0.5), y - (anchor_size * 0.5), anchor_size, anchor_size);
+  cairo_fill_preserve(cr);
+  cairo_set_line_width(cr, (selected ? 2.0 : 1.0) / zoom_scale);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_stroke(cr);
+}
+
 #include "detail.c"
 
 // clang-format off
