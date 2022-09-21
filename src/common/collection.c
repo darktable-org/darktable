@@ -2415,7 +2415,16 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 
 gboolean dt_collection_hint_message_internal(void *message)
 {
-  dt_control_hinter_message(darktable.control, message);
+  dt_control_hinter_message(darktable.control,
+    dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP) ? "" : message);
+
+  GtkWidget *count = dt_view_filter_get_count(darktable.view_manager);
+  if(count)
+  {
+    gtk_label_set_text(GTK_LABEL(count), message);
+    gtk_widget_set_tooltip_text(count, message);
+  }
+
   g_free(message);
   return FALSE;
 }
