@@ -2309,19 +2309,30 @@ static gint _bauhaus_natural_width(GtkWidget *widget, gboolean popup)
   gint natural_size = 0;
 
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+
+  PangoLayout *layout = gtk_widget_create_pango_layout(widget, NULL);
+  PangoFontDescription *font_desc = 0;
+  gtk_style_context_get(gtk_widget_get_style_context(widget), gtk_widget_get_state_flags(GTK_WIDGET(w)), "font", &font_desc, NULL);
+  pango_layout_set_font_description(layout, font_desc);
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoAttribute *attr = pango_attr_font_features_new("tnum");
+  pango_attr_list_insert(attrlist, attr);
+  pango_layout_set_attributes(layout, attrlist);
+  pango_attr_list_unref(attrlist);
+
+  pango_layout_set_text(layout, w->label, -1);
+  pango_layout_get_size(layout, &natural_size, NULL);
+  natural_size /= PANGO_SCALE;
+
   if(w->type == DT_BAUHAUS_COMBOBOX)
   {
     dt_bauhaus_combobox_data_t *d = &w->data.combobox;
 
-    PangoLayout *layout = gtk_widget_create_pango_layout(widget, NULL);
-    pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
     gint label_width = 0, entry_width = 0;
 
     if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT && w->show_label)
     {
-      pango_layout_set_text(layout, w->label, -1);
-      pango_layout_get_size(layout, &label_width, NULL);
-      label_width /= PANGO_SCALE;
+      if(!w->detached_popup) label_width = natural_size;
       if(label_width) label_width += 2 * INNER_PADDING;
     }
 
@@ -2337,12 +2348,22 @@ static gint _bauhaus_natural_width(GtkWidget *widget, gboolean popup)
 
       natural_size = MAX(natural_size, label_width + entry_width / PANGO_SCALE);
     }
-
-    _margins_retrieve(w);
-    natural_size += _widget_get_quad_width(w) + w->margin->left + w->margin->right
-                    + w->padding->left + w->padding->right;
-    g_object_unref(layout);
   }
+  else
+  {
+    gint number_width = 0;
+    char *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_size(layout, &number_width, NULL);
+    natural_size += 2 * INNER_PADDING + number_width / PANGO_SCALE;
+    g_free(text);
+  }
+
+  _margins_retrieve(w);
+  natural_size += _widget_get_quad_width(w) + w->margin->left + w->margin->right
+                  + w->padding->left + w->padding->right;
+
+  g_object_unref(layout);
 
   return natural_size;
 }
@@ -2356,6 +2377,7 @@ void dt_bauhaus_hide_popup()
 {
   if(darktable.bauhaus->current)
   {
+    darktable.bauhaus->current->detached_popup = FALSE;
     gtk_grab_remove(darktable.bauhaus->popup_area);
     gtk_widget_hide(darktable.bauhaus->popup_window);
     gtk_window_set_attached_to(GTK_WINDOW(darktable.bauhaus->popup_window), NULL);
