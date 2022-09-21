@@ -257,6 +257,7 @@ typedef struct dt_view_manager_t
       struct dt_lib_module_t *module;
       GtkWidget *(*get_filter_box)(struct dt_lib_module_t *);
       GtkWidget *(*get_sort_box)(struct dt_lib_module_t *);
+      GtkWidget *(*get_count)(struct dt_lib_module_t *);
     } filter;
 
     /* module collection proxy object */
@@ -425,6 +426,7 @@ void dt_view_collection_update_history_state(const dt_view_manager_t *vm);
 void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter);
 GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm);
 GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm);
+GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm);
 
 // active images functions
 void dt_view_active_images_reset(gboolean raise);

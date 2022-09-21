@@ -34,6 +34,7 @@ typedef struct dt_lib_tool_filter_t
 {
   GtkWidget *filter_box;
   GtkWidget *sort_box;
+  GtkWidget *count;
 } dt_lib_tool_filter_t;
 
 const char *name(dt_lib_module_t *self)
@@ -79,6 +80,12 @@ static GtkWidget *_lib_filter_get_sort_box(dt_lib_module_t *self)
   return d->sort_box;
 }
 
+static GtkWidget *_lib_filter_get_count(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  return d->count;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -86,24 +93,29 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   gtk_widget_set_valign(self->widget, GTK_ALIGN_CENTER);
 
   d->filter_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(d->filter_box, "header-rule-box");
-  gtk_box_pack_start(GTK_BOX(self->widget), d->filter_box, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->filter_box, FALSE, FALSE, 0);
 
   /* sort combobox */
   d->sort_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(d->sort_box, "header-sort-box");
-  gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, FALSE, FALSE, 0);
   GtkWidget *label = gtk_label_new(_("sort by"));
   gtk_box_pack_start(GTK_BOX(d->sort_box), label, TRUE, TRUE, 0);
+
+  /* label to display selected count */
+  d->count = gtk_label_new(_("count selected"));
+  gtk_label_set_ellipsize(GTK_LABEL(d->count), PANGO_ELLIPSIZE_END);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->count, TRUE, FALSE, 0);
 
   /* initialize proxy */
   darktable.view_manager->proxy.filter.module = self;
   darktable.view_manager->proxy.filter.get_filter_box = _lib_filter_get_filter_box;
   darktable.view_manager->proxy.filter.get_sort_box = _lib_filter_get_sort_box;
+  darktable.view_manager->proxy.filter.get_count = _lib_filter_get_count;
 
   // test if the filtering module is already load and update its gui in this case
   // otherwise filtering module will do it in its gui_init()
