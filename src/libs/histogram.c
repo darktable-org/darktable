@@ -581,7 +581,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   if(!vs_prof || isnan(vs_prof->matrix_in[0][0]))
   {
-    fprintf(stderr, "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear rec2020\n", vs_prof->type, vs_prof->filename);
+    fprintf(stderr, "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear Rec2020\n", vs_prof->type, vs_prof->filename);
     vs_prof = dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
   }
 
@@ -964,7 +964,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 {
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
-  const int min_size = MIN(width, height);
+  const double node_radius = DT_PIXEL_APPLY_DPI(2.);
+  const int min_size = MIN(width, height) - node_radius * 2.0;
   const double scale = min_size / (vs_radius * 2.);
 
   cairo_save(cr);
@@ -1048,7 +1049,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   {
     const float x = d->hue_ring[n][0][0];
     const float y = d->hue_ring[n][0][1];
-    cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
+    cairo_arc(cr, x*scale, y*scale, node_radius, 0., M_PI * 2.);
     cairo_set_source(cr, bkgd_pat);
     cairo_fill_preserve(cr);
     set_color(cr, darktable.bauhaus->graph_grid);

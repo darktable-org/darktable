@@ -1081,16 +1081,16 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
       if(nb == 1)
       {
         gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-        item = gtk_menu_item_new_with_label(_("mode : union"));
+        item = gtk_menu_item_new_with_label(_("mode: union"));
         g_signal_connect(item, "activate", (GCallback)_tree_union, self);
         gtk_menu_shell_append(menu, item);
-        item = gtk_menu_item_new_with_label(_("mode : intersection"));
+        item = gtk_menu_item_new_with_label(_("mode: intersection"));
         g_signal_connect(item, "activate", (GCallback)_tree_intersection, self);
         gtk_menu_shell_append(menu, item);
-        item = gtk_menu_item_new_with_label(_("mode : difference"));
+        item = gtk_menu_item_new_with_label(_("mode: difference"));
         g_signal_connect(item, "activate", (GCallback)_tree_difference, self);
         gtk_menu_shell_append(menu, item);
-        item = gtk_menu_item_new_with_label(_("mode : exclusion"));
+        item = gtk_menu_item_new_with_label(_("mode: exclusion"));
         g_signal_connect(item, "activate", (GCallback)_tree_exclusion, self);
         gtk_menu_shell_append(menu, item);
       }
@@ -1365,7 +1365,7 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 
   const int gui_reset = lm->gui_reset;
   lm->gui_reset = 1;
-  // if (lm->treeview) gtk_widget_destroy(lm->treeview);
+  // if(lm->treeview) gtk_widget_destroy(lm->treeview);
 
   // if a treeview is already present, let's get the currently selected items
   // as we are going to recreate the tree.
@@ -1592,76 +1592,34 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, struct dt_iop_mod
   lm->gui_reset = 0;
 }
 
+static GdkPixbuf *_get_pixbuf_from_cairo(DTGTKCairoPaintIconFunc paint, const int width, const int height)
+{
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BUTTON_FG, 1.0);
+  paint(cr, 0, 0, width, height, 0, NULL);
+  cairo_destroy(cr);
+  guchar *data = cairo_image_surface_get_data(cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, width, height);
+  return gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, width, height,
+                                  cairo_image_surface_get_stride(cst), NULL, NULL);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
-  const int bs2 = DT_PIXEL_APPLY_DPI(13);
-
   /* initialize ui widgets */
   dt_lib_masks_t *d = (dt_lib_masks_t *)g_malloc0(sizeof(dt_lib_masks_t));
   self->data = (void *)d;
   d->gui_reset = 0;
 
-  // initialise all masks icons
-  guchar *data = NULL;
-  cairo_surface_t *inverse_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, bs2, bs2);
-  cairo_t *inverse_cr = cairo_create(inverse_cst);
-  cairo_set_source_rgb(inverse_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_masks_inverse(inverse_cr, 0, 0, bs2, bs2, 0, NULL);
-  cairo_destroy(inverse_cr);
-  data = cairo_image_surface_get_data(inverse_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
-  d->ic_inverse = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
-                                           cairo_image_surface_get_stride(inverse_cst), NULL, NULL);
-
-  cairo_surface_t *union_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, bs2, bs2);
-  cairo_t *union_cr = cairo_create(union_cst);
-  cairo_set_source_rgb(union_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_masks_union(union_cr, 0, 0, bs2, bs2, 0, NULL);
-  cairo_destroy(union_cr);
-  data = cairo_image_surface_get_data(union_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
-  d->ic_union = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
-                                         cairo_image_surface_get_stride(union_cst), NULL, NULL);
-
-  cairo_surface_t *intersection_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, bs2, bs2);
-  cairo_t *intersection_cr = cairo_create(intersection_cst);
-  cairo_set_source_rgb(intersection_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_masks_intersection(intersection_cr, 0, 0, bs2, bs2, 0, NULL);
-  cairo_destroy(intersection_cr);
-  data = cairo_image_surface_get_data(intersection_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
-  d->ic_intersection = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
-                                                cairo_image_surface_get_stride(intersection_cst), NULL, NULL);
-
-  cairo_surface_t *difference_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, bs2, bs2);
-  cairo_t *difference_cr = cairo_create(difference_cst);
-  cairo_set_source_rgb(difference_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_masks_difference(difference_cr, 0, 0, bs2, bs2, 0, NULL);
-  cairo_destroy(difference_cr);
-  data = cairo_image_surface_get_data(difference_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
-  d->ic_difference = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
-                                              cairo_image_surface_get_stride(difference_cst), NULL, NULL);
-
-  cairo_surface_t *exclusion_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, bs2, bs2);
-  cairo_t *exclusion_cr = cairo_create(exclusion_cst);
-  cairo_set_source_rgb(exclusion_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_masks_exclusion(exclusion_cr, 0, 0, bs2, bs2, 0, NULL);
-  cairo_destroy(exclusion_cr);
-  data = cairo_image_surface_get_data(exclusion_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
-  d->ic_exclusion = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
-                                             cairo_image_surface_get_stride(exclusion_cst), NULL, NULL);
-
-  cairo_surface_t *used_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, bs2, bs2);
-  cairo_t *used_cr = cairo_create(used_cst);
-  cairo_set_source_rgb(used_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_masks_used(used_cr, 0, 0, bs2, bs2, 0, NULL);
-  cairo_destroy(used_cr);
-  data = cairo_image_surface_get_data(used_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
-  d->ic_used = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
-                                        cairo_image_surface_get_stride(used_cst), NULL, NULL);
+  // initialise all masks pixbuf. This is needed for the "automatic" cell renderer of the treeview
+  const int bs2 = DT_PIXEL_APPLY_DPI(13);
+  d->ic_inverse = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_inverse, bs2, bs2);
+  d->ic_used = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_used, bs2, bs2);
+  d->ic_union = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_union, bs2 * 2, bs2);
+  d->ic_intersection = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_intersection, bs2 * 2, bs2);
+  d->ic_difference = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_difference, bs2 * 2, bs2);
+  d->ic_exclusion = _get_pixbuf_from_cairo(dtgtk_cairo_paint_masks_exclusion, bs2 * 2, bs2);
 
   // initialise widgets
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

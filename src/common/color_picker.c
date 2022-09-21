@@ -17,6 +17,7 @@
 */
 
 #include "common/color_picker.h"
+#include "common/bspline.h"
 #include "common/darktable.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/iop_profile.h"
@@ -594,20 +595,44 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
                             const dt_iop_colorspace_type_t picker_cst,
                             const dt_iop_order_iccprofile_info_t *const profile)
 {
-  if((dsc->channels == 4u) && ((image_cst == picker_cst) || (picker_cst == IOP_CS_NONE)))
-    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
-  else if(dsc->channels == 4u && image_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
-    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
-  else if(dsc->channels == 4u && image_cst == IOP_CS_RGB && (picker_cst == IOP_CS_HSL || picker_cst == IOP_CS_JZCZHZ))
-    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
-  else if(dsc->channels == 4u) // This is a fallback, better than crashing as happens with monochromes
-    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
+  dt_times_t start_time = { 0 }, end_time = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+
+  if(dsc->channels == 4u)
+  {
+    // Denoise the image
+    size_t padded_size;
+    float *const restrict denoised = dt_alloc_align_float(4 * roi->width * roi->height);
+    float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * roi->width, &padded_size); //TODO: alloc in caller
+
+    // blur without clipping negatives because Lab a and b channels can be legitimately negative
+    blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
+
+    if(((image_cst == picker_cst) || (picker_cst == IOP_CS_NONE)))
+      color_picker_helper_4ch(dsc, denoised, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
+    else if(image_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
+      color_picker_helper_4ch(dsc, denoised, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
+    else if(image_cst == IOP_CS_RGB && (picker_cst == IOP_CS_HSL || picker_cst == IOP_CS_JZCZHZ))
+      color_picker_helper_4ch(dsc, denoised, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
+    else // This is a fallback, better than crashing as happens with monochromes
+      color_picker_helper_4ch(dsc, denoised, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
+
+    dt_free_align(denoised);
+    dt_free_align(tempbuf);
+  }
   else if(dsc->channels == 1u && dsc->filters != 0u && dsc->filters != 9u)
     color_picker_helper_bayer(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
   else if(dsc->channels == 1u && dsc->filters == 9u)
     color_picker_helper_xtrans(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
   else
     dt_unreachable_codepath();
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_get_times(&end_time);
+    fprintf(stderr, "colorpicker stats reading took %.3f secs (%.3f CPU)\n",
+        end_time.clock - start_time.clock, end_time.user - start_time.user);
+  }
 }
 
 // clang-format off
@@ -615,4 +640,3 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

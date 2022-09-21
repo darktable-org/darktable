@@ -84,8 +84,9 @@ typedef enum
   DT_IMAGE_4BAYER = 16384,
   // image was detected as monochrome
   DT_IMAGE_MONOCHROME = 32768,
-  // image has usercrop information
-  DT_IMAGE_HAS_USERCROP = 65536,
+  // DNG image has exif tags which are not cached in the database but must be read and stored in dt_image_t
+  // when the image is loaded.
+  DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS = 65536,
   // image is an sraw
   DT_IMAGE_S_RAW = 1 << 17,
   // image has a monochrome preview tested
@@ -261,9 +262,23 @@ typedef struct dt_image_t
 
   /* DefaultUserCrop */
   dt_boundingbox_t usercrop;
+
+  /* GainMaps from DNG OpcodeList2 exif tag */
+  GList *dng_gain_maps;
+
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
+
+// should be in datetime.h, workaround to solve cross references 
+#define DT_DATETIME_LENGTH 24       // includes msec
+
+typedef struct dt_image_basic_exif_t
+{
+  char datetime[DT_DATETIME_LENGTH];
+  char maker[64];
+  char model[64];
+} dt_image_basic_exif_t;
 
 // image buffer operations:
 /** inits basic values to sensible defaults. */
@@ -447,4 +462,3 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

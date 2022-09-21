@@ -36,7 +36,6 @@ FILE(GLOB SOURCE_FILES
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
-  "common/fswatch.c"
   "common/gaussian.c"
   "common/grouping.c"
   "common/guided_filter.c"
@@ -91,6 +90,8 @@ FILE(GLOB SOURCE_FILES
   "common/iop_group.c"
   "common/iop_order.c"
   "common/iop_profile.c"
+  "common/dng_opcode.c"
+  "common/wb_presets.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
@@ -185,6 +186,9 @@ if(WIN32)
 
   list(APPEND SOURCE_FILES "win/filepath.c")
   list(APPEND HEADER_FILES "win/filepath.h")
+
+  list(APPEND SOURCE_FILES "win/scandir.c")
+  list(APPEND HEADER_FILES "win/scandir.h")
 
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
@@ -370,10 +374,15 @@ if(USE_HEIF)
       find_package(libheif ${version} CONFIG)
       if(libheif_FOUND)
         break()
+      else()
+        find_package(libheif ${version})
+        if(libheif_FOUND)
+          break()
+        endif()
       endif()
     endforeach()
   endmacro()
-  
+
   find_libheif(1.12.0;1.11.0;1.10.0;1.9.0)
   if(TARGET heif)
     list(APPEND LIBS heif)
@@ -459,6 +468,11 @@ if (USE_ISOBMFF)
   endif()
 endif()
 
+# Optionally enable MIDI support
+if(USE_PORTMIDI)
+  find_package(PortMidi)
+endif(USE_PORTMIDI)
+
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
   if(OpenJPEG_FOUND)
@@ -467,6 +481,7 @@ if(USE_OPENJPEG)
 
     include_directories(SYSTEM ${OpenJPEG_INCLUDE_DIRS})
     list(APPEND LIBS ${OpenJPEG_LIBRARIES})
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
   endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
 
@@ -574,7 +589,7 @@ endif(LensFun_FOUND)
 
 if(OpenEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
-  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
+  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} exr CACHE INTERNAL "")
 endif(OpenEXR_FOUND)
 
 if(USE_OPENCL)
@@ -677,6 +692,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 #
 # Generate config.h
 #
+list(REMOVE_DUPLICATES DT_SUPPORTED_EXTENSIONS)
 string(REPLACE ";" "\", \"" DT_SUPPORTED_EXTENSIONS_STRING "${DT_SUPPORTED_EXTENSIONS}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${DARKTABLE_BINDIR}/config.h" @ONLY)
 
@@ -1024,7 +1040,7 @@ if (WIN32)
 else()
     set_target_properties(darktable
                           PROPERTIES
-                          INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
+                          INSTALL_RPATH ${RPATH_ORIGIN}/${REL_BIN_TO_LIBDIR})
 endif(WIN32)
 
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)

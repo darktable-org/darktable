@@ -69,9 +69,9 @@ endif()
 # Whether to use relative paths for the build RPATH
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
-    set(CMAKE_INSTALL_LIBDIR_RPATH @loader_path/../${CMAKE_INSTALL_LIBDIR}/darktable)
+    set(RPATH_ORIGIN @loader_path)
 else()
-    set(CMAKE_INSTALL_LIBDIR_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR}/darktable)
+    set(RPATH_ORIGIN $ORIGIN)
 endif()
 
 if (USE_OPENMP)
@@ -107,6 +107,10 @@ if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
   set(SOURCE_PACKAGE 1)
 else()
   set(SOURCE_PACKAGE 0)
+endif()
+
+if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(X86|x86)|(^i.86$)")
+  set(BUILD_SSE2_CODEPATHS OFF)
 endif()
 
 if(BUILD_SSE2_CODEPATHS)

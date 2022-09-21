@@ -5,6 +5,9 @@ name: Full Manual Check
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
 
   Linux:

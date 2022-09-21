@@ -15,6 +15,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the lighttable module.  */
+
+#include "common/extra_optimizations.h"
+
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
@@ -1147,19 +1150,17 @@ void gui_init(dt_view_t *self)
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
-  GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display_intent, NULL, N_("intent"));
-  dt_bauhaus_combobox_add(display_intent, _("perceptual"));
-  dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
+  static const gchar *intents_list[]
+    = { N_("perceptual"),
+        N_("relative colorimetric"),
+        NC_("rendering intent", "saturation"),
+        N_("absolute colorimetric"),
+        NULL };
 
-  GtkWidget *display2_intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display2_intent, NULL, N_("intent"));
-  dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
-  dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(display2_intent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(display2_intent, _("absolute colorimetric"));
+  GtkWidget *display_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("intent"),
+                                                            "", 0, _profile_display_intent_callback, NULL, intents_list);
+  GtkWidget *display2_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("preview intent"),
+                                                            "", 0, _profile_display2_intent_callback, NULL, intents_list);
 
   GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display_profile, NULL, N_("display profile"));
@@ -1210,10 +1211,8 @@ void gui_init(dt_view_t *self)
   g_free(system_profile_dir);
   g_free(user_profile_dir);
 
-  g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(_profile_display_intent_callback), NULL);
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(_profile_display_profile_callback), NULL);
 
-  g_signal_connect(G_OBJECT(display2_intent), "value-changed", G_CALLBACK(_profile_display2_intent_callback), NULL);
   g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(_profile_display2_profile_callback),
                    NULL);
 

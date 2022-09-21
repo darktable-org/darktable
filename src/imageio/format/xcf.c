@@ -59,32 +59,28 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   uint32_t profile_len = 0;
   gboolean profile_is_linear = TRUE;
 
-  if(imgid > 0)
+  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  cmsSaveProfileToMem(out_profile, NULL, &profile_len);
+  if(profile_len > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
-    cmsSaveProfileToMem(out_profile, 0, &profile_len);
-    if(profile_len > 0)
+    profile = malloc(profile_len);
+    if(!profile)
     {
-      profile = malloc(profile_len);
-      if(!profile)
-      {
-        fprintf(stderr, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
-        return 1;
-      }
-      cmsSaveProfileToMem(out_profile, profile, &profile_len);
+      fprintf(stderr, "[xcf] error: can't allocate %u bytes of memory\n", profile_len);
+      return 1;
+    }
+    cmsSaveProfileToMem(out_profile, profile, &profile_len);
 
-      // try to figure out if the profile is linear
-      if(cmsIsMatrixShaper(out_profile))
+    // try to figure out if the profile is linear
+    if(cmsIsMatrixShaper(out_profile))
+    {
+      const cmsToneCurve *red_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigRedTRCTag);
+      const cmsToneCurve *green_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigGreenTRCTag);
+      const cmsToneCurve *blue_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigBlueTRCTag);
+      if(red_curve && green_curve && blue_curve)
       {
-        const cmsToneCurve *red_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigRedTRCTag);
-        const cmsToneCurve *green_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigGreenTRCTag);
-        const cmsToneCurve *blue_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigBlueTRCTag);
-        if(red_curve && green_curve && blue_curve)
-        {
-          profile_is_linear = cmsIsToneCurveLinear(red_curve)
-                              && cmsIsToneCurveLinear(green_curve)
-                              && cmsIsToneCurveLinear(blue_curve);
-        }
+        profile_is_linear = cmsIsToneCurveLinear(red_curve) && cmsIsToneCurveLinear(green_curve)
+                            && cmsIsToneCurveLinear(blue_curve);
       }
     }
   }
@@ -336,19 +332,11 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // Bit depth combo box
-  gui->bpp = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->bpp, NULL, N_("bit depth"));
-  dt_bauhaus_combobox_add(gui->bpp, _("8 bit"));
-  dt_bauhaus_combobox_add(gui->bpp, _("16 bit"));
-  dt_bauhaus_combobox_add(gui->bpp, _("32 bit (float)"));
-  if(bpp == 16)
-    dt_bauhaus_combobox_set(gui->bpp, 1);
-  else if(bpp == 32)
-    dt_bauhaus_combobox_set(gui->bpp, 2);
-  else // (bpp == 8)
-    dt_bauhaus_combobox_set(gui->bpp, 0);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("bit depth"), NULL,
+                               bpp == 16 ? 1 : bpp == 32 ? 2 : 0,
+                               bpp_combobox_changed, NULL,
+                               N_("8 bit"), N_("16 bit"), N_("32 bit (float)"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->bpp), "value-changed", G_CALLBACK(bpp_combobox_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

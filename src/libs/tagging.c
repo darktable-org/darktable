@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/collection.h"
+#include "common/selection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
@@ -490,7 +491,7 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
     gtk_list_store_clear(GTK_LIST_STORE(store));
     if(count > 0 && tags)
     {
-      for (GList *tag = tags; tag; tag = g_list_next(tag))
+      for(GList *tag = tags; tag; tag = g_list_next(tag))
       {
         const char *subtag = g_strrstr(((dt_tag_t *)tag->data)->tag, "|");
         gtk_list_store_append(GTK_LIST_STORE(store), &iter);
@@ -655,7 +656,7 @@ static gboolean _find_tag_iter_tagid(GtkTreeModel *model, GtkTreeIter *iter, con
         *iter = child;
         return TRUE;
       }
-  } while (gtk_tree_model_iter_next(model, iter));
+  } while(gtk_tree_model_iter_next(model, iter));
   return FALSE;
 }
 
@@ -673,7 +674,7 @@ static void _calculate_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, const
     }
     if(gtk_tree_model_iter_children(model, &child, &parent))
       _calculate_sel_on_path(model, &child, FALSE);
-  } while (!root && gtk_tree_model_iter_next(model, &parent));
+  } while(!root && gtk_tree_model_iter_next(model, &parent));
 }
 
 // reset the indeterminated selection (1) on the tree
@@ -693,7 +694,7 @@ static void _reset_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, const gbo
       }
       _reset_sel_on_path(model, &child, FALSE);
     }
-  } while (!root && gtk_tree_model_iter_next(model, &parent));
+  } while(!root && gtk_tree_model_iter_next(model, &parent));
 }
 
 // reset all selection (1 & 2) on the tree
@@ -714,7 +715,7 @@ static void _reset_sel_on_path_full(GtkTreeModel *model, GtkTreeIter *iter, cons
       gtk_list_store_set(GTK_LIST_STORE(model), &parent,
                          DT_LIB_TAGGING_COL_SEL, DT_TS_NO_IMAGE, -1);
     }
-  } while (!root && gtk_tree_model_iter_next(model, &parent));
+  } while(!root && gtk_tree_model_iter_next(model, &parent));
 }
 
 //  try to find a node fully attached (2) which is the root of the update loop. If not the full tree will be used
@@ -722,7 +723,7 @@ static void _find_root_iter_iter(GtkTreeModel *model, GtkTreeIter *iter, GtkTree
 {
   guint sel;
   GtkTreeIter child = *iter;
-  while (gtk_tree_model_iter_parent(model, parent, &child))
+  while(gtk_tree_model_iter_parent(model, parent, &child))
   {
     gtk_tree_model_get(model, parent, DT_LIB_TAGGING_COL_SEL, &sel, -1);
     if(sel == DT_TS_ALL_IMAGES)
@@ -771,7 +772,7 @@ static void _update_sel_on_tree(GtkTreeModel *model)
   if(gtk_tree_model_get_iter_first(model, &parent))
   {
     _reset_sel_on_path_full(model, &parent, FALSE);
-    for (GList *tag = tags; tag; tag = g_list_next(tag))
+    for(GList *tag = tags; tag; tag = g_list_next(tag))
     {
       GtkTreeIter iter = parent;
       if(_find_tag_iter_tagid(model, &iter, ((dt_tag_t *)tag->data)->id))
@@ -848,7 +849,7 @@ static void _delete_tree_path(GtkTreeModel *model, GtkTreeIter *iter, gboolean r
       gtk_tree_model_get(model, &tobedel, DT_LIB_TAGGING_COL_PATH, &path, -1);
       g_free(path);
       gtk_tree_store_remove(GTK_TREE_STORE(model), &tobedel);
-    } while (!root && valid);
+    } while(!root && valid);
   }
   else  // treeview is a list. The hierarchy of tags is found with the root (left part) of tagname
   {
@@ -1356,6 +1357,19 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   if(!tag || tag[0] == '\0') return;
 
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
+  // workaround: if hovered image instead of selected, aborts
+  if(imgs && !imgs->next)
+  {
+    GList *sels = dt_selection_get_list(darktable.selection, FALSE, FALSE);
+    if(sels && (sels->next || (!sels->next && GPOINTER_TO_INT(sels->data) != GPOINTER_TO_INT(imgs->data))))
+    {
+      g_list_free(sels);
+      g_list_free(imgs);
+      return;
+    }
+    g_list_free(sels);
+  }
+
   const gboolean res = dt_tag_attach_string_list(tag, imgs, TRUE);
   if(res) dt_image_synch_xmps(imgs);
   g_list_free(imgs);
@@ -1867,7 +1881,7 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
 
       // check if one of the new tagnames already exists.
       gboolean tagname_exists = FALSE;
-      for (GList *taglist = tag_family; taglist && !tagname_exists; taglist = g_list_next(taglist))
+      for(GList *taglist = tag_family; taglist && !tagname_exists; taglist = g_list_next(taglist))
       {
         char *new_tagname = g_strconcat(new_prefix_tag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
         tagname_exists = dt_tag_exists(new_tagname, NULL);
@@ -1888,7 +1902,7 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
       }
 
       // rename related tags
-      for (GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
+      for(GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
       {
         char *new_tagname = g_strconcat(new_prefix_tag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
         dt_tag_rename(((dt_tag_t *)taglist->data)->id, new_tagname);
@@ -1992,7 +2006,7 @@ static gboolean _apply_rename_path(GtkWidget *dialog, const char *tagname,
 
   if(!tagname_exists)
   {
-    for (GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
+    for(GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
     {
       char *new_tagname = g_strconcat(newtag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
       dt_tag_rename(((dt_tag_t *)taglist->data)->id, new_tagname);
@@ -2987,8 +3001,6 @@ static gboolean _event_dnd_motion(GtkWidget *widget, GdkDragContext *context,
         if(!gtk_tree_view_row_expanded(tree, path))
           d->drag.expand_timeout = g_timeout_add(200, (GSourceFunc)_dnd_expand_timeout, self);
       }
-      else
-        gtk_tree_view_collapse_all(d->dictionary_view);
     }
 
     GtkTreeSelection *selection = gtk_tree_view_get_selection(d->dictionary_view);
@@ -3530,4 +3542,3 @@ static void _save_last_tag_used(const char *tagnames, dt_lib_tagging_t *d)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -103,9 +103,10 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_HISTORY,
   DT_COLLECTION_PROP_MODULE,
   DT_COLLECTION_PROP_ORDER,
-  DT_COLLECTION_PROP_RATING,
+  DT_COLLECTION_PROP_RATING_RANGE,
 
   DT_COLLECTION_PROP_TEXTSEARCH,
+  DT_COLLECTION_PROP_RATING,
 
   DT_COLLECTION_PROP_LAST,
 
@@ -153,6 +154,7 @@ const char *dt_collection_name(dt_collection_properties_t prop);
 const char *dt_collection_name_untranslated(dt_collection_properties_t prop);
 /* returns the name for the given collection sort property */
 const char *dt_collection_sort_name(dt_collection_sort_t sort);
+const char *dt_collection_sort_name_untranslated(dt_collection_sort_t sort);
 
 /** instantiates a collection context, if clone equals NULL default query is constructed. */
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone);

@@ -31,6 +31,7 @@
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "imageio/storage/imageio_storage_api.h"
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
@@ -187,7 +188,7 @@ static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
 
   g_hash_table_iter_init (&iter, table);
 
-  while (g_hash_table_iter_next (&iter, &key, &value))
+  while(g_hash_table_iter_next (&iter, &key, &value))
   {
     if(key && value)
     {
@@ -790,7 +791,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   GtkWidget *hbox, *label, *button;
 
   // account
-  ui->account_list = dt_bauhaus_combobox_new(NULL);
+  ui->account_list = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(ui->account_list, NULL, N_("accounts"));
   int account_index = -1, index=0;
   for(const GList *a = ui->accounts; a; a = g_list_next(a))
@@ -806,13 +807,10 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // server
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ui->server_entry = GTK_ENTRY(gtk_entry_new());
-  gtk_widget_set_tooltip_text(GTK_WIDGET(ui->server_entry),
-                              _("the server name\ndefault protocol is https\nspecify http:// if non secure server"));
+  ui->server_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("server"), G_CALLBACK(_piwigo_server_entry_changed), ui,
+                                                   _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
+                                                   last_account?last_account->server:"piwigo.com"));
   gtk_widget_set_hexpand(GTK_WIDGET(ui->server_entry), TRUE);
-  gtk_entry_set_text(ui->server_entry, last_account?last_account->server:"piwigo.com");
-  g_signal_connect(G_OBJECT(ui->server_entry), "changed", G_CALLBACK(_piwigo_server_entry_changed), (gpointer)ui);
-  gtk_entry_set_width_chars(GTK_ENTRY(ui->server_entry), 0);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("server")), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->server_entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
@@ -820,23 +818,20 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // login
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ui->user_entry = GTK_ENTRY(gtk_entry_new());
+  ui->user_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("user"), G_CALLBACK(_piwigo_entry_changed), ui,
+                                                   _("the server name\ndefault protocol is https\nspecify http:// if non secure server"),
+                                                   last_account?last_account->username:""));
   gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
-  gtk_entry_set_text(ui->user_entry, last_account?last_account->username:"");
-  g_signal_connect(G_OBJECT(ui->user_entry), "changed", G_CALLBACK(_piwigo_entry_changed), (gpointer)ui);
-  gtk_entry_set_width_chars(GTK_ENTRY(ui->user_entry), 0);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("user")), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->user_entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // password
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ui->pwd_entry = GTK_ENTRY(gtk_entry_new());
+  ui->pwd_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("password"), G_CALLBACK(_piwigo_entry_changed), ui, NULL,
+                                                   last_account?last_account->password:""));
   gtk_entry_set_visibility(GTK_ENTRY(ui->pwd_entry), FALSE);
   gtk_widget_set_hexpand(GTK_WIDGET(ui->pwd_entry), TRUE);
-  gtk_entry_set_text(ui->pwd_entry, last_account?last_account->password:"");
-  g_signal_connect(G_OBJECT(ui->pwd_entry), "changed", G_CALLBACK(_piwigo_entry_changed), (gpointer)ui);
-  gtk_entry_set_width_chars(GTK_ENTRY(ui->pwd_entry), 0);
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("password")), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->pwd_entry), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
@@ -857,20 +852,19 @@ void gui_init(dt_imageio_module_storage_t *self)
   if(account_index != -1) dt_bauhaus_combobox_set(ui->account_list, account_index);
 
   // permissions list
-  ui->permission_list = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(ui->permission_list, NULL, N_("visible to"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("everyone"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("contacts"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("friends"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("family"));
-  dt_bauhaus_combobox_add(ui->permission_list, _("you"));
-  dt_bauhaus_combobox_set(ui->permission_list, 0); // Set default permission to everyone
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(ui->permission_list, self, NULL, N_("visible to"), NULL,
+                               0, NULL, NULL,
+                               N_("everyone"),
+                               N_("contacts"),
+                               N_("friends"),
+                               N_("family"),
+                               N_("you"));
   gtk_box_pack_start(GTK_BOX(self->widget), ui->permission_list, FALSE, FALSE, 0);
 
   // album list
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  ui->album_list = dt_bauhaus_combobox_new(NULL); // Available albums
+  ui->album_list = dt_bauhaus_combobox_new_action(DT_ACTION(self)); // Available albums
   dt_bauhaus_widget_set_label(ui->album_list, NULL, N_("album"));
   g_signal_connect(G_OBJECT(ui->album_list), "value-changed", G_CALLBACK(_piwigo_album_changed), (gpointer)ui);
   gtk_widget_set_sensitive(ui->album_list, FALSE);
@@ -902,7 +896,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(ui->create_box, hbox, FALSE, FALSE, 0);
 
   // parent album list
-  ui->parent_album_list = dt_bauhaus_combobox_new(NULL); // Available albums
+  ui->parent_album_list = dt_bauhaus_combobox_new_action(DT_ACTION(self)); // Available albums
   dt_bauhaus_widget_set_label(ui->parent_album_list, NULL, N_("parent album"));
   gtk_widget_set_sensitive(ui->parent_album_list, TRUE);
   gtk_box_pack_start(ui->create_box, ui->parent_album_list, TRUE, TRUE, 0);

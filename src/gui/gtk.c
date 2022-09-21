@@ -930,7 +930,7 @@ static gboolean _window_configure(GtkWidget *da, GdkEvent *event, gpointer user_
 
 guint dt_gui_translated_key_state(GdkEventKey *event)
 {
-  if (gdk_keyval_to_lower(event->keyval) == gdk_keyval_to_upper(event->keyval) )
+  if(gdk_keyval_to_lower(event->keyval) == gdk_keyval_to_upper(event->keyval) )
   {
     //not an alphabetic character
     //find any modifiers consumed to produce keyval
@@ -1274,7 +1274,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   /* start the event loop */
   gtk_main();
 
-  if (darktable.gui->surface)
+  if(darktable.gui->surface)
   {
     cairo_surface_destroy(darktable.gui->surface);
     darktable.gui->surface = NULL;
@@ -1742,7 +1742,7 @@ void dt_ui_restore_panels(dt_ui_t *ui)
 
 void dt_ui_update_scrollbars(dt_ui_t *ui)
 {
-  if (!darktable.gui->scrollbars.visible) return;
+  if(!darktable.gui->scrollbars.visible) return;
 
   /* update scrollbars for current view */
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -1767,7 +1767,7 @@ void dt_ui_scrollbars_show(dt_ui_t *ui, gboolean show)
 {
   darktable.gui->scrollbars.visible = show;
 
-  if (show)
+  if(show)
   {
     dt_ui_update_scrollbars(ui);
   }
@@ -1960,7 +1960,7 @@ static void _ui_panel_size_changed(GtkAdjustment *adjustment, GParamSpec *pspec,
   GtkAllocation allocation;
   static float last_height[2] = { 0 };
 
-  int side = GPOINTER_TO_INT(user_data);
+  const int side = GPOINTER_TO_INT(user_data);
 
   // don't do anything when the size didn't actually change.
   const float height = gtk_adjustment_get_upper(adjustment) - gtk_adjustment_get_lower(adjustment);
@@ -2690,6 +2690,7 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_PRINT_BG] = { "print_bg_color", { .2, .2, .2, 1.0 } },
     [DT_GUI_COLOR_BRUSH_CURSOR] = { "brush_cursor", { 1., 1., 1., 0.9 } },
     [DT_GUI_COLOR_BRUSH_TRACE] = { "brush_trace", { 0., 0., 0., 0.8 } },
+    [DT_GUI_COLOR_BUTTON_FG] = { "button_fg", { 0.7, 0.7, 0.7, 0.55 } },
     [DT_GUI_COLOR_THUMBNAIL_BG] = { "thumbnail_bg_color", { 0.4, 0.4, 0.4, 1.0 } },
     [DT_GUI_COLOR_THUMBNAIL_SELECTED_BG] = { "thumbnail_selected_bg_color", { 0.6, 0.6, 0.6, 1.0 } },
     [DT_GUI_COLOR_THUMBNAIL_HOVER_BG] = { "thumbnail_hover_bg_color", { 0.8, 0.8, 0.8, 1.0 } },
@@ -2884,7 +2885,7 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const ch
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   if(strlen(text) > 2)
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
+  gtk_widget_set_tooltip_text(label, tooltip ? tooltip : _(text));
   gtk_widget_set_has_tooltip(GTK_WIDGET(notebook), FALSE);
 
   gint page_num = gtk_notebook_append_page(notebook, page, label);
@@ -3193,7 +3194,7 @@ void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget)
   }
 }
 
-static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+static void _collapse_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
 {
   dt_gui_collapsible_section_t *cs = (dt_gui_collapsible_section_t *)user_data;
 
@@ -3204,7 +3205,7 @@ static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer us
   dt_conf_set_bool(cs->confname, active);
 }
 
-static void _coeffs_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
+static void _collapse_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return;
 
@@ -3221,10 +3222,7 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs)
                                (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), active);
 
-  if(active)
-    gtk_widget_show(GTK_WIDGET(cs->container));
-  else
-    gtk_widget_hide(GTK_WIDGET(cs->container));
+  gtk_widget_set_visible(GTK_WIDGET(cs->container), active);
 }
 
 void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs)
@@ -3252,6 +3250,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
                                       (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), expanded);
   dt_gui_add_class(cs->toggle, "dt_ignore_fg_state");
+  dt_gui_add_class(cs->toggle, "dt_transparent_background");
 
   cs->container = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   gtk_widget_set_name(GTK_WIDGET(cs->container), "collapsible");
@@ -3264,11 +3263,10 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   gtk_widget_set_name(cs->expander, "collapse-block");
 
   g_signal_connect(G_OBJECT(cs->toggle), "toggled",
-                   G_CALLBACK(_coeffs_button_changed),  (gpointer)cs);
+                   G_CALLBACK(_collapse_button_changed), cs);
 
   g_signal_connect(G_OBJECT(header_evb), "button-release-event",
-                   G_CALLBACK(_coeffs_expander_click),
-                   (gpointer)cs);
+                   G_CALLBACK(_collapse_expander_click), cs);
 }
 
 // clang-format off

@@ -66,9 +66,9 @@ typedef enum dt_pixelpipe_picker_source_t
 static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
                               dt_develop_t *dev, dt_iop_buffer_dsc_t *dsc);
 
-static char *_pipe_type_to_str(int pipe_type)
+const char *dt_dev_pixelpipe_type_to_str(int pipe_type)
 {
-  const gboolean fast = (pipe_type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  const gboolean fast = pipe_type & DT_DEV_PIXELPIPE_FAST;
   char *r = NULL;
 
   switch(pipe_type & DT_DEV_PIXELPIPE_ANY)
@@ -106,55 +106,53 @@ static char *_pipe_type_to_str(int pipe_type)
   return r;
 }
 
-int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
+gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2, 0);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
   pipe->levels = levels;
   pipe->store_all_raster_masks = store_masks;
   return res;
 }
 
-int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
+gboolean dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
-int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
+gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
-int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
+gboolean dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
-  // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 8);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 12, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   return res;
 }
 
-int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
+gboolean dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 {
-  // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 5);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 5, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
   return res;
 }
 
-int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
+gboolean dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 8);
+  size_t csize = MAX(64*1024*1024, darktable.dtresources.mipmap_memory / 4);
+  const gboolean res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, csize);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
 
-int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries)
+gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries, size_t memlimit)
 {
   pipe->devid = -1;
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
@@ -162,7 +160,6 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = 0;
   pipe->nodes = NULL;
   pipe->backbuf_size = size;
-  if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size)) return 0;
   pipe->cache_obsolete = 0;
   pipe->backbuf = NULL;
   pipe->backbuf_scale = 0.0f;
@@ -198,7 +195,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->input_profile_info = NULL;
   pipe->output_profile_info = NULL;
 
-  return 1;
+  return dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, size, memlimit);
 }
 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height,
@@ -241,6 +238,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = 0;
+  pipe->next_important_module = FALSE;
 
   dt_dev_clear_rawdetail_mask(pipe);
 
@@ -412,7 +410,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with defaults_params for pipe %i\n", pipe->type);
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with defaults_params for [%s]\n", dt_dev_pixelpipe_type_to_str(pipe->type));
 
   // call reset_params on all pieces first. This is mandatory to init utility modules that don't have an history stack
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
@@ -424,7 +422,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
                          pipe, piece);
   }
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for pipe %i\n", pipe->type);
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for [%s]\n", dt_dev_pixelpipe_type_to_str(pipe->type));
 
   // go through all history items and adjust params
   GList *history = dev->history;
@@ -443,12 +441,12 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   if(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for pipe %i\n", hist->module->op, pipe->type);
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for [%s]\n", hist->module->op, dt_dev_pixelpipe_type_to_str(pipe->type));
     dt_dev_pixelpipe_synch(pipe, dev, history);
   }
   else
   {
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for pipe %i\n", pipe->type);
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for [%s]\n", dt_dev_pixelpipe_type_to_str(pipe->type));
   }
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
@@ -457,7 +455,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changing for pipe %i, flag %i\n", pipe->type, pipe->changed);
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changing for [%s], flag %i\n", dt_dev_pixelpipe_type_to_str(pipe->type), pipe->changed);
   // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
   if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
   {
@@ -616,7 +614,7 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
                                ((picker_source == PIXELPIPE_PICKER_INPUT) ? DT_DEV_TRANSFORM_DIR_FORW_INCL
                                : DT_DEV_TRANSFORM_DIR_FORW_EXCL),fbox, 2);
 
-  if (op_after_demosaic || !dt_image_is_rawprepare_supported(&image))
+  if(op_after_demosaic || !dt_image_is_rawprepare_supported(&image))
     for(int idx = 0; idx < 4; idx++) fbox[idx] *= darktable.develop->preview_downsampling;
   fbox[0] -= roi->x;
   fbox[1] -= roi->y;
@@ -928,8 +926,7 @@ static void collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev
     *pixelpipe_flow |= (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
-    if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-       && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+    if(piece->histogram && (module->request_histogram & DT_REQUEST_ON) && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
     {
       const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
       module->histogram = realloc(module->histogram, buf_size);
@@ -1058,12 +1055,29 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   return 0; //no errors
 }
 
+static inline gboolean check_good_pipe(dt_dev_pixelpipe_t *pipe)
+{
+  return (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW));
+}
+
+static inline gboolean check_module_next_important(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *module)
+{
+  if(!check_good_pipe(pipe)) return FALSE;
+  return ((module->flags() & IOP_FLAGS_CACHE_IMPORTANT_NEXT) || module->cache_next_important);
+}
+
+static inline gboolean check_module_now_important(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *module)
+{
+  if(!check_good_pipe(pipe)) return FALSE;
+  return (module->flags() & IOP_FLAGS_CACHE_IMPORTANT_NOW);
+}
+
 // recursive helper for process:
 static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output,
                                         void **cl_mem_output, dt_iop_buffer_dsc_t **out_format,
                                         const dt_iop_roi_t *roi_out, GList *modules, GList *pieces, int pos)
 {
-  if (dt_atomic_get_int(&pipe->shutdown))
+  if(dt_atomic_get_int(&pipe->shutdown))
     return 1;
 
   dt_iop_roi_t roi_in = *roi_out;
@@ -1076,7 +1090,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   dt_dev_pixelpipe_iop_t *piece = NULL;
 
   // if a module is active, check if this module allow a fast pipe run
-
   if(darktable.develop && dev->gui_module && dev->gui_module->flags() & IOP_FLAGS_ALLOW_FAST_PIPE)
     pipe->type |= DT_DEV_PIXELPIPE_FAST;
   else
@@ -1109,7 +1122,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   uint64_t hash = 0;
   // do not get gamma from cache on preview pipe so we can compute the final scope
   // FIXME: better yet, don't even cache the gamma output in this case -- but then we'd need to allocate a temporary output buffer and garbage collect it
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW
+  if(!(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
      || module == NULL
      || strcmp(module->op, "gamma") != 0)
   {
@@ -1118,11 +1131,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   }
   if(cache_available)
   {
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] dt_dev_pixelpipe_process_rec, cache available for pipe %i with hash %lu\n", pipe->type, (long unsigned int)hash);
-    // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe ==
-    // dev->preview_pipe ? "[preview]" : "", hash);
-
-    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format);
+    dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, (module) ? module->so->op : NULL, FALSE);
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return 1;
@@ -1159,7 +1168,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       {
         *output = pipe->input;
       }
-      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format))
+      else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, NULL, FALSE))
       {
         if(roi_in.scale == 1.0f)
         {
@@ -1172,7 +1181,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
 
-          if (cp_width > 0)
+          if(cp_width > 0)
           {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -1199,7 +1208,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       // else found in cache.
     }
 
-    dt_show_times_f(&start, "[dev_pixelpipe]", "initing base buffer [%s]", _pipe_type_to_str(pipe->type));
+    dt_show_times_f(&start, "[dev_pixelpipe]", "initing base buffer [%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return 1;
@@ -1247,17 +1256,21 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   }
 
   gboolean important = FALSE;
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     important = (strcmp(module->op, "colorout") == 0);
   else
     important = (strcmp(module->op, "gamma") == 0);
-  if(important)
-    (void)dt_dev_pixelpipe_cache_get_important(&(pipe->cache), basichash, hash, bufsize, output, out_format);
-  else
-    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format);
 
-// if(module) printf("reserving new buf in cache for module %s %s: %ld buf %p\n", module->op, pipe ==
-// dev->preview_pipe ? "[preview]" : "", hash, *output);
+  /*
+    As the iop cache holds modules input data we check for an important hint in the current module and
+    keep that infor for the next processed module
+  */
+  gboolean input_important = pipe->next_important_module;
+  if(module)
+    input_important |= check_module_now_important(pipe, module);
+
+  important |= input_important;
+  dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, module ? module->so->op : NULL, important);
 
   if(dt_atomic_get_int(&pipe->shutdown))
   {
@@ -1319,8 +1332,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   dt_develop_tiling_t tiling = { 0 };
   tiling.factor_cl = tiling.maxbuf_cl = -1;	// set sentinel value to detect whether callback set sizes
   module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
-  if (tiling.factor_cl < 0) tiling.factor_cl = tiling.factor; // default to CPU size if callback didn't set GPU
-  if (tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
+  if(tiling.factor_cl < 0) tiling.factor_cl = tiling.factor; // default to CPU size if callback didn't set GPU
+  if(tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
 
   /* does this module involve blending? */
   if(piece->blendop_data && ((dt_develop_blend_params_t *)piece->blendop_data)->mask_mode != DEVELOP_MASK_DISABLED)
@@ -1361,16 +1374,17 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   /* do we have opencl at all? did user tell us to use it? did we get a resource? */
   if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0)
   {
-    int success_opencl = TRUE;
+    gboolean success_opencl = TRUE;
     dt_iop_colorspace_type_t input_cst_cl = input_format->cst;
 
     /* if input is on gpu memory only, remember this fact to later take appropriate action */
-    int valid_input_on_gpu_only = (cl_mem_input != NULL);
+    gboolean valid_input_on_gpu_only = (cl_mem_input != NULL);
 
+    const float required_factor_cl = fmaxf(1.0f, (valid_input_on_gpu_only) ? tiling.factor_cl - 1.0f : tiling.factor_cl);
     /* pre-check if there is enough space on device for non-tiled processing */
     const gboolean fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
                                                                 MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
-                                                                tiling.factor_cl, tiling.overhead);
+                                                                required_factor_cl, tiling.overhead);
 
     /* general remark: in case of opencl errors within modules or out-of-memory on GPU, we transparently
        fall back to the respective cpu module and continue in pixelpipe. If we encounter errors we set
@@ -1388,7 +1402,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     if(possible_cl && !fits_on_device)
     {
-      const float cl_px = dt_opencl_get_device_available(pipe->devid) / (sizeof(float) * MAX(in_bpp, bpp) * ceilf(tiling.factor_cl));
+      const float cl_px = dt_opencl_get_device_available(pipe->devid) / (sizeof(float) * MAX(in_bpp, bpp) * ceilf(required_factor_cl));
       const float dx = MAX(roi_in.width, roi_out->width);
       const float dy = MAX(roi_in.height, roi_out->height);
       const float border = tiling.overlap + 1;
@@ -1600,10 +1614,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         /* we might need to copy back valid image from device to host */
         if(cl_mem_input != NULL)
         {
-          cl_int err;
-
           /* copy back to CPU buffer, then clean unneeded buffer */
-          err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height,
+          cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height,
                                               in_bpp);
           if(err != CL_SUCCESS)
           {
@@ -1644,7 +1656,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         // histogram collection for module
-        if (success_opencl)
+        if(success_opencl)
         {
           collect_histogram_on_CPU(pipe, dev, input, &roi_in, module, piece, &pixelpipe_flow);
         }
@@ -1746,31 +1758,28 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         return 1;
       }
 
-      // if (rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
+      // if(rand() % 20 == 0) success_opencl = FALSE; // Test code: simulate spurious failures
 
       /* finally check, if we were successful */
       if(success_opencl)
       {
         /* Nice, everything went fine */
 
-        /* this is reasonable on slow GPUs only, where it's more expensive to reprocess the whole pixelpipe
-           than
-           regularly copying device buffers back to host. This would slow down fast GPUs considerably.
-           But it is worth copying data back from the GPU which is the input to the currently focused iop,
-           as that is the iop which is most likely to change next.
+        /* Copying device buffers back to host memory is an expensive operation but is required for the iop cache.
+           As the gpu memory is very restricted we can't use that for a cache.
+           The iop cache hit rate is much more important for the UI responsiveness so we make sure relevant cache line buffers
+           are kept. This is true
+             a) for the currently focused iop, as that is the iop which is most likely to change next
+             b) if there is a hint for a module doing heavy processing.
+             c) only for full or preview pipe  
         */
-        if((darktable.opencl->sync_cache == OPENCL_SYNC_TRUE) ||
-           ((darktable.opencl->sync_cache == OPENCL_SYNC_ACTIVE_MODULE) && (module == darktable.develop->gui_module)))
+        if((module == darktable.develop->gui_module) || input_important)
         {
-          /* write back input into cache for faster re-usal (not for export or thumbnails) */
-          if(cl_mem_input != NULL
-             && (pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT
-             && (pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) != DT_DEV_PIXELPIPE_THUMBNAIL)
+          /* write back input into cache for faster re-usal (full pipe or preview) */
+          if(cl_mem_input != NULL && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW)))
           {
-            cl_int err;
-
             /* copy input to host memory, so we can find it in cache */
-            err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width,
+            cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width,
                                                 roi_in.height, in_bpp);
             if(err != CL_SUCCESS)
             {
@@ -1821,12 +1830,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         /* check where our input buffer is located */
         if(cl_mem_input != NULL)
         {
-          cl_int err;
-
           /* copy back to host memory, then clean no longer needed opencl buffer.
              important info: in order to make this possible, opencl modules must
              not spoil their input buffer, even in case of errors. */
-          err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height,
+          cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height,
                                               in_bpp);
           if(err != CL_SUCCESS)
           {
@@ -1846,7 +1853,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           dt_opencl_release_mem_object(cl_mem_input);
           valid_input_on_gpu_only = FALSE;
         }
-        if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
+        if(pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                      module, piece, &tiling, &pixelpipe_flow))
           return 1;
       }
@@ -1868,11 +1875,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       /* cleanup unneeded opencl buffer, and copy back to CPU buffer */
       if(cl_mem_input != NULL)
       {
-        cl_int err;
-
-        err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height,
+        cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width, roi_in.height,
                                             in_bpp);
-        // if (rand() % 5 == 0) err = !CL_SUCCESS; // Test code: simulate spurious failures
+        // if(rand() % 5 == 0) err = !CL_SUCCESS; // Test code: simulate spurious failures
         if(err != CL_SUCCESS)
         {
           /* late opencl error */
@@ -1892,7 +1897,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         valid_input_on_gpu_only = FALSE;
       }
 
-      if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
+      if(pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                    module, piece, &tiling, &pixelpipe_flow))
         return 1;
     }
@@ -1904,12 +1909,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     /* opencl is not inited or not enabled or we got no resource/device -> everything runs on cpu */
 
-    if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
+    if(pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                  module, piece, &tiling, &pixelpipe_flow))
       return 1;
   }
 #else // HAVE_OPENCL
-  if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
+  if(pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                module, piece, &tiling, &pixelpipe_flow))
     return 1;
 #endif // HAVE_OPENCL
@@ -1936,19 +1941,24 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU
           ? "GPU"
           : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "",
-      _pipe_type_to_str(pipe->type));
+      dt_dev_pixelpipe_type_to_str(pipe->type));
   g_free(module_label);
   module_label = NULL;
 
   // in case we get this buffer from the cache in the future, cache some stuff:
   **out_format = piece->dsc_out = pipe->dsc;
 
-  if(module == darktable.develop->gui_module)
+  if((module == darktable.develop->gui_module) || input_important)
   {
     // give the input buffer to the currently focused plugin more weight.
     // the user is likely to change that one soon, so keep it in cache.
     dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input);
   }
+
+  // we check for an important hint after processing the module as we want to track a runtime hint too.
+  pipe->next_important_module = check_module_next_important(pipe, module);
+  if(pipe->next_important_module)
+    dt_vprint(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] module %s passing important hint to next module\n", dt_dev_pixelpipe_type_to_str(pipe->type), module ? module->so->op : NULL);
 
   // warn on NaN or infinity
 #ifndef _DEBUG
@@ -1990,12 +2000,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       module_label = dt_history_item_get_name(module);
       if(hasnan)
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module_label,
-                _pipe_type_to_str(pipe->type));
+                dt_dev_pixelpipe_type_to_str(pipe->type));
       if(hasinf)
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module_label,
-                _pipe_type_to_str(pipe->type));
+                dt_dev_pixelpipe_type_to_str(pipe->type));
       fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n", module_label,
-              min[0], min[1], min[2], max[0], max[1], max[2], _pipe_type_to_str(pipe->type));
+              min[0], min[1], min[2], max[0], max[1], max[2], dt_dev_pixelpipe_type_to_str(pipe->type));
       g_free(module_label);
     }
     else if((*out_format)->datatype == TYPE_FLOAT && (*out_format)->channels == 1)
@@ -2020,12 +2030,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       module_label = dt_history_item_get_name(module);
       if(hasnan)
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module_label,
-                _pipe_type_to_str(pipe->type));
+                dt_dev_pixelpipe_type_to_str(pipe->type));
       if(hasinf)
         fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module_label,
-                _pipe_type_to_str(pipe->type));
+                dt_dev_pixelpipe_type_to_str(pipe->type));
       fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f) max: (%f) [%s]\n", module_label, min, max,
-              _pipe_type_to_str(pipe->type));
+              dt_dev_pixelpipe_type_to_str(pipe->type));
       g_free(module_label);
     }
   }
@@ -2119,12 +2129,9 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   darktable.dtresources.group = 4 * darktable.dtresources.level;
 #ifdef HAVE_OPENCL
-  if((darktable.dtresources.tunememory == 0) && (pipe->devid >= 0) && darktable.opencl->inited)
-    darktable.opencl->dev[pipe->devid].tuned_available = 0;
-
-  if((darktable.dtresources.tunepinning != 0) && (pipe->devid >= 0) && darktable.opencl->inited)
-    darktable.opencl->dev[pipe->devid].pinned_memory |= DT_OPENCL_PINNING_ON;
+  dt_opencl_check_tuning(pipe->devid);
 #endif
+  pipe->next_important_module = FALSE;
   int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #ifdef HAVE_OPENCL
   // copy back final opencl buffer (if any) to CPU
@@ -2137,9 +2144,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
   {
     if(*cl_mem_output != NULL)
     {
-      cl_int err;
-
-      err = dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output, roi_out->width, roi_out->height,
+      cl_int err = dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output, roi_out->width, roi_out->height,
                                           dt_iop_buffer_dsc_to_bpp(*out_format));
       dt_opencl_release_mem_object(*cl_mem_output);
       *cl_mem_output = NULL;
@@ -2148,7 +2153,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
       {
         /* this indicates a opencl problem earlier in the pipeline */
         dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_pixelpipe (d)] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
+                 "[dt_dev_pixelpipe_process_rec_and_backcopy] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
         pipe->opencl_error = 1;
         ret = 1;
       }
@@ -2164,12 +2169,11 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
                              float scale)
 {
   pipe->processing = 1;
-  pipe->opencl_enabled = dt_opencl_update_settings(); // update enabled flag and profile from preferences
+  pipe->opencl_enabled = dt_opencl_running();
   pipe->devid = (pipe->opencl_enabled) ? dt_opencl_lock_device(pipe->type)
                                        : -1; // try to get/lock opencl resource
 
-  dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", _pipe_type_to_str(pipe->type),
-           pipe->devid);
+  dt_dev_pixelpipe_cache_checkmem(pipe);
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
   {
@@ -2180,8 +2184,6 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   if(pipe->devid >= 0) dt_opencl_events_reset(pipe->devid);
 
   dt_iop_roi_t roi = (dt_iop_roi_t){ x, y, width, height, scale };
-  // printf("pixelpipe homebrew process start\n");
-  if(darktable.unmuted & DT_DEBUG_DEV) dt_dev_pixelpipe_cache_print(&pipe->cache);
 
   // get a snapshot of mask list
   if(pipe->forms) g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
@@ -2249,12 +2251,12 @@ restart:
     dt_dev_pixelpipe_flush_caches(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
     dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n",
-             _pipe_type_to_str(pipe->type));
+             dt_dev_pixelpipe_type_to_str(pipe->type));
     goto restart; // try again (this time without opencl)
   }
 
   // release resources:
-  if (pipe->forms)
+  if(pipe->forms)
   {
     g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
     pipe->forms = NULL;
@@ -2278,9 +2280,7 @@ restart:
   pipe->backbuf_width = width;
   pipe->backbuf_height = height;
 
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
-     || (pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL
-     || (pipe->type & DT_DEV_PIXELPIPE_PREVIEW2) == DT_DEV_PIXELPIPE_PREVIEW2)
+  if(pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2))
   {
     if(pipe->output_backbuf == NULL || pipe->output_backbuf_width != pipe->backbuf_width || pipe->output_backbuf_height != pipe->backbuf_height)
     {
@@ -2296,7 +2296,8 @@ restart:
   }
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
-  // printf("pixelpipe homebrew process end\n");
+  dt_dev_pixelpipe_cache_report(pipe);
+
   pipe->processing = 0;
   return 0;
 }
@@ -2427,20 +2428,14 @@ void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
 gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
-
   if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0)
   {
     if(p->rawdetail_mask_data)
-    {
-      fprintf(stderr, "[dt_dev_write_rawdetail_mask] detail mask not required but found old data %p\n", p->rawdetail_mask_data);
       dt_dev_clear_rawdetail_mask(p);
-    }
     return FALSE;
   }
   if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
 
-  if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask] %i (%ix%i), olddata %p", mode, roi_in->width, roi_in->height, p->rawdetail_mask_data);
   dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
@@ -2461,11 +2456,11 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
   }
   dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
   dt_free_align(tmp);
-  if(info) fprintf(stderr, " done\n");
+  dt_print(DT_DEBUG_MASKS, "[dt_dev_write_rawdetail_mask] %i (%ix%i)\n", mode, roi_in->width, roi_in->height);
   return FALSE;
 
   error:
-  if(info) fprintf(stderr, " ERROR\n");
+  fprintf(stderr, "[dt_dev_write_rawdetail_mask] couldn't write detail mask\n");
   dt_free_align(mask);
   dt_free_align(tmp);
   return TRUE;
@@ -2475,21 +2470,15 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
 gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
-
   if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0)
   {
     if(p->rawdetail_mask_data)
-    {
-      if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask_cl] detail mask not required but found old data %p\n", p->rawdetail_mask_data);
       dt_dev_clear_rawdetail_mask(p);
-    }
     return FALSE;
   }
 
   if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
 
-  if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask_cl] mode %i (%ix%i), olddata %p", mode, roi_in->width, roi_in->height, p->rawdetail_mask_data);
   dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
@@ -2500,12 +2489,14 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   float *mask = NULL;
   const int devid = p->devid;
 
+  cl_int err = CL_SUCCESS;
   mask = dt_alloc_align_float((size_t)width * height);
   if(mask == NULL) goto error;
   out = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   if(out == NULL) goto error;
   tmp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
   if(tmp == NULL) goto error;
+
   {
     const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
     dt_aligned_pixel_t wb = { piece->pipe->dsc.temperature.coeffs[0],
@@ -2523,7 +2514,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), &wb[0]);
     dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), &wb[1]);
     dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), &wb[2]);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }
   {
@@ -2533,12 +2524,12 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &out);
     dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-    if(err != CL_SUCCESS) return FALSE;
+    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    if(err != CL_SUCCESS) goto error;
   }
 
   {
-    const int err = dt_opencl_read_host_from_device(devid, mask, out, width, height, sizeof(float));
+    err = dt_opencl_read_host_from_device(devid, mask, out, width, height, sizeof(float));
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -2547,11 +2538,11 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
 
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
-  if(info) fprintf(stderr, " done\n");
+  dt_print(DT_DEBUG_MASKS, "[dt_dev_write_rawdetail_mask_cl] mode %i (%ix%i)", mode, roi_in->width, roi_in->height);
   return FALSE;
 
   error:
-  if(info) fprintf(stderr, " ERROR\n");
+  fprintf(stderr, "[dt_dev_write_rawdetail_mask_cl] couldn't write detail mask: %s\n", cl_errstr(err));
   dt_dev_clear_rawdetail_mask(p);
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
@@ -2565,8 +2556,6 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
 float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
 {
   if(!pipe->rawdetail_mask_data) return NULL;
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (pipe->type == DT_DEV_PIXELPIPE_FULL));
-
   gboolean valid = FALSE;
   const int check = pipe->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED;
 
@@ -2587,7 +2576,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
   }
 
   if(!valid) return NULL;
-  if(info) fprintf(stderr, "[dt_dev_distort_detail_mask] (%ix%i) for module %s: ", pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height, target_module->op);
+  dt_vprint(DT_DEBUG_MASKS, "[dt_dev_distort_detail_mask] (%ix%i) for module %s\n", pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height, target_module->op);
 
   float *resmask = src;
   float *inmask  = src;
@@ -2606,7 +2595,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
                     && module->processed_roi_in.height == 0))
         {
           float *tmp = dt_alloc_align_float((size_t)module->processed_roi_out.width * module->processed_roi_out.height);
-          if(info) fprintf(stderr," %s %ix%i -> %ix%i,", module->module->op, module->processed_roi_in.width, module->processed_roi_in.height, module->processed_roi_out.width, module->processed_roi_out.height);
+          dt_vprint(DT_DEBUG_MASKS, "   %s %ix%i -> %ix%i\n", module->module->op, module->processed_roi_in.width, module->processed_roi_in.height, module->processed_roi_out.width, module->processed_roi_out.height);
           module->module->distort_mask(module->module, module, inmask, tmp, &module->processed_roi_in, &module->processed_roi_out);
           resmask = tmp;
           if(inmask != src) dt_free_align(inmask);
@@ -2627,7 +2616,6 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
       }
     }
   }
-  if(info) fprintf(stderr, " done\n");
   return resmask;
 }
 

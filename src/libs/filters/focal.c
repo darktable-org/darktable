@@ -71,7 +71,7 @@ static gchar *_focal_print_func(const double value, const gboolean detailled)
 
   if(detailled)
   {
-    dt_util_dstrcat(txt, " %s", _("mm"));
+    txt = dt_util_dstrcat(txt, " %s", _("mm"));
   }
   return txt;
 }

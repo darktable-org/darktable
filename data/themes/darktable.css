@@ -66,13 +66,13 @@
 /*** Naming class and ids:
   - classes should be named with underscores, starting by dt_ then what class does (main function). See below.
   Note that some remains with hyphens, they are Gtk ones and can't be changed. It's so also a good way to distinguish Gtk classes to darktable classes.
-  - ids will be used with hyphens, with so item part name (for exemple: bauhaus-slider)
+  - ids will be used with hyphens, with so item part name (for example: bauhaus-slider)
 Why that? Just because it's a developer choice and most classes use underscore in code and id use hyphens. So make it easy and, more important, consistent to avoid being confused and make mistake that would cause bug just by wrong typing.
 ***/
 
 /*** Using classes and ids :
 
-  * classes are used to set same settings for multiples and differents widgets in the UI.
+  * classes are used to set same settings for multiples and different widgets in the UI.
   * ids are used to set a name to a specific widget and so allow to set CSS for this widget
   * some classes had been set on darktable, they all began with a dot. Before adding classes or ids, check what exist before
 
@@ -130,12 +130,12 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_40;
-@define-color scroll_bar_active @grey_50;
+@define-color scroll_bar_active @grey_60;
 @define-color scroll_bar_bg @grey_10;
 
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_20;
-@define-color section_label shade(@fg_color, 1.05);
+@define-color section_label shade(@fg_color, 0.92);
 @define-color plugin_label_color @grey_60;
 @define-color collapsible_bg_color @grey_25;
 
@@ -152,6 +152,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 /* GTK Buttons and tabs */
 @define-color button_bg @grey_25;
+@define-color button_fg alpha(@fg_color, 0.55);
 @define-color button_border shade(@button_bg, 1.04);
 @define-color button_hover_bg @grey_50;
 @define-color button_hover_fg @grey_15;
@@ -173,12 +174,12 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color log_fg_color @grey_85;
 
 /* Views */
-@define-color darkroom_bg_color @grey_45;
-@define-color darkroom_preview_bg_color @grey_35;
-@define-color print_bg_color @darkroom_bg_color;
-@define-color lighttable_bg_color @darkroom_bg_color;
-@define-color lighttable_preview_bg_color @darkroom_preview_bg_color;
+@define-color darkroom_bg_color @grey_50;    /* this need to be middle grey to correctly work on images. And for all themes */
+@define-color darkroom_preview_bg_color @darkroom_bg_color;
+@define-color lighttable_bg_color @grey_40;
+@define-color lighttable_preview_bg_color @darkroom_bg_color;
 @define-color lighttable_bg_font_color @grey_75;
+@define-color print_bg_color @lighttable_bg_color;
 
 /* Lighttable and film-strip */
 @define-color thumbnail_font_color @grey_30;
@@ -190,8 +191,8 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color thumbnail_selected_bg_color @grey_70;
 @define-color thumbnail_hover_bg_color @grey_85;
 @define-color thumbnail_hover_fg_color @grey_90;
-@define-color filmstrip_bg_color @darkroom_bg_color;
-@define-color timeline_bg_color shade(@darkroom_bg_color, 0.9);
+@define-color filmstrip_bg_color @lighttable_bg_color;
+@define-color timeline_bg_color shade(@lighttable_bg_color, 0.9);
 @define-color timeline_fg_color @text_color;
 @define-color timeline_text_bg_color alpha(black, .8);
 @define-color timeline_text_fg_color alpha(white, .9);
@@ -199,7 +200,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color range_graph_color alpha(@timeline_fg_color, 0.75);
 @define-color range_bg_color alpha(@fg_color, 0.12);
 @define-color range_cursor_color alpha(@fg_color, 0.75);
-@define-color range_sel_color alpha(@timeline_bg_color, 0.6);
+@define-color range_sel_color alpha(@bauhaus_fill, 0.6);
 @define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.8);
 
 /* Brushes */
@@ -235,7 +236,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
   background-color: @bg_color;
   background-image: none;
   color: @fg_color;
-  font-size: 1em;
+  font-size: 1em;   /* avoid changing this settings or you will made the UI quite awful (too big or too small) */
   font-family: sans-serif;
   font-weight: normal;
   box-shadow:none;
@@ -248,7 +249,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
   min-height: 0;
 }
 
-/* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
+/* Be sure now than all others UI widgets have no background color on start */
 combobox,
 combobox *,
 togglebutton,
@@ -294,7 +295,6 @@ eventbox *,
 box,
 box *
 {
-  font-size: 1em; /* avoid changing this settings or you will made the UI quite awful (too big or too small) */
   background-color: transparent;
 }
 
@@ -307,15 +307,15 @@ box *
 }
 
 /* Set no background and no border. And avoid undershoot and overshoot having too much empty space at top/bottom of sidepanels when scrolled */
-.dt_accels_box treeview,
 .combo,
 .combo:disabled,
+.dt_accels_box treeview,
+.dt_ignore_fg_state:checked,
 .dt_module_btn,
 .dt_module_btn:disabled,
 .dt_transparent_background,
 .dt_transparent_background:checked,
 .dt_transparent_background check:selected,
-.dt_ignore_fg_state:checked,
 filechooser .sidebar-button,
 menuitem:hover arrow,
 popover #bauhaus-combobox,
@@ -348,27 +348,41 @@ entry,
 textview,
 #non-flat
 {
-  padding: 2px; /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
-  border: 0.07em solid @button_border;
+  padding: 1px; /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
+  border: 1px solid @button_border; /* this too */
   border-radius: 0.21em;
   background-color: @button_bg;
-  font-weight: normal;
   font-family: sans-serif;
 }
 
 /* then set specific settings for all text zones and combo */
 .combo,
+checkbutton check,
 entry,
 spinbutton button,
 textview
 {
   background-color: alpha(@fg_color, 0.09);
+  margin: 0.07em;
+}
+
+.combo,
+entry,
+textview
+{
+  padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of workaround just below */
 }
 
 .combo *
 {
   min-height: 1em;
   min-width: 1em;
+}
+
+/* workaround for specific Gtk issue since 3.24.24 on scrolledwindow textview as borders are not displayed */
+scrolledwindow textview
+{
+  border: none;
 }
 
 /* Buttons in modules header, path-bar on filechooser dialog window and all text-button and related */
@@ -379,15 +393,15 @@ header button,
 .text-button radio, /* this line and following one are needed to set good margin inside some buttons, especially in header buttons in about dialog window and on radio button and label inside star icon overlay menu */
 .text-button label
 {
-  min-height: 1.2em;
-  min-width: 1.2em;
-  margin: 0.1em 0.07em;
+  min-height: 1.15em;
+  min-width: 1.15em;
+  margin: 0.07em;
 }
 
 .dt_module_btn,
 .dt_ignore_fg_state:checked
 {
-  color: alpha(@fg_color, 0.55);
+  color: @button_fg;
 }
 
 spinbutton > button
@@ -429,8 +443,6 @@ entry,
 textview
 {
   font-family: sans;
-  margin: 0.07em 0;
-  padding: 0.14em;
 }
 
 label selection,
@@ -442,12 +454,6 @@ textview text selection
 entry selection
 {
   background-color: shade(@field_selected_bg, 1.1);
-}
-
-/* Checkbox */
-checkbutton check
-{
-  margin: 0.28em 0.56em 0.28em 0;
 }
 
 /* Separator */
@@ -462,7 +468,8 @@ separator
   opacity: 0.6;
 }
 
-.dt_dimmed:hover /* to set full opacity when hovering those items */
+.dt_dimmed:hover, /* to set full opacity when hovering those items */
+.dt_dimmed:checked
 {
   opacity: 1;
 }
@@ -591,8 +598,9 @@ dialog .sidebar row:selected:hover label,
 }
 
 /* Labels of controls sections in modules */
-.dt_section_label,
-#blending-box .dt_section_label label  /* as those sections has icons on same line, we need to apply dt_section_label class on box above label and so separate what we apply on border and what we apply on box above */
+.dt_section_label:not(#blending-box),
+#blending-box .dt_section_label label, /* we need to separate what we apply on label and not after for those lines as they have icons on it */
+#blending-box .dt_section_label .dt_bauhaus  /* same here for drawn mask line */
 {
   padding: 0.14em 0;
   color: @section_label;
@@ -768,6 +776,7 @@ menu,
 menuitem > arrow,
 tooltip,
 popover,
+popover #bauhaus-slider,
 #range-current
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
@@ -780,11 +789,6 @@ popover,
 menu
 {
   padding: 0.14em 0;
-}
-
-combobox cellview
-{
-  padding-left: 0.14em;
 }
 
 .popup,
@@ -807,6 +811,11 @@ menuitem check:selected
 {
   color: shade(@fg_color, 0.9);
   padding: 0.42em 0 0 0.42em;   /* set only padding on top and left margin due to some default hardcoded spacing on bottom and place for icons on some bauhaus on the right */
+}
+
+.dt_bauhaus_popup_right /* set right padding for specific popup with no hardcoded right space due to icons place */
+{
+  padding-right: 0.42em;
 }
 
 /* fix for menuitem in bottom toolbar mainly */
@@ -865,16 +874,16 @@ combobox separator
   - GTK Notebooks tabs -
   ----------------------*/
 notebook tabs,
-#modules-tabs,
 #blending-tabs,
-#guides-line
+#guides-line,
+#modules-tabs
 {
   font-family: sans-serif;
 }
 
-#modules-tabs,
 #blending-tabs,
-#guides-line
+#guides-line,
+#modules-tabs
 {
   background-color: @field_active_bg;
 }
@@ -891,9 +900,9 @@ notebook tabs,
   min-height: 1.3em;
 }
 
-#modules-tabs .dt_module_btn,   /* This is needed separately to set a minimal width if panel is really narrow */
 .dt_plugin_ui #blending-tabs .dt_module_btn,
-#guides-line .dt_module_btn
+#guides-line .dt_module_btn,
+#modules-tabs .dt_module_btn   /* This is needed separately to set a minimal width if panel is really narrow */
 {
   border-radius: 0;
   min-width: 1.5em;
@@ -938,15 +947,25 @@ notebook header /* add space between notebook tabs and options below */
 scrollbar slider
 {
   background-color: @scroll_bar_inactive;
-  border: 0.14em solid transparent;
-  min-width: 0.42em;
+  border: 0.1em solid transparent;
+}
+
+scrollbar.horizontal slider
+{
+  min-width: 1em;
+  min-height: 0.45em;
+}
+
+scrollbar.vertical slider
+{
+  min-width: 0.45em;
   min-height: 1em;
 }
 
 scale contents trough
 {
   background-color: @scroll_bar_bg;
-  border-radius: 0.14em;
+  border-radius: 0.21em;
   min-width: 0.5em;
   min-height: 0.5em;
 }
@@ -961,7 +980,7 @@ scale contents trough highlight
 scale contents trough slider
 {
   background-color: @scroll_bar_inactive;
-  border: 0.035em solid @border_color;
+  border: 0.1em solid @border_color;
   font-size: 1em;
   min-height: 0.5em;
   min-width: 0.5em;
@@ -971,9 +990,9 @@ scrollbar
 {
   border-color: @scroll_bar_bg;
   background: @scroll_bar_bg;
-  border-radius: 0.35em;
-  min-height: 0.42em;
-  min-width: 0.42em;
+  border-radius: 0.42em;
+  min-height: 0.5em;
+  min-width: 0.5em;
   margin: 0.07em;
 }
 
@@ -1036,7 +1055,7 @@ treeview header label
 #usercss-box
 {
   border: 0.07em inset @border_color;
-  background-color: shade(@bg_color, 1.075);
+  background-color: shade(@bg_color, 1.1);
   margin-top: 0.7em;
   padding: 0.7em;
 }
@@ -1061,27 +1080,27 @@ treeview header label
 
 #preferences-notebook combobox,
 #preferences-notebook spinbutton,
-#preset_controls entry,
-#shortcut_controls entry
+#preset-controls entry,
+#shortcut-controls entry
 {
    min-width: 15em;
 }
 
 /* Set buttons and search field on presets and shortcuts control buttons */
-#shortcut_controls,
-#preset_controls
+#shortcut-controls,
+#preset-controls
 {
   margin-top: 0.35em;
 }
 
-#shortcut_controls button,
-#preset_controls button
+#shortcut-controls button,
+#preset-controls button
 {
   margin-left: 0.28em;
 }
 
-#shortcut_controls .search,
-#preferences-box #shortcut_controls check
+#shortcut-controls .search,
+#preferences-box #shortcut-controls check
 {
   margin-right: 0.28em;
 }
@@ -1232,7 +1251,7 @@ filechooser row:hover .sidebar-icon
   --------------------*/
 #basics-header-box
 {
-  border-top: 0.07em solid @darkroom_bg_color;
+  border-top: 0.07em solid @lighttable_bg_color;
 }
 
 #basics-header-box,
@@ -1303,7 +1322,7 @@ filechooser row:hover .sidebar-icon
 /* set range parts and quick filter box in header toolbar */
 .search,
 #range-select #dt-range-band,
-#header-toolbar #bauhaus-combobox
+#header-toolbar #bauhaus-combobox:not(.dt_transparent_background)
 {
   background-color: @range_bg_color;
 }
@@ -1326,6 +1345,11 @@ filechooser row:hover .sidebar-icon
 #range-current
 {
   padding: 0.2em;
+}
+
+#collect-header-box button
+{
+  margin-right: 0;
 }
 
 /*------------
@@ -1426,7 +1450,7 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 
 progressbar trough
 {
-  background-color: @darkroom_preview_bg_color;
+  background-color: @scroll_bar_inactive;
 }
 
 progressbar progress
@@ -1480,7 +1504,7 @@ progressbar progress
 /* the label buttons */
 .dt_history_items
 {
-  padding: 0;
+  padding: 0 0.21em;
   margin: 0.14em;
 }
 
@@ -1496,7 +1520,7 @@ progressbar progress
 /* and the history number */
 #history-number
 {
-  padding-right: 0.35em;
+  padding: 0 0.35em 0 0;
 }
 
 /* deactivated switch buttons, make them less visible */
@@ -1558,7 +1582,7 @@ progressbar progress
 .dt_history_items:active,
 .dt_history_items:checked,
 button:active,
-button:checked,
+button:checked:not(:disabled):not(.dt_transparent_background),
 button:selected,
 cell:selected,
 checkbutton check:checked,
@@ -1578,7 +1602,8 @@ treeview *:checked:not(check)
 
 /* History currently selected button ; they don't need to set background */
 .dt_history_items:active *,
-.dt_history_items:checked *
+.dt_history_items:checked *,
+button.dt_transparent_background:checked:not(:disabled):not(.dt_ignore_fg_state)
 {
   color: @field_selected_fg;
 }
@@ -1822,12 +1847,12 @@ Details :
   -----------------*/
 #thumb-image
 {
-  margin: 1.8em 1.2em; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
+  margin: 12px 10px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
 }
 
-.dt_thumbnails_2 #thumb-image /* update consistently margins if big thumbnails (less images per row) are shown */
+.dt_thumbnails_1 #thumb-image
 {
-  margin: 1em 0.75em;
+  margin: 18px 16px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
 }
 
 /* Set top margin on active image in filmstrip */
@@ -1848,7 +1873,7 @@ Details :
   color: @border_color;
 }
 
-/* Set border color around thumbnails */
+/* Set border color around grouped thumbnails */
 .dt_group_left #thumb-back,
 #thumb-main.dt_group_left:selected #thumb-back
 {
@@ -1906,7 +1931,7 @@ Details :
   border : 0.07em solid transparent; /* to not overlay thumb borders */
 }
 
-/* Set outside margins in thumbnails about bottom infos area */
+/* Set outside margins in grouped thumbnails about bottom infos area */
 .dt_group_left #thumb-bottom
 {
   border-left-width: 0.14em;
@@ -1925,7 +1950,7 @@ Details :
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom,
 .dt_overlays_hover #thumb-main:hover #thumb-bottom
 {
-  background-image: linear-gradient(rgba(198, 198, 198, 0.7) 0%, rgba(198, 198, 198, 0.7) 90%,rgba(198, 198, 198, 0) 100%);  /* rgb color needs to be set to same color as #thumb-back hover background */
+  background-image: linear-gradient(rgba(212, 212, 212, 0.7) 0%, rgba(212, 212, 212, 0.7) 90%,rgba(212, 212, 212, 0) 100%);  /* rgb color needs to be set to same color as #thumb-back hover background */
 }
 
 /* Set background on block infos in last overlay mode and culling/preview modes shown with mouse hover */
@@ -1949,8 +1974,8 @@ Details :
 /* Reset color icons to be hidden in following modes, including culling/preview overlays hover block*/
 .dt_overlays_none .dt_thumb_btn,
 .dt_overlays_none #thumb-main:hover .dt_thumb_btn,
-.dt_overlays_hover .dt_thumb_btn,
-.dt_overlays_hover_extended .dt_thumb_btn,
+.dt_overlays_hover #thumb-main .dt_thumb_btn,
+.dt_overlays_hover_extended #thumb-main .dt_thumb_btn,
 .dt_overlays_hover_block #thumb-main .dt_thumb_btn,
 #thumb-ext  /* by default, the extension is hidden */
 {
@@ -1978,30 +2003,29 @@ Details :
 }
 
 /* Set hover and selected color icons, extension name and text infos */
-.dt_overlays_always #thumb-main:hover #thumb-ext,
-.dt_overlays_always #thumb-main:selected #thumb-ext,
-.dt_overlays_always_extended #thumb-main:hover #thumb-ext,
-.dt_overlays_always_extended #thumb-main:selected #thumb-ext,
-.dt_overlays_mixed #thumb-main:hover #thumb-ext,
-.dt_overlays_mixed #thumb-main:selected #thumb-ext,
+.dt_overlays_hover #thumb-main:hover #thumb-ext,
 .dt_overlays_hover #thumb-main:hover .dt_thumb_btn,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-ext,
 .dt_overlays_hover_extended #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb-main:hover #thumb-bottom-label,
+.dt_overlays_always #thumb-main:hover #thumb-ext,
+.dt_overlays_always #thumb-main:selected #thumb-ext,
 .dt_overlays_always #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_always #thumb-main:selected .dt_thumb_btn,
+.dt_overlays_always_extended #thumb-main:hover #thumb-ext,
+.dt_overlays_always_extended #thumb-main:selected #thumb-ext,
 .dt_overlays_always_extended #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_always_extended #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_always_extended #thumb-main:hover #thumb-bottom-label,
 .dt_overlays_always_extended #thumb-main:selected #thumb-bottom-label,
+.dt_overlays_mixed #thumb-main:hover #thumb-ext,
+.dt_overlays_mixed #thumb-main:selected #thumb-ext,
 .dt_overlays_mixed #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom-label,
-.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn,
-.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn:active,
-.dt_overlays_hover_block #thumb-image:hover #thumb-audio,
-.dt_overlays_hover_block #thumb-image:hover #thumb-altered,
-.dt_overlays_hover_block #thumb-image:hover #thumb-localcopy,
-.dt_overlays_hover_block #thumb-image:hover #thumb-bottom-label
+.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn,
+.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn:active,
+.dt_overlays_hover_block #thumb-main:hover #thumb-bottom-label
 {
   color: @thumbnail_font_color;
 }
@@ -2057,6 +2081,10 @@ Details :
 }
 
 /* Set hover group and audio effect */
+.dt_overlays_hover #thumb-main:hover #thumb-group:hover,
+.dt_overlays_hover #thumb-main:hover #thumb-audio:hover,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-group:hover,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-audio:hover,
 .dt_overlays_always #thumb-main:hover #thumb-group:hover,
 .dt_overlays_always #thumb-main:hover #thumb-audio:hover,
 .dt_overlays_always_extended #thumb-main:hover #thumb-group:hover,
@@ -2121,12 +2149,6 @@ Details :
 /*---------------------------------------------------------
   - Hide icons on all lighttable modes and duplicate ones -
   ---------------------------------------------------------*/
-.dt_overlays_hover #thumb-main:hover #thumb-group,
-.dt_overlays_hover #thumb-main:hover #thumb-altered,
-.dt_overlays_hover #thumb-main:hover #thumb-audio,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-group,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-altered,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-audio,
 .dt_culling #thumb-ext,
 .dt_culling #thumb-main:selected #thumb-ext,
 .dt_culling #thumb-main:hover #thumb-ext,
@@ -2207,17 +2229,7 @@ Details :
 .dt_overlays_always#preview #thumb-bottom,
 .dt_overlays_always_extended#preview #thumb-bottom
 {
-  border-radius: 0.21em;
-  border-top: 0.07em solid @lighttable_bg_color;
-  background-image: linear-gradient(rgba(171, 171, 171, 0.2) 0%, rgba(171, 171, 171, 0.1) 5%, rgba(171, 171, 171, 0) 100%);
-}
-
-.dt_overlays_always#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always#preview #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#preview #thumb-main:hover #thumb-bottom
-{
-  background-image: linear-gradient(rgba(191, 191, 191, 0.4) 0%, rgba(191, 191, 191, 0.2) 5%, rgba(171, 171, 171, 0) 100%);
+  background-color: shade(@lighttable_bg_color, 1.1);
 }
 
 /* Set zoom info */

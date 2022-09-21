@@ -44,8 +44,6 @@
 //#define USE_NEW_CL  //uncomment to use the new, more memory-efficient OpenCL code (not yet finished)
 
 #define INSET DT_PIXEL_APPLY_DPI(5)
-#define INFL .3f
-
 
 DT_MODULE_INTROSPECTION(2, dt_iop_atrous_params_t)
 
@@ -267,7 +265,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -288,7 +286,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float *restrict tmp = NULL;
   float *restrict tmp2 = NULL;
 
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &tmp, 4, &tmp2, 4, &detail, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &tmp, 4, &tmp2, 4, &detail, 0))
   {
     dt_iop_copy_image_roi(out, i, piece->colors, roi_in, roi_out, TRUE);
     return;
@@ -316,7 +314,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 #ifdef _OPENMP
 #pragma omp simd aligned(buf1, out : 64)
 #endif
-  for (size_t k = 0; k < (size_t)4 * width * height; k++)
+  for(size_t k = 0; k < (size_t)4 * width * height; k++)
     out[k] += buf1[k];
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -355,7 +353,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
 
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -449,7 +447,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_iop_nap(darktable.opencl->micro_nap);
 
     // swap scratch buffers
-    if (scale == 0) dev_buf1 = dev_tmp2;
+    if(scale == 0) dev_buf1 = dev_tmp2;
     void* tmp = dev_buf2;
     dev_buf2 = dev_buf1;
     dev_buf1 = tmp;
@@ -475,7 +473,7 @@ error:
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_tmp2);
   dt_opencl_release_mem_object(dev_detail);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -491,7 +489,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
 
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_atrous_gui_data_t *g = (dt_iop_atrous_gui_data_t *)self->gui_data;
     g->num_samples = get_samples(g->sample, d, roi_in, piece);
@@ -617,7 +615,7 @@ error:
   for(int k = 0; k < max_scale; k++)
     dt_opencl_release_mem_object(dev_detail[k]);
   free(dev_detail);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif // USE_NEW_CL

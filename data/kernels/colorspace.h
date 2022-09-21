@@ -550,30 +550,40 @@ static inline float4 Yrg_to_LMS(const float4 Yrg)
 
 
 /*
-* Re-express Filmlight Yrg in polar coordinates Ych
-*/
+ * Re-express Filmlight Yrg in polar coordinates Ych
+ *
+ * Note that we don't explicitly store the hue angle
+ * but rather just the cosine and sine of the angle.
+ * This is because we don't need the hue angle anywhere
+ * and this way we can avoid calculating expensive
+ * trigonometric functions.
+ */
 
 static inline float4 Yrg_to_Ych(const float4 Yrg)
 {
-  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
   const float Y = Yrg.x;
-  const float r = Yrg.y - D65[0];
-  const float g = Yrg.z - D65[1];
-  const float c = hypot(g, r);
-  const float h = atan2(g, r);
-  return (float4)(Y, c, h, Yrg.w);
+  // Subtract white point. These are the r, g coordinates of
+  // sRGB (D50 adapted) (1, 1, 1) taken through
+  // XYZ D50 -> CAT16 D50->D65 adaptation -> LMS 2006
+  // -> grading RGB conversion.
+  const float r = Yrg.y - 0.21902143f;
+  const float g = Yrg.z - 0.54371398f;
+  const float c = dt_fast_hypot(g, r);
+  const float cos_h = c != 0.f ? r / c : 1.f;
+  const float sin_h = c != 0.f ? g / c : 0.f;
+  return (float4)(Y, c, cos_h, sin_h);
 }
 
 
 static inline float4 Ych_to_Yrg(const float4 Ych)
 {
-  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
   const float Y = Ych.x;
   const float c = Ych.y;
-  const float h = Ych.z;
-  const float r = c * native_cos(h) + D65[0];
-  const float g = c * native_sin(h) + D65[1];
-  return (float4)(Y, r, g, Ych.w);
+  const float cos_h = Ych.z;
+  const float sin_h = Ych.w;
+  const float r = c * cos_h + 0.21902143f;
+  const float g = c * sin_h + 0.54371398f;
+  return (float4)(Y, r, g, 0.f);
 }
 
 
@@ -609,6 +619,16 @@ static inline float4 dt_uvY_to_xyY(const float4 uvY)
   xyY.y = 4.f * uvY.y / denominator; // y
   xyY.z = uvY.z;                     // Y
   xyY.w = uvY.w;
+  return xyY;
+}
+
+static inline float4 dt_XYZ_to_xyY(const float4 XYZ)
+{
+  float4 xyY;
+  const float sum = XYZ.x + XYZ.y + XYZ.z;
+  xyY.xy = XYZ.xy / sum;
+  xyY.z = XYZ.y;
+  xyY.w = XYZ.w;
   return xyY;
 }
 
@@ -722,26 +742,184 @@ static inline float4 gamut_check_Yrg(float4 Ych)
 
   // Gamut-clip in Yrg at constant hue and luminance
   // e.g. find the max chroma value that fits in gamut at the current hue
-  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+  const float D65_r = 0.21902143f;
+  const float D65_g = 0.54371398f;
   float max_c = Ych.y;
-  const float cos_h = native_cos(Ych.z);
-  const float sin_h = native_sin(Ych.z);
+  const float cos_h = Ych.z;
+  const float sin_h = Ych.w;
 
   if(Yrg.y < 0.f)
   {
-    max_c = fmin(-D65[0] / cos_h, max_c);
+    max_c = fmin(-D65_r / cos_h, max_c);
   }
   if(Yrg.z < 0.f)
   {
-    max_c = fmin(-D65[1] / sin_h, max_c);
+    max_c = fmin(-D65_g / sin_h, max_c);
   }
   if(Yrg.y + Yrg.z > 1.f)
   {
-    max_c = fmin((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
+    max_c = fmin((1.f - D65_r - D65_g) / (cos_h + sin_h), max_c);
   }
 
   // Overwrite chroma with the sanitized value and
   Ych.y = max_c;
 
   return Ych;
+}
+
+
+/** The following is darktable Uniform Color Space 2022
+ * © Aurélien Pierre
+ * https://eng.aurelienpierre.com/2022/02/color-saturation-control-for-the-21th-century/
+ *
+ * Use this space for color-grading in a perceptual framework.
+ * The CAM terms have been removed for performance.
+ **/
+
+static inline float Y_to_dt_UCS_L_star(const float Y)
+{
+  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
+  const float Y_hat = native_powr(Y, 0.631651345306265f);
+  return 2.098883786377f * Y_hat / (Y_hat + 1.12426773749357f);
+}
+
+static inline float dt_UCS_L_star_to_Y(const float L_star)
+{
+  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
+  return native_powr((1.12426773749357f * L_star / (2.098883786377f - L_star)), 1.5831518565279648f);
+}
+
+static inline void xyY_to_dt_UCS_UV(const float4 xyY, float UV_star_prime[2])
+{
+  float4 x_factors = { -0.783941002840055f,  0.745273540913283f, 0.318707282433486f, 0.f };
+  float4 y_factors = {  0.277512987809202f, -0.205375866083878f, 2.16743692732158f,  0.f };
+  float4 offsets   = {  0.153836578598858f, -0.165478376301988f, 0.291320554395942f, 0.f };
+
+  float4 UVD = x_factors * xyY.x + y_factors * xyY.y + offsets;
+  UVD.xy /= UVD.z;
+
+  float UV_star[2] = { 0.f };
+  const float factors[2]     = { 1.39656225667f, 1.4513954287f };
+  const float half_values[2] = { 1.49217352929f, 1.52488637914f };
+  for(int c = 0; c < 2; c++)
+    UV_star[c] = factors[c] * ((float *)&UVD)[c] / (fabs(((float *)&UVD)[c]) + half_values[c]);
+
+  // The following is equivalent to a 2D matrix product
+  UV_star_prime[0] = -1.124983854323892f * UV_star[0] - 0.980483721769325f * UV_star[1];
+  UV_star_prime[1] =  1.86323315098672f  * UV_star[0] + 1.971853092390862f * UV_star[1];
+}
+
+
+static inline float4 xyY_to_dt_UCS_JCH(const float4 xyY, const float L_white)
+{
+  /*
+    input :
+      * xyY in normalized CIE XYZ for the 2° 1931 observer adapted for D65
+      * L_white the lightness of white as dt UCS L* lightness
+      * cz = 1 for standard pre-print proofing conditions with average surround and n = 20 %
+              (background = middle grey, white = perfect diffuse white)
+    range : xy in [0; 1], Y normalized for perfect diffuse white = 1
+  */
+
+  float UV_star_prime[2];
+  xyY_to_dt_UCS_UV(xyY, UV_star_prime);
+
+  // Y upper limit is calculated from the L star upper limit.
+  const float DT_UCS_Y_UPPER_LIMIT = 13237757000.f;
+  const float L_star = Y_to_dt_UCS_L_star(clamp(xyY.z, 0.f, DT_UCS_Y_UPPER_LIMIT));
+  const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
+
+  // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
+  float4 JCH;
+  JCH.x = L_star / L_white;
+  JCH.y = 15.932993652962535f * native_powr(L_star, 0.6523997524738018f) * native_powr(M2, 0.6007557017508491f) / L_white;
+  JCH.z = atan2(UV_star_prime[1], UV_star_prime[0]);
+  return JCH;
+
+}
+
+static inline float4 dt_UCS_JCH_to_xyY(const float4 JCH, const float L_white)
+{
+  /*
+    input :
+      * xyY in normalized CIE XYZ for the 2° 1931 observer adapted for D65
+      * L_white the lightness of white as dt UCS L* lightness
+      * cz = 1 for standard pre-print proofing conditions with average surround and n = 20 %
+              (background = middle grey, white = perfect diffuse white)
+    range : xy in [0; 1], Y normalized for perfect diffuse white = 1
+  */
+
+  // should be L_star = powf(JCH[0], 1.f / cz) * L_white but we treat only the case where cz = 1
+  // L_star upper limit is 2.098883786377 truncated to 32-bit float and last decimal removed.
+  // By clipping L_star to this limit, we ensure dt_UCS_L_star_to_Y() doesn't divide by zero.
+  const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
+  const float L_star = clamp(JCH.x * L_white, 0.f, DT_UCS_L_STAR_UPPER_LIMIT);
+  const float M = L_star != 0.f
+    ? native_powr(JCH.y * L_white / (15.932993652962535f * native_powr(L_star, 0.6523997524738018f)), 0.8322850678616855f)
+    : 0.f;
+
+  const float U_star_prime = M * native_cos(JCH.z);
+  const float V_star_prime = M * native_sin(JCH.z);
+
+  // The following is equivalent to a 2D matrix product
+  const float UV_star[2] = { -5.037522385190711f * U_star_prime - 2.504856328185843f * V_star_prime,
+                              4.760029407436461f * U_star_prime + 2.874012963239247f * V_star_prime };
+
+  float UV[2] = {0.f};
+  const float factors[2]     = { 1.39656225667f, 1.4513954287f };
+  const float half_values[2] = { 1.49217352929f,1.52488637914f };
+  for(int c = 0; c < 2; c++)
+    UV[c] = -half_values[c] * UV_star[c] / (fabs(UV_star[c]) - factors[c]);
+
+  const float4 U_factors = {  0.167171472114775f,   -0.150959086409163f,    0.940254742367256f,  0.f };
+  const float4 V_factors = {  0.141299802443708f,   -0.155185060382272f,    1.000000000000000f,  0.f };
+  const float4 offsets   = { -0.00801531300850582f, -0.00843312433578007f, -0.0256325967652889f, 0.f };
+
+  float4 xyD = U_factors * UV[0] + V_factors * UV[1] + offsets;
+
+  float4 xyY;
+  xyY.x = xyD.x / xyD.z;
+  xyY.y = xyD.y / xyD.z;
+  xyY.z = dt_UCS_L_star_to_Y(L_star);
+  return xyY;
+}
+
+
+static inline float4 dt_UCS_JCH_to_HSB(const float4 JCH)
+{
+  float4 HSB;
+  HSB.z = JCH.x * (native_powr(JCH.y, 1.33654221029386f) + 1.f);
+  HSB.y = (HSB.z > 0.f) ? JCH.y / HSB.z : 0.f;
+  HSB.x = JCH.z;
+  return HSB;
+}
+
+
+static inline float4 dt_UCS_HSB_to_JCH(const float4 HSB)
+{
+  float4 JCH;
+  JCH.z = HSB.x;
+  JCH.y = HSB.y * HSB.z;
+  JCH.x = HSB.z / (native_powr(JCH.y, 1.33654221029386f) + 1.f);
+  return JCH;
+}
+
+
+static inline float4 dt_UCS_JCH_to_HCB(const float4 JCH)
+{
+  float4 HCB;
+  HCB.z = JCH.x * (native_powr(JCH.y, 1.33654221029386f) + 1.f);
+  HCB.y = JCH.y;
+  HCB.x = JCH.z;
+  return HCB;
+}
+
+
+static inline float4 dt_UCS_HCB_to_JCH(const float4 HCB)
+{
+  float4 JCH;
+  JCH.z = HCB.x;
+  JCH.y = HCB.y;
+  JCH.x = HCB.z / (native_powr(HCB.y, 1.33654221029386f) + 1.f);
+  return JCH;
 }

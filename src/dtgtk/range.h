@@ -44,6 +44,8 @@ G_BEGIN_DECLS
 typedef double (*DTGTKTranslateValueFunc)(const double value);
 typedef gchar *(*DTGTKPrintValueFunc)(const double value, const gboolean detailled);
 typedef gboolean (*DTGTKDecodeValueFunc)(const gchar *text, double *value);
+typedef struct _GtkDarktableRangeSelect GtkDarktableRangeSelect;
+typedef gchar *(*DTGTKCurrentTextFunc)(GtkDarktableRangeSelect *range, const double current);
 
 typedef enum dt_range_bounds_t
 {
@@ -62,9 +64,9 @@ typedef enum dt_range_type_t
   DT_RANGE_TYPE_DATETIME
 } dt_range_type_t;
 
-typedef struct _GtkDarktableRangeSelect
+struct _GtkDarktableRangeSelect
 {
-  GtkBin widget;
+  GtkEventBox widget;
 
   dt_range_type_t type;
 
@@ -74,7 +76,7 @@ typedef struct _GtkDarktableRangeSelect
   double step_bd;        // minimal step value in band reference
 
   double select_min_r;      // low bound of the selection
-  double select_max_r;      // hight bound of the selection
+  double select_max_r;      // high bound of the selection
   dt_datetime_t select_relative_date_r; // relative date
   dt_range_bounds_t bounds; // type of selection bounds
 
@@ -88,7 +90,7 @@ typedef struct _GtkDarktableRangeSelect
   GtkWidget *entry_max;
   GtkWidget *band;
 
-  // fonction used to translate "real" value into band positions
+  // function used to translate "real" value into band positions
   // this allow to have special value repartitions on the band
   // if NULL, band values == real values
   DTGTKTranslateValueFunc value_to_band;
@@ -100,7 +102,7 @@ typedef struct _GtkDarktableRangeSelect
   // print function has detailled mode for extended infos
   DTGTKPrintValueFunc print;
   DTGTKDecodeValueFunc decode;
-
+  DTGTKCurrentTextFunc current_text;
   GList *blocks;
   GList *icons;
   GList *markers;
@@ -116,11 +118,11 @@ typedef struct _GtkDarktableRangeSelect
   GtkWidget *cur_label;
 
   struct _range_date_popup *date_popup;
-} GtkDarktableRangeSelect;
+};
 
 typedef struct _GtkDarktableRangeSelectClass
 {
-  GtkBoxClass parent_class;
+  GtkEventBoxClass parent_class;
 } GtkDarktableRangeSelectClass;
 
 GType dtgtk_range_select_get_type(void);
@@ -135,7 +137,7 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
 // directly decode raw_text and apply it to selection
 void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *range, const gchar *txt,
                                                     gboolean signal);
-// get selction range
+// get selection range
 dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *range, double *min_r, double *max_r);
 
 // get the text used for collection queries
@@ -152,7 +154,7 @@ void dtgtk_range_select_add_range_block(GtkDarktableRangeSelect *range, const do
 void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
 
 // set the function to switch from real value to band value
-// this is usefull to have non-linear value repartitions
+// this is useful to have non-linear value repartitions
 void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc value_from_band,
                                       DTGTKTranslateValueFunc value_to_band);
 // set functions to switch between real values and text representation

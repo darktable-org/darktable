@@ -23,13 +23,9 @@
 /* hide selection frame in culling */
 @define-color culling_selected_border_color transparent;
 
-*,
-#lib-plugin-ui,
-#iop-plugin-ui,
-#bauhaus-popup,
-#modules-tabs,
-#left,
-#right,
+.dt_plugin_ui,
+.dt_bauhaus,
+.dt_bauhaus_popup,
 combobox,
 combobox *,
 togglebutton,
@@ -71,47 +67,47 @@ eventbox *,
 box,
 box *
 {
-    font-family: "Roboto Light", "Roboto",                  /* best case scenario */
-                 "Segoe UI Light", "Segoe UI",              /* Windows 10 default */
-                 "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
-                 "Ubuntu Light", "Ubuntu", "IPAPGothic",    /* Ubuntu default */
-                 "Cantarell",                               /* Gnome default */
-                  sans-serif;                                /* default default */
+  font-family: "Roboto Light", "Roboto",                  /* best case scenario */
+               "Segoe UI Light", "Segoe UI",              /* Windows 10 default */
+               "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
+               "Ubuntu Light", "Ubuntu", "IPAPGothic",    /* Ubuntu default */
+               "Cantarell",                               /* Gnome default */
+                sans-serif;                                /* default default */
 }
 
-button,
-.dt_section_label,
-.dt_section_label *
+.dt_section_label:not(#blending-box),
+#blending-box .dt_section_label label,
+#blending-box .dt_section_label .dt_bauhaus
 {
-    font-family: "Roboto Medium", "Roboto",
-                 "Segoe UI Semibold", "Segoe UI",
-                 "SF Pro Display Medium", "SF Pro Display",
-                 "Ubuntu Medium", "Ubuntu", "IPAPGothic",
-                 "Cantarell",
-                  sans-serif;
+  font-family: "Roboto Medium", "Roboto",
+               "Segoe UI Semibold", "Segoe UI",
+               "SF Pro Display Medium", "SF Pro Display",
+               "Ubuntu Medium", "Ubuntu", "IPAPGothic",
+               "Cantarell",
+                sans-serif;
 }
 
 #iop-panel-label,
 #lib-panel-label
 {
-    font-family: "Roboto Condensed", "Roboto",
-                 "Segoe UI Condensed", "Segoe UI",
-                 "SF Pro Display", "SF Pro Display",
-                 "Ubuntu Condensed", "Ubuntu", "IPAPGothic",
-                 "Cantarell",
-                  sans-serif;
+  font-family: "Roboto Condensed", "Roboto",
+               "Segoe UI Condensed", "Segoe UI",
+               "SF Pro Display", "SF Pro Display",
+               "Ubuntu Condensed", "Ubuntu", "IPAPGothic",
+               "Cantarell",
+               sans-serif;
 }
 
+.active_menu_item *, /* needed for some Pango issues not rendering synthetic bold for all OS */
 notebook tabs,
-#modules-tabs,
-#blending-tabs,
 tooltip label,
-.active_menu_item * /* needed for some Pango issues not rendering synthetic bold for all OS */
+#blending-tabs,
+#modules-tabs
 {
-    font-family: "Roboto",
-                 "Segoe UI",
-                 "SF Pro Text",
-                 "Ubuntu", "IPAPGothic",
-                 "Cantarell",
-                  sans-serif;
+  font-family: "Roboto",
+               "Segoe UI",
+               "SF Pro Text",
+               "Ubuntu", "IPAPGothic",
+               "Cantarell",
+                sans-serif;
 }

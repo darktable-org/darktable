@@ -272,7 +272,7 @@ typedef struct dt_iop_gui_blendif_filter_t
 
 typedef struct dt_iop_blend_name_value_t
 {
-  char name[32];
+  char name[40];
   int value;
 } dt_develop_name_value_t;
 

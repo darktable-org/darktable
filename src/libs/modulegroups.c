@@ -90,9 +90,7 @@ typedef struct dt_lib_modulegroups_basic_item_t
   gboolean fill;
   guint padding;
   GtkPackType packtype;
-  gboolean sensitive;
   gchar *tooltip;
-  gboolean visible;
   int grid_x, grid_y, grid_w, grid_h;
 
   GtkWidget *box;
@@ -184,10 +182,6 @@ static gboolean _lib_modulegroups_test_visible(dt_lib_module_t *self, gchar *mod
    sets the active group which module belongs too.
 */
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module);
-/* modulergroups proxy search text focus function
-   \see dt_dev_modulegroups_search_text_focus()
-*/
-static void _lib_modulegroups_search_text_focus(dt_lib_module_t *self);
 
 static void _manage_preset_update_list(dt_lib_module_t *self);
 static void _manage_editor_load(const char *preset, dt_lib_module_t *self);
@@ -343,7 +337,9 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
 {
   if(item->widget && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
   {
-    // put back the widget in its iop at the right place
+    g_signal_handlers_disconnect_by_data(item->widget, item);
+    g_signal_handlers_disconnect_by_data(item->old_parent, item);
+
     if(GTK_IS_CONTAINER(item->old_parent) && gtk_widget_get_parent(item->widget) == item->box)
     {
       g_object_ref(item->widget);
@@ -366,11 +362,9 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
 
       g_object_unref(item->widget);
     }
-    // put back sensitivity, visibility and tooltip
+    // put back tooltip
     if(GTK_IS_WIDGET(item->widget))
     {
-      gtk_widget_set_sensitive(item->widget, item->sensitive);
-      gtk_widget_set_visible(item->widget, item->visible);
       gtk_widget_set_tooltip_text(item->widget, item->tooltip);
       gtk_widget_set_has_tooltip(item->widget, TRUE); // even if no tip, to show shortcuts
     }
@@ -440,6 +434,18 @@ static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_li
   }
 }
 
+static void _sync_visibility(GtkWidget *widget, dt_lib_modulegroups_basic_item_t *item)
+{
+  if(widget == item->temp_widget)
+    gtk_widget_set_visible(item->widget, gtk_widget_get_visible(item->temp_widget));
+  if(widget == item->widget)
+    gtk_widget_set_visible(item->temp_widget, gtk_widget_get_visible(item->widget));
+
+  gtk_widget_set_visible(item->box, !dt_action_widget_invisible(item->temp_widget));
+}
+
+static gboolean _manage_direct_module_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self);
+
 static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_item_t *item, GtkWidget *w,
                                dt_lib_modulegroups_basic_item_position_t item_pos)
 {
@@ -463,7 +469,6 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     {
       // on-off widgets
       item->widget = GTK_WIDGET(item->module->off);
-      item->sensitive = gtk_widget_get_sensitive(item->widget);
       item->tooltip = gtk_widget_get_tooltip_text(item->widget); // no need to copy, returns a newly-alloced string
 
       // create new basic widget
@@ -539,10 +544,8 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       return;
     }
 
-    // save old values
-    item->sensitive = gtk_widget_get_sensitive(item->widget);
+    // save old tooltip
     item->tooltip = gtk_widget_get_tooltip_text(item->widget);
-    item->visible = gtk_widget_get_visible(item->widget);
 
     // create new quick access widget
     item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -585,28 +588,23 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       }
     }
 
-    // disable widget if needed (multiinstance)
-    if(dt_iop_count_instances(item->module->so) > 1)
-    {
-      gtk_widget_set_sensitive(item->widget, FALSE);
-      gtk_widget_set_tooltip_text(item->widget, _("this quick access widget is disabled as there are multiple instances "
-                                                  "of this module present. Please use the full module to access this widget..."));
-    }
-    else if(!item->visible)
-    {
-      gtk_widget_show_all(item->widget);
-      gtk_widget_set_sensitive(item->widget, FALSE);
-      gtk_widget_set_tooltip_text(item->widget, _("this quick access widget is disabled as it's hidden in the actual "
-                                                  "module configuration. Please use the full module to access this widget..."));
-    }
-    else
-    {
-      gchar *txt = g_strdup_printf("%s (%s)\n\n%s%s%s", item->widget_name, item->module->name(),
-                                   item->tooltip ? item->tooltip : "", item->tooltip ? "\n\n" : "",
-                                   _("(some features may only be available in the full module interface)"));
-      gtk_widget_set_tooltip_text(item->widget, txt);
-      g_free(txt);
-    }
+    gchar *txt = g_strdup_printf("%s (%s)\n\n%s%s%s", item->widget_name, item->module->name(),
+                                  item->tooltip ? item->tooltip : "", item->tooltip ? "\n\n" : "",
+                                  _("(some features may only be available in the full module interface)"));
+    gtk_widget_set_tooltip_text(item->widget, txt);
+    g_free(txt);
+
+    gtk_widget_add_events(item->widget     , GDK_VISIBILITY_NOTIFY_MASK);
+    g_signal_connect(item->widget     , "show", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(item->widget     , "hide", G_CALLBACK(_sync_visibility), item);
+    gtk_widget_add_events(item->old_parent , GDK_VISIBILITY_NOTIFY_MASK);
+    g_signal_connect(item->old_parent , "show", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(item->old_parent , "hide", G_CALLBACK(_sync_visibility), item);
+    gtk_widget_add_events(item->temp_widget, GDK_VISIBILITY_NOTIFY_MASK);
+    g_signal_connect(item->temp_widget, "show", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(item->temp_widget, "hide", G_CALLBACK(_sync_visibility), item);
+
+    _sync_visibility(item->widget, item);
   }
 
   // if it's the first widget of a module, we need to create the module box structure
@@ -614,10 +612,14 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
   {
     // we create the module header box
     GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_show(header_box);
+    GtkWidget *evb = gtk_event_box_new();
+    gtk_container_add(GTK_CONTAINER(evb), header_box);
+    gtk_widget_show_all(evb);
+    g_object_set_data(G_OBJECT(evb), "module", item->module->so);
+    g_signal_connect(evb, "button-press-event", G_CALLBACK(_manage_direct_module_popup), self);
     gtk_widget_set_name(header_box, "basics-header-box");
     dt_gui_add_class(header_box, "dt_big_btn_canvas");
-    gtk_box_pack_start(GTK_BOX(d->vbox_basic), header_box, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(d->vbox_basic), evb, FALSE, FALSE, 0);
 
     // we create the module box structure
     GtkWidget *hbox_basic = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -762,7 +764,7 @@ static void _basics_show(dt_lib_module_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
     // we record if it's a new module or not to set css class and box structure
-    if (item_pos != FIRST_MODULE) item_pos = NEW_MODULE;
+    if(item_pos != FIRST_MODULE) item_pos = NEW_MODULE;
 
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->iop_order != INT_MAX)
     {
@@ -825,7 +827,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
-  if (DT_IOP_ORDER_INFO)
+  if(DT_IOP_ORDER_INFO)
     fprintf(stderr,"\n^^^^^ modulegroups");
 
   // update basic button selection too
@@ -974,7 +976,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
   }
-  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
+  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
   // now that visibility has been updated set multi-show
   dt_dev_modules_update_multishow(darktable.develop);
 
@@ -1066,22 +1068,6 @@ static gboolean _lib_modulegroups_upd_gui_thread(gpointer user_data)
   return FALSE;
 }
 
-static gboolean _lib_modulegroups_search_text_focus_gui_thread(gpointer user_data)
-{
-  _set_gui_thread_t *params = (_set_gui_thread_t *)user_data;
-
-  const dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)params->self->data;
-
-  if(GTK_IS_ENTRY(d->text_entry))
-  {
-    if(!gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box))) gtk_widget_show(GTK_WIDGET(d->hbox_search_box));
-    gtk_widget_grab_focus(GTK_WIDGET(d->text_entry));
-  }
-
-  free(params);
-  return FALSE;
-}
-
 /* this is a proxy function so it might be called from another thread */
 static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
 {
@@ -1099,16 +1085,6 @@ static void _lib_modulegroups_update_visibility_proxy(dt_lib_module_t *self)
   if(!params) return;
   params->self = self;
   g_main_context_invoke(NULL, _lib_modulegroups_upd_gui_thread, params);
-}
-
-/* this is a proxy function so it might be called from another thread */
-static void _lib_modulegroups_search_text_focus(dt_lib_module_t *self)
-{
-  _set_gui_thread_t *params = (_set_gui_thread_t *)malloc(sizeof(_set_gui_thread_t));
-  if(!params) return;
-  params->self = self;
-  params->group = 0;
-  g_main_context_invoke(NULL, _lib_modulegroups_search_text_focus_gui_thread, params);
 }
 
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)
@@ -2509,7 +2485,7 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
     {
       // FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
       // respond later to image changed signal
-      on_off = item = gtk_menu_item_new_with_label(_("on-off"));
+      on_off = item = gtk_check_menu_item_new_with_label(_("on-off"));
       action = actions->owner;
       action_label = g_strdup_printf("%s - %s", actions->owner->label, _("on-off"));
 
@@ -2522,7 +2498,8 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
 
       if(new_sub || (actions->type >= DT_ACTION_TYPE_WIDGET && actions->target && !GTK_IS_BUTTON(actions->target)))
       {
-        item = gtk_menu_item_new_with_label(actions->label);
+        item = new_sub ? gtk_menu_item_new_with_label(actions->label)
+                       : gtk_check_menu_item_new_with_label(actions->label);
         action = actions;
         action_label = _action_label(actions);
       }
@@ -2544,40 +2521,44 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
       {
         dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
+        GtkWidget *item_top = NULL;
+
         gchar *action_id = _action_id(action);
         if(g_list_find_custom(full_menu ? d->basics : d->edit_basics, action_id, _basics_item_find))
         {
-          gtk_widget_set_sensitive(item, FALSE);
+          gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+          if(!full_menu)
+            gtk_widget_set_sensitive(item, FALSE);
+          else
+            gtk_widget_set_tooltip_text(item, _("remove this widget"));
 
           const gboolean compact_ui = !dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels");
-          if(!compact_ui)
+          if(!compact_ui && item != on_off)
           {
-            gtk_widget_set_sensitive(on_off, FALSE);
-            gtk_widget_set_tooltip_text(on_off, NULL);
+            gtk_check_menu_item_set_inconsistent(GTK_CHECK_MENU_ITEM(on_off), TRUE);
+            gtk_widget_set_tooltip_text(on_off, _("header needed for other widgets"));
           }
 
           if(full_menu)
           {
-            GtkWidget *item_top = gtk_menu_item_new_with_label(action_label);;
+            item_top = gtk_menu_item_new_with_label(action_label);;
+            gtk_widget_set_tooltip_text(item_top, _("remove this widget"));
             gtk_widget_set_name(item_top, "modulegroups-popup-item");
             g_object_set_data(G_OBJECT(item_top), "widget_id", action);
             g_signal_connect(G_OBJECT(item_top), "activate", callback, self);
-            gtk_widget_set_tooltip_text(item_top, _("remove this widget"));
             gtk_menu_shell_insert(GTK_MENU_SHELL(base_menu), item_top, *num_selected);
             ++*num_selected;
           }
         }
         else
         {
-          g_object_set_data(G_OBJECT(item), "widget_id", action);
-          g_signal_connect(G_OBJECT(item), "activate", callback, self);
           gtk_widget_set_tooltip_text(item, _("add this widget"));
 
           gchar *delimited_id = g_strdup_printf("|%s|", action_id);
 
           if(strstr(RECOMMENDED_BASICS, delimited_id))
           {
-            GtkWidget *item_top = gtk_menu_item_new_with_label(action_label);;
+            item_top = gtk_menu_item_new_with_label(action_label);;
             gtk_widget_set_tooltip_text(item_top, _("add this widget"));
             gtk_widget_set_name(item_top, "modulegroups-popup-item");
             g_object_set_data(G_OBJECT(item_top), "widget_id", action);
@@ -2586,6 +2567,20 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
           }
           g_free(delimited_id);
         }
+
+        if(item != on_off && dt_action_widget_invisible(action->target))
+        {
+          gtk_check_menu_item_set_inconsistent(GTK_CHECK_MENU_ITEM(item), TRUE);
+          gchar *toolmark = gtk_widget_get_tooltip_text(item);
+          toolmark = dt_util_dstrcat(toolmark, " <i>(%s)</i>", _("currently invisible"));
+          gtk_widget_set_tooltip_markup(item, toolmark);
+          if(item_top)
+            gtk_widget_set_tooltip_markup(item_top, toolmark);
+          g_free(toolmark);
+        }
+
+        g_object_set_data(G_OBJECT(item), "widget_id", action);
+        g_signal_connect(G_OBJECT(item), "activate", callback, self);
         g_free(action_id);
       }
       g_free(action_label);
@@ -2674,6 +2669,25 @@ static gboolean _manage_direct_basic_popup(GtkWidget *widget, GdkEventButton *ev
   if(event->type == GDK_BUTTON_PRESS && event->button == 3)
   {
     _manage_basics_add_popup(widget, self, TRUE);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean _manage_direct_module_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  dt_action_t *module = g_object_get_data(G_OBJECT(widget), "module");
+
+  if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+  {
+    int nba = 0; // nb of already present items
+    GtkWidget *pop = gtk_menu_new();
+    gtk_widget_set_name(pop, "modulegroups-popup");
+
+    GtkWidget *this_module = _build_menu_from_actions(module->target, self, NULL, pop, TRUE, &nba);
+
+    dt_gui_menu_popup(GTK_MENU(this_module), NULL, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+
     return TRUE;
   }
   return FALSE;
@@ -2792,8 +2806,8 @@ static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *s
     gtk_label_set_markup
       (GTK_LABEL(d->deprecated),
        _("the following modules are deprecated because they have internal design mistakes"
-         " which can't be solved and alternative modules which solve them.\n"
-         " they will be removed for new edits in the next release."));
+         " that can't be corrected and alternative modules that correct them.\n"
+         "they will be removed for new edits in the next release."));
   }
 
 }
@@ -2820,6 +2834,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->basic_btn, "button-press-event", G_CALLBACK(_manage_direct_basic_popup), self);
   g_signal_connect(d->basic_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->basic_btn, _("quick access panel"));
+  dt_action_define(DT_ACTION(self), NULL, N_("quick access panel"), d->basic_btn, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->basic_btn, TRUE, TRUE, 0);
 
   d->vbox_basic = NULL;
@@ -2830,6 +2845,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->active_btn, "button-press-event", G_CALLBACK(_manage_direct_active_popup), self);
   g_signal_connect(d->active_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->active_btn, _("show only active modules"));
+  dt_action_define(DT_ACTION(self), NULL, N_("active modules"), d->active_btn, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->active_btn, TRUE, TRUE, 0);
 
   // we load now the presets btn
@@ -2840,11 +2856,15 @@ void gui_init(dt_lib_module_t *self)
 
   /* search box */
   d->text_entry = gtk_search_entry_new();
-  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, "search modules", d->text_entry, NULL);
+  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, N_("search modules"), d->text_entry, &dt_action_def_entry);
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->text_entry), _("search modules by name or tag"));
   g_signal_connect(G_OBJECT(d->text_entry), "search-changed", G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "stop-search", G_CALLBACK(dt_gui_search_stop), dt_ui_center(darktable.gui->ui));
-  gtk_box_pack_start(GTK_BOX(d->hbox_search_box), d->text_entry, TRUE, TRUE, 0);
+  g_signal_connect_swapped(G_OBJECT(d->text_entry), "focus-in-event", G_CALLBACK(gtk_widget_show), d->hbox_search_box);
+
+  GtkWidget *visibility_wrapper = gtk_event_box_new(); // extra layer prevents disabling shortcuts when hidden
+  gtk_container_add(GTK_CONTAINER(visibility_wrapper), d->text_entry);
+  gtk_box_pack_start(GTK_BOX(d->hbox_search_box), visibility_wrapper, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, _("clear text"));
 
@@ -2854,8 +2874,8 @@ void gui_init(dt_lib_module_t *self)
   // deprecated message
   d->deprecated
       = gtk_label_new(_("the following modules are deprecated because they have internal design mistakes"
-                        " which can't be solved and alternative modules which solve them.\nthey will be removed for"
-                        " new edits in the next release."));
+                        " that can't be corrected and alternative modules that correct them.\n"
+                        "they will be removed for new edits in the next release."));
   dt_gui_add_class(d->deprecated, "dt_warning");
   gtk_label_set_line_wrap(GTK_LABEL(d->deprecated), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->deprecated, TRUE, TRUE, 0);
@@ -2864,9 +2884,7 @@ void gui_init(dt_lib_module_t *self)
   d->current = dt_conf_get_int("plugins/darkroom/groups");
   if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
   gtk_widget_show_all(self->widget);
-  gtk_widget_show_all(d->hbox_buttons);
   gtk_widget_set_no_show_all(d->hbox_buttons, TRUE);
-  gtk_widget_show_all(d->hbox_search_box);
   gtk_widget_set_no_show_all(d->hbox_search_box, TRUE);
 
   /*
@@ -2879,7 +2897,6 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.get_activated = _lib_modulegroups_get_activated;
   darktable.develop->proxy.modulegroups.test = _lib_modulegroups_test;
   darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
-  darktable.develop->proxy.modulegroups.search_text_focus = _lib_modulegroups_search_text_focus;
   darktable.develop->proxy.modulegroups.test_visible = _lib_modulegroups_test_visible;
   darktable.develop->proxy.modulegroups.basics_module_toggle = _lib_modulegroups_basics_module_toggle;
 
@@ -3510,8 +3527,8 @@ static void _manage_editor_preset_action(GtkWidget *btn, dt_lib_module_t *self)
 #endif
   GtkWidget *bt_ok = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  gtk_box_pack_start(GTK_BOX(content_area), gtk_label_new(_("new preset name :")), FALSE, TRUE, 0);
-  GtkWidget *lb = gtk_label_new(_("a preset with this name already exists !"));
+  gtk_box_pack_start(GTK_BOX(content_area), gtk_label_new(_("new preset name:")), FALSE, TRUE, 0);
+  GtkWidget *lb = gtk_label_new(_("a preset with this name already exists!"));
   GtkWidget *tb = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(tb), new_name);
   g_object_set_data(G_OBJECT(tb), "existing_names", names);
@@ -3856,7 +3873,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vb, "modulegroups-top-boxes");
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("preset : ")), FALSE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("preset: ")), FALSE, TRUE, 2);
   d->presets_combo = gtk_combo_box_text_new();
   g_signal_connect(G_OBJECT(d->presets_combo), "changed", G_CALLBACK(_manage_preset_change), self);
   gtk_box_pack_start(GTK_BOX(hb2), d->presets_combo, TRUE, TRUE, 2);

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     x="0"
+     y="0">
+
+  <text x="0.2px" y="5.2px" text-anchor="start"
+        xml:space="preserve"
+        fill="#222222"
+        font-family="$(WATERMARK_FONT_FAMILY)"
+        font-style="$(WATERMARK_FONT_STYLE)"
+        font-weight="$(WATERMARK_FONT_WEIGHT)"
+        font-size="10px">$(WATERMARK_TEXT)</text>
+  <text x="0" y="5px" text-anchor="start"
+        xml:space="preserve"
+        fill="$(WATERMARK_COLOR)"
+        font-family="$(WATERMARK_FONT_FAMILY)"
+        font-style="$(WATERMARK_FONT_STYLE)"
+        font-weight="$(WATERMARK_FONT_WEIGHT)"
+        font-size="10px">$(WATERMARK_TEXT)</text>
+</svg>

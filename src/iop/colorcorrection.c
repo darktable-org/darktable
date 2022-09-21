@@ -130,7 +130,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_colorcorrection_data_t *const d = (dt_iop_colorcorrection_data_t *)piece->data;
   const float *const restrict in = (float *)DT_IS_ALIGNED(i);
   float *const restrict out = (float *)DT_IS_ALIGNED(o);
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          in, out, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -184,7 +184,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcorrection] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcorrection] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

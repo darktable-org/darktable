@@ -97,7 +97,7 @@ static int64_t max_image_position()
   const gchar *max_position_query = "SELECT MAX(position) FROM main.images";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), max_position_query, -1, &stmt, NULL);
 
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     max_position = sqlite3_column_int64(stmt, 0);
   }
@@ -727,7 +727,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
 
   dt_dev_pixelpipe_t pipe;
   int wd = dev.image_storage.width, ht = dev.image_storage.height;
-  int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+  gboolean res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
   if(res)
   {
     // set mem pointer to 0, won't be used.
@@ -1505,6 +1505,9 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   // also need to set the no-legacy bit, to make sure we get the right presets (new ones)
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
+  // and we set the type of image flag (from extension for now)
+  gchar *extension = g_strrstr(imgfname, ".");
+  flags |= dt_imageio_get_type_from_extension(extension);
   // set the bits in flags that indicate if any of the extra files (.txt, .wav) are present
   char *extra_file = dt_image_get_audio_path_from_path(normalized_filename);
   if(extra_file)
@@ -1825,6 +1828,7 @@ void dt_image_init(dt_image_t *img)
   img->wb_coeffs[3] = NAN;
   img->usercrop[0] = img->usercrop[1] = 0;
   img->usercrop[2] = img->usercrop[3] = 1;
+  img->dng_gain_maps = NULL;
   img->cache_entry = 0;
 
   for(int k=0; k<4; k++)
@@ -2785,7 +2789,7 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
 
 char *dt_image_camera_missing_sample_message(const struct dt_image_t *img, gboolean logmsg)
 {
-  const char *T1 = _("<b>WARNING</b> : camera is missing samples!");
+  const char *T1 = _("<b>WARNING</b>: camera is missing samples!");
   const char *T2 = _("You must provide samples in <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a>");
   char *T3 = g_strdup_printf(_("for `%s' `%s'\n"
                                "in as many format/compression/bit depths as possible"),

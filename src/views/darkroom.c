@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the darkroom module.  */
+
+#include "common/extra_optimizations.h"
+
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
@@ -516,7 +519,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // force middle grey in background
-      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+      cairo_set_source_rgb(cr, 0.4663, 0.4663, 0.4663);
     }
     else
     {
@@ -538,7 +541,8 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      cairo_rectangle(cr, -tb / 3., -tb / 3.0, wd + 2. * tb / 3., ht + 2. * tb / 3.);
+      const double tbw = (float)(tb >> closeup) * 2.0 / 3.0;  
+      cairo_rectangle(cr, -tbw, -tbw, wd + 2.0 * tbw, ht + 2.0 * tbw);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
     }
@@ -575,7 +579,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // force middle grey in background
-      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+      cairo_set_source_rgb(cr, 0.4663, 0.4663, 0.4663);
     }
     else
     {
@@ -587,7 +591,8 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      cairo_rectangle(cr, 2 * tb / 3., 2 * tb / 3.0, width - 4. * tb / 3., height - 4. * tb / 3.);
+      const double tbw = (float)(tb >> closeup) / 3.0;
+      cairo_rectangle(cr, tbw, tbw, width - 2.0 * tbw, height - 2.0 * tbw);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
     }
@@ -595,8 +600,7 @@ void expose(
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_clip(cr);
     stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    surface = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
@@ -833,6 +837,8 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dev->proxy.chroma_adaptation = NULL;
   dev->proxy.wb_is_D65 = TRUE;
   dev->proxy.wb_coeffs[0] = 0.f;
+
+  memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
 
 #ifdef USE_LUA
 
@@ -1483,28 +1489,30 @@ static gboolean _toolbar_show_popup(gpointer user_data)
 }
 
 /* colour assessment */
-static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+static int _iso_12646_get_border(dt_develop_t *d)
 {
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if (!d->gui_attached) return;
-
-  d->iso_12646.enabled = !d->iso_12646.enabled;
-  d->width = d->orig_width;
-  d->height = d->orig_height;
-
   if(d->iso_12646.enabled)
   {
-    d->border_size = 0.125 * d->width;
+    return MIN(1.75 * darktable.gui->dpi, 0.3 * MIN(d->width, d->height));
   }
   else
   {
     // Reset border size from config
-    d->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+    return DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
   }
+}
 
+static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  if(!d->gui_attached) return;
+
+  d->iso_12646.enabled = !d->iso_12646.enabled;
+  d->width = d->orig_width;
+  d->height = d->orig_height;
+  d->border_size = _iso_12646_get_border(d);
   dt_dev_configure(d, d->width, d->height);
 
-  dt_ui_restore_panels(darktable.gui->ui);
   dt_dev_reprocess_center(d);
 }
 
@@ -1883,6 +1891,7 @@ static void _preference_changed(gpointer instance, gpointer user_data)
     gtk_widget_set_visible(display_intent, FALSE);
   }
   dt_get_sysresource_level();
+  dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
 }
 
@@ -2007,7 +2016,7 @@ static void _brush_opacity_down_callback(dt_action_t *action)
 static void _overlay_cycle_callback(dt_action_t *action)
 {
   const int currentval = dt_conf_get_int("darkroom/ui/overlay_color");
-  const int nextval = (currentval + 1) % 5; // colors can go from 0 to 5
+  const int nextval = (currentval + 1) % 6; // colors can go from 0 to 5
   dt_conf_set_int("darkroom/ui/overlay_color", nextval);
   dt_guides_set_overlay_colors();
   dt_control_queue_redraw_center();
@@ -2058,12 +2067,6 @@ static void _darkroom_undo_callback(dt_action_t *action)
 static void _darkroom_redo_callback(dt_action_t *action)
 {
   dt_undo_do_redo(darktable.undo, DT_UNDO_DEVELOP);
-}
-
-static void search_callback(dt_action_t *action)
-{
-  // set focus to the search module text box
-  dt_dev_modulegroups_search_text_focus(darktable.develop);
 }
 
 static void change_slider_accel_precision(dt_action_t *action);
@@ -2131,7 +2134,7 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
         if(darktable.develop->gui_module)
         {
           dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)darktable.develop->gui_module->blend_data;
-          if (bd) lib->full_preview_masks_state = bd->masks_shown;
+          if(bd) lib->full_preview_masks_state = bd->masks_shown;
         }
         // we set the zoom values to "fit"
         lib->full_preview_last_zoom = dt_control_get_dev_zoom();
@@ -2310,19 +2313,14 @@ void gui_init(dt_view_t *self)
                                  N_("mark with CFA color"), N_("mark with solid color"), N_("false color"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
 
-    /* color scheme */
-    // FIXME can't use DT_BAUHAUS_COMBOBOX_NEW_FULL because of (unnecessary?) translation context
-    colorscheme = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(colorscheme, N_("raw overexposed"), N_("color scheme"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "red"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "green"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "blue"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "black"));
-    dt_bauhaus_combobox_set(colorscheme, dev->rawoverexposed.colorscheme);
-    gtk_widget_set_tooltip_text(
-        colorscheme,
-        _("select the solid color to indicate over exposure.\nwill only be used if mode = mark with solid color"));
-    g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(rawoverexposed_colorscheme_callback), dev);
+    DT_BAUHAUS_COMBOBOX_NEW_FULL(colorscheme, self, N_("raw overexposed"), N_("color scheme"),
+                                _("select the solid color to indicate over exposure.\nwill only be used if mode = mark with solid color"),
+                                dev->rawoverexposed.colorscheme,
+                                rawoverexposed_colorscheme_callback, dev,
+                                NC_("solidcolor", "red"),
+                                NC_("solidcolor", "green"),
+                                NC_("solidcolor", "blue"),
+                                NC_("solidcolor", "black"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
 
     /* threshold */
@@ -2443,26 +2441,22 @@ void gui_init(dt_view_t *self)
     dt_loc_get_datadir(datadir, sizeof(datadir));
     const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-    GtkWidget *display_intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(display_intent, N_("profiles"), N_("intent"));
-    dt_bauhaus_combobox_add(display_intent, _("perceptual"));
-    dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
-    dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
-    dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
+    static const gchar *intents_list[]
+      = { N_("perceptual"),
+          N_("relative colorimetric"),
+          NC_("rendering intent", "saturation"),
+          N_("absolute colorimetric"),
+          NULL };
 
-    GtkWidget *display2_intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(display2_intent, N_("profiles"), N_("preview intent"));
-    dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
-    dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
-    dt_bauhaus_combobox_add(display2_intent, C_("rendering intent", "saturation"));
-    dt_bauhaus_combobox_add(display2_intent, _("absolute colorimetric"));
+    GtkWidget *display_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("intent"),
+                                                             "", 0, display_intent_callback, dev, intents_list);
+    GtkWidget *display2_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("preview intent"),
+                                                              "", 0, display2_intent_callback, dev, intents_list);
 
     if(!force_lcms2)
     {
       gtk_widget_set_no_show_all(display_intent, TRUE);
-      gtk_widget_set_visible(display_intent, FALSE);
       gtk_widget_set_no_show_all(display2_intent, TRUE);
-      gtk_widget_set_visible(display2_intent, FALSE);
     }
 
     GtkWidget *display_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -2552,9 +2546,7 @@ void gui_init(dt_view_t *self)
     g_free(system_profile_dir);
     g_free(user_profile_dir);
 
-    g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), dev);
     g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_intent), "value-changed", G_CALLBACK(display2_intent_callback), dev);
     g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(display2_profile_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed", G_CALLBACK(softproof_profile_callback), dev);
     g_signal_connect(G_OBJECT(histogram_profile), "value-changed", G_CALLBACK(histogram_profile_callback), dev);
@@ -2650,9 +2642,6 @@ void gui_init(dt_view_t *self)
   // undo/redo
   dt_action_register(DT_ACTION(self), N_("undo"), _darkroom_undo_callback, GDK_KEY_z, GDK_CONTROL_MASK);
   dt_action_register(DT_ACTION(self), N_("redo"), _darkroom_redo_callback, GDK_KEY_y, GDK_CONTROL_MASK);
-
-  // set focus to the search modules text box
-  dt_action_register(DT_ACTION(self), N_("search modules"), search_callback, 0, 0);
 
   // change the precision for adjusting sliders with keyboard shortcuts
   dt_action_register(DT_ACTION(self), N_("change keyboard shortcut slider precision"), change_slider_accel_precision, 0, 0);
@@ -3246,7 +3235,7 @@ void leave(dt_view_t *self)
     if(!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
 
     // force refresh if module has mask visualized
-    if (module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
+    if(module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
 
     dt_action_cleanup_instance_iop(module);
     dt_iop_cleanup_module(module);
@@ -3772,13 +3761,13 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       scale = 8.0f / ppd;
   }
 
-  if (fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
+  if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
     scale = fmaxf(scale, 0.5 * fitscale);
   }
-  else if (fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
+  else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
@@ -3849,6 +3838,7 @@ void configure(dt_view_t *self, int wd, int ht)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dev->orig_width = wd;
   dev->orig_height = ht;
+  dev->border_size = _iso_12646_get_border(dev);
   dt_dev_configure(dev, wd, ht);
 }
 
@@ -4106,13 +4096,13 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
     else
       scale = 8.0f / ppd;
   }
-  if (fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
+  if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
     scale = fmaxf(scale, 0.5 * fitscale);
   }
-  else if (fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
+  else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
@@ -4561,4 +4551,3 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

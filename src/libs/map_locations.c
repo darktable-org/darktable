@@ -95,7 +95,7 @@ static gboolean _mouse_scroll(GtkWidget *treeview, GdkEventScroll *event,
                               dt_lib_module_t *self)
 {
   dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
-  if (dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     const gint increment = DT_PIXEL_APPLY_DPI(10.0);
     const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
@@ -276,7 +276,7 @@ static void _tree_name_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer,
                      DT_MAP_LOCATION_COL_TAG, &name,
                      DT_MAP_LOCATION_COL_COUNT, &count,
                      DT_MAP_LOCATION_COL_PATH, &path, -1);
-  if (count < 1)
+  if(count < 1)
   {
     coltext = g_markup_printf_escaped(locid ? "%s" : "<i>%s</i>", name);
   }
@@ -375,7 +375,7 @@ static void _delete_tree_path(GtkTreeModel *model, GtkTreeIter *iter, gboolean r
     gtk_tree_model_get(model, &tobedel, DT_MAP_LOCATION_COL_PATH, &path, -1);
     g_free(path);
     gtk_tree_store_remove(GTK_TREE_STORE(model), &tobedel);
-  } while (!root  && valid);
+  } while(!root  && valid);
 }
 
 static gboolean _update_tag_name_per_name(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, dt_loc_op_t *to)
@@ -384,9 +384,9 @@ static gboolean _update_tag_name_per_name(GtkTreeModel *model, GtkTreePath *path
   char *newtagname = to->newtagname;
   char *oldtagname = to->oldtagname;
   gtk_tree_model_get(model, iter, DT_MAP_LOCATION_COL_PATH, &tagname, -1);
-  if (g_str_has_prefix(tagname, oldtagname))
+  if(g_str_has_prefix(tagname, oldtagname))
   {
-    if (strlen(tagname) == strlen(oldtagname))
+    if(strlen(tagname) == strlen(oldtagname))
     {
       // rename the tag itself
       char *subtag = g_strrstr(to->newtagname, "|");
@@ -395,7 +395,7 @@ static gboolean _update_tag_name_per_name(GtkTreeModel *model, GtkTreePath *path
                          DT_MAP_LOCATION_COL_PATH, newtagname,
                          DT_MAP_LOCATION_COL_TAG, subtag, -1);
     }
-    else if (strlen(tagname) > strlen(oldtagname) && tagname[strlen(oldtagname)] == '|')
+    else if(strlen(tagname) > strlen(oldtagname) && tagname[strlen(oldtagname)] == '|')
     {
       // rename similar path
       char *newpath = g_strconcat(newtagname, &tagname[strlen(oldtagname)] , NULL);
@@ -570,7 +570,7 @@ static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
         {
           // existing location - rename it
           GList *children = dt_map_location_get_locations_by_path(path, FALSE);
-          for (GList *tag = children; tag; tag = g_list_next(tag))
+          for(GList *tag = children; tag; tag = g_list_next(tag))
           {
             // reset on leave is not possible. should be safe
             const char *new_part = &((dt_map_location_t *)tag->data)->tag[path_len + (reset ? 1 :0)];
@@ -632,7 +632,7 @@ static void _name_start_editing(GtkCellRenderer *renderer, GtkCellEditable *edit
                           char *path, dt_lib_module_t *self)
 {
   dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
-  if (GTK_IS_ENTRY(editable))
+  if(GTK_IS_ENTRY(editable))
   {
     // set up the editable with name (without number)
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));

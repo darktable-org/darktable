@@ -30,8 +30,8 @@
 @define-color disabled_fg_color @grey_55;       /* disabled controls */
 
 /* Scroll bars (sliders) */
-@define-color scroll_bar_inactive @grey_55;
-@define-color scroll_bar_active @grey_65;
+@define-color scroll_bar_inactive @grey_50;
+@define-color scroll_bar_active @grey_70;
 @define-color scroll_bar_bg @grey_25;
 
 /* Modules box (plugins) */
@@ -66,8 +66,7 @@
 @define-color log_fg_color @grey_90;
 
 /* Views */
-@define-color darkroom_bg_color @grey_60;
-@define-color darkroom_preview_bg_color @grey_50;
+@define-color lighttable_bg_color @grey_45;
 @define-color lighttable_bg_font_color @grey_85;
 
 /* Lighttable and film-strip */
@@ -95,7 +94,7 @@
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom,
 .dt_overlays_hover #thumb-main:hover #thumb-bottom
 {
-  background-image: linear-gradient(rgba(212, 212, 212, 0.7) 0%, rgba(212, 212, 212, 0.7) 90%,rgba(212, 212, 212, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
+  background-image: linear-gradient(rgba(226, 226, 226, 0.7) 0%, rgba(226, 226, 226, 0.7) 90%,rgba(226, 226, 226, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
 }
 
 /* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
@@ -104,13 +103,5 @@
 .dt_overlays_always#preview #thumb-bottom,
 .dt_overlays_always_extended#preview #thumb-bottom
 {
-  background-image: linear-gradient(rgba(198, 198, 198, 0.2) 0%, rgba(198, 198, 198, 0.1) 5%, rgba(198, 198, 198, 0) 100%);
-}
-
-.dt_overlays_always#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always#preview #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#preview #thumb-main:hover #thumb-bottom
-{
-  background-image: linear-gradient(rgba(218, 218, 218, 0.4) 0%, rgba(218, 218, 218, 0.2) 5%, rgba(198, 198, 198, 0) 100%);
+  background-color: shade(@lighttable_bg_color, 1.05);
 }

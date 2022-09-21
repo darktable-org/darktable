@@ -114,6 +114,9 @@ gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
                                       char *mk, int mk_len, char *md, int md_len,
                                       char *al, int al_len);
 
+// get the type of image from its extension
+dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

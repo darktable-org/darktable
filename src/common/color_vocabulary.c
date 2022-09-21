@@ -88,11 +88,13 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
 
   // L decreases with age in all ethnicities and with b/yellowness/melanine/tan.
 
-  const ethnicity_t ethnies[ETHNIE_END] = { { .name = _("Chinese"),   .ethnicity = ETHNIE_CHINESE },
-                                            { .name = _("Thai"),      .ethnicity = ETHNIE_THAI },
-                                            { .name = _("Kurdish"),   .ethnicity = ETHNIE_KURDISH },
-                                            { .name = _("Caucasian"), .ethnicity = ETHNIE_CAUCASIAN },
-                                            { .name = _("African-american"), .ethnicity = ETHNIE_AFRICAN_AM } };
+  const ethnicity_t ethnies[ETHNIE_END] =
+    { { .name = _("Chinese"),          .ethnicity = ETHNIE_CHINESE },
+      { .name = _("Thai"),             .ethnicity = ETHNIE_THAI },
+      { .name = _("Kurdish"),          .ethnicity = ETHNIE_KURDISH },
+      { .name = _("Caucasian"),        .ethnicity = ETHNIE_CAUCASIAN },
+      { .name = _("African-american"), .ethnicity = ETHNIE_AFRICAN_AM },
+      { .name = _("Mexican"),          .ethnicity = ETHNIE_MEXICAN } };
 
   const skin_color_t skin[SKINS] = {
     { .name = _("forearm"),
@@ -348,4 +350,3 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

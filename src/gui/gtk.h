@@ -70,6 +70,7 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_PRINT_BG,
   DT_GUI_COLOR_BRUSH_CURSOR,
   DT_GUI_COLOR_BRUSH_TRACE,
+  DT_GUI_COLOR_BUTTON_FG,
   DT_GUI_COLOR_THUMBNAIL_BG,
   DT_GUI_COLOR_THUMBNAIL_SELECTED_BG,
   DT_GUI_COLOR_THUMBNAIL_HOVER_BG,
@@ -406,9 +407,6 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
 // similar to the one above. this one asks the user for some string. the hint is shown in the empty entry box
 char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup, const char *placeholder,
                                            const char *no_text, const char *yes_text);
-
-void *dt_gui_show_splashscreen();
-void dt_gui_close_splashscreen(void *splashscreen);
 
 void dt_gui_add_help_link(GtkWidget *widget, const char *link);
 

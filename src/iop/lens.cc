@@ -586,7 +586,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   delete modifier;
 
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
@@ -841,7 +841,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
   }
 
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
@@ -859,7 +859,7 @@ error:
   dt_opencl_release_mem_object(dev_tmpbuf);
   if(tmpbuf != NULL) dt_free_align(tmpbuf);
   if(modifier != NULL) delete modifier;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_lens] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_lens] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

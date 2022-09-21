@@ -260,20 +260,20 @@ static int compute_tile_height(const int height, const int w)
   int tile_h = max_i(3 * w, GF_TILE_SIZE);
 #if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
       // to round off differently (as does changing GF_TILE_SIZE)
-  if ((height % tile_h) > 0 && (height % tile_h) < GF_TILE_SIZE/3)
+  if((height % tile_h) > 0 && (height % tile_h) < GF_TILE_SIZE/3)
   {
     // if there's just a sliver left over for the last row of tiles, see whether slicing off a few pixels
     // gives us a mostly-full tile
-    if (height % (tile_h - 8) >= GF_TILE_SIZE/3)
+    if(height % (tile_h - 8) >= GF_TILE_SIZE/3)
       tile_h -= 8;
-    else  if (height % (tile_h - w/4) >= GF_TILE_SIZE/3)
+    else  if(height % (tile_h - w/4) >= GF_TILE_SIZE/3)
       tile_h -= (w/4);
-    else  if (height % (tile_h - w/2) >= GF_TILE_SIZE/3)
+    else  if(height % (tile_h - w/2) >= GF_TILE_SIZE/3)
       tile_h -= (w/2);
     // try adding a few pixels
-    else if (height % (tile_h + 8) >= GF_TILE_SIZE/3)
+    else if(height % (tile_h + 8) >= GF_TILE_SIZE/3)
       tile_h += 8;
-    else if (height % (tile_h + 16) >= GF_TILE_SIZE/3)
+    else if(height % (tile_h + 16) >= GF_TILE_SIZE/3)
       tile_h += 16;
   }
 #endif
@@ -285,20 +285,20 @@ static int compute_tile_width(const int width, const int w)
   int tile_w = max_i(3 * w, GF_TILE_SIZE);
 #if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
       // to round off differently (as does changing GF_TILE_SIZE)
-  if ((width % tile_w) > 0 && (width % tile_w) < GF_TILE_SIZE/2)
+  if((width % tile_w) > 0 && (width % tile_w) < GF_TILE_SIZE/2)
   {
     // if there's just a sliver left over for the last column of tiles, see whether slicing off a few pixels
     // gives us a mostly-full tile
-    if (width % (tile_w - 8) >= GF_TILE_SIZE/3)
+    if(width % (tile_w - 8) >= GF_TILE_SIZE/3)
       tile_w -= 8;
-    else  if (width % (tile_w - w/4) >= GF_TILE_SIZE/3)
+    else  if(width % (tile_w - w/4) >= GF_TILE_SIZE/3)
       tile_w -= (w/4);
-    else  if (width % (tile_w - w/2) >= GF_TILE_SIZE/3)
+    else  if(width % (tile_w - w/2) >= GF_TILE_SIZE/3)
       tile_w -= (w/2);
     // try adding a few pixels
-    else if (width % (tile_w + 8) >= GF_TILE_SIZE/3)
+    else if(width % (tile_w + 8) >= GF_TILE_SIZE/3)
       tile_w += 8;
-    else if (width % (tile_w + 16) >= GF_TILE_SIZE/3)
+    else if(width % (tile_w + 16) >= GF_TILE_SIZE/3)
       tile_w += 16;
   }
 #endif
@@ -693,11 +693,8 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
   assert(ch >= 3);
   assert(w >= 1);
 
-  // estimate required memory for OpenCL code path with a safety factor of 5/4
-  const size_t singlebuf = (size_t)width * height * sizeof(float);
-  const size_t required  = singlebuf * 18 * 5 / 4;
-  const gboolean fits = (dt_opencl_buffer_fits_device(devid, singlebuf) &&
-                         (dt_opencl_get_device_available(devid) > required));
+  // estimate required memory for OpenCL code path with a safety factor of 1.25
+  const gboolean fits = dt_opencl_image_fits_device(devid, width, height, sizeof(float), 18.0f * 1.25f, 0);
 
   int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(fits)

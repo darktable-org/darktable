@@ -455,7 +455,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -525,7 +525,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -963,7 +963,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4/*need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4/*need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // unsupported format, image has been copied to output and module's trouble flag set
 
@@ -1135,7 +1135,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_clipping] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_clipping] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1672,7 +1672,7 @@ static void _float_to_fract(const char *num, int *n, int *d)
     {
       sep_found = TRUE;
     }
-    else if (*p < '0' || *p > '9')
+    else if(*p < '0' || *p > '9')
     {
       *n = *d = 0;
       return;
@@ -2407,7 +2407,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
-    snprintf(dimensions, sizeof(dimensions), "%.0f x %.0f", (float)procw * g->clip_w, (float)proch * g->clip_h);
+    snprintf(dimensions, sizeof(dimensions), "%i x %i", (int)(procw * g->clip_w), (int)(proch * g->clip_h));
 
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);

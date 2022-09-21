@@ -49,7 +49,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 35
+#define CURRENT_DATABASE_VERSION_LIBRARY 36
 #define CURRENT_DATABASE_VERSION_DATA     9
 
 // #define USE_NESTED_TRANSACTIONS
@@ -1462,7 +1462,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // note that images without history don't get hash and are considered as basic
     sqlite3_stmt *h_stmt;
     const gboolean basecurve_auto_apply = dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
-    const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
     // clang-format off
     char *query = g_strdup_printf(
                             "SELECT id, CASE WHEN imgid IS NULL THEN 0 ELSE 1 END as altered "
@@ -1471,10 +1470,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
                             "LEFT JOIN (SELECT DISTINCT imgid FROM main.images JOIN main.history ON imgid = id "
                             "           WHERE num < history_end AND enabled = 1"
                             "             AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare', "
-                            "             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)) "
+                            "             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s)) "
                             "ON imgid = id",
-                             basecurve_auto_apply ? ", 'basecurve'" : "",
-                             sharpen_auto_apply ? ", 'sharpen'" : "");
+                             basecurve_auto_apply ? ", 'basecurve'" : "");
     // clang-format on
     TRY_PREPARE(h_stmt, query,
                 "[init] can't prepare selecting history for history_hash migration\n");
@@ -2115,6 +2113,44 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
     new_version = 35;
+  }
+  else if(version == 35)
+  {
+    TRY_EXEC("CREATE TABLE main.images_new (id INTEGER, filename VARCHAR, flags INTEGER)",
+             "[init] can't create new images table\n");
+
+    gchar *query = g_strdup_printf("INSERT INTO `images_new` "
+                                   "SELECT id, filename, flags"
+                                   " FROM images"
+                                   " WHERE (flags & %d == 0)",
+                                   DT_IMAGE_RAW | DT_IMAGE_LDR | DT_IMAGE_HDR);
+    TRY_EXEC(query, "[init] can't copy back from images\n");
+
+    TRY_PREPARE(stmt, "SELECT id, filename, flags FROM `images_new`",
+                "[init] can't prepare selecting images flags\n");
+
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      sqlite3_stmt *stmt2;
+      sqlite3_prepare_v2(db->handle,
+                         "UPDATE `images` SET"
+                         " (flags) = "
+                         " (?2) WHERE id = ?1",
+                         -1, &stmt2, NULL);
+      sqlite3_bind_int(stmt2, 1, sqlite3_column_int(stmt, 0));
+
+      dt_image_flags_t flags = sqlite3_column_int(stmt, 2);
+      gchar *ext = g_strrstr((const char *)sqlite3_column_text(stmt, 1), ".");
+      flags |= dt_imageio_get_type_from_extension(ext);
+      sqlite3_bind_int(stmt2, 2, flags);
+
+      TRY_STEP(stmt2, SQLITE_DONE, "[init] can't update flags\n");
+      sqlite3_finalize(stmt2);
+    }
+    sqlite3_finalize(stmt);
+
+    TRY_EXEC("DROP TABLE `images_new`", "[init] can't drop temp images table\n");
+    new_version = 36;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -3581,12 +3617,12 @@ error:
 void dt_database_destroy(const dt_database_t *db)
 {
   sqlite3_close(db->handle);
-  if (db->lockfile_data)
+  if(db->lockfile_data)
   {
     g_unlink(db->lockfile_data);
     g_free(db->lockfile_data);
   }
-  if (db->lockfile_library)
+  if(db->lockfile_library)
   {
     g_unlink(db->lockfile_library);
     g_free(db->lockfile_library);
@@ -3681,7 +3717,7 @@ void dt_database_cleanup_busy_statements(const struct dt_database_t *db)
   }
 }
 
-#define ERRCHECK {if (err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'\n",err); sqlite3_free(err); err=NULL;}}
+#define ERRCHECK {if(err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'\n",err); sqlite3_free(err); err=NULL;}}
 void dt_database_perform_maintenance(const struct dt_database_t *db)
 {
   char* err = NULL;
@@ -3750,11 +3786,11 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
   {
     later_info = _("click later to be asked on next startup");
   }
-  else if (!closing_time && (!g_strcmp0(config, "on both")))
+  else if(!closing_time && (!g_strcmp0(config, "on both")))
   {
     later_info = _("click later to be asked when closing darktable");
   }
-  else if (!g_strcmp0(config, "on close"))
+  else if(!g_strcmp0(config, "on close"))
   {
     later_info = _("click later to be asked next time when closing darktable");
   }
@@ -4055,7 +4091,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   GFileInfo *info = NULL;
   guint64 last_snap = 0;
 
-  while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+  while((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
   {
     const char* fname = g_file_info_get_name(info);
     if(g_str_has_prefix(fname, lib_snap_format) || g_str_has_prefix(fname, lib_backup_format))
@@ -4116,13 +4152,13 @@ static gboolean _get_iso8601_int (const gchar *text, gsize length, gint *value)
   gsize i;
   guint v = 0;
 
-  if (length < 1 || length > 4)
+  if(length < 1 || length > 4)
     return FALSE;
 
-  for (i = 0; i < length; i++)
+  for(i = 0; i < length; i++)
   {
     const gchar c = text[i];
-    if (c < '0' || c > '9')
+    if(c < '0' || c > '9')
       return FALSE;
     v = v * 10 + (c - '0');
   }
@@ -4258,7 +4294,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
 
     GFileInfo *info = NULL;
 
-    while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+    while((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
     {
       const char* fname = g_file_info_get_name(info);
       if(g_str_has_prefix(fname, lib_snap_format))
@@ -4345,7 +4381,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
 
     GFileInfo *info = NULL;
 
-    while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+    while((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
     {
       const char* fname = g_file_info_get_name(info);
       if(g_str_has_prefix(fname, lib_snap_format))
@@ -4383,7 +4419,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     g_file_enumerator_close(library_dir_files, NULL, NULL);
     g_object_unref(library_dir_files);
 
-    while ((info = g_file_enumerator_next_file(data_dir_files, NULL, &error)))
+    while((info = g_file_enumerator_next_file(data_dir_files, NULL, &error)))
     {
       const char* fname = g_file_info_get_name(info);
       if(g_str_has_prefix(fname, dat_snap_format))
@@ -4508,7 +4544,7 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   guint64 last_snap = 0;
   gchar *last_snap_name = NULL;
 
-  while ((info = g_file_enumerator_next_file(db_dir_files, NULL, &error)))
+  while((info = g_file_enumerator_next_file(db_dir_files, NULL, &error)))
   {
     const char* fname = g_file_info_get_name(info);
     if(g_str_has_prefix(fname, db_snap_format) || g_str_has_prefix(fname, db_backup_format))

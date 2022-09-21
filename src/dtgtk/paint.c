@@ -874,68 +874,105 @@ void dtgtk_cairo_paint_masks_inverse(cairo_t *cr, gint x, gint y, gint w, gint h
 
 void dtgtk_cairo_paint_masks_union(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 1, 0, 0)
-
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  cairo_arc(cr, -0.05, 0.5, 0.45, 0, 6.2832);
-  cairo_arc(cr, 0.764, 0.5, 0.45, 0, 6.2832);
+  // note : as the icon is not square, we don't want PREAMBLE macro
+  // we want 2 round of radius R that intersect in the middle,
+  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // with a safety belt of 5% to be sure the stroke is draw inside the area
+  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
+  const float padding_left = (w - r * 3.6) / 2.0;
+  cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_fill(cr);
-
-  FINISH
 }
 
 void dtgtk_cairo_paint_masks_intersection(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 1, 0, 0)
+  // note : as the icon is not square, we don't want PREAMBLE macro
+  // we want 2 round of radius R that intersect in the middle,
+  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // with a safety belt of *0.95 to be sure the stroke is draw inside the area
+  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
+  const float padding_left = (w - r * 3.6) / 2.0;
 
-  cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
-  cairo_arc(cr, 0.05, 0.5, 0.45, 0, 6.3);
-  cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.65, 0.5, 0.45, 0, 6.3);
+  // we draw the outline of the 2 circles
+  cairo_save(cr);
+  cairo_set_line_width(cr, cairo_get_line_width(cr) * 0.5);
+  cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_stroke(cr);
-  cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-  cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.05, 0.5, 0.45, -1.0416, 1.0416);
-  cairo_arc(cr, 0.65, 0.5, 0.45, 2.1, 4.1832);
-  cairo_close_path(cr);
-  cairo_fill(cr);
+  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_stroke(cr);
+  cairo_restore(cr);
 
-  FINISH
+  // we draw the intersection of the 2 circles we slightly different radius so they are more visible
+  cairo_push_group(cr);
+  cairo_arc(cr, padding_left + r * 1.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_IN);
+  cairo_arc(cr, padding_left + r * 2.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_pop_group_to_source(cr);
+  cairo_paint(cr);
 }
 
 void dtgtk_cairo_paint_masks_difference(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 1, 0, 0)
+  // note : as the icon is not square, we don't want PREAMBLE macro
+  // we want 2 round of radius R that intersect in the middle,
+  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // with a safety belt of *0.95 to be sure the stroke is draw inside the area
+  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
+  const float padding_left = (w - r * 3.6) / 2.0;
 
-  cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
-  cairo_arc(cr, 0.65, 0.5, 0.45, 0, 6.3);
-  cairo_stroke(cr);
-  cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-  cairo_new_sub_path(cr);
-  cairo_arc(cr, 0.05, 0.5, 0.45, 1.0416, 5.2416);
-  cairo_arc_negative(cr, 0.65, 0.5, 0.45, 4.1832, 2.1);
-  cairo_close_path(cr);
+  // we draw and fill the first circle
+  cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_fill(cr);
 
-  FINISH
+  // then erase the second circle
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+
+  // last we draw the outline of the second circle
+  cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+  cairo_set_line_width(cr, cairo_get_line_width(cr) * 0.5);
+  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_stroke(cr);
 }
 
 void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 1, 0, 0)
+  // note : as the icon is not square, we don't want PREAMBLE macro
+  // we want 2 round of radius R that intersect in the middle,
+  // so the width needs R + R*0.8 + R*0.8 + R = R*3.6
+  // with a safety belt of *0.95 to be sure the stroke is draw inside the area
+  const float r = fminf(w / 3.6, h / 2.0) * 0.95;
+  const float padding_left = (w - r * 3.6) / 2.0;
 
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  cairo_arc(cr, 0.0, 0.5, 0.45, 0, 6.2832);
-  cairo_arc_negative(cr, 0.714, 0.5, 0.45, 0, 6.2832);
+  // we draw the first circle without the excluded area
+  cairo_save(cr);
+  cairo_set_line_width(cr, cairo_get_line_width(cr) * 0.5);
+  cairo_arc(cr, padding_left + r, h / 2.0, r, 0, 2.0 * M_PI);
   cairo_fill(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_arc(cr, padding_left + r * 2.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_restore(cr);
 
-  FINISH
+  // same for the second circle
+  cairo_push_group(cr);
+  cairo_arc(cr, padding_left + r * 2.6, h / 2.0, r, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_arc(cr, padding_left + r * 1.3, h / 2.0, r * 0.85, 0, 2.0 * M_PI);
+  cairo_fill(cr);
+  cairo_pop_group_to_source(cr);
+  cairo_paint(cr);
 }
 void dtgtk_cairo_paint_masks_used(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.35, 0, 6.2832);
+  cairo_arc(cr, 0.5, 0.5, 0.35, 0, 2.0 * M_PI);
   cairo_move_to(cr, 0.5, 0.15);
   cairo_line_to(cr, 0.5, 0.5);
   cairo_stroke(cr);
@@ -1585,7 +1622,7 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   }
 
   /* then improve hover effect for same blue icon */
-  if (flags & CPF_PRELIGHT)
+  if(flags & CPF_PRELIGHT)
   {
     cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
   }

@@ -26,6 +26,9 @@
 #define SNAP_SIZE 5
 #define BAR_WIDTH 4
 
+// define GTypes
+G_DEFINE_TYPE(GtkDarktableRangeSelect, _range_select, GTK_TYPE_EVENT_BOX);
+
 static void _range_select_class_init(GtkDarktableRangeSelectClass *klass);
 static void _range_select_init(GtkDarktableRangeSelect *button);
 
@@ -115,12 +118,41 @@ typedef enum _range_signal
 } _range_signal;
 static guint _signals[LAST_SIGNAL] = { 0 };
 
+static void _dt_pref_changed(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  int mh = -1;
+  int mw = -1;
+  gtk_style_context_get(context, state, "min-height", &mh, NULL);
+  gtk_style_context_get(context, state, "min-width", &mw, NULL);
+  GtkBorder margin, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_padding(context, state, &padding);
+  if(mw > 0)
+    mw += margin.left + margin.right + padding.right + padding.left;
+  else
+    mw = -1;
+  if(mh > 0)
+    mh += margin.top + margin.bottom + padding.top + padding.bottom;
+  else
+    mh = -1;
+  gtk_widget_set_size_request(range->band, mw, mh);
+
+  dtgtk_range_select_redraw(range);
+}
+
 // cleanup everything when the widget is destroyed
 static void _range_select_destroy(GtkWidget *widget)
 {
   g_return_if_fail(DTGTK_IS_RANGE_SELECT(widget));
 
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(widget);
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_pref_changed), range);
 
   if(range->markers) g_list_free_full(range->markers, g_free);
   range->markers = NULL;
@@ -131,6 +163,8 @@ static void _range_select_destroy(GtkWidget *widget)
 
   if(range->surface) cairo_surface_destroy(range->surface);
   range->surface = NULL;
+
+  GTK_WIDGET_CLASS(_range_select_parent_class)->destroy(widget);
 }
 
 static void _range_select_class_init(GtkDarktableRangeSelectClass *klass)
@@ -195,6 +229,10 @@ static gboolean _default_decode_date_func(const gchar *text, double *value)
     return TRUE;
   }
   return FALSE;
+}
+static gchar *_default_current_text_func(GtkDarktableRangeSelect *range, const double current)
+{
+  return range->print(current, TRUE);
 }
 
 static void _date_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
@@ -445,6 +483,11 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
 
   pop->internal_change++;
 
+  dt_bauhaus_combobox_clear(pop->type);
+  dt_bauhaus_combobox_add(pop->type, _("fixed"));
+  if(w == range->entry_min || w == range->entry_max) dt_bauhaus_combobox_add(pop->type, _("relative"));
+  gtk_widget_set_sensitive(pop->type, (w == range->entry_min || w == range->entry_max));
+
   int datetype = 0;
   if((w == range->entry_max && range->bounds & DT_RANGE_BOUND_MAX_RELATIVE)
      || (w == range->entry_min && range->bounds & DT_RANGE_BOUND_MIN_RELATIVE))
@@ -623,12 +666,17 @@ static void _bound_change(GtkDarktableRangeSelect *range, const gchar *val, cons
     {
       if(bound == BOUND_MIN)
       {
-        if(range->bounds & DT_RANGE_BOUND_MAX) range->bounds = DT_RANGE_BOUND_MAX;
+        range->bounds &= ~DT_RANGE_BOUND_MIN;
+        range->bounds &= ~DT_RANGE_BOUND_MIN_RELATIVE;
+        range->bounds &= ~DT_RANGE_BOUND_FIXED;
         range->select_min_r = v;
       }
       else if(bound == BOUND_MAX)
       {
-        if(range->bounds & DT_RANGE_BOUND_MIN) range->bounds = DT_RANGE_BOUND_MIN;
+        range->bounds &= ~DT_RANGE_BOUND_MAX;
+        range->bounds &= ~DT_RANGE_BOUND_MAX_RELATIVE;
+        range->bounds &= ~DT_RANGE_BOUND_MAX_NOW;
+        range->bounds &= ~DT_RANGE_BOUND_FIXED;
         range->select_max_r = v;
       }
       else if(bound == BOUND_MIDDLE)
@@ -712,7 +760,7 @@ static void _popup_date_tree_selection_change(GtkTreeView *self, GtkDarktableRan
   }
   else
   {
-    // intialize value depending of the source widget
+    // initialize value depending of the source widget
     if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_max)
     {
       m = 12;
@@ -881,9 +929,6 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   // the type of date selection
   pop->type = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(pop->type, NULL, _("date type"));
-  dt_bauhaus_combobox_add(pop->type, _("fixed"));
-  dt_bauhaus_combobox_add(pop->type, _("relative"));
-  dt_bauhaus_combobox_set(pop->type, 0);
   g_signal_connect(G_OBJECT(pop->type), "value-changed", G_CALLBACK(_popup_date_type_changed), range);
   gtk_box_pack_start(GTK_BOX(vbox), pop->type, FALSE, TRUE, 0);
 
@@ -988,7 +1033,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   // the select line
   hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox0), hbox2, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new("current date : "), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(_("current date: ")), FALSE, TRUE, 0);
   pop->selection = gtk_entry_new();
   gtk_entry_set_alignment(GTK_ENTRY(pop->selection), 0.5);
   gtk_box_pack_start(GTK_BOX(hbox2), pop->selection, TRUE, TRUE, 0);
@@ -1006,7 +1051,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 static void _popup_item_activate(GtkWidget *w, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  // retrive block and source values
+  // retrieve block and source values
   GtkWidget *source = GTK_WIDGET(g_object_get_data(G_OBJECT(w), "source_widget"));
   _range_block *blo = (_range_block *)g_object_get_data(G_OBJECT(w), "range_block");
 
@@ -1273,7 +1318,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
                      range->alloc_margin.height);
 
     // draw the rectangles on the surface
-    // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
+    // we have to do some clever things in order to packed together blocks that will be shown at the same place
     // (see above)
     dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_GRAPH, 1.0);
     bl_min_px = 0;
@@ -1371,7 +1416,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
       last = icon->posx;
     }
     min_percent = MIN(min_percent, (100 - last) * 2);
-    // we want to let some marging between icons
+    // we want to let some margin between icons
     min_percent *= 0.9;
     // and we don't want to exceed 60% of the height
     const int size = MIN(range->alloc_padding.height * 0.6, range->alloc_padding.width * min_percent / 100);
@@ -1413,8 +1458,8 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     cairo_move_to(cr, posx_px, range->alloc_padding.y);
     cairo_line_to(cr, posx_px, range->alloc_padding.height + range->alloc_padding.y);
     cairo_stroke(cr);
-    gchar *txt = range->print(current_value_r, TRUE);
-    if(range->cur_window && range->cur_label) gtk_label_set_text(GTK_LABEL(range->cur_label), txt);
+    gchar *txt = range->current_text(range, current_value_r);
+    if(range->cur_window && range->cur_label) gtk_label_set_markup(GTK_LABEL(range->cur_label), txt);
     g_free(txt);
   }
 
@@ -1432,33 +1477,6 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
   range->alloc_main.width = 0;
   // redraw the band
   gtk_widget_queue_draw(range->band);
-}
-
-static void _dt_pref_changed(gpointer instance, gpointer user_data)
-{
-  if(!user_data) return;
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
-  int mh = -1;
-  int mw = -1;
-  gtk_style_context_get(context, state, "min-height", &mh, NULL);
-  gtk_style_context_get(context, state, "min-width", &mw, NULL);
-  GtkBorder margin, padding;
-  gtk_style_context_get_margin(context, state, &margin);
-  gtk_style_context_get_padding(context, state, &padding);
-  if(mw > 0)
-    mw += margin.left + margin.right + padding.right + padding.left;
-  else
-    mw = -1;
-  if(mh > 0)
-    mh += margin.top + margin.bottom + padding.top + padding.bottom;
-  else
-    mh = -1;
-  gtk_widget_set_size_request(range->band, mw, mh);
-
-  dtgtk_range_select_redraw(range);
 }
 
 static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -1538,13 +1556,12 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
     if(range->mouse_inside == HOVER_MAX)
     {
       range->bounds &= ~DT_RANGE_BOUND_MAX;
-      range->select_min_r += 0.0001;
       range->select_max_r = pos_r;
     }
     else if(range->mouse_inside == HOVER_MIN)
     {
       range->bounds &= ~DT_RANGE_BOUND_MIN;
-      range->select_min_r = range->select_max_r + 0.0001;
+      range->select_min_r = range->select_max_r;
       range->select_max_r = pos_r;
     }
     else if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
@@ -1630,6 +1647,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   range->value_to_band = _default_value_translator;
   range->print = (type == DT_RANGE_TYPE_NUMERIC) ? _default_print_func : _default_print_date_func;
   range->decode = (type == DT_RANGE_TYPE_NUMERIC) ? _default_decode_func : _default_decode_date_func;
+  range->current_text = _default_current_text_func;
   range->show_entries = show_entries;
   range->type = type;
   range->alloc_main.width = 0;
@@ -1641,8 +1659,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   // the graph band
   range->band = gtk_drawing_area_new();
   gtk_widget_set_events(range->band, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                         | GDK_POINTER_MOTION_MASK);
+                                         | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(range->band), "draw", G_CALLBACK(_event_band_draw), range);
   g_signal_connect(G_OBJECT(range->band), "button-press-event", G_CALLBACK(_event_band_press), range);
   g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
@@ -1692,24 +1709,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
 
 GType dtgtk_range_select_get_type()
 {
-  static GType dtgtk_range_select_type = 0;
-  if(!dtgtk_range_select_type)
-  {
-    static const GTypeInfo dtgtk_range_select_info = {
-      sizeof(GtkDarktableRangeSelectClass),
-      (GBaseInitFunc)NULL,
-      (GBaseFinalizeFunc)NULL,
-      (GClassInitFunc)_range_select_class_init,
-      NULL, /* class_finalize */
-      NULL, /* class_data */
-      sizeof(GtkDarktableRangeSelect),
-      0, /* n_preallocs */
-      (GInstanceInitFunc)_range_select_init,
-    };
-    dtgtk_range_select_type
-        = g_type_register_static(GTK_TYPE_BIN, "GtkDarktableRangeSelect", &dtgtk_range_select_info, 0);
-  }
-  return dtgtk_range_select_type;
+  return _range_select_get_type();
 }
 
 gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
@@ -1718,6 +1718,7 @@ gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
   if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all"));
 
   gchar *txt = NULL;
+
   if(range->bounds & DT_RANGE_BOUND_MIN)
     txt = g_strdup(_("min"));
   else if(range->bounds & DT_RANGE_BOUND_MIN_RELATIVE)
@@ -1789,7 +1790,7 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
                             range->select_relative_date_r.hour, range->select_relative_date_r.minute,
                             range->select_relative_date_r.second);
     else if(range->bounds & DT_RANGE_BOUND_MAX_NOW)
-      txt = g_strdup("now");
+      txt = g_strdup(_("now"));
     else
       txt = range->print(range->select_max_r, FALSE);
     gtk_entry_set_text(GTK_ENTRY(range->entry_max), txt);

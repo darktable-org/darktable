@@ -78,6 +78,45 @@
 #include "lua/image.h"
 #endif
 
+// note `dng` is not included anywhere as it can be anything. For this images we'll need to open it for "real"
+static const gchar *_supported_raw[]
+    = { "3fr", "ari", "arw", "bay", "cr2", "cr3", "crw", "dc2", "dcr", "erf", "fff",
+        "ia",  "iiq", "k25", "kc2", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw",
+        "orf", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti", "x3f", NULL };
+static const gchar *_supported_ldr[]
+    = { "bmp",  "bmq", "cap", "cine", "cs1", "dcm", "gif", "gpr", "j2c", "j2k", "jng", "jp2", "jpc", "jpeg", "jpg",
+        "miff", "mng", "ori", "pbm",  "pfm", "pgm", "png", "pnm", "ppm", "pxn", "qtk", "rdc", "tif", "tiff", NULL };
+static const gchar *_supported_hdr[] = { "avif", "exr", "hdr", "heic", "heif", "hif", "pfm", NULL };
+
+// get the type of image from its extension
+dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
+{
+  const char *ext = g_str_has_prefix(extension, ".") ? extension + 1 : extension;
+  for(const char **i = _supported_raw; *i != NULL; i++)
+  {
+    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    {
+      return DT_IMAGE_RAW;
+    }
+  }
+  for(const char **i = _supported_hdr; *i != NULL; i++)
+  {
+    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    {
+      return DT_IMAGE_HDR;
+    }
+  }
+  for(const char **i = _supported_ldr; *i != NULL; i++)
+  {
+    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    {
+      return DT_IMAGE_LDR;
+    }
+  }
+  // default to 0
+  return 0;
+}
+
 // load a full-res thumbnail:
 int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
                                dt_colorspaces_color_profile_type_t *color_space)
@@ -177,7 +216,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 
     *width = MagickGetImageWidth(image);
     *height = MagickGetImageHeight(image);
-    switch (MagickGetImageColorspace(image)) {
+    switch(MagickGetImageColorspace(image)) {
     case sRGBColorspace:
       *color_space = DT_COLORSPACE_SRGB;
       break;
@@ -705,13 +744,10 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   const int wd = img->width;
   const int ht = img->height;
 
-
-  int res = 0;
-
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
+  gboolean res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
                          : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
   if(!res)
   {

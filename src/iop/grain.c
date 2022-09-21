@@ -459,7 +459,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)fmax(roi_out->width * 0.3, 1.0);
 
-  const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
   const int ch = piece->colors;
   // Apply grain to image
   const double strength = (data->strength / 100.0);

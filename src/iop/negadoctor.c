@@ -341,7 +341,7 @@ int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const
     return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_negadoctor] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_negadoctor] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -865,7 +865,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->offset = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "offset"));
   dt_bauhaus_slider_set_format(g->offset, " dB");
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->offset);
   gtk_widget_set_tooltip_text(g->offset, _("correct the exposure of the scanner, for all RGB channels,\n"
                                            "before the inversion, so blacks are neither clipped or too pale."));
 

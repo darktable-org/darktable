@@ -409,7 +409,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)piece->data;
   const float scale = piece->iscale / roi_in->scale;
 
-  if (!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
+  if(!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
     return;
 
   const float *const restrict in = __builtin_assume_aligned(ivoid, 64);
@@ -554,7 +554,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)piece->data;
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
 
-  if (!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
+  if(!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
     return;
 
   const float *const restrict in = __builtin_assume_aligned(ivoid, 64);
@@ -668,7 +668,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 error:
   if(kernel) dt_free_align(kernel);
   if(kernel_cl) dt_opencl_release_mem_object(kernel_cl);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_blurs] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_blurs] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 

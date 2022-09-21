@@ -98,6 +98,7 @@ gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *ch
 gboolean dt_conf_is_equal(const char *name, const char *value);
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries);
 void dt_conf_cleanup(dt_conf_t *cf);
+void dt_conf_save(dt_conf_t *cf);
 int dt_conf_key_exists(const char *key);
 gboolean dt_conf_key_not_empty(const char *key);
 GSList *dt_conf_all_string_entries(const char *dir);

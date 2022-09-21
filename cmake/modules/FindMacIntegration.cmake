@@ -9,10 +9,10 @@
 # Copyright 2010 henrik andersson
 #=============================================================================
 
-find_path(MACINTEGRATION_INCLUDE_DIR gtkosxapplication.h PATH_SUFFIXES gtkmacintegration gtkmacintegration-gtk3)
+find_path(MACINTEGRATION_INCLUDE_DIR gtkosxapplication.h PATH_SUFFIXES gtkmacintegration gtkmacintegration-gtk3 gtkmacintegration-gtk3/gtkmacintegration)
 mark_as_advanced(MACINTEGRATION_INCLUDE_DIR)
 
-set(MACINTEGRATION_NAMES ${MACINTEGRATION_NAMES} gtkmacintegration libgtkmacintegration gtkmacintegration-gtk3 libgtkmacintegration-gtk3)
+set(MACINTEGRATION_NAMES ${MACINTEGRATION_NAMES} gtkmacintegration libgtkmacintegration gtkmacintegration-gtk3 libgtkmacintegration-gtk3 PATH_SUFFIXES gtkmacintegration-gtk3)
 find_library(MACINTEGRATION_LIBRARY NAMES ${MACINTEGRATION_NAMES})
 mark_as_advanced(MACINTEGRATION_LIBRARY)
 

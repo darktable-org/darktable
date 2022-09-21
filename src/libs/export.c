@@ -382,7 +382,7 @@ static void _scale_changed(GtkEntry *spin, dt_lib_export_t *d)
   int i, j = 0, idec = 0, idiv = 0, pdiv = 0;
   char new_value[30] = "";
 
-  for (i = 0; i < len; i++)
+  for(i = 0; i < len; i++)
   {
     char *val = strchr(validSign, value[i]);
     if(val == NULL)
@@ -590,7 +590,7 @@ void gui_reset(dt_lib_module_t *self)
   // style mode to overwrite as it was the initial behavior
   dt_bauhaus_combobox_set(d->style_mode, dt_confgen_get_bool(CONFIG_PREFIX "style_append", DT_DEFAULT));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
+  gtk_widget_set_visible(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
 
   // export metadata presets
   g_free(d->metadata_export);
@@ -981,13 +981,13 @@ static void _style_changed(GtkWidget *widget, dt_lib_export_t *d)
   if(dt_bauhaus_combobox_get(d->style) == 0)
   {
     dt_conf_set_string(CONFIG_PREFIX "style", "");
-    gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), FALSE);
+    gtk_widget_set_visible(GTK_WIDGET(d->style_mode), FALSE);
   }
   else
   {
     const gchar *style = dt_bauhaus_combobox_get_text(d->style);
     dt_conf_set_string(CONFIG_PREFIX "style", style);
-    gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), TRUE);
+    gtk_widget_set_visible(GTK_WIDGET(d->style_mode), TRUE);
   }
 }
 
@@ -1081,6 +1081,9 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
+  dt_action_insert_sorted(DT_ACTION(self), &darktable.control->actions_format);
+  dt_action_insert_sorted(DT_ACTION(self), &darktable.control->actions_storage);
+
   GtkWidget *label = dt_ui_section_label_new(_("storage options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
@@ -1134,39 +1137,31 @@ void gui_init(dt_lib_module_t *self)
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->dimensions_type, self, NULL, N_("set size"),
                                _("choose a method for setting the output size"),
                                dt_conf_get_int(CONFIG_PREFIX "dimensions_type"),
-                               (GtkCallback)_dimensions_type_changed, d,
+                               _dimensions_type_changed, d,
                                N_("in pixels (for file)"),
                                N_("in cm (for print)"),
                                N_("in inch (for print)"),
                                N_("by scale (for file)"));
 
-  d->print_width = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->print_width, _("maximum output width limit.\n"
-                                                "click middle mouse button to reset to 0."));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->print_width), 5);
-  d->print_height = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->print_height, _("maximum output height limit.\n"
-                                                 "click middle mouse button to reset to 0."));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->print_height), 5);
-  d->print_dpi = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->print_dpi, _("resolution in dot per inch"));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->print_dpi), 4);
-  const char *dpi = dt_conf_get_string_const(CONFIG_PREFIX "print_dpi");
-  gtk_entry_set_text(GTK_ENTRY(d->print_dpi), dpi);
+  d->print_width = dt_action_entry_new(DT_ACTION(self), N_("print width"), G_CALLBACK(_print_width_changed), d,
+                                       _("maximum output width limit.\n"
+                                         "click middle mouse button to reset to 0."), NULL);
 
+  d->print_height = dt_action_entry_new(DT_ACTION(self), N_("print height"), G_CALLBACK(_print_height_changed), d,
+                                       _("maximum output height limit.\n"
+                                         "click middle mouse button to reset to 0."), NULL);
 
-  d->width = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->width, _("maximum output width limit.\n"
-                                          "click middle mouse button to reset to 0."));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->width), 5);
-  d->height = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->height, _("maximum output height limit.\n"
-                                           "click middle mouse button to reset to 0."));
-  gtk_entry_set_width_chars(GTK_ENTRY(d->height), 5);
+  d->print_dpi = dt_action_entry_new(DT_ACTION(self), N_("dpi"), G_CALLBACK(_print_dpi_changed), d,
+                                     _("resolution in dot per inch"),
+                                     dt_conf_get_string_const(CONFIG_PREFIX "print_dpi"));
 
-  gtk_widget_add_events(d->width, GDK_BUTTON_PRESS_MASK);
-  gtk_widget_add_events(d->height, GDK_BUTTON_PRESS_MASK);
+  d->width = dt_action_entry_new(DT_ACTION(self), N_("width"), G_CALLBACK(_width_changed), d,
+                                 _("maximum output width limit.\n"
+                                   "click middle mouse button to reset to 0."), NULL);
 
+  d->height = dt_action_entry_new(DT_ACTION(self), N_("height"), G_CALLBACK(_height_changed), d,
+                                  _("maximum output height limit.\n"
+                                    "click middle mouse button to reset to 0."), NULL);
 
   d->print_size = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(d->print_size), 5);
@@ -1194,14 +1189,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(d->px_size), GTK_WIDGET(px_box));
   gtk_container_foreach(GTK_CONTAINER(d->px_size), (GtkCallback)gtk_widget_set_can_focus, GINT_TO_POINTER(FALSE));
 
-  d->scale = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(d->scale), 5);
-  gtk_entry_set_text (GTK_ENTRY(d->scale), dt_conf_get_string_const(CONFIG_PREFIX "resizing_factor"));
-  gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal number or simple fraction.\n"
-                                          "zero or empty values are equal to 1.\n"
-                                          "click middle mouse button to reset to 1."));
+  d->scale = dt_action_entry_new(DT_ACTION(self), N_("scale"), G_CALLBACK(_scale_changed), d,
+                                 _("it can be an integer, decimal number or simple fraction.\n"
+                                   "zero or empty values are equal to 1.\n"
+                                   "click middle mouse button to reset to 1."),
+                                 dt_conf_get_string_const(CONFIG_PREFIX "resizing_factor"));
   gtk_widget_set_halign(GTK_WIDGET(d->scale), GTK_ALIGN_END);
-  gtk_widget_add_events(d->scale, GDK_BUTTON_PRESS_MASK);
 
   d->size_in_px = gtk_label_new("");
   gtk_label_set_ellipsize(GTK_LABEL(d->size_in_px), PANGO_ELLIPSIZE_START);
@@ -1216,24 +1209,24 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->scale), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->size_in_px), FALSE, FALSE, 0);
 
-  d->upscale = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->upscale, NULL, N_("allow upscaling"));
-  dt_bauhaus_combobox_add(d->upscale, _("no"));
-  dt_bauhaus_combobox_add(d->upscale, _("yes"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->upscale, self, NULL, N_("allow upscaling"), NULL,
+                               dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0, _callback_bool,
+                               (gpointer)CONFIG_PREFIX "upscale",
+                               N_("no"), N_("yes"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->upscale, FALSE, TRUE, 0);
 
-  d->high_quality = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->high_quality, NULL, N_("high quality resampling"));
-  dt_bauhaus_combobox_add(d->high_quality, _("no"));
-  dt_bauhaus_combobox_add(d->high_quality, _("yes"));
-  gtk_widget_set_tooltip_text(d->high_quality, _("do high quality resampling during export"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->high_quality, self, NULL, N_("high quality resampling"),
+                               _("do high quality resampling during export"),
+                               dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0, _callback_bool,
+                               (gpointer)CONFIG_PREFIX "high_quality_processing",
+                               N_("no"), N_("yes"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->high_quality, FALSE, TRUE, 0);
 
-  d->export_masks = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->export_masks, NULL, N_("store masks"));
-  dt_bauhaus_combobox_add(d->export_masks, _("no"));
-  dt_bauhaus_combobox_add(d->export_masks, _("yes"));
-  gtk_widget_set_tooltip_text(d->export_masks, _("store masks as layers in exported images. only works for some formats."));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->export_masks, self, NULL, N_("store masks"),
+                               _("store masks as layers in exported images. only works for some formats."),
+                               dt_conf_get_bool(CONFIG_PREFIX "export_masks") ? 1 : 0, _callback_bool,
+                               (gpointer)CONFIG_PREFIX "export_masks",
+                               N_("no"), N_("yes"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->export_masks, FALSE, TRUE, 0);
 
   //  Add profile combo
@@ -1266,40 +1259,35 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add intent combo
 
-  d->intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->intent, NULL, N_("intent"));
-  dt_bauhaus_combobox_add(d->intent, _("image settings"));
-  dt_bauhaus_combobox_add(d->intent, _("perceptual"));
-  dt_bauhaus_combobox_add(d->intent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(d->intent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->intent, FALSE, TRUE, 0);
-
-  tooltip = g_strdup_printf(_("• perceptual : "
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->intent, self, NULL, N_("intent"),
+                               _("• perceptual: "
                               "smoothly moves out-of-gamut colors into gamut,"
-                              "preserving gradations, but distorts in-gamut colors in the process."
+                              " preserving gradations, but distorts in-gamut colors in the process."
                               " note that perceptual is often a proprietary LUT that depends"
                               " on the destination space."
                               "\n\n"
 
-                              "• relative colorimetric : "
+                              "• relative colorimetric: "
                               "keeps luminance while reducing as little as possible saturation"
                               " until colors fit in gamut."
                               "\n\n"
 
-                              "• saturation : "
+                              "• saturation: "
                               "designed to present eye-catching business graphics"
                               " by preserving the saturation. (not suited for photography)."
                               "\n\n"
 
-                              "• absolute colorimetric : "
+                              "• absolute colorimetric: "
                               "adapt white point of the image to the white point of the"
                               " destination medium and do nothing else. mainly used when"
-                              " proofing colors. (not suited for photography)."
-                              ""
-                              ));
-  gtk_widget_set_tooltip_text(d->intent, tooltip);
-  g_free(tooltip);
+                              " proofing colors. (not suited for photography)."),
+                               0, _intent_changed, self,
+                               N_("image settings"),
+                               N_("perceptual"),
+                               N_("relative colorimetric"),
+                               NC_("rendering intent", "saturation"),
+                               N_("absolute colorimetric"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->intent, FALSE, TRUE, 0);
 
   //  Add style combo
 
@@ -1311,32 +1299,17 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add check to control whether the style is to replace or append the current module
 
-  d->style_mode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_widget_set_label(d->style_mode, NULL, N_("mode"));
-
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->style_mode, self, NULL, N_("mode"),
+                               _("whether the style items are appended to the history or replacing the history"),
+                               dt_conf_get_bool(CONFIG_PREFIX "style_append") ? 1 : 0, _callback_bool,
+                               (gpointer)CONFIG_PREFIX "style_append",
+                               N_("replace history"), N_("append history"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->style_mode, FALSE, TRUE, 0);
-
-  dt_bauhaus_combobox_add(d->style_mode, _("replace history"));
-  dt_bauhaus_combobox_add(d->style_mode, _("append history"));
-
-  dt_bauhaus_combobox_set(d->style_mode, 0);
-
-  gtk_widget_set_tooltip_text(d->style_mode,
-                              _("whether the style items are appended to the history or replacing the history"));
 
   //  Set callback signals
 
-  g_signal_connect(G_OBJECT(d->upscale), "value-changed", G_CALLBACK(_callback_bool),
-                   (gpointer)CONFIG_PREFIX "upscale");
-  g_signal_connect(G_OBJECT(d->high_quality), "value-changed", G_CALLBACK(_callback_bool),
-                   (gpointer)CONFIG_PREFIX "high_quality_processing");
-  g_signal_connect(G_OBJECT(d->export_masks), "value-changed", G_CALLBACK(_callback_bool),
-                   (gpointer)CONFIG_PREFIX "export_masks");
-  g_signal_connect(G_OBJECT(d->intent), "value-changed", G_CALLBACK(_intent_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(_profile_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(_style_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_callback_bool),
-                   (gpointer)CONFIG_PREFIX "style_append");
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
                             G_CALLBACK(_lib_export_styles_changed_callback), self);
@@ -1349,22 +1322,17 @@ void gui_init(dt_lib_module_t *self)
                                                      _("export with current settings"), GDK_KEY_e, GDK_CONTROL_MASK));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_width), "changed", G_CALLBACK(_print_width_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_height), "changed", G_CALLBACK(_print_height_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->print_dpi), "changed", G_CALLBACK(_print_dpi_changed), (gpointer)d);
-
-  g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
+  gtk_widget_add_events(d->width, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->height, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->print_width, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->print_height, GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(d->scale, GDK_BUTTON_PRESS_MASK);
 
   g_signal_connect(G_OBJECT(d->width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_width), "button-press-event", G_CALLBACK(_widht_mdlclick), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_height), "button-press-event", G_CALLBACK(_height_mdlclick), (gpointer)d);
-
   g_signal_connect(G_OBJECT(d->scale), "button-press-event", G_CALLBACK(_scale_mdlclick), (gpointer)d);
-  g_signal_connect(G_OBJECT(d->scale), "changed", G_CALLBACK(_scale_changed), (gpointer)d);
 
   // this takes care of keeping hidden widgets hidden
   gtk_widget_show_all(self->widget);
@@ -1381,10 +1349,6 @@ void gui_init(dt_lib_module_t *self)
   setting = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(setting));
   dt_bauhaus_combobox_set(d->storage, storage_index);
-
-  dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0);
-  dt_bauhaus_combobox_set(d->high_quality, dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0);
-  dt_bauhaus_combobox_set(d->export_masks, dt_conf_get_bool(CONFIG_PREFIX "export_masks") ? 1 : 0);
 
   dt_bauhaus_combobox_set(d->intent, dt_conf_get_int(CONFIG_PREFIX "iccintent") + 1);
 
@@ -1423,9 +1387,8 @@ void gui_init(dt_lib_module_t *self)
     dt_bauhaus_combobox_set(d->style, 0);
 
   // style mode to overwrite as it was the initial behavior
-  dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool(CONFIG_PREFIX "style_append"));
-
-  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
+  gtk_widget_set_no_show_all(d->style_mode, TRUE);
+  gtk_widget_set_visible(d->style_mode, dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
 
   // export metadata presets
   d->metadata_export = dt_lib_export_metadata_get_conf();
@@ -2058,4 +2021,3 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -3,53 +3,25 @@ How to make disk image with darktable application bundle (64 bit Intel only):
 1). Install MacPorts (instructions and prerequisites can be found on official website), please use default installation path (/opt/local).
     They will need some tuning, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
      buildfromsource always
-     macosx_deployment_target 10.7
-     cxx_stdlib libc++
-    (practice showed that support for versions older than 10.7 isn't viable)
+     macosx_deployment_target 10.14
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
-    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, perl, pugixml, gmic, gtk-osx-application, exiv2 and downgrade lensfun
-    (all fixes except for exiv2, gmic, gtk-osx-application and lensfun are required due to set deployment target, gmic patch removes extra dependencies,
-    gtk-osx-application patch fixes a crash, lensfun downgrade fixes backwards compatibility, exiv2 enables CR3 support):
-     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/devel/gtk-osx-application/files ~/ports/lang/python3{8,9,10}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/devel/libusb/files ~/ports/textproc ~/ports/science
+    You will also need to add a patch for gnutls
+    (that patch fixes certificate storage):
+     $ mkdir -p ~/ports/devel/gnutls/files
      $ cp -R "$(port dir gnutls)" ~/ports/devel
-     $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.diff
-     $ cp -R "$(port dir python38)" ~/ports/lang
-     $ curl -Lo ~/ports/lang/python38/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
-     $ cp -R "$(port dir python39)" ~/ports/lang
-     $ curl -Lo ~/ports/lang/python39/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
-     $ cp -R "$(port dir python310)" ~/ports/lang
-     $ curl -Lo ~/ports/lang/python310/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python310-stack_size.diff
-     $ cp -R "$(port dir GraphicsMagick)" ~/ports/graphics
-     $ curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
-     $ cp -R "$(port dir ImageMagick)" ~/ports/graphics
-     $ curl -Lo ~/ports/graphics/ImageMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/im-stdlib.diff
-     $ cp -R "$(port dir libusb)" ~/ports/devel
-     $ curl -Lo ~/ports/devel/libusb/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/libusb-no-clock_gettime.diff
-     $ cp -R "$(port dir gtk-osx-application)" ~/ports/devel
-     $ curl -Lo ~/ports/devel/gtk-osx-application/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gtk-osx-application-gettext.patch
-     $ cp -R "$(port dir perl5)" ~/ports/lang
-     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/perl-at.patch | patch -d ~/ports -p0
-     $ cp -R "$(port dir pugixml)" ~/ports/textproc
-     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pugixml-stdlib.patch | patch -d ~/ports -p0
-     $ cp -R "$(port dir gmic)" ~/ports/science
-     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gmic-minimal.patch | patch -d ~/ports -p0
-     $ cp -R "$(port dir exiv2)" ~/ports/graphics
-     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/exiv2-BMFF.patch | patch -d ~/ports -p0
-     $ cp -R "$(port dir lensfun)" ~/ports/graphics
-     $ curl -Lo ~/ports/graphics/lensfun/Portfile https://github.com/macports/macports-ports/raw/c94887a0760bdbfaf1469e20b85d06635ff294d1/graphics/lensfun/Portfile
+     $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.patch
     then append this line:
      patchfiles-append patch.diff
-    to ~/ports/*/*/Portfile files you just copied (except for perl5, pugixml, gmic, exiv2 and lensfun) and run:
+    to ~/ports/*/*/Portfile file you just copied and run:
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
-     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic libheif portmidi libsdl2 perl5
-     $ sudo port select --set python2 python27
+     $ sudo port install exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic-lib libheif portmidi libsdl2 libavif
     Clone darktable git repository (in this example into ~/src):
      $ mkdir ~/src
      $ cd ~/src
-     $ git clone --recurse-submodules https://github.com/darktable-org/darktable.git
+     $ git clone https://github.com/darktable-org/darktable.git
      $ cd darktable
      $ git submodule init
      $ git config submodule.src/tests/integration.update none
@@ -57,9 +29,9 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     Finally build and install darktable:
      $ mkdir build
      $ cd build
-     $ cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.7 -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DCMAKE_OBJCXX_FLAGS=-stdlib=libc++ -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=OFF
+     $ cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14 -DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp -DBINARY_PACKAGE_BUILD=ON -DRAWSPEED_ENABLE_LTO=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON -DDONT_USE_INTERNAL_LUA=OFF
      $ make
-     $ sudo make install
+     $ sudo cmake --install .
     After this darktable will be installed in /usr/local directory and can be started by typing the following command in terminal:
      $ GSETTINGS_SCHEMA_DIR=/opt/local/share/glib-2.0/schemas/ XDG_DATA_DIRS=/opt/local/share darktable
 

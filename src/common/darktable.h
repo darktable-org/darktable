@@ -47,6 +47,7 @@
 #include "common/dtpthread.h"
 #include "common/dttypes.h"
 #include "common/utility.h"
+#include "common/wb_presets.h"
 #ifdef _WIN32
 #include "win/getrusage.h"
 #else
@@ -156,7 +157,7 @@ typedef unsigned int u_int;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 11
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 12
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -289,8 +290,7 @@ typedef struct dt_sys_resources_t
   int *refresource; // for the debug resource modes we use fixed settings
   int group;
   int level;
-  int tunememory;
-  int tunepinning;
+  int tunemode;
 } dt_sys_resources_t;
 
 typedef struct darktable_t
@@ -663,9 +663,36 @@ static inline void dt_unreachable_codepath_with_caller(const char *description, 
  */
 #define DT_MAX_PATH_FOR_PARAMS 4096
 
+/*
+ * Helper functions for transition to gnome style xgettext translation context marking
+ *
+ * Many calls expect untranslated strings because they need to store them as ids in a language independent way.
+ * They then internally before displaying call Q_ to translate, which allows an embedded translation context to be specified.
+ * The qnome format "context|string" is used.
+ * Intltool does not support this format when it scans N_, so NC_("context","string") has to be used.
+ * But the standard NC_ does not propagate the context with the string. So here it is overridden to combine both parts.
+ *
+ * A better solution would be to switch to a modern xgettext https://wiki.gnome.org/MigratingFromIntltoolToGettext
+ *
+ *    xgettext --keyword=Q_:1g --keyword=N_:1g would allow using standard N_("context|string") to mark and pass on unchanged.
+ *
+ * This would also enable contextualised strings in introspection markups, like
+ *
+ *    DT_INTENT_SATURATION = INTENT_SATURATION, // $DESCRIPTION: "rendering intent|saturation"
+ *
+ * Before storing in a language-indpendent format, like shortcutsrc, NQ_ should be used to strip any context from the string.
+ */
+#undef NC_
+#define NC_(Context, String) (Context "|" String)
+
+static inline const gchar *NQ_(const gchar *String)
+{
+  const gchar *context_end = strchr(String, '|');
+  return context_end ? context_end + 1 : String;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

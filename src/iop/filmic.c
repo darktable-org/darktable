@@ -230,7 +230,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
 
-  if (old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 3)
   {
     typedef struct dt_iop_filmic_params_v2_t
     {
@@ -416,7 +416,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     float concavity, luma;
 
     // Global desaturation
-    if (desaturate)
+    if(desaturate)
     {
       luma = XYZ[1];
 
@@ -426,14 +426,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       }
     }
 
-    if (preserve_color)
+    if(preserve_color)
     {
       int index;
       dt_aligned_pixel_t ratios;
       float max = fmaxf(fmaxf(rgb[0], rgb[1]), rgb[2]);
 
       // Save the ratios
-      for (int c = 0; c < 3; ++c) ratios[c] = rgb[c] / max;
+      for(int c = 0; c < 3; ++c) ratios[c] = rgb[c] / max;
 
       // Log tone-mapping
       max = max / data->grey_source;
@@ -446,7 +446,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       concavity = data->grad_2[index];
 
       // Re-apply ratios
-      for (int c = 0; c < 3; ++c) rgb[c] = ratios[c] * max;
+      for(int c = 0; c < 3; ++c) rgb[c] = ratios[c] * max;
 
       luma = max;
     }
@@ -544,13 +544,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     __m128 luma;
 
     // Global saturation adjustment
-    if (desaturate)
+    if(desaturate)
     {
       luma = _mm_set1_ps(XYZ[1]);
       rgb = luma + saturation_sse * (rgb - luma);
     }
 
-    if (preserve_color)
+    if(preserve_color)
     {
       // Get the max of the RGB values
       float max = fmax(fmaxf(rgb[0], rgb[1]), rgb[2]);
@@ -593,7 +593,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       dt_aligned_pixel_t rgb_unpack;
 
       // Filmic S curve
-      for (int c = 0; c < 4; ++c)
+      for(int c = 0; c < 4; ++c)
       {
         rgb_unpack[c] = data->table[(int)CLAMP(rgb[c] * 0x10000ul, 0, 0xffff)];
       }
@@ -676,14 +676,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 error:
   dt_opencl_release_mem_object(dev_table);
   dt_opencl_release_mem_object(diff_table);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_filmic] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_filmic] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
 
 static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_t *g)
 {
-  if (p->latitude_stops > (p->white_point_source - p->black_point_source) * 0.99f)
+  if(p->latitude_stops > (p->white_point_source - p->black_point_source) * 0.99f)
   {
     // The film latitude is its linear part
     // it can never be higher than the dynamic range
@@ -1028,7 +1028,7 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
   const int combo = dt_bauhaus_combobox_get(widget);
 
-  switch (combo)
+  switch(combo)
   {
     case CUBIC_SPLINE:
     {
@@ -1137,18 +1137,18 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
   int TOE_LOST = FALSE;
   int SHOULDER_LOST = FALSE;
 
-  if ((toe_log == grey_log && toe_display == grey_display) || (toe_log == 0.0f && toe_display  == black_display))
+  if((toe_log == grey_log && toe_display == grey_display) || (toe_log == 0.0f && toe_display  == black_display))
   {
     TOE_LOST = TRUE;
   }
-  if ((shoulder_log == grey_log && shoulder_display == grey_display) || (shoulder_log == 1.0f && shoulder_display == white_display))
+  if((shoulder_log == grey_log && shoulder_display == grey_display) || (shoulder_log == 1.0f && shoulder_display == white_display))
   {
     SHOULDER_LOST = TRUE;
   }
 
   // Build the curve from the nodes
 
-  if (SHOULDER_LOST && !TOE_LOST)
+  if(SHOULDER_LOST && !TOE_LOST)
   {
     // shoulder only broke - we remove it
     nodes_data->nodes = 4;
@@ -1171,7 +1171,7 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     //dt_control_log(_("filmic curve using 4 nodes - highlights lost"));
 
   }
-  else if (TOE_LOST && !SHOULDER_LOST)
+  else if(TOE_LOST && !SHOULDER_LOST)
   {
     // toe only broke - we remove it
     nodes_data->nodes = 4;
@@ -1195,7 +1195,7 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     //dt_control_log(_("filmic curve using 4 nodes - shadows lost"));
 
   }
-  else if (TOE_LOST && SHOULDER_LOST)
+  else if(TOE_LOST && SHOULDER_LOST)
   {
     // toe and shoulder both broke - we remove them
     nodes_data->nodes = 3;
@@ -1243,13 +1243,13 @@ void compute_curve_lut(dt_iop_filmic_params_t *p, float *table, float *table_tem
     //dt_control_log(_("filmic curve using 5 nodes - everything alright"));
   }
 
-  if (p->interpolator != 3)
+  if(p->interpolator != 3)
   {
     // Compute the interpolation
 
     // Catch bad interpolators exceptions (errors in saved params)
     int interpolator = CUBIC_SPLINE;
-    if (p->interpolator > CUBIC_SPLINE && p->interpolator <= MONOTONE_HERMITE) interpolator = p->interpolator;
+    if(p->interpolator > CUBIC_SPLINE && p->interpolator <= MONOTONE_HERMITE) interpolator = p->interpolator;
 
     curve = dt_draw_curve_new(0.0, 1.0, interpolator);
     for(int k = 0; k < nodes_data->nodes; k++) (void)dt_draw_curve_add_point(curve, nodes_data->x[k], nodes_data->y[k]);
@@ -1303,7 +1303,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   const float grey_display = powf(p->grey_point_target / 100.0f, 1.0f / (p->output_power));
 
   float contrast = p->contrast;
-  if (contrast < grey_display / grey_log)
+  if(contrast < grey_display / grey_log)
   {
     // We need grey_display - (contrast * grey_log) <= 0.0
     contrast = 1.0001f * grey_display / grey_log;
@@ -1342,7 +1342,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   for(int k = 0; k < 65536; k++)
   {
     const float x = ((float)k) / 65536.0f;
-    if (sigma != 0.0f)
+    if(sigma != 0.0f)
     {
       d->grad_2[k] = expf(-0.5f * (center - x) * (center - x) / sigma);
     }
@@ -1503,13 +1503,13 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   b = Log2( 1.0f / (-1 + powf(2.0f, a)));
   d = - powf(2.0f, b);
 
-  if (grey > powf(p->grey_point_target / 100.0f, p->output_power))
+  if(grey > powf(p->grey_point_target / 100.0f, p->output_power))
   {
     // The x-coordinate rescaling is valid only when the log grey value (dynamic range center)
     // is greater or equal to the destination grey value
     rescale = TRUE;
 
-    for (int i = 0; i < 50; ++i)
+    for(int i = 0; i < 50; ++i)
     { // Optimization loop for the non-linear problem
       a = Log2((0.5f - d) / (1.0f - d)) / (grey - 1.0f);
       b = Log2( 1.0f / (-1 + powf(2.0f, a)));

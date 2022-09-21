@@ -338,7 +338,7 @@ gboolean dt_conf_key_not_empty(const char *name)
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser)
 {
   const gchar *folder = dt_conf_get_string_const(name);
-  if (folder)
+  if(folder)
   {
     gtk_file_chooser_set_current_folder(chooser, folder);
     return TRUE;
@@ -478,7 +478,7 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
     gpointer key, value;
 
     g_hash_table_iter_init (&iter, darktable.conf->x_confgen);
-    while (g_hash_table_iter_next (&iter, &key, &value))
+    while(g_hash_table_iter_next (&iter, &key, &value))
     {
       const char *name = (const char *)key;
       const dt_confgen_value_t *entry = (dt_confgen_value_t *)value;
@@ -498,35 +498,6 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 #undef LINE_SIZE
 
   return;
-}
-
-static void dt_conf_print(const gchar *key, const gchar *val, FILE *f)
-{
-  fprintf(f, "%s=%s\n", key, val);
-}
-
-void dt_conf_cleanup(dt_conf_t *cf)
-{
-  FILE *f = g_fopen(cf->filename, "wb");
-  if(f)
-  {
-    GList *keys = g_hash_table_get_keys(cf->table);
-    GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
-
-    for(GList *iter = sorted; iter; iter = g_list_next(iter))
-    {
-      const gchar *key = (const gchar *)iter->data;
-      const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
-      dt_conf_print(key, val, f);
-    }
-
-    g_list_free(sorted);
-    fclose(f);
-  }
-  g_hash_table_unref(cf->table);
-  g_hash_table_unref(cf->override_entries);
-  g_hash_table_unref(cf->x_confgen);
-  dt_pthread_mutex_destroy(&darktable.conf->mutex);
 }
 
 /** check if key exists, return 1 if lookup succeeded, 0 if failed..*/
@@ -658,7 +629,7 @@ int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
   if(!dt_confgen_value_exists(name, kind))
   {
     //early bail
-    switch (kind)
+    switch(kind)
     {
     case DT_MIN:
       return INT_MIN;
@@ -676,7 +647,7 @@ int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
   //if str is NULL or empty, dt_calculator_solve will return NAN
   const float value = dt_calculator_solve(1, str);
 
-  switch (kind)
+  switch(kind)
   {
   case DT_MIN:
     return isnan(value) ? INT_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
@@ -696,7 +667,7 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
   if(!dt_confgen_value_exists(name, kind))
   {
     //early bail
-    switch (kind)
+    switch(kind)
     {
     case DT_MIN:
       return INT64_MIN;
@@ -714,7 +685,7 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind)
   //if str is NULL or empty, dt_calculator_solve will return NAN
   const float value = dt_calculator_solve(1, str);
 
-  switch (kind)
+  switch(kind)
   {
   case DT_MIN:
     return isnan(value) ? INT64_MIN : (value > 0 ? value + 0.5f : value - 0.5f);
@@ -740,7 +711,7 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
   if(!dt_confgen_value_exists(name, kind))
   {
     //early bail
-    switch (kind)
+    switch(kind)
     {
     case DT_MIN:
       return -FLT_MAX;
@@ -759,7 +730,7 @@ float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind)
   //if str is NULL or empty, dt_calculator_solve will return NAN
   const float value = dt_calculator_solve(1, str);
 
-  switch (kind)
+  switch(kind)
   {
   case DT_MIN:
     // to anyone askig FLT_MIN is superclose to 0, not furthest value from 0 possible in float
@@ -833,6 +804,38 @@ gchar* dt_conf_expand_default_dir(const char *dir)
   return normalized_path;
 }
 
+static void dt_conf_print(const gchar *key, const gchar *val, FILE *f)
+{
+  fprintf(f, "%s=%s\n", key, val);
+}
+
+void dt_conf_save(dt_conf_t *cf)
+{
+  FILE *f = g_fopen(cf->filename, "wb");
+  if(f)
+  {
+    GList *keys = g_hash_table_get_keys(cf->table);
+    GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
+
+    for(GList *iter = sorted; iter; iter = g_list_next(iter))
+    {
+      const gchar *key = (const gchar *)iter->data;
+      const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
+      dt_conf_print(key, val, f);
+    }
+
+    g_list_free(sorted);
+    fclose(f);
+  }
+}
+void dt_conf_cleanup(dt_conf_t *cf)
+{
+  dt_conf_save(cf);
+  g_hash_table_unref(cf->table);
+  g_hash_table_unref(cf->override_entries);
+  g_hash_table_unref(cf->x_confgen);
+  dt_pthread_mutex_destroy(&darktable.conf->mutex);
+}
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

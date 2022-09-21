@@ -57,7 +57,7 @@ static void _filename_decode(const gchar *txt, gchar **name, gchar **ext)
   if(!txt || strlen(txt) == 0) return;
 
   // split the path to find filename and extension parts
-  gchar **elems = g_strsplit(txt, "/", -1);
+  gchar **elems = g_strsplit(txt, G_DIR_SEPARATOR_S, -1);
   const unsigned int size = g_strv_length(elems);
   if(size == 2)
   {
@@ -106,7 +106,7 @@ void _filename_tree_update(_widgets_filename_t *filename)
   gtk_list_store_clear(GTK_LIST_STORE(ext_model));
 
   // how do we separate filename and extension directly in sqlite :
-  // starting exemple : 'nice.bird.cr2'
+  // starting example : 'nice.bird.cr2'
   // replace(filename, '.', '') => nicebirdcr2 (remove all the point)
   // rtrim(filename, replace(filename, '.', '')) => nice.bird. (remove ending chars presents in 'nice.bird.cr2' and
   // 'nicebirdcr2') rtrim(rtrim(filename, replace(filename, '.', '')), '.') => nice.bird (remove ending '.')
@@ -272,6 +272,7 @@ static gboolean _filename_update(dt_lib_filtering_rule_t *rule)
     if(name) gtk_entry_set_text(GTK_ENTRY(filename->name), name);
     if(ext) gtk_entry_set_text(GTK_ENTRY(filename->ext), ext);
   }
+  _filename_synchronise(filename);
   rule->manual_widget_set--;
 
   g_free(name);

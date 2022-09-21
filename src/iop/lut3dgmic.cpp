@@ -76,7 +76,7 @@ void lut3d_decompress_clut(const unsigned char *const input_keypoints, const uns
   }
   catch(...)
   {
-    std::fprintf(stderr, "[lut3d gmic] error - saving cache lut (does the cache folder exist ?)\n");
+    std::fprintf(stderr, "[lut3d gmic] error - saving cache LUT (does the cache folder exist?)\n");
   }
   // format for dt
   try

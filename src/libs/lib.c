@@ -217,7 +217,7 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *min
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
 
-  dt_action_define_preset(&minfo->module->actions, "new preset");
+  dt_action_define_preset(&minfo->module->actions, _("new preset"));
 
   // then show edit dialog
   edit_preset(_("new preset"), minfo);
@@ -628,8 +628,7 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
   module->reset_button = NULL;
   module->presets_button = NULL;
 
-  module->actions = (dt_action_t){ DT_ACTION_TYPE_LIB, module->plugin_name, module->name(module),
-                                  .owner = &darktable.control->actions_libs };
+  module->actions = (dt_action_t){ DT_ACTION_TYPE_LIB, module->plugin_name, module->name(module) };
   dt_action_insert_sorted(&darktable.control->actions_libs, &module->actions);
 #ifdef USE_LUA
   dt_lua_lib_register(darktable.lua_state.state, module);
@@ -1129,6 +1128,7 @@ static gchar *_get_lib_view_path(dt_lib_module_t *module, char *suffix)
 {
   if(!darktable.view_manager) return NULL;
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(!cv) return NULL;
   // in lighttable, we store panels states per layout
   char lay[32] = "";
   if(g_strcmp0(cv->module_name, "lighttable") == 0)
@@ -1160,7 +1160,7 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 {
   gchar *key = _get_lib_view_path(module, "_visible");
   GtkWidget *widget;
-  dt_conf_set_bool(key, visible);
+  if(key) dt_conf_set_bool(key, visible);
   g_free(key);
   if(module->widget)
   {
@@ -1226,7 +1226,7 @@ static gboolean _postponed_update(gpointer data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   self->timeout_handle = 0;
-  if (self->_postponed_update)
+  if(self->_postponed_update)
     self->_postponed_update(self);
 
   return FALSE; // cancel the timer
@@ -1249,7 +1249,7 @@ void dt_lib_queue_postponed_update(dt_lib_module_t *mod, void (*update_fn)(dt_li
 void dt_lib_cancel_postponed_update(dt_lib_module_t *mod)
 {
   mod->_postponed_update = NULL;
-  if (mod->timeout_handle)
+  if(mod->timeout_handle)
   {
     g_source_remove(mod->timeout_handle);
     mod->timeout_handle = 0;

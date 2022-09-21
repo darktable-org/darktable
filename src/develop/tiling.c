@@ -30,8 +30,6 @@
 #include <strings.h>
 #include <unistd.h>
 
-#define CLAMPI(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-
 
 /* this defines an additional alignment requirement for opencl image width.
    It can have strong effects on processing speed. Reasonable values are a
@@ -186,7 +184,6 @@ static double _nm_fitness(double x[], void *rest[])
  *
  */
 
-#define MAX_IT 1000 /* maximum number of iterations */
 #define ALPHA 1.0   /* reflection coefficient */
 #define BETA 0.5    /* contraction coefficient */
 #define GAMMA 2.0   /* expansion coefficient */
@@ -273,9 +270,9 @@ static int _simplex(double (*objfunc)(double[], void *[]), double start[], int n
 #if 0
   /* print out the initial values */
   printf ("Initial Values\n");
-  for (j = 0; j <= n; j++)
+  for(j = 0; j <= n; j++)
   {
-    for (i = 0; i < n; i++)
+    for(i = 0; i < n; i++)
     {
       printf ("%f %f\n", v[j][i], f[j]);
     }
@@ -466,9 +463,9 @@ static int _simplex(double (*objfunc)(double[], void *[]), double start[], int n
 #if 0
     /* print out the value at each iteration */
     printf ("Iteration %d\n", itr);
-    for (j = 0; j <= n; j++)
+    for(j = 0; j <= n; j++)
     {
-      for (i = 0; i < n; i++)
+      for(i = 0; i < n; i++)
       {
         printf ("%f %f\n", v[j][i], f[j]);
       }
@@ -504,7 +501,7 @@ static int _simplex(double (*objfunc)(double[], void *[]), double start[], int n
 
 #if 0
   printf ("The minimum was found at\n");
-  for (j = 0; j < n; j++)
+  for(j = 0; j < n; j++)
   {
     printf ("%e\n", v[vs][j]);
     start[j] = v[vs][j];
@@ -1229,7 +1226,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
+  gboolean use_pinned_memory = dt_opencl_use_pinned_memory(devid);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)
@@ -1445,8 +1442,12 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process_cl of module */
-      if(!self->process_cl(self, piece, input, output, &iroi, &oroi)) goto error;
 
+      if(!self->process_cl(self, piece, input, output, &iroi, &oroi))
+      {
+        err = DT_OPENCL_PROCESS_CL;
+        goto error;
+      }
       /* aggregate resulting processed_maximum */
       /* TODO: check if there really can be differences between tiles and take
                appropriate action (calculate minimum, maximum, average, ...?) */
@@ -1537,11 +1538,11 @@ error:
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
-  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
+  const gboolean pinning_error = (use_pinned_memory == FALSE) && dt_opencl_use_pinned_memory(devid);
   dt_print(DT_DEBUG_TILING | DT_DEBUG_OPENCL,
       "[default_process_tiling_opencl_ptp] couldn't run process_cl() for module '%s' in tiling mode:%s %s\n",
       self->op, (pinning_error) ? " pinning problem" : "", cl_errstr(err));
-  if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
+  if(pinning_error) darktable.opencl->dev[devid].runtime_error |= DT_OPENCL_TUNE_PINNED;
   return FALSE;
 }
 
@@ -1590,7 +1591,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
+  gboolean use_pinned_memory = dt_opencl_use_pinned_memory(devid);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)
@@ -1901,8 +1902,11 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_saved[k];
 
       /* call process_cl of module */
-      if(!self->process_cl(self, piece, input, output, &iroi_full, &oroi_full)) goto error;
-
+      if(!self->process_cl(self, piece, input, output, &iroi_full, &oroi_full))
+      {
+        err = DT_OPENCL_PROCESS_CL;
+        goto error;
+      }
       /* aggregate resulting processed_maximum */
       /* TODO: check if there really can be differences between tiles and take
                appropriate action (calculate minimum, maximum, average, ...?) */
@@ -1976,11 +1980,11 @@ error:
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
-  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
+  const gboolean pinning_error = (use_pinned_memory == FALSE) && dt_opencl_use_pinned_memory(devid);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
       "[default_process_tiling_opencl_roi] couldn't run process_cl() for module '%s' in tiling mode:%s %s\n",
       self->op, (pinning_error) ? " pinning problem" : "", cl_errstr(err));
-  if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
+  if(pinning_error) darktable.opencl->dev[devid].runtime_error |= DT_OPENCL_TUNE_PINNED;
   return FALSE;
 }
 
@@ -2023,7 +2027,7 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
       = ((float)roi_out->width * (float)roi_out->height) / ((float)roi_in->width * (float)roi_in->height);
 
   tiling->factor = 1.0f + ioratio;
-  tiling->factor_cl = fmaxf(2.0f, tiling->factor); // at least have in & output buffer
+  tiling->factor_cl = tiling->factor;
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = tiling->maxbuf;
   tiling->overhead = 0;

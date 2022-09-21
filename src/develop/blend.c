@@ -240,7 +240,7 @@ static inline float _detail_mask_threshold(const float level, const gboolean det
 static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const float level)
 {
   if(level == 0.0f) return;
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
 
   const gboolean detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
@@ -258,7 +258,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   const int oheight = roi_out->height;
   if(info) fprintf(stderr, "[_refine_with_detail_mask] in module %s %ix%i --> %ix%i\n", self->op, iwidth, iheight, owidth, oheight);
 
-  const int bufsize = MAX(iwidth * iheight, owidth * oheight);
+  const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
 
   tmp = dt_alloc_align_float(bufsize);
   lum = dt_alloc_align_float(bufsize);
@@ -275,16 +275,14 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
 
   if(warp_mask == NULL) goto error;
 
-  const int msize = owidth * oheight;
+  const size_t msize = (size_t)owidth * oheight;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask, warp_mask, msize) \
   schedule(simd:static) aligned(mask, warp_mask : 64)
  #endif
-  for(int idx =0; idx < msize; idx++)
-  {
+  for(size_t idx =0; idx < msize; idx++)
     mask[idx] = mask[idx] * warp_mask[idx];
-  }
   dt_free_align(warp_mask);
 
   return;
@@ -403,11 +401,11 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask, c
   {
     float x = mask[k] / opacity;
     x = 2.f * x - 1.f;
-    if (1.f - brightness <= 0.f)
+    if(1.f - brightness <= 0.f)
       x = mask[k] <= mask_epsilon ? -1.f : 1.f;
-    else if (1.f + brightness <= 0.f)
+    else if(1.f + brightness <= 0.f)
       x = mask[k] >= 1.f - mask_epsilon ? 1.f : -1.f;
-    else if (brightness > 0.f)
+    else if(brightness > 0.f)
     {
       x = (x + brightness) / (1.f - brightness);
       x = fminf(x, 1.f);
@@ -675,7 +673,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
                                 const struct dt_iop_roi_t *roi_out, const float level, const int devid)
 {
   if(level == 0.0f) return;
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
 
   const int detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
@@ -1085,7 +1083,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
         int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
-        if (w < 1) w = 1;
+        if(w < 1) w = 1;
         const float sqrt_eps = 1.0f;
         const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
@@ -1112,7 +1110,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
         int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
-        if (w < 1) w = 1;
+        if(w < 1) w = 1;
         const float sqrt_eps = 1.0f;
         const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
@@ -1265,7 +1263,7 @@ error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_ioppr_free_iccprofile_params_cl(&work_profile_info_cl, &work_profile_lut_cl, &dev_work_profile_info,
                                      &dev_work_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1349,6 +1347,13 @@ void tiling_callback_blendop(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   tiling->overlap = 0;
   tiling->xalign = 1;
   tiling->yalign = 1;
+
+  dt_develop_blend_params_t *const bldata = (dt_develop_blend_params_t *const)piece->blendop_data;
+  if(bldata)
+  {
+    if(bldata->details != 0.0f)
+      tiling->factor += 0.75f; // details mask requires 3 additional quarter buffers   
+  }
 }
 
 /** check if content of params is all zero, indicating a non-initialized set of

@@ -658,7 +658,7 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
 
   int w = 0;
 
-  // if selection start/stop if lower than the begining of the strip
+  // if selection start/stop if lower than the beginning of the strip
   if(_time_compare_at_zoom(strip->start_t, strip->time_pos, strip->zoom) < 0) strip->start_x = -2;
   if(_time_compare_at_zoom(strip->stop_t, strip->time_pos, strip->zoom) < 0) strip->stop_x = -1;
 
@@ -753,7 +753,7 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
       }
 
       // and we jump to next date
-      // if (i+1 >= bloc->values_count) break;
+      // if(i+1 >= bloc->values_count) break;
       if(strip->zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
         _time_add(&tt, 1, DT_LIB_TIMELINE_ZOOM_MONTH);
       else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_4MONTH || strip->zoom == DT_LIB_TIMELINE_ZOOM_MONTH)

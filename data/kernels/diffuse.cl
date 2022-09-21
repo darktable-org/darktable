@@ -19,10 +19,12 @@
 #include "common.h"
 #include "noise_generator.h"
 
-// use our own coordinate sampler
-const sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE |
-                           CLK_ADDRESS_NONE            |
-                           CLK_FILTER_NEAREST;
+
+// Normalization scaling of the wavelet to approximate a laplacian
+// from the function above for sigma = B_SPLINE_SIGMA as a constant
+#define B_SPLINE_TO_LAPLACIAN 3.182727439285017f
+#define B_SPLINE_TO_LAPLACIAN_2 10.129753952777762f // square
+
 
 typedef enum dt_isotropy_t
 {
@@ -31,51 +33,6 @@ typedef enum dt_isotropy_t
   DT_ISOTROPY_GRADIENT = 2  // diffuse more in the gradient direction
 } dt_isotropy_t;
 
-
-kernel void
-diffuse_init(read_only image2d_t in, write_only image2d_t out,
-             const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  write_imagef(out, (int2)(x, y), (float4)0.f);
-}
-
-#define FSIZE 5
-
-kernel void
-diffuse_blur_bspline(read_only image2d_t in,
-                     write_only image2d_t HF, write_only image2d_t LF,
-                     const int mult, const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 acc = 0.f;
-
-  const float filter[FSIZE][FSIZE] =
-    { { 0.00390625f, 0.015625f  , 0.0234375f , 0.015625f  , 0.00390625f },
-      { 0.015625f  , 0.0625f    , 0.09375f   , 0.0625f    , 0.015625f   },
-      { 0.0234375f , 0.09375f   , 0.140625f  , 0.09375f   , 0.0234375f  },
-      { 0.015625f  , 0.0625f    , 0.09375f   , 0.0625f    , 0.015625f   },
-      { 0.00390625f, 0.015625f  , 0.0234375f , 0.015625f  , 0.00390625f } };
-
-  for(int ii = -2; ii < 3; ++ii)
-    for(int jj = -2; jj < 3; ++jj)
-    {
-      const int row = clamp(y + mult * ii, 0, height - 1);
-      const int col = clamp(x + mult * jj, 0, width - 1);
-      acc += filter[ii + 2][jj + 2] * read_imagef(in, samplerA, (int2)(col, row));
-    }
-
-  write_imagef(LF, (int2)(x, y), acc);
-  write_imagef(HF, (int2)(x, y), read_imagef(in, samplerA, (int2)(x, y)) - acc);
-}
 
 // Discretization parameters for the Partial Derivative Equation solver
 #define H_STEP 1    // spatial step

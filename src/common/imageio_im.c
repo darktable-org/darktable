@@ -67,10 +67,10 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   image = NewMagickWand();
-  if (image == NULL) goto error;
+  if(image == NULL) goto error;
 
   ret = MagickReadImage(image, filename);
-  if (ret != MagickTrue) {
+  if(ret != MagickTrue) {
     fprintf(stderr, "[ImageMagick_open] cannot open `%s'\n", img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
@@ -95,7 +95,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   img->buf_dsc.datatype = TYPE_FLOAT;
 
   float *mipbuf = dt_mipmap_cache_alloc(mbuf, img);
-  if (mipbuf == NULL) {
+  if(mipbuf == NULL) {
     fprintf(stderr,
         "[ImageMagick_open] could not alloc full buffer for image `%s'\n",
         img->filename);
@@ -104,7 +104,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   }
 
   ret = MagickExportImagePixels(image, 0, 0, img->width, img->height, "RGBP", FloatPixel, mipbuf);
-  if (ret != MagickTrue) {
+  if(ret != MagickTrue) {
     fprintf(stderr,
         "[ImageMagick_open] error reading image `%s'\n", img->filename);
     goto error;

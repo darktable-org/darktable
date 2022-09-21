@@ -168,6 +168,7 @@ void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
   dt_image_t *img = (dt_image_t *)entry->data;
   g_free(img->profile);
+  g_list_free_full(img->dng_gain_maps, g_free);
   g_free(img);
 }
 

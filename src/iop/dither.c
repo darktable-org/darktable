@@ -50,11 +50,11 @@ DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 typedef enum dt_iop_dither_type_t
 {
   DITHER_RANDOM,      // $DESCRIPTION: "random"
-  DITHER_FS1BIT,      // $DESCRIPTION: "floyd-steinberg 1-bit B&W"
-  DITHER_FS4BIT_GRAY, // $DESCRIPTION: "floyd-steinberg 4-bit gray")
-  DITHER_FS8BIT,      // $DESCRIPTION: "floyd-steinberg 8-bit RGB"
-  DITHER_FS16BIT,     // $DESCRIPTION: "floyd-steinberg 16-bit RGB"
-  DITHER_FSAUTO       // $DESCRIPTION: "floyd-steinberg auto"
+  DITHER_FS1BIT,      // $DESCRIPTION: "Floyd-Steinberg 1-bit B&W"
+  DITHER_FS4BIT_GRAY, // $DESCRIPTION: "Floyd-Steinberg 4-bit gray"
+  DITHER_FS8BIT,      // $DESCRIPTION: "Floyd-Steinberg 8-bit RGB"
+  DITHER_FS16BIT,     // $DESCRIPTION: "Floyd-Steinberg 16-bit RGB"
+  DITHER_FSAUTO       // $DESCRIPTION: "Floyd-Steinberg auto"
 } dt_iop_dither_type_t;
 
 
@@ -163,7 +163,7 @@ static inline float _rgb_to_gray(const float *const restrict val)
 static inline void nearest_color(float *const restrict val, float *const restrict err, int graymode,
                                  const float f, const float rf)
 {
-  if (graymode)
+  if(graymode)
   {
     // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
     const float in = _rgb_to_gray(val);
@@ -197,7 +197,7 @@ static inline void nearest_color(float *const restrict val, float *const restric
 #if defined(__SSE2__)
 static inline __m128 nearest_color_sse(float *const restrict val, int graymode, const float f, const float rf)
 {
-  if (graymode)
+  if(graymode)
   {
     // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
     const float in = _rgb_to_gray(val);
@@ -259,7 +259,7 @@ static inline void clipnan_pixel(float *const restrict out, const float *const r
 #ifdef _OPENMP
 #pragma omp simd aligned(in, out : 16)
 #endif
-  for (int c = 0; c < 4; c++)
+  for(int c = 0; c < 4; c++)
     out[c] = clipnan(in[c]);
 }
 
@@ -272,7 +272,7 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
   int graymode = -1;
   *levels = 65536;
   const int l1 = floorf(1.0f + dt_log2f(1.0f / scale));
-  const int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
+  const int bds = (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) ? 1 : l1 * l1;
 
   switch(data->dither_type)
   {
@@ -324,8 +324,7 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
-         || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
+      if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL))
       {
         graymode = -1;
       }
@@ -427,14 +426,14 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 #ifdef _OPENMP
 #pragma omp simd aligned(in, out : 64)
 #endif
-  for (int j = 0; j < width; j++)
+  for(int j = 0; j < width; j++)
   {
     clipnan_pixel(out + 4*j, in + 4*j);
   }
 
   // floyd-steinberg dithering follows here
 
-  if (fast_mode)
+  if(fast_mode)
   {
     // do the bulk of the image (all except the last one or two rows)
     for(int j = 0; j < height - 2; j += 2)
@@ -466,7 +465,7 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
     }
 
     // next-to-last row, if the total number of rows is even
-    if ((height & 1) == 0)
+    if((height & 1) == 0)
     {
       const float *const restrict inrow = in + (size_t)4 * (height - 2) * width;
       float *const restrict outrow = out + (size_t)4 * (height - 2) * width;
@@ -607,14 +606,14 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
 
   // once the FS dithering gets started, we can copy&clip the downright pixel, as that will be the first time
   // it will be accessed.  But to get the process started, we need to prepare the top row of pixels
-  for (int j = 0; j < width; j++)
+  for(int j = 0; j < width; j++)
   {
     clipnan_pixel_sse(out + 4*j, in + 4*j);
   }
 
   // floyd-steinberg dithering follows here
 
-  if (fast_mode)
+  if(fast_mode)
   {
     // do the bulk of the image (all except the last one or two rows)
     for(int j = 0; j < height - 2; j += 2)
@@ -647,7 +646,7 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
     }
 
     // next-to-last row, if the total number of rows is even
-    if ((height & 1) == 0)
+    if((height & 1) == 0)
     {
       const float *const restrict inrow = in + (size_t)4 * (height - 2) * width;
       float *const restrict outrow = out + (size_t)4 * (height - 2) * width;
@@ -775,7 +774,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
   {
-    const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+    const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
     process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
   }
 }
@@ -790,7 +789,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
   {
-    const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+    const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
     process_floyd_steinberg_sse2(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
   }
 }

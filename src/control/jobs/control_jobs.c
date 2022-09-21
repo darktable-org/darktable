@@ -52,6 +52,7 @@
 #endif
 #ifdef _WIN32
 #include "win/dtwin.h"
+#include <utime.h>
 #endif
 
 // Control of the collection updates during an import.  Start with a short interval to feel responsive,
@@ -367,9 +368,19 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->orientation = image.orientation;
     for(int i = 0; i < 3; i++)
       d->wb_coeffs[i] = image.wb_coeffs[i];
-    for(int k=0; k<4; k++)
-      for(int i=0; i<3; i++)
-        d->adobe_XYZ_to_CAM[k][i] = image.adobe_XYZ_to_CAM[k][i];
+    // give priority to DNG embedded matrix: see dt_colorspaces_conversion_matrices_xyz() and its call from
+    // iop/temperature.c with image_storage.adobe_XYZ_to_CAM[][] and image_storage.d65_color_matrix[] as inputs
+    if(!isnan(image.d65_color_matrix[0]))
+    {
+        for(int i = 0; i < 9; ++i)
+          d->adobe_XYZ_to_CAM[i/3][i%3] = image.d65_color_matrix[i];
+        for(int i = 0; i < 3; ++i)
+          d->adobe_XYZ_to_CAM[3][i] = 0.0f;
+    }
+    else
+      for(int k = 0; k < 4; ++k)
+        for(int i = 0; i < 3; ++i)
+          d->adobe_XYZ_to_CAM[k][i] = image.adobe_XYZ_to_CAM[k][i];
   }
 
   if(image.buf_dsc.filters == 0u || image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16)
@@ -894,7 +905,7 @@ static gint _dt_delete_file_display_modal_dialog(int send_to_trash, const char *
   dt_pthread_mutex_lock(&modal_dialog.mutex);
 
   gdk_threads_add_idle(_dt_delete_dialog_main_thread, &modal_dialog);
-  while (modal_dialog.dialog_result == GTK_RESPONSE_NONE)
+  while(modal_dialog.dialog_result == GTK_RESPONSE_NONE)
     dt_pthread_cond_wait(&modal_dialog.cond, &modal_dialog.mutex);
 
   dt_pthread_mutex_unlock(&modal_dialog.mutex);
@@ -911,7 +922,7 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
   GFile *gfile = g_file_new_for_path(filename);
   int send_to_trash = dt_conf_get_bool("send_to_trash");
 
-  while (delete_status == _DT_DELETE_STATUS_UNKNOWN)
+  while(delete_status == _DT_DELETE_STATUS_UNKNOWN)
   {
     gboolean delete_success = FALSE;
     GError *gerror = NULL;
@@ -1365,9 +1376,15 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   double fraction = 0;
 
-  // set up the fdata struct
-  fdata->max_width = (settings->max_width != 0 && w != 0) ? MIN(w, settings->max_width) : MAX(w, settings->max_width);
-  fdata->max_height = (settings->max_height != 0 && h != 0) ? MIN(h, settings->max_height) : MAX(h, settings->max_height);
+  fdata->max_width =
+    (settings->max_width != 0 && w != 0)
+    ? MIN(w, settings->max_width)
+    : MAX(w, settings->max_width);
+  fdata->max_height =
+    (settings->max_height != 0 && h != 0)
+    ? MIN(h, settings->max_height)
+    : MAX(h, settings->max_height);
+
   g_strlcpy(fdata->style, settings->style, sizeof(fdata->style));
   fdata->style_append = settings->style_append;
   // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a
@@ -1800,7 +1817,7 @@ void dt_control_reset_local_copy_images()
 void dt_control_refresh_exif()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_refresh_exif_run, N_("refresh exif"), 0,
+                     dt_control_generic_images_job_create(&dt_control_refresh_exif_run, N_("refresh EXIF"), 0,
                                                           NULL, PROGRESS_CANCELLABLE, FALSE));
 }
 
@@ -1872,7 +1889,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->sdata = sdata;
   data->high_quality = high_quality;
   data->export_masks = export_masks;
-  data->upscale = upscale;
+  data->upscale = (max_width == 0 && max_height == 0) ? FALSE : upscale;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
   data->icc_type = icc_type;
@@ -1888,7 +1905,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
 }
 
 static void _add_datetime_offset(const uint32_t imgid, const char *odt,
-                                 const long int offset, char *ndt)
+                                 const GTimeSpan offset, char *ndt)
 {
   // get the datetime_taken and calculate the new time
   GDateTime *datetime_original = dt_datetime_exif_to_gdatetime(odt, darktable.utc_tz);
@@ -1902,11 +1919,14 @@ static void _add_datetime_offset(const uint32_t imgid, const char *odt,
   if(!datetime_new)
     return;
   gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S,%f");
-  datetime[DT_DATETIME_LENGTH - 1] = '\0';  // limit to milliseconds
-  g_date_time_unref(datetime_new);
 
   if(datetime)
+  {
     g_strlcpy(ndt, datetime, DT_DATETIME_LENGTH);
+    ndt[DT_DATETIME_LENGTH - 1] = '\0';
+  }
+
+  g_date_time_unref(datetime_new);
   g_free(datetime);
 }
 
@@ -1939,16 +1959,18 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
 
     for(GList *img = t; img; img = g_list_next(img))
     {
+      const uint32_t imgid = GPOINTER_TO_INT(img->data);
+
       char odt[DT_DATETIME_LENGTH] = {0};
-      dt_image_get_datetime(GPOINTER_TO_INT(img->data), odt);
+      dt_image_get_datetime(imgid, odt);
       if(!odt[0]) continue;
 
       char ndt[DT_DATETIME_LENGTH] = {0};
-      _add_datetime_offset(GPOINTER_TO_INT(img->data), odt, offset, ndt);
+      _add_datetime_offset(imgid, odt, offset, ndt);
       if(!ndt[0]) continue;
 
       // takes the option to include the grouped images
-      GList *grps = dt_grouping_get_group_images(GPOINTER_TO_INT(img->data));
+      GList *grps = dt_grouping_get_group_images(imgid);
       for(GList *grp = grps; grp; grp = g_list_next(grp))
       {
         imgs = g_list_prepend(imgs, grp->data);
@@ -1959,6 +1981,8 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
     }
     imgs = g_list_reverse(imgs);
     dt_image_set_datetimes(imgs, dtime, TRUE);
+
+    g_array_unref(dtime);
   }
   else
   {
@@ -2049,7 +2073,7 @@ static int _control_import_image_copy(const char *filename,
 {
   char *data = NULL;
   gsize size = 0;
-  char exif_time[DT_DATETIME_LENGTH];
+  dt_image_basic_exif_t basic_exif = {0};
   gboolean res = TRUE;
   if(!g_file_get_contents(filename, &data, &size, NULL))
   {
@@ -2057,6 +2081,8 @@ static int _control_import_image_copy(const char *filename,
     return -1;
   }
   char *output = NULL;
+  struct stat statbuf;
+  const int sts = stat(filename, &statbuf);
   if(dt_has_same_path_basename(filename, *prev_filename))
   {
     // make sure we keep the same output filename, changing only the extension
@@ -2065,17 +2091,13 @@ static int _control_import_image_copy(const char *filename,
   else
   {
     char *basename = g_path_get_basename(filename);
-    dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
+    dt_exif_get_basic_data((uint8_t *)data, size, &basic_exif);
 
-    if(!exif_time[0])
+    if(!basic_exif.datetime[0] && !sts)
     { // if no exif datetime try file datetime
-      struct stat statbuf;
-      if(!stat(filename, &statbuf))
-        dt_datetime_unix_to_exif(exif_time, sizeof(exif_time), &statbuf.st_mtime);
+      dt_datetime_unix_to_exif(basic_exif.datetime, sizeof(basic_exif.datetime), &statbuf.st_mtime);
     }
-
-    if(exif_time[0])
-      dt_import_session_set_exif_time(session, exif_time);
+    dt_import_session_set_exif_basic_info(session, &basic_exif);
     dt_import_session_set_filename(session, basename);
     const char *output_path = dt_import_session_path(session, FALSE);
     const gboolean use_filename = dt_conf_get_bool("session/use_filename");
@@ -2086,12 +2108,36 @@ static int _control_import_image_copy(const char *filename,
   }
 
   if(!g_file_set_contents(output, data, size, NULL))
-  {
+  { 
     dt_print(DT_DEBUG_CONTROL, "[import_from] failed to write file %s\n", output);
     res = FALSE;
   }
   else
   {
+#ifdef _WIN32
+    struct utimbuf times;
+    times.actime = statbuf.st_atime;
+    times.modtime = statbuf.st_mtime;
+    utime(output, &times); // set origin file timestamps
+#else
+    struct timeval times[2];
+    times[0].tv_sec = statbuf.st_atime;
+    times[1].tv_sec = statbuf.st_mtime;
+#ifdef __APPLE__
+#ifndef _POSIX_SOURCE
+    times[0].tv_usec = statbuf.st_atimespec.tv_nsec * 0.001;
+    times[1].tv_usec = statbuf.st_mtimespec.tv_nsec * 0.001;
+#else
+    times[0].tv_usec = statbuf.st_atimensec * 0.001;
+    times[1].tv_usec = statbuf.st_mtimensec * 0.001;
+#endif
+#else
+    times[0].tv_usec = statbuf.st_atim.tv_nsec * 0.001;
+    times[1].tv_usec = statbuf.st_mtim.tv_nsec * 0.001;
+#endif
+    utimes(output, times); // set origin file timestamps
+#endif
+
     const int32_t imgid = dt_image_import(dt_import_session_film_id(session), output, FALSE, FALSE);
     if(!imgid) dt_control_log(_("error loading file `%s'"), output);
     else
@@ -2358,4 +2404,3 @@ void dt_control_import(GList *imgs, const char *datetime_override, const gboolea
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

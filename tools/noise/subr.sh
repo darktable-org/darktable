@@ -329,8 +329,10 @@ get_image_camera_maker() {
 	else
 		maker=$(get_exif_key "$file" Exif.Image.Make)
 	fi
-	# ensure name is capitalized
-	maker=$(echo $maker | cut -c 1 | tr "[a-z]" "[A-Z]")$(echo $maker | cut -c 2- | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
+	if [ "$maker" != "DJI" ] && [ "$maker" != "LGE" ]; then
+		# ensure name is capitalized
+		maker=$(echo $maker | cut -c 1 | tr "[a-z]" "[A-Z]")$(echo $maker | cut -c 2- | cut -d " " -f 1 | tr "[A-Z]" "[a-z]")
+	fi
 	echo $maker
 }
 
@@ -447,11 +449,11 @@ export_large_jpeg() {
 	output=$2
 	xmp="$input.xmp"
 	xmp_profiling="$scriptdir/profiling-shot.xmp"
-	
+
 	tool_installed darktable-cli
 
 	rm -f "$output" "$xmp"
-	darktable-cli "$input" "$xmp_profiling" "$output" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none --apply-custom-presets false
+	darktable-cli "$input" "$xmp_profiling" "$output" --apply-custom-presets false --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none
 	rm -f "$xmp"
 }
 

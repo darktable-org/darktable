@@ -18,6 +18,7 @@
 
 #include "common/metadata.h"
 #include "common/collection.h"
+#include "common/selection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "control/conf.h"
@@ -271,6 +272,19 @@ static void _write_metadata(GtkTextView *textview, dt_lib_module_t *self)
   }
 
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
+  // workaround: if hovered image instead of selected, aborts
+  if(imgs && !imgs->next)
+  {
+    GList *sels = dt_selection_get_list(darktable.selection, FALSE, FALSE);
+    if(sels && (sels->next || (!sels->next && GPOINTER_TO_INT(sels->data) != GPOINTER_TO_INT(imgs->data))))
+    {
+      g_list_free(sels);
+      g_list_free(imgs);
+      return;
+    }
+    g_list_free(sels);
+  }
+
   dt_metadata_set_list(imgs, key_value, TRUE);
 
   for(GList *l = key_value; l; l = l->next)
@@ -286,12 +300,11 @@ static void _write_metadata(GtkTextView *textview, dt_lib_module_t *self)
   dt_image_synch_xmps(imgs);
   g_list_free(imgs);
   _update(self);
+  d->editing = FALSE;
 }
 
 static void _apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  d->editing = FALSE;
   _write_metadata(NULL, self);
 }
 
@@ -321,14 +334,12 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
       case GDK_KEY_KP_Enter:
         _write_metadata(GTK_TEXT_VIEW(textview), self);
         _text_set_all_selected(GTK_TEXT_VIEW(textview), FALSE);
-        d->editing = FALSE;
         return TRUE;
         break;
       case GDK_KEY_Tab:
       case GDK_KEY_KP_Tab:
       case GDK_KEY_ISO_Left_Tab:
         _write_metadata(GTK_TEXT_VIEW(textview), self);
-        d->editing = FALSE;
         break;
       case GDK_KEY_Escape:
       {
@@ -437,7 +448,6 @@ static void _update_layout(dt_lib_module_t *self)
 void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  d->editing = FALSE;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const gchar *name = dt_metadata_get_name_by_display_order(i);
@@ -460,7 +470,7 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   // if editing don't lose the current entry
-  if (d->editing) return;
+  if(d->editing) return;
 
   dt_lib_queue_postponed_update(self, _update);
 }
@@ -647,7 +657,7 @@ static void _populate_popup_multi(GtkTextView *textview, GtkWidget *popup, dt_li
   // get grid line number
   const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
 
-  if (!d->metadata_list[i] || !_is_leave_unchanged(GTK_TEXT_VIEW(textview))) return;
+  if(!d->metadata_list[i] || !_is_leave_unchanged(GTK_TEXT_VIEW(textview))) return;
 
   gtk_menu_shell_append(GTK_MENU_SHELL(popup),gtk_separator_menu_item_new());
 
@@ -688,8 +698,6 @@ void gui_init(dt_lib_module_t *self)
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   self->widget = GTK_WIDGET(grid);
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-
-  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -713,7 +721,7 @@ void gui_init(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(buffer), "buffer_tv", GINT_TO_POINTER(textview));
     g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
     g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
-    gtk_text_buffer_create_tag (gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview)),
+    gtk_text_buffer_create_tag(gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview)),
                                 "italic", "style", PANGO_STYLE_ITALIC, NULL);
 
     const char *name = (char *)dt_metadata_get_name_by_display_order(i);
@@ -962,4 +970,3 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

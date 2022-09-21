@@ -215,7 +215,7 @@ GList* _get_selected_style_names(GList* selected_styles, GtkTreeModel *model)
 {
   GtkTreeIter iter;
   GList *style_names = NULL;
-  for (const GList *style = selected_styles; style; style = g_list_next(style))
+  for(const GList *style = selected_styles; style; style = g_list_next(style))
   {
     GValue value = {0,};
     gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)style->data);
@@ -270,7 +270,7 @@ static void edit_clicked(GtkWidget *w, gpointer user_data)
   GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
 
   GList *styles = gtk_tree_selection_get_selected_rows(selection, &model);
-  for (const GList *style = styles; style; style = g_list_next(style))
+  for(const GList *style = styles; style; style = g_list_next(style))
   {
     char *name = NULL;
     GValue value = {0,};
@@ -337,7 +337,7 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
   {
     dt_database_start_transaction(darktable.db);
 
-    for (const GList *style = style_names; style; style = g_list_next(style))
+    for(const GList *style = style_names; style; style = g_list_next(style))
     {
       dt_styles_delete_by_name_adv((char*)style->data, single_raise);
     }
@@ -383,7 +383,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
   {
     char *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
-    for (const GList *style = style_names; style; style = g_list_next(style))
+    for(const GList *style = style_names; style; style = g_list_next(style))
     {
       char stylename[520];
 
@@ -822,13 +822,12 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate, _("creates a duplicate of the image before applying style"));
 
-  d->applymode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
+                               _("how to handle existing history"),
+                               dt_conf_get_int("plugins/lighttable/style/applymode"),
+                               applymode_combobox_changed, self,
+                               N_("append"), N_("overwrite"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->applymode), TRUE, FALSE, 0);
-  dt_bauhaus_widget_set_label(d->applymode, NULL, N_("mode"));
-  dt_bauhaus_combobox_add(d->applymode, _("append"));
-  dt_bauhaus_combobox_add(d->applymode, _("overwrite"));
-  gtk_widget_set_tooltip_text(d->applymode, _("how to handle existing history"));
-  dt_bauhaus_combobox_set(d->applymode, dt_conf_get_int("plugins/lighttable/style/applymode"));
 
   GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -880,8 +879,6 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
-  g_signal_connect(G_OBJECT(d->applymode), "value-changed", G_CALLBACK(applymode_combobox_changed), (gpointer)self);
-
   _update(self);
 }
 
@@ -915,7 +912,7 @@ void gui_reset(dt_lib_module_t *self)
 
   if(can_delete)
   {
-    for (const GList *result = all_styles; result; result = g_list_next(result))
+    for(const GList *result = all_styles; result; result = g_list_next(result))
     {
       dt_style_t *style = (dt_style_t *)result->data;
       dt_styles_delete_by_name_adv((char*)style->name, FALSE);

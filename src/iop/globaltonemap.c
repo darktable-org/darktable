@@ -179,7 +179,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   // Drago needs the absolute Lmax value of the image. In pixelpipe FULL we can not reliably get this value
   // as the pixelpipe might only see part of the image (region of interest). Therefore we try to get lwmax from
   // the PREVIEW pixelpipe which luckily stores it for us.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_gui_enter_critical_section(self);
     const uint64_t hash = g->hash;
@@ -218,7 +218,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 
   // PREVIEW pixelpipe stores lwmax
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_iop_gui_enter_critical_section(self);
@@ -355,7 +355,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     float tmp_lwmax = NAN;
 
     // see comments in process() about lwmax value
-    if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+    if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
     {
       dt_iop_gui_enter_critical_section(self);
       const uint64_t hash = g->hash;
@@ -460,7 +460,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     parameters[2] = bl;
     parameters[3] = lwmax;
 
-    if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+    if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
     {
       uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
       dt_iop_gui_enter_critical_section(self);
@@ -511,7 +511,7 @@ error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
   dt_free_align(maximum);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

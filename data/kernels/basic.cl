@@ -52,6 +52,48 @@ rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
 }
 
 kernel void
+rawprepare_1f_gainmap(read_only image2d_t in, write_only image2d_t out,
+              const int width, const int height,
+              const int cx, const int cy,
+              global const float *sub, global const float *div,
+              const int rx, const int ry,
+              read_only image2d_t map0, read_only image2d_t map1,
+              read_only image2d_t map2, read_only image2d_t map3,
+              const int2 map_size, const float2 im_to_rel,
+              const float2 rel_to_map, const float2 map_origin)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float pixel = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
+
+  const int id = BL(ry+cy+y, rx+cx+x);
+  float pixel_scaled = (pixel - sub[id]) / div[id];
+
+  // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
+  const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5, 0.5);
+  switch(id)
+  {
+    case 0:
+      pixel_scaled *= read_imagef(map0, samplerf, map_pt).x;
+      break;
+    case 1:
+      pixel_scaled *= read_imagef(map1, samplerf, map_pt).x;
+      break;
+    case 2:
+      pixel_scaled *= read_imagef(map2, samplerf, map_pt).x;
+      break;
+    case 3:
+      pixel_scaled *= read_imagef(map3, samplerf, map_pt).x;
+      break;
+  }
+
+  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+}
+
+kernel void
 rawprepare_1f_unnormalized(read_only image2d_t in, write_only image2d_t out,
                            const int width, const int height,
                            const int cx, const int cy,
@@ -67,6 +109,48 @@ rawprepare_1f_unnormalized(read_only image2d_t in, write_only image2d_t out,
 
   const int id = BL(ry+cy+y, rx+cx+x);
   const float pixel_scaled = (pixel - sub[id]) / div[id];
+
+  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+}
+
+kernel void
+rawprepare_1f_unnormalized_gainmap(read_only image2d_t in, write_only image2d_t out,
+                           const int width, const int height,
+                           const int cx, const int cy,
+                           global const float *sub, global const float *div,
+                           const int rx, const int ry,
+                           read_only image2d_t map0, read_only image2d_t map1,
+                           read_only image2d_t map2, read_only image2d_t map3,
+                           const int2 map_size, const float2 im_to_rel,
+                           const float2 rel_to_map, const float2 map_origin)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width  || y >= height) return;
+
+  const float pixel = read_imagef(in, sampleri, (int2)(x + cx, y + cy)).x;
+
+  const int id = BL(ry+cy+y, rx+cx+x);
+  float pixel_scaled = (pixel - sub[id]) / div[id];
+
+  // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
+  const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5, 0.5);
+  switch(id)
+  {
+    case 0:
+      pixel_scaled *= read_imagef(map0, samplerf, map_pt).x;
+      break;
+    case 1:
+      pixel_scaled *= read_imagef(map1, samplerf, map_pt).x;
+      break;
+    case 2:
+      pixel_scaled *= read_imagef(map2, samplerf, map_pt).x;
+      break;
+    case 3:
+      pixel_scaled *= read_imagef(map3, samplerf, map_pt).x;
+      break;
+  }
 
   write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
 }
@@ -208,7 +292,7 @@ highlights_false_color (read_only image2d_t in, write_only image2d_t out, const 
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
-  
+
   const float ival = read_imagef(in, sampleri, (int2)(x, y)).x;
   const int c = FC(y + ry, x + rx, filters);
   float oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
@@ -450,7 +534,9 @@ kernel void
 interpolate_and_mask(read_only image2d_t input,
                      write_only image2d_t interpolated,
                      write_only image2d_t clipping_mask,
-                     constant float *clips, const int filters,
+                     constant float *clips,
+                     constant float *wb,
+                     const int filters,
                      const int width, const int height)
 {
   // Bilinear interpolation
@@ -458,6 +544,7 @@ interpolate_and_mask(read_only image2d_t input,
   const int i = get_global_id(1); // = y
 
   if(j >= width || i >= height) return;
+  const float center = read_imagef(input, sampleri, (int2)(j, i)).x;
 
   const int c = FC(i, j, filters);
 
@@ -477,103 +564,101 @@ interpolate_and_mask(read_only image2d_t input,
     // because we are dealing with local averages anyway, later on.
     // Also we remosaic the image at the end, so only the relevant channel gets picked.
     // Finally, it's unlikely that the borders of the image get clipped due to vignetting.
-    const float center = read_imagef(input, sampleri, (int2)(j, i)).x;
     R = G = B = center;
     R_clipped = G_clipped = B_clipped = (center > clips[c]);
   }
   else
   {
     // fetch neighbours and cache them for perf
-    float cache[9];
-    for(int ii = -1; ii < 2; ii++)
-      for(int jj =-1; jj < 2; jj++)
-      {
-        cache[(ii + 1) * 3 + (jj + 1)] = read_imagef(input, samplerA, (int2)(j + jj, i + ii)).x;
-      }
+    const size_t i_prev = (i - 1);
+    const size_t i_next = (i + 1);
+    const size_t j_prev = (j - 1);
+    const size_t j_next = (j + 1);
 
-    const float *const north_west = &cache[0];
-    const float *const north = &cache[1];
-    const float *const north_east = &cache[2];
-    const float *const west = &cache[3];
-    const float *const center = &cache[4];
-    const float *const east = &cache[5];
-    const float *const south_west = &cache[6];
-    const float *const south = &cache[7];
-    const float *const south_east = &cache[8];
+    const float north = read_imagef(input, samplerA, (int2)(j, i_prev)).x;
+    const float south = read_imagef(input, samplerA, (int2)(j, i_next)).x;
+    const float west = read_imagef(input, samplerA, (int2)(j_prev, i)).x;
+    const float east = read_imagef(input, samplerA, (int2)(j_next, i)).x;
+
+    const float north_east = read_imagef(input, samplerA, (int2)(j_next, i_prev)).x;
+    const float north_west = read_imagef(input, samplerA, (int2)(j_prev, i_prev)).x;
+    const float south_east = read_imagef(input, samplerA, (int2)(j_next, i_next)).x;
+    const float south_west = read_imagef(input, samplerA, (int2)(j_prev, i_next)).x;
 
     if(c == GREEN) // green pixel
     {
-      G = *center;
-      G_clipped = (*center > clips[GREEN]);
+      G = center;
+      G_clipped = (center > clips[GREEN]);
     }
     else // non-green pixel
     {
       // interpolate inside an X/Y cross
-      G = (*north + *south + *east + *west) / 4.f;
-      G_clipped = (*north > clips[GREEN] || *south > clips[GREEN] || *east > clips[GREEN] || *west > clips[GREEN]);
+      G = (north + south + east + west) / 4.f;
+      G_clipped = (north > clips[GREEN] || south > clips[GREEN] || east > clips[GREEN] || west > clips[GREEN]);
     }
 
     if(c == RED ) // red pixel
     {
-      R = *center;
-      R_clipped = (*center > clips[RED]);
+      R = center;
+      R_clipped = (center > clips[RED]);
     }
     else // non-red pixel
     {
       if(FC(i - 1, j, filters) == RED && FC(i + 1, j, filters) == RED)
       {
         // we are on a red column, so interpolate column-wise
-        R = (*north + *south) / 2.f;
-        R_clipped = (*north > clips[RED] || *south > clips[RED]);
+        R = (north + south) / 2.f;
+        R_clipped = (north > clips[RED] || south > clips[RED]);
       }
       else if(FC(i, j - 1, filters) == RED && FC(i, j + 1, filters) == RED)
       {
         // we are on a red row, so interpolate row-wise
-        R = (*west + *east) / 2.f;
-        R_clipped = (*west > clips[RED] || *east > clips[RED]);
+        R = (west + east) / 2.f;
+        R_clipped = (west > clips[RED] || east > clips[RED]);
       }
       else
       {
         // we are on a blue row, so interpolate inside a square
-        R = (*north_west + *north_east + *south_east + *south_west) / 4.f;
-        R_clipped = (*north_west > clips[RED] || *north_east > clips[RED] || *south_west > clips[RED]
-                      || *south_east > clips[RED]);
+        R = (north_west + north_east + south_east + south_west) / 4.f;
+        R_clipped = (north_west > clips[RED] || north_east > clips[RED] || south_west > clips[RED]
+                      || south_east > clips[RED]);
       }
     }
 
     if(c == BLUE ) // blue pixel
     {
-      B = *center;
-      B_clipped = (*center > clips[BLUE]);
+      B = center;
+      B_clipped = (center > clips[BLUE]);
     }
     else // non-blue pixel
     {
       if(FC(i - 1, j, filters) == BLUE && FC(i + 1, j, filters) == BLUE)
       {
         // we are on a blue column, so interpolate column-wise
-        B = (*north + *south) / 2.f;
-        B_clipped = (*north > clips[BLUE] || *south > clips[BLUE]);
+        B = (north + south) / 2.f;
+        B_clipped = (north > clips[BLUE] || south > clips[BLUE]);
       }
       else if(FC(i, j - 1, filters) == BLUE && FC(i, j + 1, filters) == BLUE)
       {
         // we are on a red row, so interpolate row-wise
-        B = (*west + *east) / 2.f;
-        B_clipped = (*west > clips[BLUE] || *east > clips[BLUE]);
+        B = (west + east) / 2.f;
+        B_clipped = (west > clips[BLUE] || east > clips[BLUE]);
       }
       else
       {
         // we are on a red row, so interpolate inside a square
-        B = (*north_west + *north_east + *south_east + *south_west) / 4.f;
+        B = (north_west + north_east + south_east + south_west) / 4.f;
 
-        B_clipped = (*north_west > clips[BLUE] || *north_east > clips[BLUE] || *south_west > clips[BLUE]
-                    || *south_east > clips[BLUE]);
+        B_clipped = (north_west > clips[BLUE] || north_east > clips[BLUE] || south_west > clips[BLUE]
+                    || south_east > clips[BLUE]);
       }
     }
   }
 
   float4 RGB = {R, G, B, native_sqrt(R * R + G * G + B * B) };
   float4 clipped = { R_clipped, G_clipped, B_clipped, (R_clipped || G_clipped || B_clipped) };
-  write_imagef(interpolated, (int2)(j, i), RGB);
+  const float4 WB4 = { wb[0], wb[1], wb[2], wb[3] };
+  write_imagef(interpolated, (int2)(j, i), RGB / WB4);
   write_imagef(clipping_mask, (int2)(j, i), clipped);
 }
 
@@ -581,6 +666,7 @@ interpolate_and_mask(read_only image2d_t input,
 kernel void
 remosaic_and_replace(read_only image2d_t interpolated,
                      write_only image2d_t output,
+                     constant float *wb,
                      const int filters,
                      const int width, const int height)
 {
@@ -594,7 +680,7 @@ remosaic_and_replace(read_only image2d_t interpolated,
   const float4 center = read_imagef(interpolated, sampleri, (int2)(j, i));
   float *rgb = (float *)&center;
 
-  write_imagef(output, (int2)(j, i), fmax(rgb[c], 0.f));
+  write_imagef(output, (int2)(j, i), fmax(rgb[c] * wb[c], 0.f));
 }
 
 kernel void
@@ -620,80 +706,25 @@ box_blur_5x5(read_only image2d_t in,
   write_imagef(out, (int2)(x, y), acc);
 }
 
-typedef enum diffuse_direction_t
+
+
+
+
+enum wavelets_scale_t
 {
-  DIFFUSE_ISOPHOTE = 0,
-  DIFFUSE_GRADIENT = 1,
-} diffuse_direction_t;
+  ANY_SCALE   = 1 << 0, // any wavelets scale   : reconstruct += HF
+  FIRST_SCALE = 1 << 1, // first wavelets scale : reconstruct = 0
+  LAST_SCALE  = 1 << 2, // last wavelets scale  : reconstruct += residual
+};
 
-
-static inline void compute_laplace_kernel(const float4 neighbour_pixel_LF[9],
-                                          const diffuse_direction_t direction,
-                                          float anisotropic_kernel[9])
-{
-  // dx, dy
-  const float gradient[2] = { (neighbour_pixel_LF[7].w - neighbour_pixel_LF[1].w) / 2.f,
-                              (neighbour_pixel_LF[5].w - neighbour_pixel_LF[3].w) / 2.f };
-  const float magnitude_grad = hypot(gradient[0], gradient[1]);
-  const float c2 = native_exp(-magnitude_grad);
-
-  // direction of the gradient. NB : force arg(grad) = 0 if hypot == 0
-  const float cos_grad = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad : 1.f; // cos(0)
-  const float sin_grad = (magnitude_grad != 0.f) ? gradient[1] / magnitude_grad : 0.f; // sin(0)
-
-  const float cos_grad_sq = cos_grad * cos_grad;
-  const float sin_grad_sq = sin_grad * sin_grad;
-  const float cos_sin_grad = cos_grad * sin_grad;
-
-  // build the rotation matrix along arg(grad) + 90°: isophote
-  float a[2][2];
-
-  if(direction == DIFFUSE_ISOPHOTE)
-  {
-    a[0][0] = cos_grad_sq + c2 * sin_grad_sq;
-    a[1][1] = c2 * cos_grad_sq + sin_grad_sq;
-    a[0][1] = a[1][0] = (c2 - 1.0f) * cos_sin_grad;
-  }
-  else if(direction == DIFFUSE_GRADIENT)
-  {
-    a[0][0] = c2 * cos_grad_sq + sin_grad_sq;
-    a[1][1] = cos_grad_sq + c2 * sin_grad_sq;
-    a[0][1] = a[1][0] = (1.f - c2) * cos_sin_grad;
-  }
-
-  const float b11 = a[0][1] / 2.0f;
-  const float b13 = -b11;
-  const float b22 = -2.0f * (a[0][0] + a[1][1]);
-
-  // build the kernel of rotated anisotropic laplacian
-  // from https://www.researchgate.net/publication/220663968 :
-  // [ [ a12 / 2,  a22,            -a12 / 2 ],
-  //   [ a11,      -2 (a11 + a22), a11      ],
-  //   [ -a12 / 2,   a22,          a12 / 2  ] ]
-  // N.B. we have flipped the signs of the a12 terms
-  // compared to the paper. There's probably a mismatch
-  // of coordinate convention between the paper and the
-  // original derivation of this convolution mask
-  // (Witkin 1991, https://doi.org/10.1145/127719.122750).
-
-  anisotropic_kernel[0] = b11;
-  anisotropic_kernel[1] = a[1][1];
-  anisotropic_kernel[2] = b13;
-  anisotropic_kernel[3] = a[0][0];
-  anisotropic_kernel[4] = b22;
-  anisotropic_kernel[5] = a[0][0];
-  anisotropic_kernel[6] = b13;
-  anisotropic_kernel[7] = a[1][1];
-  anisotropic_kernel[8] = b11;
-}
 
 kernel void
 guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
                  read_only image2d_t mask,
-                 write_only image2d_t output,
-                 const int width, const int height,
-                 const float current_radius_square, const int mult,
-                 const float noise_level, constant float *wb, const int salt)
+                 read_only image2d_t output_r, write_only image2d_t output_w,
+                 const int width, const int height, const int mult,
+                 const float noise_level, const int salt,
+                 const unsigned char scale, const float radius_sq)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -703,15 +734,11 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
   const float alpha = read_imagef(mask, samplerA, (int2)(x, y)).w;
   const float alpha_comp = 1.f - alpha;
 
+  float4 high_frequency = read_imagef(HF, samplerA, (int2)(x, y));
+
   float4 out;
 
-  if(alpha == 0.f) // non-clipped pixel, bypass
-  {
-    float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
-    float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
-    out = hf + lf;
-  }
-  else // reconstruct
+  if(alpha > 0.f) // reconstruct
   {
     // non-local neighbours coordinates
     const int j_neighbours[3] = {
@@ -725,109 +752,160 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
 
     // fetch non-local pixels and store them locally and contiguously
     float4 neighbour_pixel_HF[9];
+    neighbour_pixel_HF[3 * 0 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[0]));
+    neighbour_pixel_HF[3 * 0 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[0]));
+    neighbour_pixel_HF[3 * 0 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[0]));
 
-    for(int ii = 0; ii < 3; ii++)
-      for(int jj = 0; jj < 3; jj++)
-      {
-        neighbour_pixel_HF[3 * ii + jj] = read_imagef(HF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
-      }
+    neighbour_pixel_HF[3 * 1 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[1]));
+    neighbour_pixel_HF[3 * 1 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[1]));
+    neighbour_pixel_HF[3 * 1 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[1]));
+
+    neighbour_pixel_HF[3 * 2 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[2]));
+    neighbour_pixel_HF[3 * 2 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[2]));
+    neighbour_pixel_HF[3 * 2 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[2]));
 
     // Compute the linear fit of the laplacian of chromaticity against the laplacian of the norm
     // that is the chromaticity filter guided by the norm
 
     // Get the local average per channel
     float4 means_HF = 0.f;
-
-    for(int k = 0; k < 0; k++)
+    for(int k = 0; k < 9; k++)
     {
       means_HF += neighbour_pixel_HF[k] / 9.f;
     }
 
-    // Find the channel most likely to contain details = max( variance(HF) )
+    // Get the local variance per channel
     float4 variance_HF = 0.f;
     for(int k = 0; k < 9; k++)
     {
       variance_HF += sqf(neighbour_pixel_HF[k] - means_HF) / 9.f;
     }
 
+    // Find the channel most likely to contain details = max( variance(HF) )
+    // But since OpenCL is not designed to iterate over float4,
+    // we need to check each channel in sequence
     int guiding_channel_HF = ALPHA;
     float guiding_value_HF = 0.f;
-    for(int c = 0; c < 3; ++c)
+
+    if(variance_HF.x > guiding_value_HF)
     {
-      if(((float *)&variance_HF)[c] > guiding_value_HF)
+      guiding_value_HF = variance_HF.x;
+      guiding_channel_HF = RED;
+    }
+    if(variance_HF.y > guiding_value_HF)
       {
-        guiding_value_HF = ((float *)&variance_HF)[c];
-        guiding_channel_HF = c;
+      guiding_value_HF = variance_HF.y;
+      guiding_channel_HF = GREEN;
       }
+    if(variance_HF.z > guiding_value_HF)
+    {
+      guiding_value_HF = variance_HF.z;
+      guiding_channel_HF = BLUE;
     }
 
     // Extract the guiding values for HF and LF now
     // so we can proceed after with vectorized code
-    const float means_HF_guide = ((float *)&means_HF)[guiding_channel_HF];
+    float means_HF_guide = 0.f;
+    float variance_HF_guide = 0.f;
+    float channel_guide_HF[9];
+    float high_frequency_guide = 0.f;
 
-    float4 guide_HF[9];
-    for(int k = 0; k < 9; k++)
+    if(guiding_channel_HF == RED)
     {
-      guide_HF[k] = ((float *)&neighbour_pixel_HF[k])[guiding_channel_HF];
+      means_HF_guide = means_HF.x;
+      variance_HF_guide = variance_HF.x;
+      high_frequency_guide = high_frequency.x;
+      for(int k = 0; k < 9; k++) channel_guide_HF[k] = neighbour_pixel_HF[k].x;
+    }
+    else if(guiding_channel_HF == GREEN)
+    {
+      means_HF_guide = means_HF.y;
+      variance_HF_guide = variance_HF.y;
+      high_frequency_guide = high_frequency.y;
+      for(int k = 0; k < 9; k++) channel_guide_HF[k] = neighbour_pixel_HF[k].y;
+    }
+    else // BLUE
+    {
+      means_HF_guide = means_HF.z;
+      variance_HF_guide = variance_HF.z;
+      high_frequency_guide = high_frequency.z;
+      for(int k = 0; k < 9; k++) channel_guide_HF[k] = neighbour_pixel_HF[k].z;
     }
 
     // Compute the linear regression channel = f(guide)
     float4 covariance_HF = 0.f;
-
     for(int k = 0; k < 9; k++)
     {
       covariance_HF += (neighbour_pixel_HF[k] - means_HF)
-                       * (guide_HF[k] - means_HF_guide) / 9.f;
+                       * (channel_guide_HF[k] - means_HF_guide) / 9.f;
     }
 
-    const float4 a_HF = fmax(covariance_HF / ((float *)&variance_HF)[guiding_channel_HF], 0.f);
+    const float scale_multiplier = 1.f / radius_sq;
+    const float4 alpha_ch = read_imagef(mask, samplerA, (int2)(x, y));
+
+    const float4 a_HF = fmax(covariance_HF / variance_HF_guide, 0.f);
     const float4 b_HF = means_HF - a_HF * means_HF_guide;
 
     // Guide all channels by the norms
-    const float4 high_frequency = alpha * (a_HF * ((float *)&neighbour_pixel_HF[4])[guiding_channel_HF] + b_HF)
-                                + alpha_comp * neighbour_pixel_HF[4];
+    high_frequency = alpha_ch * scale_multiplier * (a_HF * high_frequency_guide + b_HF)
+                   + (1.f - alpha_ch * scale_multiplier) * high_frequency;
 
-    out = high_frequency + read_imagef(LF, samplerA, (int2)(x, y));
-
-    // Last step of RGB reconstruct : add noise
-    if(mult == 1 && salt)
-    {
-      // Init random number generator
-      unsigned int state[4] = { splitmix32(x + 1), splitmix32((x + 1) * (y + 3)), splitmix32(1337), splitmix32(666) };
-      xoshiro128plus(state);
-      xoshiro128plus(state);
-      xoshiro128plus(state);
-      xoshiro128plus(state);
-
-      // Model noise on the max RGB
-      const float4 sigma = out * noise_level;
-      float4 noise = dt_noise_generator_simd(DT_NOISE_POISSONIAN, out, sigma, state);
-
-      // Ensure the noise only brightens the image, since it's clipped
-      noise = out + fabs(noise - out);
-
-      out = fmax(alpha * noise + alpha_comp * out, 0.f);
-    }
   }
 
-  if(mult == 1)
+  if((scale & FIRST_SCALE))
+  {
+    // out is not inited yet
+    out = high_frequency;
+  }
+  else
+  {
+    // just accumulate HF
+    out = read_imagef(output_r, samplerA, (int2)(x, y)) + high_frequency;
+  }
+
+  if((scale & LAST_SCALE))
+  {
+    // add the residual and clamp
+    out = fmax(out + read_imagef(LF, samplerA, (int2)(x, y)), (float4)0.f);
+  }
+
+  // Last step of RGB reconstruct : add noise
+  if((scale & LAST_SCALE) && salt && alpha > 0.f)
+  {
+    // Init random number generator
+    unsigned int state[4] = { splitmix32(x + 1), splitmix32((x + 1) * (y + 3)), splitmix32(1337), splitmix32(666) };
+    xoshiro128plus(state);
+    xoshiro128plus(state);
+    xoshiro128plus(state);
+    xoshiro128plus(state);
+
+    // Model noise on the max RGB
+    const float4 sigma = out * noise_level;
+    float4 noise = dt_noise_generator_simd(DT_NOISE_POISSONIAN, out, sigma, state);
+
+    // Ensure the noise only brightens the image, since it's clipped
+    noise = out + fabs(noise - out);
+    out = fmax(alpha * noise + alpha_comp * out, 0.f);
+  }
+
+  if((scale & LAST_SCALE))
   {
     // Break the RGB channels into ratios/norm for the next step of reconstruction
     const float4 out_2 = out * out;
-    const float norm = fmax(native_sqrt(out_2.x + out_2.y + out_2.z), 1e-6f);
+    const float norm = fmax(sqrt(out_2.x + out_2.y + out_2.z), 1e-6f);
     out /= norm;
     out.w = norm;
   }
 
-  write_imagef(output, (int2)(x, y), out);
+  write_imagef(output_w, (int2)(x, y), out);
 }
 
 kernel void
 diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
               read_only image2d_t mask,
-              write_only image2d_t output,
+              read_only image2d_t output_r, write_only image2d_t output_w,
               const int width, const int height,
-              const float current_radius_square, const int mult, const int sharpen)
+              const int mult, const unsigned char scale, const float first_order_factor)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -836,15 +914,11 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
 
   const float4 alpha = read_imagef(mask, samplerA, (int2)(x, y));
 
+  float4 high_frequency = read_imagef(HF, samplerA, (int2)(x, y));
+
   float4 out;
 
-  if(alpha.w == 0.f) // non-clipped pixel, bypass
-  {
-    float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
-    float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
-    out = hf + lf;
-  }
-  else // reconstruct
+  if(alpha.w > 0.f) // reconstruct
   {
     // non-local neighbours coordinates
     const int j_neighbours[3] = {
@@ -858,20 +932,22 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
 
     // fetch non-local pixels and store them locally and contiguously
     float4 neighbour_pixel_HF[9];
-    float4 neighbour_pixel_LF[9];
+    neighbour_pixel_HF[3 * 0 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[0]));
+    neighbour_pixel_HF[3 * 0 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[0]));
+    neighbour_pixel_HF[3 * 0 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[0]));
 
-    for(int ii = 0; ii < 3; ii++)
-      for(int jj = 0; jj < 3; jj++)
-      {
-        neighbour_pixel_HF[3 * ii + jj] = read_imagef(HF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
-        neighbour_pixel_LF[3 * ii + jj] = read_imagef(LF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
-      }
+    neighbour_pixel_HF[3 * 1 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[1]));
+    neighbour_pixel_HF[3 * 1 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[1]));
+    neighbour_pixel_HF[3 * 1 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[1]));
+
+    neighbour_pixel_HF[3 * 2 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[2]));
+    neighbour_pixel_HF[3 * 2 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[2]));
+    neighbour_pixel_HF[3 * 2 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[2]));
 
     float4 update = 0.f;
 
     // Compute the laplacian in the direction parallel to the steepest gradient on the norm
-    float anisotropic_kernel_isophote[9];
-    compute_laplace_kernel(neighbour_pixel_LF, DIFFUSE_ISOPHOTE, anisotropic_kernel_isophote);
+    float anisotropic_kernel_isophote[9] = { 0.25f, 0.5f, 0.25f, 0.5f, -3.f, 0.5f, 0.25f, 0.5f, 0.25f };
 
     // Convolve the filter to get the laplacian
     float4 laplacian_HF = 0.f;
@@ -881,18 +957,40 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     }
 
     // Diffuse
-    const float4 multipliers_HF = { 0.3f, 0.3f, 0.3f, 0.f};
-
-    // Diffuse
-    out = fmax(neighbour_pixel_HF[4] + neighbour_pixel_LF[4] + alpha * (multipliers_HF * laplacian_HF), 0.f);
+    const float4 multipliers_HF = { 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 0.f };
+    high_frequency += alpha * multipliers_HF * (laplacian_HF - first_order_factor * high_frequency);
   }
 
-  // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
-  // we need it to evaluate the gradient
-  if(mult == 1)
-    out.xyz *= out.w;
+  if((scale & FIRST_SCALE))
+  {
+    // out is not inited yet
+    out = high_frequency;
+  }
+  else
+  {
+    // just accumulate HF
+    out = read_imagef(output_r, samplerA, (int2)(x, y)) + high_frequency;
+  }
 
-  write_imagef(output, (int2)(x, y), out);
+  if((scale & LAST_SCALE))
+  {
+    // add the residual and clamp
+    out = fmax(out + read_imagef(LF, samplerA, (int2)(x, y)), (float4)0.f);
+
+    // renormalize ratios
+    if(alpha.w > 0.f)
+    {
+      const float4 out_sq = sqf(out);
+      const float norm = sqrt(out_sq.x + out_sq.y + out_sq.z);
+      if(norm > 1e-4f) out.xyz /= norm;
+    }
+
+    // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
+    // we need it to evaluate the gradient
+    out.xyz *= out.w;
+  }
+
+  write_imagef(output_w, (int2)(x, y), out);
 }
 
 float

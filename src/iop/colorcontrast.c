@@ -157,7 +157,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -213,7 +213,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -227,7 +227,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   // iterate over all output pixels (same coordinates as input)
   const int npixels = roi_out->height * roi_out->width;
-  if (d->unbound)
+  if(d->unbound)
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -287,7 +287,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcontrast] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcontrast] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

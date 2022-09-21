@@ -310,7 +310,8 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
     {
       dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
-      if(strcmp(mod_src->op, mod_dest->op) == 0 && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
+      if(strcmp(mod_src->op, mod_dest->op) == 0
+         && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
       {
         // but only if it hasn't been used already
         if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
@@ -382,7 +383,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   {
     dt_iop_module_t *module_duplicate = NULL;
     // check if there's a module with the same iop_order
-    for( GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
+    for(GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)(modules_dest->data);
 
@@ -511,7 +512,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
 
   if(ops)
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr," selected ops");
+    if(DT_IOP_ORDER_INFO) fprintf(stderr," selected ops");
     // copy only selected history entries
     for(const GList *l = g_list_last(ops); l; l = g_list_previous(l))
     {
@@ -521,9 +522,9 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
 
       if(hist)
       {
-        if (!dt_iop_is_hidden(hist->module))
+        if(!dt_iop_is_hidden(hist->module))
         {
-          if (DT_IOP_ORDER_INFO)
+          if(DT_IOP_ORDER_INFO)
             fprintf(stderr,"\n  module %20s, multiprio %i",  hist->module->op, hist->module->multi_priority);
 
           mod_list = g_list_prepend(mod_list, hist->module);
@@ -533,7 +534,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   }
   else
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
+    if(DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
     // we will copy all modules
     for(GList *modules_src = dev_src->iop; modules_src; modules_src = g_list_next(modules_src))
     {
@@ -551,7 +552,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       }
     }
   }
-  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
+  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
 
   mod_list = g_list_reverse(mod_list);   // list was built in reverse order, so un-reverse it
 
@@ -744,9 +745,9 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
   return ret_val;
 }
 
-int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_imgid,
-                                       const gboolean merge, GList *ops,
-                                       const gboolean copy_iop_order, const gboolean copy_full)
+gboolean dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_imgid,
+                                            const gboolean merge, GList *ops,
+                                            const gboolean copy_iop_order, const gboolean copy_full)
 {
   if(imgid == dest_imgid) return 1;
 
@@ -769,6 +770,18 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
   if(copy_iop_order)
   {
     GList *iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
+
+    // but we also want to keep the multi-instance on the destination if merge is active
+    if(merge)
+    {
+      GList *dest_iop_list = dt_ioppr_get_iop_order_list(dest_imgid, FALSE);
+      GList *mi_iop_list = dt_ioppr_extract_multi_instances_list(dest_iop_list);
+
+      if(mi_iop_list) dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi_iop_list);
+
+      g_list_free_full(dest_iop_list, g_free);
+      g_list_free_full(mi_iop_list, g_free);
+    }
     dt_ioppr_write_iop_order_list(iop_list, dest_imgid);
     g_list_free_full(iop_list, g_free);
   }
@@ -924,7 +937,7 @@ static int dt_history_end_attop(const int32_t imgid)
     "SELECT MAX(num) FROM main.history WHERE imgid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
     size = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
@@ -932,7 +945,7 @@ static int dt_history_end_attop(const int32_t imgid)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
     "SELECT history_end FROM main.images WHERE id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
     end = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
@@ -940,10 +953,10 @@ static int dt_history_end_attop(const int32_t imgid)
 
   // a special case right after removing all history
   // It must be absolutely fresh and untouched so history_end is always on top
-  if ((size==0) && (end==0)) return -1;
+  if((size==0) && (end==0)) return -1;
 
   // return 1 if end is larger than size
-  if (end > size) return 1;
+  if(end > size) return 1;
 
   // no compression as history_end is right in the middle of stack
   return 0;
@@ -965,11 +978,11 @@ void dt_history_compress_on_image(const int32_t imgid)
     "SELECT history_end FROM main.images WHERE id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
     my_history_end = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  if (my_history_end == 0)
+  if(my_history_end == 0)
   {
     dt_history_delete_on_image(imgid);
     dt_unlock_image(imgid);
@@ -992,7 +1005,7 @@ void dt_history_compress_on_image(const int32_t imgid)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    if (sqlite3_column_int(stmt, 0) == 1) manager_position = TRUE;
+    if(sqlite3_column_int(stmt, 0) == 1) manager_position = TRUE;
   }
   sqlite3_finalize(stmt);
 
@@ -1049,7 +1062,7 @@ void dt_history_compress_on_image(const int32_t imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    if (!manager_position)
+    if(!manager_position)
     {
       // make room for mask manager history entry
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1096,7 +1109,7 @@ void dt_history_truncate_on_image(const int32_t imgid, const int32_t history_end
   dt_lock_image(imgid);
   sqlite3_stmt *stmt;
 
-  if (history_end == 0)
+  if(history_end == 0)
   {
     dt_history_delete_on_image(imgid);
     dt_unlock_image(imgid);
@@ -1173,7 +1186,7 @@ int dt_history_compress_on_list(const GList *imgs)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
         "SELECT MAX(num) FROM main.history WHERE imgid=?1", -1, &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
-      if (sqlite3_step(stmt2) == SQLITE_ROW)
+      if(sqlite3_step(stmt2) == SQLITE_ROW)
         max = sqlite3_column_int(stmt2, 0);
       sqlite3_finalize(stmt2);
 
@@ -1185,16 +1198,16 @@ int dt_history_compress_on_list(const GList *imgs)
         size = sqlite3_column_int(stmt2, 0);
       sqlite3_finalize(stmt2);
 
-      if ((size>0) && (max>0))
+      if((size>0) && (max>0))
       {
-        for (int index=0;index<(max+1);index++)
+        for(int index=0;index<(max+1);index++)
         {
           sqlite3_stmt *stmt3;
           DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
             "SELECT num FROM main.history WHERE imgid=?1 AND num=?2", -1, &stmt3, NULL);
           DT_DEBUG_SQLITE3_BIND_INT(stmt3, 1, imgid);
           DT_DEBUG_SQLITE3_BIND_INT(stmt3, 2, index);
-          if (sqlite3_step(stmt3) == SQLITE_ROW)
+          if(sqlite3_step(stmt3) == SQLITE_ROW)
           {
             sqlite3_stmt *stmt4;
             // step by step set the correct num
@@ -1247,7 +1260,7 @@ gboolean dt_history_check_module_exists(int32_t imgid, const char *operation, gb
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, enabled);
-  if (sqlite3_step(stmt) == SQLITE_ROW) result = TRUE;
+  if(sqlite3_step(stmt) == SQLITE_ROW) result = TRUE;
   sqlite3_finalize(stmt);
 
   return result;
@@ -1744,7 +1757,7 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
   }
 
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  for (const GList *l = l_copy; l; l = g_list_next(l))
+  for(const GList *l = l_copy; l; l = g_list_next(l))
   {
     const int dest = GPOINTER_TO_INT(l->data);
     dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,

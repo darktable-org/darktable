@@ -787,6 +787,13 @@ static inline float lookup_gamut(read_only image2d_t gamut_lut, const float x)
 }
 
 
+typedef enum dt_iop_colorbalancrgb_saturation_t
+{
+  DT_COLORBALANCE_SATURATION_JZAZBZ = 0, // $DESCRIPTION: "JzAzBz (2021)"
+  DT_COLORBALANCE_SATURATION_DTUCS = 1   // $DESCRIPTION: "darktable UCS (2022)"
+} dt_iop_colorbalancrgb_saturation_t;
+
+
 static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
 {
   // use an exponential soft clipping above soft_threshold
@@ -810,7 +817,9 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const float brilliance_global, const float4 brilliance,
                  const float saturation_global, const float4 saturation,
                  const int mask_display, const int mask_type, const int checker_1, const int checker_2,
-                 const float4 checker_color_1, const float4 checker_color_2)
+                 const float4 checker_color_1, const float4 checker_color_2, const float L_white,
+                 const dt_iop_colorbalancrgb_saturation_t saturation_formula,
+                 constant const float *const hue_rotation_matrix)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -842,11 +851,11 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const float4 opacities_comp = (float4)1.f - opacities;
 
   // Hue shift - do it now because we need the gamut limit at output hue right after
-  Ych.z += hue_angle;
-
-  // Ensure hue ± correction is in [-PI; PI]
-  if(Ych.z > M_PI_F) Ych.z -= 2.f * M_PI_F;
-  else if(Ych.z < -M_PI_F) Ych.z += 2.f * M_PI_F;
+  // The hue rotation is implemented as a matrix multiplication.
+  const float cos_h = Ych.z;
+  const float sin_h = Ych.w;
+  Ych.z = hue_rotation_matrix[0] * cos_h + hue_rotation_matrix[1] * sin_h;
+  Ych.w = hue_rotation_matrix[2] * cos_h + hue_rotation_matrix[3] * sin_h;
 
   // Linear chroma : distance to achromatic at constant luminance in scene-referred
   const float chroma_boost = chroma_global + dot(opacities, chroma);
@@ -892,88 +901,135 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   XYZ_D65 = LMS_to_XYZ(LMS);
 
   // Perceptual color adjustments
+  if(saturation_formula == DT_COLORBALANCE_SATURATION_JZAZBZ)
+  {
 
-  // Go to JzAzBz for perceptual saturation
-  float4 Jab = XYZ_to_JzAzBz(XYZ_D65);
+    // Go to JzAzBz for perceptual saturation
+    float4 Jab = XYZ_to_JzAzBz(XYZ_D65);
 
-  // Convert to JCh
-  float JC[2] = { Jab.x, hypot(Jab.y, Jab.z) };               // brightness/chroma vector
-  const float h = atan2(Jab.z, Jab.y);  // hue : (a, b) angle
+    // Convert to JCh
+    float JC[2] = { Jab.x, hypot(Jab.y, Jab.z) };               // brightness/chroma vector
+    const float h = atan2(Jab.z, Jab.y);  // hue : (a, b) angle
 
-  // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
-  // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
-  // so we add the chroma projected along the orthogonal axis to get some control value
-  const float T = atan2(JC[1], JC[0]); // angle of the eigenvector over the hue plane
-  const float sin_T = native_sin(T);
-  const float cos_T = native_cos(T);
-  const float M_rot_dir[2][2] = { {  cos_T,  sin_T },
-                                  { -sin_T,  cos_T } };
-  const float M_rot_inv[2][2] = { {  cos_T, -sin_T },
-                                  {  sin_T,  cos_T } };
-  float SO[2];
+    // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
+    // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
+    // so we add the chroma projected along the orthogonal axis to get some control value
+    const float T = atan2(JC[1], JC[0]); // angle of the eigenvector over the hue plane
+    const float sin_T = native_sin(T);
+    const float cos_T = native_cos(T);
+    const float M_rot_dir[2][2] = { {  cos_T,  sin_T },
+                                    { -sin_T,  cos_T } };
+    const float M_rot_inv[2][2] = { {  cos_T, -sin_T },
+                                    {  sin_T,  cos_T } };
+    float SO[2];
 
-  // brilliance & Saturation : mix of chroma and luminance
-  const float boosts[2] = { 1.f + brilliance_global + dot(opacities, brilliance),     // move in S direction
-                            saturation_global + dot(opacities, saturation) }; // move in O direction
+    // brilliance & Saturation : mix of chroma and luminance
+    const float boosts[2] = { 1.f + brilliance_global + dot(opacities, brilliance),     // move in S direction
+                              saturation_global + dot(opacities, saturation) }; // move in O direction
 
-  SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
-  SO[1] = SO[0] * clamp(T * boosts[1], -T, M_PI_F / 2.f - T);
-  SO[0] = fmax(SO[0] * boosts[0], 0.f);
+    SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
+    SO[1] = SO[0] * clamp(T * boosts[1], -T, M_PI_F / 2.f - T);
+    SO[0] = fmax(SO[0] * boosts[0], 0.f);
 
-  // Project back to JCh, that is rotate back of -T angle
-  JC[0] = fmax(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
-  JC[1] = fmax(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
+    // Project back to JCh, that is rotate back of -T angle
+    JC[0] = fmax(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
+    JC[1] = fmax(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
-  // Gamut mapping
-  const float out_max_sat_h = lookup_gamut(gamut_lut, h);
-  // if JC[0] == 0.f, the saturation / luminance ratio is infinite - assign the largest practical value we have
-  const float sat = (JC[0] > 0.f) ? soft_clip(JC[1] / JC[0], 0.8f * out_max_sat_h, out_max_sat_h)
-                                  : out_max_sat_h;
-  const float max_C_at_sat = JC[0] * sat;
-  // if sat == 0.f, the chroma is zero - assign the original luminance because there's no need to gamut map
-  const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : JC[0];
-  JC[0] = (JC[0] + max_J_at_sat) / 2.f;
-  JC[1] = (JC[1] + max_C_at_sat) / 2.f;
+    // Gamut mapping
+    const float out_max_sat_h = lookup_gamut(gamut_lut, h);
+    // if JC[0] == 0.f, the saturation / luminance ratio is infinite - assign the largest practical value we have
+    const float sat = (JC[0] > 0.f) ? soft_clip(JC[1] / JC[0], 0.8f * out_max_sat_h, out_max_sat_h)
+                                    : out_max_sat_h;
+    const float max_C_at_sat = JC[0] * sat;
+    // if sat == 0.f, the chroma is zero - assign the original luminance because there's no need to gamut map
+    const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : JC[0];
+    JC[0] = (JC[0] + max_J_at_sat) / 2.f;
+    JC[1] = (JC[1] + max_C_at_sat) / 2.f;
 
-  // Gamut-clip in Jch at constant hue and lightness,
-  // e.g. find the max chroma available at current hue that doesn't
-  // yield negative L'M'S' values, which will need to be clipped during conversion
-  const float cos_H = native_cos(h);
-  const float sin_H = native_sin(h);
+    // Gamut-clip in Jch at constant hue and lightness,
+    // e.g. find the max chroma available at current hue that doesn't
+    // yield negative L'M'S' values, which will need to be clipped during conversion
+    const float cos_H = native_cos(h);
+    const float sin_H = native_sin(h);
 
-  const float d0 = 1.6295499532821566e-11f;
-  const float d = -0.56f;
-  float Iz = JC[0] + d0;
-  Iz /= (1.f + d - d * Iz);
-  Iz = fmax(Iz, 0.f);
+    const float d0 = 1.6295499532821566e-11f;
+    const float d = -0.56f;
+    float Iz = JC[0] + d0;
+    Iz /= (1.f + d - d * Iz);
+    Iz = fmax(Iz, 0.f);
 
-  const float4 AI[3] = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
-                         {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
-                         {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+    const float4 AI[3] = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
+                          {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
+                          {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
 
-  // Do a test conversion to L'M'S'
-  const float4 IzAzBz = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
-  LMS.x = dot(AI[0], IzAzBz);
-  LMS.y = dot(AI[1], IzAzBz);
-  LMS.z = dot(AI[2], IzAzBz);
+    // Do a test conversion to L'M'S'
+    const float4 IzAzBz = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
+    LMS.x = dot(AI[0], IzAzBz);
+    LMS.y = dot(AI[1], IzAzBz);
+    LMS.z = dot(AI[2], IzAzBz);
 
-  // Clip chroma
-  float max_C = JC[1];
-  if(LMS.x < 0.f)
-    max_C = fmin(-Iz / (AI[0].y * cos_H + AI[0].z * sin_H), max_C);
+    // Clip chroma
+    float max_C = JC[1];
+    if(LMS.x < 0.f)
+      max_C = fmin(-Iz / (AI[0].y * cos_H + AI[0].z * sin_H), max_C);
 
-  if(LMS.y < 0.f)
-    max_C = fmin(-Iz / (AI[1].y * cos_H + AI[1].z * sin_H), max_C);
+    if(LMS.y < 0.f)
+      max_C = fmin(-Iz / (AI[1].y * cos_H + AI[1].z * sin_H), max_C);
 
-  if(LMS.z < 0.f)
-    max_C = fmin(-Iz / (AI[2].y * cos_H + AI[2].z * sin_H), max_C);
+    if(LMS.z < 0.f)
+      max_C = fmin(-Iz / (AI[2].y * cos_H + AI[2].z * sin_H), max_C);
 
-  // Project back to JzAzBz for real
-  Jab.x = JC[0];
-  Jab.y = max_C * cos_H;
-  Jab.z = max_C * sin_H;
+    // Project back to JzAzBz for real
+    Jab.x = JC[0];
+    Jab.y = max_C * cos_H;
+    Jab.z = max_C * sin_H;
 
-  XYZ_D65 = JzAzBz_2_XYZ(Jab);
+    XYZ_D65 = JzAzBz_2_XYZ(Jab);
+  }
+  else
+  {
+    float4 xyY = dt_XYZ_to_xyY(XYZ_D65);
+    float4 JCH = xyY_to_dt_UCS_JCH(xyY, L_white);
+    float4 HCB = dt_UCS_JCH_to_HCB(JCH);
+
+    const float radius = hypot(HCB.y, HCB.z);
+    const float sin_T = (radius > 0.f) ? HCB.y / radius : 0.f;
+    const float cos_T = (radius > 0.f) ? HCB.z / radius : 0.f;
+    const float M_rot_inv[2][2] = { { cos_T,  sin_T }, { -sin_T, cos_T } };
+    // This would be the full matrice of direct rotation if we didn't need only its last row
+    //const float M_rot_dir[2][2] = { { cos_T, -sin_T }, {  sin_T, cos_T } };
+
+    float P = HCB.y;
+    float W = sin_T * HCB.y + cos_T * HCB.z;
+
+    float a = fmax(1.f + saturation_global + dot(opacities, saturation), 0.f);
+    const float b = fmax(1.f + brilliance_global + dot(opacities, brilliance), 0.f);
+
+    const float max_a = hypot(P, W) / P;
+    a = soft_clip(a, 0.5f * max_a, max_a);
+
+    const float P_prime = (a - 1.f) * P;
+    const float W_prime = native_sqrt(sqf(P) * (1.f - sqf(a)) + sqf(W)) * b;
+
+    HCB.y = fmax(M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime, 0.f);
+    HCB.z = fmax(M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime, 0.f);
+
+    JCH = dt_UCS_HCB_to_JCH(HCB);
+
+    // Gamut mapping
+    const float max_colorfulness = lookup_gamut(gamut_lut, JCH.z); // WARNING : this is M²
+    const float max_chroma = 15.932993652962535f * native_powr(JCH.x * L_white, 0.6523997524738018f) * native_powr(max_colorfulness, 0.6007557017508491f) / L_white;
+    const float4 JCH_gamut_boundary = { JCH.x, max_chroma, JCH.z, 0.f };
+    const float4 HSB_gamut_boundary = dt_UCS_JCH_to_HSB(JCH_gamut_boundary);
+
+    // Clip saturation at constant brightness
+    float4 HSB = { HCB.x, (HCB.z > 0.f) ? HCB.y / HCB.z : 0.f, HCB.z, 0.f };
+    HSB.y = soft_clip(HSB.y, 0.8f * HSB_gamut_boundary.y, HSB_gamut_boundary.y);
+
+    JCH = dt_UCS_HSB_to_JCH(HSB);
+    xyY = dt_UCS_JCH_to_xyY(JCH, L_white);
+    XYZ_D65 = dt_xyY_to_XYZ(xyY);
+  }
 
   // Project back to D50 pipeline RGB
   RGB = matrix_product_float4(XYZ_D65, matrix_out);

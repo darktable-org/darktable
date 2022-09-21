@@ -1,0 +1,11 @@
+--- lib/system/certs.c.orig	2021-06-24 14:39:22.000000000 +0200
++++ lib/system/certs.c	2021-06-25 23:37:33.000000000 +0200
+@@ -101,7 +101,7 @@
+ 	return 0;
+ }
+ 
+-#if defined(DEFAULT_TRUST_STORE_FILE) || (defined(DEFAULT_TRUST_STORE_PKCS11) && defined(ENABLE_PKCS11))
++#if 0
+ static
+ int
+ add_system_trust(gnutls_x509_trust_list_t list,

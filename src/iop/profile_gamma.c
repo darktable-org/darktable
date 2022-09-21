@@ -250,7 +250,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_profilegamma] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_profilegamma] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -286,10 +286,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
       {
         float tmp = ((const float *)ivoid)[k] / grey;
-        if (tmp < noise) tmp = noise;
+        if(tmp < noise) tmp = noise;
         tmp = (fastlog2(tmp) - data->shadows_range) / (data->dynamic_range);
 
-        if (tmp < noise)
+        if(tmp < noise)
         {
           ((float *)ovoid)[k] = noise;
         }

@@ -363,7 +363,8 @@ static void _compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_d
 
   for(uint32_t i = 0; i < histogram_stats->bins_count; i++)
   {
-    for(uint32_t k = 0; k < histogram_stats->ch; k++) n += histogram[4 * i + k];
+    for(uint32_t k = 0; k < histogram_stats->ch; k++)
+      n += histogram[4 * i + k];
 
     if((double)n >= thr)
     {
@@ -404,7 +405,7 @@ static void _process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
     }
 
     // second, show computed correction in UI.
-    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
     {
       dt_iop_gui_enter_critical_section(self);
       g->deflicker_computed_exposure = exposure;
@@ -444,7 +445,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_exposure] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_exposure] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -473,7 +474,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     out[k] = (in[k] - black) * scale;
   }
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
   for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
 }
@@ -484,10 +486,10 @@ static float _get_exposure_bias(const struct dt_iop_module_t *self)
   float bias = 0.0f;
 
   // just check that pointers exist and are initialized
-  if(&(self->dev->image_storage) && &(self->dev->image_storage.exif_exposure_bias))
+  if(self->dev && self->dev->image_storage.exif_exposure_bias)
     bias = self->dev->image_storage.exif_exposure_bias;
 
-  // sanity checks because I don't trust exif tags too much
+  // sanity checks, don't trust exif tags too much
   if(!isnan(bias))
     return CLAMP(bias, -5.0f, 5.0f);
   else
@@ -745,13 +747,15 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     float expo = p->exposure;
 
     // If the exposure bias compensation is on, we need to add it to the user param
-    if(p->compensate_exposure_bias) expo -= _get_exposure_bias(self);
+    if(p->compensate_exposure_bias)
+      expo -= _get_exposure_bias(self);
 
-    float white = exposure2white(-expo);
+    const float white = exposure2white(-expo);
 
     // apply the exposure compensation
     dt_aligned_pixel_t XYZ_out;
-    for(int c = 0; c < 3; c++) XYZ_out[c] = XYZ[c] * white;
+    for(int c = 0; c < 3; c++)
+      XYZ_out[c] = XYZ[c] * white;
 
     // Convert to Lab for GUI feedback
     dt_aligned_pixel_t Lab_out;
@@ -785,7 +789,8 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     float expo = -white2exposure(white);
 
     // If the exposure bias compensation is on, we need to subtract it from the user param
-    if(p->compensate_exposure_bias) expo -= _get_exposure_bias(self);
+    if(p->compensate_exposure_bias)
+      expo -= _get_exposure_bias(self);
 
     white = exposure2white(-expo);
     _exposure_set_white(self, white);
@@ -814,8 +819,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     {
       case EXPOSURE_MODE_DEFLICKER:
         _autoexp_disable(self);
-        if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
-          || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
+        if(!dt_image_is_raw(&self->dev->image_storage)
+           || self->dev->image_storage.buf_dsc.channels != 1
+           || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
         {
           p->mode = EXPOSURE_MODE_MANUAL;
           dt_bauhaus_combobox_set(g->mode, p->mode);
@@ -920,7 +926,8 @@ static gboolean _origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer use
   // Init
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = allocation.height;
+  int width = allocation.width;
+  int height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -1073,16 +1080,17 @@ void gui_init(struct dt_iop_module_t *self)
      _("spot exposure mapping"),
      GTK_BOX(self->widget));
 
+  gtk_widget_set_tooltip_text(g->cs.expander, _("define a target brightness, in terms of exposure, for a selected region of the image (the control sample), which you then match against the same target brightness in other images. the control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
+
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
                                 _("\"correction\" automatically adjust exposure\n"
                                   "such that the input lightness is mapped to the target.\n"
                                   "\"measure\" simply shows how an input color is mapped by the exposure compensation\n"
                                   "and can be used to define a target."),
-                                0, NULL, self,
+                                0, _spot_settings_changed_callback, self,
                                 N_("correction"),
                                 N_("measure"));
   gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1160,4 +1168,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

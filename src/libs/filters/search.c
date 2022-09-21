@@ -30,6 +30,23 @@ typedef struct _widgets_search_t
   int time_out;
 } _widgets_search_t;
 
+static void _search_synchronize(_widgets_search_t *source)
+{
+  _widgets_search_t *dest = NULL;
+  if(source == source->rule->w_specific_top)
+    dest = source->rule->w_specific;
+  else
+    dest = source->rule->w_specific_top;
+
+  if(dest)
+  {
+    source->rule->manual_widget_set++;
+    const gchar *txt = gtk_entry_get_text(GTK_ENTRY(source->text));
+    gtk_entry_set_text(GTK_ENTRY(dest->text), txt);
+    source->rule->manual_widget_set--;
+  }
+}
+
 static gboolean _search_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
@@ -52,26 +69,10 @@ static gboolean _search_update(dt_lib_filtering_rule_t *rule)
     search = (_widgets_search_t *)rule->w_specific_top;
     gtk_entry_set_text(GTK_ENTRY(search->text), txt);
   }
+  _search_synchronize(search);
   rule->manual_widget_set--;
 
   return TRUE;
-}
-
-static void _search_synchronize(_widgets_search_t *source)
-{
-  _widgets_search_t *dest = NULL;
-  if(source == source->rule->w_specific_top)
-    dest = source->rule->w_specific;
-  else
-    dest = source->rule->w_specific_top;
-
-  if(dest)
-  {
-    source->rule->manual_widget_set++;
-    const gchar *txt = gtk_entry_get_text(GTK_ENTRY(source->text));
-    gtk_entry_set_text(GTK_ENTRY(dest->text), txt);
-    source->rule->manual_widget_set--;
-  }
 }
 
 static void _search_set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)

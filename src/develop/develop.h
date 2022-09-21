@@ -244,8 +244,6 @@ typedef struct dt_develop_t
       void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
       /* update modulegroup visibility */
       void (*update_visibility)(struct dt_lib_module_t *self);
-      /* set focus to the search module text box */
-      void (*search_text_focus)(struct dt_lib_module_t *self);
       /* test if module is preset in one of the current groups */
       gboolean (*test_visible)(struct dt_lib_module_t *self, gchar *module);
       /* add or remove module or widget in current quick access list */
@@ -419,8 +417,6 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
 void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** update modulegroup visibility */
 void dt_dev_modulegroups_update_visibility(dt_develop_t *dev);
-/** set the focus to modulegroup search text */
-void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev);
 /** set the active modulegroup */
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */

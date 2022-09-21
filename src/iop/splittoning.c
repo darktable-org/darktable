@@ -152,7 +152,7 @@ void init_presets(dt_iop_module_so_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -239,7 +239,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_splittoning] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_splittoning] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -346,7 +346,7 @@ static void colorpick_callback(GtkColorButton *widget, dt_iop_module_t *self)
   color[2] = c.blue;
   rgb2hsl(color, &h, &s, &l);
 
-  if (GTK_WIDGET(widget) == g->shadow_colorpick)
+  if(GTK_WIDGET(widget) == g->shadow_colorpick)
   {
       dt_bauhaus_slider_set(g->shadow_hue_gslider, h);
       dt_bauhaus_slider_set(g->shadow_sat_gslider, s);
@@ -468,7 +468,6 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
-  dt_bauhaus_widget_set_label(hue, section, N_("hue"));
   dt_bauhaus_slider_set_feedback(hue, 0);
   dt_bauhaus_slider_set_stop(hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.166f, 1.0f, 1.0f, 0.0f);
@@ -480,7 +479,6 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
   gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
   dt_color_picker_new(self, DT_COLOR_PICKER_POINT, hue);
 
-  dt_bauhaus_widget_set_label(saturation, section, N_("saturation"));
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(saturation, _("select the saturation tone"));
@@ -500,19 +498,19 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_splittoning_gui_data_t *g = IOP_GUI_ALLOC(splittoning);
 
-  ++darktable.bauhaus->skip_accel;
+  dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("shadows"));
   GtkWidget *shadows_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(self, "shadow_hue");
+  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(sect, "shadow_hue");
   dt_bauhaus_slider_set_factor(g->shadow_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->shadow_hue_gslider, "°");
-  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(self, "shadow_saturation");
+  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(sect, "shadow_saturation");
 
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("highlights"));
   GtkWidget *highlights_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(self, "highlight_hue");
+  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(sect, "highlight_hue");
   dt_bauhaus_slider_set_factor(g->highlight_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->highlight_hue_gslider, "°");
-  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(self, "highlight_saturation");
-  --darktable.bauhaus->skip_accel;
+  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(sect, "highlight_saturation");
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
