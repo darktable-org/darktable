@@ -402,9 +402,12 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
   }
   else if(response_id == GTK_RESPONSE_REJECT && g->old_id)
   {
-    dt_gui_presets_confirm_and_delete(GTK_WIDGET(dialog), g->original_name, g->operation, g->old_id);
-
-    if(g->callback) ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
+    if(dt_gui_presets_confirm_and_delete(GTK_WIDGET(dialog), g->original_name, g->operation, g->old_id)
+       && g->callback)
+    {
+      g->old_id = 0;
+      ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
+    }
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -414,9 +417,9 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
   free(g);
 }
 
-void dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *name, const char *module_name, int rowid)
+gboolean dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *name, const char *module_name, int rowid)
 {
-  if(!module_name) return;
+  if(!module_name) return FALSE;
 
   // This means with want to remove the preset
   GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(parent_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
@@ -427,7 +430,8 @@ void dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *nam
 #endif
 
   gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
-  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+  gboolean do_delete = gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES;
+  if(do_delete)
   {
     // deregistering accel...
     for(GList *modules = darktable.iop; modules; modules = modules->next)
@@ -460,6 +464,8 @@ void dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *nam
     sqlite3_finalize(stmt);
   }
   gtk_widget_destroy(dialog);
+
+  return do_delete;
 }
 
 static void _check_buttons_activated(GtkCheckButton *button, dt_gui_presets_edit_dialog_t *g)
