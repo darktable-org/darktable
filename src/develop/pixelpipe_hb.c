@@ -392,7 +392,8 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
           dt_iop_set_module_trouble_message(piece->module, _("enabled as required"), _("history had module disabled but it is required for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
         else
           dt_iop_set_module_trouble_message(piece->module, _("disabled as not appropriate"), _("history had module enabled but it is not allowed for this type of image.\nlikely introduced by applying a preset, style or history copy&paste"), NULL);
-        dt_print(DT_DEBUG_PARAMS, "[pixelpipe_synch] enabling mismatch for module %s in image %i\n", piece->module->op, imgid);
+        dt_print(DT_DEBUG_PARAMS, "[pixelpipe_synch] [%s] enabling mismatch for module `%s' in image %i\n",
+          dt_dev_pixelpipe_type_to_str(pipe->type), piece->module->op, imgid);
       }
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
 
@@ -410,7 +411,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with defaults_params for [%s]\n", dt_dev_pixelpipe_type_to_str(pipe->type));
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] [%s] synch all modules with defaults_params\n", dt_dev_pixelpipe_type_to_str(pipe->type));
 
   // call reset_params on all pieces first. This is mandatory to init utility modules that don't have an history stack
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
@@ -422,7 +423,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
                          pipe, piece);
   }
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for [%s]\n", dt_dev_pixelpipe_type_to_str(pipe->type));
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] [%s] synch all modules with history\n", dt_dev_pixelpipe_type_to_str(pipe->type));
 
   // go through all history items and adjust params
   GList *history = dev->history;
@@ -441,12 +442,12 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   if(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for [%s]\n", hist->module->op, dt_dev_pixelpipe_type_to_str(pipe->type));
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] [%s] synch top history module `%s'\n", dt_dev_pixelpipe_type_to_str(pipe->type), hist->module->op);
     dt_dev_pixelpipe_synch(pipe, dev, history);
   }
   else
   {
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for [%s]\n", dt_dev_pixelpipe_type_to_str(pipe->type));
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] [%s] synch top history module missing error\n", dt_dev_pixelpipe_type_to_str(pipe->type));
   }
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
@@ -455,7 +456,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changing for [%s], flag %i\n", dt_dev_pixelpipe_type_to_str(pipe->type), pipe->changed);
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] [%s] pipeline state changing, flag %i\n", dt_dev_pixelpipe_type_to_str(pipe->type), pipe->changed);
   // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
   if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
   {
@@ -987,7 +988,8 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   else
   {
     if(!fitting)
-      fprintf(stderr, "[pixelpipe_process_on_CPU] Warning: processes `%s' even if memory requirements are not met\n", module->op); 
+      fprintf(stderr, "[pixelpipe_process_on_CPU] [%s] Warning: processes `%s' without tiling even if memory requirements are not met\n",
+        dt_dev_pixelpipe_type_to_str(pipe->type), module->op); 
 
     module->process(module, piece, input, *output, roi_in, roi_out);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
@@ -1381,10 +1383,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     gboolean valid_input_on_gpu_only = (cl_mem_input != NULL);
 
     const float required_factor_cl = fmaxf(1.0f, (valid_input_on_gpu_only) ? tiling.factor_cl - 1.0f : tiling.factor_cl);
-    /* pre-check if there is enough space on device for non-tiled processing */
-    const gboolean fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
-                                                                MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
-                                                                required_factor_cl, tiling.overhead);
 
     /* general remark: in case of opencl errors within modules or out-of-memory on GPU, we transparently
        fall back to the respective cpu module and continue in pixelpipe. If we encounter errors we set
@@ -1395,54 +1393,44 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     /* test for a possible opencl path after checking some module specific pre-requisites */
     gboolean possible_cl = (module->process_cl && piece->process_cl_ready
-       && !(((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
-             || (pipe->type & DT_DEV_PIXELPIPE_PREVIEW2) == DT_DEV_PIXELPIPE_PREVIEW2)
-            && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
-       && (fits_on_device || piece->process_tiling_ready));
+       && !((pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL)));
+
+    const int m_bpp = MAX(in_bpp, bpp); 
+    const gboolean fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
+        m_bpp, required_factor_cl, tiling.overhead);
 
     if(possible_cl && !fits_on_device)
     {
-      const float cl_px = dt_opencl_get_device_available(pipe->devid) / (sizeof(float) * MAX(in_bpp, bpp) * ceilf(required_factor_cl));
-      const float dx = MAX(roi_in.width, roi_out->width);
-      const float dy = MAX(roi_in.height, roi_out->height);
-      const float border = tiling.overlap + 1;
-      /* tests for required gpu mem reflects the different tiling stategies.
-         simple tiles over whole height or width or inside rectangles where we need at last the overlapping area.
-      */
-      const gboolean possible = (cl_px > dx * border) || (cl_px > dy * border) || (cl_px > border * border);
-      if(!possible)
-      {
-        dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING, "[dt_dev_pixelpipe_process_rec] CL: tiling impossible in module `%s'. avail=%.1fM, requ=%.1fM (%ix%i). overlap=%i\n",
-            module->op, cl_px / 1e6f, dx*dy / 1e6f, (int)dx, (int)dy, (int)tiling.overlap);
+      if(!piece->process_tiling_ready)
         possible_cl = FALSE;
+  
+      const float advantage = darktable.opencl->dev[pipe->devid].advantage;
+      if(possible_cl && (advantage > 0.0f))
+      {
+        const float tilemem_cl = dt_tiling_estimate_clmem(&tiling, piece, &roi_in, roi_out, m_bpp);
+        const float tilemem_cpu = dt_tiling_estimate_cpumem(&tiling, piece, &roi_in, roi_out, m_bpp);
+        if((tilemem_cpu * advantage) < tilemem_cl)
+        {
+          dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING, "[dt_dev_pixelpipetiling_cl] [%s] estimates cpu advantage in `%s', (dev=%i, adv=%.2f, GPU %.2f CPU %.2f)\n",
+            dt_dev_pixelpipe_type_to_str(pipe->type), module->op, pipe->devid, advantage, tilemem_cl / 1e9, tilemem_cpu / 1e9);
+          possible_cl = FALSE;         
+        }
       }
     }
 
     if(possible_cl)
     {
-
-      // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, width %d, height %d, bpp %d\n",
-      // (double)tiling.factor, tiling.overhead, roi_in.width, roi_in.height, bpp);
-
-      // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %p and %p \n", module->op,
-      // cl_mem_input, *cl_mem_output);
-      // fprintf(stderr, "[opencl_pixelpipe 1] module '%s'\n", module->op);
-
       if(fits_on_device)
       {
         /* image is small enough -> try to directly process entire image with opencl */
-
-        // fprintf(stderr, "[opencl_pixelpipe 2] module '%s' running directly with process_cl\n",
-        // module->op);
-
         /* input is not on gpu memory -> copy it there */
         if(cl_mem_input == NULL)
         {
           cl_mem_input = dt_opencl_alloc_device(pipe->devid, roi_in.width, roi_in.height, in_bpp);
           if(cl_mem_input == NULL)
           {
-            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't generate input buffer for module %s\n",
-                     module->op);
+            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] [%s] couldn't generate input buffer for module `%s'\n",
+                     dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
             success_opencl = FALSE;
           }
 
@@ -1453,8 +1441,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             if(err != CL_SUCCESS)
             {
               dt_print(DT_DEBUG_OPENCL,
-                       "[opencl_pixelpipe] couldn't copy image to opencl device for module %s\n",
-                       module->op);
+                       "[opencl_pixelpipe] [%s] couldn't copy image to opencl device for module `%s'\n",
+                       dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
               success_opencl = FALSE;
             }
           }
@@ -1472,8 +1460,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           *cl_mem_output = dt_opencl_alloc_device(pipe->devid, roi_out->width, roi_out->height, bpp);
           if(*cl_mem_output == NULL)
           {
-            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] couldn't allocate output buffer for module %s\n",
-                     module->op);
+            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] [%s] couldn't allocate output buffer for module `%s'\n",
+                     dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
             success_opencl = FALSE;
           }
         }
@@ -1589,8 +1577,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         /* process blending */
         if(success_opencl)
         {
-          success_opencl
-              = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+          success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
           pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_GPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_CPU);
         }
@@ -1620,9 +1607,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           if(err != CL_SUCCESS)
           {
             /* late opencl error */
-            dt_print(
-                DT_DEBUG_OPENCL,
-                "[opencl_pixelpipe (a)] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
+            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (a)] [%s] late opencl error detected while copying back to cpu buffer: %s\n",
+                  dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = 1;
             return 1;
@@ -1669,8 +1655,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         /* now call process_tiling_cl of module; module should emit meaningful messages in case of error */
         if(success_opencl)
         {
-          success_opencl
-              = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+          success_opencl = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU);
 
@@ -1784,8 +1769,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             if(err != CL_SUCCESS)
             {
               /* late opencl error, not likely to happen here */
-              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (e)] late opencl error detected while copying "
-                                        "back to cpu buffer: %s\n", cl_errstr(err));
+              dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (e)] [%s] late opencl error detected while copying "
+                                        "back to cpu buffer: %s\n", dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
               /* that's all we do here, we later make sure to invalidate cache line */
             }
             else
@@ -1815,8 +1800,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       else
       {
         /* Bad luck, opencl failed. Let's clean up and fall back to cpu module */
-        dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] could not run module '%s' on gpu. falling back to cpu path\n",
-                 module->op);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe] [%s] could not run module `%s' on gpu. falling back to cpu path\n",
+                 dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
 
         // fprintf(stderr, "[opencl_pixelpipe 4] module '%s' running on cpu\n", module->op);
 
@@ -1838,9 +1823,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           if(err != CL_SUCCESS)
           {
             /* late opencl error */
-            dt_print(
-                DT_DEBUG_OPENCL,
-                "[opencl_pixelpipe (b)] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
+            dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (b)] [%s] late opencl error detected while copying back to cpu buffer: %s\n",
+               dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = 1;
             return 1;
@@ -1881,9 +1865,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         if(err != CL_SUCCESS)
         {
           /* late opencl error */
-          dt_print(
-              DT_DEBUG_OPENCL,
-              "[opencl_pixelpipe (c)] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
+          dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (c)] [%s] late opencl error detected while copying back to cpu buffer: %s\n",
+            dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
           dt_opencl_release_mem_object(cl_mem_input);
           pipe->opencl_error = 1;
           return 1;
@@ -1930,7 +1913,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
   gchar *module_label = dt_history_item_get_name(module);
   dt_show_times_f(
-      &start, "[dev_pixelpipe]", "processed `%s' on %s%s%s, blended on %s [%s]", module_label,
+      &start, "[dev_pixelpipe]", "[%s] processed `%s' on %s%s%s, blended on %s", dt_dev_pixelpipe_type_to_str(pipe->type), module_label,
       pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU
           ? "GPU"
           : pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_CPU ? "CPU" : "",
@@ -1940,8 +1923,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           : "",
       pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU
           ? "GPU"
-          : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "",
-      dt_dev_pixelpipe_type_to_str(pipe->type));
+          : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "");
   g_free(module_label);
   module_label = NULL;
 
@@ -1958,7 +1940,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   // we check for an important hint after processing the module as we want to track a runtime hint too.
   pipe->next_important_module = check_module_next_important(pipe, module);
   if(pipe->next_important_module)
-    dt_vprint(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] module %s passing important hint to next module\n", dt_dev_pixelpipe_type_to_str(pipe->type), module ? module->so->op : NULL);
+    dt_vprint(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] module `%s' passing important hint to next module\n", dt_dev_pixelpipe_type_to_str(pipe->type), module ? module->so->op : NULL);
 
   // warn on NaN or infinity
 #ifndef _DEBUG
@@ -2153,7 +2135,8 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
       {
         /* this indicates a opencl problem earlier in the pipeline */
         dt_print(DT_DEBUG_OPENCL,
-                 "[dt_dev_pixelpipe_process_rec_and_backcopy] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
+                 "[dt_dev_pixelpipe_process_rec_and_backcopy] [%s] late opencl error detected while copying back to cpu buffer: %s\n",
+                 dt_dev_pixelpipe_type_to_str(pipe->type), cl_errstr(err));
         pipe->opencl_error = 1;
         ret = 1;
       }

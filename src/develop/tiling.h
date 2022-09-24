@@ -71,7 +71,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling);
 
-int dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, const unsigned bpp,
+gboolean dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, const unsigned bpp,
                                      const float factor, const size_t overhead);
 
 float dt_tiling_estimate_cpumem(struct dt_develop_tiling_t *tiling, struct dt_dev_pixelpipe_iop_t *piece,
