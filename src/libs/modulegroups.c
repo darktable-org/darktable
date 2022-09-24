@@ -182,10 +182,6 @@ static gboolean _lib_modulegroups_test_visible(dt_lib_module_t *self, gchar *mod
    sets the active group which module belongs too.
 */
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module);
-/* modulergroups proxy search text focus function
-   \see dt_dev_modulegroups_search_text_focus()
-*/
-static void _lib_modulegroups_search_text_focus(dt_lib_module_t *self);
 
 static void _manage_preset_update_list(dt_lib_module_t *self);
 static void _manage_editor_load(const char *preset, dt_lib_module_t *self);
@@ -440,12 +436,12 @@ static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_li
 
 static void _sync_visibility(GtkWidget *widget, dt_lib_modulegroups_basic_item_t *item)
 {
-  gtk_widget_set_visible(item->box, gtk_widget_get_visible(item->old_parent));
-
   if(widget == item->temp_widget)
     gtk_widget_set_visible(item->widget, gtk_widget_get_visible(item->temp_widget));
   if(widget == item->widget)
     gtk_widget_set_visible(item->temp_widget, gtk_widget_get_visible(item->widget));
+
+  gtk_widget_set_visible(item->box, !dt_action_widget_invisible(item->temp_widget));
 }
 
 static gboolean _manage_direct_module_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self);
@@ -1072,22 +1068,6 @@ static gboolean _lib_modulegroups_upd_gui_thread(gpointer user_data)
   return FALSE;
 }
 
-static gboolean _lib_modulegroups_search_text_focus_gui_thread(gpointer user_data)
-{
-  _set_gui_thread_t *params = (_set_gui_thread_t *)user_data;
-
-  const dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)params->self->data;
-
-  if(GTK_IS_ENTRY(d->text_entry))
-  {
-    if(!gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box))) gtk_widget_show(GTK_WIDGET(d->hbox_search_box));
-    gtk_widget_grab_focus(GTK_WIDGET(d->text_entry));
-  }
-
-  free(params);
-  return FALSE;
-}
-
 /* this is a proxy function so it might be called from another thread */
 static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
 {
@@ -1105,16 +1085,6 @@ static void _lib_modulegroups_update_visibility_proxy(dt_lib_module_t *self)
   if(!params) return;
   params->self = self;
   g_main_context_invoke(NULL, _lib_modulegroups_upd_gui_thread, params);
-}
-
-/* this is a proxy function so it might be called from another thread */
-static void _lib_modulegroups_search_text_focus(dt_lib_module_t *self)
-{
-  _set_gui_thread_t *params = (_set_gui_thread_t *)malloc(sizeof(_set_gui_thread_t));
-  if(!params) return;
-  params->self = self;
-  params->group = 0;
-  g_main_context_invoke(NULL, _lib_modulegroups_search_text_focus_gui_thread, params);
 }
 
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)
@@ -2836,8 +2806,8 @@ static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *s
     gtk_label_set_markup
       (GTK_LABEL(d->deprecated),
        _("the following modules are deprecated because they have internal design mistakes"
-         " which can't be solved and alternative modules which solve them.\n"
-         " they will be removed for new edits in the next release."));
+         " that can't be corrected and alternative modules that correct them.\n"
+         "they will be removed for new edits in the next release."));
   }
 
 }
@@ -2886,11 +2856,15 @@ void gui_init(dt_lib_module_t *self)
 
   /* search box */
   d->text_entry = gtk_search_entry_new();
-  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, "search modules", d->text_entry, NULL);
+  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, N_("search modules"), d->text_entry, &dt_action_def_entry);
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->text_entry), _("search modules by name or tag"));
   g_signal_connect(G_OBJECT(d->text_entry), "search-changed", G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "stop-search", G_CALLBACK(dt_gui_search_stop), dt_ui_center(darktable.gui->ui));
-  gtk_box_pack_start(GTK_BOX(d->hbox_search_box), d->text_entry, TRUE, TRUE, 0);
+  g_signal_connect_swapped(G_OBJECT(d->text_entry), "focus-in-event", G_CALLBACK(gtk_widget_show), d->hbox_search_box);
+
+  GtkWidget *visibility_wrapper = gtk_event_box_new(); // extra layer prevents disabling shortcuts when hidden
+  gtk_container_add(GTK_CONTAINER(visibility_wrapper), d->text_entry);
+  gtk_box_pack_start(GTK_BOX(d->hbox_search_box), visibility_wrapper, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, _("clear text"));
 
@@ -2900,8 +2874,8 @@ void gui_init(dt_lib_module_t *self)
   // deprecated message
   d->deprecated
       = gtk_label_new(_("the following modules are deprecated because they have internal design mistakes"
-                        " which can't be solved and alternative modules which solve them.\nthey will be removed for"
-                        " new edits in the next release."));
+                        " that can't be corrected and alternative modules that correct them.\n"
+                        "they will be removed for new edits in the next release."));
   dt_gui_add_class(d->deprecated, "dt_warning");
   gtk_label_set_line_wrap(GTK_LABEL(d->deprecated), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->deprecated, TRUE, TRUE, 0);
@@ -2910,9 +2884,7 @@ void gui_init(dt_lib_module_t *self)
   d->current = dt_conf_get_int("plugins/darkroom/groups");
   if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
   gtk_widget_show_all(self->widget);
-  gtk_widget_show_all(d->hbox_buttons);
   gtk_widget_set_no_show_all(d->hbox_buttons, TRUE);
-  gtk_widget_show_all(d->hbox_search_box);
   gtk_widget_set_no_show_all(d->hbox_search_box, TRUE);
 
   /*
@@ -2925,7 +2897,6 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.modulegroups.get_activated = _lib_modulegroups_get_activated;
   darktable.develop->proxy.modulegroups.test = _lib_modulegroups_test;
   darktable.develop->proxy.modulegroups.switch_group = _lib_modulegroups_switch_group;
-  darktable.develop->proxy.modulegroups.search_text_focus = _lib_modulegroups_search_text_focus;
   darktable.develop->proxy.modulegroups.test_visible = _lib_modulegroups_test_visible;
   darktable.develop->proxy.modulegroups.basics_module_toggle = _lib_modulegroups_basics_module_toggle;
 

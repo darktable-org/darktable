@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-13 08:03+0200\n"
-"PO-Revision-Date: 2022-09-14 16:34+0800\n"
+"POT-Creation-Date: 2022-09-17 14:17+0200\n"
+"PO-Revision-Date: 2022-09-19 10:50+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -26,7 +26,7 @@ msgstr "最後一個模組實例"
 
 #: ../build/bin/conf_gen.h:214 ../build/bin/conf_gen.h:234
 #: ../build/bin/conf_gen.h:346 ../build/bin/conf_gen.h:356
-#: ../build/bin/conf_gen.h:1196 ../build/bin/conf_gen.h:1212
+#: ../build/bin/conf_gen.h:1186 ../build/bin/conf_gen.h:1202
 #: ../build/bin/preferences_gen.h:4272 ../build/bin/preferences_gen.h:4291
 #: ../build/bin/preferences_gen.h:4367 ../build/bin/preferences_gen.h:6997
 #: ../build/bin/preferences_gen.h:7127 ../build/bin/preferences_gen.h:7255
@@ -83,15 +83,15 @@ msgctxt "preferences"
 msgid "once a day"
 msgstr "每天一次"
 
-#: ../build/bin/conf_gen.h:286 ../build/bin/conf_gen.h:1189
-#: ../build/bin/conf_gen.h:1205 ../build/bin/preferences_gen.h:4237
+#: ../build/bin/conf_gen.h:286 ../build/bin/conf_gen.h:1179
+#: ../build/bin/conf_gen.h:1195 ../build/bin/preferences_gen.h:4237
 #: ../build/bin/preferences_gen.h:4332 ../build/bin/preferences_gen.h:6057
 msgctxt "preferences"
 msgid "small"
 msgstr "低"
 
 #: ../build/bin/conf_gen.h:287 ../build/bin/conf_gen.h:393
-#: ../build/bin/conf_gen.h:2110 ../build/bin/preferences_gen.h:4961
+#: ../build/bin/conf_gen.h:2100 ../build/bin/preferences_gen.h:4961
 #: ../build/bin/preferences_gen.h:4985 ../build/bin/preferences_gen.h:6062
 #: ../build/bin/preferences_gen.h:6091 ../build/bin/preferences_gen.h:6278
 #: ../build/bin/preferences_gen.h:6307
@@ -120,8 +120,8 @@ msgctxt "preferences"
 msgid "on import"
 msgstr "匯入時"
 
-#: ../build/bin/conf_gen.h:357 ../build/bin/conf_gen.h:1188
-#: ../build/bin/conf_gen.h:1204 ../build/bin/conf_gen.h:3096
+#: ../build/bin/conf_gen.h:357 ../build/bin/conf_gen.h:1178
+#: ../build/bin/conf_gen.h:1194 ../build/bin/conf_gen.h:3086
 #: ../build/bin/preferences_gen.h:4232 ../build/bin/preferences_gen.h:4327
 #: ../build/bin/preferences_gen.h:5411 ../build/bin/preferences_gen.h:5465
 #: ../build/bin/preferences_gen.h:7325
@@ -177,92 +177,77 @@ msgctxt "preferences"
 msgid "memory size and transfer"
 msgstr "記憶體空間和傳輸"
 
-#: ../build/bin/conf_gen.h:414
-msgctxt "preferences"
-msgid "true"
-msgstr "啟用"
-
-#: ../build/bin/conf_gen.h:415
-msgctxt "preferences"
-msgid "active module"
-msgstr "使用中的模組"
-
-#: ../build/bin/conf_gen.h:416
-msgctxt "preferences"
-msgid "false"
-msgstr "不啟用"
-
-#: ../build/bin/conf_gen.h:716 ../build/bin/preferences_gen.h:8614
+#: ../build/bin/conf_gen.h:706 ../build/bin/preferences_gen.h:8614
 #: ../build/bin/preferences_gen.h:8638
 msgctxt "preferences"
 msgid "id"
 msgstr "識別碼"
 
-#: ../build/bin/conf_gen.h:717 ../build/bin/preferences_gen.h:8619
+#: ../build/bin/conf_gen.h:707 ../build/bin/preferences_gen.h:8619
 msgctxt "preferences"
 msgid "folder"
 msgstr "資料夾"
 
-#: ../build/bin/conf_gen.h:731
+#: ../build/bin/conf_gen.h:721
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:732
+#: ../build/bin/conf_gen.h:722
 msgctxt "preferences"
 msgid "Lab"
 msgstr "L*a*b*"
 
-#: ../build/bin/conf_gen.h:733
+#: ../build/bin/conf_gen.h:723
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:734
+#: ../build/bin/conf_gen.h:724
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:735
+#: ../build/bin/conf_gen.h:725
 msgctxt "preferences"
 msgid "Hex"
 msgstr "十六進位值"
 
-#: ../build/bin/conf_gen.h:736 ../build/bin/conf_gen.h:1834
-#: ../build/bin/conf_gen.h:2413 ../build/bin/conf_gen.h:2917
+#: ../build/bin/conf_gen.h:726 ../build/bin/conf_gen.h:1824
+#: ../build/bin/conf_gen.h:2403 ../build/bin/conf_gen.h:2907
 #: ../build/bin/preferences_gen.h:5826 ../build/bin/preferences_gen.h:6861
 msgctxt "preferences"
 msgid "none"
 msgstr "無"
 
-#: ../build/bin/conf_gen.h:744
+#: ../build/bin/conf_gen.h:734
 msgctxt "preferences"
 msgid "mean"
 msgstr "平均"
 
-#: ../build/bin/conf_gen.h:745
+#: ../build/bin/conf_gen.h:735
 msgctxt "preferences"
 msgid "min"
 msgstr "最小"
 
-#: ../build/bin/conf_gen.h:746
+#: ../build/bin/conf_gen.h:736
 msgctxt "preferences"
 msgid "max"
 msgstr "最大"
 
-#: ../build/bin/conf_gen.h:934
+#: ../build/bin/conf_gen.h:924
 msgid "select only new pictures"
 msgstr "只選取新的影像"
 
-#: ../build/bin/conf_gen.h:935
+#: ../build/bin/conf_gen.h:925
 msgid "only select images that have not already been imported"
 msgstr "只選取尚未匯入過的影像"
 
-#: ../build/bin/conf_gen.h:940
+#: ../build/bin/conf_gen.h:930
 msgid "ignore JPEG images"
 msgstr "忽略 JPEG 檔案"
 
-#: ../build/bin/conf_gen.h:941
+#: ../build/bin/conf_gen.h:931
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -270,73 +255,73 @@ msgstr ""
 "忽略所有的 JPEG 檔案，不會顯示在檔案列表上\n"
 "因為資料夾內若同時有 RAW + JPEG 時，同時匯入兩個檔案是沒有意義的"
 
-#: ../build/bin/conf_gen.h:946
+#: ../build/bin/conf_gen.h:936
 msgid "apply metadata"
 msgstr "套用詮釋資料"
 
-#: ../build/bin/conf_gen.h:947
+#: ../build/bin/conf_gen.h:937
 msgid "apply some metadata to all newly imported images."
 msgstr "套用詮釋資料到所有新匯入的影像"
 
-#: ../build/bin/conf_gen.h:952
+#: ../build/bin/conf_gen.h:942
 msgid "recursive directory"
 msgstr "搜尋子資料夾"
 
-#: ../build/bin/conf_gen.h:953
+#: ../build/bin/conf_gen.h:943
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "匯入時包含下層子資料夾內的影像"
 
-#: ../build/bin/conf_gen.h:958
+#: ../build/bin/conf_gen.h:948
 msgid "creator to be applied when importing"
 msgstr "匯入時同步設定創作者"
 
-#: ../build/bin/conf_gen.h:964
+#: ../build/bin/conf_gen.h:954
 msgid "publisher to be applied when importing"
 msgstr "匯入時同步設定發布者"
 
-#: ../build/bin/conf_gen.h:970
+#: ../build/bin/conf_gen.h:960
 msgid "rights to be applied when importing"
 msgstr "匯入時同步設定版權"
 
-#: ../build/bin/conf_gen.h:976
+#: ../build/bin/conf_gen.h:966
 msgid "comma separated tags to be applied when importing"
 msgstr "匯入時同步設定標籤"
 
-#: ../build/bin/conf_gen.h:982
+#: ../build/bin/conf_gen.h:972
 msgid "import tags from xmp"
 msgstr "從 XMP 匯入標籤"
 
-#: ../build/bin/conf_gen.h:1008
+#: ../build/bin/conf_gen.h:998
 msgid "initial rating"
 msgstr "預設評分"
 
-#: ../build/bin/conf_gen.h:1009
+#: ../build/bin/conf_gen.h:999
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "所有影像匯入的預設評分（星級）"
 
-#: ../build/bin/conf_gen.h:1014
+#: ../build/bin/conf_gen.h:1004
 msgid "ignore EXIF rating"
 msgstr "忽略 EXIF 的評分"
 
-#: ../build/bin/conf_gen.h:1015
+#: ../build/bin/conf_gen.h:1005
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
 msgstr "如未勾選且 EXIF 內有評分資料，會以 EXIF 的評分取代預設評分設定"
 
-#: ../build/bin/conf_gen.h:1020
+#: ../build/bin/conf_gen.h:1010
 msgid "import job"
 msgstr "匯入作業"
 
-#: ../build/bin/conf_gen.h:1021
+#: ../build/bin/conf_gen.h:1011
 msgid "name of the import job"
 msgstr "匯入作業的名稱"
 
-#: ../build/bin/conf_gen.h:1026
+#: ../build/bin/conf_gen.h:1016
 msgid "override today's date"
 msgstr "替換為今天的日期"
 
-#: ../build/bin/conf_gen.h:1027
+#: ../build/bin/conf_gen.h:1017
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -346,473 +331,473 @@ msgstr ""
 "如果要替換為指定的日期和時間，格式如下：YYYY-MM-DD[hh:mm:ss[.sss]]\n"
 "依序為「年：月：日[時：分：秒[毫秒]]如不更動則讓欄位留空"
 
-#: ../build/bin/conf_gen.h:1032
+#: ../build/bin/conf_gen.h:1022
 msgid "keep this window open"
 msgstr "保持視窗開啟"
 
-#: ../build/bin/conf_gen.h:1033
+#: ../build/bin/conf_gen.h:1023
 msgid "keep this window open to run several imports"
 msgstr "讓視窗保持開啟狀態以執行多個匯入作業"
 
-#: ../build/bin/conf_gen.h:1190 ../build/bin/conf_gen.h:1206
+#: ../build/bin/conf_gen.h:1180 ../build/bin/conf_gen.h:1196
 #: ../build/bin/preferences_gen.h:4242 ../build/bin/preferences_gen.h:4337
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA (480P - 640x480)"
 
-#: ../build/bin/conf_gen.h:1191 ../build/bin/conf_gen.h:1207
+#: ../build/bin/conf_gen.h:1181 ../build/bin/conf_gen.h:1197
 #: ../build/bin/preferences_gen.h:4247 ../build/bin/preferences_gen.h:4342
 #: ../build/bin/preferences_gen.h:4386
 msgctxt "preferences"
 msgid "720p"
 msgstr "HD (720p - 1280x720)"
 
-#: ../build/bin/conf_gen.h:1192 ../build/bin/conf_gen.h:1208
+#: ../build/bin/conf_gen.h:1182 ../build/bin/conf_gen.h:1198
 #: ../build/bin/preferences_gen.h:4252 ../build/bin/preferences_gen.h:4347
 msgctxt "preferences"
 msgid "1080p"
 msgstr "FHD (1080p - 1920x1080)"
 
-#: ../build/bin/conf_gen.h:1193 ../build/bin/conf_gen.h:1209
+#: ../build/bin/conf_gen.h:1183 ../build/bin/conf_gen.h:1199
 #: ../build/bin/preferences_gen.h:4257 ../build/bin/preferences_gen.h:4352
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA (2560x1600)"
 
-#: ../build/bin/conf_gen.h:1194 ../build/bin/conf_gen.h:1210
+#: ../build/bin/conf_gen.h:1184 ../build/bin/conf_gen.h:1200
 #: ../build/bin/preferences_gen.h:4262 ../build/bin/preferences_gen.h:4357
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K UHD (3840×2160)"
 
-#: ../build/bin/conf_gen.h:1195 ../build/bin/conf_gen.h:1211
+#: ../build/bin/conf_gen.h:1185 ../build/bin/conf_gen.h:1201
 #: ../build/bin/preferences_gen.h:4267 ../build/bin/preferences_gen.h:4362
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K (5120x2880)"
 
-#: ../build/bin/conf_gen.h:1238 ../build/bin/preferences_gen.h:4577
+#: ../build/bin/conf_gen.h:1228 ../build/bin/preferences_gen.h:4577
 #: ../build/bin/preferences_gen.h:4621
 msgctxt "preferences"
 msgid "off"
 msgstr "關閉"
 
-#: ../build/bin/conf_gen.h:1239 ../build/bin/preferences_gen.h:4582
+#: ../build/bin/conf_gen.h:1229 ../build/bin/preferences_gen.h:4582
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "硬度（相對值）"
 
-#: ../build/bin/conf_gen.h:1240 ../build/bin/preferences_gen.h:4587
+#: ../build/bin/conf_gen.h:1230 ../build/bin/preferences_gen.h:4587
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "硬度（絕對值）"
 
-#: ../build/bin/conf_gen.h:1241 ../build/bin/preferences_gen.h:4592
+#: ../build/bin/conf_gen.h:1231 ../build/bin/preferences_gen.h:4592
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "透明度（相對值）"
 
-#: ../build/bin/conf_gen.h:1242 ../build/bin/preferences_gen.h:4597
+#: ../build/bin/conf_gen.h:1232 ../build/bin/preferences_gen.h:4597
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "透明度（絕對值）"
 
-#: ../build/bin/conf_gen.h:1243 ../build/bin/preferences_gen.h:4602
+#: ../build/bin/conf_gen.h:1233 ../build/bin/preferences_gen.h:4602
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "筆刷尺寸（相對值）"
 
-#: ../build/bin/conf_gen.h:1251 ../build/bin/preferences_gen.h:4657
+#: ../build/bin/conf_gen.h:1241 ../build/bin/preferences_gen.h:4657
 msgctxt "preferences"
 msgid "low"
 msgstr "低"
 
-#: ../build/bin/conf_gen.h:1252 ../build/bin/preferences_gen.h:4662
+#: ../build/bin/conf_gen.h:1242 ../build/bin/preferences_gen.h:4662
 #: ../build/bin/preferences_gen.h:4686
 msgctxt "preferences"
 msgid "medium"
 msgstr "中"
 
-#: ../build/bin/conf_gen.h:1253 ../build/bin/preferences_gen.h:4667
+#: ../build/bin/conf_gen.h:1243 ../build/bin/preferences_gen.h:4667
 msgctxt "preferences"
 msgid "high"
 msgstr "高"
 
-#: ../build/bin/conf_gen.h:1267 ../build/bin/preferences_gen.h:5135
+#: ../build/bin/conf_gen.h:1257 ../build/bin/preferences_gen.h:5135
 #: ../build/bin/preferences_gen.h:5159
 msgctxt "preferences"
 msgid "false color"
 msgstr "偽色"
 
-#: ../build/bin/conf_gen.h:1268 ../build/bin/preferences_gen.h:5140
+#: ../build/bin/conf_gen.h:1258 ../build/bin/preferences_gen.h:5140
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "灰階"
 
-#: ../build/bin/conf_gen.h:1282 ../build/bin/preferences_gen.h:4801
+#: ../build/bin/conf_gen.h:1272 ../build/bin/preferences_gen.h:4801
 msgctxt "preferences"
 msgid "top left"
 msgstr "左上"
 
-#: ../build/bin/conf_gen.h:1283 ../build/bin/preferences_gen.h:4806
+#: ../build/bin/conf_gen.h:1273 ../build/bin/preferences_gen.h:4806
 msgctxt "preferences"
 msgid "top right"
 msgstr "右上"
 
-#: ../build/bin/conf_gen.h:1284 ../build/bin/preferences_gen.h:4811
+#: ../build/bin/conf_gen.h:1274 ../build/bin/preferences_gen.h:4811
 msgctxt "preferences"
 msgid "top center"
 msgstr "中上"
 
-#: ../build/bin/conf_gen.h:1285 ../build/bin/preferences_gen.h:4816
+#: ../build/bin/conf_gen.h:1275 ../build/bin/preferences_gen.h:4816
 #: ../build/bin/preferences_gen.h:4840
 msgctxt "preferences"
 msgid "bottom"
 msgstr "下方"
 
-#: ../build/bin/conf_gen.h:1286 ../build/bin/preferences_gen.h:4821
+#: ../build/bin/conf_gen.h:1276 ../build/bin/preferences_gen.h:4821
 msgctxt "preferences"
 msgid "hidden"
 msgstr "隱藏"
 
-#: ../build/bin/conf_gen.h:1796
+#: ../build/bin/conf_gen.h:1786
 msgid "show OSD"
 msgstr "顯示地圖控制鈕"
 
-#: ../build/bin/conf_gen.h:1797
+#: ../build/bin/conf_gen.h:1787
 msgid "toggle the visibility of the map overlays"
 msgstr "控制是否在地圖的左上角顯示地圖控制鈕"
 
-#: ../build/bin/conf_gen.h:1802 ../src/libs/map_settings.c:147
+#: ../build/bin/conf_gen.h:1792 ../src/libs/map_settings.c:147
 msgid "filtered images"
 msgstr "篩選影像"
 
-#: ../build/bin/conf_gen.h:1803
+#: ../build/bin/conf_gen.h:1793
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr ""
 "啟用時僅在地圖上顯示符合目前篩選條件的影像，未勾選時顯示所有已匯入的影像"
 
-#: ../build/bin/conf_gen.h:1810
+#: ../build/bin/conf_gen.h:1800
 msgid "max images"
 msgstr "最多影像數量"
 
-#: ../build/bin/conf_gen.h:1811
+#: ../build/bin/conf_gen.h:1801
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "地圖上顯示的縮圖數量上限"
 
-#: ../build/bin/conf_gen.h:1818
+#: ../build/bin/conf_gen.h:1808
 msgid "group size factor"
 msgstr "群組縮放比例"
 
-#: ../build/bin/conf_gen.h:1819
+#: ../build/bin/conf_gen.h:1809
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
 msgstr "調整群組影像顯示的大小"
 
-#: ../build/bin/conf_gen.h:1826
+#: ../build/bin/conf_gen.h:1816
 msgid "min images per group"
 msgstr "群組最少影像數"
 
-#: ../build/bin/conf_gen.h:1827
+#: ../build/bin/conf_gen.h:1817
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
 msgstr "單一影像群組包含的最少影像數量"
 
-#: ../build/bin/conf_gen.h:1832
+#: ../build/bin/conf_gen.h:1822
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "縮圖"
 
-#: ../build/bin/conf_gen.h:1833
+#: ../build/bin/conf_gen.h:1823
 msgctxt "preferences"
 msgid "count"
 msgstr "數量"
 
-#: ../build/bin/conf_gen.h:1836 ../src/libs/map_settings.c:160
+#: ../build/bin/conf_gen.h:1826 ../src/libs/map_settings.c:160
 msgid "thumbnail display"
 msgstr "縮圖顯示"
 
-#: ../build/bin/conf_gen.h:1837
+#: ../build/bin/conf_gen.h:1827
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr "選擇縮圖的顯示方式"
 
-#: ../build/bin/conf_gen.h:1848
+#: ../build/bin/conf_gen.h:1838
 msgid "max polygon points"
 msgstr "最高多邊形點數"
 
-#: ../build/bin/conf_gen.h:1849
+#: ../build/bin/conf_gen.h:1839
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr "限制顯示的多邊形點數以獲取較高效能"
 
-#: ../build/bin/conf_gen.h:2109 ../build/bin/preferences_gen.h:4956
+#: ../build/bin/conf_gen.h:2099 ../build/bin/preferences_gen.h:4956
 msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "總是使用雙線性（快速）"
 
-#: ../build/bin/conf_gen.h:2111 ../build/bin/preferences_gen.h:4966
+#: ../build/bin/conf_gen.h:2101 ../build/bin/preferences_gen.h:4966
 msgctxt "preferences"
 msgid "full (possibly slow)"
 msgstr "完整算法（可能較慢）"
 
-#: ../build/bin/conf_gen.h:2119 ../build/bin/preferences_gen.h:5021
+#: ../build/bin/conf_gen.h:2109 ../build/bin/preferences_gen.h:5021
 #: ../build/bin/preferences_gen.h:5055
 msgctxt "preferences"
 msgid "original"
 msgstr "完整解析度"
 
-#: ../build/bin/conf_gen.h:2120 ../build/bin/preferences_gen.h:5026
+#: ../build/bin/conf_gen.h:2110 ../build/bin/preferences_gen.h:5026
 msgctxt "preferences"
 msgid "to 1/2"
 msgstr "降至 1/2"
 
-#: ../build/bin/conf_gen.h:2121 ../build/bin/preferences_gen.h:5031
+#: ../build/bin/conf_gen.h:2111 ../build/bin/preferences_gen.h:5031
 msgctxt "preferences"
 msgid "to 1/3"
 msgstr "降至 1/3"
 
-#: ../build/bin/conf_gen.h:2122 ../build/bin/preferences_gen.h:5036
+#: ../build/bin/conf_gen.h:2112 ../build/bin/preferences_gen.h:5036
 msgctxt "preferences"
 msgid "to 1/4"
 msgstr "降至 1/4"
 
-#: ../build/bin/conf_gen.h:2136 ../build/bin/conf_gen.h:2146
+#: ../build/bin/conf_gen.h:2126 ../build/bin/conf_gen.h:2136
 #: ../build/bin/preferences_gen.h:5638 ../build/bin/preferences_gen.h:5703
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "雙線性 bilinear"
 
-#: ../build/bin/conf_gen.h:2137 ../build/bin/conf_gen.h:2147
+#: ../build/bin/conf_gen.h:2127 ../build/bin/conf_gen.h:2137
 #: ../build/bin/preferences_gen.h:5643 ../build/bin/preferences_gen.h:5667
 #: ../build/bin/preferences_gen.h:5708
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "雙三次 bicubic"
 
-#: ../build/bin/conf_gen.h:2138 ../build/bin/conf_gen.h:2148
+#: ../build/bin/conf_gen.h:2128 ../build/bin/conf_gen.h:2138
 #: ../build/bin/preferences_gen.h:5648 ../build/bin/preferences_gen.h:5713
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/bin/conf_gen.h:2149 ../build/bin/preferences_gen.h:5718
+#: ../build/bin/conf_gen.h:2139 ../build/bin/preferences_gen.h:5718
 #: ../build/bin/preferences_gen.h:5737
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:2412 ../build/bin/conf_gen.h:3099
+#: ../build/bin/conf_gen.h:2402 ../build/bin/conf_gen.h:3089
 #: ../build/bin/preferences_gen.h:5426 ../build/bin/preferences_gen.h:6856
 #: ../build/bin/preferences_gen.h:6892
 msgctxt "preferences"
 msgid "auto"
 msgstr "自動"
 
-#: ../build/bin/conf_gen.h:2414 ../build/bin/preferences_gen.h:6866
+#: ../build/bin/conf_gen.h:2404 ../build/bin/preferences_gen.h:6866
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/bin/conf_gen.h:2415 ../build/bin/preferences_gen.h:6872
+#: ../build/bin/conf_gen.h:2405 ../build/bin/preferences_gen.h:6872
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/bin/conf_gen.h:2617
+#: ../build/bin/conf_gen.h:2607
 msgctxt "preferences"
 msgid "histogram"
 msgstr "直方圖"
 
-#: ../build/bin/conf_gen.h:2618
+#: ../build/bin/conf_gen.h:2608
 msgctxt "preferences"
 msgid "waveform"
 msgstr "波形圖"
 
-#: ../build/bin/conf_gen.h:2619
+#: ../build/bin/conf_gen.h:2609
 msgctxt "preferences"
 msgid "rgb parade"
 msgstr "RGB 並列波形圖"
 
-#: ../build/bin/conf_gen.h:2620
+#: ../build/bin/conf_gen.h:2610
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "彩度投影圖"
 
-#: ../build/bin/conf_gen.h:2628 ../build/bin/preferences_gen.h:7630
+#: ../build/bin/conf_gen.h:2618 ../build/bin/preferences_gen.h:7630
 msgctxt "preferences"
 msgid "left"
 msgstr "左側欄"
 
-#: ../build/bin/conf_gen.h:2629 ../build/bin/preferences_gen.h:7635
+#: ../build/bin/conf_gen.h:2619 ../build/bin/preferences_gen.h:7635
 #: ../build/bin/preferences_gen.h:7654
 msgctxt "preferences"
 msgid "right"
 msgstr "右側欄"
 
-#: ../build/bin/conf_gen.h:2637 ../build/bin/conf_gen.h:2673
+#: ../build/bin/conf_gen.h:2627 ../build/bin/conf_gen.h:2663
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "對數（感知）"
 
-#: ../build/bin/conf_gen.h:2638 ../build/bin/conf_gen.h:2674
+#: ../build/bin/conf_gen.h:2628 ../build/bin/conf_gen.h:2664
 msgctxt "preferences"
 msgid "linear"
 msgstr "線性（強度）"
 
-#: ../build/bin/conf_gen.h:2646
+#: ../build/bin/conf_gen.h:2636
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "水平"
 
-#: ../build/bin/conf_gen.h:2647
+#: ../build/bin/conf_gen.h:2637
 msgctxt "preferences"
 msgid "vertical"
 msgstr "垂直"
 
-#: ../build/bin/conf_gen.h:2655
+#: ../build/bin/conf_gen.h:2645
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "覆蓋"
 
-#: ../build/bin/conf_gen.h:2656
+#: ../build/bin/conf_gen.h:2646
 msgctxt "preferences"
 msgid "parade"
 msgstr "並列"
 
-#: ../build/bin/conf_gen.h:2664
+#: ../build/bin/conf_gen.h:2654
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "CIELUV 色彩空間"
 
-#: ../build/bin/conf_gen.h:2665
+#: ../build/bin/conf_gen.h:2655
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "JzAzBz 色彩空間"
 
-#: ../build/bin/conf_gen.h:2830
+#: ../build/bin/conf_gen.h:2820
 msgctxt "preferences"
 msgid "mm"
 msgstr "公釐 mm"
 
-#: ../build/bin/conf_gen.h:2831
+#: ../build/bin/conf_gen.h:2821
 msgctxt "preferences"
 msgid "cm"
 msgstr "公分 cm"
 
-#: ../build/bin/conf_gen.h:2832
+#: ../build/bin/conf_gen.h:2822
 msgctxt "preferences"
 msgid "inch"
 msgstr "英寸 inch"
 
-#: ../build/bin/conf_gen.h:2877 ../build/bin/preferences_gen.h:7690
+#: ../build/bin/conf_gen.h:2867 ../build/bin/preferences_gen.h:7690
 #: ../build/bin/preferences_gen.h:7719
 msgctxt "preferences"
 msgid "all"
 msgstr "全部"
 
-#: ../build/bin/conf_gen.h:2878 ../build/bin/preferences_gen.h:7695
+#: ../build/bin/conf_gen.h:2868 ../build/bin/preferences_gen.h:7695
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:2879 ../build/bin/preferences_gen.h:7700
+#: ../build/bin/conf_gen.h:2869 ../build/bin/preferences_gen.h:7700
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:2915 ../build/bin/preferences_gen.h:5816
+#: ../build/bin/conf_gen.h:2905 ../build/bin/preferences_gen.h:5816
 #: ../build/bin/preferences_gen.h:5845
 msgctxt "preferences"
 msgid "scene-referred"
 msgstr "場景參照"
 
-#: ../build/bin/conf_gen.h:2916 ../build/bin/preferences_gen.h:5821
+#: ../build/bin/conf_gen.h:2906 ../build/bin/preferences_gen.h:5821
 msgctxt "preferences"
 msgid "display-referred"
 msgstr "顯示參照"
 
-#: ../build/bin/conf_gen.h:2925 ../build/bin/preferences_gen.h:5881
+#: ../build/bin/conf_gen.h:2915 ../build/bin/preferences_gen.h:5881
 msgctxt "preferences"
 msgid "modern"
 msgstr "現代"
 
-#: ../build/bin/conf_gen.h:2926 ../build/bin/preferences_gen.h:5886
+#: ../build/bin/conf_gen.h:2916 ../build/bin/preferences_gen.h:5886
 #: ../build/bin/preferences_gen.h:5905
 msgctxt "preferences"
 msgid "legacy"
 msgstr "傳統"
 
-#: ../build/bin/conf_gen.h:3026
+#: ../build/bin/conf_gen.h:3016
 msgid "camera time zone"
 msgstr "相機時區"
 
-#: ../build/bin/conf_gen.h:3027
+#: ../build/bin/conf_gen.h:3017
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
 msgstr ""
 "大多數的相機不會在 EXIF 裡儲存時區資料，指定正確的時區以便 GPX 資料與實際相符"
 
-#: ../build/bin/conf_gen.h:3038
+#: ../build/bin/conf_gen.h:3028
 msgctxt "preferences"
 msgid "no color"
 msgstr "沒有顏色"
 
-#: ../build/bin/conf_gen.h:3039
+#: ../build/bin/conf_gen.h:3029
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "光源顏色"
 
-#: ../build/bin/conf_gen.h:3040
+#: ../build/bin/conf_gen.h:3030
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "效果模擬"
 
-#: ../build/bin/conf_gen.h:3086
+#: ../build/bin/conf_gen.h:3076
 msgctxt "preferences"
 msgid "list"
 msgstr "垂直清單"
 
-#: ../build/bin/conf_gen.h:3087
+#: ../build/bin/conf_gen.h:3077
 msgctxt "preferences"
 msgid "tabs"
 msgstr "標籤切換"
 
-#: ../build/bin/conf_gen.h:3088
+#: ../build/bin/conf_gen.h:3078
 msgctxt "preferences"
 msgid "columns"
 msgstr "水平並列"
 
-#: ../build/bin/conf_gen.h:3097 ../build/bin/preferences_gen.h:5416
+#: ../build/bin/conf_gen.h:3087 ../build/bin/preferences_gen.h:5416
 msgctxt "preferences"
 msgid "active"
 msgstr "使用中"
 
-#: ../build/bin/conf_gen.h:3098 ../build/bin/preferences_gen.h:5421
+#: ../build/bin/conf_gen.h:3088 ../build/bin/preferences_gen.h:5421
 msgctxt "preferences"
 msgid "dim"
 msgstr "變暗"
 
-#: ../build/bin/conf_gen.h:3100 ../build/bin/preferences_gen.h:5431
+#: ../build/bin/conf_gen.h:3090 ../build/bin/preferences_gen.h:5431
 msgctxt "preferences"
 msgid "fade"
 msgstr "淡出"
 
-#: ../build/bin/conf_gen.h:3101 ../build/bin/preferences_gen.h:5436
+#: ../build/bin/conf_gen.h:3091 ../build/bin/preferences_gen.h:5436
 msgctxt "preferences"
 msgid "fit"
 msgstr "適合"
 
-#: ../build/bin/conf_gen.h:3102 ../build/bin/preferences_gen.h:5441
+#: ../build/bin/conf_gen.h:3092 ../build/bin/preferences_gen.h:5441
 msgctxt "preferences"
 msgid "smooth"
 msgstr "滑順"
 
-#: ../build/bin/conf_gen.h:3103 ../build/bin/preferences_gen.h:5446
+#: ../build/bin/conf_gen.h:3093 ../build/bin/preferences_gen.h:5446
 msgctxt "preferences"
 msgid "glide"
 msgstr "滑動"
@@ -1386,10 +1371,10 @@ msgstr "色彩查找表（LUT）資料夾"
 
 #: ../build/bin/preferences_gen.h:5767 ../src/control/jobs/control_jobs.c:1696
 #: ../src/control/jobs/control_jobs.c:1758 ../src/gui/preferences.c:1035
-#: ../src/gui/presets.c:386 ../src/imageio/storage/disk.c:121
-#: ../src/imageio/storage/disk.c:188 ../src/imageio/storage/gallery.c:108
-#: ../src/imageio/storage/gallery.c:172 ../src/imageio/storage/latex.c:107
-#: ../src/imageio/storage/latex.c:171 ../src/libs/import.c:1497
+#: ../src/gui/presets.c:386 ../src/imageio/storage/disk.c:122
+#: ../src/imageio/storage/disk.c:178 ../src/imageio/storage/gallery.c:109
+#: ../src/imageio/storage/gallery.c:163 ../src/imageio/storage/latex.c:108
+#: ../src/imageio/storage/latex.c:162 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/import.c:1655 ../src/libs/styles.c:376
 #: ../src/lua/preferences.c:667
 msgid "select directory"
@@ -1633,9 +1618,9 @@ msgstr "調整 OpenCL 性能"
 
 #: ../build/bin/preferences_gen.h:6386
 msgid ""
-"allows runtime tuning of OpenCL devices. 'memory size' uses a fixed 400MB "
-"headroom, 'memory transfer' tries a faster memory access mode (pinned "
-"memory) used for tiling."
+"allows runtime tuning of OpenCL devices. 'memory size' uses a fixed headroom "
+"(400MB as default), 'memory transfer' tries a faster memory access mode "
+"(pinned memory) used for tiling."
 msgstr ""
 "調整 OpenCL 性能\n"
 "\n"
@@ -1643,7 +1628,7 @@ msgstr ""
 "不改變 OpenCL 的運作方式\n"
 "\n"
 "記憶體空間：\n"
-"對所有顯示卡記憶體保留 400MB 的空間，剩餘記憶體預設用於 OpenCL 運算\n"
+"保留固定的顯示卡記憶體（預設為 400MB），剩餘記憶體用於 OpenCL 運算\n"
 "\n"
 "記憶體傳輸：\n"
 "運算需要的紀體超過可用空間時，使用特殊模式將影像分解為多個區塊分開處理\n"
@@ -2319,8 +2304,8 @@ msgstr "特定"
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2974 ../src/develop/develop.c:2246
 #: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:130
-#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:807
-#: ../src/imageio/format/j2k.c:672 ../src/libs/live_view.c:361
+#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:789
+#: ../src/imageio/format/j2k.c:669 ../src/libs/live_view.c:361
 msgid "off"
 msgstr "關閉"
 
@@ -2368,7 +2353,7 @@ msgstr "保留色彩"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2081
-#: ../src/iop/channelmixerrgb.c:4241 ../src/iop/clipping.c:1918
+#: ../src/iop/channelmixerrgb.c:4242 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2111 ../src/iop/clipping.c:2126
 #: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1905
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1036
@@ -2652,8 +2637,8 @@ msgstr "非常嚴重的色像差"
 #: ../src/develop/blend_gui.c:2016 ../src/develop/lightroom.c:834
 #: ../src/gui/gtk.c:2918 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
-#: ../src/iop/channelmixerrgb.c:4193 ../src/iop/colorzones.c:2302
-#: ../src/iop/temperature.c:1785 ../src/iop/temperature.c:1958
+#: ../src/iop/channelmixerrgb.c:4194 ../src/iop/colorzones.c:2302
+#: ../src/iop/temperature.c:1782 ../src/iop/temperature.c:1955
 #: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:260
 msgid "red"
 msgstr "紅"
@@ -2664,9 +2649,9 @@ msgstr "紅"
 #: ../src/develop/blend_gui.c:2019 ../src/develop/lightroom.c:838
 #: ../src/gui/gtk.c:2919 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
-#: ../src/iop/channelmixerrgb.c:4194 ../src/iop/colorzones.c:2305
-#: ../src/iop/temperature.c:1769 ../src/iop/temperature.c:1787
-#: ../src/iop/temperature.c:1959 ../src/libs/collect.c:1789
+#: ../src/iop/channelmixerrgb.c:4195 ../src/iop/colorzones.c:2305
+#: ../src/iop/temperature.c:1766 ../src/iop/temperature.c:1784
+#: ../src/iop/temperature.c:1956 ../src/libs/collect.c:1789
 #: ../src/libs/filters/colors.c:262
 msgid "green"
 msgstr "綠"
@@ -2677,8 +2662,8 @@ msgstr "綠"
 #: ../src/develop/blend_gui.c:2022 ../src/develop/lightroom.c:840
 #: ../src/gui/gtk.c:2920 ../src/iop/bilateral.cc:315
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
-#: ../src/iop/channelmixerrgb.c:4195 ../src/iop/colorzones.c:2307
-#: ../src/iop/temperature.c:1789 ../src/iop/temperature.c:1960
+#: ../src/iop/channelmixerrgb.c:4196 ../src/iop/colorzones.c:2307
+#: ../src/iop/temperature.c:1786 ../src/iop/temperature.c:1957
 #: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:263
 msgid "blue"
 msgstr "藍"
@@ -2799,7 +2784,7 @@ msgid "(AI) detect from image edges..."
 msgstr "（智慧偵測）從影像的邊緣區域偵測"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:517
-#: ../src/iop/channelmixerrgb.c:3566
+#: ../src/iop/channelmixerrgb.c:3567
 msgid "as shot in camera"
 msgstr "相機的白平衡設定"
 
@@ -3228,7 +3213,7 @@ msgid "range extent"
 msgstr "亮度範圍"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:4243
+#: ../src/iop/channelmixerrgb.c:4244
 msgid "saturated colors"
 msgstr "飽和色彩"
 
@@ -3242,7 +3227,7 @@ msgstr "飽和色彩"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1980 ../src/develop/blend_gui.c:1999
 #: ../src/develop/blend_gui.c:2034 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:4065 ../src/iop/channelmixerrgb.c:4155
+#: ../src/iop/channelmixerrgb.c:4066 ../src/iop/channelmixerrgb.c:4156
 #: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:2142
 #: ../src/iop/colorbalancergb.c:2143 ../src/iop/colorbalancergb.c:2144
 #: ../src/iop/colorbalancergb.c:2145 ../src/iop/colorize.c:344
@@ -3272,9 +3257,9 @@ msgstr "處理模式"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1966 ../src/iop/channelmixer.c:624
-#: ../src/iop/channelmixerrgb.c:4148 ../src/iop/colorchecker.c:1361
+#: ../src/iop/channelmixerrgb.c:4149 ../src/iop/colorchecker.c:1361
 #: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2440
-#: ../src/iop/exposure.c:1131
+#: ../src/iop/exposure.c:1130
 msgid "lightness"
 msgstr "明度"
 
@@ -3522,9 +3507,12 @@ msgstr "修復演算法中的各種錯誤"
 msgid "upgrade profiled transform"
 msgstr "升級分析轉換"
 
+#.
+#. * Color mode combo box
+#.
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:782 ../src/libs/colorpicker.c:577
+#: ../src/imageio/format/avif.c:771 ../src/libs/colorpicker.c:577
 msgid "color mode"
 msgstr "色彩模式"
 
@@ -3803,9 +3791,9 @@ msgstr "平滑曲線處理"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:533
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2749 ../src/common/variables.c:600
-#: ../src/develop/imageop_gui.c:196 ../src/imageio/format/pdf.c:647
-#: ../src/imageio/format/pdf.c:672 ../src/libs/export.c:1209
-#: ../src/libs/export.c:1216 ../src/libs/export.c:1223
+#: ../src/develop/imageop_gui.c:196 ../src/imageio/format/pdf.c:636
+#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1202
+#: ../src/libs/export.c:1209 ../src/libs/export.c:1216
 #: ../src/libs/metadata_view.c:678
 msgid "no"
 msgstr "否"
@@ -3883,7 +3871,7 @@ msgstr "偏移"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:66
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:129
-#: ../src/iop/channelmixerrgb.c:4136 ../src/iop/exposure.c:1119
+#: ../src/iop/channelmixerrgb.c:4137 ../src/iop/exposure.c:1118
 msgid "target"
 msgstr "目標"
 
@@ -3920,7 +3908,7 @@ msgstr "中間調修正"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:140
 #: ../build/lib/darktable/plugins/introspection_highlights.c:241
-#: ../src/views/darkroom.c:2332
+#: ../src/views/darkroom.c:2329
 msgid "clipping threshold"
 msgstr "過曝剪裁門檻"
 
@@ -4057,9 +4045,9 @@ msgstr "熱壞點的標準由 4 個減至 3 個周邊像素"
 #: ../src/iop/bilat.c:427 ../src/iop/colorbalance.c:1857
 #: ../src/iop/denoiseprofile.c:3665 ../src/iop/exposure.c:1065
 #: ../src/iop/levels.c:679 ../src/iop/profile_gamma.c:676
-#: ../src/libs/copy_history.c:374 ../src/libs/export.c:1296
+#: ../src/libs/copy_history.c:374 ../src/libs/export.c:1289
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2697
-#: ../src/libs/styles.c:825 ../src/views/darkroom.c:2313
+#: ../src/libs/styles.c:825 ../src/views/darkroom.c:2310
 msgid "mode"
 msgstr "模式"
 
@@ -4090,8 +4078,8 @@ msgstr "清除"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2212 ../src/views/darkroom.c:2607
-#: ../src/views/darkroom.c:2610 ../src/views/lighttable.c:754
+#: ../src/views/darkroom.c:2209 ../src/views/darkroom.c:2604
+#: ../src/views/darkroom.c:2607 ../src/views/lighttable.c:754
 #: ../src/views/lighttable.c:763 ../src/views/lighttable.c:1227
 #: ../src/views/lighttable.c:1231 ../src/views/lighttable.c:1235
 #: ../src/views/lighttable.c:1239 ../src/views/lighttable.c:1243
@@ -4294,7 +4282,7 @@ msgstr "填色模式"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
-#: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4198
+#: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4199
 #: ../src/iop/colisa.c:306 ../src/iop/lowpass.c:574 ../src/iop/soften.c:403
 #: ../src/iop/vignette.c:981 ../src/libs/history.c:868
 msgid "brightness"
@@ -4319,12 +4307,12 @@ msgid "heal"
 msgstr "修復"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:447
-#: ../src/iop/retouch.c:1834
+#: ../src/iop/retouch.c:1836
 msgid "blur"
 msgstr "模糊"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:448
-#: ../src/iop/retouch.c:1836
+#: ../src/iop/retouch.c:1834
 msgid "fill"
 msgstr "填色"
 
@@ -4337,9 +4325,9 @@ msgid "erase"
 msgstr "擦除"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1107
+#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1105
 #: ../src/libs/colorpicker.c:285 ../src/libs/image.c:614
-#: ../src/libs/modulegroups.c:2415
+#: ../src/libs/modulegroups.c:2385
 msgid "color"
 msgstr "色彩"
 
@@ -4377,7 +4365,7 @@ msgstr "亮部色彩調整"
 
 #: ../build/lib/darktable/plugins/introspection_temperature.c:66
 #: ../build/lib/darktable/plugins/introspection_temperature.c:121
-#: ../src/iop/temperature.c:1791
+#: ../src/iop/temperature.c:1788
 msgid "emerald"
 msgstr "祖母綠"
 
@@ -4684,52 +4672,52 @@ msgstr "在地圖中顯示影像"
 msgid "Print your images"
 msgstr "列印影像"
 
-#: ../src/bauhaus/bauhaus.c:3276
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button on"
 msgstr "按鈕開啟"
 
-#: ../src/bauhaus/bauhaus.c:3276
+#: ../src/bauhaus/bauhaus.c:3278
 msgid "button off"
 msgstr "按鈕關閉"
 
-#: ../src/bauhaus/bauhaus.c:3443 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3445 ../src/gui/accelerators.c:317
 msgid "value"
 msgstr "值"
 
-#: ../src/bauhaus/bauhaus.c:3444 ../src/bauhaus/bauhaus.c:3450
-#: ../src/gui/accelerators.c:253
+#: ../src/bauhaus/bauhaus.c:3446 ../src/bauhaus/bauhaus.c:3452
+#: ../src/gui/accelerators.c:295
 msgid "button"
 msgstr "按鈕"
 
-#: ../src/bauhaus/bauhaus.c:3445
+#: ../src/bauhaus/bauhaus.c:3447
 msgid "force"
 msgstr "強度"
 
-#: ../src/bauhaus/bauhaus.c:3446
+#: ../src/bauhaus/bauhaus.c:3448
 msgid "zoom"
 msgstr "縮放"
 
-#: ../src/bauhaus/bauhaus.c:3449
+#: ../src/bauhaus/bauhaus.c:3451
 msgid "selection"
 msgstr "勾選"
 
-#: ../src/bauhaus/bauhaus.c:3468
+#: ../src/bauhaus/bauhaus.c:3470
 msgid "slider"
 msgstr "滑桿"
 
-#: ../src/bauhaus/bauhaus.c:3473
+#: ../src/bauhaus/bauhaus.c:3475
 msgid "dropdown"
 msgstr "下拉選單"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1697
-#: ../src/control/jobs/control_jobs.c:1759 ../src/gui/accelerators.c:1924
-#: ../src/gui/accelerators.c:2000 ../src/gui/accelerators.c:2051
-#: ../src/gui/accelerators.c:2079 ../src/gui/accelerators.c:2138
+#: ../src/control/jobs/control_jobs.c:1759 ../src/gui/accelerators.c:1971
+#: ../src/gui/accelerators.c:2047 ../src/gui/accelerators.c:2098
+#: ../src/gui/accelerators.c:2126 ../src/gui/accelerators.c:2185
 #: ../src/gui/hist_dialog.c:195 ../src/gui/preferences.c:997
 #: ../src/gui/preferences.c:1036 ../src/gui/presets.c:387
 #: ../src/gui/presets.c:487 ../src/gui/styles_dialog.c:420
-#: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
-#: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1551
+#: ../src/imageio/storage/disk.c:123 ../src/imageio/storage/gallery.c:110
+#: ../src/imageio/storage/latex.c:109 ../src/iop/lut3d.c:1551
 #: ../src/libs/collect.c:409 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
@@ -4998,8 +4986,9 @@ msgstr "自訂排序"
 
 #. title
 #: ../src/common/collection.c:634 ../src/common/metadata.c:48
-#: ../src/imageio/format/pdf.c:573 ../src/imageio/storage/gallery.c:178
-#: ../src/imageio/storage/latex.c:178 ../src/imageio/storage/piwigo.c:893
+#: ../src/imageio/format/pdf.c:574 ../src/imageio/format/pdf.c:576
+#: ../src/imageio/storage/gallery.c:169 ../src/imageio/storage/gallery.c:170
+#: ../src/imageio/storage/latex.c:169 ../src/imageio/storage/piwigo.c:887
 msgid "title"
 msgstr "標題"
 
@@ -5087,7 +5076,7 @@ msgstr "關鍵字搜尋"
 
 #: ../src/common/collection.c:1431 ../src/common/colorlabels.c:330
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
-#: ../src/iop/colorzones.c:2304 ../src/iop/temperature.c:1775
+#: ../src/iop/colorzones.c:2304 ../src/iop/temperature.c:1772
 #: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "黃色"
@@ -5162,7 +5151,7 @@ msgstr[0] "已選擇 %d 張影像，目前相冊共有 %d 張影像"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:1986
 #: ../src/develop/blend_gui.c:2013 ../src/gui/guides.c:729
-#: ../src/iop/channelmixerrgb.c:4199 ../src/iop/levels.c:666
+#: ../src/iop/channelmixerrgb.c:4200 ../src/iop/levels.c:666
 #: ../src/iop/rgblevels.c:947
 msgid "gray"
 msgstr "灰階"
@@ -5377,7 +5366,7 @@ msgid "aqua"
 msgstr "水藍色"
 
 #: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
-#: ../src/iop/temperature.c:1773
+#: ../src/iop/temperature.c:1770
 msgid "cyan"
 msgstr "青色"
 
@@ -5443,7 +5432,7 @@ msgid "dark magenta"
 msgstr "暗洋紅色"
 
 #: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
-#: ../src/iop/colorzones.c:2309 ../src/iop/temperature.c:1771
+#: ../src/iop/colorzones.c:2309 ../src/iop/temperature.c:1768
 msgid "magenta"
 msgstr "洋紅色"
 
@@ -5464,7 +5453,8 @@ msgstr "設定色彩標籤為「%s」"
 msgid "all colorlabels removed"
 msgstr "色彩標籤已刪除"
 
-#: ../src/common/colorlabels.c:328 ../src/libs/image.c:594
+#: ../src/common/colorlabels.c:328 ../src/gui/accelerators.c:156
+#: ../src/libs/image.c:594
 msgid "clear"
 msgstr "刪除"
 
@@ -5479,7 +5469,7 @@ msgid "export profile"
 msgstr "匯出用描述檔"
 
 #: ../src/common/colorspaces.c:1407 ../src/common/colorspaces.c:1687
-#: ../src/views/darkroom.c:2472
+#: ../src/views/darkroom.c:2469
 msgid "softproof profile"
 msgstr "軟打樣描述檔"
 
@@ -5760,7 +5750,7 @@ msgstr "啟動 darktable 時發生錯誤"
 #: ../src/common/database.c:2742 ../src/libs/collect.c:3007
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1193
-#: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3553
+#: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3524
 #: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568 ../src/libs/tagging.c:1649
 #: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
@@ -5786,9 +5776,9 @@ msgstr ""
 
 #: ../src/common/database.c:2749 ../src/common/database.c:3809
 #: ../src/common/variables.c:598 ../src/develop/imageop_gui.c:197
-#: ../src/imageio/format/pdf.c:648 ../src/imageio/format/pdf.c:673
-#: ../src/libs/export.c:1209 ../src/libs/export.c:1216
-#: ../src/libs/export.c:1223 ../src/libs/metadata_view.c:678
+#: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
+#: ../src/libs/export.c:1202 ../src/libs/export.c:1209
+#: ../src/libs/export.c:1216 ../src/libs/metadata_view.c:678
 msgid "yes"
 msgstr "是"
 
@@ -6310,28 +6300,28 @@ msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "「%s」雜訊描述檔無效"
 
-#: ../src/common/opencl.c:1111
+#: ../src/common/opencl.c:1112
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "⚠️ 注意 ⚠️\n"
 "由於顯示卡速度過慢， OpenCL 加速功能已停用"
 
-#: ../src/common/opencl.c:1118
+#: ../src/common/opencl.c:1119
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "⚠️ 注意 ⚠️\n"
 "偵測到多張顯示卡，已自動調整 OpenCL 至相應設定"
 
-#: ../src/common/opencl.c:1126
+#: ../src/common/opencl.c:1127
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "⚠️ 注意 ⚠️\n"
 "偵測到高階的顯示卡，已自動調整 OpenCL 至相應設定"
 
-#: ../src/common/opencl.c:1133
+#: ../src/common/opencl.c:1134
 msgid "opencl scheduling profile set to default"
 msgstr "恢復 OpenCL 設定成預設值"
 
@@ -6340,7 +6330,7 @@ msgstr "恢復 OpenCL 設定成預設值"
 msgid "mm"
 msgstr "公釐"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:533 ../src/libs/export.c:1164
+#: ../src/common/pdf.h:89 ../src/libs/export.c:533 ../src/libs/export.c:1159
 #: ../src/libs/print_settings.c:83
 msgid "cm"
 msgstr "公分"
@@ -6520,11 +6510,11 @@ msgid "m"
 msgstr "公尺"
 
 #: ../src/control/control.c:66 ../src/gui/accelerators.c:128
-#: ../src/views/darkroom.c:2098
+#: ../src/views/darkroom.c:2095
 msgid "hold"
 msgstr "保持按壓"
 
-#: ../src/control/control.c:102 ../src/control/control.c:136
+#: ../src/control/control.c:102 ../src/control/control.c:138
 msgid "modifiers"
 msgstr "更改"
 
@@ -6550,29 +6540,41 @@ msgstr "工具模組"
 
 #: ../src/control/control.c:113
 msgctxt "accel"
+msgid "format"
+msgstr "格式"
+
+#. will be placed under lib/export
+#: ../src/control/control.c:114
+msgctxt "accel"
+msgid "storage"
+msgstr "儲存"
+
+#. will be placed under lib/export
+#: ../src/control/control.c:115
+msgctxt "accel"
 msgid "processing modules"
 msgstr "編輯模組"
 
-#: ../src/control/control.c:114
+#: ../src/control/control.c:116
 msgctxt "accel"
 msgid "blending"
 msgstr "混合"
 
-#: ../src/control/control.c:115
+#: ../src/control/control.c:117
 msgctxt "accel"
 msgid "lua scripts"
 msgstr "Lua 腳本"
 
-#: ../src/control/control.c:116
+#: ../src/control/control.c:118
 msgctxt "accel"
 msgid "fallbacks"
 msgstr "通用擴展快速鍵"
 
-#: ../src/control/control.c:133
+#: ../src/control/control.c:135
 msgid "show accels window"
 msgstr "顯示快速鍵視窗"
 
-#: ../src/control/control.c:294
+#: ../src/control/control.c:296
 msgid "working..."
 msgstr "處理中..."
 
@@ -6678,7 +6680,9 @@ msgstr "成功：已從舊的資料庫同步「%s」的資料至新的 XMP 附�
 msgid "%id %02dh %02dm %02ds"
 msgstr "%i 天 %02d 小時 %02d 分 %02d 秒"
 
-#: ../src/control/crawler.c:625
+#: ../src/control/crawler.c:625 ../src/imageio/storage/disk.c:168
+#: ../src/imageio/storage/gallery.c:154 ../src/imageio/storage/latex.c:153
+#: ../src/imageio/storage/latex.c:171
 msgid "path"
 msgstr "路徑"
 
@@ -6947,7 +6951,7 @@ msgstr "沒有要匯出的影像"
 msgid "exporting %d / %d to %s"
 msgstr "匯出 %d 張（共 %d 張）影像到「%s」"
 
-#: ../src/control/jobs/control_jobs.c:1434 ../src/views/darkroom.c:818
+#: ../src/control/jobs/control_jobs.c:1434 ../src/views/darkroom.c:819
 #: ../src/views/print.c:337
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -7398,7 +7402,7 @@ msgctxt "blendoperation"
 msgid "reverse"
 msgstr "反轉"
 
-#: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:411
+#: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:413
 #: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1192
 msgid "default"
 msgstr "預設"
@@ -7421,17 +7425,17 @@ msgid "uniformly"
 msgstr "均勻混合"
 
 #: ../src/develop/blend_gui.c:103 ../src/develop/blend_gui.c:2321
-#: ../src/develop/blend_gui.c:2987 ../src/develop/imageop.c:2273
+#: ../src/develop/blend_gui.c:2987 ../src/develop/imageop.c:2272
 msgid "drawn mask"
 msgstr "繪製範圍遮罩"
 
 #: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2129
-#: ../src/develop/blend_gui.c:2994 ../src/develop/imageop.c:2275
+#: ../src/develop/blend_gui.c:2994 ../src/develop/imageop.c:2274
 msgid "parametric mask"
 msgstr "設定色版遮罩"
 
 #: ../src/develop/blend_gui.c:105 ../src/develop/blend_gui.c:2501
-#: ../src/develop/blend_gui.c:3012 ../src/develop/imageop.c:2277
+#: ../src/develop/blend_gui.c:3012 ../src/develop/imageop.c:2276
 msgid "raster mask"
 msgstr "點陣遮罩"
 
@@ -7473,19 +7477,19 @@ msgstr "先模糊後柔化 / 輸入"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2246
 #: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:129
-#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:805
+#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:789
 #: ../src/libs/live_view.c:362
 msgid "on"
 msgstr "開啟"
 
 #: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2190
-#: ../src/develop/imageop.c:2380 ../src/iop/channelmixerrgb.c:4116
-#: ../src/iop/exposure.c:1099
+#: ../src/develop/imageop.c:2379 ../src/iop/channelmixerrgb.c:4117
+#: ../src/iop/exposure.c:1098
 msgid "input"
 msgstr "輸入"
 
 #: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2190
-#: ../src/develop/imageop.c:2380
+#: ../src/develop/imageop.c:2379
 msgid "output"
 msgstr "輸出"
 
@@ -7567,7 +7571,7 @@ msgid "sliders for gray value"
 msgstr "以灰階參數控制混合"
 
 #: ../src/develop/blend_gui.c:1987 ../src/develop/blend_gui.c:2014
-#: ../src/iop/channelmixerrgb.c:4193 ../src/iop/denoiseprofile.c:3582
+#: ../src/iop/channelmixerrgb.c:4194 ../src/iop/denoiseprofile.c:3582
 #: ../src/iop/rawdenoise.c:905 ../src/iop/rgbcurve.c:1369
 #: ../src/iop/rgblevels.c:1013 ../src/libs/filters/colors.c:137
 msgid "R"
@@ -7578,7 +7582,7 @@ msgid "sliders for red channel"
 msgstr "以紅色色版參數控制混合"
 
 #: ../src/develop/blend_gui.c:1990 ../src/develop/blend_gui.c:2017
-#: ../src/iop/channelmixerrgb.c:4194 ../src/iop/denoiseprofile.c:3583
+#: ../src/iop/channelmixerrgb.c:4195 ../src/iop/denoiseprofile.c:3583
 #: ../src/iop/rawdenoise.c:906 ../src/iop/rgbcurve.c:1370
 #: ../src/iop/rgblevels.c:1014 ../src/libs/filters/colors.c:143
 msgid "G"
@@ -7589,7 +7593,7 @@ msgid "sliders for green channel"
 msgstr "以綠色色版參數控制混合"
 
 #: ../src/develop/blend_gui.c:1993 ../src/develop/blend_gui.c:2020
-#: ../src/iop/channelmixerrgb.c:4195 ../src/iop/denoiseprofile.c:3584
+#: ../src/iop/channelmixerrgb.c:4196 ../src/iop/denoiseprofile.c:3584
 #: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1371
 #: ../src/iop/rgblevels.c:1015 ../src/libs/filters/colors.c:146
 msgid "B"
@@ -7616,8 +7620,8 @@ msgid "sliders for chroma channel (of HSL)"
 msgstr "以 HSL 的 S 飽和度參數控制混合"
 
 #: ../src/develop/blend_gui.c:2003 ../src/develop/blend_gui.c:2030
-#: ../src/iop/atrous.c:1735 ../src/iop/channelmixerrgb.c:4071
-#: ../src/iop/channelmixerrgb.c:4162 ../src/iop/colorbalancergb.c:2146
+#: ../src/iop/atrous.c:1735 ../src/iop/channelmixerrgb.c:4072
+#: ../src/iop/channelmixerrgb.c:4163 ../src/iop/colorbalancergb.c:2146
 #: ../src/iop/colorbalancergb.c:2147 ../src/iop/colorbalancergb.c:2148
 #: ../src/iop/colorbalancergb.c:2149 ../src/iop/colorbalancergb.c:2156
 #: ../src/iop/colorbalancergb.c:2157 ../src/iop/colorbalancergb.c:2158
@@ -7747,7 +7751,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3132 ../src/iop/toneequal.c:3135
 #: ../src/iop/toneequal.c:3138 ../src/iop/toneequal.c:3141
 #: ../src/iop/toneequal.c:3235 ../src/iop/toneequal.c:3242
-#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2379
+#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2376
 msgid " EV"
 msgstr " EV"
 
@@ -7923,7 +7927,7 @@ msgstr ""
 "但場景參照流程不受標準動態範圍限制，所以必須由使用者定義中灰點"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3064 ../src/iop/watermark.c:1122
+#: ../src/develop/blend_gui.c:3064 ../src/iop/watermark.c:1120
 msgid "opacity"
 msgstr "不透明度"
 
@@ -8108,12 +8112,12 @@ msgstr "新的模組實例"
 msgid "duplicate instance"
 msgstr "複製模組實例"
 
-#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:3232
+#: ../src/develop/imageop.c:940 ../src/develop/imageop.c:3231
 #: ../src/libs/masks.c:1098
 msgid "move up"
 msgstr "向上移動"
 
-#: ../src/develop/imageop.c:946 ../src/develop/imageop.c:3233
+#: ../src/develop/imageop.c:946 ../src/develop/imageop.c:3232
 #: ../src/libs/masks.c:1101
 msgid "move down"
 msgstr "向下移動"
@@ -8121,59 +8125,59 @@ msgstr "向下移動"
 #. delete button label and tooltip will be updated based on trash pref
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
-#: ../src/develop/imageop.c:952 ../src/develop/imageop.c:3235
+#: ../src/develop/imageop.c:952 ../src/develop/imageop.c:3234
 #: ../src/gui/accelerators.c:143 ../src/gui/presets.c:488
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/masks.c:1055
 #: ../src/libs/tagging.c:1480 ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "刪除"
 
-#: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3236
-#: ../src/libs/modulegroups.c:3553 ../src/libs/modulegroups.c:3916
+#: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3235
+#: ../src/libs/modulegroups.c:3524 ../src/libs/modulegroups.c:3887
 msgid "rename"
 msgstr "重新命名"
 
-#: ../src/develop/imageop.c:1025 ../src/develop/imageop.c:2509
+#: ../src/develop/imageop.c:1025 ../src/develop/imageop.c:2508
 #, c-format
 msgid "%s is switched on"
 msgstr "「%s」模組正在使用中"
 
-#: ../src/develop/imageop.c:1025 ../src/develop/imageop.c:2509
+#: ../src/develop/imageop.c:1025 ../src/develop/imageop.c:2508
 #, c-format
 msgid "%s is switched off"
 msgstr "「%s」模組效果已關閉"
 
-#: ../src/develop/imageop.c:2267
+#: ../src/develop/imageop.c:2266
 msgid "unknown mask"
 msgstr "未知遮罩"
 
-#: ../src/develop/imageop.c:2271
+#: ../src/develop/imageop.c:2270
 msgid "drawn + parametric mask"
 msgstr "繪製 + 色版遮罩"
 
-#: ../src/develop/imageop.c:2280
+#: ../src/develop/imageop.c:2279
 #, c-format
 msgid "this module has a `%s'"
 msgstr "此模組包含「%s」"
 
-#: ../src/develop/imageop.c:2285
+#: ../src/develop/imageop.c:2284
 #, c-format
 msgid "taken from module %s"
 msgstr "取自「%s」模組"
 
-#: ../src/develop/imageop.c:2290
+#: ../src/develop/imageop.c:2289
 msgid "click to display (module must be activated first)"
 msgstr "點擊顯示（須先啟用模組）"
 
-#: ../src/develop/imageop.c:2380
+#: ../src/develop/imageop.c:2379
 msgid "purpose"
 msgstr "用途"
 
-#: ../src/develop/imageop.c:2380
+#: ../src/develop/imageop.c:2379
 msgid "process"
 msgstr "運算"
 
-#: ../src/develop/imageop.c:2478
+#: ../src/develop/imageop.c:2477
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8181,7 +8185,7 @@ msgstr ""
 "多個模組實例\n"
 "左鍵選擇操作方式，右鍵快速建立新的實例"
 
-#: ../src/develop/imageop.c:2489
+#: ../src/develop/imageop.c:2488
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8189,7 +8193,7 @@ msgstr ""
 "重設參數\n"
 "ctrl + 點擊 重新套用在任何自動預設集上"
 
-#: ../src/develop/imageop.c:2498
+#: ../src/develop/imageop.c:2497
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8197,17 +8201,17 @@ msgstr ""
 "預設集\n"
 "點擊以選擇預設集套用，或是儲存目前設定為預設集"
 
-#: ../src/develop/imageop.c:2720 ../src/develop/imageop.c:2742
+#: ../src/develop/imageop.c:2719 ../src/develop/imageop.c:2741
 msgid "ERROR"
 msgstr "⚠️ 錯誤 ⚠️"
 
-#: ../src/develop/imageop.c:3125
+#: ../src/develop/imageop.c:3124
 msgid "unsupported input"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "不支援的輸入資料"
 
-#: ../src/develop/imageop.c:3126
+#: ../src/develop/imageop.c:3125
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8217,47 +8221,47 @@ msgstr ""
 "⚠️ 警告 ⚠️\n"
 "此模組的運算順序（排列位置）不符合資料格式的要求"
 
-#: ../src/develop/imageop.c:3231 ../src/develop/imageop.c:3241
-#: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1289
+#: ../src/develop/imageop.c:3230 ../src/develop/imageop.c:3240
+#: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1288
 msgid "show"
 msgstr "顯示"
 
-#: ../src/develop/imageop.c:3234 ../src/libs/modulegroups.c:3399
-#: ../src/libs/modulegroups.c:3525 ../src/libs/modulegroups.c:3918
+#: ../src/develop/imageop.c:3233 ../src/libs/modulegroups.c:3370
+#: ../src/libs/modulegroups.c:3496 ../src/libs/modulegroups.c:3889
 #: ../src/libs/tagging.c:3247
 msgid "new"
 msgstr "新增"
 
-#: ../src/develop/imageop.c:3237 ../src/libs/duplicate.c:543
-#: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3914
+#: ../src/develop/imageop.c:3236 ../src/libs/duplicate.c:543
+#: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3885
 msgid "duplicate"
 msgstr "複製"
 
-#: ../src/develop/imageop.c:3242
+#: ../src/develop/imageop.c:3241
 msgid "enable"
 msgstr "啟用"
 
-#: ../src/develop/imageop.c:3243
+#: ../src/develop/imageop.c:3242 ../src/gui/accelerators.c:153
 msgid "focus"
 msgstr "使用中"
 
-#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:2261
+#: ../src/develop/imageop.c:3243 ../src/gui/accelerators.c:2308
 msgid "instance"
 msgstr "多模組實例"
 
-#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:105
+#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:105
 #: ../src/gui/accelerators.c:114 ../src/iop/atrous.c:1579
-#: ../src/libs/lib.c:1290 ../src/libs/modulegroups.c:3982
+#: ../src/libs/lib.c:1289 ../src/libs/modulegroups.c:3953
 msgid "reset"
 msgstr "重設"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3246 ../src/gui/preferences.c:774
-#: ../src/libs/lib.c:1291
+#: ../src/develop/imageop.c:3245 ../src/gui/preferences.c:774
+#: ../src/libs/lib.c:1290
 msgid "presets"
 msgstr "預設集"
 
-#: ../src/develop/imageop.c:3258
+#: ../src/develop/imageop.c:3257
 msgid "processing module"
 msgstr "編輯模組"
 
@@ -8613,7 +8617,7 @@ msgstr ""
 "歷史記錄中啟用此模組，但模組不適用於此類型的影像\n"
 "錯誤有可能是透過套用預設集，或是貼上影像編輯歷史記錄而導致"
 
-#: ../src/develop/pixelpipe_hb.c:2251
+#: ../src/develop/pixelpipe_hb.c:2248
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -8814,9 +8818,9 @@ msgstr "設定為目前的選取時間"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1718 ../src/gui/accelerators.c:2011
-#: ../src/gui/accelerators.c:2090 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2917
-#: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
+#: ../src/dtgtk/range.c:1718 ../src/gui/accelerators.c:2058
+#: ../src/gui/accelerators.c:2137 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2917
+#: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
 #: ../src/libs/collect.c:3153 ../src/libs/filtering.c:1424
 #: ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
@@ -9029,7 +9033,7 @@ msgstr ""
 msgid "creating complete lighttable thumbnail cache\n"
 msgstr "正在建立完整的燈箱預覽快取縮圖\n"
 
-#: ../src/gui/accelerators.c:73 ../src/views/view.c:1201
+#: ../src/gui/accelerators.c:73 ../src/views/view.c:1200
 msgid "scroll"
 msgstr "捲動"
 
@@ -9041,7 +9045,7 @@ msgstr "平移"
 #: ../src/iop/ashift.c:5424 ../src/iop/ashift.c:5526 ../src/iop/ashift.c:5527
 #: ../src/iop/ashift.c:5836 ../src/iop/clipping.c:1920
 #: ../src/iop/clipping.c:2112 ../src/iop/clipping.c:2128
-#: ../src/views/darkroom.c:2607 ../src/views/lighttable.c:1231
+#: ../src/views/darkroom.c:2604 ../src/views/lighttable.c:1231
 msgid "horizontal"
 msgstr "水平"
 
@@ -9049,7 +9053,7 @@ msgstr "水平"
 #: ../src/iop/ashift.c:5424 ../src/iop/ashift.c:5526 ../src/iop/ashift.c:5527
 #: ../src/iop/ashift.c:5835 ../src/iop/clipping.c:1919
 #: ../src/iop/clipping.c:2113 ../src/iop/clipping.c:2127
-#: ../src/views/darkroom.c:2610 ../src/views/lighttable.c:1235
+#: ../src/views/darkroom.c:2607 ../src/views/lighttable.c:1235
 msgid "vertical"
 msgstr "垂直"
 
@@ -9073,15 +9077,15 @@ msgstr "上下"
 msgid "pgupdown"
 msgstr "上下翻頁"
 
-#: ../src/gui/accelerators.c:89 ../src/views/view.c:1185
+#: ../src/gui/accelerators.c:89 ../src/views/view.c:1184
 msgid "shift"
 msgstr "shift"
 
-#: ../src/gui/accelerators.c:90 ../src/views/view.c:1186
+#: ../src/gui/accelerators.c:90 ../src/views/view.c:1185
 msgid "ctrl"
 msgstr "ctrl"
 
-#: ../src/gui/accelerators.c:91 ../src/views/view.c:1187
+#: ../src/gui/accelerators.c:91 ../src/views/view.c:1186
 msgid "alt"
 msgstr "alt"
 
@@ -9098,11 +9102,11 @@ msgstr "alt（右）"
 msgid "edit"
 msgstr "編輯"
 
-#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:581
+#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:628
 msgid "up"
 msgstr "上"
 
-#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:581
+#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:628
 msgid "down"
 msgstr "下"
 
@@ -9124,19 +9128,19 @@ msgstr "下一個"
 msgid "previous"
 msgstr "前一個"
 
-#: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:1177
+#: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:1224
 msgid "last"
 msgstr "最後一個"
 
-#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1176
+#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1223
 msgid "first"
 msgstr "第一個"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1712
+#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1712
 #: ../src/libs/filters/rating_range.c:285 ../src/libs/tagging.c:3117
-#: ../src/views/darkroom.c:2295 ../src/views/darkroom.c:2345
-#: ../src/views/darkroom.c:2579
+#: ../src/views/darkroom.c:2292 ../src/views/darkroom.c:2342
+#: ../src/views/darkroom.c:2576
 msgid "toggle"
 msgstr "切換"
 
@@ -9185,90 +9189,102 @@ msgstr "偏好設定"
 msgid "apply on new instance"
 msgstr "套用在新的模組實例"
 
-#: ../src/gui/accelerators.c:323
+#: ../src/gui/accelerators.c:154
+msgid "start"
+msgstr "開始"
+
+#: ../src/gui/accelerators.c:155
+msgid "end"
+msgstr "結束"
+
+#: ../src/gui/accelerators.c:301
+msgid "entry"
+msgstr "輸入"
+
+#: ../src/gui/accelerators.c:370
 msgid "combo effect not found"
 msgstr "找不到組合效果"
 
-#: ../src/gui/accelerators.c:477
+#: ../src/gui/accelerators.c:524
 msgid "(keypad)"
 msgstr "（主鍵區）"
 
-#: ../src/gui/accelerators.c:486
+#: ../src/gui/accelerators.c:533
 msgid "tablet button"
 msgstr "平板按鈕"
 
-#: ../src/gui/accelerators.c:495
+#: ../src/gui/accelerators.c:542
 msgid "unknown driver"
 msgstr "未知裝置"
 
-#: ../src/gui/accelerators.c:562
+#: ../src/gui/accelerators.c:609
 msgid "long"
 msgstr "長按"
 
-#: ../src/gui/accelerators.c:563
+#: ../src/gui/accelerators.c:610
 msgid "double-press"
 msgstr "雙擊"
 
-#: ../src/gui/accelerators.c:564
+#: ../src/gui/accelerators.c:611
 msgid "triple-press"
 msgstr "按三次"
 
-#: ../src/gui/accelerators.c:565
+#: ../src/gui/accelerators.c:612
 msgid "press"
 msgstr "點擊"
 
-#: ../src/gui/accelerators.c:569
+#: ../src/gui/accelerators.c:616
 msgctxt "accel"
 msgid "left"
 msgstr "左鍵"
 
-#: ../src/gui/accelerators.c:570
+#: ../src/gui/accelerators.c:617
 msgctxt "accel"
 msgid "right"
 msgstr "右鍵"
 
-#: ../src/gui/accelerators.c:571
+#: ../src/gui/accelerators.c:618
 msgctxt "accel"
 msgid "middle"
 msgstr "中鍵"
 
-#: ../src/gui/accelerators.c:572
+#: ../src/gui/accelerators.c:619
 msgctxt "accel"
 msgid "long"
 msgstr "長按"
 
-#: ../src/gui/accelerators.c:573
+#: ../src/gui/accelerators.c:620
 msgctxt "accel"
 msgid "double-click"
 msgstr "雙擊"
 
-#: ../src/gui/accelerators.c:574
+#: ../src/gui/accelerators.c:621
 msgctxt "accel"
 msgid "triple-click"
 msgstr "按三下"
 
-#: ../src/gui/accelerators.c:575
+#: ../src/gui/accelerators.c:622
 msgid "click"
 msgstr "點擊"
 
-#: ../src/gui/accelerators.c:603
+#: ../src/gui/accelerators.c:650
 msgid "first instance"
 msgstr "第一個模組實例"
 
-#: ../src/gui/accelerators.c:605
+#: ../src/gui/accelerators.c:652
 msgid "last instance"
 msgstr "最後一個模組實例"
 
-#: ../src/gui/accelerators.c:607
+#: ../src/gui/accelerators.c:654
 msgid "relative instance"
 msgstr "相對的模組實例"
 
-#: ../src/gui/accelerators.c:621 ../src/gui/accelerators.c:908
-#: ../src/gui/accelerators.c:2251 ../src/gui/accelerators.c:3107
+#: ../src/gui/accelerators.c:668 ../src/gui/accelerators.c:955
+#: ../src/gui/accelerators.c:2298 ../src/gui/accelerators.c:3154
 msgid "speed"
 msgstr "速度"
 
-#: ../src/gui/accelerators.c:680
+#: ../src/gui/accelerators.c:727
 msgid ""
 "press Del to delete selected shortcut\n"
 "double-click to add new shortcut\n"
@@ -9278,15 +9294,15 @@ msgstr ""
 "雙擊以添加新的快速鍵\n"
 "直接輸入搜尋快速鍵"
 
-#: ../src/gui/accelerators.c:696
+#: ../src/gui/accelerators.c:743
 msgid "click to filter shortcut list\n"
 msgstr "點擊可篩選快速鍵\n"
 
-#: ../src/gui/accelerators.c:697
+#: ../src/gui/accelerators.c:744
 msgid "right click to show action of selected shortcut\n"
 msgstr "右鍵展開選擇的快速鍵清單\n"
 
-#: ../src/gui/accelerators.c:698
+#: ../src/gui/accelerators.c:745
 msgid ""
 "double-click to define new shortcut\n"
 "start typing for incremental search"
@@ -9294,100 +9310,100 @@ msgstr ""
 "雙擊以自訂新的快速鍵\n"
 "直接輸入搜尋動作"
 
-#: ../src/gui/accelerators.c:717
+#: ../src/gui/accelerators.c:764
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
 msgstr "按鍵和滑鼠動作組合以建立快速鍵"
 
-#: ../src/gui/accelerators.c:718
+#: ../src/gui/accelerators.c:765
 msgid "click to open shortcut configuration"
 msgstr "滑鼠點擊打開此功能的快速鍵設定視窗"
 
-#: ../src/gui/accelerators.c:719
+#: ../src/gui/accelerators.c:766
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "ctrl + 左鍵添加到快速存取面板\n"
 
-#: ../src/gui/accelerators.c:720
+#: ../src/gui/accelerators.c:767
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "ctrl + 左鍵從快速存取面板中刪除\n"
 
-#: ../src/gui/accelerators.c:721
+#: ../src/gui/accelerators.c:768
 msgid "scroll to change default speed"
 msgstr "滑鼠滾輪可改變快速鍵速度"
 
-#: ../src/gui/accelerators.c:722
+#: ../src/gui/accelerators.c:769
 msgid "right click to exit mapping mode"
 msgstr "滑鼠右鍵退出快速鍵錄製模式"
 
-#: ../src/gui/accelerators.c:905
+#: ../src/gui/accelerators.c:952
 msgid "active view"
 msgstr "目前的模式"
 
-#: ../src/gui/accelerators.c:906
+#: ../src/gui/accelerators.c:953
 msgid "other views"
 msgstr "其他檢視模式"
 
-#: ../src/gui/accelerators.c:907
+#: ../src/gui/accelerators.c:954
 msgid "fallbacks"
 msgstr "通用擴展快速鍵"
 
-#: ../src/gui/accelerators.c:1057
+#: ../src/gui/accelerators.c:1104
 msgid "shortcut for move exists with single effect"
 msgstr "已經有同樣效果的移動快捷鍵"
 
-#: ../src/gui/accelerators.c:1058
+#: ../src/gui/accelerators.c:1105
 msgid "create separate shortcuts for up and down move?"
 msgstr "為上下移動建立單獨的快速鍵？"
 
-#: ../src/gui/accelerators.c:1081
+#: ../src/gui/accelerators.c:1128
 #, c-format
 msgid "%s, speed reset"
 msgstr "「%s」，速度重設"
 
-#: ../src/gui/accelerators.c:1090
+#: ../src/gui/accelerators.c:1137
 msgid "shortcut exists with different settings"
 msgstr "已經有不同設定的快速鍵"
 
-#: ../src/gui/accelerators.c:1091
+#: ../src/gui/accelerators.c:1138
 msgid "reset the settings of the shortcut?"
 msgstr "是否重設快速鍵的配置？"
 
-#: ../src/gui/accelerators.c:1102
+#: ../src/gui/accelerators.c:1149
 msgid "shortcut already exists"
 msgstr "快速鍵已存在"
 
-#: ../src/gui/accelerators.c:1103
+#: ../src/gui/accelerators.c:1150
 msgid "remove the shortcut?"
 msgstr "刪除此快速鍵？"
 
-#: ../src/gui/accelerators.c:1136
+#: ../src/gui/accelerators.c:1183
 msgid "remove these existing shortcuts?"
 msgstr "刪除這些已有的快速鍵？"
 
-#: ../src/gui/accelerators.c:1138
+#: ../src/gui/accelerators.c:1185
 msgid "clashing shortcuts exist"
 msgstr "與現有快速鍵衝突"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1175
+#: ../src/gui/accelerators.c:1222
 msgid "preferred"
 msgstr "優先"
 
-#: ../src/gui/accelerators.c:1178
+#: ../src/gui/accelerators.c:1225
 msgid "second"
 msgstr "第二"
 
-#: ../src/gui/accelerators.c:1179
+#: ../src/gui/accelerators.c:1226
 msgid "last but one"
 msgstr "倒數第二"
 
-#: ../src/gui/accelerators.c:1307 ../src/gui/accelerators.c:1361
+#: ../src/gui/accelerators.c:1354 ../src/gui/accelerators.c:1408
 msgid "(unchanged)"
 msgstr "（未更改）"
 
-#: ../src/gui/accelerators.c:1456
+#: ../src/gui/accelerators.c:1503
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -9407,31 +9423,31 @@ msgstr ""
 "\n"
 "點擊右鍵取消"
 
-#: ../src/gui/accelerators.c:1521
+#: ../src/gui/accelerators.c:1568
 msgid "removing shortcut"
 msgstr "移除快速鍵"
 
-#: ../src/gui/accelerators.c:1522
+#: ../src/gui/accelerators.c:1569
 msgid "remove the selected shortcut?"
 msgstr "是否要移除選取的快速鍵 ？"
 
-#: ../src/gui/accelerators.c:1921
+#: ../src/gui/accelerators.c:1968
 msgid "restore shortcuts"
 msgstr "復原快速鍵"
 
-#: ../src/gui/accelerators.c:1925
+#: ../src/gui/accelerators.c:1972
 msgid "_defaults"
 msgstr "預設（_D）"
 
-#: ../src/gui/accelerators.c:1926
+#: ../src/gui/accelerators.c:1973
 msgid "_startup"
-msgstr "啟動（_S）"
+msgstr "開始（_S）"
 
-#: ../src/gui/accelerators.c:1927
+#: ../src/gui/accelerators.c:1974
 msgid "_edits"
 msgstr "編輯（_E）"
 
-#: ../src/gui/accelerators.c:1932
+#: ../src/gui/accelerators.c:1979
 msgid ""
 "restore default shortcuts\n"
 "  or as at startup\n"
@@ -9441,7 +9457,7 @@ msgstr ""
 "啟動：恢復這次開啟軟體前的設定\n"
 "編輯：恢復前一次編輯的設定\n"
 
-#: ../src/gui/accelerators.c:1935
+#: ../src/gui/accelerators.c:1982
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -9449,22 +9465,22 @@ msgstr ""
 "清除所有更新的快速鍵\n"
 "（而不僅是恢復已更改的）"
 
-#: ../src/gui/accelerators.c:1989 ../src/gui/preferences.c:877
+#: ../src/gui/accelerators.c:2036 ../src/gui/preferences.c:877
 #: ../src/libs/tools/global_toolbox.c:496
 #: ../src/libs/tools/global_toolbox.c:819
 msgid "shortcuts"
 msgstr "快速鍵"
 
-#: ../src/gui/accelerators.c:1998
+#: ../src/gui/accelerators.c:2045
 msgid "export shortcuts"
 msgstr "匯出快速鍵"
 
-#: ../src/gui/accelerators.c:2001 ../src/gui/accelerators.c:2080
+#: ../src/gui/accelerators.c:2048 ../src/gui/accelerators.c:2127
 #: ../src/gui/hist_dialog.c:198 ../src/gui/presets.c:488
 msgid "_ok"
 msgstr "確定(_O）"
 
-#: ../src/gui/accelerators.c:2006
+#: ../src/gui/accelerators.c:2053
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -9472,27 +9488,27 @@ msgstr ""
 "選擇要匯出全部的快速鍵\n"
 "或是特定裝置的快速鍵設定\n"
 
-#: ../src/gui/accelerators.c:2012 ../src/gui/accelerators.c:2091
+#: ../src/gui/accelerators.c:2059 ../src/gui/accelerators.c:2138
 msgid "keyboard"
 msgstr "鍵盤"
 
-#: ../src/gui/accelerators.c:2024
+#: ../src/gui/accelerators.c:2071
 msgid "device id"
 msgstr "裝置識別碼"
 
-#: ../src/gui/accelerators.c:2050
+#: ../src/gui/accelerators.c:2097
 msgid "select file to export"
 msgstr "選擇要匯出的檔案"
 
-#: ../src/gui/accelerators.c:2051 ../src/libs/tagging.c:2521
+#: ../src/gui/accelerators.c:2098 ../src/libs/tagging.c:2521
 msgid "_export"
 msgstr "匯出（_E）"
 
-#: ../src/gui/accelerators.c:2077
+#: ../src/gui/accelerators.c:2124
 msgid "import shortcuts"
 msgstr "匯入快速鍵"
 
-#: ../src/gui/accelerators.c:2085
+#: ../src/gui/accelerators.c:2132
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -9500,31 +9516,31 @@ msgstr ""
 "選擇要匯入全部的快速鍵\n"
 "或是特定裝置的快速鍵設定\n"
 
-#: ../src/gui/accelerators.c:2103
+#: ../src/gui/accelerators.c:2150
 msgid "id in file"
 msgstr "檔案識別碼"
 
-#: ../src/gui/accelerators.c:2109
+#: ../src/gui/accelerators.c:2156
 msgid "id when loaded"
 msgstr "載入時的識別碼"
 
-#: ../src/gui/accelerators.c:2113
+#: ../src/gui/accelerators.c:2160
 msgid "clear device first"
 msgstr "先刪除原有的設備快速鍵"
 
-#: ../src/gui/accelerators.c:2137
+#: ../src/gui/accelerators.c:2184
 msgid "select file to import"
 msgstr "選擇要匯入的檔案"
 
-#: ../src/gui/accelerators.c:2138 ../src/libs/tagging.c:2485
+#: ../src/gui/accelerators.c:2185 ../src/libs/tagging.c:2485
 msgid "_import"
 msgstr "匯入（_I）"
 
-#: ../src/gui/accelerators.c:2211
+#: ../src/gui/accelerators.c:2258
 msgid "search shortcuts list"
 msgstr "搜尋快速鍵"
 
-#: ../src/gui/accelerators.c:2212
+#: ../src/gui/accelerators.c:2259
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -9533,28 +9549,28 @@ msgstr ""
 "使用上下鍵在符合的快速鍵中切換"
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2227 ../src/views/view.c:1382
+#: ../src/gui/accelerators.c:2274 ../src/views/view.c:1381
 msgid "shortcut"
 msgstr "快速鍵"
 
-#: ../src/gui/accelerators.c:2229 ../src/gui/accelerators.c:2320
-#: ../src/views/view.c:1384
+#: ../src/gui/accelerators.c:2276 ../src/gui/accelerators.c:2367
+#: ../src/views/view.c:1383
 msgid "action"
 msgstr "動作"
 
-#: ../src/gui/accelerators.c:2238
+#: ../src/gui/accelerators.c:2285
 msgid "element"
 msgstr "元素"
 
-#: ../src/gui/accelerators.c:2245
+#: ../src/gui/accelerators.c:2292
 msgid "effect"
 msgstr "效果"
 
-#: ../src/gui/accelerators.c:2302
+#: ../src/gui/accelerators.c:2349
 msgid "search actions list"
 msgstr "搜尋動作"
 
-#: ../src/gui/accelerators.c:2303
+#: ../src/gui/accelerators.c:2350
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -9562,16 +9578,16 @@ msgstr ""
 "輸入關鍵字搜尋動作\n"
 "使用上下鍵在符合的動作中切換"
 
-#: ../src/gui/accelerators.c:2326 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2373 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:192
 msgid "type"
 msgstr "類別"
 
-#: ../src/gui/accelerators.c:2361
+#: ../src/gui/accelerators.c:2408
 msgid "enable fallbacks"
 msgstr "啟用更多通用擴展快速鍵"
 
-#: ../src/gui/accelerators.c:2362
+#: ../src/gui/accelerators.c:2409
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -9579,53 +9595,53 @@ msgstr ""
 "在基本快速鍵之上啟用更多附加按鈕、調整或移動的效果\n"
 "更多詳細內容及參數，請閱讀操作手冊的「shortcuts」章節"
 
-#: ../src/gui/accelerators.c:2368
+#: ../src/gui/accelerators.c:2415
 msgid "restore..."
 msgstr "重設"
 
-#: ../src/gui/accelerators.c:2369
+#: ../src/gui/accelerators.c:2416
 msgid "restore default shortcuts or previous state"
 msgstr "恢復預設快速鍵或之前的狀態"
 
 #. import button
-#: ../src/gui/accelerators.c:2373 ../src/libs/styles.c:852
+#: ../src/gui/accelerators.c:2420 ../src/libs/styles.c:852
 #: ../src/libs/tagging.c:3250
 msgid "import..."
 msgstr "匯入"
 
-#: ../src/gui/accelerators.c:2374
+#: ../src/gui/accelerators.c:2421
 msgid "fully or partially import shortcuts from file"
 msgstr "從檔案匯入快速鍵"
 
 #. export button
-#: ../src/gui/accelerators.c:2378 ../src/libs/styles.c:856
+#: ../src/gui/accelerators.c:2425 ../src/libs/styles.c:856
 #: ../src/libs/tagging.c:3253
 msgid "export..."
 msgstr "匯出"
 
-#: ../src/gui/accelerators.c:2379
+#: ../src/gui/accelerators.c:2426
 msgid "fully or partially export shortcuts to file"
 msgstr "匯出快速鍵成檔案"
 
-#: ../src/gui/accelerators.c:2777
+#: ../src/gui/accelerators.c:2824
 msgid "input devices reinitialised"
 msgstr "重新初始化輸入裝置"
 
-#: ../src/gui/accelerators.c:2992
+#: ../src/gui/accelerators.c:3039
 msgid "fallback to move"
 msgstr "回復上一動"
 
-#: ../src/gui/accelerators.c:3179
+#: ../src/gui/accelerators.c:3226
 #, c-format
 msgid "%s not assigned"
 msgstr "「%s」未指定"
 
-#: ../src/gui/accelerators.c:3331
+#: ../src/gui/accelerators.c:3381
 #, c-format
 msgid "%s assigned to %s"
 msgstr "「%s」指定給「%s」"
 
-#: ../src/gui/gtk.c:171 ../src/views/darkroom.c:4507
+#: ../src/gui/gtk.c:171 ../src/views/darkroom.c:4502
 msgid "darktable - darkroom preview"
 msgstr "darktable 暗房預覽"
 
@@ -10112,7 +10128,7 @@ msgid "global guide overlay settings"
 msgstr "全體參考線設定"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2579
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2576
 msgid "guide lines"
 msgstr "參考線"
 
@@ -10416,13 +10432,13 @@ msgid "preset `%s' is write-protected, can't delete!"
 msgstr "預設集「%s」有寫入保護，無法刪除"
 
 #: ../src/gui/presets.c:177 ../src/gui/presets.c:424 ../src/libs/lib.c:248
-#: ../src/libs/modulegroups.c:3794
+#: ../src/libs/modulegroups.c:3765
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "是否要刪除預設集「%s」？"
 
 #: ../src/gui/presets.c:181 ../src/gui/presets.c:429 ../src/libs/lib.c:252
-#: ../src/libs/modulegroups.c:3798
+#: ../src/libs/modulegroups.c:3769
 msgid "delete preset?"
 msgstr "是否要刪除預設集？"
 
@@ -10459,8 +10475,8 @@ msgstr ""
 msgid "overwrite preset?"
 msgstr "是否要覆寫預設集？"
 
-#: ../src/gui/presets.c:387 ../src/imageio/storage/disk.c:122
-#: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
+#: ../src/gui/presets.c:387 ../src/imageio/storage/disk.c:123
+#: ../src/imageio/storage/gallery.c:110 ../src/imageio/storage/latex.c:109
 msgid "_select as output destination"
 msgstr "選擇輸出資料夾（_S）"
 
@@ -10548,7 +10564,7 @@ msgid "maximum focal length"
 msgstr "最長鏡頭焦距"
 
 #. raw/hdr/ldr/mono/color
-#: ../src/gui/presets.c:624 ../src/imageio/format/j2k.c:651
+#: ../src/gui/presets.c:624 ../src/imageio/format/j2k.c:650
 msgid "format"
 msgstr "格式"
 
@@ -10579,6 +10595,7 @@ msgid "(last)"
 msgstr "（最後一個）"
 
 #: ../src/gui/presets.c:971
+#, c-format
 msgid ""
 "preset %s\n"
 "%s"
@@ -10590,8 +10607,8 @@ msgstr ""
 msgid "no presets"
 msgstr "無此預設集"
 
-#: ../src/gui/presets.c:1150 ../src/libs/modulegroups.c:3882
-#: ../src/libs/modulegroups.c:3891
+#: ../src/gui/presets.c:1150 ../src/libs/modulegroups.c:3853
+#: ../src/libs/modulegroups.c:3862
 msgid "manage module layouts"
 msgstr "模組布局管理"
 
@@ -10682,9 +10699,9 @@ msgstr "輸入風格檔的說明，該描述文字可用於搜尋"
 msgid "can't create style out of unaltered image"
 msgstr "不能從未改變的影像建立風格檔"
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:79
-#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:800
-#: ../src/imageio/format/xcf.c:337
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:80
+#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:797
+#: ../src/imageio/format/xcf.c:338
 msgid "8 bit"
 msgstr "8 位元"
 
@@ -10704,33 +10721,37 @@ msgstr "無效的 AVIF 位元深度！"
 msgid "AVIF (8/10/12-bit)"
 msgstr "AVIF（8/10/12 位元）"
 
-#: ../src/imageio/format/avif.c:759 ../src/imageio/format/exr.cc:471
-#: ../src/imageio/format/pdf.c:682 ../src/imageio/format/png.c:545
-#: ../src/imageio/format/tiff.c:799 ../src/imageio/format/xcf.c:336
+#. Bit depth combo box
+#: ../src/imageio/format/avif.c:751 ../src/imageio/format/exr.cc:470
+#: ../src/imageio/format/pdf.c:661 ../src/imageio/format/png.c:544
+#: ../src/imageio/format/tiff.c:794 ../src/imageio/format/xcf.c:335
 msgid "bit depth"
 msgstr "色彩深度"
 
-#: ../src/imageio/format/avif.c:772
+#: ../src/imageio/format/avif.c:764
 msgid "color information stored in an image, higher is better"
 msgstr "影像中的色彩儲存位元精度，越高越細膩"
 
-#: ../src/imageio/format/avif.c:784
-msgid "rgb colors"
-msgstr "彩色"
-
-#: ../src/imageio/format/avif.c:786
-msgid "grayscale"
-msgstr "灰階"
-
-#: ../src/imageio/format/avif.c:790
+#: ../src/imageio/format/avif.c:772
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr "選擇色彩模式，儲存為灰階檔案可以縮小黑白影像的尺寸"
 
-#: ../src/imageio/format/avif.c:803
+#: ../src/imageio/format/avif.c:774
+msgid "rgb colors"
+msgstr "彩色"
+
+#: ../src/imageio/format/avif.c:774
+msgid "grayscale"
+msgstr "灰階"
+
+#.
+#. * Tiling combo box
+#.
+#: ../src/imageio/format/avif.c:784
 msgid "tiling"
 msgstr "分塊平鋪"
 
-#: ../src/imageio/format/avif.c:811
+#: ../src/imageio/format/avif.c:785
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -10740,11 +10761,11 @@ msgstr ""
 "把影像分成數個區塊儲存\n"
 "編碼速度更快，對影像品質的影響極小，但會增加檔案尺寸"
 
-#: ../src/imageio/format/avif.c:828 ../src/imageio/format/webp.c:381
+#: ../src/imageio/format/avif.c:802 ../src/imageio/format/webp.c:382
 msgid "compression type"
 msgstr "壓縮方式"
 
-#: ../src/imageio/format/avif.c:836
+#: ../src/imageio/format/avif.c:810
 msgid "the compression for the image"
 msgstr "影像的壓縮方式"
 
@@ -10753,13 +10774,13 @@ msgstr "影像的壓縮方式"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:853 ../src/imageio/format/j2k.c:664
+#: ../src/imageio/format/avif.c:827 ../src/imageio/format/j2k.c:661
 #: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/webp.c:394
 #: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:565
 msgid "quality"
 msgstr "影像品質"
 
-#: ../src/imageio/format/avif.c:858
+#: ../src/imageio/format/avif.c:832
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -10800,59 +10821,61 @@ msgstr "選取的輸出描述檔與 EXR 不相容"
 msgid "OpenEXR (16/32-bit float)"
 msgstr "OpenEXR（16/32 位元浮點）"
 
-#: ../src/imageio/format/exr.cc:473 ../src/imageio/format/pdf.c:80
-#: ../src/imageio/format/png.c:547 ../src/imageio/format/tiff.c:801
+#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:797
 #: ../src/imageio/format/xcf.c:338
 msgid "16 bit"
 msgstr "16 位元"
 
-#: ../src/imageio/format/exr.cc:474
+#: ../src/imageio/format/exr.cc:472
 msgid "32 bit"
 msgstr "32 位元"
 
-#: ../src/imageio/format/exr.cc:483 ../src/imageio/format/pdf.c:698
-#: ../src/imageio/format/png.c:564 ../src/imageio/format/tiff.c:814
+#. compression
+#. Compression method combo box
+#: ../src/imageio/format/exr.cc:478 ../src/imageio/format/pdf.c:676
+#: ../src/imageio/format/png.c:558 ../src/imageio/format/tiff.c:801
 msgid "compression"
 msgstr "壓縮"
 
-#: ../src/imageio/format/exr.cc:485 ../src/imageio/format/pdf.c:699
-#: ../src/imageio/format/tiff.c:815
+#: ../src/imageio/format/exr.cc:480 ../src/imageio/format/pdf.c:682
+#: ../src/imageio/format/tiff.c:803
 msgid "uncompressed"
 msgstr "無壓縮"
 
-#: ../src/imageio/format/exr.cc:486
+#: ../src/imageio/format/exr.cc:481
 msgid "RLE"
 msgstr "RLE"
 
-#: ../src/imageio/format/exr.cc:487
+#: ../src/imageio/format/exr.cc:482
 msgid "ZIPS"
 msgstr "ZIPS"
 
-#: ../src/imageio/format/exr.cc:488
+#: ../src/imageio/format/exr.cc:483
 msgid "ZIP"
 msgstr "ZIP"
 
-#: ../src/imageio/format/exr.cc:489
+#: ../src/imageio/format/exr.cc:484
 msgid "PIZ"
 msgstr "PIZ"
 
-#: ../src/imageio/format/exr.cc:490
+#: ../src/imageio/format/exr.cc:485
 msgid "PXR24"
 msgstr "PXR24"
 
-#: ../src/imageio/format/exr.cc:491
+#: ../src/imageio/format/exr.cc:486
 msgid "B44"
 msgstr "B44"
 
-#: ../src/imageio/format/exr.cc:492
+#: ../src/imageio/format/exr.cc:487
 msgid "B44A"
 msgstr "B44A"
 
-#: ../src/imageio/format/exr.cc:493
+#: ../src/imageio/format/exr.cc:488
 msgid "DWAA"
 msgstr "DWAA"
 
-#: ../src/imageio/format/exr.cc:494
+#: ../src/imageio/format/exr.cc:489
 msgid "DWAB"
 msgstr "DWAB"
 
@@ -10864,23 +10887,23 @@ msgstr "JPEG 2000（12 位元）"
 msgid "J2K"
 msgstr ".j2k（JPEG 2000）"
 
-#: ../src/imageio/format/j2k.c:653
+#: ../src/imageio/format/j2k.c:652
 msgid "jp2"
 msgstr ".jp2（JPEG 2000）"
 
-#: ../src/imageio/format/j2k.c:671
+#: ../src/imageio/format/j2k.c:667
 msgid "DCP mode"
 msgstr "DCP 模式"
 
-#: ../src/imageio/format/j2k.c:673
+#: ../src/imageio/format/j2k.c:670
 msgid "Cinema2K, 24FPS"
 msgstr "Cinema 2K 24FPS"
 
-#: ../src/imageio/format/j2k.c:674
+#: ../src/imageio/format/j2k.c:671
 msgid "Cinema2K, 48FPS"
 msgstr "Cinema 2K 48FPS"
 
-#: ../src/imageio/format/j2k.c:675
+#: ../src/imageio/format/j2k.c:672
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema 4K 24FPS"
 
@@ -10888,35 +10911,36 @@ msgstr "Cinema 4K 24FPS"
 msgid "JPEG (8-bit)"
 msgstr "JPEG（8 位元）"
 
-#: ../src/imageio/format/pdf.c:199 ../src/imageio/format/pdf.c:479
+#: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:480
 msgid "invalid paper size"
 msgstr "無效的紙張尺寸"
 
-#: ../src/imageio/format/pdf.c:206
+#: ../src/imageio/format/pdf.c:207
 msgid "invalid border size, using 0"
 msgstr "無效的邊界尺寸，不可為 0"
 
-#: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:327
-#: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:346
-#: ../src/imageio/storage/gallery.c:385 ../src/imageio/storage/piwigo.c:1019
+#: ../src/imageio/format/pdf.c:257 ../src/imageio/storage/disk.c:316
+#: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:331
+#: ../src/imageio/storage/gallery.c:370 ../src/imageio/storage/piwigo.c:1013
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "無法匯出至檔案「%s」"
 
-#: ../src/imageio/format/pdf.c:408
+#: ../src/imageio/format/pdf.c:409
 msgid "PDF"
 msgstr "PDF"
 
-#: ../src/imageio/format/pdf.c:580
+#: ../src/imageio/format/pdf.c:577
 msgid "enter the title of the pdf"
 msgstr "輸入 PDF 文件標題"
 
+#. paper size
 #. // papers
-#: ../src/imageio/format/pdf.c:592 ../src/libs/print_settings.c:2354
+#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2354
 msgid "paper size"
 msgstr "紙張尺寸"
 
-#: ../src/imageio/format/pdf.c:597
+#: ../src/imageio/format/pdf.c:586
 msgid ""
 "paper size of the pdf\n"
 "either one from the list or \"<width> [unit] x <height> <unit>\n"
@@ -10925,32 +10949,33 @@ msgstr ""
 "從列表中選擇 PDF 的紙張尺寸，或輸入指定尺寸\n"
 "「<寬> <單位> x <高> <單位>」，如：210 mm x 2.97 cm"
 
-#: ../src/imageio/format/pdf.c:607
+#. orientation
+#: ../src/imageio/format/pdf.c:600
 msgid "page orientation"
 msgstr "頁面方向"
 
-#: ../src/imageio/format/pdf.c:608 ../src/iop/borders.c:1042
+#: ../src/imageio/format/pdf.c:601
+msgid "paper orientation of the pdf"
+msgstr "PDF 的紙張方向"
+
+#: ../src/imageio/format/pdf.c:604 ../src/iop/borders.c:1042
 #: ../src/libs/filtering.c:286 ../src/libs/filters/ratio.c:122
 #: ../src/libs/print_settings.c:2363
 msgid "portrait"
 msgstr "直式"
 
-#: ../src/imageio/format/pdf.c:609 ../src/iop/borders.c:1043
+#: ../src/imageio/format/pdf.c:604 ../src/iop/borders.c:1043
 #: ../src/libs/filtering.c:282 ../src/libs/filters/ratio.c:124
 #: ../src/libs/print_settings.c:2363
 msgid "landscape"
 msgstr "橫式"
 
-#: ../src/imageio/format/pdf.c:612
-msgid "paper orientation of the pdf"
-msgstr "PDF 的紙張方向"
-
 #. border
-#: ../src/imageio/format/pdf.c:617
+#: ../src/imageio/format/pdf.c:609 ../src/imageio/format/pdf.c:611
 msgid "border"
 msgstr "邊距"
 
-#: ../src/imageio/format/pdf.c:624
+#: ../src/imageio/format/pdf.c:612
 msgid ""
 "empty space around the pdf\n"
 "format: size + unit\n"
@@ -10961,59 +10986,58 @@ msgstr ""
 "如：10 mm、0.5 cm、1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:635 ../src/libs/export.c:1169
+#: ../src/imageio/format/pdf.c:621 ../src/libs/export.c:1141
+#: ../src/libs/export.c:1164
 msgid "dpi"
 msgstr "DPI"
 
-#: ../src/imageio/format/pdf.c:639
+#: ../src/imageio/format/pdf.c:625
 msgid "dpi of the images inside the pdf"
 msgstr "PDF 內影像的 DPI 設定"
 
-#: ../src/imageio/format/pdf.c:646
+#. rotate images yes|no
+#: ../src/imageio/format/pdf.c:631
 msgid "rotate images"
 msgstr "旋轉影像"
 
-#: ../src/imageio/format/pdf.c:651
+#: ../src/imageio/format/pdf.c:632
 msgid ""
 "images can be rotated to match the pdf orientation to waste less space when "
 "printing"
 msgstr "旋轉影像以符合 PDF 的方向"
 
-#: ../src/imageio/format/pdf.c:658
+#. pages all|single images|contact sheet
+#: ../src/imageio/format/pdf.c:641
 msgid "TODO: pages"
 msgstr "設定多頁"
 
-#: ../src/imageio/format/pdf.c:660
-msgid "single images"
-msgstr "單張影像"
-
-#: ../src/imageio/format/pdf.c:661
-msgid "contact sheet"
-msgstr "聯絡清單"
-
-#. gtk_grid_attach(grid, GTK_WIDGET(d->pages), 0, ++line, 2, 1);
-#. g_signal_connect(G_OBJECT(d->pages), "value-changed", G_CALLBACK(pages_toggle_callback), self);
-#: ../src/imageio/format/pdf.c:664
+#: ../src/imageio/format/pdf.c:642
 msgid "what pages should be added to the pdf"
 msgstr "哪些頁面要加入到 PDF 中"
 
-#: ../src/imageio/format/pdf.c:671
+#: ../src/imageio/format/pdf.c:645
+msgid "single images"
+msgstr "單張影像"
+
+#: ../src/imageio/format/pdf.c:645
+msgid "contact sheet"
+msgstr "聯絡清單"
+
+#. TODO
+#. embedded icc profile yes|no
+#: ../src/imageio/format/pdf.c:651
 msgid "embed icc profiles"
 msgstr "內嵌 ICC 描述檔"
 
-#: ../src/imageio/format/pdf.c:676
+#: ../src/imageio/format/pdf.c:652
 msgid "images can be tagged with their icc profile"
 msgstr "儲存影像的 ICC 描述檔"
 
-#: ../src/imageio/format/pdf.c:692
+#: ../src/imageio/format/pdf.c:671
 msgid "bits per channel of the embedded images"
 msgstr "影像的每通道位元數"
 
-#: ../src/imageio/format/pdf.c:700 ../src/imageio/format/tiff.c:816
-msgid "deflate"
-msgstr "DEFLATE（ZIP）壓縮"
-
-#: ../src/imageio/format/pdf.c:703
+#: ../src/imageio/format/pdf.c:677
 msgid ""
 "method used for image compression\n"
 "uncompressed -- fast but big files\n"
@@ -11022,23 +11046,16 @@ msgstr ""
 "無壓縮：快速但文件大\n"
 "　壓縮：較慢但文件小"
 
-#: ../src/imageio/format/pdf.c:711
+#: ../src/imageio/format/pdf.c:682 ../src/imageio/format/tiff.c:804
+msgid "deflate"
+msgstr "DEFLATE（ZIP）壓縮"
+
+#. image mode normal|draft|debug
+#: ../src/imageio/format/pdf.c:687
 msgid "image mode"
 msgstr "影像模式"
 
-#: ../src/imageio/format/pdf.c:712
-msgid "normal"
-msgstr "正常"
-
-#: ../src/imageio/format/pdf.c:713
-msgid "draft"
-msgstr "草稿"
-
-#: ../src/imageio/format/pdf.c:714
-msgid "debug"
-msgstr "除錯"
-
-#: ../src/imageio/format/pdf.c:717
+#: ../src/imageio/format/pdf.c:688
 msgid ""
 "normal -- just put the images into the pdf\n"
 "draft -- images are replaced with boxes\n"
@@ -11047,6 +11064,18 @@ msgstr ""
 "一般 — 影像正常置入 PDF\n"
 "草稿 — 把影像替換為方框\n"
 "除錯 — 只顯示輪廓和邊界框"
+
+#: ../src/imageio/format/pdf.c:693
+msgid "normal"
+msgstr "正常"
+
+#: ../src/imageio/format/pdf.c:693
+msgid "draft"
+msgstr "草稿"
+
+#: ../src/imageio/format/pdf.c:693
+msgid "debug"
+msgstr "除錯"
 
 #: ../src/imageio/format/pfm.c:118
 msgid "PFM (float)"
@@ -11068,27 +11097,28 @@ msgstr "將匯出為灰階影像"
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF（8/16/32 位元）"
 
-#: ../src/imageio/format/tiff.c:802 ../src/imageio/format/xcf.c:339
+#: ../src/imageio/format/tiff.c:797 ../src/imageio/format/xcf.c:338
 msgid "32 bit (float)"
 msgstr "32 位元（浮點）"
 
-#: ../src/imageio/format/tiff.c:817
+#: ../src/imageio/format/tiff.c:805
 msgid "deflate with predictor"
 msgstr "預測壓縮法（有利漸層影像）"
 
-#: ../src/imageio/format/tiff.c:830
+#: ../src/imageio/format/tiff.c:817
 msgid "compression level"
 msgstr "壓縮程度"
 
-#: ../src/imageio/format/tiff.c:842
+#. shortfile option combo box
+#: ../src/imageio/format/tiff.c:826
 msgid "b&w image"
 msgstr "黑白影像"
 
-#: ../src/imageio/format/tiff.c:843
+#: ../src/imageio/format/tiff.c:828
 msgid "write rgb colors"
 msgstr "儲存 RGB 彩色影像"
 
-#: ../src/imageio/format/tiff.c:844
+#: ../src/imageio/format/tiff.c:828
 msgid "write grayscale"
 msgstr "儲存成灰階影像"
 
@@ -11096,11 +11126,11 @@ msgstr "儲存成灰階影像"
 msgid "WebP (8-bit)"
 msgstr "WebP（8 位元）"
 
-#: ../src/imageio/format/webp.c:382
+#: ../src/imageio/format/webp.c:384
 msgid "lossy"
 msgstr "有損壓縮"
 
-#: ../src/imageio/format/webp.c:383
+#: ../src/imageio/format/webp.c:384
 msgid "lossless"
 msgstr "無失真壓縮"
 
@@ -11113,11 +11143,11 @@ msgstr ""
 "有損壓縮：0 代表壓縮比最高檔案最小，100 代表壓縮比最低品質最高\n"
 "無損壓縮：0 代表壓縮最快但檔案大，100 代表壓縮最慢但檔案小"
 
-#: ../src/imageio/format/webp.c:405
+#: ../src/imageio/format/webp.c:407
 msgid "image hint"
 msgstr "影像類別提示"
 
-#: ../src/imageio/format/webp.c:407
+#: ../src/imageio/format/webp.c:408
 msgid ""
 "image characteristics hint for the underlying encoder.\n"
 "picture : digital picture, like portrait, inner shot\n"
@@ -11129,7 +11159,7 @@ msgstr ""
 "照片：自然陽光的影像，如：風景照\n"
 "圖形：色調較少的影像，如：地圖"
 
-#: ../src/imageio/format/webp.c:412
+#: ../src/imageio/format/webp.c:413
 msgid "picture"
 msgstr "圖片"
 
@@ -11137,7 +11167,7 @@ msgstr "圖片"
 msgid "photo"
 msgstr "照片"
 
-#: ../src/imageio/format/webp.c:414
+#: ../src/imageio/format/webp.c:413
 msgid "graphic"
 msgstr "圖形"
 
@@ -11145,12 +11175,12 @@ msgstr "圖形"
 msgid "xcf"
 msgstr "XCF（GIMP 格式）"
 
-#: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:1053
+#: ../src/imageio/storage/disk.c:71 ../src/libs/export.c:1053
 msgid "file on disk"
 msgstr "硬碟裡的檔案"
 
-#: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/gallery.c:166
-#: ../src/imageio/storage/latex.c:165
+#: ../src/imageio/storage/disk.c:169 ../src/imageio/storage/gallery.c:155
+#: ../src/imageio/storage/latex.c:154
 msgid ""
 "enter the path where to put exported images\n"
 "variables support bash like string manipulation\n"
@@ -11159,50 +11189,50 @@ msgstr ""
 "輸入匯出影像的位置\n"
 "可使用 darktable 變數，輸入「$(」會顯示變數列表"
 
-#: ../src/imageio/storage/disk.c:193
+#: ../src/imageio/storage/disk.c:182
 msgid "on conflict"
 msgstr "檔名衝突時"
 
-#: ../src/imageio/storage/disk.c:194
+#: ../src/imageio/storage/disk.c:185
 msgid "create unique filename"
 msgstr "另存新檔案"
 
-#: ../src/imageio/storage/disk.c:195 ../src/libs/copy_history.c:378
+#: ../src/imageio/storage/disk.c:186 ../src/libs/copy_history.c:378
 #: ../src/libs/image.c:603 ../src/libs/styles.c:425 ../src/libs/styles.c:608
 #: ../src/libs/styles.c:829
 msgid "overwrite"
 msgstr "覆寫既有檔案"
 
-#: ../src/imageio/storage/disk.c:196 ../src/libs/styles.c:424
+#: ../src/imageio/storage/disk.c:187 ../src/libs/styles.c:424
 #: ../src/libs/styles.c:607
 msgid "skip"
 msgstr "略過而不儲存"
 
-#: ../src/imageio/storage/disk.c:276 ../src/imageio/storage/gallery.c:268
-#: ../src/imageio/storage/latex.c:266
+#: ../src/imageio/storage/disk.c:265 ../src/imageio/storage/gallery.c:253
+#: ../src/imageio/storage/latex.c:252
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "無法建立「%s」資料夾"
 
-#: ../src/imageio/storage/disk.c:283
+#: ../src/imageio/storage/disk.c:272
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "無法寫入「%s」資料夾"
 
-#: ../src/imageio/storage/disk.c:313
+#: ../src/imageio/storage/disk.c:302
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
 msgstr[0] "%d/%d 正在略過「%s」"
 
-#: ../src/imageio/storage/disk.c:332 ../src/imageio/storage/email.c:144
-#: ../src/imageio/storage/gallery.c:393 ../src/imageio/storage/latex.c:354
+#: ../src/imageio/storage/disk.c:321 ../src/imageio/storage/email.c:144
+#: ../src/imageio/storage/gallery.c:378 ../src/imageio/storage/latex.c:340
 #, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
 msgstr[0] "%d/%d 匯出至「%s」"
 
-#: ../src/imageio/storage/disk.c:391
+#: ../src/imageio/storage/disk.c:380
 msgid ""
 "you are going to export on overwrite mode, this will overwrite any existing "
 "images\n"
@@ -11225,57 +11255,60 @@ msgstr "darktable 匯出的影像"
 msgid "could not launch email client!"
 msgstr "無法啟動電子郵件程式"
 
-#: ../src/imageio/storage/gallery.c:72
+#: ../src/imageio/storage/gallery.c:73
 msgid "website gallery"
 msgstr "網路相簿"
 
-#: ../src/imageio/storage/gallery.c:182
+#: ../src/imageio/storage/gallery.c:171
 msgid "enter the title of the website"
 msgstr "輸入網站標題"
 
-#: ../src/imageio/storage/latex.c:71
+#: ../src/imageio/storage/latex.c:72
 msgid "LaTeX book template"
 msgstr "LaTeX 書籍模板"
 
-#. TODO: support title, author, subject, keywords (collect tags?)
-#: ../src/imageio/storage/latex.c:184
+#: ../src/imageio/storage/latex.c:172
 msgid "enter the title of the book"
 msgstr "輸入書籍名稱"
 
-#: ../src/imageio/storage/piwigo.c:477
+#: ../src/imageio/storage/piwigo.c:478
 msgid "authenticated"
 msgstr "已驗證帳號"
 
-#: ../src/imageio/storage/piwigo.c:485 ../src/imageio/storage/piwigo.c:500
-#: ../src/imageio/storage/piwigo.c:512
+#: ../src/imageio/storage/piwigo.c:486 ../src/imageio/storage/piwigo.c:501
+#: ../src/imageio/storage/piwigo.c:513
 msgid "not authenticated"
 msgstr "未驗證帳號"
 
-#: ../src/imageio/storage/piwigo.c:491
+#: ../src/imageio/storage/piwigo.c:492
 msgid "not authenticated, cannot reach server"
 msgstr "未經驗證，無法連接伺服器"
 
-#: ../src/imageio/storage/piwigo.c:540 ../src/imageio/storage/piwigo.c:622
+#: ../src/imageio/storage/piwigo.c:541 ../src/imageio/storage/piwigo.c:623
 msgid "create new album"
 msgstr "建立新的相簿"
 
-#: ../src/imageio/storage/piwigo.c:623
+#: ../src/imageio/storage/piwigo.c:624
 msgid "---"
 msgstr "---"
 
-#: ../src/imageio/storage/piwigo.c:665
+#: ../src/imageio/storage/piwigo.c:666
 msgid "cannot refresh albums"
 msgstr "無法更新相簿列表"
 
-#: ../src/imageio/storage/piwigo.c:769
+#: ../src/imageio/storage/piwigo.c:770
 msgid "piwigo"
 msgstr "Piwigo 線上相簿"
 
-#: ../src/imageio/storage/piwigo.c:794
+#: ../src/imageio/storage/piwigo.c:795
 msgid "accounts"
 msgstr "帳號"
 
-#: ../src/imageio/storage/piwigo.c:811
+#: ../src/imageio/storage/piwigo.c:810 ../src/imageio/storage/piwigo.c:814
+msgid "server"
+msgstr "伺服器"
+
+#: ../src/imageio/storage/piwigo.c:811 ../src/imageio/storage/piwigo.c:822
 msgid ""
 "the server name\n"
 "default protocol is https\n"
@@ -11284,85 +11317,82 @@ msgstr ""
 "伺服器名稱\n"
 "預設協定為 https，如果沒有安全伺服器請指明 http: //"
 
-#: ../src/imageio/storage/piwigo.c:816
-msgid "server"
-msgstr "伺服器"
-
-#: ../src/imageio/storage/piwigo.c:828
+#: ../src/imageio/storage/piwigo.c:821 ../src/imageio/storage/piwigo.c:825
 msgid "user"
 msgstr "使用者"
 
-#: ../src/imageio/storage/piwigo.c:840
+#: ../src/imageio/storage/piwigo.c:831 ../src/imageio/storage/piwigo.c:835
 msgid "password"
 msgstr "密碼"
 
 #. login button
-#: ../src/imageio/storage/piwigo.c:845
+#: ../src/imageio/storage/piwigo.c:840
 msgid "login"
 msgstr "登入"
 
-#: ../src/imageio/storage/piwigo.c:846
+#: ../src/imageio/storage/piwigo.c:841
 msgid "piwigo login"
 msgstr "登入 Piwigo"
 
-#: ../src/imageio/storage/piwigo.c:861
+#. permissions list
+#: ../src/imageio/storage/piwigo.c:855
 msgid "visible to"
 msgstr "隱私設定"
 
-#: ../src/imageio/storage/piwigo.c:862
+#: ../src/imageio/storage/piwigo.c:857
 msgid "everyone"
 msgstr "所有人"
 
-#: ../src/imageio/storage/piwigo.c:863
+#: ../src/imageio/storage/piwigo.c:858
 msgid "contacts"
 msgstr "聯絡人"
 
-#: ../src/imageio/storage/piwigo.c:864
+#: ../src/imageio/storage/piwigo.c:859
 msgid "friends"
 msgstr "朋友"
 
-#: ../src/imageio/storage/piwigo.c:865
+#: ../src/imageio/storage/piwigo.c:860
 msgid "family"
 msgstr "家庭"
 
-#: ../src/imageio/storage/piwigo.c:866
+#: ../src/imageio/storage/piwigo.c:861
 msgid "you"
 msgstr "僅限自己"
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:874
+#: ../src/imageio/storage/piwigo.c:868
 msgid "album"
 msgstr "相簿"
 
-#: ../src/imageio/storage/piwigo.c:880
+#: ../src/imageio/storage/piwigo.c:874
 msgid "refresh album list"
 msgstr "更新相簿列表"
 
 #. Album title
-#: ../src/imageio/storage/piwigo.c:898
+#: ../src/imageio/storage/piwigo.c:892
 msgid "new album"
 msgstr "新的相簿"
 
 #. parent album list
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:906
+#: ../src/imageio/storage/piwigo.c:900
 msgid "parent album"
 msgstr "上一層相簿"
 
-#: ../src/imageio/storage/piwigo.c:910
+#: ../src/imageio/storage/piwigo.c:904
 msgid "click login button to start"
 msgstr "點擊「登入」按鈕開始作業"
 
-#: ../src/imageio/storage/piwigo.c:1038
+#: ../src/imageio/storage/piwigo.c:1032
 msgid "cannot create a new piwigo album!"
 msgstr "無法建立新的 Piwigo 相簿"
 
-#: ../src/imageio/storage/piwigo.c:1047
+#: ../src/imageio/storage/piwigo.c:1041
 msgid "could not upload to piwigo!"
 msgstr "無法上傳至 Piwigo"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/piwigo.c:1076
+#: ../src/imageio/storage/piwigo.c:1070
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
@@ -11811,7 +11841,7 @@ msgstr "更精細"
 msgid "finest"
 msgstr "最精細"
 
-#: ../src/iop/atrous.c:1653 ../src/libs/export.c:1162 ../src/libs/export.c:1177
+#: ../src/iop/atrous.c:1653 ../src/libs/export.c:1157 ../src/libs/export.c:1172
 msgid "x"
 msgstr "x"
 
@@ -12975,11 +13005,11 @@ msgstr ""
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
-#: ../src/iop/channelmixerrgb.c:1842
+#: ../src/iop/channelmixerrgb.c:1843
 msgid "double CAT applied"
 msgstr "套用了兩次色彩適應"
 
-#: ../src/iop/channelmixerrgb.c:1843
+#: ../src/iop/channelmixerrgb.c:1844
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all performing chromatic adaptation.\n"
@@ -12992,11 +13022,11 @@ msgstr ""
 "或是將不同模組與遮罩搭配使用"
 
 #. our first and biggest problem : white balance module is being clever with WB coeffs
-#: ../src/iop/channelmixerrgb.c:1853
+#: ../src/iop/channelmixerrgb.c:1854
 msgid "white balance module error"
 msgstr "白平衡模組錯誤"
 
-#: ../src/iop/channelmixerrgb.c:1854
+#: ../src/iop/channelmixerrgb.c:1855
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -13007,20 +13037,20 @@ msgstr ""
 "這會導致本模組的色彩適應問題\n"
 "更改「白平衡」模組設定或關閉色彩適應"
 
-#: ../src/iop/channelmixerrgb.c:1930
+#: ../src/iop/channelmixerrgb.c:1931
 msgid "auto-detection of white balance completed"
 msgstr "白平衡自動檢測完成"
 
-#: ../src/iop/channelmixerrgb.c:2068
+#: ../src/iop/channelmixerrgb.c:2069
 msgid "channelmixerrgb works only on RGB input"
 msgstr "RGB 色版混合器僅適用於 RGB 輸入訊號"
 
-#: ../src/iop/channelmixerrgb.c:3325
+#: ../src/iop/channelmixerrgb.c:3326
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "色溫：%.0f K（日光）"
 
-#: ../src/iop/channelmixerrgb.c:3327
+#: ../src/iop/channelmixerrgb.c:3328
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -13030,12 +13060,12 @@ msgstr ""
 "所選擇的光源色彩可使用標準日光光譜分布描述\n"
 "所以色溫與 CIE Daylight 相關聯"
 
-#: ../src/iop/channelmixerrgb.c:3333
+#: ../src/iop/channelmixerrgb.c:3334
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "色溫：%.0f K（黑體）"
 
-#: ../src/iop/channelmixerrgb.c:3335
+#: ../src/iop/channelmixerrgb.c:3336
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -13045,12 +13075,12 @@ msgstr ""
 "所選擇的光源色彩可使用理想黑體光譜分布描述\n"
 "所以色溫與普朗克黑體輻射相關聯"
 
-#: ../src/iop/channelmixerrgb.c:3341
+#: ../src/iop/channelmixerrgb.c:3342
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "色溫：%.0f K（無效）"
 
-#: ../src/iop/channelmixerrgb.c:3343
+#: ../src/iop/channelmixerrgb.c:3344
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -13062,12 +13092,12 @@ msgstr ""
 "所選擇的光源色彩無法使用日光或黑體光譜描述\n"
 "所以色溫不具有實質意義，需要使用自訂光源"
 
-#: ../src/iop/channelmixerrgb.c:3350
+#: ../src/iop/channelmixerrgb.c:3351
 #, c-format
 msgid "CCT: undefined"
 msgstr "色溫：未定義"
 
-#: ../src/iop/channelmixerrgb.c:3352
+#: ../src/iop/channelmixerrgb.c:3353
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -13075,22 +13105,22 @@ msgstr ""
 "無法計算相關色溫（CCT）\n"
 "需要使用自定光源"
 
-#: ../src/iop/channelmixerrgb.c:3642
+#: ../src/iop/channelmixerrgb.c:3643
 msgid "white balance successfully extracted from raw image"
 msgstr "成功從 RAW 檔案中取得白平衡"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:3648
+#: ../src/iop/channelmixerrgb.c:3649
 msgid "auto-detection of white balance started…"
 msgstr "正在自動偵測白平衡"
 
-#: ../src/iop/channelmixerrgb.c:3714
+#: ../src/iop/channelmixerrgb.c:3715
 msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
 msgstr "色彩校正中的灰階色版參數總和為零，歸一化將被停用"
 
-#: ../src/iop/channelmixerrgb.c:3760
+#: ../src/iop/channelmixerrgb.c:3761
 #, c-format
 msgid ""
 "L: \t%.1f %%\n"
@@ -13102,7 +13132,7 @@ msgstr ""
 "C：\t%.1f"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/iop/channelmixerrgb.c:4016 ../src/iop/clipping.c:2105
+#: ../src/iop/channelmixerrgb.c:4017 ../src/iop/clipping.c:2105
 #: ../src/iop/colorbalancergb.c:1890 ../src/iop/filmicrgb.c:4208
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3110
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2348
@@ -13111,11 +13141,11 @@ msgid "page"
 msgstr "頁面"
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:4019
+#: ../src/iop/channelmixerrgb.c:4020
 msgid "CAT"
 msgstr "色彩適應轉換"
 
-#: ../src/iop/channelmixerrgb.c:4019
+#: ../src/iop/channelmixerrgb.c:4020
 msgid "chromatic adaptation transform"
 msgstr ""
 "控制色彩適應轉換的方式和光源設定\n"
@@ -13126,11 +13156,11 @@ msgstr ""
 "色域壓縮參數用於將經過色彩適應轉換後超出色域的顏色飽和度降低\n"
 "裁切 RGB 負值可以確保輸出數值有效性，避免純色 LED 或雷射光點顏色產生問題"
 
-#: ../src/iop/channelmixerrgb.c:4021
+#: ../src/iop/channelmixerrgb.c:4022
 msgid "adaptation"
 msgstr "色彩適應"
 
-#: ../src/iop/channelmixerrgb.c:4023
+#: ../src/iop/channelmixerrgb.c:4024
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -13160,7 +13190,7 @@ msgstr ""
 "無（不轉換）\n"
 "不執行色彩適應轉換，此選項必須使用「白平衡」模組執行色彩轉換"
 
-#: ../src/iop/channelmixerrgb.c:4041
+#: ../src/iop/channelmixerrgb.c:4042
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -13169,29 +13199,29 @@ msgstr ""
 "此顏色會經由色彩適應計算成為純白\n"
 "其他所有顏色會由色彩適應轉換矩陣轉換成相對應的正確顏色"
 
-#: ../src/iop/channelmixerrgb.c:4048
+#: ../src/iop/channelmixerrgb.c:4049
 msgid "picker"
 msgstr "色彩選取工具"
 
-#: ../src/iop/channelmixerrgb.c:4049 ../src/iop/temperature.c:1888
+#: ../src/iop/channelmixerrgb.c:4050 ../src/iop/temperature.c:1885
 msgid "set white balance to detected from area"
 msgstr ""
 "在影像上選取範圍做為白平衡的參考光源顏色\n"
 "應該選取影像中應該為中灰色的區域"
 
-#: ../src/iop/channelmixerrgb.c:4053
+#: ../src/iop/channelmixerrgb.c:4054
 msgid "illuminant"
 msgstr "光源"
 
-#: ../src/iop/channelmixerrgb.c:4059 ../src/iop/temperature.c:1940
+#: ../src/iop/channelmixerrgb.c:4060 ../src/iop/temperature.c:1937
 msgid "temperature"
 msgstr "色溫"
 
-#: ../src/iop/channelmixerrgb.c:4087
+#: ../src/iop/channelmixerrgb.c:4088
 msgid "spot color mapping"
 msgstr "點測色色彩對應"
 
-#: ../src/iop/channelmixerrgb.c:4090
+#: ../src/iop/channelmixerrgb.c:4091
 msgid ""
 "define a target chromaticity (hue and chroma) for a particular region of the "
 "image (the control sample), which you then match against the same target "
@@ -13203,11 +13233,11 @@ msgstr ""
 "依據選擇的影像對照範圍設定目標顏色，然後將此顏色對應至其他影像\n"
 "藉由選擇一系列影像中顏色應保持相同的區域，批次調整多張影像的顏色一致性"
 
-#: ../src/iop/channelmixerrgb.c:4092 ../src/iop/exposure.c:1085
+#: ../src/iop/channelmixerrgb.c:4093 ../src/iop/exposure.c:1085
 msgid "spot mode"
 msgstr "點測對應模式"
 
-#: ../src/iop/channelmixerrgb.c:4093
+#: ../src/iop/channelmixerrgb.c:4094
 msgid ""
 "\"correction\" automatically adjust the illuminant\n"
 "such that the input color is mapped to the target.\n"
@@ -13217,19 +13247,19 @@ msgstr ""
 "「測量」模式藉由選擇範圍定義目標顏色\n"
 "「校正」模式自動調整光源，將顏色映射至所選目標"
 
-#: ../src/iop/channelmixerrgb.c:4098 ../src/iop/exposure.c:1091
+#: ../src/iop/channelmixerrgb.c:4099 ../src/iop/exposure.c:1091
 msgid "correction"
 msgstr "校正"
 
-#: ../src/iop/channelmixerrgb.c:4099 ../src/iop/exposure.c:1092
+#: ../src/iop/channelmixerrgb.c:4100 ../src/iop/exposure.c:1092
 msgid "measure"
 msgstr "測量"
 
-#: ../src/iop/channelmixerrgb.c:4103
+#: ../src/iop/channelmixerrgb.c:4104
 msgid "take channel mixing into account"
 msgstr "考量色版混合"
 
-#: ../src/iop/channelmixerrgb.c:4108
+#: ../src/iop/channelmixerrgb.c:4109
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
@@ -13237,11 +13267,11 @@ msgstr ""
 "計算顏色時將色版混合納入考量\n"
 "如果沒有選取，則僅則僅考慮色彩適應轉換"
 
-#: ../src/iop/channelmixerrgb.c:4122 ../src/iop/exposure.c:1105
+#: ../src/iop/channelmixerrgb.c:4123 ../src/iop/exposure.c:1104
 msgid "the input color that should be mapped to the target"
 msgstr "要對應到目標顏色的輸入顏色"
 
-#: ../src/iop/channelmixerrgb.c:4127
+#: ../src/iop/channelmixerrgb.c:4128
 msgid ""
 "L: \tN/A\n"
 "h: \tN/A\n"
@@ -13251,99 +13281,99 @@ msgstr ""
 "h：\tN/A\n"
 "C：\tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4129 ../src/iop/exposure.c:1112
+#: ../src/iop/channelmixerrgb.c:4130 ../src/iop/exposure.c:1111
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "這些 LCh 座標是從 CIELAB 1976 座標計算出來的"
 
-#: ../src/iop/channelmixerrgb.c:4142
+#: ../src/iop/channelmixerrgb.c:4143
 msgid "the desired target color after mapping"
 msgstr "選取範圍要對應的目標顏色"
 
-#: ../src/iop/channelmixerrgb.c:4177
+#: ../src/iop/channelmixerrgb.c:4178
 msgid "input R"
 msgstr "紅色色版的輸入強度係數"
 
-#: ../src/iop/channelmixerrgb.c:4181
+#: ../src/iop/channelmixerrgb.c:4182
 msgid "input G"
 msgstr "綠色色版的輸入強度係數"
 
-#: ../src/iop/channelmixerrgb.c:4185
+#: ../src/iop/channelmixerrgb.c:4186
 msgid "input B"
 msgstr "藍色色版的輸入強度係數"
 
-#: ../src/iop/channelmixerrgb.c:4193
+#: ../src/iop/channelmixerrgb.c:4194
 msgid "output R"
 msgstr "紅色色版的輸出矩陣係數"
 
-#: ../src/iop/channelmixerrgb.c:4194
+#: ../src/iop/channelmixerrgb.c:4195
 msgid "output G"
 msgstr "綠色色版的輸出矩陣係數"
 
-#: ../src/iop/channelmixerrgb.c:4195
+#: ../src/iop/channelmixerrgb.c:4196
 msgid "output B"
 msgstr "藍色色版的輸出矩陣係數"
 
-#: ../src/iop/channelmixerrgb.c:4196
+#: ../src/iop/channelmixerrgb.c:4197
 msgid "colorfulness"
 msgstr "鮮豔度"
 
-#: ../src/iop/channelmixerrgb.c:4196
+#: ../src/iop/channelmixerrgb.c:4197
 msgid "output colorfulness"
 msgstr "依據不同色版調整輸出的鮮豔度"
 
-#: ../src/iop/channelmixerrgb.c:4198
+#: ../src/iop/channelmixerrgb.c:4199
 msgid "output brightness"
 msgstr "依據不同色版調整輸出的亮度"
 
-#: ../src/iop/channelmixerrgb.c:4199
+#: ../src/iop/channelmixerrgb.c:4200
 msgid "output gray"
 msgstr "使用不同強度的色版混合輸出灰階影像"
 
-#: ../src/iop/channelmixerrgb.c:4214
+#: ../src/iop/channelmixerrgb.c:4215
 msgid "calibrate with a color checker"
 msgstr "使用校色卡校正"
 
-#: ../src/iop/channelmixerrgb.c:4218
+#: ../src/iop/channelmixerrgb.c:4219
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "使用校色卡自動計算色彩適應轉換和調整色版"
 
-#: ../src/iop/channelmixerrgb.c:4223
+#: ../src/iop/channelmixerrgb.c:4224
 msgid "chart"
 msgstr "色卡"
 
-#: ../src/iop/channelmixerrgb.c:4224
+#: ../src/iop/channelmixerrgb.c:4225
 msgid "choose the vendor and the type of your chart"
 msgstr "選擇廠商和色卡"
 
-#: ../src/iop/channelmixerrgb.c:4226
+#: ../src/iop/channelmixerrgb.c:4227
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 （2014 之前）"
 
-#: ../src/iop/channelmixerrgb.c:4227
+#: ../src/iop/channelmixerrgb.c:4228
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 （2014 之後）"
 
-#: ../src/iop/channelmixerrgb.c:4228
+#: ../src/iop/channelmixerrgb.c:4229
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 （2018 之前）"
 
-#: ../src/iop/channelmixerrgb.c:4229
+#: ../src/iop/channelmixerrgb.c:4230
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 （2018 之後）"
 
-#: ../src/iop/channelmixerrgb.c:4230
+#: ../src/iop/channelmixerrgb.c:4231
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 （2018 之前）"
 
-#: ../src/iop/channelmixerrgb.c:4231
+#: ../src/iop/channelmixerrgb.c:4232
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 （2018 之後）"
 
-#: ../src/iop/channelmixerrgb.c:4234
+#: ../src/iop/channelmixerrgb.c:4235
 msgid "optimize for"
 msgstr "最佳化目標"
 
-#: ../src/iop/channelmixerrgb.c:4235
+#: ../src/iop/channelmixerrgb.c:4236
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -13369,35 +13399,35 @@ msgstr ""
 "有兩條對角線的色塊：ΔE > 4.6，顏色非常不準確\n"
 "這樣的標示有助於直覺反應，並調整最佳化的策略目標"
 
-#: ../src/iop/channelmixerrgb.c:4242
+#: ../src/iop/channelmixerrgb.c:4243
 msgid "neutral colors"
 msgstr "中性色"
 
-#: ../src/iop/channelmixerrgb.c:4244
+#: ../src/iop/channelmixerrgb.c:4245
 msgid "skin and soil colors"
 msgstr "皮膚和土壤顏色"
 
-#: ../src/iop/channelmixerrgb.c:4245
+#: ../src/iop/channelmixerrgb.c:4246
 msgid "foliage colors"
 msgstr "樹葉的顏色"
 
-#: ../src/iop/channelmixerrgb.c:4246
+#: ../src/iop/channelmixerrgb.c:4247
 msgid "sky and water colors"
 msgstr "天空和水的顏色"
 
-#: ../src/iop/channelmixerrgb.c:4247
+#: ../src/iop/channelmixerrgb.c:4248
 msgid "average delta E"
 msgstr "平均色差（ΔE）"
 
-#: ../src/iop/channelmixerrgb.c:4248
+#: ../src/iop/channelmixerrgb.c:4249
 msgid "maximum delta E"
 msgstr "最大色差（ΔE）"
 
-#: ../src/iop/channelmixerrgb.c:4252
+#: ../src/iop/channelmixerrgb.c:4253
 msgid "patch scale"
 msgstr "色塊尺寸"
 
-#: ../src/iop/channelmixerrgb.c:4253
+#: ../src/iop/channelmixerrgb.c:4254
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -13406,19 +13436,19 @@ msgstr ""
 "調整色塊的半徑以選擇更多或更少的的中央部分\n"
 "當透視校正不正確或色塊框架在色塊上留下陰影時非常有用"
 
-#: ../src/iop/channelmixerrgb.c:4261
+#: ../src/iop/channelmixerrgb.c:4262
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "色差（ΔE）使用 CIE 2000 公式計算"
 
-#: ../src/iop/channelmixerrgb.c:4267
+#: ../src/iop/channelmixerrgb.c:4268
 msgid "accept the computed profile and set it in the module"
 msgstr "接受目前計算的描述檔，並將其設定到色彩轉換中"
 
-#: ../src/iop/channelmixerrgb.c:4272
+#: ../src/iop/channelmixerrgb.c:4273
 msgid "recompute the profile"
 msgstr "重新計算描述檔"
 
-#: ../src/iop/channelmixerrgb.c:4277
+#: ../src/iop/channelmixerrgb.c:4278
 msgid "check the output delta E"
 msgstr "檢查輸出色差（ΔE）"
 
@@ -14677,28 +14707,28 @@ msgstr "輸出轉換方式"
 msgid "rendering intent"
 msgstr "色彩轉換方式"
 
-#: ../src/iop/colorout.c:866 ../src/libs/export.c:1280
+#: ../src/iop/colorout.c:866 ../src/libs/export.c:1273
 #: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
-#: ../src/views/darkroom.c:2448 ../src/views/lighttable.c:1154
+#: ../src/views/darkroom.c:2445 ../src/views/lighttable.c:1154
 msgid "perceptual"
 msgstr "感知"
 
-#: ../src/iop/colorout.c:867 ../src/libs/export.c:1281
+#: ../src/iop/colorout.c:867 ../src/libs/export.c:1274
 #: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
-#: ../src/views/darkroom.c:2449 ../src/views/lighttable.c:1155
+#: ../src/views/darkroom.c:2446 ../src/views/lighttable.c:1155
 msgid "relative colorimetric"
 msgstr "相對色度"
 
-#: ../src/iop/colorout.c:868 ../src/libs/export.c:1282
+#: ../src/iop/colorout.c:868 ../src/libs/export.c:1275
 #: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
-#: ../src/views/darkroom.c:2450 ../src/views/lighttable.c:1156
+#: ../src/views/darkroom.c:2447 ../src/views/lighttable.c:1156
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "飽和度"
 
-#: ../src/iop/colorout.c:869 ../src/libs/export.c:1283
+#: ../src/iop/colorout.c:869 ../src/libs/export.c:1276
 #: ../src/libs/print_settings.c:2329 ../src/libs/print_settings.c:2650
-#: ../src/views/darkroom.c:2451 ../src/views/lighttable.c:1157
+#: ../src/views/darkroom.c:2448 ../src/views/lighttable.c:1157
 msgid "absolute colorimetric"
 msgstr "絶對色度"
 
@@ -14770,7 +14800,7 @@ msgstr ""
 "此選項典型的用法是做為修復皮膚的高反光區域\n"
 "選擇膚色系的色相可以避免附近高亮度的其他顏色混入造成不自然感"
 
-#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5820
+#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5827
 #: ../src/iop/highlights.c:2388
 msgid "not applicable"
 msgstr "不適用"
@@ -15032,18 +15062,18 @@ msgstr ""
 "\n"
 "從感光元件的原始數據重建完整的 RGB 像素"
 
-#: ../src/iop/demosaic.c:5288
+#: ../src/iop/demosaic.c:5289
 msgid "[dual demosaic_cl] internal problem"
 msgstr "雙重去馬賽克內部錯誤"
 
-#: ../src/iop/demosaic.c:5661
+#: ../src/iop/demosaic.c:5662
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "找不到拜耳影像「%s」的色彩矩陣"
 
-#: ../src/iop/demosaic.c:5787
+#: ../src/iop/demosaic.c:5794
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -15065,7 +15095,7 @@ msgstr ""
 "直通不去馬賽克：直接把 RGB 色版填入相同數值，適用於沒有色彩濾鏡的感光元件\n"
 "感光元件濾片色彩：呈現 RGB 濾色片，這是為了除錯而設計的，不適用於影像處理"
 
-#: ../src/iop/demosaic.c:5791
+#: ../src/iop/demosaic.c:5798
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -15084,7 +15114,7 @@ msgstr ""
 "直通不去馬賽克：直接把 RGB 色版填入相同數值，適用於沒有色彩濾鏡的感光元件\n"
 "感光元件濾片色彩：呈現 RGB 濾色片，這是為了除錯而設計的，不適用於影像處理"
 
-#: ../src/iop/demosaic.c:5795
+#: ../src/iop/demosaic.c:5802
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -15094,7 +15124,7 @@ msgstr ""
 "數值越高略過越多邊緣，1.0 完全忽略邊緣\n"
 "設定 0 會關閉此功能"
 
-#: ../src/iop/demosaic.c:5800
+#: ../src/iop/demosaic.c:5807
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -15110,7 +15140,7 @@ msgstr ""
 "遮罩亮度越低，低頻演算法的權重越高，純黑的像素代表只使用低頻數據\n"
 "雙重去馬賽克功能會逐像素計算高低頻數據的權重，然後計算最終 RGB 數值"
 
-#: ../src/iop/demosaic.c:5808
+#: ../src/iop/demosaic.c:5815
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -15119,20 +15149,20 @@ msgstr ""
 "增加了紅色和藍色色版的重新計算數值以平均輸出\n"
 "對亮度雜訊效果很好，但可能會降低具有嚴重色彩雜訊影像的品質"
 
-#: ../src/iop/demosaic.c:5811
+#: ../src/iop/demosaic.c:5818
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 "啟用去馬賽克後的顏色平滑處理\n"
 "可能可以解決一些邊緣色彩偽影的問題"
 
-#: ../src/iop/demosaic.c:5814
+#: ../src/iop/demosaic.c:5821
 msgid "green channels matching method"
 msgstr ""
 "綠色色版匹配方式\n"
 "某些相機 RGBG 中的兩個綠色濾片略有不同\n"
 "調整此設定以額外均勻化步驟來抑制偽影"
 
-#: ../src/iop/demosaic.c:5821
+#: ../src/iop/demosaic.c:5828
 msgid "demosaicing is only used for color raw images"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
@@ -15210,7 +15240,7 @@ msgstr "藍色變異數："
 msgid "variance computed on the blue channel"
 msgstr "藍色色版計算的變異數"
 
-#: ../src/iop/denoiseprofile.c:3658 ../src/libs/export.c:1234
+#: ../src/iop/denoiseprofile.c:3658 ../src/libs/export.c:1227
 #: ../src/libs/print_settings.c:2273 ../src/libs/print_settings.c:2598
 msgid "profile"
 msgstr "描述檔"
@@ -15877,11 +15907,11 @@ msgstr ""
 "「測量」模式藉由選擇範圍定義目標亮度\n"
 "「校正」模式自動調整曝光，將亮度映射至所選目標"
 
-#: ../src/iop/exposure.c:1110
+#: ../src/iop/exposure.c:1109
 msgid "L : \tN/A"
 msgstr "L : \t無"
 
-#: ../src/iop/exposure.c:1125
+#: ../src/iop/exposure.c:1124
 msgid "the desired target exposure after mapping"
 msgstr "選取範圍要對應的曝光目標"
 
@@ -16052,9 +16082,9 @@ msgstr ""
 
 #. Add intent combo
 #. Add export intent combo
-#: ../src/iop/filmic.c:1701 ../src/libs/export.c:1256
+#: ../src/iop/filmic.c:1701 ../src/libs/export.c:1249
 #: ../src/libs/print_settings.c:2324 ../src/libs/print_settings.c:2643
-#: ../src/views/darkroom.c:2454 ../src/views/lighttable.c:1160
+#: ../src/views/darkroom.c:2451 ../src/views/lighttable.c:1160
 msgid "intent"
 msgstr "轉換方式"
 
@@ -16895,7 +16925,7 @@ msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
 "the mask icon shows the clipped areas.\n"
-"you might use this for tuning 'laplacian' or 'recovery' modes,\n"
+"you might use this for tuning 'laplacian' or 'segmentation' modes,\n"
 "especially if camera white point is incorrect."
 msgstr ""
 "手動調整亮部裁切門檻以消除過曝區域的洋紅色色偏\n"
@@ -16923,7 +16953,7 @@ msgid ""
 "choose a mode tuned for segment size or the generic mode that tries to find "
 "best settings for every segment.\n"
 "small means areas with a diameter less than 25 pixels, large is best for "
-"greater than 100\n"
+"greater than 100.\n"
 "the flat modes ignore narrow unclipped structures."
 msgstr ""
 "估算被剪裁區域中遺失的影像資訊，效果會因分段尺寸和邊界模糊設定而異\n"
@@ -17249,7 +17279,7 @@ msgstr "河豚魚眼"
 
 #. scale
 #: ../src/iop/lens.cc:2397 ../src/iop/vignette.c:979
-#: ../src/iop/watermark.c:1132
+#: ../src/iop/watermark.c:1130 ../src/libs/export.c:1179
 msgid "scale"
 msgstr "縮放"
 
@@ -17259,7 +17289,7 @@ msgstr ""
 "調整影像的縮放倍率避免校正後出現黑邊\n"
 "使用右側的自動縮放按鈕由 darktable 自動尋找最適合的設定"
 
-#: ../src/iop/lens.cc:2405 ../src/libs/modulegroups.c:2416
+#: ../src/iop/lens.cc:2405 ../src/libs/modulegroups.c:2386
 msgid "correct"
 msgstr "校正"
 
@@ -18119,9 +18149,9 @@ msgstr "降低彩色雜訊的程度"
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2345
-#: ../src/views/darkroom.c:2363 ../src/views/darkroom.c:2370
-#: ../src/views/darkroom.c:2380 ../src/views/darkroom.c:2397
+#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2342
+#: ../src/views/darkroom.c:2360 ../src/views/darkroom.c:2367
+#: ../src/views/darkroom.c:2377 ../src/views/darkroom.c:2394
 msgid "overexposed"
 msgstr "過曝"
 
@@ -18249,9 +18279,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2295
-#: ../src/views/darkroom.c:2313 ../src/views/darkroom.c:2319
-#: ../src/views/darkroom.c:2332
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2292
+#: ../src/views/darkroom.c:2310 ../src/views/darkroom.c:2316
+#: ../src/views/darkroom.c:2329
 msgid "raw overexposed"
 msgstr "RAW 檔曝光過度"
 
@@ -18353,8 +18383,8 @@ msgstr ""
 msgid "toggle tool for picking median lightness in image"
 msgstr "切換在影像上選擇中間亮度的工具"
 
-#: ../src/iop/relight.c:284 ../src/libs/metadata_view.c:147
-#: ../src/libs/print_settings.c:2379
+#: ../src/iop/relight.c:284 ../src/libs/export.c:1145
+#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2379
 msgid "width"
 msgstr "寬度"
 
@@ -18979,11 +19009,11 @@ msgstr ""
 "「色彩校正」模組用更現代的色彩適應算法調整顏色"
 
 #. our second biggest problem : another module is doing CAT elsewhere in the pipe
-#: ../src/iop/temperature.c:1051
+#: ../src/iop/temperature.c:1052
 msgid "white balance applied twice"
 msgstr "白平衡被重複套用兩次"
 
-#: ../src/iop/temperature.c:1052
+#: ../src/iop/temperature.c:1053
 msgid ""
 "the color calibration module is enabled,\n"
 "and performing chromatic adaptation.\n"
@@ -18994,97 +19024,97 @@ msgstr ""
 "白平衡應設定為相機基準白點\n"
 "或在「色彩校正」中停用色彩適應"
 
-#: ../src/iop/temperature.c:1321
+#: ../src/iop/temperature.c:1322
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "找不到影像「%s」的色彩矩陣"
 
-#: ../src/iop/temperature.c:1349
+#: ../src/iop/temperature.c:1350
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "無法從「%s」讀取相機白平衡資訊"
 
-#: ../src/iop/temperature.c:1502
+#: ../src/iop/temperature.c:1499
 msgctxt "white balance"
 msgid "as shot"
 msgstr "拍攝時的設定"
 
 #. old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
-#: ../src/iop/temperature.c:1503
+#: ../src/iop/temperature.c:1500
 msgctxt "white balance"
 msgid "from image area"
 msgstr "從影像範圍分析"
 
 #. old "spot", reason: describes exactly what'll happen
-#: ../src/iop/temperature.c:1504
+#: ../src/iop/temperature.c:1501
 msgctxt "white balance"
 msgid "user modified"
 msgstr "使用者自訂"
 
-#: ../src/iop/temperature.c:1505
+#: ../src/iop/temperature.c:1502
 msgctxt "white balance"
 msgid "camera reference"
 msgstr "相機基準白點"
 
-#: ../src/iop/temperature.c:1770 ../src/iop/temperature.c:1788
+#: ../src/iop/temperature.c:1767 ../src/iop/temperature.c:1785
 msgid "green channel coefficient"
 msgstr "綠色色版係數"
 
-#: ../src/iop/temperature.c:1772
+#: ../src/iop/temperature.c:1769
 msgid "magenta channel coefficient"
 msgstr "洋紅色色版係數"
 
-#: ../src/iop/temperature.c:1774
+#: ../src/iop/temperature.c:1771
 msgid "cyan channel coefficient"
 msgstr "青色色版係數"
 
-#: ../src/iop/temperature.c:1776
+#: ../src/iop/temperature.c:1773
 msgid "yellow channel coefficient"
 msgstr "黃色色版係數"
 
-#: ../src/iop/temperature.c:1786
+#: ../src/iop/temperature.c:1783
 msgid "red channel coefficient"
 msgstr "紅色色版係數"
 
-#: ../src/iop/temperature.c:1790
+#: ../src/iop/temperature.c:1787
 msgid "blue channel coefficient"
 msgstr "藍色色版係數"
 
-#: ../src/iop/temperature.c:1792
+#: ../src/iop/temperature.c:1789
 msgid "emerald channel coefficient"
 msgstr "祖母綠色版係數"
 
-#: ../src/iop/temperature.c:1875 ../src/iop/temperature.c:1885
-#: ../src/iop/temperature.c:1890 ../src/iop/temperature.c:1896
-#: ../src/iop/temperature.c:1910
+#: ../src/iop/temperature.c:1872 ../src/iop/temperature.c:1882
+#: ../src/iop/temperature.c:1887 ../src/iop/temperature.c:1893
+#: ../src/iop/temperature.c:1907
 msgid "settings"
 msgstr "設定"
 
-#: ../src/iop/temperature.c:1875
+#: ../src/iop/temperature.c:1872
 msgid "as shot"
 msgstr "拍攝時的設定"
 
-#: ../src/iop/temperature.c:1878
+#: ../src/iop/temperature.c:1875
 msgid "set white balance to as shot"
 msgstr "將白平衡設為拍攝時的設定"
 
-#: ../src/iop/temperature.c:1885
+#: ../src/iop/temperature.c:1882
 msgid "from image area"
 msgstr "從影像區域"
 
-#: ../src/iop/temperature.c:1890
+#: ../src/iop/temperature.c:1887
 msgid "user modified"
 msgstr "使用者自訂"
 
-#: ../src/iop/temperature.c:1893
+#: ../src/iop/temperature.c:1890
 msgid "set white balance to user modified"
 msgstr "將白平衡設為使用者自訂"
 
-#: ../src/iop/temperature.c:1896
+#: ../src/iop/temperature.c:1893
 msgid "camera reference"
 msgstr "相機基準白點"
 
-#: ../src/iop/temperature.c:1899
+#: ../src/iop/temperature.c:1896
 msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
@@ -19093,49 +19123,49 @@ msgstr ""
 "絕大多數相機廠商都使用 D65 光源"
 
 #. relabel to settings to remove confusion between module presets and white balance settings
-#: ../src/iop/temperature.c:1911
+#: ../src/iop/temperature.c:1908
 msgid "choose white balance setting"
 msgstr "選擇白平衡設定方式"
 
-#: ../src/iop/temperature.c:1915
+#: ../src/iop/temperature.c:1912
 msgid "finetune"
 msgstr "微調"
 
-#: ../src/iop/temperature.c:1917
+#: ../src/iop/temperature.c:1914
 msgid "fine tune camera's white balance setting"
 msgstr "微調相機的白平衡設定"
 
-#: ../src/iop/temperature.c:1928
+#: ../src/iop/temperature.c:1925
 msgid "scene illuminant temp"
 msgstr "場景光源色溫"
 
-#: ../src/iop/temperature.c:1929
+#: ../src/iop/temperature.c:1926
 msgid "click to cycle color mode on sliders"
 msgstr ""
 "點擊可循環切換滑桿色彩顯示方式\n"
 "沒有顏色 → 光源顏色 → 效果模擬"
 
-#: ../src/iop/temperature.c:1941
+#: ../src/iop/temperature.c:1938
 msgid "color temperature (in Kelvin)"
 msgstr ""
 "以凱氏溫標（K）設定色溫\n"
 "數值越大影像越黃，數值越小影像越藍"
 
-#: ../src/iop/temperature.c:1946
+#: ../src/iop/temperature.c:1943
 msgid "tint"
 msgstr "色調"
 
-#: ../src/iop/temperature.c:1947
+#: ../src/iop/temperature.c:1944
 msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
 msgstr ""
 "調整色調偏移\n"
 "數值小於 1 偏向洋紅色，大於 1 偏向綠色"
 
-#: ../src/iop/temperature.c:1953
+#: ../src/iop/temperature.c:1950
 msgid "channel coefficients"
 msgstr "直接調整色版縮放係數"
 
-#: ../src/iop/temperature.c:1983
+#: ../src/iop/temperature.c:1980
 msgid "white balance disabled for camera"
 msgstr "相機白平衡已關閉"
 
@@ -19716,11 +19746,11 @@ msgstr ""
 "%s\\watermarks"
 
 #. Simple text
-#: ../src/iop/watermark.c:1078
+#: ../src/iop/watermark.c:1078 ../src/iop/watermark.c:1079
 msgid "text"
 msgstr "文字"
 
-#: ../src/iop/watermark.c:1081
+#: ../src/iop/watermark.c:1080
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -19728,12 +19758,16 @@ msgstr ""
 "文字字串，在 SVG 中使用以下變數，即可由此變更編輯\n"
 "$(WATERMARK_TEXT)"
 
+#: ../src/iop/watermark.c:1082
+msgid "content"
+msgstr "內容"
+
 #. Text font
-#: ../src/iop/watermark.c:1089
+#: ../src/iop/watermark.c:1087
 msgid "font"
 msgstr "字型"
 
-#: ../src/iop/watermark.c:1094
+#: ../src/iop/watermark.c:1092
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -19745,7 +19779,7 @@ msgstr ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 
-#: ../src/iop/watermark.c:1109
+#: ../src/iop/watermark.c:1107
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -19753,36 +19787,36 @@ msgstr ""
 "文字顏色，在 SVG 中使用以下變數，即可由此變更編輯\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1111
+#: ../src/iop/watermark.c:1109
 msgid "select watermark color"
 msgstr "選擇浮水印文字顏色"
 
-#: ../src/iop/watermark.c:1113
+#: ../src/iop/watermark.c:1111
 msgid "pick color from image"
 msgstr "選擇影像中的色彩"
 
-#: ../src/iop/watermark.c:1125
+#: ../src/iop/watermark.c:1123
 msgid "placement"
 msgstr "位置"
 
-#: ../src/iop/watermark.c:1138
+#: ../src/iop/watermark.c:1136
 msgid "size is relative to"
 msgstr "大小相對於"
 
-#: ../src/iop/watermark.c:1142 ../src/libs/print_settings.c:2509
+#: ../src/iop/watermark.c:1140 ../src/libs/print_settings.c:2509
 msgid "alignment"
 msgstr "對齊"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1163
+#: ../src/iop/watermark.c:1161
 msgid "the opacity of the watermark"
 msgstr "浮水印的透明度"
 
-#: ../src/iop/watermark.c:1164
+#: ../src/iop/watermark.c:1162
 msgid "the scale of the watermark"
 msgstr "浮水印的大小"
 
-#: ../src/iop/watermark.c:1165
+#: ../src/iop/watermark.c:1163
 msgid "the rotation of the watermark"
 msgstr "浮水印的旋轉角度"
 
@@ -20353,7 +20387,7 @@ msgid "create a duplicate of the image with same history stack"
 msgstr "建立一個和目前編輯完全相同的複本"
 
 #. Export button
-#: ../src/libs/export.c:154 ../src/libs/export.c:1315
+#: ../src/libs/export.c:154 ../src/libs/export.c:1308
 msgid "export"
 msgstr "匯出"
 
@@ -20371,51 +20405,55 @@ msgctxt "unit"
 msgid "in"
 msgstr "英寸"
 
-#: ../src/libs/export.c:1071
+#: ../src/libs/export.c:1074
 msgid "storage options"
 msgstr "儲存選項"
 
-#: ../src/libs/export.c:1075
+#: ../src/libs/export.c:1078
 msgid "target storage"
 msgstr "儲存目的"
 
-#: ../src/libs/export.c:1097
+#: ../src/libs/export.c:1100
 msgid "format options"
 msgstr "格式選項"
 
-#: ../src/libs/export.c:1101
+#: ../src/libs/export.c:1104
 msgid "file format"
 msgstr "檔案格式"
 
-#: ../src/libs/export.c:1118
+#: ../src/libs/export.c:1121
 msgid "global options"
 msgstr "整體選項"
 
-#: ../src/libs/export.c:1121
+#: ../src/libs/export.c:1124
 msgid "set size"
 msgstr "設定影像尺寸"
 
-#: ../src/libs/export.c:1122
+#: ../src/libs/export.c:1125
 msgid "choose a method for setting the output size"
 msgstr "選擇設定匯出影像尺寸的方式"
 
-#: ../src/libs/export.c:1125
+#: ../src/libs/export.c:1128
 msgid "in pixels (for file)"
 msgstr "像素"
 
-#: ../src/libs/export.c:1126
+#: ../src/libs/export.c:1129
 msgid "in cm (for print)"
 msgstr "公分"
 
-#: ../src/libs/export.c:1127
+#: ../src/libs/export.c:1130
 msgid "in inch (for print)"
 msgstr "英寸"
 
-#: ../src/libs/export.c:1128
+#: ../src/libs/export.c:1131
 msgid "by scale (for file)"
 msgstr "比例"
 
-#: ../src/libs/export.c:1131 ../src/libs/export.c:1146
+#: ../src/libs/export.c:1133
+msgid "print width"
+msgstr "列印寬度"
+
+#: ../src/libs/export.c:1134 ../src/libs/export.c:1146
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
@@ -20424,7 +20462,11 @@ msgstr ""
 "0 代表原始影像尺寸\n"
 "按壓滑鼠中鍵以重設"
 
-#: ../src/libs/export.c:1135 ../src/libs/export.c:1150
+#: ../src/libs/export.c:1137
+msgid "print height"
+msgstr "列印高度"
+
+#: ../src/libs/export.c:1138 ../src/libs/export.c:1150
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
@@ -20433,19 +20475,24 @@ msgstr ""
 "0 代表原始影像尺寸\n"
 "按壓滑鼠中鍵以重設"
 
-#: ../src/libs/export.c:1139
+#: ../src/libs/export.c:1142
 msgid "resolution in dot per inch"
 msgstr "解析度（像素 / 英寸）"
 
-#: ../src/libs/export.c:1167
+#: ../src/libs/export.c:1149 ../src/libs/metadata_view.c:148
+#: ../src/libs/print_settings.c:2383
+msgid "height"
+msgstr "高度"
+
+#: ../src/libs/export.c:1162
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1180 ../src/libs/tools/global_toolbox.c:219
+#: ../src/libs/export.c:1175 ../src/libs/tools/global_toolbox.c:219
 msgid "px"
 msgstr "像素"
 
-#: ../src/libs/export.c:1187
+#: ../src/libs/export.c:1180
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -20455,35 +20502,35 @@ msgstr ""
 "0 或留白代表使用原始影像尺寸\n"
 "按壓滑鼠中鍵重設為 1"
 
-#: ../src/libs/export.c:1206
+#: ../src/libs/export.c:1199
 msgid "allow upscaling"
 msgstr "允許放大影像"
 
-#: ../src/libs/export.c:1212
+#: ../src/libs/export.c:1205
 msgid "high quality resampling"
 msgstr "高品質重新採樣"
 
-#: ../src/libs/export.c:1213
+#: ../src/libs/export.c:1206
 msgid "do high quality resampling during export"
 msgstr ""
 "在匯出過程中使用高品質的像素採樣算法\n"
 "影像會以完整尺寸運算模組效果，僅在最後一步縮小至設定的匯出尺寸，這可以產生更"
 "好的品質但會較慢"
 
-#: ../src/libs/export.c:1219
+#: ../src/libs/export.c:1212
 msgid "store masks"
 msgstr "儲存遮罩"
 
-#: ../src/libs/export.c:1220
+#: ../src/libs/export.c:1213
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr "將遮罩儲存為圖層，目前僅 TIFF 和 XCF 格式支援此功能"
 
-#: ../src/libs/export.c:1236 ../src/libs/export.c:1279
+#: ../src/libs/export.c:1229 ../src/libs/export.c:1272
 #: ../src/libs/print_settings.c:2601 ../src/libs/print_settings.c:2646
 msgid "image settings"
 msgstr "遵循影像中模組的設定"
 
-#: ../src/libs/export.c:1248 ../src/libs/print_settings.c:2635
+#: ../src/libs/export.c:1241 ../src/libs/print_settings.c:2635
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr ""
@@ -20491,7 +20538,7 @@ msgstr ""
 "%s\n"
 "%s"
 
-#: ../src/libs/export.c:1257
+#: ../src/libs/export.c:1250
 msgid ""
 "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
 "gradations, but distorts in-gamut colors in the process. note that "
@@ -20522,28 +20569,28 @@ msgstr ""
 "絕對色度：\n"
 "不進行亮度和彩度對應，只適用於色彩打樣，不適合攝影用途。"
 
-#: ../src/libs/export.c:1289 ../src/libs/print_settings.c:2656
+#: ../src/libs/export.c:1282 ../src/libs/print_settings.c:2656
 msgid "style"
 msgstr "風格檔"
 
-#: ../src/libs/export.c:1292
+#: ../src/libs/export.c:1285
 msgid "temporary style to use while exporting"
 msgstr "僅在匯出時暫時套用的風格檔"
 
-#: ../src/libs/export.c:1297 ../src/libs/print_settings.c:2698
+#: ../src/libs/export.c:1290 ../src/libs/print_settings.c:2698
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "風格檔要附加編輯記錄還是替換編輯記錄"
 
-#: ../src/libs/export.c:1300 ../src/libs/print_settings.c:2700
+#: ../src/libs/export.c:1293 ../src/libs/print_settings.c:2700
 msgid "replace history"
 msgstr "替換原有的編輯記錄"
 
-#: ../src/libs/export.c:1300 ../src/libs/print_settings.c:2700
+#: ../src/libs/export.c:1293 ../src/libs/print_settings.c:2700
 msgid "append history"
 msgstr "新增在原有的編輯記錄之上"
 
-#: ../src/libs/export.c:1316
+#: ../src/libs/export.c:1309
 msgid "export with current settings"
 msgstr "使用以上的設定匯出影像"
 
@@ -21154,7 +21201,7 @@ msgid "open GPX file"
 msgstr "開啟 GPX 檔案"
 
 #. Preview key
-#: ../src/libs/geotagging.c:928 ../src/views/darkroom.c:2165
+#: ../src/libs/geotagging.c:928 ../src/views/darkroom.c:2162
 #: ../src/views/lighttable.c:646 ../src/views/lighttable.c:1247
 msgid "preview"
 msgstr "預覽"
@@ -21502,7 +21549,7 @@ msgid "physically delete from disk immediately"
 msgstr "立即從硬碟刪除實體檔案"
 
 #. delete
-#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3912
+#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3883
 #: ../src/libs/styles.c:848
 msgid "remove"
 msgstr "移除"
@@ -21843,11 +21890,11 @@ msgstr "管理模組布局"
 msgid "nothing to save"
 msgstr "沒有東西可以儲存"
 
-#: ../src/libs/lib.c:1023
+#: ../src/libs/lib.c:1022
 msgid "show module"
 msgstr "顯示模組"
 
-#: ../src/libs/lib.c:1301
+#: ../src/libs/lib.c:1300
 msgid "utility module"
 msgstr "工具模組"
 
@@ -22293,10 +22340,6 @@ msgstr "對焦距離"
 msgid "datetime"
 msgstr "拍攝日期"
 
-#: ../src/libs/metadata_view.c:148 ../src/libs/print_settings.c:2383
-msgid "height"
-msgstr "高度"
-
 #: ../src/libs/metadata_view.c:149
 msgid "export width"
 msgstr "匯出寬度"
@@ -22439,190 +22482,190 @@ msgstr "模組：已被汰除"
 msgid "last modified layout"
 msgstr "上次修改的模組布局"
 
-#: ../src/libs/modulegroups.c:197
+#: ../src/libs/modulegroups.c:193
 msgid "modulegroups"
 msgstr "編輯模組布局"
 
 #. FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
 #. respond later to image changed signal
-#: ../src/libs/modulegroups.c:312 ../src/libs/modulegroups.c:324
-#: ../src/libs/modulegroups.c:2518 ../src/libs/modulegroups.c:2520
+#: ../src/libs/modulegroups.c:308 ../src/libs/modulegroups.c:320
+#: ../src/libs/modulegroups.c:2488 ../src/libs/modulegroups.c:2490
 msgid "on-off"
 msgstr "開 / 關"
 
-#: ../src/libs/modulegroups.c:504 ../src/libs/modulegroups.c:507
+#: ../src/libs/modulegroups.c:500 ../src/libs/modulegroups.c:503
 msgid ""
 "this quick access widget is disabled as there are multiple instances of this "
 "module present. Please use the full module to access this widget..."
 msgstr "此快速存取小工具被停用，因為此模組有的多個實例，請使用完整的模組"
 
-#: ../src/libs/modulegroups.c:597
+#: ../src/libs/modulegroups.c:593
 msgid "(some features may only be available in the full module interface)"
 msgstr "（某些功能可能只有在完整的模組裡才能使用）"
 
-#: ../src/libs/modulegroups.c:639
+#: ../src/libs/modulegroups.c:635
 #, c-format
 msgid "go to the full version of the %s module"
 msgstr "前往「%s」模組的完整版本"
 
-#: ../src/libs/modulegroups.c:1585 ../src/libs/modulegroups.c:1669
-#: ../src/libs/modulegroups.c:1705 ../src/libs/modulegroups.c:1755
-#: ../src/libs/modulegroups.c:1920
+#: ../src/libs/modulegroups.c:1555 ../src/libs/modulegroups.c:1639
+#: ../src/libs/modulegroups.c:1675 ../src/libs/modulegroups.c:1725
+#: ../src/libs/modulegroups.c:1890
 msgctxt "modulegroup"
 msgid "base"
 msgstr "基本模組"
 
-#: ../src/libs/modulegroups.c:1604
+#: ../src/libs/modulegroups.c:1574
 msgctxt "modulegroup"
 msgid "tone"
 msgstr "階調模組"
 
-#: ../src/libs/modulegroups.c:1612 ../src/libs/modulegroups.c:1719
-#: ../src/libs/modulegroups.c:1765
+#: ../src/libs/modulegroups.c:1582 ../src/libs/modulegroups.c:1689
+#: ../src/libs/modulegroups.c:1735
 msgctxt "modulegroup"
 msgid "color"
 msgstr "色彩模組"
 
-#: ../src/libs/modulegroups.c:1627 ../src/libs/modulegroups.c:1727
-#: ../src/libs/modulegroups.c:1770
+#: ../src/libs/modulegroups.c:1597 ../src/libs/modulegroups.c:1697
+#: ../src/libs/modulegroups.c:1740
 msgctxt "modulegroup"
 msgid "correct"
 msgstr "校正模組"
 
-#: ../src/libs/modulegroups.c:1645 ../src/libs/modulegroups.c:1739
-#: ../src/libs/modulegroups.c:1782 ../src/libs/modulegroups.c:2419
+#: ../src/libs/modulegroups.c:1615 ../src/libs/modulegroups.c:1709
+#: ../src/libs/modulegroups.c:1752 ../src/libs/modulegroups.c:2389
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "效果模組"
 
-#: ../src/libs/modulegroups.c:1663
+#: ../src/libs/modulegroups.c:1633
 msgid "modules: all"
 msgstr "模組：全部"
 
-#: ../src/libs/modulegroups.c:1684 ../src/libs/modulegroups.c:1831
+#: ../src/libs/modulegroups.c:1654 ../src/libs/modulegroups.c:1801
 msgctxt "modulegroup"
 msgid "grading"
 msgstr "調色模組"
 
-#: ../src/libs/modulegroups.c:1692 ../src/libs/modulegroups.c:1849
-#: ../src/libs/modulegroups.c:2423
+#: ../src/libs/modulegroups.c:1662 ../src/libs/modulegroups.c:1819
+#: ../src/libs/modulegroups.c:2393
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "效果模組"
 
-#: ../src/libs/modulegroups.c:1700
+#: ../src/libs/modulegroups.c:1670
 msgid "workflow: beginner"
 msgstr "工作流程：初學者"
 
-#: ../src/libs/modulegroups.c:1749
+#: ../src/libs/modulegroups.c:1719
 msgid "workflow: display-referred"
 msgstr "工作流程：顯示參照"
 
-#: ../src/libs/modulegroups.c:1792
+#: ../src/libs/modulegroups.c:1762
 msgid "workflow: scene-referred"
 msgstr "工作流程：場景參照"
 
-#: ../src/libs/modulegroups.c:1798
+#: ../src/libs/modulegroups.c:1768
 msgctxt "modulegroup"
 msgid "technical"
 msgstr "技術性模組"
 
-#: ../src/libs/modulegroups.c:1874
+#: ../src/libs/modulegroups.c:1844
 msgid "search only"
 msgstr "只有搜尋欄"
 
-#: ../src/libs/modulegroups.c:1880 ../src/libs/modulegroups.c:2188
-#: ../src/libs/modulegroups.c:2690
+#: ../src/libs/modulegroups.c:1850 ../src/libs/modulegroups.c:2158
+#: ../src/libs/modulegroups.c:2660
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "已被汰除"
 
-#: ../src/libs/modulegroups.c:1895
+#: ../src/libs/modulegroups.c:1865
 msgid "previous config"
 msgstr "之前的設定"
 
-#: ../src/libs/modulegroups.c:1896
+#: ../src/libs/modulegroups.c:1866
 msgid "previous layout"
 msgstr "之前的布局"
 
-#: ../src/libs/modulegroups.c:1900
+#: ../src/libs/modulegroups.c:1870
 msgid "previous config with new layout"
 msgstr "套用舊設定的新布局"
 
-#: ../src/libs/modulegroups.c:2055 ../src/libs/modulegroups.c:2563
-#: ../src/libs/modulegroups.c:2575
+#: ../src/libs/modulegroups.c:2025 ../src/libs/modulegroups.c:2533
+#: ../src/libs/modulegroups.c:2545
 msgid "remove this widget"
 msgstr "移除這個小工具"
 
-#: ../src/libs/modulegroups.c:2205 ../src/libs/modulegroups.c:2445
+#: ../src/libs/modulegroups.c:2175 ../src/libs/modulegroups.c:2415
 msgid "remove this module"
 msgstr "移除這個模組"
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2414
+#: ../src/libs/modulegroups.c:2384
 msgid "base"
 msgstr "基本模組"
 
-#: ../src/libs/modulegroups.c:2417
+#: ../src/libs/modulegroups.c:2387
 msgid "tone"
 msgstr "階調模組"
 
-#: ../src/libs/modulegroups.c:2420
+#: ../src/libs/modulegroups.c:2390
 msgid "technical"
 msgstr "技術性模組"
 
-#: ../src/libs/modulegroups.c:2421
+#: ../src/libs/modulegroups.c:2391
 msgid "grading"
 msgstr "色調模組"
 
-#: ../src/libs/modulegroups.c:2427 ../src/libs/modulegroups.c:2435
+#: ../src/libs/modulegroups.c:2397 ../src/libs/modulegroups.c:2405
 msgid "add this module"
 msgstr "新增這個模組"
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2457 ../src/libs/modulegroups.c:2650
+#: ../src/libs/modulegroups.c:2427 ../src/libs/modulegroups.c:2620
 msgid "all available modules"
 msgstr "所有可用的模組"
 
-#: ../src/libs/modulegroups.c:2465
+#: ../src/libs/modulegroups.c:2435
 msgid "add module"
 msgstr "新增模組"
 
-#: ../src/libs/modulegroups.c:2470
+#: ../src/libs/modulegroups.c:2440
 msgid "remove module"
 msgstr "移除模組"
 
-#: ../src/libs/modulegroups.c:2569
+#: ../src/libs/modulegroups.c:2539
 msgid "header needed for other widgets"
 msgstr "其他小工具需要的標題"
 
-#: ../src/libs/modulegroups.c:2585 ../src/libs/modulegroups.c:2592
+#: ../src/libs/modulegroups.c:2555 ../src/libs/modulegroups.c:2562
 msgid "add this widget"
 msgstr "新增這個小工具"
 
-#: ../src/libs/modulegroups.c:2605
+#: ../src/libs/modulegroups.c:2575
 msgid "currently invisible"
 msgstr "目前隱藏的小工具"
 
-#: ../src/libs/modulegroups.c:2634
+#: ../src/libs/modulegroups.c:2604
 msgid "add widget"
 msgstr "新增小工具"
 
-#: ../src/libs/modulegroups.c:2639
+#: ../src/libs/modulegroups.c:2609
 msgid "remove widget"
 msgstr "移除小工具"
 
-#: ../src/libs/modulegroups.c:2744
+#: ../src/libs/modulegroups.c:2714
 msgid "show all history modules"
 msgstr "顯示所有使用過的模組"
 
-#: ../src/libs/modulegroups.c:2747 ../src/libs/modulegroups.c:3935
+#: ../src/libs/modulegroups.c:2717 ../src/libs/modulegroups.c:3906
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 msgstr "顯示所有影像編輯紀錄中使用過的模組，不論目前是否有被啟用"
 
-#: ../src/libs/modulegroups.c:2838
+#: ../src/libs/modulegroups.c:2808
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes which can't be solved and alternative modules which solve them.\n"
@@ -22635,19 +22678,19 @@ msgstr ""
 "這些模組將從下一版的 darktable 中移除\n"
 "僅供舊影像延續使用，無法用於編輯新的影像"
 
-#: ../src/libs/modulegroups.c:2866 ../src/libs/modulegroups.c:2867
+#: ../src/libs/modulegroups.c:2836 ../src/libs/modulegroups.c:2837
 msgid "quick access panel"
 msgstr "顯示快速存取面板"
 
-#: ../src/libs/modulegroups.c:2877
+#: ../src/libs/modulegroups.c:2847
 msgid "show only active modules"
 msgstr "只顯示使用中的模組"
 
-#: ../src/libs/modulegroups.c:2878
+#: ../src/libs/modulegroups.c:2848
 msgid "active modules"
 msgstr "使用中的模組"
 
-#: ../src/libs/modulegroups.c:2883
+#: ../src/libs/modulegroups.c:2853
 msgid ""
 "presets\n"
 "ctrl+click to manage"
@@ -22655,15 +22698,19 @@ msgstr ""
 "預設集\n"
 "ctrl + 點擊以管理"
 
-#: ../src/libs/modulegroups.c:2890
+#: ../src/libs/modulegroups.c:2859
+msgid "search modules"
+msgstr "搜尋模組"
+
+#: ../src/libs/modulegroups.c:2860
 msgid "search modules by name or tag"
 msgstr "依名稱或標籤來搜尋模組"
 
-#: ../src/libs/modulegroups.c:2895
+#: ../src/libs/modulegroups.c:2869
 msgid "clear text"
 msgstr "清除文字"
 
-#: ../src/libs/modulegroups.c:2902
+#: ../src/libs/modulegroups.c:2876
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes which can't be solved and alternative modules which solve them.\n"
@@ -22673,131 +22720,131 @@ msgstr ""
 "因為它們具有無法解決的內部設計錯誤，並且已被新模組取代\n"
 "這些模組將在下一個版本的 darktable 中被移除，不能用於編輯新的影像"
 
-#: ../src/libs/modulegroups.c:3140
+#: ../src/libs/modulegroups.c:3111
 msgid "basic icon"
 msgstr "基本圖示"
 
-#: ../src/libs/modulegroups.c:3150
+#: ../src/libs/modulegroups.c:3121
 msgid "active icon"
 msgstr "使用中圖示"
 
-#: ../src/libs/modulegroups.c:3160
+#: ../src/libs/modulegroups.c:3131
 msgid "color icon"
 msgstr "色彩圖示"
 
-#: ../src/libs/modulegroups.c:3170
+#: ../src/libs/modulegroups.c:3141
 msgid "correct icon"
 msgstr "校正圖示"
 
-#: ../src/libs/modulegroups.c:3180
+#: ../src/libs/modulegroups.c:3151
 msgid "effect icon"
 msgstr "效果圖示"
 
-#: ../src/libs/modulegroups.c:3190
+#: ../src/libs/modulegroups.c:3161
 msgid "favorites icon"
 msgstr "常用圖示"
 
-#: ../src/libs/modulegroups.c:3200
+#: ../src/libs/modulegroups.c:3171
 msgid "tone icon"
 msgstr "階調圖示"
 
-#: ../src/libs/modulegroups.c:3210
+#: ../src/libs/modulegroups.c:3181
 msgid "grading icon"
 msgstr "色調圖示"
 
-#: ../src/libs/modulegroups.c:3220
+#: ../src/libs/modulegroups.c:3191
 msgid "technical icon"
 msgstr "技術性圖示"
 
-#: ../src/libs/modulegroups.c:3253
+#: ../src/libs/modulegroups.c:3224
 msgid "quick access panel widgets"
 msgstr "快速存取面板小工具"
 
-#: ../src/libs/modulegroups.c:3255
+#: ../src/libs/modulegroups.c:3226
 msgid "quick access"
 msgstr "快速存取面板"
 
-#: ../src/libs/modulegroups.c:3275
+#: ../src/libs/modulegroups.c:3246
 msgid "add widget to the quick access panel"
 msgstr "新增小工具到快速存取面板"
 
-#: ../src/libs/modulegroups.c:3307
+#: ../src/libs/modulegroups.c:3278
 msgid "group icon"
 msgstr "群組圖示"
 
-#: ../src/libs/modulegroups.c:3316
+#: ../src/libs/modulegroups.c:3287
 msgid "group name"
 msgstr "群組名稱"
 
-#: ../src/libs/modulegroups.c:3327
+#: ../src/libs/modulegroups.c:3298
 msgid "remove group"
 msgstr "刪除群組"
 
-#: ../src/libs/modulegroups.c:3353
+#: ../src/libs/modulegroups.c:3324
 msgid "move group to the left"
 msgstr "向左移動群組"
 
-#: ../src/libs/modulegroups.c:3361
+#: ../src/libs/modulegroups.c:3332
 msgid "add module to the group"
 msgstr "新增模組至群組中"
 
-#: ../src/libs/modulegroups.c:3372
+#: ../src/libs/modulegroups.c:3343
 msgid "move group to the right"
 msgstr "向右移動群組"
 
-#: ../src/libs/modulegroups.c:3552
+#: ../src/libs/modulegroups.c:3523
 msgid "rename preset"
 msgstr "重新命名模組布局"
 
-#: ../src/libs/modulegroups.c:3559
+#: ../src/libs/modulegroups.c:3530
 msgid "new preset name:"
 msgstr "新的模組布局名稱："
 
-#: ../src/libs/modulegroups.c:3560
+#: ../src/libs/modulegroups.c:3531
 msgid "a preset with this name already exists!"
 msgstr "這個模組布局名稱已被使用"
 
-#: ../src/libs/modulegroups.c:3905
+#: ../src/libs/modulegroups.c:3876
 msgid "preset: "
 msgstr "模組布局："
 
-#: ../src/libs/modulegroups.c:3912
+#: ../src/libs/modulegroups.c:3883
 msgid "remove the preset"
 msgstr "刪除模組布局"
 
-#: ../src/libs/modulegroups.c:3914
+#: ../src/libs/modulegroups.c:3885
 msgid "duplicate the preset"
 msgstr "複製模組布局"
 
-#: ../src/libs/modulegroups.c:3916
+#: ../src/libs/modulegroups.c:3887
 msgid "rename the preset"
 msgstr "重新命名模組布局"
 
-#: ../src/libs/modulegroups.c:3918
+#: ../src/libs/modulegroups.c:3889
 msgid "create a new empty preset"
 msgstr "建立新的空白模組布局"
 
-#: ../src/libs/modulegroups.c:3926
+#: ../src/libs/modulegroups.c:3897
 msgid "show search line"
 msgstr "顯示搜尋欄位"
 
-#: ../src/libs/modulegroups.c:3929
+#: ../src/libs/modulegroups.c:3900
 msgid "show quick access panel"
 msgstr "顯示快速存取面板"
 
-#: ../src/libs/modulegroups.c:3932
+#: ../src/libs/modulegroups.c:3903
 msgid "show all history modules in active group"
 msgstr "顯示所有使用過的模組"
 
-#: ../src/libs/modulegroups.c:3944
+#: ../src/libs/modulegroups.c:3915
 msgid "auto-apply this preset"
 msgstr "自動套用這個預設集"
 
-#: ../src/libs/modulegroups.c:3959
+#: ../src/libs/modulegroups.c:3930
 msgid "module groups"
 msgstr "新增模組群組"
 
-#: ../src/libs/modulegroups.c:3976
+#: ../src/libs/modulegroups.c:3947
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr "唯讀的內建模組布局，想進行更改請複製另存為新布局"
@@ -24032,7 +24079,7 @@ msgstr "雙擊重設回「%f」"
 msgid "lua options"
 msgstr "Lua 選項"
 
-#: ../src/views/darkroom.c:624
+#: ../src/views/darkroom.c:625
 #, c-format
 msgid ""
 "darktable could not load `%s', switching to lighttable now.\n"
@@ -24052,63 +24099,63 @@ msgstr ""
 "如果確認此相機檔案有支援，請考慮在 GitHub 上回報問題\n"
 "https://github.com/darktable-org/darktable"
 
-#: ../src/views/darkroom.c:641
+#: ../src/views/darkroom.c:642
 #, c-format
 msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "正在載入「%s」"
 
-#: ../src/views/darkroom.c:767 ../src/views/darkroom.c:2422
+#: ../src/views/darkroom.c:768 ../src/views/darkroom.c:2419
 msgid "gamut check"
 msgstr "色域檢查"
 
-#: ../src/views/darkroom.c:767
+#: ../src/views/darkroom.c:768
 msgid "soft proof"
 msgstr "軟打樣"
 
 #. fail :(
-#: ../src/views/darkroom.c:805 ../src/views/print.c:324
+#: ../src/views/darkroom.c:806 ../src/views/print.c:324
 msgid "no image to open !"
 msgstr "沒有要開啟的影像"
 
-#: ../src/views/darkroom.c:1311
+#: ../src/views/darkroom.c:1312
 msgid "no userdefined presets for favorite modules were found"
 msgstr "找不到給常用模組使用的使用者自訂預設集"
 
-#: ../src/views/darkroom.c:1316
+#: ../src/views/darkroom.c:1317
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "對目前影像套用風格檔「%s」"
 
-#: ../src/views/darkroom.c:1441
+#: ../src/views/darkroom.c:1442
 msgid "no styles have been created yet"
 msgstr "還沒有已建立的風格檔"
 
-#: ../src/views/darkroom.c:2259
+#: ../src/views/darkroom.c:2256
 msgid "quick access to presets"
 msgstr "快速存取預設集"
 
-#: ../src/views/darkroom.c:2268
+#: ../src/views/darkroom.c:2265
 msgid "quick access for applying any of your styles"
 msgstr "快速存取並套用自訂風格檔"
 
-#: ../src/views/darkroom.c:2274
+#: ../src/views/darkroom.c:2271
 msgid "second window"
 msgstr "第二個視窗"
 
-#: ../src/views/darkroom.c:2277
+#: ../src/views/darkroom.c:2274
 msgid "display a second darkroom image window"
 msgstr "顯示第二個暗房影像視窗"
 
-#: ../src/views/darkroom.c:2282
+#: ../src/views/darkroom.c:2279
 msgid "color assessment"
 msgstr "色彩評估"
 
-#: ../src/views/darkroom.c:2285
+#: ../src/views/darkroom.c:2282
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "切換 ISO 12646 色彩評估模式"
 
-#: ../src/views/darkroom.c:2298
+#: ../src/views/darkroom.c:2295
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -24116,27 +24163,27 @@ msgstr ""
 "切換 RAW 過曝提示模式\n"
 "右鍵點擊以查看和修改選項"
 
-#: ../src/views/darkroom.c:2314
+#: ../src/views/darkroom.c:2311
 msgid "select how to mark the clipped pixels"
 msgstr "選擇過曝像素的顯示方式"
 
-#: ../src/views/darkroom.c:2316
+#: ../src/views/darkroom.c:2313
 msgid "mark with CFA color"
 msgstr "以感光元件濾鏡 RGB 標示"
 
-#: ../src/views/darkroom.c:2316
+#: ../src/views/darkroom.c:2313
 msgid "mark with solid color"
 msgstr "以純色標示"
 
-#: ../src/views/darkroom.c:2316
+#: ../src/views/darkroom.c:2313
 msgid "false color"
 msgstr "以相反偽色標示"
 
-#: ../src/views/darkroom.c:2319 ../src/views/darkroom.c:2370
+#: ../src/views/darkroom.c:2316 ../src/views/darkroom.c:2367
 msgid "color scheme"
 msgstr "顯示顏色"
 
-#: ../src/views/darkroom.c:2320
+#: ../src/views/darkroom.c:2317
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -24144,27 +24191,27 @@ msgstr ""
 "選取標示曝光過度的顏色\n"
 "僅模式選擇為「以純色標示」時才有作用"
 
-#: ../src/views/darkroom.c:2323
+#: ../src/views/darkroom.c:2320
 msgctxt "solidcolor"
 msgid "red"
 msgstr "紅"
 
-#: ../src/views/darkroom.c:2324
+#: ../src/views/darkroom.c:2321
 msgctxt "solidcolor"
 msgid "green"
 msgstr "綠"
 
-#: ../src/views/darkroom.c:2325
+#: ../src/views/darkroom.c:2322
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "藍"
 
-#: ../src/views/darkroom.c:2326
+#: ../src/views/darkroom.c:2323
 msgctxt "solidcolor"
 msgid "black"
 msgstr "黑"
 
-#: ../src/views/darkroom.c:2334
+#: ../src/views/darkroom.c:2331
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -24173,7 +24220,7 @@ msgstr ""
 "過度曝光的臨界值，定義哪些值應該被標示為過度曝光\n"
 "在大多數情況下，可以放心地使用預設值 1.0"
 
-#: ../src/views/darkroom.c:2348
+#: ../src/views/darkroom.c:2345
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -24181,11 +24228,11 @@ msgstr ""
 "切換色域及曝光警告模式\n"
 "右鍵點擊以查看和修改選項"
 
-#: ../src/views/darkroom.c:2363
+#: ../src/views/darkroom.c:2360
 msgid "clipping preview mode"
 msgstr "色域裁切預覽模式"
 
-#: ../src/views/darkroom.c:2364
+#: ../src/views/darkroom.c:2361
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -24193,43 +24240,43 @@ msgstr ""
 "選擇要突出顯示的指標\n"
 "全色域包含其他所有選項，提供最完整指示"
 
-#: ../src/views/darkroom.c:2366
+#: ../src/views/darkroom.c:2363
 msgid "full gamut"
 msgstr "全色域"
 
-#: ../src/views/darkroom.c:2366
+#: ../src/views/darkroom.c:2363
 msgid "any RGB channel"
 msgstr "任何 RGB 色版"
 
-#: ../src/views/darkroom.c:2366
+#: ../src/views/darkroom.c:2363
 msgid "luminance only"
 msgstr "僅亮度"
 
-#: ../src/views/darkroom.c:2366
+#: ../src/views/darkroom.c:2363
 msgid "saturation only"
 msgstr "僅飽和度"
 
-#: ../src/views/darkroom.c:2371
+#: ../src/views/darkroom.c:2368
 msgid "select colors to indicate clipping"
 msgstr "選擇顯示警告的色彩"
 
-#: ../src/views/darkroom.c:2373
+#: ../src/views/darkroom.c:2370
 msgid "black & white"
 msgstr "黑白"
 
-#: ../src/views/darkroom.c:2373
+#: ../src/views/darkroom.c:2370
 msgid "red & blue"
 msgstr "紅色和藍色"
 
-#: ../src/views/darkroom.c:2373
+#: ../src/views/darkroom.c:2370
 msgid "purple & green"
 msgstr "紫色和綠色"
 
-#: ../src/views/darkroom.c:2380
+#: ../src/views/darkroom.c:2377
 msgid "lower threshold"
 msgstr "黑點下限"
 
-#: ../src/views/darkroom.c:2381
+#: ../src/views/darkroom.c:2378
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -24249,11 +24296,11 @@ msgstr ""
 "列印美術紙：-5.30 EV\n"
 "列印相紙：-8.00 EV"
 
-#: ../src/views/darkroom.c:2397
+#: ../src/views/darkroom.c:2394
 msgid "upper threshold"
 msgstr "數值上限"
 
-#: ../src/views/darkroom.c:2399
+#: ../src/views/darkroom.c:2396
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -24263,11 +24310,11 @@ msgstr ""
 "對於色域警告，代表的是像素的飽和度與色彩空間邊界的接近程度\n"
 "對於亮度警告，代表的是像素相對於最高亮度的比例"
 
-#: ../src/views/darkroom.c:2411
+#: ../src/views/darkroom.c:2408
 msgid "softproof"
 msgstr "軟打樣"
 
-#: ../src/views/darkroom.c:2414
+#: ../src/views/darkroom.c:2411
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -24275,7 +24322,7 @@ msgstr ""
 "切換軟打樣模式\n"
 "右鍵點擊以查看和修改描述檔選項"
 
-#: ../src/views/darkroom.c:2425
+#: ../src/views/darkroom.c:2422
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -24283,30 +24330,30 @@ msgstr ""
 "切換色域檢查模式\n"
 "右鍵點擊以查看和修改描述檔選項"
 
-#: ../src/views/darkroom.c:2454 ../src/views/darkroom.c:2456
-#: ../src/views/darkroom.c:2470 ../src/views/darkroom.c:2471
-#: ../src/views/darkroom.c:2472 ../src/views/darkroom.c:2473
+#: ../src/views/darkroom.c:2451 ../src/views/darkroom.c:2453
+#: ../src/views/darkroom.c:2467 ../src/views/darkroom.c:2468
+#: ../src/views/darkroom.c:2469 ../src/views/darkroom.c:2470
 #: ../src/views/lighttable.c:1160 ../src/views/lighttable.c:1162
 msgid "profiles"
 msgstr "ICC 描述檔"
 
-#: ../src/views/darkroom.c:2456 ../src/views/lighttable.c:1162
+#: ../src/views/darkroom.c:2453 ../src/views/lighttable.c:1162
 msgid "preview intent"
 msgstr "第二視窗轉換方式"
 
-#: ../src/views/darkroom.c:2470 ../src/views/lighttable.c:1166
+#: ../src/views/darkroom.c:2467 ../src/views/lighttable.c:1166
 msgid "display profile"
 msgstr "螢幕描述檔"
 
-#: ../src/views/darkroom.c:2471 ../src/views/lighttable.c:1169
+#: ../src/views/darkroom.c:2468 ../src/views/lighttable.c:1169
 msgid "preview display profile"
 msgstr "第二視窗螢幕描述檔"
 
-#: ../src/views/darkroom.c:2473
+#: ../src/views/darkroom.c:2470
 msgid "histogram profile"
 msgstr "直方圖描述檔"
 
-#: ../src/views/darkroom.c:2537 ../src/views/lighttable.c:1205
+#: ../src/views/darkroom.c:2534 ../src/views/lighttable.c:1205
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr ""
@@ -24314,7 +24361,7 @@ msgstr ""
 "%s\n"
 "%s"
 
-#: ../src/views/darkroom.c:2540 ../src/views/lighttable.c:1208
+#: ../src/views/darkroom.c:2537 ../src/views/lighttable.c:1208
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr ""
@@ -24322,7 +24369,7 @@ msgstr ""
 "%s\n"
 "%s"
 
-#: ../src/views/darkroom.c:2543
+#: ../src/views/darkroom.c:2540
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr ""
@@ -24330,7 +24377,7 @@ msgstr ""
 "%s\n"
 "%s"
 
-#: ../src/views/darkroom.c:2546
+#: ../src/views/darkroom.c:2543
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr ""
@@ -24338,7 +24385,7 @@ msgstr ""
 "%s\n"
 "%s"
 
-#: ../src/views/darkroom.c:2582
+#: ../src/views/darkroom.c:2579
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -24347,138 +24394,133 @@ msgstr ""
 "右鍵點擊以查看和修改參考線選項"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2599
+#: ../src/views/darkroom.c:2596
 msgid "full preview"
 msgstr "全螢幕預覽"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2603
+#: ../src/views/darkroom.c:2600
 msgid "allow to pan & zoom while editing masks"
 msgstr "允許在編輯遮罩時平移和縮放"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2615
+#: ../src/views/darkroom.c:2612
 msgid "zoom close-up"
 msgstr "縮放至特寫"
 
-#: ../src/views/darkroom.c:2616
+#: ../src/views/darkroom.c:2613
 msgid "zoom fill"
 msgstr "縮放至填滿"
 
-#: ../src/views/darkroom.c:2617
+#: ../src/views/darkroom.c:2614
 msgid "zoom fit"
 msgstr "縮放至符合"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2620 ../src/views/lighttable.c:1265
+#: ../src/views/darkroom.c:2617 ../src/views/lighttable.c:1265
 msgid "zoom in"
 msgstr "放大"
 
-#: ../src/views/darkroom.c:2621 ../src/views/lighttable.c:1267
+#: ../src/views/darkroom.c:2618 ../src/views/lighttable.c:1267
 msgid "zoom out"
 msgstr "縮小"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2624
+#: ../src/views/darkroom.c:2621
 msgid "image forward"
 msgstr "下一張影像"
 
-#: ../src/views/darkroom.c:2625
+#: ../src/views/darkroom.c:2622
 msgid "image back"
 msgstr "前一張影像"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2628
+#: ../src/views/darkroom.c:2625
 msgid "cycle overlay colors"
 msgstr "循環疊加色彩"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2631
+#: ../src/views/darkroom.c:2628
 msgid "show drawn masks"
 msgstr "顯示繪製的遮罩"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2634
+#: ../src/views/darkroom.c:2631
 msgid "increase brush size"
 msgstr "增加筆刷尺寸"
 
-#: ../src/views/darkroom.c:2635
+#: ../src/views/darkroom.c:2632
 msgid "decrease brush size"
 msgstr "縮小筆刷尺寸"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2638
+#: ../src/views/darkroom.c:2635
 msgid "increase brush hardness"
 msgstr "提高筆刷硬度"
 
-#: ../src/views/darkroom.c:2639
+#: ../src/views/darkroom.c:2636
 msgid "decrease brush hardness"
 msgstr "降低筆刷硬度"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2642
+#: ../src/views/darkroom.c:2639
 msgid "increase brush opacity"
 msgstr "提升畫刷不透明度"
 
-#: ../src/views/darkroom.c:2643
+#: ../src/views/darkroom.c:2640
 msgid "decrease brush opacity"
 msgstr "降低畫刷不透明度"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2646 ../src/views/lighttable.c:1257
+#: ../src/views/darkroom.c:2643 ../src/views/lighttable.c:1257
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "復原"
 
-#: ../src/views/darkroom.c:2647 ../src/views/lighttable.c:1258
+#: ../src/views/darkroom.c:2644 ../src/views/lighttable.c:1258
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "重作"
 
-#. set focus to the search modules text box
-#: ../src/views/darkroom.c:2650
-msgid "search modules"
-msgstr "搜尋模組"
-
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2653
+#: ../src/views/darkroom.c:2647
 msgid "change keyboard shortcut slider precision"
 msgstr "改變鍵盤快速鍵滑桿的精準度"
 
-#: ../src/views/darkroom.c:3835
+#: ../src/views/darkroom.c:3829
 msgid "keyboard shortcut slider precision: fine"
 msgstr "鍵盤快速鍵滑桿的精準度：精細"
 
-#: ../src/views/darkroom.c:3837
+#: ../src/views/darkroom.c:3831
 msgid "keyboard shortcut slider precision: normal"
 msgstr "鍵盤快速鍵滑桿的精準度：中等"
 
-#: ../src/views/darkroom.c:3839
+#: ../src/views/darkroom.c:3833
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "鍵盤快速鍵滑桿的精準度：粗糙"
 
-#: ../src/views/darkroom.c:3854
+#: ../src/views/darkroom.c:3849
 msgid "switch to lighttable"
 msgstr "切換到燈箱"
 
-#: ../src/views/darkroom.c:3855 ../src/views/lighttable.c:871
+#: ../src/views/darkroom.c:3850 ../src/views/lighttable.c:871
 msgid "zoom in the image"
 msgstr "放大影像"
 
-#: ../src/views/darkroom.c:3856
+#: ../src/views/darkroom.c:3851
 msgid "unbounded zoom in the image"
 msgstr "不限制放大比例"
 
-#: ../src/views/darkroom.c:3857
+#: ../src/views/darkroom.c:3852
 msgid "zoom to 100% 200% and back"
 msgstr "縮放至 100% 200% 並返回"
 
-#: ../src/views/darkroom.c:3859
+#: ../src/views/darkroom.c:3854
 msgid "[modules] expand module without closing others"
 msgstr "展開模組時不收合其他模組"
 
-#: ../src/views/darkroom.c:3861
+#: ../src/views/darkroom.c:3856
 msgid "[modules] change module position in pipe"
 msgstr "改變模組的位置（運算順序）"
 
@@ -24670,50 +24712,62 @@ msgstr "已啟動新的工作階段「%s」"
 msgid "no camera with tethering support available for use..."
 msgstr "沒有支援連機拍攝的相機"
 
-#: ../src/views/view.c:1192
+#: ../src/views/view.c:1191
 msgid "left click"
 msgstr "左鍵點擊"
 
-#: ../src/views/view.c:1195
+#: ../src/views/view.c:1194
 msgid "right click"
 msgstr "右鍵點擊"
 
-#: ../src/views/view.c:1198
+#: ../src/views/view.c:1197
 msgid "middle click"
 msgstr "中鍵點擊"
 
-#: ../src/views/view.c:1204
+#: ../src/views/view.c:1203
 msgid "left double-click"
 msgstr "左鍵雙擊"
 
-#: ../src/views/view.c:1207
+#: ../src/views/view.c:1206
 msgid "right double-click"
 msgstr "右鍵雙擊"
 
-#: ../src/views/view.c:1210
+#: ../src/views/view.c:1209
 msgid "drag and drop"
 msgstr "拖曳"
 
-#: ../src/views/view.c:1213
+#: ../src/views/view.c:1212
 msgid "left click+drag"
 msgstr "左鍵點擊+拖曳"
 
-#: ../src/views/view.c:1216
+#: ../src/views/view.c:1215
 msgid "right click+drag"
 msgstr "右鍵點擊+拖曳"
 
-#: ../src/views/view.c:1236
+#: ../src/views/view.c:1235
 msgid "darktable - accels window"
 msgstr "darktable 快速鍵視窗"
 
-#: ../src/views/view.c:1284
+#: ../src/views/view.c:1283
 msgid "switch to a classic window which will stay open after key release"
 msgstr "切換回傳統視窗，在按鍵放開後仍保持開啟"
 
 #. we add the mouse actions too
-#: ../src/views/view.c:1343
+#: ../src/views/view.c:1342
 msgid "mouse actions"
 msgstr "滑鼠動作"
+
+#~ msgctxt "preferences"
+#~ msgid "true"
+#~ msgstr "啟用"
+
+#~ msgctxt "preferences"
+#~ msgid "active module"
+#~ msgstr "使用中的模組"
+
+#~ msgctxt "preferences"
+#~ msgid "false"
+#~ msgstr "不啟用"
 
 #~ msgid "highlights recovery"
 #~ msgstr "亮部修復"

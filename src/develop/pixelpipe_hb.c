@@ -68,7 +68,7 @@ static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe,
 
 const char *dt_dev_pixelpipe_type_to_str(int pipe_type)
 {
-  const gboolean fast = (pipe_type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  const gboolean fast = pipe_type & DT_DEV_PIXELPIPE_FAST;
   char *r = NULL;
 
   switch(pipe_type & DT_DEV_PIXELPIPE_ANY)
@@ -926,8 +926,7 @@ static void collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev
     *pixelpipe_flow |= (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
-    if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-       && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+    if(piece->histogram && (module->request_histogram & DT_REQUEST_ON) && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
     {
       const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
       module->histogram = realloc(module->histogram, buf_size);
@@ -1058,8 +1057,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
 
 static inline gboolean check_good_pipe(dt_dev_pixelpipe_t *pipe)
 {
-  return (((pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL) ||
-          ((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW));
+  return (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW));
 }
 
 static inline gboolean check_module_next_important(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *module)
@@ -1124,7 +1122,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   uint64_t hash = 0;
   // do not get gamma from cache on preview pipe so we can compute the final scope
   // FIXME: better yet, don't even cache the gamma output in this case -- but then we'd need to allocate a temporary output buffer and garbage collect it
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW
+  if(!(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
      || module == NULL
      || strcmp(module->op, "gamma") != 0)
   {
@@ -1258,7 +1256,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   }
 
   gboolean important = FALSE;
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     important = (strcmp(module->op, "colorout") == 0);
   else
     important = (strcmp(module->op, "gamma") == 0);
@@ -1768,20 +1766,17 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         /* Nice, everything went fine */
 
         /* Copying device buffers back to host memory is an expensive operation but is required for the iop cache.
-           - this might be reasonable on very slow GPUs, where it's more expensive to reprocess a module than
-             regularly copying device buffers back to host.
-           - But it is worth copying data back from the GPU
+           As the gpu memory is very restricted we can't use that for a cache.
+           The iop cache hit rate is much more important for the UI responsiveness so we make sure relevant cache line buffers
+           are kept. This is true
              a) for the currently focused iop, as that is the iop which is most likely to change next
-             b) if there is a hint for a module doing heavy processing.  
+             b) if there is a hint for a module doing heavy processing.
+             c) only for full or preview pipe  
         */
-        if((darktable.opencl->sync_cache == OPENCL_SYNC_TRUE) ||
-           ((darktable.opencl->sync_cache == OPENCL_SYNC_ACTIVE_MODULE) && (module == darktable.develop->gui_module)) ||
-           input_important)
+        if((module == darktable.develop->gui_module) || input_important)
         {
-          /* write back input into cache for faster re-usal (not for export or thumbnails) */
-          if(cl_mem_input != NULL
-             && (pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT
-             && (pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) != DT_DEV_PIXELPIPE_THUMBNAIL)
+          /* write back input into cache for faster re-usal (full pipe or preview) */
+          if(cl_mem_input != NULL && (pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW)))
           {
             /* copy input to host memory, so we can find it in cache */
             cl_int err = dt_opencl_copy_device_to_host(pipe->devid, input, cl_mem_input, roi_in.width,
@@ -2285,9 +2280,7 @@ restart:
   pipe->backbuf_width = width;
   pipe->backbuf_height = height;
 
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
-     || (pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL
-     || (pipe->type & DT_DEV_PIXELPIPE_PREVIEW2) == DT_DEV_PIXELPIPE_PREVIEW2)
+  if(pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW2))
   {
     if(pipe->output_backbuf == NULL || pipe->output_backbuf_width != pipe->backbuf_width || pipe->output_backbuf_height != pipe->backbuf_height)
     {

@@ -344,7 +344,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(data->flag == ACQUIRE)
   {
-    if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+    if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     {
       // only get stuff from the preview pipe, rest stays untouched.
       int hist[HISTN];

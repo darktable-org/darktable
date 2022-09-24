@@ -149,6 +149,12 @@ const gchar *dt_action_effect_preset_iop[]
   = { N_("apply"),
       N_("apply on new instance"),
       NULL };
+const gchar *dt_action_effect_entry[]
+  = { N_("focus"),
+      N_("start"),
+      N_("end"),
+      N_("clear"),
+      NULL };
 
 const dt_action_element_def_t dt_action_elements_hold[]
   = { { NULL, dt_action_effect_hold } };
@@ -157,6 +163,8 @@ const dt_action_element_def_t _action_elements_toggle[]
   = { { NULL, dt_action_effect_toggle } };
 const dt_action_element_def_t _action_elements_button[]
   = { { NULL, dt_action_effect_activate } };
+const dt_action_element_def_t _action_elements_entry[]
+  = { { NULL, dt_action_effect_entry } };
 const dt_action_element_def_t _action_elements_value_fallback[]
   = { { NULL, dt_action_effect_value } };
 
@@ -231,6 +239,40 @@ static float _action_process_button(gpointer target, dt_action_element_t element
   return NAN;
 }
 
+static const gchar *_entry_set_element = NULL;
+
+static float _action_process_entry(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  if(!isnan(move_size))
+  {
+    switch(effect)
+    {
+    case DT_ACTION_EFFECT_FOCUS:
+      gtk_widget_grab_focus(target);
+      break;
+    case DT_ACTION_EFFECT_START:
+      gtk_widget_grab_focus(target);
+      gtk_editable_set_position(target, 0);
+      break;
+    case DT_ACTION_EFFECT_END:
+      gtk_widget_grab_focus(target);
+      gtk_editable_set_position(target, -1);
+      break;
+    case DT_ACTION_EFFECT_CLEAR:
+      gtk_editable_delete_text(target, 0, -1);
+      break;
+    case DT_ACTION_EFFECT_SET:;
+      gint position = move_size;
+      gtk_editable_insert_text(target, _entry_set_element, -1, &position);
+      break;
+    }
+  }
+  else if(effect == DT_ACTION_EFFECT_SET)
+    gtk_entry_set_text(target, _entry_set_element);
+
+  return NAN;
+}
+
 static const dt_shortcut_fallback_t _action_fallbacks_toggle[]
   = { { .mods = GDK_CONTROL_MASK    , .effect = DT_ACTION_EFFECT_TOGGLE_CTRL  },
       { .button = DT_SHORTCUT_RIGHT , .effect = DT_ACTION_EFFECT_TOGGLE_RIGHT },
@@ -254,6 +296,11 @@ const dt_action_def_t dt_action_def_button
       _action_process_button,
       _action_elements_button,
       _action_fallbacks_button };
+
+const dt_action_def_t dt_action_def_entry
+  = { N_("entry"),
+      _action_process_entry,
+      _action_elements_entry };
 
 static const dt_shortcut_fallback_t _action_fallbacks_value[]
   = { { .mods = GDK_CONTROL_MASK                  , .effect = -1, .speed = 0.1 },
@@ -2847,9 +2894,9 @@ static void _lookup_mapping_widget()
 gboolean dt_action_widget_invisible(GtkWidget *w)
 {
   GtkWidget *p = gtk_widget_get_parent(w);
-  GtkStyleContext *context = gtk_widget_get_style_context(p);
-  return (!GTK_IS_WIDGET(w) || !gtk_widget_get_visible(w)
-          || (!gtk_style_context_has_class(context, "dt_plugin_ui_main") && !gtk_widget_get_visible(p)));
+  return (!GTK_IS_WIDGET(w) || !gtk_widget_get_visible(w) || (!gtk_widget_get_visible(p)
+          && strcmp(gtk_widget_get_name(p), "collapsible")
+          && !gtk_style_context_has_class(gtk_widget_get_style_context(p), "dt_plugin_ui_main")));
 }
 
 gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboolean *fully_matched, const dt_action_def_t *def, char **fb_log)
@@ -3214,6 +3261,9 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
     const dt_action_element_def_t *elements = _action_find_elements(ac);
     if(elements)
     {
+      if(elements == _action_elements_entry && (_entry_set_element = element) && !strcmp("set", effect))
+        return _process_action(ac, instance, 0, DT_ACTION_EFFECT_SET, move_size, NULL);
+
       if(element && *element)
       {
         while(elements[el].name && strcmp(elements[el].name, element)) el++;
@@ -3876,6 +3926,8 @@ static inline gchar *path_without_symbols(const gchar *path)
 
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
 {
+  new_action->owner = owner;
+
   dt_action_t **insertion_point = (dt_action_t **)&owner->target;
 
   while(*insertion_point
@@ -3919,7 +3971,6 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
       new_action->id = clean_path;
       new_action->label = g_strdup(needs_translation ? Q_(*path) : *path);
       new_action->type = DT_ACTION_TYPE_SECTION;
-      new_action->owner = owner;
 
       dt_action_insert_sorted(owner, new_action);
 
@@ -4292,7 +4343,22 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpoin
   }
 
   return button;
-};
+}
+
+GtkWidget *dt_action_entry_new(dt_action_t *ac, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, const gchar *text)
+{
+  GtkWidget *entry = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(entry), 5);
+  if(text)
+    gtk_entry_set_text (GTK_ENTRY(entry), text);
+  if(tooltip)
+    gtk_widget_set_tooltip_text(entry, tooltip);
+  g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(callback), data);
+
+  dt_action_define(ac, NULL, label, entry, &dt_action_def_entry);
+
+  return entry;
+}
 
 dt_action_t *dt_action_register(dt_action_t *owner, const gchar *label, dt_action_callback_t callback, guint accel_key, GdkModifierType mods)
 {

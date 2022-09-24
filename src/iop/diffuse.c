@@ -1059,7 +1059,7 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
              void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
 
@@ -1326,7 +1326,7 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
   dt_iop_diffuse_global_data_t *const gd = (dt_iop_diffuse_global_data_t *)self->global_data;
