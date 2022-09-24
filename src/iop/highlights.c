@@ -111,7 +111,7 @@ typedef struct dt_iop_highlights_params_t
   // params of v1
   dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
   float blendL; // unused $DEFAULT: 1.0
-  float balance; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "cast balance"
+  float chrominance; // $MIN: -0.5 $MAX: 0.5 $DEFAULT: 0.0 $DESCRIPTION: "cast control"
   float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
   // params of v2
   float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
@@ -138,7 +138,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *combine;
   GtkWidget *recovery;
   GtkWidget *strength;
-  GtkWidget *balance;
+  GtkWidget *chrominance;
   gboolean show_visualize;
   dt_segments_mask_t segmentation_mask_mode;
 } dt_iop_highlights_gui_data_t;
@@ -215,7 +215,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scales = 5;
     n->solid_color = 0.f;
     n->strength = 0.0f;
-    n->balance = 0.0f;
+    n->chrominance = 0.0f;
     return 0;
   }
   if(old_version == 2 && new_version == 4)
@@ -240,7 +240,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scales = 5;
     n->solid_color = 0.f;
     n->strength = 0.0f;
-    n->balance = 0.0f;
+    n->chrominance = 0.0f;
     return 0;
   }
   if(old_version == 3 && new_version == 4)
@@ -253,7 +253,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->solid_color = 0.f;
     n->strength = 0.0f;
-    n->balance = 0.0f;
+    n->chrominance = 0.0f;
     return 0;
   }
 
@@ -2201,7 +2201,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
   const gboolean use_segmentation = bayer && (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   const gboolean use_recovery = use_segmentation && (p->recovery != DT_RECOVERY_MODE_OFF);
-  const gboolean use_balance = FALSE; // (mode == DT_IOP_HIGHLIGHTS_OPPOSED);
+  const gboolean use_chrominance = (mode == DT_IOP_HIGHLIGHTS_OPPOSED);
   gtk_widget_set_visible(g->noise_level, use_laplacian || use_recovery);
   gtk_widget_set_visible(g->iterations, use_laplacian);
   gtk_widget_set_visible(g->scales, use_laplacian);
@@ -2211,7 +2211,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->combine, use_segmentation);
   gtk_widget_set_visible(g->recovery, use_segmentation);
   gtk_widget_set_visible(g->strength, use_recovery);
-  gtk_widget_set_visible(g->balance, use_balance);
+  gtk_widget_set_visible(g->chrominance, use_chrominance);
   dt_bauhaus_widget_set_quad_visibility(g->strength, use_recovery);
 
   // The special case for strength button active needs further care here
@@ -2410,10 +2410,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g_signal_connect(G_OBJECT(g->strength), "quad-pressed", G_CALLBACK(_strength_callback), self);
 
-  g->balance = dt_bauhaus_slider_from_params(self, "balance");
-  gtk_widget_set_tooltip_text(g->balance, _("tune the opposed red versus blue balance"));
-  dt_bauhaus_slider_set_format(g->balance, "%");
-
+  g->chrominance = dt_bauhaus_slider_from_params(self, "chrominance");
+  dt_bauhaus_slider_set_format(g->chrominance, "%");
+  dt_bauhaus_slider_set_step(g->candidating, 0.05f);
+  gtk_widget_set_tooltip_text(g->chrominance, _("reduce a color cast by global averaged chrominance means"));
+ 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
                                                 "into the rest of the noisy image. useful at high ISO."));
