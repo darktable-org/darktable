@@ -226,7 +226,7 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %f",
+  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %f %.3f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
@@ -235,7 +235,8 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].event_handles,
     cl->dev[devid].asyncmode & 1,
     cl->dev[devid].disabled & 1,
-    cl->dev[devid].benchmark);
+    cl->dev[devid].benchmark,
+    cl->dev[devid].advantage);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 
@@ -267,9 +268,10 @@ gboolean dt_opencl_read_device_config(const int devid)
     int event_handles;
     int asyncmode;
     int disabled;
-    float benchmark; 
-    sscanf(dat, "%i %i %i %i %i %i %i %i %f",
-      &avoid_atomics, &micro_nap, &pinned_memory, &wd, &ht, &event_handles, &asyncmode, &disabled, &benchmark);
+    float benchmark;
+    float advantage; 
+    sscanf(dat, "%i %i %i %i %i %i %i %i %f %f",
+      &avoid_atomics, &micro_nap, &pinned_memory, &wd, &ht, &event_handles, &asyncmode, &disabled, &benchmark, &advantage);
 
     // some rudimentary safety checking if string seems to be ok
     safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513);
@@ -285,6 +287,7 @@ gboolean dt_opencl_read_device_config(const int devid)
       cl->dev[devid].asyncmode = asyncmode;
       cl->dev[devid].disabled = disabled;
       cl->dev[devid].benchmark = benchmark;
+      cl->dev[devid].advantage = advantage;
     }
     else // if there is something wrong with the found conf key reset to defaults
     {
@@ -307,6 +310,8 @@ gboolean dt_opencl_read_device_config(const int devid)
   cl->dev[devid].use_events = (cl->dev[devid].event_handles != 0) ? 1 : 0;
   cl->dev[devid].asyncmode &= 1;
   cl->dev[devid].disabled &= 1;
+
+  cl->dev[devid].advantage = fmaxf(0.0f, cl->dev[devid].advantage);
 
   // Also take care of extended device data, these are not only device specific but also depend on the devid
   g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
@@ -369,6 +374,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].benchmark = 0.0f;
+  cl->dev[dev].advantage = 0.0f;
   cl->dev[dev].use_events = 1;
   cl->dev[dev].event_handles = 128;
   cl->dev[dev].asyncmode = 0;
@@ -624,7 +630,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   dt_print_nts(DT_DEBUG_OPENCL, "   ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL, "   CHECK EVENT HANDLES:      %i\n", cl->dev[dev].event_handles);
   if(cl->dev[dev].benchmark > 0.0f)
-    dt_print_nts(DT_DEBUG_OPENCL, "   PERFORMANCE:              %f\n", dt_opencl_device_perfgain(dev));
+    dt_print_nts(DT_DEBUG_OPENCL, "   PERFORMANCE:              %.3f\n", dt_opencl_device_perfgain(dev));
+  dt_print_nts(DT_DEBUG_OPENCL, "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
   dt_print_nts(DT_DEBUG_OPENCL, "   DEFAULT DEVICE:           %s\n", (type & CL_DEVICE_TYPE_DEFAULT) ? "YES" : "NO");
 
   if(cl->dev[dev].disabled)
@@ -2789,7 +2796,7 @@ void dt_opencl_check_tuning(const int devid)
     cl->dev[devid].tuneactive |= DT_OPENCL_TUNE_PINNED;
 
   int level = res->level;
-  const gboolean info = ((oldlevel != level) || (oldtuned != tunemode) || (darktable.unmuted & DT_DEBUG_VERBOSE));
+  const gboolean info = ((oldlevel != level) || (oldtuned != tunemode));
   oldlevel = level;
   oldtuned = tunemode;
 
