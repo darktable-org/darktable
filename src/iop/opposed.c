@@ -60,14 +60,30 @@ static void _process_opposed_xtrans(dt_dev_pixelpipe_iop_t *piece, const void *c
     refavg[i] = plane[i] + HL_OPP_SENSOR_PLANES * p_size; 
   }
 
-  const float corrections[3] = { 0.5f, 0.2f, 0.5f };  
+  // test xtrans alignment on a 3x3 superpixel
+  // FIXME we need correct alignment here
+  float counter[3] = { 0.0f , 0.0f, 0.0f };  
+  for(size_t row = 0; row < 3; row++)
+  {
+    for(size_t col = 0, i = row*width; col < 3; col++, i++)
+    {
+      const int c = FCxtrans(row, col, roi_in, xtrans);
+      counter[c] += 1.0f;
+    }
+  }
+  if((counter[0] != 2.0f) || (counter[1] != 5.0f) || (counter[2] != 2.0f))
+  {
+    fprintf(stderr, "xtrans alignment problem %i %i %i (should be 2 5 2), aligned at %i/%i\n", (int)counter[0], (int)counter[1], (int)counter[2], roi_in->x, roi_in->y);
+  }
+
+  const float corrections[3] = { 1.0f / counter[0], 1.0f / counter[1], 1.0f / counter[2] };  
   int has_clipped = 0;
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   reduction( | : has_clipped) \
   dt_omp_firstprivate(in, plane, clips, corrections, roi_in) \
   dt_omp_sharedconst(width, p_off, height, pwidth, xtrans) \
-  schedule(static) aligned(in, plane : 64)
+  schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
   {
@@ -102,15 +118,13 @@ static void _process_opposed_xtrans(dt_dev_pixelpipe_iop_t *piece, const void *c
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
   // Find channel average chrominances
-  const float darkval = (data->chrominance + 0.75f) * clipval;
-
   for(int c = 0; c < HL_OPP_SENSOR_PLANES; c++)
   {
-    const float cutoff_dark = powf(darkval * icoeffs[c], 1.0f / 3.0f);
-    float sum = 0.0f;
-    float cnt = 0.0f;  
+    const float cutoff_dark = powf((-data->chrominance + 0.75f) * clips[c], 1.0f / 3.0f);
+    double sum = 0.0f;
+    double cnt = 0.0f;  
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   reduction(+ : sum, cnt) \
   dt_omp_firstprivate(plane, coeffs, chrominance, refavg) \
   dt_omp_sharedconst(cutoff_dark, pwidth, pheight, c) \
@@ -122,14 +136,14 @@ static void _process_opposed_xtrans(dt_dev_pixelpipe_iop_t *piece, const void *c
       {
         const size_t i = row * pwidth + col;
         const float val = plane[c][i];
-        if((val >= cutoff_dark) && (val < coeffs[c]))
+        if((val > cutoff_dark) && (val < coeffs[c]))
         {
-          sum += val - refavg[c][i];
-          cnt += 1.0f;
+          sum += (double) val - refavg[c][i];
+          cnt += 1.0;
         }
       }
     }
-    chrominance[c] = sum / fmaxf(1.0f, cnt);
+    chrominance[c] = (float) sum / fmaxf(1.0f, cnt);
   }
 
 #ifdef _OPENMP
@@ -206,11 +220,11 @@ static void _process_opposed_bayer(dt_dev_pixelpipe_iop_t *piece, const void *co
   const float corrections[3] = { 1.0f, 0.5f, 1.0f };  
   int has_clipped = 0;
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   reduction( | : has_clipped) \
   dt_omp_firstprivate(in, plane, clips, corrections) \
   dt_omp_sharedconst(width, p_off, height, pwidth, filters) \
-  schedule(static) aligned(in, plane : 64)
+  schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
   {
@@ -245,15 +259,13 @@ static void _process_opposed_bayer(dt_dev_pixelpipe_iop_t *piece, const void *co
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
   // Find channel average chrominances
-  const float darkval = (data->chrominance + 0.75f) * clipval;
-
   for(int c = 0; c < HL_OPP_SENSOR_PLANES; c++)
   {
-    const float cutoff_dark = powf(darkval * icoeffs[c], 1.0f / 3.0f);
-    float sum = 0.0f;
-    float cnt = 0.0f;  
+    const float cutoff_dark = powf((-data->chrominance + 0.75f) * clips[c], 1.0f / 3.0f);
+    double sum = 0.0f;
+    double cnt = 0.0f;  
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   reduction(+ : sum, cnt) \
   dt_omp_firstprivate(plane, coeffs, chrominance, refavg) \
   dt_omp_sharedconst(cutoff_dark, pwidth, pheight, c) \
@@ -265,14 +277,14 @@ static void _process_opposed_bayer(dt_dev_pixelpipe_iop_t *piece, const void *co
       {
         const size_t i = row * pwidth + col;
         const float val = plane[c][i];
-        if((val >= cutoff_dark) && (val < coeffs[c]))
+        if((val > cutoff_dark) && (val < coeffs[c]))
         {
-          sum += val - refavg[c][i];
-          cnt += 1.0f;
+          sum += (double) val - refavg[c][i];
+          cnt += 1.0;
         }
       }
     }
-    chrominance[c] = sum / fmaxf(1.0f, cnt);
+    chrominance[c] = (float) sum / fmaxf(1.0f, cnt);
   }
 
 #ifdef _OPENMP

@@ -111,7 +111,7 @@ typedef struct dt_iop_highlights_params_t
   // params of v1
   dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
   float blendL; // unused $DEFAULT: 1.0
-  float chrominance; // $MIN: -0.5 $MAX: 0.5 $DEFAULT: 0.0 $DESCRIPTION: "cast control"
+  float chrominance; // $MIN: -0.2 $MAX: 0.2 $DEFAULT: 0.0 $DESCRIPTION: "cast control"
   float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
   // params of v2
   float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
@@ -503,8 +503,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     }
     else
     {
-      tiling->xalign = 3;
-      tiling->yalign = 3;
+      tiling->xalign = 6;
+      tiling->yalign = 6;
       tiling->factor = 2.7f; // in & out plus plane buffers including some border safety
       tiling->overlap = 6;
     }
@@ -2395,6 +2395,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   g_signal_connect(G_OBJECT(g->candidating), "quad-pressed", G_CALLBACK(_candidating_callback), self);
 
+  g->chrominance = dt_bauhaus_slider_from_params(self, "chrominance");
+  dt_bauhaus_slider_set_digits(g->chrominance, 2);
+  gtk_widget_set_tooltip_text(g->chrominance, _("tune the color casting via global averaged chrominance means.\n"
+                                                "might be necessary especially for images with strong global contrast or bad white balance"));
+ 
   g->recovery = dt_bauhaus_combobox_from_params(self, "recovery");
   gtk_widget_set_tooltip_text(g->recovery, _("approximate lost data in regions with all photosites clipped, the effect depends on segment size and border gradients.\n"
                                              "choose a mode tuned for segment size or the generic mode that tries to find best settings for every segment.\n"
@@ -2410,11 +2415,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g_signal_connect(G_OBJECT(g->strength), "quad-pressed", G_CALLBACK(_strength_callback), self);
 
-  g->chrominance = dt_bauhaus_slider_from_params(self, "chrominance");
-  dt_bauhaus_slider_set_format(g->chrominance, "%");
-  dt_bauhaus_slider_set_step(g->candidating, 0.05f);
-  gtk_widget_set_tooltip_text(g->chrominance, _("reduce a color cast by global averaged chrominance means"));
- 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
                                                 "into the rest of the noisy image. useful at high ISO."));
