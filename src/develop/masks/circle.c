@@ -119,7 +119,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up);
+      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
     }
     else
     {
@@ -817,7 +817,7 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
   const gboolean selected = (gui->group_selected == index) && (gui->form_selected || gui->form_dragging);
   _circle_draw_lines(FALSE, FALSE, cr, dashed, 0, selected, zoom_scale, gpt->points, gpt->points_count);
   // we draw the borders
-  if(gui->group_selected == index)
+  if(gui->show_all_feathers || gui->group_selected == index)
   {
     _circle_draw_lines(TRUE, FALSE, cr, dashed, len, gui->border_selected, zoom_scale, gpt->border,
                        gpt->border_count);
@@ -1397,6 +1397,34 @@ static void _circle_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const b
   }
 }
 
+static void _circle_modify_property(dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max)
+{
+  float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+
+  dt_masks_point_circle_t *circle = (form->points)->data;
+
+  switch(prop)
+  {
+    case DT_MASKS_PROPERTY_SIZE:;
+      const float max_mask_size = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
+      circle->radius = CLAMP(circle->radius * ratio, 0.001f, max_mask_size);
+      *sum += circle->radius;
+      *max = fminf(*max, max_mask_size / circle->radius);
+      *min = fmaxf(*min, 0.001f / circle->radius);
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_FEATHER:;
+      const float max_mask_border = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
+      circle->border = CLAMP(circle->border * ratio, 0.0005f, max_mask_border);
+      *sum += circle->border / circle->radius;
+      *max = fminf(*max, max_mask_border / circle->border);
+      *min = fmaxf(*min, 0.0005f / circle->border);
+      ++*count;
+      break;
+    default:;
+  }
+}
+
 static void _circle_initial_source_pos(const float iwd, const float iht, float *x, float *y)
 {
   const float radius = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
@@ -1412,6 +1440,7 @@ const dt_masks_functions_t dt_masks_functions_circle = {
   .setup_mouse_actions = _circle_setup_mouse_actions,
   .set_form_name = _circle_set_form_name,
   .set_hint_message = _circle_set_hint_message,
+  .modify_property = _circle_modify_property,
   .duplicate_points = _circle_duplicate_points,
   .initial_source_pos = _circle_initial_source_pos,
   .get_distance = _circle_get_distance,
