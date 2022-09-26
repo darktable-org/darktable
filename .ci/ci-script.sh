@@ -110,8 +110,10 @@ case "$TARGET" in
       -DUSE_NLS=OFF \
       -DUSE_GRAPHICSMAGICK=OFF \
       -DUSE_OPENJPEG=OFF \
+      -DUSE_JXL=OFF \
       -DUSE_WEBP=OFF \
       -DUSE_AVIF=OFF \
+      -DUSE_HEIF=OFF \
       -DUSE_XCF=OFF \
       -DBUILD_CMSTEST=OFF \
       -DUSE_OPENEXR=OFF \
@@ -135,8 +137,10 @@ case "$TARGET" in
       -DUSE_NLS=OFF \
       -DUSE_GRAPHICSMAGICK=OFF \
       -DUSE_OPENJPEG=OFF \
+      -DUSE_JXL=OFF \
       -DUSE_WEBP=OFF \
       -DUSE_AVIF=OFF \
+      -DUSE_HEIF=OFF \
       -DUSE_XCF=OFF \
       -DBUILD_CMSTEST=OFF \
       -DUSE_OPENEXR=OFF \
