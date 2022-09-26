@@ -416,6 +416,7 @@ jobs:
             libgphoto2:p
             libheif:p
             libjpeg-turbo:p
+            libjxl:p
             libsecret:p
             libsoup:p
             libwebp:p
