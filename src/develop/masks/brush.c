@@ -1134,7 +1134,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up);
+      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
     }
     else
     {
@@ -1150,10 +1150,12 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
             dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
             const float masks_hardness = point->hardness;
             point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-            dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
+            dt_toast_log(_("hardness: %3.2f%%"), point->hardness*100.0f);
           }
           pts_number++;
         }
+
+        // FIXME scale default hardess even when adjusting one point?
         float masks_hardness = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
         masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
@@ -1184,6 +1186,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
           }
           pts_number++;
         }
+        // FIXME scale default border even when adjusting one point? Not showing toast for point itself?
         float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border));
         masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
@@ -2380,7 +2383,7 @@ static void _brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_fo
   }
 
   // draw corners
-  if(gui->group_selected == index && gpt->points_count > nb * 3 + 2)
+  if((gui->show_all_feathers || gui->group_selected == index) && gpt->points_count > nb * 3 + 2)
   {
     for(int k = 0; k < nb; k++)
       dt_masks_draw_anchor(cr, k == gui->point_dragging || k == gui->point_selected, zoom_scale,
@@ -2896,6 +2899,51 @@ static void _brush_initial_source_pos(const float iwd, const float iht, float *x
   *y = 0.01f * iht;
 }
 
+static void _brush_modify_property(dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max)
+{
+  float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+
+  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+
+  int pts_number = 0;
+
+  switch(prop)
+  {
+    case DT_MASKS_PROPERTY_SIZE:
+      for(GList *l = form->points; l; l = g_list_next(l))
+      {
+        if(gui->point_selected == -1 || gui->point_selected == pts_number)
+        {
+          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
+          point->border[0] = CLAMP(point->border[0] * ratio, BORDER_MIN, BORDER_MAX);
+          point->border[1] = CLAMP(point->border[1] * ratio, BORDER_MIN, BORDER_MAX);
+          *sum += point->border[0] + point->border[1];
+          *max = fminf(*max, fminf(BORDER_MAX / point->border[0], BORDER_MAX / point->border[1]));
+          *min = fmaxf(*min, fmaxf(BORDER_MIN / point->border[0], BORDER_MIN / point->border[1]));
+          ++*count;
+        }
+        pts_number++;
+      }
+      break;
+    case DT_MASKS_PROPERTY_HARDNESS:
+      for(GList *l = form->points; l; l = g_list_next(l))
+      {
+        if(gui->point_selected == -1 || gui->point_selected == pts_number)
+        {
+          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
+          point->hardness = CLAMP(point->hardness * ratio, HARDNESS_MIN, HARDNESS_MAX);
+          *sum += point->hardness;
+          *max = fminf(*max, HARDNESS_MAX / point->hardness);
+          *min = fmaxf(*min, HARDNESS_MIN / point->hardness);
+          ++*count;
+        }
+        pts_number++;
+      }
+      break;
+    default:;
+  }
+}
+
 // The function table for brushes.  This must be public, i.e. no "static" keyword.
 const dt_masks_functions_t dt_masks_functions_brush = {
   .point_struct_size = sizeof(struct dt_masks_point_brush_t),
@@ -2903,6 +2951,7 @@ const dt_masks_functions_t dt_masks_functions_brush = {
   .setup_mouse_actions = _brush_setup_mouse_actions,
   .set_form_name = _brush_set_form_name,
   .set_hint_message = _brush_set_hint_message,
+  .modify_property = _brush_modify_property,
   .duplicate_points = _brush_duplicate_points,
   .initial_source_pos = _brush_initial_source_pos,
   .get_distance = _brush_get_distance,

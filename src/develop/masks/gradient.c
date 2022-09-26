@@ -124,7 +124,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up);
+      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
     }
     else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
@@ -995,7 +995,7 @@ static void _gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   // draw main line
   _gradient_draw_lines(FALSE, cr, dashed, len, selected, zoom_scale, gpt->points, gpt->points_count, xref, yref);
   // draw borders
-  if(gui->group_selected == index)
+  if(gui->show_all_feathers || gui->group_selected == index)
     _gradient_draw_lines(TRUE, cr, dashed, len, gui->border_selected, zoom_scale, gpt->border, gpt->border_count,
                          xref, yref);
 
@@ -1468,6 +1468,35 @@ static void _gradient_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const
   }
 }
 
+static void _gradient_modify_property(dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max)
+{
+  dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
+
+  switch(prop)
+  {
+    case DT_MASKS_PROPERTY_CURVATURE:;
+      gradient->curvature = CLAMP(gradient->curvature + new_val - old_val, -2.0f, 2.0f);
+      *sum += gradient->curvature * .5;
+      *max = fminf(*max,  2.0f - gradient->curvature);
+      *min = fmaxf(*min, -2.0f - gradient->curvature);
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_COMPRESSION:;
+      float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+      gradient->compression = CLAMP(gradient->compression * ratio, 0.001f, 1.0f);
+      *sum += gradient->compression;
+      *max = fminf(*max, 1.0f / gradient->compression);
+      *min = fmaxf(*min, 0.0005f / gradient->compression);
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_ROTATION:
+      *sum += (gradient->rotation = fmodf(gradient->rotation - new_val + old_val, 360.0f));
+      ++*count;
+      break;
+    default:;
+  }
+}
+
 // The function table for gradients.  This must be public, i.e. no "static" keyword.
 const dt_masks_functions_t dt_masks_functions_gradient = {
   .point_struct_size = sizeof(struct dt_masks_point_gradient_t),
@@ -1475,6 +1504,7 @@ const dt_masks_functions_t dt_masks_functions_gradient = {
   .setup_mouse_actions = _gradient_setup_mouse_actions,
   .set_form_name = _gradient_set_form_name,
   .set_hint_message = _gradient_set_hint_message,
+  .modify_property = _gradient_modify_property,
   .duplicate_points = _gradient_duplicate_points,
   .get_distance = _gradient_get_distance,
   .get_points_border = _gradient_get_points_border,

@@ -25,6 +25,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
+#include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
@@ -44,6 +45,10 @@ typedef struct dt_lib_masks_t
   GtkWidget *hbox;
   GtkWidget *bt_circle, *bt_path, *bt_gradient, *bt_ellipse, *bt_brush;
   GtkWidget *treeview;
+  dt_gui_collapsible_section_t cs;
+  GtkWidget *property[DT_MASKS_PROPERTY_LAST];
+  float last_value[DT_MASKS_PROPERTY_LAST];
+  GtkWidget *none_label;
 
   GdkPixbuf *ic_inverse, *ic_union, *ic_intersection, *ic_difference, *ic_exclusion, *ic_used;
   int gui_reset;
@@ -87,6 +92,136 @@ typedef enum dt_masks_tree_cols_t
   TREE_USED_TEXT,
   TREE_COUNT
 } dt_masks_tree_cols_t;
+
+const struct
+{
+  gchar *name;
+  gchar *format;
+  float min, max;
+  gboolean relative;
+} _masks_properties[DT_MASKS_PROPERTY_LAST]
+  = { [ DT_MASKS_PROPERTY_OPACITY] = {N_("opacity"), "%", 0, 1, FALSE },
+      [ DT_MASKS_PROPERTY_SIZE] = { N_("size"), "%", 0.0001, 1, TRUE },
+      [ DT_MASKS_PROPERTY_HARDNESS] = { N_("hardness"), "%", 0.0001, 1, TRUE },
+      [ DT_MASKS_PROPERTY_FEATHER] = { N_("feather"), "%", 0.0001, 1, TRUE },
+      [ DT_MASKS_PROPERTY_ROTATION] = { N_("rotation"), "°", 0, 360, FALSE },
+      [ DT_MASKS_PROPERTY_CURVATURE] = { N_("curvature"), "%", 0.0001, 1, FALSE },
+      [ DT_MASKS_PROPERTY_COMPRESSION] = { N_("compression"), "%", 0.0001, 1, TRUE },
+};
+
+gboolean _timeout_show_all_feathers(gpointer userdata)
+{
+  dt_masks_form_gui_t *gui = userdata;
+  gui->show_all_feathers = 0;
+  dt_control_queue_redraw_center();
+  return G_SOURCE_REMOVE;
+}
+
+static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
+{
+  if(darktable.gui->reset) return;
+
+  dt_lib_module_t *self = darktable.develop->proxy.masks.module;
+  dt_lib_masks_t *d = self->data;
+
+  float value = dt_bauhaus_slider_get(widget);
+
+  dt_develop_t *dev = darktable.develop;
+  dt_masks_form_t *form = dev->form_visible;
+  dt_masks_form_gui_t *gui = dev->form_gui;
+  if(!gui) return;
+  if(!form) return;
+
+  int count = 0;
+  float sum = 0, min = _masks_properties[prop].min, max = _masks_properties[prop].max;
+  if(_masks_properties[prop].relative)
+  {
+    max /= min;
+    min /= _masks_properties[prop].max;
+  }
+  else
+  {
+    max -= min;
+    min -= _masks_properties[prop].max;
+  }
+
+  int pos = 0;
+  for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
+  {
+    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+    dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+    if(!sel || (dev->mask_form_selected_id && dev->mask_form_selected_id != sel->formid)) continue;;
+
+    if(prop == DT_MASKS_PROPERTY_OPACITY && fpt->parentid)
+    {
+      float new_opacity = dt_masks_form_change_opacity(sel, fpt->parentid, value - d->last_value[prop]);
+      sum += new_opacity;
+      max = fminf(max, 1.0f - new_opacity);
+      min = fmaxf(min, .05f - new_opacity);
+      ++count;
+    }
+    else
+    {
+      int saved_count = count;
+
+      if(sel->functions && sel->functions->modify_property)
+        sel->functions->modify_property(sel, prop, d->last_value[prop], value, &sum, &count, &min, &max);
+
+      if(value != d->last_value[prop] && count != saved_count && value != d->last_value[prop])
+      {
+        // we recreate the form points
+        dt_masks_gui_form_remove(sel, gui, pos);
+        dt_masks_gui_form_create(sel, gui, pos, dev->gui_module);
+      }
+    }
+    pos++;
+  }
+
+  if(count)
+  {
+    if(value != d->last_value[prop] && sum / count != d->last_value[prop])
+    {
+      if(prop != DT_MASKS_PROPERTY_OPACITY)
+      {
+        if(gui->show_all_feathers) g_source_remove(gui->show_all_feathers);
+        gui->show_all_feathers = g_timeout_add_seconds(2, _timeout_show_all_feathers, gui);
+      }
+      // we save the new parameters
+      dt_dev_add_masks_history_item(darktable.develop, dev->gui_module, TRUE);
+      dt_masks_update_image(darktable.develop);
+    }
+
+    ++darktable.gui->reset;
+    if(_masks_properties[prop].relative)
+    {
+      max *= d->last_value[prop];
+      min *= d->last_value[prop];
+    }
+    else
+    {
+      max += d->last_value[prop];
+      min += d->last_value[prop];
+    }
+    dt_bauhaus_slider_set_soft_range(widget, min, max);
+
+    dt_bauhaus_slider_set(widget, sum / count);
+    d->last_value[prop] = dt_bauhaus_slider_get(widget);
+    --darktable.gui->reset;
+
+    gtk_widget_show(widget);
+    gtk_widget_hide(d->none_label);
+  }
+  else
+    gtk_widget_hide(widget);
+}
+
+static void _update_all_properties(dt_lib_masks_t *self)
+{
+  gtk_widget_show(self->none_label);
+
+  for(int i = 0; i < DT_MASKS_PROPERTY_LAST; i++)
+    _property_changed(self->property[i], i);
+}
 
 static void _lib_masks_get_values(GtkTreeModel *model, GtkTreeIter *iter,
                                   dt_iop_module_t **module, int *groupid, int *formid)
@@ -854,6 +989,8 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = DT_MASKS_EDIT_FULL;
   dt_control_queue_redraw_center();
+
+  _update_all_properties(self);
 }
 
 static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
@@ -1590,6 +1727,8 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, struct dt_iop_mod
   }
 
   lm->gui_reset = 0;
+
+  _update_all_properties(lm);
 }
 
 static GdkPixbuf *_get_pixbuf_from_cairo(DTGTKCairoPaintIconFunc paint, const int width, const int height)
@@ -1630,30 +1769,35 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 
   d->bt_gradient = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, 0, NULL);
+  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add gradient"), d->bt_gradient, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(d->bt_gradient), "button-press-event", G_CALLBACK(_bt_add_gradient), self);
   gtk_widget_set_tooltip_text(d->bt_gradient, _("add gradient"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_gradient), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_gradient, FALSE, FALSE, 0);
 
   d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, 0, NULL);
+  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add path"), d->bt_path, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_path), self);
   gtk_widget_set_tooltip_text(d->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_path, FALSE, FALSE, 0);
 
   d->bt_ellipse = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, 0, NULL);
+  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add ellipse"), d->bt_ellipse, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(d->bt_ellipse), "button-press-event", G_CALLBACK(_bt_add_ellipse), self);
   gtk_widget_set_tooltip_text(d->bt_ellipse, _("add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_ellipse), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_ellipse, FALSE, FALSE, 0);
 
   d->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, 0, NULL);
+  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add circle"), d->bt_circle, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(d->bt_circle), "button-press-event", G_CALLBACK(_bt_add_circle), self);
   gtk_widget_set_tooltip_text(d->bt_circle, _("add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_circle), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_circle, FALSE, FALSE, 0);
 
   d->bt_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, 0, NULL);
+  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add brush"), d->bt_brush, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(d->bt_brush), "button-press-event", G_CALLBACK(_bt_add_brush), self);
   gtk_widget_set_tooltip_text(d->bt_brush, _("add brush"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_brush), FALSE);
@@ -1688,15 +1832,33 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
   gtk_tree_selection_set_select_function(selection, _tree_restrict_select, d, NULL);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->treeview), FALSE);
-  // gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->treeview),TREE_USED_TEXT);
-  g_object_set(d->treeview, "has-tooltip", TRUE, (gchar *)0);
+  gtk_widget_set_has_tooltip(d->treeview, TRUE);
   g_signal_connect(d->treeview, "query-tooltip", G_CALLBACK(_tree_query_tooltip), NULL);
   g_signal_connect(selection, "changed", G_CALLBACK(_tree_selection_change), d);
   g_signal_connect(d->treeview, "button-press-event", (GCallback)_tree_button_pressed, self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_scroll_wrap(d->treeview, 200, "plugins/darkroom/masks/heightview"), FALSE, FALSE, 0);
 
-  gtk_widget_show_all(self->widget);
+  dt_gui_new_collapsible_section
+    (&d->cs,
+     "plugins/darkroom/masks/expand_properties",
+     _("properties"),
+     GTK_BOX(self->widget));
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->cs.container), TRUE);
+
+  for(int i = 0; i < DT_MASKS_PROPERTY_LAST; i++)
+  {
+    d->property[i] = dt_bauhaus_slider_new_action(DT_ACTION(self), _masks_properties[i].min,
+                                                  _masks_properties[i].max, 0, 0.0, 2);
+    dt_bauhaus_widget_set_label(d->property[i], N_("properties"), _masks_properties[i].name);
+    dt_bauhaus_slider_set_format(d->property[i], _masks_properties[i].format);
+    d->last_value[i] = dt_bauhaus_slider_get(d->property[i]);
+    gtk_box_pack_start(GTK_BOX(d->cs.container), d->property[i], FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(d->property[i]), "value-changed", G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
+  }
+
+  d->none_label = dt_ui_label_new(_("no shapes selected"));
+  gtk_box_pack_start(GTK_BOX(d->cs.container), d->none_label, FALSE, FALSE, 0);
 
   // set proxy functions
   darktable.develop->proxy.masks.module = self;

@@ -1013,7 +1013,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up);
+      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
     }
     else
     {
@@ -2072,7 +2072,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   }
 
   // draw border and corners
-  if((gui->group_selected == index) && gpt->border_count > nb * 3 + 6)
+  if((gui->show_all_feathers || gui->group_selected == index) && gpt->border_count > nb * 3 + 6)
   {
     int dep = 1;
     for(int i = nb * 3; i < gpt->border_count; i++)
@@ -3135,6 +3135,79 @@ static void _path_initial_source_pos(const float iwd, const float iht, float *x,
   *y = (0.02f * iht);
 }
 
+static void _path_modify_property(dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max)
+{
+  float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+
+  switch(prop)
+  {
+    case DT_MASKS_PROPERTY_SIZE:;
+      // get the center of gravity of the form (like if it was a simple polygon)
+      float bx = 0.0f;
+      float by = 0.0f;
+      float surf = 0.0f;
+
+      for(const GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
+      {
+        const GList *next = g_list_next_wraparound(form_points, form->points);
+        float *point1 = ((dt_masks_point_path_t *)form_points->data)->corner;
+        float *point2 = ((dt_masks_point_path_t *)next->data)->corner;
+        surf += point1[0] * point2[1] - point2[0] * point1[1];
+
+        bx += (point1[0] + point2[0]) * (point1[0] * point2[1] - point2[0] * point1[1]);
+        by += (point1[1] + point2[1]) * (point1[0] * point2[1] - point2[0] * point1[1]);
+      }
+      bx /= 3.0f * surf;
+      by /= 3.0f * surf;
+
+      ratio = fminf(fmaxf(ratio, 0.00001f / fabsf(surf)), 4.0f / fabsf(surf));
+
+      // now we move each point
+      for(GList *l = form->points; l; l = g_list_next(l))
+      {
+        dt_masks_point_path_t *point = (dt_masks_point_path_t *)l->data;
+        const float x = (point->corner[0] - bx) * ratio;
+        const float y = (point->corner[1] - by) * ratio;
+
+        // we stretch ctrl points
+        const float ct1x = (point->ctrl1[0] - point->corner[0]) * ratio;
+        const float ct1y = (point->ctrl1[1] - point->corner[1]) * ratio;
+        const float ct2x = (point->ctrl2[0] - point->corner[0]) * ratio;
+        const float ct2y = (point->ctrl2[1] - point->corner[1]) * ratio;
+
+        // and we set the new points
+        point->corner[0] = bx + x;
+        point->corner[1] = by + y;
+        point->ctrl1[0] = point->corner[0] + ct1x;
+        point->ctrl1[1] = point->corner[1] + ct1y;
+        point->ctrl2[0] = point->corner[0] + ct2x;
+        point->ctrl2[1] = point->corner[1] + ct2y;
+      }
+
+      // now the redraw/save stuff
+      _path_init_ctrl_points(form);
+
+      *max = fminf(*max, 4.0f / fabsf(surf));
+      *min = fmaxf(*min, 0.00001f / fabsf(surf));
+      *sum += surf;
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_FEATHER:;
+      for(const GList *l = form->points; l; l = g_list_next(l))
+      {
+        dt_masks_point_path_t *point = (dt_masks_point_path_t *)l->data;
+        point->border[0] = CLAMP(point->border[0] * ratio, 0.0005f, 1.0f);
+        point->border[1] = CLAMP(point->border[1] * ratio, 0.0005f, 1.0f);
+        *sum += point->border[0] + point->border[1];
+        *max = fminf(*max, fminf(1.0f / point->border[0], 1.0f / point->border[1]));
+        *min = fmaxf(*min, fmaxf(0.0005f / point->border[0], 0.0005f / point->border[1]));
+        ++*count;
+      }
+      break;
+    default:;
+  }
+}
+
 // The function table for paths.  This must be public, i.e. no "static" keyword.
 const dt_masks_functions_t dt_masks_functions_path = {
   .point_struct_size = sizeof(struct dt_masks_point_path_t),
@@ -3142,6 +3215,7 @@ const dt_masks_functions_t dt_masks_functions_path = {
   .setup_mouse_actions = _path_setup_mouse_actions,
   .set_form_name = _path_set_form_name,
   .set_hint_message = _path_set_hint_message,
+  .modify_property = _path_modify_property,
   .duplicate_points = _path_duplicate_points,
   .initial_source_pos = _path_initial_source_pos,
   .get_distance = _path_get_distance,

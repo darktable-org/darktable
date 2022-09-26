@@ -483,7 +483,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up);
+      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
     }
     else
     {
@@ -1407,7 +1407,7 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   _ellipse_draw_shape(FALSE, FALSE, cr, dashed, 0, selected, zoom_scale, xref, yref, gpt->points, gpt->points_count);
 
   // draw border
-  if(gui->group_selected == index)
+  if(gui->show_all_feathers || gui->group_selected == index)
   {
     _ellipse_draw_shape(TRUE, FALSE, cr, dashed, len, gui->border_selected, zoom_scale, xref, yref, gpt->border, gpt->border_count);
 
@@ -2124,6 +2124,42 @@ static void _ellipse_sanitize_config(dt_masks_type_t type)
   DT_CONF_SET_SANITIZED_FLOAT(DT_MASKS_CONF(type, ellipse, border), border, 0.001f, reference);
 }
 
+static void _ellipse_modify_property(dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max)
+{
+  float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+
+  dt_masks_point_ellipse_t *ellipse = (form->points)->data;
+
+  const float radius_limit = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
+
+  switch(prop)
+  {
+    case DT_MASKS_PROPERTY_SIZE:;
+      const float oldradius0 = ellipse->radius[0], oldradius1 = ellipse->radius[1];
+      ellipse->radius[0] = CLAMP(ellipse->radius[0] * ratio                        , 0.001f, radius_limit);
+      ellipse->radius[1] = CLAMP(ellipse->radius[1] * ellipse->radius[0]/oldradius0, 0.001f, radius_limit);
+      ellipse->radius[0] = oldradius0 * ellipse->radius[1]/oldradius1;
+      *sum += fmaxf(ellipse->radius[0], ellipse->radius[0]);
+      *max = fminf(*max, fminf(radius_limit / ellipse->radius[0], radius_limit / ellipse->radius[1]));
+      *min = fmaxf(*min, fmaxf(0.001f / ellipse->radius[0], 0.001f / ellipse->radius[1]));
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_FEATHER:;
+      const float reference = (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f/fmin(ellipse->radius[0], ellipse->radius[1]) : 1.0f);
+      ellipse->border = CLAMP(ellipse->border * ratio, 0.001f * reference, radius_limit * reference);
+      *sum += ellipse->border;
+      *max = fminf(*max, radius_limit * reference / ellipse->border);
+      *min = fmaxf(*min, 0.001f * reference / ellipse->border);
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_ROTATION:
+      *sum += (ellipse->rotation = fmodf(ellipse->rotation + new_val - old_val, 360.0f));
+      ++*count;
+      break;
+    default:;
+  }
+}
+
 // The function table for ellipses.  This must be public, i.e. no "static" keyword.
 const dt_masks_functions_t dt_masks_functions_ellipse = {
   .point_struct_size = sizeof(struct dt_masks_point_ellipse_t),
@@ -2131,6 +2167,7 @@ const dt_masks_functions_t dt_masks_functions_ellipse = {
   .setup_mouse_actions = _ellipse_setup_mouse_actions,
   .set_form_name = _ellipse_set_form_name,
   .set_hint_message = _ellipse_set_hint_message,
+  .modify_property = _ellipse_modify_property,
   .duplicate_points = _ellipse_duplicate_points,
   .initial_source_pos = _ellipse_initial_source_pos,
   .get_distance = _ellipse_get_distance,

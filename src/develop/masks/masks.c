@@ -1739,16 +1739,15 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
   if(form_removed) dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 }
 
-void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
+float dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, float amount)
 {
-  if(!form) return;
+  if(!form) return 0;
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, parentid);
-  if(!grp || !(grp->type & DT_MASKS_GROUP)) return;
+  if(!grp || !(grp->type & DT_MASKS_GROUP)) return 0;
 
   // we first need to test if the opacity can be set to the form
-  if(form->type & DT_MASKS_GROUP) return;
+  if(form->type & DT_MASKS_GROUP) return 0;
   const int id = form->formid;
-  const float amount = up ? 0.05f : -0.05f;
 
   // so we change the value inside the group
   for(GList *fpts = grp->points; fpts; fpts = g_list_next(fpts))
@@ -1762,9 +1761,10 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
       dt_toast_log(_("opacity: %d%%"), opacitypercent);
       dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
       dt_masks_update_image(darktable.develop);
-      break;
+      return opacity;
     }
   }
+  return 0;
 }
 
 void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up)
