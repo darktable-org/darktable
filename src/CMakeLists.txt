@@ -356,6 +356,7 @@ if(USE_WEBP)
     list(APPEND LIBS ${WebP_LIBRARIES})
     add_definitions("-DHAVE_WEBP")
     list(APPEND SOURCES "common/imageio_webp.c")
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} webp CACHE INTERNAL "")
   endif(WebP_FOUND)
 endif(USE_WEBP)
 
