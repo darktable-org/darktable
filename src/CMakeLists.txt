@@ -354,7 +354,7 @@ if(USE_WEBP)
   if(WebP_FOUND)
     include_directories(SYSTEM ${WebP_INCLUDE_DIRS})
     list(APPEND LIBS ${WebP_LIBRARIES})
-    add_definitions(${WebP_DEFINITIONS})
+    add_definitions("-DHAVE_WEBP")
   endif(WebP_FOUND)
 endif(USE_WEBP)
 
