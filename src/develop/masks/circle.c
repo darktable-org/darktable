@@ -320,7 +320,6 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
       dt_masks_form_t *newform = dt_masks_create(form->type);
       dt_masks_change_form_gui(newform);
-      darktable.develop->form_gui->creation = TRUE;
       darktable.develop->form_gui->creation_module = crea_module;
       darktable.develop->form_gui->creation_continuous = TRUE;
       darktable.develop->form_gui->creation_continuous_module = crea_module;
@@ -390,8 +389,6 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
     {
       dt_masks_form_t *form_new = dt_masks_create(form->type);
       dt_masks_change_form_gui(form_new);
-
-      darktable.develop->form_gui->creation = TRUE;
       darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
     }
     return 1;
@@ -429,8 +426,6 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
     {
       dt_masks_form_t *form_new = dt_masks_create(form->type);
       dt_masks_change_form_gui(form_new);
-
-      darktable.develop->form_gui->creation = TRUE;
       darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
     }
 

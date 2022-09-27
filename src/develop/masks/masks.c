@@ -1245,6 +1245,11 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   /* update sticky accels window */
   if(newform != old && darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
     dt_view_accels_refresh(darktable.view_manager);
+
+  if(newform && newform->type != DT_MASKS_GROUP)
+    darktable.develop->form_gui->creation = TRUE;
+
+  dt_dev_masks_selection_change(darktable.develop, NULL, 0, FALSE);
 }
 
 void dt_masks_reset_form_gui(void)
@@ -1391,7 +1396,6 @@ static void _menu_add_shape(struct dt_iop_module_t *module, dt_masks_type_t type
   // we create the new form
   dt_masks_form_t *form = dt_masks_create(type);
   dt_masks_change_form_gui(form);
-  darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
