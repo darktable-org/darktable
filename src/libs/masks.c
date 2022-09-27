@@ -272,7 +272,6 @@ static void _tree_add_circle(GtkButton *button, dt_iop_module_t *module)
   // we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CIRCLE);
   dt_masks_change_form_gui(spot);
-  darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
@@ -296,7 +295,6 @@ static void _tree_add_ellipse(GtkButton *button, dt_iop_module_t *module)
   // we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_ELLIPSE);
   dt_masks_change_form_gui(spot);
-  darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
@@ -344,7 +342,6 @@ static void _tree_add_gradient(GtkButton *button, dt_iop_module_t *module)
   // we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_GRADIENT);
   dt_masks_change_form_gui(spot);
-  darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
@@ -367,7 +364,6 @@ static void _tree_add_brush(GtkButton *button, dt_iop_module_t *module)
   // we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_BRUSH);
   dt_masks_change_form_gui(spot);
-  darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();

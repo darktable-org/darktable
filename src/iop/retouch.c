@@ -970,7 +970,6 @@ static gboolean rt_add_shape(GtkWidget *widget, const int creation_continuous, d
       spot = dt_masks_create(type | DT_MASKS_NON_CLONE);
 
     dt_masks_change_form_gui(spot);
-    darktable.develop->form_gui->creation = TRUE;
     darktable.develop->form_gui->creation_module = self;
 
     if(creation_continuous)
@@ -1811,8 +1810,6 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
     else
       spot = dt_masks_create(type | DT_MASKS_NON_CLONE);
     dt_masks_change_form_gui(spot);
-
-    darktable.develop->form_gui->creation = TRUE;
     darktable.develop->form_gui->creation_module = self;
     dt_control_queue_redraw_center();
   }

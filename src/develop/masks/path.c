@@ -1206,8 +1206,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         {
           dt_masks_form_t *form_new = dt_masks_create(form->type);
           dt_masks_change_form_gui(form_new);
-
-          darktable.develop->form_gui->creation = TRUE;
           darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
         }
       }
