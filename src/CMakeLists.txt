@@ -355,6 +355,7 @@ if(USE_WEBP)
     include_directories(SYSTEM ${WebP_INCLUDE_DIRS})
     list(APPEND LIBS ${WebP_LIBRARIES})
     add_definitions("-DHAVE_WEBP")
+    list(APPEND SOURCES "common/imageio_webp.c")
   endif(WebP_FOUND)
 endif(USE_WEBP)
 
