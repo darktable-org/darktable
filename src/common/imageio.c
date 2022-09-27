@@ -474,7 +474,7 @@ return_label:
 
 /* magic data: exclusion,offset,length, xx, yy, ...
     just add magic bytes to match to this struct
-    to extend mathc on ldr formats.
+    to extend match on LDR formats.
 */
 static const uint8_t _imageio_ldr_magic[] = {
   /* jpeg magics */
@@ -487,6 +487,9 @@ static const uint8_t _imageio_ldr_magic[] = {
   /* jpeg 2000, j2k format */
   0x00, 0x00, 0x05, 0xFF, 0x4F, 0xFF, 0x51, 0x00,
 #endif
+
+  /* webp image */
+  0x00, 0x08, 0x04, 'W', 'E', 'B', 'P',
 
   /* png image */
   0x00, 0x01, 0x03, 0x50, 0x4E, 0x47, // ASCII 'PNG'
