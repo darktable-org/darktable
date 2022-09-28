@@ -286,7 +286,8 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
 
 kernel void
 highlights_false_color (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                    const int rx, const int ry, const int filters, global const float *clips)
+                    const int rx, const int ry, const int filters, global const unsigned char (*const xtrans)[6],
+                    global const float *clips)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -294,7 +295,7 @@ highlights_false_color (read_only image2d_t in, write_only image2d_t out, const 
   if(x >= width || y >= height) return;
 
   const float ival = read_imagef(in, sampleri, (int2)(x, y)).x;
-  const int c = FC(y + ry, x + rx, filters);
+  const int c = (filters == 9u) ? FCxtrans(y + ry, x + rx, xtrans) : FC(y + ry, x + rx, filters);
   float oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
 
   write_imagef (out, (int2)(x, y), oval);
