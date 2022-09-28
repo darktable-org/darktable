@@ -433,8 +433,6 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     {
       float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, border));
       int flags = dt_conf_get_int(DT_MASKS_CONF(form->type, ellipse, flags));
-      radius_a = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_a));
-      radius_b = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_b));
 
       const float reference = (flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f / fmin(radius_a, radius_b) : 1.0f);
       if(!up && masks_border > 0.001f * reference)
@@ -2123,32 +2121,53 @@ static void _ellipse_modify_property(dt_masks_form_t *const form, dt_masks_prope
 {
   float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
 
-  dt_masks_point_ellipse_t *ellipse = (form->points)->data;
+  dt_masks_point_ellipse_t *ellipse = form->points ? form->points->data : NULL;
+
+  float radius_a = ellipse ? ellipse->radius[0] : dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_a));
+  float radius_b = ellipse ? ellipse->radius[1] : dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, radius_b));
 
   const float radius_limit = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
 
   switch(prop)
   {
     case DT_MASKS_PROPERTY_SIZE:;
-      const float oldradius0 = ellipse->radius[0], oldradius1 = ellipse->radius[1];
-      ellipse->radius[0] = CLAMP(ellipse->radius[0] * ratio                        , 0.001f, radius_limit);
-      ellipse->radius[1] = CLAMP(ellipse->radius[1] * ellipse->radius[0]/oldradius0, 0.001f, radius_limit);
-      ellipse->radius[0] = oldradius0 * ellipse->radius[1]/oldradius1;
-      *sum += fmaxf(ellipse->radius[0], ellipse->radius[0]);
-      *max = fminf(*max, fminf(radius_limit / ellipse->radius[0], radius_limit / ellipse->radius[1]));
-      *min = fmaxf(*min, fmaxf(0.001f / ellipse->radius[0], 0.001f / ellipse->radius[1]));
+      const float oldradiusa = radius_a, oldradiusb = radius_b;
+      radius_a = CLAMP(radius_a * ratio                , 0.001f, radius_limit);
+      radius_b = CLAMP(radius_b * radius_a / oldradiusa, 0.001f, radius_limit);
+      radius_a = oldradiusa * radius_b / oldradiusb;
+
+      if(ellipse) ellipse->radius[0] = radius_a;
+      if(ellipse) ellipse->radius[1] = radius_b;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_a), radius_a);
+      dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_b), radius_b);
+
+      *sum += fmaxf(radius_a, radius_b);
+      *max = fminf(*max, fminf(radius_limit / radius_a, radius_limit / radius_b));
+      *min = fmaxf(*min, fmaxf(0.001f / radius_a, 0.001f / radius_b));
       ++*count;
       break;
     case DT_MASKS_PROPERTY_FEATHER:;
-      const float reference = (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f/fmin(ellipse->radius[0], ellipse->radius[1]) : 1.0f);
-      ellipse->border = CLAMP(ellipse->border * ratio, 0.001f * reference, radius_limit * reference);
-      *sum += ellipse->border;
-      *max = fminf(*max, radius_limit * reference / ellipse->border);
-      *min = fmaxf(*min, 0.001f * reference / ellipse->border);
+      dt_masks_ellipse_flags_t flags = ellipse ? ellipse->flags : dt_conf_get_int(DT_MASKS_CONF(form->type, ellipse, flags));
+      const float reference = flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f/fmin(radius_a, radius_b) : 1.0f;
+      float masks_border = ellipse ? ellipse->border : dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, border));
+      masks_border = CLAMP(masks_border * ratio, 0.001f * reference, radius_limit * reference);
+
+      if(ellipse) ellipse->border = masks_border;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, border), masks_border);
+
+      *sum += masks_border;
+      *max = fminf(*max, radius_limit * reference / masks_border);
+      *min = fmaxf(*min, 0.001f * reference / masks_border);
       ++*count;
       break;
-    case DT_MASKS_PROPERTY_ROTATION:
-      *sum += (ellipse->rotation = fmodf(ellipse->rotation + new_val - old_val, 360.0f));
+    case DT_MASKS_PROPERTY_ROTATION:;
+      float rotation = ellipse ? ellipse->rotation : dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, rotation));
+      rotation = fmodf(rotation + new_val - old_val, 360.0f);
+
+      if(ellipse) ellipse->rotation = rotation;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), rotation);
+
+      *sum += rotation;
       ++*count;
       break;
     default:;

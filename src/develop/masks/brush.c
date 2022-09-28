@@ -2907,6 +2907,18 @@ static void _brush_modify_property(dt_masks_form_t *const form, dt_masks_propert
   switch(prop)
   {
     case DT_MASKS_PROPERTY_SIZE:
+      if(gui->creation)
+      {
+        float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border));
+        masks_border = MAX(BORDER_MIN, MIN(masks_border * ratio, BORDER_MAX));
+        dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
+
+        *sum += 2.0f * masks_border;
+        *max = fminf(*max, BORDER_MAX / masks_border);
+        *min = fmaxf(*min, BORDER_MIN / masks_border);
+        ++*count;
+      }
+      else
       for(GList *l = form->points; l; l = g_list_next(l))
       {
         if(gui->point_selected == -1 || gui->point_selected == pts_number)
@@ -2923,6 +2935,18 @@ static void _brush_modify_property(dt_masks_form_t *const form, dt_masks_propert
       }
       break;
     case DT_MASKS_PROPERTY_HARDNESS:
+      if(gui->creation)
+      {
+        float masks_hardness = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
+        masks_hardness = MAX(BORDER_MIN, MIN(masks_hardness * ratio, BORDER_MAX));
+        dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
+
+        *sum += masks_hardness;
+        *max = fminf(*max, HARDNESS_MAX / masks_hardness);
+        *min = fmaxf(*min, HARDNESS_MIN / masks_hardness);
+        ++*count;
+      }
+      else
       for(GList *l = form->points; l; l = g_list_next(l))
       {
         if(gui->point_selected == -1 || gui->point_selected == pts_number)

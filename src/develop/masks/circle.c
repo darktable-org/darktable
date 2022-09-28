@@ -1396,24 +1396,35 @@ static void _circle_modify_property(dt_masks_form_t *const form, dt_masks_proper
 {
   float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
 
-  dt_masks_point_circle_t *circle = (form->points)->data;
+  dt_masks_point_circle_t *circle = form->points ? form->points->data : NULL;
+
+  float masks_size = circle ? circle->radius : dt_conf_get_float(DT_MASKS_CONF(form->type, circle, size));
 
   switch(prop)
   {
     case DT_MASKS_PROPERTY_SIZE:;
       const float max_mask_size = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
-      circle->radius = CLAMP(circle->radius * ratio, 0.001f, max_mask_size);
-      *sum += circle->radius;
-      *max = fminf(*max, max_mask_size / circle->radius);
-      *min = fmaxf(*min, 0.001f / circle->radius);
+      masks_size = CLAMP(masks_size * ratio, 0.001f, max_mask_size);
+
+      if(circle) circle->radius = masks_size;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), masks_size);
+
+      *sum += masks_size;
+      *max = fminf(*max, max_mask_size / masks_size);
+      *min = fmaxf(*min, 0.001f / masks_size);
       ++*count;
       break;
     case DT_MASKS_PROPERTY_FEATHER:;
       const float max_mask_border = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
-      circle->border = CLAMP(circle->border * ratio, 0.0005f, max_mask_border);
-      *sum += circle->border / circle->radius;
-      *max = fminf(*max, max_mask_border / circle->border);
-      *min = fmaxf(*min, 0.0005f / circle->border);
+      float masks_border = circle ? circle->border : dt_conf_get_float(DT_MASKS_CONF(form->type, circle, border));
+      masks_border = CLAMP(masks_border * ratio, 0.0005f, max_mask_border);
+
+      if(circle) circle->border = masks_border;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), masks_border);
+
+      *sum += masks_border / masks_size;
+      *max = fminf(*max, max_mask_border / masks_border);
+      *min = fmaxf(*min, 0.0005f / masks_border);
       ++*count;
       break;
     default:;
