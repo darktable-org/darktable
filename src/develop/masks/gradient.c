@@ -1469,27 +1469,43 @@ static void _gradient_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const
 
 static void _gradient_modify_property(dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max)
 {
-  dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
+  dt_masks_point_gradient_t *gradient = form->points ? form->points->data : NULL;
 
   switch(prop)
   {
     case DT_MASKS_PROPERTY_CURVATURE:;
-      gradient->curvature = CLAMP(gradient->curvature + new_val - old_val, -2.0f, 2.0f);
-      *sum += gradient->curvature * .5;
-      *max = fminf(*max,  2.0f - gradient->curvature);
-      *min = fmaxf(*min, -2.0f - gradient->curvature);
+      float curvature = gradient ? gradient->curvature : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, curvature));
+      curvature = CLAMP(curvature + new_val - old_val, -2.0f, 2.0f);
+
+      if(gradient) gradient->curvature = curvature;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, curvature), curvature);
+
+      *sum += curvature * 0.5;
+      *max = fminf(*max,  1.0f - 0.5 * curvature);
+      *min = fmaxf(*min, -1.0f - 0.5 * curvature);
       ++*count;
       break;
     case DT_MASKS_PROPERTY_COMPRESSION:;
       float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
-      gradient->compression = CLAMP(gradient->compression * ratio, 0.001f, 1.0f);
-      *sum += gradient->compression;
-      *max = fminf(*max, 1.0f / gradient->compression);
-      *min = fmaxf(*min, 0.0005f / gradient->compression);
+      float compression = gradient ? gradient->compression : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, compression));
+      compression = CLAMP(compression * ratio, 0.001f, 1.0f);
+
+      if(gradient) gradient->compression = compression;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, compression), compression);
+
+      *sum += compression;
+      *max = fminf(*max, 1.0f / compression);
+      *min = fmaxf(*min, 0.0005f / compression);
       ++*count;
       break;
-    case DT_MASKS_PROPERTY_ROTATION:
-      *sum += (gradient->rotation = fmodf(gradient->rotation - new_val + old_val, 360.0f));
+    case DT_MASKS_PROPERTY_ROTATION:;
+      float rotation = gradient ? gradient->rotation : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, rotation));
+      rotation = fmodf(rotation + new_val - old_val, 360.0f);
+
+      if(gradient) gradient->rotation = rotation;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, rotation), rotation);
+
+      *sum += rotation;
       ++*count;
       break;
     default:;

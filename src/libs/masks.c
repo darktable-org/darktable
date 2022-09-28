@@ -132,7 +132,7 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
   if(!gui) return;
   if(!form) return;
 
-  int count = 0;
+  int count = 0, pos = 0;
   float sum = 0, min = _masks_properties[prop].min, max = _masks_properties[prop].max;
   if(_masks_properties[prop].relative)
   {
@@ -145,7 +145,9 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     min -= _masks_properties[prop].max;
   }
 
-  int pos = 0;
+  if(gui->creation && form->functions && form->functions->modify_property)
+    form->functions->modify_property(form, prop, d->last_value[prop], value, &sum, &count, &min, &max);
+  else
   for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
@@ -194,13 +196,13 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     ++darktable.gui->reset;
     if(_masks_properties[prop].relative)
     {
-      max *= d->last_value[prop];
-      min *= d->last_value[prop];
+      max *= sum / count;
+      min *= sum / count;
     }
     else
     {
-      max += d->last_value[prop];
-      min += d->last_value[prop];
+      max += sum / count;
+      min += sum / count;
     }
     dt_bauhaus_slider_set_soft_range(widget, min, max);
 
@@ -1709,12 +1711,14 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, struct dt_iop_mod
   gtk_tree_selection_unselect_all(selection);
   lm->gui_reset = 0;
 
-  // we go through all nodes
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
+  if(!model) return;
+
   lm->gui_reset = 1 - throw_event;
   GtkTreeIter iter;
-  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
 
+  // we go through all nodes
   if(valid)
   {
     gtk_tree_view_expand_all(GTK_TREE_VIEW(lm->treeview));
