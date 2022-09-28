@@ -181,13 +181,11 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 
   if(count)
   {
-    if(value != d->last_value[prop] && sum / count != d->last_value[prop])
+    if(value != d->last_value[prop] && sum / count != d->last_value[prop] && prop != DT_MASKS_PROPERTY_OPACITY)
     {
-      if(prop != DT_MASKS_PROPERTY_OPACITY)
-      {
-        if(gui->show_all_feathers) g_source_remove(gui->show_all_feathers);
-        gui->show_all_feathers = g_timeout_add_seconds(2, _timeout_show_all_feathers, gui);
-      }
+      if(gui->show_all_feathers) g_source_remove(gui->show_all_feathers);
+      gui->show_all_feathers = g_timeout_add_seconds(2, _timeout_show_all_feathers, gui);
+
       // we save the new parameters
       dt_dev_add_masks_history_item(darktable.develop, dev->gui_module, TRUE);
       dt_masks_update_image(darktable.develop);

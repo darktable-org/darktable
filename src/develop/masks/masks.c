@@ -1760,11 +1760,14 @@ float dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, float am
     if(fpt->formid == id)
     {
       const float opacity = CLAMP(fpt->opacity + amount, 0.05f, 1.0f);
-      fpt->opacity = opacity;
-      const int opacitypercent = opacity * 100;
-      dt_toast_log(_("opacity: %d%%"), opacitypercent);
-      dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
-      dt_masks_update_image(darktable.develop);
+      if(opacity != fpt->opacity)
+      {
+        fpt->opacity = opacity;
+        const int opacitypercent = opacity * 100;
+        dt_toast_log(_("opacity: %d%%"), opacitypercent);
+        dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
+        dt_masks_update_image(darktable.develop);
+      }
       return opacity;
     }
   }
