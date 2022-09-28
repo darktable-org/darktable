@@ -174,6 +174,10 @@ static void _ellipse_get_distance(float x, float y, float as, dt_masks_form_gui_
     const float cy = y - gpt->points[k * 2 + 1];
     const float dd = sqf(cx) + sqf(cy);
     *dist = fminf(*dist, dd);
+    const float by = y - gpt->border[k * 2 + 1];
+    const float bx = x - gpt->border[k * 2];
+    const float bd = sqf(bx) + sqf(by);
+    *dist = fminf(*dist, bd);
   }
 
   *inside_source = 0;
