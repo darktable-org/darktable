@@ -277,7 +277,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_xtrans = NULL;
-
+  cl_mem dev_clips = NULL;
   // this works for bayer and X-Trans sensors
   if(visualizing)
   {
@@ -287,10 +287,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                        d->clip * (c[BLUE]  <= 0.0f ? 1.0f : c[BLUE]),
                        d->clip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]) };
 
-    cl_mem dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
+    dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
     if(dev_clips == NULL) goto error;
 
-    // bayer sensor raws with LCH mode
+    dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+    if(dev_xtrans == NULL) goto error;
+
     size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -299,7 +301,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 4, sizeof(int), (void *)&roi_out->x);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 5, sizeof(int), (void *)&roi_out->y);
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 6, sizeof(int), (void *)&filters);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 7, sizeof(cl_mem), (void *)&dev_clips);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_lch_xtrans, 7, sizeof(cl_mem), (void *)&dev_xtrans);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 8, sizeof(cl_mem), (void *)&dev_clips);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_false_color, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -307,6 +310,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
     dt_opencl_release_mem_object(dev_clips);
+    dt_opencl_release_mem_object(dev_xtrans);
     return TRUE;
   }
 
@@ -418,6 +422,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
+  dt_opencl_release_mem_object(dev_clips);
   dt_opencl_release_mem_object(dev_xtrans);
   dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
@@ -1903,12 +1908,14 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
 
 static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         const uint32_t filters, dt_iop_highlights_data_t *data)
+                         dt_iop_highlights_data_t *data)
 {
+  const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
+  const uint32_t filters = piece->pipe->dsc.filters;
+  const gboolean is_xtrans = (filters == 9u);
+
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
-  const size_t width = roi_out->width;
-  const size_t height = roi_out->height;
   const float clip = data->clip;
   const float *cf = piece->pipe->dsc.temperature.coeffs;
   const float clips[4] = { clip * (cf[RED]   <= 0.0f ? 1.0f : cf[RED]),
@@ -1917,18 +1924,18 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
                            clip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]) };
 
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in, out) \
-  dt_omp_sharedconst(height, width, filters, clips) \
-  schedule(simd:static) aligned(in, out : 64)
+  #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, clips, roi_in) \
+  dt_omp_sharedconst(filters, xtrans, is_xtrans) \
+  schedule(static)
 #endif
-  for(size_t row = 0; row < height; row++)
+  for(size_t row = 0; row < roi_in->height; row++)
   {
-    for(size_t col = 0, i = row*width; col < width; col++, i++)
+    for(size_t col = 0, i = row * roi_in->width; col < roi_in->width; col++, i++)
     {
-      const int c = FC(row, col, filters);
+      const int c = is_xtrans ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
       const float ival = in[i];
-      out[i] = (ival < clips[c]) ? 0.2f * ival : 1.0f;
+      out[i] = (ival < clips[c]) ? 0.01f * ival : 1.0f;
     }
   }
 }
@@ -1947,7 +1954,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(visualizing)
   {
-    process_visualize(piece, ivoid, ovoid, roi_in, roi_out, filters, data);
+    process_visualize(piece, ivoid, ovoid, roi_in, roi_out, data);
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
     return;
