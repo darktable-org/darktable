@@ -3746,7 +3746,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
         if(gtk_widget_event(focused_widget, event))
           return TRUE;
 
-        if(GTK_IS_ENTRY(focused_widget) &&
+        if((GTK_IS_ENTRY(focused_widget) || GTK_IS_TREE_VIEW(focused_widget)) &&
            (event->key.keyval == GDK_KEY_Tab ||
             event->key.keyval == GDK_KEY_KP_Tab ||
             event->key.keyval == GDK_KEY_ISO_Left_Tab))
