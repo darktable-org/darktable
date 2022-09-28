@@ -61,6 +61,20 @@ static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t
   const float cy = y - gpt->points[1];
   *dist = sqf(cx) + sqf(cy);
 
+  // compute distances from resize point
+
+  const float dx = x - gpt->points[2];
+  const float dy = y - gpt->points[3];
+  const float dd = sqf(dx) + sqf(dy);
+  *dist = fminf(*dist, dd);
+
+  // compute distances from feather point
+
+  const float bx = x - gpt->border[2];
+  const float by = y - gpt->border[3];
+  const float bd = sqf(bx) + sqf(by);
+  *dist = fminf(*dist, bd);
+
   // we check if it's inside borders
   if(!dt_masks_point_in_form_exact(x, y, gpt->border, 1, gpt->border_count)) return;
 
