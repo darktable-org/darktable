@@ -2552,10 +2552,13 @@ static void _slider_add_step(GtkWidget *widget, float delta, guint state, gboole
 
   if(force || dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
   {
-    if(d->factor > 0 ? d->pos < 0.0001 : d->pos > 0.9999) d->min = d->soft_min;
-    if(d->factor < 0 ? d->pos < 0.0001 : d->pos > 0.9999) d->max = d->soft_max;
+    if(d->factor > 0 ? d->pos < 0.0001 : d->pos > 0.9999) d->min = d->min > d->soft_min ? d->max : d->soft_min;
+    if(d->factor < 0 ? d->pos < 0.0001 : d->pos > 0.9999) d->max = d->max < d->soft_max ? d->min : d->soft_max;
     dt_bauhaus_slider_set(widget, value + delta);
   }
+  else if(!strcmp(d->format,"°") && (d->max - d->min) * d->factor == 360.0f
+          && fabsf(value + delta)/(d->max - d->min) < 2)
+    dt_bauhaus_slider_set(widget, fmodf(value + delta + d->max - 2*d->min, d->max - d->min) + d->min);
   else
     dt_bauhaus_slider_set(widget, CLAMP(value + delta, d->min, d->max));
 }
