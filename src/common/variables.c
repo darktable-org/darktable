@@ -596,6 +596,11 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   {
     if(dt_opencl_is_enabled())
       result = g_strdup(_("yes"));
+    else if(params->escape_markup)
+    {
+      result = g_markup_printf_escaped("<span foreground='red'><b>%s</b></span>", _("no"));
+      escape = FALSE;
+    }
     else
       result = g_strdup(_("no"));
   }
