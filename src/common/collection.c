@@ -271,7 +271,8 @@ int dt_collection_update(const dt_collection_t *collection)
 
   /* build select part includes where */
   /* COLOR and PATH */
-  if(collection->params.sorts[DT_COLLECTION_SORT_COLOR] && collection->params.sorts[DT_COLLECTION_SORT_PATH]
+  if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
+     && collection->params.sorts[DT_COLLECTION_SORT_PATH]
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -283,7 +284,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* COLOR and TITLE */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR] && collection->params.sorts[DT_COLLECTION_SORT_TITLE]
+  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
+          && collection->params.sorts[DT_COLLECTION_SORT_TITLE]
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -308,7 +310,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* PATH and TITLE */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE] && collection->params.sorts[DT_COLLECTION_SORT_PATH]
+  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
+          && collection->params.sorts[DT_COLLECTION_SORT_PATH]
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
