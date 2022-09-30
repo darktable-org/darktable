@@ -3143,7 +3143,7 @@ static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
@@ -3218,7 +3218,7 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   cl_mem dev_out2 = NULL;
   float *sumsum = NULL;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   if(data->green_eq == DT_IOP_GREEN_EQ_BOTH)
   {
@@ -3398,7 +3398,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   cl_mem VP_diff = NULL;
   cl_mem HQ_diff = NULL;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   if(qual_flags & DT_DEMOSAIC_FULL_SCALE)
   {
@@ -3730,7 +3730,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   cl_mem dev_tmp = NULL;
   cl_mem dev_med = NULL;
   cl_mem dev_green_eq = NULL;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   if(qual_flags & DT_DEMOSAIC_FULL_SCALE)
   {
@@ -3775,6 +3775,9 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     }
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
     {
+      cl_mem dev_xtrans = dt_opencl_copy_host_to_device_constant(devid, sizeof(piece->pipe->dsc.xtrans), piece->pipe->dsc.xtrans);
+      if(dev_xtrans == NULL) goto error;
+
       size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 1, sizeof(cl_mem), &dev_aux);
@@ -3783,8 +3786,10 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 4, sizeof(int), (void *)&roi_in->x);
       dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 5, sizeof(int), (void *)&roi_in->y);
       dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 6, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 7, sizeof(cl_mem), (void *)&dev_xtrans);
 
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_passthrough_color, sizes);
+      dt_opencl_release_mem_object(dev_xtrans);
       if(err != CL_SUCCESS) goto error;
     }
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PPG)
@@ -4011,7 +4016,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   cl_mem dev_code = NULL;
   cl_mem dev_ips = NULL;
   cl_mem dev_green_eq = NULL;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   int32_t(*lookup)[16][32] = NULL;
 
@@ -4427,7 +4432,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   cl_mem dev_aux = NULL;
   cl_mem dev_edge_in = NULL;
   cl_mem dev_edge_out = NULL;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   cl_mem *dev_rgb = dev_rgbv;
 
