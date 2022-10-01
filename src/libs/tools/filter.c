@@ -86,6 +86,12 @@ static GtkWidget *_lib_filter_get_count(dt_lib_module_t *self)
   return d->count;
 }
 
+static gboolean _pref_show(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  dt_view_filtering_show_pref_menu(darktable.view_manager, widget);
+  return TRUE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -94,6 +100,11 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_valign(self->widget, GTK_ALIGN_CENTER);
+
+  GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
+  gtk_widget_set_tooltip_text(bt, _("filters preferences"));
+  g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_pref_show), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), bt, FALSE, TRUE, 0);
 
   d->filter_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(d->filter_box, "header-rule-box");

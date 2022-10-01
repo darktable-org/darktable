@@ -779,6 +779,7 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
   // add new rule
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
   const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
+  const int top = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "topbar"));
   char confname[200] = { 0 };
 
   if(mode >= 0)
@@ -796,7 +797,7 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", d->nb_rules);
     dt_conf_set_int(confname, 0);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", d->nb_rules);
-    dt_conf_set_int(confname, 0);
+    dt_conf_set_int(confname, top);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", d->nb_rules);
     dt_conf_set_string(confname, "");
     d->nb_rules++;
@@ -825,6 +826,7 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
     gtk_label_set_xalign(GTK_LABEL(child), xalign);
     g_object_set_data(G_OBJECT(smt), "collect_id", GINT_TO_POINTER(id));
+    g_object_set_data(G_OBJECT(smt), "topbar", GINT_TO_POINTER(0));
     if(data) g_object_set_data(G_OBJECT(smt), "collect_data", data);
     g_signal_connect(G_OBJECT(smt), "activate", callback, self);
   }
@@ -903,25 +905,10 @@ static void _rule_populate_prop_combo_add(GtkWidget *w, const dt_collection_prop
   dt_bauhaus_combobox_add_full(w, dt_collection_name(prop), DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE,
                                GUINT_TO_POINTER(prop), NULL, TRUE);
 }
-static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
-{
-  GtkWidget *w = rule->w_prop;
-  // first we cleanup existing entries
-  dt_bauhaus_combobox_clear(w);
-#define ADD_COLLECT_ENTRY(value) _rule_populate_prop_combo_add(w, value);
 
-  // in the case of a pinned rule, we only add the selected entry
-  if(rule->topbar)
-  {
-    ADD_COLLECT_ENTRY(rule->prop);
-    gtk_widget_set_tooltip_text(w,
-                                _("rule property\nthis can't be changed as the rule is pinned into the toolbar"));
-    rule->manual_widget_set++;
-    dt_bauhaus_combobox_set_from_value(rule->w_prop, rule->prop);
-    rule->manual_widget_set--;
-    return;
-  }
-  // otherwise we add all implemented rules
+static void _populate_rules_combo(GtkWidget *w)
+{
+#define ADD_COLLECT_ENTRY(value) _rule_populate_prop_combo_add(w, value);
   gtk_widget_set_tooltip_text(w, _("rule property"));
 
   dt_bauhaus_combobox_add_section(w, _("files"));
@@ -975,6 +962,27 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
 
 #undef ADD_COLLECT_ENTRY
+}
+
+static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
+{
+  GtkWidget *w = rule->w_prop;
+  // first we cleanup existing entries
+  dt_bauhaus_combobox_clear(w);
+
+  // in the case of a pinned rule, we only add the selected entry
+  if(rule->topbar)
+  {
+    _rule_populate_prop_combo_add(w, rule->prop);
+    gtk_widget_set_tooltip_text(w,
+                                _("rule property\nthis can't be changed as the rule is pinned into the toolbar"));
+    rule->manual_widget_set++;
+    dt_bauhaus_combobox_set_from_value(rule->w_prop, rule->prop);
+    rule->manual_widget_set--;
+    return;
+  }
+  // otherwise we add all implemented rules
+  _populate_rules_combo(w);
 
   rule->manual_widget_set++;
   dt_bauhaus_combobox_set_from_value(rule->w_prop, rule->prop);
@@ -1133,6 +1141,25 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
   }
   else
     return FALSE;
+
+  return TRUE;
+}
+
+static gboolean _topbar_rule_remove(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+  if(rule->manual_widget_set) return TRUE;
+
+  // unpin the rule
+  rule->topbar = FALSE;
+  _topbar_update(self);
+
+  // remove the rule
+  _event_rule_close(widget, NULL, self);
+
+  // remove the entry from the popover
+  GtkWidget *hb = gtk_widget_get_parent(widget);
+  gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(hb)), hb);
 
   return TRUE;
 }
@@ -1496,6 +1523,155 @@ static void _event_history_show(GtkWidget *widget, gpointer user_data)
   }
 
   dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+}
+
+static GtkWidget *_topbar_menu_new_rule(dt_lib_filtering_rule_t *rule, dt_lib_module_t *self)
+{
+  GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *lb = gtk_label_new(dt_collection_name(rule->prop));
+  gtk_label_set_xalign(GTK_LABEL(lb), 0.0f);
+  gtk_box_pack_start(GTK_BOX(hb), lb, TRUE, TRUE, 0);
+  GtkWidget *btr = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+  g_object_set_data(G_OBJECT(btr), "rule", rule);
+  g_signal_connect(G_OBJECT(btr), "button-press-event", G_CALLBACK(_topbar_rule_remove), self);
+  gtk_box_pack_start(GTK_BOX(hb), btr, FALSE, TRUE, 0);
+  return hb;
+}
+
+static void _topbar_rule_add(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+
+  const int prop = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
+  if(prop < 0) return;
+
+  // add the new rule
+  g_object_set_data(G_OBJECT(widget), "collect_id", GINT_TO_POINTER(prop));
+  g_object_set_data(G_OBJECT(widget), "topbar", GINT_TO_POINTER(1));
+  _event_append_rule(widget, self);
+
+  // reset the combobox
+  dt_bauhaus_combobox_set(widget, 0);
+
+  // add a new item to the popover list
+  gtk_box_pack_start(GTK_BOX(gtk_widget_get_parent(widget)),
+                     _topbar_menu_new_rule(&d->rule[d->nb_rules - 1], self), TRUE, TRUE, 0);
+  gtk_widget_show_all(gtk_widget_get_parent(widget));
+}
+
+static void _topbar_populate_prop_combo_add(GtkWidget *w, const dt_collection_properties_t prop)
+{
+  if(!_filters_get(prop)) return;
+  dt_bauhaus_combobox_add_full(w, dt_collection_name(prop), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                               GUINT_TO_POINTER(prop), NULL, TRUE);
+}
+
+static void _topbar_populate_rules_combo(GtkWidget *w)
+{
+#define ADD_COLLECT_ENTRY(value) _topbar_populate_prop_combo_add(w, value);
+  gtk_widget_set_tooltip_text(w, _("rule property"));
+
+  dt_bauhaus_combobox_add_section(w, _("files"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILMROLL);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOLDERS);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILENAME);
+
+  dt_bauhaus_combobox_add_section(w, _("metadata"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    const gchar *name = dt_metadata_get_name(keyid);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    const int meta_type = dt_metadata_get_type(keyid);
+    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
+    {
+      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
+    }
+  }
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_RANGE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TEXTSEARCH);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
+
+  /*dt_bauhaus_combobox_add_section(w, _("times"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);*/
+
+  dt_bauhaus_combobox_add_section(w, _("capture details"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
+
+  dt_bauhaus_combobox_add_section(w, _("darktable"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
+
+#undef ADD_COLLECT_ENTRY
+}
+
+static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
+{
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+
+  // initialize the popover
+  GtkWidget *pop = gtk_popover_new(bt);
+  g_object_set(G_OBJECT(pop), "transitions-enabled", FALSE, NULL);
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_container_add(GTK_CONTAINER(pop), vbox);
+
+  // fill the popover with all pinned rules
+  GtkWidget *lb = gtk_label_new(_("Shown filters"));
+  dt_gui_add_class(lb, "dt_section_label");
+  gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
+
+  for(int i = 0; i < d->nb_rules; i++)
+  {
+    if(d->rule[i].topbar)
+    {
+      gtk_box_pack_start(GTK_BOX(vbox), _topbar_menu_new_rule(&d->rule[i], self), TRUE, TRUE, 0);
+    }
+  }
+
+  // the "add new rule" part
+  GtkWidget *nr = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(nr, NULL, _("new filter"));
+  dt_bauhaus_combobox_add_full(nr, "", DT_BAUHAUS_COMBOBOX_ALIGN_LEFT, GUINT_TO_POINTER(-1), NULL, TRUE);
+  _topbar_populate_rules_combo(nr);
+  g_signal_connect(G_OBJECT(nr), "value-changed", G_CALLBACK(_topbar_rule_add), self);
+  gtk_box_pack_end(GTK_BOX(vbox), nr, TRUE, TRUE, 0);
+
+  // show the popover
+  GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+
+  int x, y;
+  GdkWindow *pointer_window = gdk_device_get_window_at_position(pointer, &x, &y);
+  gpointer pointer_widget = NULL;
+  if(pointer_window) gdk_window_get_user_data(pointer_window, &pointer_widget);
+
+  GdkRectangle rect = { gtk_widget_get_allocated_width(bt) / 2, gtk_widget_get_allocated_height(bt), 1, 1 };
+
+  if(pointer_widget && bt != pointer_widget)
+    gtk_widget_translate_coordinates(pointer_widget, bt, x, y, &rect.x, &rect.y);
+
+  gtk_popover_set_pointing_to(GTK_POPOVER(pop), &rect);
+
+  gtk_widget_show_all(pop);
 }
 
 // save a sort rule inside the conf
@@ -2011,6 +2187,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.module_filtering.module = self;
   darktable.view_manager->proxy.module_filtering.update = _filtering_gui_update;
   darktable.view_manager->proxy.module_filtering.reset_filter = _proxy_reset_filter;
+  darktable.view_manager->proxy.module_filtering.show_pref_menu = _topbar_show_pref_menu;
 
   d->last_where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
 
