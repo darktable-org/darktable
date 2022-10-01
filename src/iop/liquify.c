@@ -527,7 +527,7 @@ typedef struct
 } distort_params_t;
 
 static void _distort_paths(const struct dt_iop_module_t *module,
-                            const distort_params_t *params, const dt_iop_liquify_params_t *p)
+                           const distort_params_t *params, const dt_iop_liquify_params_t *p)
 {
   int len = 0;
 
@@ -645,10 +645,10 @@ static void _distort_paths(const struct dt_iop_module_t *module,
 }
 
 static void distort_paths_raw_to_piece(const struct dt_iop_module_t *module,
-                                        dt_dev_pixelpipe_t *pipe,
-                                        const float roi_in_scale,
-                                        dt_iop_liquify_params_t *p,
-                                        const gboolean from_distort_transform)
+                                       dt_dev_pixelpipe_t *pipe,
+                                       const float roi_in_scale,
+                                       dt_iop_liquify_params_t *p,
+                                       const gboolean from_distort_transform)
 {
   const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, DT_DEV_TRANSFORM_DIR_BACK_EXCL, from_distort_transform };
   _distort_paths(module, &params, p);
@@ -1436,7 +1436,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   if(map_extent.width != 0 && map_extent.height != 0)
   {
-    int ch = piece->colors;
+    const int ch = piece->colors;
     piece->colors = 1;
     apply_global_distortion_map(self, piece, in, out, roi_in, roi_out, map, &map_extent);
     piece->colors = ch;
@@ -1880,7 +1880,7 @@ static void _draw_paths(dt_iop_module_t *module,
                         dt_iop_liquify_params_t *p,
                         GList *layers)
 {
-  const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+  const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
@@ -2376,18 +2376,18 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
       else if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT)
       {
         const float complex p = warp->point - warp->strength;
-        CHECK_HIT_PT(warp->strength +  (float)DT_PIXEL_APPLY_DPI(5) * (p / cabsf(p)));
+        CHECK_HIT_PT(warp->strength + (float)DT_PIXEL_APPLY_DPI(5) * (p / cabsf(p)));
       }
 
       if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
       {
-        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT1 &&
-            !(prev && prev->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH))
+        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT1
+           && !(prev && prev->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH))
         {
           CHECK_HIT_PT(data->node.ctrl1);
         }
-        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT2 &&
-            data->header.node_type != DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH)
+        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT2
+           && data->header.node_type != DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH)
         {
           CHECK_HIT_PT(data->node.ctrl2);
         }
@@ -2602,10 +2602,10 @@ static void smooth_paths_linsys(dt_iop_liquify_params_t *params)
     if(n < 2)
       continue;
 
-    float complex *pt   = calloc(n, sizeof(float complex));
-    float complex *c1   = calloc(n, sizeof(float complex));
-    float complex *c2   = calloc(n, sizeof(float complex));
-    int *eqn            = calloc(n, sizeof(int));
+    float complex *pt = calloc(n, sizeof(float complex));
+    float complex *c1 = calloc(n, sizeof(float complex));
+    float complex *c2 = calloc(n, sizeof(float complex));
+    int *eqn          = calloc(n, sizeof(int));
     size_t idx = 0;
 
     while(node)
@@ -2653,7 +2653,7 @@ static void smooth_paths_linsys(dt_iop_liquify_params_t *params)
       else if(lastseg && !autosmooth && next_autosmooth)             eqn[idx] = 7;
       else if(autosmooth && !next_autosmooth)                        eqn[idx] = 6;
       else if(!autosmooth && next_autosmooth)                        eqn[idx] = 4;
-      else                                                            eqn[idx] = 2;
+      else                                                           eqn[idx] = 2;
 
       ++idx;
       node = node_next(params, node);
@@ -3199,7 +3199,7 @@ int button_pressed(struct dt_iop_module_t *module,
   // Line tool or curve tool
 
   if(which == 1 && (gtk_toggle_button_get_active(g->btn_line_tool)
-                     || gtk_toggle_button_get_active(g->btn_curve_tool)))
+                    || gtk_toggle_button_get_active(g->btn_curve_tool)))
   {
     // always end dragging before manipulating the path list to avoid
     // dangling pointers
@@ -3781,4 +3781,3 @@ static void _liquify_cairo_paint_node_tool(cairo_t *cr, const gint x, const gint
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
