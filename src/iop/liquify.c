@@ -3227,33 +3227,6 @@ int button_pressed(struct dt_iop_module_t *module,
     goto done;
   }
 
-  // Node tool
-
-  if(gtk_toggle_button_get_active(g->btn_node_tool))
-  {
-    if(which == 1 && dt_modifier_is(g->last_mouse_mods, GDK_CONTROL_MASK) &&
-        (g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT))
-    {
-      // cycle node type: smooth -> cusp etc.
-      dt_liquify_path_data_t *node = g->last_hit.elem;
-      node->header.node_type = (node->header.node_type + 1) % DT_LIQUIFY_NODE_TYPE_LAST;
-      handled = 1;
-      goto done;
-    }
-    if(which == 1 && dt_modifier_is(g->last_mouse_mods, GDK_CONTROL_MASK) &&
-        (g->last_hit.layer == DT_LIQUIFY_LAYER_STRENGTHPOINT))
-    {
-      // cycle warp type: linear -> radial etc.
-      if(g->last_hit.elem->header.type == DT_LIQUIFY_PATH_MOVE_TO_V1)
-      {
-        dt_liquify_warp_t *warp = &g->last_hit.elem->warp;
-        warp->type = (warp->type + 1) % DT_LIQUIFY_WARP_TYPE_LAST;
-      }
-      handled = 1;
-      goto done;
-    }
-  }
-
 done:
   dt_iop_gui_leave_critical_section(module);
   return handled;
@@ -3493,6 +3466,26 @@ int button_released(struct dt_iop_module_t *module,
 
           mix_warps(warp2, warp1, warp3, midpoint, t);
           node_insert_before(&g->params, e, tmp);
+
+        }
+      }
+      else if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
+      {
+        // cycle node type: smooth -> cusp etc.
+        dt_liquify_path_data_t *e = g->last_hit.elem;
+        e->header.node_type = (e->header.node_type + 1) % DT_LIQUIFY_NODE_TYPE_LAST;
+
+        handled = 2;
+        goto done;
+      }
+      else if(g->last_hit.layer == DT_LIQUIFY_LAYER_STRENGTHPOINT)
+      {
+        // cycle warp type: linear -> radial etc.
+        dt_liquify_path_data_t *e = g->last_hit.elem;
+        if(e->header.type == DT_LIQUIFY_PATH_MOVE_TO_V1)
+        {
+          dt_liquify_warp_t *warp = &e->warp;
+          warp->type = (warp->type + 1) % DT_LIQUIFY_WARP_TYPE_LAST;
 
           handled = 2;
           goto done;
