@@ -982,7 +982,15 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   dt_masks_form_t *grp2 = dt_masks_create(DT_MASKS_GROUP);
   grp2->formid = 0;
   dt_masks_group_ungroup(grp2, grp);
-  dt_masks_change_form_gui(grp2);
+
+  // don't call dt_masks_change_form_gui because it triggers a selection change again
+  dt_masks_clear_form_gui(darktable.develop);
+  darktable.develop->form_visible = grp2;
+
+  // update sticky accels window
+  if(darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
+    dt_view_accels_refresh(darktable.view_manager);
+
   darktable.develop->form_gui->edit_mode = DT_MASKS_EDIT_FULL;
   dt_control_queue_redraw_center();
 
@@ -1038,6 +1046,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
 
     int grpid = 0;
     int depth = 0;
+    dt_masks_form_t *grp = NULL;
 
     if(nb > 0)
     {
@@ -1050,14 +1059,19 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
         if(gtk_tree_model_get_iter(model, &iter, it0))
         {
           _lib_masks_get_values(model, &iter, NULL, NULL, &grpid);
+          grp = dt_masks_get_from_id(darktable.develop, grpid);
         }
       }
       g_list_free_full(selected, (GDestroyNotify)gtk_tree_path_free);
     }
     if(depth > 1) from_group = 1;
 
-    if(nb == 0)
+    if(nb == 0 || (grp && grp->type & DT_MASKS_GROUP))
     {
+      item = gtk_menu_item_new_with_label(_("add brush"));
+      g_signal_connect(item, "activate", (GCallback)_tree_add_brush, module);
+      gtk_menu_shell_append(menu, item);
+
       item = gtk_menu_item_new_with_label(_("add circle"));
       g_signal_connect(item, "activate", (GCallback)_tree_add_circle, module);
       gtk_menu_shell_append(menu, item);
@@ -1073,96 +1087,70 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
       item = gtk_menu_item_new_with_label(_("add gradient"));
       g_signal_connect(item, "activate", (GCallback)_tree_add_gradient, module);
       gtk_menu_shell_append(menu, item);
-
-      gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
     }
 
-    if(nb == 1)
+    if(grp && grp->type & DT_MASKS_GROUP)
     {
-      dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grpid);
-      if(grp && (grp->type & DT_MASKS_GROUP))
+      // existing forms
+      gboolean has_unused_shapes = FALSE;
+      GtkWidget *menu0 = gtk_menu_new();
+      for(GList *forms = darktable.develop->forms; forms; forms = g_list_next(forms))
       {
-        item = gtk_menu_item_new_with_label(_("add brush"));
-        g_signal_connect(item, "activate", (GCallback)_tree_add_brush, module);
-        gtk_menu_shell_append(menu, item);
-
-        item = gtk_menu_item_new_with_label(_("add circle"));
-        g_signal_connect(item, "activate", (GCallback)_tree_add_circle, module);
-        gtk_menu_shell_append(menu, item);
-
-        item = gtk_menu_item_new_with_label(_("add ellipse"));
-        g_signal_connect(item, "activate", (GCallback)_tree_add_ellipse, module);
-        gtk_menu_shell_append(menu, item);
-
-        item = gtk_menu_item_new_with_label(_("add path"));
-        g_signal_connect(item, "activate", (GCallback)_tree_add_path, module);
-        gtk_menu_shell_append(menu, item);
-
-        item = gtk_menu_item_new_with_label(_("add gradient"));
-        g_signal_connect(item, "activate", (GCallback)_tree_add_gradient, module);
-        gtk_menu_shell_append(menu, item);
-
-        // existing forms
-        gboolean has_unused_shapes = FALSE;
-        GtkWidget *menu0 = gtk_menu_new();
-        for(GList *forms = darktable.develop->forms; forms; forms = g_list_next(forms))
+        dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
+        if((form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE)) || form->formid == grpid)
         {
-          dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
-          if((form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE)) || form->formid == grpid)
-          {
-            continue;
-          }
-          char str[10000] = "";
-          g_strlcat(str, form->name, sizeof(str));
-          int nbuse = 0;
+          continue;
+        }
+        char str[10000] = "";
+        g_strlcat(str, form->name, sizeof(str));
+        int nbuse = 0;
 
-          // we search were this form is used
-          for(const GList *modules = darktable.develop->iop; modules; modules = g_list_next(modules))
+        // we search were this form is used
+        for(const GList *modules = darktable.develop->iop; modules; modules = g_list_next(modules))
+        {
+          dt_iop_module_t *m = (dt_iop_module_t *)modules->data;
+          dt_masks_form_t *grp = dt_masks_get_from_id(m->dev, m->blend_params->mask_id);
+          if(grp && (grp->type & DT_MASKS_GROUP))
           {
-            dt_iop_module_t *m = (dt_iop_module_t *)modules->data;
-            dt_masks_form_t *grp = dt_masks_get_from_id(m->dev, m->blend_params->mask_id);
-            if(grp && (grp->type & DT_MASKS_GROUP))
+            for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
             {
-              for(const GList *pts = grp->points; pts; pts = g_list_next(pts))
+              dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+              if(pt->formid == form->formid)
               {
-                dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
-                if(pt->formid == form->formid)
+                if(m == module)
                 {
-                  if(m == module)
-                  {
-                    nbuse = -1;
-                    break;
-                  }
-                  if(nbuse == 0) g_strlcat(str, " (", sizeof(str));
-                  g_strlcat(str, " ", sizeof(str));
-                  gchar *module_label = dt_history_item_get_name(m);
-                  g_strlcat(str, module_label, sizeof(str));
-                  g_free(module_label);
-                  nbuse++;
+                  nbuse = -1;
+                  break;
                 }
+                if(nbuse == 0) g_strlcat(str, " (", sizeof(str));
+                g_strlcat(str, " ", sizeof(str));
+                gchar *module_label = dt_history_item_get_name(m);
+                g_strlcat(str, module_label, sizeof(str));
+                g_free(module_label);
+                nbuse++;
               }
             }
           }
-          if(nbuse != -1)
-          {
-            if(nbuse > 0) g_strlcat(str, " )", sizeof(str));
-
-            // we add the menu entry
-            item = gtk_menu_item_new_with_label(str);
-            g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
-            g_object_set_data(G_OBJECT(item), "module", module);
-            g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_tree_add_exist), grp);
-            gtk_menu_shell_append(GTK_MENU_SHELL(menu0), item);
-            has_unused_shapes = TRUE;
-          }
         }
-
-        if(has_unused_shapes)
+        if(nbuse != -1)
         {
-          item = gtk_menu_item_new_with_label(_("add existing shape"));
-          gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu0);
-          gtk_menu_shell_append(menu, item);
+          if(nbuse > 0) g_strlcat(str, " )", sizeof(str));
+
+          // we add the menu entry
+          item = gtk_menu_item_new_with_label(str);
+          g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
+          g_object_set_data(G_OBJECT(item), "module", module);
+          g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_tree_add_exist), grp);
+          gtk_menu_shell_append(GTK_MENU_SHELL(menu0), item);
+          has_unused_shapes = TRUE;
         }
+      }
+
+      if(has_unused_shapes)
+      {
+        item = gtk_menu_item_new_with_label(_("add existing shape"));
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu0);
+        gtk_menu_shell_append(menu, item);
       }
     }
 
@@ -1183,9 +1171,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
       }
       else
       {
-        // TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
-        // we can only do that after 3.8 is released.
-        item = gtk_menu_item_new_with_label(_("delete"));
+        item = gtk_menu_item_new_with_label(_("delete group"));
         g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
         gtk_menu_shell_append(menu, item);
       }
