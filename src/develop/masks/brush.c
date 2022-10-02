@@ -2380,7 +2380,7 @@ static void _brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_fo
   }
 
   // draw corners
-  if((gui->show_all_feathers || gui->group_selected == index) && gpt->points_count > nb * 3 + 2)
+  if(gui->group_selected == index && gpt->points_count > nb * 3 + 2)
   {
     for(int k = 0; k < nb; k++)
       dt_masks_draw_anchor(cr, k == gui->point_dragging || k == gui->point_selected, zoom_scale,
@@ -2423,7 +2423,7 @@ static void _brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_fo
   }
 
   // draw border and corners
-  if((gui->group_selected == index) && gpt->border_count > nb * 3 + 2)
+  if((gui->show_all_feathers || gui->group_selected == index) && gpt->border_count > nb * 3 + 2)
   {
     cairo_move_to(cr, gpt->border[nb * 6], gpt->border[nb * 6 + 1]);
 
