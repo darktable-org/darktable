@@ -1458,6 +1458,8 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 
   g_object_unref(treestore);
 
+  _update_all_properties(lm);
+
   lm->gui_reset = gui_reset;
 }
 
