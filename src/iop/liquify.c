@@ -263,7 +263,6 @@ typedef struct
 
 typedef struct
 {
-  dt_iop_liquify_params_t params;
   int node_index; // last node index inserted
 
   float complex last_mouse_pos;
@@ -1778,16 +1777,19 @@ static gboolean detect_drag(const dt_iop_liquify_gui_data_t *g, const double sca
     cabsf(pt - g->last_button1_pressed_pos) >= (GET_UI_WIDTH(MIN_DRAG) * pr_d / scale);
 }
 
-static void update_warp_count(const dt_iop_liquify_gui_data_t *g)
+static void update_warp_count(struct dt_iop_module_t *module)
 {
+  const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
+  dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;
+
   guint warp = 0, node = 0;
   for(int k=0; k<MAX_NODES; k++)
-    if(g->params.nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
+    if(p->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
       break;
     else
     {
       node++;
-      if(g->params.nodes[k].header.type == DT_LIQUIFY_PATH_MOVE_TO_V1)
+      if(p->nodes[k].header.type == DT_LIQUIFY_PATH_MOVE_TO_V1)
         warp++;
     }
   char str[10];
@@ -2262,17 +2264,16 @@ static void casteljau(const float complex *p0, float complex *p1, float complex 
   if(d < distance)                      \
   {                                     \
     distance = d;                       \
-    hit.layer = layer;                  \
-    hit.elem = data;                    \
+    hit->layer = layer;                  \
+    hit->elem = data;                    \
   }
 
-static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
-                                   dt_iop_liquify_params_t *p,
-                                   GList *layers,
-                                   const float complex *pt)
+void _hit_paths(dt_iop_module_t *module,
+                dt_iop_liquify_params_t *p,
+                GList *layers,
+                const float complex *pt,
+                dt_liquify_hit_t *hit)
 {
-  dt_liquify_hit_t hit = NOWHERE;
-
   float distance = FLT_MAX;
 
   for(const GList *l = layers; l; l = g_list_next(l))
@@ -2316,13 +2317,7 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
           if(t > 0.0f && t < 1.0f)
           {
             const float complex linepoint = cmix(lp1, lp2, t);
-            const float d = cabsf(linepoint - *pt);
-            if(d < distance)
-            {
-              distance = d;
-              hit.layer = layer;
-              hit.elem = data;
-            }
+            CHECK_HIT_PT(linepoint);
           }
         }
         else if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
@@ -2342,13 +2337,7 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
             float complex p2 = data->node.ctrl2;
             casteljau(&lp1, &p1, &p2, &curvepoint, t);
 
-            const float d = cabsf(curvepoint - *pt);
-            if(d < distance)
-            {
-              distance = d;
-              hit.layer = layer;
-              hit.elem = data;
-            }
+            CHECK_HIT_PT(curvepoint);
           }
         }
       }
@@ -2395,10 +2384,10 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
     }
   }
 
-  if(distance < DT_PIXEL_APPLY_DPI(25))
-    return hit;
-  else
-    return NOWHERE;
+  if(distance > DT_PIXEL_APPLY_DPI(25))
+  {
+    memcpy(hit, &NOWHERE, sizeof(dt_liquify_hit_t));
+  }
 }
 
 static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, const float scale, dt_iop_liquify_params_t *params)
@@ -2428,11 +2417,11 @@ static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, const float 
   g_list_free(layers);
 }
 
-static dt_liquify_hit_t _hit_test_paths(struct dt_iop_module_t *module,
-                                        dt_iop_liquify_params_t *params,
-                                        float complex pt)
+void _hit_test_paths(struct dt_iop_module_t *module,
+                     dt_iop_liquify_params_t *params,
+                     float complex pt,
+                     dt_liquify_hit_t *hit)
 {
-  dt_liquify_hit_t hit = NOWHERE;
   GList *layers = NULL;
 
   for(dt_liquify_layer_enum_t layer = 0; layer < DT_LIQUIFY_LAYER_LAST; ++layer)
@@ -2442,9 +2431,8 @@ static dt_liquify_hit_t _hit_test_paths(struct dt_iop_module_t *module,
   }
   layers = g_list_reverse(layers); // list was built in reverse order, so un-reverse it
 
-  hit = _hit_paths(module, params, layers, &pt);
+  _hit_paths(module, params, layers, &pt, hit);
   g_list_free(layers);
-  return hit;
 }
 
 /**
@@ -2707,8 +2695,9 @@ static void init_warp(dt_liquify_warp_t *warp, float complex point)
 
 static dt_liquify_path_data_t *alloc_move_to(dt_iop_module_t *module, float complex start_point)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  dt_liquify_path_data_t* m = (dt_liquify_path_data_t*)node_alloc(&g->params, &g->node_index);
+  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
+  dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;
+  dt_liquify_path_data_t* m = (dt_liquify_path_data_t*)node_alloc(p, &g->node_index);
   if(m)
   {
     m->header.type = DT_LIQUIFY_PATH_MOVE_TO_V1;
@@ -2720,8 +2709,9 @@ static dt_liquify_path_data_t *alloc_move_to(dt_iop_module_t *module, float comp
 
 static dt_liquify_path_data_t *alloc_line_to(dt_iop_module_t *module, float complex end_point)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  dt_liquify_path_data_t* l = (dt_liquify_path_data_t*)node_alloc(&g->params, &g->node_index);
+  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
+  dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;
+  dt_liquify_path_data_t* l = (dt_liquify_path_data_t*)node_alloc(p, &g->node_index);
   if(l)
   {
     l->header.type = DT_LIQUIFY_PATH_LINE_TO_V1;
@@ -2733,8 +2723,9 @@ static dt_liquify_path_data_t *alloc_line_to(dt_iop_module_t *module, float comp
 
 static dt_liquify_path_data_t *alloc_curve_to(dt_iop_module_t *module, float complex end_point)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  dt_liquify_path_data_t* c = (dt_liquify_path_data_t*)node_alloc(&g->params, &g->node_index);
+  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
+  dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;
+  dt_liquify_path_data_t* c = (dt_liquify_path_data_t*)node_alloc(p, &g->node_index);
   if(c)
   {
     c->header.type = DT_LIQUIFY_PATH_CURVE_TO_V1;
@@ -2762,14 +2753,15 @@ static float get_zoom_scale(dt_develop_t *develop)
 }
 
 void gui_post_expose(struct dt_iop_module_t *module,
-                      cairo_t *cr,
-                      int32_t width,
-                      int32_t height,
-                      int32_t pointerx,
-                      int32_t pointery)
+                     cairo_t *cr,
+                     int32_t width,
+                     int32_t height,
+                     int32_t pointerx,
+                     int32_t pointery)
 {
   dt_develop_t *develop = module->dev;
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
+  dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;
   if(!g)
     return;
 
@@ -2783,10 +2775,10 @@ void gui_post_expose(struct dt_iop_module_t *module,
 
   // get a copy of all iop params
   dt_iop_gui_enter_critical_section(module);
-  update_warp_count(g);
-  smooth_paths_linsys(&g->params);
+  update_warp_count(module);
+  smooth_paths_linsys(p);
   dt_iop_liquify_params_t copy_params;
-  memcpy(&copy_params, &g->params, sizeof(dt_iop_liquify_params_t));
+  memcpy(&copy_params, p, sizeof(dt_iop_liquify_params_t));
   dt_iop_gui_leave_critical_section(module);
 
   // distort all points
@@ -2824,10 +2816,8 @@ static void sync_pipe(struct dt_iop_module_t *module, gboolean history)
 {
   if(history)
   {
-    const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
     // something definitive has happened like button release ... so
     // redraw pipe
-    memcpy(module->params, &g->params, sizeof(dt_iop_liquify_params_t));
     dt_dev_add_history_item(darktable.develop, module, TRUE);
   }
   else
@@ -2878,6 +2868,7 @@ int mouse_moved(struct dt_iop_module_t *module,
                  int which)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+  dt_iop_liquify_params_t *pa = (dt_iop_liquify_params_t *)module->params;
   gboolean handled = FALSE;
   float complex pt = 0.0f;
   float scale = 0.0f;
@@ -2893,8 +2884,9 @@ int mouse_moved(struct dt_iop_module_t *module,
 
   if(!is_dragging(g))
   {
-    dt_liquify_hit_t hit = _hit_test_paths(module, &g->params, pt);
-    dt_liquify_path_data_t *last_hovered = find_hovered(&g->params);
+    dt_liquify_hit_t hit = NOWHERE;
+    _hit_test_paths(module, pa, pt, &hit);
+    dt_liquify_path_data_t *last_hovered = find_hovered(pa);
     if(hit.elem != last_hovered
        || (last_hovered && hit.elem
            && hit.elem->header.hovered != last_hovered->header.hovered))
@@ -2931,8 +2923,8 @@ int mouse_moved(struct dt_iop_module_t *module,
   else // we are dragging
   {
     dt_liquify_path_data_t *d = g->dragging.elem;
-    dt_liquify_path_data_t *n = node_next(&g->params, d);
-    dt_liquify_path_data_t *p = node_prev(&g->params, d);
+    dt_liquify_path_data_t *n = node_next(pa, d);
+    dt_liquify_path_data_t *p = node_prev(pa, d);
 
     const float complex *start_pt = &d->warp.point;
 
@@ -3159,6 +3151,8 @@ int button_pressed(struct dt_iop_module_t *module,
                     uint32_t state)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+  dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;
+
   int handled = 0;
   float complex pt = 0.0f;
   float scale = 0.0f;
@@ -3174,7 +3168,7 @@ int button_pressed(struct dt_iop_module_t *module,
 
   if(!is_dragging(g))
     // while dragging you would always hit the dragged thing
-    g->last_hit = _hit_test_paths(module, &g->params, pt);
+    _hit_test_paths(module, p, pt, &g->last_hit);
 
   if(which == 2) goto done;
 
@@ -3262,7 +3256,8 @@ int button_released(struct dt_iop_module_t *module,
                      int which,
                      uint32_t state)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
+  dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;
   int handled = 0;
   float complex pt = 0.0f;
   float scale = 0.0f;
@@ -3299,7 +3294,7 @@ int button_released(struct dt_iop_module_t *module,
       g->temp->warp.strength = pt + strength;
       // links
       g->temp->header.prev = prev_index;
-      node_get(&g->params, prev_index)->header.next = g->node_index;
+      node_get(p, prev_index)->header.next = g->node_index;
       start_drag(g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
       g->just_started = FALSE;
       handled = 1;
@@ -3315,7 +3310,7 @@ int button_released(struct dt_iop_module_t *module,
       g->temp->warp.strength = pt + strength;
       // links
       g->temp->header.prev = prev_index;
-      node_get(&g->params, prev_index)->header.next = g->node_index;
+      node_get(p, prev_index)->header.next = g->node_index;
       start_drag(g, DT_LIQUIFY_LAYER_CENTERPOINT, g->temp);
       g->just_started = FALSE;
       handled = 1;
@@ -3340,7 +3335,7 @@ int button_released(struct dt_iop_module_t *module,
     // cancel line or curve creation
     if(g->temp)
     {
-      node_delete(&g->params, g->temp);
+      node_delete(p, g->temp);
       g->temp = NULL;
       if(g->creation_continuous && !g->just_started)
         _start_new_shape(module);
@@ -3364,7 +3359,7 @@ int button_released(struct dt_iop_module_t *module,
     // delete node
     if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
     {
-      node_delete(&g->params, g->last_hit.elem);
+      node_delete(p, g->last_hit.elem);
       g->last_hit = NOWHERE;
       handled = 2;
       goto done;
@@ -3372,7 +3367,7 @@ int button_released(struct dt_iop_module_t *module,
     // delete shape
     if(g->last_hit.layer == DT_LIQUIFY_LAYER_PATH)
     {
-      path_delete(&g->params, g->last_hit.elem);
+      path_delete(p, g->last_hit.elem);
       g->last_hit = NOWHERE;
       handled = 2;
       goto done;
@@ -3390,7 +3385,7 @@ int button_released(struct dt_iop_module_t *module,
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
       {
         const int oldsel = !!g->last_hit.elem->header.selected;
-        unselect_all(&g->params);
+        unselect_all(p);
         g->last_hit.elem->header.selected = oldsel ? 0 : g->last_hit.layer;
         handled = 1;
         goto done;
@@ -3398,7 +3393,7 @@ int button_released(struct dt_iop_module_t *module,
       // unselect all
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_BACKGROUND)
       {
-        unselect_all(&g->params);
+        unselect_all(p);
         handled = 1;
         goto done;
       }
@@ -3420,7 +3415,7 @@ int button_released(struct dt_iop_module_t *module,
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_PATH)
       {
         dt_liquify_path_data_t *e = g->last_hit.elem;
-        dt_liquify_path_data_t *prev = node_prev(&g->params, e);
+        dt_liquify_path_data_t *prev = node_prev(p, e);
         if(prev && e->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
           // add node to curve
@@ -3446,7 +3441,7 @@ int button_released(struct dt_iop_module_t *module,
 
           mix_warps(warp2, warp1, warp3, midpoint, t);
 
-          node_insert_before(&g->params, e, (dt_liquify_path_data_t *)curve2);
+          node_insert_before(p, e, (dt_liquify_path_data_t *)curve2);
 
           handled = 2;
           goto done;
@@ -3465,7 +3460,7 @@ int button_released(struct dt_iop_module_t *module,
           const float complex midpoint = cmix(warp1->point, warp3->point, t);
 
           mix_warps(warp2, warp1, warp3, midpoint, t);
-          node_insert_before(&g->params, e, tmp);
+          node_insert_before(p, e, tmp);
 
         }
       }
@@ -3500,7 +3495,7 @@ int button_released(struct dt_iop_module_t *module,
       {
         // change segment
         dt_liquify_path_data_t *e = g->last_hit.elem;
-        dt_liquify_path_data_t *prev = node_prev(&g->params, e);
+        dt_liquify_path_data_t *prev = node_prev(p, e);
         if(prev && e->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
           // curve -> line
@@ -3529,13 +3524,13 @@ int button_released(struct dt_iop_module_t *module,
   }
 
 done:
+  dt_iop_gui_leave_critical_section(module);
   if(which == 1)
     g->last_button1_pressed_pos = -1;
   g->last_hit = NOWHERE;
-  dt_iop_gui_leave_critical_section(module);
   if(handled)
   {
-    update_warp_count(g);
+    update_warp_count(module);
     sync_pipe(module, handled == 2);
   }
   return handled;
@@ -3558,9 +3553,10 @@ static void _liquify_cairo_paint_node_tool(cairo_t *cr, const gint x, const gint
 static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *event, dt_iop_module_t *module)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+  dt_iop_liquify_params_t *p = (dt_iop_liquify_params_t *)module->params;
 
   // if currently dragging and a form (line or node) has been started, does nothing (expect resetting the toggle button status).
-  if(is_dragging(g) && g->temp && node_prev(&g->params, g->temp))
+  if(is_dragging(g) && g->temp && node_prev(p, g->temp))
   {
     return TRUE;
   }
@@ -3573,7 +3569,7 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
   // in this case we abort the current preview and let the new tool activated.
   if(g->status & DT_LIQUIFY_STATUS_PREVIEW)
   {
-    node_delete(&g->params, g->temp);
+    node_delete(p, g->temp);
     g->temp = NULL;
     g->status &= ~DT_LIQUIFY_STATUS_PREVIEW;
   }
@@ -3622,9 +3618,7 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
 
 void gui_update(dt_iop_module_t *module)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  memcpy(&g->params, module->params, sizeof(dt_iop_liquify_params_t));
-  update_warp_count(g);
+  update_warp_count(module);
 }
 
 void gui_init(dt_iop_module_t *self)
