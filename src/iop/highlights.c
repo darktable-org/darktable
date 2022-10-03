@@ -507,14 +507,14 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     {
       tiling->xalign = 2;
       tiling->yalign = 2;
-      tiling->factor = 3.1f; // in & out plus plane buffers including some border safety
+      tiling->factor = 2.0;
       tiling->overlap = 4;
     }
     else
     {
-      tiling->xalign = 6;
-      tiling->yalign = 6;
-      tiling->factor = 2.7f; // in & out plus plane buffers including some border safety
+      tiling->xalign = 3;
+      tiling->yalign = 3;
+      tiling->factor = 2.0f; // in & out plus plane buffers including some border safety
       tiling->overlap = 6;
     }
     tiling->maxbuf = 1.0f;
