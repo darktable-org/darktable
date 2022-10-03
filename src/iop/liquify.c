@@ -1663,6 +1663,9 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void init(dt_iop_module_t *module)
 {
+  // We don't use dt_iop_default_init(module); as some type int8, floatcomplex are not
+  // supported by introspection.
+
   // module is disabled by default
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_liquify_params_t);
@@ -1671,27 +1674,6 @@ void init(dt_iop_module_t *module)
   // all allocated to 0, which is the default
   module->params = calloc(1, module->params_size);
   module->default_params = calloc(1, module->params_size);
-}
-
-void init_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  piece->data = malloc(module->params_size);
-}
-
-void cleanup_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  free(piece->data);
-  piece->data = NULL;
-}
-
-/* commit is the synch point between core and gui, so it copies params to pipe data. */
-
-void commit_params(struct dt_iop_module_t *module,
-                    dt_iop_params_t *params,
-                    dt_dev_pixelpipe_t *pipe,
-                    dt_dev_pixelpipe_iop_t *piece)
-{
-  memcpy(piece->data, params, module->params_size);
 }
 
 // calculate the dot product of 2 vectors.
