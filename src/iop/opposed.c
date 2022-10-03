@@ -77,7 +77,7 @@ static void _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 #pragma omp parallel for default(none) \
   reduction( | : anyclipped) \
   dt_omp_firstprivate(clips, ivoid, ovoid, roi_in, roi_out, xtrans, mask_buffer) \
-  dt_omp_sharedconst(filters, p_size, pwidth, pheight, p_off, stderr) \
+  dt_omp_sharedconst(filters, p_size, pwidth, pheight, p_off) \
   schedule(static)
 #endif
   for(int row = 0; row < roi_out->height; row++)
