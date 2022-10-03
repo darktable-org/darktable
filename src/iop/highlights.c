@@ -67,7 +67,7 @@ DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
    the visualizing is wrong for those algos. It seems to be a a minor issue but sometimes significant.
    Please note, every mode defined in dt_iop_highlights_mode_t requires a value.
 */
-static float highlights_clip_magics[5] = { 1.0f, 1.0f, 0.987f, 0.995f, 0.987f };  
+static float highlights_clip_magics[6] = { 1.0f, 1.0f, 0.987f, 0.995f, 0.987f, 0.987f };  
 
 typedef enum dt_iop_highlights_mode_t
 {
@@ -1925,12 +1925,12 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  const float clip = data->clip * highlights_clip_magics[data->mode];
+  const float mclip = data->clip * highlights_clip_magics[data->mode];
   const float *cf = piece->pipe->dsc.temperature.coeffs;
-  const float clips[4] = { clip * (cf[RED]   <= 0.0f ? 1.0f : cf[RED]),
-                           clip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]),
-                           clip * (cf[BLUE]  <= 0.0f ? 1.0f : cf[BLUE]),
-                           clip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]) };
+  const float clips[4] = { mclip * (cf[RED]   <= 0.0f ? 1.0f : cf[RED]),
+                           mclip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]),
+                           mclip * (cf[BLUE]  <= 0.0f ? 1.0f : cf[BLUE]),
+                           mclip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]) };
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
