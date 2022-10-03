@@ -76,6 +76,7 @@ typedef enum dt_iop_highlights_mode_t
   DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
   DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
   DT_IOP_HIGHLIGHTS_SEGMENTS = 4, // $DESCRIPTION: "segmentation based"
+  DT_IOP_HIGHLIGHTS_OPPOSED = 5,  // $DESCRIPTION: "inpaint opposed"
 } dt_iop_highlights_mode_t;
 
 typedef enum dt_atrous_wavelets_scales_t
@@ -497,7 +498,27 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->overhead = segments * 5 * 5 * sizeof(int); // segmentation stuff
     tiling->factor = 2.0f + 3.3f; // in & out plus planes plus segmentation
     tiling->maxbuf = 1.0f;
+    return;
+  }
 
+  if(d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)
+  {
+    if(filters != 9u)
+    {
+      tiling->xalign = 2;
+      tiling->yalign = 2;
+      tiling->factor = 3.1f; // in & out plus plane buffers including some border safety
+      tiling->overlap = 4;
+    }
+    else
+    {
+      tiling->xalign = 6;
+      tiling->yalign = 6;
+      tiling->factor = 2.7f; // in & out plus plane buffers including some border safety
+      tiling->overlap = 6;
+    }
+    tiling->maxbuf = 1.0f;
+    tiling->overhead = 0;
     return;
   }
 
@@ -1950,6 +1971,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
 }
 
 #include "iop/hlrecovery.c"
+#include "iop/opposed.c"
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -2067,6 +2089,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
     }
 
+    case DT_IOP_HIGHLIGHTS_OPPOSED:
+    {
+      _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      break;
+    }
+
     case DT_IOP_HIGHLIGHTS_LAPLACIAN:
     {
       const dt_aligned_pixel_t clips = { 0.995f * data->clip * piece->pipe->dsc.processed_maximum[0],
@@ -2083,9 +2111,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   // update processed maximum
-  if((data->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (data->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
+  if((data->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (data->mode != DT_IOP_HIGHLIGHTS_SEGMENTS) && (data->mode != DT_IOP_HIGHLIGHTS_OPPOSED))
   {
-    // The guided laplacian and segmentation modes keep signal scene-referred and don't clip highlights to 1
+    // The guided laplacian, inpaint opposed and segmentation modes keep signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
     const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
                           piece->pipe->dsc.processed_maximum[2]);
@@ -2104,7 +2132,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   memcpy(d, p, sizeof(*p));
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT or DT_IOP_HIGHLIGHTS_SEGMENTS
-  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)) ? 0 : 1;
+  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)) ? 0 : 1;
   if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) piece->process_tiling_ready = 0;
 
   // check for heavy computing here to give an iop cache hint
@@ -2252,12 +2280,17 @@ void reload_defaults(dt_iop_module_t *module)
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
         dt_bauhaus_combobox_add_full(g->mode, _("segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
+        dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
       }
     }
     else
     {
+      dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_OPPOSED);
       dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_SEGMENTS);
       dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_LAPLACIAN);
+      dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
     }
   }
 }
