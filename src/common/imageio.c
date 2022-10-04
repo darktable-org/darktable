@@ -49,6 +49,9 @@
 #ifdef HAVE_LIBHEIF
 #include "common/imageio_heif.h"
 #endif
+#ifdef HAVE_WEBP
+#include "common/imageio_webp.h"
+#endif
 #include "common/imageio_libraw.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
@@ -474,7 +477,7 @@ return_label:
 
 /* magic data: exclusion,offset,length, xx, yy, ...
     just add magic bytes to match to this struct
-    to extend mathc on ldr formats.
+    to extend match on LDR formats.
 */
 static const uint8_t _imageio_ldr_magic[] = {
   /* jpeg magics */
@@ -487,6 +490,9 @@ static const uint8_t _imageio_ldr_magic[] = {
   /* jpeg 2000, j2k format */
   0x00, 0x00, 0x05, 0xFF, 0x4F, 0xFF, 0x51, 0x00,
 #endif
+
+  /* webp image */
+  0x00, 0x08, 0x04, 'W', 'E', 'B', 'P',
 
   /* png image */
   0x00, 0x01, 0x03, 0x50, 0x4E, 0x47, // ASCII 'PNG'
@@ -627,6 +633,21 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->loader = LOADER_TIFF;
     return ret;
   }
+
+#ifdef HAVE_WEBP
+  ret = dt_imageio_open_webp(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->buf_dsc.cst = IOP_CS_RGB;
+    img->buf_dsc.filters = 0u;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_WEBP;
+    return ret;
+  }
+#endif
 
   ret = dt_imageio_open_png(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
