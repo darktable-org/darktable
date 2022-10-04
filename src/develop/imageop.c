@@ -232,6 +232,9 @@ void dt_iop_default_init(dt_iop_module_t *module)
   {
     switch(i->header.type)
     {
+    case DT_INTROSPECTION_TYPE_FLOATCOMPLEX:
+      *(float complex*)((uint8_t *)module->default_params + i->header.offset) = i->FloatComplex.Default;
+      break;
     case DT_INTROSPECTION_TYPE_FLOAT:
       *(float*)((uint8_t *)module->default_params + i->header.offset) = i->Float.Default;
       break;
@@ -243,6 +246,9 @@ void dt_iop_default_init(dt_iop_module_t *module)
       break;
     case DT_INTROSPECTION_TYPE_USHORT:
       *(unsigned short*)((uint8_t *)module->default_params + i->header.offset) = i->UShort.Default;
+      break;
+    case DT_INTROSPECTION_TYPE_INT8:
+      *(short*)((uint8_t *)module->default_params + i->header.offset) = i->Int8.Default;
       break;
     case DT_INTROSPECTION_TYPE_ENUM:
       *(int*)((uint8_t *)module->default_params + i->header.offset) = i->Enum.Default;
