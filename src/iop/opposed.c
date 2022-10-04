@@ -139,7 +139,7 @@ static void _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const iv
         const float inval = fmaxf(0.0f, in[0]); 
         /* we only use the unclipped photosites very close the true clipped data
            to calculate the chrominance offset */
-        if((mask_buffer[color * p_size + p_off + ((row/3) * pwidth) + (col/3)] != 0) && (inval < clips[color]))
+        if((mask_buffer[color * p_size + p_off + ((row/3) * pwidth) + (col/3)] != 0) && (inval > 0.125f * clips[color]) && (inval < clips[color]))
         {
           const float refavg = powf(_calc_refavg(&in[0], xtrans, filters, row, col, roi_in), 3.0f);
           cr_sum[color] += (double) (inval - refavg);
