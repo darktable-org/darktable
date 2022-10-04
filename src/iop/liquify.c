@@ -1661,21 +1661,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void init(dt_iop_module_t *module)
-{
-  // We don't use dt_iop_default_init(module); as some type int8, floatcomplex are not
-  // supported by introspection.
-
-  // module is disabled by default
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_liquify_params_t);
-  module->gui_data = NULL;
-
-  // all allocated to 0, which is the default
-  module->params = calloc(1, module->params_size);
-  module->default_params = calloc(1, module->params_size);
-}
-
 // calculate the dot product of 2 vectors.
 
 static float cdot(const float complex p0, const float complex p1)
