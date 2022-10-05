@@ -53,11 +53,13 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   }
   fclose(f);
 
-// WebPGetInfo will tell us image dimensions needed for dt image buffer allocation
+  // WebPGetInfo should tell us the image dimensions needed for darktable image buffer allocation
   if(!WebPGetInfo(read_buffer, filesize, &w, &h))
   {
+    // If we couldn't get the webp metadata, then the file we're trying to read is most likely in
+    // a different format (darktable just trying different loaders until it finds the right one).
+    // We just have to return without complaining.
     g_free(read_buffer);
-    fprintf(stderr,"[webp_open] WebPGetInfo failed\n");
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
   img->width = w;
