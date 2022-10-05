@@ -37,6 +37,7 @@ set(DT_SUPPORTED_EXTENSIONS
     "pbm"
     "pgm"
     "ppm"
+    "pnm"
     "pfm"
     "pxn"
     "qtk"
