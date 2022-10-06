@@ -2615,8 +2615,23 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/jxl/bpp</name>
-    <type min="0" max="5">int</type>
-    <default>0</default>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>10</option>
+        <option>12</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
+    <default>8</default>
+    <shortdescription>JPEG XL bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/pixel_type</name>
+    <type>bool</type>
+    <default>false</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

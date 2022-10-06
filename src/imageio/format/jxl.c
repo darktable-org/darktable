@@ -33,6 +33,7 @@ typedef struct dt_imageio_jxl_t
 {
   dt_imageio_module_data_t global;
   int bpp;
+  int pixel_type;
   int quality;
   int original;
   int effort;
@@ -41,8 +42,10 @@ typedef struct dt_imageio_jxl_t
 
 typedef struct dt_imageio_jxl_gui_data_t
 {
-  // Int (0:8b, 1:10b, 2:12b, 3:16b, 4:half, 5:float)
+  // Int (8/10/12/16/32 bit)
   GtkWidget *bpp;
+  // Bool: whether the (16 bit) pixel type is unsigned integer or floating point
+  GtkWidget *pixel_type;
   // Int (4-100): the quality of the image, roughly corresponding to JPEG quality (100 is lossless)
   GtkWidget *quality;
   // Bool: whether to encode using the original color profile or the internal XYB one
@@ -53,11 +56,12 @@ typedef struct dt_imageio_jxl_gui_data_t
   GtkWidget *tier;
 } dt_imageio_jxl_gui_data_t;
 
-
 void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
   dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_t, bpp, int);
+
+  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_t, pixel_type, int);
 
   dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_t, quality, int);
 
@@ -72,7 +76,6 @@ void init(dt_imageio_module_format_t *self)
 void cleanup(dt_imageio_module_format_t *self)
 {
 }
-
 
 const char *mime(dt_imageio_module_data_t *data)
 {
@@ -97,7 +100,6 @@ int bpp(dt_imageio_module_data_t *data)
 {
   return 32; /* always request float */
 }
-
 
 int write_image(struct dt_imageio_module_data_t *data, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename, void *exif, int exif_len,
@@ -150,33 +152,11 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   JxlEncoderInitBasicInfo(&basic_info);
   basic_info.xsize = width;
   basic_info.ysize = height;
-  switch(params->bpp)
-  {
-    case 0:
-      basic_info.bits_per_sample = 8;
-      basic_info.exponent_bits_per_sample = 0;
-      break;
-    case 1:
-      basic_info.bits_per_sample = 10;
-      basic_info.exponent_bits_per_sample = 0;
-      break;
-    case 2:
-      basic_info.bits_per_sample = 12;
-      basic_info.exponent_bits_per_sample = 0;
-      break;
-    case 3:
-      basic_info.bits_per_sample = 16;
-      basic_info.exponent_bits_per_sample = 0;
-      break;
-    case 4:
-      basic_info.bits_per_sample = 16;
-      basic_info.exponent_bits_per_sample = 5;
-      break;
-    default:
-      basic_info.bits_per_sample = 32;
-      basic_info.exponent_bits_per_sample = 8;
-      break;
-  }
+  basic_info.bits_per_sample = params->bpp;
+  basic_info.exponent_bits_per_sample = 0;
+  // For 16-bit we can choose half, but 32-bit is always float
+  if(params->bpp == 16 && params->pixel_type) basic_info.exponent_bits_per_sample = 5;
+  if(params->bpp == 32) basic_info.exponent_bits_per_sample = 8;
   // Lossless only makes sense for integer modes
   if(basic_info.exponent_bits_per_sample == 0 && params->quality == 100)
   {
@@ -189,7 +169,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   {
     basic_info.uses_original_profile = params->original == FALSE ? JXL_FALSE : JXL_TRUE;
     const float distance = params->quality >= 30 ? 0.1f + (100 - params->quality) * 0.09f
-                                           : 6.24f + powf(2.5f, (30 - params->quality) / 5.0f) / 6.25f;
+                                                 : 6.24f + powf(2.5f, (30 - params->quality) / 5.0f) / 6.25f;
     LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, MIN(distance, 25.0f)));
   }
 
@@ -421,6 +401,23 @@ int flags(dt_imageio_module_data_t *data)
   return 0; /* FORMAT_FLAGS_SUPPORT_XMP; */
 }
 
+static inline int _bpp_to_enum(int bpp)
+{
+  switch(bpp)
+  {
+    case 32:
+      return 4;
+    case 16:
+      return 3;
+    case 12:
+      return 2;
+    case 10:
+      return 1;
+    default:
+      break;
+  }
+  return 0; // 8bpp
+}
 
 size_t params_size(dt_imageio_module_format_t *self)
 {
@@ -434,13 +431,10 @@ void *get_params(dt_imageio_module_format_t *self)
   if(!d) return NULL;
 
   d->bpp = dt_conf_get_int("plugins/imageio/format/jxl/bpp");
-
+  d->pixel_type = dt_conf_get_bool("plugins/imageio/format/jxl/pixel_type") & 1;
   d->quality = dt_conf_get_int("plugins/imageio/format/jxl/quality");
-
   d->original = dt_conf_get_bool("plugins/imageio/format/jxl/original") & 1;
-
   d->effort = dt_conf_get_int("plugins/imageio/format/jxl/effort");
-
   d->tier = dt_conf_get_int("plugins/imageio/format/jxl/tier");
 
   return d;
@@ -458,40 +452,15 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   const dt_imageio_jxl_t *d = (dt_imageio_jxl_t *)params;
   dt_imageio_jxl_gui_data_t *g = (dt_imageio_jxl_gui_data_t *)self->gui_data;
 
-  int bpp = d->bpp;
-  if(bpp < 0)
-    bpp = 0;
-  else if(bpp > 5)
-    bpp = 5;
-  dt_bauhaus_combobox_set(g->bpp, bpp);
-
-  int quality = d->quality;
-  if(quality < 4)
-    quality = 4;
-  else if(quality > 100)
-    quality = 100;
-  dt_bauhaus_slider_set(g->quality, quality);
-
-  int original = d->original;
-  dt_bauhaus_combobox_set(g->original, original & 1);
-
-  int effort = d->effort;
-  if(effort < 1)
-    effort = 1;
-  else if(effort > 9)
-    effort = 9;
-  dt_bauhaus_slider_set(g->effort, effort);
-
-  int tier = d->tier;
-  if(tier < 0)
-    tier = 0;
-  else if(tier > 4)
-    tier = 4;
-  dt_bauhaus_slider_set(g->tier, tier);
+  dt_bauhaus_combobox_set(g->bpp, _bpp_to_enum(d->bpp));
+  dt_bauhaus_combobox_set(g->pixel_type, d->pixel_type & 1);
+  dt_bauhaus_slider_set(g->quality, d->quality);
+  dt_bauhaus_combobox_set(g->original, d->original & 1);
+  dt_bauhaus_slider_set(g->effort, d->effort);
+  dt_bauhaus_slider_set(g->tier, d->tier);
 
   return 0;
 }
-
 
 const char *name()
 {
@@ -501,10 +470,44 @@ const char *name()
 static void bpp_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
 {
   const int bpp_enum = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_int("plugins/imageio/format/jxl/bpp", bpp_enum);
+  int bpp;
+  switch(bpp_enum)
+  {
+    case 0:
+      bpp = 8;
+      break;
+    case 1:
+      bpp = 10;
+      break;
+    case 2:
+      bpp = 12;
+      break;
+    case 3:
+      bpp = 16;
+      break;
+    default:
+      bpp = 32;
+      break;
+  }
+  dt_conf_set_int("plugins/imageio/format/jxl/bpp", bpp);
 
+  const int pixel_type = bpp_enum == 3 ? dt_bauhaus_combobox_get(gui->pixel_type) : bpp_enum == 4 ? 1 : 0;
   const int quality = (int)dt_bauhaus_slider_get(gui->quality);
-  gtk_widget_set_visible(gui->original, bpp_enum > 3 || quality < 100);
+  gboolean lossless = bpp_enum <= 3 && !pixel_type && quality == 100;
+
+  gtk_widget_set_visible(gui->pixel_type, bpp_enum == 3);
+  gtk_widget_set_visible(gui->original, !lossless);
+}
+
+static void pixel_type_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
+{
+  const int pixel_type = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_bool("plugins/imageio/format/jxl/pixel_type", pixel_type);
+
+  const int bpp_enum = dt_bauhaus_combobox_get(gui->bpp);
+  const int quality = (int)dt_bauhaus_slider_get(gui->quality);
+  gboolean lossless = bpp_enum <= 3 && !pixel_type && quality == 100;
+  gtk_widget_set_visible(gui->original, !lossless);
 }
 
 static void quality_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
@@ -513,7 +516,9 @@ static void quality_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
   dt_conf_set_int("plugins/imageio/format/jxl/quality", quality);
 
   const int bpp_enum = dt_bauhaus_combobox_get(gui->bpp);
-  gtk_widget_set_visible(gui->original, bpp_enum > 3 || quality < 100);
+  const int pixel_type = bpp_enum == 3 ? dt_bauhaus_combobox_get(gui->pixel_type) : bpp_enum == 4 ? 1 : 0;
+  gboolean lossless = bpp_enum <= 3 && !pixel_type && quality == 100;
+  gtk_widget_set_visible(gui->original, !lossless);
 }
 
 static void original_changed(GtkWidget *widget, dt_imageio_jxl_gui_data_t *gui)
@@ -541,12 +546,23 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = box;
 
   // bits per sample combobox
-  const int bpp_enum = dt_conf_get_int("plugins/imageio/format/jxl/bpp");
+  const int bpp_enum = _bpp_to_enum(dt_conf_get_int("plugins/imageio/format/jxl/bpp"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("bit depth"), NULL, bpp_enum, bpp_changed, gui,
-                               N_("8 bit"), N_("10 bit"), N_("12 bit"), N_("16 bit"), N_("16 bit (half)"),
-                               N_("32 bit (float)"));
+                               N_("8 bit"), N_("10 bit"), N_("12 bit"), N_("16 bit"), N_("32 bit (float)"));
   gtk_box_pack_start(GTK_BOX(box), gui->bpp, TRUE, TRUE, 0);
+
+  // pixel type combobox
+  const int pixel_type = dt_conf_get_bool("plugins/imageio/format/jxl/pixel_type") & 1;
+
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->pixel_type, self, NULL, N_("pixel type"), NULL, pixel_type, pixel_type_changed,
+                               gui, N_("unsigned integer"), N_("floating point"));
+  dt_bauhaus_combobox_set_default(gui->pixel_type,
+                                  dt_confgen_get_bool("plugins/imageio/format/jxl/pixel_type", DT_DEFAULT) & 1);
+  gtk_box_pack_start(GTK_BOX(box), gui->pixel_type, TRUE, TRUE, 0);
+
+  gtk_widget_set_visible(gui->pixel_type, bpp_enum == 3);
+  gtk_widget_set_no_show_all(gui->pixel_type, TRUE);
 
   // quality slider
   const int quality = dt_conf_get_int("plugins/imageio/format/jxl/quality");
@@ -571,7 +587,7 @@ void gui_init(dt_imageio_module_format_t *self)
                                   dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);
   gtk_box_pack_start(GTK_BOX(box), gui->original, TRUE, TRUE, 0);
 
-  gtk_widget_set_visible(gui->original, bpp_enum > 3 || quality < 100);
+  gtk_widget_set_visible(gui->original, bpp_enum == 4 || (bpp_enum == 3 && pixel_type) || quality < 100);
   gtk_widget_set_no_show_all(gui->original, TRUE);
 
   // encoding effort slider
@@ -607,20 +623,14 @@ void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_jxl_gui_data_t *gui = (dt_imageio_jxl_gui_data_t *)self->gui_data;
 
-  const int bpp = dt_confgen_get_int("plugins/imageio/format/jxl/bpp", DT_DEFAULT);
-  dt_bauhaus_combobox_set(gui->bpp, bpp);
-
-  const int quality = dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_DEFAULT);
-  dt_bauhaus_slider_set(gui->quality, quality);
-
-  const int original = dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT);
-  dt_bauhaus_combobox_set(gui->original, original & 1);
-
-  const int effort = dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_DEFAULT);
-  dt_bauhaus_slider_set(gui->effort, effort);
-
-  const int tier = dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_DEFAULT);
-  dt_bauhaus_slider_set(gui->tier, tier);
+  dt_bauhaus_combobox_set(gui->bpp, _bpp_to_enum(dt_confgen_get_int("plugins/imageio/format/jxl/bpp", DT_DEFAULT)));
+  dt_bauhaus_combobox_set(gui->pixel_type,
+                          dt_confgen_get_bool("plugins/imageio/format/jxl/pixel_type", DT_DEFAULT) & 1);
+  dt_bauhaus_slider_set(gui->quality, dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_DEFAULT));
+  dt_bauhaus_combobox_set(gui->original,
+                          dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);
+  dt_bauhaus_slider_set(gui->effort, dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_DEFAULT));
+  dt_bauhaus_slider_set(gui->tier, dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_DEFAULT));
 }
 
 // clang-format off
