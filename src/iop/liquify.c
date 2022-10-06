@@ -3416,10 +3416,10 @@ int button_released(struct dt_iop_module_t *module,
 
           mix_warps(warp2, warp1, warp3, midpoint, t);
           node_insert_before(p, e, tmp);
-
         }
       }
-      else if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
+      else if(g->last_hit.elem->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1
+              && g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
       {
         // cycle node type: smooth -> cusp etc.
         dt_liquify_path_data_t *e = g->last_hit.elem;
