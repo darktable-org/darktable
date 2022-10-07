@@ -49,7 +49,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 36
+#define CURRENT_DATABASE_VERSION_LIBRARY 37
 #define CURRENT_DATABASE_VERSION_DATA     9
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2152,6 +2152,12 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("DROP TABLE `images_new`", "[init] can't drop temp images table\n");
     new_version = 36;
   }
+  else if(version == 36)
+  {
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS `metadata_index_value` ON meta_data (value)",
+             "[init] can't create metadata_index_value\n");
+    new_version = 37;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2515,6 +2521,7 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken COLLATE NOCASE)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_value ON meta_data (value)", NULL, NULL, NULL);
   // clang-format on
 }
 
@@ -4684,4 +4691,3 @@ void dt_database_rollback_transaction(const struct dt_database_t *db)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
