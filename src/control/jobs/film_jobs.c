@@ -123,7 +123,7 @@ dt_job_t *dt_pathlist_import_create(int argc, char *argv[])
     {
       // iterate over the directory, extracting image files
       GDir *cdir = g_dir_open(path, 0, NULL);
-      if (cdir)
+      if(cdir)
       {
         while(TRUE)
         {
@@ -229,7 +229,7 @@ static int _film_filename_cmp(gchar *a, gchar *b)
 static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
 {
   // first, gather all images to import if not already given
-  if (!images)
+  if(!images)
   {
     const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
 
@@ -378,6 +378,9 @@ static void _film_import1(dt_job_t *job, dt_film_t *film, GList *images)
   }
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

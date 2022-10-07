@@ -229,11 +229,13 @@ static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
   gtk_list_store_clear(metadata->m_model);
   GtkTreeIter iter;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name, op_params FROM data.presets "
                               "WHERE operation = 'metadata' "
                               "ORDER BY writeprotect DESC, LOWER(name)",
                               -1, &stmt, NULL);
+  // clang-format on
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
@@ -245,6 +247,8 @@ static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
     uint32_t total_len = 0;
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
+      if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+        continue;
       metadata_param[i] = buf;
       metadata_len[i] = strlen(metadata_param[i]) + 1;
       buf += metadata_len[i];
@@ -258,6 +262,8 @@ static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
       gtk_list_store_set(metadata->m_model, &iter, 0, (char *)sqlite3_column_text(stmt, 0), -1);
       for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       {
+        if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+          continue;
         gtk_list_store_set(metadata->m_model, &iter, i+1, metadata_param[i], -1);
       }
     }
@@ -288,11 +294,13 @@ static void _import_tags_presets_update(dt_import_metadata_t *metadata)
   gtk_list_store_clear(metadata->t_model);
   GtkTreeIter iter;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name, op_params FROM data.presets "
                               "WHERE operation = 'tagging' "
                               "ORDER BY writeprotect DESC, LOWER(name)",
                               -1, &stmt, NULL);
+  // clang-format on
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
@@ -407,7 +415,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
 
   // grid headers
   GtkWidget *label = gtk_label_new(_("metadata presets"));
-  gtk_widget_set_name(label, "import_presets");
+  gtk_widget_set_name(label, "import-presets");
   GtkWidget *labelev =_set_up_label(label, GTK_ALIGN_START, DT_META_META_HEADER, metadata);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"
                                                    "\ndouble-click on a label to clear the corresponding entry"
@@ -459,7 +467,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
 
   // tags
   label = gtk_label_new(_("tag presets"));
-  gtk_widget_set_name(label, "import_presets");
+  gtk_widget_set_name(label, "import-presets");
   labelev =_set_up_label(label, GTK_ALIGN_START, DT_META_TAGS_HEADER, metadata);
 
   presets = _set_up_combobox(metadata->t_model, DT_META_TAGS_HEADER, metadata);
@@ -551,6 +559,9 @@ void dt_import_metadata_reset(dt_import_metadata_t *metadata)
   _metadata_reset_all(metadata, TRUE);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

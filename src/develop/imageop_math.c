@@ -232,7 +232,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size(uint16_t *const out, const uint16_t *
         {
           col += in[clut[c][1] + xx + in_stride * yy];
           num++;
-          if (clut[c][0] == 2)
+          if(clut[c][0] == 2)
           { // G in RGGB CFA
             col += in[clut[c][2] + xx + in_stride * yy];
             num++;
@@ -1004,6 +1004,9 @@ void dt_iop_estimate_cubic(const float x[4], const float y[4], float a[4])
   mat4mulv(a, X_inv, y);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

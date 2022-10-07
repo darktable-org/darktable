@@ -5,6 +5,9 @@ name: Full Manual Check
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
 
   Linux:
@@ -105,7 +108,7 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src
@@ -223,7 +226,7 @@ jobs:
             mingw-w64-x86_64-gmic
             mingw-w64-x86_64-nsis
           update: true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src
@@ -253,7 +256,7 @@ jobs:
           cmake --build "${BUILD_DIR}" --target package
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
-        uses: 'actions/upload-artifact@v2'
+        uses: actions/upload-artifact@v3
         with:
           name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.btype}}.${{ github.sha }}
           path: ${{ env.BUILD_DIR }}/darktable-*.exe
@@ -282,7 +285,7 @@ jobs:
       GENERATOR: Ninja
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src

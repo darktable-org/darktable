@@ -243,7 +243,7 @@ static int collection_numindex(lua_State *L)
     return luaL_error(L, "incorrect index in database");
   }
   int imgid = dt_collection_get_nth(darktable.collection,index-1);
-  if (imgid >0)
+  if(imgid >0)
   {
     luaA_push(L, dt_lua_image_t, &imgid);
   } else {
@@ -318,6 +318,9 @@ int dt_lua_init_database(lua_State *L)
   return 0;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

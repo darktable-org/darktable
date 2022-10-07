@@ -114,7 +114,8 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz = 13 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz = 14 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz = 15 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3,  //show module's output without processing by later iops
+  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3, // show module's output without processing by later iops
+  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU_MONO = 17 << 3, // same as above but specific for pre-demosaic to stay monochrome
   DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
@@ -243,8 +244,6 @@ typedef struct dt_develop_t
       void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
       /* update modulegroup visibility */
       void (*update_visibility)(struct dt_lib_module_t *self);
-      /* set focus to the search module text box */
-      void (*search_text_focus)(struct dt_lib_module_t *self);
       /* test if module is preset in one of the current groups */
       gboolean (*test_visible)(struct dt_lib_module_t *self, gchar *module);
       /* add or remove module or widget in current quick access list */
@@ -418,8 +417,6 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
 void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** update modulegroup visibility */
 void dt_dev_modulegroups_update_visibility(dt_develop_t *dev);
-/** set the focus to modulegroup search text */
-void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev);
 /** set the active modulegroup */
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */
@@ -538,6 +535,9 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

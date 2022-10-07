@@ -236,8 +236,8 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr,
             _("warning: disk backend for full preview cache is disabled (cache_disk_backend_full)\nif you want "
-              "to pre-generate full preview and for darktable to use them, you need to enable disk backend "
-              "for full preview cache\nno thumbnails to be generated, done.\n"));
+              "to pre-generate full previews and for darktable to use them, you need to enable disk backend "
+              "for full preview cache\nno full previews to be generated, done.\n"));
     dt_cleanup();
     free(m_arg);
     exit(EXIT_FAILURE);
@@ -263,6 +263,9 @@ int main(int argc, char *arg[])
   free(m_arg);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

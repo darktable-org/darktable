@@ -328,7 +328,7 @@ int main(int argc, char *arg[])
           usage(arg[0]);
           exit(1);
         }
-        if (*arg[k] == '.')
+        if(*arg[k] == '.')
         {
           //remove dot ;)
           arg[k]++;
@@ -440,7 +440,7 @@ int main(int argc, char *arg[])
     output_filename = g_strdup(input_filename);
     input_filename = xmp_filename = NULL;
   }
-  else if (inputs && file_counter == 2)
+  else if(inputs && file_counter == 2)
   {
     // inputs as options, xmp & output specified
     if(output_filename)
@@ -449,7 +449,7 @@ int main(int argc, char *arg[])
     xmp_filename = input_filename;
     input_filename = NULL;
   }
-  else if (inputs && file_counter == 3)
+  else if(inputs && file_counter == 3)
   {
     fprintf(stderr, _("error: input file and import opts specified! that's not supported!\n"));
     usage(arg[0]);
@@ -458,8 +458,7 @@ int main(int argc, char *arg[])
       g_free(output_filename);
     if(output_ext)
       g_free(output_ext);
-    if(inputs)
-      g_list_free_full(inputs, g_free);
+    g_list_free_full(inputs, g_free);
     exit(1);
   }
   else if(file_counter == 2)
@@ -771,6 +770,9 @@ int main(int argc, char *arg[])
   exit(res);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

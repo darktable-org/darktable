@@ -125,31 +125,30 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
   self->data = d;
   self->widget = gtk_grid_new();
-  dt_gui_add_help_link(self->widget, dt_get_help_url("select"));
 
   GtkGrid *grid = GTK_GRID(self->widget);
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 
-  d->select_all_button = dt_ui_button_new(_("select all"), _("select all images in current collection"), NULL);
+  d->select_all_button = dt_action_button_new(self, N_("select all"), button_clicked, GINT_TO_POINTER(0),
+                                              _("select all images in current collection"), GDK_KEY_a, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->select_all_button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(d->select_all_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
-  d->select_none_button = dt_ui_button_new(_("select none"), _("clear selection"), NULL);
+  d->select_none_button = dt_action_button_new(self, N_("select none"), button_clicked, GINT_TO_POINTER(1),
+                                              _("clear selection"), GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_grid_attach(grid, d->select_none_button, 1, line++, 1, 1);
-  g_signal_connect(G_OBJECT(d->select_none_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
 
-  d->select_invert_button = dt_ui_button_new(_("invert selection"), _("select unselected images\nin current collection"), NULL);
+  d->select_invert_button = dt_action_button_new(self, N_("invert selection"), button_clicked, GINT_TO_POINTER(2),
+                                              _("select unselected images\nin current collection"), GDK_KEY_i, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->select_invert_button, 0, line, 1, 1);
-  g_signal_connect(G_OBJECT(d->select_invert_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(2));
 
-  d->select_film_roll_button = dt_ui_button_new(_("select film roll"), _("select all images which are in the same\nfilm roll as the selected images"), NULL);
+  d->select_film_roll_button = dt_action_button_new(self, N_("select film roll"), button_clicked, GINT_TO_POINTER(3),
+                                              _("select all images which are in the same\nfilm roll as the selected images"), 0, 0);
   gtk_grid_attach(grid, d->select_film_roll_button, 1, line++, 1, 1);
-  g_signal_connect(G_OBJECT(d->select_film_roll_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
-  d->select_untouched_button = dt_ui_button_new(_("select untouched"), _("select untouched images in\ncurrent collection"), NULL);
+  d->select_untouched_button = dt_action_button_new(self, N_("select untouched"), button_clicked, GINT_TO_POINTER(4),
+                                              _("select untouched images in\ncurrent collection"), 0, 0);
   gtk_grid_attach(grid, d->select_untouched_button, 0, line, 2, 1);
-  g_signal_connect(G_OBJECT(d->select_untouched_button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_image_selection_changed_callback), self);
@@ -226,7 +225,7 @@ static void lua_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static int lua_register_selection(lua_State *L)
 {
-  lua_settop(L, 3);
+  lua_settop(L, 4);
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
   lua_getiuservalue(L, -1, 1);
@@ -242,7 +241,7 @@ static int lua_register_selection(lua_State *L)
   lua_settable(L, -3);
 
   GtkWidget* button = gtk_button_new_with_label(key);
-  const char * tooltip = lua_tostring(L, 3);
+  const char * tooltip = lua_tostring(L, 4);
   if(tooltip)
     gtk_widget_set_tooltip_text(button, tooltip);
 
@@ -372,26 +371,9 @@ void init(struct dt_lib_module_t *self)
 }
 #endif
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "select all"), GDK_KEY_a, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "select none"), GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "invert selection"), GDK_KEY_i, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "select film roll"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "select untouched"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_select_t *d = (dt_lib_select_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "select all", GTK_WIDGET(d->select_all_button));
-  dt_accel_connect_button_lib(self, "select none", GTK_WIDGET(d->select_none_button));
-  dt_accel_connect_button_lib(self, "invert selection", GTK_WIDGET(d->select_invert_button));
-  dt_accel_connect_button_lib(self, "select film roll", GTK_WIDGET(d->select_film_roll_button));
-  dt_accel_connect_button_lib(self, "select untouched", GTK_WIDGET(d->select_untouched_button));
-}
-
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

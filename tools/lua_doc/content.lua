@@ -396,7 +396,7 @@ darktable.collection:set_text([[Allows to access the currently worked on images,
 darktable.collection["#"]:set_text([[Each image in the collection appears with a numerical index; you can iterate them using ipairs.]])
 
 
-for k, v in darktable.gui.views:unskiped_children() do
+for k, v in darktable.gui.views:unskipped_children() do
 	v:set_main_parent(darktable.gui.views)
 end
 darktable.gui.views:set_text([[The different views in darktable]])
@@ -410,10 +410,10 @@ darktable.gui.views.lighttable:set_text([[The lighttable view]])
 darktable.gui.views.tethering:set_text([[The tethering view]])
 darktable.gui.views.slideshow:set_text([[The slideshow view]])
 darktable.gui.views.print:set_text([[The print view]])
-darktable.gui.views.knight:set_skiped()
+darktable.gui.views.knight:set_skipped()
 
 --[[
-for k, v in darktable.gui.libs:unskiped_children() do
+for k, v in darktable.gui.libs:unskipped_children() do
 	local real_node = real_darktable.gui.libs[k]
 	v:set_attribute("position",real_node.position);
 	v:set_attribute("container",real_node.container);
@@ -676,6 +676,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_format_data_tiff.bpp:set_text([[The bpp parameter to use when exporting.]])
 	types.dt_imageio_module_format_data_exr:set_text([[Type object describing parameters to export to exr.]])
 	types.dt_imageio_module_format_data_exr.compression:set_text([[The compression parameter to use when exporting.]])
+	types.dt_imageio_module_format_data_exr.pixel_type:set_text([[The pixel type parameter to use when exporting.]])
 	types.dt_imageio_module_format_data_copy:set_text([[Type object describing parameters to export to copy.]])
 	types.dt_imageio_module_format_data_pfm:set_text([[Type object describing parameters to export to pfm.]])
 	types.dt_imageio_module_format_data_jpeg:set_text([[Type object describing parameters to export to jpeg.]])
@@ -799,6 +800,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
 
   types.dt_imageio_exr_compression_t:set_text("The type of compression to use for the EXR image")
+  types.dt_imageio_exr_pixeltype_t:set_text("The pixel type to use for the EXR image")
 
   types.dt_lib_collect_params_rule_t:set_text("A single rule for filtering a collection");
   types.dt_lib_collect_params_rule_t.mode:set_text("How this rule is applied after the previous one. Unused for the first rule");
@@ -1084,7 +1086,7 @@ local widget = dt.new_widget("button"){
 	--  ATTRIBUTES      --
 	----------------------
 	function invisible_attr(attr)
-		attr:set_skiped()
+		attr:set_skipped()
 		attr:set_attribute("internal_attr",true);
 	end
 	attributes:set_text([[This section documents various attributes used throughout the documentation.]])
@@ -1093,7 +1095,7 @@ local widget = dt.new_widget("button"){
 	invisible_attr(attributes.reported_type)
 	invisible_attr(attributes.is_singleton)
 	invisible_attr(attributes.optional)
-	invisible_attr(attributes.skiped)
+	invisible_attr(attributes.skipped)
 	invisible_attr(attributes.is_attribute)
 	invisible_attr(attributes.internal_attr)
 	invisible_attr(attributes.read)
@@ -1107,10 +1109,10 @@ local widget = dt.new_widget("button"){
 	attributes.has_tostring:set_text([[This object has a specific reimplementation of the "tostring" method that allows pretty-printing it.]])
 	attributes.implicit_yield:set_text([[This call will release the Lua lock while executing, thus allowing other Lua callbacks to run.]])
 	attributes.parent:set_text([[This object inherits some methods from another object. You can call the methods from the parent on the child object]])
-	--attributes.views:set_skiped();
-	--attributes.position:set_skiped();
-	--attributes.container:set_skiped();
-	attributes.values:set_skiped();
+	--attributes.views:set_skipped();
+	--attributes.position:set_skipped();
+	--attributes.container:set_skipped();
+	attributes.values:set_skipped();
 
 --
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua

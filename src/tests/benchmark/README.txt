@@ -9,10 +9,8 @@ Performance numbers will only be directly comparable when using the
 same version of darktable, the same image, and the same sidecar file.
 Unless you override the image or sidecar, they will remain the same.
 Comparisons between different darktable versions will also reflect
-performance changes between the versions (for example, on the same
-32-core AMD Threadripper using the v3.4 sidecar file, darktable v3.2.1
-rates ~410, darktable v3.4.0 rates ~645, and a development version
-v3.5.0 rated ~690).
+performance changes between the versions (see the "Comparative
+Performance" section at the end of this file).
 
 Note that on a slow machine, it could easily take three to five
 minutes to run the benchmark.
@@ -126,3 +124,27 @@ How to add a new benchmark
    to apply your new sidecar to the standard image from the
    integration test suite (src/tests/integration/images/mire1.cr2).
 
+
+Comparative Performance
+-----------------------
+
+Reported performance numbers depend on the hardware, darktable
+version, image, and sidecar file used.  The following are some example
+throughput ratings using the standard image.
+
+Thruput Sidecar dt           Hardware
+~410*   3.4     3.2.1        32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+~645    3.4     3.4.0        32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+~690    3.4     3.6.0        32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+720     3.4     3.7.0+440    32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+713     3.4     3.9.0+1630   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+
+659     3.6     3.7.0+440    32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+661     3.6     3.9.0+1630   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+
+644	3.8	3.7.0+1370   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+666     3.8     3.9.0+1630   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+
+[*] darktable 3.2.1 using the v3.4 sidecar skips two modules which
+  didn't yet exist, so this number is actually over-reporting the
+  comparative performance.

@@ -94,7 +94,7 @@ function print_node(node,node_name)
   result = result..add_table_entry("__text",doc.get_text(node),node_name..".__text")
   result = result..add_table_entry("__attributes",node._luadoc_attributes,node_name..".__attributes")
 
-  for k,v in node:unskiped_children() do
+  for k,v in node:unskipped_children() do
     result = result..add_table_entry(k,v,node_name.."[\""..k.."\"]")
   end
   result=result.."}"
@@ -125,7 +125,7 @@ function M.get_doc()
 end
 
 
---for k, v in darktable.gui.libs:unskiped_children() do
+--for k, v in darktable.gui.libs:unskipped_children() do
 --  print(v._luadoc_attributes["position"].."aaa")
 --end
 

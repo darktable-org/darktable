@@ -4,7 +4,7 @@
 	prefs (import|lighttable|darkroom|otherviews|processing|security|cpugpu|storage|misc) #IMPLIED
         section
         (import|session|interface|other|tags|geoloc|slideshow|cpugpu|database|xmp|accel|general|modules|thumbs) #IMPLIED
-        dialog (collect|recentcollect|import) #IMPLIED
+        dialog (collect|recentcollect|import|tagging) #IMPLIED
         ui (yes|no) #IMPLIED
         restart (true|false) #IMPLIED
         capability CDATA #IMPLIED

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -257,11 +257,24 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     for(int i = 0; i < 4; i++)
       img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
+    const int msize = r->metadata.colorMatrix.size();
+    // Grab the adobe coeff
+    for(int k = 0; k < 4; k++)
+      for(int i = 0; i < 3; i++)
+      {
+        const int idx = k*3 + i;
+        if(idx < msize)
+          img->adobe_XYZ_to_CAM[k][i] =
+            (float)r->metadata.colorMatrix[idx] / (float)ADOBE_COEFF_FACTOR;
+        else
+          img->adobe_XYZ_to_CAM[k][i] = 0.0f;
+      }
+
     // FIXME: grab r->metadata.colorMatrix.
 
-    // Get DefaultUserCrop
-    if (img->flags & DT_IMAGE_HAS_USERCROP)
-      dt_exif_img_check_usercrop(img, filename);
+    // Get additional exif tags that are not cached in the database
+    if(img->flags & DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS)
+      dt_exif_img_check_additional_tags(img, filename);
 
     if(r->getDataType() == TYPE_FLOAT32)
     {
@@ -359,7 +372,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // if buf is NULL, we quit the fct here
     if(!mbuf)
     {
-      img->buf_dsc.cst = iop_cs_RAW;
+      img->buf_dsc.cst = IOP_CS_RAW;
       img->loader = LOADER_RAWSPEED;
       return DT_IMAGEIO_OK;
     }
@@ -409,7 +422,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  img->buf_dsc.cst = iop_cs_RAW;
+  img->buf_dsc.cst = IOP_CS_RAW;
   img->loader = LOADER_RAWSPEED;
 
   return DT_IMAGEIO_OK;
@@ -437,7 +450,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   // if buf is NULL, we quit the fct here
   if(!mbuf)
   {
-    img->buf_dsc.cst = iop_cs_RAW;
+    img->buf_dsc.cst = IOP_CS_RAW;
     img->loader = LOADER_RAWSPEED;
     return DT_IMAGEIO_OK;
   }
@@ -540,7 +553,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
     }
   }
 
-  img->buf_dsc.cst = iop_cs_RAW;
+  img->buf_dsc.cst = IOP_CS_RAW;
   img->loader = LOADER_RAWSPEED;
 
   //  Check if the camera is missing samples
@@ -554,6 +567,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   return DT_IMAGEIO_OK;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

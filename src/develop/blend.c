@@ -67,16 +67,16 @@ static inline dt_develop_blend_colorspace_t _blend_default_module_blend_colorspa
   {
     switch(module->blend_colorspace(module, NULL, NULL))
     {
-      case iop_cs_RAW:
+      case IOP_CS_RAW:
         return DEVELOP_BLEND_CS_RAW;
-      case iop_cs_Lab:
-      case iop_cs_LCh:
+      case IOP_CS_LAB:
+      case IOP_CS_LCH:
         return DEVELOP_BLEND_CS_LAB;
-      case iop_cs_rgb:
+      case IOP_CS_RGB:
         return is_scene_referred ? DEVELOP_BLEND_CS_RGB_SCENE : DEVELOP_BLEND_CS_RGB_DISPLAY;
-      case iop_cs_HSL:
+      case IOP_CS_HSL:
         return DEVELOP_BLEND_CS_RGB_DISPLAY;
-      case iop_cs_JzCzhz:
+      case IOP_CS_JZCZHZ:
         return DEVELOP_BLEND_CS_RGB_SCENE;
       default:
         return DEVELOP_BLEND_CS_NONE;
@@ -139,12 +139,12 @@ dt_iop_colorspace_type_t dt_develop_blend_colorspace(const dt_dev_pixelpipe_iop_
   switch(bp->blend_cst)
   {
     case DEVELOP_BLEND_CS_RAW:
-      return iop_cs_RAW;
+      return IOP_CS_RAW;
     case DEVELOP_BLEND_CS_LAB:
-      return iop_cs_Lab;
+      return IOP_CS_LAB;
     case DEVELOP_BLEND_CS_RGB_DISPLAY:
     case DEVELOP_BLEND_CS_RGB_SCENE:
-      return iop_cs_rgb;
+      return IOP_CS_RGB;
     default:
       return cst;
   }
@@ -240,7 +240,7 @@ static inline float _detail_mask_threshold(const float level, const gboolean det
 static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const float level)
 {
   if(level == 0.0f) return;
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
 
   const gboolean detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
@@ -258,7 +258,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   const int oheight = roi_out->height;
   if(info) fprintf(stderr, "[_refine_with_detail_mask] in module %s %ix%i --> %ix%i\n", self->op, iwidth, iheight, owidth, oheight);
 
-  const int bufsize = MAX(iwidth * iheight, owidth * oheight);
+  const size_t bufsize = (size_t)MAX(iwidth * iheight, owidth * oheight);
 
   tmp = dt_alloc_align_float(bufsize);
   lum = dt_alloc_align_float(bufsize);
@@ -275,16 +275,14 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
 
   if(warp_mask == NULL) goto error;
 
-  const int msize = owidth * oheight;
+  const size_t msize = (size_t)owidth * oheight;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask, warp_mask, msize) \
   schedule(simd:static) aligned(mask, warp_mask : 64)
  #endif
-  for(int idx =0; idx < msize; idx++)
-  {
+  for(size_t idx =0; idx < msize; idx++)
     mask[idx] = mask[idx] * warp_mask[idx];
-  }
   dt_free_align(warp_mask);
 
   return;
@@ -403,11 +401,11 @@ static void _develop_blend_process_mask_tone_curve(float *const restrict mask, c
   {
     float x = mask[k] / opacity;
     x = 2.f * x - 1.f;
-    if (1.f - brightness <= 0.f)
+    if(1.f - brightness <= 0.f)
       x = mask[k] <= mask_epsilon ? -1.f : 1.f;
-    else if (1.f + brightness <= 0.f)
+    else if(1.f + brightness <= 0.f)
       x = mask[k] >= 1.f - mask_epsilon ? 1.f : -1.f;
-    else if (brightness > 0.f)
+    else if(brightness > 0.f)
     {
       x = (x + brightness) / (1.f - brightness);
       x = fminf(x, 1.f);
@@ -471,7 +469,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
   // get channel max values depending on colorspace
   const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
-  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, iop_cs_NONE);
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
 
   // check if mask should be suppressed temporarily (i.e. just set to global opacity value)
   const gboolean suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
@@ -590,7 +588,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       _develop_mask_post_processing operation = post_operations[index];
       if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
-        const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
+        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
         float *restrict guide = (float *restrict)ivoid;
         if(!rois_equal)
           guide = _develop_blend_process_copy_region(guide, ch * iwidth, ch * xoffs, ch * yoffs,
@@ -603,7 +601,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       }
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
-        const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
+        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
         _develop_blend_process_feather((const float *const restrict)ovoid, mask, owidth, oheight, ch,
                                        guide_weight, d->feathering_radius, roi_out->scale / piece->iscale);
       }
@@ -675,7 +673,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
                                 const struct dt_iop_roi_t *roi_out, const float level, const int devid)
 {
   if(level == 0.0f) return;
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
 
   const int detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
@@ -708,7 +706,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   }
 
   {
-    size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_read_mask;
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &tmp);
@@ -719,7 +717,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   }
 
   {
-    size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_calc_blend;
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &blur);
@@ -738,7 +736,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 13, blurmat);
     if(dev_blurmat != NULL)
     {
-      size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
+      size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
       const int clkernel = darktable.opencl->blendop->kernel_mask_blur;
       dt_opencl_set_kernel_arg(devid, clkernel, 0, sizeof(cl_mem), &blur);
       dt_opencl_set_kernel_arg(devid, clkernel, 1, sizeof(cl_mem), &out);
@@ -757,7 +755,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   }
 
   {
-    size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_write_mask;
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &tmp);
@@ -862,7 +860,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   // get channel max values depending on colorspace
   const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
-  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, iop_cs_NONE);
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
@@ -918,7 +916,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   const int devid = piece->pipe->devid;
   const int offs[2] = { xoffs, yoffs };
-  const size_t sizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(owidth, devid), ROUNDUPDHT(oheight, devid), 1 };
 
   cl_int err = -999;
   cl_mem dev_blendif_params = NULL;
@@ -1085,9 +1083,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
         int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
-        if (w < 1) w = 1;
+        if(w < 1) w = 1;
         const float sqrt_eps = 1.0f;
-        const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
+        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
         cl_mem guide = dev_in;
         if(!rois_equal)
@@ -1112,9 +1110,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
         int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
-        if (w < 1) w = 1;
+        if(w < 1) w = 1;
         const float sqrt_eps = 1.0f;
-        const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
+        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
         guided_filter_cl(devid, dev_out, dev_mask_1, dev_mask_2, owidth, oheight, ch, w, sqrt_eps, guide_weight,
                          0.0f, 1.0f);
@@ -1265,7 +1263,7 @@ error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_ioppr_free_iccprofile_params_cl(&work_profile_info_cl, &work_profile_lut_cl, &dev_work_profile_info,
                                      &dev_work_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1349,6 +1347,13 @@ void tiling_callback_blendop(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   tiling->overlap = 0;
   tiling->xalign = 1;
   tiling->yalign = 1;
+
+  dt_develop_blend_params_t *const bldata = (dt_develop_blend_params_t *const)piece->blendop_data;
+  if(bldata)
+  {
+    if(bldata->details != 0.0f)
+      tiling->factor += 0.75f; // details mask requires 3 additional quarter buffers   
+  }
 }
 
 /** check if content of params is all zero, indicating a non-initialized set of
@@ -1907,6 +1912,9 @@ int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so, const 
 
 // tools/update_modelines.sh
 // remove-trailing-space on;
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

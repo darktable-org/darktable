@@ -265,14 +265,14 @@ static void _transform_lcms2(struct dt_iop_module_t *self, const float *const im
 
   *converted_cst = cst_to;
 
-  if(cst_from == iop_cs_rgb && cst_to == iop_cs_Lab)
+  if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_LAB)
   {
     dt_print(DT_DEBUG_DEV,
              "[_transform_lcms2] transfoming from RGB to Lab (%s %s)\n", self->op, self->multi_name);
     _transform_from_to_rgb_lab_lcms2(image_in, image_out, width, height, profile_info->type,
                                      profile_info->filename, profile_info->intent, 1);
   }
-  else if(cst_from == iop_cs_Lab && cst_to == iop_cs_rgb)
+  else if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_RGB)
   {
     dt_print(DT_DEBUG_DEV,
              "[_transform_lcms2] transfoming from Lab to RGB (%s %s)\n", self->op, self->multi_name);
@@ -580,11 +580,11 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
 
   *converted_cst = cst_to;
 
-  if(cst_from == iop_cs_rgb && cst_to == iop_cs_Lab)
+  if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_LAB)
   {
     _transform_rgb_to_lab_matrix(image_in, image_out, width, height, profile_info);
   }
-  else if(cst_from == iop_cs_Lab && cst_to == iop_cs_rgb)
+  else if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_RGB)
   {
     _transform_lab_to_rgb_matrix(image_in, image_out, width, height, profile_info);
   }
@@ -817,7 +817,7 @@ dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
   {
-    fprintf(stderr, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear rec2020\n", type, filename);
+    fprintf(stderr, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear Rec2020\n", type, filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
   pipe->work_profile_info = profile_info;
@@ -839,7 +839,7 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
   {
     fprintf(stderr,
             "[dt_ioppr_set_pipe_input_profile_info] unsupported input profile %i %s, it will be replaced with "
-            "linear rec2020\n",
+            "linear Rec2020\n",
             type, filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
@@ -870,7 +870,7 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
   {
-    if (type != DT_COLORSPACE_DISPLAY)
+    if(type != DT_COLORSPACE_DISPLAY)
     {
       // ??? this error output has been disabled for a display profile.
       // see discussion in https://github.com/darktable-org/darktable/issues/6774
@@ -1085,7 +1085,7 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
     {
       dt_get_times(&end_time);
       fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f CPU) [%s %s]\n",
-          (cst_from == iop_cs_rgb) ? "RGB": "Lab", (cst_to == iop_cs_rgb) ? "RGB": "Lab",
+          (cst_from == IOP_CS_RGB) ? "RGB": "Lab", (cst_to == IOP_CS_RGB) ? "RGB": "Lab",
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
@@ -1097,7 +1097,7 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
     {
       dt_get_times(&end_time);
       fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f lcms2) [%s %s]\n",
-          (cst_from == iop_cs_rgb) ? "RGB": "Lab", (cst_to == iop_cs_rgb) ? "RGB": "Lab",
+          (cst_from == IOP_CS_RGB) ? "RGB": "Lab", (cst_to == IOP_CS_RGB) ? "RGB": "Lab",
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
@@ -1336,11 +1336,11 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
 
-    if(cst_from == iop_cs_rgb && cst_to == iop_cs_Lab)
+    if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_LAB)
     {
       kernel_transform = darktable.opencl->colorspaces->kernel_colorspaces_transform_rgb_matrix_to_lab;
     }
-    else if(cst_from == iop_cs_Lab && cst_to == iop_cs_rgb)
+    else if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_RGB)
     {
       kernel_transform = darktable.opencl->colorspaces->kernel_colorspaces_transform_lab_to_rgb_matrix;
     }
@@ -1393,7 +1393,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
       goto cleanup;
     }
 
-    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     dt_opencl_set_kernel_arg(devid, kernel_transform, 0, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, kernel_transform, 1, sizeof(cl_mem), (void *)&dev_img_out);
@@ -1414,7 +1414,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
     {
       dt_get_times(&end_time);
       fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f GPU) [%s %s]\n",
-          (cst_from == iop_cs_rgb) ? "RGB": "Lab", (cst_to == iop_cs_rgb) ? "RGB": "Lab",
+          (cst_from == IOP_CS_RGB) ? "RGB": "Lab", (cst_to == IOP_CS_RGB) ? "RGB": "Lab",
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
@@ -1602,7 +1602,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
       goto cleanup;
     }
 
-    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     dt_opencl_set_kernel_arg(devid, kernel_transform, 0, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, kernel_transform, 1, sizeof(cl_mem), (void *)&dev_img_out);
@@ -1683,3 +1683,9 @@ cleanup:
 #endif
 
 #undef DT_IOP_ORDER_PROFILE
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

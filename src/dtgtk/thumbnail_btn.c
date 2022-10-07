@@ -22,16 +22,15 @@
 static void _thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass);
 static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button);
 static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr);
-static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
-static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
+static gboolean _thumbnail_btn_enter_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
 
 static void _thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
   widget_class->draw = _thumbnail_btn_draw;
-  widget_class->enter_notify_event = _thumbnail_btn_enter_notify_callback;
-  widget_class->leave_notify_event = _thumbnail_btn_leave_notify_callback;
+  widget_class->enter_notify_event = _thumbnail_btn_enter_leave_notify_callback;
+  widget_class->leave_notify_event = _thumbnail_btn_enter_leave_notify_callback;
 }
 
 static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button)
@@ -79,17 +78,16 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
     else
       flags &= ~CPF_ACTIVE;
 
-    if(flags & CPF_DO_NOT_USE_BORDER)
-    {
-      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0, 0, allocation.width, allocation.height, flags,
-                                        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
-    }
-    else
-    {
-      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0.125 * allocation.width, 0.125 * allocation.height,
-                                        0.75 * allocation.width, 0.75 * allocation.height, flags,
-                                        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
-    }
+    GtkBorder padding;
+    gtk_style_context_get_padding(context, state, &padding);
+    // padding is a percent of the full size
+    const float icon_x = padding.left * allocation.width / 100.0f;
+    const float icon_y = padding.top * allocation.height / 100.0f;
+    const float icon_w = allocation.width - (padding.left + padding.right) * allocation.width / 100.0f;
+    const float icon_h = allocation.height - (padding.top + padding.bottom) * allocation.height / 100.0f;
+    DTGTK_THUMBNAIL_BTN(widget)->icon(
+        cr, icon_x, icon_y, icon_w, icon_h, flags,
+        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
   }
   // and eventually the image border
   cairo_restore(cr);
@@ -101,25 +99,15 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
   return TRUE;
 }
 
-static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
+static gboolean _thumbnail_btn_enter_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
 
-  int flags = gtk_widget_get_state_flags(widget);
-  flags |= GTK_STATE_FLAG_PRELIGHT;
+  if(event->type == GDK_ENTER_NOTIFY)
+    gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
+  else
+    gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
 
-  gtk_widget_set_state_flags(widget, flags, TRUE);
-  gtk_widget_queue_draw(widget);
-  return FALSE;
-}
-static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
-{
-  g_return_val_if_fail(widget != NULL, FALSE);
-
-  int flags = gtk_widget_get_state_flags(widget);
-  flags &= ~GTK_STATE_FLAG_PRELIGHT;
-
-  gtk_widget_set_state_flags(widget, flags, TRUE);
   gtk_widget_queue_draw(widget);
   return FALSE;
 }
@@ -129,8 +117,7 @@ GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflag
 {
   GtkDarktableThumbnailBtn *button;
   button = g_object_new(dtgtk_thumbnail_btn_get_type(), NULL);
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(button));
-  gtk_style_context_add_class(context, "dt_thumb_btn");
+  dt_gui_add_class(GTK_WIDGET(button), "dt_thumb_btn");
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
@@ -171,6 +158,9 @@ gboolean dtgtk_thumbnail_btn_is_hidden(GtkWidget *widget)
 
   return DTGTK_THUMBNAIL_BTN(widget)->hidden;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

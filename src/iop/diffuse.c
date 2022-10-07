@@ -15,6 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include "common/extra_optimizations.h"
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -22,7 +25,6 @@
 #include "common/bspline.h"
 #include "common/darktable.h"
 #include "common/dwt.h"
-#include "common/fast_guided_filter.h"
 #include "common/gaussian.h"
 #include "common/image.h"
 #include "common/imagebuf.h"
@@ -53,26 +55,26 @@ DT_MODULE_INTROSPECTION(2, dt_iop_diffuse_params_t)
 typedef struct dt_iop_diffuse_params_t
 {
   // global parameters
-  int iterations;           // $MIN: 1   $MAX: 128   $DEFAULT: 1  $DESCRIPTION: "iterations"
+  int iterations;           // $MIN: 0    $MAX: 500  $DEFAULT: 1  $DESCRIPTION: "iterations"
   float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
-  int radius;               // $MIN: 1   $MAX: 512   $DEFAULT: 8  $DESCRIPTION: "radius span"
-  float regularization;     // $MIN: 0. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
-  float variance_threshold; // $MIN: -2. $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
+  int radius;               // $MIN: 0    $MAX: 2048 $DEFAULT: 8  $DESCRIPTION: "radius span"
+  float regularization;     // $MIN: 0.   $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
+  float variance_threshold; // $MIN: -2.  $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
 
-  float anisotropy_first;         // $MIN: -10. $MAX: 10.   $DEFAULT: 0. $DESCRIPTION: "1st order anisotropy"
-  float anisotropy_second;        // $MIN: -10. $MAX: 10.   $DEFAULT: 0. $DESCRIPTION: "2nd order anisotropy"
-  float anisotropy_third;         // $MIN: -10. $MAX: 10.   $DEFAULT: 0. $DESCRIPTION: "3rd order anisotropy"
-  float anisotropy_fourth;        // $MIN: -10. $MAX: 10.   $DEFAULT: 0. $DESCRIPTION: "4th order anisotropy"
+  float anisotropy_first;   // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "1st order anisotropy"
+  float anisotropy_second;  // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "2nd order anisotropy"
+  float anisotropy_third;   // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "3rd order anisotropy"
+  float anisotropy_fourth;  // $MIN: -10. $MAX: 10.  $DEFAULT: 0. $DESCRIPTION: "4th order anisotropy"
 
-  float threshold; // $MIN: 0.  $MAX: 8.   $DEFAULT: 0. $DESCRIPTION: "luminance masking threshold"
+  float threshold;          // $MIN: 0.   $MAX: 8.   $DEFAULT: 0. $DESCRIPTION: "luminance masking threshold"
 
-  float first; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "1st order speed"
-  float second; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "2nd order speed"
-  float third; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "3rd order speed"
-  float fourth; // $MIN: -1. $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th order speed"
+  float first;              // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "1st order speed"
+  float second;             // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "2nd order speed"
+  float third;              // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "3rd order speed"
+  float fourth;             // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "4th order speed"
 
   // v2
-  int radius_center;      // $MIN: 0 $MAX: 512 $DEFAULT: 0 $DESCRIPTION: "central radius"
+  int radius_center;        // $MIN: 0    $MAX: 1024 $DEFAULT: 0  $DESCRIPTION: "central radius"
 
   // new versions add params mandatorily at the end, so we can memcpy old parameters at the beginning
 
@@ -87,7 +89,10 @@ typedef struct dt_iop_diffuse_gui_data_t
 
 typedef struct dt_iop_diffuse_global_data_t
 {
-  int kernel_wavelets_decompose;
+  int kernel_filmic_bspline_vertical;
+  int kernel_filmic_bspline_horizontal;
+  int kernel_filmic_wavelets_detail;
+
   int kernel_diffuse_build_mask;
   int kernel_diffuse_inpaint_mask;
   int kernel_diffuse_pde;
@@ -132,14 +137,16 @@ const char *aliases()
   return _("diffusion|deconvolution|blur|sharpening");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("simulate directional diffusion of light with heat transfer model\n"
-                                  "to apply an iterative edge-oriented blur, \n"
-                                  "inpaint damaged parts of the image,\n"
+                                  "to apply an iterative edge-oriented blur,\n"
+                                  "inpaint damaged parts of the image,"
                                   "or to remove blur with blind deconvolution."),
-                                _("corrective and creative"), _("linear, RGB, scene-referred"), _("linear, RGB"),
+                                _("corrective and creative"),
+                                _("linear, RGB, scene-referred"),
+                                _("linear, RGB"),
                                 _("linear, RGB, scene-referred"));
 }
 
@@ -155,7 +162,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
@@ -479,44 +486,6 @@ void init_presets(dt_iop_module_so_t *self)
                              DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
-// The B spline best approximate a Gaussian of standard deviation :
-// see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/
-#define B_SPLINE_SIGMA 1.0553651328015339f
-
-static inline float normalize_laplacian(const float sigma)
-{
-  // Normalize the wavelet scale to approximate a laplacian
-  // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Scaling-coefficient
-  return 2.f * M_PI_F / (sqrtf(M_PI_F) * sqf(sigma));
-}
-
-static inline float equivalent_sigma_at_step(const float sigma, const unsigned int s)
-{
-  // If we stack several gaussian blurs of standard deviation sigma on top of each other,
-  // this is the equivalent standard deviation we get at the end (after s steps)
-  // First step is s = 0
-  // see
-  // https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Multi-scale-iterative-scheme
-  if(s == 0)
-    return sigma;
-  else
-    return sqrtf(sqf(equivalent_sigma_at_step(sigma, s - 1)) + sqf(exp2f((float)s) * sigma));
-}
-
-static inline unsigned int num_steps_to_reach_equivalent_sigma(const float sigma_filter, const float sigma_final)
-{
-  // The inverse of the above : compute the number of scales needed to reach the desired equivalent sigma_final
-  // after sequential blurs of constant sigma_filter
-  unsigned int s = 0;
-  float radius = sigma_filter;
-  while(radius < sigma_final)
-  {
-    ++s;
-    radius = sqrtf(sqf(radius) + sqf((float)(1 << s) * sigma_filter));
-  }
-  return s + 1;
-}
-
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
@@ -635,15 +604,20 @@ static inline void build_matrix(const dt_aligned_pixel_t a[2][2], dt_aligned_pix
 {
   for_each_channel(c)
   {
-    const float b13 = a[0][1][c] / 2.0f;
-    const float b11 = -b13;
+    const float b11 = a[0][1][c] / 2.0f;
+    const float b13 = -b11;
     const float b22 = -2.0f * (a[0][0][c] + a[1][1][c]);
 
     // build the kernel of rotated anisotropic laplacian
     // from https://www.researchgate.net/publication/220663968 :
-    // [ [ -a12 / 2,  a22,           a12 / 2  ],
+    // [ [ a12 / 2,  a22,            -a12 / 2 ],
     //   [ a11,      -2 (a11 + a22), a11      ],
-    //   [ a12 / 2,   a22,          -a12 / 2  ] ]
+    //   [ -a12 / 2,   a22,          a12 / 2  ] ]
+    // N.B. we have flipped the signs of the a12 terms
+    // compared to the paper. There's probably a mismatch
+    // of coordinate convention between the paper and the
+    // original derivation of this convolution mask
+    // (Witkin 1991, https://doi.org/10.1145/127719.122750).
     kernel[0][c] = b11;
     kernel[1][c] = a[1][1][c];
     kernel[2][c] = b13;
@@ -1085,10 +1059,20 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
              void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
 
   const size_t width = roi_out->width;
   const size_t height = roi_out->height;
+
+  // allow fast mode, just copy input to ouput
+  if(fastmode)
+  {
+    const size_t ch = piece->colors;
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    return;
+  }
 
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
@@ -1107,6 +1091,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+
+  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16);
 
   gboolean out_of_memory = FALSE;
 
@@ -1245,13 +1231,31 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
       buffer_out = LF_odd;
     }
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 0, sizeof(cl_mem), (void *)&buffer_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 1, sizeof(cl_mem), (void *)&HF[s]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 2, sizeof(cl_mem), (void *)&buffer_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 3, sizeof(int), (void *)&mult);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 4, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 5, sizeof(int), (void *)&height);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_wavelets_decompose, sizes);
+    // Compute wavelets low-frequency scales
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 0, sizeof(cl_mem), (void *)&buffer_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 1, sizeof(cl_mem), (void *)&HF[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 4, sizeof(int), (void *)&mult);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_horizontal, sizes);
+    if(err != CL_SUCCESS) return err;
+
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 0, sizeof(cl_mem), (void *)&HF[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 1, sizeof(cl_mem), (void *)&buffer_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 4, sizeof(int), (void *)&mult);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_vertical, sizes);
+    if(err != CL_SUCCESS) return err;
+
+    // Compute wavelets high-frequency scales and backup the maximum of texture over the RGB channels
+    // Note : HF = detail - LF
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 0, sizeof(cl_mem), (void *)&buffer_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 1, sizeof(cl_mem), (void *)&buffer_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 2, sizeof(cl_mem), (void *)&HF[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 4, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_wavelets_detail, sizes);
     if(err != CL_SUCCESS) return err;
 
     residual = buffer_out;
@@ -1322,6 +1326,8 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
   dt_iop_diffuse_global_data_t *const gd = (dt_iop_diffuse_global_data_t *)self->global_data;
 
@@ -1333,7 +1339,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  // allow fast mode, just copy input to ouput
+  if(fastmode)
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    return err == CL_SUCCESS;
+  }
+
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   cl_mem in = dev_in;
 
@@ -1351,6 +1366,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+
+  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16);
 
   // wavelets scales buffers
   cl_mem HF[MAX_NUM_SCALES];
@@ -1439,7 +1456,7 @@ error:
   if(LF_odd) dt_opencl_release_mem_object(LF_odd);
   for(int s = 0; s < scales; s++) if(HF[s]) dt_opencl_release_mem_object(HF[s]);
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_diffuse] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_diffuse] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -1451,8 +1468,12 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_diffuse_build_mask = dt_opencl_create_kernel(program, "build_mask");
   gd->kernel_diffuse_inpaint_mask = dt_opencl_create_kernel(program, "inpaint_mask");
-  gd->kernel_wavelets_decompose = dt_opencl_create_kernel(program, "diffuse_blur_bspline");
   gd->kernel_diffuse_pde = dt_opencl_create_kernel(program, "diffuse_pde");
+
+  const int wavelets = 35; // bspline.cl, from programs.conf
+  gd->kernel_filmic_bspline_horizontal = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_horizontal");
+  gd->kernel_filmic_bspline_vertical = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_vertical");
+  gd->kernel_filmic_wavelets_detail = dt_opencl_create_kernel(wavelets, "wavelets_detail_level");
 }
 
 
@@ -1461,54 +1482,35 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_diffuse_global_data_t *gd = (dt_iop_diffuse_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_diffuse_build_mask);
   dt_opencl_free_kernel(gd->kernel_diffuse_inpaint_mask);
-  dt_opencl_free_kernel(gd->kernel_wavelets_decompose);
   dt_opencl_free_kernel(gd->kernel_diffuse_pde);
+
+  dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);
+  dt_opencl_free_kernel(gd->kernel_filmic_bspline_horizontal);
+  dt_opencl_free_kernel(gd->kernel_filmic_wavelets_detail);
   free(module->data);
   module->data = NULL;
 }
 #endif
 
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_diffuse_gui_data_t *g = (dt_iop_diffuse_gui_data_t *)self->gui_data;
-  dt_iop_diffuse_params_t *p = (dt_iop_diffuse_params_t *)self->params;
-  dt_bauhaus_slider_set_soft(g->iterations, p->iterations);
-  dt_bauhaus_slider_set_soft(g->fourth, p->fourth);
-  dt_bauhaus_slider_set_soft(g->third, p->third);
-  dt_bauhaus_slider_set_soft(g->second, p->second);
-  dt_bauhaus_slider_set_soft(g->first, p->first);
-
-  dt_bauhaus_slider_set_soft(g->variance_threshold, p->variance_threshold);
-  dt_bauhaus_slider_set_soft(g->regularization, p->regularization);
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set_soft(g->radius_center, p->radius_center);
-  dt_bauhaus_slider_set_soft(g->sharpness, p->sharpness);
-  dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
-
-  dt_bauhaus_slider_set_soft(g->anisotropy_first, p->anisotropy_first);
-  dt_bauhaus_slider_set_soft(g->anisotropy_second, p->anisotropy_second);
-  dt_bauhaus_slider_set_soft(g->anisotropy_third, p->anisotropy_third);
-  dt_bauhaus_slider_set_soft(g->anisotropy_fourth, p->anisotropy_fourth);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_diffuse_gui_data_t *g = IOP_GUI_ALLOC(diffuse);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion properties")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 0);
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
-  dt_bauhaus_slider_enable_soft_boundaries(g->iterations, 0., 500);
+  dt_bauhaus_slider_set_soft_range(g->iterations, 1., 128);
   gtk_widget_set_tooltip_text(g->iterations,
                               _("more iterations make the effect stronger but the module slower.\n"
                                 "this is analogous to giving more time to the diffusion reaction.\n"
-                                "if you plan on sharpening or inpainting, more iterations help reconstruction."));
+                                "if you plan on sharpening or inpainting, \n"
+                                "more iterations help reconstruction."));
 
   g->radius_center = dt_bauhaus_slider_from_params(self, "radius_center");
-  dt_bauhaus_slider_enable_soft_boundaries(g->radius_center, 0., 1024.);
-  dt_bauhaus_slider_set_format(g->radius_center, "%.0f px");
+  dt_bauhaus_slider_set_soft_range(g->radius_center, 0., 512.);
+  dt_bauhaus_slider_set_format(g->radius_center, " px");
   gtk_widget_set_tooltip_text(
       g->radius_center, _("main scale of the diffusion.\n"
                           "zero makes diffusion act on the finest details more heavily.\n"
@@ -1517,101 +1519,97 @@ void gui_init(struct dt_iop_module_t *self)
                           "increase to act on local contrast instead."));
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
-  dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0., 2048.);
-  dt_bauhaus_slider_set_format(g->radius, "%.0f px");
+  dt_bauhaus_slider_set_soft_range(g->radius, 1., 512.);
+  dt_bauhaus_slider_set_format(g->radius, " px");
   gtk_widget_set_tooltip_text(
-      g->radius, _("width of the diffusion around the center radius.\n"
+      g->radius, _("width of the diffusion around the central radius.\n"
                    "high values diffuse on a large band of radii.\n"
-                   "low values diffuse closer to the center radius.\n"
-                   "if you plan on deblurring, the radius should be around the width of your lens blur."));
+                   "low values diffuse closer to the central radius.\n"
+                   "if you plan on deblurring, \n"
+                   "the radius should be around the width of your lens blur."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion speed")), FALSE, FALSE, 0);
+  GtkWidget *label_speed = dt_ui_section_label_new(_("speed (sharpen ↔ diffuse)"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label_speed, FALSE, FALSE, 0);
 
   g->first = dt_bauhaus_slider_from_params(self, "first");
-  dt_bauhaus_slider_set_factor(g->first, 100.0f);
   dt_bauhaus_slider_set_digits(g->first, 4);
-  dt_bauhaus_slider_set_format(g->first, "%+.2f %%");
-  gtk_widget_set_tooltip_text(g->first, _("smoothing or sharpening of smooth details (gradients).\n"
-                                          "positive values diffuse and blur.\n"
-                                          "negative values sharpen.\n"
-                                          "zero does nothing."));
+  dt_bauhaus_slider_set_format(g->first, "%");
+  gtk_widget_set_tooltip_text(g->first, _("diffusion speed of low-frequency wavelet layers\n"
+                  "in the direction of 1st order anisotropy (set below).\n\n"
+                  "negative values sharpen, \n"
+                  "positive values diffuse and blur, \n"
+                  "zero does nothing."));
 
   g->second = dt_bauhaus_slider_from_params(self, "second");
   dt_bauhaus_slider_set_digits(g->second, 4);
-  dt_bauhaus_slider_set_factor(g->second, 100.0f);
-  dt_bauhaus_slider_set_format(g->second, "%+.2f %%");
-  gtk_widget_set_tooltip_text(g->second, _("smoothing or sharpening of sharp details.\n"
-                                          "positive values diffuse and blur.\n"
-                                          "negative values sharpen.\n"
-                                          "zero does nothing."));
+  dt_bauhaus_slider_set_format(g->second, "%");
+  gtk_widget_set_tooltip_text(g->second, _("diffusion speed of low-frequency wavelet layers\n"
+                  "in the direction of 2nd order anisotropy (set below).\n\n"
+                  "negative values sharpen, \n"
+                  "positive values diffuse and blur, \n"
+                  "zero does nothing."));
 
   g->third = dt_bauhaus_slider_from_params(self, "third");
   dt_bauhaus_slider_set_digits(g->third, 4);
-  dt_bauhaus_slider_set_factor(g->third, 100.0f);
-  dt_bauhaus_slider_set_format(g->third, "%+.2f %%");
-  gtk_widget_set_tooltip_text(g->third, _("smoothing or sharpening of sharp details.\n"
-                                          "positive values diffuse and blur.\n"
-                                          "negative values sharpen.\n"
-                                          "zero does nothing."));
+  dt_bauhaus_slider_set_format(g->third, "%");
+  gtk_widget_set_tooltip_text(g->third, _("diffusion speed of high-frequency wavelet layers\n"
+                  "in the direction of 3rd order anisotropy (set below).\n\n"
+                  "negative values sharpen, \n"
+                  "positive values diffuse and blur, \n"
+                  "zero does nothing."));
 
   g->fourth = dt_bauhaus_slider_from_params(self, "fourth");
   dt_bauhaus_slider_set_digits(g->fourth, 4);
-  dt_bauhaus_slider_set_factor(g->fourth, 100.0f);
-  dt_bauhaus_slider_set_format(g->fourth, "%+.2f %%");
-  gtk_widget_set_tooltip_text(g->fourth, _("smoothing or sharpening of sharp details (gradients).\n"
-                                           "positive values diffuse and blur.\n"
-                                           "negative values sharpen.\n"
-                                           "zero does nothing."));
+  dt_bauhaus_slider_set_format(g->fourth, "%");
+  gtk_widget_set_tooltip_text(g->fourth, _("diffusion speed of high-frequency wavelet layers\n"
+                  "in the direction of 4th order anisotropy (set below).\n\n"
+                  "negative values sharpen, \n"
+                  "positive values diffuse and blur, \n"
+                  "zero does nothing."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion directionality")), FALSE, FALSE, 0);
+  GtkWidget *label_direction = dt_ui_section_label_new(_("direction"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label_direction, FALSE, FALSE, 0);
 
   g->anisotropy_first = dt_bauhaus_slider_from_params(self, "anisotropy_first");
   dt_bauhaus_slider_set_digits(g->anisotropy_first, 4);
-  dt_bauhaus_slider_set_factor(g->anisotropy_first, 100.0f);
-  dt_bauhaus_slider_set_format(g->anisotropy_first, "%+.2f %%");
-  gtk_widget_set_tooltip_text(g->anisotropy_first,
-                              _("anisotropy of the diffusion.\n"
-                                "zero makes the diffusion isotrope (same in all directions)\n"
-                                "positives make the diffusion follow isophotes more closely\n"
-                                "negatives make the diffusion follow gradients more closely"));
+  dt_bauhaus_slider_set_format(g->anisotropy_first, "%");
+  gtk_widget_set_tooltip_text(g->anisotropy_first, _("direction of 1st order speed (set above).\n\n"
+                  "negative values follow gradients more closely, \n"
+                  "positive values rather avoid edges (isophotes), \n"
+                  "zero affects both equally (isotropic)."));
 
   g->anisotropy_second = dt_bauhaus_slider_from_params(self, "anisotropy_second");
   dt_bauhaus_slider_set_digits(g->anisotropy_second, 4);
-  dt_bauhaus_slider_set_factor(g->anisotropy_second, 100.0f);
-  dt_bauhaus_slider_set_format(g->anisotropy_second, "%+.2f %%");
-  gtk_widget_set_tooltip_text(g->anisotropy_second,
-                              _("anisotropy of the diffusion.\n"
-                                "zero makes the diffusion isotrope (same in all directions)\n"
-                                "positives make the diffusion follow isophotes more closely\n"
-                                "negatives make the diffusion follow gradients more closely"));
+  dt_bauhaus_slider_set_format(g->anisotropy_second, "%");
+  gtk_widget_set_tooltip_text(g->anisotropy_second,_("direction of 2nd order speed (set above).\n\n"
+                  "negative values follow gradients more closely, \n"
+                  "positive values rather avoid edges (isophotes), \n"
+                  "zero affects both equally (isotropic)."));
 
   g->anisotropy_third = dt_bauhaus_slider_from_params(self, "anisotropy_third");
   dt_bauhaus_slider_set_digits(g->anisotropy_third, 4);
-  dt_bauhaus_slider_set_factor(g->anisotropy_third, 100.0f);
-  dt_bauhaus_slider_set_format(g->anisotropy_third, "%+.2f %%");
-  gtk_widget_set_tooltip_text(g->anisotropy_third,
-                              _("anisotropy of the diffusion.\n"
-                                "zero makes the diffusion isotrope (same in all directions)\n"
-                                "positives make the diffusion follow isophotes more closely\n"
-                                "negatives make the diffusion follow gradients more closely"));
+  dt_bauhaus_slider_set_format(g->anisotropy_third, "%");
+  gtk_widget_set_tooltip_text(g->anisotropy_third,_("direction of 3rd order speed (set above).\n\n"
+                  "negative values follow gradients more closely, \n"
+                  "positive values rather avoid edges (isophotes), \n"
+                  "zero affects both equally (isotropic)."));
 
   g->anisotropy_fourth = dt_bauhaus_slider_from_params(self, "anisotropy_fourth");
   dt_bauhaus_slider_set_digits(g->anisotropy_fourth, 4);
-  dt_bauhaus_slider_set_factor(g->anisotropy_fourth, 100.0f);
-  dt_bauhaus_slider_set_format(g->anisotropy_fourth, "%+.2f %%");
-  gtk_widget_set_tooltip_text(g->anisotropy_fourth,
-                              _("anisotropy of the diffusion.\n"
-                                "zero makes the diffusion isotrope (same in all directions)\n"
-                                "positives make the diffusion follow isophotes more closely\n"
-                                "negatives make the diffusion follow gradients more closely"));
+  dt_bauhaus_slider_set_format(g->anisotropy_fourth, "%");
+  gtk_widget_set_tooltip_text(g->anisotropy_fourth,_("direction of 4th order speed (set above).\n\n"
+                  "negative values follow gradients more closely, \n"
+                  "positive values rather avoid edges (isophotes), \n"
+                  "zero affects both equally (isotropic)."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("edges management")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("edge management")), FALSE, FALSE, 0);
 
   g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
-  dt_bauhaus_slider_set_factor(g->sharpness, 100.0f);
-  dt_bauhaus_slider_set_format(g->sharpness, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->sharpness, "%");
   gtk_widget_set_tooltip_text(g->sharpness,
-                              _("increase or decrease the sharpness of the highest frequencies"));
+                              _("increase or decrease the sharpness of the highest frequencies.\n"
+                              "can be used to keep details after blooming,\n"
+                              "for standalone sharpening set speed to negative values."));
 
   g->regularization = dt_bauhaus_slider_from_params(self, "regularization");
   gtk_widget_set_tooltip_text(g->regularization,
@@ -1630,11 +1628,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion spatiality")), FALSE, FALSE, 0);
 
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
-  dt_bauhaus_slider_set_factor(g->threshold, 100.0f);
-  dt_bauhaus_slider_set_format(g->threshold, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->threshold, "%");
   gtk_widget_set_tooltip_text(g->threshold,
                               _("luminance threshold for the mask.\n"
                                 "0. disables the luminance masking and applies the module on the whole image.\n"
                                 "any higher value excludes pixels with luminance lower than the threshold.\n"
                                 "this can be used to inpaint highlights."));
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

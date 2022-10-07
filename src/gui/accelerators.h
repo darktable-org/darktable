@@ -31,11 +31,13 @@ void dt_shortcuts_save(const gchar *ext, const gboolean backup);
 
 void dt_shortcuts_load(const gchar *ext, const gboolean clear);
 
-void dt_shortcuts_reinitialise();
+void dt_shortcuts_reinitialise(dt_action_t *action);
 
 void dt_shortcuts_select_view(dt_view_type_flags_t view);
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data);
+gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
+                                      GtkTooltip *tooltip, gpointer user_data);
 
 float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float size);
 
@@ -43,8 +45,23 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action);
 
 dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create);
 
+static inline dt_action_t *dt_action_section(dt_action_t *owner, const gchar *section)
+{
+  return dt_action_locate(owner, (gchar **)(const gchar *[]){section, NULL}, TRUE);
+}
+static inline dt_view_t *dt_action_view(dt_action_t *action)
+{
+  while(action && action->type != DT_ACTION_TYPE_VIEW) action = action->owner;
+  return (dt_view_t *)action;
+}
+static inline dt_lib_module_t *dt_action_lib(dt_action_t *action)
+{
+  while(action && action->type != DT_ACTION_TYPE_LIB) action = action->owner;
+  return (dt_lib_module_t *)action;
+}
+
 void dt_action_define_preset(dt_action_t *action, const gchar *name);
-// delete if new_name == NULL
+// rename or remove (new_name == NULL) actions or presets
 void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const gchar *new_name);
 void dt_action_rename(dt_action_t *action, const gchar *new_name);
 
@@ -139,9 +156,10 @@ typedef struct dt_action_def_t
 
 extern const dt_action_def_t dt_action_def_toggle;
 extern const dt_action_def_t dt_action_def_button;
+extern const dt_action_def_t dt_action_def_entry;
 extern const dt_action_def_t dt_action_def_value;
 
-void dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
+dt_action_t *dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
 
 dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
 
@@ -154,45 +172,34 @@ typedef enum dt_accel_iop_slider_scale_t
   DT_IOP_PRECISION_COARSE = 2
 } dt_accel_iop_slider_scale_t;
 
-// Accelerator registration functions
-void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods);
-//register lib shortcut but make it look like a view shortcut
-void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods);
-void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, guint element, guint effect, guint accel_key, GdkModifierType mods);
+typedef void dt_action_callback_t(dt_action_t *action);
+dt_action_t *dt_action_register(dt_action_t *owner, const gchar *label, dt_action_callback_t callback, guint accel_key, GdkModifierType mods);
+void dt_shortcut_register(dt_action_t *owner, guint element, guint effect, guint accel_key, GdkModifierType mods);
 
 // Accelerator connection functions
-void dt_accel_connect_global(const gchar *path, GClosure *closure);
-void dt_accel_connect_view(dt_view_t *self, const gchar *path, GClosure *closure);
-void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure);
-void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure);
-//connect lib as a view shortcut
-void dt_accel_connect_lib_as_view(dt_lib_module_t *module, gchar *view_name, const gchar *path, GClosure *closure);
-//connect lib as a global shortcut
-void dt_accel_connect_lib_as_global(dt_lib_module_t *module, const gchar *path, GClosure *closure);
-void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
-void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button);
-void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_instance_iop(dt_iop_module_t *module);
-void dt_accel_connect_lua(const gchar *path, GClosure *closure);
-void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path_string, GClosure *closure);
 
 // Cleanup function
 void dt_action_cleanup_instance_iop(dt_iop_module_t *module);
 
-// Rename/remove functions
-void dt_accel_rename_global(const gchar *path, const gchar *new_path);
-void dt_accel_rename_lua(const gchar *path, const gchar *new_path);
-
 // UX miscellaneous functions
-void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *text);
+void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *msg, ...);
 
-// Get the scale multiplier for adjusting sliders with shortcuts
-float dt_accel_get_slider_scale_multiplier();
+// check if widget intentionally hidden (to disable it)
+gboolean dt_action_widget_invisible(GtkWidget *w);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// Get the speed multiplier for adjusting sliders and other widgets
+float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state);
+
+// create a shortcutable button with ellipsized label and tooltip
+GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, guint accel_key, GdkModifierType mods);
+
+// create a shortcutable entry field
+GtkWidget *dt_action_entry_new(dt_action_t *ac, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, const gchar *text);
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

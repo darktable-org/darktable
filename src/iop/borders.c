@@ -181,7 +181,7 @@ const char *name()
   return _("framing");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("add solid borders or margins around the picture"),
                                       _("creative"),
@@ -208,7 +208,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const restrict points, size_t points_count)
@@ -221,7 +221,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const int border_size_l = border_tot_width * d->pos_h;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if (border_size_l == 0 && border_size_t == 0) return 1;
+  if(border_size_l == 0 && border_size_t == 0) return 1;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -247,7 +247,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const int border_size_l = border_tot_width * d->pos_h;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if (border_size_l == 0 && border_size_t == 0) return 1;
+  if(border_size_l == 0 && border_size_t == 0) return 1;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -402,12 +402,12 @@ struct border_positions_t
 // this will be called from inside an OpenMP parallel section, so no need to parallelize further
 static inline void set_pixels(float *buf, const dt_aligned_pixel_t color, const int npixels)
 {
-  for (int i = 0; i < npixels; i++)
+  for(int i = 0; i < npixels; i++)
   {
 #ifdef _OPENMP
 #pragma omp simd aligned(buf, color : 16)
 #endif
-    for (int c = 0; c < 4; c++)
+    for(int c = 0; c < 4; c++)
     {
       buf[4*i+c] = color[c];
     }
@@ -417,12 +417,12 @@ static inline void set_pixels(float *buf, const dt_aligned_pixel_t color, const 
 // this will be called from inside an OpenMP parallel section, so no need to parallelize further
 static inline void copy_pixels(float *out, const float *const in, const int npixels)
 {
-  for (int i = 0; i < npixels; i++)
+  for(int i = 0; i < npixels; i++)
   {
 #ifdef _OPENMP
 #pragma omp simd aligned(in, out : 16)
 #endif
-    for (int c = 0; c < 4; c++)
+    for(int c = 0; c < 4; c++)
     {
       out[4*i+c] = in[4*i+c];
     }
@@ -437,22 +437,22 @@ void copy_image_with_border(float *out, const float *const in, const struct bord
   dt_omp_firstprivate(in, out, binfo, image_width) \
   schedule(static)
 #endif
-  for (size_t row = 0; row < binfo->height; row++)
+  for(size_t row = 0; row < binfo->height; row++)
   {
     float *outrow = out + 4 * row * binfo->width;
-    if (row < binfo->border_top || row >= binfo->border_bot)
+    if(row < binfo->border_top || row >= binfo->border_bot)
     {
       // top/bottom border outside the frameline: entirely the border color
       set_pixels(outrow, binfo->bcolor, binfo->width);
     }
-    else if (row < binfo->fl_top || row >= binfo->fl_bot)
+    else if(row < binfo->fl_top || row >= binfo->fl_bot)
     {
       // top/bottom frameline
       set_pixels(outrow, binfo->bcolor, binfo->border_left);
       set_pixels(outrow + 4*binfo->border_left, binfo->flcolor, binfo->border_right - binfo->border_left);
       set_pixels(outrow + 4*binfo->border_right, binfo->bcolor, binfo->width - binfo->border_right);
     }
-    else if (row < binfo->image_top || row >= binfo->image_bot)
+    else if(row < binfo->image_top || row >= binfo->image_bot)
     {
       // top/bottom border inside the frameline
       set_pixels(outrow, binfo->bcolor, binfo->border_left);
@@ -466,7 +466,7 @@ void copy_image_with_border(float *out, const float *const in, const struct bord
       // image area: set left border (w/optional frame line), copy image row, set right border (w/optional frame line)
       // set outer border
       set_pixels(outrow, binfo->bcolor, binfo->border_left);
-      if (binfo->image_left > binfo->border_left)
+      if(binfo->image_left > binfo->border_left)
       {
         // we have a frameline, so set it and the inner border
         set_pixels(outrow + 4*binfo->border_left, binfo->flcolor, binfo->fl_left - binfo->border_left);
@@ -476,7 +476,7 @@ void copy_image_with_border(float *out, const float *const in, const struct bord
       copy_pixels(outrow + 4*binfo->image_left, in + 4 * (row - binfo->image_top) * binfo->stride, image_width);
       // set right border
       set_pixels(outrow + 4*binfo->image_right, binfo->bcolor, binfo->fl_right - binfo->image_right);
-      if (binfo->width > binfo->fl_right)
+      if(binfo->width > binfo->fl_right)
       {
         // we have a frameline, so set it and the outer border
         set_pixels(outrow + 4*binfo->fl_right, binfo->flcolor, binfo->border_right - binfo->fl_right);
@@ -525,7 +525,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       .height = roi_out->height,
       .stride = roi_in->width
   };
-  if (frame_size > 0)
+  if(frame_size > 0)
   {
     const int image_lx = border_size_l - roi_out->x;
     const int image_ty = border_size_t - roi_out->y;
@@ -586,7 +586,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // ----- Filling border
   const float col[4] = { d->color[0], d->color[1], d->color[2], 1.0f };
-  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   const int zero = 0;
   dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 0, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &zero);
@@ -662,7 +662,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_borders] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_borders] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -844,7 +844,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
 
-  if (w == g->aspect_slider)
+  if(w == g->aspect_slider)
   {
     dt_bauhaus_combobox_set(g->aspect, DT_IOP_BORDERS_ASPECT_COUNT);
   }
@@ -897,8 +897,8 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  dt_bauhaus_slider_set(g->size, p->size);
 
+// FIXME by hand
   // ----- Aspect
   int k = 0;
   for(; k < DT_IOP_BORDERS_ASPECT_COUNT; k++)
@@ -913,9 +913,6 @@ void gui_update(struct dt_iop_module_t *self)
   {
       dt_bauhaus_combobox_set(g->aspect, k);
   }
-
-  // ----- aspect orientation
-  dt_bauhaus_combobox_set(g->aspect_orient, p->aspect_orient);
 
   // ----- Position H
   for(k = 0; k < DT_IOP_BORDERS_POSITION_H_COUNT; k++)
@@ -944,11 +941,6 @@ void gui_update(struct dt_iop_module_t *self)
   {
     dt_bauhaus_combobox_set(g->pos_v, k);
   }
-  dt_bauhaus_slider_set(g->aspect_slider, p->aspect);
-  dt_bauhaus_slider_set(g->pos_h_slider, p->pos_h);
-  dt_bauhaus_slider_set(g->pos_v_slider, p->pos_v);
-  dt_bauhaus_slider_set(g->frame_size, p->frame_size);
-  dt_bauhaus_slider_set(g->frame_offset, p->frame_offset);
 
   // ----- Border Color
   GdkRGBA c = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
@@ -1031,9 +1023,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->default_params;
 
   g->size = dt_bauhaus_slider_from_params(self, "size");
-  dt_bauhaus_slider_set_factor(g->size, 100);
   dt_bauhaus_slider_set_digits(g->size, 4);
-  dt_bauhaus_slider_set_format(g->size, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->size, "%");
   gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
 
   g->aspect = dt_bauhaus_combobox_new(self);
@@ -1060,7 +1051,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->pos_h, _("select the horizontal position ratio relative to top "
                                           "or right click and type your own (y:h)"));
   g->pos_h_slider = dt_bauhaus_slider_from_params(self, "pos_h");
-  dt_bauhaus_slider_set_step(g->pos_h_slider, 0.1);
   gtk_widget_set_tooltip_text(g->pos_h_slider, _("custom horizontal position"));
 
   g->pos_v = dt_bauhaus_combobox_new(self);
@@ -1071,23 +1061,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->pos_v, _("select the vertical position ratio relative to left "
                                           "or right click and type your own (x:w)"));
   g->pos_v_slider = dt_bauhaus_slider_from_params(self, "pos_v");
-  dt_bauhaus_slider_set_step(g->pos_v_slider, 0.1);
   gtk_widget_set_tooltip_text(g->pos_v_slider, _("custom vertical position"));
 
   gui_init_positions(self);
 
   g->frame_size = dt_bauhaus_slider_from_params(self, "frame_size");
-  dt_bauhaus_slider_set_factor(g->frame_size, 100);
-  dt_bauhaus_slider_set_step(g->frame_size, 0.005);
   dt_bauhaus_slider_set_digits(g->frame_size, 4);
-  dt_bauhaus_slider_set_format(g->frame_size, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->frame_size, "%");
   gtk_widget_set_tooltip_text(g->frame_size, _("size of the frame line in percent of min border width"));
 
   g->frame_offset = dt_bauhaus_slider_from_params(self, "frame_offset");
-  dt_bauhaus_slider_set_factor(g->frame_offset, 100);
-  dt_bauhaus_slider_set_step(g->frame_size, 0.005);
   dt_bauhaus_slider_set_digits(g->frame_offset, 4);
-  dt_bauhaus_slider_set_format(g->frame_offset, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->frame_offset, "%");
   gtk_widget_set_tooltip_text(g->frame_offset, _("offset of the frame line beginning on picture side"));
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
@@ -1131,6 +1116,9 @@ void init(dt_iop_module_t *self)
   g_strlcpy(defaults->pos_v_text, "1/2", sizeof(defaults->pos_v_text));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

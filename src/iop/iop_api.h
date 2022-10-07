@@ -78,7 +78,7 @@ DEFAULT(int, flags, void);
 DEFAULT(const char *, deprecated_msg, void);
 
 /** get a descriptive text used for example in a tooltip in more modules */
-DEFAULT(const char *, description, struct dt_iop_module_t *self);
+DEFAULT(const char **, description, struct dt_iop_module_t *self);
 
 DEFAULT(int, operation_tags, void);
 DEFAULT(int, operation_tags_filter, void);
@@ -127,12 +127,7 @@ OPTIONAL(void, gui_post_expose, struct dt_iop_module_t *self, cairo_t *cr, int32
 /** optional callback to be notified if the module acquires gui focus/loses it. */
 OPTIONAL(void, gui_focus, struct dt_iop_module_t *self, gboolean in);
 
-/** Optional callback for keyboard accelerators */
-OPTIONAL(void, init_key_accels, struct dt_iop_module_so_t *so);
-OPTIONAL(void, original_init_key_accels, struct dt_iop_module_so_t *so);
 /** Key accelerator registration callbacks */
-OPTIONAL(void, connect_key_accels, struct dt_iop_module_t *self);
-OPTIONAL(void, disconnect_key_accels, struct dt_iop_module_t *self);
 OPTIONAL(GSList *, mouse_actions, struct dt_iop_module_t *self);
 
 /** optional event callbacks */
@@ -239,6 +234,9 @@ OPTIONAL(void, set_preferences, void *menu, struct dt_iop_module_t *self);
 
 #endif // FULL_API_H
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

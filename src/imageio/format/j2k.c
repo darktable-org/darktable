@@ -323,6 +323,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
                 void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
                 const gboolean export_masks)
 {
+  int rc = 1;
   const float *in = (const float *)in_tmp;
   dt_imageio_j2k_t *j2k = (dt_imageio_j2k_t *)j2k_tmp;
   opj_cparameters_t parameters; /* compression parameters */
@@ -372,7 +373,6 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     for(int i = 0; i < numcomps; i++)
     {
       cmptparm[i].prec = prec;
-      cmptparm[i].bpp = prec;
       cmptparm[i].sgnd = 0;
       cmptparm[i].dx = subsampling_dx;
       cmptparm[i].dy = subsampling_dy;
@@ -384,7 +384,8 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     {
       fprintf(stderr, "Error: opj_image_create() failed\n");
       free(rates);
-      return 1;
+      rc = 0;
+      goto exit;
     }
 
     /* set image offset and reference grid */
@@ -437,7 +438,6 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 
   /* encode the destination image */
   /* ---------------------------- */
-  int rc = 1;
   OPJ_CODEC_FORMAT codec;
   if(parameters.cod_format == J2K_CFMT) /* J2K format output */
     codec = OPJ_CODEC_J2K;
@@ -466,7 +466,8 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
     fprintf(stderr, "failed to create output stream\n");
-    return 1;
+    rc = 0;
+    goto exit;
   }
 
   if(!opj_start_compress(ccodec, image, cstream))
@@ -475,7 +476,8 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
     fprintf(stderr, "failed to encode image: opj_start_compress\n");
-    return 1;
+    rc = 0;
+    goto exit;
   }
 
   /* encode the image */
@@ -485,7 +487,8 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
     fprintf(stderr, "failed to encode image: opj_encode\n");
-    return 1;
+    rc = 0;
+    goto exit;
   }
 
   /* encode the image */
@@ -495,7 +498,8 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     opj_destroy_codec(ccodec);
     opj_image_destroy(image);
     fprintf(stderr, "failed to encode image: opj_end_compress\n");
-    return 1;
+    rc = 0;
+    goto exit;
   }
 
   opj_stream_destroy(cstream);
@@ -507,9 +511,11 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   /* free image data */
   opj_image_destroy(image);
 
+exit:
   /* free user parameters structure */
   g_free(parameters.cp_comment);
   free(parameters.cp_matrice);
+  free(parameters.mct_data);
 
   return ((rc == 1) ? 0 : 1);
 }
@@ -641,15 +647,12 @@ void gui_init(dt_imageio_module_format_t *self)
   const int preset_last = dt_conf_get_int("plugins/imageio/format/j2k/preset");
   const int quality_last = dt_conf_get_int("plugins/imageio/format/j2k/quality");
 
-  gui->format = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->format, NULL, N_("format"));
-  dt_bauhaus_combobox_add(gui->format, _("J2K"));
-  dt_bauhaus_combobox_add(gui->format, _("jp2"));
-  dt_bauhaus_combobox_set(gui->format, format_last);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->format, self, NULL, N_("format"), NULL,
+                               format_last, format_changed, self,
+                               N_("J2K"), N_("jp2"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->format, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->format), "value-changed", G_CALLBACK(format_changed), NULL);
 
-  gui->quality = dt_bauhaus_slider_new_with_range(NULL,
+  gui->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
                                                   dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_MIN),
                                                   dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_MAX),
                                                   1,
@@ -661,15 +664,13 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
 
-  gui->preset = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->preset, NULL, N_("DCP mode"));
-  dt_bauhaus_combobox_add(gui->preset, _("off"));
-  dt_bauhaus_combobox_add(gui->preset, _("Cinema2K, 24FPS"));
-  dt_bauhaus_combobox_add(gui->preset, _("Cinema2K, 48FPS"));
-  dt_bauhaus_combobox_add(gui->preset, _("Cinema4K, 24FPS"));
-  dt_bauhaus_combobox_set(gui->preset, preset_last);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->preset, self, NULL, N_("DCP mode"), NULL,
+                               preset_last, preset_changed, self,
+                               N_("off"),
+                               N_("Cinema2K, 24FPS"),
+                               N_("Cinema2K, 48FPS"),
+                               N_("Cinema4K, 24FPS"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->preset, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->preset), "value-changed", G_CALLBACK(preset_changed), NULL);
 
   // TODO: options for "off"
 }
@@ -696,6 +697,9 @@ int flags(dt_imageio_module_data_t *data)
   return ((j && j->format == JP2_CFMT) ? FORMAT_FLAGS_SUPPORT_XMP : 0);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

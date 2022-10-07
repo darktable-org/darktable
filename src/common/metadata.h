@@ -33,6 +33,7 @@ typedef enum dt_metadata_t
   DT_METADATA_XMP_DC_RIGHTS,
   DT_METADATA_XMP_ACDSEE_NOTES,
   DT_METADATA_XMP_VERSION_NAME,
+  DT_METADATA_XMP_IMAGE_ID,
   DT_METADATA_NUMBER
 }
 dt_metadata_t;
@@ -60,6 +61,9 @@ typedef enum dt_metadata_flag_t
   DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata value changed
 }
 dt_metadata_flag_t;
+
+/** return the number of user metadata (!= DT_METADATA_TYPE_INTERNAL) */
+unsigned int dt_metadata_get_nb_user_metadata();
 
 /** return the metadata key by display order */
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);
@@ -120,6 +124,12 @@ GList *dt_metadata_get_list_id(int id); // libs/image.c
 /** Remove metadata from specific images, or all selected for id == -1. */
 void dt_metadata_clear(const GList *imgs, const gboolean undo_on); // libs/metadata.c
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+/** check if the "Xmp.darktable.image_id" already exists */
+gboolean dt_metadata_already_imported(const char *filename, const char *datetime);
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

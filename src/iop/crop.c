@@ -89,9 +89,6 @@ typedef enum _grab_region_t
 
 typedef struct dt_iop_crop_gui_data_t
 {
-  GtkWidget *margins_toggle, *margins_expander, *margins_widgets;
-  gboolean expand_margins;
-
   GtkWidget *cx, *cy, *cw, *ch;
   GList *aspect_list;
   GtkWidget *aspect_presets;
@@ -111,6 +108,7 @@ typedef struct dt_iop_crop_gui_data_t
   gboolean shift_hold;
   gboolean ctrl_hold;
   gboolean preview_ready;
+  dt_gui_collapsible_section_t cs;
 } dt_iop_crop_gui_data_t;
 
 typedef struct dt_iop_crop_data_t
@@ -135,7 +133,7 @@ const char *aliases()
   return _("reframe|distortion");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("change the framing"), _("corrective or creative"),
                                 _("linear, RGB, scene-referred"), _("geometric, RGB"),
@@ -166,7 +164,7 @@ int operation_tags_filter()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 static int _gui_has_focus(struct dt_iop_module_t *self)
@@ -178,10 +176,11 @@ static int _gui_has_focus(struct dt_iop_module_t *self)
 static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop_crop_params_t *p)
 {
   if(darktable.gui->reset) return;
+  if(self->dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
+
   g->cropping = 0;
   const dt_boundingbox_t old = { p->cx, p->cy, p->cw, p->ch };
   const float eps = 1e-6f; // threshold to avoid rounding errors
-
   if(!self->enabled)
   {
     // first time crop, if any data is stored in p, it's obsolete:
@@ -198,6 +197,7 @@ static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop
     dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
     if(piece)
     {
+      if(piece->buf_out.width < 1 || piece->buf_out.height < 1) return;
       p->cx = points[0] / (float)piece->buf_out.width;
       p->cy = points[1] / (float)piece->buf_out.height;
       p->cw = points[2] / (float)piece->buf_out.width;
@@ -220,6 +220,7 @@ static int _set_max_clip(struct dt_iop_module_t *self)
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
 
   if(g->clip_max_pipe_hash == self->dev->preview_pipe->backbuf_hash) return 1;
+  if(self->dev->preview_status != DT_DEV_PIXELPIPE_VALID) return 1;
 
   // we want to know the size of the actual buffer
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
@@ -357,7 +358,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_crop] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_crop] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -389,11 +390,11 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   if(!g) return; // seems that sometimes, g can be undefined for some reason...
   g->preview_ready = TRUE;
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
   if(self->dev->gui_module != self)
   {
     dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
   }
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
   // force max size to be recomputed
   g->clip_max_pipe_hash = 0;
 }
@@ -404,10 +405,11 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   if(self->enabled)
   {
+    // once the pipe is recomputed, we want to update final sizes
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                                    G_CALLBACK(_event_preview_updated_callback), self);
     if(in)
     {
-      DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                      G_CALLBACK(_event_preview_updated_callback), self);
       // got focus, grab stuff to gui:
       // need to get gui stuff for the first time for this image,
       g->clip_x = CLAMPF(p->cx, 0.0f, 0.9f);
@@ -416,11 +418,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       g->clip_h = CLAMPF(p->ch - p->cy, 0.1f, 1.0f - g->clip_y);
       g->preview_ready = FALSE;
     }
-    else
+    else if(g->preview_ready)
     {
-      // once the pipe is recomputed, we want to update final sizes
-      DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                      G_CALLBACK(_event_preview_updated_callback), self);
       // hack : commit_box use distort_transform routines with gui values to get params
       // but this values are accurate only if crop is the gui_module...
       // so we temporary put back gui_module to crop and revert once finished
@@ -650,7 +649,7 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     // now fix outside boxes:
     if(clip_x < g->clip_max_x)
     {
-      double prev_clip_h = clip_h;
+      const double prev_clip_h = clip_h;
       clip_h *= (clip_w + clip_x - g->clip_max_x) / clip_w;
       clip_w = clip_w + clip_x - g->clip_max_x;
       clip_x = g->clip_max_x;
@@ -658,7 +657,7 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     }
     if(clip_y < g->clip_max_y)
     {
-      double prev_clip_w = clip_w;
+      const double prev_clip_w = clip_w;
       clip_w *= (clip_h + clip_y - g->clip_max_y) / clip_h;
       clip_h = clip_h + clip_y - g->clip_max_y;
       clip_y = g->clip_max_y;
@@ -666,14 +665,14 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     }
     if(clip_x + clip_w > g->clip_max_x + g->clip_max_w)
     {
-      double prev_clip_h = clip_h;
+      const double prev_clip_h = clip_h;
       clip_h *= (g->clip_max_x + g->clip_max_w - clip_x) / clip_w;
       clip_w = g->clip_max_x + g->clip_max_w - clip_x;
       if(grab & GRAB_TOP) clip_y += prev_clip_h - clip_h;
     }
     if(clip_y + clip_h > g->clip_max_y + g->clip_max_h)
     {
-      double prev_clip_w = clip_w;
+      const double prev_clip_w = clip_w;
       clip_w *= (g->clip_max_y + g->clip_max_h - clip_y) / clip_h;
       clip_h = g->clip_max_y + g->clip_max_h - clip_y;
       if(grab & GRAB_LEFT) clip_x += prev_clip_w - clip_w;
@@ -930,12 +929,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
 
-  /* update ui elements */
-  dt_bauhaus_slider_set(g->cx, p->cx);
-  dt_bauhaus_slider_set(g->cy, p->cy);
-  dt_bauhaus_slider_set(g->cw, p->cw);
-  dt_bauhaus_slider_set(g->ch, p->ch);
-
   //  set aspect ratio based on the current image, if not found let's default
   //  to free aspect.
 
@@ -983,40 +976,27 @@ void gui_update(struct dt_iop_module_t *self)
   g->clip_y = p->cy;
   g->clip_h = p->ch - p->cy;
 
-  // update margins expander
-  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->margins_toggle));
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->margins_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->margins_expander), active);
+  dt_gui_update_collapsible_section(&g->cs);
 }
 
-static void _event_key_swap(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                            GdkModifierType modifier, gpointer d)
+static void _event_key_swap(dt_iop_module_t *self)
 {
-  (void)accel_group;
-  (void)acceleratable;
-  (void)keyval;
-  (void)modifier;
-  dt_iop_module_t *self = (dt_iop_module_t *)d;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   p->ratio_d = -p->ratio_d;
   _aspect_apply(self, GRAB_HORIZONTAL);
   dt_control_queue_redraw_center();
 }
 
-static gboolean _event_key_commit(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                  GdkModifierType modifier, gpointer data)
+static void _event_commit_clicked(GtkButton *button, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)data;
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   _commit_box(self, g, p);
-  return TRUE;
 }
 
 static void _event_aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 {
-  _event_key_swap(NULL, NULL, 0, 0, self);
+  _event_key_swap(self);
 }
 
 static gint _aspect_ratio_cmp(const dt_iop_crop_aspect_t *a, const dt_iop_crop_aspect_t *b)
@@ -1048,29 +1028,6 @@ static gchar *_aspect_format(gchar *original, int adim, int bdim)
   return g_strdup_printf("%s  %4.2f", original, (float)adim / (float)bdim);
 }
 
-static void _event_margins_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->margins_toggle));
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->margins_expander), active);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->margins_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
-  g->expand_margins = active;
-  dt_conf_set_bool("plugins/darkroom/crop/expand_margins", active);
-}
-
-static void _event_margins_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
-{
-  if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return;
-
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->margins_toggle),
-                               !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->margins_toggle)));
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = IOP_GUI_ALLOC(crop);
@@ -1081,19 +1038,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->clip_max_x = g->clip_max_y = 0.0;
   g->clip_max_w = g->clip_max_h = 1.0;
   g->clip_max_pipe_hash = 0;
-  g->cropping = 0;
+  g->cropping = GRAB_CENTER;
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
   g->preview_ready = FALSE;
 
-  g->expand_margins = dt_conf_get_bool("plugins/darkroom/crop/expand_margins");
-
   GtkWidget *box_enabled = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  GtkWidget *lb = dt_ui_section_label_new(_("crop settings"));
-  GtkStyleContext *context = gtk_widget_get_style_context(lb);
-  gtk_style_context_add_class(context, "section_label_top");
-  gtk_box_pack_start(GTK_BOX(box_enabled), lb, TRUE, TRUE, 0);
 
   dt_iop_crop_aspect_t aspects[] = {
     { _("freehand"), 0, 0 },
@@ -1212,57 +1162,40 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(_event_aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(box_enabled), g->aspect_presets, TRUE, TRUE, 0);
 
+  GtkWidget *commit = dt_action_button_new((dt_lib_module_t *)self, N_("commit"), _event_commit_clicked, self, _("commit changes"), GDK_KEY_Return, 0);
+  gtk_box_pack_end(GTK_BOX(box_enabled), commit, TRUE, TRUE, 0);
+
   // we put margins values under an expander
-  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  GtkWidget *header_evb = gtk_event_box_new();
-  GtkWidget *destdisp = dt_ui_section_label_new(_("margins"));
-  context = gtk_widget_get_style_context(destdisp_head);
-  gtk_style_context_add_class(context, "section-expander");
-  gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/crop/expand_margins",
+     _("margins"),
+     GTK_BOX(box_enabled));
 
-  g->margins_toggle
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->margins_toggle), g->expand_margins);
-  gtk_widget_set_name(GTK_WIDGET(g->margins_toggle), "control-button");
-
-  g->margins_widgets = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), header_evb, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), g->margins_toggle, FALSE, FALSE, 0);
-
-  g->margins_expander = dtgtk_expander_new(destdisp_head, g->margins_widgets);
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->margins_expander), TRUE);
-  gtk_box_pack_end(GTK_BOX(box_enabled), g->margins_expander, FALSE, FALSE, 0);
-
-  g_signal_connect(G_OBJECT(g->margins_toggle), "toggled", G_CALLBACK(_event_margins_button_changed),
-                   (gpointer)self);
-
-  g_signal_connect(G_OBJECT(header_evb), "button-release-event", G_CALLBACK(_event_margins_expander_click),
-                   (gpointer)self);
+  self->widget = GTK_WIDGET(g->cs.container);
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
   dt_bauhaus_slider_set_digits(g->cx, 4);
-  dt_bauhaus_slider_set_factor(g->cx, 100.0);
-  dt_bauhaus_slider_set_format(g->cx, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->cx, "%");
   gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
 
   g->cw = dt_bauhaus_slider_from_params(self, "cw");
   dt_bauhaus_slider_set_digits(g->cw, 4);
   dt_bauhaus_slider_set_factor(g->cw, -100.0);
   dt_bauhaus_slider_set_offset(g->cw, 100.0);
-  dt_bauhaus_slider_set_format(g->cw, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->cw, "%");
   gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
 
   g->cy = dt_bauhaus_slider_from_params(self, "cy");
   dt_bauhaus_slider_set_digits(g->cy, 4);
-  dt_bauhaus_slider_set_factor(g->cy, 100.0);
-  dt_bauhaus_slider_set_format(g->cy, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->cy, "%");
   gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
 
   g->ch = dt_bauhaus_slider_from_params(self, "ch");
   dt_bauhaus_slider_set_digits(g->ch, 4);
   dt_bauhaus_slider_set_factor(g->ch, -100.0);
   dt_bauhaus_slider_set_offset(g->ch, 100.0);
-  dt_bauhaus_slider_set_format(g->ch, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->ch, "%");
   gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
 
   self->widget = box_enabled;
@@ -1293,10 +1226,16 @@ static _grab_region_t _gui_get_grab(float pzx, float pzy, dt_iop_crop_gui_data_t
   {
     // we are inside the crop box
     grab = GRAB_CENTER;
-    if(pzx >= g->clip_x && pzx * wd < g->clip_x * wd + border) grab |= GRAB_LEFT; // left border
-    if(pzy >= g->clip_y && pzy * ht < g->clip_y * ht + border) grab |= GRAB_TOP;  // top border
+
+    if(pzx >= g->clip_x && pzx * wd < g->clip_x * wd + border)
+      grab |= GRAB_LEFT; // left border
+
+    if(pzy >= g->clip_y && pzy * ht < g->clip_y * ht + border)
+      grab |= GRAB_TOP;  // top border
+
     if(pzx <= g->clip_x + g->clip_w && pzx * wd > (g->clip_w + g->clip_x) * wd - border)
       grab |= GRAB_RIGHT; // right border
+
     if(pzy <= g->clip_y + g->clip_h && pzy * ht > (g->clip_h + g->clip_y) * ht - border)
       grab |= GRAB_BOTTOM; // bottom border
   }
@@ -1348,7 +1287,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   {
     cairo_set_line_width(cr, dashes / 2.0);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
-    dt_draw_set_color_overlay(cr, 0.7, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
     cairo_stroke(cr);
   }
 
@@ -1367,7 +1306,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
-    snprintf(dimensions, sizeof(dimensions), "%.0f x %.0f", (float)procw * g->clip_w, (float)proch * g->clip_h);
+    snprintf(dimensions, sizeof(dimensions), "%i x %i", (int)(procw * g->clip_w), (int)(proch * g->clip_h));
 
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
@@ -1397,13 +1336,17 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_guides_draw(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht, zoom_scale);
 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.3, 1.0);
+  dt_draw_set_color_overlay(cr, FALSE, 1.0);
   const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
 
   const _grab_region_t grab = g->cropping ? g->cropping : _gui_get_grab(pzx, pzy, g, border, wd, ht);
-  if(grab == GRAB_LEFT) cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, g->clip_h * ht);
-  if(grab == GRAB_TOP) cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, border);
-  if(grab == GRAB_TOP_LEFT) cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, border);
+
+  if(grab == GRAB_LEFT)
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, g->clip_h * ht);
+  if(grab == GRAB_TOP)
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, border);
+  if(grab == GRAB_TOP_LEFT)
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, border);
   if(grab == GRAB_RIGHT)
     cairo_rectangle(cr, (g->clip_x + g->clip_w) * wd - border, g->clip_y * ht, border, g->clip_h * ht);
   if(grab == GRAB_BOTTOM)
@@ -1434,132 +1377,121 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
+
+  const _grab_region_t grab = _gui_get_grab(pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
+
   _set_max_clip(self);
-  _grab_region_t grab = _gui_get_grab(pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
     // draw a light gray frame, to show it's not stored yet:
     // first mouse button, adjust cropping frame, but what do we do?
-    const float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
-    if(g->cropping == GRAB_CENTER)
+    const float bzx = g->button_down_zoom_x + .5f;
+    const float bzy = g->button_down_zoom_y + .5f;
+
+    if(g->cropping == GRAB_ALL)
     {
-      g->cropping = grab;
-      if(grab == GRAB_CENTER)
-      {
-        g->cropping = GRAB_ALL;
-        g->handle_x = g->clip_x;
-        g->handle_y = g->clip_y;
-      }
-      if(grab & GRAB_LEFT) g->handle_x = bzx - g->clip_x;
-      if(grab & GRAB_TOP) g->handle_y = bzy - g->clip_y;
-      if(grab & GRAB_RIGHT) g->handle_x = bzx - (g->clip_w + g->clip_x);
-      if(grab & GRAB_BOTTOM) g->handle_y = bzy - (g->clip_h + g->clip_y);
+      /* moving the crop window */
+      if(!g->shift_hold)
+        g->clip_x
+          = fminf(g->clip_max_w + g->clip_max_x - g->clip_w,
+                  fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
+
+      if(!g->ctrl_hold)
+        g->clip_y
+          = fminf(g->clip_max_h + g->clip_max_y - g->clip_h,
+                  fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
     }
-    if(darktable.control->button_down_which == 1)
+    else
     {
-      grab = g->cropping;
-
-      if(grab == GRAB_ALL)
+      /* changing the crop window */
+      if(g->shift_hold)
       {
-        /* moving the crop window */
-        if(!g->shift_hold)
-          g->clip_x
-              = fminf(g->clip_max_w + g->clip_max_x - g->clip_w, fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
+        /* the center is locked, scale crop radial with locked ratio */
+        float xx = 0.0f;
+        float yy = 0.0f;
 
-        if(!g->ctrl_hold)
-          g->clip_y
-              = fminf(g->clip_max_h + g->clip_max_y - g->clip_h, fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
+        if(g->cropping & GRAB_LEFT || g->cropping & GRAB_RIGHT)
+          xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+        if(g->cropping & GRAB_TOP || g->cropping & GRAB_BOTTOM)
+          yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
+
+        float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
+                            (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+
+        // ensure we don't get too small crop size
+        if(g->prev_clip_w * ratio < 0.1f) ratio = 0.1f / g->prev_clip_w;
+        if(g->prev_clip_h * ratio < 0.1f) ratio = 0.1f / g->prev_clip_h;
+
+        // ensure we don't have too big crop size
+        if(g->prev_clip_w * ratio > g->clip_max_w) ratio = g->clip_max_w / g->prev_clip_w;
+        if(g->prev_clip_h * ratio > g->clip_max_h) ratio = g->clip_max_h / g->prev_clip_h;
+
+        // now that we are sure that the crop size is correct, we have to adjust top & left
+        float nx = g->prev_clip_x - (g->prev_clip_w * ratio - g->prev_clip_w) / 2.0f;
+        float ny = g->prev_clip_y - (g->prev_clip_h * ratio - g->prev_clip_h) / 2.0f;
+        float nw = g->prev_clip_w * ratio;
+        float nh = g->prev_clip_h * ratio;
+
+        // move crop area to the right if needed
+        nx = fmaxf(nx, g->clip_max_x);
+        // move crop area to the left if needed
+        nx = fminf(nx, g->clip_max_w + g->clip_max_x - nw);
+        // move crop area to the bottom if needed
+        ny = fmaxf(ny, g->clip_max_y);
+        // move crop area to the top if needed
+        ny = fminf(ny, g->clip_max_h + g->clip_max_y - nh);
+
+        g->clip_x = nx;
+        g->clip_y = ny;
+        g->clip_w = nw;
+        g->clip_h = nh;
       }
       else
       {
-        /* changing the crop window */
-        if(g->shift_hold)
+        if(g->cropping & GRAB_LEFT)
         {
-          /* the center is locked, scale crop radial with locked ratio */
-          float xx = 0.0f;
-          float yy = 0.0f;
-
-          if(grab & GRAB_LEFT || grab & GRAB_RIGHT) xx = (grab & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
-          if(grab & GRAB_TOP || grab & GRAB_BOTTOM) yy = (grab & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
-
-          float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
-                              (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
-
-          // ensure we don't get too small crop size
-          if(g->prev_clip_w * ratio < 0.1f) ratio = 0.1f / g->prev_clip_w;
-          if(g->prev_clip_h * ratio < 0.1f) ratio = 0.1f / g->prev_clip_h;
-
-          // ensure we don't have too big crop size
-          if(g->prev_clip_w * ratio > g->clip_max_w) ratio = g->clip_max_w / g->prev_clip_w;
-          if(g->prev_clip_h * ratio > g->clip_max_h) ratio = g->clip_max_h / g->prev_clip_h;
-
-          // now that we are sure that the crop size is correct, we have to adjust top & left
-          float nx = g->prev_clip_x - (g->prev_clip_w * ratio - g->prev_clip_w) / 2.0f;
-          float ny = g->prev_clip_y - (g->prev_clip_h * ratio - g->prev_clip_h) / 2.0f;
-          float nw = g->prev_clip_w * ratio;
-          float nh = g->prev_clip_h * ratio;
-
-          // move crop area to the right if needed
-          nx = fmaxf(nx, g->clip_max_x);
-          // move crop area to the left if needed
-          nx = fminf(nx, g->clip_max_w + g->clip_max_x - nw);
-          // move crop area to the bottom if needed
-          ny = fmaxf(ny, g->clip_max_y);
-          // move crop area to the top if needed
-          ny = fminf(ny, g->clip_max_h + g->clip_max_y - nh);
-
-          g->clip_x = nx;
-          g->clip_y = ny;
-          g->clip_w = nw;
-          g->clip_h = nh;
+          const float old_clip_x = g->clip_x;
+          g->clip_x = fminf(fmaxf(g->clip_max_x, pzx - g->handle_x), g->clip_x + g->clip_w - 0.1f);
+          g->clip_w = old_clip_x + g->clip_w - g->clip_x;
         }
-        else
+        if(g->cropping & GRAB_TOP)
         {
-
-          if(grab & GRAB_LEFT)
-          {
-            const float old_clip_x = g->clip_x;
-            g->clip_x = fminf(fmaxf(g->clip_max_x, pzx - g->handle_x), g->clip_x + g->clip_w - 0.1f);
-            g->clip_w = old_clip_x + g->clip_w - g->clip_x;
-          }
-          if(grab & GRAB_TOP)
-          {
-            const float old_clip_y = g->clip_y;
-            g->clip_y = fminf(fmaxf(g->clip_max_y, pzy - g->handle_y), g->clip_y + g->clip_h - 0.1f);
-            g->clip_h = old_clip_y + g->clip_h - g->clip_y;
-          }
-          if(grab & GRAB_RIGHT)
-            g->clip_w = fmaxf(0.1f, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
-          if(grab & GRAB_BOTTOM)
-            g->clip_h = fmaxf(0.1f, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
+          const float old_clip_y = g->clip_y;
+          g->clip_y = fminf(fmaxf(g->clip_max_y, pzy - g->handle_y), g->clip_y + g->clip_h - 0.1f);
+          g->clip_h = old_clip_y + g->clip_h - g->clip_y;
         }
-
-        if(g->clip_x + g->clip_w > g->clip_max_w + g->clip_max_x)
-          g->clip_w = g->clip_max_w + g->clip_max_x - g->clip_x;
-        if(g->clip_y + g->clip_h > g->clip_max_h + g->clip_max_y)
-          g->clip_h = g->clip_max_h + g->clip_max_y - g->clip_y;
+        if(g->cropping & GRAB_RIGHT)
+          g->clip_w = fmaxf(0.1f, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
+        if(g->cropping & GRAB_BOTTOM)
+          g->clip_h = fmaxf(0.1f, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
       }
 
-      _aspect_apply(self, grab);
-
-      // only update the sliders, not the dt_iop_cropping_params_t structure, so that the call to
-      // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
-      // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
-      // from the sliders when the iop loses focus, at which time the final selected crop is applied.
-      ++darktable.gui->reset;
-
-      dt_bauhaus_slider_set(g->cx, g->clip_x);
-      dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
-      dt_bauhaus_slider_set(g->cy, g->clip_y);
-      dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
-      dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
-      dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
-      dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
-      dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
-
-      --darktable.gui->reset;
+      if(g->clip_x + g->clip_w > g->clip_max_w + g->clip_max_x)
+        g->clip_w = g->clip_max_w + g->clip_max_x - g->clip_x;
+      if(g->clip_y + g->clip_h > g->clip_max_h + g->clip_max_y)
+        g->clip_h = g->clip_max_h + g->clip_max_y - g->clip_y;
     }
+
+    _aspect_apply(self, g->cropping);
+
+    // only update the sliders, not the dt_iop_cropping_params_t structure, so that the call to
+    // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
+    // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
+    // from the sliders when the iop loses focus, at which time the final selected crop is applied.
+    ++darktable.gui->reset;
+
+    dt_bauhaus_slider_set(g->cx, g->clip_x);
+    dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
+    dt_bauhaus_slider_set(g->cy, g->clip_y);
+    dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
+    dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
+    dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
+    dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
+    dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
+
+    --darktable.gui->reset;
+
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1595,7 +1527,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   else
   {
     dt_control_change_cursor(GDK_FLEUR);
-    g->cropping = 0;
+    g->cropping = GRAB_CENTER;
     dt_control_hinter_message(darktable.control, _("<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</b>: ctrl+drag"));
     dt_control_queue_redraw_center();
   }
@@ -1612,7 +1544,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   /* reset internal ui states*/
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
-  g->cropping = 0;
+  g->cropping = GRAB_CENTER;
+
+  dt_control_change_cursor(GDK_LEFT_PTR);
 
   // we save the crop into the params now so params are kept in synch with gui settings
   _commit_box(self, g, p);
@@ -1624,6 +1558,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   // we don't do anything if the image is not ready
+
   if(!g->preview_ready) return 0;
 
   // avoid unexpected back to lt mode:
@@ -1632,12 +1567,23 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   if(which == 1)
   {
+    const float wd = self->dev->preview_pipe->backbuf_width;
+    const float ht = self->dev->preview_pipe->backbuf_height;
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1 << closeup, 1);
+
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+
     // switch module on already, other code depends in this:
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
     g->button_down_x = x;
     g->button_down_y = y;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
+
+    g->button_down_zoom_x = pzx;
+    g->button_down_zoom_y = pzy;
 
     /* update prev clip box with current */
     g->prev_clip_x = g->clip_x;
@@ -1648,6 +1594,27 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     /* if shift is pressed, then lock crop on center */
     if(dt_modifiers_include(state, GDK_SHIFT_MASK)) g->shift_hold = TRUE;
     if(dt_modifiers_include(state, GDK_CONTROL_MASK)) g->ctrl_hold = TRUE;
+
+    /* store grabbed area */
+
+    const float bzx = pzx + .5f;
+    const float bzy = pzy + .5f;
+
+    g->cropping = _gui_get_grab(bzx, bzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
+
+    if(g->cropping == GRAB_CENTER)
+    {
+      g->cropping = GRAB_ALL;
+      g->handle_x = g->clip_x;
+      g->handle_y = g->clip_y;
+    }
+    else
+    {
+      if(g->cropping & GRAB_LEFT)   g->handle_x = bzx - g->clip_x;
+      if(g->cropping & GRAB_TOP)    g->handle_y = bzy - g->clip_y;
+      if(g->cropping & GRAB_RIGHT)  g->handle_x = bzx - (g->clip_w + g->clip_x);
+      if(g->cropping & GRAB_BOTTOM) g->handle_y = bzy - (g->clip_h + g->clip_y);
+    }
 
     return 1;
   }
@@ -1665,16 +1632,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     return 0;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, TRUE, N_("commit"), GDK_KEY_Return, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_accel_connect_iop(self, "commit", g_cclosure_new(G_CALLBACK(_event_key_commit), (gpointer)self, NULL));
-}
-
 GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;
@@ -1687,6 +1644,8 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 // #undef PHI
 // #undef INVPHI
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

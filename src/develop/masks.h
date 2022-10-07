@@ -437,8 +437,6 @@ void dt_masks_calc_rawdetail_mask(float *const src, float *const out, float *con
                                   const int height, const dt_aligned_pixel_t wb);
 void dt_masks_calc_detail_mask(float *const src, float *const out, float *const tmp, const int width, const int height, const float threshold, const gboolean detail);
 
-void dt_masks_blur_approx_weighed(float *const src, float *const out, float *const weight, const int width, const int height);
-
 /** the output data are blurred-val * gain and are clipped to be within 0 to clip
     The returned int might be used to expand the border as this depends on sigma */
 int dt_masks_blur_fast(float *const src, float *const out, const int width, const int height, const float sigma, const float gain, const float clip);
@@ -636,6 +634,9 @@ int dt_masks_roundup(int num, int mult)
 }
 
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

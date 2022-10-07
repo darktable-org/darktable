@@ -99,18 +99,6 @@ int position()
   return 997;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "capture image(s)"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_camera_t *lib = (dt_lib_camera_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "capture image(s)", GTK_WIDGET(lib->gui.button1));
-}
-
 /** Property changed*/
 static void property_changed_callback(GtkComboBox *cb, gpointer data)
 {
@@ -138,13 +126,14 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       dt_bauhaus_widget_set_label(prop->values, NULL, label);
       g_object_ref_sink(prop->values);
 
-      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL));
+      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL));
+      dt_gui_add_class(GTK_WIDGET(prop->osd), "dt_transparent_background");
       g_object_ref_sink(prop->osd);
       gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
       do
       {
-        dt_bauhaus_combobox_add(prop->values, g_dgettext("libgphoto2-2", value));
-        if(!strcmp(current_value, g_dgettext("libgphoto2-2", value)))
+        dt_bauhaus_combobox_add(prop->values, g_dgettext("libgphoto2-6", value));
+        if(!strcmp(current_value, g_dgettext("libgphoto2-6", value)))
           dt_bauhaus_combobox_set(prop->values, i);
         i++;
       } while((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, propertyname))
@@ -429,7 +418,6 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label = dt_ui_section_label_new(_("camera control"));
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(GTK_GRID(self->widget), label, lib->gui.rows++, 0, 2, 1);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("camera_settings"));
 
   GtkWidget *modes_label = gtk_label_new(_("modes"));
   GtkWidget *timer_label = gtk_label_new(_("timer (s)"));
@@ -449,12 +437,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(steps_label), 0, lib->gui.rows++, 1, 1);
 
   // capture modes buttons
-  lib->gui.toggle_timer = DTGTK_TOGGLEBUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_timer, CPF_STYLE_FLAT, NULL));
-  lib->gui.toggle_sequence = DTGTK_TOGGLEBUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip, CPF_STYLE_FLAT, NULL));
-  lib->gui.toggle_bracket = DTGTK_TOGGLEBUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, CPF_STYLE_FLAT, NULL));
+  lib->gui.toggle_timer = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_timer, 0, NULL));
+  lib->gui.toggle_sequence = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip, 0, NULL));
+  lib->gui.toggle_bracket = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, 0, NULL));
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.toggle_timer), TRUE, TRUE, 0);
@@ -471,7 +456,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.brackets), GTK_WIDGET(brackets_label), GTK_POS_RIGHT, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.steps), GTK_WIDGET(steps_label), GTK_POS_RIGHT, 1, 1);
 
-  lib->gui.button1 = gtk_button_new_with_label(_("capture image(s)"));
+  lib->gui.button1 = dt_action_button_new(self, N_("capture image(s)"), _capture_button_clicked, lib, NULL, 0, 0);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.button1), 0, lib->gui.rows++, 2, 1);
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_timer), _("toggle delayed capture mode"));
@@ -490,7 +475,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->gui.toggle_timer), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.toggle_sequence), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.toggle_bracket), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
-  g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(_capture_button_clicked), lib);
 
   gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.timer), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.count), FALSE);
@@ -502,7 +486,6 @@ void gui_init(dt_lib_module_t *self)
   // Camera settings
   label = dt_ui_section_label_new(_("properties"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("camera_settings"));
 
   lib->gui.prop_start = lib->gui.rows -1;
   lib->gui.prop_end = lib->gui.rows;
@@ -511,7 +494,6 @@ void gui_init(dt_lib_module_t *self)
   // user specified properties
   label = dt_ui_section_label_new(_("additional properties"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("camera_settings"));
 
   label = gtk_label_new(_("label"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -633,6 +615,9 @@ void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   g_list_free_full(lib->gui.properties,_lib_property_free);
   lib->gui.properties = NULL;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

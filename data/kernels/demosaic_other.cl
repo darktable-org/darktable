@@ -37,6 +37,26 @@ passthrough_monochrome (__read_only image2d_t in, __write_only image2d_t out, co
   write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
 }
 
+__kernel void
+passthrough_color (__read_only image2d_t in, __write_only image2d_t out, const int width, const int height, const int rx, const int ry,
+                   const unsigned int filters, global const unsigned char (*const xtrans)[6])
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float ival = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const int c = (filters == 9u) ? FCxtrans(y + ry, x + rx, xtrans) : FC(y + ry, x + rx, filters);
+
+  float4 oval = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
+  if(c == 0)       oval.x = ival;
+  else if (c == 1) oval.y = ival;
+  else             oval.z = ival;
+
+  write_imagef (out, (int2)(x, y), oval);
+}
+
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.

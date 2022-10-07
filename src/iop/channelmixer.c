@@ -131,7 +131,7 @@ const char *deprecated_msg()
   return _("this module is deprecated. please use the color calibration module instead.");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("perform color space corrections\n"
                                         "such as white balance, channels mixing\n"
@@ -155,7 +155,7 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
@@ -360,7 +360,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
-  switch (data->operation_mode)
+  switch(data->operation_mode)
   {
     case OPERATION_MODE_RGB:
       process_rgb(piece, (const float *const restrict)ivoid, (float *const restrict)ovoid, roi_out);
@@ -398,7 +398,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const _channelmixer_operation_mode_t operation_mode = data->operation_mode;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   dev_hsl_matrix = dt_opencl_copy_host_to_device_constant(devid, sizeof(data->hsl_matrix), data->hsl_matrix);
   if(dev_hsl_matrix == NULL) goto error;
@@ -423,7 +423,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 error:
   dt_opencl_release_mem_object(dev_hsl_matrix);
   dt_opencl_release_mem_object(dev_rgb_matrix);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixer] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_channelmixer] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -630,19 +630,19 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->output_channel), "value-changed", G_CALLBACK(output_callback), self);
 
   /* red */
-  g->scale_red = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED], 3);
+  g->scale_red = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0, p->red[CHANNEL_RED], 3);
   gtk_widget_set_tooltip_text(g->scale_red, _("amount of red channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale_red, NULL, N_("red"));
   g_signal_connect(G_OBJECT(g->scale_red), "value-changed", G_CALLBACK(red_callback), self);
 
   /* green */
-  g->scale_green = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED], 3);
+  g->scale_green = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0, p->green[CHANNEL_RED], 3);
   gtk_widget_set_tooltip_text(g->scale_green, _("amount of green channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale_green, NULL, N_("green"));
   g_signal_connect(G_OBJECT(g->scale_green), "value-changed", G_CALLBACK(green_callback), self);
 
   /* blue */
-  g->scale_blue = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED], 3);
+  g->scale_blue = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0, p->blue[CHANNEL_RED], 3);
   gtk_widget_set_tooltip_text(g->scale_blue, _("amount of blue channel in the output channel"));
   dt_bauhaus_widget_set_label(g->scale_blue, NULL, N_("blue"));
   g_signal_connect(G_OBJECT(g->scale_blue), "value-changed", G_CALLBACK(blue_callback), self);
@@ -657,7 +657,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   dt_gui_presets_add_generic(_("swap R and B"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 1, 0 },
@@ -771,9 +771,12 @@ void init_presets(dt_iop_module_so_t *self)
                              sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

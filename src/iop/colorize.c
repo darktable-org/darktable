@@ -96,10 +96,10 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("overlay a solid color on the image"),
                                       _("creative"),
@@ -180,7 +180,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float b = data->b;
   const float mix = data->mix;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -195,7 +195,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorize] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorize] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -327,11 +327,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_bauhaus_slider_set(g->hue, p->hue);
-  dt_bauhaus_slider_set(g->saturation, p->saturation);
-  dt_bauhaus_slider_set(g->lightness, p->lightness);
-  dt_bauhaus_slider_set(g->source_mix, p->source_lightness_mix);
-
   update_saturation_slider_end_color(g->saturation, p->hue);
 }
 
@@ -349,7 +344,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, N_("hue")));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);
-  dt_bauhaus_slider_set_format(g->hue, "%.2f°");
+  dt_bauhaus_slider_set_format(g->hue, "°");
   dt_bauhaus_slider_set_stop(g->hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
@@ -360,23 +355,23 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue, _("select the hue tone"));
 
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
-  dt_bauhaus_slider_set_factor(g->saturation, 100.0f);
-  dt_bauhaus_slider_set_format(g->saturation, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->saturation, "%");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(g->saturation, _("select the saturation shadow tone"));
 
   g->lightness = dt_bauhaus_slider_from_params(self, N_("lightness"));
-  dt_bauhaus_slider_set_format(g->lightness, "%.2f%%");
-  dt_bauhaus_slider_set_step(g->lightness, 0.1);
+  dt_bauhaus_slider_set_format(g->lightness, "%");
   gtk_widget_set_tooltip_text(g->lightness, _("lightness of color"));
 
   g->source_mix = dt_bauhaus_slider_from_params(self, "source_lightness_mix");
-  dt_bauhaus_slider_set_format(g->source_mix, "%.2f%%");
-  dt_bauhaus_slider_set_step(g->source_mix, 0.1);
+  dt_bauhaus_slider_set_format(g->source_mix, "%");
   gtk_widget_set_tooltip_text(g->source_mix, _("mix value of source lightness"));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

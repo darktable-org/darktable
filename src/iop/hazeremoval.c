@@ -44,6 +44,7 @@
 #include "develop/imageop_gui.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
+#include "develop/tiling.h"
 #include "iop/iop_api.h"
 
 #ifdef HAVE_OPENCL
@@ -105,7 +106,7 @@ const char *aliases()
   return _("dehaze|defog|smoke|smog");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove fog and atmospheric hazing from pictures"),
                                       _("corrective"),
@@ -128,7 +129,7 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 
@@ -176,9 +177,6 @@ void cleanup_global(dt_iop_module_so_t *self)
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
-  dt_iop_hazeremoval_params_t *p = (dt_iop_hazeremoval_params_t *)self->params;
-  dt_bauhaus_slider_set(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->distance, p->distance);
 
   dt_iop_gui_enter_critical_section(self);
   g->distance_max = NAN;
@@ -204,7 +202,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
 
   g->distance = dt_bauhaus_slider_from_params(self, N_("distance"));
-  dt_bauhaus_slider_set_step(g->distance, 0.005);
   dt_bauhaus_slider_set_digits(g->distance, 3);
   gtk_widget_set_tooltip_text(g->distance, _("limit haze removal up to a specific spatial depth"));
 }
@@ -456,7 +453,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // only see part of the image (region of interest).  Therefore, we
   // try to get A0 and distance_max from the PREVIEW pixelpipe which
   // luckily stores it for us.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_gui_enter_critical_section(self);
     const uint64_t hash = g->hash;
@@ -481,7 +478,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light(img_in, w1, &A0);
   // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_iop_gui_enter_critical_section(self);
@@ -571,7 +568,7 @@ static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   dt_opencl_set_kernel_arg(devid, kernel_x, 2, sizeof(in), &in);
   dt_opencl_set_kernel_arg(devid, kernel_x, 3, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_x, 4, sizeof(w), &w);
-  const size_t sizes_x[] = { 1, ROUNDUPWD(height) };
+  const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) goto error;
 
@@ -581,7 +578,7 @@ static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   dt_opencl_set_kernel_arg(devid, kernel_y, 2, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_y, 3, sizeof(out), &out);
   dt_opencl_set_kernel_arg(devid, kernel_y, 4, sizeof(w), &w);
-  const size_t sizes_y[] = { ROUNDUPWD(width), 1 };
+  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 
 error:
@@ -604,7 +601,7 @@ static int box_max_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   dt_opencl_set_kernel_arg(devid, kernel_x, 2, sizeof(in), &in);
   dt_opencl_set_kernel_arg(devid, kernel_x, 3, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_x, 4, sizeof(w), &w);
-  const size_t sizes_x[] = { 1, ROUNDUPWD(height) };
+  const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) goto error;
 
@@ -614,7 +611,7 @@ static int box_max_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   dt_opencl_set_kernel_arg(devid, kernel_y, 2, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_y, 3, sizeof(out), &out);
   dt_opencl_set_kernel_arg(devid, kernel_y, 4, sizeof(w), &w);
-  const size_t sizes_y[] = { ROUNDUPWD(width), 1 };
+  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 
 error:
@@ -640,7 +637,7 @@ static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(A0[0]), &A0[0]);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(A0[1]), &A0[1]);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(A0[2]), &A0[2]);
-  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS)
   {
@@ -670,12 +667,25 @@ static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(A0[0]), &A0[0]);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(A0[1]), &A0[1]);
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(A0[2]), &A0[2]);
-  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[hazeremoval, dehaze_cl] unknown error: %d\n", err);
   return err;
 }
 
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 2.5f;  // in + out + two single-channel temp buffers
+  tiling->factor_cl = 5.0f;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+}
 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem img_in, cl_mem img_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -708,7 +718,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // only see part of the image (region of interest).  Therefore, we
   // try to get A0 and distance_max from the PREVIEW pixelpipe which
   // luckily stores it for us.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_gui_enter_critical_section(self);
     const uint64_t hash = g->hash;
@@ -733,7 +743,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light_cl(self, devid, img_in, w1, &A0);
   // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_iop_gui_enter_critical_section(self);
@@ -767,6 +777,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

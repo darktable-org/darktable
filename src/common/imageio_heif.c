@@ -118,7 +118,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
-  img->buf_dsc.cst = iop_cs_rgb;
+  img->buf_dsc.cst = IOP_CS_RGB;
 
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL)
@@ -253,7 +253,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   // Get profile information from HEIF file
   enum heif_color_profile_type profile_type = heif_image_handle_get_color_profile_type(handle);
 
-  switch (profile_type)
+  switch(profile_type)
   {
     case heif_color_profile_type_nclx:
       dt_print(DT_DEBUG_IMAGEIO,
@@ -275,7 +275,7 @@ int dt_imageio_heif_read_profile(const char *filename,
     case heif_color_profile_type_rICC:
     case heif_color_profile_type_prof:
       icc_size = heif_image_handle_get_raw_color_profile_size(handle);
-      if(icc_size <= 0)
+      if(icc_size == 0)
       {
         // image has no embedded ICC profile
         goto out;
@@ -321,3 +321,9 @@ int dt_imageio_heif_read_profile(const char *filename,
 
   return size;
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

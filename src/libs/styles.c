@@ -68,28 +68,6 @@ int position()
   return 599;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "create"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "remove"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "export"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "import"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "apply"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "create", d->create_button);
-  dt_accel_connect_button_lib(self, "remove", d->delete_button);
-  dt_accel_connect_button_lib(self, "export", d->export_button);
-  dt_accel_connect_button_lib(self, "import", d->import_button);
-  if(d->edit_button) dt_accel_connect_button_lib(self, "edit", d->edit_button);
-  dt_accel_connect_button_lib(self, "apply", d->apply_button);
-}
-
 typedef enum _styles_columns_t
 {
   DT_STYLES_COL_NAME = 0,
@@ -237,7 +215,7 @@ GList* _get_selected_style_names(GList* selected_styles, GtkTreeModel *model)
 {
   GtkTreeIter iter;
   GList *style_names = NULL;
-  for (const GList *style = selected_styles; style; style = g_list_next(style))
+  for(const GList *style = selected_styles; style; style = g_list_next(style))
   {
     GValue value = {0,};
     gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)style->data);
@@ -292,7 +270,7 @@ static void edit_clicked(GtkWidget *w, gpointer user_data)
   GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
 
   GList *styles = gtk_tree_selection_get_selected_rows(selection, &model);
-  for (const GList *style = styles; style; style = g_list_next(style))
+  for(const GList *style = styles; style; style = g_list_next(style))
   {
     char *name = NULL;
     GValue value = {0,};
@@ -357,8 +335,9 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
 
   if(can_delete)
   {
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
-    for (const GList *style = style_names; style; style = g_list_next(style))
+    dt_database_start_transaction(darktable.db);
+
+    for(const GList *style = style_names; style; style = g_list_next(style))
     {
       dt_styles_delete_by_name_adv((char*)style->data, single_raise);
     }
@@ -368,7 +347,7 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
       // this also calls _gui_styles_update_view
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
     }
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+    dt_database_release_transaction(darktable.db);
   }
   g_list_free_full(style_names, g_free);
 }
@@ -404,7 +383,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
   {
     char *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
-    for (const GList *style = style_names; style; style = g_list_next(style))
+    for(const GList *style = style_names; style; style = g_list_next(style))
     {
       char stylename[520];
 
@@ -799,7 +778,6 @@ void gui_init(dt_lib_module_t *self)
   self->timeout_handle = 0;
   d->edit_button = NULL;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("styles_usage"));
   GtkWidget *w;
 
   /* tree */
@@ -844,13 +822,12 @@ void gui_init(dt_lib_module_t *self)
                                dt_conf_get_bool("ui_last/styles_create_duplicate"));
   gtk_widget_set_tooltip_text(d->duplicate, _("creates a duplicate of the image before applying style"));
 
-  d->applymode = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->applymode, self, NULL, N_("mode"),
+                               _("how to handle existing history"),
+                               dt_conf_get_int("plugins/lighttable/style/applymode"),
+                               applymode_combobox_changed, self,
+                               N_("append"), N_("overwrite"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->applymode), TRUE, FALSE, 0);
-  dt_bauhaus_widget_set_label(d->applymode, NULL, N_("mode"));
-  dt_bauhaus_combobox_add(d->applymode, _("append"));
-  dt_bauhaus_combobox_add(d->applymode, _("overwrite"));
-  gtk_widget_set_tooltip_text(d->applymode, _("how to handle existing history"));
-  dt_bauhaus_combobox_set(d->applymode, dt_conf_get_int("plugins/lighttable/style/applymode"));
 
   GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -860,33 +837,27 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox3, TRUE, FALSE, 0);
 
   // create
-  d->create_button = dt_ui_button_new(_("create..."), _("create styles from history stack of selected images"), NULL);
-  g_signal_connect(G_OBJECT(d->create_button), "clicked", G_CALLBACK(create_clicked), d);
+  d->create_button = dt_action_button_new(self, N_("create..."), create_clicked, d, _("create styles from history stack of selected images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox1), d->create_button, TRUE, TRUE, 0);
 
   // edit
-  d->edit_button = dt_ui_button_new(_("edit..."), _("edit the selected styles in list above"), NULL);
-  g_signal_connect(d->edit_button, "clicked", G_CALLBACK(edit_clicked), d);
+  d->edit_button = dt_action_button_new(self, N_("edit..."), edit_clicked, d, _("edit the selected styles in list above"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox1), d->edit_button, TRUE, TRUE, 0);
 
   // delete
-  d->delete_button = dt_ui_button_new(_("remove"), _("removes the selected styles in list above"), NULL);
-  g_signal_connect(d->delete_button, "clicked", G_CALLBACK(delete_clicked), d);
+  d->delete_button = dt_action_button_new(self, N_("remove"), delete_clicked, d, _("removes the selected styles in list above"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox1), d->delete_button, TRUE, TRUE, 0);
 
   // import button
-  d->import_button = dt_ui_button_new(C_("verb", "import..."), _("import styles from a style files"), NULL);
-  g_signal_connect(d->import_button, "clicked", G_CALLBACK(import_clicked), d);
+  d->import_button = dt_action_button_new(self, N_("import..."), import_clicked, d, _("import styles from a style files"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), d->import_button, TRUE, TRUE, 0);
 
   // export button
-  d->export_button = dt_ui_button_new(_("export..."), _("export the selected styles into a style files"), NULL);
-  g_signal_connect(d->export_button, "clicked", G_CALLBACK(export_clicked), d);
+  d->export_button = dt_action_button_new(self, N_("export..."), export_clicked, d, _("export the selected styles into a style files"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), d->export_button, TRUE, TRUE, 0);
 
   // apply button
-  d->apply_button = dt_ui_button_new(_("apply"), _("apply the selected styles in list above to selected images"), NULL);
-  g_signal_connect(d->apply_button, "clicked", G_CALLBACK(apply_clicked), d);
+  d->apply_button = dt_action_button_new(self, N_("apply"), apply_clicked, d, _("apply the selected styles in list above to selected images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox3), d->apply_button, TRUE, TRUE, 0);
 
   // add entry completion
@@ -908,8 +879,6 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
-  g_signal_connect(G_OBJECT(d->applymode), "value-changed", G_CALLBACK(applymode_combobox_changed), (gpointer)self);
-
   _update(self);
 }
 
@@ -928,12 +897,13 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
+
   GList *all_styles = dt_styles_get_list("");
 
   if(all_styles == NULL)
   {
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "END TRANSACTION", NULL, NULL, NULL);
+    dt_database_release_transaction(darktable.db);
     return;
   }
 
@@ -942,7 +912,7 @@ void gui_reset(dt_lib_module_t *self)
 
   if(can_delete)
   {
-    for (const GList *result = all_styles; result; result = g_list_next(result))
+    for(const GList *result = all_styles; result; result = g_list_next(result))
     {
       dt_style_t *style = (dt_style_t *)result->data;
       dt_styles_delete_by_name_adv((char*)style->name, FALSE);
@@ -950,11 +920,14 @@ void gui_reset(dt_lib_module_t *self)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
   g_list_free_full(all_styles, dt_style_free);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
   _update(self);
 }
 
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

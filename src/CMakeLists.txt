@@ -20,6 +20,7 @@ FILE(GLOB SOURCE_FILES
   "common/calculator.c"
   "common/collection.c"
   "common/color_picker.c"
+  "common/color_vocabulary.c"
   "common/colorlabels.c"
   "common/colorspaces.c"
   "common/curve_tools.c"
@@ -28,13 +29,13 @@ FILE(GLOB SOURCE_FILES
   "common/cpuid.c"
   "common/darktable.c"
   "common/database.c"
+  "common/datetime.c"
   "common/dbus.c"
   "common/dtpthread.c"
   "common/eaw.c"
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
-  "common/fswatch.c"
   "common/gaussian.c"
   "common/grouping.c"
   "common/guided_filter.c"
@@ -89,6 +90,8 @@ FILE(GLOB SOURCE_FILES
   "common/iop_group.c"
   "common/iop_order.c"
   "common/iop_profile.c"
+  "common/dng_opcode.c"
+  "common/wb_presets.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
@@ -129,6 +132,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/gradientslider.c"
   "dtgtk/icon.c"
   "dtgtk/paint.c"
+  "dtgtk/range.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
   "dtgtk/thumbnail.c"
@@ -182,6 +186,9 @@ if(WIN32)
 
   list(APPEND SOURCE_FILES "win/filepath.c")
   list(APPEND HEADER_FILES "win/filepath.h")
+
+  list(APPEND SOURCE_FILES "win/scandir.c")
+  list(APPEND HEADER_FILES "win/scandir.h")
 
   # Use mingw's sprintf instead of windows's
   ADD_DEFINITIONS( -D__USE_MINGW_ANSI_STDIO=1 )
@@ -319,10 +326,12 @@ if(LibSoup2_FOUND)
 endif(LibSoup2_FOUND)
 
 if(USE_CAMERA_SUPPORT)
-  find_package(Gphoto2)
-  include_directories(SYSTEM ${Gphoto2_INCLUDE_DIRS})
-  list(APPEND LIBS ${Gphoto2_LIBRARIES})
-  add_definitions(${Gphoto2_DEFINITIONS})
+  find_package(Gphoto2 2.5)
+  if(Gphoto2_FOUND)
+    include_directories(SYSTEM ${Gphoto2_INCLUDE_DIRS})
+    list(APPEND LIBS ${Gphoto2_LIBRARIES})
+    add_definitions(${Gphoto2_DEFINITIONS})
+  endif()
 endif(USE_CAMERA_SUPPORT)
 
 if(USE_OPENEXR)
@@ -345,7 +354,9 @@ if(USE_WEBP)
   if(WebP_FOUND)
     include_directories(SYSTEM ${WebP_INCLUDE_DIRS})
     list(APPEND LIBS ${WebP_LIBRARIES})
-    add_definitions(${WebP_DEFINITIONS})
+    add_definitions("-DHAVE_WEBP")
+    list(APPEND SOURCES "common/imageio_webp.c")
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} webp CACHE INTERNAL "")
   endif(WebP_FOUND)
 endif(USE_WEBP)
 
@@ -360,11 +371,24 @@ if (USE_AVIF)
 endif()
 
 if(USE_HEIF)
-  find_package(libheif 1.9.0 CONFIG)
+  macro(find_libheif versions)
+    foreach(version ${versions})
+      find_package(libheif ${version} CONFIG)
+      if(libheif_FOUND)
+        break()
+      else()
+        find_package(libheif ${version})
+        if(libheif_FOUND)
+          break()
+        endif()
+      endif()
+    endforeach()
+  endmacro()
+
+  find_libheif(1.12.0;1.11.0;1.10.0;1.9.0)
   if(TARGET heif)
     list(APPEND LIBS heif)
   else()
-    find_package(libheif 1.9.0)
     if(TARGET libheif::libheif)
       list(APPEND LIBS libheif::libheif)
     endif()
@@ -387,7 +411,6 @@ if (USE_LIBRAW)
 #        list(APPEND LIBS ${libraw_LIBRARY})
 #        add_definitions(-DHAVE_LIBRAW=1)
 #        list(APPEND SOURCES "common/imageio_libraw.c")
-#        set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} libraw CACHE INTERNAL "")
 #    endif()
    add_definitions(-DHAVE_LIBRAW=1)
    list(APPEND SOURCES "common/imageio_libraw.c")
@@ -447,6 +470,11 @@ if (USE_ISOBMFF)
   endif()
 endif()
 
+# Optionally enable MIDI support
+if(USE_PORTMIDI)
+  find_package(PortMidi)
+endif(USE_PORTMIDI)
+
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
   if(OpenJPEG_FOUND)
@@ -455,6 +483,7 @@ if(USE_OPENJPEG)
 
     include_directories(SYSTEM ${OpenJPEG_INCLUDE_DIRS})
     list(APPEND LIBS ${OpenJPEG_LIBRARIES})
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
   endif(OpenJPEG_FOUND)
 endif(USE_OPENJPEG)
 
@@ -513,24 +542,25 @@ if(USE_GRAPHICSMAGICK)
   find_package(GraphicsMagick)
   if(GraphicsMagick_FOUND)
     add_definitions(-DHAVE_GRAPHICSMAGICK)
-    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} gif jpc jp2 bmp dcm jng miff mng pbm pnm ppm pgm CACHE INTERNAL "")
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} gif jpc jp2 bmp dcm jng miff mng pam webp jxl CACHE INTERNAL "")
     include_directories(SYSTEM ${GraphicsMagick_INCLUDE_DIRS})
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
 
 if(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
-  # Do not use find_package(): module is not working with ImageMagick 7
+  # Do not use find_package(): module is not providing needed CFLAGS
   find_package(PkgConfig)
-  pkg_check_modules(ImageMagick MagickWand QUIET)
+  pkg_check_modules(ImageMagick MagickWand>=7)
   if(ImageMagick_FOUND)
     add_definitions(-DHAVE_IMAGEMAGICK ${ImageMagick_CFLAGS_OTHER})
-    if(NOT ImageMagick_VERSION VERSION_GREATER 7)
-      message(FATAL "ImageMagick version must be >= 7")
-    endif(NOT ImageMagick_VERSION VERSION_GREATER 7)
     include_directories(SYSTEM ${ImageMagick_INCLUDE_DIRS})
-    find_library(ImageMagick_LIBRARY ${ImageMagick_LIBRARIES} HINTS ${ImageMagick_LIBDIR})
-    list(APPEND LIBS ${ImageMagick_LIBRARY})
+    foreach(lib ${ImageMagick_LIBRARIES})
+      find_library(ImageMagick_LIBRARY NAMES ${lib} HINTS ${ImageMagick_LIBRARY_DIRS})
+      list(APPEND LIBS ${ImageMagick_LIBRARY})
+      unset(ImageMagick_LIBRARY CACHE)
+    endforeach(lib)
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} gif jpc jp2 bmp dcm jng miff mng pam webp jxl CACHE INTERNAL "")
   endif(ImageMagick_FOUND)
 endif(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
 
@@ -562,7 +592,7 @@ endif(LensFun_FOUND)
 
 if(OpenEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
-  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} j2c j2k jp2 jpc CACHE INTERNAL "")
+  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} exr CACHE INTERNAL "")
 endif(OpenEXR_FOUND)
 
 if(USE_OPENCL)
@@ -573,25 +603,10 @@ endif(USE_OPENCL)
 if(Gphoto2_FOUND)
   set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" )
   add_definitions("-DHAVE_GPHOTO2")
-
-  # Gphoto 2.5 changed the prototype of a set of callback functions.
-  # The interface change makes it necessary to detect the version here,
-  # as it's not possible to do in code. Argh.
-  # Diff: http://sourceforge.net/p/gphoto/code/12735/
-  #
-  # This workaround may be removed when darktable no longer needs
-  # to support gphoto2 < 2.5.0.
-  #
-  if(${Gphoto2_VERSION_STRING} VERSION_LESS "2.5")
-  else()
-    add_definitions("-DHAVE_GPHOTO_25_OR_NEWER")
-  endif()
-
   # CPack ignores variables you define in your CMakeLists.txt file,
   # and only variables ${CPACK_*} are correctly used.
   # so this needs to be saved by adding another variable with a name beginning with CPACK
   set(CPACK_NSIS_GPHOTO2_VERSION ${Gphoto2_VERSION_STRING} CACHE STRING "Gphoto2 version string")
-  set(CPACK_NSIS_GRAPHICSMAGICK_VERSION ${GraphicsMagick_PKGCONF_VERSION} CACHE STRING "GM version string")
 endif(Gphoto2_FOUND)
 
 # Check for __builtin_cpu_supports here due to a bug in clang/llvm. LLVM uses
@@ -680,6 +695,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 #
 # Generate config.h
 #
+list(REMOVE_DUPLICATES DT_SUPPORTED_EXTENSIONS)
 string(REPLACE ";" "\", \"" DT_SUPPORTED_EXTENSIONS_STRING "${DT_SUPPORTED_EXTENSIONS}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${DARKTABLE_BINDIR}/config.h" @ONLY)
 
@@ -1027,7 +1043,7 @@ if (WIN32)
 else()
     set_target_properties(darktable
                           PROPERTIES
-                          INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
+                          INSTALL_RPATH ${RPATH_ORIGIN}/${REL_BIN_TO_LIBDIR})
 endif(WIN32)
 
 install(TARGETS darktable DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)
@@ -1042,7 +1058,6 @@ if (USE_LIBRAW)
   if(NOT USE_OPENMP)
     set(ENABLE_OPENMP OFF CACHE BOOL "")
   endif()
-  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} libraw CACHE INTERNAL "")
 
   # LibRaw sub-module
   add_subdirectory(external/LibRaw-cmake)

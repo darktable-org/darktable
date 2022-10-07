@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/extra_optimizations.h"
+
 #include "views/view.h"
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
@@ -48,8 +50,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-
-#define DECORATION_SIZE_LIMIT 40
 
 static void dt_view_manager_load_modules(dt_view_manager_t *vm);
 static int dt_view_load_module(void *v, const char *libname, const char *module_name);
@@ -173,12 +173,9 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
 
   if(darktable.gui)
   {
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_VIEW, module->module_name, module->name(module),
-                                     .owner = &darktable.control->actions_views };
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_VIEW, module->module_name, module->name(module) };
     dt_action_insert_sorted(&darktable.control->actions_views, &module->actions);
   }
-
-  if(darktable.gui && module->init_key_accels) module->init_key_accels(module);
 
   return 0;
 }
@@ -240,9 +237,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 {
   dt_view_t *old_view = vm->current_view;
   dt_view_t *new_view = (dt_view_t *)nv; // views belong to us, we can de-const them :-)
-
-  // Before switching views, restore accelerators if disabled
-  if(!darktable.control->key_accelerators_on) dt_control_key_accelerators_on(darktable.control);
 
   // reset the cursor to the default one
   dt_control_change_cursor(GDK_LEFT_PTR);
@@ -345,8 +339,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       /* try get the module expander  */
       GtkWidget *w = dt_lib_gui_get_expander(plugin);
 
-      if(plugin->connect_key_accels) plugin->connect_key_accels(plugin);
-
       /* if we didn't get an expander let's add the widget */
       if(!w) w = plugin->widget;
 
@@ -401,7 +393,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   /* enter view. crucially, do this before initing the plugins below,
       as e.g. modulegroups requires the dr stuff to be inited. */
   if(new_view->enter) new_view->enter(new_view);
-  if(new_view->connect_key_accels) new_view->connect_key_accels(new_view);
 
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);
@@ -610,7 +601,7 @@ void dt_view_manager_scrollbar_changed(dt_view_manager_t *vm, double x, double y
 void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsize, float hwinsize, float vpos,
                            float vlower, float vsize, float vwinsize)
 {
-  if (view->vscroll_pos == vpos
+  if(view->vscroll_pos == vpos
       && view->vscroll_lower == vlower
       && view->vscroll_size == vsize
       && view->vscroll_viewport_size == vwinsize
@@ -639,7 +630,7 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hlower, float hsiz
   widget = darktable.gui->widgets.top_border;
   gtk_widget_queue_draw(widget);
 
-  if (!darktable.gui->scrollbars.dragging)
+  if(!darktable.gui->scrollbars.dragging)
     dt_ui_update_scrollbars(darktable.gui->ui);
 }
 
@@ -941,10 +932,23 @@ void dt_view_toggle_selection(int imgid)
 /**
  * \brief Reset filter
  */
-void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter)
+void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter)
 {
-  if(vm->proxy.filter.module && vm->proxy.filter.reset_filter)
-    vm->proxy.filter.reset_filter(vm->proxy.filter.module, smart_filter);
+  if(vm->proxy.module_filtering.module && vm->proxy.module_filtering.reset_filter)
+    vm->proxy.module_filtering.reset_filter(vm->proxy.module_filtering.module, smart_filter);
+}
+
+GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm)
+{
+  if(vm->proxy.filter.module && vm->proxy.filter.get_filter_box)
+    return vm->proxy.filter.get_filter_box(vm->proxy.filter.module);
+  return NULL;
+}
+GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm)
+{
+  if(vm->proxy.filter.module && vm->proxy.filter.get_sort_box)
+    return vm->proxy.filter.get_sort_box(vm->proxy.filter.module);
+  return NULL;
 }
 
 void dt_view_active_images_reset(gboolean raise)
@@ -1048,10 +1052,24 @@ void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gin
 
 void dt_view_collection_update(const dt_view_manager_t *vm)
 {
+  if(vm->proxy.module_filtering.module) vm->proxy.module_filtering.update(vm->proxy.module_filtering.module);
   if(vm->proxy.module_collect.module)
     vm->proxy.module_collect.update(vm->proxy.module_collect.module);
 }
 
+void dt_view_collection_update_history_state(const dt_view_manager_t *vm)
+{
+  if(vm->proxy.module_recentcollect.module)
+    vm->proxy.module_recentcollect.update_visibility(vm->proxy.module_recentcollect.module);
+  if(vm->proxy.module_collect.module)
+    vm->proxy.module_collect.update_history_visibility(vm->proxy.module_collect.module);
+}
+
+void dt_view_filtering_set_sort(const dt_view_manager_t *vm, int sort, gboolean asc)
+{
+  if(vm->proxy.module_filtering.module)
+    vm->proxy.module_filtering.set_sort(vm->proxy.module_filtering.module, sort, asc);
+}
 
 int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm)
 {
@@ -1135,7 +1153,7 @@ void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *cont
 #ifdef HAVE_PRINT
 void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo, dt_images_box *imgs)
 {
-  if (vm->proxy.print.view)
+  if(vm->proxy.print.view)
     vm->proxy.print.print_settings(vm->proxy.print.view, pinfo, imgs);
 }
 #endif
@@ -1145,7 +1163,7 @@ GSList *dt_mouse_action_create_simple(GSList *actions, dt_mouse_action_type_t ty
 {
   dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = type;
-  a->key.accel_mods = accel;
+  a->mods = accel;
   g_strlcpy(a->name, description, sizeof(a->name));
   return g_slist_append(actions, a);
 }
@@ -1155,16 +1173,17 @@ GSList *dt_mouse_action_create_format(GSList *actions, dt_mouse_action_type_t ty
 {
   dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = type;
-  a->key.accel_mods = accel;
+  a->mods = accel;
   g_snprintf(a->name, sizeof(a->name), format_string, replacement);
   return g_slist_append(actions, a);
 }
 
 static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
 {
-  gchar *atxt = gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods);
-  if(strcmp(atxt, ""))
-    atxt = dt_util_dstrcat(atxt, "+");
+  gchar *atxt = NULL;
+  if(ma->mods & GDK_SHIFT_MASK  ) atxt = dt_util_dstrcat(atxt, "%s+", _("shift"));
+  if(ma->mods & GDK_CONTROL_MASK) atxt = dt_util_dstrcat(atxt, "%s+", _("ctrl"));
+  if(ma->mods & GDK_MOD1_MASK   ) atxt = dt_util_dstrcat(atxt, "%s+", _("alt"));
 
   switch(ma->action)
   {
@@ -1212,8 +1231,7 @@ static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_v
 
   // creating new window
   GtkWindow *win = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(win));
-  gtk_style_context_add_class(context, "accels_window");
+  dt_gui_add_class(GTK_WIDGET(win), "dt_accels_window");
   gtk_window_set_title(win, _("darktable - accels window"));
   GtkAllocation alloc;
   gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
@@ -1243,37 +1261,29 @@ void dt_view_accels_show(dt_view_manager_t *vm)
 
   vm->accels_window.sticky = FALSE;
   vm->accels_window.prevent_refresh = FALSE;
-
-  GtkStyleContext *context;
   vm->accels_window.window = gtk_window_new(GTK_WINDOW_POPUP);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(vm->accels_window.window);
 #endif
-  context = gtk_widget_get_style_context(vm->accels_window.window);
-  gtk_style_context_add_class(context, "accels_window");
+  dt_gui_add_class(vm->accels_window.window, "dt_accels_window");
 
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  context = gtk_widget_get_style_context(sw);
-  gtk_style_context_add_class(context, "accels_window_scroll");
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
   vm->accels_window.flow_box = gtk_flow_box_new();
-  context = gtk_widget_get_style_context(vm->accels_window.flow_box);
-  gtk_style_context_add_class(context, "accels_window_box");
+  dt_gui_add_class(vm->accels_window.flow_box, "dt_accels_box");
   gtk_orientable_set_orientation(GTK_ORIENTABLE(vm->accels_window.flow_box), GTK_ORIENTATION_HORIZONTAL);
 
   gtk_box_pack_start(GTK_BOX(hb), vm->accels_window.flow_box, TRUE, TRUE, 0);
 
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  vm->accels_window.sticky_btn
-      = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
+  vm->accels_window.sticky_btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, 0, NULL);
   g_object_set(G_OBJECT(vm->accels_window.sticky_btn), "tooltip-text",
                _("switch to a classic window which will stay open after key release"), (char *)NULL);
   g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "button-press-event", G_CALLBACK(_accels_window_sticky),
                    vm);
-  context = gtk_widget_get_style_context(vm->accels_window.sticky_btn);
-  gtk_style_context_add_class(context, "accels_window_stick");
+  dt_gui_add_class(vm->accels_window.sticky_btn, "dt_accels_stick");
   gtk_box_pack_start(GTK_BOX(vb), vm->accels_window.sticky_btn, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 0);
 
@@ -1358,8 +1368,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     // the title
     GtkWidget *lb = gtk_label_new(category->label);
-    GtkStyleContext *context = gtk_widget_get_style_context(lb);
-    gtk_style_context_add_class(context, "accels_window_cat_title");
+    dt_gui_add_class(lb, "dt_accels_cat_title");
     gtk_box_pack_start(GTK_BOX(box), lb, FALSE, FALSE, 0);
 
     // the list of accels
@@ -1368,8 +1377,6 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
     {
       GtkWidget *list = gtk_tree_view_new_with_model(model);
       g_object_unref(model);
-      context = gtk_widget_get_style_context(list);
-      gtk_style_context_add_class(context, "accels_window_list");
       GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
       GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("shortcut"), renderer, "text", 0, NULL);
       gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
@@ -1448,6 +1455,9 @@ void dt_view_audio_stop(dt_view_manager_t *vm)
   g_spawn_close_pid(vm->audio.audio_player_pid);
   vm->audio.audio_player_id = -1;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

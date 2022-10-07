@@ -93,7 +93,7 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
 {
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
-  if (newid <= 0) return;
+  if(newid <= 0) return;
   dt_history_delete_on_image(newid);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
@@ -103,7 +103,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
 {
   const int imgid = darktable.develop->image_storage.id;
   const int newid = dt_image_duplicate(imgid);
-  if (newid <= 0) return;
+  if(newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL, TRUE, TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, newid);
@@ -205,7 +205,7 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  if (d->imgid == 0) return;
+  if(d->imgid == 0) return;
   dt_develop_t *dev = darktable.develop;
   if(!dev->preview_pipe->backbuf || dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
 
@@ -227,7 +227,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   const int32_t tb = darktable.develop->border_size;
 
   // we rescale the sizes to the screen size
-  if (img_ht * (width - 2 * tb) > img_wd * (height - 2 * tb))
+  if(img_ht * (width - 2 * tb) > img_wd * (height - 2 * tb))
   {
     img_wd = img_wd*(height - 2 * tb)/img_ht;
     img_ht = (height - 2 * tb);
@@ -289,7 +289,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_save(cri);
     // force middle grey in background
     if(dev->iso_12646.enabled)
-      cairo_set_source_rgb(cri, 0.5, 0.5, 0.5);
+      cairo_set_source_rgb(cri, 0.4663, 0.4663, 0.4663);
     else
       dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
 
@@ -400,6 +400,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   int count = 0;
 
   // we get a summarize of all versions of the image
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT i.version, i.id, m.value"
                               " FROM images AS i"
@@ -407,6 +408,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
                               " WHERE film_id = ?1 AND filename = ?2"
                               " ORDER BY i.version",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dev->image_storage.filename, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, DT_METADATA_XMP_VERSION_NAME);
@@ -417,10 +419,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   {
     GtkWidget *hb = gtk_grid_new();
     const int imgid = sqlite3_column_int(stmt, 1);
-
-    GtkStyleContext *context = gtk_widget_get_style_context(hb);
-    gtk_style_context_add_class(context, "dt_overlays_always");
-
+    dt_gui_add_class(hb, "dt_overlays_always");
     dt_thumbnail_t *thumb = dt_thumbnail_new(100, 100, IMG_TO_FIT, imgid, -1, DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL,
                                              DT_THUMBNAIL_CONTAINER_LIGHTTABLE, TRUE);
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -428,7 +427,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     thumb->disable_actions = TRUE;
     dt_thumbnail_set_mouseover(thumb, imgid == dev->image_storage.id);
 
-    if (imgid != dev->image_storage.id)
+    if(imgid != dev->image_storage.id)
     {
       g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event",
                        G_CALLBACK(_lib_duplicate_thumb_press_callback), self);
@@ -449,8 +448,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
     gtk_widget_set_hexpand(lb, TRUE);
-    bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-//    gtk_widget_set_halign(bt, GTK_ALIGN_END);
+    bt = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
+    //    gtk_widget_set_halign(bt, GTK_ALIGN_END);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 
@@ -533,18 +532,16 @@ void gui_init(dt_lib_module_t *self)
   d->preview_height = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkStyleContext *context = gtk_widget_get_style_context(self->widget);
-  gtk_style_context_add_class(context, "duplicate-ui");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
+  dt_gui_add_class(self->widget, "dt_duplicate_ui");
 
   d->duplicate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *bt = dt_ui_button_new(_("original"), _("create a 'virgin' duplicate of the image without any development"), NULL);
-  g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_new_clicked_callback), self);
+  GtkWidget *bt = dt_action_button_new(NULL, N_("original"), _lib_duplicate_new_clicked_callback, self,
+                            _("create a 'virgin' duplicate of the image without any development"), 0, 0);
   gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
-  bt = dt_ui_button_new(_("duplicate"), _("create a duplicate of the image with same history stack"), (char *)NULL);
-  g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
+  bt = dt_action_button_new(NULL, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
+                            _("create a duplicate of the image with same history stack"), 0, 0);
   gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
 
   /* add duplicate list and buttonbox to widget */
@@ -572,6 +569,9 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

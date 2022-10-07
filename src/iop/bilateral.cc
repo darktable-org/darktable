@@ -90,10 +90,10 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply edge-aware surface blur to denoise or smoothen textures"),
                                       _("corrective and creative"),
@@ -122,7 +122,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   // if rad <= 6 use naive version!
   const int rad = (int)(3.0 * fmaxf(sigma[0], sigma[1]) + 1.0);
-  if(rad <= 6 && ((piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL))
+  if(rad <= 6 && (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
     dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
@@ -277,17 +277,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
-  dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)self->params;
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  // dt_bauhaus_slider_set(g->scale2, p->sigma[1]);
-  dt_bauhaus_slider_set_soft(g->red, p->red);
-  dt_bauhaus_slider_set_soft(g->green, p->green);
-  dt_bauhaus_slider_set_soft(g->blue, p->blue);
-}
-
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
@@ -312,7 +301,6 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the gaussian"));
   dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 30.0);
-  dt_bauhaus_slider_set_step(g->radius, 1.0);
 
   g->red = dt_bauhaus_slider_from_params(self, N_("red"));
   gtk_widget_set_tooltip_text(g->red, _("how much to blur red"));
@@ -331,6 +319,9 @@ void gui_init(dt_iop_module_t *self)
 }
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

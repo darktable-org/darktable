@@ -88,7 +88,7 @@ int dt_cache_for_all(
   gpointer key, value;
 
   g_hash_table_iter_init (&iter, cache->hashtable);
-  while (g_hash_table_iter_next (&iter, &key, &value))
+  while(g_hash_table_iter_next (&iter, &key, &value))
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
     const int err = process(GPOINTER_TO_INT(key), entry->data, user_data);
@@ -367,9 +367,9 @@ void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, co
 #ifdef _DEBUG
 
 # if defined(HAVE_THREAD_RWLOCK_ARCH_T_READERS)
-  if (entry->lock.lock.__data.__readers <= 1)
+  if(entry->lock.lock.__data.__readers <= 1)
 # elif defined(HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS)
-  if (entry->lock.lock.__data.__nr_readers <= 1)
+  if(entry->lock.lock.__data.__nr_readers <= 1)
 # else /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
 #  error "No valid reader member"
 # endif /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
@@ -377,7 +377,7 @@ void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, co
 #else /* _DEBUG */
 
 # if defined(HAVE_THREAD_RWLOCK_ARCH_T_READERS)
-  if (entry->lock.__data.__readers <= 1)
+  if(entry->lock.__data.__readers <= 1)
 # elif defined(HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS)
   if(entry->lock.__data.__nr_readers <= 1)
 # else /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
@@ -395,6 +395,9 @@ void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, co
   dt_pthread_rwlock_unlock(&entry->lock);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -50,8 +50,6 @@ void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, double pressure, int which);
 void dt_control_mouse_leave();
 void dt_control_mouse_enter();
-int dt_control_key_pressed(guint key, guint state);
-int dt_control_key_released(guint key, guint state);
 int dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
@@ -113,13 +111,6 @@ struct dt_control_t;
 /** sets the hinter message */
 void dt_control_hinter_message(const struct dt_control_t *s, const char *message);
 
-/** turn the use of key accelerators on */
-void dt_control_key_accelerators_on(struct dt_control_t *s);
-/** turn the use of key accelerators on */
-void dt_control_key_accelerators_off(struct dt_control_t *s);
-
-int dt_control_is_key_accelerators_on(struct dt_control_t *s);
-
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 1000
 #define DT_CTL_LOG_TIMEOUT 5000
@@ -135,12 +126,17 @@ typedef struct dt_control_t
 {
   gboolean accel_initialising;
 
-  dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend, actions_lua, actions_fallbacks, *actions_modifiers;
+  dt_action_t *actions, actions_global,
+               actions_views, actions_thumb,
+               actions_libs, actions_format, actions_storage,
+               actions_iops, actions_blend,
+               actions_lua, actions_fallbacks, *actions_modifiers;
 
   GHashTable *widgets, *combo_introspection, *combo_list;
   GSequence *shortcuts;
   gboolean enable_fallbacks;
   GtkWidget *mapping_widget;
+  gboolean confirm_mapping;
   dt_action_element_t element;
   GPtrArray *widget_definitions;
   GSList *input_drivers;
@@ -181,7 +177,6 @@ typedef struct dt_control_t
   // gui settings
   dt_pthread_mutex_t global_mutex, image_mutex;
   double last_expose_time;
-  int key_accelerators_on;
 
   // job management
   int32_t running;
@@ -286,6 +281,9 @@ static inline int32_t dt_ctl_get_num_procs()
 #endif
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

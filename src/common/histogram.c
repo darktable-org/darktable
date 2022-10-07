@@ -369,12 +369,12 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
 {
   switch(cst)
   {
-    case iop_cs_RAW:
+    case IOP_CS_RAW:
       dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_RAW, profile_info);
       histogram_stats->ch = 1u;
       break;
 
-    case iop_cs_rgb:
+    case IOP_CS_RGB:
       if(compensate_middle_grey && profile_info)
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb_compensated, profile_info);
       else
@@ -382,9 +382,9 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
       histogram_stats->ch = 3u;
       break;
 
-    case iop_cs_Lab:
+    case IOP_CS_LAB:
     default:
-      if(cst_to != iop_cs_LCh)
+      if(cst_to != IOP_CS_LCH)
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_Lab, profile_info);
       else
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_Lab_LCh, profile_info);
@@ -402,12 +402,12 @@ void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_sta
   uint32_t *hist = *histogram;
   switch(cst)
   {
-    case iop_cs_RAW:
+    case IOP_CS_RAW:
       for(int k = 0; k < 4 * histogram_stats->bins_count; k += 4)
         histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
       break;
 
-    case iop_cs_rgb:
+    case IOP_CS_RGB:
       // don't count <= 0 pixels
       for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
         histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
@@ -419,9 +419,9 @@ void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_sta
         histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
       break;
 
-    case iop_cs_Lab:
+    case IOP_CS_LAB:
     default:
-      if(cst_to == iop_cs_LCh)
+      if(cst_to == IOP_CS_LCH)
       {
         // don't count <= 0 pixels
         for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
@@ -449,6 +449,9 @@ void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_sta
   }
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

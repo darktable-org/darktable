@@ -96,19 +96,19 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
 
   g->num_levels = MIN(max_levels, 31-__builtin_clz(MIN(width,height)));
   g->max_supp = 1<<(g->num_levels-1);
-  g->bwidth = ROUNDUPWD(width  + 2*g->max_supp);
-  g->bheight = ROUNDUPHT(height + 2*g->max_supp);
+  g->bwidth = ROUNDUPDWD(width  + 2*g->max_supp, devid);
+  g->bheight = ROUNDUPDHT(height + 2*g->max_supp, devid);
 
   // get intermediate vector buffers with read-write access
   for(int l=0;l<g->num_levels;l++)
   {
-    g->dev_padded[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(g->bwidth, l)), ROUNDUPHT(dl(g->bheight, l)), sizeof(float));
+    g->dev_padded[l] = dt_opencl_alloc_device(devid, ROUNDUPDWD(dl(g->bwidth, l), devid), ROUNDUPDHT(dl(g->bheight, l), devid), sizeof(float));
     if(!g->dev_padded[l]) goto error;
-    g->dev_output[l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(g->bwidth, l)), ROUNDUPHT(dl(g->bheight, l)), sizeof(float));
+    g->dev_output[l] = dt_opencl_alloc_device(devid, ROUNDUPDWD(dl(g->bwidth, l), devid), ROUNDUPDHT(dl(g->bheight, l), devid), sizeof(float));
     if(!g->dev_output[l]) goto error;
     for(int k=0;k<num_gamma;k++)
     {
-      g->dev_processed[k][l] = dt_opencl_alloc_device(devid, ROUNDUPWD(dl(g->bwidth, l)), ROUNDUPHT(dl(g->bheight, l)), sizeof(float));
+      g->dev_processed[k][l] = dt_opencl_alloc_device(devid, ROUNDUPDWD(dl(g->bwidth, l), devid), ROUNDUPDHT(dl(g->bheight, l), devid), sizeof(float));
       if(!g->dev_processed[k][l]) goto error;
     }
   }
@@ -130,7 +130,7 @@ cl_int dt_local_laplacian_cl(
 
   if(b->bwidth <= 1 || b->bheight <= 1) return err;
 
-  size_t sizes_pad[] = { ROUNDUPWD(b->bwidth), ROUNDUPHT(b->bheight), 1 };
+  size_t sizes_pad[] = { ROUNDUPDWD(b->bwidth, b->devid), ROUNDUPDHT(b->bheight, b->devid), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 0, sizeof(cl_mem), &input);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 1, sizeof(cl_mem), &b->dev_padded[0]);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 2, sizeof(int), &b->width);
@@ -145,7 +145,7 @@ cl_int dt_local_laplacian_cl(
   for(int l=1;l<b->num_levels;l++)
   {
     const int wd = dl(b->bwidth, l), ht = dl(b->bheight, l);
-    size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
+    size_t sizes[] = { ROUNDUPDWD(wd, b->devid), ROUNDUPDHT(ht, b->devid), 1 };
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), &b->dev_padded[l-1]);
     if(l == b->num_levels-1)
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), &b->dev_output[l]);
@@ -176,7 +176,7 @@ cl_int dt_local_laplacian_cl(
     for(int l=1;l<b->num_levels;l++)
     {
       const int wd = dl(b->bwidth, l), ht = dl(b->bheight, l);
-      size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
+      size_t sizes[] = { ROUNDUPDWD(wd, b->devid), ROUNDUPDHT(ht, b->devid), 1 };
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 0, sizeof(cl_mem), &b->dev_processed[k][l-1]);
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 1, sizeof(cl_mem), &b->dev_processed[k][l]);
       dt_opencl_set_kernel_arg(b->devid, b->global->kernel_gauss_reduce, 2, sizeof(int), &wd);
@@ -190,7 +190,7 @@ cl_int dt_local_laplacian_cl(
   for(int l=b->num_levels-2;l >= 0; l--)
   {
     const int pw = dl(b->bwidth,l), ph = dl(b->bheight,l);
-    size_t sizes[] = { ROUNDUPWD(pw), ROUNDUPHT(ph), 1 };
+    size_t sizes[] = { ROUNDUPDWD(pw, b->devid), ROUNDUPDHT(ph, b->devid), 1 };
     // this is so dumb:
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  0, sizeof(cl_mem), &b->dev_padded[l]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  1, sizeof(cl_mem), &b->dev_output[l+1]);
@@ -218,7 +218,7 @@ cl_int dt_local_laplacian_cl(
   }
 
   // read back processed L channel and copy colours:
-  size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(b->width, b->devid), ROUNDUPDHT(b->height, b->devid), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 0, sizeof(cl_mem), &input);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 1, sizeof(cl_mem), &b->dev_output[0]);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_write_back, 2, sizeof(cl_mem), &output);
@@ -238,3 +238,9 @@ error:
 #undef max_levels
 #undef num_gamma
 #endif
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

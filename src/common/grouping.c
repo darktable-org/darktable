@@ -16,11 +16,13 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "control/signal.h"
 #include "common/grouping.h"
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/selection.h"
+#include "control/signal.h"
 #include "gui/gtk.h"
 
 /** add an image to a group */
@@ -164,12 +166,18 @@ void dt_grouping_add_grouped_images(GList **images)
     {
       const int img_group_id = image->group_id;
       dt_image_cache_read_release(darktable.image_cache, image);
-      if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
+      if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id
+         && dt_selection_get_collection(darktable.selection))
       {
         sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img_group_id);
+        // clang-format off
+        gchar *query = g_strdup_printf(
+            "SELECT id"
+            "  FROM main.images"
+            "  WHERE group_id = %d AND id IN (%s)",
+            img_group_id, dt_collection_get_query_no_group(dt_selection_get_collection(darktable.selection)));
+        // clang-format on
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
@@ -178,6 +186,7 @@ void dt_grouping_add_grouped_images(GList **images)
             gimgs = g_list_prepend(gimgs, GINT_TO_POINTER(image_id));
         }
         sqlite3_finalize(stmt);
+        g_free(query);
       }
     }
   }
@@ -186,6 +195,9 @@ void dt_grouping_add_grouped_images(GList **images)
     *images = g_list_concat(*images, g_list_reverse(gimgs));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

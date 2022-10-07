@@ -42,7 +42,6 @@
 #include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
-#define DT_GUI_CURVE_INFL .3f
 
 DT_MODULE_INTROSPECTION(2, dt_iop_levels_params_t)
 
@@ -122,10 +121,10 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("adjust black, white and mid-gray points"),
                                       _("creative"),
@@ -314,7 +313,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
-    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
     {
       dt_iop_gui_enter_critical_section(self);
       const uint64_t hash = g->hash;
@@ -336,14 +335,14 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       compute_lut(piece);
     }
 
-    if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW || isnan(d->levels[0]) || isnan(d->levels[1])
+    if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) || isnan(d->levels[0]) || isnan(d->levels[1])
        || isnan(d->levels[2]))
     {
       dt_iop_levels_compute_levels_automatic(piece);
       compute_lut(piece);
     }
 
-    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW && d->mode == LEVELS_MODE_AUTOMATIC)
+    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) && d->mode == LEVELS_MODE_AUTOMATIC)
     {
       uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
       dt_iop_gui_enter_critical_section(self);
@@ -427,7 +426,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_lut = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
   if(dev_lut == NULL) goto error;
 
-  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(int), &width);
@@ -445,7 +444,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
 error:
   dt_opencl_release_mem_object(dev_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_levels] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -467,7 +466,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;
 
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     piece->request_histogram |= (DT_REQUEST_ON);
   else
     piece->request_histogram &= ~(DT_REQUEST_ON);
@@ -550,9 +549,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
   dt_bauhaus_combobox_set(g->mode, p->mode);
-  dt_bauhaus_slider_set(g->percentile_black, p->black);
-  dt_bauhaus_slider_set(g->percentile_grey, p->gray);
-  dt_bauhaus_slider_set(g->percentile_white, p->white);
 
   gui_changed(self, g->mode, 0);
 
@@ -665,18 +661,15 @@ void gui_init(dt_iop_module_t *self)
 
   c->percentile_black = dt_bauhaus_slider_from_params(self, N_("black"));
   gtk_widget_set_tooltip_text(c->percentile_black, _("black percentile"));
-  dt_bauhaus_slider_set_format(c->percentile_black, "%.1f%%");
-  dt_bauhaus_slider_set_step(c->percentile_black, 0.1);
+  dt_bauhaus_slider_set_format(c->percentile_black, "%");
 
   c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray"));
   gtk_widget_set_tooltip_text(c->percentile_grey, _("gray percentile"));
-  dt_bauhaus_slider_set_format(c->percentile_grey, "%.1f%%");
-  dt_bauhaus_slider_set_step(c->percentile_grey, 0.1);
+  dt_bauhaus_slider_set_format(c->percentile_grey, "%");
 
   c->percentile_white = dt_bauhaus_slider_from_params(self, N_("white"));
   gtk_widget_set_tooltip_text(c->percentile_white, _("white percentile"));
-  dt_bauhaus_slider_set_format(c->percentile_white, "%.1f%%");
-  dt_bauhaus_slider_set_step(c->percentile_white, 0.1);
+  dt_bauhaus_slider_set_format(c->percentile_white, "%");
 
   gtk_stack_add_named(GTK_STACK(c->mode_stack), vbox_automatic, "automatic");
 
@@ -1012,6 +1005,9 @@ static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

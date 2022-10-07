@@ -48,35 +48,16 @@ typedef struct dt_draw_curve_t
 } dt_draw_curve_t;
 
 /** set color based on gui overlay preference */
-static inline void dt_draw_set_color_overlay(cairo_t *cr, double amt, double alpha)
+static inline void dt_draw_set_color_overlay(cairo_t *cr, gboolean bright, double alpha)
 {
-  const int overlay_color = dt_conf_get_int("darkroom/ui/overlay_color");
+  double amt;
 
-  if(overlay_color == DT_DEV_OVERLAY_GRAY)
-  {
-    cairo_set_source_rgba(cr, 1.0 * amt, 1.0 * amt, 1.0 * amt, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_RED)
-  {
-    cairo_set_source_rgba(cr, 1.0 * amt, 0.0, 0.0, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_GREEN)
-  {
-    cairo_set_source_rgba(cr, 0.0, 1.0 * amt, 0.0, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_YELLOW)
-  {
-    cairo_set_source_rgba(cr, 1.0 * amt, 1.0 * amt, 0.0, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_CYAN)
-  {
-    cairo_set_source_rgba(cr, 0.0, 1.0 * amt, 1.0 * amt, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_MAGENTA)
-  {
-    cairo_set_source_rgba(cr, 1.0 * amt, 0.0, 1.0 * amt, alpha);
-  }
+  if(bright)
+    amt = 0.5 + darktable.gui->overlay_contrast * 0.5;
+  else
+    amt = (1.0 - darktable.gui->overlay_contrast) * 0.5;
 
+  cairo_set_source_rgba(cr, darktable.gui->overlay_red * amt, darktable.gui->overlay_green * amt, darktable.gui->overlay_blue * amt, alpha);
 }
 
 /** draws a rating star
@@ -527,7 +508,7 @@ static inline GdkPixbuf *dt_draw_paint_to_pixbuf
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim, dim);
   cairo_t *cr = cairo_create(cst);
   gdk_cairo_set_source_rgba(cr, &fg_color);
-  (*dtgtk_cairo_paint_fct)(cr, 0, 0, dim, dim, flags | CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  (*dtgtk_cairo_paint_fct)(cr, 0, 0, dim, dim, flags, NULL);
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, dim, dim);
@@ -540,6 +521,9 @@ static inline GdkPixbuf *dt_draw_paint_to_pixbuf
   return pixbuf;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

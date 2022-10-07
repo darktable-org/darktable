@@ -69,9 +69,9 @@ endif()
 # Whether to use relative paths for the build RPATH
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
-    set(CMAKE_INSTALL_LIBDIR_RPATH @loader_path/../${CMAKE_INSTALL_LIBDIR}/darktable)
+    set(RPATH_ORIGIN @loader_path)
 else()
-    set(CMAKE_INSTALL_LIBDIR_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR}/darktable)
+    set(RPATH_ORIGIN $ORIGIN)
 endif()
 
 if (USE_OPENMP)
@@ -109,6 +109,10 @@ else()
   set(SOURCE_PACKAGE 0)
 endif()
 
+if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(X86|x86)|(^i.86$)")
+  set(BUILD_SSE2_CODEPATHS OFF)
+endif()
+
 if(BUILD_SSE2_CODEPATHS)
   CHECK_C_COMPILER_FLAG("-msse2" _MSSE2)
   if(NOT _MSSE2)
@@ -124,9 +128,20 @@ MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
 #
 if(APPLE)
 	message("-- Mac OS X build detected, setting default features")
-
-	# prefer macports and/or user-installed libraries over system ones
-	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
+  find_program(HOMEBREW_EXISTS "brew")
+  if(HOMEBREW_EXISTS)
+    execute_process(COMMAND brew --prefix OUTPUT_VARIABLE HOMEBREW_PREFIX)
+    string(STRIP "${HOMEBREW_PREFIX}" HOMEBREW_PREFIX)
+    message("-- Homebrew detected, setting CMAKE_PREFIX_PATH to ${HOMEBREW_PREFIX}")
+    LIST(APPEND CMAKE_PREFIX_PATH ${HOMEBREW_PREFIX})
+    # Explicitly add llvm, icu4c and libsoup@2 to prefix path
+    LIST(APPEND CMAKE_PREFIX_PATH ${HOMEBREW_PREFIX}/opt/llvm)
+    LIST(APPEND CMAKE_PREFIX_PATH ${HOMEBREW_PREFIX}/opt/icu4c)
+    LIST(APPEND CMAKE_PREFIX_PATH ${HOMEBREW_PREFIX}/opt/libsoup@2)
+  else()
+    message("-- Setting CMAKE_PREFIX_PATH to prefer MacPorts and/or user-installed libraries over system ones")
+    LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
+  endif()
 	set(CMAKE_FIND_FRAMEWORK "LAST")
 	# except libstdc++ (only one linked via -l flag, not full path)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib")
@@ -308,7 +323,7 @@ if(TESTBUILD_OPENCL_PROGRAMS)
   endmacro()
 
   # 3.9 is the first version with which this works.
-  find_llvm("13;12;11;10;9;8;7;6.0;5.0;4.0;3.9")
+  find_llvm("14;13;12;11;10;9;8;7;6.0;5.0;4.0;3.9")
 
   if (LLVM_FOUND)
     message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")

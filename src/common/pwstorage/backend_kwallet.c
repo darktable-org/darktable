@@ -87,6 +87,7 @@ static gchar *char2qstring(const gchar *in, gsize *size)
   if(error)
   {
     dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: error converting string: %s\n", error->message);
+    g_free(out);
     g_error_free(error);
     return NULL;
   }
@@ -567,6 +568,9 @@ GHashTable *dt_pwstorage_kwallet_get(const backend_kwallet_context_t *context, c
 
   return table;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

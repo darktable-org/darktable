@@ -61,10 +61,10 @@ dt_cpu_flags_t dt_detect_cpu_features()
     }
 
     /* Are there extensions? */
-    if (__get_cpuid(0x80000000,&ax,&bx,&cx,&dx))
+    if(__get_cpuid(0x80000000,&ax,&bx,&cx,&dx))
     {
       /* Ask extensions */
-      if (__get_cpuid(0x80000001,&ax,&bx,&cx,&dx))
+      if(__get_cpuid(0x80000001,&ax,&bx,&cx,&dx))
       {
         if(dx & 0x80000000) cpuflags |= CPU_FLAG_3DNOW;
         if(dx & 0x40000000) cpuflags |= CPU_FLAG_3DNOW_EXT;
@@ -88,6 +88,9 @@ dt_cpu_flags_t dt_detect_cpu_features()
 }
 #endif /* defined(HAVE___GET_CPUID) */
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

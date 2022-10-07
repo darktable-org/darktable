@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the darkroom module.  */
+
+#include "common/extra_optimizations.h"
+
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
@@ -72,26 +75,6 @@
 #endif
 
 DT_MODULE(1)
-
-static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, gpointer data);
-
-static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data);
-static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data);
-static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                        GdkModifierType modifier, gpointer data);
-static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data);
-static gboolean _brush_hardness_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                            GdkModifierType modifier, gpointer data);
-static gboolean _brush_hardness_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                              GdkModifierType modifier, gpointer data);
-static gboolean _brush_opacity_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data);
-static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                             GdkModifierType modifier, gpointer data);
 
 static void _update_softproof_gamut_checking(dt_develop_t *d);
 
@@ -250,6 +233,7 @@ void _display_module_trouble_message_callback(gpointer instance,
         gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
         gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
         gtk_widget_set_name(label_widget, "iop-plugin-warning");
+        dt_gui_add_class(label_widget, "dt_warning");
 
         GtkWidget *iopw = gtk_widget_get_parent(module->widget);
         gtk_box_pack_start(GTK_BOX(iopw), label_widget, TRUE, TRUE, 0);
@@ -535,7 +519,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // force middle grey in background
-      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+      cairo_set_source_rgb(cr, 0.4663, 0.4663, 0.4663);
     }
     else
     {
@@ -557,7 +541,8 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      cairo_rectangle(cr, -tb / 3., -tb / 3.0, wd + 2. * tb / 3., ht + 2. * tb / 3.);
+      const double tbw = (float)(tb >> closeup) * 2.0 / 3.0;  
+      cairo_rectangle(cr, -tbw, -tbw, wd + 2.0 * tbw, ht + 2.0 * tbw);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
     }
@@ -594,7 +579,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // force middle grey in background
-      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+      cairo_set_source_rgb(cr, 0.4663, 0.4663, 0.4663);
     }
     else
     {
@@ -606,7 +591,8 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      cairo_rectangle(cr, 2 * tb / 3., 2 * tb / 3.0, width - 4. * tb / 3., height - 4. * tb / 3.);
+      const double tbw = (float)(tb >> closeup) / 3.0;
+      cairo_rectangle(cr, tbw, tbw, width - 2.0 * tbw, height - 2.0 * tbw);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
     }
@@ -614,8 +600,7 @@ void expose(
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_clip(cr);
     stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    surface = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
@@ -853,6 +838,8 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dev->proxy.wb_is_D65 = TRUE;
   dev->proxy.wb_coeffs[0] = 0.f;
 
+  memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
+
 #ifdef USE_LUA
 
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
@@ -873,10 +860,12 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   if(dev->image_storage.id > 0)
   {
     sqlite3_stmt *stmt;
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
                                 "WHERE m.imgid=s.imgid",
                                 -1, &stmt, NULL);
+    // clang-format on
     gboolean follow = FALSE;
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -899,7 +888,7 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
-    double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    const double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
     dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
   }
   else
@@ -1178,10 +1167,12 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 
   // we new offset and imgid after the jump
   sqlite3_stmt *stmt;
+  // clang-format off
   gchar *query = g_strdup_printf("SELECT rowid, imgid "
                                  "FROM memory.collected_images "
                                  "WHERE rowid=(SELECT rowid FROM memory.collected_images WHERE imgid=%d)+%d",
                                  imgid, diff);
+  // clang-format on
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1228,15 +1219,13 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
   if(by_key) dt_control_set_mouse_over_id(new_id);
 }
 
-static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, gpointer data)
+static void zoom_key_accel(dt_action_t *action)
 {
   dt_develop_t *dev = darktable.develop;
   int zoom, closeup;
   float zoom_x, zoom_y;
-  switch(GPOINTER_TO_INT(data))
+  if(!strcmp(action->id, "zoom close-up"))
   {
-    case 1:
       zoom = dt_control_get_dev_zoom();
       zoom_x = dt_control_get_dev_zoom_x();
       zoom_y = dt_control_get_dev_zoom_y();
@@ -1247,42 +1236,53 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
       dt_control_set_dev_zoom_x(zoom_x);
       dt_control_set_dev_zoom_y(zoom_y);
       dt_control_set_dev_closeup(closeup);
-      break;
-    case 2:
+  }
+  else if(!strcmp(action->id, "zoom fill"))
+  {
       zoom_x = zoom_y = 0.0f;
       dt_control_set_dev_zoom(DT_ZOOM_FILL);
       dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
       dt_control_set_dev_zoom_x(zoom_x);
       dt_control_set_dev_zoom_y(zoom_y);
       dt_control_set_dev_closeup(0);
-      break;
-    case 3:
+  }
+  else if(!strcmp(action->id, "zoom fit"))
+  {
       dt_control_set_dev_zoom(DT_ZOOM_FIT);
       dt_control_set_dev_zoom_x(0);
       dt_control_set_dev_zoom_y(0);
       dt_control_set_dev_closeup(0);
-      break;
-    default:
-      break;
   }
+
   dt_dev_invalidate(dev);
   dt_control_queue_redraw_center();
   dt_control_navigation_redraw();
-  return TRUE;
 }
 
-static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data)
+static void zoom_in_callback(dt_action_t *action)
 {
-  dt_dev_jump_image((dt_develop_t *)data, 1, TRUE);
-  return TRUE;
+  dt_view_t *self = dt_action_view(action);
+  dt_develop_t *dev = self->data;
+
+  scrolled(self, dev->width / 2, dev->height / 2, 1, GDK_CONTROL_MASK);
 }
 
-static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data)
+static void zoom_out_callback(dt_action_t *action)
 {
-  dt_dev_jump_image((dt_develop_t *)data, -1, TRUE);
-  return TRUE;
+  dt_view_t *self = dt_action_view(action);
+  dt_develop_t *dev = self->data;
+
+  scrolled(self, dev->width / 2, dev->height / 2, 0, GDK_CONTROL_MASK);
+}
+
+static void skip_f_key_accel_callback(dt_action_t *action)
+{
+  dt_dev_jump_image(dt_action_view(action)->data, 1, TRUE);
+}
+
+static void skip_b_key_accel_callback(dt_action_t *action)
+{
+  dt_dev_jump_image(dt_action_view(action)->data, -1, TRUE);
 }
 
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer data)
@@ -1489,28 +1489,30 @@ static gboolean _toolbar_show_popup(gpointer user_data)
 }
 
 /* colour assessment */
-static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+static int _iso_12646_get_border(dt_develop_t *d)
 {
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if (!d->gui_attached) return;
-
-  d->iso_12646.enabled = !d->iso_12646.enabled;
-  d->width = d->orig_width;
-  d->height = d->orig_height;
-
   if(d->iso_12646.enabled)
   {
-    d->border_size = 0.125 * d->width;
+    return MIN(1.75 * darktable.gui->dpi, 0.3 * MIN(d->width, d->height));
   }
   else
   {
     // Reset border size from config
-    d->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+    return DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
   }
+}
 
+static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  if(!d->gui_attached) return;
+
+  d->iso_12646.enabled = !d->iso_12646.enabled;
+  d->width = d->orig_width;
+  d->height = d->orig_height;
+  d->border_size = _iso_12646_get_border(d);
   dt_dev_configure(d, d->width, d->height);
 
-  dt_ui_restore_panels(darktable.gui->ui);
   dt_dev_reprocess_center(d);
 }
 
@@ -1888,6 +1890,9 @@ static void _preference_changed(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(display_intent, TRUE);
     gtk_widget_set_visible(display_intent, FALSE);
   }
+  dt_get_sysresource_level();
+  dt_opencl_update_settings();
+  dt_configure_ppd_dpi(darktable.gui);
 }
 
 static void _preference_prev_downsample_change(gpointer instance, gpointer user_data)
@@ -1969,73 +1974,59 @@ static void _display2_profile_changed(gpointer instance, uint8_t profile_type, g
 
 /** end of toolbox */
 
-static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                        GdkModifierType modifier, gpointer data)
+static void _brush_size_up_callback(dt_action_t *action)
 {
-  dt_develop_t *dev = (dt_develop_t *)data;
-
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
-  return TRUE;
-}
-static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data)
-{
-  dt_develop_t *dev = (dt_develop_t *)data;
+  dt_develop_t *dev = dt_action_view(action)->data;
 
   if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
-  return TRUE;
+}
+static void _brush_size_down_callback(dt_action_t *action)
+{
+  dt_develop_t *dev = dt_action_view(action)->data;
+
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
 }
 
-static gboolean _brush_hardness_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                            GdkModifierType modifier, gpointer data)
+static void _brush_hardness_up_callback(dt_action_t *action)
 {
-  dt_develop_t *dev = (dt_develop_t *)data;
-
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_SHIFT_MASK);
-  return TRUE;
-}
-static gboolean _brush_hardness_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                              GdkModifierType modifier, gpointer data)
-{
-  dt_develop_t *dev = (dt_develop_t *)data;
+  dt_develop_t *dev = dt_action_view(action)->data;
 
   if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_SHIFT_MASK);
-  return TRUE;
+}
+static void _brush_hardness_down_callback(dt_action_t *action)
+{
+  dt_develop_t *dev = dt_action_view(action)->data;
+
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_SHIFT_MASK);
 }
 
-static gboolean _brush_opacity_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
+static void _brush_opacity_up_callback(dt_action_t *action)
 {
-  dt_develop_t *dev = (dt_develop_t *)data;
-
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_CONTROL_MASK);
-  return TRUE;
-}
-static gboolean _brush_opacity_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                             GdkModifierType modifier, gpointer data)
-{
-  dt_develop_t *dev = (dt_develop_t *)data;
+  dt_develop_t *dev = dt_action_view(action)->data;
 
   if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_CONTROL_MASK);
-  return TRUE;
+}
+static void _brush_opacity_down_callback(dt_action_t *action)
+{
+  dt_develop_t *dev = dt_action_view(action)->data;
+
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_CONTROL_MASK);
 }
 
-static gboolean _overlay_cycle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                             GdkModifierType modifier, gpointer data)
+static void _overlay_cycle_callback(dt_action_t *action)
 {
   const int currentval = dt_conf_get_int("darkroom/ui/overlay_color");
-  const int nextval = (currentval + 1) % 5; // colors can go from 0 to 5
+  const int nextval = (currentval + 1) % 6; // colors can go from 0 to 5
   dt_conf_set_int("darkroom/ui/overlay_color", nextval);
+  dt_guides_set_overlay_colors();
   dt_control_queue_redraw_center();
-  return TRUE;
 }
 
-static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                             GdkModifierType modifier, gpointer data)
+static void _toggle_mask_visibility_callback(dt_action_t *action)
 {
-  if(darktable.gui->reset) return FALSE;
+  if(darktable.gui->reset) return;
 
-  dt_develop_t *dev = (dt_develop_t *)data;
+  dt_develop_t *dev = dt_action_view(action)->data;
   dt_iop_module_t *mod = dev->gui_module;
 
   //retouch and spot removal module use masks differently and have different buttons associated
@@ -2065,12 +2056,20 @@ static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GOb
     }
 
     --darktable.gui->reset;
-
-    return TRUE;
   }
-  else
-    return FALSE;
 }
+
+static void _darkroom_undo_callback(dt_action_t *action)
+{
+  dt_undo_do_undo(darktable.undo, DT_UNDO_DEVELOP);
+}
+
+static void _darkroom_redo_callback(dt_action_t *action)
+{
+  dt_undo_do_redo(darktable.undo, DT_UNDO_DEVELOP);
+}
+
+static void change_slider_accel_precision(dt_action_t *action);
 
 static float _action_process_skip_mouse(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
@@ -2135,7 +2134,7 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
         if(darktable.develop->gui_module)
         {
           dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)darktable.develop->gui_module->blend_data;
-          if (bd) lib->full_preview_masks_state = bd->masks_shown;
+          if(bd) lib->full_preview_masks_state = bd->masks_shown;
         }
         // we set the zoom values to "fit"
         lib->full_preview_last_zoom = dt_control_get_dev_zoom();
@@ -2245,13 +2244,15 @@ void connect_button_press_release(GtkWidget *w, GtkWidget *p)
 void gui_init(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
+
+  dt_action_t *sa = &self->actions, *ac = NULL;
+
   /*
    * Add view specific tool buttons
    */
 
   /* create favorite plugin preset popup tool */
-  GtkWidget *favorite_presets
-      = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
@@ -2259,28 +2260,24 @@ void gui_init(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
-  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT, NULL);
+  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
   g_signal_connect(G_OBJECT(styles), "clicked", G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
   dt_gui_add_help_link(styles, dt_get_help_url("bottom_panel_styles"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
   /* create second window display button */
-  dev->second_window.button
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, CPF_STYLE_FLAT, NULL);
-  dt_action_define(&self->actions, NULL, "second window", dev->second_window.button, &dt_action_def_toggle);
+  dev->second_window.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
+  dt_action_define(sa, NULL, N_("second window"), dev->second_window.button, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(dev->second_window.button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
                    dev);
   gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
-  const int dialog_width       = 350;
-  const int large_dialog_width = 550; // for dialog with profile names
-
   /* Enable ISO 12646-compliant colour assessment conditions */
-  dev->iso_12646.button
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
-  dt_action_define(&self->actions, NULL, "color assessment", dev->iso_12646.button, &dt_action_def_toggle);
+  dev->iso_12646.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
+  ac = dt_action_define(sa, NULL, N_("color assessment"), dev->iso_12646.button, &dt_action_def_toggle);
+  dt_shortcut_register(ac, 0, 0, GDK_KEY_b, GDK_CONTROL_MASK);
   gtk_widget_set_tooltip_text(dev->iso_12646.button,
                               _("toggle ISO 12646 color assessment conditions"));
   g_signal_connect(G_OBJECT(dev->iso_12646.button), "clicked", G_CALLBACK(_iso_12646_quickbutton_clicked), dev);
@@ -2291,9 +2288,9 @@ void gui_init(dt_view_t *self)
   /* create rawoverexposed popup tool */
   {
     // the button
-    dev->rawoverexposed.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, CPF_STYLE_FLAT, NULL);
-    dt_action_define(&self->actions, N_("raw overexposed"), N_("toggle"), dev->rawoverexposed.button, &dt_action_def_toggle);
+    dev->rawoverexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, 0, NULL);
+    ac = dt_action_define(sa, N_("raw overexposed"), N_("toggle"), dev->rawoverexposed.button, &dt_action_def_toggle);
+    dt_shortcut_register(ac, 0, 0, GDK_KEY_o, GDK_SHIFT_MASK);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
                                 _("toggle raw over exposed indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->rawoverexposed.button), "clicked",
@@ -2304,7 +2301,6 @@ void gui_init(dt_view_t *self)
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
     connect_button_press_release(dev->rawoverexposed.button, dev->rawoverexposed.floating_window);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), dialog_width, -1);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->rawoverexposed.floating_window), vbox);
@@ -2316,23 +2312,16 @@ void gui_init(dt_view_t *self)
                                  dev->rawoverexposed.mode, rawoverexposed_mode_callback, dev,
                                  N_("mark with CFA color"), N_("mark with solid color"), N_("false color"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
-    gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
 
-    /* color scheme */
-    // FIXME can't use DT_BAUHAUS_COMBOBOX_NEW_FULL because of (unnecessary?) translation context
-    colorscheme = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(colorscheme, N_("raw overexposed"), N_("color scheme"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "red"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "green"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "blue"));
-    dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "black"));
-    dt_bauhaus_combobox_set(colorscheme, dev->rawoverexposed.colorscheme);
-    gtk_widget_set_tooltip_text(
-        colorscheme,
-        _("select the solid color to indicate over exposure.\nwill only be used if mode = mark with solid color"));
-    g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(rawoverexposed_colorscheme_callback), dev);
+    DT_BAUHAUS_COMBOBOX_NEW_FULL(colorscheme, self, N_("raw overexposed"), N_("color scheme"),
+                                _("select the solid color to indicate over exposure.\nwill only be used if mode = mark with solid color"),
+                                dev->rawoverexposed.colorscheme,
+                                rawoverexposed_colorscheme_callback, dev,
+                                NC_("solidcolor", "red"),
+                                NC_("solidcolor", "green"),
+                                NC_("solidcolor", "blue"),
+                                NC_("solidcolor", "black"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
-    gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* threshold */
     GtkWidget *threshold = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.0, 2.0, 0.01, 1.0, 3);
@@ -2349,9 +2338,9 @@ void gui_init(dt_view_t *self)
   /* create overexposed popup tool */
   {
     // the button
-    dev->overexposed.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT, NULL);
-    dt_action_define(DT_ACTION(self), N_("overexposed"), N_("toggle"), dev->overexposed.button, &dt_action_def_toggle);
+    dev->overexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, 0, NULL);
+    ac = dt_action_define(DT_ACTION(self), N_("overexposed"), N_("toggle"), dev->overexposed.button, &dt_action_def_toggle);
+    dt_shortcut_register(ac, 0, 0, GDK_KEY_o, 0);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle clipping indication\nright click for options"));
     g_signal_connect(G_OBJECT(dev->overexposed.button), "clicked",
@@ -2362,7 +2351,6 @@ void gui_init(dt_view_t *self)
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
     connect_button_press_release(dev->overexposed.button, dev->overexposed.floating_window);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), dialog_width, -1);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), vbox);
@@ -2374,7 +2362,6 @@ void gui_init(dt_view_t *self)
                                  dev->overexposed.mode, mode_callback, dev,
                                  N_("full gamut"), N_("any RGB channel"), N_("luminance only"), N_("saturation only"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
-    gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* color scheme */
     DT_BAUHAUS_COMBOBOX_NEW_FULL(colorscheme, self, N_("overexposed"), N_("color scheme"),
@@ -2382,12 +2369,11 @@ void gui_init(dt_view_t *self)
                                  dev->overexposed.colorscheme, colorscheme_callback, dev,
                                  N_("black & white"), N_("red & blue"), N_("purple & green"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
-    gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* lower */
     GtkWidget *lower = dt_bauhaus_slider_new_action(DT_ACTION(self), -32., -4., 1., -12.69, 2);
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
-    dt_bauhaus_slider_set_format(lower, _("%+.2f EV"));
+    dt_bauhaus_slider_set_format(lower, _(" EV"));
     dt_bauhaus_widget_set_label(lower, N_("overexposed"), N_("lower threshold"));
     gtk_widget_set_tooltip_text(lower, _("clipping threshold for the black point,\n"
                                          "in EV, relatively to white (0 EV).\n"
@@ -2404,7 +2390,7 @@ void gui_init(dt_view_t *self)
     /* upper */
     GtkWidget *upper = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.0, 100.0, 0.1, 99.99, 2);
     dt_bauhaus_slider_set(upper, dev->overexposed.upper);
-    dt_bauhaus_slider_set_format(upper, "%.2f%%");
+    dt_bauhaus_slider_set_format(upper, "%");
     dt_bauhaus_widget_set_label(upper, N_("overexposed"), N_("upper threshold"));
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(upper, _("clipping threshold for the white point.\n"
@@ -2418,9 +2404,9 @@ void gui_init(dt_view_t *self)
   /* create profile popup tool & buttons (softproof + gamut) */
   {
     // the softproof button
-    dev->profile.softproof_button =
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT, NULL);
-    dt_action_define(&self->actions, NULL, "softproof", dev->profile.softproof_button, &dt_action_def_toggle);
+    dev->profile.softproof_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, 0, NULL);
+    ac = dt_action_define(sa, NULL, N_("softproof"), dev->profile.softproof_button, &dt_action_def_toggle);
+    dt_shortcut_register(ac, 0, 0, GDK_KEY_s, GDK_CONTROL_MASK);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
@@ -2429,9 +2415,9 @@ void gui_init(dt_view_t *self)
     dt_gui_add_help_link(dev->profile.softproof_button, dt_get_help_url("softproof"));
 
     // the gamut check button
-    dev->profile.gamut_button =
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT, NULL);
-    dt_action_define(&self->actions, NULL, "gamut check", dev->profile.gamut_button, &dt_action_def_toggle);
+    dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, 0, NULL);
+    ac = dt_action_define(sa, NULL, N_("gamut check"), dev->profile.gamut_button, &dt_action_def_toggle);
+    dt_shortcut_register(ac, 0, 0, GDK_KEY_g, GDK_CONTROL_MASK);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
@@ -2444,7 +2430,6 @@ void gui_init(dt_view_t *self)
     connect_button_press_release(dev->second_window.button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.softproof_button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.gamut_button, dev->profile.floating_window);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), large_dialog_width, -1);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
@@ -2456,26 +2441,22 @@ void gui_init(dt_view_t *self)
     dt_loc_get_datadir(datadir, sizeof(datadir));
     const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-    GtkWidget *display_intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(display_intent, N_("profiles"), N_("intent"));
-    dt_bauhaus_combobox_add(display_intent, _("perceptual"));
-    dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
-    dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
-    dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
+    static const gchar *intents_list[]
+      = { N_("perceptual"),
+          N_("relative colorimetric"),
+          NC_("rendering intent", "saturation"),
+          N_("absolute colorimetric"),
+          NULL };
 
-    GtkWidget *display2_intent = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-    dt_bauhaus_widget_set_label(display2_intent, N_("profiles"), N_("preview intent"));
-    dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
-    dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
-    dt_bauhaus_combobox_add(display2_intent, C_("rendering intent", "saturation"));
-    dt_bauhaus_combobox_add(display2_intent, _("absolute colorimetric"));
+    GtkWidget *display_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("intent"),
+                                                             "", 0, display_intent_callback, dev, intents_list);
+    GtkWidget *display2_intent = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("profiles"), N_("preview intent"),
+                                                              "", 0, display2_intent_callback, dev, intents_list);
 
     if(!force_lcms2)
     {
       gtk_widget_set_no_show_all(display_intent, TRUE);
-      gtk_widget_set_visible(display_intent, FALSE);
       gtk_widget_set_no_show_all(display2_intent, TRUE);
-      gtk_widget_set_visible(display2_intent, FALSE);
     }
 
     GtkWidget *display_profile = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -2565,9 +2546,7 @@ void gui_init(dt_view_t *self)
     g_free(system_profile_dir);
     g_free(user_profile_dir);
 
-    g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), dev);
     g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);
-    g_signal_connect(G_OBJECT(display2_intent), "value-changed", G_CALLBACK(display2_intent_callback), dev);
     g_signal_connect(G_OBJECT(display2_profile), "value-changed", G_CALLBACK(display2_profile_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed", G_CALLBACK(softproof_profile_callback), dev);
     g_signal_connect(G_OBJECT(histogram_profile), "value-changed", G_CALLBACK(histogram_profile_callback), dev);
@@ -2593,8 +2572,9 @@ void gui_init(dt_view_t *self)
   /* create grid changer popup tool */
   {
     // the button
-    darktable.view_manager->guides_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
-    dt_action_define(&self->actions, "guide lines", "toggle", darktable.view_manager->guides_toggle, &dt_action_def_toggle);
+    darktable.view_manager->guides_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, 0, NULL);
+    ac = dt_action_define(sa, N_("guide lines"), N_("toggle"), darktable.view_manager->guides_toggle, &dt_action_def_toggle);
+    dt_shortcut_register(ac, 0, 0, GDK_KEY_g, 0);
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
                                 _("toggle guide lines\nright click for guides options"));
     darktable.view_manager->guides_popover = dt_guides_popover(self, darktable.view_manager->guides_toggle);
@@ -2612,23 +2592,59 @@ void gui_init(dt_view_t *self)
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
   dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
 
-  dt_action_t *sa = &self->actions, *ac = NULL;
-
   // Fullscreen preview key
-  dt_accel_register_shortcut(sa, NC_("accel", "full preview"), 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
-  dt_action_define(sa, NULL, "full preview", NULL, &dt_action_def_preview);
+  ac = dt_action_define(sa, NULL, N_("full preview"), NULL, &dt_action_def_preview);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
 
   // add an option to allow skip mouse events while editing masks
-  dt_accel_register_shortcut(sa, NC_("accel", "allow to pan & zoom while editing masks"), 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_a, 0);
-  dt_action_define(sa, NULL, "allow to pan & zoom while editing masks", NULL, &dt_action_def_skip_mouse);
+  ac = dt_action_define(sa, NULL, N_("allow to pan & zoom while editing masks"), NULL, &dt_action_def_skip_mouse);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_a, 0);
 
   // move left/right/up/down
-  ac = dt_action_define(&self->actions, N_("move"), N_("horizontal"), GINT_TO_POINTER(1), &_action_def_move);
-  dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_DOWN, GDK_KEY_Left , 0);
-  dt_accel_register_shortcut(ac, NULL, 0, DT_ACTION_EFFECT_UP  , GDK_KEY_Right, 0);
-  ac = dt_action_define(&self->actions, N_("move"), N_("vertical"), GINT_TO_POINTER(0), &_action_def_move);
-  dt_accel_register_shortcut(ac, NULL, 0  , DT_ACTION_EFFECT_DOWN, GDK_KEY_Down , 0);
-  dt_accel_register_shortcut(ac, NULL, 0  , DT_ACTION_EFFECT_UP  , GDK_KEY_Up   , 0);
+  ac = dt_action_define(sa, N_("move"), N_("horizontal"), GINT_TO_POINTER(1), &_action_def_move);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_DOWN, GDK_KEY_Left , 0);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_UP  , GDK_KEY_Right, 0);
+  ac = dt_action_define(sa, N_("move"), N_("vertical"), GINT_TO_POINTER(0), &_action_def_move);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_DOWN, GDK_KEY_Down , 0);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_UP  , GDK_KEY_Up   , 0);
+
+  // Zoom shortcuts
+  dt_action_register(DT_ACTION(self), N_("zoom close-up"), zoom_key_accel, GDK_KEY_1, GDK_MOD1_MASK);
+  dt_action_register(DT_ACTION(self), N_("zoom fill"), zoom_key_accel, GDK_KEY_2, GDK_MOD1_MASK);
+  dt_action_register(DT_ACTION(self), N_("zoom fit"), zoom_key_accel, GDK_KEY_3, GDK_MOD1_MASK);
+
+  // zoom in/out
+  dt_action_register(DT_ACTION(self), N_("zoom in"), zoom_in_callback, GDK_KEY_plus, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("zoom out"), zoom_out_callback, GDK_KEY_minus, GDK_CONTROL_MASK);
+
+  // Shortcut to skip images
+  dt_action_register(DT_ACTION(self), N_("image forward"), skip_f_key_accel_callback, GDK_KEY_space, 0);
+  dt_action_register(DT_ACTION(self), N_("image back"), skip_b_key_accel_callback, GDK_KEY_BackSpace, 0);
+
+  // cycle overlay colors
+  dt_action_register(DT_ACTION(self), N_("cycle overlay colors"), _overlay_cycle_callback, GDK_KEY_o, GDK_CONTROL_MASK);
+
+  // toggle visibility of drawn masks for current gui module
+  dt_action_register(DT_ACTION(self), N_("show drawn masks"), _toggle_mask_visibility_callback, 0, 0);
+
+  // brush size +/-
+  dt_action_register(DT_ACTION(self), N_("increase brush size"), _brush_size_up_callback, 0, 0);
+  dt_action_register(DT_ACTION(self), N_("decrease brush size"), _brush_size_down_callback, 0, 0);
+
+  // brush hardness +/-
+  dt_action_register(DT_ACTION(self), N_("increase brush hardness"), _brush_hardness_up_callback, GDK_KEY_braceright, 0);
+  dt_action_register(DT_ACTION(self), N_("decrease brush hardness"), _brush_hardness_down_callback, GDK_KEY_braceleft, 0);
+
+  // brush opacity +/-
+  dt_action_register(DT_ACTION(self), N_("increase brush opacity"), _brush_opacity_up_callback, GDK_KEY_greater, 0);
+  dt_action_register(DT_ACTION(self), N_("decrease brush opacity"), _brush_opacity_down_callback, GDK_KEY_less, 0);
+
+  // undo/redo
+  dt_action_register(DT_ACTION(self), N_("undo"), _darkroom_undo_callback, GDK_KEY_z, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("redo"), _darkroom_redo_callback, GDK_KEY_y, GDK_CONTROL_MASK);
+
+  // change the precision for adjusting sliders with keyboard shortcuts
+  dt_action_register(DT_ACTION(self), N_("change keyboard shortcut slider precision"), change_slider_accel_precision, 0, 0);
 }
 
 enum
@@ -2726,10 +2742,9 @@ static void _on_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer 
       cairo_t *cr = cairo_create(surface);
 
       // hack to render not transparent
-      GtkStyleContext *style_context = gtk_widget_get_style_context(module_src->header);
-      gtk_style_context_add_class(style_context, "iop_drag_icon");
+      dt_gui_add_class(module_src->header, "iop_drag_icon");
       gtk_widget_draw(module_src->header, cr);
-      gtk_style_context_remove_class(style_context, "iop_drag_icon");
+      dt_gui_remove_class(module_src->header, "iop_drag_icon");
 
       // FIXME: this centers the icon on the mouse -- instead translate such that the label doesn't jump when mouse down?
       cairo_surface_set_device_offset(surface, -allocation_w.width * darktable.gui->ppd / 2, -allocation_w.height * darktable.gui->ppd / 2);
@@ -2788,19 +2803,17 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
 
     if(module->expander)
     {
-      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
-      gtk_style_context_remove_class(context, "iop_drop_after");
-      gtk_style_context_remove_class(context, "iop_drop_before");
+      dt_gui_remove_class(module->expander, "iop_drop_after");
+      dt_gui_remove_class(module->expander, "iop_drop_before");
     }
   }
 
   if(can_moved)
   {
-    GtkStyleContext *context = gtk_widget_get_style_context(module_dest->expander);
     if(module_src->iop_order < module_dest->iop_order)
-      gtk_style_context_add_class(context, "iop_drop_after");
+      dt_gui_add_class(module_dest->expander, "iop_drop_after");
     else
-      gtk_style_context_add_class(context, "iop_drop_before");
+      dt_gui_add_class(module_dest->expander, "iop_drop_before");
 
     gdk_drag_status(dc, GDK_ACTION_COPY, time);
     GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
@@ -2862,9 +2875,8 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
 
     if(module->expander)
     {
-      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
-      gtk_style_context_remove_class(context, "iop_drop_after");
-      gtk_style_context_remove_class(context, "iop_drop_before");
+      dt_gui_remove_class(module->expander, "iop_drop_after");
+      dt_gui_remove_class(module->expander, "iop_drop_before");
     }
   }
 
@@ -2905,9 +2917,8 @@ static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gp
 
     if(module->expander)
     {
-      GtkStyleContext *context = gtk_widget_get_style_context(module->expander);
-      gtk_style_context_remove_class(context, "iop_drop_after");
-      gtk_style_context_remove_class(context, "iop_drop_before");
+      dt_gui_remove_class(module->expander, "iop_drop_after");
+      dt_gui_remove_class(module->expander, "iop_drop_before");
     }
   }
 
@@ -3224,7 +3235,7 @@ void leave(dt_view_t *self)
     if(!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
 
     // force refresh if module has mask visualized
-    if (module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
+    if(module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
 
     dt_action_cleanup_instance_iop(module);
     dt_iop_cleanup_module(module);
@@ -3750,13 +3761,13 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       scale = 8.0f / ppd;
   }
 
-  if (fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
+  if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
     scale = fmaxf(scale, 0.5 * fitscale);
   }
-  else if (fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
+  else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
@@ -3808,16 +3819,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_control_navigation_redraw();
 }
 
-static gboolean search_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
-{
-  // set focus to the search module text box
-  dt_dev_modulegroups_search_text_focus(darktable.develop);
-  return TRUE;
-}
-
-static gboolean change_slider_accel_precision(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
+static void change_slider_accel_precision(dt_action_t *action)
 {
   const int curr_precision = dt_conf_get_int("accel/slider_precision");
   const int new_precision = curr_precision + 1 == 3 ? 0 : curr_precision + 1;
@@ -3829,185 +3831,15 @@ static gboolean change_slider_accel_precision(GtkAccelGroup *accel_group, GObjec
     dt_toast_log(_("keyboard shortcut slider precision: normal"));
   else
     dt_toast_log(_("keyboard shortcut slider precision: coarse"));
-
-  return TRUE;
 }
-
-static gboolean zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = (dt_view_t *)data;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-
-  scrolled(self, dev->width / 2, dev->height / 2, 1, modifier);
-  return TRUE;
-}
-
-static gboolean zoom_out_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                           GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = (dt_view_t *)data;
-  dt_develop_t *dev = (dt_develop_t *)self->data;
-
-  scrolled(self, dev->width / 2, dev->height / 2, 0, modifier);
-  return TRUE;
-}
-
 
 void configure(dt_view_t *self, int wd, int ht)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dev->orig_width = wd;
   dev->orig_height = ht;
+  dev->border_size = _iso_12646_get_border(dev);
   dt_dev_configure(dev, wd, ht);
-}
-
-void init_key_accels(dt_view_t *self)
-{
-  // Zoom shortcuts
-  dt_accel_register_view(self, NC_("accel", "zoom close-up"), GDK_KEY_1, GDK_MOD1_MASK);
-  dt_accel_register_view(self, NC_("accel", "zoom fill"), GDK_KEY_2, GDK_MOD1_MASK);
-  dt_accel_register_view(self, NC_("accel", "zoom fit"), GDK_KEY_3, GDK_MOD1_MASK);
-
-  // zoom in/out
-  dt_accel_register_view(self, NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
-  dt_accel_register_view(self, NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
-
-  // Shortcut to skip images
-  dt_accel_register_view(self, NC_("accel", "image forward"), GDK_KEY_space, 0);
-  dt_accel_register_view(self, NC_("accel", "image back"), GDK_KEY_BackSpace, 0);
-
-  // toggle ISO 12646 color assessment condition
-  dt_accel_register_view(self, NC_("accel", "color assessment"), GDK_KEY_b, GDK_CONTROL_MASK);
-
-  // toggle raw overexposure indication
-  dt_accel_register_view(self, NC_("accel", "raw overexposed/toggle"), GDK_KEY_o, GDK_SHIFT_MASK);
-
-  // toggle overexposure indication
-  dt_accel_register_view(self, NC_("accel", "overexposed/toggle"), GDK_KEY_o, 0);
-
-  // cycle overlay colors
-  dt_accel_register_view(self, NC_("accel", "cycle overlay colors"), GDK_KEY_o, GDK_CONTROL_MASK);
-
-  // toggle softproofing
-  dt_accel_register_view(self, NC_("accel", "softproof"), GDK_KEY_s, GDK_CONTROL_MASK);
-
-  // toggle gamut check
-  dt_accel_register_view(self, NC_("accel", "gamut check"), GDK_KEY_g, GDK_CONTROL_MASK);
-
-  // toggle visibility of drawn masks for current gui module
-  dt_accel_register_view(self, NC_("accel", "show drawn masks"), 0, 0);
-
-  // toggle visibility of guide lines
-  dt_accel_register_view(self, NC_("accel", "guide lines/toggle"), GDK_KEY_g, 0);
-
-  // toggle visibility of second window
-  dt_accel_register_view(self, NC_("accel", "second window"), 0, 0);
-
-  // brush size +/-
-  dt_accel_register_view(self, NC_("accel", "increase brush size"), 0, 0);
-  dt_accel_register_view(self, NC_("accel", "decrease brush size"), 0, 0);
-
-  // brush hardness +/-
-  dt_accel_register_view(self, NC_("accel", "increase brush hardness"), GDK_KEY_braceright, 0);
-  dt_accel_register_view(self, NC_("accel", "decrease brush hardness"), GDK_KEY_braceleft, 0);
-
-  // brush opacity +/-
-  dt_accel_register_view(self, NC_("accel", "increase brush opacity"), GDK_KEY_greater, 0);
-  dt_accel_register_view(self, NC_("accel", "decrease brush opacity"), GDK_KEY_less, 0);
-
-  // undo/redo
-  dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
-  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
-
-  // set focus to the search modules text box
-  dt_accel_register_view(self, NC_("accel", "search modules"), 0, 0);
-
-  // change the precision for adjusting sliders with keyboard shortcuts
-  dt_accel_register_view(self, NC_("accel", "change keyboard shortcut slider precision"), 0, 0);
-}
-
-static gboolean _darkroom_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                        GdkModifierType modifier, gpointer data)
-{
-  dt_undo_do_undo(darktable.undo, DT_UNDO_DEVELOP);
-  return TRUE;
-}
-
-static gboolean _darkroom_redo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                        GdkModifierType modifier, gpointer data)
-{
-  dt_undo_do_redo(darktable.undo, DT_UNDO_DEVELOP);
-  return TRUE;
-}
-
-void connect_key_accels(dt_view_t *self)
-{
-  GClosure *closure;
-
-  // Zoom shortcuts
-  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(1), NULL);
-  dt_accel_connect_view(self, "zoom close-up", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(2), NULL);
-  dt_accel_connect_view(self, "zoom fill", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(3), NULL);
-  dt_accel_connect_view(self, "zoom fit", closure);
-
-  // zoom in/out
-  closure = g_cclosure_new(G_CALLBACK(zoom_in_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "zoom in", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(zoom_out_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "zoom out", closure);
-
-  // Shortcut to skip images
-  closure = g_cclosure_new(G_CALLBACK(skip_f_key_accel_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "image forward", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(skip_b_key_accel_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "image back", closure);
-
-  // cycle through overlay colors
-  closure = g_cclosure_new(G_CALLBACK(_overlay_cycle_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "cycle overlay colors", closure);
-
-  // toggle visibility of drawn masks for current gui module
-  closure = g_cclosure_new(G_CALLBACK(_toggle_mask_visibility_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "show drawn masks", closure);
-
-  // brush size +/-
-  closure = g_cclosure_new(G_CALLBACK(_brush_size_up_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "increase brush size", closure);
-  closure = g_cclosure_new(G_CALLBACK(_brush_size_down_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "decrease brush size", closure);
-
-  // brush hardness +/-
-  closure = g_cclosure_new(G_CALLBACK(_brush_hardness_up_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "increase brush hardness", closure);
-  closure = g_cclosure_new(G_CALLBACK(_brush_hardness_down_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "decrease brush hardness", closure);
-
-  // brush opacity +/-
-  closure = g_cclosure_new(G_CALLBACK(_brush_opacity_up_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "increase brush opacity", closure);
-  closure = g_cclosure_new(G_CALLBACK(_brush_opacity_down_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "decrease brush opacity", closure);
-
-  // undo/redo
-  closure = g_cclosure_new(G_CALLBACK(_darkroom_undo_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "undo", closure);
-  closure = g_cclosure_new(G_CALLBACK(_darkroom_redo_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "redo", closure);
-
-  // search modules
-  closure = g_cclosure_new(G_CALLBACK(search_callback), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "search modules", closure);
-
-  // change the precision for adjusting sliders with keyboard shortcuts
-  closure = g_cclosure_new(G_CALLBACK(change_slider_accel_precision), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "change keyboard shortcut slider precision", closure);
 }
 
 GSList *mouse_actions(const dt_view_t *self)
@@ -4264,13 +4096,13 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
     else
       scale = 8.0f / ppd;
   }
-  if (fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
+  if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
     scale = fmaxf(scale, 0.5 * fitscale);
   }
-  else if (fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
+  else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
   {
     if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
     if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
@@ -4714,6 +4546,8 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
   gtk_widget_show_all(dev->second_window.second_wnd);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

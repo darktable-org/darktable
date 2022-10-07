@@ -98,12 +98,12 @@ guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
 
 gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gchar *substitute)
 {
-  const gint occurences = dt_util_str_occurence(string, pattern);
+  const gint occurrences = dt_util_str_occurence(string, pattern);
   gchar *nstring = NULL;
 
-  if(occurences)
+  if(occurrences)
   {
-    nstring = g_malloc_n(strlen(string) + (occurences * strlen(substitute)) + 1, sizeof(gchar));
+    nstring = g_malloc_n(strlen(string) + (occurrences * strlen(substitute)) + 1, sizeof(gchar));
     const gchar *pend = string + strlen(string);
     const gchar *s = string, *p = string;
     gchar *np = nstring;
@@ -785,10 +785,10 @@ GList *dt_util_str_to_glist(const gchar *separator, const gchar *text)
   gchar *entry = g_strdup(text);
   gchar *prev = entry;
   int len = strlen(prev);
-  while (len)
+  while(len)
   {
     gchar *next = g_strstr_len(prev, -1, separator);
-    if (next)
+    if(next)
     {
       const gchar c = next[0];
       next[0] = '\0';
@@ -842,7 +842,7 @@ char *dt_util_format_exposure(const float exposuretime)
 
 char *dt_read_file(const char *const filename, size_t *filesize)
 {
-  if (filesize) *filesize = 0;
+  if(filesize) *filesize = 0;
   FILE *fd = g_fopen(filename, "rb");
   if(!fd) return NULL;
 
@@ -855,9 +855,9 @@ char *dt_read_file(const char *const filename, size_t *filesize)
 
   const size_t count = fread(content, sizeof(char), end, fd);
   fclose(fd);
-  if (count == end)
+  if(count == end)
   {
-    if (filesize) *filesize = end;
+    if(filesize) *filesize = end;
     return content;
   }
   free(content);
@@ -994,6 +994,9 @@ gchar *dt_str_replace(const char *string, const char *search, const char *replac
   return res;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

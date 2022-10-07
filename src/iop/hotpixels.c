@@ -67,7 +67,7 @@ const char *name()
   return _("hot pixels");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove abnormally bright pixels by dampening them with neighbours"),
                                       _("corrective"),
@@ -89,7 +89,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_RAW;
+  return IOP_CS_RAW;
 }
 
 /* Detect hot sensor pixels based on the 4 surrounding sites. Pixels
@@ -293,7 +293,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     fixed = process_bayer(data, ivoid, ovoid, roi_out);
   }
 
-  if(g != NULL && self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(g != NULL && self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     g->pixels_fixed = fixed;
   }
@@ -301,8 +301,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void reload_defaults(dt_iop_module_t *module)
 {
+  const dt_image_t *img = &module->dev->image_storage;
+  const gboolean enabled = dt_image_is_raw(img) && !dt_image_is_monochrome(img);
   // can't be switched on for non-raw images:
-  module->hide_enable_button = !dt_image_is_raw(&module->dev->image_storage);
+  module->hide_enable_button = !enabled;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -314,9 +316,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->multiplier = p->strength / 2.0;
   d->threshold = p->threshold;
   d->permissive = p->permissive;
-  d->markfixed = p->markfixed && ((pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT)
-    && ((pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) != DT_DEV_PIXELPIPE_THUMBNAIL);
-  if(!(dt_image_is_raw(&pipe->image)) || p->strength == 0.0) piece->enabled = 0;
+  d->markfixed = p->markfixed && (!(pipe->type & (DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_THUMBNAIL)));
+
+  const dt_image_t *img = &pipe->image;
+  const gboolean enabled = dt_image_is_raw(img) && !dt_image_is_monochrome(img);
+
+  if(!enabled || p->strength == 0.0) piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -335,12 +340,15 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
-  dt_bauhaus_slider_set(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
   gtk_toggle_button_set_active(g->markfixed, p->markfixed);
   gtk_toggle_button_set_active(g->permissive, p->permissive);
   g->pixels_fixed = -1;
   gtk_label_set_text(g->message, "");
+
+  const dt_image_t *img = &self->dev->image_storage;
+  const gboolean enabled = dt_image_is_raw(img) && !dt_image_is_monochrome(img);
+  // can't be switched on for non-raw images:
+  self->hide_enable_button = !enabled;
 
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "non_raw" : "raw");
 }
@@ -374,7 +382,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(box_raw), "draw", G_CALLBACK(draw), self);
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
-  dt_bauhaus_slider_set_step(g->threshold, 0.005);
   dt_bauhaus_slider_set_digits(g->threshold, 4);
   gtk_widget_set_tooltip_text(g->threshold, _("lower threshold for hot pixel"));
 
@@ -402,6 +409,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

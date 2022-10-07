@@ -272,7 +272,7 @@ typedef struct dt_iop_gui_blendif_filter_t
 
 typedef struct dt_iop_blend_name_value_t
 {
-  char name[32];
+  char name[40];
   int value;
 } dt_develop_name_value_t;
 
@@ -478,6 +478,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
                                 const struct dt_iop_roi_t *roi_out);
 #endif
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

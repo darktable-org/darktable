@@ -17,7 +17,7 @@ TryExec=${CMAKE_INSTALL_PREFIX}/bin/darktable
 Terminal=false
 StartupNotify=true
 
-MimeType=application/x-darktable;image/x-dcraw;image/jpeg;image/jpg;image/jp2;image/png;image/tiff;image/x-portable-pixmap;image/x-portable-floatmap;image/x-exr;
+MimeType=application/x-darktable;image/x-dcraw;image/x-adobe-dng;image/x-canon-cr2;image/x-canon-crw;image/x-fuji-raf;image/x-kodak-dcr;image/x-kodak-kdc;image/x-minolta-mrw;image/x-nikon-nef;image/x-nikon-nrw;image/x-olympus-orf;image/x-panasonic-rw;image/x-panasonic-rw2;image/x-pentax-pef;image/x-sony-arw;image/x-sony-sr2;image/x-sony-srf;image/jpeg;image/png;image/tiff;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-portable-floatmap;image/vnd.radiance;${DESKTOP_MIME_TYPES}
 
 Icon=darktable
 

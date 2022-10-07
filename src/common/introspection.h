@@ -243,6 +243,7 @@ typedef struct dt_introspection_t
   dt_introspection_field_t           *field;           // the type of the params. should always be a DT_INTROSPECTION_TYPE_STRUCT
   size_t                              self_size;       // size of dt_iop_module_t. useful to not need dt headers
   size_t                              default_params;  // offset of the default_params in dt_iop_module_t. useful to not need dt headers
+  GHashTable                         *sections;        // section names associated with parameter offsets
 } dt_introspection_t;
 
 // clang-format on
@@ -341,6 +342,9 @@ static inline gboolean dt_introspection_get_enum_value(dt_introspection_field_t 
   return FALSE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

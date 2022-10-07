@@ -124,11 +124,12 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
 /** load style from file */
 void dt_styles_import_from_file(const char *style_path);
 
-/** register global style accelerators at start time */
-void dt_init_styles_key_accels();
-/** connect global style accelerators at start time */
-void dt_connect_styles_key_accels();
+/** register style actions for shortcuts at start time */
+void dt_init_styles_actions();
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

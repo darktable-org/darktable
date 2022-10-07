@@ -32,15 +32,15 @@ typedef enum dtgtk_cairo_paint_flags_t
   CPF_DIRECTION_RIGHT = 1 << 3,
   CPF_ACTIVE = 1 << 4,
   CPF_PRELIGHT = 1 << 5,
-  CPF_IGNORE_FG_STATE = 1 << 6,    // Ignore state when setting foregroundcolor
-  CPF_BG_TRANSPARENT = 1 << 7,     // transparent background
-  CPF_STYLE_FLAT = 1 << 8,         // flat style widget
-  CPF_STYLE_BOX = 1 << 9,          // boxed style widget
-  CPF_DO_NOT_USE_BORDER = 1 << 10, // do not paint inner border
-  CPF_CUSTOM_BG = 1 << 11,
-  CPF_CUSTOM_FG = 1 << 12,
   CPF_FOCUS = 1 << 13,
-  CPF_SPECIAL_FLAG = 1 << 14 // this needs to be the last one. also update shift in dtgtk_cairo_paint_alignment
+  CPF_SPECIAL_FLAG = 1 << 14, // this needs to be the last one. also update shift in dtgtk_cairo_paint_alignment
+
+  // colorlabels
+  CPF_LABEL_RED = CPF_DIRECTION_UP,
+  CPF_LABEL_YELLOW = CPF_DIRECTION_DOWN,
+  CPF_LABEL_GREEN = CPF_DIRECTION_LEFT,
+  CPF_LABEL_BLUE = CPF_DIRECTION_RIGHT,
+  CPF_LABEL_PURPLE = 1 << 7
 } dtgtk_cairo_paint_flags_t;
 
 
@@ -55,6 +55,10 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
 void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a solid arrow left/right/up/down */
 void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
+/** Paint an arrow with a line */
+void dtgtk_cairo_paint_line_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
+/** Paint a sort by icon */
+void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
 /** Paint a store icon */
 void dtgtk_cairo_paint_store(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a reset icon */
@@ -77,6 +81,8 @@ void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, gint x, gint y, gint w, gi
 void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Same as dtgtk_cairo_paint_plusminus, but render as a plus even when CFP_ACTIVE is disabled. */
 void dtgtk_cairo_paint_plus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a square plus icon */
+void dtgtk_cairo_paint_square_plus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a double arrow up/down */
 void dtgtk_cairo_paint_sorting(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a simple plus icon */
@@ -115,12 +121,18 @@ void dtgtk_cairo_paint_cancel(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 void dtgtk_cairo_paint_aspectflip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a color label icon */
 void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a color label icon for selection */
+void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint the local copy symbol */
 void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint the reject icon on thumbs */
 void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint the remove icon */
+void dtgtk_cairo_paint_remove(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a rating icon on thumbs */
 void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint an icon for unrating star on thumbs */
+void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an altered icon on thumbs */
 void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an audio icon on thumbs */
@@ -320,6 +332,12 @@ void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 /** Paint a shortcut icon for input ng */
 void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+/** Paint a pined icon for filtering */
+void dtgtk_cairo_paint_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

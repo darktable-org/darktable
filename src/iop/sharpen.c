@@ -85,10 +85,10 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("sharpen the details in the image using a standard UnSharp Mask (USM)"),
                                       _("corrective"),
@@ -197,7 +197,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   /* horizontal blur */
   sizes[0] = bwidth;
-  sizes[1] = ROUNDUPHT(height);
+  sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
   local[0] = hblocksize;
   local[1] = 1;
@@ -214,7 +214,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   /* vertical blur */
-  sizes[0] = ROUNDUPWD(width);
+  sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = bheight;
   sizes[2] = 1;
   local[0] = 1;
@@ -232,8 +232,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   /* mixing tmp and in -> out */
-  sizes[0] = ROUNDUPWD(width);
-  sizes[1] = ROUNDUPHT(height);
+  sizes[0] = ROUNDUPDWD(width, devid);
+  sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_sharpen_mix, 1, sizeof(cl_mem), (void *)&dev_tmp);
@@ -254,7 +254,7 @@ error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_tmp);
   dt_free_align(mat);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_sharpen] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_sharpen] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -280,7 +280,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
   const dt_iop_sharpen_data_t *const data = (dt_iop_sharpen_data_t *)piece->data;
@@ -296,7 +296,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   float *restrict tmp;	// one row per thread
   size_t padded_size;
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out,
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out,
                                   1 | DT_IMGSZ_WIDTH | DT_IMGSZ_PERTHREAD, &tmp, &padded_size,
                                   0))
   {
@@ -323,7 +323,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     // We skip the top and bottom 'rad' rows because the kernel would extend beyond the edge of the image, resulting
     // in an incomplete summation.
-    if (j < rad || j >= roi_out->height - rad)
+    if(j < rad || j >= roi_out->height - rad)
     {
       // fill in the top/bottom border with unchanged luma values from the input image.
       const float *const restrict row_in = in + (size_t)4 * j * width;
@@ -336,13 +336,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // vertically blur the pixels of the current row into the temp buffer
     const size_t start_row = j-rad;
     const size_t end_row = j+rad;
+    const size_t end_bulk = width & ~(size_t)3;
     // do the bulk of the row four at a time
-    for(int i = 0; i < width; i += 4)
+    for(size_t i = 0; i < end_bulk; i += 4)
     {
       dt_aligned_pixel_t sum = { 0.0f };
-      for(int k = start_row; k <= end_row; k++)
+      for(size_t k = start_row; k <= end_row; k++)
       {
-        const int k_adj = k - (j-rad);
+        const size_t k_adj = k - start_row;
         for_four_channels(c,aligned(in))
           sum[c] += mat[k_adj] * in[4*(k*width+i+c)];
       }
@@ -351,12 +352,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         vblurred[c] = sum[c];
     }
     // do the leftover 0-3 pixels of the row
-    for(int i = width & ~3; i < width; i++)
+    for(size_t i = end_bulk; i < width; i++)
     {
       float sum = 0.0f;
-      for(int k = start_row; k <= end_row; k++)
+      for(size_t k = start_row; k <= end_row; k++)
       {
-        const int k_adj = k - (j-rad);
+        const size_t k_adj = k - start_row;
         sum += mat[k_adj] * in[4*(k*width+i)];
       }
       temp_buf[i] = sum;
@@ -420,15 +421,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t *)self->gui_data;
-  dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set(g->amount, p->amount);
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 7; // sharpen.cl, from programs.conf
@@ -456,23 +448,23 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   dt_bauhaus_slider_set_soft_max(g->radius, 8.0);
-  dt_bauhaus_slider_set_step(g->radius, 0.1);
   dt_bauhaus_slider_set_digits(g->radius, 3);
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the unblurring"));
 
   g->amount = dt_bauhaus_slider_from_params(self, N_("amount"));
-  dt_bauhaus_slider_set_step(g->amount, 0.01);
   dt_bauhaus_slider_set_digits(g->amount, 3);
   gtk_widget_set_tooltip_text(g->amount, _("strength of the sharpen"));
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
-  dt_bauhaus_slider_set_step(g->threshold, 0.1);
   dt_bauhaus_slider_set_digits(g->threshold, 3);
   gtk_widget_set_tooltip_text(g->threshold, _("threshold to activate sharpen"));
 }
 
 #undef MAXR
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

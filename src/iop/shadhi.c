@@ -187,10 +187,10 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("modify the tonal range of the shadows and highlights\n"
                                         "of an image by enhancing local contrast."),
@@ -544,8 +544,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   // final mixing step
-  sizes[0] = ROUNDUPWD(width);
-  sizes[1] = ROUNDUPHT(height);
+  sizes[0] = ROUNDUPDWD(width, devid);
+  sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 1, sizeof(cl_mem), (void *)&dev_tmp);
@@ -575,7 +575,7 @@ error:
   if(g) dt_gaussian_free_cl(g);
   if(b) dt_bilateral_free_cl(b);
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_shadows&highlights] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_shadows&highlights] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -641,7 +641,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 #ifdef HAVE_OPENCL
   if(d->shadhi_algo == SHADHI_ALGO_BILATERAL)
-    piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
 #endif
 }
 
@@ -654,20 +654,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 {
   free(piece->data);
   piece->data = NULL;
-}
-
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  dt_bauhaus_slider_set(g->shadows, p->shadows);
-  dt_bauhaus_slider_set(g->highlights, p->highlights);
-  dt_bauhaus_slider_set(g->whitepoint, p->whitepoint);
-  dt_bauhaus_slider_set(g->radius, p->radius);
-  dt_bauhaus_combobox_set(g->shadhi_algo, p->shadhi_algo);
-  dt_bauhaus_slider_set(g->compress, p->compress);
-  dt_bauhaus_slider_set(g->shadows_ccorrect, p->shadows_ccorrect);
-  dt_bauhaus_slider_set(g->highlights_ccorrect, p->highlights_ccorrect);
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -697,11 +683,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->shadhi_algo = dt_bauhaus_combobox_from_params(self, "shadhi_algo");
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   g->compress = dt_bauhaus_slider_from_params(self, N_("compress"));
-  dt_bauhaus_slider_set_format(g->compress, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->compress, "%");
   g->shadows_ccorrect = dt_bauhaus_slider_from_params(self, "shadows_ccorrect");
-  dt_bauhaus_slider_set_format(g->shadows_ccorrect, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->shadows_ccorrect, "%");
   g->highlights_ccorrect = dt_bauhaus_slider_from_params(self, "highlights_ccorrect");
-  dt_bauhaus_slider_set_format(g->highlights_ccorrect, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->highlights_ccorrect, "%");
 
   gtk_widget_set_tooltip_text(g->shadows, _("correct shadows"));
   gtk_widget_set_tooltip_text(g->highlights, _("correct highlights"));
@@ -713,6 +699,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->highlights_ccorrect, _("adjust saturation of highlights"));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -49,6 +49,9 @@
 #ifdef HAVE_LIBHEIF
 #include "common/imageio_heif.h"
 #endif
+#ifdef HAVE_WEBP
+#include "common/imageio_webp.h"
+#endif
 #include "common/imageio_libraw.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
@@ -77,6 +80,45 @@
 #ifdef USE_LUA
 #include "lua/image.h"
 #endif
+
+// note `dng` is not included anywhere as it can be anything. For this images we'll need to open it for "real"
+static const gchar *_supported_raw[]
+    = { "3fr", "ari", "arw", "bay", "cr2", "cr3", "crw", "dc2", "dcr", "erf", "fff",
+        "ia",  "iiq", "k25", "kc2", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw",
+        "orf", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti", "x3f", NULL };
+static const gchar *_supported_ldr[]
+    = { "bmp",  "bmq", "cap", "cine", "cs1", "dcm", "gif", "gpr", "j2c", "j2k", "jng", "jp2", "jpc", "jpeg", "jpg",
+        "miff", "mng", "ori", "pbm",  "pfm", "pgm", "png", "pnm", "ppm", "pxn", "qtk", "rdc", "tif", "tiff", NULL };
+static const gchar *_supported_hdr[] = { "avif", "exr", "hdr", "heic", "heif", "hif", "pfm", NULL };
+
+// get the type of image from its extension
+dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
+{
+  const char *ext = g_str_has_prefix(extension, ".") ? extension + 1 : extension;
+  for(const char **i = _supported_raw; *i != NULL; i++)
+  {
+    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    {
+      return DT_IMAGE_RAW;
+    }
+  }
+  for(const char **i = _supported_hdr; *i != NULL; i++)
+  {
+    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    {
+      return DT_IMAGE_HDR;
+    }
+  }
+  for(const char **i = _supported_ldr; *i != NULL; i++)
+  {
+    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    {
+      return DT_IMAGE_LDR;
+    }
+  }
+  // default to 0
+  return 0;
+}
 
 // load a full-res thumbnail:
 int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
@@ -177,7 +219,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 
     *width = MagickGetImageWidth(image);
     *height = MagickGetImageHeight(image);
-    switch (MagickGetImageColorspace(image)) {
+    switch(MagickGetImageColorspace(image)) {
     case sRGBColorspace:
       *color_space = DT_COLORSPACE_SRGB;
       break;
@@ -393,7 +435,7 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, d
   // needed to alloc correct buffer size:
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
-  img->buf_dsc.cst = iop_cs_rgb;
+  img->buf_dsc.cst = IOP_CS_RGB;
   dt_imageio_retval_t ret;
   dt_image_loader_t loader;
 #ifdef HAVE_OPENEXR
@@ -435,7 +477,7 @@ return_label:
 
 /* magic data: exclusion,offset,length, xx, yy, ...
     just add magic bytes to match to this struct
-    to extend mathc on ldr formats.
+    to extend match on LDR formats.
 */
 static const uint8_t _imageio_ldr_magic[] = {
   /* jpeg magics */
@@ -448,6 +490,9 @@ static const uint8_t _imageio_ldr_magic[] = {
   /* jpeg 2000, j2k format */
   0x00, 0x00, 0x05, 0xFF, 0x4F, 0xFF, 0x51, 0x00,
 #endif
+
+  /* webp image */
+  0x00, 0x08, 0x04, 'W', 'E', 'B', 'P',
 
   /* png image */
   0x00, 0x01, 0x03, 0x50, 0x4E, 0x47, // ASCII 'PNG'
@@ -567,7 +612,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_jpeg(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb; // jpeg is always RGB
+    img->buf_dsc.cst = IOP_CS_RGB; // jpeg is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_S_RAW;
@@ -589,10 +634,25 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     return ret;
   }
 
+#ifdef HAVE_WEBP
+  ret = dt_imageio_open_webp(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->buf_dsc.cst = IOP_CS_RGB;
+    img->buf_dsc.filters = 0u;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_WEBP;
+    return ret;
+  }
+#endif
+
   ret = dt_imageio_open_png(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb; // png is always RGB
+    img->buf_dsc.cst = IOP_CS_RGB; // png is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_S_RAW;
@@ -606,7 +666,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_j2k(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb; // j2k is always RGB
+    img->buf_dsc.cst = IOP_CS_RGB; // j2k is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -620,7 +680,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_pnm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb; // pnm is always RGB
+    img->buf_dsc.cst = IOP_CS_RGB; // pnm is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_S_RAW;
@@ -705,13 +765,10 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   const int wd = img->width;
   const int ht = img->height;
 
-
-  int res = 0;
-
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
+  gboolean res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
                          : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
   if(!res)
   {
@@ -1148,7 +1205,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
   dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = IOP_CS_RGB;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_S_RAW;
@@ -1269,6 +1326,9 @@ gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
   return found;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

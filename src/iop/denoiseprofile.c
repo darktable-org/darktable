@@ -349,12 +349,12 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
 static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece, const char *const namespec,
                            const float* const restrict buf, const int width, const int height, const int scale)
 {
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW)
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
   {
     char filename[512];
     snprintf(filename, sizeof(filename), namespec, scale);
     FILE *f = g_fopen(filename, "wb");
-    if (f)
+    if(f)
     {
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       const size_t n = (size_t)width * height;
@@ -713,10 +713,10 @@ const char *name()
   return _("denoise (profiled)");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("denoise using noise statistics profiled on sensors."),
+                                _("denoise using noise statistics profiled on sensors"),
                                 _("corrective"),
                                 _("linear, RGB, scene-referred"),
                                 _("linear, RGB"),
@@ -735,7 +735,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 typedef union floatint_t
@@ -1308,7 +1308,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float *restrict precond = NULL;
   float *restrict tmp = NULL;
 
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
   {
     dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
     return;
@@ -1396,7 +1396,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #ifdef _OPENMP
 #pragma omp simd aligned(buf1, out : 64)
 #endif
-  for (size_t k = 0; k < 4U * npixels; k++)
+  for(size_t k = 0; k < 4U * npixels; k++)
     out[k] += buf1[k];
 
   if(!d->use_new_vst)
@@ -1453,15 +1453,14 @@ static float nlmeans_scattering(int *nbhood, const dt_iop_denoiseprofile_data_t 
   int K = *nbhood;
   float scattering = d->scattering;
 
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
-     || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
+  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // much faster slightly more inaccurate preview
     const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
     K = MIN(3, K);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
   {
     // much faster slightly more inaccurate preview
     const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
@@ -1580,12 +1579,12 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   const dt_iop_denoiseprofile_data_t *const d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
   float *restrict in;
-  if (!dt_iop_alloc_image_buffers(piece->module, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+  if(!dt_iop_alloc_image_buffers(piece->module, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
   // adjust to zoom size:
@@ -1710,13 +1709,13 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   size_t npixels = (size_t)width * height;
 
   memcpy(ovoid, ivoid, sizeof(float) * 4 * npixels);
-  if(((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
   {
     return;
   }
 
   float *restrict in;
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
   dt_aligned_pixel_t wb;  // the "unused" fourth element enables vectorization
@@ -1804,7 +1803,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     return FALSE;
   }
 
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
@@ -1835,7 +1834,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
   if(dev_U2 == NULL) err = -999;
 
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
   {
     const dt_aligned_pixel_t norm2 = { 1.0f, 1.0f, 1.0f, 1.0f };
     const dt_nlmeans_param_t params =
@@ -1859,7 +1858,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       };
     err = nlmeans_denoiseprofile_cl(&params, devid, dev_tmp, dev_U2, roi_in);
   }
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
   {
     if(!d->use_new_vst)
     {
@@ -1890,9 +1889,9 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
     return TRUE;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 
 #else
@@ -1955,7 +1954,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     vblocksize = 1;
 
 
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   size_t sizesl[3];
   size_t local[3];
 
@@ -2017,7 +2016,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       if(err != CL_SUCCESS) goto error;
 
       sizesl[0] = bwidth;
-      sizesl[1] = ROUNDUPHT(height);
+      sizesl[1] = ROUNDUPDHT(height, devid);
       sizesl[2] = 1;
       local[0] = hblocksize;
       local[1] = 1;
@@ -2034,7 +2033,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_horiz, sizesl, local);
       if(err != CL_SUCCESS) goto error;
 
-      sizesl[0] = ROUNDUPWD(width);
+      sizesl[0] = ROUNDUPDWD(width, devid);
       sizesl[1] = bheight;
       sizesl[2] = 1;
       local[0] = 1;
@@ -2066,11 +2065,10 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_accu, sizes);
       if(err != CL_SUCCESS) goto error;
 
-      if(!darktable.opencl->async_pixelpipe || (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT)
-        dt_opencl_finish(devid);
+      dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
-      dt_iop_nap(darktable.opencl->micro_nap);
+      dt_iop_nap(dt_opencl_micro_nap(devid));
     }
   }
 
@@ -2118,7 +2116,7 @@ error:
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 #endif /* USE_NEW_IMPL_CL */
 }
@@ -2279,7 +2277,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     }
   }
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   if(!d->use_new_vst)
   {
@@ -2357,7 +2355,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_iop_nap(dt_opencl_micro_nap(devid));
 
     // swap buffers
     cl_mem dev_buf3 = dev_buf2;
@@ -2507,7 +2505,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_iop_nap(dt_opencl_micro_nap(devid));
 
     // swap buffers
     cl_mem dev_buf3 = dev_buf2;
@@ -2579,9 +2577,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     }
   }
 
-  if(!darktable.opencl->async_pixelpipe || (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT)
-    dt_opencl_finish(devid);
-
+  dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
   dt_opencl_release_mem_object(dev_r);
   dt_opencl_release_mem_object(dev_m);
@@ -2602,7 +2598,7 @@ error:
     dt_opencl_release_mem_object(dev_detail[k]);
   free(dev_detail);
   dt_free_align(sumsum);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s, devid %d\n", cl_errstr(err), devid);
   return FALSE;
 }
 
@@ -3017,8 +3013,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     {
       gtk_widget_set_visible(g->radius, TRUE);
       gtk_widget_set_visible(g->scattering, TRUE);
-      dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
-      dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
       gtk_widget_set_visible(g->radius, FALSE);
       gtk_widget_set_visible(g->scattering, FALSE);
     }
@@ -3027,8 +3023,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       // we are in wavelets mode.
       // we need to show the box_nlm, setting the sliders to visible is not enough
       gtk_widget_show_all(g->box_nlm);
-      dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
-      dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
       gtk_widget_hide(g->box_nlm);
     }
     gtk_widget_set_visible(g->shadows, TRUE);
@@ -3054,17 +3050,9 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
 
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set_soft(g->nbhood, p->nbhood);
-  dt_bauhaus_slider_set_soft(g->strength, p->strength);
-  dt_bauhaus_slider_set_soft(g->overshooting, p->overshooting);
-  dt_bauhaus_slider_set_soft(g->shadows, p->shadows);
-  dt_bauhaus_slider_set_soft(g->bias, p->bias);
-  dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
-  dt_bauhaus_slider_set_soft(g->central_pixel_weight, p->central_pixel_weight);
   dt_bauhaus_combobox_set(g->profile, -1);
   unsigned combobox_index = 0;
-  switch (p->mode)
+  switch(p->mode)
   {
     case MODE_NLMEANS:
       combobox_index = 0;
@@ -3113,13 +3101,12 @@ void gui_update(dt_iop_module_t *self)
   if((p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO))
   {
     const float gain = p->overshooting;
-    dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
-    dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+    dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
+    dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
     dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
     dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
   }
   dt_bauhaus_combobox_set(g->mode, combobox_index);
-  dt_bauhaus_combobox_set(g->wavelet_color_mode, p->wavelet_color_mode);
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -3576,17 +3563,13 @@ void gui_init(dt_iop_module_t *self)
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_range(g->radius, 0.0, 8.0);
-  dt_bauhaus_slider_set_step(g->radius, 1.0);
   dt_bauhaus_slider_set_digits(g->radius, 0);
   g->nbhood = dt_bauhaus_slider_from_params(self, "nbhood");
-  dt_bauhaus_slider_set_step(g->nbhood, 1.0);
   dt_bauhaus_slider_set_digits(g->nbhood, 0);
   g->scattering = dt_bauhaus_slider_from_params(self, "scattering");
   dt_bauhaus_slider_set_soft_max(g->scattering, 1.0f);
-  dt_bauhaus_slider_set_step(g->scattering, 0.01f);
   g->central_pixel_weight = dt_bauhaus_slider_from_params(self, "central_pixel_weight");
   dt_bauhaus_slider_set_soft_max(g->central_pixel_weight, 1.0f);
-  dt_bauhaus_slider_set_step(g->central_pixel_weight, 0.01f);
 
   g->box_wavelets = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -3693,13 +3676,10 @@ void gui_init(dt_iop_module_t *self)
 
   g->overshooting = dt_bauhaus_slider_from_params(self, "overshooting");
   dt_bauhaus_slider_set_soft_max(g->overshooting, 4.0f);
-  dt_bauhaus_slider_set_step(g->overshooting, 0.05f);
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_soft_max(g->strength, 4.0f);
   dt_bauhaus_slider_set_digits(g->strength, 3);
-  dt_bauhaus_slider_set_step(g->strength, 0.05f);
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
-  dt_bauhaus_slider_set_step(g->shadows, 0.05f);
   g->bias = dt_bauhaus_slider_from_params(self, "bias");
   dt_bauhaus_slider_set_soft_range(g->bias, -10.0f, 10.0f);
 
@@ -3773,6 +3753,8 @@ void gui_cleanup(dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

@@ -189,8 +189,6 @@ static dt_lib_module_t ref_lib = {
   .get_params = NULL,
   .set_params = NULL,
   .init_presets = NULL,
-  .init_key_accels = NULL,
-  .connect_key_accels = NULL,
   .reset_button = NULL,
   .presets_button = NULL,
   .view_enter = view_enter_wrapper,
@@ -284,14 +282,6 @@ static int register_lib(lua_State *L)
 
   lua_pop(L,2);
 
-
-
-
-
-  if(lib->gui_reset)
-  {
-    dt_accel_register_lib(lib, NC_("accel", "reset lib parameters"), 0, 0);
-  }
   if(lib->init) lib->init(lib);
 
   lib->gui_init(lib);
@@ -299,7 +289,6 @@ static int register_lib(lua_State *L)
 
   darktable.lib->plugins = g_list_insert_sorted(darktable.lib->plugins, lib, dt_lib_sort_plugins);
   dt_lib_init_presets(lib);
-  if(darktable.gui && lib->init_key_accels) lib->init_key_accels(lib);
 
   dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
   return 0;
@@ -319,6 +308,9 @@ int dt_lua_init_lualib(lua_State *L)
   return 0;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

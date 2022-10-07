@@ -73,11 +73,12 @@ const char *button_names[]
       N_("left stick"), N_("right stick"), N_("left shoulder"), N_("right shoulder"),
       N_("dpad up"), N_("dpad down"), N_("dpad left"), N_("dpad right"),
       N_("button misc1"), N_("paddle1"), N_("paddle2"), N_("paddle3"), N_("paddle4"), N_("touchpad"),
+      N_("left trigger"), N_("right trigger"),
       NULL };
 
 gchar *key_to_string(const guint key, const gboolean display)
 {
-  const gchar *name = key < SDL_CONTROLLER_BUTTON_MAX ? button_names[key] : N_("invalid gamepad button");
+  const gchar *name = key < SDL_CONTROLLER_BUTTON_MAX + 2 ? button_names[key] : N_("invalid gamepad button");
   return g_strdup(display ? _(name) : name);
 }
 
@@ -95,7 +96,6 @@ gboolean string_to_key(const gchar *string, guint *key)
 
 const char *move_names[]
   = { N_("left x"), N_("left y"), N_("right x"), N_("right y"),
-      N_("left trigger"), N_("right trigger"),
       N_("left diagonal"), N_("left skew"), N_("right diagonal"), N_("right skew"),
       NULL };
 
@@ -176,15 +176,10 @@ void process_axis_and_send(gamepad_device *gamepad, Uint32 timestamp)
         else
         {
           gamepad->location[stick]  += size * step_size * angle;
-          dt_shortcut_move(gamepad->id, timestamp, stick + ((angle < 0) ? 7 : 6), size);
+          dt_shortcut_move(gamepad->id, timestamp, stick + ((angle < 0) ? 5 : 4), size);
         }
       }
     }
-
-/*
-    int trigger = SDL_CONTROLLER_AXIS_TRIGGERLEFT + side;
-    if(gamepad->value[trigger]) dt_shortcut_move(gamepad->id, timestamp, trigger, gamepad->value[trigger] / 32000);
-*/
   }
 }
 
@@ -222,18 +217,37 @@ static gboolean poll_gamepad_devices(gpointer user_data)
     case SDL_CONTROLLERBUTTONDOWN:
       dt_print(DT_DEBUG_INPUT, "SDL button down event time %d id %d button %hhd state %hhd\n", event.cbutton.timestamp, event.cbutton.which, event.cbutton.button, event.cbutton.state);
       process_axis_and_send(gamepad, event.cbutton.timestamp);
-      dt_shortcut_key_press(gamepad->id + event.cbutton.which, event.cbutton.timestamp, event.cbutton.button);
+      dt_shortcut_key_press(gamepad->id, event.cbutton.timestamp, event.cbutton.button);
 
       break;
     case SDL_CONTROLLERBUTTONUP:
       dt_print(DT_DEBUG_INPUT, "SDL button up event time %d id %d button %hhd state %hhd\n", event.cbutton.timestamp, event.cbutton.which, event.cbutton.button, event.cbutton.state);
       process_axis_and_send(gamepad, event.cbutton.timestamp);
-      dt_shortcut_key_release(gamepad->id + event.cbutton.which, event.cbutton.timestamp, event.cbutton.button);
+      dt_shortcut_key_release(gamepad->id, event.cbutton.timestamp, event.cbutton.button);
       break;
     case SDL_CONTROLLERAXISMOTION:
       dt_print(DT_DEBUG_INPUT, "SDL axis event type %d time %d id %d axis %hhd value %hd\n", event.caxis.type, event.caxis.timestamp, event.caxis.which, event.caxis.axis, event.caxis.value);
-      process_axis_timestep(gamepad, event.caxis.timestamp);
-      gamepad->value[event.caxis.axis] = event.caxis.value;
+
+      if(event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || event.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+      {
+        int trigger = event.caxis.axis - SDL_CONTROLLER_AXIS_TRIGGERLEFT;
+        if(event.caxis.value / 10500 > gamepad->value[event.caxis.axis])
+        {
+          dt_shortcut_key_release(gamepad->id, event.cbutton.timestamp, SDL_CONTROLLER_BUTTON_MAX + trigger);
+          dt_shortcut_key_press(gamepad->id, event.cbutton.timestamp, SDL_CONTROLLER_BUTTON_MAX + trigger);
+          gamepad->value[event.caxis.axis] = event.caxis.value / 10500;
+        }
+        else if(event.caxis.value / 9500 < gamepad->value[event.caxis.axis])
+        {
+          dt_shortcut_key_release(gamepad->id, event.cbutton.timestamp, SDL_CONTROLLER_BUTTON_MAX + trigger);
+          gamepad->value[event.caxis.axis] = event.caxis.value / 9500;
+        }
+      }
+      else
+      {
+        process_axis_timestep(gamepad, event.caxis.timestamp);
+        gamepad->value[event.caxis.axis] = event.caxis.value;
+      }
       break;
     case SDL_CONTROLLERDEVICEADDED:
       break;
@@ -304,7 +318,7 @@ void gamepad_close_devices(dt_lib_module_t *self)
   g_slist_free_full(self->data, (void (*)(void *))gamepad_device_free);
   self->data = NULL;
 
-  SDL_Quit();
+  // Don't call SDL_Quit here because reinitialising using SDL_Init won't work
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -326,6 +340,9 @@ void gui_cleanup(dt_lib_module_t *self)
 
 #endif // HAVE_SDL
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

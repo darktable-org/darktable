@@ -110,8 +110,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-viewmanager-view-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
     FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
-  { "dt-viewmanager-view-cannot-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg, NULL,
-    FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE
+  { "dt-viewmanager-view-cannot-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2, pointer_2arg,
+    NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE
   { "dt-viewmanager-thumbtable-activate", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg,
     NULL, FALSE }, // DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE
 
@@ -129,7 +129,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     G_CALLBACK(_image_info_changed_destroy_callback), FALSE }, // DT_SIGNAL_IMAGE_INFO_CHANGED
   { "dt-style-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_STYLE_CHANGED
-  { "dt-images-order-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1, uint_arg, NULL,
+  { "dt-images-order-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
     FALSE }, // DT_SIGNAL_IMAGES_ORDER_CHANGE
   { "dt-filmrolls-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_FILMROLLS_CHANGED
@@ -286,7 +286,7 @@ static void _print_trace (const char* op)
     size = backtrace (array, 10);
     strings = backtrace_symbols (array, size);
 
-    for (i = 0; i < size; i++)
+    for(i = 0; i < size; i++)
       dt_print(DT_DEBUG_SIGNAL, "[signal-trace-%s]: %s\n", op, strings[i]);
 
     free (strings);
@@ -414,6 +414,9 @@ void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig,
   g_signal_handlers_unblock_by_func(G_OBJECT(ctlsig->sink), cb, user_data);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

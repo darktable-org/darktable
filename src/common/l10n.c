@@ -145,21 +145,21 @@ static void get_language_names(GList *languages)
   // on windows we are shipping the translations of iso-codes along ours
   char localedir[PATH_MAX] = { 0 };
   dt_loc_get_localedir(localedir, sizeof(localedir));
-  bindtextdomain("iso_639", localedir);
+  bindtextdomain("iso_639-2", localedir);
 #else
 #ifdef __APPLE__
   if(res_path)
   {
     char localedir[PATH_MAX] = { 0 };
     dt_loc_get_localedir(localedir, sizeof(localedir));
-    bindtextdomain("iso_639", localedir);
+    bindtextdomain("iso_639-2", localedir);
   }
   else
 #endif
-  bindtextdomain("iso_639", ISO_CODES_LOCALEDIR);
+  bindtextdomain("iso_639-2", ISO_CODES_LOCALEDIR);
 #endif
 
-  bind_textdomain_codeset("iso_639", "UTF-8");
+  bind_textdomain_codeset("iso_639-2", "UTF-8");
 
   parser = json_parser_new();
   if(!json_parser_load_from_file(parser, filename, &error))
@@ -229,7 +229,7 @@ static void get_language_names(GList *languages)
           g_setenv("LANGUAGE", language->code, TRUE);
           setlocale (LC_ALL, language->code);
 
-          char *localized_name = g_strdup(dgettext("iso_639", name));
+          char *localized_name = g_strdup(dgettext("iso_639-2", name));
 
           /* If original and localized names are the same for other than English,
            * maybe localization failed. Try now in the main dialect. */
@@ -241,7 +241,7 @@ static void get_language_names(GList *languages)
             g_setenv("LANGUAGE", language->base_code, TRUE);
             setlocale (LC_ALL, language->base_code);
 
-            localized_name = g_strdup(dgettext("iso_639", name));
+            localized_name = g_strdup(dgettext("iso_639-2", name));
           }
 
           /*  there might be several language names; use the first one  */
@@ -438,6 +438,9 @@ const char *dt_l10n_get_name(const dt_l10n_language_t *language)
   return language->name ? language->name : language->code;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

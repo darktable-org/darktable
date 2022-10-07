@@ -44,9 +44,9 @@ typedef struct dt_iop_color_picker_t
   dt_iop_module_t *module;
   dt_iop_color_picker_kind_t kind;
   /** requested colorspace for the color picker, valid options are:
-   * iop_cs_NONE: module colorspace
-   * iop_cs_LCh: for Lab modules
-   * iop_cs_HSL: for RGB modules
+   * IOP_CS_NONE: module colorspace
+   * IOP_CS_LCH: for Lab modules
+   * IOP_CS_HSL: for RGB modules
    */
   dt_iop_colorspace_type_t picker_cst;
   /** used to avoid recursion when a parameter is modified in the apply() */
@@ -84,6 +84,9 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
 GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w,
                                         const dt_iop_colorspace_type_t cst);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

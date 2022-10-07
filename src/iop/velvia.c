@@ -96,10 +96,10 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("resaturate giving more weight to blacks, whites and low-saturation pixels"),
                                       _("creative"),
@@ -184,7 +184,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float strength = data->strength / 100.0f;
   const float bias = data->bias;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   if(strength <= 0.0f)
   {
@@ -208,7 +208,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_velvia] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_velvia] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -264,13 +264,16 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_velvia_gui_data_t *g = IOP_GUI_ALLOC(velvia);
 
   g->strength_scale = dt_bauhaus_slider_from_params(self, N_("strength"));
-  dt_bauhaus_slider_set_format(g->strength_scale, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->strength_scale, "%");
   gtk_widget_set_tooltip_text(g->strength_scale, _("the strength of saturation boost"));
 
   g->bias_scale = dt_bauhaus_slider_from_params(self, "bias");
   gtk_widget_set_tooltip_text(g->bias_scale, _("how much to spare highlights and shadows"));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

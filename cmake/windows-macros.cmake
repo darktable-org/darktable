@@ -31,9 +31,9 @@ endmacro()
 #-------------------------------------------------------------------------------
 # _copy_required_library(<target> <library>)
 #
-# Helper function to copy required library (specified by target) alongside the 
-# target binary. 
-# 
+# Helper function to copy required library (specified by target) alongside the
+# target binary.
+#
 # This is required as Win doesn't have a RPATH
 #-------------------------------------------------------------------------------
 function(_copy_required_library target library)
@@ -42,6 +42,20 @@ function(_copy_required_library target library)
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${library}> $<TARGET_FILE_DIR:${target}>
   )
 endfunction()
+
+
+#-------------------------------------------------------------------------------
+# _install_translations(<catalog> <src_localedir>)
+#
+# Helper macro to install all available translations for a given catalog.
+#-------------------------------------------------------------------------------
+macro(_install_translations catalog src_localedir)
+  file(GLOB MO_FILES RELATIVE "${src_localedir}" "${src_localedir}/*/LC_MESSAGES/${catalog}.mo")
+  foreach(MO ${MO_FILES})
+    get_filename_component(MO_TARGET_DIR "${MO}" DIRECTORY)
+    install(FILES "${src_localedir}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
+  endforeach()
+endmacro()
 
 
 function(InstallDependencyFiles)
@@ -169,7 +183,9 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
 
-  install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTApplication)
+  # Add GLib and GTK translations
+  _install_translations(glib20 ${MINGW_PATH}/../share/locale)
+  _install_translations(gtk30 ${MINGW_PATH}/../share/locale)
 
   # TODO: Add auxiliary files for openssl?
 
@@ -180,6 +196,12 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       DESTINATION lib/
       COMPONENT DTApplication
       PATTERN "*.a" EXCLUDE)
+
+  # Add glib-networking modules
+  install(DIRECTORY
+      "${MINGW_PATH}/../lib/gio/modules/"
+      DESTINATION lib/gio/modules/
+      COMPONENT DTApplication)
 
   # Add adwaita-icon-theme files
   install(DIRECTORY
@@ -205,25 +227,37 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       DESTINATION share/libthai/
       COMPONENT DTApplication)
 
-  # Add libgphoto2 files
-  install(DIRECTORY
-      "${MINGW_PATH}/../lib/libgphoto2"
-      DESTINATION lib/
-      COMPONENT DTApplication
-      PATTERN "*.a" EXCLUDE)
+  # Add libgphoto2 files and dependencies
+  if(Gphoto2_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      ${MINGW_PATH}/imagequant.dll
+      ${MINGW_PATH}/libexif*.dll
+      ${MINGW_PATH}/libgd.dll
+      ${MINGW_PATH}/libusb*.dll
+      ${MINGW_PATH}/libXpm-noX*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
 
-  install(DIRECTORY
-      "${MINGW_PATH}/../lib/libgphoto2_port"
-      DESTINATION lib/
-      COMPONENT DTApplication
-      PATTERN "*.a" EXCLUDE
-      PATTERN "usb.dll" EXCLUDE)
+    install(DIRECTORY
+        "${MINGW_PATH}/../lib/libgphoto2"
+        DESTINATION lib/
+        COMPONENT DTApplication
+        PATTERN "*.a" EXCLUDE)
+    _install_translations(libgphoto2-6 ${MINGW_PATH}/../share/locale)
+
+    install(DIRECTORY
+        "${MINGW_PATH}/../lib/libgphoto2_port"
+        DESTINATION lib/
+        COMPONENT DTApplication
+        PATTERN "*.a" EXCLUDE
+        PATTERN "usb.dll" EXCLUDE)
+  endif()
 
   # Add GraphicsMagick libraries
   if(GraphicsMagick_FOUND)
     install(DIRECTORY
-        "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/coders"
-        DESTINATION lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/
+        "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q16/coders"
+        DESTINATION lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q16/
         COMPONENT DTApplication
         FILES_MATCHING PATTERN "*"
         PATTERN "*.a" EXCLUDE
@@ -256,17 +290,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
         DESTINATION share/iso-codes/json/
         COMPONENT DTApplication
     )
-    file(GLOB IsoCodes_MO_FILES RELATIVE "${IsoCodes_LOCALEDIR}" "${IsoCodes_LOCALEDIR}/*/LC_MESSAGES/iso_639.mo")
-    foreach(MO ${IsoCodes_MO_FILES})
-      string(REPLACE "iso_639.mo" "" MO_TARGET_DIR "${MO}")
-      install(FILES "${IsoCodes_LOCALEDIR}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
-      file(GLOB mofiles "${IsoCodes_LOCALEDIR}/${MO_TARGET_DIR}/*")
-      foreach(sysfile ${mofiles})
-        install(FILES ${sysfile}
-                DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${MO_TARGET_DIR}
-                COMPONENT DTApplication)
-      endforeach(sysfile)
-    endforeach()
+    _install_translations(iso_639-2 ${IsoCodes_LOCALEDIR})
   endif(IsoCodes_FOUND)
 
   # Add ca-cert for curl
@@ -293,6 +317,10 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     )
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif(Rsvg2_FOUND)
+
+  list(REMOVE_DUPLICATES CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+
+  install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTApplication)
 
 endif(WIN32 AND NOT BUILD_MSYS2_INSTALL)
 

@@ -344,12 +344,14 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
   sqlite3_finalize(stmt);
 
   // add new history info
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.history"
                               "  (imgid, num, module, operation, op_params, enabled,"
                               "   blendop_params, blendop_version, multi_priority, multi_name)"
                               " VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7, 0, ' ')",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
@@ -362,12 +364,14 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
   sqlite3_finalize(stmt);
 
   // also bump history_end
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images"
                               " SET history_end = (SELECT IFNULL(MAX(num) + 1, 0)"
                               "                    FROM main.history"
                               "                    WHERE imgid = ?1)"
                               " WHERE id = ?1", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -1000,22 +1004,22 @@ static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, int imgid, xmlXPathCon
 {
   xmlXPathObject *xpathObj = xmlXPathEvalExpression(xpath, ctx);
 
-  if (xpathObj != NULL)
+  if(xpathObj != NULL)
     {
       const xmlNodeSetPtr xnodes = xpathObj->nodesetval;
       const int n = xnodes->nodeNr;
 
-      for (int k=0; k<n; k++)
+      for(int k=0; k<n; k++)
         {
           const xmlNode *node = xnodes->nodeTab[k];
 
-          if (_has_list((char *)node->name))
+          if(_has_list((char *)node->name))
             {
               xmlNodePtr listnode = node->xmlChildrenNode;
-              if (listnode) listnode = listnode->next;
-              if (listnode) listnode = listnode->xmlChildrenNode;
-              if (listnode) listnode = listnode->next;
-              if (listnode) _lrop(dev, doc, imgid, node->name, NULL, listnode, data);
+              if(listnode) listnode = listnode->next;
+              if(listnode) listnode = listnode->xmlChildrenNode;
+              if(listnode) listnode = listnode->next;
+              if(listnode) _lrop(dev, doc, imgid, node->name, NULL, listnode, data);
             }
           else
             {
@@ -1231,7 +1235,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   // All prefixes to parse from the XMP document
   static char *names[] = { "crs", "dc", "tiff", "xmp", "exif", "lr", NULL };
 
-  for (int i=0; names[i]!=NULL; i++)
+  for(int i=0; names[i]!=NULL; i++)
     {
       char expr[50];
 
@@ -1563,6 +1567,9 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   }
   return TRUE;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

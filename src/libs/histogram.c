@@ -177,7 +177,7 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
                                              const dt_histogram_roi_t *const roi)
 {
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
-  const dt_iop_colorspace_type_t cst = iop_cs_rgb;
+  const dt_iop_colorspace_type_t cst = IOP_CS_RGB;
   dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0 };
   uint32_t histogram_max[4] = { 0 };
 
@@ -190,8 +190,8 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
 
   // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of the graph
   // FIXME: set up "custom" histogram worker which can do colorspace conversion on fly -- in cases that we need to do that -- may need to add from colorspace to dt_dev_histogram_collection_params_t
-  dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, input, &d->histogram, FALSE, NULL);
-  dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &d->histogram, histogram_max);
+  dt_histogram_helper(&histogram_params, &histogram_stats, cst, IOP_CS_NONE, input, &d->histogram, FALSE, NULL);
+  dt_histogram_max_helper(&histogram_stats, cst, IOP_CS_NONE, &d->histogram, histogram_max);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
 }
 
@@ -581,7 +581,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
   if(!vs_prof || isnan(vs_prof->matrix_in[0][0]))
   {
-    fprintf(stderr, "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear rec2020\n", vs_prof->type, vs_prof->filename);
+    fprintf(stderr, "[histogram] unsupported vectorscope profile %i %s, it will be replaced with linear Rec2020\n", vs_prof->type, vs_prof->filename);
     vs_prof = dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
   }
 
@@ -964,7 +964,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 {
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
-  const int min_size = MIN(width, height);
+  const double node_radius = DT_PIXEL_APPLY_DPI(2.);
+  const int min_size = MIN(width, height) - node_radius * 2.0;
   const double scale = min_size / (vs_radius * 2.);
 
   cairo_save(cr);
@@ -1048,7 +1049,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   {
     const float x = d->hue_ring[n][0][0];
     const float y = d->hue_ring[n][0][1];
-    cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
+    cairo_arc(cr, x*scale, y*scale, node_radius, 0., M_PI * 2.);
     cairo_set_source(cr, bkgd_pat);
     cairo_fill_preserve(cr);
     set_color(cr, darktable.bauhaus->graph_grid);
@@ -1699,26 +1700,20 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   return TRUE;
 }
 
-static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
-                                                 GObject *acceleratable, guint keyval,
-                                                 GdkModifierType modifier, gpointer data)
+static void _lib_histogram_collapse_callback(dt_action_t *action)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
 
   // Get the state
   const gint visible = dt_lib_is_visible(self);
 
   // Inverse the visibility
   dt_lib_set_visible(self, !visible);
-
-  return TRUE;
 }
 
-static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
-                                                   GObject *acceleratable, guint keyval,
-                                                   GdkModifierType modifier, gpointer user_data)
+static void _lib_histogram_cycle_mode_callback(dt_action_t *action)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   // FIXME: When switch modes, this hack turns off the highlight and turn the cursor back to pointer, as we don't know what/if the new highlight is going to be. Right solution would be to have a highlight update function which takes cursor x,y and is called either here or on pointer motion. Really right solution is probably separate widgets for the drag areas which generate enter/leave events.
@@ -1795,31 +1790,23 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
     case DT_LIB_HISTOGRAM_SCOPE_N:
       dt_unreachable_codepath();
   }
-
-  return TRUE;
 }
 
-static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
-                                                    GObject *acceleratable, guint keyval,
-                                                    GdkModifierType modifier, gpointer user_data)
+static void _lib_histogram_change_mode_callback(dt_action_t *action)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   d->dragging = FALSE;
   d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
   dt_control_change_cursor(GDK_LEFT_PTR);
   _scope_type_clicked(d->scope_type_button, d);
-  return TRUE;
 }
 
-static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
-                                                    GObject *acceleratable, guint keyval,
-                                                    GdkModifierType modifier, gpointer user_data)
+static void _lib_histogram_change_type_callback(dt_action_t *action)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   _scope_view_clicked(d->scope_view_button, d);
-  return TRUE;
 }
 
 // this is only called in darkroom view
@@ -1957,11 +1944,16 @@ void gui_init(dt_lib_module_t *self)
 
   // create widgets
   GtkWidget *overlay = gtk_overlay_new();
+  dt_action_t *dark = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, N_("histogram"));
+  dt_action_t *ac = NULL;
+
+  dt_action_register(dark, N_("cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
 
   // shows the scope, scale, and has draggable areas
   d->scope_draw = gtk_drawing_area_new();
   gtk_widget_set_tooltip_text(d->scope_draw, _("ctrl+scroll to change display height"));
-  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, "histogram", "hide histogram", d->scope_draw, NULL);
+  ac = dt_action_define(dark, NULL, N_("hide histogram"), d->scope_draw, NULL);
+  dt_action_register(ac, NULL, _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_widget_set_events(d->scope_draw, GDK_ENTER_NOTIFY_MASK);
 
   // a row of control buttons
@@ -1981,11 +1973,22 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: this could be a combobox to allow for more types and not to have to swap the icon on click
   // icons will be filled in by _scope_type_update()
   d->scope_type_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, "histogram", "switch histogram mode", d->scope_type_button, NULL);
+  ac = dt_action_define(dark, NULL, N_("switch histogram mode"), d->scope_type_button, NULL);
+  dt_action_register(ac, NULL, _lib_histogram_change_mode_callback, 0, 0);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_type_button, FALSE, FALSE, 0);
   d->scope_view_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, "histogram", "switch histogram type", d->scope_view_button, NULL);
+  ac = dt_action_define(dark, NULL, N_("switch histogram type"), d->scope_view_button, NULL);
+  dt_action_register(ac, NULL, _lib_histogram_change_type_callback, 0, 0);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_view_button, FALSE, FALSE, 0);
+
+  dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
+  if(teth)
+  {
+    dt_action_register(teth, N_("cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
+    dt_action_register(teth, N_("hide histogram"), _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+    dt_action_register(teth, N_("switch histogram mode"), _lib_histogram_change_mode_callback, 0, 0);
+    dt_action_register(teth, N_("switch histogram type"), _lib_histogram_change_type_callback, 0, 0);
+  }
 
   // the red togglebutton turns into colorspace button in vectorscope
   d->button_stack = gtk_stack_new();
@@ -2050,7 +2053,6 @@ void gui_init(dt_lib_module_t *self)
   self->widget = eventbox;
 
   gtk_widget_set_name(self->widget, "main-histogram");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   /* connect callbacks */
 
@@ -2115,38 +2117,9 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib_as_view("darkroom", NC_("accel", "histogram/hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib_as_view("tethering", NC_("accel", "hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib_as_view("darkroom", NC_("accel", "histogram/cycle histogram modes"), 0, 0);
-  dt_accel_register_lib_as_view("tethering", NC_("accel", "cycle histogram modes"), 0, 0);
-  dt_accel_register_lib_as_view("darkroom", NC_("accel", "histogram/switch histogram mode"), 0, 0);
-  dt_accel_register_lib_as_view("tethering", NC_("accel", "switch histogram mode"), 0, 0);
-  dt_accel_register_lib_as_view("darkroom", NC_("accel", "histogram/switch histogram type"), 0, 0);
-  dt_accel_register_lib_as_view("tethering", NC_("accel", "switch histogram type"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_connect_lib_as_view(self, "darkroom", "histogram/hide histogram",
-                     g_cclosure_new(G_CALLBACK(_lib_histogram_collapse_callback), self, NULL));
-  dt_accel_connect_lib_as_view(self, "tethering", "hide histogram",
-                     g_cclosure_new(G_CALLBACK(_lib_histogram_collapse_callback), self, NULL));
-  dt_accel_connect_lib_as_view(self, "darkroom", "histogram/cycle histogram modes",
-                     g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
-  dt_accel_connect_lib_as_view(self, "tethering", "cycle histogram modes",
-                     g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
-  dt_accel_connect_lib_as_view(self, "darkroom", "histogram/switch histogram mode",
-                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_mode_callback), self, NULL));
-  dt_accel_connect_lib_as_view(self, "tethering", "switch histogram mode",
-                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_mode_callback), self, NULL));
-  dt_accel_connect_lib_as_view(self, "darkroom", "histogram/switch histogram type",
-                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_type_callback), self, NULL));
-  dt_accel_connect_lib_as_view(self, "tethering", "switch histogram type",
-                     g_cclosure_new(G_CALLBACK(_lib_histogram_change_type_callback), self, NULL));
-}
-
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

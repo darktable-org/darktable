@@ -57,6 +57,11 @@ int read_header(const char *filename, dt_imageio_png_t *png)
     return 1;
   }
 
+  /* TODO: gate by version once known cICP chunk read support is added to libpng */
+#ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
+  png_set_keep_unknown_chunks(png->png_ptr, 3, (png_const_bytep) "cICP", 1);
+#endif
+
   png->info_ptr = png_create_info_struct(png->png_ptr);
   if(!png->info_ptr)
   {
@@ -212,12 +217,17 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   return DT_IMAGEIO_OK;
 }
 
-int dt_imageio_png_read_profile(const char *filename, uint8_t **out)
+int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspaces_cicp_t *cicp)
 {
+  /* set default return values */
+  *out = NULL;
+  cicp->color_primaries = DT_CICP_COLOR_PRIMARIES_UNSPECIFIED;
+  cicp->transfer_characteristics = DT_CICP_TRANSFER_CHARACTERISTICS_UNSPECIFIED;
+  cicp->matrix_coefficients = DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED;
+
   dt_imageio_png_t image;
   png_charp name;
-  int compression_type;
-  png_uint_32 proflen;
+  png_uint_32 proflen = 0;
 
 #if PNG_LIBPNG_VER >= 10500 /* 1.5.0 */
   png_bytep profile;
@@ -229,16 +239,35 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out)
 
   if(read_header(filename, &image) != 0) return DT_IMAGEIO_FILE_CORRUPTED;
 
+  /* TODO: also add check for known cICP chunk read support once added to libpng */
+#ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED
+  png_unknown_chunkp unknowns = NULL;
+  const int num = png_get_unknown_chunks(image.png_ptr, image.info_ptr, &unknowns);
+  for(size_t c = 0; c < num; ++c)
+    if(!strcmp((const char *)unknowns[c].name, "cICP"))
+    {
+      /* only RGB (i.e. matrix coeffs 0 in data[2]) and full range (1 in data[3]) pixel values are supported by the
+       * loader above and dt color management */
+      if(!unknowns[c].data[2] && unknowns[c].data[3])
+      {
+        cicp->color_primaries = (dt_colorspaces_cicp_color_primaries_t)unknowns[c].data[0];
+        cicp->transfer_characteristics = (dt_colorspaces_cicp_transfer_characteristics_t)unknowns[c].data[1];
+        cicp->matrix_coefficients = (dt_colorspaces_cicp_matrix_coefficients_t)unknowns[c].data[2];
+      }
+      else
+        dt_print(DT_DEBUG_IMAGEIO, "[png_open] encountered YUV and/or narrow-range image `%s', assuming unknown CICP\n", filename);
+      break;
+    }
+#endif
+
 #ifdef PNG_iCCP_SUPPORTED
   if(png_get_valid(image.png_ptr, image.info_ptr, PNG_INFO_iCCP) != 0
-     && png_get_iCCP(image.png_ptr, image.info_ptr, &name, &compression_type, &profile, &proflen) != 0)
+     && png_get_iCCP(image.png_ptr, image.info_ptr, &name, NULL, &profile, &proflen) != 0)
   {
     *out = (uint8_t *)g_malloc(proflen);
     memcpy(*out, profile, proflen);
   }
-  else
 #endif
-    proflen = 0;
 
   png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
   fclose(image.f);
@@ -246,6 +275,8 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out)
   return proflen;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

@@ -121,6 +121,9 @@ void dt_gui_favorite_presets_menu_show();
 /** apply a preset to the current module **/
 void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module);
 
+/** apply next or previous preset to the current module **/
+void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, int direction);
+
 /** apply any auto presets that are appropriate for the current module **/
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module);
 
@@ -131,8 +134,11 @@ void dt_gui_presets_show_edit_dialog(const char *name_in, const char *module_nam
                                      GCallback final_callback, gpointer data, gboolean allow_name_change,
                                      gboolean allow_desc_change, gboolean allow_remove, GtkWindow *parent);
 
-void dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *name, const char *module_name, int rowid);
+gboolean dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *name, const char *module_name, int rowid);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

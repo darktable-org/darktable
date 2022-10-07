@@ -37,7 +37,7 @@ typedef enum _lib_location_type_t
   LOCATION_TYPE_HAMLET,
   LOCATION_TYPE_CITY,
   LOCATION_TYPE_ADMINISTRATIVE,
-  LOCATION_TYPE_RESIDENTAL,
+  LOCATION_TYPE_RESIDENTIAL,
   LOCATION_TYPE_UNKNOWN
 } _lib_location_type_t;
 
@@ -133,7 +133,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_location_t *lib = self->data;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   /* add search box */
   lib->search = GTK_ENTRY(gtk_entry_new());
@@ -153,20 +152,13 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean over)
-{
-  int flags = gtk_widget_get_state_flags(w);
-  if(over)
-    flags |= flag;
-  else
-    flags &= ~flag;
-
-  gtk_widget_set_state_flags(w, flags, TRUE);
-}
-
 static gboolean _event_box_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
+  if(event->type == GDK_ENTER_NOTIFY)
+    gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
+  else
+    gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
+
   return FALSE;
 }
 
@@ -238,7 +230,7 @@ static int32_t _lib_location_place_get_zoom(_lib_location_result_t *place)
 {
   switch(place->type)
   {
-    case LOCATION_TYPE_RESIDENTAL:
+    case LOCATION_TYPE_RESIDENTIAL:
       return 18;
 
     case LOCATION_TYPE_ADMINISTRATIVE:
@@ -616,15 +608,17 @@ broken_bbox:
       {
 
         if(strcmp(*avalue, "village") == 0)
-          place->type = LOCATION_TYPE_RESIDENTAL;
+          place->type = LOCATION_TYPE_RESIDENTIAL;
         else if(strcmp(*avalue, "hamlet") == 0)
           place->type = LOCATION_TYPE_HAMLET;
         else if(strcmp(*avalue, "city") == 0)
           place->type = LOCATION_TYPE_CITY;
         else if(strcmp(*avalue, "administrative") == 0)
           place->type = LOCATION_TYPE_ADMINISTRATIVE;
-        else if(strcmp(*avalue, "residental") == 0)
-          place->type = LOCATION_TYPE_RESIDENTAL;
+        else if(strcmp(*avalue, "residental") == 0) // for backward compatibility
+          place->type = LOCATION_TYPE_RESIDENTIAL;
+        else if(strcmp(*avalue, "residential") == 0)
+          place->type = LOCATION_TYPE_RESIDENTIAL;
       }
 
       aname++;
@@ -680,9 +674,9 @@ void *get_params(dt_lib_module_t *self, int *size)
   params_fixed->bbox.lat2 = location->bbox.lat2;
   params_fixed->marker_type = location->marker_type;
 
-  memcpy(params + size_fixed, location->name, size_name);
+  memcpy((uint8_t *)params + size_fixed, location->name, size_name);
 
-  float *points = (float *)(params + size_fixed + size_name);
+  float *points = (float *)((uint8_t *)params + size_fixed + size_name);
   for(GList *iter = location->marker_points; iter; iter = g_list_next(iter), points += 2)
   {
     dt_geo_map_display_point_t *point = (dt_geo_map_display_point_t *)iter->data;
@@ -703,7 +697,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(size < size_fixed) return 1;
 
   const struct params_fixed_t *params_fixed = (struct params_fixed_t *)params;
-  const char *name = (char *)(params + size_fixed);
+  const char *name = (char *)((uint8_t *)params + size_fixed);
   const size_t size_name = strlen(name) + 1;
 
   if(size_fixed + size_name > size) return 1;
@@ -726,7 +720,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   location->name = g_strdup(name);
   location->marker_points = NULL;
 
-  for(const float *points = (float *)(params + size_fixed + size_name); (void *)points < params + size; points += 2)
+  for(const float *points = (float *)((uint8_t *)params + size_fixed + size_name); (uint8_t *)points < (uint8_t *)params + size; points += 2)
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)malloc(sizeof(dt_geo_map_display_point_t));
     p->lat = points[0];
@@ -743,6 +737,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   return 0;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

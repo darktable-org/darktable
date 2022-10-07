@@ -32,6 +32,7 @@
 #include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
+#include "develop/tiling.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_basicadj_params_t)
 
@@ -140,7 +141,7 @@ const char *name()
   return _("basic adjustments");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply usual image adjustments"),
                                       _("creative"),
@@ -161,7 +162,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 static void _turn_select_region_off(struct dt_iop_module_t *self)
@@ -502,6 +503,19 @@ static inline float get_lut_contrast(const float x, const float contrast, const 
                    : lut[CLAMP((int)(x * 0x10000ul), 0, 0xffff)];
 }
 
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 2.0f;
+  tiling->factor_cl = 3.0f;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+}
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -545,18 +559,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  dt_bauhaus_slider_set(g->sl_black_point, p->black_point);
-  dt_bauhaus_slider_set(g->sl_exposure, p->exposure);
-  dt_bauhaus_slider_set(g->sl_hlcompr, p->hlcompr);
-  dt_bauhaus_slider_set(g->sl_contrast, p->contrast);
-  dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
-  dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
-  dt_bauhaus_slider_set(g->sl_brightness, p->brightness);
-  dt_bauhaus_slider_set(g->sl_saturation, p->saturation);
-  dt_bauhaus_slider_set(g->sl_vibrance, p->vibrance);
-  dt_bauhaus_slider_set(g->sl_clip, p->clip);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_select_region), g->draw_selected_region);
 }
@@ -587,7 +589,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->sl_black_point = dt_bauhaus_slider_from_params(self, "black_point");
   dt_bauhaus_slider_set_soft_range(g->sl_black_point, -0.1, 0.1);
-  dt_bauhaus_slider_set_step(g->sl_black_point, .001);
   dt_bauhaus_slider_set_digits(g->sl_black_point, 4);
   gtk_widget_set_tooltip_text(g->sl_black_point, _("adjust the black level to unclip negative RGB values.\n"
                                                     "you should never use it to add more density in blacks!\n"
@@ -596,8 +597,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->sl_exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
   dt_bauhaus_slider_set_soft_range(g->sl_exposure, -4.0, 4.0);
-  dt_bauhaus_slider_set_step(g->sl_exposure, .02);
-  dt_bauhaus_slider_set_format(g->sl_exposure, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->sl_exposure, _(" EV"));
   gtk_widget_set_tooltip_text(g->sl_exposure, _("adjust the exposure correction"));
 
   g->sl_hlcompr = dt_bauhaus_slider_from_params(self, "hlcompr");
@@ -613,8 +613,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->sl_middle_grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                       dt_bauhaus_slider_from_params(self, "middle_grey"));
-  dt_bauhaus_slider_set_step(g->sl_middle_grey, .5);
-  dt_bauhaus_slider_set_format(g->sl_middle_grey, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->sl_middle_grey, "%");
   gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle gray adjustment"));
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 
@@ -630,12 +629,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
 
-  g->bt_auto_levels = dt_ui_button_new(_("auto"), _("apply auto exposure based on the entire image"), NULL);
-  g_signal_connect(G_OBJECT(g->bt_auto_levels), "clicked", G_CALLBACK(_auto_levels_callback), self);
+  g->bt_auto_levels = dt_action_button_new(NULL, N_("auto"), _auto_levels_callback, self, _("apply auto exposure based on the entire image"), 0, 0);
   gtk_widget_set_size_request(g->bt_auto_levels, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
 
-  g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
+  g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
+  dt_gui_add_class(g->bt_select_region, "dt_transparent_background");
   gtk_widget_set_tooltip_text(g->bt_select_region,
                               _("apply auto exposure based on a region defined by the user\n"
                                 "click and drag to draw the area\n"
@@ -1287,7 +1286,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)
@@ -1300,7 +1299,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(src_buffer == NULL)
       {
         fprintf(stderr, "[basicadj process_cl] error allocating memory for color transformation 1\n");
-        err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        err = DT_OPENCL_SYSMEM_ALLOCATION;
         goto cleanup;
       }
 
@@ -1377,7 +1376,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     goto cleanup;
   }
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 2, sizeof(int), (void *)&width);
@@ -1425,7 +1424,7 @@ cleanup:
 
   if(src_buffer) dt_free_align(src_buffer);
 
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_basicadj] couldn't enqueue kernel! %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_basicadj] couldn't enqueue kernel! %s\n", cl_errstr(err));
 
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
@@ -1442,7 +1441,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)
@@ -1580,6 +1579,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #undef exposure2white
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

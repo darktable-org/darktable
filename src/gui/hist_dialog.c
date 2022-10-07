@@ -176,7 +176,7 @@ tree_on_row_activated(GtkTreeView        *treeview,
 
   // select now the one that got double-clicked
 
-  if (gtk_tree_model_get_iter(model, &iter, path))
+  if(gtk_tree_model_get_iter(model, &iter, path))
   {
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_HIST_ITEMS_COL_ENABLED, TRUE, -1);
     // and finally close the dialog
@@ -321,6 +321,9 @@ void dt_gui_hist_dialog_init(dt_history_copy_item_t *d)
   d->copy_iop_order = FALSE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

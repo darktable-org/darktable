@@ -94,7 +94,7 @@ const char *name()
   return _("local contrast");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("manipulate local and global contrast separately"),
                                       _("creative"),
@@ -117,7 +117,7 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
 int legacy_params(
@@ -202,7 +202,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return TRUE;
 error:
     dt_bilateral_free_cl(b);
-    dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] couldn't enqueue kernel! %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] couldn't enqueue kernel! %s\n", cl_errstr(err));
     return FALSE;
   }
   else // mode == s_mode_local_laplacian
@@ -278,7 +278,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 #ifdef HAVE_OPENCL
   if(d->mode == s_mode_bilateral)
-    piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
 #endif
   if(d->mode == s_mode_local_laplacian)
     piece->process_tiling_ready = 0; // can't deal with tiles, sorry.
@@ -398,8 +398,6 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  dt_bauhaus_slider_set(g->detail, p->detail);
-  dt_bauhaus_combobox_set(g->mode, p->mode);
 
   if(p->mode == s_mode_local_laplacian)
   {
@@ -430,10 +428,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
   g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));
-  dt_bauhaus_slider_set_step(g->detail, 0.01);
-  dt_bauhaus_slider_set_factor(g->detail, 100);
   dt_bauhaus_slider_set_offset(g->detail, 100);
-  dt_bauhaus_slider_set_format(g->detail, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->detail, "%");
   gtk_widget_set_tooltip_text(g->detail, _("changes the local contrast"));
 
   ++darktable.bauhaus->skip_accel;
@@ -443,26 +439,26 @@ void gui_init(dt_iop_module_t *self)
   g->shadows = dt_bauhaus_slider_from_params(self, "sigma_s");
   --darktable.bauhaus->skip_accel;
 
+  dt_bauhaus_slider_set_hard_min(g->spatial, 3.0);
   dt_bauhaus_slider_set_default(g->spatial, 50.0);
   dt_bauhaus_slider_set_digits(g->spatial, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, N_("coarseness"));
   gtk_widget_set_tooltip_text(g->spatial, _("feature size of local details (spatial sigma of bilateral filter)"));
 
+  dt_bauhaus_slider_set_hard_min(g->range, 1.0);
   dt_bauhaus_slider_set_default(g->range, 20.0);
   dt_bauhaus_slider_set_digits(g->range, 0);
   dt_bauhaus_widget_set_label(g->range, NULL, N_("contrast"));
   gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
-  dt_bauhaus_slider_set_step(g->highlights, 0.01);
   dt_bauhaus_widget_set_label(g->highlights, NULL, N_("highlights"));
-  dt_bauhaus_slider_set_factor(g->highlights, 100);
-  dt_bauhaus_slider_set_format(g->highlights, "%.0f%%");
+  dt_bauhaus_slider_set_hard_max(g->highlights, 2.0);
+  dt_bauhaus_slider_set_format(g->highlights, "%");
   gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
 
-  dt_bauhaus_slider_set_step(g->shadows, 0.01);
   dt_bauhaus_widget_set_label(g->shadows, NULL, N_("shadows"));
-  dt_bauhaus_slider_set_factor(g->shadows, 100);
-  dt_bauhaus_slider_set_format(g->shadows, "%.0f%%");
+  dt_bauhaus_slider_set_hard_max(g->shadows, 2.0);
+  dt_bauhaus_slider_set_format(g->shadows, "%");
   gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
 
   g->midtone = dt_bauhaus_slider_from_params(self, "midtone");
@@ -476,12 +472,11 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->range), "no-show-all", TRUE, NULL);
   g_object_set(G_OBJECT(g->spatial), "no-show-all", TRUE, NULL);
 
-  dt_bauhaus_slider_set_hard_min(g->spatial, 3.0);
-  dt_bauhaus_slider_set_hard_min(g->range, 1.0);
-  dt_bauhaus_slider_set_hard_max(g->highlights, 2.0);
-  dt_bauhaus_slider_set_hard_max(g->shadows, 2.0);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

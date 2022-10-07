@@ -25,6 +25,7 @@
 
 #ifdef _WIN32
 #include "win/main_wrapper.h"
+#include "common/datetime.h"
 #endif
 
 int main(int argc, char *argv[])
@@ -35,8 +36,8 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
   // on Windows we have a hard time showing stuff printed to stdout/stderr to the user.
   // because of that we write it to a log file.
-  char datetime[20];
-  dt_gettime(datetime, sizeof(datetime));
+  char datetime[DT_DATETIME_EXIF_LENGTH];
+  dt_datetime_now_to_exif(datetime);
 
   // make sure to not redirect output when the output is already being redirected, either to a file or a pipe.
   int out_type = GetFileType(GetStdHandle(STD_OUTPUT_HANDLE));
@@ -95,7 +96,6 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
   if(redirect_output)
   {
-    dt_gettime(datetime, sizeof(datetime));
     printf("\n");
     printf("end:   %s\n", datetime);
     printf("========================================\n");
@@ -106,6 +106,9 @@ int main(int argc, char *argv[])
   exit(0);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

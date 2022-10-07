@@ -467,6 +467,7 @@ GList *dt_ioppr_get_iop_order_rules()
     { .op_prev = "demosaic",    .op_next = "colorin"     },
     { .op_prev = "colorin",     .op_next = "colorout"    },
     { .op_prev = "colorout",    .op_next = "gamma"       },
+    { .op_prev = "flip",        .op_next = "crop"        }, // crop GUI broken if flip is done on top
     { .op_prev = "flip",        .op_next = "clipping"    }, // clipping GUI broken if flip is done on top
     { .op_prev = "ashift",      .op_next = "clipping"    }, // clipping GUI broken if ashift is done on top
     { .op_prev = "colorin",     .op_next = "channelmixerrgb"},
@@ -749,10 +750,12 @@ gboolean dt_ioppr_has_iop_order_list(int32_t imgid)
   gboolean result = FALSE;
   sqlite3_stmt *stmt;
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT version, iop_list"
                               " FROM main.module_order"
                               " WHERE imgid=?1", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -778,10 +781,12 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
     // search, but there will not be many such presets and we do call this routine
     // only when loading an image and when changing the iop-order.
 
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT version, iop_list"
                                 " FROM main.module_order"
                                 " WHERE imgid=?1", -1, &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -943,9 +948,11 @@ void dt_ioppr_change_iop_order(struct dt_develop_t *dev, const int32_t imgid, GL
 
   if(mi) iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
 
+  g_list_free_full(mi, g_free);
+
   dt_dev_write_history(darktable.develop);
   dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
-  g_list_free_full(iop_list, free);
+  g_list_free_full(iop_list, g_free);
 
   dt_ioppr_migrate_iop_order(darktable.develop, imgid);
 }
@@ -1134,7 +1141,6 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
 
 void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, gboolean append)
 {
-
   // for each priority list to be checked
   for(GList *e_list = entry_list; e_list; e_list = g_list_next(e_list))
   {
@@ -2198,3 +2204,8 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf, size_t size)
 }
 
 #undef DT_IOP_ORDER_INFO
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,9 @@
 
 // FIXME: kill this pls.
 #define FILTERS_ARE_4BAYER(filters) (FILTERS_ARE_CYGM(filters) || FILTERS_ARE_RGBE(filters))
+
+// for Adobe coefficients from LibRaw & RawSpeed
+#define ADOBE_COEFF_FACTOR 10000
 
 typedef enum dt_imageio_levels_t
 {
@@ -111,6 +114,12 @@ gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
                                       char *mk, int mk_len, char *md, int md_len,
                                       char *al, int al_len);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// get the type of image from its extension
+dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension);
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

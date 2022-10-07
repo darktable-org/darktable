@@ -86,7 +86,7 @@ const char *aliases()
   return _("blur|lens|motion");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("simulate physically-accurate lens and motion blurs"),
@@ -108,7 +108,7 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 
@@ -409,7 +409,7 @@ static void process_fft(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)piece->data;
   const float scale = piece->iscale / roi_in->scale;
 
-  if (!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
+  if(!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
     return;
 
   const float *const restrict in = __builtin_assume_aligned(ivoid, 64);
@@ -554,7 +554,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)piece->data;
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
 
-  if (!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
+  if(!dt_iop_have_required_input_format(4, self, piece->colors, ivoid, ovoid, roi_in, roi_out))
     return;
 
   const float *const restrict in = __builtin_assume_aligned(ivoid, 64);
@@ -638,7 +638,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   // Init the blur kernel
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
@@ -668,7 +668,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 error:
   if(kernel) dt_free_align(kernel);
   if(kernel_cl) dt_opencl_release_mem_object(kernel_cl);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_blurs] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_blurs] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -784,21 +784,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_blurs_gui_data_t *g = (dt_iop_blurs_gui_data_t *)self->gui_data;
-  dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)self->params;
-
-  dt_bauhaus_combobox_set_from_value(g->type, p->type);
-  dt_bauhaus_slider_set(g->radius, p->radius);
-
-  dt_bauhaus_slider_set(g->blades, p->blades);
-  dt_bauhaus_slider_set(g->concavity, p->concavity);
-  dt_bauhaus_slider_set(g->linearity, p->linearity);
-  dt_bauhaus_slider_set(g->rotation, p->rotation);
-
-  dt_bauhaus_slider_set(g->angle, p->angle);
-  dt_bauhaus_slider_set(g->curvature, p->curvature);
-  dt_bauhaus_slider_set(g->offset, p->offset);
-
+// FIXME check why needed
   gui_changed(self, NULL, NULL);
 }
 
@@ -822,7 +808,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
-  dt_bauhaus_slider_set_format(g->radius, "%.f px");
+  dt_bauhaus_slider_set_format(g->radius, " px");
 
   g->type = dt_bauhaus_combobox_from_params(self, "type");
 
@@ -831,11 +817,11 @@ void gui_init(dt_iop_module_t *self)
   g->linearity = dt_bauhaus_slider_from_params(self, "linearity");
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
   dt_bauhaus_slider_set_factor(g->rotation, DEG_TO_RAD);
-  dt_bauhaus_slider_set_format(g->rotation, "%.f °");
+  dt_bauhaus_slider_set_format(g->rotation, "°");
 
   g->angle = dt_bauhaus_slider_from_params(self, "angle");
   dt_bauhaus_slider_set_factor(g->angle, DEG_TO_RAD);
-  dt_bauhaus_slider_set_format(g->angle, "%.f °");
+  dt_bauhaus_slider_set_format(g->angle, "°");
 
 
   g->curvature = dt_bauhaus_slider_from_params(self, "curvature");
@@ -851,6 +837,9 @@ void gui_cleanup(dt_iop_module_t *self)
 }
 
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

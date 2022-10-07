@@ -24,12 +24,19 @@ constant sampler_t samplerf =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_T
 
 constant sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP         | CLK_FILTER_NEAREST;
 
+// sampler for when the bound checks are already done manually
+constant sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE            | CLK_FILTER_NEAREST;
+
 
 #ifndef M_PI_F
 #define M_PI_F           3.14159265358979323846  // should be defined by the OpenCL compiler acc. to standard
 #endif
 
 #define ICLAMP(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define RED 0
+#define GREEN 1
+#define BLUE 2
+#define ALPHA 3
 
 
 static inline int
@@ -43,6 +50,13 @@ static inline int
 FCxtrans(const int row, const int col, global const unsigned char (*const xtrans)[6])
 {
   return xtrans[row % 6][col % 6];
+}
+
+
+static inline float
+dt_fast_hypot(const float x, const float y)
+{
+  return native_sqrt(x * x + y * y);
 }
 
 

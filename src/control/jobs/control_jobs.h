@@ -28,7 +28,7 @@
 
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz, GList *imgs);
 
-void dt_control_datetime(const long int offset, const char *datetime, GList *imgs);
+void dt_control_datetime(const GTimeSpan offset, const char *datetime, GList *imgs);
 
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
@@ -47,11 +47,14 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                        dt_iop_color_intent_t icc_intent, const gchar *metadata_export);
 void dt_control_merge_hdr();
-void dt_control_import(GList *imgs, const time_t datetime_override, const gboolean inplace);
+void dt_control_import(GList *imgs, const char *datetime_override, const gboolean inplace);
 void dt_control_seed_denoise();
 void dt_control_denoise();
 void dt_control_refresh_exif();
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

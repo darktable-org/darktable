@@ -20,6 +20,7 @@
 
 #include <glib.h>
 #include <stdint.h>
+#include "common/image.h"
 
 typedef struct dt_variables_params_t
 {
@@ -55,9 +56,9 @@ void dt_variables_set_max_width_height(dt_variables_params_t *params, int max_wi
 /** set upscale allowed flag for an export session in a dt_variables_params_t. */
 void dt_variables_set_upscale(dt_variables_params_t *params, gboolean upscale);
 /** set the time in a dt_variables_params_t. */
-void dt_variables_set_time(dt_variables_params_t *params, time_t time);
-/** set the time to use for EXIF variables */
-void dt_variables_set_exif_time(dt_variables_params_t *params, time_t time);
+void dt_variables_set_time(dt_variables_params_t *params, const char *time);
+/** set the basic info to use for EXIF variables */
+void dt_variables_set_exif_basic_info(dt_variables_params_t *params, const dt_image_basic_exif_t *basic_exif);
 /** set flags for tags to be exported */
 void dt_variables_set_tags_flags(dt_variables_params_t *params, uint32_t flags);
 
@@ -66,6 +67,8 @@ char *dt_variables_expand(dt_variables_params_t *params, gchar *source, gboolean
 /** reset sequence number */
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

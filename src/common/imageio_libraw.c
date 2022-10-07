@@ -83,6 +83,20 @@ const model_map_t modelMap[] = {
   },
   {
     .exif_make = "Canon",
+    .exif_model = "Canon EOS R7",
+    .clean_make = "Canon",
+    .clean_model = "EOS R7",
+    .clean_alias = "EOS R7"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R10",
+    .clean_make = "Canon",
+    .clean_model = "EOS R10",
+    .clean_alias = "EOS R10"
+  },
+  {
+    .exif_make = "Canon",
     .exif_model = "Canon EOS M50",
     .clean_make = "Canon",
     .clean_model = "EOS M50",
@@ -113,8 +127,8 @@ const model_map_t modelMap[] = {
     .exif_make = "Canon",
     .exif_model = "Canon EOS M6 Mark II",
     .clean_make = "Canon",
-    .clean_model = "EOS M6",
-    .clean_alias = "EOS M6"
+    .clean_model = "EOS M6 Mark II",
+    .clean_alias = "EOS M6 Mark II"
   },
   {
     .exif_make = "Canon",
@@ -129,6 +143,20 @@ const model_map_t modelMap[] = {
     .clean_make = "Canon",
     .clean_model = "EOS 250D",
     .clean_alias = "EOS 250D"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS Rebel SL3",
+    .clean_make = "Canon",
+    .clean_model = "EOS 250D",
+    .clean_alias = "EOS Rebel SL3"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS 200D II",
+    .clean_make = "Canon",
+    .clean_model = "EOS 250D",
+    .clean_alias = "EOS 200D Mark II"
   },
   {
     .exif_make = "Canon",
@@ -254,6 +282,11 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   for(size_t c = 0; c < 4; ++c)
     img->wb_coeffs[c] = raw->rawdata.color.cam_mul[c];
 
+  // Grab the adobe coeff
+  for(int k = 0; k < 4; k++)
+    for(int i = 0; i < 3; i++)
+      img->adobe_XYZ_to_CAM[k][i] = raw->rawdata.color.cam_xyz[k][i];
+
   // Raw dimensions. This is the full sensor range.
   img->width = raw->rawdata.sizes.raw_width;
   img->height = raw->rawdata.sizes.raw_height;
@@ -291,7 +324,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   img->buf_dsc.channels = 1;
 
   img->buf_dsc.datatype = TYPE_UINT16;
-  img->buf_dsc.cst = iop_cs_RAW;
+  img->buf_dsc.cst = IOP_CS_RAW;
 
   // Allocate and copy image from libraw buffer to dt
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
@@ -352,6 +385,9 @@ error:
 }
 #endif
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -183,7 +183,7 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
 {
   dt_print_t *prt = (dt_print_t *)self->data;
 
-  if (prt->pinfo == NULL)
+  if(prt->pinfo == NULL)
     return;
 
   float px=.0f, py=.0f, pwidth=.0f, pheight=.0f;
@@ -397,6 +397,9 @@ void leave(dt_view_t *self)
 //  g_signal_disconnect(widget, "drag-motion", G_CALLBACK(_drag_motion_received));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

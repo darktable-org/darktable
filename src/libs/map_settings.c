@@ -93,12 +93,13 @@ static void _map_source_changed(GtkWidget *widget, gpointer data)
   }
 }
 
+static void _thumbnail_change(dt_action_t *action);
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)malloc(sizeof(dt_lib_map_settings_t));
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   GtkBox *hbox;
   GtkWidget *label;
 
@@ -143,6 +144,9 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
   d->filtered_images_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/filter_images_drawn", 0, line++, FALSE);
   g_signal_connect(G_OBJECT(d->filtered_images_checkbutton), "toggled", G_CALLBACK(_parameter_changed), NULL);
+  dt_shortcut_register(dt_action_define(DT_ACTION(self), NULL, N_("filtered images"),
+                                        d->filtered_images_checkbutton, &dt_action_def_button),
+                       0, 0, GDK_KEY_s, GDK_CONTROL_MASK);
   d->max_images_entry = dt_gui_preferences_int(grid, "plugins/map/max_images_drawn", 0, line++);
   g_signal_connect(G_OBJECT(d->max_images_entry), "value-changed", G_CALLBACK(_parameter_changed), self);
   d->epsilon_factor = dt_gui_preferences_int(grid, "plugins/map/epsilon_factor", 0, line++);
@@ -152,6 +156,8 @@ void gui_init(dt_lib_module_t *self)
   d->images_thumb = dt_gui_preferences_enum(grid, "plugins/map/images_thumbnail", 0, line++);
   g_signal_connect(G_OBJECT(d->images_thumb), "changed", G_CALLBACK(_parameter_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), FALSE, FALSE, 0);
+
+  dt_action_register(DT_ACTION(self), N_("thumbnail display"), _thumbnail_change, GDK_KEY_s, GDK_SHIFT_MASK);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -172,10 +178,9 @@ void gui_reset(dt_lib_module_t *self)
   dt_gui_preferences_enum_reset(d->images_thumb);
 }
 
-static gboolean _thumbnail_change(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                  GdkModifierType modifier, dt_lib_module_t *self)
+static void _thumbnail_change(dt_action_t *action)
 {
-  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
+  dt_lib_map_settings_t *d = dt_action_lib(action)->data;;
 
   const char *str = dt_conf_get_string_const("plugins/map/images_thumbnail");
   if(!g_strcmp0(str, "thumbnail"))
@@ -185,23 +190,11 @@ static gboolean _thumbnail_change(GtkAccelGroup *accel_group, GObject *accelerat
   else
     dt_conf_set_string("plugins/map/images_thumbnail", "thumbnail");
   dt_gui_preferences_enum_update(d->images_thumb);
-
-  return TRUE;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "filtered images"), GDK_KEY_s, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "thumbnail display"), GDK_KEY_s, GDK_SHIFT_MASK);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
-  dt_accel_connect_button_lib(self, "filtered images", d->filtered_images_checkbutton);
-  dt_accel_connect_lib(self, "thumbnail display", g_cclosure_new(G_CALLBACK(_thumbnail_change), self, NULL));
-}
-
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

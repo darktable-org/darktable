@@ -1496,7 +1496,7 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
     const dt_aligned_pixel_t max = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     float *tmp_buffer = dt_alloc_align_float((size_t)owidth * oheight * DT_BLENDIF_LAB_CH);
-    if (tmp_buffer != NULL)
+    if(tmp_buffer != NULL)
     {
       dt_iop_image_copy(tmp_buffer, b, (size_t)owidth * oheight * DT_BLENDIF_LAB_CH);
       if((d->blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE)
@@ -1549,6 +1549,9 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
 
 // tools/update_modelines.sh
 // remove-trailing-space on;
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

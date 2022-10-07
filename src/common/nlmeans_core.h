@@ -54,3 +54,9 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
 int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int devid,
                               cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in);
 #endif /* HAVE_OPENCL */
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

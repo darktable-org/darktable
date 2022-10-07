@@ -34,7 +34,7 @@ static int32_t dt_image_load_job_run(dt_job_t *job)
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, params->imgid, params->mip, DT_MIPMAP_BLOCKING, 'r');
 
-  if (buf.buf && buf.height && buf.width)
+  if(buf.buf && buf.height && buf.width)
   {
     const double aspect_ratio = (double)buf.width / (double)buf.height;
     dt_image_set_aspect_ratio_if_different(params->imgid, aspect_ratio, FALSE);
@@ -114,6 +114,9 @@ dt_job_t *dt_image_import_job_create(uint32_t filmid, const char *filename)
   return job;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

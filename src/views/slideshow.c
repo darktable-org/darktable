@@ -553,9 +553,9 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   return 0;
 }
 
-static gboolean _start_stop_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, dt_slideshow_t *d)
+static void _start_stop_callback(dt_action_t *action)
 {
+  dt_slideshow_t *d = dt_action_view(action)->data;
   if(!d->auto_advance)
   {
     d->auto_advance = TRUE;
@@ -566,84 +566,61 @@ static gboolean _start_stop_callback(GtkAccelGroup *accel_group, GObject *accele
     d->auto_advance = FALSE;
     dt_control_log(_("slideshow paused"));
   }
-
-  return TRUE;
 }
 
-static gboolean _slow_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, dt_slideshow_t *d)
+static void _slow_down_callback(dt_action_t *action)
 {
+  dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, 1);
   dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
-
-  return TRUE;
 }
 
-static gboolean _speed_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                   GdkModifierType modifier, dt_slideshow_t *d)
+static void _speed_up_callback(dt_action_t *action)
 {
+  dt_slideshow_t *d = dt_action_view(action)->data;
   _set_delay(d, -1);
   dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
-
-  return TRUE;
 }
 
-static gboolean _step_back_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, dt_slideshow_t *d)
+static void _step_back_callback(dt_action_t *action)
 {
-  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  dt_slideshow_t *d = dt_action_view(action)->data;
+  if(d->auto_advance) dt_control_log(_("slideshow paused"));
   d->auto_advance = FALSE;
   _step_state(d, S_REQUEST_STEP_BACK);
-
-  return TRUE;
 }
 
-static gboolean _step_forward_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                       GdkModifierType modifier, dt_slideshow_t *d)
+static void _step_forward_callback(dt_action_t *action)
 {
-  if (d->auto_advance) dt_control_log(_("slideshow paused"));
+  dt_slideshow_t *d = dt_action_view(action)->data;
+  if(d->auto_advance) dt_control_log(_("slideshow paused"));
   d->auto_advance = FALSE;
   _step_state(d, S_REQUEST_STEP);
-
-  return TRUE;
 }
 
-static gboolean _exit_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, dt_slideshow_t *d)
+static void _exit_callback(dt_action_t *action)
 {
+  dt_slideshow_t *d = dt_action_view(action)->data;
   // go back to lt mode
   d->auto_advance = FALSE;
   dt_ctl_switch_mode_to("lighttable");
-
-  return TRUE;
 }
 
-void init_key_accels(dt_view_t *self)
+void gui_init(dt_view_t *self)
 {
-  dt_accel_register_view(self, NC_("accel", "start and stop"), GDK_KEY_space, 0);
-  dt_accel_register_view(self, NC_("accel", "exit slideshow"), GDK_KEY_Escape, 0);
+  dt_action_register(DT_ACTION(self), N_("start and stop"), _start_stop_callback, GDK_KEY_space, 0);
+  dt_action_register(DT_ACTION(self), N_("exit slideshow"), _exit_callback, GDK_KEY_Escape, 0);
 
-  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_Up, 0);
-  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_KP_Add, 0);
-  dt_accel_register_view(self, NC_("accel", "slow down"), GDK_KEY_plus, 0);
-  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_Down, 0);
-  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_KP_Subtract, 0);
-  dt_accel_register_view(self, NC_("accel", "speed up"), GDK_KEY_minus, 0);
+  dt_action_t *ac;
+  ac = dt_action_register(DT_ACTION(self), N_("slow down"), _slow_down_callback, GDK_KEY_Up, 0);
+  dt_shortcut_register(ac, 0, 0, GDK_KEY_KP_Add, 0);
+  dt_shortcut_register(ac, 0, 0, GDK_KEY_plus, 0);
+  ac = dt_action_register(DT_ACTION(self), N_("speed up"), _speed_up_callback, GDK_KEY_Down, 0);
+  dt_shortcut_register(ac, 0, 0, GDK_KEY_KP_Subtract, 0);
+  dt_shortcut_register(ac, 0, 0, GDK_KEY_minus, 0);
 
-  dt_accel_register_view(self, NC_("accel", "step forward"), GDK_KEY_Right, 0);
-  dt_accel_register_view(self, NC_("accel", "step back"), GDK_KEY_Left, 0);
-}
-
-void connect_key_accels(dt_view_t *self)
-{
-  dt_accel_connect_view(self, "start and stop", g_cclosure_new(G_CALLBACK(_start_stop_callback), self->data, NULL));
-  dt_accel_connect_view(self, "exit slideshow", g_cclosure_new(G_CALLBACK(_exit_callback), self->data, NULL));
-
-  dt_accel_connect_view(self, "slow down", g_cclosure_new(G_CALLBACK(_slow_down_callback), self->data, NULL));
-  dt_accel_connect_view(self, "speed up", g_cclosure_new(G_CALLBACK(_speed_up_callback), self->data, NULL));
-
-  dt_accel_connect_view(self, "step forward", g_cclosure_new(G_CALLBACK(_step_forward_callback), self->data, NULL));
-  dt_accel_connect_view(self, "step back", g_cclosure_new(G_CALLBACK(_step_back_callback), self->data, NULL));
+  dt_action_register(DT_ACTION(self), N_("step forward"), _step_forward_callback, GDK_KEY_Right, 0);
+  dt_action_register(DT_ACTION(self), N_("step back"), _step_back_callback, GDK_KEY_Left, 0);
 }
 
 GSList *mouse_actions(const dt_view_t *self)
@@ -653,6 +630,9 @@ GSList *mouse_actions(const dt_view_t *self)
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("go to previous image"));
   return lm;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

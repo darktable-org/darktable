@@ -238,14 +238,14 @@ static inline float lab_f_inv(const float x)
 #endif
 static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
-  const float fy = (Lab[0] + 16.0f) / 116.0f;
-  const float fx = Lab[1] / 500.0f + fy;
-  const float fz = fy - Lab[2] / 200.0f;
-  const dt_aligned_pixel_t f = { fx, fy, fz };
-  for_each_channel(c)
-    XYZ[c] = d50[c] * lab_f_inv(f[c]);
+  dt_aligned_pixel_t f = { Lab[1], Lab[0] + 16.0f, -Lab[2], 0.0f };
+  static const dt_aligned_pixel_t coeff = { 500.0f, 116.0f, 200.0f, 1.0f };
+  static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
+  for_each_channel(c,aligned(Lab,coeff,f))
+    f[c] /= coeff[c];
+  for_each_channel(c,aligned(d50,f,add_coeff,XYZ))
+    XYZ[c] = d50[c] * lab_f_inv(f[c] + f[1] * add_coeff[c]);
 }
-
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, XYZ:16)
@@ -1145,23 +1145,34 @@ static inline void Yrg_to_LMS(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t L
 }
 
 /*
-* Re-express Filmlight Yrg in polar coordinates Ych
-*/
+ * Re-express Filmlight Yrg in polar coordinates Ych.
+ *
+ * Note that we don't explicitly store the hue angle
+ * but rather just the cosine and sine of the angle.
+ * This is because we don't need the hue angle anywhere
+ * and this way we can avoid calculating expensive
+ * trigonometric functions.
+ */
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Ych, Yrg: 16)
 #endif
 static inline void Yrg_to_Ych(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t Ych)
 {
-  const dt_aligned_pixel_t D65 = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
   const float Y = Yrg[0];
-  const float r = Yrg[1] - D65[0];
-  const float g = Yrg[2] - D65[1];
-  const float c = hypotf(g, r);
-  const float h = atan2f(g, r);
+  // Subtract white point. These are the r, g coordinates of
+  // sRGB (D50 adapted) (1, 1, 1) taken through
+  // XYZ D50 -> CAT16 D50->D65 adaptation -> LMS 2006
+  // -> grading RGB conversion.
+  const float r = Yrg[1] - 0.21902143f;
+  const float g = Yrg[2] - 0.54371398f;
+  const float c = dt_fast_hypotf(g, r);
+  const float cos_h = c != 0.f ? r / c : 1.f;
+  const float sin_h = c != 0.f ? g / c : 0.f;
   Ych[0] = Y;
   Ych[1] = c;
-  Ych[2] = h;
+  Ych[2] = cos_h;
+  Ych[3] = sin_h;
 }
 
 #ifdef _OPENMP
@@ -1169,15 +1180,34 @@ static inline void Yrg_to_Ych(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t Y
 #endif
 static inline void Ych_to_Yrg(const dt_aligned_pixel_t Ych, dt_aligned_pixel_t Yrg)
 {
-  const dt_aligned_pixel_t D65 = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
   const float Y = Ych[0];
   const float c = Ych[1];
-  const float h = Ych[2];
-  const float r = c * cosf(h) + D65[0];
-  const float g = c * sinf(h) + D65[1];
+  const float cos_h = Ych[2];
+  const float sin_h = Ych[3];
+  const float r = c * cos_h + 0.21902143f;
+  const float g = c * sin_h + 0.54371398f;
   Yrg[0] = Y;
   Yrg[1] = r;
   Yrg[2] = g;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych: 16)
+#endif
+static inline void make_Ych(const float Y, const float c, const float h, dt_aligned_pixel_t Ych)
+{
+  Ych[0] = Y;
+  Ych[1] = c;
+  Ych[2] = cosf(h);
+  Ych[3] = sinf(h);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych: 16)
+#endif
+static inline float get_hue_angle_from_Ych(const dt_aligned_pixel_t Ych)
+{
+  return atan2f(Ych[3], Ych[2]);
 }
 
 /*
@@ -1237,8 +1267,229 @@ static inline void Ych_to_XYZ(const dt_aligned_pixel_t Ych, dt_aligned_pixel_t X
   LMS_to_XYZ(LMS, XYZ);
 }
 
+
+static inline void gamut_check_Yrg(dt_aligned_pixel_t Ych)
+{
+  // Check if the color fits in Yrg and LMS cone space
+  // clip chroma at constant hue and luminance otherwise
+
+  // Do a test conversion to Yrg
+  dt_aligned_pixel_t Yrg = { 0.f };
+  Ych_to_Yrg(Ych, Yrg);
+
+  // Gamut-clip chroma in Yrg at constant hue and luminance
+  // e.g. find the max chroma value that fits in gamut at the current hue
+  // taken from colorbalancergb.c
+  const float D65_r = 0.21902143f;
+  const float D65_g = 0.54371398f;
+
+  float max_c = Ych[1];
+  const float cos_h = Ych[2];
+  const float sin_h = Ych[3];
+
+  if(Yrg[1] < 0.f)
+  {
+    max_c = fminf(-D65_r / cos_h, max_c);
+  }
+  if(Yrg[2] < 0.f)
+  {
+    max_c = fminf(-D65_g / sin_h, max_c);
+  }
+  if(Yrg[1] + Yrg[2] > 1.f)
+  {
+    max_c = fminf((1.f - D65_r - D65_g) / (cos_h + sin_h), max_c);
+  }
+
+  // Overwrite chroma with the sanitized value
+  Ych[1] = max_c;
+}
+
+/** The following is darktable Uniform Color Space 2022
+ * © Aurélien Pierre
+ * https://eng.aurelienpierre.com/2022/02/color-saturation-control-for-the-21th-century/
+ *
+ * Use this space for color-grading in a perceptual framework.
+ * The CAM terms have been removed for performance.
+ **/
+
+static inline float Y_to_dt_UCS_L_star(const float Y)
+{
+  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
+  const float Y_hat = powf(Y, 0.631651345306265f);
+  return 2.098883786377f * Y_hat / (Y_hat + 1.12426773749357f);
+}
+
+static inline float dt_UCS_L_star_to_Y(const float L_star)
+{
+  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
+  return powf((1.12426773749357f * L_star / (2.098883786377f - L_star)), 1.5831518565279648f);
+}
+
+
+// L_star upper limit is 2.098883786377 truncated to 32-bit float and last decimal removed.
+// By clipping L_star to this limit, we ensure dt_UCS_L_star_to_Y() doesn't divide by zero.
+static const float DT_UCS_L_STAR_UPPER_LIMIT = 2.098883f;
+// Y upper limit is calculated from the above L star upper limit.
+static const float DT_UCS_Y_UPPER_LIMIT = 13237757000.f;
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY: 16)
+#endif
+static inline void xyY_to_dt_UCS_UV(const dt_aligned_pixel_t xyY, float UV_star_prime[2])
+{
+
+  const dt_aligned_pixel_t x_factors = { -0.783941002840055f,  0.745273540913283f, 0.318707282433486f, 0.f };
+  const dt_aligned_pixel_t y_factors = {  0.277512987809202f, -0.205375866083878f, 2.16743692732158f,  0.f };
+  const dt_aligned_pixel_t offsets   = {  0.153836578598858f, -0.165478376301988f, 0.291320554395942f, 0.f };
+
+  dt_aligned_pixel_t UVD = { 0.f };
+  for_each_channel(c, aligned(xyY, UVD, x_factors, y_factors, offsets))
+    UVD[c] = x_factors[c] * xyY[0] + y_factors[c] * xyY[1] + offsets[c];
+
+  UVD[0] /= UVD[2];
+  UVD[1] /= UVD[2];
+
+  float UV_star[2] = { 0.f };
+  const float factors[2]     = { 1.39656225667f, 1.4513954287f };
+  const float half_values[2] = { 1.49217352929f, 1.52488637914f };
+  for(int c = 0; c < 2; c++)
+    UV_star[c] = factors[c] * UVD[c] / (fabsf(UVD[c]) + half_values[c]);
+
+  // The following is equivalent to a 2D matrix product
+  UV_star_prime[0] = -1.124983854323892f * UV_star[0] - 0.980483721769325f * UV_star[1];
+  UV_star_prime[1] =  1.86323315098672f  * UV_star[0] + 1.971853092390862f * UV_star[1];
+
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, JCH: 16)
+#endif
+static inline void xyY_to_dt_UCS_JCH(const dt_aligned_pixel_t xyY, const float L_white, dt_aligned_pixel_t JCH)
+{
+  /*
+    input :
+      * xyY in normalized CIE XYZ for the 2° 1931 observer adapted for D65
+      * L_white the lightness of white as dt UCS L* lightness
+      * cz = 1 for standard pre-print proofing conditions with average surround and n = 20 %
+              (background = middle grey, white = perfect diffuse white)
+    range : xy in [0; 1], Y normalized for perfect diffuse white = 1
+  */
+
+  float UV_star_prime[2];
+  xyY_to_dt_UCS_UV(xyY, UV_star_prime);
+
+  // L_star must be clipped to the valid range of dt UCS
+  const float L_star = Y_to_dt_UCS_L_star(CLAMPF(xyY[2], 0.f, DT_UCS_Y_UPPER_LIMIT));
+  const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
+
+  // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
+  JCH[0] = L_star / L_white;
+  JCH[1] = 15.932993652962535f * powf(L_star, 0.6523997524738018f) * powf(M2, 0.6007557017508491f) / L_white;
+  JCH[2] = atan2f(UV_star_prime[1], UV_star_prime[0]);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, JCH: 16)
+#endif
+static inline void dt_UCS_JCH_to_xyY(const dt_aligned_pixel_t JCH, const float L_white, dt_aligned_pixel_t xyY)
+{
+  /*
+    input :
+      * xyY in normalized CIE XYZ for the 2° 1931 observer adapted for D65
+      * L_white the lightness of white as dt UCS L* lightness
+      * cz = 1 for standard pre-print proofing conditions with average surround and n = 20 %
+              (background = middle grey, white = perfect diffuse white)
+    range : xy in [0; 1], Y normalized for perfect diffuse white = 1
+  */
+
+  // should be L_star = powf(JCH[0], 1.f / cz) * L_white but we treat only the case where cz = 1
+  // L_star must be clipped to the valid range of dt UCS
+  const float L_star = CLAMPF(JCH[0] * L_white, 0.f, DT_UCS_L_STAR_UPPER_LIMIT);
+  const float M = L_star != 0.f
+    ? powf(JCH[1] * L_white / (15.932993652962535f * powf(L_star, 0.6523997524738018f)), 0.8322850678616855f)
+    : 0.f;
+
+  const float U_star_prime = M * cosf(JCH[2]);
+  const float V_star_prime = M * sinf(JCH[2]);
+
+  // The following is equivalent to a 2D matrix product
+  const float UV_star[2] = { -5.037522385190711f * U_star_prime - 2.504856328185843f * V_star_prime,
+                              4.760029407436461f * U_star_prime + 2.874012963239247f * V_star_prime };
+
+  float UV[2] = { 0.f };
+  const float factors[2]     = { 1.39656225667f, 1.4513954287f };
+  const float half_values[2] = { 1.49217352929f, 1.52488637914f };
+  for(int c = 0; c < 2; c++)
+    UV[c] = -half_values[c] * UV_star[c] / (fabsf(UV_star[c]) - factors[c]);
+
+  const dt_aligned_pixel_t U_factors = {  0.167171472114775f,   -0.150959086409163f,    0.940254742367256f,  0.f };
+  const dt_aligned_pixel_t V_factors = {  0.141299802443708f,   -0.155185060382272f,    1.000000000000000f,  0.f };
+  const dt_aligned_pixel_t offsets   = { -0.00801531300850582f, -0.00843312433578007f, -0.0256325967652889f, 0.f };
+
+  dt_aligned_pixel_t xyD = { 0.f };
+  for_each_channel(c, aligned(xyD, UV, U_factors, V_factors, offsets))
+    xyD[c] = U_factors[c] * UV[0] + V_factors[c] * UV[1] + offsets[c];
+
+  xyY[0] = xyD[0] / xyD[2];
+  xyY[1] = xyD[1] / xyD[2];
+  xyY[2] = dt_UCS_L_star_to_Y(L_star);
+}
+
+
+static inline void dt_UCS_JCH_to_HSB(const dt_aligned_pixel_t JCH, dt_aligned_pixel_t HSB)
+{
+  HSB[2] = JCH[0] * (powf(JCH[1], 1.33654221029386f) + 1.f);
+  HSB[1] = (HSB[2] > 0.f) ? JCH[1] / HSB[2] : 0.f;
+  HSB[0] = JCH[2];
+}
+
+
+static inline void dt_UCS_HSB_to_JCH(const dt_aligned_pixel_t HSB, dt_aligned_pixel_t JCH)
+{
+  JCH[2] = HSB[0];
+  JCH[1] = HSB[1] * HSB[2];
+  JCH[0] = HSB[2] / (powf(JCH[1], 1.33654221029386f) + 1.f);
+}
+
+
+static inline void dt_UCS_JCH_to_HCB(const dt_aligned_pixel_t JCH, dt_aligned_pixel_t HCB)
+{
+  HCB[2] = JCH[0] * (powf(JCH[1], 1.33654221029386f) + 1.f);
+  HCB[1] = JCH[1];
+  HCB[0] = JCH[2];
+}
+
+
+static inline void dt_UCS_HCB_to_JCH(const dt_aligned_pixel_t HCB, dt_aligned_pixel_t JCH)
+{
+  JCH[2] = HCB[0];
+  JCH[1] = HCB[1];
+  JCH[0] = HCB[2] / (powf(HCB[1], 1.33654221029386f) + 1.f);
+}
+
+
+static inline void dt_UCS_HSB_to_HPW(const dt_aligned_pixel_t HSB, dt_aligned_pixel_t HPW)
+{
+  HPW[2] = sqrtf(HSB[1] * HSB[1] + HSB[2] * HSB[2]);
+  HPW[1] = (HPW[2] > 0.f) ? HSB[1] / HPW[2] : 0.f;
+  HPW[0] = HSB[0];
+}
+
+
+static inline void dt_UCS_HPW_to_HSB(const dt_aligned_pixel_t HPW, dt_aligned_pixel_t HSB)
+{
+  HSB[0] = HPW[0];
+  HSB[1] = HPW[1] * HPW[2];
+  HSB[2] = fmaxf(sqrtf(HPW[2] * HPW[2] - HSB[1] * HSB[1]), 0.f);
+}
+
 #undef DT_RESTRICT
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

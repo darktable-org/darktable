@@ -22,6 +22,9 @@ mark_as_advanced(WebP_INCLUDE_DIR)
 
 set(WebP_NAMES ${WebP_NAMES} webp libwebp)
 find_library(WebP_LIBRARY NAMES ${WebP_NAMES} HINTS ${WebP_PKGCONF_LIBRARY_DIRS})
+set(WebP_MUX_NAMES ${WebP_MUX_NAMES} webpmux libwebpmux)
+find_library(WebP_MUX_LIBRARY NAMES ${WebP_MUX_NAMES} HINTS ${WebP_PKGCONF_LIBRARY_DIRS})
+set(WebP_LIBRARY ${WebP_LIBRARY} ${WebP_MUX_LIBRARY})
 mark_as_advanced(WebP_LIBRARY)
 
 include(FindPackageHandleStandardArgs)

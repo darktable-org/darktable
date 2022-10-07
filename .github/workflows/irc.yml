@@ -9,8 +9,9 @@ jobs:
   dtslave:
     if: github.repository == 'darktable-org/darktable'
     runs-on: ubuntu-latest
+    concurrency: irc_bot
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 200
           path: src
@@ -59,7 +60,7 @@ jobs:
           message: |-
             Showing last ${{ steps.gitlog.outputs.llc }} commit(s) to ${{ github.repository }}:
             ${{ steps.gitlog.outputs.log }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: recent_commit
           path: recent_commit

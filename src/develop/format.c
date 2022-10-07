@@ -46,7 +46,7 @@ void default_input_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dsc->datatype = TYPE_FLOAT;
   dsc->cst = self->input_colorspace(self, pipe, piece);
 
-  if(dsc->cst != iop_cs_RAW) return;
+  if(dsc->cst != IOP_CS_RAW) return;
 
   if(dt_image_is_raw(&pipe->image)) dsc->channels = 1;
 
@@ -64,7 +64,7 @@ void default_output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
   dsc->datatype = TYPE_FLOAT;
   dsc->cst = self->output_colorspace(self, pipe, piece);
 
-  if(dsc->cst != iop_cs_RAW) return;
+  if(dsc->cst != IOP_CS_RAW) return;
 
   if(dt_image_is_raw(&pipe->image)) dsc->channels = 1;
 
@@ -93,6 +93,9 @@ int default_blend_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
   return self->default_colorspace(self, pipe, piece);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -38,7 +38,7 @@ void dt_bilateral_grid_size(dt_bilateral_t *b, const int width, const int height
   // dimensions; for sigma_s < 0.5, there is at least one unused grid point between any two used points, and
   // thus the gaussian blur will have little effect.  So we force sigma_s to be at least 0.5 to avoid an
   // excessively large grid.
-  if (sigma_s < 0.5) sigma_s = 0.5;
+  if(sigma_s < 0.5) sigma_s = 0.5;
 
   // compute an initial grid size, clamping away insanely large grids
   float _x = CLAMPS((int)roundf(width / sigma_s), 4, DT_COMMON_BILATERAL_MAX_RES_S);
@@ -53,8 +53,8 @@ void dt_bilateral_grid_size(dt_bilateral_t *b, const int width, const int height
   b->size_y = (int)ceilf(height / b->sigma_s) + 1;
   b->size_z = (int)ceilf(L_range / b->sigma_r) + 1;
 #if 0
-  if (b->sigma_s != sigma_s) fprintf(stderr, "[bilateral] clamped sigma_s (%g -> %g)!\n",sigma_s,b->sigma_s);
-  if (b->sigma_r != sigma_r) fprintf(stderr, "[bilateral] clamped sigma_r (%g -> %g)!\n",sigma_r,b->sigma_r);
+  if(b->sigma_s != sigma_s) fprintf(stderr, "[bilateral] clamped sigma_s (%g -> %g)!\n",sigma_s,b->sigma_s);
+  if(b->sigma_r != sigma_r) fprintf(stderr, "[bilateral] clamped sigma_r (%g -> %g)!\n",sigma_r,b->sigma_r);
 #endif
 }
 
@@ -149,9 +149,9 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->sliceheight = (height + b->numslices - 1) / b->numslices;
   b->slicerows = (b->size_y + b->numslices - 1) / b->numslices + 2;
   b->buf = dt_calloc_align_float(b->size_x * b->size_z * b->numslices * b->slicerows);
-  if (!b->buf)
+  if(!b->buf)
   {
-    fprintf(stderr,"[bilateral] unable to allocate buffer for %lux%lux%lu grid\n",b->size_x,b->size_y,b->size_z);
+    fprintf(stderr,"[bilateral] unable to allocate buffer for %zux%zux%zu grid\n",b->size_x,b->size_y,b->size_z);
     free(b);
     return NULL;
   }
@@ -171,7 +171,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
   const float sigma_s = b->sigma_s * b->sigma_s;
   float *const buf = b->buf;
 
-  if (!buf) return;
+  if(!buf) return;
   // splat into downsampled grid
   const int nthreads = darktable.num_openmp_threads;
   const size_t offsets[8] =
@@ -233,7 +233,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
   }
 
   // merge the per-thread results into the final result
-  for (int slice = 1 ; slice < nthreads; slice++)
+  for(int slice = 1 ; slice < nthreads; slice++)
   {
     // compute the first row of the final grid which this slice splats
     const int destrow = (int)(slice * b->sliceheight / b->sigma_s);
@@ -249,7 +249,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
       dest += oy;
       // clear elements in the part of the buffer which holds the final result now that we've read the partial result,
       // since we'll be adding to those locations later
-      if (j < b->size_y)
+      if(j < b->size_y)
         memset(buf + j*oy, '\0', sizeof(float) * oy);
     }
   }
@@ -344,7 +344,7 @@ static void blur_line(float *buf, const int offset1, const int offset2, const in
 
 void dt_bilateral_blur(const dt_bilateral_t *b)
 {
-  if (!b || !b->buf)
+  if(!b || !b->buf)
     return;
   const int ox = b->size_z;
   const int oy = b->size_x * b->size_z;
@@ -372,7 +372,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
   const int width = b->width;
   const int height = b->height;
 
-  if (!buf) return;
+  if(!buf) return;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(b, in, norm, ox, oy, oz, height, width, buf) \
@@ -420,7 +420,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
   const int width = b->width;
   const int height = b->height;
 
-  if (!buf) return;
+  if(!buf) return;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(b, in, norm, oy, oz, ox, buf, width, height) \
@@ -458,6 +458,9 @@ void dt_bilateral_free(dt_bilateral_t *b)
 #undef DT_COMMON_BILATERAL_MAX_RES_S
 #undef DT_COMMON_BILATERAL_MAX_RES_R
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

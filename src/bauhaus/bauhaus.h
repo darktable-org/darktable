@@ -19,9 +19,9 @@
 #pragma once
 
 #include "common/debug.h"
+#include "common/introspection.h"
 #include "common/colorlabels.h"
 #include "control/control.h"
-#include "develop/develop.h"
 #include "develop/imageop.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -47,6 +47,7 @@ extern GType DT_BAUHAUS_WIDGET_TYPE;
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX 500
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN 25
 #define DT_BAUHAUS_SLIDER_MAX_STOPS 20
+#define DT_BAUHAUS_COMBO_MAX_TEXT 180
 
 typedef enum dt_bauhaus_type_t
 {
@@ -71,29 +72,29 @@ typedef struct dt_bauhaus_slider_data_t
   float min, max; // min and max range
   float soft_min, soft_max;
   float hard_min, hard_max;
-  float scale; // step width for loupe mode
   int digits;  // how many decimals to round to
 
-  float grad_col[DT_BAUHAUS_SLIDER_MAX_STOPS][3]; // colors for gradient slider
-  int grad_cnt;                                   // how many stops
-  float grad_pos[DT_BAUHAUS_SLIDER_MAX_STOPS];    // and position of these.
+  float (*grad_col)[3]; // colors for gradient slider
+  int grad_cnt;         // how many stops
+  float *grad_pos;      // and position of these.
 
-  int fill_feedback; // fill the slider with brighter part up to the handle?
+  int fill_feedback : 1; // fill the slider with brighter part up to the handle?
 
-  char format[24]; // numeric value is printed with this string
-  float factor;    // multiplication factor before printing
-  float offset;    // addition before printing
+  const char *format;   // numeric value is printed with this format
+  float factor;         // multiplication factor before printing
+  float offset;         // addition before printing
 
-  int is_dragging;      // indicates is mouse is dragging slider
-  int is_changed;       // indicates new data
+  int is_dragging : 1;  // indicates is mouse is dragging slider
+  int is_changed : 1;   // indicates new data
   guint timeout_handle; // used to store id of timeout routine
-  float (*curve)(GtkWidget*, float, dt_bauhaus_curve_t); // callback function
+  float (*curve)(float, dt_bauhaus_curve_t); // callback function
 } dt_bauhaus_slider_data_t;
 
 typedef enum dt_bauhaus_combobox_alignment_t
 {
   DT_BAUHAUS_COMBOBOX_ALIGN_LEFT = 0,
-  DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT = 1
+  DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT = 1,
+  DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE = 2
 } dt_bauhaus_combobox_alignment_t;
 
 // data portion for a combobox
@@ -102,22 +103,21 @@ typedef struct dt_bauhaus_combobox_entry_t
   char *label;
   dt_bauhaus_combobox_alignment_t alignment;
   gboolean sensitive;
-  void *data;
-  void (*free_func)(void *); // callback to free data elements
+  gpointer data;
+  void (*free_func)(gpointer); // callback to free data elements
 } dt_bauhaus_combobox_entry_t;
 
 typedef struct dt_bauhaus_combobox_data_t
 {
-  int num_labels;       // number of elements
   int active;           // currently active element
   int defpos;           // default position
   int editable;         // 1 if arbitrary text may be typed
-  int scale;            // scale of the combo popup from combo widget
   dt_bauhaus_combobox_alignment_t text_align; // if selected text in combo should be aligned to the left/right
-  char text[180];       // roughly as much as a slider
+  char *text;           // to hold arbitrary text if editable
   PangoEllipsizeMode entries_ellipsis;
-  GList *entries;
+  GPtrArray *entries;
   gboolean mute_scrolling;   // if set, prevents to issue "data-changed"
+  void (*populate)(GtkWidget *w, struct dt_iop_module_t **module); // function to populate the combo list on the fly
 } dt_bauhaus_combobox_data_t;
 
 typedef union dt_bauhaus_data_t
@@ -144,8 +144,14 @@ typedef struct dt_bauhaus_widget_t
   dt_bauhaus_type_t type;
   // associated image operation module (to handle focus and such)
   dt_action_t *module;
+  // pointer to iop field linked to widget
+  gpointer field;
+  // type of field
+  dt_introspection_type_t field_type;
+
   // label text, short
   char label[256];
+  gboolean show_label;
   // section, short
   gchar *section;
   gboolean show_extended_label;
@@ -157,11 +163,18 @@ typedef struct dt_bauhaus_widget_t
   void *quad_paint_data;
   // quad is a toggle button?
   int quad_toggle;
+  // show quad icon or space
+  gboolean show_quad;
   // if a section label
   gboolean is_section;
 
-  // function to populate the combo list on the fly
-  void (*combo_populate)(GtkWidget *w, struct dt_iop_module_t **module);
+  // margin and padding structure, defined in css, retrieve on each draw
+  GtkBorder *margin, *padding;
+  // gap to add to the top padding due to the vertical centering
+  int top_gap;
+
+  // is the popup not attached to the main widget (shortcuts)
+  gboolean detached_popup;
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
@@ -183,14 +196,14 @@ enum
 
 typedef struct dt_bauhaus_t
 {
-  dt_bauhaus_widget_t *current;
+  struct dt_bauhaus_widget_t *current;
   GtkWidget *popup_window;
   GtkWidget *popup_area;
   // are set by the motion notification, to be used during drawing.
   float mouse_x, mouse_y;
   // time when the popup window was opened. this is sortof a hack to
   // detect `double clicks between windows' to reset the combobox.
-  double opentime;
+  guint32 opentime;
   // pointer position when popup window is closed
   float end_mouse_x, end_mouse_y;
   // used to determine whether the user crossed the line already.
@@ -209,9 +222,6 @@ typedef struct dt_bauhaus_t
 
   // appearance relevant stuff:
   // sizes and fonts:
-  float scale;                           // gui scale multiplier
-  float widget_space;                    // space between widgets in a module
-  float line_space;                      // space between lines of text in e.g. the combo box
   float line_height;                     // height of a line of text
   float marker_size;                     // height of the slider indicator
   float baseline_size;                   // height of the slider bar
@@ -219,6 +229,7 @@ typedef struct dt_bauhaus_t
   float quad_width;                      // width of the quad area to paint icons
   PangoFontDescription *pango_font_desc; // no need to recreate this for every string we want to print
   PangoFontDescription *pango_sec_font_desc; // as above but for section labels
+  GtkBorder *popup_padding;                  // padding of the popup. updated in show function
 
   // the slider popup has a blinking cursor
   guint cursor_timeout;
@@ -249,7 +260,7 @@ void dt_bauhaus_widget_set_section(GtkWidget *w, const gboolean is_section);
 
 // common functions:
 // set the label text:
-void dt_bauhaus_widget_set_label(GtkWidget *w, const char *section, const char *label);
+dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *w, const char *section, const char *label);
 const char* dt_bauhaus_widget_get_label(GtkWidget *w);
 // attach a custom painted quad to the space at the right side (overwriting the default icon if any):
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, int paint_flags, void *paint_data);
@@ -259,9 +270,16 @@ void dt_bauhaus_widget_set_quad_toggle(GtkWidget *w, int toggle);
 void dt_bauhaus_widget_set_quad_active(GtkWidget *w, int active);
 // get active status for the quad toggle button:
 int dt_bauhaus_widget_get_quad_active(GtkWidget *w);
+// set quad visibility:
+void dt_bauhaus_widget_set_quad_visibility(GtkWidget *w, const gboolean visible);
+// set pointer to iop params field:
+void dt_bauhaus_widget_set_field(GtkWidget *w, gpointer field, dt_introspection_type_t field_type);
+
+// update all bauhaus widgets in an iop module from their params fields
+void dt_bauhaus_update_module(dt_iop_module_t *self);
 
 void dt_bauhaus_hide_popup();
-void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w);
+void dt_bauhaus_show_popup(GtkWidget *w);
 
 // slider:
 GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self);
@@ -270,23 +288,23 @@ GtkWidget *dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, fl
 GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, float min, float max,
                                                          float step, float defval, int digits, int feedback);
 
-GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget, dt_iop_module_t *self, float min, float max,
-                                                         float step, float defval, int digits, int feedback);
+GtkWidget *dt_bauhaus_slider_from_widget(struct dt_bauhaus_widget_t* widget, dt_iop_module_t *self, float min, float max,
+                                         float step, float defval, int digits, int feedback);
 GtkWidget *dt_bauhaus_slider_new_action(dt_action_t *self, float min, float max, float step,
                                         float defval, int digits);
 
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
-void dt_bauhaus_slider_set_soft(GtkWidget *w, float pos);
 void dt_bauhaus_slider_set_val(GtkWidget *w, float val);
 float dt_bauhaus_slider_get(GtkWidget *w);
 float dt_bauhaus_slider_get_val(GtkWidget *w);
-char *dt_bauhaus_slider_get_text(GtkWidget *w);
+char *dt_bauhaus_slider_get_text(GtkWidget *w, float val);
 
 void dt_bauhaus_slider_set_soft_min(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_soft_min(GtkWidget* w);
 void dt_bauhaus_slider_set_soft_max(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_soft_max(GtkWidget* w);
+void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float soft_max);
 
 void dt_bauhaus_slider_set_hard_min(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_hard_min(GtkWidget* w);
@@ -308,21 +326,20 @@ void dt_bauhaus_slider_set_offset(GtkWidget *w, float offset);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
 void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
-void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float soft_max);
 float dt_bauhaus_slider_get_default(GtkWidget *widget);
-void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max);
-void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(GtkWidget *self, float value, dt_bauhaus_curve_t dir));
+void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(float value, dt_bauhaus_curve_t dir));
 
 // combobox:
-void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* widget,dt_iop_module_t *self);
+void dt_bauhaus_combobox_from_widget(struct dt_bauhaus_widget_t* widget,dt_iop_module_t *self);
 GtkWidget *dt_bauhaus_combobox_new(dt_iop_module_t *self);
 GtkWidget *dt_bauhaus_combobox_new_action(dt_action_t *self);
 GtkWidget *dt_bauhaus_combobox_new_full(dt_action_t *action, const char *section, const char *label, const char *tip,
                                         int pos, GtkCallback callback, gpointer data, const char **texts);
-#define DT_BAUHAUS_COMBOBOX_NEW_FULL(widget, action, section, label, tip, pos, callback, data, ...)          \
-{                                                                                                            \
-  static const gchar *texts[] = { __VA_ARGS__, NULL };                                                       \
-  widget = dt_bauhaus_combobox_new_full(DT_ACTION(action), section, label, tip, pos, callback, data, texts); \
+#define DT_BAUHAUS_COMBOBOX_NEW_FULL(widget, action, section, label, tip, pos, callback, data, ...) \
+{                                                                                                   \
+  static const gchar *texts[] = { __VA_ARGS__, NULL };                                              \
+  widget = dt_bauhaus_combobox_new_full(DT_ACTION(action), section, label, tip, pos,                \
+                                        (GtkCallback)callback, data, texts);                        \
 }
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text);
@@ -330,6 +347,7 @@ void dt_bauhaus_combobox_add_section(GtkWidget *widget, const char *text);
 void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align);
 void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,
                                   gpointer data, void (*free_func)(void *data), gboolean sensitive);
+gboolean dt_bauhaus_combobox_set_entry_label(GtkWidget *widget, const int pos, const gchar *label);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *w, const char *text);
 gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *w, int value);
@@ -339,13 +357,12 @@ void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bau
                                      gpointer data, void (*free_func)(void *data), int pos);
 int dt_bauhaus_combobox_length(GtkWidget *widget);
 void dt_bauhaus_combobox_set_editable(GtkWidget *w, int editable);
-void dt_bauhaus_combobox_set_popup_scale(GtkWidget *widget, int scale);
 void dt_bauhaus_combobox_set_selected_text_align(GtkWidget *widget, const dt_bauhaus_combobox_alignment_t text_align);
 int dt_bauhaus_combobox_get_editable(GtkWidget *w);
 const char *dt_bauhaus_combobox_get_text(GtkWidget *w);
 void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
 int dt_bauhaus_combobox_get(GtkWidget *w);
-const GList *dt_bauhaus_combobox_get_entries(GtkWidget *w);
+const char *dt_bauhaus_combobox_get_entry(GtkWidget *w, int pos);
 gpointer dt_bauhaus_combobox_get_data(GtkWidget *widget);
 void dt_bauhaus_combobox_clear(GtkWidget *w);
 void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def);
@@ -368,6 +385,9 @@ static inline void set_color(cairo_t *cr, GdkRGBA color)
   cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

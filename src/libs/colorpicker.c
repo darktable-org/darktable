@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "libs/colorpicker.h"
 #include "common/darktable.h"
+#include "common/color_vocabulary.h"
 #include "common/iop_profile.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -89,19 +90,6 @@ int expandable(dt_lib_module_t *self)
 int position()
 {
   return 800;
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "pick color"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "add sample"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)self->data;
-  dt_accel_connect_button_lib(self, "pick color", d->picker_button);
-  dt_accel_connect_button_lib(self, "add sample", d->add_sample_button);
 }
 
 // GUI callbacks
@@ -265,7 +253,7 @@ static void _set_sample_point(dt_lib_module_t *self, const float pos[2])
 static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                          GtkTooltip *tooltip, const dt_colorpicker_sample_t *sample)
 {
-  gchar **sample_parts = g_malloc0_n(12, sizeof(char*));
+  gchar **sample_parts = g_malloc0_n(14, sizeof(char*));
 
   sample_parts[3] = g_strdup_printf("%22s(0x%02X%02X%02X)\n<big><b>%14s</b></big>", " ",
                                     CLAMP(sample->label_rgb[0], 0, 255), CLAMP(sample->label_rgb[1], 0, 255),
@@ -292,6 +280,11 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
                                           _(dt_lib_colorpicker_statistic_names[i]));
   }
 
+  dt_aligned_pixel_t color;
+  dt_Lab_2_LCH(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MEAN], color);
+  sample_parts[11] = g_strdup_printf("\n<big><b>%14s</b></big>", _("color"));
+  sample_parts[12] = g_strdup_printf("%6s", Lch_to_color_name(color));
+
   gchar *tooltip_text = g_strjoinv("\n", sample_parts);
   g_strfreev(sample_parts);
 
@@ -299,7 +292,8 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
   if(!view)
   {
     view = gtk_text_view_new();
-    gtk_widget_set_name(view, "colorpicker-tooltip");
+    dt_gui_add_class(view, "dt_transparent_background");
+    dt_gui_add_class(view, "dt_monospace");
     g_signal_connect(G_OBJECT(view), "destroy", G_CALLBACK(gtk_widget_destroyed), &view);
   }
 
@@ -472,7 +466,7 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(container), color_patch_wrapper, TRUE, TRUE, 0);
 
   sample->output_label = gtk_label_new("");
-  gtk_widget_set_name(sample->output_label, "live-sample-data");
+  dt_gui_add_class(sample->output_label, "dt_monospace");
   gtk_label_set_ellipsize(GTK_LABEL(sample->output_label), PANGO_ELLIPSIZE_START);
   gtk_label_set_selectable(GTK_LABEL(sample->output_label), TRUE);
   gtk_widget_set_has_tooltip(sample->output_label, TRUE);
@@ -480,7 +474,7 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(sample->output_label), "size-allocate", G_CALLBACK(_label_size_allocate_callback), sample);
   gtk_box_pack_start(GTK_BOX(container), sample->output_label, TRUE, TRUE, 0);
 
-  GtkWidget *delete_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+  GtkWidget *delete_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_remove, 0, NULL);
   g_signal_connect(G_OBJECT(delete_button), "clicked", G_CALLBACK(_remove_sample_cb), sample);
   gtk_box_pack_start(GTK_BOX(container), delete_button, FALSE, FALSE, 0);
 
@@ -550,9 +544,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Setting up the GUI
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkStyleContext *context = gtk_widget_get_style_context(self->widget);
-  gtk_style_context_add_class(context, "picker-module");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
+  dt_gui_add_class(self->widget, "picker-module");
 
   // The color patch
   GtkWidget *color_patch_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -579,7 +571,7 @@ void gui_init(dt_lib_module_t *self)
                                                           self, dt_lib_colorpicker_statistic_names);
   dt_bauhaus_combobox_set_entries_ellipsis(data->statistic_selector, PANGO_ELLIPSIZE_NONE);
   dt_bauhaus_widget_set_label(data->statistic_selector, NULL, NULL);
-  gtk_widget_set_valign(data->statistic_selector, GTK_ALIGN_END);
+  gtk_widget_set_valign(data->statistic_selector, GTK_ALIGN_CENTER);
   gtk_box_pack_start(GTK_BOX(picker_row), data->statistic_selector, TRUE, TRUE, 0);
 
   data->color_mode_selector = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("color mode"),
@@ -588,13 +580,14 @@ void gui_init(dt_lib_module_t *self)
                                                            dt_lib_colorpicker_model_names);
   dt_bauhaus_combobox_set_entries_ellipsis(data->color_mode_selector, PANGO_ELLIPSIZE_NONE);
   dt_bauhaus_widget_set_label(data->color_mode_selector, NULL, NULL);
-  gtk_widget_set_valign(data->color_mode_selector, GTK_ALIGN_END);
+  gtk_widget_set_valign(data->color_mode_selector, GTK_ALIGN_CENTER);
   gtk_box_pack_start(GTK_BOX(picker_row), data->color_mode_selector, TRUE, TRUE, 0);
 
   data->picker_button = dt_color_picker_new(NULL, DT_COLOR_PICKER_POINT_AREA, picker_row);
   gtk_widget_set_tooltip_text(data->picker_button, _("turn on color picker\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(GTK_WIDGET(data->picker_button), "color-picker-button");
   g_signal_connect(G_OBJECT(data->picker_button), "toggled", G_CALLBACK(_picker_button_toggled), data);
+  dt_action_define(DT_ACTION(self), NULL, N_("pick color"), data->picker_button, &dt_action_def_toggle);
 
   gtk_box_pack_start(GTK_BOX(self->widget), picker_row, TRUE, TRUE, 0);
 
@@ -623,21 +616,21 @@ void gui_init(dt_lib_module_t *self)
   gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_START);
   gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-  gtk_widget_set_name(label, "live-sample-data");
+  dt_gui_add_class(label, "dt_monospace");
   gtk_widget_set_has_tooltip(label, TRUE);
   g_signal_connect(G_OBJECT(label), "query-tooltip", G_CALLBACK(_sample_tooltip_callback), &data->primary_sample);
   g_signal_connect(G_OBJECT(label), "size-allocate", G_CALLBACK(_label_size_allocate_callback), &data->primary_sample);
   gtk_box_pack_start(GTK_BOX(sample_row), label, TRUE, TRUE, 0);
 
-  data->add_sample_button = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, CPF_STYLE_FLAT, NULL);;
+  data->add_sample_button = dtgtk_button_new(dtgtk_cairo_paint_square_plus, 0, NULL);
+  ;
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
   g_signal_connect(G_OBJECT(data->add_sample_button), "clicked", G_CALLBACK(_add_sample), self);
+  dt_action_define(DT_ACTION(self), NULL, N_("add sample"), data->add_sample_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(sample_row), data->add_sample_button, FALSE, FALSE, 0);
 
   // Adding the live samples section
   label = dt_ui_section_label_new(_("live samples"));
-  context = gtk_widget_get_style_context(GTK_WIDGET(label));
-  gtk_style_context_add_class(context, "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
 
@@ -725,6 +718,8 @@ void gui_reset(dt_lib_module_t *self)
   // redraw without a picker
   dt_control_queue_redraw_center();
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

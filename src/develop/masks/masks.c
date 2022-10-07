@@ -30,7 +30,7 @@
 
 dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
 {
-  if (!form) return NULL;
+  if(!form) return NULL;
 
   dt_masks_form_t *new_form = malloc(sizeof(struct dt_masks_form_t));
   memcpy(new_form, form, sizeof(struct dt_masks_form_t));
@@ -39,13 +39,13 @@ dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
 
   GList* newpoints = NULL;
 
-  if (form->points)
+  if(form->points)
   {
     int size_item = (form->functions) ? form->functions->point_struct_size : 0;
 
-    if (size_item != 0)
+    if(size_item != 0)
     {
-      for (GList *pt = form->points; pt; pt = g_list_next(pt))
+      for(GList *pt = form->points; pt; pt = g_list_next(pt))
       {
         void *item = malloc(size_item);
         memcpy(item, pt->data, size_item);
@@ -253,7 +253,7 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *g
       {
         dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
         dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-        if (!sel) return;
+        if(!sel) return;
         dt_masks_gui_form_create(sel, gui, pos, module);
         pos++;
       }
@@ -798,20 +798,20 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
   form->version = dt_masks_version();
   form->formid = time(NULL) + form_id++;
 
-  if (type & DT_MASKS_CIRCLE)
+  if(type & DT_MASKS_CIRCLE)
     form->functions = &dt_masks_functions_circle;
-  else if (type & DT_MASKS_ELLIPSE)
+  else if(type & DT_MASKS_ELLIPSE)
     form->functions = &dt_masks_functions_ellipse;
-  else if (type & DT_MASKS_BRUSH)
+  else if(type & DT_MASKS_BRUSH)
     form->functions = &dt_masks_functions_brush;
-  else if (type & DT_MASKS_PATH)
+  else if(type & DT_MASKS_PATH)
     form->functions = &dt_masks_functions_path;
-  else if (type & DT_MASKS_GRADIENT)
+  else if(type & DT_MASKS_GRADIENT)
     form->functions = &dt_masks_functions_gradient;
-  else if (type & DT_MASKS_GROUP)
+  else if(type & DT_MASKS_GROUP)
     form->functions = &dt_masks_functions_group;
 
-  if (form->functions && form->functions->sanitize_config)
+  if(form->functions && form->functions->sanitize_config)
     form->functions->sanitize_config(type);
 
   return form;
@@ -863,11 +863,13 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
   int num_prev = -1;
 
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT imgid, formid, form, name, version, points, points_count, source, num "
       "FROM main.masks_history WHERE imgid = ?1 ORDER BY num",
       -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -957,10 +959,13 @@ void dt_masks_write_masks_history_item(const int imgid, const int num, dt_masks_
   sqlite3_stmt *stmt;
 
   // write the form into the database
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO main.masks_history (imgid, num, formid, form, name, "
-                                                             "version, points, points_count,source) VALUES "
-                                                             "(?1, ?9, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO main.masks_history (imgid, num, formid, form, name, "
+                              "version, points, points_count,source) VALUES "
+                              "(?1, ?9, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
@@ -974,7 +979,7 @@ void dt_masks_write_masks_history_item(const int imgid, const int num, dt_masks_
     const guint nb = g_list_length(form->points);
     char *const restrict ptbuf = (char *)malloc(nb * point_size);
     int pos = 0;
-    for (GList *points = form->points; points; points = g_list_next(points))
+    for(GList *points = form->points; points; points = g_list_next(points))
     {
       memcpy(ptbuf + pos, points->data, point_size);
       pos += point_size;
@@ -1415,7 +1420,7 @@ static void _menu_add_exist(dt_iop_module_t *module, int formid)
 void dt_masks_group_update_name(dt_iop_module_t *module)
 {
   dt_masks_form_t *grp = _group_from_module(darktable.develop, module);
-  if (!grp)
+  if(!grp)
     return;
 
   _set_group_name_from_module(module, grp);
@@ -2388,6 +2393,9 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
 
 #include "detail.c"
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

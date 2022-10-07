@@ -102,9 +102,9 @@ float2rgbe(unsigned char rgbe[4], float red, float green, float blue)
   int e;
 
   v = red;
-  if (green > v) v = green;
-  if (blue > v) v = blue;
-  if (v < 1e-32)
+  if(green > v) v = green;
+  if(blue > v) v = blue;
+  if(v < 1e-32)
   {
     rgbe[0] = rgbe[1] = rgbe[2] = rgbe[3] = 0;
   }
@@ -141,24 +141,24 @@ int RGBE_WriteHeader(FILE *fp, int width, int height, rgbe_header_info *info)
 {
   char *programtype = "RGBE";
 
-  if (info && (info->valid & RGBE_VALID_PROGRAMTYPE))
+  if(info && (info->valid & RGBE_VALID_PROGRAMTYPE))
     programtype = info->programtype;
-  if (fprintf(fp,"#?%s\n",programtype) < 0)
+  if(fprintf(fp,"#?%s\n",programtype) < 0)
     return rgbe_error(rgbe_write_error,NULL);
   /* The #? is to identify file type, the programtype is optional. */
-  if (info && (info->valid & RGBE_VALID_GAMMA))
+  if(info && (info->valid & RGBE_VALID_GAMMA))
   {
-    if (fprintf(fp,"GAMMA=%g\n",info->gamma) < 0)
+    if(fprintf(fp,"GAMMA=%g\n",info->gamma) < 0)
       return rgbe_error(rgbe_write_error,NULL);
   }
-  if (info && (info->valid & RGBE_VALID_EXPOSURE))
+  if(info && (info->valid & RGBE_VALID_EXPOSURE))
   {
-    if (fprintf(fp,"EXPOSURE=%g\n",info->exposure) < 0)
+    if(fprintf(fp,"EXPOSURE=%g\n",info->exposure) < 0)
       return rgbe_error(rgbe_write_error,NULL);
   }
-  if (fprintf(fp,"FORMAT=32-bit_rle_rgbe\n\n") < 0)
+  if(fprintf(fp,"FORMAT=32-bit_rle_rgbe\n\n") < 0)
     return rgbe_error(rgbe_write_error,NULL);
-  if (fprintf(fp, "-Y %d +X %d\n", height, width) < 0)
+  if(fprintf(fp, "-Y %d +X %d\n", height, width) < 0)
     return rgbe_error(rgbe_write_error,NULL);
   return RGBE_RETURN_SUCCESS;
 }
@@ -262,12 +262,12 @@ int RGBE_WritePixels(FILE *fp, float *data, int numpixels)
 {
   unsigned char rgbe[4];
 
-  while (numpixels-- > 0)
+  while(numpixels-- > 0)
   {
     float2rgbe(rgbe,data[RGBE_DATA_RED],
                data[RGBE_DATA_GREEN],data[RGBE_DATA_BLUE]);
     data += RGBE_DATA_SIZE;
-    if (fwrite(rgbe, sizeof(rgbe), 1, fp) < 1)
+    if(fwrite(rgbe, sizeof(rgbe), 1, fp) < 1)
       return rgbe_error(rgbe_write_error,NULL);
   }
   return RGBE_RETURN_SUCCESS;
@@ -316,11 +316,11 @@ static int RGBE_WriteBytes_RLE(FILE *fp, unsigned char *data, int numbytes)
         run_count++;
     }
     /* if data before next big run is a short run then write it as such */
-    if ((old_run_count > 1)&&(old_run_count == beg_run - cur))
+    if((old_run_count > 1)&&(old_run_count == beg_run - cur))
     {
       buf[0] = 128 + old_run_count;   /*write short run*/
       buf[1] = data[cur];
-      if (fwrite(buf,sizeof(buf[0])*2,1,fp) < 1)
+      if(fwrite(buf,sizeof(buf[0])*2,1,fp) < 1)
         return rgbe_error(rgbe_write_error,NULL);
       cur = beg_run;
     }
@@ -328,21 +328,21 @@ static int RGBE_WriteBytes_RLE(FILE *fp, unsigned char *data, int numbytes)
     while(cur < beg_run)
     {
       nonrun_count = beg_run - cur;
-      if (nonrun_count > 128)
+      if(nonrun_count > 128)
         nonrun_count = 128;
       buf[0] = nonrun_count;
-      if (fwrite(buf,sizeof(buf[0]),1,fp) < 1)
+      if(fwrite(buf,sizeof(buf[0]),1,fp) < 1)
         return rgbe_error(rgbe_write_error,NULL);
-      if (fwrite(&data[cur],sizeof(data[0])*nonrun_count,1,fp) < 1)
+      if(fwrite(&data[cur],sizeof(data[0])*nonrun_count,1,fp) < 1)
         return rgbe_error(rgbe_write_error,NULL);
       cur += nonrun_count;
     }
     /* write out next run if one was found */
-    if (run_count >= MINRUNLENGTH)
+    if(run_count >= MINRUNLENGTH)
     {
       buf[0] = 128 + run_count;
       buf[1] = data[beg_run];
-      if (fwrite(buf,sizeof(buf[0])*2,1,fp) < 1)
+      if(fwrite(buf,sizeof(buf[0])*2,1,fp) < 1)
         return rgbe_error(rgbe_write_error,NULL);
       cur += run_count;
     }
@@ -358,11 +358,11 @@ int RGBE_WritePixels_RLE(FILE *fp, float *data, int scanline_width,
   unsigned char *buffer;
   int i, err;
 
-  if ((scanline_width < 8)||(scanline_width > 0x7fff))
+  if((scanline_width < 8)||(scanline_width > 0x7fff))
     /* run length encoding is not allowed so write flat*/
     return RGBE_WritePixels(fp,data,scanline_width*num_scanlines);
   buffer = (unsigned char *)malloc(sizeof(unsigned char)*4*scanline_width);
-  if (buffer == NULL)
+  if(buffer == NULL)
     /* no buffer space so write flat */
     return RGBE_WritePixels(fp,data,scanline_width*num_scanlines);
   while(num_scanlines-- > 0)
@@ -371,7 +371,7 @@ int RGBE_WritePixels_RLE(FILE *fp, float *data, int scanline_width,
     rgbe[1] = 2;
     rgbe[2] = scanline_width >> 8;
     rgbe[3] = scanline_width & 0xFF;
-    if (fwrite(rgbe, sizeof(rgbe), 1, fp) < 1)
+    if(fwrite(rgbe, sizeof(rgbe), 1, fp) < 1)
     {
       free(buffer);
       return rgbe_error(rgbe_write_error,NULL);
@@ -390,7 +390,7 @@ int RGBE_WritePixels_RLE(FILE *fp, float *data, int scanline_width,
     /* first red, then green, then blue, then exponent */
     for(i=0; i<4; i++)
     {
-      if ((err = RGBE_WriteBytes_RLE(fp,&buffer[i*scanline_width],
+      if((err = RGBE_WriteBytes_RLE(fp,&buffer[i*scanline_width],
                                      scanline_width)) != RGBE_RETURN_SUCCESS)
       {
         free(buffer);
@@ -636,6 +636,9 @@ error_cache_full:
   return DT_IMAGEIO_CACHE_FULL;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

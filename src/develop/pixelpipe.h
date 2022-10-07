@@ -24,6 +24,7 @@
 #include "config.h"
 #endif
 
+/* The pixelpipe types here are all defined as a bit mask to ensure easy testing via & operator */
 typedef enum dt_dev_pixelpipe_type_t
 {
   DT_DEV_PIXELPIPE_NONE      = 0,
@@ -76,6 +77,9 @@ const char *dt_pixelpipe_name(dt_dev_pixelpipe_type_t pipe);
 
 #include "develop/pixelpipe_hb.h"
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

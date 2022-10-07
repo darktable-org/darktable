@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ const char *aliases()
   return _("profile|lut|color grading");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("perform color space corrections and apply looks"),
                                       _("corrective or creative"),
@@ -142,7 +142,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
 int legacy_params(
@@ -580,7 +580,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_params = dt_opencl_copy_host_to_device_constant(devid, params_size, params);
   if(dev_params == NULL) goto error;
 
-  size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 2, sizeof(int), (void *)&width);
@@ -597,7 +597,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 error:
   free(params);
   dt_opencl_release_mem_object(dev_params);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorchecker] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorchecker] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -787,7 +787,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         A[j*N4+i] = 0;
     // make coefficient matrix triangular
     int *pivot = malloc(sizeof(*pivot) * N4);
-    if (gauss_make_triangular(A, pivot, N4))
+    if(gauss_make_triangular(A, pivot, N4))
     {
       // calculate coefficients for L channel
       for(int i=0;i<N;i++) b[i] = p->target_L[i];
@@ -1161,18 +1161,21 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     }
   }
 
-  const int draw_i = g->drawn_patch % cells_x;
-  const int draw_j = g->drawn_patch / cells_x;
-  float color = 1.0;
-  if(p->source_L[g->drawn_patch] > 80) color = 0.0;
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-  cairo_set_source_rgb(cr, color, color, color);
-  cairo_rectangle(cr,
-      width * draw_i / (float) cells_x + DT_PIXEL_APPLY_DPI(5),
-      height * draw_j / (float) cells_y + DT_PIXEL_APPLY_DPI(5),
-      width / (float) cells_x - DT_PIXEL_APPLY_DPI(11),
-      height / (float) cells_y - DT_PIXEL_APPLY_DPI(11));
-  cairo_stroke(cr);
+  if(g->drawn_patch != -1)
+  {
+    const int draw_i = g->drawn_patch % cells_x;
+    const int draw_j = g->drawn_patch / cells_x;
+    float color = 1.0;
+    if(p->source_L[g->drawn_patch] > 80) color = 0.0;
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+    cairo_set_source_rgb(cr, color, color, color);
+    cairo_rectangle(cr,
+                    width * draw_i / (float) cells_x + DT_PIXEL_APPLY_DPI(5),
+                    height * draw_j / (float) cells_y + DT_PIXEL_APPLY_DPI(5),
+                    width / (float) cells_x - DT_PIXEL_APPLY_DPI(11),
+                    height / (float) cells_y - DT_PIXEL_APPLY_DPI(11));
+    cairo_stroke(cr);
+  }
 
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
@@ -1208,7 +1211,7 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
       _("(%2.2f %2.2f %2.2f)\n"
         "altered patches are marked with an outline\n"
         "click to select\n"
-        "double click to reset\n"
+        "double-click to reset\n"
         "right click to delete patch\n"
         "shift+click while color picking to replace patch"),
       p->source_L[patch], p->source_a[patch], p->source_b[patch]);
@@ -1353,25 +1356,25 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, g->combobox_patch);
 
-  g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 200.0, 1.0, 0.0f, 2);
+  g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 200.0, 0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_L, _("adjust target color Lab 'L' channel\nlower values darken target color while higher brighten it"));
   dt_bauhaus_widget_set_label(g->scale_L, NULL, N_("lightness"));
 
-  g->scale_a = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 1.0, 0.0f, 2);
+  g->scale_a = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_a, _("adjust target color Lab 'a' channel\nlower values shift target color towards greens while higher shift towards magentas"));
   dt_bauhaus_widget_set_label(g->scale_a, NULL, N_("green-magenta offset"));
   dt_bauhaus_slider_set_stop(g->scale_a, 0.0, 0.0, 1.0, 0.2);
   dt_bauhaus_slider_set_stop(g->scale_a, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_a, 1.0, 1.0, 0.0, 0.2);
 
-  g->scale_b = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 1.0, 0.0f, 2);
+  g->scale_b = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_b, _("adjust target color Lab 'b' channel\nlower values shift target color towards blues while higher shift towards yellows"));
   dt_bauhaus_widget_set_label(g->scale_b, NULL, N_("blue-yellow offset"));
   dt_bauhaus_slider_set_stop(g->scale_b, 0.0, 0.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 1.0, 1.0, 0.0);
 
-  g->scale_C = dt_bauhaus_slider_new_with_range(self, -128.0, 128.0, 1.0f, 0.0f, 2);
+  g->scale_C = dt_bauhaus_slider_new_with_range(self, -128.0, 128.0, 0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_C, _("adjust target color saturation\nadjusts 'a' and 'b' channels of target color in Lab space simultaneously\nlower values scale towards lower saturation while higher scale towards higher saturation"));
   dt_bauhaus_widget_set_label(g->scale_C, NULL, N_("saturation"));
 
@@ -1399,6 +1402,8 @@ void gui_init(struct dt_iop_module_t *self)
 
 #undef MAX_PATCHES
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

@@ -66,7 +66,7 @@ typedef struct dt_iop_graduatednd_global_data_t
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   dt_gui_presets_add_generic(_("neutral gray ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0, 0 },
@@ -114,7 +114,7 @@ void init_presets(dt_iop_module_so_t *self)
                              &(dt_iop_graduatednd_params_t){ 2, 0, 0, 50, 0.082927, 0.25 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 }
 
 typedef struct dt_iop_graduatednd_gui_data_t
@@ -144,7 +144,7 @@ const char *name()
   return _("graduated density");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("simulate an optical graduated neutral density filter"),
                                       _("corrective and creative"),
@@ -166,7 +166,7 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 static inline float f(const float t, const float c, const float x)
@@ -499,7 +499,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0) / zoom_scale);
   else
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.3, 0.8);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
 
   cairo_move_to(cr, xa, ya);
   cairo_line_to(cr, xb, yb);
@@ -509,7 +509,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
   else
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.8, 0.8);
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_move_to(cr, xa, ya);
   cairo_line_to(cr, xb, yb);
   cairo_stroke(cr);
@@ -531,14 +531,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_close_path(cr);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
   if(g->selected == 1 || g->dragging == 1)
-    dt_draw_set_color_overlay(cr, 0.8, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
   else
-    dt_draw_set_color_overlay(cr, 0.8, 0.5);
+    dt_draw_set_color_overlay(cr, TRUE, 0.5);
   cairo_fill_preserve(cr);
   if(g->selected == 1 || g->dragging == 1)
-    dt_draw_set_color_overlay(cr, 0.3, 1.0);
+    dt_draw_set_color_overlay(cr, FALSE, 1.0);
   else
-    dt_draw_set_color_overlay(cr, 0.3, 0.5);
+    dt_draw_set_color_overlay(cr, FALSE, 0.5);
   cairo_stroke(cr);
 
   x1 = xb - (xb - xa) * ext / l;
@@ -553,14 +553,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_close_path(cr);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
   if(g->selected == 2 || g->dragging == 2)
-    dt_draw_set_color_overlay(cr, 0.8, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
   else
-    dt_draw_set_color_overlay(cr, 0.8, 0.5);
+    dt_draw_set_color_overlay(cr, TRUE, 0.5);
   cairo_fill_preserve(cr);
   if(g->selected == 2 || g->dragging == 2)
-    dt_draw_set_color_overlay(cr, 0.3, 1.0);
+    dt_draw_set_color_overlay(cr, FALSE, 1.0);
   else
-    dt_draw_set_color_overlay(cr, 0.3, 0.5);
+    dt_draw_set_color_overlay(cr, FALSE, 0.5);
   cairo_stroke(cr);
 }
 
@@ -991,7 +991,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float length_inc_y = -cosv * hh_inv * filter_hardness;
   const float length_inc_x = sinv * hw_inv * filter_hardness;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
 
@@ -1009,7 +1009,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_graduatednd] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_graduatednd] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1086,12 +1086,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_bauhaus_slider_set(g->density, p->density);
-  dt_bauhaus_slider_set(g->hardness, p->hardness);
-  dt_bauhaus_slider_set(g->rotation, p->rotation);
-  dt_bauhaus_slider_set(g->hue, p->hue);
-  dt_bauhaus_slider_set(g->saturation, p->saturation);
-
   g->define = 0;
   update_saturation_slider_end_color(g->saturation, p->hue);
 }
@@ -1101,22 +1095,22 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_graduatednd_gui_data_t *g = IOP_GUI_ALLOC(graduatednd);
 
   g->density = dt_bauhaus_slider_from_params(self, "density");
-  dt_bauhaus_slider_set_format(g->density, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->density, _(" EV"));
   gtk_widget_set_tooltip_text(g->density, _("the density in EV for the filter"));
 
   g->hardness = dt_bauhaus_slider_from_params(self, "hardness");
-  dt_bauhaus_slider_set_format(g->hardness, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->hardness, "%");
   /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->hardness, _("hardness of graduation:\n0% = soft, 100% = hard"));
 
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
-  dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
+  dt_bauhaus_slider_set_format(g->rotation, "°");
   gtk_widget_set_tooltip_text(g->rotation, _("rotation of filter -180 to 180 degrees"));
 
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, "hue"));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);
-  dt_bauhaus_slider_set_format(g->hue, "%.2f°");
+  dt_bauhaus_slider_set_format(g->hue, "°");
   dt_bauhaus_slider_set_stop(g->hue, 0.0f, 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
@@ -1127,8 +1121,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue, _("select the hue tone of filter"));
 
   g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
-  dt_bauhaus_slider_set_factor(g->saturation, 100.0f);
-  dt_bauhaus_slider_set_format(g->saturation, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->saturation, "%");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(g->saturation, _("select the saturation of filter"));
@@ -1150,6 +1143,9 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
                                      _("[%s on line] change hardness"), self->name());
   return lm;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

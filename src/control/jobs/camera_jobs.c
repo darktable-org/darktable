@@ -20,6 +20,7 @@
 #include "common/collection.h"
 #include "common/import_session.h"
 #include "common/utility.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/jobs/image_jobs.h"
 #include "gui/gtk.h"
@@ -220,11 +221,24 @@ dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint
 }
 
 /** Listener interface for import job */
-void _camera_import_image_downloaded(const dt_camera_t *camera, const char *filename, void *data)
+void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_path,
+                                     const char *in_filename, const char *filename, void *data)
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   const int32_t imgid = dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE, TRUE);
+
+  const time_t timestamp = (!in_path || !in_filename) ? 0 :
+               dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
+  if(timestamp && imgid >= 0)
+  {
+    char dt_txt[DT_DATETIME_EXIF_LENGTH];
+    dt_datetime_unix_to_exif(dt_txt, sizeof(dt_txt), &timestamp);
+    gchar *id = g_strconcat(in_filename, "-", dt_txt, NULL);
+    dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
+    g_free(id);
+  }
+
   dt_control_queue_redraw_center();
   gchar *basename = g_path_get_basename(filename);
   const int num_images = g_list_length(t->images);
@@ -254,7 +268,7 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *file
 }
 
 static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename,
-                                                  time_t *exif_time, void *data)
+                                                  const dt_image_basic_exif_t *basic_exif, void *data)
 {
   const gchar *file;
   struct dt_camera_shared_t *shared;
@@ -262,8 +276,7 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   const gboolean use_filename = dt_conf_get_bool("session/use_filename");
 
   dt_import_session_set_filename(shared->session, filename);
-  if(exif_time)
-    dt_import_session_set_exif_time(shared->session, *exif_time);
+  dt_import_session_set_exif_basic_info(shared->session, basic_exif);
   file = dt_import_session_filename(shared->session, use_filename);
 
   if(file == NULL) return NULL;
@@ -271,12 +284,11 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   return g_strdup(file);
 }
 
-static const char *_camera_request_image_path(const dt_camera_t *camera, time_t *exif_time, void *data)
+static const char *_camera_request_image_path(const dt_camera_t *camera, const dt_image_basic_exif_t *basic_exif, void *data)
 {
   struct dt_camera_shared_t *shared;
   shared = (struct dt_camera_shared_t *)data;
-  if(exif_time)
-    dt_import_session_set_exif_time(shared->session, *exif_time);
+  dt_import_session_set_exif_basic_info(shared->session, basic_exif);
   return dt_import_session_path(shared->session, FALSE);
 }
 
@@ -342,7 +354,7 @@ static void dt_camera_import_cleanup(void *p)
 }
 
 dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
-                                      time_t time_override)
+                                      const char *time_override)
 {
   dt_job_t *job = dt_control_job_create(&dt_camera_import_job_run, "import selected images from camera");
   if(!job)
@@ -358,7 +370,7 @@ dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
   dt_control_job_set_params(job, params, dt_camera_import_cleanup);
 
   /* initialize import session for camera import job */
-  if(time_override != 0) dt_import_session_set_time(params->shared.session, time_override);
+  if(time_override && time_override[0]) dt_import_session_set_time(params->shared.session, time_override);
   const char *jobcode = dt_conf_get_string_const("ui_last/import_jobcode");
   dt_import_session_set_name(params->shared.session, jobcode);
 
@@ -370,6 +382,8 @@ dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
   return job;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

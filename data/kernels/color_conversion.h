@@ -22,13 +22,13 @@
 // must be in synch with dt_iop_colorspace_type_t in imageop.h
 typedef enum dt_iop_colorspace_type_t
 {
-  iop_cs_NONE = -1,
-  iop_cs_RAW = 0,
-  iop_cs_Lab = 1,
-  iop_cs_rgb = 2,
-  iop_cs_LCh = 3,
-  iop_cs_HSL = 4,
-  iop_cs_JzCzhz = 5,
+  IOP_CS_NONE = -1,
+  IOP_CS_RAW = 0,
+  IOP_CS_LAB = 1,
+  IOP_CS_RGB = 2,
+  IOP_CS_LCH = 3,
+  IOP_CS_HSL = 4,
+  IOP_CS_JZCZHZ = 5,
 } dt_iop_colorspace_type_t;
 
 // must be in synch with dt_colorspaces_iccprofile_info_cl_t

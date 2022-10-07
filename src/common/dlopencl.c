@@ -64,9 +64,9 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
     library = name;
     module = dt_gmodule_open(library);
     if(module == NULL)
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not find opencl runtime library '%s'\n", library);
+      dt_vprint(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find opencl runtime library '%s'\n", library);
     else
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] found opencl runtime library '%s'\n", library);
+      dt_vprint(DT_DEBUG_OPENCL, "[dt_dlopencl_init] found opencl runtime library '%s'\n", library);
   }
   else
   {
@@ -76,9 +76,9 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
       library = *iter;
       module = dt_gmodule_open(library);
       if(module == NULL)
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not find opencl runtime library '%s'\n", library);
+        dt_vprint(DT_DEBUG_OPENCL, "[dt_dlopencl_init] could not find opencl runtime library '%s'\n", library);
       else
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] found opencl runtime library '%s'\n", library);
+        dt_vprint(DT_DEBUG_OPENCL, "[dt_dlopencl_init] found opencl runtime library '%s'\n", library);
       iter++;
     }
   }
@@ -223,6 +223,9 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
 
 #endif
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

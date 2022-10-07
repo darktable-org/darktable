@@ -212,7 +212,7 @@ static void _ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected,
     cairo_set_line_width(cr, 5.0 / zoom_scale);
   else
     cairo_set_line_width(cr, 3.0 / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.3, 0.8);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
 
   _ellipse_point_transform(xref, yref, points[10], points[11], sinr, cosr, &x, &y);
   cairo_move_to(cr, x, y);
@@ -228,7 +228,7 @@ static void _ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected,
     cairo_set_line_width(cr, 2.0 / zoom_scale);
   else
     cairo_set_line_width(cr, 1.0 / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.8, 0.8);
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_stroke(cr);
 }
 
@@ -250,7 +250,7 @@ static void _ellipse_draw_border(cairo_t *cr, double *dashed, const float len, c
     cairo_set_line_width(cr, 2.0 / zoom_scale);
   else
     cairo_set_line_width(cr, 1.0 / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.3, 0.8);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
 
   _ellipse_point_transform(xref, yref, border[10], border[11], sinr, cosr, &x, &y);
   cairo_move_to(cr, x, y);
@@ -267,7 +267,7 @@ static void _ellipse_draw_border(cairo_t *cr, double *dashed, const float len, c
     cairo_set_line_width(cr, 2.0 / zoom_scale);
   else
     cairo_set_line_width(cr, 1.0 / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.8, 0.8);
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_set_dash(cr, dashed, len, 4);
   cairo_stroke(cr);
 }
@@ -641,7 +641,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         }
         dt_toast_log(_("size: %3.2f%%"), fmaxf(ellipse->radius[0], ellipse->radius[1])*100);
       }
-      else if (!dt_modifier_is(state, 0))
+      else if(!dt_modifier_is(state, 0))
       {
         // user is holding down a modifier key, but we didn't handle that particular combination
         // say we've processed the scroll event so that the image is not zoomed instead
@@ -989,7 +989,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2f(pts2[5] - pts2[1], pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-    if (check_angle < 0)
+    if(check_angle < 0)
       ellipse->rotation -= dv / M_PI * 180.0f;
     else
       ellipse->rotation += dv / M_PI * 180.0f;
@@ -1474,7 +1474,7 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
 
     for(int i = 1; i < 5; i++)
     {
-      dt_draw_set_color_overlay(cr, 0.8, 0.8);
+      dt_draw_set_color_overlay(cr, TRUE, 0.8);
 
       if(i == gui->point_dragging || i == gui->point_selected)
         anchor_size = 7.0f / zoom_scale;
@@ -1490,7 +1490,7 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.3, 0.8);
+      dt_draw_set_color_overlay(cr, FALSE, 0.8);
       cairo_stroke(cr);
     }
   }
@@ -1592,13 +1592,13 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         cairo_set_line_width(cr, 2.5 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.3, 0.8);
+      dt_draw_set_color_overlay(cr, FALSE, 0.8);
       cairo_stroke_preserve(cr);
       if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
         cairo_set_line_width(cr, 1.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 0.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.8, 0.8);
+      dt_draw_set_color_overlay(cr, TRUE, 0.8);
       cairo_stroke(cr);
     }
 
@@ -1608,7 +1608,7 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_set_line_width(cr, 2.5 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
     _ellipse_point_transform(xrefs, yrefs, gpt->source[10], gpt->source[11], sinr, cosr, &x, &y);
     cairo_move_to(cr, x, y);
     for(int i = 6; i < gpt->source_count; i++)
@@ -1623,7 +1623,7 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_set_line_width(cr, 1.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 0.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_stroke(cr);
   }
 }
@@ -1773,7 +1773,7 @@ static int _ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   size_t point_count = 0;
   float *const restrict points
     = _ellipse_points_to_transform(form->source[0], form->source[1], total[0], total[1], ellipse->rotation, wd, ht, &point_count);
-  if (!points)
+  if(!points)
     return 0;
 
   // and we transform them with all distorted modules
@@ -1804,7 +1804,7 @@ static int _ellipse_get_area(const dt_iop_module_t *const module, const dt_dev_p
   size_t point_count = 0;
   float *const restrict points
     = _ellipse_points_to_transform(ellipse->center[0], ellipse->center[1], total[0], total[1], ellipse->rotation, wd, ht, &point_count);
-  if (!points)
+  if(!points)
     return 0;
 
   // and we transform them with all distorted modules
@@ -2160,7 +2160,7 @@ static void _ellipse_set_form_name(struct dt_masks_form_t *const form, const siz
 static void _ellipse_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
   (void)dev; // unused arg, keep compiler from complaining
-  for (GList *pts = base->points; pts; pts = g_list_next(pts))
+  for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)pts->data;
     dt_masks_point_ellipse_t *npt = (dt_masks_point_ellipse_t *)malloc(sizeof(dt_masks_point_ellipse_t));
@@ -2269,6 +2269,9 @@ const dt_masks_functions_t dt_masks_functions_ellipse = {
   .post_expose = _ellipse_events_post_expose
 };
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -23,6 +23,8 @@
 #include <inttypes.h>
 #include "common/metadata.h"
 
+#define DT_COLLECTION_MAX_RULES 10
+
 typedef enum dt_collection_query_t
 {
   COLLECTION_QUERY_SIMPLE             = 0,      // a query with only select and where statement
@@ -45,22 +47,9 @@ typedef enum dt_collection_filter_comparator_t
   COLLECTION_FILTER_CUSTOM_COMPARE  = 1 << 6  // use the comparator defined in the comparator field to filter stars
 } dt_collection_filter_comparator_t;
 
-typedef enum dt_collection_filter_t
-{
-  DT_COLLECTION_FILTER_ALL        = 0,
-  DT_COLLECTION_FILTER_STAR_NO    = 1,
-  DT_COLLECTION_FILTER_STAR_1     = 2,
-  DT_COLLECTION_FILTER_STAR_2     = 3,
-  DT_COLLECTION_FILTER_STAR_3     = 4,
-  DT_COLLECTION_FILTER_STAR_4     = 5,
-  DT_COLLECTION_FILTER_STAR_5     = 6,
-  DT_COLLECTION_FILTER_REJECT     = 7,
-  DT_COLLECTION_FILTER_NOT_REJECT = 8
-} dt_collection_filter_t;
-
 typedef enum dt_collection_sort_t
 {
-  DT_COLLECTION_SORT_NONE     = -1,
+  DT_COLLECTION_SORT_NONE = -1,
   DT_COLLECTION_SORT_FILENAME = 0,
   DT_COLLECTION_SORT_DATETIME,
   DT_COLLECTION_SORT_IMPORT_TIMESTAMP,
@@ -76,7 +65,8 @@ typedef enum dt_collection_sort_t
   DT_COLLECTION_SORT_TITLE,
   DT_COLLECTION_SORT_DESCRIPTION,
   DT_COLLECTION_SORT_ASPECT_RATIO,
-  DT_COLLECTION_SORT_SHUFFLE
+  DT_COLLECTION_SORT_SHUFFLE,
+  DT_COLLECTION_SORT_LAST
 } dt_collection_sort_t;
 
 #define DT_COLLECTION_ORDER_FLAG 0x8000
@@ -113,6 +103,9 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_HISTORY,
   DT_COLLECTION_PROP_MODULE,
   DT_COLLECTION_PROP_ORDER,
+  DT_COLLECTION_PROP_RATING_RANGE,
+
+  DT_COLLECTION_PROP_TEXTSEARCH,
   DT_COLLECTION_PROP_RATING,
 
   DT_COLLECTION_PROP_LAST,
@@ -120,17 +113,6 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_UNDEF,
   DT_COLLECTION_PROP_SORT
 } dt_collection_properties_t;
-
-typedef enum dt_collection_rating_comperator_t
-{
-  DT_COLLECTION_RATING_COMP_LT  = 0,
-  DT_COLLECTION_RATING_COMP_LEQ = 1,
-  DT_COLLECTION_RATING_COMP_EQ  = 2,
-  DT_COLLECTION_RATING_COMP_GEQ = 3,
-  DT_COLLECTION_RATING_COMP_GT  = 4,
-  DT_COLLECTION_RATING_COMP_NE  = 5,
-  DT_COLLECTION_RATING_N_COMPS  = 6
-} dt_collection_rating_comperator_t;
 
 typedef enum dt_collection_change_t
 {
@@ -151,14 +133,8 @@ typedef struct dt_collection_params_t
   /** current film id */
   uint32_t film_id;
 
-  /** current  filter */
-  uint32_t rating;
-  dt_collection_rating_comperator_t comparator;
-
-  /** sorting **/
-  dt_collection_sort_t sort; // Has to be changed to a dt_collection_sort struct
-  dt_collection_sort_t sort_second_order;
-  gint descending;
+  /** list of used sort orders */
+  gboolean sorts[DT_COLLECTION_SORT_LAST];
 
 } dt_collection_params_t;
 
@@ -175,6 +151,10 @@ typedef struct dt_collection_t
 
 /* returns the name for the given collection property */
 const char *dt_collection_name(dt_collection_properties_t prop);
+const char *dt_collection_name_untranslated(dt_collection_properties_t prop);
+/* returns the name for the given collection sort property */
+const char *dt_collection_sort_name(dt_collection_sort_t sort);
+const char *dt_collection_sort_name_untranslated(dt_collection_sort_t sort);
 
 /** instantiates a collection context, if clone equals NULL default query is constructed. */
 const dt_collection_t *dt_collection_new(const dt_collection_t *clone);
@@ -213,24 +193,12 @@ void dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t f
 void dt_collection_set_film_id(const dt_collection_t *collection, const int32_t film_id);
 /** set the tagid of collection */
 void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid);
-/** set the star level for filter */
-void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating);
-/** get the star level for filter. The value returned starts on 0 **/
-uint32_t dt_collection_get_rating(const dt_collection_t *collection);
-/** set the comparator for rating */
-void dt_collection_set_rating_comparator(const dt_collection_t *collection,
-                                         const dt_collection_rating_comperator_t comparator);
-/** get the comparator for rating */
-dt_collection_rating_comperator_t dt_collection_get_rating_comparator(const dt_collection_t *collection);
 
-/** set the sort fields and flags used to show the collection **/
-void dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t sort, gint reverse);
-/** get the sort field used **/
-dt_collection_sort_t dt_collection_get_sort_field(const dt_collection_t *collection);
-/** get if the collection must be shown in descending order **/
-gboolean dt_collection_get_sort_descending(const dt_collection_t *collection);
 /** get the part of the query for sorting the collection **/
 gchar *dt_collection_get_sort_query(const dt_collection_t *collection);
+/* serialize and deserialize sorting into a string. */
+void dt_collection_sort_deserialize(const char *buf);
+void dt_collection_sort_serialize(char *buf, int bufsize);
 
 /** get the count of query */
 uint32_t dt_collection_get_count(const dt_collection_t *collection);
@@ -258,8 +226,8 @@ void dt_collection_hint_message(const dt_collection_t *collection);
 int dt_collection_image_offset(int imgid);
 
 /* serialize and deserialize into a string. */
-void dt_collection_deserialize(const char *buf);
-int dt_collection_serialize(char *buf, int bufsize);
+void dt_collection_deserialize(const char *buf, gboolean filtering);
+int dt_collection_serialize(char *buf, int bufsize, gboolean filtering);
 
 /* splits an input string into a number part and an optional operator part */
 void dt_collection_split_operator_number(const gchar *input, char **number1, char **number2, char **op);
@@ -276,6 +244,9 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images);
 /* initialize memory table */
 void dt_collection_memory_update();
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -168,7 +168,7 @@ int main(int argc __attribute__((unused)), char *arg[] __attribute__((unused)))
       if((pp = g_strstr_len(pp, -1, ".")) == NULL)
         g_strlcat(disp_name, ".0", sizeof(disp_name));
       else  {
-        if (pp[1] == '\0')
+        if(pp[1] == '\0')
           g_strlcat(disp_name, "0", sizeof(disp_name));
         else
         {
@@ -223,7 +223,7 @@ int main(int argc __attribute__((unused)), char *arg[] __attribute__((unused)))
         XRRFreeCrtcInfo(crtc_info);
       }
     }
-    if (primary_id == -1)
+    if(primary_id == -1)
       printf("couldn't locate primary CRTC!\n");
     else
     {
@@ -493,6 +493,9 @@ end:
 }
 
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

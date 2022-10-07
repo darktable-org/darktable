@@ -140,7 +140,7 @@ static int value_member(lua_State *L)
   luaA_to(L,lua_slider,&slider,1);
   if(lua_gettop(L) > 2) {
     float value = luaL_checknumber(L,3);
-    dt_bauhaus_slider_set_soft(slider->widget,value);
+    dt_bauhaus_slider_set(slider->widget,value);
     return 0;
   }
   lua_pushnumber(L,dt_bauhaus_slider_get(slider->widget));
@@ -191,6 +191,9 @@ int dt_lua_init_widget_slider(lua_State* L)
   dt_lua_type_register(L, lua_slider, "label");
   return 0;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

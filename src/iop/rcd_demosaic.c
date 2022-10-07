@@ -355,9 +355,9 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         const int tileRows = MIN(rowEnd - rowStart, RCD_TILESIZE);
         const int tileCols = MIN(colEnd - colStart, RCD_TILESIZE);
 
-        if (rowStart + RCD_TILESIZE > height || colStart + RCD_TILESIZE > width)
+        if(rowStart + RCD_TILESIZE > height || colStart + RCD_TILESIZE > width)
         {
-          // VH_Dir is only filled for (4,4)..(height-4,width-4), but the refinement code reads (3,3)...(h-3,w-3),
+          // VH_Dir is only filled for(4,4)..(height-4,width-4), but the refinement code reads (3,3)...(h-3,w-3),
           // so we need to ensure that the border is zeroed for partial tiles to get consistent results
           memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
           // TODO: figure out what part of rgb is being accessed without initialization on partial tiles
@@ -601,4 +601,10 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 #undef w4
 #undef eps
 #undef epssq
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
 

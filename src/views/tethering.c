@@ -465,7 +465,7 @@ static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgi
 
 /** callbacks to deal with images taken in tethering mode */
 static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename,
-                                                  time_t *exif_time, void *data)
+                                                  const dt_image_basic_exif_t *basic_exif, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
 
@@ -479,13 +479,14 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   return g_strdup(file);
 }
 
-static const char *_camera_request_image_path(const dt_camera_t *camera, time_t *exif_time, void *data)
+static const char *_camera_request_image_path(const dt_camera_t *camera, const dt_image_basic_exif_t *basic_exif, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
   return dt_import_session_path(lib->session, FALSE);
 }
 
-static void _camera_capture_image_downloaded(const dt_camera_t *camera, const char *filename, void *data)
+static void _camera_capture_image_downloaded(const dt_camera_t *camera, const char *in_folder,
+                                             const char *in_filename, const char *filename, void *data)
 {
   dt_capture_t *lib = (dt_capture_t *)data;
 
@@ -636,6 +637,8 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   }
   return 0;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

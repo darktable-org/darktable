@@ -240,11 +240,9 @@ static float parse_multiplicative_expression(parser_state_t *self)
 
 static float parse_power_expression(parser_state_t *self)
 {
-  float left, right;
-
   if(!self->token) return NAN;
 
-  left = parse_unary_expression(self);
+  float left = parse_unary_expression(self);
 
   while(self->token && self->token->type == T_OPERATOR)
   {
@@ -253,7 +251,7 @@ static float parse_power_expression(parser_state_t *self)
     free(self->token);
     self->token = get_token(self);
 
-    right = parse_unary_expression(self);
+    const float right = parse_unary_expression(self);
 
     left = powf(left, right);
   }
@@ -292,17 +290,16 @@ static float parse_primary_expression(parser_state_t *self)
 
   if(self->token->type == T_NUMBER)
   {
-    float result = self->token->data.number;
+    const float result = self->token->data.number;
     free(self->token);
     self->token = get_token(self);
     return result;
   }
   if(self->token->type == T_OPERATOR && self->token->data.operator== O_LEFTROUND)
   {
-    float result;
     free(self->token);
     self->token = get_token(self);
-    result = parse_expression(self);
+    const float result = parse_expression(self);
     if(!self->token || self->token->type != T_OPERATOR || self->token->data.operator!= O_RIGHTROUND)
       return NAN;
     free(self->token);
@@ -315,11 +312,10 @@ static float parse_primary_expression(parser_state_t *self)
 
 /** the public interface **/
 
-float dt_calculator_solve(float x, const char *formula)
+float dt_calculator_solve(const float x, const char *formula)
 {
   if(formula == NULL || *formula == '\0') return NAN;
 
-  float result;
   gchar *dotformula = g_strdup(formula);
   parser_state_t *self = (parser_state_t *)malloc(sizeof(parser_state_t));
 
@@ -327,6 +323,8 @@ float dt_calculator_solve(float x, const char *formula)
   self->x = x;
 
   self->token = get_token(self);
+
+  float result = .0f;
 
   //   operators_t operator = -1;
   if(self->token && self->token->type == T_OPERATOR)
@@ -391,6 +389,9 @@ end:
 //   return 0;
 // }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

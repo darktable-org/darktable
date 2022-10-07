@@ -93,7 +93,7 @@ const char *aliases()
   return _("denoise (non-local means)");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply a poisson noise removal best suited for astrophotography"),
                                       _("corrective"),
@@ -104,7 +104,7 @@ const char *description(struct dt_iop_module_t *self)
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -192,10 +192,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     .kernel_accu = gd->kernel_nlmeans_accu
   };
   cl_int err = nlmeans_denoise_cl(&params, devid, dev_in, dev_U2, roi_in);
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
   {
     // normalize and blend
-    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
     dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
@@ -207,9 +207,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   // clean up and check whether all kernels ran successfully
   dt_opencl_release_mem_object(dev_U2);
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
     return TRUE;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 
 #else // old code
@@ -266,7 +266,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   size_t sizesl[3];
   size_t local[3];
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 0, sizeof(cl_mem), (void *)&dev_U2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 1, sizeof(int), (void *)&width);
@@ -295,7 +295,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(err != CL_SUCCESS) goto error;
 
       sizesl[0] = bwidth;
-      sizesl[1] = ROUNDUPHT(height);
+      sizesl[1] = ROUNDUPDHT(height, devid);
       sizesl[2] = 1;
       local[0] = hblocksize;
       local[1] = 1;
@@ -312,7 +312,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(err != CL_SUCCESS) goto error;
 
 
-      sizesl[0] = ROUNDUPWD(width);
+      sizesl[0] = ROUNDUPDWD(width, devid);
       sizesl[1] = bheight;
       sizesl[2] = 1;
       local[0] = 1;
@@ -340,11 +340,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_nlmeans_accu, sizes);
       if(err != CL_SUCCESS) goto error;
 
-      if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
-        dt_opencl_finish(devid);
+      dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
-      dt_iop_nap(darktable.opencl->micro_nap);
+      dt_iop_nap(dt_opencl_micro_nap(devid));
     }
 
   // normalize and blend
@@ -371,7 +370,7 @@ error:
     dt_opencl_release_mem_object(buckets[k]);
   }
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_nlmeans] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 #endif /* USE_NEW_IMPL_CL */
 }
@@ -405,7 +404,7 @@ static void process_cpu(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   const dt_iop_nlmeans_params_t *const d = (dt_iop_nlmeans_params_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -421,7 +420,7 @@ static void process_cpu(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
   const dt_aligned_pixel_t norm2 = { nL * nL, nC * nC, nC * nC, 1.0f };
 
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
-  int decimate = (piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+  int decimate = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL));
 
   const dt_nlmeans_param_t params = { .scattering = 0,
                                       .scale = scale,
@@ -504,17 +503,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(dt_iop_module_t *self)
-{
-  // let gui slider match current parameters:
-  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set_soft(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->luma, p->luma);
-  dt_bauhaus_slider_set(g->chroma, p->chroma);
-}
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_nlmeans_gui_data_t *g = IOP_GUI_ALLOC(nlmeans);
@@ -522,23 +510,23 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_max(g->radius, 4.0f);
   dt_bauhaus_slider_set_digits(g->radius, 0);
-  dt_bauhaus_slider_set_format(g->radius, "%.0f");
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match"));
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_soft_max(g->strength, 100.0f);
   dt_bauhaus_slider_set_digits(g->strength, 0);
-  dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->strength, "%");
   gtk_widget_set_tooltip_text(g->strength, _("strength of the effect"));
   g->luma = dt_bauhaus_slider_from_params(self, N_("luma"));
-  dt_bauhaus_slider_set_factor(g->luma, 100.0f);
-  dt_bauhaus_slider_set_format(g->luma, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->luma, "%");
   gtk_widget_set_tooltip_text(g->luma, _("how much to smooth brightness"));
   g->chroma = dt_bauhaus_slider_from_params(self, N_("chroma"));
-  dt_bauhaus_slider_set_factor(g->chroma, 100.0f);
-  dt_bauhaus_slider_set_format(g->chroma, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->chroma, "%");
   gtk_widget_set_tooltip_text(g->chroma, _("how much to smooth colors"));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

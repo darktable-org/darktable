@@ -32,13 +32,13 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
   va_list args;
   // first pass: zero out all of the given buffer pointers
   va_start(args,roi_out);
-  while (TRUE)
+  while(TRUE)
   {
     const int size = va_arg(args,int);
     float **bufptr = va_arg(args,float**);
-    if (size & DT_IMGSZ_PERTHREAD)
+    if(size & DT_IMGSZ_PERTHREAD)
       (void)va_arg(args,size_t*);    // skip the extra pointer for per-thread allocations
-    if (size == 0 || !bufptr)        // end of arg list?
+    if(size == 0 || !bufptr)        // end of arg list?
       break;
     *bufptr = NULL;
   }
@@ -46,16 +46,16 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
 
   // second pass: attempt to allocate the requested buffers
   va_start(args,roi_out);
-  while (success)
+  while(success)
   {
     const int size = va_arg(args,int);
     float **bufptr = va_arg(args,float**);
     size_t *paddedsize = (size & DT_IMGSZ_PERTHREAD) ? va_arg(args,size_t*) : NULL;
-    if (size == 0 || !bufptr)
+    if(size == 0 || !bufptr)
       break;
     const size_t channels = size & DT_IMGSZ_CH_MASK;
     size_t nfloats;
-    switch (size & (DT_IMGSZ_ROI_MASK | DT_IMGSZ_DIM_MASK))
+    switch(size & (DT_IMGSZ_ROI_MASK | DT_IMGSZ_DIM_MASK))
     {
     case DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL:
       nfloats = channels * roi_out->width * roi_out->height;
@@ -85,19 +85,19 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
       nfloats = 0;
       break;
     }
-    if (size & DT_IMGSZ_PERTHREAD)
+    if(size & DT_IMGSZ_PERTHREAD)
     {
       *bufptr = dt_alloc_perthread_float(nfloats,paddedsize);
-      if ((size & DT_IMGSZ_CLEARBUF) && *bufptr)
+      if((size & DT_IMGSZ_CLEARBUF) && *bufptr)
         memset(*bufptr, 0, *paddedsize * dt_get_num_threads() * sizeof(float));
     }
     else
     {
       *bufptr = dt_alloc_align_float(nfloats);
-      if ((size & DT_IMGSZ_CLEARBUF) && *bufptr)
+      if((size & DT_IMGSZ_CLEARBUF) && *bufptr)
         memset(*bufptr, 0, nfloats * sizeof(float));
     }
-    if (!*bufptr)
+    if(!*bufptr)
     {
       success = FALSE;
       break;
@@ -106,32 +106,32 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
   va_end(args);
 
   // finally, check whether successful and clean up if something went wrong
-  if (success)
+  if(success)
   {
-    if (module)
+    if(module)
       dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
   }
   else
   {
     va_start(args,roi_out);
-    while (TRUE)
+    while(TRUE)
     {
       const int size = va_arg(args,int);
       float **bufptr = va_arg(args,float**);
-      if (size & DT_IMGSZ_PERTHREAD)
+      if(size & DT_IMGSZ_PERTHREAD)
         (void)va_arg(args,size_t*);  // skip the extra pointer for per-thread allocations
-      if (size == 0 || !bufptr || !*bufptr)
+      if(size == 0 || !bufptr || !*bufptr)
         break;  // end of arg list or this attempted allocation failed
       dt_free_align(*bufptr);
       *bufptr = NULL;
     }
     va_end(args);
     // set the module's trouble flag
-    if (module)
+    if(module)
       dt_iop_set_module_trouble_message(module, _("insufficient memory"),
-                                        _("This module was unable to allocate\n"
+                                        _("this module was unable to allocate\n"
                                           "all of the memory required to process\n"
-                                          "the image.  Some or all processing\n"
+                                          "the image.  some or all processing\n"
                                           "has been skipped."),
                                         "unable to allocate working memory");
   }
@@ -145,7 +145,7 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
 void dt_iop_image_copy(float *const __restrict__ out, const float *const __restrict__ in, const size_t nfloats)
 {
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
@@ -169,18 +169,18 @@ void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __r
                            const dt_iop_roi_t *const __restrict__ roi_in,
                            const dt_iop_roi_t *const __restrict__ roi_out, const int zero_pad)
 {
-  if (roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  if(roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
     // fast path, just copy the entire contents of the buffer
     dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
   }
-  else if (roi_in->width <= roi_out->width && roi_in->height <= roi_out->height)
+  else if(roi_in->width <= roi_out->width && roi_in->height <= roi_out->height)
   {
     // output needs padding
     fprintf(stderr,"copy_image_roi with larger output not yet implemented\n");
     //TODO
   }
-  else if (roi_in->width >= roi_out->width && roi_in->height >= roi_out->height)
+  else if(roi_in->width >= roi_out->width && roi_in->height >= roi_out->height)
   {
     // copy only a portion of the input
     fprintf(stderr,"copy_image_roi with smaller output not yet implemented\n");
@@ -199,7 +199,7 @@ void dt_iop_image_scaled_copy(float *const restrict buf, const float *const rest
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
@@ -216,7 +216,7 @@ void dt_iop_image_scaled_copy(float *const restrict buf, const float *const rest
 #ifdef _OPENMP
 #pragma simd aligned(buf, src : 16)
 #endif
-  for (size_t k = 0; k < nfloats; k++)
+  for(size_t k = 0; k < nfloats; k++)
     buf[k] = scale * src[k];
 }
 
@@ -225,7 +225,7 @@ void dt_iop_image_fill(float *const buf, const float fill_value, const size_t wi
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     const size_t nthreads = MIN(16,darktable.num_openmp_threads);
     // determine the number of 4-float vectors to be processed by each thread
@@ -242,7 +242,7 @@ void dt_iop_image_fill(float *const buf, const float fill_value, const size_t wi
   }
 #endif // _OPENMP
   // no OpenMP, or image too small to bother parallelizing
-  if (fill_value == 0.0f)
+  if(fill_value == 0.0f)
   {
     // take advantage of compiler intrinsic which is hopefully highly optimized
     memset(buf, 0, sizeof(float) * nfloats);
@@ -252,7 +252,7 @@ void dt_iop_image_fill(float *const buf, const float fill_value, const size_t wi
 #ifdef _OPENMP
 #pragma simd aligned(buf:16)
 #endif
-    for (size_t k = 0; k < nfloats; k++)
+    for(size_t k = 0; k < nfloats; k++)
       buf[k] = fill_value;
   }
 }
@@ -262,7 +262,7 @@ void dt_iop_image_add_const(float *const buf, const float add_value, const size_
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
@@ -279,7 +279,7 @@ void dt_iop_image_add_const(float *const buf, const float add_value, const size_
 #ifdef _OPENMP
 #pragma simd aligned(buf:16)
 #endif
-  for (size_t k = 0; k < nfloats; k++)
+  for(size_t k = 0; k < nfloats; k++)
     buf[k] += add_value;
 }
 
@@ -288,7 +288,7 @@ void dt_iop_image_add_image(float *const buf, const float* const other_image,
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
@@ -305,7 +305,7 @@ void dt_iop_image_add_image(float *const buf, const float* const other_image,
 #ifdef _OPENMP
 #pragma simd aligned(buf, other_image : 16)
 #endif
-  for (size_t k = 0; k < nfloats; k++)
+  for(size_t k = 0; k < nfloats; k++)
     buf[k] += other_image[k];
 }
 
@@ -314,7 +314,7 @@ void dt_iop_image_sub_image(float *const buf, const float* const other_image,
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
@@ -331,7 +331,7 @@ void dt_iop_image_sub_image(float *const buf, const float* const other_image,
 #ifdef _OPENMP
 #pragma simd aligned(buf, other_image : 16)
 #endif
-  for (size_t k = 0; k < nfloats; k++)
+  for(size_t k = 0; k < nfloats; k++)
     buf[k] -= other_image[k];
 }
 
@@ -340,7 +340,7 @@ void dt_iop_image_invert(float *const buf, const float max_value, const size_t w
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
@@ -357,7 +357,7 @@ void dt_iop_image_invert(float *const buf, const float max_value, const size_t w
 #ifdef _OPENMP
 #pragma simd aligned(buf:16)
 #endif
-  for (size_t k = 0; k < nfloats; k++)
+  for(size_t k = 0; k < nfloats; k++)
     buf[k] = max_value - buf[k];
 }
 
@@ -366,7 +366,7 @@ void dt_iop_image_mul_const(float *const buf, const float mul_value, const size_
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
@@ -383,7 +383,7 @@ void dt_iop_image_mul_const(float *const buf, const float mul_value, const size_
 #ifdef _OPENMP
 #pragma simd aligned(buf:16)
 #endif
-  for (size_t k = 0; k < nfloats; k++)
+  for(size_t k = 0; k < nfloats; k++)
     buf[k] *= mul_value;
 }
 
@@ -392,7 +392,7 @@ void dt_iop_image_div_const(float *const buf, const float div_value, const size_
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
@@ -409,7 +409,7 @@ void dt_iop_image_div_const(float *const buf, const float div_value, const size_
 #ifdef _OPENMP
 #pragma simd aligned(buf:16)
 #endif
-  for (size_t k = 0; k < nfloats; k++)
+  for(size_t k = 0; k < nfloats; k++)
     buf[k] /= div_value;
 }
 
@@ -420,7 +420,7 @@ void dt_iop_image_linear_blend(float *const restrict buf, const float lambda, co
   const size_t nfloats = width * height * ch;
   const float lambda_1 = 1.0f - lambda;
 #ifdef _OPENMP
-  if (nfloats > parallel_imgop_minimum/2) // is the task big enough to outweigh threading overhead?
+  if(nfloats > parallel_imgop_minimum/2) // is the task big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
@@ -438,7 +438,7 @@ void dt_iop_image_linear_blend(float *const restrict buf, const float lambda, co
 #ifdef _OPENMP
 #pragma simd aligned(buf:16)
 #endif
-  for (size_t k = 0; k < nfloats; k++)
+  for(size_t k = 0; k < nfloats; k++)
     buf[k] = lambda*buf[k] + lambda_1*other[k];
 }
 
@@ -452,13 +452,15 @@ void dt_iop_image_copy_benchmark()
 void dt_iop_image_copy_configure()
 {
   int thresh = dt_conf_get_int("memcpy_parallel_threshold");
-  if (thresh > 0)
+  if(thresh > 0)
     parallel_imgop_minimum = thresh;
   int threads = dt_conf_get_int("memcpy_parallel_maxthreads");
-  if (threads > 0)
+  if(threads > 0)
     parallel_imgop_maxthreads = threads;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

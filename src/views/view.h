@@ -110,7 +110,7 @@ typedef enum dt_view_surface_value_t
 
 typedef struct dt_mouse_action_t
 {
-  GtkAccelKey key;
+  GdkModifierType mods;
   dt_mouse_action_type_t action;
   gchar name[256];
 } dt_mouse_action_t;
@@ -229,7 +229,7 @@ typedef struct dt_view_manager_t
   } audio;
 
   // toggle button for guides (in the module toolbox)
-  GtkWidget *guides_toggle, *guides, *guides_colors, *guides_popover;
+  GtkWidget *guides_toggle, *guides, *guides_colors, *guides_contrast, *guides_popover;
 
   /*
    * Proxy
@@ -255,7 +255,8 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*reset_filter)(struct dt_lib_module_t *, gboolean smart_filter);
+      GtkWidget *(*get_filter_box)(struct dt_lib_module_t *);
+      GtkWidget *(*get_sort_box)(struct dt_lib_module_t *);
     } filter;
 
     /* module collection proxy object */
@@ -263,7 +264,24 @@ typedef struct dt_view_manager_t
     {
       struct dt_lib_module_t *module;
       void (*update)(struct dt_lib_module_t *);
+      void (*update_history_visibility)(struct dt_lib_module_t *);
     } module_collect;
+
+    /* module recent collection proxy object */
+    struct
+    {
+      struct dt_lib_module_t *module;
+      void (*update_visibility)(struct dt_lib_module_t *);
+    } module_recentcollect;
+
+    /* module filtering proxy object */
+    struct
+    {
+      struct dt_lib_module_t *module;
+      void (*update)(struct dt_lib_module_t *);
+      void (*set_sort)(struct dt_lib_module_t *, int sort, gboolean asc);
+      void (*reset_filter)(struct dt_lib_module_t *, gboolean smart_filter);
+    } module_filtering;
 
     /* filmstrip proxy object */
     struct
@@ -398,11 +416,15 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
 
 /** update the collection module */
 void dt_view_collection_update(const dt_view_manager_t *vm);
+void dt_view_filtering_set_sort(const dt_view_manager_t *vm, int sort, gboolean asc);
+void dt_view_collection_update_history_state(const dt_view_manager_t *vm);
 
 /*
  * Filter dropdown proxy
  */
-void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter);
+void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter);
+GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm);
+GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm);
 
 // active images functions
 void dt_view_active_images_reset(gboolean raise);
@@ -461,6 +483,9 @@ void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *cont
 void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo, dt_images_box *imgs);
 #endif
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -20,7 +20,6 @@
 
 #include "common/chromatic_adaptation.h"
 #include "common/image.h"
-#include "external/adobe_coeff.c"
 
 
 /* Standard CIE illuminants */
@@ -437,7 +436,9 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_alig
   }
   else
   {
-    dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])XYZ_to_CAM);
+    for(int k=0; k<4; k++)
+      for(int i=0; i<3; i++)
+        XYZ_to_CAM[k][i] = img->adobe_XYZ_to_CAM[k][i];
   }
 
   if(isnan(XYZ_to_CAM[0][0])) return FALSE;
@@ -511,7 +512,7 @@ static inline float get_tint_from_tinted_xy(const float x, const float y, const 
 #endif
 static inline void xy_to_uv(const float xy[2], float uv[2])
 {
-  // Convert to CIE1960 Yuv color space, usefull to compute CCT
+  // Convert to CIE1960 Yuv color space, useful to compute CCT
   // https://en.wikipedia.org/wiki/CIE_1960_color_space
   const float denom = 12.f * xy[1] - 1.882f * xy[0] + 2.9088f;
   uv[0] = 5.5932f * xy[0] + 1.9116 * xy[1];
@@ -596,3 +597,9 @@ static inline float CCT_reverse_lookup(const float x, const float y)
 
   return min_radius.temperature;
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

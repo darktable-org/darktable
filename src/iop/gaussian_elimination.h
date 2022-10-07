@@ -149,13 +149,13 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
                                         double *const restrict y,
                                         const size_t m, const size_t n, const int checks)
 {
-  // Solve the weighted linear problem w A'A x = w A' y with the over-constrained rectanguler matrice A
+  // Solve the weighted linear problem w A'A x = w A' y with the over-constrained rectanguler matrix A
   // of dimension m × n (m >= n) and w a vector of weights, by the least squares method
   int valid = 1;
 
   if(m < n)
   {
-    fprintf(stdout, "Pseudo solve: cannot cast %zu × %zu matrice\n", m, n);
+    fprintf(stderr, "pseudo solve: cannot cast %zu x %zu matrix\n", m, n);
     return 0;
   }
 
@@ -171,7 +171,7 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
     #endif
     {
       // Prepare the least squares matrix = A' A
-      valid = transpose_dot_matrix(A, A_square, m, n);
+      transpose_dot_matrix(A, A_square, m, n);
     }
 
     #ifdef _OPENMP
@@ -179,7 +179,7 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
     #endif
     {
       // Prepare the y square vector = A' y
-      valid = transpose_dot_vector(A, y, y_square, m, n);
+      transpose_dot_vector(A, y, y_square, m, n);
     }
   }
 
@@ -192,3 +192,9 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
 
   return valid;
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

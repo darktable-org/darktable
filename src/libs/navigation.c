@@ -91,19 +91,15 @@ static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer 
 }
 
 
-static gboolean _lib_navigation_collapse_callback(GtkAccelGroup *accel_group,
-                                                GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer data)
+static void _lib_navigation_collapse_callback(dt_action_t *action)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  dt_lib_module_t *self = darktable.lib->proxy.navigation.module;
 
   // Get the state
   const gboolean visible = dt_lib_is_visible(self);
 
   // Inverse the visibility
   dt_lib_set_visible(self, !visible);
-
-  return TRUE;
 }
 
 
@@ -115,7 +111,6 @@ void gui_init(dt_lib_module_t *self)
 
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK | GDK_ENTER_NOTIFY_MASK
                                       | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                                       | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK);
@@ -135,13 +130,17 @@ void gui_init(dt_lib_module_t *self)
   /* set size of navigation draw area */
   gtk_widget_set_size_request(self->widget, -1, 175);
   gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
-  dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL, "hide navigation thumbnail", self->widget, NULL);
+  dt_action_t *ac = dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL,
+                                     N_("hide navigation thumbnail"), self->widget, NULL);
+  dt_action_register(ac, NULL, _lib_navigation_collapse_callback, GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_lib_navigation_control_redraw_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
                             G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+
+  darktable.lib->proxy.navigation.module = self;
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -564,17 +563,9 @@ static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget, GdkEven
   return TRUE;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib_as_view("darkroom", NC_("accel", "hide navigation thumbnail"), GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_connect_lib_as_view(self,"darkroom", "hide navigation thumbnail",
-                     g_cclosure_new(G_CALLBACK(_lib_navigation_collapse_callback), self, NULL));
-}
-
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

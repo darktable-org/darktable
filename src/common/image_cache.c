@@ -21,6 +21,7 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 
@@ -36,6 +37,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   entry->data = img;
   // load stuff from db and store in cache:
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure,"
@@ -46,6 +48,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       "  FROM main.images"
       "  WHERE id = ?1",
       -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -55,8 +58,8 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->width = sqlite3_column_int(stmt, 3);
     img->height = sqlite3_column_int(stmt, 4);
     img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
-    img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0]
-        = img->exif_datetime_taken[0] = '\0';
+    img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0] = '\0';
+    dt_datetime_exif_to_img(img, "");
     char *str;
     str = (char *)sqlite3_column_text(stmt, 5);
     if(str) g_strlcpy(img->filename, str, sizeof(img->filename));
@@ -70,8 +73,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->exif_aperture = sqlite3_column_double(stmt, 10);
     img->exif_iso = sqlite3_column_double(stmt, 11);
     img->exif_focal_length = sqlite3_column_double(stmt, 12);
-    str = (char *)sqlite3_column_text(stmt, 13);
-    if(str) g_strlcpy(img->exif_datetime_taken, str, sizeof(img->exif_datetime_taken));
+    img->exif_datetime_taken = sqlite3_column_int64(stmt, 13);
     img->flags = sqlite3_column_int(stmt, 14);
     img->loader = LOADER_UNKNOWN;
     img->exif_crop = sqlite3_column_double(stmt, 15);
@@ -113,10 +115,10 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       img->exif_exposure_bias = sqlite3_column_double(stmt, 28);
     else
       img->exif_exposure_bias = NAN;
-    img->import_timestamp = sqlite3_column_int(stmt, 29);
-    img->change_timestamp = sqlite3_column_int(stmt, 30);
-    img->export_timestamp = sqlite3_column_int(stmt, 31);
-    img->print_timestamp = sqlite3_column_int(stmt, 32);
+    img->import_timestamp = sqlite3_column_int64(stmt, 29);
+    img->change_timestamp = sqlite3_column_int64(stmt, 30);
+    img->export_timestamp = sqlite3_column_int64(stmt, 31);
+    img->print_timestamp = sqlite3_column_int64(stmt, 32);
     img->final_width = sqlite3_column_int(stmt, 33);
     img->final_height = sqlite3_column_int(stmt, 34);
 
@@ -125,7 +127,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     {
       img->buf_dsc.channels = 4;
       img->buf_dsc.datatype = TYPE_FLOAT;
-      img->buf_dsc.cst = iop_cs_rgb;
+      img->buf_dsc.cst = IOP_CS_RGB;
     }
     else if(img->flags & DT_IMAGE_HDR)
     {
@@ -133,13 +135,13 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       {
         img->buf_dsc.channels = 1;
         img->buf_dsc.datatype = TYPE_FLOAT;
-        img->buf_dsc.cst = iop_cs_RAW;
+        img->buf_dsc.cst = IOP_CS_RAW;
       }
       else
       {
         img->buf_dsc.channels = 4;
         img->buf_dsc.datatype = TYPE_FLOAT;
-        img->buf_dsc.cst = iop_cs_rgb;
+        img->buf_dsc.cst = IOP_CS_RGB;
       }
     }
     else
@@ -147,7 +149,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       // raw
       img->buf_dsc.channels = 1;
       img->buf_dsc.datatype = TYPE_UINT16;
-      img->buf_dsc.cst = iop_cs_RAW;
+      img->buf_dsc.cst = IOP_CS_RAW;
     }
   }
   else
@@ -166,6 +168,7 @@ void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
   dt_image_t *img = (dt_image_t *)entry->data;
   g_free(img->profile);
+  g_list_free_full(img->dng_gain_maps, g_free);
   g_free(img);
 }
 
@@ -246,6 +249,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   if(img->id <= 0) return;
 
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images"
                               " SET width = ?1, height = ?2, filename = ?3, maker = ?4, model = ?5,"
@@ -259,6 +263,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
                               "     print_timestamp = ?31, output_width = ?32, output_height = ?33"
                               " WHERE id = ?34",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->filename, -1, SQLITE_STATIC);
@@ -271,7 +276,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, img->exif_focal_length);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, img->exif_focus_distance);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, img->film_id);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, img->exif_datetime_taken, -1, SQLITE_STATIC);
+  if(img->exif_datetime_taken)
+    DT_DEBUG_SQLITE3_BIND_INT64(stmt, 13, img->exif_datetime_taken);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, img->flags);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 15, img->exif_crop);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, img->orientation);
@@ -287,10 +293,14 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, img->raw_white_point);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 26, img->aspect_ratio);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 27, img->exif_exposure_bias);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 28, img->import_timestamp);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 29, img->change_timestamp);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 30, img->export_timestamp);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 31, img->print_timestamp);
+  if(img->import_timestamp)
+    DT_DEBUG_SQLITE3_BIND_INT64(stmt, 28, img->import_timestamp);
+  if(img->change_timestamp)
+    DT_DEBUG_SQLITE3_BIND_INT64(stmt, 29, img->change_timestamp);
+  if(img->export_timestamp)
+    DT_DEBUG_SQLITE3_BIND_INT64(stmt, 30, img->export_timestamp);
+  if(img->print_timestamp)
+    DT_DEBUG_SQLITE3_BIND_INT64(stmt, 31, img->print_timestamp);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 32, img->final_width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 33, img->final_height);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 34, img->id);
@@ -324,7 +334,7 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const int32_t 
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
-  img->change_timestamp = time(0);
+  img->change_timestamp = dt_datetime_now_to_gtimespan();
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
@@ -334,7 +344,7 @@ void dt_image_cache_set_change_timestamp_from_image(dt_image_cache_t *cache, con
 
   // get source timestamp
   const dt_image_t *simg = dt_image_cache_get(cache, sourceid, 'r');
-  const time_t change_timestamp = simg->change_timestamp;
+  const GTimeSpan change_timestamp = simg->change_timestamp;
   dt_image_cache_read_release(cache, simg);
 
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -354,7 +364,7 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const int32_
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
-  img->change_timestamp = -1;
+  img->change_timestamp = 0;
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
@@ -366,7 +376,7 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const int32_t 
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
-  img->export_timestamp = time(0);
+  img->export_timestamp = dt_datetime_now_to_gtimespan();
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
@@ -378,10 +388,12 @@ void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const int32_t i
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
-  img->print_timestamp = time(0);
+  img->print_timestamp = dt_datetime_now_to_gtimespan();
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

@@ -724,8 +724,7 @@ Section "-Core installation"
    !define env_hkcu 'HKCU "Environment"'
    ; set variable for local machine
    WriteRegExpandStr ${env_hklm} CAMLIBS "$INSTDIR\lib\libgphoto2\@CPACK_NSIS_GPHOTO2_VERSION@"
-   WriteRegExpandStr ${env_hklm} IOLIBS $INSTDIR\lib\libgphoto2_port\0.12.0
-   WriteRegExpandStr ${env_hklm} MAGICK_HOME $INSTDIR\lib\GraphicsMagick-@CPACK_NSIS_GRAPHICSMAGICK_VERSION@\modules-Q8\coders
+   WriteRegExpandStr ${env_hklm} IOLIBS $INSTDIR\lib\libgphoto2_port\0.12.1
 
   !insertmacro MUI_STARTMENU_WRITE_END
 

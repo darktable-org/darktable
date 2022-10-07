@@ -153,7 +153,7 @@ const char *aliases()
   return _("vignette|chromatic aberrations|distortion");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct lenses optical flaws"),
                                       _("corrective"),
@@ -180,7 +180,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -367,17 +367,12 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
   return mod;
 }
 
-static inline gboolean monochrome_img(const dt_image_t *img)
-{
-  return (dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ? TRUE : FALSE;
-}
-
 /* Why do we care about being a monochrome image or not?
  The lensfun library does not have an algorithm for distortion or tca correction specialized for monochrome images,
    the builtin correction works with subtle differences for the color channels leading to some colorizing of the images.
  How is this fixed here:
    Monochrome images (from pure monochrome cameras or cameras with the color filter removed from the sensor) have
-   all three rgb colors set to the same value by the demosaicer. 
+   all three rgb colors set to the same value by the demosaicer.
    Looking through lensfun code & docs the ApplySubpixelGeometryDistortion algorithm makes assumptions from given
    coeffs how far data are displaced for the different wavelengths of light.
    As green / Y channel is the most centric i took that as the canonical value instead of taking the mean.
@@ -401,7 +396,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     return;
   }
 
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
+  const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
@@ -591,7 +586,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   delete modifier;
 
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
@@ -607,7 +602,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
+  const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
   cl_mem dev_tmpbuf = NULL;
@@ -638,8 +633,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t origin[] = { 0, 0, 0 };
   size_t iregion[] = { (size_t)iwidth, (size_t)iheight, 1 };
   size_t oregion[] = { (size_t)owidth, (size_t)oheight, 1 };
-  size_t isizes[] = { (size_t)ROUNDUPWD(iwidth), (size_t)ROUNDUPHT(iheight), 1 };
-  size_t osizes[] = { (size_t)ROUNDUPWD(owidth), (size_t)ROUNDUPHT(oheight), 1 };
+  size_t isizes[] = { (size_t)ROUNDUPDWD(iwidth, devid), (size_t)ROUNDUPDHT(iheight, devid), 1 };
+  size_t osizes[] = { (size_t)ROUNDUPDWD(owidth, devid), (size_t)ROUNDUPDHT(oheight, devid), 1 };
 
   int modflags;
   int ldkernel = -1;
@@ -846,7 +841,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
   }
 
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
@@ -864,7 +859,7 @@ error:
   dt_opencl_release_mem_object(dev_tmpbuf);
   if(tmpbuf != NULL) dt_free_align(tmpbuf);
   if(modifier != NULL) delete modifier;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_lens] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_lens] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -890,8 +885,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
   int modflags;
 
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
-  const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
+  const int used_lf_mask = (dt_image_is_monochrome(&self->dev->image_storage)) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
   const lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, TRUE);
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
@@ -922,8 +916,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
-  const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
+  const int used_lf_mask = (dt_image_is_monochrome(&self->dev->image_storage)) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
   int modflags;
@@ -1147,7 +1140,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   const lfCamera *camera = NULL;
   const lfCamera **cam = NULL;
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
   if(d->lens)
   {
     delete d->lens;
@@ -1209,7 +1201,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   lf_free(cam);
   d->modify_flags = p->modify_flags;
-  if(raw_monochrome) d->modify_flags &= ~LF_MODIFY_TCA;
+  if(dt_image_is_monochrome(&self->dev->image_storage)) d->modify_flags &= ~LF_MODIFY_TCA;
   d->inverse = p->inverse;
   d->scale = p->scale;
   d->focal = p->focal;
@@ -1340,7 +1332,7 @@ void reload_defaults(dt_iop_module_t *module)
   d->distance = img->exif_focus_distance == 0.0f ? 1000.0f : img->exif_focus_distance;
   d->target_geom = LF_RECTILINEAR;
 
-  if(monochrome_img(img))
+  if(dt_image_is_monochrome(img))
     d->modify_flags &= ~LF_MODIFY_TCA;
 
   // init crop from db:
@@ -2127,7 +2119,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
+  const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   gtk_widget_set_visible(g->tca_override, !raw_monochrome);
   // update gui to show/hide tca sliders if tca_override was changed
   if(!w || w == g->tca_override)
@@ -2321,6 +2313,7 @@ void gui_init(struct dt_iop_module_t *self)
   modifier->pos = ++pos;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+    gtk_widget_set_name(self->widget, "lens-module");
 
   // camera selector
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2329,7 +2322,8 @@ void gui_init(struct dt_iop_module_t *self)
                                       NULL, 0, hbox);
   g->find_camera_button = dt_iop_button_new(self, N_("find camera"),
                                             G_CALLBACK(camera_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
-                                            dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN, NULL);
+                                            dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
+  dt_gui_add_class(g->find_camera_button, "dt_big_btn_canvas");
   gtk_box_pack_start(GTK_BOX(hbox), g->find_camera_button, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
@@ -2340,7 +2334,8 @@ void gui_init(struct dt_iop_module_t *self)
                                     NULL, 0, hbox);
   g->find_lens_button = dt_iop_button_new(self, N_("find lens"),
                                           G_CALLBACK(lens_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
-                                          dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN, NULL);
+                                          dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
+  dt_gui_add_class(g->find_lens_button, "dt_big_btn_canvas");
   gtk_box_pack_start(GTK_BOX(hbox), g->find_lens_button, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
@@ -2400,7 +2395,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   // scale
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
-  dt_bauhaus_slider_set_step(g->scale, 0.005);
   dt_bauhaus_slider_set_digits(g->scale, 3);
   dt_bauhaus_widget_set_quad_paint(g->scale, dtgtk_cairo_paint_refresh, 0, NULL);
   g_signal_connect(G_OBJECT(g->scale), "quad-pressed", G_CALLBACK(autoscale_pressed), self);
@@ -2484,9 +2478,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   dt_bauhaus_combobox_set(g->reverse, p->inverse);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tca_override), p->tca_override);
-  dt_bauhaus_slider_set(g->tca_r, p->tca_r);
-  dt_bauhaus_slider_set(g->tca_b, p->tca_b);
-  dt_bauhaus_slider_set(g->scale, p->scale);
   const lfCamera **cam = NULL;
   g->camera = NULL;
   if(p->camera[0])
@@ -2542,6 +2533,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

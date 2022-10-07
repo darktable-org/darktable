@@ -91,7 +91,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
-  img->buf_dsc.cst = iop_cs_rgb;
+  img->buf_dsc.cst = IOP_CS_RGB;
 
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL)
@@ -113,7 +113,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   const uint8_t *const restrict in = (const uint8_t *)rgb.pixels;
 
-  switch (bit_depth) {
+  switch(bit_depth) {
   case 12:
   case 10: {
 #ifdef _OPENMP
@@ -122,9 +122,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   schedule(simd:static) \
   collapse(2)
 #endif
-    for (size_t y = 0; y < height; y++)
+    for(size_t y = 0; y < height; y++)
     {
-      for (size_t x = 0; x < width; x++)
+      for(size_t x = 0; x < width; x++)
       {
           uint16_t *in_pixel = (uint16_t *)&in[(y * rowbytes) + (3 * sizeof(uint16_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
@@ -145,9 +145,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   schedule(simd:static) \
   collapse(2)
 #endif
-    for (size_t y = 0; y < height; y++)
+    for(size_t y = 0; y < height; y++)
     {
-      for (size_t x = 0; x < width; x++)
+      for(size_t x = 0; x < width; x++)
       {
           uint8_t *in_pixel = (uint8_t *)&in[(y * rowbytes) + (3 * sizeof(uint8_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
@@ -203,12 +203,9 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
     goto out;
   }
 
-  if(avif_image.icc.size > 0)
+  avifRWData *icc = &avif_image.icc;
+  if(icc->size && icc->data)
   {
-    avifRWData *icc = &avif_image.icc;
-
-    if(icc->data == NULL) goto out;
-
     *out = (uint8_t *)g_malloc0(icc->size);
     memcpy(*out, icc->data, icc->size);
     size = icc->size;
@@ -255,6 +252,8 @@ out:
   return size;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

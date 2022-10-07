@@ -204,7 +204,7 @@ static gboolean stacked_job_dispatch (GSource* source, GSourceFunc callback, gpo
 {
   gpointer message;
   message = g_async_queue_try_pop (darktable.lua_state.stacked_job_queue);
-  if (message == NULL)
+  if(message == NULL)
   {
     return TRUE;
   }
@@ -301,7 +301,7 @@ static gboolean alien_job_dispatch (GSource* source, GSourceFunc callback, gpoin
 {
   gpointer message;
   message = g_async_queue_try_pop (darktable.lua_state.alien_job_queue);
-  if (message == NULL)
+  if(message == NULL)
   {
     return TRUE;
   }
@@ -408,7 +408,7 @@ static gboolean string_job_dispatch (GSource* source, GSourceFunc callback, gpoi
 {
   gpointer message;
   message = g_async_queue_try_pop (darktable.lua_state.string_job_queue);
-  if (message == NULL)
+  if(message == NULL)
   {
     return TRUE;
   }
@@ -728,6 +728,9 @@ int dt_lua_init_call(lua_State *L)
   return 0;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

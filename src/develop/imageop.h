@@ -108,17 +108,18 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_ALLOW_FAST_PIPE = 1 << 12,   // Module can work with a fast pipe
   IOP_FLAGS_UNSAFE_COPY = 1 << 13,       // Unsafe to copy as part of history
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
-  IOP_FLAGS_GUIDES_WIDGET = 1 << 15        // require the guides widget
+  IOP_FLAGS_GUIDES_WIDGET = 1 << 15,       // require the guides widget
+  IOP_FLAGS_CACHE_IMPORTANT_NOW = 1 << 16, // hints for higher priority in iop cache
+  IOP_FLAGS_CACHE_IMPORTANT_NEXT = 1 << 17  
 } dt_iop_flags_t;
 
 /** status of a module*/
 typedef enum dt_iop_module_state_t
 {
-  dt_iop_state_HIDDEN = 0, // keep first
-  dt_iop_state_ACTIVE,
-  dt_iop_state_FAVORITE,
-  dt_iop_state_LAST
-
+  IOP_STATE_HIDDEN = 0, // keep first
+  IOP_STATE_ACTIVE,
+  IOP_STATE_FAVORITE,
+  IOP_STATE_LAST
 } dt_iop_module_state_t;
 
 typedef struct dt_iop_gui_data_t
@@ -141,18 +142,16 @@ typedef enum dt_dev_request_colorpick_flags_t
 /** colorspace enums, must be in synch with dt_iop_colorspace_type_t in color_conversion.cl */
 typedef enum dt_iop_colorspace_type_t
 {
-  iop_cs_NONE = -1,
-  iop_cs_RAW = 0,
-  iop_cs_Lab = 1,
-  iop_cs_rgb = 2,
-  iop_cs_LCh = 3,
-  iop_cs_HSL = 4,
-  iop_cs_JzCzhz = 5,
+  IOP_CS_NONE = -1,
+  IOP_CS_RAW = 0,
+  IOP_CS_LAB = 1,
+  IOP_CS_RGB = 2,
+  IOP_CS_LCH = 3,
+  IOP_CS_HSL = 4,
+  IOP_CS_JZCZHZ = 5,
 } dt_iop_colorspace_type_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
-struct dt_iop_module_so_t;
-struct dt_iop_module_t;
 typedef struct dt_iop_module_so_t
 {
   dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
@@ -217,8 +216,8 @@ typedef struct dt_iop_module_t
   /** maximum levels in histogram, one per channel */
   uint32_t histogram_max[4];
   /** requested colorspace for the histogram, valid options are:
-   * iop_cs_NONE: module colorspace
-   * iop_cs_LCh: for Lab modules
+   * IOP_CS_NONE: module colorspace
+   * IOP_CS_LCH: for Lab modules
    */
   dt_iop_colorspace_type_t histogram_cst;
   /** scale the histogram so the middle grey is at .5 */
@@ -273,14 +272,13 @@ typedef struct dt_iop_module_t
   /** fusion slider */
   GtkWidget *fusion_slider;
 
+  /* list of instance widgets and associated actions. Bauhaus with field pointer at end, starting from widget_list_bh */
   GSList *widget_list;
+  GSList *widget_list_bh;
+
   /** show/hide guide button and combobox */
   GtkWidget *guides_toggle;
   GtkWidget *guides_combo;
-  /** list of closures: show, enable/disable */
-  GSList *accel_closures;
-  GSList *accel_closures_local;
-  gboolean local_closures_connected;
 
   /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
   gboolean has_trouble;
@@ -294,7 +292,6 @@ typedef struct dt_iop_module_t
   gboolean multi_show_up;
   gboolean multi_show_down;
   gboolean multi_show_new;
-  GtkWidget *duplicate_button;
   GtkWidget *multimenu_button;
 
   /** delayed-event handling */
@@ -303,10 +300,17 @@ typedef struct dt_iop_module_t
   void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                         const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
                         const struct dt_iop_roi_t *const roi_out);
-
+  // hint for higher io cache priority
+  gboolean cache_next_important;
   // introspection related data
   gboolean have_introspection;
 } dt_iop_module_t;
+
+typedef struct dt_action_target_t
+{
+  dt_action_t *action;
+  void *target;
+} dt_action_target_t;
 
 /** loads and inits the modules in the plugins/ directory. */
 void dt_iop_load_modules_so(void);
@@ -405,7 +409,7 @@ dt_iop_module_t *dt_iop_get_colorout_module(void);
 dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op);
 dt_iop_module_t *dt_iop_get_module(const char *op);
 /** returns module with op + multi_priority or NULL if not found on the list,
-    if multi_priority == -1 do not checl for it */
+    if multi_priority == -1 do not check for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
 /** returns module with op + multi_name or NULL if not found on the list,
     if multi_name == NULL do not check for it */
@@ -476,9 +480,9 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *module,
                                        const char *stderr_message);
 
 // format modules description going in tooltips
-char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
-                             const char *purpose, const char *input,
-                             const char *process, const char *output);
+const char **dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
+                                    const char *purpose, const char *input,
+                                    const char *process, const char *output);
 
 static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
 {
@@ -506,6 +510,11 @@ gboolean dt_iop_have_required_input_format(const int required_ch, struct dt_iop_
 /* bring up module rename dialog */
 void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

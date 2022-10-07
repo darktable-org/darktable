@@ -698,7 +698,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       if(preview) zoom_scale *= ps;
       break;
   }
-  if (preview) zoom_scale /= dev->preview_downsampling;
+  if(preview) zoom_scale /= dev->preview_downsampling;
 
   return zoom_scale;
 }
@@ -726,9 +726,6 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
 
   dev->first_load = FALSE;
-
-  // Loading an image means we do some developing and so remove the darktable|problem|history-compress tag
-  dt_history_set_compress_problem(imgid, FALSE);
 
   dt_unlock_image(imgid);
 }
@@ -770,12 +767,14 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   // printf("[dev write history item] writing %d - %s params %f %f\n", h->module->instance, h->module->op,
   // *(float *)h->params, *(((float *)h->params)+1));
   sqlite3_finalize(stmt);
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.history"
                               " SET operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
                               "     blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = ?10"
                               " WHERE imgid = ?5 AND num = ?6",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, h->module->version());
@@ -794,7 +793,7 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   for(GList *forms = h->forms; forms; forms = g_list_next(forms))
   {
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
-    if (form)
+    if(form)
       dt_masks_write_masks_history_item(imgid, num, form);
   }
 
@@ -840,7 +839,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     history = next;
   }
   // then remove NIL items there
-  while ((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
+  while((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
     dev->history_end--;
 
   dev->history_end += kept_module;
@@ -1314,21 +1313,21 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   // write history entries
 
   GList *history = dev->history;
-  if (DT_IOP_ORDER_INFO)
+  if(DT_IOP_ORDER_INFO)
     fprintf(stderr,"\n^^^^ Writing history image: %i, iop version: %i",imgid,dev->iop_order_version);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
-    if (DT_IOP_ORDER_INFO)
+    if(DT_IOP_ORDER_INFO)
     {
       fprintf(stderr,"\n%20s, num %i, order %d, v(%i), multiprio %i",
               hist->module->op,i,hist->iop_order,hist->module->version(),hist->multi_priority);
-      if (hist->enabled) fprintf(stderr,", enabled");
+      if(hist->enabled) fprintf(stderr,", enabled");
     }
     history = g_list_next(history);
   }
-  if (DT_IOP_ORDER_INFO)
+  if(DT_IOP_ORDER_INFO)
     fprintf(stderr,"\nvvvv\n");
 
   // update history end
@@ -1472,17 +1471,15 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   const gboolean auto_apply_filmic = is_raw && is_scene_referred;
   const gboolean auto_apply_cat = has_matrix && is_modern_chroma;
-  const gboolean auto_apply_sharpen = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
 
-  if(auto_apply_filmic || auto_apply_sharpen || auto_apply_cat)
+  if(auto_apply_filmic || auto_apply_cat)
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-      if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
-          || (auto_apply_sharpen && strcmp(module->op, "sharpen") == 0)
-          || (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
+      if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0) ||
+          (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
          && !dt_history_check_module_exists(imgid, module->op, FALSE)
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
       {
@@ -1496,6 +1493,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
+  // clang-format off
   snprintf(query, sizeof(query),
            "INSERT INTO memory.history"
            " SELECT ?1, 0, op_version, operation, op_params,"
@@ -1514,6 +1512,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            preset_table[legacy],
            is_display_referred?"":"basecurve");
+  // clang-format on
   // query for all modules at once:
   sqlite3_stmt *stmt;
   const char *workflow_preset = has_matrix && is_display_referred
@@ -1554,6 +1553,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   if(!dt_ioppr_has_iop_order_list(imgid))
   {
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT op_params"
                                 " FROM data.presets"
@@ -1567,6 +1567,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                                 "       AND operation = 'ioporder'"
                                 " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
                                 -1, &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
@@ -1685,7 +1686,8 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
                                   -1, &stmt, NULL);
 
       // let's wrap this into a transaction, it might make it a little faster.
-      sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+      dt_database_start_transaction(darktable.db);
+
       for(GList *r = rowids; r; r = g_list_next(r))
       {
         DT_DEBUG_SQLITE3_CLEAR_BINDINGS(stmt);
@@ -1698,7 +1700,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
         v++;
       }
 
-      sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+      dt_database_release_transaction(darktable.db);
 
       g_list_free(rowids);
 
@@ -1714,11 +1716,13 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       if(sqlite3_step(stmt) == SQLITE_DONE)
       {
         sqlite3_finalize(stmt);
+        // clang-format off
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "UPDATE main.images"
                                     " SET history_end=history_end+?1"
                                     " WHERE id=?2",
                                     -1, &stmt, NULL);
+        // clang-format on
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
@@ -1726,6 +1730,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
         {
           // and finally prepend the rest with increasing numbers (starting at 0)
           sqlite3_finalize(stmt);
+          // clang-format off
           DT_DEBUG_SQLITE3_PREPARE_V2(
             dt_database_get(darktable.db),
             "INSERT INTO main.history"
@@ -1734,6 +1739,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
             "        multi_name"
             " FROM memory.history",
             -1, &stmt, NULL);
+          // clang-format on
           sqlite3_step(stmt);
           sqlite3_finalize(stmt);
         }
@@ -1824,6 +1830,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   sqlite3_finalize(stmt);
 
   // Load current image history from DB
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid, num, module, operation,"
                               "       op_params, enabled, blendop_params,"
@@ -1832,6 +1839,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
                               " WHERE imgid = ?1"
                               " ORDER BY num",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   dev->history_end = 0;
@@ -2350,12 +2358,6 @@ void dt_dev_modulegroups_update_visibility(dt_develop_t *dev)
     dev->proxy.modulegroups.update_visibility(dev->proxy.modulegroups.module);
 }
 
-void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev)
-{
-  if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.search_text_focus && dev->first_load == 0)
-    dev->proxy.modulegroups.search_text_focus(dev->proxy.modulegroups.module);
-}
-
 gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module)
 {
   if(dev->proxy.modulegroups.module && dev->proxy.modulegroups.test_visible)
@@ -2490,7 +2492,7 @@ void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
   for(; list; list = g_list_next(list))
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)list->data;
-    if (hitem->module == module)
+    if(hitem->module == module)
     {
       hitem->module = NULL;
     }
@@ -2612,7 +2614,7 @@ gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
   gchar *label;
   /* create a history button and add to box */
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup(module->name());
+    label = g_markup_escape_text(module->name(), -1);
   else
     label = g_markup_printf_escaped("%s <span size=\"smaller\">%s</span>", module->name(), module->multi_name);
   return label;
@@ -2664,7 +2666,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
   dt_pthread_mutex_lock(&dev->history_mutex);
   const int success = dt_dev_distort_transform_locked(dev,pipe,iop_order,transf_direction,points,points_count);
 
-  if (success
+  if(success
       && (dev->preview_downsampling != 1.0f)
       && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
           || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
@@ -2711,7 +2713,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
                                       float *points, size_t points_count)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  if ((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
+  if((dev->preview_downsampling != 1.0f) && (transf_direction == DT_DEV_TRANSFORM_DIR_ALL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL
     || transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL))
       for(size_t idx=0; idx < 2 * points_count; idx++)
@@ -3025,7 +3027,7 @@ float dt_second_window_get_zoom_scale(dt_develop_t *dev, const dt_dev_zoom_t zoo
       if(preview) zoom_scale *= ps;
       break;
   }
-  if (preview) zoom_scale /= dev->preview_downsampling;
+  if(preview) zoom_scale /= dev->preview_downsampling;
   return zoom_scale;
 }
 
@@ -3128,6 +3130,8 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
   }
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

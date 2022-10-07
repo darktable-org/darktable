@@ -1,5 +1,9 @@
 name: CI
 
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # Keep in sync with manualrun.yml!
 
 on:
@@ -32,6 +36,9 @@ on:
         - "data/themes/**"
         - "data/watermarks/**"
         - "**.md"
+
+permissions:
+  contents: read
 
 jobs:
 
@@ -143,7 +150,7 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src
@@ -310,7 +317,7 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src
@@ -383,50 +390,53 @@ jobs:
     steps:
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: ucrt64
           install: >-
             base-devel
             git
             intltool
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-cmocka
-            mingw-w64-x86_64-ninja
-            mingw-w64-x86_64-nsis
-            mingw-w64-x86_64-dbus-glib
-            mingw-w64-x86_64-drmingw
-            mingw-w64-x86_64-exiv2
-            mingw-w64-x86_64-gettext
-            mingw-w64-x86_64-gmic
-            mingw-w64-x86_64-graphicsmagick
-            mingw-w64-x86_64-gtk3
-            mingw-w64-x86_64-iso-codes
-            mingw-w64-x86_64-lcms2
-            mingw-w64-x86_64-lensfun
-            mingw-w64-x86_64-libavif
-            mingw-w64-x86_64-libexif
-            mingw-w64-x86_64-libgphoto2
-            mingw-w64-x86_64-libheif
-            mingw-w64-x86_64-libjpeg-turbo
-            mingw-w64-x86_64-libsecret
-            mingw-w64-x86_64-libsoup
-            mingw-w64-x86_64-libwebp
-            mingw-w64-x86_64-libxml2
-            mingw-w64-x86_64-libxslt
-            mingw-w64-x86_64-lua
-            mingw-w64-x86_64-openexr
-            mingw-w64-x86_64-openjpeg2
-            mingw-w64-x86_64-osm-gps-map
-            mingw-w64-x86_64-portmidi
-            mingw-w64-x86_64-pugixml
-            mingw-w64-x86_64-python3
-            mingw-w64-x86_64-python3-jsonschema
-            mingw-w64-x86_64-python3-setuptools
-            mingw-w64-x86_64-python3-six
-            mingw-w64-x86_64-sqlite3
-            mingw-w64-x86_64-zlib
+          pacboy: >-
+            toolchain:p
+            cmake:p
+            cmocka:p
+            ninja:p
+            nsis:p
+            dbus-glib:p
+            drmingw:p
+            exiv2:p
+            gettext:p
+            gmic:p
+            graphicsmagick:p
+            gtk3:p
+            iso-codes:p
+            lcms2:p
+            lensfun:p
+            libavif:p
+            libexif:p
+            libgphoto2:p
+            libheif:p
+            libjpeg-turbo:p
+            libsecret:p
+            libsoup:p
+            libwebp:p
+            libxml2:p
+            libxslt:p
+            lua:p
+            openexr:p
+            openjpeg2:p
+            osm-gps-map:p
+            portmidi:p
+            pugixml:p
+            python3:p
+            python3-jsonschema:p
+            python3-setuptools:p
+            python3-six:p
+            sqlite3:p
+            zlib:p
           update: true
-      - uses: actions/checkout@v2
+      - run: git config --global core.autocrlf input
+        shell: bash
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src
@@ -461,10 +471,10 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-10.15, xcode: 11.3.1, deployment: 10.7 }
-          - { os: macos-10.15, xcode: 11.7,   deployment: 10.14 }
-          - { os: macos-10.15, xcode: 12.4,   deployment: 10.15 }
+          - { os: macos-10.15, xcode: 12.4,   deployment: 10.14 }
           - { os: macos-11,    xcode: 12.5.1, deployment: 11.3 }
+          - { os: macos-11,    xcode: 13.2.1, deployment: 12.1 }
+          - { os: macos-12,    xcode: 13.4,   deployment: 12.3 }
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ RelWithDebInfo ]
@@ -472,30 +482,20 @@ jobs:
           - skiptest
           - nofeatures
         generator:
-          #- Unix Makefiles
           - Ninja
-        exclude:
-          - build: { os: macos-10.15, xcode: 11.7 }
-            compiler: { compiler: XCode,   CC: cc, CXX: c++ }
-            btype: RelWithDebInfo
-            target: skiptest
-            generator: Ninja
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.build.deployment }}
-      CXXFLAGS: -stdlib=libc++
-      OBJCXXFLAGS: -stdlib=libc++
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
-      CMAKE_PREFIX_PATH: /usr/local/opt/libsoup@2:/usr/local/opt/icu4c
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src
@@ -503,9 +503,8 @@ jobs:
         run: |
           brew update > /dev/null || true
           brew unlink python@3.8
-          brew unlink gcc@9
           sudo rm '/usr/local/bin/2to3'
-          brew link --overwrite python@3.9 # workaround introduced 30.12.2020, replace asap.
+          # brew link --overwrite python@3.9 # workaround introduced 30.12.2020, replace asap.
           # brew upgrade --ignore-pinned # workaround introduced 18.07.2021, replace asap
           brew tap Homebrew/bundle
           cd src/.ci
@@ -528,4 +527,4 @@ jobs:
                  --core --disable-opencl --conf host_memory_limit=8192 \
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
+                 --conf plugins/lighttable/export/iccintent=0 || true # OpenMP builds crash for most configs

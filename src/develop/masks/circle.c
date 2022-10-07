@@ -567,7 +567,7 @@ static void _circle_draw_lines(gboolean borders, gboolean source, cairo_t *cr, d
     else
       cairo_set_line_width(cr, 3.0 / zoom_scale);
   }
-  dt_draw_set_color_overlay(cr, 0.3, 0.8);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
 
   cairo_move_to(cr, points[2], points[3]);
   for(int i = 2; i < points_count; i++)
@@ -591,7 +591,7 @@ static void _circle_draw_lines(gboolean borders, gboolean source, cairo_t *cr, d
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
   }
-  dt_draw_set_color_overlay(cr, 0.8, 0.8);
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_stroke(cr);
 }
 
@@ -837,13 +837,13 @@ static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
         cairo_set_line_width(cr, 2.5 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.3, 0.8);
+      dt_draw_set_color_overlay(cr, FALSE, 0.8);
       cairo_stroke_preserve(cr);
       if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
         cairo_set_line_width(cr, 1.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 0.5 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.8, 0.8);
+      dt_draw_set_color_overlay(cr, TRUE, 0.8);
       cairo_stroke(cr);
     }
 
@@ -1407,6 +1407,9 @@ const dt_masks_functions_t dt_masks_functions_circle = {
 
 
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -63,14 +63,14 @@ static void blur_horizontal_1ch(float *const restrict buf, const int height, con
     const size_t index = (size_t)y * width;
     float *const restrict scanline = dt_get_perthread(scanlines,padded_size);
     // add up the left half of the window
-    for (int x = 0; x < MIN(radius,width) ; x++)
+    for(int x = 0; x < MIN(radius,width) ; x++)
     {
       L += buf[index+x];
       hits++;
     }
     // process the blur up to the point where we start removing values
     int x;
-    for (x = 0; (x <= radius) && ((x + radius) < width); x++)
+    for(x = 0; (x <= radius) && ((x + radius) < width); x++)
     {
       const int np = x + radius;
       if(np < width)
@@ -126,7 +126,7 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
     int hits = 0;
     const size_t index = (size_t)2 * y * width;
     // add up the left half of the window
-    for (int x = 0; x < MIN(radius, width) ; x++)
+    for(int x = 0; x < MIN(radius, width) ; x++)
     {
       hits++;
       L1 += buf[index + 2*x];
@@ -134,7 +134,7 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
     }
     // process the blur up to the point where we start removing values
     int x;
-    for (x = 0; (x <= radius) && ((x + radius) < width); x++)
+    for(x = 0; (x <= radius) && ((x + radius) < width); x++)
     {
       const int np = x + radius;
       if(np < width)
@@ -253,7 +253,7 @@ static void load_add_16wide(float *const restrict out, float *const restrict acc
 #ifdef _OPENMP
 #pragma omp simd aligned(accum, out : 64)
 #endif
-  for (size_t c = 0; c < 16; c++)
+  for(size_t c = 0; c < 16; c++)
   {
     const float v = in[c];
     accum[c] += v;
@@ -285,7 +285,7 @@ static void load_add_16wide_Kahan(float *const restrict out, float *const restri
 #ifdef _OPENMP
 #pragma omp simd aligned(accum, comp, out : 64)
 #endif
-  for (size_t c = 0; c < 16; c++)
+  for(size_t c = 0; c < 16; c++)
   {
     const float v = in[c];
     out[c] = v;
@@ -303,7 +303,7 @@ static void store_16wide(float *const restrict out, const float *const restrict 
 #ifdef _OPENMP
 #pragma omp simd aligned(in : 64)
 #endif
-  for (size_t c = 0; c < 16; c++)
+  for(size_t c = 0; c < 16; c++)
     out[c] = in[c];
 }
 
@@ -340,7 +340,7 @@ static void load_add_Nwide_Kahan(const size_t N, float *const restrict out, floa
 #ifdef _OPENMP
 #pragma omp simd aligned(accum, comp : 64)
 #endif
-  for (size_t c = 0; c < N; c++)
+  for(size_t c = 0; c < N; c++)
   {
     const float v = in[c];
     out[c] = v;
@@ -380,14 +380,14 @@ static void blur_horizontal_4ch(float *const restrict buf, const size_t height, 
     const size_t index = (size_t)4 * y * width;
     float *const restrict bufp = buf + index;
     // add up the left half of the window
-    for (size_t x = 0; x < MIN(radius,width) ; x++)
+    for(size_t x = 0; x < MIN(radius,width) ; x++)
     {
       hits++;
       load_add_4wide(scratch + 4*x, L, bufp + 4*x);
     }
     // process the blur up to the point where we start removing values
     size_t x;
-    for (x = 0; (x <= radius) && ((x + radius) < width); x++)
+    for(x = 0; (x <= radius) && ((x + radius) < width); x++)
     {
       const int np = x + radius;
       hits++;
@@ -431,14 +431,14 @@ static void blur_horizontal_4ch_Kahan(float *const restrict buf, const size_t wi
   dt_aligned_pixel_t comp = { 0, 0, 0, 0 };
   size_t hits = 0;
   // add up the left half of the window
-  for (size_t x = 0; x < MIN(radius,width) ; x++)
+  for(size_t x = 0; x < MIN(radius,width) ; x++)
   {
     hits++;
     load_add_4wide_Kahan(scratch + 4*x, L, buf + 4*x, comp);
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t x;
-  for (x = 0; (x <= radius) && ((x + radius) < width); x++)
+  for(x = 0; (x <= radius) && ((x + radius) < width); x++)
   {
     const int np = x + radius;
     hits++;
@@ -475,21 +475,21 @@ static void blur_horizontal_4ch_Kahan(float *const restrict buf, const size_t wi
 static void blur_horizontal_Nch_Kahan(const size_t N, float *const restrict buf, const size_t width,
                                       const size_t radius, float *const restrict scratch)
 {
-  if (N > 16) return;
-  if (N != 9) return;  // since we only use 9 channels at the moment, give the compiler a big hint
+  if(N > 16) return;
+  if(N != 9) return;  // since we only use 9 channels at the moment, give the compiler a big hint
 
   float DT_ALIGNED_ARRAY L[16] = { 0, 0, 0, 0 };
   float DT_ALIGNED_ARRAY comp[16] = { 0, 0, 0, 0 };
   size_t hits = 0;
   // add up the left half of the window
-  for (size_t x = 0; x < MIN(radius,width) ; x++)
+  for(size_t x = 0; x < MIN(radius,width) ; x++)
   {
     hits++;
     load_add_Nwide_Kahan(N, scratch + N*x, L, buf + N*x, comp);
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t x;
-  for (x = 0; (x <= radius) && ((x + radius) < width); x++)
+  for(x = 0; (x <= radius) && ((x + radius) < width); x++)
   {
     const int np = x + radius;
     hits++;
@@ -533,7 +533,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   __m128 hits = { 0, 0, 0, 0 };
   const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
   // add up the top half of the window
-  for (size_t y = 0; y < MIN(radius, height); y++)
+  for(size_t y = 0; y < MIN(radius, height); y++)
   {
     PREFETCH_NTA(buf + (y+16)*width);
     hits += one;
@@ -543,7 +543,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= radius && y + radius < height; y++)
+  for(y = 0; y <= radius && y + radius < height; y++)
   {
     const size_t np = y + radius;
     hits += one;
@@ -561,7 +561,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
     _mm_storeu_ps(buf + y*width, L / hits);
   }
   // process the blur for the bulk of the column
-  for ( ; y + radius < height; y++)
+  for( ; y + radius < height; y++)
   {
     const size_t np = y + radius;
     const size_t op = y - radius - 1;
@@ -574,7 +574,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
     _mm_storeu_ps(buf + y*width, L / hits);
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
-  for ( ; y < height; y++)
+  for( ; y < height; y++)
   {
     const size_t op = y - radius - 1;
     hits -= one;
@@ -597,11 +597,11 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
   __m128 hits = { 0.0f, 0.0f, 0.0f, 0.0f };
   const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
   // add up the top half of the window
-  for (size_t y = 0; y < MIN(radius, height); y++)
+  for(size_t y = 0; y < MIN(radius, height); y++)
   {
     PREFETCH_NTA(buf + (y+16)*width);
     hits += one;
-    for (size_t c = 0; c < 4; c++)
+    for(size_t c = 0; c < 4; c++)
     {
       const __m128 v = _mm_loadu_ps(buf + y*width + 4*c); // use unaligned load since width may not be a multiple of 4
       L[c] += v;
@@ -610,12 +610,12 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= radius && y + radius < height; y++)
+  for(y = 0; y <= radius && y + radius < height; y++)
   {
     const size_t np = y + radius;
     hits += one;
     PREFETCH_NTA(buf + (np+16)*width);
-    for (size_t c = 0; c < 4; c++)
+    for(size_t c = 0; c < 4; c++)
     {
       const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
       L[c] += v;
@@ -627,16 +627,16 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
   //  remove old values (y-radius < 0)
   for(; y <= radius && y < height; y++)
   {
-    for (size_t c = 0; c < 4; c++)
+    for(size_t c = 0; c < 4; c++)
       _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
   }
   // process the blur for the bulk of the scan line
-  for ( ; y + radius < height; y++)
+  for( ; y + radius < height; y++)
   {
     const size_t np = y + radius;
     const size_t op = y - radius - 1;
     PREFETCH_NTA(buf + (np+32)*width);
-    for (size_t c = 0; c < 4; c++)
+    for(size_t c = 0; c < 4; c++)
     {
       const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
       L[c] -= scratch[4*(op&mask) + c];
@@ -647,11 +647,11 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
     }
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
-  for ( ; y < height; y++)
+  for( ; y < height; y++)
   {
     const size_t op = y - radius - 1;
     hits -= one;
-    for (size_t c = 0; c < 4; c++)
+    for(size_t c = 0; c < 4; c++)
     {
       L[c] -= scratch[4*(op&mask) + c];
       // store the final result
@@ -677,7 +677,7 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
   float L = 0.0f;
   size_t hits = 0;
   // add up the left half of the window
-  for (size_t y = 0; y < MIN(radius, height); y++)
+  for(size_t y = 0; y < MIN(radius, height); y++)
   {
     PREFETCH_NTA(buf + (y+16)*width);
     hits++;
@@ -687,7 +687,7 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
   }
   // process up to the point where we start removing values from the moving average
   size_t y;
-  for (y = 0; y <= radius && y + radius < height; y++)
+  for(y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -745,7 +745,7 @@ static void blur_vertical_1wide_Kahan(float *const restrict buf, const size_t he
   float c = 0.0f;
   size_t hits = 0;
   // add up the left half of the window
-  for (size_t y = 0; y < MIN(radius, height); y++)
+  for(size_t y = 0; y < MIN(radius, height); y++)
   {
     PREFETCH_NTA(buf + (y+16)*width);
     hits++;
@@ -755,7 +755,7 @@ static void blur_vertical_1wide_Kahan(float *const restrict buf, const size_t he
   }
   // process up to the point where we start removing values from the moving average
   size_t y;
-  for (y = 0; y <= radius && y + radius < height; y++)
+  for(y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -802,7 +802,7 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
                                 float *const restrict scratch)
 {
 #ifdef __SSE2__
-  if (darktable.codepath.SSE2)
+  if(darktable.codepath.SSE2)
   {
     blur_vertical_1ch_sse(buf, height, width, radius, (__m128*)scratch);
     return;
@@ -820,7 +820,7 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
   dt_aligned_pixel_t L = { 0, 0, 0, 0 };
   size_t hits = 0;
   // add up the left half of the window
-  for (size_t y = 0; y < MIN(radius, height); y++)
+  for(size_t y = 0; y < MIN(radius, height); y++)
   {
     DT_PREFETCH(buf + (y+16)*width);
     hits++;
@@ -828,7 +828,7 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= radius && y + radius < height; y++)
+  for(y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -844,7 +844,7 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
     store_scaled_4wide(buf + y*width, L, hits);
   }
   // process the blur for the bulk of the column
-  for ( ; y + radius < height; y++)
+  for( ; y + radius < height; y++)
   {
     const int np = y + radius;
     const int op = y - radius - 1;
@@ -854,7 +854,7 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
     store_scaled_4wide(buf + y*width, L, hits);
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
-  for ( ; y < height; y++)
+  for( ; y < height; y++)
   {
     const int op = y - radius - 1;
     hits--;
@@ -880,7 +880,7 @@ static void blur_vertical_4wide_Kahan(float *const restrict buf, const size_t he
   dt_aligned_pixel_t comp = { 0, 0, 0, 0 };
   size_t hits = 0;
   // add up the left half of the window
-  for (size_t y = 0; y < MIN(radius, height); y++)
+  for(size_t y = 0; y < MIN(radius, height); y++)
   {
     DT_PREFETCH(buf + (y+16)*width);
     hits++;
@@ -888,7 +888,7 @@ static void blur_vertical_4wide_Kahan(float *const restrict buf, const size_t he
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= radius && y + radius < height; y++)
+  for(y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -904,7 +904,7 @@ static void blur_vertical_4wide_Kahan(float *const restrict buf, const size_t he
     store_scaled_4wide(buf + y*width, L, hits);
   }
   // process the blur for the bulk of the scan line
-  for ( ; y + radius < height; y++)
+  for( ; y + radius < height; y++)
   {
     const int np = y + radius;
     const int op = y - radius - 1;
@@ -914,7 +914,7 @@ static void blur_vertical_4wide_Kahan(float *const restrict buf, const size_t he
     store_scaled_4wide(buf + y*width, L, hits);
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
-  for ( ; y < height; y++)
+  for( ; y < height; y++)
   {
     const int op = y - radius - 1;
     hits--;
@@ -929,7 +929,7 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
                                  const size_t radius, float *const restrict scratch)
 {
 #ifdef __SSE2__
-  if (darktable.codepath.SSE2)
+  if(darktable.codepath.SSE2)
   {
     blur_vertical_4ch_sse(buf, height, width, radius, (__m128*)scratch);
     return;
@@ -947,7 +947,7 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
   float DT_ALIGNED_ARRAY L[16] = { 0, 0, 0, 0 };
   float hits = 0;
   // add up the left half of the window
-  for (size_t y = 0; y < MIN(radius, height); y++)
+  for(size_t y = 0; y < MIN(radius, height); y++)
   {
     PREFETCH_NTA(buf + (y+16)*width);
     hits++;
@@ -955,7 +955,7 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t y;
-  for (y = 0; y <= radius && y + radius < height; y++)
+  for(y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -971,7 +971,7 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
     store_scaled_16wide(buf + y*width, L, hits);
   }
   // process the blur for the bulk of the column
-  for ( ; y + radius < height; y++)
+  for( ; y + radius < height; y++)
   {
     const int np = y + radius;
     const int op = y - radius - 1;
@@ -982,7 +982,7 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
     store_scaled_16wide(buf + y*width, L, hits);
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
-  for ( ; y < height; y++)
+  for( ; y < height; y++)
   {
     const int op = y - radius - 1;
     hits--;
@@ -1009,7 +1009,7 @@ static void blur_vertical_16wide_Kahan(float *const restrict buf, const size_t h
   float DT_ALIGNED_ARRAY comp[16] = { 0, 0, 0, 0 };
   float hits = 0;
   // add up the left half of the window
-  for (size_t y = 0; y < MIN(radius, height); y++)
+  for(size_t y = 0; y < MIN(radius, height); y++)
   {
     DT_PREFETCH(buf + (y+16)*width);
     hits++;
@@ -1017,7 +1017,7 @@ static void blur_vertical_16wide_Kahan(float *const restrict buf, const size_t h
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t y;
-  for (y = 0; y <= radius && y + radius < height; y++)
+  for(y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -1033,7 +1033,7 @@ static void blur_vertical_16wide_Kahan(float *const restrict buf, const size_t h
     store_scaled_16wide(buf + y*width, L, hits);
   }
   // process the blur for the bulk of the column
-  for ( ; y + radius < height; y++)
+  for( ; y + radius < height; y++)
   {
     const int np = y + radius;
     const int op = y - radius - 1;
@@ -1044,7 +1044,7 @@ static void blur_vertical_16wide_Kahan(float *const restrict buf, const size_t h
     store_scaled_16wide(buf + y*width, L, hits);
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
-  for ( ; y < height; y++)
+  for( ; y < height; y++)
   {
     const int op = y - radius - 1;
     hits--;
@@ -1068,7 +1068,7 @@ static void blur_vertical_1ch(float *const restrict buf, const size_t height, co
   for(int x = 0; x < width; x += 16)
   {
     float *const restrict scratch = dt_get_perthread(scanlines,padded_size);
-    if (x + 16 <= width)
+    if(x + 16 <= width)
     {
       blur_vertical_16wide(buf + x, height, width, radius, scratch);
     }
@@ -1148,10 +1148,10 @@ static void box_mean_vert_1ch_Kahan(float *const buf, const int height, const si
   dt_omp_sharedconst(buf, scratch_buf) \
   schedule(static)
 #endif
-  for (size_t col = 0; col < width; col += 16)
+  for(size_t col = 0; col < width; col += 16)
   {
     float *const restrict scratch = dt_get_perthread(scratch_buf,padded_size);
-    if (col + 16 <= width)
+    if(col + 16 <= width)
     {
       blur_vertical_16wide_Kahan(buf + col, height, width, radius, scratch);
     }
@@ -1183,7 +1183,7 @@ static void dt_box_mean_4ch_Kahan(float *const buf, const size_t height, const s
   dt_omp_sharedconst(buf, scanlines) \
   schedule(static)
 #endif
-    for (size_t row = 0; row < height; row++)
+    for(size_t row = 0; row < height; row++)
     {
       float *const restrict scratch = dt_get_perthread(scanlines,padded_size);
       blur_horizontal_4ch_Kahan(buf + row * 4 * width, width, radius, scratch);
@@ -1207,9 +1207,9 @@ static inline void box_mean_2ch(float *const restrict in, const size_t height, c
   const size_t Ndim = MAX(4*width,16*eff_height);
   size_t padded_size;
   float *const restrict temp = dt_alloc_perthread_float(Ndim, &padded_size);
-  if (temp == NULL) return;
+  if(temp == NULL) return;
 
-  for (unsigned iteration = 0; iteration < iterations; iteration++)
+  for(unsigned iteration = 0; iteration < iterations; iteration++)
   {
     blur_horizontal_2ch(in, height, width, radius, temp, padded_size);
     blur_vertical_1ch(in, height, 2*width, radius, temp, padded_size);
@@ -1220,19 +1220,19 @@ static inline void box_mean_2ch(float *const restrict in, const size_t height, c
 void dt_box_mean(float *const buf, const size_t height, const size_t width, const int ch,
                  const int radius, const unsigned iterations)
 {
-  if (ch == 1)
+  if(ch == 1)
   {
     dt_box_mean_1ch(buf,height,width,radius,iterations);
   }
-  else if (ch == 4)
+  else if(ch == 4)
   {
     dt_box_mean_4ch(buf,height,width,radius,iterations);
   }
-  else if (ch == (4|BOXFILTER_KAHAN_SUM))
+  else if(ch == (4|BOXFILTER_KAHAN_SUM))
   {
     dt_box_mean_4ch_Kahan(buf,height,width,radius,iterations);
   }
-  else if (ch == 2) // used by fast_guided_filter.h
+  else if(ch == 2) // used by fast_guided_filter.h
   {
     box_mean_2ch(buf,height,width,radius,iterations);
   }
@@ -1243,18 +1243,18 @@ void dt_box_mean(float *const buf, const size_t height, const size_t width, cons
 void dt_box_mean_horizontal(float *const restrict buf, const size_t width, const int ch, const int radius,
                             float *const restrict user_scratch)
 {
-  if (ch == (4|BOXFILTER_KAHAN_SUM))
+  if(ch == (4|BOXFILTER_KAHAN_SUM))
   {
     float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(4*width);
     blur_horizontal_4ch_Kahan(buf, width, radius, scratch);
-    if (!user_scratch)
+    if(!user_scratch)
       dt_free_align(scratch);
   }
-  else if (ch == (9|BOXFILTER_KAHAN_SUM))
+  else if(ch == (9|BOXFILTER_KAHAN_SUM))
   {
     float *const restrict scratch = user_scratch ? user_scratch : dt_alloc_align_float(9*width);
     blur_horizontal_Nch_Kahan(9, buf, width, radius, scratch);
-    if (!user_scratch)
+    if(!user_scratch)
       dt_free_align(scratch);
   }
   else
@@ -1263,7 +1263,7 @@ void dt_box_mean_horizontal(float *const restrict buf, const size_t width, const
 
 void dt_box_mean_vertical(float *const buf, const size_t height, const size_t width, const int ch, const int radius)
 {
-  if ((ch & BOXFILTER_KAHAN_SUM) && (ch & ~BOXFILTER_KAHAN_SUM) <= 16)
+  if((ch & BOXFILTER_KAHAN_SUM) && (ch & ~BOXFILTER_KAHAN_SUM) <= 16)
   {
     size_t channels = ch & ~BOXFILTER_KAHAN_SUM;
     box_mean_vert_1ch_Kahan(buf, height, channels*width, radius);
@@ -1310,7 +1310,7 @@ static void set_16wide(float *const restrict out, const float value)
 #ifdef _OPENMP
 #pragma omp simd aligned(out : 64)
 #endif
-  for (size_t c = 0; c < 16; c++)
+  for(size_t c = 0; c < 16; c++)
     out[c] = value;
 }
 
@@ -1319,7 +1319,7 @@ static inline void update_max_16wide(float m[16], const float *const restrict ba
 #ifdef _OPENMP
 #pragma omp simd aligned(m, base : 64)
 #endif
-  for (size_t c = 0; c < 16; c++)
+  for(size_t c = 0; c < 16; c++)
   {
     m[c] = fmaxf(m[c], base[c]);
   }
@@ -1330,7 +1330,7 @@ static inline void load_update_max_16wide(float *const restrict out, float m[16]
 #ifdef _OPENMP
 #pragma omp simd aligned(out, m : 64)
 #endif
-  for (size_t c = 0; c < 16; c++)
+  for(size_t c = 0; c < 16; c++)
   {
     const float v = base[c];
     out[c] = v;
@@ -1360,7 +1360,7 @@ static inline void box_max_vert_16wide(const int N, float *const restrict scratc
     store_16wide(buf + stride * i, m);
     // If the earliest member of the current window is the max, we need to
     // rescan the window to determine the new maximum
-    if (i >= w)
+    if(i >= w)
     {
       set_16wide(m, -(FLT_MAX));  // reset max values to lowest possible
       for(int j = i - w + 1; j < MIN(i + w + 1, N); j++)
@@ -1409,7 +1409,7 @@ static void box_max_1ch(float *const buf, const size_t height, const size_t widt
     box_max_vert_16wide(height, scratch, buf + col, width, w, eff_height-1);
   }
   // handle the leftover 0..15 columns
-  for (size_t col = width & ~15 ; col < width; col++)
+  for(size_t col = width & ~15 ; col < width; col++)
   {
     float *const restrict scratch = scratch_buffers;
     for(size_t row = 0; row < height; row++)
@@ -1423,7 +1423,7 @@ static void box_max_1ch(float *const buf, const size_t height, const size_t widt
 // in-place calculate the two-dimensional moving maximum over a box of size (2*radius+1) x (2*radius+1)
 void dt_box_max(float *const buf, const size_t height, const size_t width, const int ch, const int radius)
 {
-  if (ch == 1)
+  if(ch == 1)
     box_max_1ch(buf, height, width, radius);
   else
   //TODO: 4ch version if needed
@@ -1465,7 +1465,7 @@ static inline void update_min_16wide(float m[16], const float *const restrict ba
 #ifdef _OPENMP
 #pragma omp simd aligned(m, base : 64)
 #endif
-  for (size_t c = 0; c < 16; c++)
+  for(size_t c = 0; c < 16; c++)
   {
     m[c] = fminf(m[c], base[c]);
   }
@@ -1476,7 +1476,7 @@ static inline void load_update_min_16wide(float *const restrict out, float m[16]
 #ifdef _OPENMP
 #pragma omp simd aligned(out, m : 64)
 #endif
-  for (size_t c = 0; c < 16; c++)
+  for(size_t c = 0; c < 16; c++)
   {
     const float v = base[c];
     out[c] = v;
@@ -1506,7 +1506,7 @@ static inline void box_min_vert_16wide(const int N, float *const restrict scratc
     store_16wide(buf + i * stride, m);
     // If the earliest member of the current window is the min, we need to
     // rescan the window to determine the new minimum
-    if (i >= w)
+    if(i >= w)
     {
       set_16wide(m, FLT_MAX);  // reset min values to the highest possible
       for(int j = i - w + 1; j < MIN(i + w + 1, N); j++)
@@ -1556,7 +1556,7 @@ static void box_min_1ch(float *const buf, const size_t height, const size_t widt
     box_min_vert_16wide(height, scratch, buf + col, width, w, eff_height-1);
   }
   // handle the leftover 0..15 columns
-  for (size_t col = width & ~15 ; col < width; col++)
+  for(size_t col = width & ~15 ; col < width; col++)
   {
     float *const restrict scratch = scratch_buffers;
     for(size_t row = 0; row < height; row++)
@@ -1569,9 +1569,15 @@ static void box_min_1ch(float *const buf, const size_t height, const size_t widt
 
 void dt_box_min(float *const buf, const size_t height, const size_t width, const int ch, const int radius)
 {
-  if (ch == 1)
+  if(ch == 1)
     box_min_1ch(buf, height, width, radius);
   else
   //TODO: 4ch version if needed
     dt_unreachable_codepath();
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

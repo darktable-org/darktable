@@ -281,7 +281,7 @@ read_icc_profile (j_decompress_ptr cinfo,
       JOCTET *dst_ptr = icc_data + data_offset[seq_no];
       JOCTET FAR *src_ptr = marker->data + ICC_OVERHEAD_LEN;
       unsigned int length = data_length[seq_no];
-      while (length--)
+      while(length--)
       {
         *dst_ptr++ = *src_ptr++;
       }
@@ -344,14 +344,14 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
 
   jpeg_start_compress(&(jpg->cinfo), TRUE);
 
-  if(imgid > 0)
+  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  uint32_t len = 0;
+  cmsSaveProfileToMem(out_profile, NULL, &len);
+  if(len > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
-    uint32_t len = 0;
-    cmsSaveProfileToMem(out_profile, 0, &len);
-    if(len > 0)
+    unsigned char *buf = malloc(sizeof(unsigned char) * len);
+    if(buf)
     {
-      unsigned char *buf = malloc(sizeof(unsigned char) * len);
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
       free(buf);
@@ -511,6 +511,15 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   return 0;
 }
 
+int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data, uint32_t *width,
+              uint32_t *height)
+{
+  /* maximum dimensions supported by JPEG images */
+  *width = 65535U;
+  *height = 65535U;
+  return 1;
+}
+
 int bpp(dt_imageio_module_data_t *p)
 {
   return 8;
@@ -569,7 +578,7 @@ void gui_init(dt_imageio_module_format_t *self)
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   self->widget = box;
   // quality slider
-  g->quality = dt_bauhaus_slider_new_with_range(NULL,
+  g->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
                                                 dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MIN),
                                                 dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MAX),
                                                 1,
@@ -594,6 +603,8 @@ void gui_reset(dt_imageio_module_format_t *self)
   dt_bauhaus_slider_set(g->quality, dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

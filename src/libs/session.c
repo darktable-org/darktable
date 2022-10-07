@@ -82,7 +82,6 @@ static void create_callback(GtkButton *button, gpointer user_data)
 void gui_init(dt_lib_module_t *self)
 {
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("tethering_session"));
   self->data = calloc(1, sizeof(dt_lib_session_t));
 
   // Setup lib data
@@ -123,6 +122,9 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

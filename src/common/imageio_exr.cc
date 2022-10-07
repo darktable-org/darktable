@@ -158,7 +158,55 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   float whiteLuminance = 1.0;
 
   if(Imf::hasChromaticities(header))
+  {
     chromaticities = Imf::chromaticities(header);
+
+    /* adapt chromaticities to D65 expected by colorin */
+    cmsCIExyY red_xy = { chromaticities.red[0], chromaticities.red[1], 1.0 };
+    cmsCIEXYZ srcRed;
+    cmsxyY2XYZ(&srcRed, &red_xy);
+
+    cmsCIExyY green_xy = { chromaticities.green[0], chromaticities.green[1], 1.0 };
+    cmsCIEXYZ srcGreen;
+    cmsxyY2XYZ(&srcGreen, &green_xy);
+
+    cmsCIExyY blue_xy = { chromaticities.blue[0], chromaticities.blue[1], 1.0 };
+    cmsCIEXYZ srcBlue;
+    cmsxyY2XYZ(&srcBlue, &blue_xy);
+
+    const cmsCIExyY srcWhite_xy = { chromaticities.white[0], chromaticities.white[1], 1.0 };
+    cmsCIEXYZ srcWhite;
+    cmsxyY2XYZ(&srcWhite, &srcWhite_xy);
+
+    /* use Imf::Chromaticities definition */
+    const cmsCIExyY d65_xy = {0.3127f, 0.3290f, 1.0};
+    cmsCIEXYZ d65;
+    cmsxyY2XYZ(&d65, &d65_xy);
+
+    cmsCIEXYZ dstRed;
+    cmsAdaptToIlluminant(&dstRed, &srcWhite, &d65, &srcRed);
+
+    cmsCIEXYZ dstGreen;
+    cmsAdaptToIlluminant(&dstGreen, &srcWhite, &d65, &srcGreen);
+
+    cmsCIEXYZ dstBlue;
+    cmsAdaptToIlluminant(&dstBlue, &srcWhite, &d65, &srcBlue);
+
+    cmsXYZ2xyY(&red_xy, &dstRed);
+    chromaticities.red[0] = (float)red_xy.x;
+    chromaticities.red[1] = (float)red_xy.y;
+
+    cmsXYZ2xyY(&green_xy, &dstGreen);
+    chromaticities.green[0] = (float)green_xy.x;
+    chromaticities.green[1] = (float)green_xy.y;
+
+    cmsXYZ2xyY(&blue_xy, &dstBlue);
+    chromaticities.blue[0] = (float)blue_xy.x;
+    chromaticities.blue[1] = (float)blue_xy.y;
+
+    chromaticities.white[0] = 0.3127f;
+    chromaticities.white[1] = 0.3290f;
+  }
 
   if(Imf::hasWhiteLuminance(header))
     whiteLuminance = Imf::whiteLuminance(header);
@@ -170,16 +218,13 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
 //   std::cout << chromaticities.blue << std::endl;
 //   std::cout << chromaticities.white << std::endl;
 
-  Imath::M44f m = Imf::RGBtoXYZ(chromaticities, whiteLuminance);
-  float mat[3][3];
+  Imath::M44f m = Imf::XYZtoRGB(chromaticities, whiteLuminance);
 
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 3; j++)
     {
-      mat[i][j] = m[j][i];
+      img->d65_color_matrix[3 * i + j] = m[j][i];
     }
-
-  mat3inv((float *)img->d65_color_matrix, (float *)mat);
 
 
   /* cleanup and return... */
@@ -193,6 +238,8 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   return DT_IMAGEIO_OK;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

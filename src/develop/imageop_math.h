@@ -185,6 +185,11 @@ static inline int FC(const size_t row, const size_t col, const uint32_t filters)
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
+#define RED 0
+#define GREEN 1
+#define BLUE 2
+#define ALPHA 3
+
 /** Calculate the xtrans pattern color from the row and column **/
 static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
                            const uint8_t (*const xtrans)[6])
@@ -218,6 +223,9 @@ static inline int fcol(const int row, const int col, const uint32_t filters, con
     return FC(row, col, filters);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

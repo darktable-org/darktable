@@ -65,15 +65,17 @@ GList *dt_control_crawler_run()
   GList *result = NULL;
   gboolean look_for_xmp = (dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER);
 
+  // clang-format off
   sqlite3_prepare_v2(dt_database_get(darktable.db),
                      "SELECT i.id, write_timestamp, version, folder || '" G_DIR_SEPARATOR_S "' || filename, flags "
                      "FROM main.images i, main.film_rolls f ON i.film_id = f.id ORDER BY f.id, filename",
                      -1, &stmt, NULL);
+  // clang-format on
   sqlite3_prepare_v2(dt_database_get(darktable.db), "UPDATE main.images SET flags = ?1 WHERE id = ?2", -1,
                      &inner_stmt, NULL);
 
   // let's wrap this into a transaction, it might make it a little faster.
-  sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -202,7 +204,7 @@ GList *dt_control_crawler_run()
     free(extra_path);
   }
 
-  sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 
   sqlite3_finalize(stmt);
   sqlite3_finalize(inner_stmt);
@@ -245,7 +247,7 @@ static void _delete_selected_rows(dt_control_crawler_gui_t *gui)
     if(path)
     {
       GtkTreeIter  iter;
-      if (gtk_tree_model_get_iter(model, &iter, path))
+      if(gtk_tree_model_get_iter(model, &iter, path))
         gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
     }
   }
@@ -354,13 +356,13 @@ static void sync_xmp_to_db(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
 
   if(error)
   {
-    _log_synchronization(gui, _("ERROR: %s NOT synced XMP → DB"), entry.image_path);
+    _log_synchronization(gui, _("ERROR: %s NOT synced XMP → DB"), entry.image_path);
     _log_synchronization(gui, _("ERROR: cannot write the database. the destination may be full, offline or read-only."), NULL);
   }
   else
   {
     _append_row_to_remove(model, path, &gui->rows_to_remove);
-    _log_synchronization(gui, _("SUCCESS: %s synced XMP → DB"), entry.image_path);
+    _log_synchronization(gui, _("SUCCESS: %s synced XMP → DB"), entry.image_path);
   }
 
   g_free(entry.xmp_path);
@@ -377,13 +379,13 @@ static void sync_db_to_xmp(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
 
   if(error)
   {
-    _log_synchronization(gui, _("ERROR: %s NOT synced DB → XMP"), entry.image_path);
+    _log_synchronization(gui, _("ERROR: %s NOT synced DB → XMP"), entry.image_path);
     _log_synchronization(gui, _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."), entry.xmp_path);
   }
   else
   {
     _append_row_to_remove(model, path, &gui->rows_to_remove);
-    _log_synchronization(gui, _("SUCCESS: %s synced DB → XMP"), entry.image_path);
+    _log_synchronization(gui, _("SUCCESS: %s synced DB → XMP"), entry.image_path);
   }
 
   g_free(entry.xmp_path);
@@ -400,17 +402,17 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
 
   if(entry.timestamp_xmp > entry.timestamp_db)
   {
-    // WRITE XMP in DB
+    // WRITE XMP in DB
     _db_update_timestamp(entry.id, entry.timestamp_xmp);
     error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
     if(error)
     {
-      _log_synchronization(gui, _("ERROR: %s NOT synced new (XMP) → old (DB)"), entry.image_path);
+      _log_synchronization(gui, _("ERROR: %s NOT synced new (XMP) → old (DB)"), entry.image_path);
       _log_synchronization(gui, _("ERROR: cannot write the database. the destination may be full, offline or read-only."), NULL);
     }
     else
     {
-      _log_synchronization(gui, _("SUCCESS: %s synced new (XMP) → old (DB)"), entry.image_path);
+      _log_synchronization(gui, _("SUCCESS: %s synced new (XMP) → old (DB)"), entry.image_path);
     }
   }
   else if(entry.timestamp_xmp < entry.timestamp_db)
@@ -420,12 +422,12 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     fprintf(stdout, "%s synced DB (new) → XMP (old)\n", entry.image_path);
     if(error)
     {
-      _log_synchronization(gui, _("ERROR: %s NOT synced new (DB) → old (XMP)"), entry.image_path);
+      _log_synchronization(gui, _("ERROR: %s NOT synced new (DB) → old (XMP)"), entry.image_path);
       _log_synchronization(gui, _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."), entry.xmp_path);
     }
     else
     {
-      _log_synchronization(gui, _("SUCCESS: %s synced new (DB) → old (XMP)"), entry.image_path);
+      _log_synchronization(gui, _("SUCCESS: %s synced new (DB) → old (XMP)"), entry.image_path);
     }
   }
   else
@@ -433,7 +435,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
     error = 1;
-    _log_synchronization(gui, _("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
+    _log_synchronization(gui, _("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
   }
 
   if(!error) _append_row_to_remove(model, path, &gui->rows_to_remove);
@@ -452,17 +454,17 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
 
   if(entry.timestamp_xmp < entry.timestamp_db)
   {
-    // WRITE XMP in DB
+    // WRITE XMP in DB
     _db_update_timestamp(entry.id, entry.timestamp_xmp);
     error = dt_history_load_and_apply(entry.id, entry.xmp_path, 0);
     if(error)
     {
-      _log_synchronization(gui, _("ERROR: %s NOT synced old (XMP) → new (DB)"), entry.image_path);
+      _log_synchronization(gui, _("ERROR: %s NOT synced old (XMP) → new (DB)"), entry.image_path);
     _log_synchronization(gui, _("ERROR: cannot write the database. the destination may be full, offline or read-only."), NULL);
     }
     else
     {
-      _log_synchronization(gui, _("SUCCESS: %s synced old (XMP) → new (DB)"), entry.image_path);
+      _log_synchronization(gui, _("SUCCESS: %s synced old (XMP) → new (DB)"), entry.image_path);
     }
   }
   else if(entry.timestamp_xmp > entry.timestamp_db)
@@ -471,12 +473,12 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     error = dt_image_write_sidecar_file(entry.id);
     if(error)
     {
-      _log_synchronization(gui, _("ERROR: %s NOT synced old (DB) → new (XMP)"), entry.image_path);
+      _log_synchronization(gui, _("ERROR: %s NOT synced old (DB) → new (XMP)"), entry.image_path);
       _log_synchronization(gui, _("ERROR: cannot write %s \nthe destination may be full, offline or read-only."), entry.xmp_path);
     }
     else
     {
-      _log_synchronization(gui, _("SUCCESS: %s synced old (DB) → new (XMP)"), entry.image_path);
+      _log_synchronization(gui, _("SUCCESS: %s synced old (DB) → new (XMP)"), entry.image_path);
     }
   }
   else
@@ -484,7 +486,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model, GtkTreePath *path, GtkTre
     // we should never reach that part of the code
     // if both timestamps are equal, they should not be in this list in the first place
     error = 1;
-    _log_synchronization(gui, _("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
+    _log_synchronization(gui, _("EXCEPTION: %s has inconsistent timestamps"), entry.image_path);
   }
 
   if(!error) _append_row_to_remove(model, path, &gui->rows_to_remove);
@@ -718,6 +720,9 @@ void dt_control_crawler_show_image_list(GList *images)
   g_signal_connect(dialog, "response", G_CALLBACK(dt_control_crawler_response_callback), gui);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

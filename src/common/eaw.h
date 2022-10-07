@@ -51,3 +51,9 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
 void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict in, float *const restrict detail,
                           dt_aligned_pixel_t sum_squared, const int scale, const float inv_sigma2,
                           const int32_t width, const int32_t height);
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

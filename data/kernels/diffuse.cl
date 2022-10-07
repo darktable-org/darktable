@@ -19,10 +19,12 @@
 #include "common.h"
 #include "noise_generator.h"
 
-// use our own coordinate sampler
-const sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE |
-                           CLK_ADDRESS_NONE            |
-                           CLK_FILTER_NEAREST;
+
+// Normalization scaling of the wavelet to approximate a laplacian
+// from the function above for sigma = B_SPLINE_SIGMA as a constant
+#define B_SPLINE_TO_LAPLACIAN 3.182727439285017f
+#define B_SPLINE_TO_LAPLACIAN_2 10.129753952777762f // square
+
 
 typedef enum dt_isotropy_t
 {
@@ -32,52 +34,8 @@ typedef enum dt_isotropy_t
 } dt_isotropy_t;
 
 
-kernel void
-diffuse_init(read_only image2d_t in, write_only image2d_t out,
-             const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  write_imagef(out, (int2)(x, y), (float4)0.f);
-}
-
-#define FSIZE 5
-
-kernel void
-diffuse_blur_bspline(read_only image2d_t in,
-                     write_only image2d_t HF, write_only image2d_t LF,
-                     const int mult, const int width, const int height)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
-  float4 acc = 0.f;
-
-  for(int ii = 0; ii < FSIZE; ++ii)
-    for(int jj = 0; jj < FSIZE; ++jj)
-    {
-      const int row = clamp(y + mult * (int)(ii - (FSIZE - 1) / 2), 0, height - 1);
-      const int col = clamp(x + mult * (int)(jj - (FSIZE - 1) / 2), 0, width - 1);
-      const int k_index = (row * width + col);
-
-      const float filter[FSIZE]
-          = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
-      const float filters = filter[ii] * filter[jj];
-
-      acc += filters * read_imagef(in, samplerA, (int2)(col, row));
-    }
-
-  write_imagef(LF, (int2)(x, y), acc);
-  write_imagef(HF, (int2)(x, y), read_imagef(in, samplerA, (int2)(x, y)) - acc);
-}
-
 // Discretization parameters for the Partial Derivative Equation solver
-#define H 1         // spatial step
+#define H_STEP 1    // spatial step
 #define KAPPA 0.25f // 0.25 if h = 1, 1 if h = 2
 
 
@@ -135,15 +93,20 @@ inline void rotation_matrix_gradient(const float4 c2,
 
 inline void build_matrix(const float4 a[2][2], float4 kern[9])
 {
-  const float4 b13 = a[0][1] / 2.0f;
-  const float4 b11 = -b13;
+  const float4 b11 = a[0][1] / 2.0f;
+  const float4 b13 = -b11;
   const float4 b22 = -2.0f * (a[0][0] + a[1][1]);
 
   // build the kernel of rotated anisotropic laplacian
   // from https://www.researchgate.net/publication/220663968 :
-  // [ [ -a12 / 2,  a22,           a12 / 2  ],
+  // [ [ a12 / 2,  a22,            -a12 / 2 ],
   //   [ a11,      -2 (a11 + a22), a11      ],
-  //   [ a12 / 2,   a22,          -a12 / 2  ] ]
+  //   [ -a12 / 2,   a22,          a12 / 2  ] ]
+  // N.B. we have flipped the signs of the a12 terms
+  // compared to the paper. There's probably a mismatch
+  // of coordinate convention between the paper and the
+  // original derivation of this convolution mask
+  // (Witkin 1991, https://doi.org/10.1145/127719.122750).
   kern[0] = b11;
   kern[1] = a[1][1];
   kern[2] = b13;
@@ -231,13 +194,13 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
   {
     // non-local neighbours coordinates
     const int j_neighbours[3] = {
-      clamp((x - mult * H), 0, width - 1),
+      clamp((x - mult * H_STEP), 0, width - 1),
       x,
-      clamp((x + mult * H), 0, width - 1) };
+      clamp((x + mult * H_STEP), 0, width - 1) };
     const int i_neighbours[3] = {
-      clamp((y - mult * H), 0, height - 1),
+      clamp((y - mult * H_STEP), 0, height - 1),
       y,
-      clamp((y + mult * H), 0, height - 1) };
+      clamp((y + mult * H_STEP), 0, height - 1) };
 
     // fetch non-local pixels and store them locally and contiguously
     float4 neighbour_pixel_HF[9];

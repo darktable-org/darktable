@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,13 +83,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     if(self->dev && self->dev->image_storage.flags & DT_IMAGE_4BAYER)
     {
-      const char *camera = self->dev->image_storage.camera_makermodel;
-
       double RGB_to_CAM[4][3];
 
       // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-      if(!dt_colorspaces_conversion_matrices_rgb(camera, RGB_to_CAM, NULL, self->dev->image_storage.d65_color_matrix, NULL))
+      if(!dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.adobe_XYZ_to_CAM,
+                                                 RGB_to_CAM, NULL,
+                                                 self->dev->image_storage.d65_color_matrix, NULL))
       {
+        const char *camera = self->dev->image_storage.camera_makermodel;
         fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
         dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
       }
@@ -115,7 +116,7 @@ const char *deprecated_msg()
   return _("this module is deprecated. please use the negadoctor module instead.");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("invert film negatives"),
                                       _("corrective"),
@@ -137,19 +138,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_RAW;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, FALSE, N_("pick color of film material from image"), 0, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_button_iop(self, "pick color of film material from image", GTK_WIDGET(g->colorpicker));
+  return IOP_CS_RAW;
 }
 
 static void gui_update_from_coeffs(dt_iop_module_t *self)
@@ -487,7 +476,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
@@ -505,7 +494,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   dt_opencl_release_mem_object(dev_color);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_invert] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_invert] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -514,7 +503,7 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_invert_gui_data_t *const g = (dt_iop_invert_gui_data_t*)self->gui_data;
 
-  if (g)
+  if(g)
   {
     if(dt_image_is_monochrome(&self->dev->image_storage))
     {
@@ -528,11 +517,12 @@ void reload_defaults(dt_iop_module_t *self)
 
       if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
       {
-        const char *camera = self->dev->image_storage.camera_makermodel;
-
         // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-        if(!dt_colorspaces_conversion_matrices_rgb(camera, g->RGB_to_CAM, g->CAM_to_RGB, self->dev->image_storage.d65_color_matrix, NULL))
+        if(!dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.adobe_XYZ_to_CAM,
+                                                   g->RGB_to_CAM, g->CAM_to_RGB,
+                                                   self->dev->image_storage.d65_color_matrix, NULL))
         {
+          const char *camera = self->dev->image_storage.camera_makermodel;
           fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
           dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
         }
@@ -607,6 +597,7 @@ void gui_init(dt_iop_module_t *self)
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   g->colorpicker = gtk_color_button_new_with_rgba(&color);
+  dt_action_define(DT_ACTION(self), NULL, N_("pick color of film material from image"), g->colorpicker, &dt_action_def_button);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpicker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpicker), _("select color of film material"));
   g_signal_connect(G_OBJECT(g->colorpicker), "color-set", G_CALLBACK(colorpicker_callback), self);
@@ -615,6 +606,9 @@ void gui_init(dt_iop_module_t *self)
   g->picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, GTK_WIDGET(g->pickerbuttons));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

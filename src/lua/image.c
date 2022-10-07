@@ -28,6 +28,7 @@
 #include "common/collection.h"
 #include "common/metadata.h"
 #include "common/ratings.h"
+#include "common/datetime.h"
 #include "views/view.h"
 #include "lua/database.h"
 #include "lua/film.h"
@@ -317,6 +318,27 @@ static int metadata_member(lua_State *L)
   }
 }
 
+static int exif_datetime_taken_member(lua_State *L)
+{
+  if(lua_gettop(L) != 3)
+  {
+    const dt_image_t *my_image = checkreadimage(L, 1);
+    char sdt[DT_DATETIME_EXIF_LENGTH] = {0};
+    dt_datetime_img_to_exif(sdt, sizeof(sdt), my_image);
+    lua_pushstring(L, sdt);
+    releasereadimage(L, my_image);
+    return 1;
+  }
+  else
+  {
+    dt_image_t *my_image = checkwriteimage(L, 1);
+    dt_datetime_exif_to_img(my_image, luaL_checkstring(L, 3));
+    dt_image_synch_xmp(my_image->id);
+    releasewriteimage(L, my_image);
+    return 0;
+  }
+}
+
 static int local_copy_member(lua_State *L)
 {
   if(lua_gettop(L) != 3)
@@ -484,7 +506,6 @@ int dt_lua_init_image(lua_State *L)
   luaA_struct_member(L, dt_image_t, exif_maker, char_64);
   luaA_struct_member(L, dt_image_t, exif_model, char_64);
   luaA_struct_member(L, dt_image_t, exif_lens, char_128);
-  luaA_struct_member(L, dt_image_t, exif_datetime_taken, char_20);
   luaA_struct_member(L, dt_image_t, filename, const char_filename_length);
   luaA_struct_member(L, dt_image_t, width, const int32_t);
   luaA_struct_member(L, dt_image_t, height, const int32_t);
@@ -546,6 +567,8 @@ int dt_lua_init_image(lua_State *L)
     dt_lua_type_register(L, dt_lua_image_t, *name);
     name++;
   }
+  lua_pushcfunction(L, exif_datetime_taken_member);
+  dt_lua_type_register(L, dt_lua_image_t, "exif_datetime_taken");
   // metadata
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -607,6 +630,9 @@ int dt_lua_init_image(lua_State *L)
   return 0;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -72,13 +72,15 @@ int operation_tags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
-  return g_strdup(_("internal module to setup technical specificities of raw sensor.\n\n"
-                    "you should not touch values here !"));
+  return dt_iop_set_description(self,
+                                _("internal module to setup technical specificities of raw sensor.\n\n"
+                                  "you should not touch values here !"),
+                                NULL, NULL, NULL, NULL);
 }
 
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
@@ -178,7 +180,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->width = hw[1];
 
   float reduction_ratio = MAX(hw[0] / (piece->buf_in.height * 1.0f), hw[1] / (piece->buf_in.width * 1.0f));
-  if (reduction_ratio > 1.0f)
+  if(reduction_ratio > 1.0f)
   {
     roi_in->height /= reduction_ratio;
     roi_in->width /= reduction_ratio;
@@ -282,6 +284,9 @@ void gui_init(dt_iop_module_t *self)
 
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

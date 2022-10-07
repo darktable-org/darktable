@@ -163,21 +163,21 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
   cairo_set_line_width(cr, 1.0 / zoom_scale);
 
   cairo_set_dash(cr, &dashes, 1, 0);
-  dt_draw_set_color_overlay(cr, 0.2, 0.3);
+  dt_draw_set_color_overlay(cr, FALSE, 0.3);
   dt_draw_horizontal_lines(cr, (1 + nbh) * (1 + subdiv), x, y, right, bottom);
   dt_draw_vertical_lines(cr, (1 + nbv) * (1 + subdiv), x, y, right, bottom);
   cairo_set_dash(cr, &dashes, 1, dashes);
-  dt_draw_set_color_overlay(cr, 0.8, 0.3);
+  dt_draw_set_color_overlay(cr, TRUE, 0.3);
   dt_draw_horizontal_lines(cr, (1 + nbh) * (1 + subdiv), x, y, right, bottom);
   dt_draw_vertical_lines(cr, (1 + nbv) * (1 + subdiv), x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, 0);
-  dt_draw_set_color_overlay(cr, 0.2, 0.5);
+  dt_draw_set_color_overlay(cr, FALSE, 0.5);
   dt_draw_horizontal_lines(cr, 1 + nbh, x, y, right, bottom);
   dt_draw_vertical_lines(cr, 1 + nbv, x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, dashes);
-  dt_draw_set_color_overlay(cr, 0.8, 0.5);
+  dt_draw_set_color_overlay(cr, TRUE, 0.5);
   dt_draw_horizontal_lines(cr, 1 + nbh, x, y, right, bottom);
   dt_draw_vertical_lines(cr, 1 + nbv, x, y, right, bottom);
 }
@@ -651,9 +651,39 @@ static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
   dt_control_queue_redraw_center();
 }
 
+void dt_guides_set_overlay_colors()
+{
+  const int overlay_color = dt_conf_get_int("darkroom/ui/overlay_color");
+
+  darktable.gui->overlay_contrast = dt_conf_get_float("darkroom/ui/overlay_contrast");
+
+  darktable.gui->overlay_red = darktable.gui->overlay_green = darktable.gui->overlay_blue = 0.0f;
+
+  if(overlay_color == DT_DEV_OVERLAY_GRAY)
+    darktable.gui->overlay_red = darktable.gui->overlay_green = darktable.gui->overlay_blue = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_RED)
+    darktable.gui->overlay_red = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_GREEN)
+    darktable.gui->overlay_green = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_YELLOW)
+    darktable.gui->overlay_red = darktable.gui->overlay_green = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_CYAN)
+    darktable.gui->overlay_green = darktable.gui->overlay_blue = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_MAGENTA)
+    darktable.gui->overlay_red = darktable.gui->overlay_blue = 1.0f;
+}
+
 static void _settings_colors_changed(GtkWidget *combo, _guides_settings_t *gw)
 {
   dt_conf_set_int("darkroom/ui/overlay_color", dt_bauhaus_combobox_get(combo));
+  dt_guides_set_overlay_colors();
+  dt_control_queue_redraw_center();
+}
+
+static void _settings_contrast_changed(GtkWidget *slider, _guides_settings_t *gw)
+{
+  dt_conf_set_float("darkroom/ui/overlay_contrast", dt_bauhaus_slider_get(slider));
+  dt_guides_set_overlay_colors();
   dt_control_queue_redraw_center();
 }
 
@@ -661,7 +691,6 @@ static void _settings_colors_changed(GtkWidget *combo, _guides_settings_t *gw)
 GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
 {
   GtkWidget *pop = gtk_popover_new(button);
-  gtk_widget_set_size_request(GTK_WIDGET(pop), 350, -1);
 
   // create a new struct for all the widgets
   _guides_settings_t *gw = (_guides_settings_t *)g_malloc0(sizeof(_guides_settings_t));
@@ -670,7 +699,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   // title
   GtkWidget *lb = gtk_label_new(_("global guide overlay settings"));
   gtk_label_set_justify(GTK_LABEL(lb), GTK_JUSTIFY_CENTER);
-  gtk_widget_set_name(lb, "guides_menu_title");
+  dt_gui_add_class(lb, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
 
   // global guides section
@@ -679,7 +708,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   gtk_widget_set_no_show_all(gw->g_widgets, TRUE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gw->g_flip, self, N_("guide lines"), N_("flip"), _("flip guides"),
-                               0, (GtkCallback)_settings_flip_changed, gw,
+                               0, _settings_flip_changed, gw,
                                N_("none"),
                                N_("horizontally"),
                                N_("vertically"),
@@ -696,14 +725,23 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(darktable.view_manager->guides_colors, self, N_("guide lines"), N_("overlay color"), _("set overlay color"),
-                               dt_conf_get_int("darkroom/ui/overlay_color"), (GtkCallback)_settings_colors_changed, gw,
+                               dt_conf_get_int("darkroom/ui/overlay_color"), _settings_colors_changed, gw,
                                N_("gray"),
                                N_("red"),
                                N_("green"),
                                N_("yellow"),
                                N_("cyan"),
                                N_("magenta"));
+  // NOTE: any change in the number of entries above will require a corresponding change in _overlay_cycle_callback
+  // in src/views/darkroom.c
   gtk_box_pack_start(GTK_BOX(vbox), darktable.view_manager->guides_colors, TRUE, TRUE, 0);
+
+  GtkWidget *contrast = darktable.view_manager->guides_contrast = dt_bauhaus_slider_new_action(DT_ACTION(self), 0, 1, 0.005, 0.5, 3);
+  dt_bauhaus_widget_set_label(contrast, N_("guide lines"), N_("contrast"));
+  gtk_widget_set_tooltip_text(contrast, N_("set the contrast between the lightest and darkest part of the guide overlays"));
+  dt_bauhaus_slider_set(contrast, dt_conf_get_float("darkroom/ui/overlay_contrast"));
+  gtk_box_pack_start(GTK_BOX(vbox), contrast, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(contrast), "value-changed", G_CALLBACK(_settings_contrast_changed), NULL);
 
   gtk_container_add(GTK_CONTAINER(pop), vbox);
 
@@ -770,8 +808,8 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
   cairo_rectangle(cr, left, top, width, height);
   cairo_clip(cr);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.8, 1.0);
-  cairo_set_dash(cr, &dashes, 1, 0);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_set_dash(cr, &dashes, 0, 0);
 
   // Move coordinates to local center selection.
   cairo_translate(cr, (width / 2 + left), (height / 2 + top));
@@ -785,8 +823,8 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
   guide->draw(cr, -width / 2.0, -height / 2.0, width, height, zoom_scale, guide->user_data);
 
   cairo_stroke_preserve(cr);
-  cairo_set_dash(cr, &dashes, 0, 0);
-  dt_draw_set_color_overlay(cr, 0.3, 0.8);
+  cairo_set_dash(cr, &dashes, 1, 0);
+  dt_draw_set_color_overlay(cr, TRUE, 1.0);
   cairo_stroke(cr);
 
   cairo_restore(cr);
@@ -853,7 +891,7 @@ void dt_guides_init_module_widget(GtkWidget *iopw, struct dt_iop_module_t *modul
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *cb = module->guides_combo = gtk_check_button_new_with_label(_("show guides"));
-  gtk_widget_set_name(box, "guides_module_combobox");
+  gtk_widget_set_name(box, "guides-module-combobox");
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(cb))), PANGO_ELLIPSIZE_START);
 
   gchar *key = _conf_get_path(module->op, "autoshow", NULL);
@@ -862,7 +900,7 @@ void dt_guides_init_module_widget(GtkWidget *iopw, struct dt_iop_module_t *modul
 
   g_signal_connect(G_OBJECT(cb), "toggled", G_CALLBACK(_settings_autoshow_change2), module);
   gtk_widget_set_tooltip_text(cb, _("show guide overlay when this module has focus"));
-  GtkWidget *ic = dtgtk_button_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
+  GtkWidget *ic = dtgtk_button_new(dtgtk_cairo_paint_grid, 0, NULL);
   gtk_widget_set_tooltip_text(ic, _("change global guide settings\nnote that these settings are applied globally "
                                     "and will impact any module that shows guide overlays"));
   g_signal_connect(G_OBJECT(ic), "clicked", G_CALLBACK(_settings_autoshow_menu), module);
@@ -897,7 +935,11 @@ void dt_guides_update_popover_values()
   dt_bauhaus_combobox_set(darktable.view_manager->guides, i);
   // colors
   dt_bauhaus_combobox_set(darktable.view_manager->guides_colors, dt_conf_get_int("darkroom/ui/overlay_color"));
+  dt_bauhaus_slider_set(darktable.view_manager->guides_contrast, dt_conf_get_float("darkroom/ui/overlay_contrast"));
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

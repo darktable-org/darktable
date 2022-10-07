@@ -419,7 +419,7 @@ const char *name()
   return _("grain");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("simulate silver grains from film"),
                                       _("creative"),
@@ -440,7 +440,7 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
 // see: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
@@ -459,7 +459,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)fmax(roi_out->width * 0.3, 1.0);
 
-  const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
   const int ch = piece->colors;
   // Apply grain to image
   const double strength = (data->strength / 100.0);
@@ -551,16 +551,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
-  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-
-  dt_bauhaus_slider_set(g->scale, p->scale);
-  dt_bauhaus_slider_set(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->midtones_bias, p->midtones_bias);
-}
-
 void init_global(struct dt_iop_module_so_t *self)
 {
   _simplex_noise_init();
@@ -573,20 +563,22 @@ void gui_init(struct dt_iop_module_t *self)
   /* courseness */
   g->scale = dt_bauhaus_slider_from_params(self, "scale");
   dt_bauhaus_slider_set_factor(g->scale, GRAIN_SCALE_FACTOR);
-  dt_bauhaus_slider_set_step(g->scale, 20.0/GRAIN_SCALE_FACTOR);
-  dt_bauhaus_slider_set_digits(g->scale, 5);
-  dt_bauhaus_slider_set_format(g->scale, _("%.0f ISO"));
+  dt_bauhaus_slider_set_digits(g->scale, 0);
+  dt_bauhaus_slider_set_format(g->scale, " ISO");
   gtk_widget_set_tooltip_text(g->scale, _("the grain size (~ISO of the film)"));
 
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
-  dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->strength, "%");
   gtk_widget_set_tooltip_text(g->strength, _("the strength of applied grain"));
 
   g->midtones_bias = dt_bauhaus_slider_from_params(self, "midtones_bias");
-  dt_bauhaus_slider_set_format(g->midtones_bias, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->midtones_bias, "%");
   gtk_widget_set_tooltip_text(g->midtones_bias, _("amount of mid-tones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

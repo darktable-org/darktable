@@ -59,7 +59,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
      intent,
      black_point_compensation ? cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
 
-  if (!hTransform)
+  if(!hTransform)
   {
     fprintf(stderr, "error printer profile may be corrupted\n");
     return 1;
@@ -67,7 +67,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 
   void *out = (void *)malloc((size_t)3 * width * height);
 
-  if (bpp == 8)
+  if(bpp == 8)
   {
     const uint8_t *ptr_in = (uint8_t *)*in;
     uint8_t *ptr_out = (uint8_t *)out;
@@ -75,7 +75,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(ptr_in, ptr_out, hTransform, height, width)
 #endif
-    for (int k=0; k<height; k++)
+    for(int k=0; k<height; k++)
       cmsDoTransform(hTransform, (const void *)&ptr_in[k*width*3], (void *)&ptr_out[k*width*3], width);
   }
   else
@@ -86,7 +86,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(ptr_in, ptr_out, hTransform, height, width)
 #endif
-    for (int k=0; k<height; k++)
+    for(int k=0; k<height; k++)
       cmsDoTransform(hTransform, (const void *)&ptr_in[k*width*3], (void *)&ptr_out[k*width*3], width);
   }
 
@@ -98,6 +98,9 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
   return 0;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+
