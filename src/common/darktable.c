@@ -93,7 +93,11 @@
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #elif defined HAVE_IMAGEMAGICK
-#include <MagickWand/MagickWand.h>
+  #ifdef HAVE_IMAGEMAGICK7
+  #include <MagickWand/MagickWand.h>
+  #else
+  #include <wand/MagickWand.h>
+  #endif
 #endif
 
 #include "dbus.h"
