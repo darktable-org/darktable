@@ -65,7 +65,11 @@
 #include <magick/api.h>
 #include <magick/blob.h>
 #elif defined HAVE_IMAGEMAGICK
-#include <MagickWand/MagickWand.h>
+  #ifdef HAVE_IMAGEMAGICK7
+  #include <MagickWand/MagickWand.h>
+  #else
+  #include <wand/MagickWand.h>
+  #endif
 #endif
 
 #include <assert.h>
