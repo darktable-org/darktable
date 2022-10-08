@@ -151,8 +151,9 @@ FILE(GLOB SOURCE_FILES
   "gui/import_metadata.c"
   "libs/lib.c"
   "views/view.c"
+  "libs/filters/filters.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/OpenCL/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "libs/filters/*.h" "views/*.h")
 
 if(APPLE)
   list(APPEND SOURCE_FILES "osx/osx.mm")

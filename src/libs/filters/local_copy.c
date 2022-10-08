@@ -22,7 +22,7 @@
 
 typedef struct _widgets_local_copy_t
 {
-  dt_lib_filtering_rule_t *rule;
+  dt_lib_filters_rule_t *rule;
 
   GtkWidget *combo;
 } _widgets_local_copy_t;
@@ -36,23 +36,6 @@ typedef enum _local_copy_type_t
 
 static const char *_local_copy_names[]
     = { N_("all images"), N_("copied locally"), N_("not copied locally"), NULL };
-
-static void _local_copy_synchronise(_widgets_local_copy_t *source)
-{
-  _widgets_local_copy_t *dest = NULL;
-  if(source == source->rule->w_specific_top)
-    dest = source->rule->w_specific;
-  else
-    dest = source->rule->w_specific_top;
-
-  if(dest)
-  {
-    source->rule->manual_widget_set++;
-    const int val = dt_bauhaus_combobox_get(source->combo);
-    dt_bauhaus_combobox_set(dest->combo, val);
-    source->rule->manual_widget_set--;
-  }
-}
 
 static void _local_copy_decode(const gchar *txt, int *val)
 {
@@ -84,10 +67,9 @@ static void _local_copy_changed(GtkWidget *widget, gpointer user_data)
       _rule_set_raw_text(local_copy->rule, "$LOCAL_COPY", TRUE);
       break;
   }
-  _local_copy_synchronise(local_copy);
 }
 
-static gboolean _local_copy_update(dt_lib_filtering_rule_t *rule)
+static gboolean _local_copy_update(dt_lib_filters_rule_t *rule, gchar *last_where_ext)
 {
   if(!rule->w_specific) return FALSE;
   int val = _LCP_ALL;
@@ -105,7 +87,7 @@ static gboolean _local_copy_update(dt_lib_filtering_rule_t *rule)
                    " FROM main.images AS mi "
                    " WHERE %s"
                    " GROUP BY lcp ORDER BY lcp ASC",
-                   DT_IMAGE_LOCAL_COPY, rule->lib->last_where_ext);
+                   DT_IMAGE_LOCAL_COPY, last_where_ext);
   // clang-format on
   int counts[2] = { 0 };
   sqlite3_stmt *stmt;
@@ -126,13 +108,12 @@ static gboolean _local_copy_update(dt_lib_filtering_rule_t *rule)
   }
 
   dt_bauhaus_combobox_set(local_copy->combo, val);
-  _local_copy_synchronise(local_copy);
   rule->manual_widget_set--;
 
   return TRUE;
 }
 
-static void _local_copy_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+static void _local_copy_widget_init(dt_lib_filters_rule_t *rule, const dt_collection_properties_t prop,
                                     const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_local_copy_t *local_copy = (_widgets_local_copy_t *)g_malloc0(sizeof(_widgets_local_copy_t));
@@ -143,20 +124,14 @@ static void _local_copy_widget_init(dt_lib_filtering_rule_t *rule, const dt_coll
       (GtkCallback)_local_copy_changed, local_copy, _local_copy_names);
   DT_BAUHAUS_WIDGET(local_copy->combo)->show_label = FALSE;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), local_copy->combo, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), local_copy->combo, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), local_copy->combo, TRUE, TRUE, 0);
 
   if(top)
   {
     dt_gui_add_class(local_copy->combo, "dt_quick_filter");
   }
 
-  if(top)
-    rule->w_specific_top = local_copy;
-  else
-    rule->w_specific = local_copy;
+  rule->w_specific = local_copy;
 }
 
 // clang-format off

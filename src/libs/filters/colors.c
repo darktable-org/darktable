@@ -110,7 +110,7 @@ static void _colors_operator_clicked(GtkWidget *w, _widgets_colors_t *colors)
   _colors_update(rule);
 }
 
-static gchar *_colors_pretty_print(const gchar *raw_txt)
+gchar *dt_filters_colors_pretty_print(const gchar *raw_txt)
 {
   gchar *txt = NULL;
   const int val = _get_mask(raw_txt);

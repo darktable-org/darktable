@@ -22,7 +22,7 @@
 
 typedef struct _widgets_filename_t
 {
-  dt_lib_filtering_rule_t *rule;
+  dt_lib_filters_rule_t *rule;
 
   GtkWidget *name;
   GtkWidget *ext;
@@ -31,26 +31,8 @@ typedef struct _widgets_filename_t
   GtkWidget *ext_tree;
   gboolean tree_ok;
   int internal_change;
+  gchar *last_where_ext;
 } _widgets_filename_t;
-
-static void _filename_synchronise(_widgets_filename_t *source)
-{
-  _widgets_filename_t *dest = NULL;
-  if(source == source->rule->w_specific_top)
-    dest = source->rule->w_specific;
-  else
-    dest = source->rule->w_specific_top;
-
-  if(dest)
-  {
-    source->rule->manual_widget_set++;
-    const gchar *txt1 = gtk_entry_get_text(GTK_ENTRY(source->name));
-    gtk_entry_set_text(GTK_ENTRY(dest->name), txt1);
-    const gchar *txt2 = gtk_entry_get_text(GTK_ENTRY(source->ext));
-    gtk_entry_set_text(GTK_ENTRY(dest->ext), txt2);
-    source->rule->manual_widget_set--;
-  }
-}
 
 static void _filename_decode(const gchar *txt, gchar **name, gchar **ext)
 {
@@ -77,7 +59,6 @@ static void _filename_changed(GtkWidget *widget, gpointer user_data)
                                  gtk_entry_get_text(GTK_ENTRY(filename->ext)));
 
   _rule_set_raw_text(filename->rule, value, TRUE);
-  _filename_synchronise(filename);
   g_free(value);
 }
 
@@ -91,8 +72,6 @@ static gboolean _filename_focus_out(GtkWidget *entry, GdkEventFocus *event, gpoi
 
 void _filename_tree_update(_widgets_filename_t *filename)
 {
-  dt_lib_filtering_t *d = filename->rule->lib;
-
   char query[1024] = { 0 };
   int nb_raw = 0;
   int nb_not_raw = 0;
@@ -120,7 +99,7 @@ void _filename_tree_update(_widgets_filename_t *filename)
              " WHERE %s"
              " GROUP BY fn"
              " ORDER BY filename",
-             d->last_where_ext);
+             filename->last_where_ext);
   // clang-format on
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -144,7 +123,7 @@ void _filename_tree_update(_widgets_filename_t *filename)
              " WHERE %s"
              " GROUP BY ext"
              " ORDER BY ext",
-             d->last_where_ext);
+             filename->last_where_ext);
   // clang-format on
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -253,26 +232,23 @@ static gboolean _filename_press(GtkWidget *w, GdkEventButton *e, _widgets_filena
   return FALSE;
 }
 
-static gboolean _filename_update(dt_lib_filtering_rule_t *rule)
+static gboolean _filename_update(dt_lib_filters_rule_t *rule, gchar *last_where_ext)
 {
   if(!rule->w_specific) return FALSE;
   gchar *name = NULL;
   gchar *ext = NULL;
   _filename_decode(rule->raw_text, &name, &ext);
 
-  rule->manual_widget_set++;
   _widgets_filename_t *filename = (_widgets_filename_t *)rule->w_specific;
+  if(last_where_ext)
+  {
+    g_free(filename->last_where_ext);
+    filename->last_where_ext = g_strdup(last_where_ext);
+  }
   filename->tree_ok = FALSE;
+  rule->manual_widget_set++;
   if(name) gtk_entry_set_text(GTK_ENTRY(filename->name), name);
   if(ext) gtk_entry_set_text(GTK_ENTRY(filename->ext), ext);
-  if(rule->topbar && rule->w_specific_top)
-  {
-    filename = (_widgets_filename_t *)rule->w_specific_top;
-    filename->tree_ok = FALSE;
-    if(name) gtk_entry_set_text(GTK_ENTRY(filename->name), name);
-    if(ext) gtk_entry_set_text(GTK_ENTRY(filename->ext), ext);
-  }
-  _filename_synchronise(filename);
   rule->manual_widget_set--;
 
   g_free(name);
@@ -347,17 +323,15 @@ void _filename_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer
   g_free(name);
 }
 
-static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+static void _filename_widget_init(dt_lib_filters_rule_t *rule, const dt_collection_properties_t prop,
                                   const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_filename_t *filename = (_widgets_filename_t *)g_malloc0(sizeof(_widgets_filename_t));
   filename->rule = rule;
+  filename->last_where_ext = g_strdup("1=1"); // initialize the query to search the full db
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), hb, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), hb, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), hb, TRUE, TRUE, 0);
   filename->name = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(filename->name), (top) ? 10 : 0);
   gtk_widget_set_can_default(filename->name, TRUE);
@@ -453,10 +427,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_box_pack_start(GTK_BOX(hb), btn, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_filename_ok_clicked), filename);
 
-  if(top)
-    rule->w_specific_top = filename;
-  else
-    rule->w_specific = filename;
+  rule->w_specific = filename;
 }
 
 // clang-format off

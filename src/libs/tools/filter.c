@@ -116,13 +116,6 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.filter.get_filter_box = _lib_filter_get_filter_box;
   darktable.view_manager->proxy.filter.get_sort_box = _lib_filter_get_sort_box;
   darktable.view_manager->proxy.filter.get_count = _lib_filter_get_count;
-
-  // test if the filtering module is already load and update its gui in this case
-  // otherwise filtering module will do it in its gui_init()
-  if(darktable.view_manager->proxy.module_filtering.module)
-  {
-    darktable.view_manager->proxy.module_filtering.update(darktable.view_manager->proxy.module_filtering.module);
-  }
 }
 
 void gui_cleanup(dt_lib_module_t *self)
