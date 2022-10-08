@@ -323,7 +323,7 @@ if(TESTBUILD_OPENCL_PROGRAMS)
   endmacro()
 
   # 3.9 is the first version with which this works.
-  find_llvm("14;13;12;11;10;9;8;7;6.0;5.0;4.0;3.9")
+  find_llvm("15;14;13;12;11;10;9;8;7;6.0;5.0;4.0;3.9")
 
   if (LLVM_FOUND)
     message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
