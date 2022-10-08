@@ -48,6 +48,7 @@ typedef struct tiff_t
   tdata_t buf;
 } tiff_t;
 
+#ifndef HAVE_IMATH
 typedef union fp32_t
 {
   uint32_t u;
@@ -81,6 +82,7 @@ static inline float _half_to_float(uint16_t h)
   o.u |= (h & 0x8000) << 16;    // sign bit
   return o.f;
 }
+#endif
 
 static inline int _read_chunky_8(tiff_t *t)
 {
