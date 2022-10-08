@@ -148,7 +148,6 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         else
           return 1;
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-        dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), circle->border);
         dt_toast_log(_("feather size: %3.2f%%"), (circle->border/circle->radius)*100.0f);
@@ -162,7 +161,6 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         else
           return 1;
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-        dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), circle->radius);
         dt_toast_log(_("size: %3.2f%%"), circle->radius*100.0f);
@@ -393,7 +391,6 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
@@ -430,7 +427,6 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
@@ -487,7 +483,6 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
     }
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -512,7 +507,6 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
     circle->radius = CLAMP(circle->radius * (1.0f + deltax / rx), 0.0005f, max_mask_size);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -537,7 +531,6 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
 
     circle->border = CLAMP((circle->radius + circle->border) * (1.0f + deltax / rx) - circle->radius, 0.001f, max_mask_border);
 
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;

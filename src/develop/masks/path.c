@@ -1104,7 +1104,6 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
       // we recreate the form points
-      dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index, module);
 
       // we save the move
@@ -1292,7 +1291,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       _path_init_ctrl_points(form);
 
       // we recreate the form points
-      dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index, module);
 
       dt_control_queue_redraw_center();
@@ -1342,7 +1340,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
         // we recreate the form points
-        dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
         gpt->clockwise = _path_is_clockwise(form);
         // we save the move
@@ -1401,7 +1398,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
         form->points = g_list_insert(form->points, bzpt, gui->seg_selected + 1);
         _path_init_ctrl_points(form);
-        dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
         gui->point_edited = gui->point_dragging = gui->point_selected = gui->seg_selected + 1;
         gui->seg_selected = -1;
@@ -1470,7 +1466,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
@@ -1490,7 +1485,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
       // we recreate the form points
-      dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index, module);
       gpt->clockwise = _path_is_clockwise(form);
       // we save the move
@@ -1568,7 +1562,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
@@ -1591,7 +1584,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
@@ -1637,7 +1629,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
@@ -1672,7 +1663,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
@@ -1750,7 +1740,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     _path_init_ctrl_points(form);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -1797,7 +1786,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     dt_control_queue_redraw_center();
@@ -1823,7 +1811,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
 
     _path_init_ctrl_points(form);
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -1850,7 +1837,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     point->border[0] = point->border[1] = bdr;
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -1884,7 +1870,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     }
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
