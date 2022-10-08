@@ -1743,6 +1743,7 @@ void gui_init(dt_lib_module_t *self)
                                                   _masks_properties[i].max, 0, 0.0, 2);
     dt_bauhaus_widget_set_label(d->property[i], N_("properties"), _masks_properties[i].name);
     dt_bauhaus_slider_set_format(d->property[i], _masks_properties[i].format);
+    dt_bauhaus_slider_set_digits(d->property[i], 2);
     d->last_value[i] = dt_bauhaus_slider_get(d->property[i]);
     gtk_box_pack_start(GTK_BOX(d->cs.container), d->property[i], FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(d->property[i]), "value-changed", G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
