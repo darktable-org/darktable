@@ -501,7 +501,6 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         ellipse->rotation = fmodf(ellipse->rotation, 360.0f);
 
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-        dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), ellipse->rotation);
         dt_toast_log(_("rotation: %3.f°"), ellipse->rotation);
@@ -517,7 +516,6 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         else return 1;
         ellipse->border = CLAMP(ellipse->border, 0.001f * reference, radius_limit *reference);
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-        dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, border), ellipse->border);
         dt_toast_log(_("feather size: %3.2f%%"), ellipse->border*100.0f);
@@ -538,7 +536,6 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         ellipse->radius[1] *= factor;
 
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-        dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_a), ellipse->radius[0]);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_b), ellipse->radius[1]);
@@ -787,7 +784,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
@@ -833,7 +829,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the new parameters
@@ -882,7 +877,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the rotation
@@ -930,7 +924,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the updated shape
@@ -975,7 +968,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the updated shape
@@ -1006,7 +998,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
@@ -1053,7 +1044,6 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     }
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -1125,7 +1115,6 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     }
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -1165,7 +1154,6 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
                             0.001f * reference, radius_limit *reference);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -1205,7 +1193,6 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), ellipse->rotation);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we remap dx, dy to the right values, as it will be used in next movements

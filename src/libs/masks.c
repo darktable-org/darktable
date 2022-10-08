@@ -172,7 +172,6 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
       if(value != d->last_value[prop] && count != saved_count && value != d->last_value[prop])
       {
         // we recreate the form points
-        dt_masks_gui_form_remove(sel, gui, pos);
         dt_masks_gui_form_create(sel, gui, pos, dev->gui_module);
       }
     }
