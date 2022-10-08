@@ -35,28 +35,6 @@
    Again the algorithms has been developed in collaboration by @garagecoder and @Iain from gmic team an @jenshannoschwalm from dt.
 */
 
-static inline float _calc_refavg(const float *in, const uint8_t(*const xtrans)[6], const uint32_t filters, const int row, const int col, const dt_iop_roi_t *const roi)
-{
-  const int color = (filters == 9u) ? FCxtrans(row, col, roi, xtrans) : FC(row, col, filters);
-  dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f };
-  for(int dy = -1; dy < 2; dy++)
-  {
-    for(int dx = -1; dx < 2; dx++)
-    {
-      const float val = in[(ssize_t)dy * roi->width + dx];
-      const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, roi, xtrans) : FC(row + dy, col + dx, filters);
-      mean[c] += val;
-      cnt[c] += 1.0f;
-    }
-  }
-  for(int c = 0; c < 3; c++)
-    mean[c] = powf(mean[c] / cnt[c], 1.0f / 3.0f);
-
-  const dt_aligned_pixel_t croot_refavg = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
-  return powf(croot_refavg[color], 3.0f);
-}
-
 static gboolean _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                          dt_iop_highlights_data_t *data)
@@ -95,7 +73,7 @@ static gboolean _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *cons
       if((out[0] >= clips[color]) && (col > 0) && (col < roi_out->width - 1) && (row > 0) && (row < roi_out->height - 1))
       {
         /* for the clipped photosites we later do the correction when the chrominance is available, we keep refavg in raw-RGB */
-        out[0] = _calc_refavg(&in[0], xtrans, filters, row, col, roi_in);
+        out[0] = _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE);
         mask_buffer[color * p_size + p_off + (row/3) * pwidth + (col/3)] |= 1;
         anyclipped |= TRUE;
       }
@@ -141,7 +119,7 @@ static gboolean _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *cons
          to calculate the chrominance offset */
       if((mask_buffer[color * p_size + p_off + ((row/3) * pwidth) + (col/3)]) && (inval > clipdark[color]) && (inval < clips[color]))
       {
-        cr_sum[color] += (double) (inval - _calc_refavg(&in[0], xtrans, filters, row, col, roi_in));
+        cr_sum[color] += (double) (inval - _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE));
         cr_cnt[color] += 1.0;
       }
       in++;
