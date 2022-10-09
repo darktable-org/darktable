@@ -2911,11 +2911,7 @@ static void _bauhaus_slider_value_change(dt_bauhaus_widget_t *w)
   }
 
   if(d->is_changed && d->is_dragging && !d->timeout_handle)
-  {
-    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
-                            DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
-    d->timeout_handle = g_timeout_add(delay, _bauhaus_slider_value_change_dragging, w);
-  }
+    d->timeout_handle = g_idle_add(_bauhaus_slider_value_change_dragging, w);
 }
 
 static gboolean _bauhaus_slider_value_change_dragging(gpointer data)
