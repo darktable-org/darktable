@@ -51,7 +51,6 @@ typedef struct dt_lib_masks_t
   GtkWidget *none_label;
 
   GdkPixbuf *ic_inverse, *ic_union, *ic_intersection, *ic_difference, *ic_exclusion, *ic_used;
-  int gui_reset;
 } dt_lib_masks_t;
 
 
@@ -119,11 +118,10 @@ gboolean _timeout_show_all_feathers(gpointer userdata)
 
 static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 {
-  if(darktable.gui->reset) return;
-
   dt_lib_module_t *self = darktable.develop->proxy.masks.module;
   dt_lib_masks_t *d = self->data;
 
+  gtk_widget_hide(widget);
   float value = dt_bauhaus_slider_get(widget);
 
   dt_develop_t *dev = darktable.develop;
@@ -132,6 +130,7 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
   if(!gui) return;
   if(!form) return;
 
+  ++darktable.gui->reset;
   int count = 0, pos = 0;
   float sum = 0, min = _masks_properties[prop].min, max = _masks_properties[prop].max;
   if(_masks_properties[prop].relative)
@@ -180,7 +179,8 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 
   if(count)
   {
-    if(value != d->last_value[prop] && sum / count != d->last_value[prop] && prop != DT_MASKS_PROPERTY_OPACITY)
+    if(value != d->last_value[prop] && sum / count != d->last_value[prop]
+       && prop != DT_MASKS_PROPERTY_OPACITY && !gui->creation)
     {
       if(gui->show_all_feathers) g_source_remove(gui->show_all_feathers);
       gui->show_all_feathers = g_timeout_add_seconds(2, _timeout_show_all_feathers, gui);
@@ -190,7 +190,6 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
       dt_masks_update_image(darktable.develop);
     }
 
-    ++darktable.gui->reset;
     if(_masks_properties[prop].relative)
     {
       max *= sum / count;
@@ -205,21 +204,22 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 
     dt_bauhaus_slider_set(widget, sum / count);
     d->last_value[prop] = dt_bauhaus_slider_get(widget);
-    --darktable.gui->reset;
 
     gtk_widget_show(widget);
     gtk_widget_hide(d->none_label);
+    dt_control_queue_redraw_center();
   }
-  else
-    gtk_widget_hide(widget);
+  --darktable.gui->reset;
 }
 
 static void _update_all_properties(dt_lib_masks_t *self)
 {
   gtk_widget_show(self->none_label);
 
+  ++darktable.gui->reset;
   for(int i = 0; i < DT_MASKS_PROPERTY_LAST; i++)
     _property_changed(self->property[i], i);
+  --darktable.gui->reset;
 }
 
 static void _lib_masks_get_values(GtkTreeModel *model, GtkTreeIter *iter,
@@ -302,7 +302,7 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
     // and we apply the change
     dt_masks_update_image(darktable.develop);
     dt_masks_iop_update(module);
-    dt_dev_masks_selection_change(darktable.develop, NULL, grp->formid, TRUE);
+    dt_dev_masks_selection_change(darktable.develop, NULL, grp->formid);
   }
 }
 
@@ -391,10 +391,9 @@ static void _tree_cleanup(GtkButton *button, dt_lib_module_t *self)
 
 static void _add_masks_history_item(dt_lib_masks_t *lm)
 {
-  const int reset = lm->gui_reset;
-  lm->gui_reset = 1;
+  ++darktable.gui->reset;
   dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
-  lm->gui_reset = reset;
+  --darktable.gui->reset;
 }
 
 
@@ -687,7 +686,7 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
-  lm->gui_reset = 1;
+  ++darktable.gui->reset;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
   for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
   {
@@ -704,7 +703,7 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
 
-  lm->gui_reset = 0;
+  --darktable.gui->reset;
   _lib_masks_recreate_list(self);
   dt_masks_update_image(darktable.develop);
 }
@@ -719,7 +718,7 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
-  lm->gui_reset = 1;
+  ++darktable.gui->reset;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
   for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
   {
@@ -736,7 +735,7 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
 
-  lm->gui_reset = 0;
+  --darktable.gui->reset;
   _lib_masks_recreate_list(self);
   dt_masks_update_image(darktable.develop);
 }
@@ -752,7 +751,7 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   dt_iop_module_t *module = NULL;
-  lm->gui_reset = 1;
+  ++darktable.gui->reset;
   GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
   for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
   {
@@ -770,7 +769,7 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
 
-  lm->gui_reset = 0;
+  --darktable.gui->reset;
   _lib_masks_recreate_list(self);
 }
 
@@ -793,7 +792,7 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
     const int nid = dt_masks_form_duplicate(darktable.develop, id);
     if(nid > 0)
     {
-      dt_dev_masks_selection_change(darktable.develop, NULL, nid, TRUE);
+      dt_dev_masks_selection_change(darktable.develop, NULL, nid);
       //_lib_masks_recreate_list(self);
     }
   }
@@ -826,7 +825,7 @@ static void _tree_cell_edited(GtkCellRendererText *cell, gchar *path_string, gch
 
 static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *self)
 {
-  if(self->gui_reset) return;
+  if(darktable.gui->reset) return;
   // we reset all "show mask" icon of iops
   dt_masks_reset_show_masks_icons();
 
@@ -1144,8 +1143,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
 static gboolean _tree_restrict_select(GtkTreeSelection *selection, GtkTreeModel *model, GtkTreePath *path,
                                       gboolean path_currently_selected, gpointer data)
 {
-  dt_lib_masks_t *self = (dt_lib_masks_t *)data;
-  if(self->gui_reset) return TRUE;
+  if(darktable.gui->reset) return TRUE;
 
   // if the change is SELECT->UNSELECT no pb
   if(path_currently_selected) return TRUE;
@@ -1384,10 +1382,9 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
   /* first destroy all buttons in list */
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   if(!lm) return;
-  if(lm->gui_reset) return;
+  if(darktable.gui->reset) return;
 
-  const int gui_reset = lm->gui_reset;
-  lm->gui_reset = 1;
+  ++darktable.gui->reset;
   // if(lm->treeview) gtk_widget_destroy(lm->treeview);
 
   // if a treeview is already present, let's get the currently selected items
@@ -1457,9 +1454,9 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 
   g_object_unref(treestore);
 
-  _update_all_properties(lm);
+  --darktable.gui->reset;
 
-  lm->gui_reset = gui_reset;
+  _update_all_properties(lm);
 }
 
 static gboolean _update_foreach(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
@@ -1555,7 +1552,7 @@ static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parent
 
 static gboolean _lib_masks_selection_change_r(GtkTreeModel *model, GtkTreeSelection *selection,
                                               GtkTreeIter *iter, struct dt_iop_module_t *module,
-                                              const int selectid, int throw_event, const int level)
+                                              const int selectid, const int level)
 {
   gboolean found = FALSE;
 
@@ -1579,7 +1576,7 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model, GtkTreeSelect
     GtkTreeIter child, parent = i;
     if(gtk_tree_model_iter_children(model, &child, &parent))
     {
-      found = _lib_masks_selection_change_r(model, selection, &child, module, selectid, throw_event, level + 1);
+      found = _lib_masks_selection_change_r(model, selection, &child, module, selectid, level + 1);
       if(found)
       {
         break;
@@ -1590,21 +1587,20 @@ static gboolean _lib_masks_selection_change_r(GtkTreeModel *model, GtkTreeSelect
   return found;
 }
 
-static void _lib_masks_selection_change(dt_lib_module_t *self, struct dt_iop_module_t *module, const int selectid, const int throw_event)
+static void _lib_masks_selection_change(dt_lib_module_t *self, struct dt_iop_module_t *module, const int selectid)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   if(!lm->treeview) return;
 
-  // we first unselect all
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
-  lm->gui_reset = 1;
-  gtk_tree_selection_unselect_all(selection);
-  lm->gui_reset = 0;
-
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   if(!model) return;
 
-  lm->gui_reset = 1 - throw_event;
+  ++darktable.gui->reset;
+
+  // we first unselect all
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
+  gtk_tree_selection_unselect_all(selection);
+
   GtkTreeIter iter;
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
 
@@ -1612,11 +1608,11 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, struct dt_iop_mod
   if(valid)
   {
     gtk_tree_view_expand_all(GTK_TREE_VIEW(lm->treeview));
-    const gboolean found = _lib_masks_selection_change_r(model, selection, &iter, module, selectid, throw_event, 1);
+    const gboolean found = _lib_masks_selection_change_r(model, selection, &iter, module, selectid, 1);
     if(!found) gtk_tree_view_collapse_all(GTK_TREE_VIEW(lm->treeview));
   }
 
-  lm->gui_reset = 0;
+  --darktable.gui->reset;
 
   _update_all_properties(lm);
 }
@@ -1639,7 +1635,6 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_masks_t *d = (dt_lib_masks_t *)g_malloc0(sizeof(dt_lib_masks_t));
   self->data = (void *)d;
-  d->gui_reset = 0;
 
   // initialise all masks pixbuf. This is needed for the "automatic" cell renderer of the treeview
   const int bs2 = DT_PIXEL_APPLY_DPI(13);

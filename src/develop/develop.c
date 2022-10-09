@@ -1056,8 +1056,6 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_modu
 
 void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
-  if(!darktable.gui || darktable.gui->reset) return;
-
   dt_dev_undo_start_record(dev);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
@@ -2388,10 +2386,10 @@ void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid)
     dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);
 }
 void dt_dev_masks_selection_change(dt_develop_t *dev, struct dt_iop_module_t *module,
-                                   const int selectid, const int throw_event)
+                                   const int selectid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.selection_change)
-    dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid, throw_event);
+    dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);
 }
 
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
