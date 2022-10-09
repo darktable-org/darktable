@@ -177,7 +177,7 @@ static void _calc_plane_candidates(const float *plane, const float *refavg, dt_i
           }
         }
         const float av = sum / fmaxf(1.0f, pix);
-        if(av > 0.25f * clipval)
+        if(av > 0.125f * clipval)
         {
           seg->val1[id] = fminf(clipval, sum / fmaxf(1.0f, pix));
           seg->val2[id] = refavg[testref];
@@ -197,7 +197,7 @@ static inline float _calc_refavg(const float *in, const uint8_t(*const xtrans)[6
   {
     for(int dx = -1; dx < 2; dx++)
     {
-      const float val = in[(ssize_t)dy * roi->width + dx];
+      const float val = fmaxf(0.0f, in[(ssize_t)dy * roi->width + dx]);
       const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, roi, xtrans) : FC(row + dy, col + dx, filters);
       mean[c] += val;
       cnt[c] += 1.0f;
@@ -688,10 +688,10 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
           const int pid = _get_segment_id(&isegments[color], ppos);
           const gboolean iclipped = (in[0] >= clips[color]);
           const gboolean isegment = ((pid > 1) && (pid <= isegments[color].nr));
-          const gboolean badseg = isegment && (isegments[color].val1[pid] != 0.0f);
+          const gboolean goodseg = isegment && (isegments[color].val1[pid] != 0.0f);
 
           if((vmode == DT_SEGMENTS_MASK_COMBINE) && isegment && !iclipped)        out[0] = 1.0f;
-          else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && isegment && !badseg) out[0] = 1.0f;
+          else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && isegment && goodseg) out[0] = 1.0f;
           else if(vmode == DT_SEGMENTS_MASK_STRENGTH)                             out[0] += gradient[ppos] * strength;
         }
         out++;
