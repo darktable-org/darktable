@@ -1069,7 +1069,7 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
 
   if(darktable.develop->mask_form_selected_id)
     dt_dev_masks_selection_change(darktable.develop, module,
-                                  darktable.develop->mask_form_selected_id, FALSE);
+                                  darktable.develop->mask_form_selected_id);
 
   if(form->functions)
     return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
@@ -1249,7 +1249,7 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   if(newform && newform->type != DT_MASKS_GROUP)
     darktable.develop->form_gui->creation = TRUE;
 
-  dt_dev_masks_selection_change(darktable.develop, NULL, 0, FALSE);
+  dt_dev_masks_selection_change(darktable.develop, NULL, 0);
 }
 
 void dt_masks_reset_form_gui(void)
@@ -1315,10 +1315,7 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
 
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
-  if(value && form)
-    dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, FALSE);
-  else
-    dt_dev_masks_selection_change(darktable.develop, NULL, 0, FALSE);
+  dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? form->formid : 0);
 
   if(bd->masks_support)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
@@ -1352,10 +1349,7 @@ void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module, const in
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = value;
 
-  if(value && form)
-    dt_dev_masks_selection_change(darktable.develop, NULL, formid, FALSE);
-  else
-    dt_dev_masks_selection_change(darktable.develop, NULL, 0, FALSE);
+  dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? formid : 0);
 
   dt_control_queue_redraw_center();
 }

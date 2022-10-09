@@ -431,13 +431,13 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
       // and we switch in edit mode to show all the forms
       dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
-      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid, TRUE);
+      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
       gui->creation_module = NULL;
     }
     else
     {
       // we select the new form
-      dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, TRUE);
+      dt_dev_masks_selection_change(darktable.develop, NULL, form->formid);
     }
 
     if(crea_module && gui->creation_continuous)
