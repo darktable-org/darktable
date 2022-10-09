@@ -49,7 +49,6 @@ static gboolean _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *cons
   const int pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const int pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
   const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 16);
-  const size_t p_off  = (HL_BORDER * pwidth) + HL_BORDER;
 
   int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
 
@@ -58,7 +57,7 @@ static gboolean _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *cons
 #pragma omp parallel for default(none) \
   reduction( | : anyclipped) \
   dt_omp_firstprivate(clips, ivoid, ovoid, roi_in, roi_out, xtrans, mask_buffer) \
-  dt_omp_sharedconst(filters, p_size, pwidth, pheight, p_off) \
+  dt_omp_sharedconst(filters, p_size, pwidth, pheight) \
   schedule(static)
 #endif
   for(int row = 0; row < roi_out->height; row++)
@@ -74,7 +73,7 @@ static gboolean _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *cons
       {
         /* for the clipped photosites we later do the correction when the chrominance is available, we keep refavg in raw-RGB */
         out[0] = _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE);
-        mask_buffer[color * p_size + p_off + (row/3) * pwidth + (col/3)] |= 1;
+        mask_buffer[color * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
         anyclipped |= TRUE;
       }
       out++;
@@ -105,7 +104,7 @@ static gboolean _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *cons
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ivoid, roi_in, xtrans, clips, clipdark, mask_buffer) \
   reduction(+ : cr_sum, cr_cnt) \
-  dt_omp_sharedconst(filters, p_size, pwidth, p_off) \
+  dt_omp_sharedconst(filters, p_size, pwidth) \
   schedule(static)
 #endif
   for(int row = 1; row < roi_in->height-1; row++)
@@ -117,7 +116,7 @@ static gboolean _process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *cons
       const float inval = fmaxf(0.0f, in[0]); 
       /* we only use the unclipped photosites very close the true clipped data
          to calculate the chrominance offset */
-      if((mask_buffer[color * p_size + p_off + ((row/3) * pwidth) + (col/3)]) && (inval > clipdark[color]) && (inval < clips[color]))
+      if((mask_buffer[color * p_size + _raw_to_plane(pwidth, row, col)]) && (inval > clipdark[color]) && (inval < clips[color]))
       {
         cr_sum[color] += (double) (inval - _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE));
         cr_cnt[color] += 1.0;
