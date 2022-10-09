@@ -2425,7 +2425,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
   gtk_widget_set_tooltip_text(g->strength, _("set strength of reconstruction in regions with all photosites clipped"));
   dt_bauhaus_slider_set_format(g->strength, "%");
-  dt_bauhaus_slider_set_step(g->strength, 0.1f);
+  dt_bauhaus_slider_set_digits(g->strength, 0);
   dt_bauhaus_widget_set_quad_paint(g->strength, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->strength, TRUE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
