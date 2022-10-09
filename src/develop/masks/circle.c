@@ -119,6 +119,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), masks_size);
       dt_toast_log(_("size: %3.2f%%"), masks_size*100.0f);
     }
+    dt_dev_masks_list_change(darktable.develop);
     return 1;
   }
 

@@ -1119,6 +1119,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       }
       dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
     }
+    dt_dev_masks_list_change(darktable.develop);
     dt_control_queue_redraw_center();
     return 1;
   }
