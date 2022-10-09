@@ -427,7 +427,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         rotation += 10.f;
       else
         rotation -= 10.f;
-      rotation = fmodf(rotation, 360.0f);
+      rotation = fmodf(rotation + 360.0f, 360.0f);
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), rotation);
 
@@ -498,7 +498,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
           ellipse->rotation += 10.f;
         else
           ellipse->rotation -= 10.f;
-        ellipse->rotation = fmodf(ellipse->rotation, 360.0f);
+        ellipse->rotation = fmodf(ellipse->rotation + 360.0f, 360.0f);
 
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
@@ -2153,7 +2153,7 @@ static void _ellipse_modify_property(dt_masks_form_t *const form, dt_masks_prope
       break;
     case DT_MASKS_PROPERTY_ROTATION:;
       float rotation = ellipse ? ellipse->rotation : dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, rotation));
-      rotation = fmodf(rotation + new_val - old_val, 360.0f);
+      rotation = fmodf(rotation + new_val - old_val + 360.0f, 360.0f);
 
       if(ellipse) ellipse->rotation = rotation;
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), rotation);

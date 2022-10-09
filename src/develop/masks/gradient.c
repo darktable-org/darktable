@@ -1492,12 +1492,12 @@ static void _gradient_modify_property(dt_masks_form_t *const form, dt_masks_prop
       break;
     case DT_MASKS_PROPERTY_ROTATION:;
       float rotation = gradient ? gradient->rotation : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, rotation));
-      rotation = fmodf(rotation + new_val - old_val, 360.0f);
+      rotation = fmodf(rotation - new_val + old_val + 360.0f, 360.0f);
 
       if(gradient) gradient->rotation = rotation;
       dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, rotation), rotation);
 
-      *sum += rotation;
+      *sum += 360.0f - rotation;
       ++*count;
       break;
     default:;
