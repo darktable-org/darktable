@@ -471,6 +471,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_b), radius_b);
       dt_toast_log(_("size: %3.2f%%"), fmaxf(radius_a, radius_b)*100);
     }
+    dt_dev_masks_list_change(darktable.develop);
     return 1;
   }
 

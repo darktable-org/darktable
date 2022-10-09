@@ -110,6 +110,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
       dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, curvature), curvature);
       dt_toast_log(_("curvature: %3.2f%%"), curvature * 50.0f);
     }
+    dt_dev_masks_list_change(darktable.develop);
     return 1;
   }
 
