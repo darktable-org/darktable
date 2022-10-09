@@ -2410,7 +2410,6 @@ void gui_init(struct dt_iop_module_t *self)
                                                 "the mask button shows selected segments."));
   dt_bauhaus_slider_set_format(g->candidating, "%");
   dt_bauhaus_slider_set_digits(g->candidating, 0);
-  dt_bauhaus_slider_set_step(g->candidating, 0.05f);
   dt_bauhaus_widget_set_quad_paint(g->candidating, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->candidating, TRUE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
