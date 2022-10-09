@@ -454,7 +454,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
   dt_iop_segmentation_t isegments[HL_SEGMENT_PLANES];
   for(int i = 0; i < HL_SEGMENT_PLANES; i++)
-    dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER, segmentation_limit);
+    dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER +1, segmentation_limit);
 
   gboolean has_allclipped = FALSE;
 #ifdef _OPENMP
@@ -673,24 +673,27 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   dt_omp_sharedconst(filters, pwidth, vmode, strength) \
   schedule(static)
 #endif
-    for(int row = 1; row < roi_out->height-1; row++)
+    for(int row = 0; row < roi_out->height; row++)
     {
-      float *out = (float *)ovoid + (size_t)roi_out->width * row + 1;
-      float *in = (float *)ivoid + (size_t)roi_in->width * row + 1;
-      for(int col = 1; col < roi_out->width-1; col++)
+      float *out = (float *)ovoid + (size_t)roi_out->width * row;
+      float *in = (float *)ivoid + (size_t)roi_in->width * row;
+      for(int col = 0; col < roi_out->width; col++)
       {
-        const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-        const size_t ppos = _raw_to_plane(pwidth, row, col);
-
-        const int pid = _get_segment_id(&isegments[color], ppos);
-        const gboolean iclipped = (in[0] >= clips[color]);
-        const gboolean isegment = ((pid > 1) && (pid <= isegments[color].nr));
-        const gboolean badseg = isegment && (isegments[color].ref[pid] == 0);
-
         out[0] = 0.1f * in[0];
-        if((vmode == DT_SEGMENTS_MASK_COMBINE) && isegment && !iclipped)        out[0] = 1.0f;
-        else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && isegment && !badseg) out[0] = 1.0f;
-        else if(vmode == DT_SEGMENTS_MASK_STRENGTH)                             out[0] += gradient[ppos] * strength;
+        if((row > 0) && (col > 0) && (row < roi_out->height -1) && (col < roi_in->width -1))
+        {
+          const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
+          const size_t ppos = _raw_to_plane(pwidth, row, col);
+
+          const int pid = _get_segment_id(&isegments[color], ppos);
+          const gboolean iclipped = (in[0] >= clips[color]);
+          const gboolean isegment = ((pid > 1) && (pid <= isegments[color].nr));
+          const gboolean badseg = isegment && (isegments[color].val1[pid] != 0.0f);
+
+          if((vmode == DT_SEGMENTS_MASK_COMBINE) && isegment && !iclipped)        out[0] = 1.0f;
+          else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && isegment && !badseg) out[0] = 1.0f;
+          else if(vmode == DT_SEGMENTS_MASK_STRENGTH)                             out[0] += gradient[ppos] * strength;
+        }
         out++;
         in++;
       }
