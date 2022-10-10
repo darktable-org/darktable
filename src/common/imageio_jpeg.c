@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -725,8 +725,11 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".jpg", 4) && strncmp(ext, ".JPG", 4) && strncmp(ext, ".jpeg", 5)
-     && strncmp(ext, ".JPEG", 5))
+
+  // JFIF ("JPEG File Interchange Format") has the same container as regular JPEG, only a different metadata
+  // format (instead of the more common Exif metadata format)
+  // See https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format
+  if(g_ascii_strcasecmp(ext, ".jpg") && g_ascii_strcasecmp(ext, ".jpeg") && g_ascii_strcasecmp(ext, ".jfif"))
     return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);

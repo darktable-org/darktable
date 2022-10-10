@@ -22,6 +22,7 @@ set(DT_SUPPORTED_EXTENSIONS
     "iiq"
     "jpeg"
     "jpg"
+    "jfif"
     "k25"
     "kc2"
     "kdc"
