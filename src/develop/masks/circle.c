@@ -107,7 +107,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         masks_border *= 0.97f;
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), masks_border);
-      dt_toast_log(_("feather size: %3.2f%%"), (masks_border / masks_size)*100.0f);
+      dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
@@ -151,7 +151,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), circle->border);
-        dt_toast_log(_("feather size: %3.2f%%"), (circle->border/circle->radius)*100.0f);
+        dt_toast_log(_("feather size: %3.2f%%"), circle->border*100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -1430,7 +1430,7 @@ static void _circle_modify_property(dt_masks_form_t *const form, dt_masks_proper
       if(circle) circle->border = masks_border;
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), masks_border);
 
-      *sum += masks_border / masks_size;
+      *sum += masks_border;
       *max = fminf(*max, max_mask_border / masks_border);
       *min = fmaxf(*min, 0.0005f / masks_border);
       ++*count;
