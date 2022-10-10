@@ -28,6 +28,9 @@
 #include <stdio.h>
 #include <strings.h>
 #include <tiffio.h>
+#ifdef HAVE_IMATH
+#include "Imath/half.h"
+#endif
 
 #define LAB_CONVERSION_PROFILE DT_COLORSPACE_LIN_REC2020
 
@@ -45,18 +48,18 @@ typedef struct tiff_t
   tdata_t buf;
 } tiff_t;
 
+#ifndef HAVE_IMATH
 typedef union fp32_t
 {
   uint32_t u;
   float f;
 } fp32_t;
 
+/* fallback if Imath library implementation w/ intrinsics not available */
 static inline float _half_to_float(uint16_t h)
 {
   /* see https://en.wikipedia.org/wiki/Half-precision_floating-point_format#Exponent_encoding
      and https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding */
-
-  /* TODO: use intrinsics when possible */
 
   /* from https://gist.github.com/rygorous/2156668 */
   static const fp32_t magic = { 113 << 23 };
@@ -79,6 +82,7 @@ static inline float _half_to_float(uint16_t h)
   o.u |= (h & 0x8000) << 16;    // sign bit
   return o.f;
 }
+#endif
 
 static inline int _read_chunky_8(tiff_t *t)
 {
@@ -155,7 +159,11 @@ static inline int _read_chunky_h(tiff_t *t)
 
     for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
     {
+#ifdef HAVE_IMATH
+      out[0] = imath_half_to_float(in[0]);
+#else
       out[0] = _half_to_float(in[0]);
+#endif
 
       if(t->spp == 1)
       {
@@ -163,8 +171,13 @@ static inline int _read_chunky_h(tiff_t *t)
       }
       else
       {
+#ifdef HAVE_IMATH
+        out[1] = imath_half_to_float(in[1]);
+        out[2] = imath_half_to_float(in[2]);
+#else
         out[1] = _half_to_float(in[1]);
         out[2] = _half_to_float(in[2]);
+#endif
       }
 
       out[3] = 0;
