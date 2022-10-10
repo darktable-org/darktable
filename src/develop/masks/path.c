@@ -947,55 +947,6 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, flo
                               points_count, border, border_count, source);
 }
 
-static void _path_get_sizes(struct dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index, float *masks_size, float *feather_size)
-{
-  const dt_masks_form_gui_points_t *gpt =
-    (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-  if(!gpt) return;
-
-  const int nb = g_list_length(form->points);
-  const float wd = darktable.develop->preview_pipe->backbuf_width;
-  const float ht = darktable.develop->preview_pipe->backbuf_height;
-
-  float p1[2] = { FLT_MAX, FLT_MAX };
-  float p2[2] = { FLT_MIN, FLT_MIN };
-
-  float fp1[2] = { FLT_MAX, FLT_MAX };
-  float fp2[2] = { FLT_MIN, FLT_MIN };
-
-  for(int i = nb * 3; i < gpt->points_count; i++)
-  {
-    // line
-    const float x = gpt->points[i * 2];
-    const float y = gpt->points[i * 2 + 1];
-
-    p1[0] = fminf(p1[0], x);
-    p2[0] = fmaxf(p2[0], x);
-    p1[1] = fminf(p1[1], y);
-    p2[1] = fmaxf(p2[1], y);
-
-    if(feather_size)
-    {
-      // feather
-      const float fx = gpt->border[i * 2];
-      const float fy = gpt->border[i * 2 + 1];
-
-      // ??? looks like when x border is nan then y is a point index
-      // see draw border in _path_events_post_expose.
-      if(!isnan(fx))
-      {
-        fp1[0] = fminf(fp1[0], fx);
-        fp2[0] = fmaxf(fp2[0], fx);
-        fp1[1] = fminf(fp1[1], fy);
-        fp2[1] = fmaxf(fp2[1], fy);
-      }
-    }
-  }
-
-  *masks_size = fmaxf((p2[0] - p1[0]) / wd, (p2[1] - p1[1]) / ht);
-  if(feather_size) *feather_size = fmaxf((fp2[0] - fp1[0]) / wd, (fp2[1] - fp1[1]) / ht);
-}
-
 static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
                                        uint32_t state, dt_masks_form_t *form, int parentid,
                                        dt_masks_form_gui_t *gui, int index)
@@ -1017,12 +968,11 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
     }
     else
     {
-      const float amount = up ? 1.03f : 0.97f;
+      const float amount = up ? 1.03f : 1.0f / 1.03f;
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
-        float masks_size = 1.0f, feather_size = 0.0f;
-        _path_get_sizes(module, form, gui, index, &masks_size, &feather_size);
+        float feather_size = 0.0f;
 
         // do not exceed upper limit of 1.0
         for(const GList *l = form->points; l; l = g_list_next(l))
@@ -1035,11 +985,12 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
           dt_masks_point_path_t *point = (dt_masks_point_path_t *)l->data;
           point->border[0] *= amount;
           point->border[1] *= amount;
+          feather_size += point->border[0] + point->border[1];
         }
         float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, path, border));
         masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
         dt_conf_set_float(DT_MASKS_CONF(form->type, path, border), masks_border);
-        dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size * 100.0f);
+        dt_toast_log(_("feather size: %3.2f%%"), feather_size * 50.0f / g_list_length(form->points));
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -1063,8 +1014,9 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
         bx /= 3.0f * surf;
         by /= 3.0f * surf;
 
-        if(amount < 1.0f && surf < 0.00001f && surf > -0.00001f) return 1;
-        if(amount > 1.0f && surf > 4.0f) return 1;
+        surf = sqrtf(fabsf(surf));
+        if(amount < 1.0f && surf < 0.001f) return 1;
+        if(amount > 1.0f && surf > 2.0f) return 1;
 
         // now we move each point
         for(GList *l = form->points; l; l = g_list_next(l))
@@ -1091,10 +1043,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
         // now the redraw/save stuff
         _path_init_ctrl_points(form);
 
-        float masks_size = 0.0f;
-        _path_get_sizes(module, form, gui, index, &masks_size, NULL);
-
-        dt_toast_log(_("size: %3.2f%%"), masks_size * 100.0f);
+        dt_toast_log(_("size: %3.2f%%"), surf * amount * 50.0f);
       }
       else
       {
@@ -3143,7 +3092,11 @@ static void _path_modify_property(dt_masks_form_t *const form, dt_masks_property
       bx /= 3.0f * surf;
       by /= 3.0f * surf;
 
-      ratio = fminf(fmaxf(ratio, 0.00001f / fabsf(surf)), 4.0f / fabsf(surf));
+      if(surf)
+      {
+        surf = sqrtf(fabsf(surf));
+        ratio = fminf(fmaxf(ratio, 0.001f / surf), 2.0f / surf);
+      }
 
       // now we move each point
       for(GList *l = form->points; l; l = g_list_next(l))
@@ -3170,9 +3123,10 @@ static void _path_modify_property(dt_masks_form_t *const form, dt_masks_property
       // now the redraw/save stuff
       _path_init_ctrl_points(form);
 
-      *max = fminf(*max, 4.0f / fabsf(surf));
-      *min = fmaxf(*min, 0.00001f / fabsf(surf));
-      *sum += surf;
+      surf *= ratio;
+      *max = fminf(*max, 2.0f / surf);
+      *min = fmaxf(*min, 0.001f / surf);
+      *sum += surf / 2.0f;
       ++*count;
       break;
     case DT_MASKS_PROPERTY_FEATHER:;
@@ -3184,7 +3138,7 @@ static void _path_modify_property(dt_masks_form_t *const form, dt_masks_property
         *sum += point->border[0] + point->border[1];
         *max = fminf(*max, fminf(1.0f / point->border[0], 1.0f / point->border[1]));
         *min = fmaxf(*min, fmaxf(0.0005f / point->border[0], 0.0005f / point->border[1]));
-        ++*count;
+        *count += 2;
       }
       break;
     default:;
