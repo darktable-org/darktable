@@ -2925,7 +2925,7 @@ static void _brush_modify_property(dt_masks_form_t *const form, dt_masks_propert
       if(gui->creation)
       {
         float masks_hardness = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, hardness));
-        masks_hardness = MAX(BORDER_MIN, MIN(masks_hardness * ratio, BORDER_MAX));
+        masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * ratio, HARDNESS_MAX));
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, hardness), masks_hardness);
 
         *sum += masks_hardness;
