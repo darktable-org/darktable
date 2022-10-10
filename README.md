@@ -173,6 +173,7 @@ Optional dependencies (minimum version):
 * libheif 1.9.0 *(for HEIF/HEIC/HIF import)*
 * WebP 0.3.0 *(for WebP export)*
 * libgphoto2 2.5 *(for camera tethering)*
+* Imath 3.1.0 *(for 16-bit half float TIFF export and faster import)*
 
 Optional dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)*
