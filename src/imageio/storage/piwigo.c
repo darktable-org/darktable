@@ -123,7 +123,6 @@ typedef struct dt_storage_piwigo_params_t
 } dt_storage_piwigo_params_t;
 
 dt_storage_piwigo_conflict_actions_t conflict_action;
-char existing_image_id[10];
 
 /* low-level routine doing the HTTP POST request */
 static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth);
@@ -756,8 +755,7 @@ static char *_piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t 
           {
             if(strcmp(img->filename, json_object_get_string_member(existing_image, "file")) == 0)
             {
-              sprintf(existing_image_id, "%d", (int) json_object_get_int_member(existing_image, "id"));
-              return existing_image_id;
+              return (char*) json_object_get_int_member(existing_image, "id");
             }
           }
         }
@@ -1124,7 +1122,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
         pwg_image_id = _piwigo_api_get_image_id(p, img);
       }
 
-      if(conflict_action==DT_PIWIGO_CONFLICT_METADATA)
+      if(conflict_action == DT_PIWIGO_CONFLICT_METADATA)
       {
         status = _piwigo_api_set_info(p, author, caption, description, pwg_image_id);
         if(!status)
@@ -1154,6 +1152,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
           _piwigo_refresh_albums(ui, p->album);
         }
       }
+      g_free(pwg_image_id);
     }
     if(p->tags)
     {
