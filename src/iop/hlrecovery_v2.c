@@ -248,7 +248,7 @@ static float _segment_maxdistance(const int width, const int height, float *dist
   float max_distance = 0.0f;
 
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   reduction(max : max_distance) \
   dt_omp_firstprivate(distance, seg) \
   dt_omp_sharedconst(width, xmin, xmax, ymin, ymax, id) \
@@ -458,7 +458,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
   gboolean has_allclipped = FALSE;
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   reduction( | : has_allclipped) \
   dt_omp_firstprivate(ivoid, ovoid, roi_in, roi_out, plane, isegments, cube_coeffs, refavg, xtrans) \
   dt_omp_sharedconst(pwidth, filters) \
@@ -603,9 +603,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
         distance[i] = (isegments[3].data[i] == 1) ? DT_DISTANCE_TRANSFORM_MAX : 0.0f;
       }
     }
-    dt_masks_extend_border(tmp, pwidth, pheight, HL_BORDER);
+    dt_masks_extend_border(tmp, pwidth, pheight, HL_BORDER+1);
     dt_masks_blur_fast(tmp, luminance, pwidth, pheight, 1.2f, 1.0f, 20.0f);
-    dt_masks_extend_border(luminance, pwidth, pheight, HL_BORDER);
+    dt_masks_extend_border(luminance, pwidth, pheight, HL_BORDER+1);
   }
 
   if(do_recovery)
@@ -615,7 +615,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
     {
       dt_segmentize_plane(&isegments[3]);
       _initial_gradients(pwidth, pheight, luminance, distance, recout);
-      dt_masks_extend_border(recout, pwidth, pheight, HL_BORDER);
+      dt_masks_extend_border(recout, pwidth, pheight, HL_BORDER+1);
 
       // now we check for significant all-clipped-segments and reconstruct data
       for(int id = 2; id < isegments[3].nr+2; id++)
