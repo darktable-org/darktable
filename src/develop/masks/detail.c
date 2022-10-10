@@ -90,14 +90,14 @@ static inline float _sqrf(float a)
   return a * a;
 }
 
-void dt_masks_extend_border(float *const restrict mask, const int width, const int height, const int border)
+void dt_masks_extend_border(float *const mask, const int width, const int height, const int border)
 {
   if(border <= 0) return;
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(mask) \
   dt_omp_sharedconst(width, height, border) \
-  schedule(simd:static) aligned(mask : 64)
+  schedule(static)
  #endif
   for(size_t row = border; row < height - border; row++)
   {
@@ -109,10 +109,10 @@ void dt_masks_extend_border(float *const restrict mask, const int width, const i
     }
   }
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(mask) \
   dt_omp_sharedconst(width, height, border) \
-  schedule(simd:static) aligned(mask : 64)
+  schedule(static)
  #endif
   for(size_t col = 0; col < width; col++)
   {
