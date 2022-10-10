@@ -2906,19 +2906,21 @@ static void _brush_modify_property(dt_masks_form_t *const form, dt_masks_propert
         ++*count;
       }
       else
-      for(GList *l = form->points; l; l = g_list_next(l))
       {
-        if(gui->point_selected == -1 || gui->point_selected == pts_number)
+        for(GList *l = form->points; l; l = g_list_next(l))
         {
-          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-          point->border[0] = CLAMP(point->border[0] * ratio, BORDER_MIN, BORDER_MAX);
-          point->border[1] = CLAMP(point->border[1] * ratio, BORDER_MIN, BORDER_MAX);
-          *sum += point->border[0] + point->border[1];
-          *max = fminf(*max, fminf(BORDER_MAX / point->border[0], BORDER_MAX / point->border[1]));
-          *min = fmaxf(*min, fmaxf(BORDER_MIN / point->border[0], BORDER_MIN / point->border[1]));
-          ++*count;
+          if(gui->point_selected == -1 || gui->point_selected == pts_number)
+          {
+            dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
+            point->border[0] = CLAMP(point->border[0] * ratio, BORDER_MIN, BORDER_MAX);
+            point->border[1] = CLAMP(point->border[1] * ratio, BORDER_MIN, BORDER_MAX);
+            *sum += point->border[0] + point->border[1];
+            *max = fminf(*max, fminf(BORDER_MAX / point->border[0], BORDER_MAX / point->border[1]));
+            *min = fmaxf(*min, fmaxf(BORDER_MIN / point->border[0], BORDER_MIN / point->border[1]));
+            ++*count;
+          }
+          pts_number++;
         }
-        pts_number++;
       }
       break;
     case DT_MASKS_PROPERTY_HARDNESS:
@@ -2934,18 +2936,20 @@ static void _brush_modify_property(dt_masks_form_t *const form, dt_masks_propert
         ++*count;
       }
       else
-      for(GList *l = form->points; l; l = g_list_next(l))
       {
-        if(gui->point_selected == -1 || gui->point_selected == pts_number)
+        for(GList *l = form->points; l; l = g_list_next(l))
         {
-          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-          point->hardness = CLAMP(point->hardness * ratio, HARDNESS_MIN, HARDNESS_MAX);
-          *sum += point->hardness;
-          *max = fminf(*max, HARDNESS_MAX / point->hardness);
-          *min = fmaxf(*min, HARDNESS_MIN / point->hardness);
-          ++*count;
+          if(gui->point_selected == -1 || gui->point_selected == pts_number)
+          {
+            dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
+            point->hardness = CLAMP(point->hardness * ratio, HARDNESS_MIN, HARDNESS_MAX);
+            *sum += point->hardness;
+            *max = fminf(*max, HARDNESS_MAX / point->hardness);
+            *min = fmaxf(*min, HARDNESS_MIN / point->hardness);
+            ++*count;
+          }
+          pts_number++;
         }
-        pts_number++;
       }
       break;
     default:;
