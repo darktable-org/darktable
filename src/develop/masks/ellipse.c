@@ -1374,9 +1374,6 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
 
   if(!gpt) return;
 
-  const float r = atan2f(gpt->points[3] - gpt->points[1], gpt->points[2] - gpt->points[0]);
-  const float sinr = sinf(r);
-  const float cosr = cosf(r);
 
   xref = gpt->points[0];
   yref = gpt->points[1];
@@ -1397,6 +1394,10 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     _ellipse_draw_shape(TRUE, FALSE, cr, dashed, len, gui->border_selected, zoom_scale, xref, yref, gpt->border, gpt->border_count);
 
     // draw anchor points
+    const float r = atan2f(gpt->points[3] - gpt->points[1], gpt->points[2] - gpt->points[0]);
+    const float sinr = sinf(r);
+    const float cosr = cosf(r);
+
     for(int i = 1; i < 5; i++)
     {
       float x, y;
