@@ -491,12 +491,20 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
   {
     // even if the algorithm can't tile we want to calculate memory for pixelpipe checks and a possible warning
-    const int segments = roi_out->width * roi_out->height / 2000; // segments per mpix
-    tiling->xalign = 2;
-    tiling->yalign = 2;
+    const int segments = roi_out->width * roi_out->height / 4000; // segments per mpix
+    if(filters != 9u)
+    {
+      tiling->xalign = 2;
+      tiling->yalign = 2;
+    }
+    else
+    {
+      tiling->xalign = 3;
+      tiling->yalign = 3;
+    }
     tiling->overlap = 0;
     tiling->overhead = segments * 5 * 5 * sizeof(int); // segmentation stuff
-    tiling->factor = 2.0f + 3.3f; // in & out plus planes plus segmentation
+    tiling->factor = 3.0f;
     tiling->maxbuf = 1.0f;
     return;
   }
@@ -1970,7 +1978,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
   }
 }
 
-#include "iop/hlrecovery.c"
+#include "iop/hlrecovery_v2.c"
 #include "iop/opposed.c"
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -2077,10 +2085,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
-      dt_segments_mask_t vmode = DT_SEGMENTS_MASK_OFF;
-      if(g != NULL) vmode = g->segmentation_mask_mode;
+      const dt_segments_mask_t vmode = ((g != NULL) && fullpipe) ? g->segmentation_mask_mode : DT_SEGMENTS_MASK_OFF;
+      const gboolean anyclip = _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      const gboolean complete = fullpipe || (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT);
+      if(complete && (anyclip || (vmode != DT_SEGMENTS_MASK_OFF)))
+        _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, vmode);
 
-      _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, filters, data, vmode);
       if(vmode != DT_SEGMENTS_MASK_OFF)
       {
         piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
@@ -2207,7 +2217,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_bauhaus_widget_set_quad_visibility(g->clip, israw);
 
   const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
-  const gboolean use_segmentation = bayer && (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
+  const gboolean use_segmentation = (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   const gboolean use_recovery = use_segmentation && (p->recovery != DT_RECOVERY_MODE_OFF);
 
   gtk_widget_set_visible(g->noise_level, use_laplacian || use_recovery);
@@ -2228,12 +2238,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
   }
   // If guided laplacian or segmentation mode was copied as part of the history of another pic, sanitize it
-  // guided laplacian and segmentation are not available for XTrans
-  if(!bayer && ((mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) || (mode == DT_IOP_HIGHLIGHTS_SEGMENTS)) )
+  // guided laplacian is not available for XTrans
+  if(!bayer && (mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
   {
     p->mode = DT_IOP_HIGHLIGHTS_CLIP;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
-    dt_control_log(_("highlights: guided laplacian and segmentation modes are not available for X-Trans sensors. falling back to clip."));
+    dt_control_log(_("highlights: guided laplacian is not available for X-Trans sensors. falling back to clip."));
   }
 }
 
@@ -2289,6 +2299,8 @@ void reload_defaults(dt_iop_module_t *module)
       dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_OPPOSED);
       dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_SEGMENTS);
       dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_LAPLACIAN);
+      dt_bauhaus_combobox_add_full(g->mode, _("segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
       dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
     }
@@ -2385,18 +2397,19 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
-  gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations."));
+  gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations\n."
+                                            "the mask button shows resulting segment borders."));
   dt_bauhaus_widget_set_quad_paint(g->combine, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->combine, TRUE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   g_signal_connect(G_OBJECT(g->combine), "quad-pressed", G_CALLBACK(_combine_callback), self);
 
   g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
-  gtk_widget_set_tooltip_text(g->candidating, _("dealing with isolated clipped segments in dark regions.\n"
-                                                   "increase to favour candidates found in segmentation analysis,\n"
-                                                   "decrease for simple inpainting."));
+  gtk_widget_set_tooltip_text(g->candidating, _("select inpainting after segmentation analysis.\n"
+                                                "increase to favour candidates found in segmentation analysis, decrease for opposed means inpainting.\n"
+                                                "the mask button shows selected segments."));
   dt_bauhaus_slider_set_format(g->candidating, "%");
-  dt_bauhaus_slider_set_step(g->candidating, 0.05f);
+  dt_bauhaus_slider_set_digits(g->candidating, 0);
   dt_bauhaus_widget_set_quad_paint(g->candidating, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->candidating, TRUE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
@@ -2411,7 +2424,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
   gtk_widget_set_tooltip_text(g->strength, _("set strength of reconstruction in regions with all photosites clipped"));
   dt_bauhaus_slider_set_format(g->strength, "%");
-  dt_bauhaus_slider_set_step(g->strength, 0.1f);
+  dt_bauhaus_slider_set_digits(g->strength, 0);
   dt_bauhaus_widget_set_quad_paint(g->strength, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->strength, TRUE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
