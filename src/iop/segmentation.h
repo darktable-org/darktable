@@ -191,10 +191,10 @@ static inline int _test_dilate(const int *img, const size_t i, const size_t w1, 
 static inline void _dilating(const int *img, int *o, const int w1, const int height, const int border, const int radius)
 {
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(img, o) \
   dt_omp_sharedconst(height, w1, border, radius) \
-  schedule(static) aligned(o, img : 64)
+  schedule(static)
 #endif
   for(size_t row = border; row < height - border; row++)
   {
@@ -315,10 +315,10 @@ static inline int _test_erode(const int *img, const size_t i, const size_t w1, c
 static inline void _eroding(const int *img, int *o, const int w1, const int height, const int border, const int radius)
 {
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(img, o) \
   dt_omp_sharedconst(height, w1, border, radius) \
-  schedule(static) aligned(o, img : 64)
+  schedule(static)
 #endif
   for(size_t row = border; row < height - border; row++)
   {
