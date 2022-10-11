@@ -120,15 +120,16 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 {
   dt_lib_module_t *self = darktable.develop->proxy.masks.module;
   dt_lib_masks_t *d = self->data;
-
-  gtk_widget_hide(widget);
-  float value = dt_bauhaus_slider_get(widget);
-
   dt_develop_t *dev = darktable.develop;
   dt_masks_form_t *form = dev->form_visible;
   dt_masks_form_gui_t *gui = dev->form_gui;
-  if(!gui) return;
-  if(!form) return;
+  if(!form || !gui)
+  {
+    gtk_widget_hide(widget);
+    return;
+  }
+
+  float value = dt_bauhaus_slider_get(widget);
 
   ++darktable.gui->reset;
   int count = 0, pos = 0;
@@ -178,6 +179,7 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     }
   }
 
+  gtk_widget_set_visible(widget, count != 0);
   if(count)
   {
     if(value != d->last_value[prop] && sum / count != d->last_value[prop]
@@ -206,10 +208,10 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
     dt_bauhaus_slider_set(widget, sum / count);
     d->last_value[prop] = dt_bauhaus_slider_get(widget);
 
-    gtk_widget_show(widget);
     gtk_widget_hide(d->none_label);
     dt_control_queue_redraw_center();
   }
+
   --darktable.gui->reset;
 }
 
