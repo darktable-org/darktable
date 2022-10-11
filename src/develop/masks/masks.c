@@ -180,15 +180,11 @@ void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
 {
   const int npoints = g_list_length(gui->points);
   if(npoints == index)
-  {
-    dt_masks_form_gui_points_t *gpt2
-        = (dt_masks_form_gui_points_t *)calloc(1, sizeof(dt_masks_form_gui_points_t));
-    gui->points = g_list_append(gui->points, gpt2);
-  }
-  else if(npoints < index)
+    gui->points = g_list_append(gui->points, calloc(1, sizeof(dt_masks_form_gui_points_t)));
+  else if(npoints > index)
+    dt_masks_gui_form_remove(form, gui, index);
+  else
     return;
-
-  dt_masks_gui_form_remove(form, gui, index);
 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(dt_masks_get_points_border(darktable.develop, form, &gpt->points, &gpt->points_count, &gpt->border,

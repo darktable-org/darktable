@@ -147,34 +147,35 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
   if(gui->creation && form->functions && form->functions->modify_property)
     form->functions->modify_property(form, prop, d->last_value[prop], value, &sum, &count, &min, &max);
   else
-  for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
-    dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-    if(!sel || (dev->mask_form_selected_id && dev->mask_form_selected_id != sel->formid)) continue;;
-
-    if(prop == DT_MASKS_PROPERTY_OPACITY && fpt->parentid)
+    for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts), pos++)
     {
-      float new_opacity = dt_masks_form_change_opacity(sel, fpt->parentid, value - d->last_value[prop]);
-      sum += new_opacity;
-      max = fminf(max, 1.0f - new_opacity);
-      min = fmaxf(min, .05f - new_opacity);
-      ++count;
-    }
-    else
-    {
-      int saved_count = count;
+      dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+      dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+      if(!sel || (dev->mask_form_selected_id && dev->mask_form_selected_id != sel->formid)) continue;;
 
-      if(sel->functions && sel->functions->modify_property)
-        sel->functions->modify_property(sel, prop, d->last_value[prop], value, &sum, &count, &min, &max);
-
-      if(value != d->last_value[prop] && count != saved_count && value != d->last_value[prop])
+      if(prop == DT_MASKS_PROPERTY_OPACITY && fpt->parentid)
       {
-        // we recreate the form points
-        dt_masks_gui_form_create(sel, gui, pos, dev->gui_module);
+        float new_opacity = dt_masks_form_change_opacity(sel, fpt->parentid, value - d->last_value[prop]);
+        sum += new_opacity;
+        max = fminf(max, 1.0f - new_opacity);
+        min = fmaxf(min, .05f - new_opacity);
+        ++count;
+      }
+      else
+      {
+        int saved_count = count;
+
+        if(sel->functions && sel->functions->modify_property)
+          sel->functions->modify_property(sel, prop, d->last_value[prop], value, &sum, &count, &min, &max);
+
+        if(value != d->last_value[prop] && count != saved_count && value != d->last_value[prop])
+        {
+          // we recreate the form points
+          dt_masks_gui_form_create(sel, gui, pos, dev->gui_module);
+        }
       }
     }
-    pos++;
   }
 
   if(count)
