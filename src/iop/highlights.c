@@ -71,12 +71,12 @@ static float highlights_clip_magics[6] = { 1.0f, 1.0f, 0.987f, 0.995f, 0.987f, 0
 
 typedef enum dt_iop_highlights_mode_t
 {
+  DT_IOP_HIGHLIGHTS_OPPOSED = 5,  // $DESCRIPTION: "inpaint opposed"
   DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "clip highlights"
   DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
   DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
   DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
   DT_IOP_HIGHLIGHTS_SEGMENTS = 4, // $DESCRIPTION: "segmentation based"
-  DT_IOP_HIGHLIGHTS_OPPOSED = 5,  // $DESCRIPTION: "inpaint opposed"
 } dt_iop_highlights_mode_t;
 
 typedef enum dt_atrous_wavelets_scales_t
@@ -116,7 +116,7 @@ typedef enum dt_segments_mask_t
 typedef struct dt_iop_highlights_params_t
 {
   // params of v1
-  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
+  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_OPPOSED $DESCRIPTION: "method"
   float blendL; // unused $DEFAULT: 1.0
   float blendC; // unused $DEFAULT: 0.0
   float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
@@ -1950,7 +1950,6 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
   const gboolean is_xtrans = (filters == 9u);
-
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
@@ -2210,11 +2209,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
-  const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
-  const gboolean israw = (self->dev->image_storage.buf_dsc.filters != 0);
+  const gboolean linear_raw = (self->dev->image_storage.buf_dsc.filters == 0);
+  const gboolean bayer = !linear_raw && (self->dev->image_storage.buf_dsc.filters != 9u);
   const dt_iop_highlights_mode_t mode = p->mode;
-
-  dt_bauhaus_widget_set_quad_visibility(g->clip, israw);
 
   const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
   const gboolean use_segmentation = (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
@@ -2237,13 +2234,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
     g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
   }
-  // If guided laplacian or segmentation mode was copied as part of the history of another pic, sanitize it
-  // guided laplacian is not available for XTrans
-  if(!bayer && (mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
+
+  // Sanitize mode if wrongfully copied as part of the history of another pic
+  if((!bayer && (mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
+    || (linear_raw && (mode == DT_IOP_HIGHLIGHTS_LCH || mode == DT_IOP_HIGHLIGHTS_INPAINT)))
   {
-    p->mode = DT_IOP_HIGHLIGHTS_CLIP;
+    p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
-    dt_control_log(_("highlights: guided laplacian is not available for X-Trans sensors. falling back to clip."));
+    dt_control_log(_("highlights: mode not available for this type of image. falling back to inpaint opposed."));
   }
 }
 
@@ -2278,31 +2276,32 @@ void reload_defaults(dt_iop_module_t *module)
 
   // Remove the guided laplacians option if not Bayer CFA
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)module->gui_data;
-  const gboolean bayer = (module->dev->image_storage.buf_dsc.filters != 9u);
+  const gboolean linear_raw = (module->dev->image_storage.buf_dsc.filters == 0);
+  const gboolean bayer = !linear_raw && (module->dev->image_storage.buf_dsc.filters != 9u);
 
   if(g)
   {
-    if(bayer)
-    {
-      if(dt_bauhaus_combobox_length(g->mode) < DT_IOP_HIGHLIGHTS_LAPLACIAN + 1)
-      {
-        dt_bauhaus_combobox_add_full(g->mode, _("guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
-        dt_bauhaus_combobox_add_full(g->mode, _("segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
-        dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
-      }
-    }
+    const int menu_size = dt_bauhaus_combobox_length(g->mode);
+    for(int i = 0; i < menu_size - 1; i++)
+      dt_bauhaus_combobox_remove_at(g->mode, 1);
+
+    if(linear_raw)
+      dt_bauhaus_combobox_add_full(g->mode, _("clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_CLIP), NULL, TRUE);
     else
     {
-      dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_OPPOSED);
-      dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_SEGMENTS);
-      dt_bauhaus_combobox_remove_at(g->mode, DT_IOP_HIGHLIGHTS_LAPLACIAN);
+      dt_bauhaus_combobox_add_full(g->mode, _("reconstruct in LCh"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LCH), NULL, TRUE);
+      dt_bauhaus_combobox_add_full(g->mode, _("clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_CLIP), NULL, TRUE);
       dt_bauhaus_combobox_add_full(g->mode, _("segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
-      dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
+      dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
+
+      if(bayer)
+        dt_bauhaus_combobox_add_full(g->mode, _("guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
     }
   }
 }
