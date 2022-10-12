@@ -2878,7 +2878,7 @@ static void add_mask_entries_to_db(int imgid, GHashTable *mask_entries, int mask
     dt_masks_point_group_t *group = (dt_masks_point_group_t *)entry->mask_points;
     if((int)(entry->mask_nb * sizeof(dt_masks_point_group_t)) != entry->mask_points_len)
     {
-      fprintf(stderr, "[masks] error loading masks from xmp file, bad binary blob size.\n");
+      fprintf(stderr, "[masks] error loading masks from XMP file, bad binary blob size.\n");
       return;
     }
     for(int i = 0; i < entry->mask_nb; i++)
@@ -4354,8 +4354,8 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       }
       else
       {
-        fprintf(stderr, "cannot read xmp file '%s': '%s'\n", filename, strerror(errno));
-        dt_control_log(_("cannot read xmp file '%s': '%s'"), filename, strerror(errno));
+        fprintf(stderr, "cannot read XMP file '%s': '%s'\n", filename, strerror(errno));
+        dt_control_log(_("cannot read XMP file '%s': '%s'"), filename, strerror(errno));
       }
 
       Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
@@ -4406,8 +4406,8 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       }
       else
       {
-        fprintf(stderr, "cannot write xmp file '%s': '%s'\n", filename, strerror(errno));
-        dt_control_log(_("cannot write xmp file '%s': '%s'"), filename, strerror(errno));
+        fprintf(stderr, "cannot write XMP file '%s': '%s'\n", filename, strerror(errno));
+        dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, strerror(errno));
         return -1;
       }
     }
