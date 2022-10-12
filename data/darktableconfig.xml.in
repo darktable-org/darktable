@@ -259,7 +259,7 @@
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
+  <dtconfig prefs="storage" section="XMP">
     <name>write_sidecar_files</name>
     <type>
       <enum>
@@ -272,7 +272,7 @@
     <shortdescription>write sidecar file for each image</shortdescription>
     <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written:\n - never\n - on import: immediately after importing the image\n - after edit: after any user change on the image</longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
+  <dtconfig prefs="storage" section="XMP">
     <name>compress_xmp_tags</name>
     <type>
       <enum>
@@ -282,8 +282,8 @@
       </enum>
     </type>
     <default>only large entries</default>
-    <shortdescription>store xmp tags in compressed format</shortdescription>
-    <longdescription>entries in xmp tags can get rather large and may exceed the available space to store the history stack in output files. this option allows xmp tags to be compressed and save space.</longdescription>
+    <shortdescription>store XMP tags in compressed format</shortdescription>
+    <longdescription>entries in XMP tags can get rather large and may exceed the available space to store the history stack in output files. this option allows XMP tags to be compressed and save space.</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="tags">
     <name>omit_tag_hierarchy</name>
@@ -992,7 +992,7 @@
     <name>ui_last/import_last_tags_imported</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>import tags from xmp</shortdescription>
+    <shortdescription>import tags from XMP</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -3212,12 +3212,12 @@
     <shortdescription>DPI value for exported files</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
+  <dtconfig prefs="storage" section="XMP">
     <name>run_crawler_on_start</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>look for updated xmp files on startup</shortdescription>
-    <longdescription>check file modification times of all xmp files on startup to check if any got updated in the meantime</longdescription>
+    <shortdescription>look for updated XMP files on startup</shortdescription>
+    <longdescription>check file modification times of all XMP files on startup to check if any got updated in the meantime</longdescription>
   </dtconfig>
   <dtconfig prefs="security" section="other">
     <name>plugins/lighttable/audio_player</name>
