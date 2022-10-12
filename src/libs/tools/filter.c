@@ -107,8 +107,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->sort_box), label, TRUE, TRUE, 0);
 
   /* label to display selected count */
-  d->count = gtk_label_new(_("count selected"));
-  gtk_label_set_ellipsize(GTK_LABEL(d->count), PANGO_ELLIPSIZE_END);
+  d->count = gtk_label_new("");
+  gtk_label_set_ellipsize(GTK_LABEL(d->count), PANGO_ELLIPSIZE_MIDDLE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->count, TRUE, FALSE, 0);
 
   /* initialize proxy */
