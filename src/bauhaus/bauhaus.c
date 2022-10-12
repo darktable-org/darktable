@@ -2936,7 +2936,7 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   rpos = (rpos - d->min) / (d->max - d->min);
   d->pos = d->curve(rpos, DT_BAUHAUS_SET);
   gtk_widget_queue_draw(GTK_WIDGET(w));
-  d->is_changed = 1;
+  d->is_changed = -1;
 
   _bauhaus_slider_value_change(w);
 }
@@ -3102,7 +3102,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     }
     else
     {
-      d->is_dragging = 1;
+      d->is_dragging = -1;
       if(!dt_modifier_is(event->state, 0))
         darktable.bauhaus->mouse_x = ex;
       else if(ey > darktable.bauhaus->line_height / 2.0f)
