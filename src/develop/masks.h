@@ -55,6 +55,18 @@ typedef enum dt_masks_state_t
   DT_MASKS_STATE_EXCLUSION = 1 << 6
 } dt_masks_state_t;
 
+typedef enum dt_masks_property_t
+{
+  DT_MASKS_PROPERTY_OPACITY,
+  DT_MASKS_PROPERTY_SIZE,
+  DT_MASKS_PROPERTY_HARDNESS,
+  DT_MASKS_PROPERTY_FEATHER,
+  DT_MASKS_PROPERTY_ROTATION,
+  DT_MASKS_PROPERTY_CURVATURE,
+  DT_MASKS_PROPERTY_COMPRESSION,
+  DT_MASKS_PROPERTY_LAST
+} dt_masks_property_t;
+
 typedef enum dt_masks_points_states_t
 {
   DT_MASKS_POINT_STATE_NORMAL = 1,
@@ -167,6 +179,7 @@ typedef struct dt_masks_functions_t
   void (*set_form_name)(struct dt_masks_form_t *const form, const size_t nb);
   void (*set_hint_message)(const struct dt_masks_form_gui_t *const gui, const struct dt_masks_form_t *const form,
                            const int opacity, char *const __restrict__ msgbuf, const size_t msgbuf_len);
+  void (*modify_property)(struct dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max);
   void (*duplicate_points)(struct dt_develop_t *const dev, struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
   void (*initial_source_pos)(const float iwd, const float iht, float *x, float *y);
   void (*get_distance)(float x, float y, float as, struct dt_masks_form_gui_t *gui, int index, int num_points,
@@ -275,6 +288,7 @@ typedef struct dt_masks_form_gui_t
   int group_edited;
   int group_selected;
 
+  guint show_all_feathers;
 
   gboolean creation;
   gboolean creation_continuous;
@@ -404,7 +418,7 @@ int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form);
 char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str);
 
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form);
-void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up);
+float dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, float amount);
 void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up);
 int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
 /* returns a duplicate tof form, including the formid */
@@ -633,6 +647,10 @@ int dt_masks_roundup(int num, int mult)
   return (rem == 0) ? num : num + mult - rem;
 }
 
+#define DT_MASKS_CONF(type, shape, param) \
+  (type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? "plugins/darkroom/spots/" #shape "_" #param : "plugins/darkroom/masks/" #shape "/" #param)
+
+void dt_masks_draw_anchor(cairo_t *cr, gboolean selected, const float zoom_scale, const float x, const float y);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

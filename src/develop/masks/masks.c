@@ -180,15 +180,11 @@ void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
 {
   const int npoints = g_list_length(gui->points);
   if(npoints == index)
-  {
-    dt_masks_form_gui_points_t *gpt2
-        = (dt_masks_form_gui_points_t *)calloc(1, sizeof(dt_masks_form_gui_points_t));
-    gui->points = g_list_append(gui->points, gpt2);
-  }
-  else if(npoints < index)
+    gui->points = g_list_append(gui->points, calloc(1, sizeof(dt_masks_form_gui_points_t)));
+  else if(npoints > index)
+    dt_masks_gui_form_remove(form, gui, index);
+  else
     return;
-
-  dt_masks_gui_form_remove(form, gui, index);
 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(dt_masks_get_points_border(darktable.develop, form, &gpt->points, &gpt->points_count, &gpt->border,
@@ -1069,7 +1065,7 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
 
   if(darktable.develop->mask_form_selected_id)
     dt_dev_masks_selection_change(darktable.develop, module,
-                                  darktable.develop->mask_form_selected_id, FALSE);
+                                  darktable.develop->mask_form_selected_id);
 
   if(form->functions)
     return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
@@ -1245,6 +1241,11 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   /* update sticky accels window */
   if(newform != old && darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
     dt_view_accels_refresh(darktable.view_manager);
+
+  if(newform && newform->type != DT_MASKS_GROUP)
+    darktable.develop->form_gui->creation = TRUE;
+
+  dt_dev_masks_selection_change(darktable.develop, NULL, 0);
 }
 
 void dt_masks_reset_form_gui(void)
@@ -1310,10 +1311,7 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
 
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
-  if(value && form)
-    dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, FALSE);
-  else
-    dt_dev_masks_selection_change(darktable.develop, NULL, 0, FALSE);
+  dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? form->formid : 0);
 
   if(bd->masks_support)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
@@ -1347,10 +1345,7 @@ void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module, const in
   dt_masks_change_form_gui(grp2);
   darktable.develop->form_gui->edit_mode = value;
 
-  if(value && form)
-    dt_dev_masks_selection_change(darktable.develop, NULL, formid, FALSE);
-  else
-    dt_dev_masks_selection_change(darktable.develop, NULL, 0, FALSE);
+  dt_dev_masks_selection_change(darktable.develop, NULL, value && form ? formid : 0);
 
   dt_control_queue_redraw_center();
 }
@@ -1391,7 +1386,6 @@ static void _menu_add_shape(struct dt_iop_module_t *module, dt_masks_type_t type
   // we create the new form
   dt_masks_form_t *form = dt_masks_create(type);
   dt_masks_change_form_gui(form);
-  darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
@@ -1739,16 +1733,15 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
   if(form_removed) dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 }
 
-void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
+float dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, float amount)
 {
-  if(!form) return;
+  if(!form) return 0;
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, parentid);
-  if(!grp || !(grp->type & DT_MASKS_GROUP)) return;
+  if(!grp || !(grp->type & DT_MASKS_GROUP)) return 0;
 
   // we first need to test if the opacity can be set to the form
-  if(form->type & DT_MASKS_GROUP) return;
+  if(form->type & DT_MASKS_GROUP) return 0;
   const int id = form->formid;
-  const float amount = up ? 0.05f : -0.05f;
 
   // so we change the value inside the group
   for(GList *fpts = grp->points; fpts; fpts = g_list_next(fpts))
@@ -1757,14 +1750,18 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
     if(fpt->formid == id)
     {
       const float opacity = CLAMP(fpt->opacity + amount, 0.05f, 1.0f);
-      fpt->opacity = opacity;
-      const int opacitypercent = opacity * 100;
-      dt_toast_log(_("opacity: %d%%"), opacitypercent);
-      dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
-      dt_masks_update_image(darktable.develop);
-      break;
+      if(opacity != fpt->opacity)
+      {
+        fpt->opacity = opacity;
+        const int opacitypercent = opacity * 100;
+        dt_toast_log(_("opacity: %d%%"), opacitypercent);
+        dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
+        dt_masks_update_image(darktable.develop);
+      }
+      return opacity;
     }
   }
+  return 0;
 }
 
 void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up)
@@ -2389,6 +2386,19 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
 
   *px = x;
   *py = y;
+}
+
+void dt_masks_draw_anchor(cairo_t *cr, gboolean selected, const float zoom_scale, const float x, const float y)
+{
+  float anchor_size = (selected ? 8.0f : 5.0f) / zoom_scale;
+
+  cairo_set_dash(cr, NULL, 0, 0);
+  dt_draw_set_color_overlay(cr, TRUE, 0.8);
+  cairo_rectangle(cr, x - (anchor_size * 0.5), y - (anchor_size * 0.5), anchor_size, anchor_size);
+  cairo_fill_preserve(cr);
+  cairo_set_line_width(cr, (selected ? 2.0 : 1.0) / zoom_scale);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
+  cairo_stroke(cr);
 }
 
 #include "detail.c"
