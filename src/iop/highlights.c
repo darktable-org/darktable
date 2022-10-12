@@ -2023,7 +2023,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       = data->clip * fminf(piece->pipe->dsc.processed_maximum[0],
                            fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
 
-  if(!filters)
+  if((filters == 0) && (data->mode == DT_IOP_HIGHLIGHTS_CLIP))
   {
     process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
     for(int k=0;k<3;k++)
@@ -2121,7 +2121,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     case DT_IOP_HIGHLIGHTS_OPPOSED:
     {
-      _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      if(filters == 0)
+        _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      else
+        _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
       break;
     }
 
