@@ -291,7 +291,6 @@ static gboolean _add_shape(GtkWidget *widget, const int creation_continuous, dt_
 
   dt_masks_form_t *form = dt_masks_create(type | DT_MASKS_CLONE);
   dt_masks_change_form_gui(form);
-  darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = self;
 
   if(creation_continuous)

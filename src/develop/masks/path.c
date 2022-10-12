@@ -947,55 +947,6 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, flo
                               points_count, border, border_count, source);
 }
 
-static void _path_get_sizes(struct dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index, float *masks_size, float *feather_size)
-{
-  const dt_masks_form_gui_points_t *gpt =
-    (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-  if(!gpt) return;
-
-  const int nb = g_list_length(form->points);
-  const float wd = darktable.develop->preview_pipe->backbuf_width;
-  const float ht = darktable.develop->preview_pipe->backbuf_height;
-
-  float p1[2] = { FLT_MAX, FLT_MAX };
-  float p2[2] = { FLT_MIN, FLT_MIN };
-
-  float fp1[2] = { FLT_MAX, FLT_MAX };
-  float fp2[2] = { FLT_MIN, FLT_MIN };
-
-  for(int i = nb * 3; i < gpt->points_count; i++)
-  {
-    // line
-    const float x = gpt->points[i * 2];
-    const float y = gpt->points[i * 2 + 1];
-
-    p1[0] = fminf(p1[0], x);
-    p2[0] = fmaxf(p2[0], x);
-    p1[1] = fminf(p1[1], y);
-    p2[1] = fmaxf(p2[1], y);
-
-    if(feather_size)
-    {
-      // feather
-      const float fx = gpt->border[i * 2];
-      const float fy = gpt->border[i * 2 + 1];
-
-      // ??? looks like when x border is nan then y is a point index
-      // see draw border in _path_events_post_expose.
-      if(!isnan(fx))
-      {
-        fp1[0] = fminf(fp1[0], fx);
-        fp2[0] = fmaxf(fp2[0], fx);
-        fp1[1] = fminf(fp1[1], fy);
-        fp2[1] = fmaxf(fp2[1], fy);
-      }
-    }
-  }
-
-  *masks_size = fmaxf((p2[0] - p1[0]) / wd, (p2[1] - p1[1]) / ht);
-  if(feather_size) *feather_size = fmaxf((fp2[0] - fp1[0]) / wd, (fp2[1] - fp1[1]) / ht);
-}
-
 static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
                                        uint32_t state, dt_masks_form_t *form, int parentid,
                                        dt_masks_form_gui_t *gui, int index)
@@ -1013,16 +964,15 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up);
+      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
     }
     else
     {
-      const float amount = up ? 1.03f : 0.97f;
+      const float amount = up ? 1.03f : 1.0f / 1.03f;
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
-        float masks_size = 1.0f, feather_size = 0.0f;
-        _path_get_sizes(module, form, gui, index, &masks_size, &feather_size);
+        float feather_size = 0.0f;
 
         // do not exceed upper limit of 1.0
         for(const GList *l = form->points; l; l = g_list_next(l))
@@ -1035,21 +985,12 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
           dt_masks_point_path_t *point = (dt_masks_point_path_t *)l->data;
           point->border[0] *= amount;
           point->border[1] *= amount;
+          feather_size += point->border[0] + point->border[1];
         }
-        if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        {
-          float masks_border = dt_conf_get_float("plugins/darkroom/spots/path_border");
-          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
-          dt_conf_set_float("plugins/darkroom/spots/path_border", masks_border);
-          dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size *100.0f);
-        }
-        else
-        {
-          float masks_border = dt_conf_get_float("plugins/darkroom/masks/path/border");
-          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
-          dt_conf_set_float("plugins/darkroom/masks/path/border", masks_border);
-          dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size * 100.0f);
-        }
+        float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, path, border));
+        masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
+        dt_conf_set_float(DT_MASKS_CONF(form->type, path, border), masks_border);
+        dt_toast_log(_("feather size: %3.2f%%"), feather_size * 50.0f / g_list_length(form->points));
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -1073,8 +1014,9 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
         bx /= 3.0f * surf;
         by /= 3.0f * surf;
 
-        if(amount < 1.0f && surf < 0.00001f && surf > -0.00001f) return 1;
-        if(amount > 1.0f && surf > 4.0f) return 1;
+        surf = sqrtf(fabsf(surf));
+        if(amount < 1.0f && surf < 0.001f) return 1;
+        if(amount > 1.0f && surf > 2.0f) return 1;
 
         // now we move each point
         for(GList *l = form->points; l; l = g_list_next(l))
@@ -1101,10 +1043,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
         // now the redraw/save stuff
         _path_init_ctrl_points(form);
 
-        float masks_size = 0.0f;
-        _path_get_sizes(module, form, gui, index, &masks_size, NULL);
-
-        dt_toast_log(_("size: %3.2f%%"), masks_size * 100.0f);
+        dt_toast_log(_("size: %3.2f%%"), surf * amount * 50.0f);
       }
       else
       {
@@ -1114,7 +1053,6 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
       // we recreate the form points
-      dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index, module);
 
       // we save the move
@@ -1134,11 +1072,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
-  float masks_border;
-  if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/path_border"), 0.5f);
-  else
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/path/border"), 0.5f);
+  float masks_border = MIN(dt_conf_get_float(DT_MASKS_CONF(form->type, path, border)), 0.5f);
 
   if(gui->creation && which == 1 && form->points == NULL
      && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
@@ -1190,12 +1124,12 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         else if(!gui->creation_continuous)
           dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
         dt_masks_iop_update(crea_module);
-        dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid, TRUE);
+        dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
         gui->creation_module = NULL;
       }
       else
       {
-        dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, TRUE);
+        dt_dev_masks_selection_change(darktable.develop, NULL, form->formid);
       }
 
       if(gui->creation_continuous)
@@ -1220,8 +1154,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         {
           dt_masks_form_t *form_new = dt_masks_create(form->type);
           dt_masks_change_form_gui(form_new);
-
-          darktable.develop->form_gui->creation = TRUE;
           darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
         }
       }
@@ -1308,7 +1240,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       _path_init_ctrl_points(form);
 
       // we recreate the form points
-      dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index, module);
 
       dt_control_queue_redraw_center();
@@ -1358,7 +1289,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
         // we recreate the form points
-        dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
         gpt->clockwise = _path_is_clockwise(form);
         // we save the move
@@ -1417,7 +1347,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
 
         form->points = g_list_insert(form->points, bzpt, gui->seg_selected + 1);
         _path_init_ctrl_points(form);
-        dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index, module);
         gui->point_edited = gui->point_dragging = gui->point_selected = gui->seg_selected + 1;
         gui->seg_selected = -1;
@@ -1486,7 +1415,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
@@ -1506,7 +1434,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
       // we recreate the form points
-      dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index, module);
       gpt->clockwise = _path_is_clockwise(form);
       // we save the move
@@ -1584,7 +1511,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
@@ -1607,7 +1533,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
@@ -1653,7 +1578,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
@@ -1688,7 +1612,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     gpt->clockwise = _path_is_clockwise(form);
     // we save the move
@@ -1766,7 +1689,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     _path_init_ctrl_points(form);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -1813,7 +1735,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     dt_control_queue_redraw_center();
@@ -1839,7 +1760,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
 
     _path_init_ctrl_points(form);
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -1866,7 +1786,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     point->border[0] = point->border[1] = bdr;
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -1900,7 +1819,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     }
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -2043,33 +1961,11 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   }
 
   // draw corners
-  float anchor_size = 0.0f;
   if(gui->group_selected == index && gpt->points_count > nb * 3 + 6)
   {
     for(int k = 0; k < nb; k++)
-    {
-      if(k == gui->point_dragging || k == gui->point_selected)
-      {
-        anchor_size = 7.0f / zoom_scale;
-      }
-      else
-      {
-        anchor_size = 5.0f / zoom_scale;
-      }
-      dt_draw_set_color_overlay(cr, TRUE, 0.8);
-      cairo_rectangle(cr, gpt->points[k * 6 + 2] - (anchor_size * 0.5),
-                      gpt->points[k * 6 + 3] - (anchor_size * 0.5), anchor_size, anchor_size);
-      cairo_fill_preserve(cr);
-
-      if(k == gui->point_dragging || k == gui->point_selected)
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else if((k == 0 || k == nb) && gui->creation && gui->creation_closing_form)
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, FALSE, 0.8);
-      cairo_stroke(cr);
-    }
+      dt_masks_draw_anchor(cr, k == gui->point_dragging || k == gui->point_selected, zoom_scale,
+                           gpt->points[k * 6 + 2], gpt->points[k * 6 + 3]);
   }
 
   // draw feathers
@@ -2108,7 +2004,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   }
 
   // draw border and corners
-  if((gui->group_selected == index) && gpt->border_count > nb * 3 + 6)
+  if((gui->show_all_feathers || gui->group_selected == index) && gpt->border_count > nb * 3 + 6)
   {
     int dep = 1;
     for(int i = nb * 3; i < gpt->border_count; i++)
@@ -2145,29 +2041,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
 
     // we draw the path segment by segment
     for(int k = 0; k < nb; k++)
-    {
-      // draw the point
-      if(gui->point_border_selected == k)
-      {
-        anchor_size = 7.0f / zoom_scale;
-      }
-      else
-      {
-        anchor_size = 5.0f / zoom_scale;
-      }
-      dt_draw_set_color_overlay(cr, TRUE, 0.8);
-      cairo_rectangle(cr, gpt->border[k * 6] - (anchor_size * 0.5), gpt->border[k * 6 + 1] - (anchor_size * 0.5),
-                      anchor_size, anchor_size);
-      cairo_fill_preserve(cr);
-
-      if(gui->point_border_selected == k)
-        cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else
-        cairo_set_line_width(cr, 1.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, FALSE, 0.8);
-      cairo_set_dash(cr, dashed, 0, 0);
-      cairo_stroke(cr);
-    }
+      dt_masks_draw_anchor(cr, gui->point_border_selected == k, zoom_scale, gpt->border[k * 6], gpt->border[k * 6 + 1]);
   }
 
   // draw a cross where the source will be created
@@ -3132,15 +3006,15 @@ static GSList *_path_setup_mouse_actions(const struct dt_masks_form_t *const for
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
                                      _("[PATH creation] add a sharp node"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("[PATH creation] terminate path creation"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK,
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
                                      _("[PATH on node] switch between smooth/sharp node"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("[PATH on node] remove the node"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("[PATH on feather] reset curvature"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
                                      _("[PATH on segment] add node"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[PATH] change size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[PATH] change opacity"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[PATH] change feather size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[PATH] change opacity"));
   return lm;
 }
 
@@ -3193,6 +3067,84 @@ static void _path_initial_source_pos(const float iwd, const float iht, float *x,
   *y = (0.02f * iht);
 }
 
+static void _path_modify_property(dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max)
+{
+  float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+
+  switch(prop)
+  {
+    case DT_MASKS_PROPERTY_SIZE:;
+      // get the center of gravity of the form (like if it was a simple polygon)
+      float bx = 0.0f;
+      float by = 0.0f;
+      float surf = 0.0f;
+
+      for(const GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
+      {
+        const GList *next = g_list_next_wraparound(form_points, form->points);
+        float *point1 = ((dt_masks_point_path_t *)form_points->data)->corner;
+        float *point2 = ((dt_masks_point_path_t *)next->data)->corner;
+        surf += point1[0] * point2[1] - point2[0] * point1[1];
+
+        bx += (point1[0] + point2[0]) * (point1[0] * point2[1] - point2[0] * point1[1]);
+        by += (point1[1] + point2[1]) * (point1[0] * point2[1] - point2[0] * point1[1]);
+      }
+      bx /= 3.0f * surf;
+      by /= 3.0f * surf;
+
+      if(surf)
+      {
+        surf = sqrtf(fabsf(surf));
+        ratio = fminf(fmaxf(ratio, 0.001f / surf), 2.0f / surf);
+      }
+
+      // now we move each point
+      for(GList *l = form->points; l; l = g_list_next(l))
+      {
+        dt_masks_point_path_t *point = (dt_masks_point_path_t *)l->data;
+        const float x = (point->corner[0] - bx) * ratio;
+        const float y = (point->corner[1] - by) * ratio;
+
+        // we stretch ctrl points
+        const float ct1x = (point->ctrl1[0] - point->corner[0]) * ratio;
+        const float ct1y = (point->ctrl1[1] - point->corner[1]) * ratio;
+        const float ct2x = (point->ctrl2[0] - point->corner[0]) * ratio;
+        const float ct2y = (point->ctrl2[1] - point->corner[1]) * ratio;
+
+        // and we set the new points
+        point->corner[0] = bx + x;
+        point->corner[1] = by + y;
+        point->ctrl1[0] = point->corner[0] + ct1x;
+        point->ctrl1[1] = point->corner[1] + ct1y;
+        point->ctrl2[0] = point->corner[0] + ct2x;
+        point->ctrl2[1] = point->corner[1] + ct2y;
+      }
+
+      // now the redraw/save stuff
+      _path_init_ctrl_points(form);
+
+      surf *= ratio;
+      *max = fminf(*max, 2.0f / surf);
+      *min = fmaxf(*min, 0.001f / surf);
+      *sum += surf / 2.0f;
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_FEATHER:;
+      for(const GList *l = form->points; l; l = g_list_next(l))
+      {
+        dt_masks_point_path_t *point = (dt_masks_point_path_t *)l->data;
+        point->border[0] = CLAMP(point->border[0] * ratio, 0.0005f, 1.0f);
+        point->border[1] = CLAMP(point->border[1] * ratio, 0.0005f, 1.0f);
+        *sum += point->border[0] + point->border[1];
+        *max = fminf(*max, fminf(1.0f / point->border[0], 1.0f / point->border[1]));
+        *min = fmaxf(*min, fmaxf(0.0005f / point->border[0], 0.0005f / point->border[1]));
+        *count += 2;
+      }
+      break;
+    default:;
+  }
+}
+
 // The function table for paths.  This must be public, i.e. no "static" keyword.
 const dt_masks_functions_t dt_masks_functions_path = {
   .point_struct_size = sizeof(struct dt_masks_point_path_t),
@@ -3200,6 +3152,7 @@ const dt_masks_functions_t dt_masks_functions_path = {
   .setup_mouse_actions = _path_setup_mouse_actions,
   .set_form_name = _path_set_form_name,
   .set_hint_message = _path_set_hint_message,
+  .modify_property = _path_modify_property,
   .duplicate_points = _path_duplicate_points,
   .initial_source_pos = _path_initial_source_pos,
   .get_distance = _path_get_distance,
