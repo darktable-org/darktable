@@ -2282,7 +2282,6 @@ static OsmGpsMapPolygon *_view_map_add_polygon_location(dt_map_t *lib, dt_locati
   bbox.lat2 = CLAMP(bbox.lat2 - mlat, -90.0, 90);
 
   int i = 0;
-  int j = 0;
   float prev_lat = 0.0;
   float prev_lon = 0.0;
   for(GList *iter = ld->data.polygons; iter; iter = g_list_next(iter), i++)
@@ -2297,14 +2296,12 @@ static OsmGpsMapPolygon *_view_map_add_polygon_location(dt_map_t *lib, dt_locati
         osm_gps_map_track_add_point(track, point);
         prev_lat = p->lat;
         prev_lon = p->lon;
-        j++;
       }
     }
     else if(!(i % mod2))
     {
       OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
       osm_gps_map_track_add_point(track, point);
-      j++;
     }
   }
 

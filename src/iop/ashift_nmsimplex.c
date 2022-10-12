@@ -86,7 +86,6 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
   int vg; /* vertex with largest value */
 
   int i = 0, j = 0, m, row;
-  int k;   /* track the number of function evaluations */
   int itr; /* track the number of iterations */
 
   double **v;    /* holds vertices of simplex */
@@ -155,7 +154,6 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
     f[j] = objfunc(v[j], params);
   }
 
-  k = n + 1;
 #if 0
   /* print out the initial values */
   printf("Initial Values\n");
@@ -226,7 +224,6 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
       constrain(vr, n);
     }
     fr = objfunc(vr, params);
-    k++;
 
     if(fr < f[vh] && fr >= f[vs])
     {
@@ -250,7 +247,6 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
         constrain(ve, n);
       }
       fe = objfunc(ve, params);
-      k++;
 
       /* by making fe < fr as opposed to fe < f[vs],
          Rosenbrocks function takes 63 iterations as opposed
@@ -290,7 +286,6 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
           constrain(vc, n);
         }
         fc = objfunc(vc, params);
-        k++;
       }
       else
       {
@@ -305,7 +300,6 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
           constrain(vc, n);
         }
         fc = objfunc(vc, params);
-        k++;
       }
 
 
@@ -339,13 +333,11 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
           constrain(v[vg], n);
         }
         f[vg] = objfunc(v[vg], params);
-        k++;
         if(constrain != NULL)
         {
           constrain(v[vh], n);
         }
         f[vh] = objfunc(v[vh], params);
-        k++;
       }
     }
 #if 0
