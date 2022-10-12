@@ -466,7 +466,6 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 #endif
   for(size_t row = 1; row < roi_out->height-1; row++)
   {
-    float *out = (float *)ovoid + (size_t)roi_out->width * row + 1;
     float *in = (float *)ivoid + (size_t)roi_in->width * row + 1;
     for(size_t col = 1; col < roi_out->width-1; col++)
     {
@@ -504,7 +503,6 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
         isegments[3].data[o] = (allclipped == 3) ? 1 : 0;
         has_allclipped |= (allclipped == 3) ? TRUE : FALSE;
       }
-      out++;
       in++;
     }
   }
