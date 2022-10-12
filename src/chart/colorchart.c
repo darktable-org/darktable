@@ -290,7 +290,6 @@ chart_t *parse_cht(const char *filename)
           x_min = MIN(x_min, xo);
           y_min = MIN(y_min, yo);
 
-          int x_steps = 1, y_steps = 1;
           size_t lxs_len = strlen(lxs), lxe_len = strlen(lxe), lys_len = strlen(lys), lye_len = strlen(lye);
           if(lxs_len > lxe_len || lys_len > lye_len) ERROR;
 
@@ -346,7 +345,6 @@ chart_t *parse_cht(const char *filename)
               // increment in x direction
               if(!g_strcmp0(x_label, lxe)) break;
               x += xi;
-              x_steps++;
               if(!strinc(x_label, x_label_size))
               {
                 free(y_label);
@@ -358,7 +356,6 @@ chart_t *parse_cht(const char *filename)
             // increment in y direction
             if(!g_strcmp0(y_label, lye)) break;
             y += yi;
-            y_steps++;
             if(!strinc(y_label, y_label_size))
             {
               free(y_label);

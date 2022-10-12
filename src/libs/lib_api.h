@@ -77,7 +77,7 @@ OPTIONAL(int, button_pressed, struct dt_lib_module_t *self, double x, double y, 
                    uint32_t state);
 OPTIONAL(int, scrolled, struct dt_lib_module_t *self, double x, double y, int up);
 OPTIONAL(void, configure, struct dt_lib_module_t *self, int width, int height);
-OPTIONAL(int, position, );
+OPTIONAL(int, position, void);
 
 /** implement these three if you want customizable presets to be stored in db. */
 /** legacy_params can run in iterations, just return to what version you updated the preset. */

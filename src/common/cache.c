@@ -320,10 +320,8 @@ restart:
 void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
   GList *l = cache->lru;
-  int cnt = 0;
   while(l)
   {
-    cnt++;
     dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
     assert(entry->link->data == entry);
     l = g_list_next(l); // we might remove this element, so walk to the next one while we still have the pointer..
