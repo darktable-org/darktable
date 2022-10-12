@@ -48,6 +48,11 @@ typedef struct dt_iop_flip_params_t
   dt_image_orientation_t orientation;
 } dt_iop_flip_params_t;
 
+typedef struct dt_iop_flip_gui_data_t
+{
+  GtkWidget *ccw, *cw, *h, *v;
+} dt_iop_flip_gui_data_t;
+
 typedef struct dt_iop_flip_params_t dt_iop_flip_data_t;
 
 typedef struct dt_iop_flip_global_data_t
@@ -476,14 +481,15 @@ void reload_defaults(dt_iop_module_t *self)
   }
 }
 
-static void do_rotate(dt_iop_module_t *self, uint32_t cw)
+static gboolean rotate_cw(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
   dt_image_orientation_t orientation = p->orientation;
 
-  if(orientation == ORIENTATION_NULL) orientation = dt_image_orientation(&self->dev->image_storage);
+  if(orientation == ORIENTATION_NULL || dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    orientation = dt_image_orientation(&self->dev->image_storage);
 
-  if(cw == 0)
+  if(widget == NULL)
   {
     if(orientation & ORIENTATION_SWAP_XY)
       orientation ^= ORIENTATION_FLIP_Y;
@@ -501,47 +507,60 @@ static void do_rotate(dt_iop_module_t *self, uint32_t cw)
 
   p->orientation = orientation;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gui_update(self);
+
+  return TRUE;
 }
-static void rotate_cw(GtkWidget *widget, dt_iop_module_t *self)
+static gboolean rotate_ccw(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  do_rotate(self, 1);
+  return rotate_cw(NULL, event, self);
 }
-static void rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
-{
-  do_rotate(self, 0);
-}
-static void _flip_h(GtkWidget *widget, dt_iop_module_t *self)
+static gboolean _flip_h(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
   dt_image_orientation_t orientation = p->orientation;
 
-  if(orientation == ORIENTATION_NULL) orientation = dt_image_orientation(&self->dev->image_storage);
+  if(orientation == ORIENTATION_NULL || dt_modifier_is(event->state, GDK_CONTROL_MASK))
+    orientation = dt_image_orientation(&self->dev->image_storage);
 
-  if(orientation & ORIENTATION_SWAP_XY)
+  if(((orientation & ORIENTATION_SWAP_XY) != 0) ^ (widget == NULL))
     p->orientation = orientation ^ ORIENTATION_FLIP_VERTICALLY;
   else
     p->orientation = orientation ^ ORIENTATION_FLIP_HORIZONTALLY;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-static void _flip_v(GtkWidget *widget, dt_iop_module_t *self)
-{
-  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
-  dt_image_orientation_t orientation = p->orientation;
+  gui_update(self);
 
+  return TRUE;
+}
+static gboolean _flip_v(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+{
+  return _flip_h(NULL, event, self);
+}
+
+void gui_update(dt_iop_module_t *self)
+{
+  dt_iop_flip_gui_data_t *g = (dt_iop_flip_gui_data_t *)self->gui_data;
+  dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
+
+  dt_image_orientation_t orientation = p->orientation;
   if(orientation == ORIENTATION_NULL) orientation = dt_image_orientation(&self->dev->image_storage);
 
-  if(orientation & ORIENTATION_SWAP_XY)
-    p->orientation = orientation ^ ORIENTATION_FLIP_HORIZONTALLY;
-  else
-    p->orientation = orientation ^ ORIENTATION_FLIP_VERTICALLY;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->ccw), orientation == ORIENTATION_ROTATE_CCW_90_DEG ||
+                                                          orientation == ORIENTATION_TRANSVERSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cw ), orientation == ORIENTATION_ROTATE_CW_90_DEG ||
+                                                          orientation == ORIENTATION_TRANSPOSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->h  ), orientation == ORIENTATION_FLIP_HORIZONTALLY ||
+                                                          orientation == ORIENTATION_ROTATE_180_DEG ||
+                                                          orientation == ORIENTATION_TRANSVERSE ||
+                                                          orientation == ORIENTATION_TRANSPOSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->v  ), orientation == ORIENTATION_FLIP_VERTICALLY ||
+                                                          orientation == ORIENTATION_ROTATE_180_DEG);
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = NULL;
+  dt_iop_flip_gui_data_t *g = IOP_GUI_ALLOC(flip);
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -549,24 +568,28 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *label = dtgtk_reset_label_new(_("transform"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
-  dt_iop_button_new(self, N_("rotate 90 degrees CCW"),
-                    G_CALLBACK(rotate_ccw), FALSE, GDK_KEY_bracketleft, 0,
-                    dtgtk_cairo_paint_refresh, 0, self->widget);
+  g->ccw = dt_iop_togglebutton_new(self, NULL, N_("rotate 90 degrees CCW"), N_("reset first"),
+                                   G_CALLBACK(rotate_ccw), FALSE, GDK_KEY_bracketleft, 0,
+                                   dtgtk_cairo_paint_refresh, self->widget);
 
-  dt_iop_button_new(self, N_("rotate 90 degrees CW"),
-                    G_CALLBACK(rotate_cw), FALSE, GDK_KEY_bracketright, 0,
-                    dtgtk_cairo_paint_refresh, 1, self->widget);
+  g->cw = dt_iop_togglebutton_new(self, NULL, N_("rotate 90 degrees CW"), N_("reset first"),
+                                  G_CALLBACK(rotate_cw), FALSE, GDK_KEY_bracketright, 0,
+                                  dtgtk_cairo_paint_refresh, self->widget);
 
-  dt_iop_button_new(self, N_("flip horizontally"), G_CALLBACK(_flip_h), FALSE, 0, 0, dtgtk_cairo_paint_flip, 1,
-                    self->widget);
+  g->h = dt_iop_togglebutton_new(self, NULL, N_("flip horizontally"), N_("reset first"),
+                                 G_CALLBACK(_flip_h), FALSE, 0, 0,
+                                 dtgtk_cairo_paint_flip, self->widget);
 
-  dt_iop_button_new(self, N_("flip vertically"), G_CALLBACK(_flip_v), FALSE, 0, 0, dtgtk_cairo_paint_flip, 0,
-                    self->widget);
-}
+  g->v = dt_iop_togglebutton_new(self, NULL, N_("flip vertically"), N_("reset first"),
+                                 G_CALLBACK(_flip_v), FALSE, 0, 0,
+                                 dtgtk_cairo_paint_flip, self->widget);
 
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  self->gui_data = NULL;
+  // fix some dt_iop_togglebutton_new defaults
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->cw), dtgtk_cairo_paint_refresh, 1, NULL);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->h), dtgtk_cairo_paint_flip, 1, NULL);
+  GtkContainer *c = GTK_CONTAINER(self->widget);
+  for(GList *w = gtk_container_get_children(c); w; w = g_list_delete_link(w, w))
+    gtk_container_child_set(c, w->data,"expand", TRUE, "fill", TRUE, "pack-type", GTK_PACK_START, NULL);
 }
 
 // clang-format off
