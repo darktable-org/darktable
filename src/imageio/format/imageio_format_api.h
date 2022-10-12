@@ -41,7 +41,7 @@ struct dt_dev_pixelpipe_t;
 
 // gui and management:
 /* get translated module name */
-REQUIRED(const char *, name,);
+REQUIRED(const char *, name, void);
 /* construct widget above */
 OPTIONAL(void, gui_init, struct dt_imageio_module_format_t *self);
 /* destroy resources */
