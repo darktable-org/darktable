@@ -1950,6 +1950,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
   const gboolean is_xtrans = (filters == 9u);
+  const gboolean is_linear = (filters == 0);
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
@@ -1960,19 +1961,39 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
                            mclip * (cf[BLUE]  <= 0.0f ? 1.0f : cf[BLUE]),
                            mclip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]) };
 
+  if(is_linear)
+  {
+    const size_t npixels = roi_out->width * (size_t)roi_out->height;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, out, clips) \
+    dt_omp_sharedconst(npixels) \
+    schedule(static)
+#endif
+    for(size_t k = 0; k < 4*npixels; k += 4)
+    {
+      for(int c = 0; c < 3; c++)
+        out[k+c] = (in[k+c] < clips[c]) ? 0.2f * in[k+c] : 1.0f;
+      out[k+3] = 0.0f;
+    }
+  }
+  else
+  {
+
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, clips, roi_in) \
   dt_omp_sharedconst(filters, xtrans, is_xtrans) \
   schedule(static)
 #endif
-  for(size_t row = 0; row < roi_in->height; row++)
-  {
-    for(size_t col = 0, i = row * roi_in->width; col < roi_in->width; col++, i++)
+    for(size_t row = 0; row < roi_in->height; row++)
     {
-      const int c = is_xtrans ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-      const float ival = in[i];
-      out[i] = (ival < clips[c]) ? 0.2f * ival : 1.0f;
+      for(size_t col = 0, i = row * roi_in->width; col < roi_in->width; col++, i++)
+      {
+        const int c = is_xtrans ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
+        const float ival = in[i];
+        out[i] = (ival < clips[c]) ? 0.2f * ival : 1.0f;
+      }
     }
   }
 }
@@ -2140,10 +2161,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   memcpy(d, p, sizeof(*p));
 
-  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT or DT_IOP_HIGHLIGHTS_SEGMENTS
+  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT or DT_IOP_HIGHLIGHTS_SEGMENTS and DT_IOP_HIGHLIGHTS_OPPOSED
   piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)) ? 0 : 1;
   if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) piece->process_tiling_ready = 0;
 
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  if(g)
+  {
+    const gboolean linear = piece->pipe->dsc.filters == 0;
+    const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+    if(g->show_visualize && linear && fullpipe)
+      piece->process_cl_ready = FALSE;
+  }
   // check for heavy computing here to give an iop cache hint
   const gboolean heavy = ((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256));
   self->cache_next_important = heavy;
