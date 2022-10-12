@@ -1182,7 +1182,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   }
 
   GList *newlist = NULL;
-  int nbnew = 0;
   int pos = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW && g_list_shorter_than(newlist, table->thumbs_count+1))
@@ -1244,7 +1243,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
       }
       thumb->aspect_ratio = aspect_ratio;
       newlist = g_list_prepend(newlist, thumb);
-      nbnew++;
     }
     // if it's the offset, we record the imgid
     if(nrow == table->offset) table->offset_imgid = nid;
@@ -1322,7 +1320,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
           }
           thumb->aspect_ratio = aspect_ratio;
           newlist = g_list_prepend(newlist, thumb);
-          nbnew++;
         }
         // if it's the offset, we record the imgid
         if(nrow == table->offset) table->offset_imgid = nid;

@@ -492,7 +492,6 @@ GList *_map_location_find_images(dt_location_draw_t *ld)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, ld->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, ld->data.shape);
 
-  int i = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int id = sqlite3_column_int(stmt, 0);
@@ -506,7 +505,6 @@ GList *_map_location_find_images(dt_location_draw_t *ld)
     }
     else
       imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
-    i++;
   }
   sqlite3_finalize(stmt);
   return imgs;
