@@ -2241,8 +2241,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
-  const gboolean linear_raw = (self->dev->image_storage.buf_dsc.filters == 0);
-  const gboolean bayer = !linear_raw && (self->dev->image_storage.buf_dsc.filters != 9u);
+  const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
+  const gboolean linear_raw = (filters == 0);
+  const gboolean bayer = !linear_raw && (filters != 9u);
   const dt_iop_highlights_mode_t mode = p->mode;
 
   const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
@@ -2291,6 +2292,16 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
+
+  const int menu_size = dt_bauhaus_combobox_length(g->mode);
+  const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
+  const gboolean bayer = (filters != 0) && (filters != 9u);
+
+  const gboolean basic = ((filters == 9u && menu_size == 4) || (bayer && menu_size == 5));
+  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+  if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT && basic)
+     dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
   gui_changed(self, NULL, NULL);
 }
 
@@ -2300,24 +2311,22 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev || module->dev->image_storage.id == -1) return;
 
   const gboolean monochrome = dt_image_is_monochrome(&module->dev->image_storage);
-  // enable this per default if raw or sraw if not real monochrome
+  // enable this per default if raw or sraw if not true monochrome
   module->default_enabled = dt_image_is_rawprepare_supported(&module->dev->image_storage) && !monochrome;
   module->hide_enable_button = monochrome;
   if(module->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->default_enabled ? "default" : "monochrome");
 
-  // Remove the guided laplacians option if not Bayer CFA
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)module->gui_data;
-  const gboolean linear_raw = (module->dev->image_storage.buf_dsc.filters == 0);
-  const gboolean bayer = !linear_raw && (module->dev->image_storage.buf_dsc.filters != 9u);
-
   if(g)
   {
+    // rebuild the complete menu depending on sensor type and possibly active but obsolete mode
+    const uint32_t filters = module->dev->image_storage.buf_dsc.filters;
     const int menu_size = dt_bauhaus_combobox_length(g->mode);
     for(int i = 0; i < menu_size - 1; i++)
       dt_bauhaus_combobox_remove_at(g->mode, 1);
 
-    if(linear_raw)
+    if(filters == 0)
       dt_bauhaus_combobox_add_full(g->mode, _("clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_CLIP), NULL, TRUE);
     else
@@ -2328,12 +2337,14 @@ void reload_defaults(dt_iop_module_t *module)
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_CLIP), NULL, TRUE);
       dt_bauhaus_combobox_add_full(g->mode, _("segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
-      dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
-
-      if(bayer)
+      if((filters != 0) && (filters != 9u))
         dt_bauhaus_combobox_add_full(g->mode, _("guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
+
+      dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)module->params;
+      if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT)
+        dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
     }
   }
 }
