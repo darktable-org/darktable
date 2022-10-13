@@ -71,12 +71,12 @@ static float highlights_clip_magics[6] = { 1.0f, 1.0f, 0.987f, 0.995f, 0.987f, 0
 
 typedef enum dt_iop_highlights_mode_t
 {
-  DT_IOP_HIGHLIGHTS_OPPOSED = 5,  // $DESCRIPTION: "inpaint opposed"
   DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "clip highlights"
   DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
   DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
   DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
   DT_IOP_HIGHLIGHTS_SEGMENTS = 4, // $DESCRIPTION: "segmentation based"
+  DT_IOP_HIGHLIGHTS_OPPOSED = 5,  // $DESCRIPTION: "inpaint opposed"
 } dt_iop_highlights_mode_t;
 
 typedef enum dt_atrous_wavelets_scales_t
@@ -2323,8 +2323,11 @@ void reload_defaults(dt_iop_module_t *module)
     // rebuild the complete menu depending on sensor type and possibly active but obsolete mode
     const uint32_t filters = module->dev->image_storage.buf_dsc.filters;
     const int menu_size = dt_bauhaus_combobox_length(g->mode);
-    for(int i = 0; i < menu_size - 1; i++)
-      dt_bauhaus_combobox_remove_at(g->mode, 1);
+    for(int i = 0; i < menu_size; i++)
+      dt_bauhaus_combobox_remove_at(g->mode, 0);
+
+    dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                      GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
 
     if(filters == 0)
       dt_bauhaus_combobox_add_full(g->mode, _("clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
