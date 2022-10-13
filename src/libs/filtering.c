@@ -1342,7 +1342,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 350;
 }

@@ -289,7 +289,7 @@ static void _image_preference_changed(gpointer instance, gpointer user_data)
                            : _("physically delete from disk immediately"));
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 700;
 }
