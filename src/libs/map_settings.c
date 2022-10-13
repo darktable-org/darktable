@@ -56,7 +56,7 @@ typedef struct dt_lib_map_settings_t
   GtkWidget *images_thumb, *max_images_entry, *epsilon_factor, *min_images, *max_outline_nodes;
 } dt_lib_map_settings_t;
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 990;
 }
@@ -197,4 +197,3 @@ static void _thumbnail_change(dt_action_t *action)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

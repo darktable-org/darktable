@@ -63,7 +63,7 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_LEFT_BOTTOM;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 1;
 }
@@ -323,4 +323,3 @@ static void _lib_backgroundjobs_message_updated(dt_lib_module_t *self, dt_lib_ba
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

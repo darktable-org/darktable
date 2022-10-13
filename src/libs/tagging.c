@@ -2710,7 +2710,7 @@ void gui_reset(dt_lib_module_t *self)
   _update_atdetach_buttons(self);
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 500;
 }

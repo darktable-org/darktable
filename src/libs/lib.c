@@ -579,8 +579,8 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 {
   const dt_lib_module_t *am = (const dt_lib_module_t *)a;
   const dt_lib_module_t *bm = (const dt_lib_module_t *)b;
-  const int apos = am->position ? am->position() : 0;
-  const int bpos = bm->position ? bm->position() : 0;
+  const int apos = am->position ? am->position(am) : 0;
+  const int bpos = bm->position ? bm->position(bm) : 0;
   return apos - bpos;
 }
 

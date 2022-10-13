@@ -122,7 +122,7 @@ void gui_reset(dt_lib_module_t *self)
 {
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 998;
 }
@@ -706,4 +706,3 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -154,8 +154,7 @@ static void _height_changed(GtkWidget *widget, gpointer user_data);
 static void _x_changed(GtkWidget *widget, gpointer user_data);
 static void _y_changed(GtkWidget *widget, gpointer user_data);
 
-int
-position()
+int position(const dt_lib_module_t *self)
 {
   return 990;
 }

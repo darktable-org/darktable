@@ -2608,7 +2608,7 @@ static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr)
   update_view(dr);
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 400;
 }
