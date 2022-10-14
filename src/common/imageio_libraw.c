@@ -275,6 +275,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   img->raw_white_point = raw->rawdata.color.linear_max[0] ? raw->rawdata.color.linear_max[0] :raw->rawdata.color.maximum;
 
   // Copy black level
+  img->raw_black_level = raw->rawdata.color.black;
   for(size_t c = 0; c < 4; ++c)
     img->raw_black_level_separate[c] = raw->rawdata.color.black + raw->rawdata.color.cblack[c];
 
