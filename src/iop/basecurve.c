@@ -418,7 +418,7 @@ int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 {
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
   /* horizontal blur */
@@ -448,7 +448,7 @@ int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 {
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
   size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
@@ -471,7 +471,7 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 {
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
   {
@@ -516,7 +516,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int num_levels_max = 8;
   const int devid = piece->pipe->devid;
@@ -824,7 +824,7 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   cl_mem dev_m = NULL;
   cl_mem dev_coeffs = NULL;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   cl_mem dev_profile_info = NULL;
   cl_mem dev_profile_lut = NULL;

@@ -1176,7 +1176,7 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
                                          cl_mem LF_odd,
                                          cl_mem LF_even)
 {
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const dt_aligned_pixel_t anisotropy
       = { compute_anisotropy_factor(data->anisotropy_first),
@@ -1333,7 +1333,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   int out_of_memory = FALSE;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;

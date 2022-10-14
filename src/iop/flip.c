@@ -346,7 +346,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   const dt_iop_flip_data_t *data = (dt_iop_flip_data_t *)piece->data;
   const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->global_data;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
