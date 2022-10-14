@@ -827,6 +827,20 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
+#ifdef USE_LUA
+
+static void _fire_darkroom_image_loaded_event(const bool clean, const int32_t imgid)
+{
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
+      LUA_ASYNC_TYPENAME, "bool", clean,
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(imgid),
+      LUA_ASYNC_DONE);
+}
+
+#endif
+
 static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
@@ -839,16 +853,6 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dev->proxy.wb_coeffs[0] = 0.f;
 
   memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
-
-#ifdef USE_LUA
-
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(imgid),
-      LUA_ASYNC_DONE);
-
-#endif
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);
@@ -910,17 +914,41 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // which in turn try to acquire the gdk lock.
   //
   // worst case, it'll drop some change image events. sorry.
-  if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex)) return;
+  if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex)) 
+  {
+
+  #ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(FALSE, imgid);  
+
+#endif
+
+  return;
+  }
   if(dt_pthread_mutex_BAD_trylock(&dev->pipe_mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
-    return;
+
+ #ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(FALSE, imgid);  
+
+#endif
+
+   return;
   }
   if(dt_pthread_mutex_BAD_trylock(&dev->preview2_pipe_mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->pipe_mutex);
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
-    return;
+
+ #ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(FALSE, imgid);  
+
+#endif
+
+   return;
   }
 
   // get current plugin in focus before defocus
@@ -1139,6 +1167,13 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
+
+#ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(TRUE, imgid);  
+
+#endif
+
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_t imgid, gpointer user_data)
