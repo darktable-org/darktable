@@ -43,6 +43,10 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
+#ifdef USE_LUA
+#include "lua/call.h"
+#endif
+
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
@@ -632,11 +636,13 @@ restart:
   dt_control_toast_busy_leave();
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
 
+#ifdef USE_LUA
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
       0, NULL, NULL,
       LUA_ASYNC_TYPENAME, "const char*", "pixelpipe-processing-complete",
       LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
       LUA_ASYNC_DONE);
+#endif
 
   if(dev->gui_attached && !dev->gui_leaving)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
