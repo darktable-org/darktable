@@ -87,9 +87,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   const int devid = piece->pipe->devid;
-  cl_int err = -999;
-
-  err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+  cl_int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
   if(err != CL_SUCCESS) goto error;
 
   return TRUE;

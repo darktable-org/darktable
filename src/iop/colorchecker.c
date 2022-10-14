@@ -553,7 +553,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_out->height;
   const int num_patches = d->num_patches;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_params = NULL;
 
   const size_t params_size = (size_t)(4 * (2 * num_patches + 4)) * sizeof(float);

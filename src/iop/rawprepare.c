@@ -459,7 +459,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem dev_sub = NULL;
   cl_mem dev_div = NULL;
   cl_mem dev_gainmap[4] = {0};
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   int kernel = -1;
   gboolean gainmap_args = FALSE;
