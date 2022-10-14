@@ -2272,7 +2272,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if((!bayer && (mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
     || (linear_raw && (mode == DT_IOP_HIGHLIGHTS_LCH
         || mode == DT_IOP_HIGHLIGHTS_INPAINT
-        || mode == DT_IOP_HIGHLIGHTS_LAPLACIAN
         || mode == DT_IOP_HIGHLIGHTS_SEGMENTS)))
   {
     p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
