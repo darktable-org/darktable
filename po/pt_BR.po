@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-12 10:37-0300\n"
-"PO-Revision-Date: 2022-10-12 12:52-0300\n"
+"POT-Creation-Date: 2022-10-13 21:58-0300\n"
+"PO-Revision-Date: 2022-10-13 22:03-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -293,8 +293,8 @@ msgid "comma separated tags to be applied when importing"
 msgstr "etiquetas separadas por vírgulas a serem aplicadas ao importar"
 
 #: ../build/bin/conf_gen.h:972
-msgid "import tags from xmp"
-msgstr "importar etiquetas do xmp"
+msgid "import tags from XMP"
+msgstr "importar etiquetas do XMP"
 
 #: ../build/bin/conf_gen.h:998
 msgid "initial rating"
@@ -1847,8 +1847,8 @@ msgstr ""
 "para uma recuperação."
 
 #: ../build/bin/preferences_gen.h:7224 ../src/control/crawler.c:608
-msgid "xmp"
-msgstr "xmp"
+msgid "XMP"
+msgstr "XMP"
 
 #: ../build/bin/preferences_gen.h:7244
 msgid "write sidecar file for each image"
@@ -1874,30 +1874,25 @@ msgstr ""
 " - após edição: depois de qualquer mudança feita na imagem"
 
 #: ../build/bin/preferences_gen.h:7309
-msgid "store xmp tags in compressed format"
-msgstr "salvar etiquetas xmp em formato comprimido"
+msgid "store XMP tags in compressed format"
+msgstr "salvar etiquetas XMP em formato comprimido"
 
 #: ../build/bin/preferences_gen.h:7352
 msgid ""
-"entries in xmp tags can get rather large and may exceed the available space "
-"to store the history stack in output files. this option allows xmp tags to "
+"entries in XMP tags can get rather large and may exceed the available space "
+"to store the history stack in output files. this option allows XMP tags to "
 "be compressed and save space."
-msgstr ""
-"entradas nas etiquetas xmp podem se tornar bastante grandes e exceder o "
-"espaço disponível para armazenar o histórico em arquivos de saída. esta "
-"opção permite que etiquetas xmp sejam comprimidos e economizem espaço."
+msgstr "entradas nas etiquetas XMP podem se tornar bastante grandes e exceder o espaço disponível para armazenar o histórico em arquivos de saída. esta opção permite que etiquetas XMP sejam comprimidos e economizem espaço."
 
 #: ../build/bin/preferences_gen.h:7374
-msgid "look for updated xmp files on startup"
-msgstr "procurar por arquivos xmp atualizados ao iniciar"
+msgid "look for updated XMP files on startup"
+msgstr "procurar por arquivos XMP atualizados ao iniciar"
 
 #: ../build/bin/preferences_gen.h:7388
 msgid ""
-"check file modification times of all xmp files on startup to check if any "
+"check file modification times of all XMP files on startup to check if any "
 "got updated in the meantime"
-msgstr ""
-"verificar tempo de modificação de todos os arquivos xmp ao iniciar para ver "
-"se algum foi modificado"
+msgstr "verificar tempo de modificação de todos os arquivos XMP ao iniciar para ver se algum foi modificado"
 
 #: ../build/bin/preferences_gen.h:7416
 msgid "miscellaneous"
@@ -2412,7 +2407,7 @@ msgstr "preservar cores"
 #: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1905
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1036
 #: ../src/libs/filters/module_order.c:158 ../src/libs/live_view.c:311
-#: ../src/libs/print_settings.c:2658
+#: ../src/libs/print_settings.c:2657
 msgid "none"
 msgstr "nenhum"
 
@@ -2590,7 +2585,7 @@ msgstr "proporção da imagem"
 #. // portrait / landscape
 #: ../build/lib/darktable/plugins/introspection_borders.c:128
 #: ../build/lib/darktable/plugins/introspection_borders.c:263
-#: ../src/iop/flip.c:74 ../src/libs/print_settings.c:2361
+#: ../src/iop/flip.c:74 ../src/libs/print_settings.c:2360
 msgid "orientation"
 msgstr "orientação"
 
@@ -3198,7 +3193,7 @@ msgstr "sRGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:303
 #: ../src/common/colorspaces.c:1431 ../src/common/colorspaces.c:1657
-#: ../src/libs/print_settings.c:1292
+#: ../src/libs/print_settings.c:1291
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatível)"
 
@@ -4068,7 +4063,7 @@ msgstr "detectar por 3 vizinhos"
 #: ../src/iop/denoiseprofile.c:3664 ../src/iop/exposure.c:1065
 #: ../src/iop/levels.c:679 ../src/iop/profile_gamma.c:676
 #: ../src/libs/copy_history.c:374 ../src/libs/export.c:1289
-#: ../src/libs/image.c:599 ../src/libs/print_settings.c:2697
+#: ../src/libs/image.c:599 ../src/libs/print_settings.c:2696
 #: ../src/libs/styles.c:825 ../src/views/darkroom.c:2310
 msgid "mode"
 msgstr "modo"
@@ -4828,8 +4823,8 @@ msgstr "nenhuma imagem para exportar, cancelando\n"
 
 #: ../src/cli/main.c:583
 #, c-format
-msgid "error: can't open xmp file %s"
-msgstr "erro: não foi possível abrir o arquivo xmp %s"
+msgid "error: can't open XMP file %s"
+msgstr "erro: não foi possível abrir o arquivo XMP %s"
 
 #: ../src/cli/main.c:604
 msgid "empty history stack"
@@ -5473,7 +5468,7 @@ msgstr "perfil do monitor do sistema (segunda janela)"
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (ex. JPG)"
 
-#: ../src/common/colorspaces.c:1426 ../src/libs/print_settings.c:1285
+#: ../src/common/colorspaces.c:1426 ../src/libs/print_settings.c:1284
 msgid "sRGB (web-safe)"
 msgstr "sRGB (seguro para Web)"
 
@@ -5997,13 +5992,13 @@ msgstr ""
 
 #: ../src/common/exif.cc:4358
 #, c-format
-msgid "cannot read xmp file '%s': '%s'"
-msgstr "não foi possível abrir o arquivo xmp '%s': '%s'"
+msgid "cannot read XMP file '%s': '%s'"
+msgstr "não foi possível abrir o arquivo XMP '%s': '%s'"
 
 #: ../src/common/exif.cc:4410
 #, c-format
-msgid "cannot write xmp file '%s': '%s'"
-msgstr "não foi possível escrever o arquivo xmp '%s': '%s'"
+msgid "cannot write XMP file '%s': '%s'"
+msgstr "não foi possível escrever o arquivo XMP '%s': '%s'"
 
 #: ../src/common/fast_guided_filter.h:316
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -6713,8 +6708,8 @@ msgid "path"
 msgstr "caminho"
 
 #: ../src/control/crawler.c:633
-msgid "xmp timestamp"
-msgstr "data/hora do xmp"
+msgid "XMP timestamp"
+msgstr "data/hora do XMP"
 
 #: ../src/control/crawler.c:637
 msgid "database timestamp"
@@ -6729,8 +6724,8 @@ msgid "time difference"
 msgstr "diferença de tempo"
 
 #: ../src/control/crawler.c:656
-msgid "updated xmp sidecar files found"
-msgstr "arquivo auxiliar xmp atualizado não encontrado"
+msgid "updated XMP sidecar files found"
+msgstr "arquivo auxiliar XMP atualizado não encontrado"
 
 #: ../src/control/crawler.c:657
 msgid "_close"
@@ -6758,8 +6753,8 @@ msgid "on the selection:"
 msgstr "na seleção:"
 
 #: ../src/control/crawler.c:686
-msgid "keep the xmp edit"
-msgstr "manter a edição do xmp"
+msgid "keep the XMP edit"
+msgstr "manter a edição do XMP"
 
 #: ../src/control/crawler.c:687
 msgid "keep the database edit"
@@ -8627,7 +8622,7 @@ msgstr ""
 "darktable encontrou problemas com o sua configuração de OpenCL; "
 "desabilitando OpenCL para esta sessão!"
 
-#: ../src/develop/tiling.c:830 ../src/develop/tiling.c:1163
+#: ../src/develop/tiling.c:821 ../src/develop/tiling.c:1154
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
@@ -9699,7 +9694,7 @@ msgid "slideshow"
 msgstr "apresentação"
 
 #. Print button
-#: ../src/gui/gtk.c:1180 ../src/libs/print_settings.c:2707
+#: ../src/gui/gtk.c:1180 ../src/libs/print_settings.c:2706
 msgid "print"
 msgstr "imprimir"
 
@@ -10252,22 +10247,19 @@ msgstr ""
 "clique-duplo em 'predefinições' para limpar todas as entradas"
 
 #: ../src/gui/import_metadata.c:430
-msgid "from xmp"
-msgstr "do xmp"
+msgid "from XMP"
+msgstr "do XMP"
 
 #: ../src/gui/import_metadata.c:433
 msgid ""
 "selected metadata are imported from image and override the default value\n"
-" this drives also the 'look for updated xmp files' and 'load sidecar file' "
+" this drives also the 'look for updated XMP files' and 'load sidecar file' "
 "actions\n"
-" CAUTION: not selected metadata are cleaned up when xmp file is updated"
+" CAUTION: not selected metadata are cleaned up when XMP file is updated"
 msgstr ""
-"os metadados selecionados são importados da imagem e sobrescrevem o valor "
-"padrão\n"
-" isto também tem efeito sobre as ações 'procurar por arquivos xmp "
-"atualizados' e 'carregar arquivo xmp\n"
-" CUIDADO: metadados não selecionados são limpados quando o arquivo xmp é "
-"atualizado"
+"os metadados selecionados são importados da imagem e sobrescrevem o valor padrão\n"
+" isto também tem efeito sobre as ações 'procurar por arquivos XMP atualizados' e 'carregar arquivo XMP\n"
+" CUIDADO: metadados não selecionados são limpados quando o arquivo XMP é atualizado"
 
 #. tags
 #: ../src/gui/import_metadata.c:469
@@ -10970,7 +10962,7 @@ msgstr "inserir o título do pdf"
 
 #. paper size
 #. // papers
-#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2354
+#: ../src/imageio/format/pdf.c:585 ../src/libs/print_settings.c:2353
 msgid "paper size"
 msgstr "tamanho do papel"
 
@@ -10995,13 +10987,13 @@ msgstr "orientação do papel no pdf"
 
 #: ../src/imageio/format/pdf.c:604 ../src/iop/borders.c:1042
 #: ../src/libs/filtering.c:286 ../src/libs/filters/ratio.c:122
-#: ../src/libs/print_settings.c:2363
+#: ../src/libs/print_settings.c:2362
 msgid "portrait"
 msgstr "retrato"
 
 #: ../src/imageio/format/pdf.c:604 ../src/iop/borders.c:1043
 #: ../src/libs/filtering.c:282 ../src/libs/filters/ratio.c:124
-#: ../src/libs/print_settings.c:2363
+#: ../src/libs/print_settings.c:2362
 msgid "landscape"
 msgstr "paisagem"
 
@@ -13060,7 +13052,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:4017 ../src/iop/clipping.c:2105
 #: ../src/iop/colorbalancergb.c:1891 ../src/iop/filmicrgb.c:4208
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3110
-#: ../src/libs/image.c:462 ../src/libs/print_settings.c:2348
+#: ../src/libs/image.c:462 ../src/libs/print_settings.c:2347
 #: ../src/views/lighttable.c:1239
 msgid "page"
 msgstr "página"
@@ -14496,26 +14488,26 @@ msgid "rendering intent"
 msgstr "intenção de renderização"
 
 #: ../src/iop/colorout.c:866 ../src/libs/export.c:1273
-#: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
+#: ../src/libs/print_settings.c:2325 ../src/libs/print_settings.c:2646
 #: ../src/views/darkroom.c:2445 ../src/views/lighttable.c:1154
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:867 ../src/libs/export.c:1274
-#: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
+#: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
 #: ../src/views/darkroom.c:2446 ../src/views/lighttable.c:1155
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
 #: ../src/iop/colorout.c:868 ../src/libs/export.c:1275
-#: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
+#: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
 #: ../src/views/darkroom.c:2447 ../src/views/lighttable.c:1156
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:1276
-#: ../src/libs/print_settings.c:2329 ../src/libs/print_settings.c:2650
+#: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
 #: ../src/views/darkroom.c:2448 ../src/views/lighttable.c:1157
 msgid "absolute colorimetric"
 msgstr "colorimétrico absoluto"
@@ -14963,7 +14955,7 @@ msgid "variance computed on the blue channel"
 msgstr "variância calculada no canal azul"
 
 #: ../src/iop/denoiseprofile.c:3657 ../src/libs/export.c:1227
-#: ../src/libs/print_settings.c:2273 ../src/libs/print_settings.c:2598
+#: ../src/libs/print_settings.c:2272 ../src/libs/print_settings.c:2597
 msgid "profile"
 msgstr "perfil"
 
@@ -15814,7 +15806,7 @@ msgstr ""
 #. Add intent combo
 #. Add export intent combo
 #: ../src/iop/filmic.c:1701 ../src/libs/export.c:1249
-#: ../src/libs/print_settings.c:2324 ../src/libs/print_settings.c:2643
+#: ../src/libs/print_settings.c:2323 ../src/libs/print_settings.c:2642
 #: ../src/views/darkroom.c:2451 ../src/views/lighttable.c:1160
 msgid "intent"
 msgstr "intenção"
@@ -16554,7 +16546,9 @@ msgstr "reconstrução, raw"
 msgid ""
 "highlights: guided laplacian is not available for X-Trans sensors. falling "
 "back to clip."
-msgstr "realces: modo laplaciano guiado não está disponível para sensores X-Trans. revertendo para recorte."
+msgstr ""
+"realces: modo laplaciano guiado não está disponível para sensores X-Trans. "
+"revertendo para recorte."
 
 #: ../src/iop/highlights.c:2384
 msgid "highlight reconstruction method"
@@ -16578,7 +16572,8 @@ msgid ""
 "combine closely related clipped segments by morphological operations\n"
 ".the mask button shows resulting segment borders."
 msgstr ""
-"combinar segmentos recortados que tenham forte relação por operações morfológicas\n"
+"combinar segmentos recortados que tenham forte relação por operações "
+"morfológicas\n"
 ".o botão de máscara mostra as bordas de segmentos resultantes."
 
 #: ../src/iop/highlights.c:2408
@@ -16589,7 +16584,8 @@ msgid ""
 "the mask button shows selected segments."
 msgstr ""
 "selecione a reconstrução depois da análise de segmentos.\n"
-"aumente para favorecer candidatos encontrados na análise de segmentação, diminua para reconstrução por média oposta.\n"
+"aumente para favorecer candidatos encontrados na análise de segmentação, "
+"diminua para reconstrução por média oposta.\n"
 "o botão de máscara mostra os segmentos selecoinados."
 
 #: ../src/iop/highlights.c:2419
@@ -17911,7 +17907,7 @@ msgid "toggle tool for picking median lightness in image"
 msgstr "alterna ferramenta para selecionar luminosidade media na imagem"
 
 #: ../src/iop/relight.c:284 ../src/libs/export.c:1145
-#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2379
+#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2378
 msgid "width"
 msgstr "largura"
 
@@ -19204,7 +19200,7 @@ msgstr "posicionamento"
 msgid "size is relative to"
 msgstr "tamanho é relativo a"
 
-#: ../src/iop/watermark.c:1140 ../src/libs/print_settings.c:2509
+#: ../src/iop/watermark.c:1140 ../src/libs/print_settings.c:2508
 msgid "alignment"
 msgstr "alinhamento"
 
@@ -19873,7 +19869,7 @@ msgid "resolution in dot per inch"
 msgstr "resolução em pontos por polegada"
 
 #: ../src/libs/export.c:1149 ../src/libs/metadata_view.c:148
-#: ../src/libs/print_settings.c:2383
+#: ../src/libs/print_settings.c:2382
 msgid "height"
 msgstr "altura"
 
@@ -19918,11 +19914,11 @@ msgstr ""
 "só funciona com alguns formatos."
 
 #: ../src/libs/export.c:1229 ../src/libs/export.c:1272
-#: ../src/libs/print_settings.c:2601 ../src/libs/print_settings.c:2646
+#: ../src/libs/print_settings.c:2600 ../src/libs/print_settings.c:2645
 msgid "image settings"
 msgstr "configurações da imagem"
 
-#: ../src/libs/export.c:1241 ../src/libs/print_settings.c:2635
+#: ../src/libs/export.c:1241 ../src/libs/print_settings.c:2634
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "perfil ICC de saída em  %s ou %s"
@@ -19959,7 +19955,7 @@ msgstr ""
 "branco da mídia de destino e não faz mais nada. usado principalmente ao "
 "verificar cores (não serve para fotografia)."
 
-#: ../src/libs/export.c:1282 ../src/libs/print_settings.c:2656
+#: ../src/libs/export.c:1282 ../src/libs/print_settings.c:2655
 msgid "style"
 msgstr "estilo"
 
@@ -19967,18 +19963,18 @@ msgstr "estilo"
 msgid "temporary style to use while exporting"
 msgstr "estilo temporário a ser usado ao exportar"
 
-#: ../src/libs/export.c:1290 ../src/libs/print_settings.c:2698
+#: ../src/libs/export.c:1290 ../src/libs/print_settings.c:2697
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "se os itens de estilo são adicionados ao final do histórico ou se substituem "
 "o histórico"
 
-#: ../src/libs/export.c:1293 ../src/libs/print_settings.c:2700
+#: ../src/libs/export.c:1293 ../src/libs/print_settings.c:2699
 msgid "replace history"
 msgstr "substituir histórico"
 
-#: ../src/libs/export.c:1293 ../src/libs/print_settings.c:2700
+#: ../src/libs/export.c:1293 ../src/libs/print_settings.c:2699
 msgid "append history"
 msgstr "adicionar ao final do histórico"
 
@@ -20023,7 +20019,7 @@ msgid "export EXIF metadata"
 msgstr "exportar metadados EXIF"
 
 #: ../src/libs/export_metadata.c:311
-msgid "export dt xmp metadata (from metadata editor module)"
+msgid "export dt XMP metadata (from metadata editor module)"
 msgstr "exportar metadados dt xmp (do módulo editor de metadados)"
 
 #: ../src/libs/export_metadata.c:321
@@ -20034,16 +20030,13 @@ msgstr "só embarcado"
 msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
-"to avoid this and let only image embedded dt xmp metadata, check this flag.\n"
-"if remote storage doesn't understand dt xmp metadata, you can use calculated "
+"to avoid this and let only image embedded dt XMP metadata, check this flag.\n"
+"if remote storage doesn't understand dt XMP metadata, you can use calculated "
 "metadata instead"
 msgstr ""
-"por padrão, a interface envia alguns metadados (limitados) além da imagem "
-"para o armazenamento remoto.\n"
-"para evitar isto e deixar que somente os metadados incorporados na imagem "
-"sejam exportados, selecione esta opção.\n"
-"se o armazenamento remoto não entende metadados do darktable, você pode usar "
-"metadados calculados."
+"por padrão, a interface envia alguns metadados (limitados) além da imagem para o armazenamento remoto.\n"
+"para evitar isto e deixar que somente os metadados XMP incorporados na imagem sejam exportados, selecione esta opção.\n"
+"se o armazenamento remoto não entende metadados do darktable, você pode usar metadados XMP calculados."
 
 #: ../src/libs/export_metadata.c:328 ../src/libs/image.c:568
 msgid "geo tags"
@@ -20100,10 +20093,8 @@ msgstr "histórico de processamento"
 #: ../src/libs/export_metadata.c:354
 msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
-"xmp file)"
-msgstr ""
-"exportar dados de desenvolvimento dt (para recuperação em caso de perda da "
-"base de dados ou arquivo xmp)"
+"XMP file)"
+msgstr "exportar dados de desenvolvimento dt (para recuperação em caso de perda da base de dados ou arquivo XMP)"
 
 #: ../src/libs/export_metadata.c:361
 msgid "per metadata settings"
@@ -22293,105 +22284,105 @@ msgid "1600%"
 msgstr "1600%"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:46 ../src/libs/print_settings.c:2591
+#: ../src/libs/print_settings.c:46 ../src/libs/print_settings.c:2590
 msgid "print settings"
 msgstr "configurações de impressão"
 
 #. FIXME: ellipsize title/printer as the export completed message is ellipsized
-#: ../src/libs/print_settings.c:336 ../src/libs/print_settings.c:713
+#: ../src/libs/print_settings.c:335 ../src/libs/print_settings.c:712
 #, c-format
 msgid "processing `%s' for `%s'"
 msgstr "processando `%s' para `%s'"
 
-#: ../src/libs/print_settings.c:364
+#: ../src/libs/print_settings.c:363
 #, c-format
 msgid "cannot open printer profile `%s'"
 msgstr "não foi possível abrir o perfil de impressora `%s'!"
 
-#: ../src/libs/print_settings.c:373
+#: ../src/libs/print_settings.c:372
 #, c-format
 msgid "error getting output profile for image %d"
 msgstr "erro ao obter perfil de saída para imagem %d"
 
-#: ../src/libs/print_settings.c:382
+#: ../src/libs/print_settings.c:381
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "não foi possível aplicar o perfil de impressora `%s'!"
 
-#: ../src/libs/print_settings.c:535
+#: ../src/libs/print_settings.c:534
 msgid "failed to create temporary pdf for printing"
 msgstr "falha ao criar pdf temporário para imprimir"
 
-#: ../src/libs/print_settings.c:581
+#: ../src/libs/print_settings.c:580
 msgid "maximum image per page reached"
 msgstr "máximo de imagens por página foi atingido"
 
-#: ../src/libs/print_settings.c:668
+#: ../src/libs/print_settings.c:667
 msgid "cannot print until a picture is selected"
 msgstr "não pode imprimir até que uma foto seja selecionada"
 
-#: ../src/libs/print_settings.c:673
+#: ../src/libs/print_settings.c:672
 msgid "cannot print until a printer is selected"
 msgstr "não pode imprimir até uma impressora ser selecionada"
 
-#: ../src/libs/print_settings.c:678
+#: ../src/libs/print_settings.c:677
 msgid "cannot print until a paper is selected"
 msgstr "não pode imprimir até um papel ser selecionado"
 
 #. in this case no need to release from cache what we couldn't get
-#: ../src/libs/print_settings.c:705
+#: ../src/libs/print_settings.c:704
 #, c-format
 msgid "cannot get image %d for printing"
 msgstr "não foi possível obter a imagem %d para imprimir"
 
-#: ../src/libs/print_settings.c:875
+#: ../src/libs/print_settings.c:874
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:2253 ../src/libs/print_settings.c:2265
-#: ../src/libs/print_settings.c:2273 ../src/libs/print_settings.c:2324
+#: ../src/libs/print_settings.c:2252 ../src/libs/print_settings.c:2264
+#: ../src/libs/print_settings.c:2272 ../src/libs/print_settings.c:2323
 msgid "printer"
 msgstr "impressora"
 
-#: ../src/libs/print_settings.c:2265
+#: ../src/libs/print_settings.c:2264
 msgid "media"
 msgstr "mídia"
 
-#: ../src/libs/print_settings.c:2283
+#: ../src/libs/print_settings.c:2282
 msgid "color management in printer driver"
 msgstr "gerenciamento de cor do driver da impressora"
 
-#: ../src/libs/print_settings.c:2315
+#: ../src/libs/print_settings.c:2314
 #, c-format
 msgid "printer ICC profiles in %s or %s"
 msgstr "perfis ICC em %s ou %s"
 
-#: ../src/libs/print_settings.c:2334
+#: ../src/libs/print_settings.c:2333
 msgid "black point compensation"
 msgstr "compensação de ponto preto"
 
-#: ../src/libs/print_settings.c:2342
+#: ../src/libs/print_settings.c:2341
 msgid "activate black point compensation when applying the printer profile"
 msgstr "ativar compensação de ponto preto ao aplicar o perfil da impressora"
 
-#: ../src/libs/print_settings.c:2369
+#: ../src/libs/print_settings.c:2368
 msgid "measurement units"
 msgstr "unidades de medida"
 
-#: ../src/libs/print_settings.c:2377
+#: ../src/libs/print_settings.c:2376
 msgid "image width/height"
 msgstr "largura/altura da imagem"
 
-#: ../src/libs/print_settings.c:2381
+#: ../src/libs/print_settings.c:2380
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:2389
+#: ../src/libs/print_settings.c:2388
 msgid "scale factor"
 msgstr "fator de escala"
 
-#: ../src/libs/print_settings.c:2394
+#: ../src/libs/print_settings.c:2393
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -22404,46 +22395,46 @@ msgstr ""
 "um valor muito grande pode resultar em baixa qualidade de impressão"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2408
+#: ../src/libs/print_settings.c:2407
 msgid "top margin"
 msgstr "margem superior"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2412
+#: ../src/libs/print_settings.c:2411
 msgid "left margin"
 msgstr "margem esquerda"
 
-#: ../src/libs/print_settings.c:2415
+#: ../src/libs/print_settings.c:2414
 msgid "lock"
 msgstr "bloquear"
 
-#: ../src/libs/print_settings.c:2416
+#: ../src/libs/print_settings.c:2415
 msgid "change all margins uniformly"
 msgstr "mudar todas as margens uniformemente"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2420
+#: ../src/libs/print_settings.c:2419
 msgid "right margin"
 msgstr "margem direita"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2424
+#: ../src/libs/print_settings.c:2423
 msgid "bottom margin"
 msgstr "margem inferior"
 
-#: ../src/libs/print_settings.c:2457
+#: ../src/libs/print_settings.c:2456
 msgid "display grid"
 msgstr "visualizar grade"
 
-#: ../src/libs/print_settings.c:2467
+#: ../src/libs/print_settings.c:2466
 msgid "snap to grid"
 msgstr "alinhar à grade"
 
-#: ../src/libs/print_settings.c:2477
+#: ../src/libs/print_settings.c:2476
 msgid "borderless mode required"
 msgstr "modo sem bordas necessário"
 
-#: ../src/libs/print_settings.c:2480
+#: ../src/libs/print_settings.c:2479
 msgid ""
 "indicates that the borderless mode should be activated\n"
 "in the printer driver because the selected margins are\n"
@@ -22454,15 +22445,15 @@ msgstr ""
 "menores que as margens do hardware da impressora."
 
 #. pack image dimension hbox here
-#: ../src/libs/print_settings.c:2487
+#: ../src/libs/print_settings.c:2486
 msgid "image layout"
 msgstr "disposição da imagem"
 
-#: ../src/libs/print_settings.c:2525
+#: ../src/libs/print_settings.c:2524
 msgid "new image area"
 msgstr "nova área de imagem"
 
-#: ../src/libs/print_settings.c:2526
+#: ../src/libs/print_settings.c:2525
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
@@ -22472,47 +22463,47 @@ msgstr ""
 "clique e arraste na página para posicionar a área\n"
 "arraste&solte a imagem do rolo de filme nela"
 
-#: ../src/libs/print_settings.c:2530
+#: ../src/libs/print_settings.c:2529
 msgid "delete image area"
 msgstr "excluir área de imagem"
 
-#: ../src/libs/print_settings.c:2531
+#: ../src/libs/print_settings.c:2530
 msgid "delete the currently selected image area"
 msgstr "remover a área da imagem atualmente selecionada"
 
-#: ../src/libs/print_settings.c:2534
+#: ../src/libs/print_settings.c:2533
 msgid "clear layout"
 msgstr "limpar disposição"
 
-#: ../src/libs/print_settings.c:2535
+#: ../src/libs/print_settings.c:2534
 msgid "remove all image areas from the page"
 msgstr "remove todas áreas de imagem da página"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2550
+#: ../src/libs/print_settings.c:2549
 msgid "image area x origin (in current unit)"
 msgstr "origem x da área da imagem (na unidade atual)"
 
 #. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2554
+#: ../src/libs/print_settings.c:2553
 msgid "image area y origin (in current unit)"
 msgstr "origem y da área da imagem (na unidade atual)"
 
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2565
+#: ../src/libs/print_settings.c:2564
 msgid "image area width (in current unit)"
 msgstr "largura da área da imagem (na unidade atual)"
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2569
+#: ../src/libs/print_settings.c:2568
 msgid "image area height (in current unit)"
 msgstr "altura da área da imagem (na unidade atual)"
 
-#: ../src/libs/print_settings.c:2678
+#: ../src/libs/print_settings.c:2677
 msgid "temporary style to use while printing"
 msgstr "estilo temporário a ser usado ao imprimir"
 
-#: ../src/libs/print_settings.c:2708
+#: ../src/libs/print_settings.c:2707
 msgid "print with current settings"
 msgstr "imprime com configuração atual"
 
@@ -24050,15 +24041,15 @@ msgstr "zoom máximo"
 msgid "zoom min"
 msgstr "zoom mínimo"
 
-#: ../src/views/map.c:2812
+#: ../src/views/map.c:2809
 msgid "[on image] open in darkroom"
 msgstr "abrir imagem na sala escura"
 
-#: ../src/views/map.c:2813
+#: ../src/views/map.c:2810
 msgid "[on map] zoom map"
 msgstr "zoom no mapa"
 
-#: ../src/views/map.c:2814
+#: ../src/views/map.c:2811
 msgid "move image location"
 msgstr "mover localização da imagem"
 
@@ -24177,6 +24168,13 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1342
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "xmp"
+#~ msgstr "xmp"
+
+#, c-format
+#~ msgid "error: can't open xmp file %s"
+#~ msgstr "erro: não foi possível abrir o arquivo xmp %s"
 
 #~ msgid "[BRUSH creation] change size"
 #~ msgstr "[PINCEL criação] mudar tamanho"
