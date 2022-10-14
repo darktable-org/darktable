@@ -656,6 +656,11 @@ int dt_lua_init_events(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "darkroom-image-history-changed");
 
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L, "pixelpipe-processing-complete");
+
   return 0;
 }
 // clang-format off
