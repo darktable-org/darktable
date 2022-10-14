@@ -67,7 +67,7 @@ DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
    the visualizing is wrong for those algos. It seems to be a a minor issue but sometimes significant.
    Please note, every mode defined in dt_iop_highlights_mode_t requires a value.
 */
-static float highlights_clip_magics[6] = { 1.0f, 1.0f, 0.987f, 0.995f, 0.987f, 0.987f };  
+static float highlights_clip_magics[6] = { 1.0f, 1.0f, 0.987f, 0.995f, 0.987f, 0.987f };
 
 typedef enum dt_iop_highlights_mode_t
 {
@@ -2444,7 +2444,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
-  gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations\n."
+  gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations.\n"
                                             "the mask button shows resulting segment borders."));
   dt_bauhaus_widget_set_quad_paint(g->combine, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->combine, TRUE);
