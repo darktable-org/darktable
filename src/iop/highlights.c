@@ -2242,12 +2242,21 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
   const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
-  const gboolean linear_raw = (filters == 0);
-  const gboolean bayer = !linear_raw && (filters != 9u);
-  const dt_iop_highlights_mode_t mode = p->mode;
+  const gboolean bayer = (filters != 0) && (filters != 9u);
 
-  const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
-  const gboolean use_segmentation = (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
+  // Sanitize mode if wrongfully copied as part of the history of another pic or by preset / style
+  if((!bayer && (p->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
+    || ((filters == 0) && (p->mode == DT_IOP_HIGHLIGHTS_LCH
+        || p->mode == DT_IOP_HIGHLIGHTS_INPAINT
+        || p->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)))
+  {
+    p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
+    dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
+    dt_control_log(_("highlights: mode not available for this type of image. falling back to inpaint opposed."));
+  }
+
+  const gboolean use_laplacian = bayer && p->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
+  const gboolean use_segmentation = (p->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   const gboolean use_recovery = use_segmentation && (p->recovery != DT_RECOVERY_MODE_OFF);
 
   gtk_widget_set_visible(g->noise_level, use_laplacian || use_recovery);
@@ -2266,17 +2275,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
     g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
-  }
-
-  // Sanitize mode if wrongfully copied as part of the history of another pic
-  if((!bayer && (mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
-    || (linear_raw && (mode == DT_IOP_HIGHLIGHTS_LCH
-        || mode == DT_IOP_HIGHLIGHTS_INPAINT
-        || mode == DT_IOP_HIGHLIGHTS_SEGMENTS)))
-  {
-    p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
-    dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
-    dt_control_log(_("highlights: mode not available for this type of image. falling back to inpaint opposed."));
   }
 }
 
