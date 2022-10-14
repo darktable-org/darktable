@@ -2023,13 +2023,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       = data->clip * fminf(piece->pipe->dsc.processed_maximum[0],
                            fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
 
-  if((filters == 0) && (data->mode == DT_IOP_HIGHLIGHTS_CLIP))
+  if(filters == 0)
   {
-    process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
-    for(int k=0;k<3;k++)
-      piece->pipe->dsc.processed_maximum[k]
+    if(data->mode == DT_IOP_HIGHLIGHTS_CLIP)
+    {
+      process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
+      for(int k=0;k<3;k++)
+        piece->pipe->dsc.processed_maximum[k]
           = fminf(piece->pipe->dsc.processed_maximum[0],
                   fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+    }
+    else
+      _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+
     return;
   }
 
@@ -2119,12 +2125,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
     }
 
-    case DT_IOP_HIGHLIGHTS_OPPOSED:
+    case DT_IOP_HIGHLIGHTS_CLIP:
     {
-      if(filters == 0)
-        _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
-      else
-        _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
     }
 
@@ -2138,9 +2141,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     default:
-    case DT_IOP_HIGHLIGHTS_CLIP:
-      process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
+    case DT_IOP_HIGHLIGHTS_OPPOSED:
+    {
+      _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
       break;
+    }
+
   }
 
   // update processed maximum
