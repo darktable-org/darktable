@@ -2270,7 +2270,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   // Sanitize mode if wrongfully copied as part of the history of another pic
   if((!bayer && (mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
-    || (linear_raw && (mode == DT_IOP_HIGHLIGHTS_LCH || mode == DT_IOP_HIGHLIGHTS_INPAINT)))
+    || (linear_raw && (mode == DT_IOP_HIGHLIGHTS_LCH
+        || mode == DT_IOP_HIGHLIGHTS_INPAINT
+        || mode == DT_IOP_HIGHLIGHTS_LAPLACIAN
+        || mode == DT_IOP_HIGHLIGHTS_SEGMENTS)))
   {
     p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
