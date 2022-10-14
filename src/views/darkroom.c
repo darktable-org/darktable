@@ -3081,16 +3081,6 @@ void enter(dt_view_t *self)
     }
   }
 
-#ifdef USE_LUA
-
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
-      LUA_ASYNC_DONE);
-
-#endif
-
   /* signal that darktable.develop is initialized and ready to be used */
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
 
@@ -3157,6 +3147,13 @@ void enter(dt_view_t *self)
   dt_iop_color_picker_init();
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
+
+#ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(TRUE, dev->image_storage.id);
+
+#endif
+
 }
 
 void leave(dt_view_t *self)
