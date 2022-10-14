@@ -87,6 +87,22 @@ gboolean dtgtk_expander_get_expanded(GtkDarktableExpander *expander)
   return expander->expanded;
 }
 
+static void dtgtk_expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
+{
+  if(!(gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED)) return;
+
+  GtkWidget *scrolled_window = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
+  if(!GTK_IS_SCROLLED_WINDOW(scrolled_window)) return;
+
+  GtkAllocation available;
+  gtk_widget_get_allocation(scrolled_window, &available);
+
+  GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
+  gdouble value = gtk_adjustment_get_value(adjustment);
+  if(allocation->y + allocation->height - value > available.height)
+    gtk_adjustment_set_value(adjustment, allocation->y - MAX(available.height - allocation->height, 0));
+}
+
 static void dtgtk_expander_init(GtkDarktableExpander *expander)
 {
 }
@@ -114,6 +130,8 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
 
   gtk_box_pack_start(GTK_BOX(expander), expander->header_evb, TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(expander), expander->frame, TRUE, FALSE, 0);
+
+  g_signal_connect(G_OBJECT(expander), "size-allocate", G_CALLBACK(dtgtk_expander_resize), expander->frame);
 
   return GTK_WIDGET(expander);
 }
