@@ -1606,7 +1606,7 @@ int process_cl(struct dt_iop_module_t *module,
                 const dt_iop_roi_t *roi_in,
                 const dt_iop_roi_t *roi_out)
 {
-  cl_int_t err = -999;
+  cl_int_t err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int height = MIN(roi_in->height, roi_out->height);
   const int width = MIN(roi_in->width, roi_out->width);
