@@ -24,6 +24,7 @@
 #include "develop/imageop_gui.h"
 #include "develop/openmp_maths.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
@@ -45,7 +46,7 @@ typedef enum dt_iop_sigmoid_methods_type_t
 
 typedef struct dt_iop_sigmoid_params_t
 {
-  float middle_grey_contrast;  // $MIN: 0.1  $MAX: 10.0 $DEFAULT: 1.6 $DESCRIPTION: "contrast"
+  float middle_grey_contrast;  // $MIN: 0.1  $MAX: 10.0 $DEFAULT: 1.5 $DESCRIPTION: "contrast"
   float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "skew"
   float display_white_target;  // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
   float display_black_target;  // $MIN: 0.0  $MAX: 15.0 $DEFAULT: 0.0152 $DESCRIPTION: "target black"
@@ -115,6 +116,29 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
                   void *new_params, const int new_version)
 {
   return 1;
+}
+
+void init_presets(dt_iop_module_so_t *self)
+{
+  dt_iop_sigmoid_params_t p;
+  p.display_white_target = 100.0f;
+  p.display_black_target = 0.0152f;
+  p.color_processing = DT_SIGMOID_METHOD_PER_CHANNEL;
+
+  p.middle_grey_contrast = 1.22f;
+  p.contrast_skewness = 0.65f;
+  p.hue_preservation = 100.0f;
+  dt_gui_presets_add_generic(_("neutral grey"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.middle_grey_contrast = 1.6f;
+  p.contrast_skewness = -0.2f;
+  p.hue_preservation = 0.0f;
+  dt_gui_presets_add_generic(_("aces 100-nits like"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.middle_grey_contrast = 1.0f;
+  p.contrast_skewness = 0.0f;
+  p.color_processing = DT_SIGMOID_METHOD_RGB_RATIO;
+  dt_gui_presets_add_generic(_("reinhard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // Declared here as it is used in the commit params function
