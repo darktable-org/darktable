@@ -343,20 +343,20 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
   int mods_done_tmp = 0;
 
 #ifdef LF_0395
-  mod = new lfModifier(d->crop, w, h, LF_PF_F32, (force_inverse) ? !d->inverse : d->inverse);
+  mod = new lfModifier(d->lens, d->focal, d->crop, w, h, LF_PF_F32, (force_inverse) ? !d->inverse : d->inverse);
   if(mods_todo & LF_MODIFY_DISTORTION)
-    mods_done_tmp |= mod->EnableDistortionCorrection(d->lens, d->focal);
+    mods_done_tmp |= mod->EnableDistortionCorrection();
   if((mods_todo & LF_MODIFY_GEOMETRY) && (d->lens->Type != d->target_geom))
-    mods_done_tmp |= mod->EnableProjectionTransform(d->lens, d->focal, d->target_geom);
+    mods_done_tmp |= mod->EnableProjectionTransform(d->target_geom);
   if((mods_todo & LF_MODIFY_SCALE) && (d->scale != 1.0))
     mods_done_tmp |= mod->EnableScaling(d->scale);
   if(mods_todo & LF_MODIFY_TCA)
   {
     if(d->tca_override) mods_done_tmp |= mod->EnableTCACorrection(d->custom_tca);
-    else mods_done_tmp |= mod->EnableTCACorrection(d->lens, d->focal);
+    else mods_done_tmp |= mod->EnableTCACorrection();
   }
   if(mods_todo & LF_MODIFY_VIGNETTING)
-    mods_done_tmp |= mod->EnableVignettingCorrection(d->lens, d->focal, d->aperture, d->distance);
+    mods_done_tmp |= mod->EnableVignettingCorrection(d->aperture, d->distance);
 #else
   mod = new lfModifier(d->lens, d->crop, w, h);
   mods_done_tmp = mod->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance, d->scale, d->target_geom, mods_todo,
@@ -1178,8 +1178,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
            .Focal     = p->focal,
            .Terms     = { p->tca_r, p->tca_b },
            .CalibAttr = {
-                         .CenterX = 0.0f,
-                         .CenterY = 0.0f,
                          .CropFactor = d->crop,
                          .AspectRatio = (float)img->width / (float)img->height
                          }
