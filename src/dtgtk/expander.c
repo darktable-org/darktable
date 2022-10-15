@@ -65,6 +65,8 @@ GtkWidget *dtgtk_expander_get_body_event_box(GtkDarktableExpander *expander)
   return expander->body_evb;
 }
 
+static GtkAllocation _start_pos = {0};
+
 void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expanded)
 {
   g_return_if_fail(DTGTK_IS_EXPANDER(expander));
@@ -76,6 +78,16 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
     expander->expanded = expanded;
 
     GtkWidget *frame = expander->body;
+
+    if(expanded && gtk_widget_get_mapped(GTK_WIDGET(expander)))
+    {
+      GtkWidget *sw = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(GTK_WIDGET(expander))));
+      if(GTK_IS_SCROLLED_WINDOW(sw))
+      {
+        gtk_widget_get_allocation(GTK_WIDGET(expander), &_start_pos);
+        _start_pos.x = gtk_adjustment_get_value(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw)));
+      }
+    }
 
     if(frame)
     {
@@ -98,7 +110,7 @@ static GtkWidget *_scroll_widget = NULL;
 static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, gpointer user_data)
 {
   GtkWidget *scrolled_window = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
-  if(!GTK_IS_SCROLLED_WINDOW(scrolled_window)) return G_SOURCE_REMOVE;
+  g_return_val_if_fail(GTK_IS_SCROLLED_WINDOW(scrolled_window), G_SOURCE_REMOVE);
 
   GtkAllocation allocation, available;
   gtk_widget_get_allocation(widget, &allocation);
@@ -106,18 +118,28 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
 
   GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
   gdouble value = gtk_adjustment_get_value(adjustment);
+
+  if(allocation.y < _start_pos.y)
+  {
+    int offset = _start_pos.y - allocation.y - _start_pos.x + value;
+    value -= offset;
+    _start_pos.y = allocation.y;
+  }
+
   float prop = 1.0f;
   gboolean scroll_to_top = dt_conf_get_bool("darkroom/ui/scroll_to_module");
-  if(allocation.y + allocation.height - value > available.height || (scroll_to_top && allocation.y != value))
+  if((allocation.y + allocation.height - value > available.height && value < allocation.y) ||
+     (scroll_to_top && allocation.y != value))
   {
     gint64 interval = 0;
     gdk_frame_clock_get_refresh_info(frame_clock, 0, &interval, NULL);
     int remaining = GPOINTER_TO_INT(user_data) - gdk_frame_clock_get_frame_time(frame_clock);
     prop = (float)interval / MAX(interval, remaining);
-
-    gtk_adjustment_set_value(adjustment, (1-prop) * value +
-                                         prop * (allocation.y - (scroll_to_top ? 0 : MAX(available.height - allocation.height, 0))));
+    value = (1-prop) * value + prop * (allocation.y - (scroll_to_top ? 0 : MAX(available.height - allocation.height, 0)));
   }
+
+  _start_pos.x = value;
+  gtk_adjustment_set_value(adjustment, value);
 
   if(prop != 1.0f) return G_SOURCE_CONTINUE;
 
