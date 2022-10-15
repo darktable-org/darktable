@@ -2162,6 +2162,13 @@
     <shortdescription>always show panels' scrollbars</shortdescription>
     <longdescription>defines whether the panel scrollbars should be always visible or activated only depending on the content.  (need a restart)</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>darkroom/ui/transition_duration</name>
+    <type min="0" max="1000">int</type>
+    <default>250</default>
+    <shortdescription>duration of the ui transitions in ms</shortdescription>
+    <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other ui elements</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>

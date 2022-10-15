@@ -17,7 +17,10 @@
 */
 
 #include "dtgtk/expander.h"
+#include "common/darktable.h"
 #include "control/conf.h"
+#include "gui/gtk.h"
+#include "libs/lib.h"
 
 #include <gtk/gtk.h>
 
@@ -77,6 +80,7 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
     if(frame)
     {
       gtk_widget_set_visible(frame, TRUE); // for collapsible sections
+      gtk_revealer_set_transition_duration(GTK_REVEALER(expander->frame), dt_conf_get_int("darkroom/ui/transition_duration"));
       gtk_revealer_set_reveal_child(GTK_REVEALER(expander->frame), expander->expanded);
     }
   }
@@ -123,12 +127,15 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
 
 static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
 {
-  if(!(gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED) || widget == _scroll_widget)
+  if(widget == _scroll_widget ||
+     (!(gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED) &&
+     (!darktable.lib->gui_module || darktable.lib->gui_module->expander != widget)))
     return;
 
   _scroll_widget = widget;
   gtk_widget_add_tick_callback(widget, _expander_scroll,
-                               GINT_TO_POINTER(gdk_frame_clock_get_frame_time(gtk_widget_get_frame_clock(widget)) + 500000), NULL);
+                               GINT_TO_POINTER(gdk_frame_clock_get_frame_time(gtk_widget_get_frame_clock(widget))
+                               + dt_conf_get_int("darkroom/ui/transition_duration") * 1000), NULL);
 }
 
 static void dtgtk_expander_init(GtkDarktableExpander *expander)
@@ -156,7 +163,6 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   GtkWidget *frame = gtk_frame_new(NULL);
   gtk_container_add(GTK_CONTAINER(frame), expander->body_evb);
   expander->frame = gtk_revealer_new();
-  gtk_revealer_set_transition_duration(GTK_REVEALER(expander->frame), 500);
   gtk_container_add(GTK_CONTAINER(expander->frame), frame);
 
   gtk_box_pack_start(GTK_BOX(expander), expander->header_evb, TRUE, FALSE, 0);
