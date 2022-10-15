@@ -116,7 +116,7 @@ typedef enum dt_segments_mask_t
 typedef struct dt_iop_highlights_params_t
 {
   // params of v1
-  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_OPPOSED $DESCRIPTION: "method"
+  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
   float blendL; // unused $DEFAULT: 1.0
   float blendC; // unused $DEFAULT: 0.0
   float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
@@ -2023,13 +2023,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       = data->clip * fminf(piece->pipe->dsc.processed_maximum[0],
                            fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
 
-  if((filters == 0) && (data->mode == DT_IOP_HIGHLIGHTS_CLIP))
+  if(filters == 0)
   {
-    process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
-    for(int k=0;k<3;k++)
-      piece->pipe->dsc.processed_maximum[k]
+    if(data->mode == DT_IOP_HIGHLIGHTS_CLIP)
+    {
+      process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
+      for(int k=0;k<3;k++)
+        piece->pipe->dsc.processed_maximum[k]
           = fminf(piece->pipe->dsc.processed_maximum[0],
                   fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+    }
+    else
+      _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+
     return;
   }
 
@@ -2119,12 +2125,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
     }
 
-    case DT_IOP_HIGHLIGHTS_OPPOSED:
+    case DT_IOP_HIGHLIGHTS_CLIP:
     {
-      if(filters == 0)
-        _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
-      else
-        _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
       break;
     }
 
@@ -2138,9 +2141,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     default:
-    case DT_IOP_HIGHLIGHTS_CLIP:
-      process_clip(piece, ivoid, ovoid, roi_in, roi_out, clip);
+    case DT_IOP_HIGHLIGHTS_OPPOSED:
+    {
+      _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
       break;
+    }
+
   }
 
   // update processed maximum
@@ -2242,12 +2248,21 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
   const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
-  const gboolean linear_raw = (filters == 0);
-  const gboolean bayer = !linear_raw && (filters != 9u);
-  const dt_iop_highlights_mode_t mode = p->mode;
+  const gboolean bayer = (filters != 0) && (filters != 9u);
 
-  const gboolean use_laplacian = bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
-  const gboolean use_segmentation = (mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
+  // Sanitize mode if wrongfully copied as part of the history of another pic or by preset / style
+  if((!bayer && (p->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
+    || ((filters == 0) && (p->mode == DT_IOP_HIGHLIGHTS_LCH
+        || p->mode == DT_IOP_HIGHLIGHTS_INPAINT
+        || p->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)))
+  {
+    p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
+    dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
+    dt_control_log(_("highlights: mode not available for this type of image. falling back to inpaint opposed."));
+  }
+
+  const gboolean use_laplacian = bayer && p->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
+  const gboolean use_segmentation = (p->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   const gboolean use_recovery = use_segmentation && (p->recovery != DT_RECOVERY_MODE_OFF);
 
   gtk_widget_set_visible(g->noise_level, use_laplacian || use_recovery);
@@ -2266,17 +2281,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
     g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
-  }
-
-  // Sanitize mode if wrongfully copied as part of the history of another pic
-  if((!bayer && (mode == DT_IOP_HIGHLIGHTS_LAPLACIAN))
-    || (linear_raw && (mode == DT_IOP_HIGHLIGHTS_LCH
-        || mode == DT_IOP_HIGHLIGHTS_INPAINT
-        || mode == DT_IOP_HIGHLIGHTS_SEGMENTS)))
-  {
-    p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
-    dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
-    dt_control_log(_("highlights: mode not available for this type of image. falling back to inpaint opposed."));
   }
 }
 
