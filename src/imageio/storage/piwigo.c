@@ -722,15 +722,18 @@ static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
   return TRUE;
 }
 
-static char *_piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *img)
+static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *img, int page)
 {
   GList *args = NULL;
   char album_id[10];
-  sprintf(album_id, "%d", (int) p->album_id);
+  char page_string[10];
+  snprintf(album_id, sizeof(album_id), "%d", (int) p->album_id);
+  snprintf(page_string, sizeof(page_string), "%d", page);
 
   args = _piwigo_query_add_arguments(args, "method", "pwg.categories.getImages");
   args = _piwigo_query_add_arguments(args, "cat_id", album_id);
-  args = _piwigo_query_add_arguments(args, "per_page", "999999");
+  args = _piwigo_query_add_arguments(args, "per_page", "100");
+  args = _piwigo_query_add_arguments(args, "page", page_string);
 
   _piwigo_api_post(p->api, args, NULL, TRUE);
 
@@ -744,38 +747,57 @@ static char *_piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t 
     {
       JsonObject *result = json_node_get_object(result_node);
 
-      if(json_object_has_member(result, "images"))
+      if(json_object_has_member(result, "paging"))
       {
-        JsonArray *existing_images = json_object_get_array_member(result, "images");
-
-        for(int i = 0; i < json_array_get_length(existing_images); i++)
+        JsonNode *paging_node = json_object_get_member(result, "paging");
+        if(paging_node != NULL && json_node_get_node_type(paging_node) == JSON_NODE_OBJECT)
         {
-          JsonObject *existing_image = json_array_get_object_element(existing_images, i);
-          if(json_object_has_member(existing_image, "file"))
+          JsonObject *paging = json_node_get_object(paging_node);
+          int count = json_object_get_int_member(paging, "count");
+
+          if(count > 0)
           {
-            if(strcmp(img->filename, json_object_get_string_member(existing_image, "file")) == 0)
+            JsonArray *existing_images = json_object_get_array_member(result, "images");
+
+            for(int i = 0; i < json_array_get_length(existing_images); i++)
             {
-              return (char*) json_object_get_int_member(existing_image, "id");
+              JsonObject *existing_image = json_array_get_object_element(existing_images, i);
+              if(json_object_has_member(existing_image, "file"))
+              {
+                if(strcmp(img->filename, json_object_get_string_member(existing_image, "file")) == 0)
+                {
+                  return json_object_get_int_member(existing_image, "id");
+                }
+              }
             }
+            return _piwigo_api_get_image_id(p, img, page+1);
           }
         }
       }
     }
   }
 
-  return NULL;
+  return -1;
 }
 
-static gboolean _piwigo_api_set_info(dt_storage_piwigo_params_t *p, gchar *author, gchar *caption, gchar *description, gchar *pwg_image_id)
+static gboolean _piwigo_api_set_info(dt_storage_piwigo_params_t *p, gchar *author, gchar *caption, gchar *description, int pwg_image_id)
 {
   GList *args = NULL;
+  char pwg_image_id_string[10];
+  snprintf(pwg_image_id_string, sizeof(pwg_image_id_string), "%d", pwg_image_id);
 
   args = _piwigo_query_add_arguments(args, "method", "pwg.images.setInfo");
-  args = _piwigo_query_add_arguments(args, "image_id", pwg_image_id);
+  args = _piwigo_query_add_arguments(args, "image_id", pwg_image_id_string);
   args = _piwigo_query_add_arguments(args, "single_value_mode", "replace");
-  args = _piwigo_query_add_arguments(args, "author", author);
-  args = _piwigo_query_add_arguments(args, "name", caption);
-  args = _piwigo_query_add_arguments(args, "comment", description);
+
+  if(caption && strlen(caption)>0)
+    args = _piwigo_query_add_arguments(args, "name", caption);
+
+  if(author && strlen(author)>0)
+    args = _piwigo_query_add_arguments(args, "author", author);
+
+  if(description && strlen(description)>0)
+    args = _piwigo_query_add_arguments(args, "comment", description);
 
   _piwigo_api_post(p->api, args, NULL, TRUE);
 
@@ -785,16 +807,18 @@ static gboolean _piwigo_api_set_info(dt_storage_piwigo_params_t *p, gchar *autho
 }
 
 static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *fname,
-                                         gchar *author, gchar *caption, gchar *description, gchar *pwg_image_id)
+                                         gchar *author, gchar *caption, gchar *description, int pwg_image_id)
 {
   GList *args = NULL;
   char cat[10];
   char privacy[10];
+  char pwg_image_id_string[10];
 
   // upload picture
 
   snprintf(cat, sizeof(cat), "%"PRId64, p->album_id);
   snprintf(privacy, sizeof(privacy), "%d", p->privacy);
+  snprintf(pwg_image_id_string, sizeof(pwg_image_id_string), "%d", pwg_image_id);
 
   args = _piwigo_query_add_arguments(args, "method", "pwg.images.addSimple");
   args = _piwigo_query_add_arguments(args, "image", fname);
@@ -813,8 +837,8 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *f
   if(p->tags && strlen(p->tags)>0)
     args = _piwigo_query_add_arguments(args, "tags", p->tags);
 
-  if(pwg_image_id)
-    args = _piwigo_query_add_arguments(args, "image_id", pwg_image_id);
+  if(pwg_image_id >= 0)
+    args = _piwigo_query_add_arguments(args, "image_id", pwg_image_id_string);
 
   _piwigo_api_post(p->api, args, fname, FALSE);
 
@@ -1115,14 +1139,14 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
     if(status)
     {
-      char *pwg_image_id = NULL;
+      int pwg_image_id = -1;
 
       if(conflict_action != DT_PIWIGO_CONFLICT_NOTHING)
       {
-        pwg_image_id = _piwigo_api_get_image_id(p, img);
+        pwg_image_id = _piwigo_api_get_image_id(p, img, 0);
       }
 
-      if(conflict_action == DT_PIWIGO_CONFLICT_METADATA)
+      if(pwg_image_id >= 0 && conflict_action == DT_PIWIGO_CONFLICT_METADATA)
       {
         status = _piwigo_api_set_info(p, author, caption, description, pwg_image_id);
         if(!status)
@@ -1132,7 +1156,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
           result = 1;
         }
       }
-      else if(pwg_image_id && conflict_action==DT_PIWIGO_CONFLICT_SKIP)
+      else if(pwg_image_id >= 0 && conflict_action == DT_PIWIGO_CONFLICT_SKIP)
       {
         skipped = 1;
       }
@@ -1152,7 +1176,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
           _piwigo_refresh_albums(ui, p->album);
         }
       }
-      g_free(pwg_image_id);
     }
     if(p->tags)
     {
