@@ -541,7 +541,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      const double tbw = (float)(tb >> closeup) * 2.0 / 3.0;  
+      const double tbw = (float)(tb >> closeup) * 2.0 / 3.0;
       cairo_rectangle(cr, -tbw, -tbw, wd + 2.0 * tbw, ht + 2.0 * tbw);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
@@ -852,8 +852,6 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dev->proxy.wb_is_D65 = TRUE;
   dev->proxy.wb_coeffs[0] = 0.f;
 
-  memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
-
   // change active image
   g_slist_free(darktable.view_manager->active_images);
   darktable.view_manager->active_images = g_slist_prepend(NULL, GINT_TO_POINTER(imgid));
@@ -914,12 +912,12 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // which in turn try to acquire the gdk lock.
   //
   // worst case, it'll drop some change image events. sorry.
-  if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex)) 
+  if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex))
   {
 
   #ifdef USE_LUA
 
-  _fire_darkroom_image_loaded_event(FALSE, imgid);  
+  _fire_darkroom_image_loaded_event(FALSE, imgid);
 
 #endif
 
@@ -931,7 +929,7 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
  #ifdef USE_LUA
 
-  _fire_darkroom_image_loaded_event(FALSE, imgid);  
+  _fire_darkroom_image_loaded_event(FALSE, imgid);
 
 #endif
 
@@ -944,7 +942,7 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
  #ifdef USE_LUA
 
-  _fire_darkroom_image_loaded_event(FALSE, imgid);  
+  _fire_darkroom_image_loaded_event(FALSE, imgid);
 
 #endif
 
@@ -1170,7 +1168,7 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
 #ifdef USE_LUA
 
-  _fire_darkroom_image_loaded_event(TRUE, imgid);  
+  _fire_darkroom_image_loaded_event(TRUE, imgid);
 
 #endif
 
