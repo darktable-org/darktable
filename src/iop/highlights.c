@@ -492,15 +492,15 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     // even if the algorithm can't tile we want to calculate memory for pixelpipe checks and a possible warning
     const int segments = roi_out->width * roi_out->height / 4000; // segments per mpix
-    if(filters != 9u)
-    {
-      tiling->xalign = 2;
-      tiling->yalign = 2;
-    }
-    else
+    if(filters == 9u)
     {
       tiling->xalign = 3;
       tiling->yalign = 3;
+    }
+    else
+    {
+      tiling->xalign = 2;
+      tiling->yalign = 2;
     }
     tiling->overlap = 0;
     tiling->overhead = segments * 5 * 5 * sizeof(int); // segmentation stuff
@@ -511,20 +511,18 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   if(d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)
   {
-    if(filters != 9u)
-    {
-      tiling->xalign = 2;
-      tiling->yalign = 2;
-      tiling->factor = 2.0;
-      tiling->overlap = 4;
-    }
-    else
+    if(filters == 9u)
     {
       tiling->xalign = 3;
       tiling->yalign = 3;
-      tiling->factor = 2.0f; // in & out plus plane buffers including some border safety
-      tiling->overlap = 6;
     }
+    else
+    {
+      tiling->xalign = 2;
+      tiling->yalign = 2;
+    }
+    tiling->factor = 2.0f; // in & out plus plane buffers including some border safety
+    tiling->overlap = 0;
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
     return;
@@ -1979,7 +1977,6 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
   }
   else
   {
-
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, clips, roi_in) \
@@ -2000,6 +1997,51 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
 
 #include "iop/hlrecovery_v2.c"
 #include "iop/opposed.c"
+
+/* inpaint opposed and segmentation based algorithms want the whole image for proper calculation
+   of chrominance correction and best candidates so we change both rois.
+   1st pass: how large would the output be, given this input roi?
+*/
+void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
+{
+  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+
+  if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
+    return;
+
+  *roi_out = *roi_in;
+  roi_out->width = roi_in->width;
+  roi_out->height = roi_in->height;
+  roi_out->x = roi_in->x;
+  roi_out->y = roi_in->y;
+
+  // sanity check.
+  if(roi_out->x < 0) roi_out->x = 0;
+  if(roi_out->y < 0) roi_out->y = 0;
+}
+
+// 2nd pass: which roi would this operation need as input to fill the given output region?
+void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
+                   dt_iop_roi_t *roi_in)
+{
+  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+
+  if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
+    return;
+
+  *roi_in = *roi_out;
+  roi_in->x = 0;
+  roi_in->y = 0;
+  roi_in->width = piece->buf_in.width;
+  roi_in->height = piece->buf_in.height;
+}
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -2034,8 +2076,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                   fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
     }
     else
-      _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
-
+    {
+      float *tmp = _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      dt_free_align(tmp);
+    }
     return;
   }
 
@@ -2112,10 +2156,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
       const dt_segments_mask_t vmode = ((g != NULL) && fullpipe) ? g->segmentation_mask_mode : DT_SEGMENTS_MASK_OFF;
-      const gboolean anyclip = _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
-      const gboolean complete = fullpipe || (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT);
-      if(complete && (anyclip || (vmode != DT_SEGMENTS_MASK_OFF)))
-        _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, vmode);
+
+      float *tmp = _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      if(tmp)
+        _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, vmode, tmp);
+      dt_free_align(tmp);
 
       if(vmode != DT_SEGMENTS_MASK_OFF)
       {
@@ -2143,10 +2188,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     default:
     case DT_IOP_HIGHLIGHTS_OPPOSED:
     {
-      _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      float *tmp = _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      dt_free_align(tmp);
       break;
     }
-
   }
 
   // update processed maximum

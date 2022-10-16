@@ -417,7 +417,7 @@ static inline size_t _raw_to_plane(const int width, const int row, const int col
 
 static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         dt_iop_highlights_data_t *data, const int vmode)
+                         dt_iop_highlights_data_t *data, const int vmode, float *tmpout)
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -435,7 +435,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
   const int recovery_closing[NUM_RECOVERY_MODES] = { 0, 0, 0, 2, 2, 0, 2};
   const int seg_border = recovery_closing[recovery_mode];
-  const int segmentation_limit = roi_out->width * roi_out->height / 4000; // segments per mpix
+  const int segmentation_limit = roi_in->width * roi_in->height / 4000; // segments per mpix
 
   const int pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const int pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
@@ -460,14 +460,14 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   reduction( | : has_allclipped) \
-  dt_omp_firstprivate(ivoid, ovoid, roi_in, roi_out, plane, isegments, cube_coeffs, refavg, xtrans) \
+  dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans) \
   dt_omp_sharedconst(pwidth, filters) \
   schedule(static)
 #endif
-  for(size_t row = 1; row < roi_out->height-1; row++)
+  for(size_t row = 1; row < roi_in->height-1; row++)
   {
-    float *in = (float *)ivoid + (size_t)roi_in->width * row + 1;
-    for(size_t col = 1; col < roi_out->width-1; col++)
+    float *in = tmpout + (size_t)roi_in->width * row + 1;
+    for(size_t col = 1; col < roi_in->width-1; col++)
     {
       // calc all color planes for the centre of a 3x3 area
       if((col % 3 == 1) && (row % 3 == 1))
@@ -543,15 +543,15 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, ivoid, ovoid, roi_in, roi_out, xtrans, isegments, plane) \
+  dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, roi_out, xtrans, isegments, plane) \
   dt_omp_sharedconst(filters, pwidth) \
   schedule(static)
 #endif
-  for(int row = 1; row < roi_out->height-1; row++)
+  for(int row = 1; row < roi_in->height-1; row++)
   {
-    float *out = (float *)ovoid + (size_t)roi_out->width * row + 1;
+    float *out = tmpout + (size_t)roi_in->width * row + 1;
     float *in = (float *)ivoid + (size_t)roi_in->width * row + 1;
-    for(int col = 1; col < roi_out->width-1; col++)
+    for(int col = 1; col < roi_in->width-1; col++)
     {
       const float inval = fmaxf(0.0f, in[0]);
       const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
@@ -627,7 +627,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
       dt_masks_blur_fast(recout, gradient, pwidth, pheight, 1.2f, 1.0f, 20.0f);
       // possibly add some noise
-      const float noise_level = data->noise_level / fmaxf(piece->iscale / roi_in->scale, 1.0f);
+      const float noise_level = data->noise_level;
       if(noise_level > 0.0f)
       {
         for(int id = 2; id < isegments[3].nr+2; id++)
@@ -639,13 +639,13 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       const float dshift = 2.0f + (float)recovery_closing[recovery_mode];
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, ivoid, ovoid, roi_in, roi_out, xtrans, gradient, distance) \
+  dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, roi_out, xtrans, gradient, distance) \
   dt_omp_sharedconst(filters, pwidth, dshift, strength) \
   schedule(static)
 #endif
-      for(int row = 1; row < roi_out->height-1; row++)
+      for(int row = 1; row < roi_in->height-1; row++)
       {
-        float *out = (float *)ovoid + (size_t)roi_out->width * row + 1;
+        float *out = tmpout + (size_t)roi_in->width * row + 1;
         float *in = (float *)ivoid + (size_t)roi_in->width * row + 1;
         for(int col = 1; col < roi_out->width-1; col++)
         {
@@ -654,7 +654,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
           {
             const size_t o = _raw_to_plane(pwidth, row, col);
             const float effect = strength / (1.0f + expf(-(distance[o] - dshift)));
-            out[0] += fmaxf(0.0f, gradient[o] * effect);
+            out[0]+= fmaxf(0.0f, gradient[o] * effect);
           }
           out++;
           in++;
@@ -674,14 +674,14 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
     for(int row = 0; row < roi_out->height; row++)
     {
       float *out = (float *)ovoid + (size_t)roi_out->width * row;
-      float *in = (float *)ivoid + (size_t)roi_in->width * row;
+      float *in = (float *)ivoid + (size_t)roi_in->width * (row + roi_out->y) + roi_out->x;
       for(int col = 0; col < roi_out->width; col++)
       {
         out[0] = 0.1f * in[0];
         if((row > 0) && (col > 0) && (row < roi_out->height -1) && (col < roi_in->width -1))
         {
-          const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-          const size_t ppos = _raw_to_plane(pwidth, row, col);
+          const int color = (filters == 9u) ? FCxtrans(row+roi_out->y, col+roi_out->x, roi_in, xtrans) : FC(row+roi_out->y, col+roi_out->x, filters);
+          const size_t ppos = _raw_to_plane(pwidth, row+roi_out->y, col+roi_out->x);
 
           const int pid = _get_segment_id(&isegments[color], ppos);
           const gboolean iclipped = (in[0] >= clips[color]);
@@ -697,9 +697,24 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       }
     }
   }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ovoid, tmpout, roi_in, roi_out) \
+  schedule(static)
+#endif
+    for(int row = 0; row < roi_out->height; row++)
+    {
+      float *out = (float *)ovoid + (size_t)roi_out->width * row;
+      float *in = tmpout + (size_t)roi_in->width * (row + roi_out->y) + roi_out->x;
+      for(int col = 0; col < roi_out->width; col++)
+        out[col] = in[col];
+    }
+  }
 
 //  fprintf(stderr, "[segmentation report]%5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all.\n",
-//     (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr, isegments[1].nr, isegments[2].nr, isegments[3].nr);
+//    (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr, isegments[1].nr, isegments[2].nr, isegments[3].nr);
 
   finish:
 
