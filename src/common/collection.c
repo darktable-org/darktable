@@ -2415,7 +2415,17 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 
 gboolean dt_collection_hint_message_internal(void *message)
 {
-  dt_control_hinter_message(darktable.control, message);
+  GtkWidget *count = dt_view_filter_get_count(darktable.view_manager);
+  if(count)
+  {
+    gtk_label_set_markup(GTK_LABEL(count), message);
+    gtk_widget_set_tooltip_markup(count, message);
+  }
+
+  message = dt_util_dstrcat(message, _(" in current collection"));
+  dt_control_hinter_message(darktable.control,
+    dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP) ? "" : message);
+
   g_free(message);
   return FALSE;
 }
@@ -2441,14 +2451,14 @@ void dt_collection_hint_message(const dt_collection_t *collection)
       selected++;
     }
     g_list_free(selected_imgids);
-    message = g_strdup_printf(_("%d image of %d (#%d) in current collection is selected"), cs, c, selected);
+    message = g_strdup_printf(_("<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"), cs, selected, c);
   }
   else
   {
     message = g_strdup_printf(
       ngettext(
-        "%d image of %d in current collection is selected",
-        "%d images of %d in current collection are selected",
+        "<b>%d</b> image selected of <b>%d</b>",
+        "<b>%d</b> images selected of <b>%d</b>",
         cs),
       cs, c);
   }

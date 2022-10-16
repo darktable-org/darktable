@@ -1594,6 +1594,7 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
 
     /* if box is center we want it to fill as much as it can */
     case DT_UI_CONTAINER_PANEL_TOP_CENTER:
+    case DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT:
     case DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER:
     case DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER:
     case DT_UI_CONTAINER_PANEL_BOTTOM:
@@ -2274,7 +2275,7 @@ static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
 
   /* add container for center top left */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT], FALSE, FALSE,
+  gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT], TRUE, TRUE,
                      DT_UI_PANEL_MODULE_SPACING);
 
   /* add container for center top center */
