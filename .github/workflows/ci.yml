@@ -509,6 +509,7 @@ jobs:
           brew tap Homebrew/bundle
           cd src/.ci
           brew bundle --verbose
+          brew link --force libomp # fix for keg-only libomp
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
