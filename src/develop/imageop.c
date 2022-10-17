@@ -737,9 +737,6 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
                           module->expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
     dt_iop_gui_set_expanded(module, TRUE, FALSE);
 
-    if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-        darktable.gui->scroll_to[1] = module->expander;
-
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
 
     if(copy_params)
@@ -997,9 +994,6 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     if(gtk_toggle_button_get_active(togglebutton))
     {
       module->enabled = 1;
-
-      if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-        darktable.gui->scroll_to[1] = module->expander;
 
       if(!basics && dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
@@ -2055,10 +2049,6 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     }
     else
     {
-      // make gtk scroll to the module once it updated its allocation size
-      if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-        darktable.gui->scroll_to[1] = module->expander;
-
       const gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != (!dt_modifier_is(e->state, GDK_SHIFT_MASK));
       dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
 

@@ -1065,7 +1065,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
     darktable.gui->grouping = dt_conf_get_bool("ui_last/grouping");
-    memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
     dt_film_set_folder_status();
   }
 
