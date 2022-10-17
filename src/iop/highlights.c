@@ -2311,23 +2311,24 @@ void gui_update(struct dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev || module->dev->image_storage.id == -1) return;
+  if(!self->dev || self->dev->image_storage.id == -1) return;
 
-  const gboolean monochrome = dt_image_is_monochrome(&module->dev->image_storage);
+  const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   // enable this per default if raw or sraw if not true monochrome
-  module->default_enabled = dt_image_is_rawprepare_supported(&module->dev->image_storage) && !monochrome;
-  module->hide_enable_button = monochrome;
-  if(module->widget)
-    gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->default_enabled ? "default" : "monochrome");
+  self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
+  self->hide_enable_button = monochrome;
 
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)module->gui_data;
+  if(self->widget)
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
+
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
   {
     // rebuild the complete menu depending on sensor type and possibly active but obsolete mode
-    const uint32_t filters = module->dev->image_storage.buf_dsc.filters;
+    const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
     const int menu_size = dt_bauhaus_combobox_length(g->mode);
     for(int i = 0; i < menu_size; i++)
       dt_bauhaus_combobox_remove_at(g->mode, 0);
@@ -2350,7 +2351,7 @@ void reload_defaults(dt_iop_module_t *module)
         dt_bauhaus_combobox_add_full(g->mode, _("guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
 
-      dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)module->params;
+      dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
       if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT)
         dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
