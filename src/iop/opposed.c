@@ -71,7 +71,8 @@ static float * _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void
   const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 16);
 
   int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
-  float *tmpout = dt_alloc_align_float(roi_in->width * roi_in->height * 8);
+  const size_t bsize = (4 + MAX(roi_in->width + roi_in->x, roi_out->width + roi_out->x)) * (4 + MAX(roi_in->height + roi_in->y, roi_out->height + roi_out->y)); 
+  float *tmpout = dt_alloc_align_float(4 * bsize);
 
   // make sure date are fully copied in case of an early exit
 #ifdef _OPENMP
@@ -235,7 +236,8 @@ static float *_process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const 
   const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 16);
 
   int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
-  float *tmpout = dt_alloc_align_float(roi_in->width * roi_in->height * 2);
+  const size_t bsize = (4 + MAX(roi_in->width + roi_in->x, roi_out->width + roi_out->x)) * (4 + MAX(roi_in->height + roi_in->y, roi_out->height + roi_out->y)); 
+  float *tmpout = dt_alloc_align_float(bsize);
 
   // make sure date are fully copied in case of an early exit
 #ifdef _OPENMP
