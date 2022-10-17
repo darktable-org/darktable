@@ -139,8 +139,8 @@ static float * _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void
     memcpy(mask, tmp, p_size * sizeof(int));
   }
 
-  double cr_sum[4] = {0.0, 0.0, 0.0, 0.0};
-  double cr_cnt[4] = {0.0, 0.0, 0.0, 0.0};
+  dt_aligned_pixel_t cr_sum = {0.0f, 0.0f, 0.0f, 0.0f};
+  dt_aligned_pixel_t cr_cnt = {0.0f, 0.0f, 0.0f, 0.0f};
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ivoid, roi_in, clips, clipdark, mask_buffer) \
@@ -158,8 +158,8 @@ static float * _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void
         const float inval = fmaxf(0.0f, in[c]); 
         if((mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)]) && (inval > clipdark[c]) && (inval < clips[c]))
         {
-          cr_sum[c] += (double) (inval - _calc_linear_refavg(&in[0], row, col, roi_in, c));
-          cr_cnt[c] += 1.0;
+          cr_sum[c] += inval - _calc_linear_refavg(&in[0], row, col, roi_in, c);
+          cr_cnt[c] += 1.0f;
         }
       }
       in += 4;
@@ -299,8 +299,8 @@ static float *_process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const 
   }
 
   /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */ 
-  double cr_sum[4] = {0.0, 0.0, 0.0, 0.0};
-  double cr_cnt[4] = {0.0, 0.0, 0.0, 0.0};
+  dt_aligned_pixel_t cr_sum = {0.0f, 0.0f, 0.0f, 0.0f};
+  dt_aligned_pixel_t cr_cnt = {0.0f, 0.0f, 0.0f, 0.0f};
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ivoid, roi_in, xtrans, clips, clipdark, mask_buffer) \
@@ -319,8 +319,8 @@ static float *_process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const 
          to calculate the chrominance offset */
       if((mask_buffer[color * p_size + _raw_to_plane(pwidth, row, col)]) && (inval > clipdark[color]) && (inval < clips[color]))
       {
-        cr_sum[color] += (double) (inval - _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE));
-        cr_cnt[color] += 1.0;
+        cr_sum[color] += inval - _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE);
+        cr_cnt[color] += 1.0f;
       }
       in++;
     }
