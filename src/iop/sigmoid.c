@@ -207,12 +207,12 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void desaturate_negative_values(const float pix_in[4], float pix_out[4])
+static inline void desaturate_negative_values(const dt_aligned_pixel_t pix_in, dt_aligned_pixel_t pix_out)
 {
   const float pixel_average = fmaxf((pix_in[0] + pix_in[1] + pix_in[2]) / 3.0f, 0.0f);
   const float min_value = fminf(fminf(pix_in[0], pix_in[1]), pix_in[2]);
   const float saturation_factor = min_value < 0.0f ? -pixel_average / (min_value - pixel_average) : 1.0f;
-  for(size_t c = 0; c < 3; c++)
+  for_each_channel(c, aligned(pix_in, pix_out))
   {
     pix_out[c] = pixel_average + saturation_factor * (pix_in[c] - pixel_average);
   }
@@ -225,7 +225,7 @@ typedef struct dt_iop_sigmoid_value_order_t
   size_t max;
 } dt_iop_sigmoid_value_order_t;
 
-static void pixel_channel_order(const float pix_in[4], dt_iop_sigmoid_value_order_t *pixel_value_order)
+static void pixel_channel_order(const dt_aligned_pixel_t pix_in, dt_iop_sigmoid_value_order_t *pixel_value_order)
 {
   if (pix_in[0] >= pix_in[1])
   {
@@ -304,12 +304,12 @@ void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *
   { 
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
-    float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
+    dt_aligned_pixel_t pix_in_strict_positive;
 
     // Force negative values to zero
     desaturate_negative_values(pix_in, pix_in_strict_positive);
 
-    for(size_t c = 0; c < 3; c++)
+    for_each_channel(c, aligned(pix_in_strict_positive, pix_out))
     {
       pix_out[c] = generalized_loglogistic_sigmoid(pix_in_strict_positive[c], white_target, paper_exp, film_fog, contrast_power, skew_power);
     }
@@ -344,8 +344,8 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
   {
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
-    float DT_ALIGNED_ARRAY pre_out[4];
-    float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
+    dt_aligned_pixel_t pre_out;
+    dt_aligned_pixel_t pix_in_strict_positive;
 
     // Force negative values to zero
     desaturate_negative_values(pix_in, pix_in_strict_positive);
@@ -357,14 +357,14 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
     if (luma > 1e-9)
     {
       const float scaling_factor = mapped_luma / luma;
-      for(size_t c = 0; c < 3; c++)
+      for_each_channel(c, aligned(pix_in_strict_positive, pix_out))
       {
         pre_out[c] = scaling_factor * pix_in_strict_positive[c];
       }
     }
     else
     {
-      for(size_t c = 0; c < 3; c++)
+      for_each_channel(c, aligned(pix_in_strict_positive, pix_out))
       {
         pre_out[c] = mapped_luma;
       }
@@ -392,7 +392,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
     const float hyperbolic_z = sqrtf(hyperbolic_chroma * hyperbolic_chroma + 1.0f);
     const float chroma_factor = hyperbolic_chroma / (1.0f + hyperbolic_z) * display_border_vs_chroma;
 
-    for(size_t c = 0; c < 3; c++)
+    for_each_channel(c, aligned(pre_out, pix_out))
     {
       pix_out[c] = mapped_luma + chroma_factor * (pre_out[c] - mapped_luma);
     }
@@ -404,7 +404,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
 
 // Linear interpolation of hue that also preserve sum of channels
 // Assumes hue_preservation strictly in range [0, 1]
-static inline void preserve_hue_and_energy(const float pix_in[4], const float per_channel[4], float pix_out[4],
+static inline void preserve_hue_and_energy(const dt_aligned_pixel_t pix_in, const dt_aligned_pixel_t per_channel, dt_aligned_pixel_t pix_out,
     const dt_iop_sigmoid_value_order_t order, const float hue_preservation)
 {
   if (per_channel[order.max] - per_channel[order.min] < 1e-9)
@@ -471,13 +471,13 @@ void process_loglogistic_per_channel_interpolated(dt_dev_pixelpipe_iop_t *piece,
   {
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
-    float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
-    float DT_ALIGNED_ARRAY per_channel[4];
+    dt_aligned_pixel_t pix_in_strict_positive;
+    dt_aligned_pixel_t per_channel;
 
     // Force negative values to zero
     desaturate_negative_values(pix_in, pix_in_strict_positive);
 
-    for(size_t c = 0; c < 3; c++)
+    for_each_channel(c, aligned(pix_in_strict_positive, per_channel))
     {
       per_channel[c] = generalized_loglogistic_sigmoid(pix_in_strict_positive[c], white_target, paper_exp, film_fog, contrast_power, skew_power);
     }
