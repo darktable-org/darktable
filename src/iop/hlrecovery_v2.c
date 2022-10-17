@@ -85,7 +85,7 @@ The chosen segmentation algorithm works like this:
 
 #define HL_RGB_PLANES 3
 #define HL_SEGMENT_PLANES 4
-#define HL_FLOAT_PLANES 9
+#define HL_FLOAT_PLANES 8
 #define HL_BORDER 8
 
 #include "iop/segmentation.h"
@@ -115,7 +115,7 @@ static float _calc_weight(const float *s, const size_t loc, const int w, const f
   for(int y = -1; y < 2; y++)
   {
     for(int x = -1; x < 2; x++)
-      val += s[loc + y*w + x] * 0.11111f;
+      val += s[loc + y*w + x] / 9.0f;
   }
   const float sval = fmaxf(1.0f, powf(fminf(clipval, val) / clipval, 2.0f));
   return sval * smoothness;
@@ -573,11 +573,11 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
     }
   }
 
-  float *restrict distance  = plane[HL_SEGMENT_PLANES];
-  float *restrict gradient  = plane[HL_SEGMENT_PLANES + 1];
-  float *restrict luminance = plane[HL_SEGMENT_PLANES + 2];
-  float *restrict recout    = plane[HL_SEGMENT_PLANES + 3];
-  float *restrict tmp       = plane[HL_SEGMENT_PLANES + 4];
+  float *restrict distance  = plane[HL_RGB_PLANES];
+  float *restrict gradient  = plane[HL_RGB_PLANES + 1];
+  float *restrict luminance = plane[HL_RGB_PLANES + 2];
+  float *restrict recout    = plane[HL_RGB_PLANES + 3];
+  float *restrict tmp       = plane[HL_RGB_PLANES + 4];
 
   const gboolean do_recovery = (recovery_mode != DT_RECOVERY_MODE_OFF) && has_allclipped && (strength > 0.0f);
   if(do_recovery || (vmode != DT_SEGMENTS_MASK_OFF))
