@@ -2311,6 +2311,15 @@ void gui_update(struct dt_iop_module_t *self)
   gui_changed(self, NULL, NULL);
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+  dt_iop_highlights_params_t *d = (dt_iop_highlights_params_t *)self->default_params;
+
+  d->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
+  p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
+}
+
 void reload_defaults(dt_iop_module_t *self)
 {
   // we might be called from presets update infrastructure => there is no image
@@ -2320,6 +2329,11 @@ void reload_defaults(dt_iop_module_t *self)
   // enable this per default if raw or sraw if not true monochrome
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
   self->hide_enable_button = monochrome;
+
+  dt_iop_highlights_params_t *d = (dt_iop_highlights_params_t *)self->default_params;
+
+  if(!dt_image_altered(self->dev->image_storage.id))
+    d->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
 
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
