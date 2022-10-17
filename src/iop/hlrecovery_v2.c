@@ -663,6 +663,19 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
     }
   }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ovoid, tmpout, roi_in, roi_out) \
+  schedule(static)
+#endif
+  for(int row = 0; row < roi_out->height; row++)
+  {
+    float *out = (float *)ovoid + (size_t)roi_out->width * row;
+    float *in = tmpout + (size_t)roi_in->width * (row + roi_out->y) + roi_out->x;
+    for(int col = 0; col < roi_out->width; col++)
+      out[col] = in[col];
+  }
+
   if((vmode != DT_SEGMENTS_MASK_OFF) && fullpipe)
   {
 #ifdef _OPENMP
@@ -695,21 +708,6 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
         out++;
         in++;
       }
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, tmpout, roi_in, roi_out) \
-  schedule(static)
-#endif
-    for(int row = 0; row < roi_out->height; row++)
-    {
-      float *out = (float *)ovoid + (size_t)roi_out->width * row;
-      float *in = tmpout + (size_t)roi_in->width * (row + roi_out->y) + roi_out->x;
-      for(int col = 0; col < roi_out->width; col++)
-        out[col] = in[col];
     }
   }
 
