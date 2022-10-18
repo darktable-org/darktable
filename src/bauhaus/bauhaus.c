@@ -2322,9 +2322,12 @@ static gint _bauhaus_natural_width(GtkWidget *widget, gboolean popup)
   pango_layout_set_attributes(layout, attrlist);
   pango_attr_list_unref(attrlist);
 
-  pango_layout_set_text(layout, w->label, -1);
-  pango_layout_get_size(layout, &natural_size, NULL);
-  natural_size /= PANGO_SCALE;
+  if(w->show_label || w->detached_popup)
+  {
+    pango_layout_set_text(layout, w->label, -1);
+    pango_layout_get_size(layout, &natural_size, NULL);
+    natural_size /= PANGO_SCALE;
+  }
 
   if(w->type == DT_BAUHAUS_COMBOBOX)
   {
@@ -2354,11 +2357,14 @@ static gint _bauhaus_natural_width(GtkWidget *widget, gboolean popup)
   else
   {
     gint number_width = 0;
-    char *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
+    char *max = dt_bauhaus_slider_get_text(widget, w->data.slider.max);
+    char *min = dt_bauhaus_slider_get_text(widget, w->data.slider.min);
+    char *text = strlen(max) >= strlen(min) ? max : min;
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_size(layout, &number_width, NULL);
     natural_size += 2 * INNER_PADDING + number_width / PANGO_SCALE;
-    g_free(text);
+    g_free(max);
+    g_free(min);
   }
 
   _margins_retrieve(w);
