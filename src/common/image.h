@@ -272,7 +272,7 @@ typedef struct dt_image_t
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
 
-// should be in datetime.h, workaround to solve cross references 
+// should be in datetime.h, workaround to solve cross references
 #define DT_DATETIME_LENGTH 24       // includes msec
 
 typedef struct dt_image_basic_exif_t
@@ -364,7 +364,7 @@ void dt_image_set_images_locations(const GList *imgs, const GArray *gloc,
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns TRUE if current hash is not basic nor auto_apply, FALSE otherwise. */
 gboolean dt_image_altered(const int32_t imgid);
-/** returns TRUE if if current has is basic, FALSE otherwise. */
+/** returns TRUE if current hash is basic, FALSE otherwise. */
 gboolean dt_image_basic(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
 float dt_image_set_aspect_ratio(const int32_t imgid, const gboolean raise);
