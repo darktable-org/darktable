@@ -20,7 +20,9 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/image.h"
+#include "dtgtk/button.h"
 #include "dtgtk/range.h"
+#include "gui/accelerators.h"
 
 typedef void (*_widget_init_func)(dt_lib_filters_rule_t *rule, const dt_collection_properties_t prop,
                                   const gchar *text, dt_lib_module_t *self, gboolean top);
@@ -53,23 +55,23 @@ static void _rule_set_raw_text(dt_lib_filters_rule_t *rule, const gchar *text, c
 static void _range_widget_add_to_rule(dt_lib_filters_rule_t *rule, _widgets_range_t *special, const gboolean top);
 
 // filters definitions
-/*#include "libs/filters/aperture.c"
+#include "libs/filters/aperture.c"
 #include "libs/filters/colors.c"
 #include "libs/filters/date.c"
-#include "libs/filters/exposure.c"*/
+#include "libs/filters/exposure.c"
 #include "libs/filters/filename.c"
 #include "libs/filters/focal.c"
-/*#include "libs/filters/grouping.c"
+#include "libs/filters/grouping.c"
 #include "libs/filters/history.c"
-#include "libs/filters/iso.c"*/
+#include "libs/filters/iso.c"
 #include "libs/filters/local_copy.c"
-/*#include "libs/filters/module_order.c"
+#include "libs/filters/module_order.c"
 #include "libs/filters/rating.c"
 #include "libs/filters/rating_range.c"
 #include "libs/filters/ratio.c"
-#include "libs/filters/search.c"*/
+#include "libs/filters/search.c"
 
-/*static _filter_t filters[]
+static _filter_t filters[]
     = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_init, _colors_update },
         { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
         { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update },
@@ -88,10 +90,7 @@ static void _range_widget_add_to_rule(dt_lib_filters_rule_t *rule, _widgets_rang
         { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
         { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
         { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update },
-        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update } };*/
-static _filter_t filters[] = { { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
-                               { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
-                               { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update } };
+        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -186,7 +185,7 @@ void dt_filters_reset(dt_lib_filters_rule_t *rule, const gboolean signal)
 
 void dt_filters_free(dt_lib_filters_rule_t *rule)
 {
-  gtk_widget_destroy(rule->w_special_box);
+  if(rule->w_special_box) gtk_widget_destroy(rule->w_special_box);
   rule->w_special_box = NULL;
   g_free(rule->w_specific);
   rule->w_specific = NULL;

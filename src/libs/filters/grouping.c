@@ -22,7 +22,7 @@
 
 typedef struct _widgets_grouping_t
 {
-  dt_lib_filtering_rule_t *rule;
+  dt_lib_filters_rule_t *rule;
 
   GtkWidget *combo;
 } _widgets_grouping_t;
@@ -35,23 +35,6 @@ typedef enum _grouping_type_t
   _GROUPING_LEADER,
   _GROUPING_FOLLOWER
 } _grouping_type_t;
-
-static void _grouping_synchronise(_widgets_grouping_t *source)
-{
-  _widgets_grouping_t *dest = NULL;
-  if(source == source->rule->w_specific_top)
-    dest = source->rule->w_specific;
-  else
-    dest = source->rule->w_specific_top;
-
-  if(dest)
-  {
-    source->rule->manual_widget_set++;
-    const int val = dt_bauhaus_combobox_get(source->combo);
-    dt_bauhaus_combobox_set(dest->combo, val);
-    source->rule->manual_widget_set--;
-  }
-}
 
 static void _grouping_decode(const gchar *txt, int *val)
 {
@@ -93,10 +76,9 @@ static void _grouping_changed(GtkWidget *widget, gpointer user_data)
       _rule_set_raw_text(grouping->rule, "$FOLLOWER", TRUE);
       break;
   }
-  _grouping_synchronise(grouping);
 }
 
-static gboolean _grouping_update(dt_lib_filtering_rule_t *rule)
+static gboolean _grouping_update(dt_lib_filters_rule_t *rule, gchar *last_where_ext)
 {
   if(!rule->w_specific) return FALSE;
   int val = _GROUPING_ALL;
@@ -114,7 +96,7 @@ static gboolean _grouping_update(dt_lib_filtering_rule_t *rule)
                    "        GROUP BY group_id)"
                    " GROUP BY gr_count "
                    " ORDER BY gr_count",
-                   rule->lib->last_where_ext);
+                   last_where_ext);
   // clang-format on
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -152,13 +134,12 @@ static gboolean _grouping_update(dt_lib_filtering_rule_t *rule)
   g_free(item);
 
   dt_bauhaus_combobox_set(grouping->combo, val);
-  _grouping_synchronise(grouping);
   rule->manual_widget_set--;
 
   return TRUE;
 }
 
-static void _grouping_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+static void _grouping_widget_init(dt_lib_filters_rule_t *rule, const dt_collection_properties_t prop,
                                   const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_grouping_t *grouping = (_widgets_grouping_t *)g_malloc0(sizeof(_widgets_grouping_t));
@@ -170,20 +151,14 @@ static void _grouping_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                N_("group leaders"), N_("group followers"));
   DT_BAUHAUS_WIDGET(grouping->combo)->show_label = FALSE;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), grouping->combo, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), grouping->combo, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), grouping->combo, TRUE, TRUE, 0);
 
   if(top)
   {
     dt_gui_add_class(grouping->combo, "dt_quick_filter");
   }
 
-  if(top)
-    rule->w_specific_top = grouping;
-  else
-    rule->w_specific = grouping;
+  rule->w_specific = grouping;
 }
 
 // clang-format off

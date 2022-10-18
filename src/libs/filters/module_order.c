@@ -22,7 +22,7 @@
 
 typedef struct _widgets_module_order_t
 {
-  dt_lib_filtering_rule_t *rule;
+  dt_lib_filters_rule_t *rule;
 
   GtkWidget *combo;
 } _widgets_module_order_t;
@@ -37,23 +37,6 @@ typedef enum _module_order_type_t
 } _module_order_type_t;
 
 static char **_module_order_names = NULL;
-
-static void _module_order_synchronise(_widgets_module_order_t *source)
-{
-  _widgets_module_order_t *dest = NULL;
-  if(source == source->rule->w_specific_top)
-    dest = source->rule->w_specific;
-  else
-    dest = source->rule->w_specific_top;
-
-  if(dest)
-  {
-    source->rule->manual_widget_set++;
-    const int val = dt_bauhaus_combobox_get(source->combo);
-    dt_bauhaus_combobox_set(dest->combo, val);
-    source->rule->manual_widget_set--;
-  }
-}
 
 static void _module_order_decode(const gchar *txt, int *val)
 {
@@ -95,10 +78,9 @@ static void _module_order_changed(GtkWidget *widget, gpointer user_data)
       _rule_set_raw_text(module_order->rule, "", TRUE);
       break;
   }
-  _module_order_synchronise(module_order);
 }
 
-static gboolean _module_order_update(dt_lib_filtering_rule_t *rule)
+static gboolean _module_order_update(dt_lib_filters_rule_t *rule, gchar *last_where_ext)
 {
   if(!rule->w_specific) return FALSE;
   int val = _MORDER_ALL;
@@ -115,7 +97,7 @@ static gboolean _module_order_update(dt_lib_filtering_rule_t *rule)
                    " ON mo.imgid = mi.id"
                    " WHERE %s"
                    " GROUP BY mo.version",
-                   rule->lib->last_where_ext);
+                   last_where_ext);
   // clang-format on
   int counts[DT_IOP_ORDER_LAST + 1] = { 0 };
   sqlite3_stmt *stmt;
@@ -136,13 +118,12 @@ static gboolean _module_order_update(dt_lib_filtering_rule_t *rule)
   }
 
   dt_bauhaus_combobox_set(module_order->combo, val);
-  _module_order_synchronise(module_order);
   rule->manual_widget_set--;
 
   return TRUE;
 }
 
-static void _module_order_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+static void _module_order_widget_init(dt_lib_filters_rule_t *rule, const dt_collection_properties_t prop,
                                       const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_module_order_t *module_order = (_widgets_module_order_t *)g_malloc0(sizeof(_widgets_module_order_t));
@@ -162,20 +143,14 @@ static void _module_order_widget_init(dt_lib_filtering_rule_t *rule, const dt_co
       (GtkCallback)_module_order_changed, module_order, (const char **)_module_order_names);
   DT_BAUHAUS_WIDGET(module_order->combo)->show_label = FALSE;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), module_order->combo, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), module_order->combo, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), module_order->combo, TRUE, TRUE, 0);
 
   if(top)
   {
     dt_gui_add_class(module_order->combo, "dt_quick_filter");
   }
 
-  if(top)
-    rule->w_specific_top = module_order;
-  else
-    rule->w_specific = module_order;
+  rule->w_specific = module_order;
 }
 
 // clang-format off

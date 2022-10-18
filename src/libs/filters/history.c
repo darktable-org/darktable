@@ -22,7 +22,7 @@
 
 typedef struct _widgets_history_t
 {
-  dt_lib_filtering_rule_t *rule;
+  dt_lib_filters_rule_t *rule;
 
   GtkWidget *combo;
 } _widgets_history_t;
@@ -36,23 +36,6 @@ typedef enum _history_type_t
 } _history_type_t;
 
 static const char *_history_names[] = { N_("all images"), N_("basic"), N_("auto applied"), N_("altered"), NULL };
-
-static void _history_synchronise(_widgets_history_t *source)
-{
-  _widgets_history_t *dest = NULL;
-  if(source == source->rule->w_specific_top)
-    dest = source->rule->w_specific;
-  else
-    dest = source->rule->w_specific_top;
-
-  if(dest)
-  {
-    source->rule->manual_widget_set++;
-    const int val = dt_bauhaus_combobox_get(source->combo);
-    dt_bauhaus_combobox_set(dest->combo, val);
-    source->rule->manual_widget_set--;
-  }
-}
 
 static void _history_decode(const gchar *txt, int *val)
 {
@@ -89,10 +72,9 @@ static void _history_changed(GtkWidget *widget, gpointer user_data)
       _rule_set_raw_text(history->rule, "$ALTERED", TRUE);
       break;
   }
-  _history_synchronise(history);
 }
 
-static gboolean _history_update(dt_lib_filtering_rule_t *rule)
+static gboolean _history_update(dt_lib_filters_rule_t *rule, gchar *last_where_ext)
 {
   if(!rule->w_specific) return FALSE;
   int val = _HISTORY_ALL;
@@ -115,7 +97,7 @@ static gboolean _history_update(dt_lib_filtering_rule_t *rule)
                    " WHERE %s"
                    " GROUP BY altered"
                    " ORDER BY altered ASC",
-                   rule->lib->last_where_ext);
+                   last_where_ext);
   // clang-format on
   int counts[3] = { 0 };
   sqlite3_stmt *stmt;
@@ -137,13 +119,12 @@ static gboolean _history_update(dt_lib_filtering_rule_t *rule)
   }
 
   dt_bauhaus_combobox_set(history->combo, val);
-  _history_synchronise(history);
   rule->manual_widget_set--;
 
   return TRUE;
 }
 
-static void _history_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+static void _history_widget_init(dt_lib_filters_rule_t *rule, const dt_collection_properties_t prop,
                                  const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_history_t *history = (_widgets_history_t *)g_malloc0(sizeof(_widgets_history_t));
@@ -154,20 +135,14 @@ static void _history_widget_init(dt_lib_filtering_rule_t *rule, const dt_collect
                                      (GtkCallback)_history_changed, history, _history_names);
   DT_BAUHAUS_WIDGET(history->combo)->show_label = FALSE;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), history->combo, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), history->combo, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), history->combo, TRUE, TRUE, 0);
 
   if(top)
   {
     dt_gui_add_class(history->combo, "dt_quick_filter");
   }
 
-  if(top)
-    rule->w_specific_top = history;
-  else
-    rule->w_specific = history;
+  rule->w_specific = history;
 }
 
 // clang-format off

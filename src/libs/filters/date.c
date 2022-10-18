@@ -20,7 +20,7 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
-static gchar *_date_get_db_colname(dt_lib_filtering_rule_t *rule)
+static gchar *_date_get_db_colname(dt_lib_filters_rule_t *rule)
 {
   switch(rule->prop)
   {
@@ -37,15 +37,12 @@ static gchar *_date_get_db_colname(dt_lib_filtering_rule_t *rule)
   }
 }
 
-static gboolean _date_update(dt_lib_filtering_rule_t *rule)
+static gboolean _date_update(dt_lib_filters_rule_t *rule, gchar *last_where_ext)
 {
   if(!rule->w_specific) return FALSE;
 
-  dt_lib_filtering_t *d = rule->lib;
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
-  _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -57,33 +54,29 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
              " FROM main.images AS mi"
              " WHERE %s IS NOT NULL AND %s"
              " GROUP BY date",
-             colname, colname, d->last_where_ext);
+             colname, colname, last_where_ext);
   // clang-format on
   g_free(colname);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
-  if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int count = sqlite3_column_int(stmt, 1);
     const long dt = sqlite3_column_int64(stmt, 0);
     dtgtk_range_select_add_block(range, dt, count);
-    if(rangetop) dtgtk_range_select_add_block(rangetop, dt, count);
   }
   sqlite3_finalize(stmt);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
-  if(rangetop) dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
   rule->manual_widget_set--;
 
   dtgtk_range_select_redraw(range);
-  if(rangetop) dtgtk_range_select_redraw(rangetop);
   return TRUE;
 }
 
-static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+static void _date_widget_init(dt_lib_filters_rule_t *rule, const dt_collection_properties_t prop,
                               const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
