@@ -2014,14 +2014,10 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
     return;
 
   *roi_out = *roi_in;
-  roi_out->width = roi_in->width;
-  roi_out->height = roi_in->height;
-  roi_out->x = roi_in->x;
-  roi_out->y = roi_in->y;
-
-  // sanity check.
-  if(roi_out->x < 0) roi_out->x = 0;
-  if(roi_out->y < 0) roi_out->y = 0;
+  roi_out->x = MAX(roi_in->x, 0);
+  roi_out->y = MAX(roi_in->y, 0);
+  roi_out->width = MIN(roi_in->width-6, piece->buf_in.width);
+  roi_out->height = MIN(roi_in->height-6, piece->buf_in.height);
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
