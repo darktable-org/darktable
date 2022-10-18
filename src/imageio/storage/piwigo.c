@@ -86,6 +86,7 @@ typedef struct dt_storage_piwigo_gui_data_t
   GtkBox *create_box;                               // Create album options...
   GtkWidget *permission_list;
   GtkWidget *album_list, *parent_album_list;
+  GtkWidget *conflict_action;
   GtkWidget *account_list;
 
   GList *albums;
@@ -101,6 +102,14 @@ typedef struct _curl_args_t
   char value[512];
 } _curl_args_t;
 
+typedef enum dt_storage_piwigo_conflict_actions_t
+{
+  DT_PIWIGO_CONFLICT_NOTHING = 0,
+  DT_PIWIGO_CONFLICT_SKIP = 1,
+  DT_PIWIGO_CONFLICT_METADATA = 2,
+  DT_PIWIGO_CONFLICT_OVERWRITE = 3
+} dt_storage_piwigo_conflict_actions_t;
+
 typedef struct dt_storage_piwigo_params_t
 {
   _piwigo_api_context_t *api;
@@ -112,6 +121,8 @@ typedef struct dt_storage_piwigo_params_t
   gboolean export_tags; // deprecated - let here not to change params size. to be removed on next version change
   gchar *tags;
 } dt_storage_piwigo_params_t;
+
+dt_storage_piwigo_conflict_actions_t conflict_action;
 
 /* low-level routine doing the HTTP POST request */
 static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth);
@@ -565,6 +576,11 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
   }
 }
 
+static void _piwigo_conflict_changed(GtkWidget *widget, gpointer data)
+{
+  dt_conf_set_int("storage/piwigo/conflict", dt_bauhaus_combobox_get(widget));
+}
+
 /** Refresh albums */
 static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar *select_album)
 {
@@ -706,17 +722,103 @@ static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
   return TRUE;
 }
 
+static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *img, int page)
+{
+  GList *args = NULL;
+  char album_id[10];
+  char page_string[10];
+  snprintf(album_id, sizeof(album_id), "%d", (int) p->album_id);
+  snprintf(page_string, sizeof(page_string), "%d", page);
+
+  args = _piwigo_query_add_arguments(args, "method", "pwg.categories.getImages");
+  args = _piwigo_query_add_arguments(args, "cat_id", album_id);
+  args = _piwigo_query_add_arguments(args, "per_page", "100");
+  args = _piwigo_query_add_arguments(args, "page", page_string);
+
+  _piwigo_api_post(p->api, args, NULL, TRUE);
+
+  g_list_free(args);
+
+  if(p->api->response && !p->api->error_occured && json_object_has_member(p->api->response, "result"))
+  {
+    JsonNode *result_node = json_object_get_member(p->api->response, "result");
+
+    if(result_node != NULL && json_node_get_node_type(result_node) == JSON_NODE_OBJECT)
+    {
+      JsonObject *result = json_node_get_object(result_node);
+
+      if(json_object_has_member(result, "paging"))
+      {
+        JsonNode *paging_node = json_object_get_member(result, "paging");
+        if(paging_node != NULL && json_node_get_node_type(paging_node) == JSON_NODE_OBJECT)
+        {
+          JsonObject *paging = json_node_get_object(paging_node);
+          int count = json_object_get_int_member(paging, "count");
+
+          if(count > 0)
+          {
+            JsonArray *existing_images = json_object_get_array_member(result, "images");
+
+            for(int i = 0; i < json_array_get_length(existing_images); i++)
+            {
+              JsonObject *existing_image = json_array_get_object_element(existing_images, i);
+              if(json_object_has_member(existing_image, "file"))
+              {
+                if(strcmp(img->filename, json_object_get_string_member(existing_image, "file")) == 0)
+                {
+                  return json_object_get_int_member(existing_image, "id");
+                }
+              }
+            }
+            return _piwigo_api_get_image_id(p, img, page+1);
+          }
+        }
+      }
+    }
+  }
+
+  return -1;
+}
+
+static gboolean _piwigo_api_set_info(dt_storage_piwigo_params_t *p, gchar *author, gchar *caption, gchar *description, int pwg_image_id)
+{
+  GList *args = NULL;
+  char pwg_image_id_string[10];
+  snprintf(pwg_image_id_string, sizeof(pwg_image_id_string), "%d", pwg_image_id);
+
+  args = _piwigo_query_add_arguments(args, "method", "pwg.images.setInfo");
+  args = _piwigo_query_add_arguments(args, "image_id", pwg_image_id_string);
+  args = _piwigo_query_add_arguments(args, "single_value_mode", "replace");
+
+  if(caption && strlen(caption)>0)
+    args = _piwigo_query_add_arguments(args, "name", caption);
+
+  if(author && strlen(author)>0)
+    args = _piwigo_query_add_arguments(args, "author", author);
+
+  if(description && strlen(description)>0)
+    args = _piwigo_query_add_arguments(args, "comment", description);
+
+  _piwigo_api_post(p->api, args, NULL, TRUE);
+
+  g_list_free(args);
+
+  return !p->api->error_occured;
+}
+
 static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *fname,
-                                         gchar *author, gchar *caption, gchar *description)
+                                         gchar *author, gchar *caption, gchar *description, int pwg_image_id)
 {
   GList *args = NULL;
   char cat[10];
   char privacy[10];
+  char pwg_image_id_string[10];
 
   // upload picture
 
   snprintf(cat, sizeof(cat), "%"PRId64, p->album_id);
   snprintf(privacy, sizeof(privacy), "%d", p->privacy);
+  snprintf(pwg_image_id_string, sizeof(pwg_image_id_string), "%d", pwg_image_id);
 
   args = _piwigo_query_add_arguments(args, "method", "pwg.images.addSimple");
   args = _piwigo_query_add_arguments(args, "image", fname);
@@ -734,6 +836,9 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *f
 
   if(p->tags && strlen(p->tags)>0)
     args = _piwigo_query_add_arguments(args, "tags", p->tags);
+
+  if(pwg_image_id >= 0)
+    args = _piwigo_query_add_arguments(args, "image_id", pwg_image_id_string);
 
   _piwigo_api_post(p->api, args, fname, FALSE);
 
@@ -902,6 +1007,17 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(ui->create_box, ui->parent_album_list, TRUE, TRUE, 0);
 
   _piwigo_set_status(ui, _("click login button to start"), "#ffffff");
+
+  // action on conflict
+  ui->conflict_action = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(ui->conflict_action, NULL, N_("on conflict"));
+  dt_bauhaus_combobox_add(ui->conflict_action, _("don't check"));
+  dt_bauhaus_combobox_add(ui->conflict_action, _("skip"));
+  dt_bauhaus_combobox_add(ui->conflict_action, _("update metadata"));
+  dt_bauhaus_combobox_add(ui->conflict_action, _("overwrite"));
+  gtk_box_pack_start(GTK_BOX(self->widget), ui->conflict_action, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed", G_CALLBACK(_piwigo_conflict_changed), self);
+  dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/conflict"));
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
@@ -950,33 +1066,20 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
 
   gint result = 0;
-
-  const char *ext = format->extension(fdata);
+  gint skipped = 0;
 
   // Let's upload image...
-
-  /* construct a temporary file name */
-  char fname[PATH_MAX] = { 0 };
-  dt_loc_get_tmp_dir(fname, sizeof(fname));
-  g_strlcat(fname, "/darktable.XXXXXX.", sizeof(fname));
-  g_strlcat(fname, ext, sizeof(fname));
 
   char *caption = NULL;
   char *description = NULL;
   char *author = NULL;
 
-  gint fd = g_mkstemp(fname);
-  if(fd == -1)
-  {
-    dt_control_log("failed to create temporary image for piwigo export");
-    fprintf(stderr, "failed to create tempfile: %s\n", fname);
-    return 1;
-  }
-  close(fd);
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+
+  gchar *fname = g_strconcat(darktable.tmpdir, "/", img->filename, NULL);
 
   if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   // If title is not existing, then use the filename without extension. If not, then use title instead
     GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
     if(title != NULL)
@@ -997,7 +1100,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       description = g_strdup(desc->data);
       g_list_free_full(desc, &g_free);
     }
-    dt_image_cache_read_release(darktable.image_cache, img);
 
     GList *auth = dt_metadata_get(img->id, "Xmp.dc.creator", NULL);
     if(auth != NULL)
@@ -1006,6 +1108,9 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       g_list_free_full(auth, &g_free);
     }
   }
+
+  dt_image_cache_read_release(darktable.image_cache, img);
+
   if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type, icc_filename,
                        icc_intent, self, sdata, num, total, metadata) != 0)
   {
@@ -1034,18 +1139,42 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
     if(status)
     {
-      status = _piwigo_api_upload_photo(p, fname, author, caption, description);
-      if(!status)
+      int pwg_image_id = -1;
+
+      if(conflict_action != DT_PIWIGO_CONFLICT_NOTHING)
       {
-        fprintf(stderr, "[imageio_storage_piwigo] could not upload to piwigo!\n");
-        dt_control_log(_("could not upload to piwigo!"));
-        result = 1;
+        pwg_image_id = _piwigo_api_get_image_id(p, img, 0);
       }
-      else if(p->new_album)
+
+      if(pwg_image_id >= 0 && conflict_action == DT_PIWIGO_CONFLICT_METADATA)
       {
-        // we do not want to create more albums when multiple upload
-        p->new_album = FALSE;
-        _piwigo_refresh_albums(ui, p->album);
+        status = _piwigo_api_set_info(p, author, caption, description, pwg_image_id);
+        if(!status)
+        {
+          fprintf(stderr, "[imageio_storage_piwigo] could not update to piwigo!\n");
+          dt_control_log(_("could not update to piwigo!"));
+          result = 1;
+        }
+      }
+      else if(pwg_image_id >= 0 && conflict_action == DT_PIWIGO_CONFLICT_SKIP)
+      {
+        skipped = 1;
+      }
+      else
+      {
+        status = _piwigo_api_upload_photo(p, fname, author, caption, description, pwg_image_id);
+        if(!status)
+        {
+          fprintf(stderr, "[imageio_storage_piwigo] could not upload to piwigo!\n");
+          dt_control_log(_("could not upload to piwigo!"));
+          result = 1;
+        }
+        else if(p->new_album)
+        {
+          // we do not want to create more albums when multiple upload
+          p->new_album = FALSE;
+          _piwigo_refresh_albums(ui, p->album);
+        }
       }
     }
     if(p->tags)
@@ -1064,7 +1193,11 @@ cleanup:
   g_free(description);
   g_free(author);
 
-  if(!result)
+  if(skipped)
+  {
+    dt_control_log(_("%d/%d skipped (already exists)"), num, total);
+  }
+  else if(!result && !skipped)
   {
     // this makes sense only if the export was successful
     dt_control_log(ngettext("%d/%d exported to piwigo webalbum", "%d/%d exported to piwigo webalbum", num),
@@ -1123,6 +1256,8 @@ void *get_params(dt_imageio_module_storage_t *self)
 
     p->album_id = 0;
     p->tags = NULL;
+
+    conflict_action = dt_bauhaus_combobox_get(ui->conflict_action);
 
     switch(dt_bauhaus_combobox_get(ui->permission_list))
     {
