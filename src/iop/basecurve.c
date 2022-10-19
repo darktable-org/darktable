@@ -431,11 +431,12 @@ int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(err != CL_SUCCESS) return FALSE;
 
   /* vertical blur */
+  size_t sizes2[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 0, sizeof(cl_mem), (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 3, sizeof(int), (void *)&height);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blur_v, sizes);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blur_v, sizes2);
   if(err != CL_SUCCESS) return FALSE;
 
   return TRUE;

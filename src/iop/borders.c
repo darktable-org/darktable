@@ -574,6 +574,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const int width = roi_out->width;
   const int height = roi_out->height;
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
 
   const int border_tot_width = (piece->buf_out.width - piece->buf_in.width) * roi_in->scale;
   const int border_tot_height = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
@@ -586,7 +587,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // ----- Filling border
   const float col[4] = { d->color[0], d->color[1], d->color[2], 1.0f };
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   const int zero = 0;
   dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 0, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &zero);

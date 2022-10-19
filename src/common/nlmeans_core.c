@@ -950,12 +950,12 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   for(int p = 0; p < num_patches; p++)
   {
     const patch_t *patch = &patches[p];
     int q[2] = { patch->rows, patch->cols };
+    const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     // compute channel-normed squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -1045,12 +1045,12 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   for(int p = 0; p < num_patches; p++)
   {
     const patch_t *patch = &patches[p];
     int q[2] = { patch->rows, patch->cols };
+    const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     // compute squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];

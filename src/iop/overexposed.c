@@ -406,8 +406,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 4, sizeof(int), &height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 5, sizeof(float), &lower);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 6, sizeof(float), &upper);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 7, 4 * sizeof(float), lower_color);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 8, 4 * sizeof(float), upper_color);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 7, 4 * sizeof(float), (void *)lower_color);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 8, 4 * sizeof(float), (void *)upper_color);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 9, sizeof(cl_mem), (void *)&dev_profile_info);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 10, sizeof(cl_mem), (void *)&dev_profile_lut);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 11, sizeof(int), (void *)&use_work_profile);

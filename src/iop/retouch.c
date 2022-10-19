@@ -3690,8 +3690,6 @@ static cl_int rt_copy_in_to_out_cl(const int devid, cl_mem dev_in, const struct 
   cl_mem dev_roi_in = NULL;
   cl_mem dev_roi_out = NULL;
 
-  const size_t sizes[]
-      = { ROUNDUPDWD(MIN(roi_out->width, roi_in->width), devid), ROUNDUPDHT(MIN(roi_out->height, roi_in->height), devid), 1 };
 
   dev_roi_in = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_in);
   dev_roi_out = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_out);
@@ -3702,6 +3700,7 @@ static cl_int rt_copy_in_to_out_cl(const int devid, cl_mem dev_in, const struct 
     goto cleanup;
   }
 
+  const size_t sizes[] = { ROUNDUPDWD(MIN(roi_out->width, roi_in->width), devid), ROUNDUPDHT(MIN(roi_out->height, roi_in->height), devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_roi_in);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_out);
@@ -3766,7 +3765,6 @@ static cl_int rt_copy_image_masked_cl(const int devid, cl_mem dev_src, cl_mem de
 {
   cl_int err = CL_SUCCESS;
 
-  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
 
   const cl_mem dev_roi_dest =
     dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_dest);
@@ -3780,6 +3778,7 @@ static cl_int rt_copy_image_masked_cl(const int devid, cl_mem dev_src, cl_mem de
     goto cleanup;
   }
 
+  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_src);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_dest);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_roi_dest);
@@ -3804,7 +3803,6 @@ static cl_int rt_copy_mask_to_alpha_cl(const int devid, cl_mem dev_layer, dt_iop
 
   // fill it
   const int kernel = gd->kernel_retouch_copy_mask_to_alpha;
-  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
 
   const cl_mem  dev_roi_layer = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_layer);
   const cl_mem dev_roi_mask_scaled
@@ -3815,6 +3813,7 @@ static cl_int rt_copy_mask_to_alpha_cl(const int devid, cl_mem dev_layer, dt_iop
     goto cleanup;
   }
 
+  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_layer);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_roi_layer);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask_scaled);
@@ -3881,7 +3880,6 @@ static cl_int _retouch_fill_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
 
   // fill it
   const int kernel = gd->kernel_retouch_fill;
-  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
 
   const cl_mem dev_roi_layer = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_layer);
   const cl_mem dev_roi_mask_scaled
@@ -3892,6 +3890,7 @@ static cl_int _retouch_fill_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
     goto cleanup;
   }
 
+  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_layer);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_roi_layer);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask_scaled);

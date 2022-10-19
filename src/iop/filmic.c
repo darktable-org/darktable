@@ -634,7 +634,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   cl_mem dev_table = NULL;
   cl_mem diff_table = NULL;
@@ -653,6 +652,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int preserve_color = d->preserve_color;
   const float saturation = d->global_saturation / 100.0f;
 
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 2, sizeof(int), (void *)&width);
@@ -666,7 +666,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 10, sizeof(float), (void *)&power);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 11, sizeof(int), (void *)&preserve_color);
   dt_opencl_set_kernel_arg(devid, gd->kernel_filmic, 12, sizeof(int), (void *)&saturation);
-
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic, sizes);
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_table);

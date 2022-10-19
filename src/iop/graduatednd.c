@@ -991,10 +991,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float length_inc_y = -cosv * hh_inv * filter_hardness;
   const float length_inc_x = sinv * hw_inv * filter_hardness;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
 
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);

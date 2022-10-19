@@ -142,8 +142,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_zero, 0, sizeof(cl_mem), (void *)&b->dev_grid);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_zero, 1, sizeof(int), (void *)&wd);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_zero, 2, sizeof(int), (void *)&ht);
-  cl_int err = -666;
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_zero, sizes);
+  cl_int err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_zero, sizes);
   if(err != CL_SUCCESS)
   {
     dt_bilateral_free_cl(b);

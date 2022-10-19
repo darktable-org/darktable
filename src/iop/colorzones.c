@@ -547,12 +547,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int kernel_colorzones
       = (d->mode == DT_IOP_COLORZONES_MODE_SMOOTH) ? gd->kernel_colorzones_v3 : gd->kernel_colorzones;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dev_L = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
   dev_a = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
   dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if(dev_L == NULL || dev_a == NULL || dev_b == NULL) goto error;
 
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel_colorzones, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, kernel_colorzones, 1, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, kernel_colorzones, 2, sizeof(int), &width);
