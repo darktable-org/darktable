@@ -260,6 +260,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_bilateral_free_cl(b);
   b = NULL; // make sure we don't do double cleanup in case the next few lines err out
 
+  size_t sizes2[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 1, sizeof(cl_mem), &dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 2, sizeof(cl_mem), &dev_out);
@@ -269,7 +270,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 6, sizeof(float), &d->b);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 7, sizeof(float), &sigma2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 8, sizeof(float), &d->highlights);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome, sizes);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome, sizes2);
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_tmp);

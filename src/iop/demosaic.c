@@ -3507,8 +3507,8 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
     {
       // populate data
-      size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
       const float scaler = 1.0f / fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
+      size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_populate, 0, sizeof(cl_mem), &dev_in);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_populate, 1, sizeof(cl_mem), &cfa);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_populate, 2, sizeof(cl_mem), &rgb0);
@@ -3787,7 +3787,6 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 5, sizeof(int), (void *)&roi_in->y);
       dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 6, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
       dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 7, sizeof(cl_mem), (void *)&dev_xtrans);
-
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_passthrough_color, sizes);
       dt_opencl_release_mem_object(dev_xtrans);
       if(err != CL_SUCCESS) goto error;
@@ -3916,14 +3915,10 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 3, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 4, sizeof(int), (void *)&zero);
       dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 5, sizeof(int), (void *)&zero);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 6, sizeof(int),
-                               (void *)&roi_in->width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 7, sizeof(int),
-                               (void *)&roi_in->height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 8, sizeof(float),
-                               (void *)&roi_out->scale);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 9, sizeof(uint32_t),
-                               (void *)&piece->pipe->dsc.filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 6, sizeof(int), (void *)&roi_in->width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 7, sizeof(int), (void *)&roi_in->height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 8, sizeof(float),(void *)&roi_out->scale);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_passthrough_monochrome, 9, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_zoom_passthrough_monochrome, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -3945,8 +3940,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 6, sizeof(int), (void *)&roi_in->width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 7, sizeof(int), (void *)&roi_in->height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 8, sizeof(float), (void *)&roi_out->scale);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 9, sizeof(uint32_t),
-                               (void *)&piece->pipe->dsc.filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 9, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_zoom_half_size, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4347,8 +4341,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 6, sizeof(int), (void *)&roi_in->width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 7, sizeof(int), (void *)&roi_in->height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 8, sizeof(float), (void *)&roi_out->scale);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 9, sizeof(uint32_t),
-                               (void *)&piece->pipe->dsc.filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_zoom_half_size, 9, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_zoom_half_size, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -5726,7 +5719,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, use_method);
   else
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, use_method);
-  p->demosaicing_method = use_method;  
+  p->demosaicing_method = use_method;
 
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
   gtk_widget_set_visible(g->greeneq, !passing);

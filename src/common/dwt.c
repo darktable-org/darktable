@@ -603,12 +603,12 @@ static cl_int dwt_subtract_layer_cl(cl_mem bl, cl_mem bh, dwt_params_cl_t *const
   const int devid = p->devid;
   const int kernel = p->global->kernel_dwt_subtract_layer;
 
-  size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
 
   const float lpass_mult = (1.f / 16.f);
   const int width = p->width;
   const int height = p->height;
 
+  size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&bl);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&bh);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(width));
@@ -626,11 +626,11 @@ static cl_int dwt_add_layer_cl(cl_mem img, cl_mem layers, dwt_params_cl_t *const
   const int devid = p->devid;
   const int kernel = p->global->kernel_dwt_add_img_to_layer;
 
-  size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
 
   const int width = p->width;
   const int height = p->height;
 
+  size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&img);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&layers);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(width));
@@ -695,10 +695,10 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   {
     const int kernel = p->global->kernel_dwt_init_buffer;
 
-    size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
     const int width = p->width;
     const int height = p->height;
 
+    size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&layers);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(width));
     dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(height));
@@ -719,10 +719,10 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     {
       const int kernel = p->global->kernel_dwt_init_buffer;
 
-      size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
       const int width = p->width;
       const int height = p->height;
 
+      size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
       dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&merged_layers);
       dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(width));
       dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(height));

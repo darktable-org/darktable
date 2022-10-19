@@ -195,8 +195,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err == CL_SUCCESS)
   {
     // normalize and blend
-    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
     dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 2, sizeof(cl_mem), (void *)&dev_out);
@@ -263,10 +263,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   else
     vblocksize = 1;
 
-
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   size_t sizesl[3];
   size_t local[3];
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 0, sizeof(cl_mem), (void *)&dev_U2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 1, sizeof(int), (void *)&width);

@@ -92,7 +92,7 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   // 4BAYER is not supported by this module yet anyway.
   const int ch = (dev->image_storage.flags & DT_IMAGE_4BAYER) ? 4 : 3;
 
-  // the clipping is detected as (raw value > threshold) 
+  // the clipping is detected as (raw value > threshold)
   float threshold = dev->rawoverexposed.threshold;
 
   for(int k = 0; k < ch; k++)
@@ -349,22 +349,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_thresholds == NULL) goto error;
 
   size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), &dev_coord);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), &dev_raw);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(int), &raw_width);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), &raw_height);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(uint32_t), &filters);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), &dev_xtrans);
-  dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), &dev_thresholds);
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord), CLARG(width), CLARG(height), CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans), CLARG(dev_thresholds));
 
   if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA)
-    dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(cl_mem), &dev_colors);
+    dt_opencl_set_kernel_args(devid, kernel, 11, CLARG(dev_colors));
   else if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID)
-    dt_opencl_set_kernel_arg(devid, kernel, 11, 4 * sizeof(float), color);
+    dt_opencl_set_kernel_arg(devid, kernel, 11, 4 * sizeof(float), (void *)color);
 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -433,7 +423,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   const dt_image_t *const image = &(dev->image_storage);
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean sensorok = (image->flags & DT_IMAGE_4BAYER) == 0;
-  
+
   piece->enabled = dev->rawoverexposed.enabled && fullpipe && dev->gui_attached && sensorok;
 
   if(image->buf_dsc.datatype != TYPE_UINT16 || !image->buf_dsc.filters) piece->enabled = 0;

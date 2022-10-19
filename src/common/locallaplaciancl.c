@@ -160,6 +160,7 @@ cl_int dt_local_laplacian_cl(
   for(int k=0;k<num_gamma;k++)
   { // process images
     const float g = (k+.5f)/(float)num_gamma;
+    size_t sizes_pad2[] = { ROUNDUPDWD(b->bwidth, b->devid), ROUNDUPDHT(b->bheight, b->devid), 1 };
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 0, sizeof(cl_mem), &b->dev_padded[0]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 1, sizeof(cl_mem), &b->dev_processed[k][0]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 2, sizeof(float), &g);
@@ -169,7 +170,7 @@ cl_int dt_local_laplacian_cl(
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 6, sizeof(float), &b->clarity);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 7, sizeof(int), &b->bwidth);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_process_curve, 8, sizeof(int), &b->bheight);
-    err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_process_curve, sizes_pad);
+    err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_process_curve, sizes_pad2);
     if(err != CL_SUCCESS) goto error;
 
     // create gaussian pyramids
@@ -191,7 +192,6 @@ cl_int dt_local_laplacian_cl(
   {
     const int pw = dl(b->bwidth,l), ph = dl(b->bheight,l);
     size_t sizes[] = { ROUNDUPDWD(pw, b->devid), ROUNDUPDHT(ph, b->devid), 1 };
-    // this is so dumb:
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  0, sizeof(cl_mem), &b->dev_padded[l]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  1, sizeof(cl_mem), &b->dev_output[l+1]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble,  2, sizeof(cl_mem), &b->dev_output[l]);
@@ -207,10 +207,6 @@ cl_int dt_local_laplacian_cl(
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 12, sizeof(cl_mem), &b->dev_processed[4][l+1]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 13, sizeof(cl_mem), &b->dev_processed[5][l]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 14, sizeof(cl_mem), &b->dev_processed[5][l+1]);
-    // dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 15, sizeof(cl_mem), &b->dev_processed[6][l]);
-    // dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 16, sizeof(cl_mem), &b->dev_processed[6][l+1]);
-    // dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 17, sizeof(cl_mem), &b->dev_processed[7][l]);
-    // dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 18, sizeof(cl_mem), &b->dev_processed[7][l+1]);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 15, sizeof(int), &pw);
     dt_opencl_set_kernel_arg(b->devid, b->global->kernel_laplacian_assemble, 16, sizeof(int), &ph);
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_laplacian_assemble, sizes);

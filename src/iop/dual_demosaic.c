@@ -113,10 +113,10 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
 
   {
-    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     const dt_aligned_pixel_t wb = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1],
                                     piece->pipe->dsc.temperature.coeffs[2] };
     const int kernel = darktable.opencl->blendop->kernel_calc_Y0_mask;
+    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &detail);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &high_image);
     dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
