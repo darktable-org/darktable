@@ -97,8 +97,19 @@ void dt_style_item_free(gpointer data)
 
 static void _apply_style_shortcut_callback(dt_action_t *action)
 {
+  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-  dt_styles_apply_to_list(action->label, imgs, FALSE);
+
+  if(v->view(v) == DT_VIEW_DARKROOM)
+  {
+    const int32_t imgid = GPOINTER_TO_INT(imgs->data);
+    dt_styles_apply_to_dev(action->label, imgid);
+  }
+  else
+  {
+    dt_styles_apply_to_list(action->label, imgs, FALSE);
+  }
+
   g_list_free(imgs);
 }
 
