@@ -2000,7 +2000,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
 
 /* inpaint opposed and segmentation based algorithms want the whole image for proper calculation
    of chrominance correction and best candidates so we change both rois.
-   1st pass: how large would the output be, given this input roi?
+   we're not scaling here so just crop borders
 */
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *const roi_in)
@@ -2014,10 +2014,12 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
     return;
 
   *roi_out = *roi_in;
-  roi_out->x = MAX(roi_in->x, 0);
-  roi_out->y = MAX(roi_in->y, 0);
-  roi_out->width = MIN(roi_in->width-6, piece->buf_in.width);
-  roi_out->height = MIN(roi_in->height-6, piece->buf_in.height);
+ 
+  roi_out->x = MAX(0, roi_in->x);
+  roi_out->y = MAX(0, roi_in->y);
+ // fprintf(stderr, "[%s] in %f out %f iscale %f \n", dt_dev_pixelpipe_type_to_str(piece->pipe->type), roi_in->scale, roi_out->scale, piece->iscale);
+  roi_out->width = roi_in->width;
+  roi_out->height = roi_in->height;
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
