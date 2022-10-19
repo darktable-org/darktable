@@ -296,6 +296,10 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(exif_datetime);
   }
 
+  else if(_has_prefix(variable, "EXIF.DATE.REGIONAL"))
+    result = g_date_time_format(datetime, "%x");
+  else if(_has_prefix(variable, "EXIF.TIME.REGIONAL"))
+    result = g_date_time_format(datetime, "%X");
   else if(_has_prefix(variable, "EXIF.YEAR.SHORT") || _has_prefix(variable, "EXIF.DATE.SHORT_YEAR"))
     result = g_date_time_format(datetime, "%y");
   else if(_has_prefix(variable, "EXIF.YEAR") || _has_prefix(variable, "EXIF_YEAR") || _has_prefix(variable, "EXIF.DATE.LONG_YEAR"))
