@@ -330,7 +330,12 @@ if(USE_CAMERA_SUPPORT)
   if(Gphoto2_FOUND)
     include_directories(SYSTEM ${Gphoto2_INCLUDE_DIRS})
     list(APPEND LIBS ${Gphoto2_LIBRARIES})
-    add_definitions(${Gphoto2_DEFINITIONS})
+    set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" )
+    add_definitions("-DHAVE_GPHOTO2")
+    # CPack ignores variables you define in your CMakeLists.txt file,
+    # and only variables ${CPACK_*} are correctly used.
+    # so this needs to be saved by adding another variable with a name beginning with CPACK
+    set(CPACK_NSIS_GPHOTO2_VERSION ${Gphoto2_VERSION_STRING} CACHE STRING "Gphoto2 version string")
   endif()
 endif(USE_CAMERA_SUPPORT)
 
@@ -352,8 +357,9 @@ if(USE_OPENEXR)
   if(OpenEXR_FOUND)
     include_directories(SYSTEM ${OpenEXR_INCLUDE_DIRS})
     list(APPEND LIBS ${OpenEXR_LIBRARIES})
-    add_definitions(${OpenEXR_DEFINITIONS})
+    add_definitions("-DHAVE_OPENEXR")
     list(APPEND SOURCES "common/imageio_exr.cc")
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} exr CACHE INTERNAL "")
   endif(OpenEXR_FOUND)
 endif(USE_OPENEXR)
 
@@ -412,7 +418,7 @@ if(USE_LENSFUN)
   if(LensFun_FOUND)
     include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
     list(APPEND LIBS ${LensFun_LIBRARIES})
-    add_definitions(${LensFun_DEFINITIONS})
+    add_definitions("-DHAVE_LENSFUN")
   endif()
 endif()
 
@@ -576,32 +582,10 @@ if(USE_ICU)
   endif(ICU_FOUND)
 endif(USE_ICU)
 
-#
-# Add HAVE_xxx defines used by darktable
-#
-
-if(LensFun_FOUND)
-  add_definitions("-DHAVE_LENSFUN")
-endif(LensFun_FOUND)
-
-if(OpenEXR_FOUND)
-  add_definitions("-DHAVE_OPENEXR")
-  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} exr CACHE INTERNAL "")
-endif(OpenEXR_FOUND)
-
 if(USE_OPENCL)
   add_definitions("-DHAVE_OPENCL")
 endif(USE_OPENCL)
 
-
-if(Gphoto2_FOUND)
-  set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" )
-  add_definitions("-DHAVE_GPHOTO2")
-  # CPack ignores variables you define in your CMakeLists.txt file,
-  # and only variables ${CPACK_*} are correctly used.
-  # so this needs to be saved by adding another variable with a name beginning with CPACK
-  set(CPACK_NSIS_GPHOTO2_VERSION ${Gphoto2_VERSION_STRING} CACHE STRING "Gphoto2 version string")
-endif(Gphoto2_FOUND)
 
 # Check for __builtin_cpu_supports here due to a bug in clang/llvm. LLVM uses
 # libgcc to provide the symbols, so if clang wasn't compiled with libgcc, the
