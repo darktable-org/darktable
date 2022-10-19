@@ -1345,23 +1345,11 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
     dt_control_log(_("no userdefined presets for favorite modules were found"));
 }
 
-static void _darkroom_ui_apply_style_activate_callback(gchar *name)
+static void _darkroom_ui_apply_style_activate_callback(const gchar *name)
 {
   dt_control_log(_("applied style `%s' on current image"), name);
 
-  /* write current history changes so nothing gets lost */
-  dt_dev_write_history(darktable.develop);
-
-  dt_dev_undo_start_record(darktable.develop);
-
-  /* apply style on image and reload*/
-  dt_styles_apply_to_image(name, FALSE, FALSE, darktable.develop->image_storage.id);
-  dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
-
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
-  /* record current history state : after change (needed for undo) */
-  dt_dev_undo_end_record(darktable.develop);
+  dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
 
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();
