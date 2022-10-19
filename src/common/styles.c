@@ -787,7 +787,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
   }
 }
 
-void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const gboolean overwrite, const int32_t imgid)
+void _styles_apply_to_image_ext(const char *name, const gboolean duplicate, const gboolean overwrite, const int32_t imgid, const gboolean undo)
 {
   int id = 0;
   sqlite3_stmt *stmt;
@@ -902,18 +902,25 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 
-    dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
-    hist->imgid = newimgid;
-    dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+    dt_undo_lt_history_t *hist = NULL;
+    if(undo)
+    {
+      hist = dt_history_snapshot_item_init();
+      hist->imgid = newimgid;
+      dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+    }
 
     // write history and forms to db
     dt_dev_write_history_ext(dev_dest, newimgid);
 
-    dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
-    dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
-                   dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
-    dt_undo_end_group(darktable.undo);
+    if(undo)
+    {
+      dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
+      dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                     dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+      dt_undo_end_group(darktable.undo);
+    }
 
     dt_dev_cleanup(dev_dest);
 
@@ -954,6 +961,30 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     /* redraw center view to update visible mipmaps */
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, newimgid);
   }
+}
+
+void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const gboolean overwrite, const int32_t imgid)
+{
+  _styles_apply_to_image_ext(name, duplicate, overwrite, imgid, TRUE);
+}
+
+void dt_styles_apply_to_dev(const char *name, const int32_t imgid)
+{
+  if(!darktable.develop || darktable.develop->image_storage.id == -1) return;
+
+  /* write current history changes so nothing gets lost */
+  dt_dev_write_history(darktable.develop);
+
+  dt_dev_undo_start_record(darktable.develop);
+
+  /* apply style on image and reload*/
+  _styles_apply_to_image_ext(name, FALSE, FALSE, imgid, FALSE);
+  dt_dev_reload_image(darktable.develop, imgid);
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+  /* record current history state : after change (needed for undo) */
+  dt_dev_undo_end_record(darktable.develop);
 }
 
 void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)

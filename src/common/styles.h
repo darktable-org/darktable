@@ -88,6 +88,10 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
 /** applies the style to image by imgid, takes care of overwrite and duplicate modes */
 void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const gboolean overwrite, const int32_t imgid);
 
+/** applies the style to the currently edited image in the darkroom.
+    does nothing if not called with a proper dev struct initialized */
+void dt_styles_apply_to_dev(const char *name, const int32_t imgid);
+
 /** delete a style by name */
 void dt_styles_delete_by_name_adv(const char *name, const gboolean raise);
 
