@@ -272,7 +272,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_DEMOSAIC       = 1 << 22,
   DT_DEBUG_ACT_ON         = 1 << 23,
   DT_DEBUG_TILING         = 1 << 24,
-  DT_DEBUG_VERBOSE        = 1 << 25
+  DT_DEBUG_VERBOSE        = 1 << 25,
+  DT_DEBUG_ROI            = 1 << 26
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
