@@ -2304,12 +2304,14 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 
   const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
   const int _n_f = dt_conf_get_int("plugins/lighttable/filtering/num_rules");
+  const int _n_t = dt_conf_get_int("plugins/lighttable/topbar/num_rules");
   const int num_rules = CLAMP(_n_r, 1, 10);
   const int num_filters = MIN(_n_f, 10);
+  const int num_topbar = MIN(_n_t, 10);
   char *conj[] = { "AND", "OR", "AND NOT" };
 
-  gchar **query_parts = g_new(gchar *, num_rules + num_filters + 1);
-  query_parts[num_rules + num_filters] = NULL;
+  gchar **query_parts = g_new(gchar *, num_rules + num_filters + num_topbar + 1);
+  query_parts[num_rules + num_filters + num_topbar] = NULL;
 
   // the main rules part
   for(int i = 0; i < num_rules; i++)
@@ -2369,6 +2371,33 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     g_free(text);
   }
 
+  // the topbar part (same syntax as for collect rules)
+  for(int i = 0; i < num_topbar; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/item%1d", i);
+    const int property = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/string%1d", i);
+    gchar *text = dt_conf_get_string(confname);
+    const int mode = 0;
+    const int off = 0;
+
+    if(off || !text || text[0] == '\0')
+    {
+      if(!off && mode == 1) // for OR show all
+        query_parts[i + num_rules + num_filters] = g_strdup(" OR 1=1");
+      else
+        query_parts[i + num_rules + num_filters] = g_strdup("");
+    }
+    else
+    {
+      gchar *query = get_query_string(property, text);
+
+      query_parts[i + num_rules + num_filters] = g_strdup_printf(" %s %s", conj[mode], query);
+
+      g_free(query);
+    }
+    g_free(text);
+  }
 
   /* set the extended where and the use of it in the query */
   dt_collection_set_extended_where(collection, query_parts);

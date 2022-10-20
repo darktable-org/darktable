@@ -630,6 +630,55 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/topbar/num_rules</name>
+    <type>int</type>
+    <default>3</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/topbar/item0</name>
+    <type>int</type>
+    <default>32</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/topbar/string0</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/topbar/item1</name>
+    <type>int</type>
+    <default>18</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/topbar/string1</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/topbar/item2</name>
+    <type>int</type>
+    <default>33</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/topbar/string2</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/session/jobcode</name>
     <type>string</type>
     <default>capture job</default>
