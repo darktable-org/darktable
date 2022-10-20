@@ -666,20 +666,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = 1;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, sizeof(float) * channels, (void *)&Labmax);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, sizeof(float) * channels, (void *)&Labmin);
+  dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2), CLARG(width), CLARG(height), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2), CLARG(coefp), CLARG(coefn), CLARG(Labmax), CLARG(Labmin));
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS) return err;
 
@@ -687,12 +674,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   sizes[0] = bwidth;
   sizes[1] = bheight;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 5, bpp * blocksize * (blocksize + 1), NULL);
+  dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_temp1), CLARG(width), CLARG(height), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS) return err;
 
@@ -702,20 +684,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   sizes[0] = ROUNDUPDHT(height, devid);
   sizes[1] = 1;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 1, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 2, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 4, sizeof(float), (void *)&a0);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 5, sizeof(float), (void *)&a1);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 6, sizeof(float), (void *)&a2);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 7, sizeof(float), (void *)&a3);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 8, sizeof(float), (void *)&b1);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, sizeof(float) * channels, (void *)&Labmax);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, sizeof(float) * channels, (void *)&Labmin);
+  dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2), CLARG(height), CLARG(width), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2), CLARG(coefp), CLARG(coefn), CLARG(Labmax), CLARG(Labmin));
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS) return err;
 
@@ -724,12 +693,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   sizes[0] = bheight;
   sizes[1] = bwidth;
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 0, sizeof(cl_mem), (void *)&dev_temp2);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 1, sizeof(cl_mem), (void *)&dev_temp1);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 2, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 4, sizeof(int), (void *)&blocksize);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_transpose, 5, bpp * blocksize * (blocksize + 1), NULL);
+  dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_temp1), CLARG(height), CLARG(width), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS) return err;
 

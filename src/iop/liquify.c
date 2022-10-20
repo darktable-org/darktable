@@ -1573,16 +1573,8 @@ static cl_int_t _apply_global_distortion_map_cl(struct dt_iop_module_t *module,
       || dev_kdesc == NULL || dev_kernel == NULL)
     goto error;
 
-  const size_t sizes[] = { ROUNDUPDWD(map_extent->width, devid), ROUNDUPDHT(map_extent->height, devid) };
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 2, sizeof(cl_mem), &dev_roi_in);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 3, sizeof(cl_mem), &dev_roi_out);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 4, sizeof(cl_mem), &dev_map);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 5, sizeof(cl_mem), &dev_map_extent);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 6, sizeof(cl_mem), &dev_kdesc);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 7, sizeof(cl_mem), &dev_kernel);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->warp_kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->warp_kernel, map_extent->width, map_extent->height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(dev_roi_in), CLARG(dev_roi_out), CLARG(dev_map), CLARG(dev_map_extent), CLARG(dev_kdesc), CLARG(dev_kernel));
 
 error:
 

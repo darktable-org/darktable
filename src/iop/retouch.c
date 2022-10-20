@@ -3700,14 +3700,8 @@ static cl_int rt_copy_in_to_out_cl(const int devid, cl_mem dev_in, const struct 
     goto cleanup;
   }
 
-  const size_t sizes[] = { ROUNDUPDWD(MIN(roi_out->width, roi_in->width), devid), ROUNDUPDHT(MIN(roi_out->height, roi_in->height), devid), 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_roi_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_roi_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&xoffs);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&yoffs);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, MIN(roi_out->width, roi_in->width), MIN(roi_out->height, roi_in->height),
+    CLARG(dev_in), CLARG(dev_roi_in), CLARG(dev_out), CLARG(dev_roi_out), CLARG(xoffs), CLARG(yoffs));
   if(err != CL_SUCCESS)
   {
     fprintf(stderr, "rt_copy_in_to_out_cl error 2\n");
@@ -3778,14 +3772,8 @@ static cl_int rt_copy_image_masked_cl(const int devid, cl_mem dev_src, cl_mem de
     goto cleanup;
   }
 
-  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_src);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_dest);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_roi_dest);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_mask_scaled);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_roi_mask_scaled);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), (void *)&opacity);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_mask_scaled->width, roi_mask_scaled->height,
+    CLARG(dev_src), CLARG(dev_dest), CLARG(dev_roi_dest), CLARG(dev_mask_scaled), CLARG(dev_roi_mask_scaled), CLARG(opacity));
   if(err != CL_SUCCESS) goto cleanup;
 
 cleanup:
@@ -3813,13 +3801,8 @@ static cl_int rt_copy_mask_to_alpha_cl(const int devid, cl_mem dev_layer, dt_iop
     goto cleanup;
   }
 
-  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_layer);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_roi_layer);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask_scaled);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_roi_mask_scaled);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), (void *)&opacity);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_mask_scaled->width, roi_mask_scaled->height,
+    CLARG(dev_layer), CLARG(dev_roi_layer), CLARG(dev_mask_scaled), CLARG(dev_roi_mask_scaled), CLARG(opacity));
   if(err != CL_SUCCESS) goto cleanup;
 
 
@@ -3890,16 +3873,8 @@ static cl_int _retouch_fill_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
     goto cleanup;
   }
 
-  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_layer);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_roi_layer);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask_scaled);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_roi_mask_scaled);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), (void *)&opacity);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), (void *)&(color[0]));
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), (void *)&(color[1]));
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(float), (void *)&(color[2]));
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_mask_scaled->width, roi_mask_scaled->height,
+    CLARG(dev_layer), CLARG(dev_roi_layer), CLARG(dev_mask_scaled), CLARG(dev_roi_mask_scaled), CLARG(opacity), CLARG((color[0])), CLARG((color[1])), CLARG((color[2])));
   if(err != CL_SUCCESS) goto cleanup;
 
 
@@ -3934,12 +3909,8 @@ static cl_int _retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
   if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL)
   {
     const int kernel = gd->kernel_retouch_image_rgb2lab;
-    size_t sizes[] = { ROUNDUPDWD(roi_layer->width, devid), ROUNDUPDHT(roi_layer->height, devid), 1 };
-
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_layer);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(roi_layer->width));
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(roi_layer->height));
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_layer->width, roi_layer->height,
+      CLARG(dev_layer), CLARG((roi_layer->width)), CLARG((roi_layer->height)));
     if(err != CL_SUCCESS) goto cleanup;
   }
 
@@ -3995,12 +3966,8 @@ static cl_int _retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
   if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL)
   {
     const int kernel = gd->kernel_retouch_image_lab2rgb;
-    const size_t sizes[] = { ROUNDUPDWD(roi_layer->width, devid), ROUNDUPDHT(roi_layer->height, devid), 1 };
-
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_layer);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(roi_layer->width));
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(roi_layer->height));
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_layer->width, roi_layer->height,
+      CLARG(dev_layer), CLARG((roi_layer->width)), CLARG((roi_layer->height)));
     if(err != CL_SUCCESS) goto cleanup;
   }
 
@@ -4336,12 +4303,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
     const int kernel = gd->kernel_retouch_clear_alpha;
-    const size_t sizes[] = { ROUNDUPDWD(roi_rt->width, devid), ROUNDUPDHT(roi_rt->height, devid), 1 };
-
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&in_retouch);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(roi_rt->width));
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(roi_rt->height));
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_rt->width, roi_rt->height,
+      CLARG(in_retouch), CLARG((roi_rt->width)), CLARG((roi_rt->height)));
     if(err != CL_SUCCESS) goto cleanup;
 
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
@@ -4405,13 +4368,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && g && !g->mask_display)
   {
     const int kernel = gd->kernel_retouch_copy_alpha;
-    const size_t sizes[] = { ROUNDUPDWD(roi_rt->width, devid), ROUNDUPDHT(roi_rt->height, devid), 1 };
-
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&in_retouch);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(roi_rt->width));
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(roi_rt->height));
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_rt->width, roi_rt->height,
+      CLARG(dev_in), CLARG(in_retouch), CLARG((roi_rt->width)), CLARG((roi_rt->height)));
     if(err != CL_SUCCESS) goto cleanup;
   }
 
