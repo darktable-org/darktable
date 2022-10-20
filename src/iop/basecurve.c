@@ -422,21 +422,13 @@ int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const int devid = piece->pipe->devid;
 
   /* horizontal blur */
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 1, sizeof(cl_mem), (void *)&dev_tmp);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 3, sizeof(int), (void *)&height);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blur_h, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_blur_h, width, height,
+    CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) return FALSE;
 
   /* vertical blur */
-  size_t sizes2[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 0, sizeof(cl_mem), (void *)&dev_tmp);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_v, 3, sizeof(int), (void *)&height);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blur_v, sizes2);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_blur_v, width, height,
+    CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) return FALSE;
 
   return TRUE;
@@ -452,12 +444,8 @@ int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 3, sizeof(int), (void *)&height);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_expand, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_expand, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height));
   if(err != CL_SUCCESS) return FALSE;
 
   return gauss_blur_cl(self, piece, dev_out, dev_out, dev_tmp, width, height);
@@ -482,12 +470,8 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     const int cw = (width - 1) / 2 + 1;
     const int ch = (height - 1) / 2 + 1;
 
-    size_t sizes[] = { ROUNDUPDWD(cw, devid), ROUNDUPDHT(ch, devid), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 0, sizeof(cl_mem), (void *)&dev_tmp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 1, sizeof(cl_mem), (void *)&dev_coarse);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 2, sizeof(int), (void *)&cw);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 3, sizeof(int), (void *)&ch);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_reduce, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_reduce, cw, ch,
+      CLARG(dev_tmp1), CLARG(dev_coarse), CLARG(cw), CLARG(ch));
     if(err != CL_SUCCESS) return FALSE;
   }
 
@@ -496,13 +480,8 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     if(!gauss_expand_cl(self, piece, dev_coarse, dev_tmp1, dev_tmp2, width, height))
       return FALSE;
 
-    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 1, sizeof(cl_mem), (void *)&dev_tmp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 2, sizeof(cl_mem), (void *)&dev_detail);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 4, sizeof(int), (void *)&height);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_detail, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_detail, width, height,
+      CLARG(dev_in), CLARG(dev_tmp1), CLARG(dev_detail), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) return FALSE;
   }
 
@@ -563,11 +542,8 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     dev_comb[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_comb[k] == NULL) goto error;
 
-    size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_zero, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_zero, 1, sizeof(int), (void *)&w);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_zero, 2, sizeof(int), (void *)&h);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_zero, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_zero, w, h,
+      CLARG(dev_comb[k]), CLARG(w), CLARG(h));
     if(err != CL_SUCCESS) goto error;
 
     w = (w - 1) / 2 + 1;
@@ -597,36 +573,17 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
       if(d->preserve_colors == DT_RGB_NORM_NONE)
       {
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 0, sizeof(cl_mem), (void *)&dev_in);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 1, sizeof(cl_mem), (void *)&dev_tmp1);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 2, sizeof(int), (void *)&width);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 3, sizeof(int), (void *)&height);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 4, sizeof(float), (void *)&mul);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 5, sizeof(cl_mem), (void *)&dev_m);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
+        dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_legacy_lut, 0, CLARG(dev_in), CLARG(dev_tmp1), CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs));
         err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_legacy_lut, sizes);
         if(err != CL_SUCCESS) goto error;
       }
       else
       {
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 0, sizeof(cl_mem), (void *)&dev_in);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_tmp1);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_m);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 7, sizeof(int), (void *)&preserve_colors);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 8, sizeof(cl_mem), (void *)&dev_profile_info);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 9, sizeof(cl_mem), (void *)&dev_profile_lut);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 10, sizeof(int), (void *)&use_work_profile);
+        dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_lut, 0, CLARG(dev_in), CLARG(dev_tmp1), CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
         err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
       }
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 0, sizeof(cl_mem), (void *)&dev_tmp1);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 1, sizeof(cl_mem), (void *)&dev_col[0]);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_compute_features, 0, CLARG(dev_tmp1), CLARG(dev_col[0]), CLARG(width), CLARG(height));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_compute_features, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -637,13 +594,8 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
     // adjust features
     {
-      size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 0, sizeof(cl_mem), (void *)&dev_col[0]);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 2, sizeof(cl_mem), (void *)&dev_tmp1);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 3, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 4, sizeof(int), (void *)&height);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_adjust_features, sizes);
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_adjust_features, width, height,
+        CLARG(dev_col[0]), CLARG(dev_out), CLARG(dev_tmp1), CLARG(width), CLARG(height));
       if(err != CL_SUCCESS) goto error;
 
       size_t origin[] = { 0, 0, 0 };
@@ -682,13 +634,8 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       if(k == num_levels - 1)
       {
         // blend gaussian base
-        size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 1, sizeof(cl_mem), (void *)&dev_col[k]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 2, sizeof(cl_mem), (void *)&dev_tmp1);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 3, sizeof(int), (void *)&w);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 4, sizeof(int), (void *)&h);
-        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blend_gaussian, sizes);
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_blend_gaussian, w, h,
+          CLARG(dev_comb[k]), CLARG(dev_col[k]), CLARG(dev_tmp1), CLARG(w), CLARG(h));
         if(err != CL_SUCCESS) goto error;
 
         size_t origin[] = { 0, 0, 0 };
@@ -699,14 +646,8 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       else
       {
         // blend laplacian
-        size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 1, sizeof(cl_mem), (void *)&dev_col[k]);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 2, sizeof(cl_mem), (void *)&dev_tmp2);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 3, sizeof(cl_mem), (void *)&dev_tmp1);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 4, sizeof(int), (void *)&w);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 5, sizeof(int), (void *)&h);
-        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_blend_laplacian, sizes);
+        err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_blend_laplacian, w, h,
+          CLARG(dev_comb[k]), CLARG(dev_col[k]), CLARG(dev_tmp2), CLARG(dev_tmp1), CLARG(w), CLARG(h));
         if(err != CL_SUCCESS) goto error;
 
         size_t origin[] = { 0, 0, 0 };
@@ -731,12 +672,8 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
     {
       // normalize both gaussian base and laplacian
-      size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 1, sizeof(cl_mem), (void *)&dev_tmp1);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 2, sizeof(int), (void *)&w);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 3, sizeof(int), (void *)&h);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_normalize, sizes);
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_normalize, w, h,
+        CLARG(dev_comb[k]), CLARG(dev_tmp1), CLARG(w), CLARG(h));
       if(err != CL_SUCCESS) goto error;
 
       // dev_tmp1[k] -> dev_comb[k]
@@ -755,13 +692,8 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
         goto error;
 
       // dev_comb[k] + dev_tmp1 -> dev_tmp2
-      size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 1, sizeof(cl_mem), (void *)&dev_tmp1);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 2, sizeof(cl_mem), (void *)&dev_tmp2);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 3, sizeof(int), (void *)&w);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 4, sizeof(int), (void *)&h);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_reconstruct, sizes);
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_reconstruct, w, h,
+        CLARG(dev_comb[k]), CLARG(dev_tmp1), CLARG(dev_tmp2), CLARG(w), CLARG(h));
       if(err != CL_SUCCESS) goto error;
 
       // dev_tmp2 -> dev_comb[k]
@@ -774,13 +706,8 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
   // copy output buffer
   {
-    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 1, sizeof(cl_mem), (void *)&dev_comb[0]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 2, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 4, sizeof(int), (void *)&height);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_finalize, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basecurve_finalize, width, height,
+      CLARG(dev_in), CLARG(dev_comb[0]), CLARG(dev_out), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -856,30 +783,14 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   // Conditional is moved outside of the OpenCL operations for performance.
   if(d->preserve_colors == DT_RGB_NORM_NONE)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 4, sizeof(float), (void *)&mul);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 5, sizeof(cl_mem), (void *)&dev_m);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
+    dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_legacy_lut, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_legacy_lut, sizes);
     if(err != CL_SUCCESS) goto error;
   }
   else
   {
     //FIXME:  There are still conditionals on d->preserve_colors within this flow that could impact performance
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_m);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 7, sizeof(int), (void *)&preserve_colors);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 8, sizeof(cl_mem), (void *)&dev_profile_info);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 9, sizeof(cl_mem), (void *)&dev_profile_lut);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 10, sizeof(int), (void *)&use_work_profile);
+    dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_lut, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
     if(err != CL_SUCCESS) goto error;
   }

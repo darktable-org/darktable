@@ -426,16 +426,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dev_lut = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
   if(dev_lut == NULL) goto error;
 
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 3, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 4, sizeof(cl_mem), &dev_lut);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 5, sizeof(float), &d->levels[0]);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 6, sizeof(float), &d->levels[2]);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 7, sizeof(float), &d->in_inv_gamma);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_levels, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_levels, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_lut), CLARG(d->levels[0]), CLARG(d->levels[2]), CLARG(d->in_inv_gamma));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_lut);

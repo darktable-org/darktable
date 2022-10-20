@@ -1110,24 +1110,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     sizes[0] = ROUNDUPDWD(width, devid);
     sizes[1] = ROUNDUPDHT(height, devid);
     sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, crkernel, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, crkernel, 1, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, crkernel, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, crkernel, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, crkernel, 4, sizeof(int), &roi_in->width);
-    dt_opencl_set_kernel_arg(devid, crkernel, 5, sizeof(int), &roi_in->height);
-    dt_opencl_set_kernel_arg(devid, crkernel, 6, 2 * sizeof(int), &roi);
-    dt_opencl_set_kernel_arg(devid, crkernel, 7, 2 * sizeof(float), &roo);
-    dt_opencl_set_kernel_arg(devid, crkernel, 8, sizeof(float), &roi_in->scale);
-    dt_opencl_set_kernel_arg(devid, crkernel, 9, sizeof(float), &roi_out->scale);
-    dt_opencl_set_kernel_arg(devid, crkernel, 10, sizeof(int), &d->flip);
-    dt_opencl_set_kernel_arg(devid, crkernel, 11, 2 * sizeof(float), &t);
-    dt_opencl_set_kernel_arg(devid, crkernel, 12, 2 * sizeof(float), &k);
-    dt_opencl_set_kernel_arg(devid, crkernel, 13, 4 * sizeof(float), &m);
-    dt_opencl_set_kernel_arg(devid, crkernel, 14, 4 * sizeof(float), &k_space);
-    dt_opencl_set_kernel_arg(devid, crkernel, 15, 2 * sizeof(float), &ka);
-    dt_opencl_set_kernel_arg(devid, crkernel, 16, 4 * sizeof(float), &maa);
-    dt_opencl_set_kernel_arg(devid, crkernel, 17, 2 * sizeof(float), &mbb);
+    dt_opencl_set_kernel_args(devid, crkernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(roi_in->width), CLARG(roi_in->height), CLARG(roi), CLARG(roo), CLARG(roi_in->scale), CLARG(roi_out->scale), CLARG(d->flip), CLARG(t), CLARG(k), CLARG(m), CLARG(k_space), CLARG(ka), CLARG(maa), CLARG(mbb));
     err = dt_opencl_enqueue_kernel_2d(devid, crkernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }

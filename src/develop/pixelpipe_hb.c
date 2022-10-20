@@ -989,7 +989,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   {
     if(!fitting)
       fprintf(stderr, "[pixelpipe_process_on_CPU] [%s] Warning: processes `%s' without tiling even if memory requirements are not met\n",
-        dt_dev_pixelpipe_type_to_str(pipe->type), module->op); 
+        dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
 
     module->process(module, piece, input, *output, roi_in, roi_out);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
@@ -1395,7 +1395,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     gboolean possible_cl = (module->process_cl && piece->process_cl_ready
        && !((pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL)));
 
-    const int m_bpp = MAX(in_bpp, bpp); 
+    const int m_bpp = MAX(in_bpp, bpp);
     const gboolean fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
         m_bpp, required_factor_cl, tiling.overhead);
 
@@ -1403,7 +1403,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     {
       if(!piece->process_tiling_ready)
         possible_cl = FALSE;
-  
+
       const float advantage = darktable.opencl->dev[pipe->devid].advantage;
       if(possible_cl && (advantage > 0.0f))
       {
@@ -1413,7 +1413,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         {
           dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING, "[dt_dev_pixelpipetiling_cl] [%s] estimates cpu advantage in `%s', (dev=%i, adv=%.2f, GPU %.2f CPU %.2f)\n",
             dt_dev_pixelpipe_type_to_str(pipe->type), module->op, pipe->devid, advantage, tilemem_cl / 1e9, tilemem_cpu / 1e9);
-          possible_cl = FALSE;         
+          possible_cl = FALSE;
         }
       }
     }
@@ -1756,7 +1756,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
            are kept. This is true
              a) for the currently focused iop, as that is the iop which is most likely to change next
              b) if there is a hint for a module doing heavy processing.
-             c) only for full or preview pipe  
+             c) only for full or preview pipe
         */
         if((module == darktable.develop->gui_module) || input_important)
         {
@@ -2489,25 +2489,14 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     {
       wb[0] = wb[1] = wb[2] = 1.0f;
     }
-    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &in);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), &wb[0]);
-    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), &wb[1]);
-    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), &wb[2]);
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+      CLARG(tmp), CLARG(in), CLARG(width), CLARG(height), CLARG(wb[0]), CLARG(wb[1]), CLARG(wb[2]));
     if(err != CL_SUCCESS) goto error;
   }
   {
-    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_write_scharr_mask;
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &out);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+      CLARG(tmp), CLARG(out), CLARG(width), CLARG(height));
     if(err != CL_SUCCESS) goto error;
   }
 

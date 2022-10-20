@@ -1931,23 +1931,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   dev_vmeta = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * height * 3, vmeta);
   if(dev_vmeta == NULL) goto error;
 
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_hmeta);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), (void *)&dev_vmeta);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_hlength);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_vlength);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cl_mem), (void *)&dev_hindex);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), (void *)&dev_vindex);
-  dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), (void *)&dev_hkernel);
-  dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(cl_mem), (void *)&dev_vkernel);
-  dt_opencl_set_kernel_arg(devid, kernel, 12, sizeof(int), (void *)&hmaxtaps);
-  dt_opencl_set_kernel_arg(devid, kernel, 13, sizeof(int), (void *)&taps);
-  dt_opencl_set_kernel_arg(devid, kernel, 14, hmaxtaps * sizeof(float), NULL);
-  dt_opencl_set_kernel_arg(devid, kernel, 15, hmaxtaps * sizeof(int), NULL);
-  dt_opencl_set_kernel_arg(devid, kernel, 16, vblocksize * 4 * sizeof(float), NULL);
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_hmeta), CLARG(dev_vmeta), CLARG(dev_hlength), CLARG(dev_vlength), CLARG(dev_hindex), CLARG(dev_vindex), CLARG(dev_hkernel), CLARG(dev_vkernel), CLARG(hmaxtaps), CLARG(taps), CLLOCAL(hmaxtaps * sizeof(float)), CLLOCAL(hmaxtaps * sizeof(int)), CLLOCAL(vblocksize * 4 * sizeof(float)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizes, local);
   if(err != CL_SUCCESS) goto error;
 

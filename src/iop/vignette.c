@@ -862,22 +862,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float saturation = data->saturation;
   const int unbound = data->unbound;
 
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 2, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 3, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 4, 2 * sizeof(float), &scale);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 5, 2 * sizeof(float), &roi_center_scaled_f);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 6, 2 * sizeof(float), &expt);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 7, sizeof(float), &dscale);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 8, sizeof(float), &fscale);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 9, sizeof(float), &brightness);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 10, sizeof(float), &saturation);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 11, sizeof(float), &dither);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 12, sizeof(int), &unbound);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vignette, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_vignette, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(scale), CLARG(roi_center_scaled_f), CLARG(expt), CLARG(dscale), CLARG(fscale), CLARG(brightness), CLARG(saturation), CLARG(dither), CLARG(unbound));
   if(err != CL_SUCCESS) goto error;
 
   return TRUE;

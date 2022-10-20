@@ -706,26 +706,16 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   }
 
   {
-    size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_read_mask;
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &tmp);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &iwidth);
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &iheight);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    const int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, iwidth, iheight,
+      CLARG(out), CLARG(tmp), CLARG(iwidth), CLARG(iheight));
     if(err != CL_SUCCESS) goto error;
   }
 
   {
-    size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_calc_blend;
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &blur);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &iwidth);
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &iheight);
-    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), &threshold);
-    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), &detail);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    const int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, iwidth, iheight,
+      CLARG(out), CLARG(blur), CLARG(iwidth), CLARG(iheight), CLARG(threshold), CLARG(detail));
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -736,14 +726,9 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 13, blurmat);
     if(dev_blurmat != NULL)
     {
-      size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
       const int clkernel = darktable.opencl->blendop->kernel_mask_blur;
-      dt_opencl_set_kernel_arg(devid, clkernel, 0, sizeof(cl_mem), &blur);
-      dt_opencl_set_kernel_arg(devid, clkernel, 1, sizeof(cl_mem), &out);
-      dt_opencl_set_kernel_arg(devid, clkernel, 2, sizeof(int), &iwidth);
-      dt_opencl_set_kernel_arg(devid, clkernel, 3, sizeof(int), &iheight);
-      dt_opencl_set_kernel_arg(devid, clkernel, 4, sizeof(cl_mem), (void *) &dev_blurmat);
-      const int err = dt_opencl_enqueue_kernel_2d(devid, clkernel, sizes);
+      const int err = dt_opencl_enqueue_kernel_2d_args(devid, clkernel, iwidth, iheight,
+        CLARG(blur), CLARG(out), CLARG(iwidth), CLARG(iheight), CLARG(dev_blurmat));
       dt_opencl_release_mem_object(dev_blurmat);
       if(err != CL_SUCCESS) goto error;
     }
@@ -755,13 +740,9 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   }
 
   {
-    size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_write_mask;
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &tmp);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &iwidth);
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &iheight);
-    const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    const int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, iwidth, iheight,
+      CLARG(out), CLARG(tmp), CLARG(iwidth), CLARG(iheight));
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -962,10 +943,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     // blend uniformly (no drawn or parametric mask)
 
     // set dev_mask with global opacity value
-    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 0, sizeof(cl_mem), (void *)&dev_mask_1);
-    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 1, sizeof(int), (void *)&owidth);
-    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 2, sizeof(int), (void *)&oheight);
-    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 3, sizeof(float), (void *)&opacity);
+    dt_opencl_set_kernel_args(devid, kernel_set_mask, 0, CLARG(dev_mask_1), CLARG(owidth), CLARG(oheight), CLARG(opacity));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_set_mask, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -1051,21 +1029,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     // get parametric mask (if any) and apply global opacity
     const unsigned blendif = d->blendif;
     const unsigned int mask_combine = d->mask_combine;
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask_1);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(cl_mem), (void *)&dev_mask_2);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 4, sizeof(int), (void *)&owidth);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 5, sizeof(int), (void *)&oheight);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 6, sizeof(float), (void *)&opacity);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 7, sizeof(unsigned), (void *)&blendif);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 8, sizeof(cl_mem), (void *)&dev_blendif_params);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 9, sizeof(unsigned), (void *)&mask_mode);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 10, sizeof(unsigned), (void *)&mask_combine);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 11, 2 * sizeof(int), (void *)&offs);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 12, sizeof(cl_mem), (void *)&dev_profile_info);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 13, sizeof(cl_mem), (void *)&dev_profile_lut);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 14, sizeof(int), (void *)&use_profile);
+    dt_opencl_set_kernel_args(devid, kernel_mask, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_mask_1), CLARG(dev_mask_2), CLARG(owidth), CLARG(oheight), CLARG(opacity), CLARG(blendif), CLARG(dev_blendif_params), CLARG(mask_mode), CLARG(mask_combine), CLARG(offs), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_profile));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
     if(err != CL_SUCCESS)
     {
@@ -1135,13 +1099,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       {
         const float e = expf(3.f * d->contrast);
         const float brightness = d->brightness;
-        dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 0, sizeof(cl_mem), (void *)&dev_mask_1);
-        dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 1, sizeof(cl_mem), (void *)&dev_mask_2);
-        dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 2, sizeof(int), (void *)&owidth);
-        dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 3, sizeof(int), (void *)&oheight);
-        dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 4, sizeof(float), (void *)&e);
-        dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 5, sizeof(float), (void *)&brightness);
-        dt_opencl_set_kernel_arg(devid, kernel_mask_tone_curve, 6, sizeof(float), (void *)&opacity);
+        dt_opencl_set_kernel_args(devid, kernel_mask_tone_curve, 0, CLARG(dev_mask_1), CLARG(dev_mask_2), CLARG(owidth), CLARG(oheight), CLARG(e), CLARG(brightness), CLARG(opacity));
         err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask_tone_curve, sizes);
         if(err != CL_SUCCESS) goto error;
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
@@ -1177,21 +1135,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     if(err != CL_SUCCESS) goto error;
 
     // let us display a specific channel
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 2, sizeof(cl_mem), (void *)&dev_mask_1);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 3, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 4, sizeof(int), (void *)&owidth);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 5, sizeof(int), (void *)&oheight);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 6, 2 * sizeof(int), (void *)&offs);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 7, sizeof(int), (void *)&request_mask_display);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 8, sizeof(cl_mem), (void*)&dev_boost_factors);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 9, sizeof(cl_mem), (void *)&dev_profile_info);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 10, sizeof(cl_mem), (void *)&dev_profile_lut);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 11, sizeof(int), (void *)&use_profile);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 12, sizeof(cl_mem), (void *)&dev_work_profile_info);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 13, sizeof(cl_mem), (void *)&dev_work_profile_lut);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 14, sizeof(int), (void *)&use_work_profile);
+    dt_opencl_set_kernel_args(devid, kernel_display_channel, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_mask_1), CLARG(dev_out), CLARG(owidth), CLARG(oheight), CLARG(offs), CLARG(request_mask_display), CLARG(dev_boost_factors), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_profile), CLARG(dev_work_profile_info), CLARG(dev_work_profile_lut), CLARG(use_work_profile));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_display_channel, sizes);
     if(err != CL_SUCCESS)
     {
@@ -1204,16 +1148,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     // apply blending with per-pixel opacity value as defined in dev_mask_1
     const unsigned int blend_mode = d->blend_mode;
     const float blend_parameter = exp2f(d->blend_parameter);
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask_1);
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&owidth);
-    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&oheight);
-    dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(unsigned), (void *)&blend_mode);
-    dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(float), (void *)&blend_parameter);
-    dt_opencl_set_kernel_arg(devid, kernel, 8, 2 * sizeof(int), (void *)&offs);
-    dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(int), (void *)&mask_display);
+    dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_mask_1), CLARG(dev_out), CLARG(owidth), CLARG(oheight), CLARG(blend_mode), CLARG(blend_parameter), CLARG(offs), CLARG(mask_display));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -1352,7 +1287,7 @@ void tiling_callback_blendop(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   if(bldata)
   {
     if(bldata->details != 0.0f)
-      tiling->factor += 0.75f; // details mask requires 3 additional quarter buffers   
+      tiling->factor += 0.75f; // details mask requires 3 additional quarter buffers
   }
 }
 
