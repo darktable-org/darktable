@@ -892,7 +892,7 @@ static inline cl_int nlmeans_cl_horiz(const int devid, const int kernel, cl_mem 
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_U4_t);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, 2 * sizeof(int), (void *)&q);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, 2 * sizeof(int), (void *)q);
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&P);
   dt_opencl_set_kernel_arg(devid, kernel, 6, (hblocksize + 2 * P) * sizeof(float), NULL);
   return dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizesl, local);
@@ -910,7 +910,7 @@ static inline cl_int nlmeans_cl_accu(const int devid, const int kernel, cl_mem d
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_U4_tt);
   dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, 2 * sizeof(int), (void *)&q);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, 2 * sizeof(int), (void *)q);
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 #endif /* HAVE_OPENCL */
@@ -1081,7 +1081,7 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
     dt_opencl_set_kernel_arg(devid, params->kernel_vert, 6, sizeof(float), (void *)&norm);
     dt_opencl_set_kernel_arg(devid, params->kernel_vert, 7, (vblocksize + 2 * P) * sizeof(float), NULL);
     dt_opencl_set_kernel_arg(devid, params->kernel_vert, 8, sizeof(float), (void *)&central_pixel_weight);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 9, sizeof(cl_mem), ((void *)&dev_U4));
+    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 9, sizeof(cl_mem), (void *)&dev_U4);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_vert, sizesl, local);
     if(err != CL_SUCCESS) break;
 
