@@ -885,7 +885,7 @@ static inline cl_int nlmeans_cl_horiz(const int devid, const int kernel, cl_mem 
 {
   const size_t sizesl[3] = { bwidth, ROUNDUPDHT(height, devid), 1 };
   const size_t local[3] = { hblocksize, 1, 1 };
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_U4), CLARG(dev_U4_t), CLARG(width), CLARG(height), CLWRAP(2 * sizeof(int), q), CLARG(P), CLLOCAL((hblocksize + 2 * P) * sizeof(float)));
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_U4), CLARG(dev_U4_t), CLARG(width), CLARG(height), CLARRAY(2, q), CLARG(P), CLLOCAL((hblocksize + 2 * P) * sizeof(float)));
   return dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizesl, local);
 }
 #endif /* HAVE_OPENCL */
@@ -896,7 +896,7 @@ static inline cl_int nlmeans_cl_accu(const int devid, const int kernel, cl_mem d
                                      cl_mem dev_out, const int q[2], const int height, const int width,
                                      const size_t sizes[3])
 {
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLWRAP(2 * sizeof(int), q));
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARRAY(2, q));
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 #endif /* HAVE_OPENCL */
