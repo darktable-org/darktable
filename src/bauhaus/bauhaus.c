@@ -3417,7 +3417,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
 
   if(!isnan(move_size))
   {
-    if(element == DT_ACTION_ELEMENT_BUTTON)
+    if(element == DT_ACTION_ELEMENT_BUTTON || !w->data.combobox.entries->len)
     {
       _action_process_button(widget, effect);
       return dt_bauhaus_widget_get_quad_active(widget);
@@ -3453,7 +3453,7 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
     dt_action_widget_toast(w->module, widget, "\n%s", dt_bauhaus_combobox_get_text(widget));
   }
 
-  if(element == DT_ACTION_ELEMENT_BUTTON)
+  if(element == DT_ACTION_ELEMENT_BUTTON || !w->data.combobox.entries->len)
     return dt_bauhaus_widget_get_quad_active(widget);
 
   for(int i = value; i >= 0; i--)
