@@ -2422,7 +2422,7 @@ gboolean dt_collection_hint_message_internal(void *message)
     gtk_widget_set_tooltip_markup(count, message);
   }
 
-  message = dt_util_dstrcat(message, _(" in current collection"));
+  message = dt_util_dstrcat(message, " %s", _("in current collection"));
   dt_control_hinter_message(darktable.control,
     dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP) ? "" : message);
 
