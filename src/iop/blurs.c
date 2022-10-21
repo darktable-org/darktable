@@ -650,7 +650,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem kernel_cl = dt_opencl_copy_host_to_device(devid, kernel, kernel_width, kernel_width, sizeof(float));
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_blurs_convolve, width, height,
-    CLARG(dev_in), CLARG(kernel_cl), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height), CLARG(radius));
+    CLARG(dev_in), CLARG(kernel_cl), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+    CLARG(radius));
   if(err != CL_SUCCESS) goto error;
 
   // cleanup and exit on success

@@ -885,7 +885,8 @@ static inline cl_int nlmeans_cl_horiz(const int devid, const int kernel, cl_mem 
 {
   const size_t sizesl[3] = { bwidth, ROUNDUPDHT(height, devid), 1 };
   const size_t local[3] = { hblocksize, 1, 1 };
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_U4), CLARG(dev_U4_t), CLARG(width), CLARG(height), CLARRAY(2, q), CLARG(P), CLLOCAL((hblocksize + 2 * P) * sizeof(float)));
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_U4), CLARG(dev_U4_t), CLARG(width), CLARG(height), CLARRAY(2, q),
+    CLARG(P), CLLOCAL((hblocksize + 2 * P) * sizeof(float)));
   return dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizesl, local);
 }
 #endif /* HAVE_OPENCL */
@@ -896,7 +897,8 @@ static inline cl_int nlmeans_cl_accu(const int devid, const int kernel, cl_mem d
                                      cl_mem dev_out, const int q[2], const int height, const int width,
                                      const size_t sizes[3])
 {
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARRAY(2, q));
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width),
+    CLARG(height), CLARRAY(2, q));
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 #endif /* HAVE_OPENCL */
@@ -945,7 +947,8 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
 
     // compute channel-normed squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_args(devid, params->kernel_dist, 0, CLARG(dev_in), CLARG(dev_U4), CLARG(width), CLARG(height), CLARG(q), CLARG(nL2), CLARG(nC2));
+    dt_opencl_set_kernel_args(devid, params->kernel_dist, 0, CLARG(dev_in), CLARG(dev_U4), CLARG(width),
+      CLARG(height), CLARG(q), CLARG(nL2), CLARG(nC2));
     err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_dist, sizes);
     if(err != CL_SUCCESS) break;
 
@@ -959,7 +962,8 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
     const size_t local[3] = { 1, vblocksize, 1 };
     const float sharpness = params->sharpness;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_args(devid, params->kernel_vert, 0, CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARG(q), CLARG(P), CLARG(sharpness), CLLOCAL((vblocksize + 2 * P) * sizeof(float)));
+    dt_opencl_set_kernel_args(devid, params->kernel_vert, 0, CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width),
+      CLARG(height), CLARG(q), CLARG(P), CLARG(sharpness), CLLOCAL((vblocksize + 2 * P) * sizeof(float)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_vert, sizesl, local);
     if(err != CL_SUCCESS) break;
 
@@ -1027,7 +1031,8 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
 
     // compute squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_args(devid, params->kernel_dist, 0, CLARG(dev_in), CLARG(dev_U4), CLARG(width), CLARG(height), CLARG(q));
+    dt_opencl_set_kernel_args(devid, params->kernel_dist, 0, CLARG(dev_in), CLARG(dev_U4), CLARG(width),
+      CLARG(height), CLARG(q));
     err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_dist, sizes);
     if(err != CL_SUCCESS) break;
 
@@ -1041,7 +1046,9 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
     const size_t local[3] = { 1, vblocksize, 1 };
     const float central_pixel_weight = params->center_weight;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_args(devid, params->kernel_vert, 0, CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARG(q), CLARG(P), CLARG(norm), CLLOCAL((vblocksize + 2 * P) * sizeof(float)), CLARG(central_pixel_weight), CLARG(dev_U4));
+    dt_opencl_set_kernel_args(devid, params->kernel_vert, 0, CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width),
+      CLARG(height), CLARG(q), CLARG(P), CLARG(norm), CLLOCAL((vblocksize + 2 * P) * sizeof(float)),
+      CLARG(central_pixel_weight), CLARG(dev_U4));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_vert, sizesl, local);
     if(err != CL_SUCCESS) break;
 

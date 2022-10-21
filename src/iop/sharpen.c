@@ -202,7 +202,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   local[0] = hblocksize;
   local[1] = 1;
   local[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_hblur, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_m), CLARG(rad), CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * rad) * sizeof(float)));
+  dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_hblur, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_m),
+    CLARG(rad), CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * rad) * sizeof(float)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_sharpen_hblur, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
@@ -213,7 +214,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   local[0] = 1;
   local[1] = vblocksize;
   local[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_vblur, 0, CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m), CLARG(rad), CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * rad) * sizeof(float)));
+  dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_vblur, 0, CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m),
+    CLARG(rad), CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * rad) * sizeof(float)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_sharpen_vblur, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
@@ -221,7 +223,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_mix, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->amount), CLARG(d->threshold));
+  dt_opencl_set_kernel_args(devid, gd->kernel_sharpen_mix, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
+    CLARG(width), CLARG(height), CLARG(d->amount), CLARG(d->threshold));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_sharpen_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 

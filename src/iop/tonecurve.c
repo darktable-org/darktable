@@ -323,7 +323,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_coeffs_ab == NULL) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_tonecurve, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_L), CLARG(dev_a), CLARG(dev_b), CLARG(autoscale_ab), CLARG(unbound_ab), CLARG(dev_coeffs_L), CLARG(dev_coeffs_ab), CLARG(low_approximation), CLARG(preserve_colors), CLARG(dev_profile_info), CLARG(dev_profile_lut));
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_L), CLARG(dev_a), CLARG(dev_b),
+    CLARG(autoscale_ab), CLARG(unbound_ab), CLARG(dev_coeffs_L), CLARG(dev_coeffs_ab), CLARG(low_approximation),
+    CLARG(preserve_colors), CLARG(dev_profile_info), CLARG(dev_profile_lut));
 
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_L);

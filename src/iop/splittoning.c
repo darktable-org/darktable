@@ -224,7 +224,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float highlight_saturation = d->highlight_saturation;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_splittoning, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(compress), CLARG(balance), CLARG(shadow_hue), CLARG(shadow_saturation), CLARG(highlight_hue), CLARG(highlight_saturation));
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(compress), CLARG(balance), CLARG(shadow_hue),
+    CLARG(shadow_saturation), CLARG(highlight_hue), CLARG(highlight_saturation));
   if(err != CL_SUCCESS) goto error;
   return TRUE;
 

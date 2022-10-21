@@ -235,7 +235,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_soften_overexposed, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(saturation), CLARG(brightness));
+  dt_opencl_set_kernel_args(devid, gd->kernel_soften_overexposed, 0, CLARG(dev_in), CLARG(dev_tmp),
+    CLARG(width), CLARG(height), CLARG(saturation), CLARG(brightness));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_soften_overexposed, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -248,7 +249,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     local[0] = hblocksize;
     local[1] = 1;
     local[2] = 1;
-    dt_opencl_set_kernel_args(devid, gd->kernel_soften_hblur, 0, CLARG(dev_tmp), CLARG(dev_out), CLARG(dev_m), CLARG(wdh), CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * wdh) * 4 * sizeof(float)));
+    dt_opencl_set_kernel_args(devid, gd->kernel_soften_hblur, 0, CLARG(dev_tmp), CLARG(dev_out), CLARG(dev_m),
+      CLARG(wdh), CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * wdh) * 4 * sizeof(float)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_hblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
@@ -260,7 +262,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     local[0] = 1;
     local[1] = vblocksize;
     local[2] = 1;
-    dt_opencl_set_kernel_args(devid, gd->kernel_soften_vblur, 0, CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m), CLARG(wdh), CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * wdh) * 4 * sizeof(float)));
+    dt_opencl_set_kernel_args(devid, gd->kernel_soften_vblur, 0, CLARG(dev_out), CLARG(dev_tmp), CLARG(dev_m),
+      CLARG(wdh), CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * wdh) * 4 * sizeof(float)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_vblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
@@ -269,7 +272,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_soften_mix, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(amount));
+  dt_opencl_set_kernel_args(devid, gd->kernel_soften_mix, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out),
+    CLARG(width), CLARG(height), CLARG(amount));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_soften_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 

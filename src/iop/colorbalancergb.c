@@ -986,7 +986,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     = { cosf(d->hue_angle), -sinf(d->hue_angle), sinf(d->hue_angle), cosf(d->hue_angle) };
   hue_rotation_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), hue_rotation_matrix);
 
-  dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance_rgb, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_profile_info), CLARG(input_matrix_cl), CLARG(output_matrix_cl), CLARG(gamut_LUT), CLARG(d->shadows_weight), CLARG(d->highlights_weight), CLARG(d->midtones_weight), CLARG(d->mask_grey_fulcrum), CLARG(d->hue_angle), CLARG(d->chroma_global), CLARG(d->chroma), CLARG(d->vibrance), CLARG(d->global), CLARG(d->shadows), CLARG(d->highlights), CLARG(d->midtones), CLARG(d->white_fulcrum), CLARG(d->midtones_Y), CLARG(d->grey_fulcrum), CLARG(d->contrast), CLARG(d->brilliance_global), CLARG(d->brilliance), CLARG(d->saturation_global), CLARG(d->saturation), CLARG(mask_display), CLARG(mask_type), CLARG(checker_1), CLARG(checker_2), CLARG(d->checker_color_1), CLARG(d->checker_color_2), CLARG(L_white), CLARG(d->saturation_formula), CLARG(hue_rotation_matrix_cl));
+  dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance_rgb, 0, CLARG(dev_in), CLARG(dev_out),
+    CLARG(width), CLARG(height), CLARG(dev_profile_info), CLARG(input_matrix_cl), CLARG(output_matrix_cl),
+    CLARG(gamut_LUT), CLARG(d->shadows_weight), CLARG(d->highlights_weight), CLARG(d->midtones_weight),
+    CLARG(d->mask_grey_fulcrum), CLARG(d->hue_angle), CLARG(d->chroma_global), CLARG(d->chroma), CLARG(d->vibrance),
+    CLARG(d->global), CLARG(d->shadows), CLARG(d->highlights), CLARG(d->midtones), CLARG(d->white_fulcrum),
+    CLARG(d->midtones_Y), CLARG(d->grey_fulcrum), CLARG(d->contrast), CLARG(d->brilliance_global),
+    CLARG(d->brilliance), CLARG(d->saturation_global), CLARG(d->saturation), CLARG(mask_display), CLARG(mask_type),
+    CLARG(checker_1), CLARG(checker_2), CLARG(d->checker_color_1), CLARG(d->checker_color_2), CLARG(L_white),
+    CLARG(d->saturation_formula), CLARG(hue_rotation_matrix_cl));
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_rgb, sizes);
   if(err != CL_SUCCESS) goto error;

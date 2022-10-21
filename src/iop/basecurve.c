@@ -573,17 +573,21 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
       if(d->preserve_colors == DT_RGB_NORM_NONE)
       {
-        dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_legacy_lut, 0, CLARG(dev_in), CLARG(dev_tmp1), CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs));
+        dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_legacy_lut, 0, CLARG(dev_in), CLARG(dev_tmp1),
+          CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs));
         err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_legacy_lut, sizes);
         if(err != CL_SUCCESS) goto error;
       }
       else
       {
-        dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_lut, 0, CLARG(dev_in), CLARG(dev_tmp1), CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
+        dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_lut, 0, CLARG(dev_in), CLARG(dev_tmp1), CLARG(width),
+          CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info),
+          CLARG(dev_profile_lut), CLARG(use_work_profile));
         err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
       }
 
-      dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_compute_features, 0, CLARG(dev_tmp1), CLARG(dev_col[0]), CLARG(width), CLARG(height));
+      dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_compute_features, 0, CLARG(dev_tmp1), CLARG(dev_col[0]),
+        CLARG(width), CLARG(height));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_compute_features, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -783,14 +787,17 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   // Conditional is moved outside of the OpenCL operations for performance.
   if(d->preserve_colors == DT_RGB_NORM_NONE)
   {
-    dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_legacy_lut, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs));
+    dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_legacy_lut, 0, CLARG(dev_in), CLARG(dev_out),
+      CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_legacy_lut, sizes);
     if(err != CL_SUCCESS) goto error;
   }
   else
   {
     //FIXME:  There are still conditionals on d->preserve_colors within this flow that could impact performance
-    dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_lut, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
+    dt_opencl_set_kernel_args(devid, gd->kernel_basecurve_lut, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+      CLARG(height), CLARG(mul), CLARG(dev_m), CLARG(dev_coeffs), CLARG(preserve_colors), CLARG(dev_profile_info),
+      CLARG(dev_profile_lut), CLARG(use_work_profile));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
     if(err != CL_SUCCESS) goto error;
   }

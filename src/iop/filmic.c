@@ -653,7 +653,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float saturation = d->global_saturation / 100.0f;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_filmic, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range), CLARG(grey), CLARG(dev_table), CLARG(diff_table), CLARG(contrast), CLARG(power), CLARG(preserve_color), CLARG(saturation));
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range),
+    CLARG(grey), CLARG(dev_table), CLARG(diff_table), CLARG(contrast), CLARG(power), CLARG(preserve_color),
+    CLARG(saturation));
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_table);
   dt_opencl_release_mem_object(diff_table);

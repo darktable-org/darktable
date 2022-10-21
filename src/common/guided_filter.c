@@ -398,7 +398,8 @@ static int cl_covariances(const int devid, const int width, const int height, cl
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_guided_filter_covariances;
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(width), CLARG(height), CLARG(guide), CLARG(in), CLARG(cov_imgg_img_r), CLARG(cov_imgg_img_g), CLARG(cov_imgg_img_b), CLARG(guide_weight));
+    CLARG(width), CLARG(height), CLARG(guide), CLARG(in), CLARG(cov_imgg_img_r), CLARG(cov_imgg_img_g),
+    CLARG(cov_imgg_img_b), CLARG(guide_weight));
 }
 
 
@@ -408,7 +409,8 @@ static int cl_variances(const int devid, const int width, const int height, cl_m
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_guided_filter_variances;
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(width), CLARG(height), CLARG(guide), CLARG(var_imgg_rr), CLARG(var_imgg_rg), CLARG(var_imgg_rb), CLARG(var_imgg_gg), CLARG(var_imgg_gb), CLARG(var_imgg_bb), CLARG(guide_weight));
+    CLARG(width), CLARG(height), CLARG(guide), CLARG(var_imgg_rr), CLARG(var_imgg_rg), CLARG(var_imgg_rb),
+    CLARG(var_imgg_gg), CLARG(var_imgg_gb), CLARG(var_imgg_bb), CLARG(guide_weight));
 }
 
 
@@ -429,7 +431,10 @@ static int cl_solve(const int devid, const int width, const int height, cl_mem i
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_solve;
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(width), CLARG(height), CLARG(img_mean), CLARG(imgg_mean_r), CLARG(imgg_mean_g), CLARG(imgg_mean_b), CLARG(cov_imgg_img_r), CLARG(cov_imgg_img_g), CLARG(cov_imgg_img_b), CLARG(var_imgg_rr), CLARG(var_imgg_rg), CLARG(var_imgg_rb), CLARG(var_imgg_gg), CLARG(var_imgg_gb), CLARG(var_imgg_bb), CLARG(a_r), CLARG(a_g), CLARG(a_b), CLARG(b));
+    CLARG(width), CLARG(height), CLARG(img_mean), CLARG(imgg_mean_r), CLARG(imgg_mean_g), CLARG(imgg_mean_b),
+    CLARG(cov_imgg_img_r), CLARG(cov_imgg_img_g), CLARG(cov_imgg_img_b), CLARG(var_imgg_rr), CLARG(var_imgg_rg),
+    CLARG(var_imgg_rb), CLARG(var_imgg_gg), CLARG(var_imgg_gb), CLARG(var_imgg_bb), CLARG(a_r), CLARG(a_g),
+    CLARG(a_b), CLARG(b));
 }
 
 
@@ -439,7 +444,8 @@ static int cl_generate_result(const int devid, const int width, const int height
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_generate_result;
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(width), CLARG(height), CLARG(guide), CLARG(a_r), CLARG(a_g), CLARG(a_b), CLARG(b), CLARG(out), CLARG(guide_weight), CLARG(min), CLARG(max));
+    CLARG(width), CLARG(height), CLARG(guide), CLARG(a_r), CLARG(a_g), CLARG(a_b), CLARG(b), CLARG(out),
+    CLARG(guide_weight), CLARG(min), CLARG(max));
 }
 
 

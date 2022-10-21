@@ -1377,7 +1377,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basicadj, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_gamma), CLARG(dev_contrast), CLARG(black_point), CLARG(scale), CLARG(process_gamma), CLARG(gamma), CLARG(plain_contrast), CLARG(preserve_colors), CLARG(contrast), CLARG(process_saturation_vibrance), CLARG(saturation), CLARG(vibrance), CLARG(process_hlcompr), CLARG(hlcomp), CLARG(hlrange), CLARG(middle_grey), CLARG(inv_middle_grey), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_gamma), CLARG(dev_contrast),
+    CLARG(black_point), CLARG(scale), CLARG(process_gamma), CLARG(gamma), CLARG(plain_contrast), CLARG(preserve_colors),
+    CLARG(contrast), CLARG(process_saturation_vibrance), CLARG(saturation), CLARG(vibrance), CLARG(process_hlcompr),
+    CLARG(hlcomp), CLARG(hlrange), CLARG(middle_grey), CLARG(inv_middle_grey), CLARG(dev_profile_info),
+    CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
     fprintf(stderr, "[basicadj process_cl] error %i enqueue kernel\n", err);

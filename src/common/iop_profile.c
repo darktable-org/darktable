@@ -1596,7 +1596,8 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
     }
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_transform, width, height,
-      CLARG(dev_tmp), CLARG(dev_img_out), CLARG(width), CLARG(height), CLARG(dev_profile_info_from), CLARG(dev_lut_from), CLARG(dev_profile_info_to), CLARG(dev_lut_to), CLARG(matrix_cl));
+      CLARG(dev_tmp), CLARG(dev_img_out), CLARG(width), CLARG(height), CLARG(dev_profile_info_from),
+      CLARG(dev_lut_from), CLARG(dev_profile_info_to), CLARG(dev_lut_to), CLARG(matrix_cl));
     if(err != CL_SUCCESS)
     {
       fprintf(stderr,

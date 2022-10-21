@@ -399,7 +399,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int mode = dev->overexposed.mode;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_overexposed, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(lower), CLARG(upper), CLARRAY(4, lower_color), CLARRAY(4, upper_color), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile), CLARG(mode));
+    CLARG(dev_in), CLARG(dev_out), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(lower), CLARG(upper),
+    CLARRAY(4, lower_color), CLARRAY(4, upper_color),
+    CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile), CLARG(mode));
   if(err != CL_SUCCESS) goto error;
   if(dev_tmp) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
