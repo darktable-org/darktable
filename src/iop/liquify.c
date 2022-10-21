@@ -1574,7 +1574,8 @@ static cl_int_t _apply_global_distortion_map_cl(struct dt_iop_module_t *module,
     goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->warp_kernel, map_extent->width, map_extent->height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(dev_roi_in), CLARG(dev_roi_out), CLARG(dev_map), CLARG(dev_map_extent), CLARG(dev_kdesc), CLARG(dev_kernel));
+    CLARG(dev_in), CLARG(dev_out), CLARG(dev_roi_in), CLARG(dev_roi_out), CLARG(dev_map), CLARG(dev_map_extent),
+    CLARG(dev_kdesc), CLARG(dev_kernel));
 
 error:
 

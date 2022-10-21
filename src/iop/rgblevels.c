@@ -1473,7 +1473,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(err != CL_SUCCESS) goto cleanup;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_levels, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(autoscale), CLARG(preserve_colors), CLARG(dev_lutr), CLARG(dev_lutg), CLARG(dev_lutb), CLARG(dev_levels), CLARG(dev_inv_gamma), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(autoscale), CLARG(preserve_colors),
+    CLARG(dev_lutr), CLARG(dev_lutg), CLARG(dev_lutb), CLARG(dev_levels), CLARG(dev_inv_gamma), CLARG(dev_profile_info),
+    CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
     fprintf(stderr, "[rgblevels process_cl] error %i enqueue kernel\n", err);

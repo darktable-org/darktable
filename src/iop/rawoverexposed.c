@@ -349,7 +349,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_thresholds == NULL) goto error;
 
   size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord), CLARG(width), CLARG(height), CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans), CLARG(dev_thresholds));
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_coord), CLARG(width),
+    CLARG(height), CLARG(dev_raw), CLARG(raw_width), CLARG(raw_height), CLARG(filters), CLARG(dev_xtrans),
+    CLARG(dev_thresholds));
 
   if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA)
     dt_opencl_set_kernel_args(devid, kernel, 11, CLARG(dev_colors));

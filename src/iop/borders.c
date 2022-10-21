@@ -588,7 +588,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // ----- Filling border
   const float col[4] = { d->color[0], d->color[1], d->color[2], 1.0f };
   const int zero = 0;
-  dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0, CLARG(dev_out), CLARG(zero), CLARG(zero), CLARG(width), CLARG(height), CLARG(col));
+  dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0, CLARG(dev_out), CLARG(zero), CLARG(zero),
+    CLARG(width), CLARG(height), CLARG(col));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -627,11 +628,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     const int roi_frame_out_width = frame_br_out_x - frame_tl_out_x;
     const int roi_frame_out_height = frame_br_out_y - frame_tl_out_y;
 
-    dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0, CLARG(dev_out), CLARG(frame_tl_out_x), CLARG(frame_tl_out_y), CLARG(roi_frame_out_width), CLARG(roi_frame_out_height), CLARG(col_frame));
+    dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0, CLARG(dev_out), CLARG(frame_tl_out_x),
+      CLARG(frame_tl_out_y), CLARG(roi_frame_out_width), CLARG(roi_frame_out_height), CLARG(col_frame));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0, CLARG(dev_out), CLARG(frame_tl_in_x), CLARG(frame_tl_in_y), CLARG(roi_frame_in_width), CLARG(roi_frame_in_height), CLARG(col));
+    dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0, CLARG(dev_out), CLARG(frame_tl_in_x),
+      CLARG(frame_tl_in_y), CLARG(roi_frame_in_width), CLARG(roi_frame_in_height), CLARG(col));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
     if(err != CL_SUCCESS) goto error;
   }

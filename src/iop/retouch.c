@@ -3773,7 +3773,8 @@ static cl_int rt_copy_image_masked_cl(const int devid, cl_mem dev_src, cl_mem de
   }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_mask_scaled->width, roi_mask_scaled->height,
-    CLARG(dev_src), CLARG(dev_dest), CLARG(dev_roi_dest), CLARG(dev_mask_scaled), CLARG(dev_roi_mask_scaled), CLARG(opacity));
+    CLARG(dev_src), CLARG(dev_dest), CLARG(dev_roi_dest), CLARG(dev_mask_scaled), CLARG(dev_roi_mask_scaled),
+    CLARG(opacity));
   if(err != CL_SUCCESS) goto cleanup;
 
 cleanup:
@@ -3874,7 +3875,8 @@ static cl_int _retouch_fill_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
   }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, roi_mask_scaled->width, roi_mask_scaled->height,
-    CLARG(dev_layer), CLARG(dev_roi_layer), CLARG(dev_mask_scaled), CLARG(dev_roi_mask_scaled), CLARG(opacity), CLARG((color[0])), CLARG((color[1])), CLARG((color[2])));
+    CLARG(dev_layer), CLARG(dev_roi_layer), CLARG(dev_mask_scaled), CLARG(dev_roi_mask_scaled), CLARG(opacity),
+    CLARG((color[0])), CLARG((color[1])), CLARG((color[2])));
   if(err != CL_SUCCESS) goto cleanup;
 
 

@@ -937,7 +937,10 @@ static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct
   int pref = precedence;
   size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
   size_t local[] = { b->blocksizex, b->blocksizey, 1 };
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_splat, 0, CLARG(in), CLARG(b->dev_grid), CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s), CLARG(b->sigma_r), CLARG(threshold), CLARG(pref), CLARRAY(4, params), CLLOCAL(b->blocksizex * b->blocksizey * sizeof(int)), CLLOCAL(b->blocksizex * b->blocksizey * 4 * sizeof(float)));
+  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_splat, 0, CLARG(in), CLARG(b->dev_grid),
+    CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s),
+    CLARG(b->sigma_r), CLARG(threshold), CLARG(pref), CLARRAY(4, params), CLLOCAL(b->blocksizex * b->blocksizey * sizeof(int)),
+    CLLOCAL(b->blocksizex * b->blocksizey * 4 * sizeof(float)));
   err = dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_colorreconstruct_splat, sizes, local);
   return err;
 }
@@ -958,7 +961,9 @@ static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_
   stride1 = b->size_x * b->size_y;
   stride2 = b->size_x;
   stride3 = 1;
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, CLARG(b->dev_grid_tmp), CLARG(b->dev_grid), CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_y), CLARG(b->size_x));
+  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, CLARG(b->dev_grid_tmp),
+    CLARG(b->dev_grid), CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_y),
+    CLARG(b->size_x));
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_blur_line, sizes);
   if(err != CL_SUCCESS) return err;
 
@@ -967,7 +972,9 @@ static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_
   stride3 = b->size_x;
   sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
   sizes[1] = ROUNDUPDHT(b->size_x, b->devid);
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, CLARG(b->dev_grid), CLARG(b->dev_grid_tmp), CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_x), CLARG(b->size_y));
+  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, CLARG(b->dev_grid),
+    CLARG(b->dev_grid_tmp), CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_x),
+    CLARG(b->size_y));
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_blur_line, sizes);
   if(err != CL_SUCCESS) return err;
 
@@ -976,7 +983,9 @@ static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_
   stride3 = b->size_x * b->size_y;
   sizes[0] = ROUNDUPDWD(b->size_x, b->devid);
   sizes[1] = ROUNDUPDHT(b->size_y, b->devid);
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, CLARG(b->dev_grid_tmp), CLARG(b->dev_grid), CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z));
+  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, CLARG(b->dev_grid_tmp),
+    CLARG(b->dev_grid), CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_x), CLARG(b->size_y),
+    CLARG(b->size_z));
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_blur_line, sizes);
   return err;
 }
@@ -991,7 +1000,9 @@ static cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct
   const float rescale = iscale / (roi->scale * b->scale);
 
   err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_colorreconstruct_slice, roi->width, roi->height,
-    CLARG(in), CLARG(out), CLARG(b->dev_grid), CLARG(roi->width), CLARG(roi->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s), CLARG(b->sigma_r), CLARG(threshold), CLARG(bxy), CLARG(roixy), CLARG(rescale));
+    CLARG(in), CLARG(out), CLARG(b->dev_grid), CLARG(roi->width), CLARG(roi->height), CLARG(b->size_x),
+    CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s), CLARG(b->sigma_r), CLARG(threshold), CLARG(bxy),
+    CLARG(roixy), CLARG(rescale));
   return err;
 }
 

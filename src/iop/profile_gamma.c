@@ -209,7 +209,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     const float dynamic_range = d->dynamic_range;
     const float shadows_range = d->shadows_range;
     const float grey = d->grey_point / 100.0f;
-    dt_opencl_set_kernel_args(devid, gd->kernel_profilegamma_log, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range), CLARG(grey));
+    dt_opencl_set_kernel_args(devid, gd->kernel_profilegamma_log, 0, CLARG(dev_in), CLARG(dev_out),
+      CLARG(width), CLARG(height), CLARG(dynamic_range), CLARG(shadows_range), CLARG(grey));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma_log, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -223,7 +224,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
     if(dev_coeffs == NULL) goto error;
 
-    dt_opencl_set_kernel_args(devid, gd->kernel_profilegamma, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_table), CLARG(dev_coeffs));
+    dt_opencl_set_kernel_args(devid, gd->kernel_profilegamma, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+      CLARG(height), CLARG(dev_table), CLARG(dev_coeffs));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_profilegamma, sizes);
     if(err != CL_SUCCESS)

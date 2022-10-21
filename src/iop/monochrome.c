@@ -254,7 +254,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   b = NULL; // make sure we don't do double cleanup in case the next few lines err out
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_monochrome, width, height,
-    CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->a), CLARG(d->b), CLARG(sigma2), CLARG(d->highlights));
+    CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->a), CLARG(d->b),
+    CLARG(sigma2), CLARG(d->highlights));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_tmp);

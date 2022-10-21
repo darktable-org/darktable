@@ -408,7 +408,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[0] = flocopt.sizex;
       local[1] = flocopt.sizey;
       local[2] = 1;
-      dt_opencl_set_kernel_args(devid, gd->kernel_pixelmax_first, 0, CLARG(dev_in), CLARG(width), CLARG(height), CLARG(dev_m), CLLOCAL(sizeof(float) * flocopt.sizex * flocopt.sizey));
+      dt_opencl_set_kernel_args(devid, gd->kernel_pixelmax_first, 0, CLARG(dev_in), CLARG(width), CLARG(height),
+        CLARG(dev_m), CLLOCAL(sizeof(float) * flocopt.sizex * flocopt.sizey));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_first, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
@@ -418,7 +419,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[0] = slocopt.sizex;
       local[1] = 1;
       local[2] = 1;
-      dt_opencl_set_kernel_args(devid, gd->kernel_pixelmax_second, 0, CLARG(dev_m), CLARG(dev_r), CLARG(bufsize), CLLOCAL(sizeof(float) * slocopt.sizex));
+      dt_opencl_set_kernel_args(devid, gd->kernel_pixelmax_second, 0, CLARG(dev_m), CLARG(dev_r), CLARG(bufsize),
+        CLLOCAL(sizeof(float) * slocopt.sizex));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
       if(err != CL_SUCCESS) goto error;
 

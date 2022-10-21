@@ -131,7 +131,8 @@ cl_int dt_local_laplacian_cl(
   if(b->bwidth <= 1 || b->bheight <= 1) return err;
 
   err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_pad_input, b->bwidth, b->bheight,
-    CLARG(input), CLARG(b->dev_padded[0]), CLARG(b->width), CLARG(b->height), CLARG(b->max_supp), CLARG(b->bwidth), CLARG(b->bheight));
+    CLARG(input), CLARG(b->dev_padded[0]), CLARG(b->width), CLARG(b->height), CLARG(b->max_supp), CLARG(b->bwidth),
+    CLARG(b->bheight));
   if(err != CL_SUCCESS) goto error;
 
   // create gauss pyramid of padded input, write coarse directly to output
@@ -143,7 +144,8 @@ cl_int dt_local_laplacian_cl(
     if(l == b->num_levels-1)
       dt_opencl_set_kernel_args(b->devid, b->global->kernel_gauss_reduce, 1, CLARG(b->dev_output[l]));
     else
-      dt_opencl_set_kernel_args(b->devid, b->global->kernel_gauss_reduce, 1, CLARG(b->dev_padded[l]), CLARG(wd), CLARG(ht));
+      dt_opencl_set_kernel_args(b->devid, b->global->kernel_gauss_reduce, 1, CLARG(b->dev_padded[l]),
+        CLARG(wd), CLARG(ht));
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_gauss_reduce, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -152,7 +154,8 @@ cl_int dt_local_laplacian_cl(
   { // process images
     const float g = (k+.5f)/(float)num_gamma;
     err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_process_curve, b->bwidth, b->bheight,
-      CLARG(b->dev_padded[0]), CLARG(b->dev_processed[k][0]), CLARG(g), CLARG(b->sigma), CLARG(b->shadows), CLARG(b->highlights), CLARG(b->clarity), CLARG(b->bwidth), CLARG(b->bheight));
+      CLARG(b->dev_padded[0]), CLARG(b->dev_processed[k][0]), CLARG(g), CLARG(b->sigma), CLARG(b->shadows),
+      CLARG(b->highlights), CLARG(b->clarity), CLARG(b->bwidth), CLARG(b->bheight));
     if(err != CL_SUCCESS) goto error;
 
     // create gaussian pyramids
@@ -170,7 +173,11 @@ cl_int dt_local_laplacian_cl(
   {
     const int pw = dl(b->bwidth,l), ph = dl(b->bheight,l);
     err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_laplacian_assemble, pw, ph,
-      CLARG(b->dev_padded[l]), CLARG(b->dev_output[l+1]), CLARG(b->dev_output[l]), CLARG(b->dev_processed[0][l]), CLARG(b->dev_processed[0][l+1]), CLARG(b->dev_processed[1][l]), CLARG(b->dev_processed[1][l+1]), CLARG(b->dev_processed[2][l]), CLARG(b->dev_processed[2][l+1]), CLARG(b->dev_processed[3][l]), CLARG(b->dev_processed[3][l+1]), CLARG(b->dev_processed[4][l]), CLARG(b->dev_processed[4][l+1]), CLARG(b->dev_processed[5][l]), CLARG(b->dev_processed[5][l+1]), CLARG(pw), CLARG(ph));
+      CLARG(b->dev_padded[l]), CLARG(b->dev_output[l+1]), CLARG(b->dev_output[l]), CLARG(b->dev_processed[0][l]),
+      CLARG(b->dev_processed[0][l+1]), CLARG(b->dev_processed[1][l]), CLARG(b->dev_processed[1][l+1]),
+      CLARG(b->dev_processed[2][l]), CLARG(b->dev_processed[2][l+1]), CLARG(b->dev_processed[3][l]),
+      CLARG(b->dev_processed[3][l+1]), CLARG(b->dev_processed[4][l]), CLARG(b->dev_processed[4][l+1]),
+      CLARG(b->dev_processed[5][l]), CLARG(b->dev_processed[5][l+1]), CLARG(pw), CLARG(ph));
     if(err != CL_SUCCESS) goto error;
   }
 

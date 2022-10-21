@@ -505,7 +505,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int height = roi_out->height;
 
   size_t sizes[] = { ROUNDUPDWD(roi_in->width, devid), ROUNDUPDHT(roi_in->height, devid), 1 };
-  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG((width)), CLARG((height)), CLARG(csx), CLARG(csy), CLARG(dev_sub), CLARG(dev_div), CLARG(roi_out->x), CLARG(roi_out->y));
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG((width)), CLARG((height)),
+    CLARG(csx), CLARG(csy), CLARG(dev_sub), CLARG(dev_div), CLARG(roi_out->x), CLARG(roi_out->y));
   if(gainmap_args)
   {
     const int map_size[2] = { d->gainmaps[0]->map_points_h, d->gainmaps[0]->map_points_v };
@@ -522,7 +523,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       if(err != CL_SUCCESS) goto error;
     }
 
-    dt_opencl_set_kernel_args(devid, kernel, 10, CLARG(dev_gainmap[0]), CLARG(dev_gainmap[1]), CLARG(dev_gainmap[2]), CLARG(dev_gainmap[3]), CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
+    dt_opencl_set_kernel_args(devid, kernel, 10, CLARG(dev_gainmap[0]), CLARG(dev_gainmap[1]), CLARG(dev_gainmap[2]),
+      CLARG(dev_gainmap[3]), CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
   }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;

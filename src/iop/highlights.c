@@ -303,7 +303,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(dev_xtrans == NULL) goto error;
 
     size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters));
+    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 0, CLARG(dev_in), CLARG(dev_out),
+      CLARG(width), CLARG(height), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters));
     dt_opencl_set_kernel_args(devid, gd->kernel_highlights_1f_lch_xtrans, 7, CLARG(dev_xtrans));
     dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 8, CLARG(dev_clips));
 
@@ -332,7 +333,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     // bayer sensor raws with LCH mode
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_lch_bayer, width, height,
-      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters));
+      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
+      CLARG(filters));
     if(err != CL_SUCCESS) goto error;
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters == 9u)
@@ -359,7 +361,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     size_t sizes[] = { ROUNDUP(width, blocksizex), ROUNDUP(height, blocksizey), 1 };
     size_t local[] = { blocksizex, blocksizey, 1 };
-    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_1f_lch_xtrans, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans), CLLOCAL(sizeof(float) * (blocksizex + 4) * (blocksizey + 4)));
+    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_1f_lch_xtrans, 0, CLARG(dev_in), CLARG(dev_out),
+      CLARG(width), CLARG(height), CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans),
+      CLLOCAL(sizeof(float) * (blocksizex + 4) * (blocksizey + 4)));
 
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_highlights_1f_lch_xtrans, sizes, local);
     if(err != CL_SUCCESS) goto error;
@@ -376,7 +380,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     // raw images with clip mode (both bayer and xtrans)
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_1f_clip, width, height,
-      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters));
+      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clip), CLARG(roi_out->x), CLARG(roi_out->y),
+      CLARG(filters));
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -1690,17 +1695,20 @@ static inline cl_int wavelets_process_cl(const int devid,
     }
 
     // Compute wavelets low-frequency scales
-    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_horizontal, 0, CLARG(buffer_in), CLARG(HF), CLARG(width), CLARG(height), CLARG(mult));
+    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_horizontal, 0, CLARG(buffer_in), CLARG(HF),
+      CLARG(width), CLARG(height), CLARG(mult));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_horizontal, sizes);
     if(err != CL_SUCCESS) return err;
 
-    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_vertical, 0, CLARG(HF), CLARG(buffer_out), CLARG(width), CLARG(height), CLARG(mult));
+    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_vertical, 0, CLARG(HF), CLARG(buffer_out),
+      CLARG(width), CLARG(height), CLARG(mult));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_vertical, sizes);
     if(err != CL_SUCCESS) return err;
 
     // Compute wavelets high-frequency scales and backup the maximum of texture over the RGB channels
     // Note : HF = detail - LF
-    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_wavelets_detail, 0, CLARG(buffer_in), CLARG(buffer_out), CLARG(HF), CLARG(width), CLARG(height));
+    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_wavelets_detail, 0, CLARG(buffer_in), CLARG(buffer_out),
+      CLARG(HF), CLARG(width), CLARG(height));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_wavelets_detail, sizes);
     if(err != CL_SUCCESS) return err;
 
@@ -1710,13 +1718,17 @@ static inline cl_int wavelets_process_cl(const int devid,
     // Compute wavelets low-frequency scales
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
     {
-      dt_opencl_set_kernel_args(devid, gd->kernel_highlights_guide_laplacians, 0, CLARG(HF), CLARG(buffer_out), CLARG(clipping_mask), CLARG(reconstructed), CLARG(reconstructed), CLARG(width), CLARG(height), CLARG(mult), CLARG(noise_level), CLARG(salt), CLARG(current_scale_type), CLARG(radius));
+      dt_opencl_set_kernel_args(devid, gd->kernel_highlights_guide_laplacians, 0, CLARG(HF), CLARG(buffer_out),
+        CLARG(clipping_mask), CLARG(reconstructed), CLARG(reconstructed), CLARG(width), CLARG(height),
+        CLARG(mult), CLARG(noise_level), CLARG(salt), CLARG(current_scale_type), CLARG(radius));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_guide_laplacians, sizes);
       if(err != CL_SUCCESS) return err;
     }
     else // DIFFUSE_RECONSTRUCT_CHROMA
     {
-      dt_opencl_set_kernel_args(devid, gd->kernel_highlights_diffuse_color, 0, CLARG(HF), CLARG(buffer_out), CLARG(clipping_mask), CLARG(reconstructed), CLARG(reconstructed), CLARG(width), CLARG(height), CLARG(mult), CLARG(current_scale_type), CLARG(solid_color));
+      dt_opencl_set_kernel_args(devid, gd->kernel_highlights_diffuse_color, 0, CLARG(HF), CLARG(buffer_out),
+        CLARG(clipping_mask), CLARG(reconstructed), CLARG(reconstructed), CLARG(width), CLARG(height),
+        CLARG(mult), CLARG(current_scale_type), CLARG(solid_color));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_diffuse_color, sizes);
       if(err != CL_SUCCESS) return err;
     }
@@ -1774,12 +1786,14 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pi
   cl_mem clips_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), (float*)clips);
   cl_mem wb_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), (float*)wb);
 
-  dt_opencl_set_kernel_args(devid, gd->kernel_highlights_bilinear_and_mask, 0, CLARG(dev_in), CLARG(interpolated), CLARG(temp), CLARG(clips_cl), CLARG(wb_cl), CLARG(filters), CLARG(roi_out->width), CLARG(roi_out->height));
+  dt_opencl_set_kernel_args(devid, gd->kernel_highlights_bilinear_and_mask, 0, CLARG(dev_in), CLARG(interpolated),
+    CLARG(temp), CLARG(clips_cl), CLARG(wb_cl), CLARG(filters), CLARG(roi_out->width), CLARG(roi_out->height));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_bilinear_and_mask, sizes);
   dt_opencl_release_mem_object(clips_cl);
   if(err != CL_SUCCESS) goto error;
 
-  dt_opencl_set_kernel_args(devid, gd->kernel_highlights_box_blur, 0, CLARG(temp), CLARG(clipping_mask), CLARG(roi_out->width), CLARG(roi_out->height));
+  dt_opencl_set_kernel_args(devid, gd->kernel_highlights_box_blur, 0, CLARG(temp), CLARG(clipping_mask),
+    CLARG(roi_out->width), CLARG(roi_out->height));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_box_blur, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -1795,7 +1809,8 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pi
     if(err != CL_SUCCESS) goto error;
   }
 
-  dt_opencl_set_kernel_args(devid, gd->kernel_highlights_remosaic_and_replace, 0, CLARG(interpolated), CLARG(dev_out), CLARG(wb_cl), CLARG(filters), CLARG(roi_out->width), CLARG(roi_out->height));
+  dt_opencl_set_kernel_args(devid, gd->kernel_highlights_remosaic_and_replace, 0, CLARG(interpolated),
+    CLARG(dev_out), CLARG(wb_cl), CLARG(filters), CLARG(roi_out->width), CLARG(roi_out->height));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_remosaic_and_replace, sizes);
   if(err != CL_SUCCESS) goto error;
 

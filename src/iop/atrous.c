@@ -410,7 +410,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     const int scale = s;
 
     // run the decomposition
-    dt_opencl_set_kernel_args(devid, gd->kernel_decompose, 0, CLARG(dev_buf2), CLARG(dev_buf1), CLARG(dev_detail), CLARG(width), CLARG(height), CLARG(scale), CLARG(sharp[s]), CLARG(dev_filter));
+    dt_opencl_set_kernel_args(devid, gd->kernel_decompose, 0, CLARG(dev_buf2), CLARG(dev_buf1), CLARG(dev_detail),
+      CLARG(width), CLARG(height), CLARG(scale), CLARG(sharp[s]), CLARG(dev_filter));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -419,7 +420,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_iop_nap(darktable.opencl->micro_nap);
 
     // now immediately run the synthesis for the current scale, accumulating the details into dev_out
-    dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 0, CLARG(dev_out), CLARG(dev_out), CLARG(dev_detail), CLARG(width), CLARG(height), CLARG(thrs[scale][0]), CLARG(thrs[scale][1]), CLARG(thrs[scale][2]), CLARG(thrs[scale][3]), CLARG(boost[scale][0]), CLARG(boost[scale][1]), CLARG(boost[scale][2]), CLARG(boost[scale][3]));
+    dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 0, CLARG(dev_out), CLARG(dev_out), CLARG(dev_detail),
+      CLARG(width), CLARG(height), CLARG(thrs[scale][0]), CLARG(thrs[scale][1]), CLARG(thrs[scale][2]),
+      CLARG(thrs[scale][3]), CLARG(boost[scale][0]), CLARG(boost[scale][1]), CLARG(boost[scale][2]),
+      CLARG(boost[scale][3]));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -531,7 +535,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     {
       dt_opencl_set_kernel_args(devid, gd->kernel_decompose, 0, CLARG(dev_out), CLARG(dev_tmp));
     }
-    dt_opencl_set_kernel_args(devid, gd->kernel_decompose, 2, CLARG(dev_detail[s]), CLARG(width), CLARG(height), CLARG(scale), CLARG(sharp[s]), CLARG(dev_filter));
+    dt_opencl_set_kernel_args(devid, gd->kernel_decompose, 2, CLARG(dev_detail[s]), CLARG(width), CLARG(height),
+      CLARG(scale), CLARG(sharp[s]), CLARG(dev_filter));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -552,7 +557,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 0, CLARG(dev_out), CLARG(dev_tmp));
     }
 
-    dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 2, CLARG(dev_detail[scale]), CLARG(width), CLARG(height), CLARG(thrs[scale][0]), CLARG(thrs[scale][1]), CLARG(thrs[scale][2]), CLARG(thrs[scale][3]), CLARG(boost[scale][0]), CLARG(boost[scale][1]), CLARG(boost[scale][2]), CLARG(boost[scale][3]));
+    dt_opencl_set_kernel_args(devid, gd->kernel_synthesize, 2, CLARG(dev_detail[scale]), CLARG(width),
+      CLARG(height), CLARG(thrs[scale][0]), CLARG(thrs[scale][1]), CLARG(thrs[scale][2]), CLARG(thrs[scale][3]),
+      CLARG(boost[scale][0]), CLARG(boost[scale][1]), CLARG(boost[scale][2]), CLARG(boost[scale][3]));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_synthesize, sizes);
     if(err != CL_SUCCESS) goto error;

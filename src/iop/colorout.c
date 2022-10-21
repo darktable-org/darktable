@@ -316,7 +316,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3, (float *)d->unbounded_coeffs);
   if(dev_coeffs == NULL) goto error;
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_m), CLARG(dev_r), CLARG(dev_g), CLARG(dev_b), CLARG(dev_coeffs));
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_m), CLARG(dev_r), CLARG(dev_g),
+    CLARG(dev_b), CLARG(dev_coeffs));
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);

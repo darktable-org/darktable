@@ -136,7 +136,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, gd->kernel_colisa, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(saturation), CLARG(dev_cm), CLARG(dev_ccoeffs), CLARG(dev_lm), CLARG(dev_lcoeffs));
+  dt_opencl_set_kernel_args(devid, gd->kernel_colisa, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+    CLARG(height), CLARG(saturation), CLARG(dev_cm), CLARG(dev_ccoeffs), CLARG(dev_lm), CLARG(dev_lcoeffs));
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colisa, sizes);
   if(err != CL_SUCCESS) goto error;

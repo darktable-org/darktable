@@ -1706,7 +1706,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_rgbcurve, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_r), CLARG(dev_g), CLARG(dev_b), CLARG(dev_coeffs_r), CLARG(dev_coeffs_g), CLARG(dev_coeffs_b), CLARG(autoscale), CLARG(preserve_colors), CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_r), CLARG(dev_g), CLARG(dev_b),
+    CLARG(dev_coeffs_r), CLARG(dev_coeffs_g), CLARG(dev_coeffs_b), CLARG(autoscale), CLARG(preserve_colors),
+    CLARG(dev_profile_info), CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
     fprintf(stderr, "[rgbcurve process_cl] error %i enqueue kernel\n", err);

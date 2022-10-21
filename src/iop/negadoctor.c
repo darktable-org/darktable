@@ -322,7 +322,8 @@ int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const
   const int height = roi_in->height;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_negadoctor, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->Dmin), CLARG(d->wb_high), CLARG(d->offset), CLARG(d->exposure), CLARG(d->black), CLARG(d->gamma), CLARG(d->soft_clip), CLARG(d->soft_clip_comp));
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->Dmin), CLARG(d->wb_high),
+    CLARG(d->offset), CLARG(d->exposure), CLARG(d->black), CLARG(d->gamma), CLARG(d->soft_clip), CLARG(d->soft_clip_comp));
   if(err != CL_SUCCESS) goto error;
     return TRUE;
 

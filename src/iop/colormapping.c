@@ -671,7 +671,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(dev_mapio == NULL) goto error;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_histogram, width, height,
-      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(equalization), CLARG(dev_target_hist), CLARG(dev_source_ihist));
+      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(equalization), CLARG(dev_target_hist),
+      CLARG(dev_source_ihist));
     if(err != CL_SUCCESS) goto error;
 
     if(equalization > 0.001f)
@@ -696,7 +697,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_mapping, width, height,
-      CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(data->n), CLARG(dev_target_mean), CLARG(dev_source_mean), CLARG(dev_var_ratio), CLARG(dev_mapio));
+      CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(data->n), CLARG(dev_target_mean),
+      CLARG(dev_source_mean), CLARG(dev_var_ratio), CLARG(dev_mapio));
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_release_mem_object(dev_tmp);
