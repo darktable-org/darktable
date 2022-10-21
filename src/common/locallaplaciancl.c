@@ -144,8 +144,8 @@ cl_int dt_local_laplacian_cl(
     if(l == b->num_levels-1)
       dt_opencl_set_kernel_args(b->devid, b->global->kernel_gauss_reduce, 1, CLARG(b->dev_output[l]));
     else
-      dt_opencl_set_kernel_args(b->devid, b->global->kernel_gauss_reduce, 1, CLARG(b->dev_padded[l]),
-        CLARG(wd), CLARG(ht));
+      dt_opencl_set_kernel_args(b->devid, b->global->kernel_gauss_reduce, 1, CLARG(b->dev_padded[l]));
+    dt_opencl_set_kernel_args(b->devid, b->global->kernel_gauss_reduce, 2, CLARG(wd), CLARG(ht));
     err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_gauss_reduce, sizes);
     if(err != CL_SUCCESS) goto error;
   }

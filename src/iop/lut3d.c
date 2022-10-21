@@ -1017,8 +1017,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(transform)
       dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_out));
     else
-      dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
-        CLARG(clut_cl), CLARG(level));
+      dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in));
+    dt_opencl_set_kernel_args(devid, kernel, 1, CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(transform)
       dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,

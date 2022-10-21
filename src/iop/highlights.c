@@ -304,9 +304,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 0, CLARG(dev_in), CLARG(dev_out),
-      CLARG(width), CLARG(height), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters));
-    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_1f_lch_xtrans, 7, CLARG(dev_xtrans));
-    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_false_color, 8, CLARG(dev_clips));
+      CLARG(width), CLARG(height), CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters), CLARG(dev_xtrans),
+      CLARG(dev_clips));
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_false_color, sizes);
     if(err != CL_SUCCESS) goto error;
