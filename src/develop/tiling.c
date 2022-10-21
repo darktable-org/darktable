@@ -101,7 +101,7 @@ static inline int _maximum_number_tiles()
 
 static inline void _print_roi(const dt_iop_roi_t *roi, const char *label)
 {
-  if((darktable.unmuted & DT_DEBUG_VERBOSE) && (darktable.unmuted & DT_DEBUG_TILING))
+  if((darktable.unmuted & DT_DEBUG_VERBOSE) && (darktable.unmuted & (DT_DEBUG_TILING | DT_DEBUG_ROI)))
     fprintf(stderr,"     {%5d %5d ->%5d %5d (%5dx%5d)  %.6f } %s\n",
          roi->x, roi->y, roi->x + roi->width, roi->y + roi->height, roi->width, roi->height, roi->scale, label);
 }
