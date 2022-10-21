@@ -937,7 +937,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct
   int pref = precedence;
   size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
   size_t local[] = { b->blocksizex, b->blocksizey, 1 };
-  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_splat, 0, CLARG(in), CLARG(b->dev_grid), CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s), CLARG(b->sigma_r), CLARG(threshold), CLARG(pref), CLWRAP(4*sizeof(float), params), CLLOCAL(b->blocksizex * b->blocksizey * sizeof(int)), CLLOCAL(b->blocksizex * b->blocksizey * 4 * sizeof(float)));
+  dt_opencl_set_kernel_args(b->devid, b->global->kernel_colorreconstruct_splat, 0, CLARG(in), CLARG(b->dev_grid), CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s), CLARG(b->sigma_r), CLARG(threshold), CLARG(pref), CLARRAY(4, params), CLLOCAL(b->blocksizex * b->blocksizey * sizeof(int)), CLLOCAL(b->blocksizex * b->blocksizey * 4 * sizeof(float)));
   err = dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_colorreconstruct_splat, sizes, local);
   return err;
 }

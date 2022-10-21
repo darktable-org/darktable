@@ -995,7 +995,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLWRAP(4 * sizeof(float), data->color), CLARG(density), CLARG(length_base), CLARG(length_inc_x), CLARG(length_inc_y));
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARRAY(4, data->color), CLARG(density), CLARG(length_base), CLARG(length_inc_x), CLARG(length_inc_y));
   if(err != CL_SUCCESS) goto error;
   return TRUE;
 

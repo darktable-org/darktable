@@ -4042,7 +4042,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0, CLARG(dev_tmp), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4), CLWRAP(4*sizeof(float), processed_maximum), CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
+      dt_opencl_set_kernel_args(devid, gd->kernel_vng_interpolate, 0, CLARG(dev_tmp), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(filters4), CLARRAY(4, processed_maximum), CLARG(dev_xtrans), CLARG(dev_ips), CLARG(dev_code), CLLOCAL(sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4293,7 +4293,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     {
       size_t sizes[3] = { ROUNDUP(width, locopt_g1_g3.sizex), ROUNDUP(height, locopt_g1_g3.sizey), 1 };
       size_t local[3] = { locopt_g1_g3.sizex, locopt_g1_g3.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_green_minmax, 0, CLARG(dev_rgb[0]), CLARG(dev_gminmax), CLARG(width), CLARG(height), CLARG(pad_g1_g3), CLARG(roi_in->x), CLARG(roi_in->y), CLWRAP(2 * sizeof(char), sgreen), CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * (locopt_g1_g3.sizex + 2*3) * (locopt_g1_g3.sizey + 2*3)));
+      dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_green_minmax, 0, CLARG(dev_rgb[0]), CLARG(dev_gminmax), CLARG(width), CLARG(height), CLARG(pad_g1_g3), CLARG(roi_in->x), CLARG(roi_in->y), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * (locopt_g1_g3.sizex + 2*3) * (locopt_g1_g3.sizey + 2*3)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_green_minmax, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4311,7 +4311,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     {
       size_t sizes[3] = { ROUNDUP(width, locopt_g_interp.sizex), ROUNDUP(height, locopt_g_interp.sizey), 1 };
       size_t local[3] = { locopt_g_interp.sizex, locopt_g_interp.sizey, 1 };
-      dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_green, 0, CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]), CLARG(dev_gminmax), CLARG(width), CLARG(height), CLARG(pad_g_interp), CLARG(roi_in->x), CLARG(roi_in->y), CLWRAP(2 * sizeof(char), sgreen), CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g_interp.sizex + 2*6) * (locopt_g_interp.sizey + 2*6)));
+      dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_green, 0, CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]), CLARG(dev_gminmax), CLARG(width), CLARG(height), CLARG(pad_g_interp), CLARG(roi_in->x), CLARG(roi_in->y), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g_interp.sizex + 2*6) * (locopt_g_interp.sizey + 2*6)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_green, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4339,7 +4339,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
         // recalculate green from interpolated values of closer pixels
         const int pad_g_recalc = 6;
         err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_recalculate_green, width, height,
-          CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]), CLARG(dev_gminmax), CLARG(width), CLARG(height), CLARG(pad_g_recalc), CLARG(roi_in->x), CLARG(roi_in->y), CLWRAP(2 * sizeof(char), sgreen), CLARG(dev_xtrans), CLARG(dev_allhex));
+          CLARG(dev_rgb[0]), CLARG(dev_rgb[1]), CLARG(dev_rgb[2]), CLARG(dev_rgb[3]), CLARG(dev_gminmax), CLARG(width), CLARG(height), CLARG(pad_g_recalc), CLARG(roi_in->x), CLARG(roi_in->y), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLARG(dev_allhex));
         if(err != CL_SUCCESS) goto error;
       }
 
@@ -4361,7 +4361,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
         // we use dev_aux to transport intermediate results from one loop run to the next
         size_t sizes[3] = { ROUNDUP(width, locopt_rb_g.sizex), ROUNDUP(height, locopt_rb_g.sizey), 1 };
         size_t local[3] = { locopt_rb_g.sizex, locopt_rb_g.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_solitary_green, 0, CLARG(dev_trgb[0]), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(pad_rb_g), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(d), CLWRAP(2 * sizeof(char), dir), CLARG(h), CLWRAP(2 * sizeof(char), sgreen), CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_g.sizex + 2*2) * (locopt_rb_g.sizey + 2*2)));
+        dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_solitary_green, 0, CLARG(dev_trgb[0]), CLARG(dev_aux), CLARG(width), CLARG(height), CLARG(pad_rb_g), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(d), CLARRAY(2, dir), CLARG(h), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_g.sizex + 2*2) * (locopt_rb_g.sizey + 2*2)));
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_solitary_green, sizes, local);
         if(err != CL_SUCCESS) goto error;
 
@@ -4382,7 +4382,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       {
         size_t sizes[3] = { ROUNDUP(width, locopt_rb_br.sizex), ROUNDUP(height, locopt_rb_br.sizey), 1 };
         size_t local[3] = { locopt_rb_br.sizex, locopt_rb_br.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_red_and_blue, 0, CLARG(dev_rgb[d]), CLARG(width), CLARG(height), CLARG(pad_rb_br), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(d), CLWRAP(2 * sizeof(char), sgreen), CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_br.sizex + 2*3) * (locopt_rb_br.sizey + 2*3)));
+        dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_red_and_blue, 0, CLARG(dev_rgb[d]), CLARG(width), CLARG(height), CLARG(pad_rb_br), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(d), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLLOCAL(sizeof(float) * 4 * (locopt_rb_br.sizex + 2*3) * (locopt_rb_br.sizey + 2*3)));
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_red_and_blue, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }
@@ -4401,7 +4401,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       {
         size_t sizes[3] = { ROUNDUP(width, locopt_g22.sizex), ROUNDUP(height, locopt_g22.sizey), 1 };
         size_t local[3] = { locopt_g22.sizex, locopt_g22.sizey, 1 };
-        dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 0, CLARG(dev_rgb[n]), CLARG(width), CLARG(height), CLARG(pad_g22), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(d), CLWRAP(2 * sizeof(char), sgreen), CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g22.sizex + 2*2) * (locopt_g22.sizey + 2*2)));
+        dt_opencl_set_kernel_args(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 0, CLARG(dev_rgb[n]), CLARG(width), CLARG(height), CLARG(pad_g22), CLARG(roi_in->x), CLARG(roi_in->y), CLARG(d), CLARRAY(2, sgreen), CLARG(dev_xtrans), CLARG(dev_allhex), CLLOCAL(sizeof(float) * 4 * (locopt_g22.sizex + 2*2) * (locopt_g22.sizey + 2*2)));
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_twoxtwo, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }
@@ -4574,7 +4574,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     {
       // process the final image
       err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_markesteijn_final, width, height,
-        CLARG(dev_tmptmp), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(pad_tile), CLWRAP(4*sizeof(float), processed_maximum));
+        CLARG(dev_tmptmp), CLARG(dev_tmp), CLARG(width), CLARG(height), CLARG(pad_tile), CLARRAY(4, processed_maximum));
       if(err != CL_SUCCESS) goto error;
     }
 

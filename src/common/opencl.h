@@ -338,12 +338,16 @@ int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, con
                              const void *arg);
 
 /** wrap opencl arguments */
+/** the magic number is used for parameter checking; don't use it in your code! */
 #define CLWRAP(size, ptr) (const size_t)0xF111E8, (const size_t)size, (const void *)ptr
 
 /** wrap opencl single argument */
 #define CLARG(arg) CLWRAP(sizeof(arg), &arg)
 
-/** wrap opencl local argument  allocation */
+/** wrap opencl argument array */
+#define CLARRAY(num, arg) CLWRAP(num * sizeof(*arg), arg)
+
+/** wrap opencl local argument allocation */
 #define CLLOCAL(arg) CLWRAP(arg, NULL)
 
 /** attach args. */

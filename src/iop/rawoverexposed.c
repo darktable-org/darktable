@@ -354,7 +354,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA)
     dt_opencl_set_kernel_args(devid, kernel, 11, CLARG(dev_colors));
   else if(dev->rawoverexposed.mode == DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID)
-    dt_opencl_set_kernel_args(devid, kernel, 11, CLWRAP(4 * sizeof(float), color));
+    dt_opencl_set_kernel_args(devid, kernel, 11, CLARRAY(4, color));
 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
