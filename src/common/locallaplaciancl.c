@@ -231,7 +231,7 @@ cl_int dt_local_laplacian_cl(
   return CL_SUCCESS;
 
 error:
-  fprintf(stderr, "[local laplacian cl] failed: %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[local laplacian cl] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return err;
 }
 
@@ -243,4 +243,3 @@ error:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
