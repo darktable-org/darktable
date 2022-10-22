@@ -35,7 +35,7 @@
     c) a wrong whitepoint setting in the rawprepare module. 
     d) the maths might not be best
 
-   Again the algorithms has been developed in collaboration by @garagecoder and @Iain from gmic team and @jenshannoschwalm from dt.
+   Again the algorithm has been developed in collaboration by @garagecoder and @Iain from gmic team and @jenshannoschwalm from dt.
 */
 
 static inline float _calc_linear_refavg(const float *in, const int row, const int col, const dt_iop_roi_t *const roi, const int color)
@@ -45,15 +45,15 @@ static inline float _calc_linear_refavg(const float *in, const int row, const in
   {
     for(int dx = -1; dx < 2; dx++)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
         mean[c] += fmaxf(0.0f, in[roi->width * 4 * dy + 4 * dx + c]);
     }
   }
-  for(int c = 0; c < 3; c++)
-    mean[c] = powf(mean[c] / 9.0f, 1.0f / 3.0f);
+  for_each_channel(c)
+    mean[c] = powf(mean[c] / 9.0f, 1.0f / HL_POWERF);
 
   const dt_aligned_pixel_t croot_refavg = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
-  return powf(croot_refavg[color], 3.0f);
+  return powf(croot_refavg[color], HL_POWERF);
 }
 
 // A slighly modified version for sraws
@@ -66,27 +66,32 @@ static float * _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]}; 
   const dt_aligned_pixel_t clipdark = { 0.03f * clips[0], 0.125f * clips[1], 0.03f * clips[2] };   
 
-  const int pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
-  const int pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
+  const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
+  const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
   const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 16);
 
+  const size_t o_row_max = MIN(roi_out->height, roi_in->height - roi_out->y);
+  const size_t o_col_max = MIN(roi_out->width, roi_in->width - roi_out->y);
+  const size_t o_width = roi_out->width;
+  const size_t i_width = roi_in->width;
+
   int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
-  const size_t bsize = (4 + MAX(roi_in->width + roi_in->x, roi_out->width + roi_out->x)) * (4 + MAX(roi_in->height + roi_in->y, roi_out->height + roi_out->y)); 
-  float *tmpout = dt_alloc_align_float(4 * bsize);
+  float *tmpout = dt_alloc_align_float(4 * roi_in->width * roi_in->height);
 
   // make sure date are fully copied in case of an early exit
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ovoid, ivoid, roi_in, roi_out) \
+  dt_omp_sharedconst(o_row_max, o_col_max, o_width, i_width) \
   schedule(static)
 #endif
-  for(int row = 0; row < roi_out->height; row++)
+  for(size_t row = 0; row < o_row_max; row++)
   {
-    float *out = (float *)ovoid + (size_t)roi_out->width * row * 4;
-    float *in = (float *)ivoid + (size_t)roi_in->width * (row + roi_out->y) * 4 + roi_out->x * 4;
-    for(int col = 0; col < roi_out->width; col++)
+    float *out = (float *)ovoid + o_width * row * 4;
+    float *in = (float *)ivoid + 4 * (i_width * (row + roi_out->y) + roi_out->x);
+    for(size_t col = 0; col < o_col_max; col++)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
         out[c] = fmaxf(0.0f, in[c]);
       out += 4;
       in += 4;
@@ -100,21 +105,21 @@ static float * _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void
 #pragma omp parallel for default(none) \
   reduction( | : anyclipped) \
   dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, roi_out, mask_buffer) \
-  dt_omp_sharedconst(p_size, pwidth, pheight) \
+  dt_omp_sharedconst(p_size, pwidth, pheight, i_width) \
   schedule(static)
 #endif
-  for(int row = 0; row < roi_in->height; row++)
+  for(size_t row = 0; row < roi_in->height; row++)
   {
-    float *tmp = tmpout + (size_t)roi_in->width * row * 4;
-    float *in = (float *)ivoid + (size_t)roi_in->width * row * 4;
-    for(int col = 0; col < roi_in->width; col++)
+    float *tmp = tmpout + i_width * row * 4;
+    float *in = (float *)ivoid + i_width * row * 4;
+    for(size_t col = 0; col < i_width; col++)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
         tmp[c] = fmaxf(0.0f, in[c]);
 
-      if((col > 0) && (col < roi_in->width - 1) && (row > 0) && (row < roi_in->height - 1))
+      if((col > 0) && (col < i_width - 1) && (row > 0) && (row < roi_in->height - 1))
       {
-        for(int c = 0; c < 3; c++)
+        for_each_channel(c)
         {
           if(in[c] >= clips[c])
           {
@@ -146,15 +151,15 @@ static float * _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ivoid, roi_in, clips, clipdark, mask_buffer) \
   reduction(+ : cr_sum, cr_cnt) \
-  dt_omp_sharedconst(p_size, pwidth) \
+  dt_omp_sharedconst(p_size, pwidth, i_width) \
   schedule(static)
 #endif
-  for(int row = 1; row < roi_in->height-1; row++)
+  for(size_t row = 1; row < roi_in->height-1; row++)
   {
-    float *in  = (float *)ivoid + (size_t)roi_in->width * row * 4 + 4;
-    for(int col = 1; col < roi_in->width-1; col++)
+    float *in  = (float *)ivoid + i_width * row * 4 + 4;
+    for(size_t col = 1; col < i_width - 1; col++)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
       {
         const float inval = fmaxf(0.0f, in[c]); 
         if((mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)]) && (inval > clipdark[c]) && (inval < clips[c]))
@@ -174,15 +179,16 @@ static float * _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, roi_out, chrominance) \
+  dt_omp_sharedconst(o_row_max, o_col_max, i_width) \
   schedule(static)
 #endif
-  for(int row = 0; row < roi_in->height; row++)
+  for(size_t row = 0; row < roi_in->height; row++)
   {
-    float *in = (float *)ivoid + (size_t)roi_in->width * row * 4;
-    float *tmp = tmpout + (size_t)roi_in->width * row * 4;
-    for(int col = 0; col < roi_in->width; col++)
+    float *in = (float *)ivoid + i_width * row * 4;
+    float *tmp = tmpout + i_width * row * 4;
+    for(size_t col = 0; col < i_width; col++)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
       {
         const float inval = fmaxf(0.0f, in[c]); 
         if(inval >= clips[c])
@@ -196,15 +202,16 @@ static float * _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ovoid, tmpout, roi_in, roi_out) \
+  dt_omp_sharedconst(o_row_max, o_col_max, o_width, i_width) \
   schedule(static)
 #endif
-  for(int row = 0; row < roi_out->height; row++)
+  for(size_t row = 0; row < o_row_max; row++)
   {
-    float *out = (float *)ovoid + (size_t)roi_out->width * row * 4;
-    float *tmp = tmpout + (size_t)(roi_in->width * (row + roi_out->y) * 4 + roi_out->x * 4);
-    for(int col = 0; col < roi_out->width; col++)
+    float *out = (float *)ovoid + o_width * row * 4;
+    float *tmp = tmpout + 4 * (i_width * (row + roi_out->y) + roi_out->x);
+    for(size_t col = 0; col < o_col_max; col++)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
         out[c] = tmp[c];
       out += 4;
       tmp += 4;
@@ -231,25 +238,30 @@ static float *_process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const 
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]};
   const dt_aligned_pixel_t clipdark = { 0.03f * clips[0], 0.125f * clips[1], 0.03f * clips[2] };
 
-  const int pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
-  const int pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
+  const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
+  const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
   const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 16);
 
   int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
-  const size_t bsize = (4 + MAX(roi_in->width + roi_in->x, roi_out->width + roi_out->x)) * (4 + MAX(roi_in->height + roi_in->y, roi_out->height + roi_out->y)); 
-  float *tmpout = dt_alloc_align_float(bsize);
+  float *tmpout = dt_alloc_align_float(roi_in->width * roi_in->height);
+
+  const size_t o_row_max = MIN(roi_out->height, roi_in->height - roi_out->y);
+  const size_t o_col_max = MIN(roi_out->width, roi_in->width - roi_out->y);
+  const size_t o_width = roi_out->width;
+  const size_t i_width = roi_in->width;
 
   // make sure date are fully copied in case of an early exit
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, ivoid, roi_in, roi_out) \
+  dt_omp_firstprivate(ovoid, ivoid, roi_out) \
+  dt_omp_sharedconst(o_row_max, o_col_max, o_width, i_width) \
   schedule(static)
 #endif
-  for(int row = 0; row < roi_out->height; row++)
+  for(size_t row = 0; row < o_row_max; row++)
   {
-    float *out = (float *)ovoid + (size_t)roi_out->width * row;
-    float *in = (float *)ivoid + (size_t)roi_in->width * (row + roi_out->y) + roi_out->x;
-    for(int col = 0; col < roi_out->width; col++)
+    float *out = (float *)ovoid + o_width * row;
+    float *in = (float *)ivoid + i_width * (row + roi_out->y) + roi_out->x;
+    for(size_t col = 0; col < o_col_max; col++)
       out[col] = fmaxf(0.0f, in[col]);
   }
 
@@ -260,19 +272,19 @@ static float *_process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const 
 #pragma omp parallel for default(none) \
   reduction( | : anyclipped) \
   dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, roi_out, xtrans, mask_buffer) \
-  dt_omp_sharedconst(filters, p_size, pwidth, pheight) \
+  dt_omp_sharedconst(filters, p_size, pwidth, pheight, i_width, o_width) \
   schedule(static)
 #endif
-  for(int row = 0; row < roi_in->height; row++)
+  for(size_t row = 0; row < roi_in->height; row++)
   {
-    float *tmp = tmpout + (size_t)roi_in->width * row;
-    float *in = (float *)ivoid + (size_t)roi_in->width * row;
-    for(int col = 0; col < roi_in->width; col++)
+    float *tmp = tmpout + i_width * row;
+    float *in = (float *)ivoid + i_width * row;
+    for(size_t col = 0; col < i_width; col++)
     {
       const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
       tmp[0] = fmaxf(0.0f, in[0]);
       
-      if((tmp[0] >= clips[color]) && (col > 0) && (col < roi_in->width - 1) && (row > 0) && (row < roi_in->height - 1))
+      if((tmp[0] >= clips[color]) && (col > 0) && (col < i_width - 1) && (row > 0) && (row < roi_in->height - 1))
       {
         /* for the clipped photosites we later do the correction when the chrominance is available, we keep refavg in raw-RGB */
         tmp[0] = _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE);
@@ -307,13 +319,13 @@ static float *_process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const 
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ivoid, roi_in, xtrans, clips, clipdark, mask_buffer) \
   reduction(+ : cr_sum, cr_cnt) \
-  dt_omp_sharedconst(filters, p_size, pwidth) \
+  dt_omp_sharedconst(filters, p_size, pwidth, i_width) \
   schedule(static)
 #endif
-  for(int row = 1; row < roi_in->height-1; row++)
+  for(size_t row = 1; row < roi_in->height - 1; row++)
   {
-    float *in  = (float *)ivoid + (size_t)roi_in->width * row + 1;
-    for(int col = 1; col < roi_in->width-1; col++)
+    float *in  = (float *)ivoid + i_width * row + 1;
+    for(size_t col = 1; col < i_width - 1; col++)
     {
       const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
       const float inval = fmaxf(0.0f, in[0]); 
@@ -335,14 +347,14 @@ static float *_process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, xtrans, chrominance) \
-  dt_omp_sharedconst(filters) \
+  dt_omp_sharedconst(filters, o_row_max, o_col_max, i_width) \
   schedule(static)
 #endif
-  for(int row = 0; row < roi_in->height; row++)
+  for(size_t row = 0; row < roi_in->height; row++)
   {
-    float *in = (float *)ivoid + (size_t)roi_in->width * row;
-    float *tmp = tmpout + (size_t)roi_in->width * row;
-    for(int col = 0; col < roi_in->width; col++)
+    float *in = (float *)ivoid + i_width * row;
+    float *tmp = tmpout + i_width * row;
+    for(size_t col = 0; col < i_width; col++)
     {
       const float inval = fmaxf(0.0f, in[0]);
       const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
@@ -356,13 +368,14 @@ static float *_process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ovoid, tmpout, roi_in, roi_out) \
+  dt_omp_sharedconst(o_row_max, o_col_max, i_width, o_width) \
   schedule(static)
 #endif
-  for(int row = 0; row < roi_out->height; row++)
+  for(size_t row = 0; row < o_row_max; row++)
   {
-    float *out = (float *)ovoid + (size_t)(roi_out->width * row);
-    float *tmp = tmpout + (size_t)(roi_in->width * (row + roi_out->y) + roi_out->x);
-    for(int col = 0; col < roi_out->width; col++)
+    float *out = (float *)ovoid + o_width * row;
+    float *tmp = tmpout + i_width * (row + roi_out->y) + roi_out->x;
+    for(size_t col = 0; col < o_col_max; col++)
       out[col] = tmp[col];
   }
 
