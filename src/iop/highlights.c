@@ -1970,7 +1970,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
 #endif
     for(size_t k = 0; k < 4*npixels; k += 4)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
         out[k+c] = (in[k+c] < clips[c]) ? 0.2f * in[k+c] : 1.0f;
       out[k+3] = 0.0f;
     }
@@ -2000,11 +2000,11 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
 
 /* inpaint opposed and segmentation based algorithms want the whole image for proper calculation
    of chrominance correction and best candidates so we change both rois.
-   1st pass: how large would the output be, given this input roi?
 */
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *const roi_in)
 {
+  *roi_out = *roi_in;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
@@ -2013,21 +2013,17 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
     return;
 
-  *roi_out = *roi_in;
-  roi_out->width = roi_in->width;
-  roi_out->height = roi_in->height;
-  roi_out->x = roi_in->x;
-  roi_out->y = roi_in->y;
-
-  // sanity check.
-  if(roi_out->x < 0) roi_out->x = 0;
-  if(roi_out->y < 0) roi_out->y = 0;
+  roi_out->x = MAX(0, roi_in->x);
+  roi_out->y = MAX(0, roi_in->y);
+  // we can't do a proper sanity check here for width & height; that has to be done in the
+  // opposed and segmentation code!
 }
 
-// 2nd pass: which roi would this operation need as input to fill the given output region?
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {
+  *roi_in = *roi_out;
+
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
@@ -2036,7 +2032,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
     return;
 
-  *roi_in = *roi_out;
+  // we always take the full data provided by rawspeed
   roi_in->x = 0;
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
@@ -2228,7 +2224,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       piece->process_cl_ready = FALSE;
   }
   // check for heavy computing here to give an iop cache hint
-  const gboolean heavy = ((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256));
+  const gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
+                          || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
+                          || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED));
   self->cache_next_important = heavy;
 }
 
