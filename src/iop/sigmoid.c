@@ -112,12 +112,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RGB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
-{
-  return 1;
-}
-
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_sigmoid_params_t p;
@@ -523,26 +517,9 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
   piece->data = calloc(1, sizeof(dt_iop_sigmoid_data_t));
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  free(piece->data);
-  piece->data = NULL;
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   module->data = malloc(sizeof(dt_iop_sigmoid_global_data_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  // Releases any memory allocated in init(module)
-  // Implement this function explicitly if the module allocates additional memory besides (default_)params.
-  // this is rare.
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
