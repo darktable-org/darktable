@@ -45,7 +45,7 @@ static inline float _calc_linear_refavg(const float *in, const int row, const in
   {
     for(int dx = -1; dx < 2; dx++)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
         mean[c] += fmaxf(0.0f, in[roi->width * 4 * dy + 4 * dx + c]);
     }
   }

@@ -1970,7 +1970,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
 #endif
     for(size_t k = 0; k < 4*npixels; k += 4)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
         out[k+c] = (in[k+c] < clips[c]) ? 0.2f * in[k+c] : 1.0f;
       out[k+3] = 0.0f;
     }
@@ -2032,7 +2032,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
     return;
 
-  // we always take the full date provided by rawspeed
+  // we always take the full data provided by rawspeed
   roi_in->x = 0;
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
