@@ -66,9 +66,6 @@ typedef struct dt_iop_sigmoid_data_t
   float hue_preservation;
 } dt_iop_sigmoid_data_t;
 
-typedef struct dt_iop_sigmoid_global_data_t
-{} dt_iop_sigmoid_global_data_t;
-
 typedef struct dt_iop_sigmoid_gui_data_t
 {
   GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *hue_preservation_slider,
@@ -515,17 +512,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_sigmoid_data_t));
-}
-
-void init_global(dt_iop_module_so_t *module)
-{
-  module->data = malloc(sizeof(dt_iop_sigmoid_global_data_t));
-}
-
-void cleanup_global(dt_iop_module_so_t *module)
-{
-  free(module->data);
-  module->data = NULL;
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
