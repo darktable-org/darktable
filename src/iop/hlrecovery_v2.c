@@ -205,7 +205,8 @@ static inline float _calc_refavg(const float *in, const uint8_t(*const xtrans)[6
       cnt[c] += 1.0f;
     }
   }
-  for(int c = 0; c < 3; c++) mean[c] = powf(mean[c] / cnt[c], 1.0f / HL_POWERF);
+  for_each_channel(c)
+    mean[c] = powf(mean[c] / cnt[c], 1.0f / HL_POWERF);
 
   const dt_aligned_pixel_t croot_refavg = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   return (linear) ? powf(croot_refavg[color], HL_POWERF) : croot_refavg[color];
@@ -439,14 +440,14 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   const int seg_border = recovery_closing[recovery_mode];
   const int segmentation_limit = roi_in->width * roi_in->height / 4000; // segments per mpix
 
-  const int pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
-  const int pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
+  const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
+  const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
   const size_t p_size = dt_round_size((size_t) (pwidth + 4) * (pheight + 4), 16);
 
-  const int o_row_max = MIN(roi_out->height, roi_in->height - roi_out->y);
-  const int o_col_max = MIN(roi_out->width, roi_in->width - roi_out->y);
-  const int o_width = roi_out->width;
-  const int i_width = roi_in->width;
+  const size_t o_row_max = MIN(roi_out->height, roi_in->height - roi_out->y);
+  const size_t o_col_max = MIN(roi_out->width, roi_in->width - roi_out->y);
+  const size_t o_width = roi_out->width;
+  const size_t i_width = roi_in->width;
  
   float *fbuffer = dt_alloc_align_float((HL_FLOAT_PLANES) * p_size);
   if(!fbuffer) return;
@@ -479,8 +480,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       // calc all color planes for the centre of a 3x3 area
       if((col % 3 == 1) && (row % 3 == 1))
       {
-        dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f };
-        dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f };
+        dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
+        dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int dy = -1; dy < 2; dy++)
         {
           for(int dx = -1; dx < 2; dx++)
@@ -492,7 +493,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
           }
         }
 
-        for(int c = 0; c < 3; c++) mean[c] = powf(mean[c] / cnt[c], 1.0f / HL_POWERF);
+        for_each_channel(c)
+          mean[c] = powf(mean[c] / cnt[c], 1.0f / HL_POWERF);
         const dt_aligned_pixel_t cube_refavg = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
 
         const size_t o = _raw_to_plane(pwidth, row, col);
@@ -554,11 +556,11 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   dt_omp_sharedconst(filters, pwidth, i_width) \
   schedule(static)
 #endif
-  for(int row = 1; row < roi_in->height-1; row++)
+  for(size_t row = 1; row < roi_in->height-1; row++)
   {
-    float *out = tmpout + (size_t)i_width * row + 1;
-    float *in = (float *)ivoid + (size_t)i_width * row + 1;
-    for(int col = 1; col < roi_in->width-1; col++)
+    float *out = tmpout + i_width * row + 1;
+    float *in = (float *)ivoid + i_width * row + 1;
+    for(size_t col = 1; col < roi_in->width - 1; col++)
     {
       const float inval = fmaxf(0.0f, in[0]);
       const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
@@ -650,11 +652,11 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   dt_omp_sharedconst(filters, pwidth, dshift, strength, i_width) \
   schedule(static)
 #endif
-      for(int row = 1; row < roi_in->height-1; row++)
+      for(size_t row = 1; row < roi_in->height-1; row++)
       {
-        float *out = tmpout + (size_t)i_width * row + 1;
-        float *in = (float *)ivoid + (size_t)i_width * row + 1;
-        for(int col = 1; col < roi_out->width-1; col++)
+        float *out = tmpout + i_width * row + 1;
+        float *in = (float *)ivoid + i_width * row + 1;
+        for(size_t col = 1; col < roi_out->width-1; col++)
         {
           const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
           if(fmaxf(0.0f, in[0]) > clips[color])
@@ -676,11 +678,11 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   dt_omp_sharedconst(o_row_max, o_col_max, o_width, i_width) \
   schedule(static)
 #endif
-  for(int row = 0; row < o_row_max; row++)
+  for(size_t row = 0; row < o_row_max; row++)
   {
-    float *out = (float *)ovoid + (size_t)o_width * row;
-    float *in = tmpout + (size_t)i_width * (row + roi_out->y) + roi_out->x;
-    for(int col = 0; col < o_col_max; col++)
+    float *out = (float *)ovoid + o_width * row;
+    float *in = tmpout + i_width * (row + roi_out->y) + roi_out->x;
+    for(size_t col = 0; col < o_col_max; col++)
       out[col] = in[col];
   }
 
@@ -692,11 +694,11 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   dt_omp_sharedconst(filters, pwidth, vmode, strength, o_row_max, o_col_max, o_width, i_width) \
   schedule(static)
 #endif
-    for(int row = 0; row < o_row_max; row++)
+    for(size_t row = 0; row < o_row_max; row++)
     {
-      float *out = (float *)ovoid + (size_t)o_width * row;
-      float *in = (float *)ivoid + (size_t)i_width * (row + roi_out->y) + roi_out->x;
-      for(int col = 0; col < o_col_max; col++)
+      float *out = (float *)ovoid + o_width * row;
+      float *in = (float *)ivoid + i_width * (row + roi_out->y) + roi_out->x;
+      for(size_t col = 0; col < o_col_max; col++)
       {
         out[0] = 0.1f * in[0];
         if((row > 0) && (col > 0) && (row < roi_out->height -1) && (col < i_width -1))
