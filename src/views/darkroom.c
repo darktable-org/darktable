@@ -1106,8 +1106,6 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
 
-  dt_dev_masks_list_change(dev);
-
   /* cleanup histograms */
   g_list_foreach(dev->iop, (GFunc)dt_iop_cleanup_histogram, (gpointer)NULL);
 
@@ -1116,6 +1114,8 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
      A double history entry is not generated.
   */
   --darktable.gui->reset;
+
+  dt_dev_masks_list_change(dev);
 
   /* Now we can request focus again and write a safe plugins/darkroom/active */
   if(active_plugin)
