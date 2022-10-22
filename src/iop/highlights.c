@@ -2004,6 +2004,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
 void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *const roi_in)
 {
+  *roi_out = *roi_in;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
@@ -2012,7 +2013,6 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
     return;
 
-  *roi_out = *roi_in;
   roi_out->x = MAX(0, roi_in->x);
   roi_out->y = MAX(0, roi_in->y);
   // we can't do a proper sanity check here for width & height; that has to be done in the
@@ -2022,6 +2022,8 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {
+  *roi_in = *roi_out;
+
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
@@ -2031,7 +2033,6 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
     return;
 
   // we always take the full date provided by rawspeed
-  *roi_in = *roi_out;
   roi_in->x = 0;
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
