@@ -121,21 +121,24 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
 
   if(allocation.y < _start_pos.y)
   {
-    int offset = _start_pos.y - allocation.y - _start_pos.x + value;
+    const int offset = _start_pos.y - allocation.y - _start_pos.x + value;
     value -= offset;
     _start_pos.y = allocation.y;
   }
 
   float prop = 1.0f;
-  gboolean scroll_to_top = dt_conf_get_bool("darkroom/ui/scroll_to_module");
-  if((allocation.y + allocation.height - value > available.height && value < allocation.y) ||
-     (scroll_to_top && allocation.y != value))
+  const gboolean scroll_to_top = dt_conf_get_bool("darkroom/ui/scroll_to_module");
+  const int spare = available.height - allocation.height;
+  const int from_top = allocation.y - value;
+  const int move = MAX(from_top - scroll_to_top ? 0 : MAX(0, MIN(from_top, spare)),
+                       - MAX(0, spare - from_top));
+  if(move)
   {
     gint64 interval = 0;
     gdk_frame_clock_get_refresh_info(frame_clock, 0, &interval, NULL);
-    int remaining = GPOINTER_TO_INT(user_data) - gdk_frame_clock_get_frame_time(frame_clock);
+    const int remaining = GPOINTER_TO_INT(user_data) - gdk_frame_clock_get_frame_time(frame_clock);
     prop = (float)interval / MAX(interval, remaining);
-    value = (1-prop) * value + prop * (allocation.y - (scroll_to_top ? 0 : MAX(available.height - allocation.height, 0)));
+    value += prop * move;
   }
 
   _start_pos.x = value;
