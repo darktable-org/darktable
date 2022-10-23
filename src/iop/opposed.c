@@ -71,7 +71,7 @@ static void _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void *c
   const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 16);
 
   const size_t o_row_max = MIN(roi_out->height, roi_in->height - roi_out->y);
-  const size_t o_col_max = MIN(roi_out->width, roi_in->width - roi_out->y);
+  const size_t o_col_max = MIN(roi_out->width, roi_in->width - roi_out->x);
   const size_t o_width = roi_out->width;
   const size_t i_width = roi_in->width;
 
@@ -225,7 +225,7 @@ static float *_process_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const 
   float *tmpout = dt_alloc_align_float(roi_in->width * roi_in->height);
 
   const size_t o_row_max = MIN(roi_out->height, roi_in->height - roi_out->y);
-  const size_t o_col_max = MIN(roi_out->width, roi_in->width - roi_out->y);
+  const size_t o_col_max = MIN(roi_out->width, roi_in->width - roi_out->x);
   const size_t o_width = roi_out->width;
   const size_t i_width = roi_in->width;
 
