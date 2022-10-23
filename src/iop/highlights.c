@@ -2073,8 +2073,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else
     {
-      float *tmp = _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
-      dt_free_align(tmp);
+      _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
     }
     return;
   }
