@@ -35,7 +35,7 @@ typedef struct dt_bilateral_cl_t
 {
   dt_bilateral_cl_global_t *global;
   int devid;
-  size_t size_x, size_y, size_z;
+  int size_x, size_y, size_z;
   int width, height;
   size_t blocksizex, blocksizey;
   float sigma_s, sigma_r;

@@ -677,7 +677,7 @@ typedef struct dt_iop_colorreconstruct_bilateral_cl_t
 {
   dt_iop_colorreconstruct_global_data_t *global;
   int devid;
-  size_t size_x, size_y, size_z;
+  int size_x, size_y, size_z;
   int width, height, x, y;
   float scale;
   size_t blocksizex, blocksizey;
@@ -952,7 +952,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_
   size_t sizes[3] = { 0, 0, 1 };
 
   err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
-                                                b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+                                                sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(err != CL_SUCCESS) return err;
 
   sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
