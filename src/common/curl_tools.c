@@ -28,6 +28,10 @@ void dt_curl_init(CURL *curl, gboolean verbose)
 {
   curl_easy_reset(curl);
 
+  char useragent[64];
+  snprintf(useragent, sizeof(useragent), "darktable/%s", darktable_package_version);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, useragent);
+
   char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   gchar *crtfilename = g_build_filename(datadir, "..", "curl", "curl-ca-bundle.crt", NULL);
