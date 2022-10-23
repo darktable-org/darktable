@@ -172,7 +172,7 @@ cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
   size_t sizes[3] = { 0, 0, 1 };
 
   err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
-                                                b->size_x * b->size_y * b->size_z * sizeof(float));
+                                                sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(err != CL_SUCCESS) return err;
 
   sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
