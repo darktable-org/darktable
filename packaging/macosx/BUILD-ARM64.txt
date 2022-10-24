@@ -14,7 +14,7 @@ How to make disk image with darktable application bundle (64 bit ARM only):
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
-     $ sudo port install exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic-lib libheif portmidi libsdl2 libavif
+     $ sudo port install exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic-lib libheif portmidi libsdl2 libavif libjxl
     Clone darktable git repository (in this example into ~/src):
      $ mkdir ~/src
      $ cd ~/src
