@@ -2009,8 +2009,9 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+  const gboolean thumb = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL)) != 0;
 
-  if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
+  if(visualizing || thumb || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
     return;
 
   roi_out->x = MAX(0, roi_in->x);
@@ -2028,8 +2029,9 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+  const gboolean thumb = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL)) != 0;
 
-  if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
+  if(visualizing || thumb || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
     return;
 
   // we always take the full data provided by rawspeed
