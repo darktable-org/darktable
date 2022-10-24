@@ -957,7 +957,7 @@ static gboolean _button_pressed(GtkWidget *w, GdkEventButton *event, gpointer us
     gdk_event_get_axis ((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
   }
   dt_control_button_pressed(event->x, event->y, pressure, event->button, event->type, event->state & 0xf);
-  gtk_widget_grab_focus(w);
+  // gtk_widget_grab_focus(w);
   gtk_widget_queue_draw(w);
   return FALSE;
 }
@@ -2246,7 +2246,7 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
                      DT_UI_PANEL_MODULE_SPACING);
 
   /* adding the center box */
-  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER], FALSE, TRUE,
                      DT_UI_PANEL_MODULE_SPACING);
 

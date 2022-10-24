@@ -67,6 +67,15 @@ typedef enum dt_masks_property_t
   DT_MASKS_PROPERTY_LAST
 } dt_masks_property_t;
 
+typedef enum dt_masks_box_t
+{
+  DT_MASKS_BOX_MANAGER,
+  DT_MASKS_BOX_BAR,
+  DT_MASKS_BOX_POPUP,
+  DT_MASKS_BOX_LAST
+} dt_masks_box_t;
+
+
 typedef enum dt_masks_points_states_t
 {
   DT_MASKS_POINT_STATE_NORMAL = 1,

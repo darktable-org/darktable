@@ -45,8 +45,10 @@ typedef struct dt_lib_masks_t
   GtkWidget *hbox;
   GtkWidget *bt_circle, *bt_path, *bt_gradient, *bt_ellipse, *bt_brush;
   GtkWidget *treeview;
+
   dt_gui_collapsible_section_t cs;
-  GtkWidget *property[DT_MASKS_PROPERTY_LAST];
+  GtkWidget *bar, *pop;
+  GtkWidget *property[DT_MASKS_PROPERTY_LAST][DT_MASKS_BOX_LAST];
   float last_value[DT_MASKS_PROPERTY_LAST];
   GtkWidget *none_label;
 
@@ -123,93 +125,99 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
   dt_develop_t *dev = darktable.develop;
   dt_masks_form_t *form = dev->form_visible;
   dt_masks_form_gui_t *gui = dev->form_gui;
-  if(!form || !gui)
-  {
-    gtk_widget_hide(widget);
-    return;
-  }
-
-  float value = dt_bauhaus_slider_get(widget);
 
   ++darktable.gui->reset;
+
   int count = 0, pos = 0;
-  float sum = 0, min = _masks_properties[prop].min, max = _masks_properties[prop].max;
-  if(_masks_properties[prop].relative)
+  float sum = 0, avg = 0, min = _masks_properties[prop].min, max = _masks_properties[prop].max;
+
+  if(form && gui)
   {
-    max /= min;
-    min /= _masks_properties[prop].max;
-  }
-  else
-  {
-    max -= min;
-    min -= _masks_properties[prop].max;
-  }
-
-  if(gui->creation && form->functions && form->functions->modify_property)
-    form->functions->modify_property(form, prop, d->last_value[prop], value, &sum, &count, &min, &max);
-  else
-  {
-    for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts), pos++)
-    {
-      dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
-      dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-      if(!sel || (dev->mask_form_selected_id && dev->mask_form_selected_id != sel->formid)) continue;;
-
-      if(prop == DT_MASKS_PROPERTY_OPACITY && fpt->parentid)
-      {
-        float new_opacity = dt_masks_form_change_opacity(sel, fpt->parentid, value - d->last_value[prop]);
-        sum += new_opacity;
-        max = fminf(max, 1.0f - new_opacity);
-        min = fmaxf(min, .05f - new_opacity);
-        ++count;
-      }
-      else
-      {
-        int saved_count = count;
-
-        if(sel->functions && sel->functions->modify_property)
-          sel->functions->modify_property(sel, prop, d->last_value[prop], value, &sum, &count, &min, &max);
-
-        if(value != d->last_value[prop] && count != saved_count && value != d->last_value[prop])
-        {
-          // we recreate the form points
-          dt_masks_gui_form_create(sel, gui, pos, dev->gui_module);
-        }
-      }
-    }
-  }
-
-  gtk_widget_set_visible(widget, count != 0);
-  if(count)
-  {
-    if(value != d->last_value[prop] && sum / count != d->last_value[prop]
-       && prop != DT_MASKS_PROPERTY_OPACITY && !gui->creation)
-    {
-      if(gui->show_all_feathers) g_source_remove(gui->show_all_feathers);
-      gui->show_all_feathers = g_timeout_add_seconds(2, _timeout_show_all_feathers, gui);
-
-      // we save the new parameters
-      dt_dev_add_masks_history_item(darktable.develop, dev->gui_module, TRUE);
-      dt_masks_update_image(darktable.develop);
-    }
+    float value = dt_bauhaus_slider_get(widget);
 
     if(_masks_properties[prop].relative)
     {
-      max *= sum / count;
-      min *= sum / count;
+      max /= min;
+      min /= _masks_properties[prop].max;
     }
     else
     {
-      max += sum / count;
-      min += sum / count;
+      max -= min;
+      min -= _masks_properties[prop].max;
     }
-    dt_bauhaus_slider_set_soft_range(widget, min, max);
 
-    dt_bauhaus_slider_set(widget, sum / count);
-    d->last_value[prop] = dt_bauhaus_slider_get(widget);
+    if(gui->creation && form->functions && form->functions->modify_property)
+      form->functions->modify_property(form, prop, d->last_value[prop], value, &sum, &count, &min, &max);
+    else
+    {
+      for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts), pos++)
+      {
+        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+        dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+        if(!sel || (dev->mask_form_selected_id && dev->mask_form_selected_id != sel->formid)) continue;;
 
-    gtk_widget_hide(d->none_label);
-    dt_control_queue_redraw_center();
+        if(prop == DT_MASKS_PROPERTY_OPACITY && fpt->parentid)
+        {
+          float new_opacity = dt_masks_form_change_opacity(sel, fpt->parentid, value - d->last_value[prop]);
+          sum += new_opacity;
+          max = fminf(max, 1.0f - new_opacity);
+          min = fmaxf(min, .05f - new_opacity);
+          ++count;
+        }
+        else
+        {
+          int saved_count = count;
+
+          if(sel->functions && sel->functions->modify_property)
+            sel->functions->modify_property(sel, prop, d->last_value[prop], value, &sum, &count, &min, &max);
+
+          if(value != d->last_value[prop] && count != saved_count && value != d->last_value[prop])
+          {
+            // we recreate the form points
+            dt_masks_gui_form_create(sel, gui, pos, dev->gui_module);
+          }
+        }
+      }
+    }
+
+    if(count)
+    {
+      avg = sum / count;
+
+      if(value != d->last_value[prop] && avg != d->last_value[prop]
+        && prop != DT_MASKS_PROPERTY_OPACITY && !gui->creation)
+      {
+        if(gui->show_all_feathers) g_source_remove(gui->show_all_feathers);
+        gui->show_all_feathers = g_timeout_add_seconds(2, _timeout_show_all_feathers, gui);
+
+        // we save the new parameters
+        dt_dev_add_masks_history_item(darktable.develop, dev->gui_module, TRUE);
+        dt_masks_update_image(darktable.develop);
+      }
+
+      if(_masks_properties[prop].relative)
+      {
+        max *= avg;
+        min *= avg;
+      }
+      else
+      {
+        max += avg;
+        min += avg;
+      }
+
+      gtk_widget_hide(d->none_label);
+      dt_control_queue_redraw_center();
+    }
+  }
+
+  for(int b = 0; b < DT_MASKS_BOX_LAST; b++)
+  {
+    gtk_widget_set_visible(d->property[prop][b], count != 0);
+    dt_bauhaus_slider_set_soft_range(d->property[prop][b], min, max);
+
+    dt_bauhaus_slider_set(d->property[prop][b], avg);
+    d->last_value[prop] = dt_bauhaus_slider_get(d->property[prop][b]);
   }
 
   --darktable.gui->reset;
@@ -217,11 +225,23 @@ static void _property_changed(GtkWidget *widget, dt_masks_property_t prop)
 
 static void _update_all_properties(dt_lib_masks_t *self)
 {
+  if(!gtk_widget_get_parent(self->bar))
+  {
+    const char *str = dt_conf_get_string_const("plugins/darkroom/mask_bar_position");
+    if(g_strcmp0(str, "hidden"))
+    {
+      gtk_box_pack_end(dt_ui_get_container(darktable.gui->ui, !g_strcmp0(str, "top")
+                                                            ? DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER
+                                                            : DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER),
+                       self->bar, TRUE, TRUE, 10);
+    }
+  }
+
   gtk_widget_show(self->none_label);
 
   ++darktable.gui->reset;
   for(int i = 0; i < DT_MASKS_PROPERTY_LAST; i++)
-    _property_changed(self->property[i], i);
+    _property_changed(self->property[i][DT_MASKS_BOX_MANAGER], i);
   --darktable.gui->reset;
 }
 
@@ -1630,6 +1650,26 @@ static GdkPixbuf *_get_pixbuf_from_cairo(DTGTKCairoPaintIconFunc paint, const in
                                   cairo_image_surface_get_stride(cst), NULL, NULL);
 }
 
+static void _lib_masks_popup(dt_action_t *action)
+{
+  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+
+  if(!gui) return;
+
+  dt_lib_module_t *self = dt_action_lib(action);
+  dt_lib_masks_t *d = self->data;
+
+  GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+
+  GdkRectangle rect = { 0, 0, 1, 1 };
+  GdkWindow *win = gdk_device_get_window_at_position(pointer, &rect.x, &rect.y);
+
+  if(win != gtk_widget_get_window(dt_ui_center(darktable.gui->ui))) return;
+
+  gtk_popover_set_pointing_to(GTK_POPOVER(d->pop), &rect);
+  gtk_widget_show(d->pop);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -1647,46 +1687,61 @@ void gui_init(dt_lib_module_t *self)
 
   // initialise widgets
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *popbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+  while(TRUE)
+  {
+    d->bt_gradient = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, 0, NULL);
+    dt_action_define(DT_ACTION(self), N_("shapes"), N_("add gradient"), d->bt_gradient, &dt_action_def_toggle);
+    g_signal_connect(G_OBJECT(d->bt_gradient), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_GRADIENT));
+    gtk_widget_set_tooltip_text(d->bt_gradient, _("add gradient"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_gradient), FALSE);
+    gtk_box_pack_end(GTK_BOX(hbox), d->bt_gradient, !d->pop, TRUE, 0);
+
+    d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, 0, NULL);
+    dt_action_define(DT_ACTION(self), N_("shapes"), N_("add path"), d->bt_path, &dt_action_def_toggle);
+    g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_PATH));
+    gtk_widget_set_tooltip_text(d->bt_path, _("add path"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
+    gtk_box_pack_end(GTK_BOX(hbox), d->bt_path, !d->pop, TRUE, 0);
+
+    d->bt_ellipse = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, 0, NULL);
+    dt_action_define(DT_ACTION(self), N_("shapes"), N_("add ellipse"), d->bt_ellipse, &dt_action_def_toggle);
+    g_signal_connect(G_OBJECT(d->bt_ellipse), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_ELLIPSE));
+    gtk_widget_set_tooltip_text(d->bt_ellipse, _("add ellipse"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_ellipse), FALSE);
+    gtk_box_pack_end(GTK_BOX(hbox), d->bt_ellipse, !d->pop, TRUE, 0);
+
+    d->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, 0, NULL);
+    dt_action_define(DT_ACTION(self), N_("shapes"), N_("add circle"), d->bt_circle, &dt_action_def_toggle);
+    g_signal_connect(G_OBJECT(d->bt_circle), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_CIRCLE));
+    gtk_widget_set_tooltip_text(d->bt_circle, _("add circle"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_circle), FALSE);
+    gtk_box_pack_end(GTK_BOX(hbox), d->bt_circle, !d->pop, TRUE, 0);
+
+    d->bt_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, 0, NULL);
+    dt_action_define(DT_ACTION(self), N_("shapes"), N_("add brush"), d->bt_brush, &dt_action_def_toggle);
+    g_signal_connect(G_OBJECT(d->bt_brush), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_BRUSH));
+    gtk_widget_set_tooltip_text(d->bt_brush, _("add brush"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_brush), FALSE);
+    gtk_box_pack_end(GTK_BOX(hbox), d->bt_brush, !d->pop, TRUE, 0);
+
+    if(d->pop) break;
+
+    d->pop = gtk_popover_new(dt_ui_center(darktable.gui->ui));
+    gtk_popover_set_position(GTK_POPOVER(d->pop), GTK_POS_RIGHT);
+    g_object_set(G_OBJECT(d->pop), "transitions-enabled", FALSE, NULL);
+    gtk_container_add(GTK_CONTAINER(d->pop), popbox);
+    gtk_box_pack_start(GTK_BOX(popbox), hbox, TRUE, TRUE, 0);
+    gtk_widget_show_all(d->pop);
+
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  }
 
   GtkWidget *label = gtk_label_new(_("created shapes"));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
-
-  d->bt_gradient = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, 0, NULL);
-  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add gradient"), d->bt_gradient, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_gradient), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_GRADIENT));
-  gtk_widget_set_tooltip_text(d->bt_gradient, _("add gradient"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_gradient), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_gradient, FALSE, FALSE, 0);
-
-  d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, 0, NULL);
-  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add path"), d->bt_path, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_PATH));
-  gtk_widget_set_tooltip_text(d->bt_path, _("add path"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_path, FALSE, FALSE, 0);
-
-  d->bt_ellipse = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, 0, NULL);
-  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add ellipse"), d->bt_ellipse, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_ellipse), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_ELLIPSE));
-  gtk_widget_set_tooltip_text(d->bt_ellipse, _("add ellipse"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_ellipse), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_ellipse, FALSE, FALSE, 0);
-
-  d->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, 0, NULL);
-  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add circle"), d->bt_circle, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_circle), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_CIRCLE));
-  gtk_widget_set_tooltip_text(d->bt_circle, _("add circle"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_circle), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_circle, FALSE, FALSE, 0);
-
-  d->bt_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, 0, NULL);
-  dt_action_define(DT_ACTION(self), N_("shapes"), N_("add brush"), d->bt_brush, &dt_action_def_toggle);
-  g_signal_connect(G_OBJECT(d->bt_brush), "button-press-event", G_CALLBACK(_bt_add_shape), GINT_TO_POINTER(DT_MASKS_BRUSH));
-  gtk_widget_set_tooltip_text(d->bt_brush, _("add brush"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_brush), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_brush, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
@@ -1731,21 +1786,35 @@ void gui_init(dt_lib_module_t *self)
      _("properties"),
      GTK_BOX(self->widget));
   gtk_widget_set_no_show_all(GTK_WIDGET(d->cs.container), TRUE);
+  d->none_label = dt_ui_label_new(_("no shapes selected"));
+  gtk_box_pack_start(GTK_BOX(d->cs.container), d->none_label, FALSE, FALSE, 0);
+
+  d->bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_set_homogeneous(GTK_BOX(d->bar), TRUE);
+  gtk_widget_show(d->bar);
+  g_object_ref(d->bar);
+
 
   for(int i = 0; i < DT_MASKS_PROPERTY_LAST; i++)
   {
-    d->property[i] = dt_bauhaus_slider_new_action(DT_ACTION(self), _masks_properties[i].min,
-                                                  _masks_properties[i].max, 0, 0.0, 2);
-    dt_bauhaus_widget_set_label(d->property[i], N_("properties"), _masks_properties[i].name);
-    dt_bauhaus_slider_set_format(d->property[i], _masks_properties[i].format);
-    dt_bauhaus_slider_set_digits(d->property[i], 2);
-    d->last_value[i] = dt_bauhaus_slider_get(d->property[i]);
-    gtk_box_pack_start(GTK_BOX(d->cs.container), d->property[i], FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(d->property[i]), "value-changed", G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
+    for(int b = 0; b < DT_MASKS_BOX_LAST; b++)
+    {
+      d->property[i][b] = dt_bauhaus_slider_new_action(DT_ACTION(self), _masks_properties[i].min,
+                                                       _masks_properties[i].max, 0, 0.0, 2);
+      dt_bauhaus_widget_set_label(d->property[i][b], N_("properties"), _masks_properties[i].name);
+      dt_bauhaus_slider_set_format(d->property[i][b], _masks_properties[i].format);
+      dt_bauhaus_slider_set_digits(d->property[i][b], 2);
+      g_signal_connect(G_OBJECT(d->property[i][b]), "value-changed", G_CALLBACK(_property_changed), GINT_TO_POINTER(i));
+    }
+    d->last_value[i] = dt_bauhaus_slider_get(d->property[i][DT_MASKS_BOX_MANAGER]);
+    gtk_box_pack_start(GTK_BOX(d->cs.container), d->property[i][DT_MASKS_BOX_MANAGER], FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(d->bar), d->property[i][DT_MASKS_BOX_BAR], TRUE, TRUE, DT_PIXEL_APPLY_DPI(2));
+    gtk_box_pack_start(GTK_BOX(popbox), d->property[i][DT_MASKS_BOX_POPUP], FALSE, FALSE, 0);
+    DT_BAUHAUS_WIDGET(d->property[i][DT_MASKS_BOX_BAR])->show_quad = FALSE;
+    DT_BAUHAUS_WIDGET(d->property[i][DT_MASKS_BOX_POPUP])->show_quad = FALSE;
   }
 
-  d->none_label = dt_ui_label_new(_("no shapes selected"));
-  gtk_box_pack_start(GTK_BOX(d->cs.container), d->none_label, FALSE, FALSE, 0);
+  dt_action_register(DT_ACTION(self), N_("popup"), _lib_masks_popup, 0, 0);
 
   // set proxy functions
   darktable.develop->proxy.masks.module = self;
@@ -1753,10 +1822,14 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.masks.list_update = _lib_masks_update_list;
   darktable.develop->proxy.masks.list_remove = _lib_masks_remove_item;
   darktable.develop->proxy.masks.selection_change = _lib_masks_selection_change;
+  darktable.develop->proxy.masks.popup = _lib_masks_popup;
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_masks_t *d = (dt_lib_masks_t *)self->data;
+  g_object_unref(d->bar);
+
   g_free(self->data);
   self->data = NULL;
 }

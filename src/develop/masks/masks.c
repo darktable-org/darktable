@@ -1079,6 +1079,12 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
   pzx += 0.5f;
   pzy += 0.5f;
 
+  if(which == 3 && dt_conf_get_bool("masks_right_click_menu") && darktable.develop->proxy.masks.popup)
+  {
+    darktable.develop->proxy.masks.popup(DT_ACTION(darktable.develop->proxy.masks.module));
+    return 1;
+  }
+
   // allow to select a shape inside an iop
   if(gui && which == 1)
   {

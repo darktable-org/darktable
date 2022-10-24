@@ -261,6 +261,7 @@ typedef struct dt_develop_t
       void (*list_update)(struct dt_lib_module_t *self);
       /* selected forms change */
       void (*selection_change)(struct dt_lib_module_t *self, struct dt_iop_module_t *module, const int selectid);
+      void (*popup)(dt_action_t *action);
     } masks;
 
     // what is the ID of the module currently doing pipeline chromatic adaptation ?

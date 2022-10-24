@@ -1310,11 +1310,24 @@
     <longdescription>defines how color channels are displayed when activated in the parametric masks feature.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
-    <name>plugins/darkroom/image_infos_pattern</name>
-    <type>longstring</type>
-    <default>$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
-    <shortdescription>pattern for the image information line</shortdescription>
-    <longdescription>see manual for a list of the tags you can use.</longdescription>
+    <name>masks_right_click_menu</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>right-click calls up mask menu</shortdescription>
+    <longdescription>right-clicking while in mask mode calls up a popup menu rather than deleting or ending creation of a shape</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="general">
+    <name>plugins/darkroom/mask_bar_position</name>
+    <type>
+      <enum>
+        <option>hidden</option>
+        <option>top</option>
+        <option>bottom</option>
+      </enum>
+    </type>
+    <default>hidden</default>
+    <shortdescription>position of the mask slider bar</shortdescription>
+    <longdescription/>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/image_infos_position</name>
@@ -1330,6 +1343,13 @@
     <default>bottom</default>
     <shortdescription>position of the image information line</shortdescription>
     <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="general">
+    <name>plugins/darkroom/image_infos_pattern</name>
+    <type>longstring</type>
+    <default>$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
+    <shortdescription>pattern for the image information line</shortdescription>
+    <longdescription>see manual for a list of the tags you can use.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
