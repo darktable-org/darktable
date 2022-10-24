@@ -20,6 +20,7 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
+#include "common/math.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/openmp_maths.h"
@@ -139,11 +140,15 @@ void init_presets(dt_iop_module_so_t *self)
 static inline float generalized_loglogistic_sigmoid(const float value, const float magnitude, const float paper_exp,
                                                     const float film_fog, const float film_power, const float paper_power)
 {
+  const float clamped_value = fmaxf(value, 0.0f);
   // The following equation can be derived as a model for film + paper but it has a pole at 0
   // magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -film_power), -paper_power);
-  // Rewritten on a stable form including a check for negative values:
-  const float film_response = film_fog + value > 0.0f ? powf(film_fog + value, film_power) : 0.0f;
-  return magnitude * powf(film_response / (paper_exp + film_response), paper_power);
+  // Rewritten on a stable around zero form:
+  const float film_response = powf(film_fog + clamped_value, film_power);
+  const float paper_response = magnitude * powf(film_response / (paper_exp + film_response), paper_power);
+  
+  // Safety check for very large floats that cause numerical errors
+  return isnan(paper_response) ? magnitude : paper_response;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
