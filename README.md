@@ -169,21 +169,22 @@ Optional dependencies (minimum version):
 * LLVM 3.9 *(for OpenCL checks at compilation time)*
 * OpenCL 1.2 *(for GPU-accelerated computing)*
 * Lua 5.4 *(for plugins and extension scripting)*
-* libavif 0.8.2 *(for AVIF import/export)*
-* libheif 1.9.0 *(for HEIF/HEIC/HIF import)*
-* WebP 0.3.0 *(for WebP export)*
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit half float TIFF export and faster import)*
+* libavif 0.8.2 *(for AVIF import & export)*
+* libheif 1.9.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
+* libjxl 0.7.0 *(for JPEG XL export)*
+* WebP 0.3.0 *(for WebP export)*
 
 Optional dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)*
-* OpenEXR *(for EXR import and export)*
-* OpenJPEG *(for Jpeg2000 export)*
 * colord, Xatom *(for fetching the system display color profile)*
 * G'MIC *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*
 * SDL2 *(for gamepad input support)*
 * CUPS *(for print mode support)*
+* OpenEXR *(for EXR import & export)*
+* OpenJPEG *(for JPEG 2000 import & export)*
 * GraphicsMagick or ImageMagick *(for misc image format import)*
 
 To install all the dependencies on Linux systems, you may use the source repositories of your distribution
