@@ -512,7 +512,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE, TRUE, is_scaling,
                                  FALSE, "pre:rawprepare", FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
-                                 NULL, num, total, NULL);
+                                 NULL, num, total, NULL, -1);
 
     t = g_list_next(t);
 
