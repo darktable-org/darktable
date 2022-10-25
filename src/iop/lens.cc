@@ -58,47 +58,66 @@ extern "C" {
 #define LF_0395
 #endif
 
-DT_MODULE_INTROSPECTION(5, dt_iop_lensfun_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_lens_params_t)
 
-typedef enum dt_iop_lensfun_modflag_t
+typedef enum dt_iop_lens_modify_flag_t
 {
-  LENSFUN_MODFLAG_NONE = 0,
-  LENSFUN_MODFLAG_ALL = LF_MODIFY_DISTORTION | LF_MODIFY_TCA | LF_MODIFY_VIGNETTING,
-  LENSFUN_MODFLAG_DIST_TCA = LF_MODIFY_DISTORTION | LF_MODIFY_TCA,
-  LENSFUN_MODFLAG_DIST_VIGN = LF_MODIFY_DISTORTION | LF_MODIFY_VIGNETTING,
-  LENSFUN_MODFLAG_TCA_VIGN = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING,
-  LENSFUN_MODFLAG_DIST = LF_MODIFY_DISTORTION,
-  LENSFUN_MODFLAG_TCA = LF_MODIFY_TCA,
-  LENSFUN_MODFLAG_VIGN = LF_MODIFY_VIGNETTING,
-  LENSFUN_MODFLAG_MASK = LF_MODIFY_DISTORTION | LF_MODIFY_TCA | LF_MODIFY_VIGNETTING
-} dt_iop_lensfun_modflag_t;
+  DT_IOP_LENS_MODIFY_FLAG_TCA = 1,
+  DT_IOP_LENS_MODIFY_FLAG_VIGNETTING = 1 << 1,
+  DT_IOP_LENS_MODIFY_FLAG_DISTORTION = 1 << 2
+} dt_iop_lens_modify_flag_t;
 
-typedef struct dt_iop_lensfun_modifier_t
+typedef enum dt_iop_lens_modflag_t
 {
-  char name[80];
-  int pos; // position in combo box
-  int modflag;
-} dt_iop_lensfun_modifier_t;
+  DT_IOP_LENS_MODFLAG_NONE = 0,
+  DT_IOP_LENS_MODFLAG_ALL = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_TCA | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING,
+  DT_IOP_LENS_MODFLAG_DIST_TCA = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_TCA,
+  DT_IOP_LENS_MODFLAG_DIST_VIGN = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING,
+  DT_IOP_LENS_MODFLAG_TCA_VIGN = DT_IOP_LENS_MODIFY_FLAG_TCA | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING,
+  DT_IOP_LENS_MODFLAG_DIST = DT_IOP_LENS_MODIFY_FLAG_DISTORTION,
+  DT_IOP_LENS_MODFLAG_TCA = DT_IOP_LENS_MODIFY_FLAG_TCA,
+  DT_IOP_LENS_MODFLAG_VIGN = DT_IOP_LENS_MODIFY_FLAG_VIGNETTING,
+} dt_iop_lens_modflag_t;
 
-typedef struct dt_iop_lensfun_params_t
+typedef enum dt_iop_lens_lenstype_t
 {
-  int modify_flags;
+  DT_IOP_LENS_LENSTYPE_UNKNOWN = 0,
+  DT_IOP_LENS_LENSTYPE_RECTILINEAR = 1,
+  DT_IOP_LENS_LENSTYPE_FISHEYE = 2,
+  DT_IOP_LENS_LENSTYPE_PANORAMIC = 3,
+  DT_IOP_LENS_LENSTYPE_EQUIRECTANGULAR = 4,
+  DT_IOP_LENS_LENSTYPE_FISHEYE_ORTHOGRAPHIC = 5,
+  DT_IOP_LENS_LENSTYPE_FISHEYE_STEREOGRAPHIC = 6,
+  DT_IOP_LENS_LENSTYPE_FISHEYE_EQUISOLID = 7,
+  DT_IOP_LENS_LENSTYPE_FISHEYE_THOBY = 8
+} dt_iop_lens_lenstype_t;
+
+typedef struct dt_iop_lens_params_t
+{
+  int modify_flags; // $DEFAULT: DT_IOP_LENS_MODFLAG_ALL $DESCRIPTION: "corrections"
   int inverse; // $MIN: 0 $MAX: 1 $DEFAULT: 0 $DESCRIPTION: "mode"
   float scale; // $MIN: 0.1 $MAX: 2.0 $DEFAULT: 1.0
   float crop;
   float focal;
   float aperture;
   float distance;
-  lfLensType target_geom; // $DEFAULT: LF_RECTILINEAR $DESCRIPTION: "geometry"
+  int target_geom; // $DEFAULT: DT_IOP_LENS_LENSTYPE_RECTILINEAR $DESCRIPTION: "geometry"
   char camera[128];
   char lens[128];
   gboolean tca_override; // $DEFAULT: FALSE $DESCRIPTION: "TCA overwrite"
   float tca_r; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA red"
   float tca_b; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA blue"
   int modified; // $DEFAULT: 0 did user changed anything from automatically detected?
-} dt_iop_lensfun_params_t;
+} dt_iop_lens_params_t;
 
-typedef struct dt_iop_lensfun_gui_data_t
+typedef struct dt_iop_lens_gui_modifier_t
+{
+  char name[80];
+  int pos; // position in combo box
+  int modflag;
+} dt_iop_lens_gui_modifier_t;
+
+typedef struct dt_iop_lens_gui_data_t
 {
   const lfCamera *camera;
   GtkWidget *lens_param_box;
@@ -114,9 +133,9 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkLabel *message;
   int corrections_done;
   gboolean trouble;
-} dt_iop_lensfun_gui_data_t;
+} dt_iop_lens_gui_data_t;
 
-typedef struct dt_iop_lensfun_global_data_t
+typedef struct dt_iop_lens_global_data_t
 {
   lfDatabase *db;
   int kernel_lens_distort_bilinear;
@@ -124,9 +143,9 @@ typedef struct dt_iop_lensfun_global_data_t
   int kernel_lens_distort_lanczos2;
   int kernel_lens_distort_lanczos3;
   int kernel_lens_vignette;
-} dt_iop_lensfun_global_data_t;
+} dt_iop_lens_global_data_t;
 
-typedef struct dt_iop_lensfun_data_t
+typedef struct dt_iop_lens_data_t
 {
   lfLens *lens;
   int modify_flags;
@@ -140,7 +159,7 @@ typedef struct dt_iop_lensfun_data_t
   gboolean do_nan_checks;
   gboolean tca_override;
   lfLensCalibTCA custom_tca;
-} dt_iop_lensfun_data_t;
+} dt_iop_lens_data_t;
 
 
 const char *name()
@@ -183,10 +202,82 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RGB;
 }
 
+static int _modflags_to_lensfun_mods(int modify_flags)
+{
+  int mods = LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
+
+  mods |= modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION ? LF_MODIFY_DISTORTION : 0;
+  mods |= modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING ? LF_MODIFY_VIGNETTING : 0;
+  mods |= modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA        ? LF_MODIFY_TCA        : 0;
+
+  return mods;
+}
+
+static int _modflags_from_lensfun_mods(int lf_mods)
+{
+  int mods = 0;
+
+  mods |= lf_mods & LF_MODIFY_DISTORTION ? DT_IOP_LENS_MODIFY_FLAG_DISTORTION : 0;
+  mods |= lf_mods & LF_MODIFY_VIGNETTING ? DT_IOP_LENS_MODIFY_FLAG_VIGNETTING : 0;
+  mods |= lf_mods & LF_MODIFY_TCA        ? DT_IOP_LENS_MODIFY_FLAG_TCA        : 0;
+
+  return mods;
+}
+
+static lfLensType _lenstype_to_lensfun_lenstype(int lt)
+{
+  switch(lt)
+  {
+    case DT_IOP_LENS_LENSTYPE_RECTILINEAR:
+      return LF_RECTILINEAR;
+    case DT_IOP_LENS_LENSTYPE_FISHEYE:
+      return LF_FISHEYE;
+    case DT_IOP_LENS_LENSTYPE_PANORAMIC:
+      return LF_PANORAMIC;
+    case DT_IOP_LENS_LENSTYPE_EQUIRECTANGULAR:
+      return LF_EQUIRECTANGULAR;
+    case DT_IOP_LENS_LENSTYPE_FISHEYE_ORTHOGRAPHIC:
+      return LF_FISHEYE_ORTHOGRAPHIC;
+    case DT_IOP_LENS_LENSTYPE_FISHEYE_STEREOGRAPHIC:
+      return LF_FISHEYE_STEREOGRAPHIC;
+    case DT_IOP_LENS_LENSTYPE_FISHEYE_EQUISOLID:
+      return LF_FISHEYE_EQUISOLID;
+    case DT_IOP_LENS_LENSTYPE_FISHEYE_THOBY:
+      return LF_FISHEYE_THOBY;
+    default:
+      return LF_UNKNOWN;
+  }
+}
+
+static int _lenstype_from_lensfun_lenstype(lfLensType lt)
+{
+  switch(lt)
+  {
+    case LF_RECTILINEAR:
+      return DT_IOP_LENS_LENSTYPE_RECTILINEAR;
+    case LF_FISHEYE:
+      return DT_IOP_LENS_LENSTYPE_FISHEYE;
+    case LF_PANORAMIC:
+      return DT_IOP_LENS_LENSTYPE_PANORAMIC;
+    case LF_EQUIRECTANGULAR:
+      return DT_IOP_LENS_LENSTYPE_EQUIRECTANGULAR;
+    case LF_FISHEYE_ORTHOGRAPHIC:
+      return DT_IOP_LENS_LENSTYPE_FISHEYE_ORTHOGRAPHIC;
+    case LF_FISHEYE_STEREOGRAPHIC:
+      return DT_IOP_LENS_LENSTYPE_FISHEYE_STEREOGRAPHIC;
+    case LF_FISHEYE_EQUISOLID:
+      return DT_IOP_LENS_LENSTYPE_FISHEYE_EQUISOLID;
+    case LF_FISHEYE_THOBY:
+      return DT_IOP_LENS_LENSTYPE_FISHEYE_THOBY;
+    default:
+      return DT_IOP_LENS_LENSTYPE_UNKNOWN;
+  }
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2 && new_version == 6)
   {
     // legacy params of version 2; version 1 comes from ancient times and seems to be forgotten by now
     typedef struct
@@ -203,22 +294,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char lens[52];
       int tca_override;
       float tca_r, tca_b;
-    } dt_iop_lensfun_params_v2_t;
+    } dt_iop_lens_params_v2_t;
 
-    const dt_iop_lensfun_params_v2_t *o = (dt_iop_lensfun_params_v2_t *)old_params;
-    dt_iop_lensfun_params_t *n = (dt_iop_lensfun_params_t *)new_params;
-    dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)self->default_params;
+    const dt_iop_lens_params_v2_t *o = (dt_iop_lens_params_v2_t *)old_params;
+    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
+    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
-    n->modify_flags = o->modify_flags;
+    n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = o->inverse;
     n->scale = o->scale;
     n->crop = o->crop;
     n->focal = o->focal;
     n->aperture = o->aperture;
     n->distance = o->distance;
-    n->target_geom = o->target_geom;
+    n->target_geom = _lenstype_from_lensfun_lenstype(o->target_geom);
     n->tca_override = o->tca_override;
     g_strlcpy(n->camera, o->camera, sizeof(n->camera));
     g_strlcpy(n->lens, o->lens, sizeof(n->lens));
@@ -230,7 +321,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     return 0;
   }
-  if(old_version == 3 && new_version == 5)
+
+  if(old_version == 3 && new_version == 6)
   {
     typedef struct
     {
@@ -246,15 +338,25 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       char lens[128];
       int tca_override;
       float tca_r, tca_b;
-    } dt_iop_lensfun_params_v3_t;
+    } dt_iop_lens_params_v3_t;
 
-    const dt_iop_lensfun_params_v3_t *o = (dt_iop_lensfun_params_v3_t *)old_params;
-    dt_iop_lensfun_params_t *n = (dt_iop_lensfun_params_t *)new_params;
-    dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)self->default_params;
+    const dt_iop_lens_params_v3_t *o = (dt_iop_lens_params_v3_t *)old_params;
+    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
+    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
-    memcpy(n, o, sizeof(dt_iop_lensfun_params_t) - sizeof(int));
+    n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
+    n->inverse = o->inverse;
+    n->scale = o->scale;
+    n->crop = o->crop;
+    n->focal = o->focal;
+    n->aperture = o->aperture;
+    n->distance = o->distance;
+    n->target_geom = _lenstype_from_lensfun_lenstype(o->target_geom);
+    n->tca_override = o->tca_override;
+    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
+    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
 
     // one more parameter and changed parameters in case we autodetect
     n->modified = 1;
@@ -266,7 +368,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
 
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4 && new_version == 6)
   {
     typedef struct
     {
@@ -283,19 +385,71 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int tca_override;
       float tca_r, tca_b;
       int modified;
-    } dt_iop_lensfun_params_v4_t;
+    } dt_iop_lens_params_v4_t;
 
-    const dt_iop_lensfun_params_v4_t *o = (dt_iop_lensfun_params_v4_t *)old_params;
-    dt_iop_lensfun_params_t *n = (dt_iop_lensfun_params_t *)new_params;
-    dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)self->default_params;
+    const dt_iop_lens_params_v4_t *o = (dt_iop_lens_params_v4_t *)old_params;
+    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
+    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
 
     *n = *d; // start with a fresh copy of default parameters
 
-    memcpy(n, o, sizeof(dt_iop_lensfun_params_t));
+    n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
+    n->inverse = o->inverse;
+    n->scale = o->scale;
+    n->crop = o->crop;
+    n->focal = o->focal;
+    n->aperture = o->aperture;
+    n->distance = o->distance;
+    n->target_geom = _lenstype_from_lensfun_lenstype(o->target_geom);
+    n->tca_override = o->tca_override;
+    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
+    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    n->modified = o->modified;
 
     // old versions had R and B swapped
     n->tca_r = o->tca_b;
     n->tca_b = o->tca_r;
+
+    return 0;
+  }
+
+  if(old_version == 5 && new_version == 6)
+  {
+    typedef struct
+    {
+      int modify_flags;
+      int inverse;
+      float scale;
+      float crop;
+      float focal;
+      float aperture;
+      float distance;
+      lfLensType target_geom;
+      char camera[128];
+      char lens[128];
+      int tca_override;
+      float tca_r, tca_b;
+      int modified;
+    } dt_iop_lens_params_v5_t;
+
+    const dt_iop_lens_params_v5_t *o = (dt_iop_lens_params_v5_t *)old_params;
+    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
+    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
+    n->inverse = o->inverse;
+    n->scale = o->scale;
+    n->crop = o->crop;
+    n->focal = o->focal;
+    n->aperture = o->aperture;
+    n->distance = o->distance;
+    n->target_geom = _lenstype_from_lensfun_lenstype(o->target_geom);
+    n->tca_override = o->tca_override;
+    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
+    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    n->modified = o->modified;
 
     return 0;
   }
@@ -336,10 +490,12 @@ static char *_lens_sanitize(const char *orig_lens)
   }
 }
 
-static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lensfun_data_t *d, int mods_filter, gboolean force_inverse)
+static lfModifier * _get_modifier(int *mods_done, int w, int h, const dt_iop_lens_data_t *d, int mods_filter, gboolean force_inverse)
 {
   lfModifier *mod;
-  int mods_todo = d->modify_flags & mods_filter;
+
+  const int mods = _modflags_to_lensfun_mods(d->modify_flags);
+  const int mods_todo = mods & mods_filter;
   int mods_done_tmp = 0;
 
 #ifdef LF_0395
@@ -381,8 +537,8 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_lensfun_data_t *const d = (dt_iop_lensfun_data_t *)piece->data;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  const dt_iop_lens_data_t *const d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
@@ -404,7 +560,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
   int modflags;
-  const lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
+  const lfModifier *modifier = _get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
 
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
@@ -589,7 +745,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
-    g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
+    g->corrections_done = _modflags_from_lensfun_mods(modflags);
     dt_iop_gui_leave_critical_section(self);
   }
 }
@@ -598,9 +754,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
@@ -675,7 +831,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_tmpbuf == NULL) goto error;
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-  modifier = get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
+  modifier = _get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   if(d->inverse)
@@ -822,7 +978,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
-    g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
+    g->corrections_done = _modflags_from_lensfun_mods(modflags);
     dt_iop_gui_leave_critical_section(self);
   }
 
@@ -857,7 +1013,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const __restrict points, size_t points_count)
 {
-  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
@@ -865,7 +1021,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   const int used_lf_mask = (dt_image_is_monochrome(&self->dev->image_storage)) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
-  const lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, TRUE);
+  const lfModifier *modifier = _get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, TRUE);
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
 
@@ -890,7 +1046,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const __restrict points,
                           size_t points_count)
 {
-  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
@@ -898,7 +1054,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
   int modflags;
-  const lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
+  const lfModifier *modifier = _get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
@@ -925,7 +1081,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
                   float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_lensfun_data_t *const d = (dt_iop_lensfun_data_t *)piece->data;
+  const dt_iop_lens_data_t *const d = (dt_iop_lens_data_t *)piece->data;
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
@@ -936,7 +1092,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   int modflags;
-  const lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, /*LF_MODIFY_TCA |*/ LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE, FALSE);
+  const lfModifier *modifier = _get_modifier(&modflags, orig_w, orig_h, d, /*LF_MODIFY_TCA |*/ LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE, FALSE);
 
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
@@ -996,7 +1152,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *const roi_out, dt_iop_roi_t *roi_in)
 {
-  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   *roi_in = *roi_out;
   // inverse transform with given params
 
@@ -1004,7 +1160,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
   int modflags;
-  const lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, LF_MODIFY_ALL, FALSE);
+  const lfModifier *modifier = _get_modifier(&modflags, orig_w, orig_h, d, LF_MODIFY_ALL, FALSE);
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
@@ -1101,7 +1257,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)p1;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)p1;
 
   if(p->modified == 0)
   {
@@ -1109,12 +1265,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
      * user did not modify anything in gui after autodetection - let's
      * use current default_params as params - for presets and mass-export
      */
-    p = (dt_iop_lensfun_params_t *)self->default_params;
+    p = (dt_iop_lens_params_t *)self->default_params;
   }
 
-  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   const lfCamera *camera = NULL;
   const lfCamera **cam = NULL;
@@ -1179,13 +1335,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   lf_free(cam);
   d->modify_flags = p->modify_flags;
-  if(dt_image_is_monochrome(&self->dev->image_storage)) d->modify_flags &= ~LF_MODIFY_TCA;
+  if(dt_image_is_monochrome(&self->dev->image_storage)) d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
   d->inverse = p->inverse;
   d->scale = p->scale;
   d->focal = p->focal;
   d->aperture = p->aperture;
   d->distance = p->distance;
-  d->target_geom = p->target_geom;
+  d->target_geom = _lenstype_to_lensfun_lenstype(p->target_geom);
   d->do_nan_checks = TRUE;
   d->tca_override = p->tca_override;
 
@@ -1205,12 +1361,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = calloc(1, sizeof(dt_iop_lensfun_data_t));
+  piece->data = calloc(1, sizeof(dt_iop_lens_data_t));
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+  dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
   if(d->lens)
   {
@@ -1224,8 +1380,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_lensfun_global_data_t *gd
-      = (dt_iop_lensfun_global_data_t *)calloc(1, sizeof(dt_iop_lensfun_global_data_t));
+  dt_iop_lens_global_data_t *gd
+      = (dt_iop_lens_global_data_t *)calloc(1, sizeof(dt_iop_lens_global_data_t));
   module->data = gd;
   gd->kernel_lens_distort_bilinear = dt_opencl_create_kernel(program, "lens_distort_bilinear");
   gd->kernel_lens_distort_bicubic = dt_opencl_create_kernel(program, "lens_distort_bicubic");
@@ -1285,7 +1441,7 @@ void init_global(dt_iop_module_so_t *module)
   }
 }
 
-static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, const lfCamera *camera);
+static float get_autoscale(dt_iop_module_t *self, dt_iop_lens_params_t *p, const lfCamera *camera);
 
 void reload_defaults(dt_iop_module_t *module)
 {
@@ -1294,7 +1450,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   // reload image specific stuff
   // get all we can from exif:
-  dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)module->default_params;
+  dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)module->default_params;
 
   new_lens = _lens_sanitize(img->exif_lens);
   g_strlcpy(d->lens, new_lens, sizeof(d->lens));
@@ -1303,15 +1459,13 @@ void reload_defaults(dt_iop_module_t *module)
   d->crop = img->exif_crop;
   d->aperture = img->exif_aperture;
   d->focal = img->exif_focal_length;
-  d->scale = 1.0;
-  d->modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING | LF_MODIFY_DISTORTION |
-                    LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
+
   // if we did not find focus_distance in EXIF, lets default to 1000
   d->distance = img->exif_focus_distance == 0.0f ? 1000.0f : img->exif_focus_distance;
-  d->target_geom = LF_RECTILINEAR;
+  d->target_geom = DT_IOP_LENS_LENSTYPE_RECTILINEAR;
 
   if(dt_image_is_monochrome(img))
-    d->modify_flags &= ~LF_MODIFY_TCA;
+    d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
 
   // init crop from db:
   char model[100]; // truncate often complex descriptions.
@@ -1321,7 +1475,7 @@ void reload_defaults(dt_iop_module_t *module)
       if(++cnt == 2) *c = '\0';
   if(img->exif_maker[0] || model[0])
   {
-    dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->global_data;
+    dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)module->global_data;
 
     // just to be sure
     if(!gd || !gd->db) return;
@@ -1380,7 +1534,7 @@ void reload_defaults(dt_iop_module_t *module)
           g_strlcpy(d->lens, lens[lens_i]->Model, sizeof(d->lens));
         }
 
-        d->target_geom = lens[lens_i]->Type;
+        d->target_geom = _lenstype_from_lensfun_lenstype(lens[lens_i]->Type);
         lf_free(lens);
       }
 
@@ -1392,7 +1546,7 @@ void reload_defaults(dt_iop_module_t *module)
   }
 
   // if we have a gui -> reset corrections_done message
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)module->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)module->gui_data;
   if(g)
   {
     dt_iop_gui_enter_critical_section(module);
@@ -1404,7 +1558,7 @@ void reload_defaults(dt_iop_module_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)module->data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   delete dt_iop_lensfun_db;
 
@@ -1526,8 +1680,8 @@ static void ptr_array_insert_index(GPtrArray *array, const void *item, int index
 
 static void camera_set(dt_iop_module_t *self, const lfCamera *cam)
 {
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   gchar *fm;
   const char *maker, *model, *variant;
   char _variant[100];
@@ -1576,14 +1730,14 @@ static void camera_menu_select(GtkMenuItem *menuitem, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   camera_set(self, (lfCamera *)g_object_get_data(G_OBJECT(menuitem), "lfCamera"));
   if(darktable.gui->reset) return;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   p->modified = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void camera_menu_fill(dt_iop_module_t *self, const lfCamera *const *camlist)
 {
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   unsigned i;
   GPtrArray *makers, *submenus;
 
@@ -1652,9 +1806,9 @@ static void parse_model(const char *txt, char *model, size_t sz_model)
 static void camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   (void)button;
 
@@ -1671,11 +1825,11 @@ static void camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
 static void camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   char make[200], model[200];
-  const gchar *txt = (const gchar *)((dt_iop_lensfun_params_t *)self->default_params)->camera;
+  const gchar *txt = (const gchar *)((dt_iop_lens_params_t *)self->default_params)->camera;
 
   (void)button;
 
@@ -1706,7 +1860,7 @@ static void camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
 
 static void lens_comboentry_focal_update(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   const char *text = dt_bauhaus_combobox_get_text(widget);
   if(text) (void)sscanf(text, "%f", &p->focal);
   p->modified = 1;
@@ -1715,7 +1869,7 @@ static void lens_comboentry_focal_update(GtkWidget *widget, dt_iop_module_t *sel
 
 static void lens_comboentry_aperture_update(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   const char *text = dt_bauhaus_combobox_get_text(widget);
   if(text) (void)sscanf(text, "%f", &p->aperture);
   p->modified = 1;
@@ -1724,7 +1878,7 @@ static void lens_comboentry_aperture_update(GtkWidget *widget, dt_iop_module_t *
 
 static void lens_comboentry_distance_update(GtkWidget *widget, dt_iop_module_t *self)
 {
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   const char *text = dt_bauhaus_combobox_get_text(widget);
   if(text) (void)sscanf(text, "%f", &p->distance);
   p->modified = 1;
@@ -1739,7 +1893,7 @@ static void delete_children(GtkWidget *widget, gpointer data)
 
 static void _display_lens_error(struct dt_iop_module_t *self)
 {
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   if(g->trouble && self->enabled)
   {
@@ -1761,8 +1915,8 @@ static void _display_lens_error(struct dt_iop_module_t *self)
 
 static void lens_set(dt_iop_module_t *self, const lfLens *lens)
 {
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
   gchar *fm;
   const char *maker, *model;
@@ -1955,8 +2109,8 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
 static void lens_menu_select(GtkMenuItem *menuitem, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   lens_set(self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
   if(darktable.gui->reset) return;
   p->modified = 1;
@@ -1967,7 +2121,7 @@ static void lens_menu_select(GtkMenuItem *menuitem, gpointer user_data)
 
 static void lens_menu_fill(dt_iop_module_t *self, const lfLens *const *lenslist)
 {
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   unsigned i;
   GPtrArray *makers, *submenus;
 
@@ -2019,9 +2173,9 @@ static void lens_menu_fill(dt_iop_module_t *self, const lfLens *const *lenslist)
 static void lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
 
   (void)button;
@@ -2039,12 +2193,12 @@ static void lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
 static void lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
   char model[200];
-  const gchar *txt = ((dt_iop_lensfun_params_t *)self->default_params)->lens;
+  const gchar *txt = ((dt_iop_lens_params_t *)self->default_params)->lens;
 
   (void)button;
 
@@ -2065,10 +2219,10 @@ static void lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
 static void target_geometry_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
   int pos = dt_bauhaus_combobox_get(widget);
-  p->target_geom = (lfLensType)(pos + LF_UNKNOWN + 1);
+  p->target_geom = (pos + DT_IOP_LENS_LENSTYPE_UNKNOWN + 1);
   p->modified = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2077,15 +2231,15 @@ static void modflags_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   int pos = dt_bauhaus_combobox_get(widget);
   for(GList *modifiers = g->modifiers;  modifiers; modifiers = g_list_next(modifiers))
   {
-    dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
+    dt_iop_lens_gui_modifier_t *mm = (dt_iop_lens_gui_modifier_t *)modifiers->data;
     if(mm->pos == pos)
     {
-      p->modify_flags = (p->modify_flags & ~LENSFUN_MODFLAG_MASK) | mm->modflag;
+      p->modify_flags = mm->modflag;
       p->modified = 1;
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       break;
@@ -2095,8 +2249,8 @@ static void modflags_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   gtk_widget_set_visible(g->tca_override, !raw_monochrome);
   // update gui to show/hide tca sliders if tca_override was changed
@@ -2117,9 +2271,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 }
 
 
-static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, const lfCamera *camera)
+static float get_autoscale(dt_iop_module_t *self, dt_iop_lens_params_t *p, const lfCamera *camera)
 {
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   float scale = 1.0;
   if(p->lens[0] != '\0')
@@ -2137,7 +2291,7 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
 
       // create dummy modifier
 #if defined(__GNUC__) && (__GNUC__ > 7)
-      const dt_iop_lensfun_data_t d =
+      const dt_iop_lens_data_t d =
         {
          .lens         = (lfLens *)lenslist[0],
          .modify_flags = p->modify_flags,
@@ -2147,7 +2301,7 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
          .focal        = p->focal,
          .aperture     = p->aperture,
          .distance     = p->distance,
-         .target_geom  = p->target_geom,
+         .target_geom  = _lenstype_to_lensfun_lenstype(p->target_geom),
          .custom_tca   = { .Model = LF_TCA_MODEL_NONE }
         };
 #else
@@ -2155,7 +2309,7 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
       //    sorry, unimplemented: non-trivial designated initializers not supported
       // ?? This code can be removed when GCC-7 is not used anymore.
 
-      dt_iop_lensfun_data_t d;
+      dt_iop_lens_data_t d;
       d.lens             = (lfLens *)lenslist[0];
       d.modify_flags     = p->modify_flags;
       d.inverse          = p->inverse;
@@ -2164,11 +2318,11 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
       d.focal            = p->focal;
       d.aperture         = p->aperture;
       d.distance         = p->distance;
-      d.target_geom      = p->target_geom;
+      d.target_geom      = _lenstype_to_lensfun_lenstype(p->target_geom);
       d.custom_tca.Model = LF_TCA_MODEL_NONE;
 #endif
 
-      lfModifier *modifier = get_modifier(NULL, iwd, iht, &d, LF_MODIFY_ALL, FALSE);
+      lfModifier *modifier = _get_modifier(NULL, iwd, iht, &d, LF_MODIFY_ALL, FALSE);
 
       scale = modifier->GetAutoScale(p->inverse);
       delete modifier;
@@ -2182,8 +2336,8 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
 static void autoscale_pressed(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   const float scale = get_autoscale(self, p, g->camera);
   p->modified = 1;
   dt_bauhaus_slider_set(g->scale, scale);
@@ -2192,7 +2346,7 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
 static void corrections_done(gpointer instance, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
 
   dt_iop_gui_enter_critical_section(self);
@@ -2203,7 +2357,7 @@ static void corrections_done(gpointer instance, gpointer user_data)
   char *message = (char *)empty_message;
   for(GList *modifiers = g->modifiers; modifiers && self->enabled; modifiers = g_list_next(modifiers))
   {
-    dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
+    dt_iop_lens_gui_modifier_t *mm = (dt_iop_lens_gui_modifier_t *)modifiers->data;
     if(mm->modflag == corrections_done)
     {
       message = mm->name;
@@ -2225,7 +2379,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  dt_iop_lensfun_gui_data_t *g = IOP_GUI_ALLOC(lensfun);
+  dt_iop_lens_gui_data_t *g = IOP_GUI_ALLOC(lens);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
@@ -2241,53 +2395,53 @@ void gui_init(struct dt_iop_module_t *self)
 
   // initialize modflags options
   int pos = -1;
-  dt_iop_lensfun_modifier_t *modifier;
-  modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
+  dt_iop_lens_gui_modifier_t *modifier;
+  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
   dt_utf8_strlcpy(modifier->name, _("none"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = LENSFUN_MODFLAG_NONE;
+  modifier->modflag = DT_IOP_LENS_MODFLAG_NONE;
   modifier->pos = ++pos;
 
-  modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
+  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
   dt_utf8_strlcpy(modifier->name, _("all"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = LENSFUN_MODFLAG_ALL;
+  modifier->modflag = DT_IOP_LENS_MODFLAG_ALL;
   modifier->pos = ++pos;
 
-  modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
+  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
   dt_utf8_strlcpy(modifier->name, _("distortion & TCA"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = LENSFUN_MODFLAG_DIST_TCA;
+  modifier->modflag = DT_IOP_LENS_MODFLAG_DIST_TCA;
   modifier->pos = ++pos;
 
-  modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
+  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
   dt_utf8_strlcpy(modifier->name, _("distortion & vignetting"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = LENSFUN_MODFLAG_DIST_VIGN;
+  modifier->modflag = DT_IOP_LENS_MODFLAG_DIST_VIGN;
   modifier->pos = ++pos;
 
-  modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
+  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
   dt_utf8_strlcpy(modifier->name, _("TCA & vignetting"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = LENSFUN_MODFLAG_TCA_VIGN;
+  modifier->modflag = DT_IOP_LENS_MODFLAG_TCA_VIGN;
   modifier->pos = ++pos;
 
-  modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
+  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
   dt_utf8_strlcpy(modifier->name, _("only distortion"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = LENSFUN_MODFLAG_DIST;
+  modifier->modflag = DT_IOP_LENS_MODFLAG_DIST;
   modifier->pos = ++pos;
 
-  modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
+  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
   dt_utf8_strlcpy(modifier->name, _("only TCA"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = LENSFUN_MODFLAG_TCA;
+  modifier->modflag = DT_IOP_LENS_MODFLAG_TCA;
   modifier->pos = ++pos;
 
-  modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
+  modifier = (dt_iop_lens_gui_modifier_t *)g_malloc0(sizeof(dt_iop_lens_gui_modifier_t));
   dt_utf8_strlcpy(modifier->name, _("only vignetting"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
-  modifier->modflag = LENSFUN_MODFLAG_VIGN;
+  modifier->modflag = DT_IOP_LENS_MODFLAG_VIGN;
   modifier->pos = ++pos;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -2346,7 +2500,7 @@ void gui_init(struct dt_iop_module_t *self)
   GList *l = g->modifiers;
   while(l)
   {
-    modifier = (dt_iop_lensfun_modifier_t *)l->data;
+    modifier = (dt_iop_lens_gui_modifier_t *)l->data;
     dt_bauhaus_combobox_add(g->modflags, modifier->name);
     l = g_list_next(l);
   }
@@ -2421,8 +2575,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 void gui_update(struct dt_iop_module_t *self)
 {
   // let gui elements reflect params
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
   if(p->modified == 0)
   {
@@ -2430,10 +2584,10 @@ void gui_update(struct dt_iop_module_t *self)
      * user did not modify anything in gui after autodetection - let's
      * use current default_params as params - for presets and mass-export
      */
-    memcpy(self->params, self->default_params, sizeof(dt_iop_lensfun_params_t));
+    memcpy(self->params, self->default_params, sizeof(dt_iop_lens_params_t));
   }
 
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
+  dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   // these are the wrong (untranslated) strings in general but that's ok, they will be overwritten further
   // down
@@ -2442,10 +2596,10 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->camera_model, "");
   gtk_widget_set_tooltip_text(g->lens_model, "");
 
-  int modflag = p->modify_flags & LENSFUN_MODFLAG_MASK;
+  int modflag = p->modify_flags;
   for(GList *modifiers = g->modifiers; modifiers; modifiers = g_list_next(modifiers))
   {
-    dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
+    dt_iop_lens_gui_modifier_t *mm = (dt_iop_lens_gui_modifier_t *)modifiers->data;
     if(mm->modflag == modflag)
     {
       dt_bauhaus_combobox_set(g->modflags, mm->pos);
@@ -2494,7 +2648,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(corrections_done), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
@@ -2516,4 +2670,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
