@@ -749,6 +749,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   dt_develop_t dev;
   dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
+  if(history_end != -1)
+    dt_dev_pop_history_items_ext(&dev, history_end);
 
   const gboolean buf_is_downscaled = (thumbnail_export && dt_conf_get_bool("ui/performance"));
   dt_mipmap_buffer_t buf;
@@ -783,7 +785,6 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     goto error;
   }
 
-  const int final_history_end = history_end == -1 ? dev.history_end : history_end;
   const gboolean use_style = !thumbnail_export && format_params->style[0] != '\0';
   const gboolean appending = format_params->style_append != FALSE;
   //  If a style is to be applied during export, add the iop params into the history
@@ -798,7 +799,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
     GList *modules_used = NULL;
 
-    dt_dev_pop_history_items_ext(&dev, appending ? final_history_end : 0);
+    if(!appending) dt_dev_pop_history_items_ext(&dev, 0);
     dt_ioppr_update_for_style_items(&dev, style_items, appending);
 
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
@@ -810,8 +811,6 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     g_list_free(modules_used);
     g_list_free_full(style_items, dt_style_item_free);
   }
-  else if(history_end != -1)
-    dt_dev_pop_history_items_ext(&dev, final_history_end);
 
   dt_ioppr_resync_modules_order(&dev);
 
