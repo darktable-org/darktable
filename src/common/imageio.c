@@ -772,13 +772,14 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  gboolean res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
-                         : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
+  gboolean res = thumbnail_export
+    ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
+    : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
   if(!res)
   {
     dt_control_log(
-        _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
-        thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
+      _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
+      thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
     goto error;
   }
 
@@ -1123,7 +1124,6 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
   if(!ignore_exif)
   {
-    int length;
     uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes max, but if original size is close to that,
                                   // adding new tags could make it go over that... so let it be and see what
                                   // happens when we write the image
@@ -1131,7 +1131,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
     // last param is dng mode, it's false here
-    length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
+    const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
 
     res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, exif_profile, length, imgid,
                               num, total, &pipe, export_masks);
@@ -1335,4 +1335,3 @@ gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
