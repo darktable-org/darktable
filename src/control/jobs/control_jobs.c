@@ -2108,7 +2108,7 @@ static int _control_import_image_copy(const char *filename,
   }
 
   if(!g_file_set_contents(output, data, size, NULL))
-  { 
+  {
     dt_print(DT_DEBUG_CONTROL, "[import_from] failed to write file %s\n", output);
     res = FALSE;
   }
