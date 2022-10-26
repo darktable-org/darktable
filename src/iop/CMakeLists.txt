@@ -155,9 +155,7 @@ if(Rsvg2_FOUND)
   add_iop(watermark "watermark.c")
 endif(Rsvg2_FOUND)
 
-if(LensFun_FOUND)
-  add_iop(lens "lens.cc" DEFAULT_VISIBLE)
-endif(LensFun_FOUND)
+add_iop(lens "lens.cc" DEFAULT_VISIBLE)
 
 # fix for Mac when OpenMP is only available in C compiler
 if(APPLE)
