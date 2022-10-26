@@ -34,6 +34,7 @@ DT_MODULE(1)
 typedef struct dt_lib_tool_filter_filter_t
 {
   dt_collection_properties_t prop;
+  int num;
   gchar *raw_text;
 
   dt_lib_filters_rule_t *rule;
@@ -43,13 +44,12 @@ typedef struct dt_lib_tool_filter_t
 {
   GtkWidget *filter_box;
   GtkWidget *sort_box;
-<<<<<<< HEAD
   GtkWidget *count;
-=======
 
   GList *filters;
   GList *sorts;
->>>>>>> 07f7975e37 (filters : reactivate topbar)
+
+  gchar *last_where_ext;
 } dt_lib_tool_filter_t;
 
 const char *name(dt_lib_module_t *self)
@@ -105,7 +105,6 @@ static void _dt_collection_updated(gpointer instance, dt_collection_change_t que
                                    dt_collection_properties_t changed_property, gpointer imgs, int next,
                                    gpointer self)
 {
-  /* TODO
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)dm->data;
 
@@ -114,40 +113,30 @@ static void _dt_collection_updated(gpointer instance, dt_collection_change_t que
   {
     g_free(d->last_where_ext);
     d->last_where_ext = g_strdup(where_ext);
-    for(int i = 0; i <= d->nb_rules; i++)
+    for(GList *iter = d->filters; iter; iter = g_list_next(iter))
     {
-      _widget_update(&d->rule[i]);
+      dt_lib_tool_filter_filter_t *filter = (dt_lib_tool_filter_filter_t *)iter->data;
+      dt_filters_update(filter->rule, d->last_where_ext);
     }
-  }*/
+  }
 }
 
 static void _filters_changed(void *data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  dt_lib_filters_rule_t *rule = (dt_lib_filters_rule_t *)data;
+  dt_lib_tool_filter_filter_t *filter = rule->parent;
 
   // save the values
   char confname[200] = { 0 };
-  int i = 0;
-  int last = -1;
-  for(GList *iter = d->filters; iter; iter = g_list_next(iter))
-  {
-    dt_lib_tool_filter_filter_t *f = (dt_lib_tool_filter_filter_t *)iter->data;
-    snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/item%1d", i);
-    dt_conf_set_int(confname, f->prop);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/string%1d", i);
-    dt_conf_set_string(confname, f->raw_text);
-    last = f->prop;
-    i++;
-  }
-  dt_conf_set_int("plugins/lighttable/topbar/num_rules", i);
-
-  if(i == 0) return;
+  snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/item%1d", filter->num);
+  dt_conf_set_int(confname, rule->prop);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/string%1d", filter->num);
+  dt_conf_set_string(confname, rule->raw_text);
 
   // update the query without throwing signal everywhere
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, last, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, rule->prop, NULL);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
 }
@@ -183,11 +172,12 @@ static void _filters_init(dt_lib_module_t *self)
     dt_lib_tool_filter_filter_t *f = (dt_lib_tool_filter_filter_t *)g_malloc0(sizeof(dt_lib_tool_filter_filter_t));
 
     f->prop = prop;
+    f->num = i;
     snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/string%1d", i);
     f->raw_text = dt_conf_get_string(confname);
 
     f->rule = (dt_lib_filters_rule_t *)g_malloc0(sizeof(dt_lib_filters_rule_t));
-    f->rule->parent = self;
+    f->rule->parent = f;
     f->rule->rule_changed = _filters_changed;
     if(f->rule->w_special_box) gtk_widget_destroy(f->rule->w_special_box);
     f->rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

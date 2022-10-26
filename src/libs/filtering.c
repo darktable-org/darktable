@@ -1053,7 +1053,7 @@ static void _dt_collection_updated(gpointer instance, dt_collection_change_t que
   {
     g_free(d->last_where_ext);
     d->last_where_ext = g_strdup(where_ext);
-    for(int i = 0; i <= d->nb_rules; i++)
+    for(int i = 0; i < d->nb_rules; i++)
     {
       _widget_update(&d->rule[i]);
     }
