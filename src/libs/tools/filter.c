@@ -31,15 +31,6 @@
 
 DT_MODULE(1)
 
-typedef struct dt_lib_tool_filter_filter_t
-{
-  dt_collection_properties_t prop;
-  int num;
-  gchar *raw_text;
-
-  dt_lib_filters_rule_t *rule;
-} dt_lib_tool_filter_filter_t;
-
 typedef struct dt_lib_tool_filter_t
 {
   GtkWidget *filter_box;
@@ -116,8 +107,8 @@ static void _dt_collection_updated(gpointer instance, dt_collection_change_t que
     d->last_where_ext = g_strdup(where_ext);
     for(GList *iter = d->filters; iter; iter = g_list_next(iter))
     {
-      dt_lib_tool_filter_filter_t *filter = (dt_lib_tool_filter_filter_t *)iter->data;
-      dt_filters_update(filter->rule, d->last_where_ext);
+      dt_lib_filters_rule_t *rule = (dt_lib_filters_rule_t *)iter->data;
+      dt_filters_update(rule, d->last_where_ext);
     }
   }
 }
@@ -125,13 +116,15 @@ static void _dt_collection_updated(gpointer instance, dt_collection_change_t que
 static void _filters_changed(void *data)
 {
   dt_lib_filters_rule_t *rule = (dt_lib_filters_rule_t *)data;
-  dt_lib_tool_filter_filter_t *filter = rule->parent;
+  dt_lib_tool_filter_t *d = rule->parent;
 
   // save the values
+  const int num = g_list_index(d->filters, rule);
+  if(num < 0) return;
   char confname[200] = { 0 };
-  snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/item%1d", filter->num);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/item%1d", num);
   dt_conf_set_int(confname, rule->prop);
-  snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/string%1d", filter->num);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/string%1d", num);
   dt_conf_set_string(confname, rule->raw_text);
 
   // update the query without throwing signal everywhere
@@ -144,38 +137,30 @@ static void _filters_changed(void *data)
 
 static void _filter_free(gpointer data)
 {
-  dt_lib_tool_filter_filter_t *filter = (dt_lib_tool_filter_filter_t *)data;
-  if(filter->raw_text) g_free(filter->raw_text);
-  dt_filters_free(filter->rule);
+  dt_lib_filters_rule_t *rule = (dt_lib_filters_rule_t *)data;
+  dt_filters_free(rule);
 }
 
-static dt_lib_tool_filter_filter_t *_filter_create_new(const dt_collection_properties_t prop,
-                                                       const gchar *raw_text, dt_lib_module_t *self)
+static dt_lib_filters_rule_t *_filter_create_new(const dt_collection_properties_t prop, const gchar *raw_text,
+                                                 dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   if(!dt_filters_exists(prop)) return NULL;
 
   // create a new filter structure
-  dt_lib_tool_filter_filter_t *f = (dt_lib_tool_filter_filter_t *)g_malloc0(sizeof(dt_lib_tool_filter_filter_t));
+  dt_lib_filters_rule_t *rule = (dt_lib_filters_rule_t *)g_malloc0(sizeof(dt_lib_filters_rule_t));
+  rule->parent = d;
+  rule->rule_changed = _filters_changed;
+  rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  f->prop = prop;
-  f->num = g_list_length(d->filters);
-  f->raw_text = g_strdup(raw_text);
+  dt_filters_init(rule, prop, raw_text, self, TRUE);
 
-  f->rule = (dt_lib_filters_rule_t *)g_malloc0(sizeof(dt_lib_filters_rule_t));
-  f->rule->parent = f;
-  f->rule->rule_changed = _filters_changed;
-  if(f->rule->w_special_box) gtk_widget_destroy(f->rule->w_special_box);
-  f->rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(d->filter_box), rule->w_special_box, FALSE, TRUE, 0);
+  gtk_widget_show_all(rule->w_special_box);
 
-  dt_filters_init(f->rule, f->prop, f->raw_text, self, TRUE);
+  d->filters = g_list_append(d->filters, rule);
 
-  gtk_box_pack_start(GTK_BOX(d->filter_box), f->rule->w_special_box, FALSE, TRUE, 0);
-  gtk_widget_show_all(f->rule->w_special_box);
-
-  d->filters = g_list_append(d->filters, f);
-
-  return f;
+  return rule;
 }
 
 static void _filters_init(dt_lib_module_t *self)
@@ -205,29 +190,22 @@ static void _filters_init(dt_lib_module_t *self)
   --darktable.gui->reset;
 }
 
-static gboolean _event_filter_remove(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean _event_filter_remove(GtkWidget *widget, GdkEventButton *event, dt_lib_filters_rule_t *rule)
 {
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  dt_lib_tool_filter_filter_t *filter
-      = (dt_lib_tool_filter_filter_t *)g_object_get_data(G_OBJECT(widget), "filter");
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)rule->parent;
 
   // remove the filter from the GList and destroy it
-  for(GList *iter = d->filters; iter; iter = g_list_next(iter))
-  {
-    if(iter->data == filter)
-    {
-      d->filters = g_list_remove(d->filters, iter->data);
-      _filter_free(filter);
-      break;
-    }
-  }
+  const int num = g_list_index(d->filters, rule);
+  if(num < 0) return TRUE;
+  d->filters = g_list_remove(d->filters, rule);
+  _filter_free(rule);
 
   // remove the filter from the saved properties
   const int nb = MAX(dt_conf_get_int("plugins/lighttable/topbar/num_rules"), 0);
   char confname[200] = { 0 };
 
   // create or update defined rules
-  for(int i = filter->num + 1; i < nb; i++)
+  for(int i = num + 1; i < nb; i++)
   {
     snprintf(confname, sizeof(confname), "plugins/lighttable/topbar/item%1d", i);
     const int prop = dt_conf_get_int(confname);
@@ -250,16 +228,15 @@ static gboolean _event_filter_remove(GtkWidget *widget, GdkEventButton *event, d
   return TRUE;
 }
 
-static GtkWidget *_popup_get_new_filter_line(dt_lib_tool_filter_filter_t *filter, dt_lib_module_t *self)
+static GtkWidget *_popup_get_new_filter_line(dt_lib_filters_rule_t *rule, dt_lib_module_t *self)
 {
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *eb = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(eb), gtk_label_new(dt_collection_name(filter->prop)));
+  gtk_container_add(GTK_CONTAINER(eb), gtk_label_new(dt_collection_name(rule->prop)));
   gtk_box_pack_start(GTK_BOX(hbox), eb, TRUE, TRUE, 0);
   GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
-  g_object_set_data(G_OBJECT(btn), "filter", filter);
   gtk_widget_set_tooltip_text(btn, _("remove the filter"));
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_filter_remove), self);
+  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_filter_remove), rule);
   gtk_box_pack_start(GTK_BOX(hbox), btn, FALSE, TRUE, 0);
   gtk_widget_show_all(hbox);
   return hbox;
@@ -271,8 +248,8 @@ static void _event_add_filter(GtkWidget *widget, dt_lib_module_t *self)
 
   // create the filter and add it to the GList
   const int prop = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
-  dt_lib_tool_filter_filter_t *filter = _filter_create_new(prop, "", self);
-  if(!filter) return;
+  dt_lib_filters_rule_t *rule = _filter_create_new(prop, "", self);
+  if(!rule) return;
 
   // save the properties
   const int nb = g_list_length(d->filters);
@@ -284,7 +261,7 @@ static void _event_add_filter(GtkWidget *widget, dt_lib_module_t *self)
   dt_conf_set_string(confname, "");
 
   // add the line in the popup
-  GtkWidget *hbox = _popup_get_new_filter_line(filter, self);
+  GtkWidget *hbox = _popup_get_new_filter_line(rule, self);
   gtk_box_pack_start(GTK_BOX(gtk_widget_get_parent(widget)), hbox, FALSE, TRUE, 0);
 
   // reset the combobox
@@ -310,8 +287,8 @@ static gboolean _event_menu_show(GtkWidget *widget, GdkEventButton *event, dt_li
   // we show already added filters
   for(GList *iter = d->filters; iter; iter = g_list_next(iter))
   {
-    dt_lib_tool_filter_filter_t *filter = (dt_lib_tool_filter_filter_t *)iter->data;
-    GtkWidget *hbox = _popup_get_new_filter_line(filter, self);
+    dt_lib_filters_rule_t *rule = (dt_lib_filters_rule_t *)iter->data;
+    GtkWidget *hbox = _popup_get_new_filter_line(rule, self);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
   }
 
