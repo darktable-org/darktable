@@ -212,9 +212,11 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   if(id)
   {
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
-    dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
-                                 high_quality, TRUE, FALSE, FALSE, NULL, FALSE, FALSE, DT_COLORSPACE_DISPLAY,
-                                 NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
+    dt_imageio_export_with_flags
+      (id, "slideshow", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
+       high_quality, TRUE, FALSE, FALSE, NULL, FALSE, FALSE,
+       darktable.color_profiles->display_type, darktable.color_profiles->display_filename,
+       DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
 
     // lock to copy back into the slot the rendered buffer, not that this is done only if
     // the slot rank is still the same as the local buffer rank. This can be false if the
