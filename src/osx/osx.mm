@@ -15,6 +15,11 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* workaround to fix issue #12720 */
+#if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
+#define _DARWIN_C_SOURCE
+#endif
+
 #include <Carbon/Carbon.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreServices/CoreServices.h>
