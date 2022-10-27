@@ -3012,7 +3012,7 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
   {
     const gint new_size = dt_conf_get_int(config_str) + increment*delta_y;
 
-    dt_toast_log("%d", 1 + new_size / increment);
+    dt_toast_log(_("never show more than %d lines"), 1 + new_size / increment);
 
     dt_conf_set_int(config_str, new_size);
 
