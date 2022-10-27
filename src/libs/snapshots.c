@@ -204,7 +204,8 @@ static int _export_image(dt_lib_module_t *self, size_t width, size_t height)
   dt_imageio_export_with_flags
     (snap->imgid, "snapshot", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
      high_quality, upscale, is_scaling, FALSE, NULL, FALSE, export_masks,
-     DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
+     darktable.color_profiles->display_type, darktable.color_profiles->display_filename,
+     DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
      snap->history_end);
 
   d->params.buf = dat.buf;
