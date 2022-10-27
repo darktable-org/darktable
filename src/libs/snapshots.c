@@ -532,6 +532,21 @@ void gui_reset(dt_lib_module_t *self)
   dt_control_queue_redraw_center();
 }
 
+static void _signal_profile_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
+{
+  // when the display profile is changed, make sure we recreate the snapshot
+  if(profile_type == DT_COLORSPACES_PROFILE_TYPE_DISPLAY)
+  {
+    dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+    dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+
+    if(d->selected >= 0)
+      d->snap_requested = TRUE;
+
+    dt_control_queue_redraw_center();
+  }
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -595,6 +610,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
 
   dt_action_register(DT_ACTION(self), N_("toggle last snapshot"), _lib_snapshots_toggle_last, 0, 0);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+                                  G_CALLBACK(_signal_profile_changed), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
