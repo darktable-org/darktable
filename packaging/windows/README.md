@@ -8,7 +8,7 @@ To build darktable for the Windows operating system you have two basic options.
 Native build using MSYS2
 ------------------------
 
-How to make a darktable Windows installer (x64 only; Windows 8.1 or earlier will need to have [UCRT installed](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c)):
+How to make a darktable Windows installer (x64 only; Windows 8.1 will need to have [UCRT installed](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c)):
 
 * Install MSYS2 (instructions and prerequisites can be found on the official website: https://www.msys2.org)
 
