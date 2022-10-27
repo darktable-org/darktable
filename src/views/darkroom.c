@@ -172,15 +172,6 @@ void cleanup(dt_view_t *self)
   free(dev);
 }
 
-static cairo_status_t _write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
-{
-  const int fd = GPOINTER_TO_INT(closure);
-  ssize_t res = write(fd, data, length);
-  if(res != length)
-    return CAIRO_STATUS_WRITE_ERROR;
-  return CAIRO_STATUS_SUCCESS;
-}
-
 static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -691,23 +682,6 @@ void expose(
 
   /* if we are in full preview mode, we don"t want anything else than the image */
   if(dev->full_preview) return;
-
-  /* check if we should create a snapshot of view */
-  if(darktable.develop->proxy.snapshot.request && !darktable.develop->image_loading)
-  {
-    /* reset the request */
-    darktable.develop->proxy.snapshot.request = FALSE;
-
-    /* validation of snapshot filename */
-    g_assert(darktable.develop->proxy.snapshot.filename != NULL);
-
-    /* Store current image surface to snapshot file.
-       FIXME: add checks so that we don't make snapshots of preview pipe image surface.
-    */
-    const int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY | O_BINARY, 0600);
-    cairo_surface_write_to_png_stream(image_surface, _write_snapshot_data, GINT_TO_POINTER(fd));
-    close(fd);
-  }
 
   // Displaying sample areas if enabled
   if(darktable.lib->proxy.colorpicker.live_samples
