@@ -144,7 +144,10 @@ static void _search_widget_init(dt_lib_filters_rule_t *rule, const dt_collection
   search->text = gtk_search_entry_new();
   g_signal_connect(G_OBJECT(search->text), "search-changed", G_CALLBACK(_search_changed), search);
   g_signal_connect(G_OBJECT(search->text), "stop-search", G_CALLBACK(_search_reset_text_entry), rule);
-  gtk_entry_set_width_chars(GTK_ENTRY(search->text), 0);
+  if(top)
+    gtk_entry_set_width_chars(GTK_ENTRY(search->text), 14);
+  else
+    gtk_entry_set_width_chars(GTK_ENTRY(search->text), 0);
   gtk_widget_set_tooltip_text(search->text,
                               /* xgettext:no-c-format */
                               _("filter by text from images metadata, tags, file path and name"
