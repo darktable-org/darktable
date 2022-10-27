@@ -57,7 +57,7 @@ Requirements
 
 * Linux (64 bit)
 * FreeBSD (64 bit)
-* Windows 8 (64 bit), Windows 10 (64 bit)
+* Windows (64 bit), 8.1 and later
 * macOS
 
 *32 bit platforms are not officially supported - they might or might not work.*
@@ -69,7 +69,7 @@ prefer using darktable on Linux.*
 
 (workable minimum / **recommended minimum**):
 * RAM: 4 GB / **8 GB**
-* CPU: Intel Pentium 4 / **Intel Core i5 4×2.4 GHz**
+* CPU: Intel Pentium 4 (Core 2 for Windows) / **Intel Core i5 4×2.4 GHz**
 * GPU: none / **Nvidia with 1024 CUDA cores, 4 GB, OpenCL 1.2 compatible**
 * free disk space: 250 MB / **1 GB**
 
