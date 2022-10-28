@@ -2848,6 +2848,37 @@ static gboolean _notebook_scroll_callback(GtkNotebook *notebook, GdkEventScroll 
   return TRUE;
 }
 
+
+static void _reset_all_bauhaus(GtkWidget *w, gpointer module)
+{
+  if(GTK_IS_CONTAINER(w))
+    gtk_container_foreach(GTK_CONTAINER(w), _reset_all_bauhaus, module);
+  else if(DT_IS_BAUHAUS_WIDGET(w))
+  {
+    dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(w);
+    *(dt_action_t **)module = b->module;
+
+    dt_bauhaus_widget_reset(w);
+  }
+}
+
+static gboolean _notebook_button_press_callback(GtkNotebook *notebook, GdkEventButton *event, gpointer user_data)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    dt_action_t *module = NULL;
+
+    GtkWidget *box = gtk_notebook_get_nth_page(notebook, gtk_notebook_get_current_page(notebook));
+    ++darktable.gui->reset;
+    _reset_all_bauhaus(box, &module);
+    --darktable.gui->reset;
+    if(module && module->type == DT_ACTION_TYPE_IOP_INSTANCE)
+      dt_dev_add_history_item(darktable.develop, (dt_iop_module_t *)module, TRUE);
+  }
+
+  return FALSE;
+}
+
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
 {
   if(notebook != _current_notebook)
@@ -2870,6 +2901,7 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const ch
     g_signal_connect(G_OBJECT(notebook), "size-allocate", G_CALLBACK(_notebook_size_callback), NULL);
     g_signal_connect(G_OBJECT(notebook), "motion-notify-event", G_CALLBACK(_notebook_motion_notify_callback), NULL);
     g_signal_connect(G_OBJECT(notebook), "scroll-event", G_CALLBACK(_notebook_scroll_callback), NULL);
+    g_signal_connect(G_OBJECT(notebook), "button-press-event", G_CALLBACK(_notebook_button_press_callback), NULL);
     gtk_widget_add_events(GTK_WIDGET(notebook), darktable.gui->scroll_mask);
   }
   if(_current_action_def)

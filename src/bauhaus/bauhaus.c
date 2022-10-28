@@ -2818,17 +2818,21 @@ int dt_bauhaus_slider_get_feedback(GtkWidget *widget)
   return d->fill_feedback;
 }
 
-void dt_bauhaus_slider_reset(GtkWidget *widget)
+void dt_bauhaus_widget_reset(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
 
-  if(w->type != DT_BAUHAUS_SLIDER) return;
-  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  if(w->type == DT_BAUHAUS_SLIDER)
+  {
+    dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-  d->min = d->soft_min;
-  d->max = d->soft_max;
+    d->min = d->soft_min;
+    d->max = d->soft_max;
 
-  dt_bauhaus_slider_set(widget, d->defpos);
+    dt_bauhaus_slider_set(widget, d->defpos);
+  }
+  else
+    dt_bauhaus_combobox_set(widget, w->data.combobox.defpos);
 
   return;
 }
@@ -3098,7 +3102,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     if(event->type == GDK_2BUTTON_PRESS)
     {
       d->is_dragging = 0;
-      dt_bauhaus_slider_reset(widget);
+      dt_bauhaus_widget_reset(widget);
     }
     else
     {
@@ -3329,7 +3333,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         --d->is_dragging;
         break;
       case DT_ACTION_EFFECT_RESET:
-        dt_bauhaus_slider_reset(widget);
+        dt_bauhaus_widget_reset(widget);
         break;
       case DT_ACTION_EFFECT_TOP:
         dt_bauhaus_slider_set(widget, element == DT_ACTION_ELEMENT_FORCE ? d->hard_max: d->max);
