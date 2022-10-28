@@ -321,22 +321,9 @@ int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 4, 4 * sizeof(float), (void *)&d->Dmin);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 5, 4 * sizeof(float), (void *)&d->wb_high);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 6, 4 * sizeof(float), (void *)&d->offset);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 7, sizeof(float), (void *)&d->exposure);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 8, sizeof(float), (void *)&d->black);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 9, sizeof(float), (void *)&d->gamma);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 10, sizeof(float), (void *)&d->soft_clip);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 11, sizeof(float), (void *)&d->soft_clip_comp);
-
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_negadoctor, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_negadoctor, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->Dmin), CLARG(d->wb_high),
+    CLARG(d->offset), CLARG(d->exposure), CLARG(d->black), CLARG(d->gamma), CLARG(d->soft_clip), CLARG(d->soft_clip_comp));
   if(err != CL_SUCCESS) goto error;
     return TRUE;
 

@@ -1015,14 +1015,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
        transform = FALSE;
     }
     if(transform)
-      dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_out);
+      dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_out));
     else
-      dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&clut_cl);
-    dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&level);
+      dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in));
+    dt_opencl_set_kernel_args(devid, kernel, 1, CLARG(dev_out), CLARG(width), CLARG(height), CLARG(clut_cl), CLARG(level));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(transform)
       dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,
@@ -1030,10 +1026,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   else
   { // no lut: identity kernel
-    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d_none, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d_none, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d_none, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d_none, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_args(devid, gd->kernel_lut3d_none, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+      CLARG(height));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lut3d_none, sizes);
   }
   if(err != CL_SUCCESS)

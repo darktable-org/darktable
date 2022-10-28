@@ -670,16 +670,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dev_mapio = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * MAXN, mapio);
     if(dev_mapio == NULL) goto error;
 
-    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
-    dt_opencl_set_kernel_arg(devid, gd->kernel_histogram, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_histogram, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_histogram, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_histogram, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_histogram, 4, sizeof(float), (void *)&equalization);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_histogram, 5, sizeof(cl_mem), (void *)&dev_target_hist);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_histogram, 6, sizeof(cl_mem), (void *)&dev_source_ihist);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_histogram, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_histogram, width, height,
+      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(equalization), CLARG(dev_target_hist),
+      CLARG(dev_source_ihist));
     if(err != CL_SUCCESS) goto error;
 
     if(equalization > 0.001f)
@@ -703,17 +696,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(err != CL_SUCCESS) goto error;
     }
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 2, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 4, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 5, sizeof(int), (void *)&data->n);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 6, sizeof(cl_mem), (void *)&dev_target_mean);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 7, sizeof(cl_mem), (void *)&dev_source_mean);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 8, sizeof(cl_mem), (void *)&dev_var_ratio);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_mapping, 9, sizeof(cl_mem), (void *)&dev_mapio);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_mapping, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_mapping, width, height,
+      CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(data->n), CLARG(dev_target_mean),
+      CLARG(dev_source_mean), CLARG(dev_var_ratio), CLARG(dev_mapio));
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_release_mem_object(dev_tmp);

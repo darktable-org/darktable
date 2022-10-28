@@ -353,14 +353,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
   const int orientation = data->orientation;
 
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 4, sizeof(int), (void *)&orientation);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_flip, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_flip, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(orientation));
 
   if(err != CL_SUCCESS) goto error;
   return TRUE;
