@@ -952,7 +952,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_
   size_t sizes[3] = { 0, 0, 1 };
 
   err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
-                                                sizeof(float) * b->size_x * b->size_y * b->size_z);
+                                                sizeof(float) * b->size_x * b->size_y * b->size_z * 4);
   if(err != CL_SUCCESS) return err;
 
   sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
