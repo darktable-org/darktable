@@ -371,15 +371,8 @@ static int cl_split_rgb(const int devid, const int width, const int height, cl_m
                         cl_mem imgg_g, cl_mem imgg_b, const float guide_weight)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_split_rgb;
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(guide), &guide);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(imgg_r), &imgg_r);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(imgg_g), &imgg_g);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(imgg_b), &imgg_b);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(guide_weight), &guide_weight);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(width), CLARG(height), CLARG(guide), CLARG(imgg_r), CLARG(imgg_g), CLARG(imgg_b), CLARG(guide_weight));
 }
 
 
@@ -387,21 +380,13 @@ static int cl_box_mean(const int devid, const int width, const int height, const
                        cl_mem temp)
 {
   const int kernel_x = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_x;
-  dt_opencl_set_kernel_arg(devid, kernel_x, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 2, sizeof(in), &in);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 3, sizeof(temp), &temp);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 4, sizeof(w), &w);
+  dt_opencl_set_kernel_args(devid, kernel_x, 0, CLARG(width), CLARG(height), CLARG(in), CLARG(temp), CLARG(w));
   const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
   const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) return err;
 
   const int kernel_y = darktable.opencl->guided_filter->kernel_guided_filter_box_mean_y;
-  dt_opencl_set_kernel_arg(devid, kernel_y, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 2, sizeof(temp), &temp);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 3, sizeof(out), &out);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 4, sizeof(w), &w);
+  dt_opencl_set_kernel_args(devid, kernel_y, 0, CLARG(width), CLARG(height), CLARG(temp), CLARG(out), CLARG(w));
   const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   return dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 }
@@ -412,16 +397,9 @@ static int cl_covariances(const int devid, const int width, const int height, cl
                           const float guide_weight)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_guided_filter_covariances;
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(guide), &guide);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(in), &in);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cov_imgg_img_r), &cov_imgg_img_r);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cov_imgg_img_g), &cov_imgg_img_g);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cov_imgg_img_b), &cov_imgg_img_b);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(guide_weight), &guide_weight);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(width), CLARG(height), CLARG(guide), CLARG(in), CLARG(cov_imgg_img_r), CLARG(cov_imgg_img_g),
+    CLARG(cov_imgg_img_b), CLARG(guide_weight));
 }
 
 
@@ -430,18 +408,9 @@ static int cl_variances(const int devid, const int width, const int height, cl_m
                         cl_mem var_imgg_bb, const float guide_weight)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_guided_filter_variances;
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(guide), &guide);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(var_imgg_rr), &var_imgg_rr);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(var_imgg_rg), &var_imgg_rg);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(var_imgg_rb), &var_imgg_rb);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(var_imgg_gg), &var_imgg_gg);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(var_imgg_gb), &var_imgg_gb);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(var_imgg_bb), &var_imgg_bb);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(guide_weight), &guide_weight);
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(width), CLARG(height), CLARG(guide), CLARG(var_imgg_rr), CLARG(var_imgg_rg), CLARG(var_imgg_rb),
+    CLARG(var_imgg_gg), CLARG(var_imgg_gb), CLARG(var_imgg_bb), CLARG(guide_weight));
 }
 
 
@@ -449,15 +418,8 @@ static int cl_update_covariance(const int devid, const int width, const int heig
                                 cl_mem a, cl_mem b, float eps)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_update_covariance;
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(in), &in);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(out), &out);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(a), &a);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(b), &b);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(eps), &eps);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(width), CLARG(height), CLARG(in), CLARG(out), CLARG(a), CLARG(b), CLARG(eps));
 }
 
 
@@ -468,27 +430,11 @@ static int cl_solve(const int devid, const int width, const int height, cl_mem i
                     cl_mem b)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_solve;
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(img_mean), &img_mean);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(imgg_mean_r), &imgg_mean_r);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(imgg_mean_g), &imgg_mean_g);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(imgg_mean_b), &imgg_mean_b);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cov_imgg_img_r), &cov_imgg_img_r);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cov_imgg_img_g), &cov_imgg_img_g);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cov_imgg_img_b), &cov_imgg_img_b);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(var_imgg_rr), &var_imgg_rr);
-  dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(var_imgg_rg), &var_imgg_rg);
-  dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(var_imgg_rb), &var_imgg_rb);
-  dt_opencl_set_kernel_arg(devid, kernel, 12, sizeof(var_imgg_gg), &var_imgg_gg);
-  dt_opencl_set_kernel_arg(devid, kernel, 13, sizeof(var_imgg_gb), &var_imgg_gb);
-  dt_opencl_set_kernel_arg(devid, kernel, 14, sizeof(var_imgg_bb), &var_imgg_bb);
-  dt_opencl_set_kernel_arg(devid, kernel, 15, sizeof(a_r), &a_r);
-  dt_opencl_set_kernel_arg(devid, kernel, 16, sizeof(a_g), &a_g);
-  dt_opencl_set_kernel_arg(devid, kernel, 17, sizeof(a_b), &a_b);
-  dt_opencl_set_kernel_arg(devid, kernel, 18, sizeof(b), &b);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(width), CLARG(height), CLARG(img_mean), CLARG(imgg_mean_r), CLARG(imgg_mean_g), CLARG(imgg_mean_b),
+    CLARG(cov_imgg_img_r), CLARG(cov_imgg_img_g), CLARG(cov_imgg_img_b), CLARG(var_imgg_rr), CLARG(var_imgg_rg),
+    CLARG(var_imgg_rb), CLARG(var_imgg_gg), CLARG(var_imgg_gb), CLARG(var_imgg_bb), CLARG(a_r), CLARG(a_g),
+    CLARG(a_b), CLARG(b));
 }
 
 
@@ -497,19 +443,9 @@ static int cl_generate_result(const int devid, const int width, const int height
                               const float min, const float max)
 {
   const int kernel = darktable.opencl->guided_filter->kernel_guided_filter_generate_result;
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(guide), &guide);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(a_r), &a_r);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(a_g), &a_g);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(a_b), &a_b);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(b), &b);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(out), &out);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(guide_weight), &guide_weight);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(min), &min);
-  dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(max), &max);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(width), CLARG(height), CLARG(guide), CLARG(a_r), CLARG(a_g), CLARG(a_b), CLARG(b), CLARG(out),
+    CLARG(guide_weight), CLARG(min), CLARG(max));
 }
 
 

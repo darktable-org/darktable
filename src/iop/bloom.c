@@ -243,12 +243,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
   dev_tmp1 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 1, sizeof(cl_mem), (void *)&dev_tmp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 4, sizeof(float), (void *)&scale);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 5, sizeof(float), (void *)&threshold);
+  dt_opencl_set_kernel_args(devid, gd->kernel_bloom_threshold, 0, CLARG(dev_in), CLARG(dev_tmp1),
+    CLARG(width), CLARG(height), CLARG(scale), CLARG(threshold));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_bloom_threshold, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -263,14 +259,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[1] = 1;
       local[2] = 1;
       dev_tmp2 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 0, sizeof(cl_mem), (void *)&dev_tmp1);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 1, sizeof(cl_mem), (void *)&dev_tmp2);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 2, sizeof(int), (void *)&radius);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 3, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 4, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 5, sizeof(int), (void *)&hblocksize);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 6, (hblocksize + 2 * radius) * sizeof(float),
-                               NULL);
+      dt_opencl_set_kernel_args(devid, gd->kernel_bloom_hblur, 0, CLARG(dev_tmp1), CLARG(dev_tmp2), CLARG(radius),
+        CLARG(width), CLARG(height), CLARG(hblocksize), CLLOCAL((hblocksize + 2 * radius) * sizeof(float)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_bloom_hblur, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
@@ -283,14 +273,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       local[1] = vblocksize;
       local[2] = 1;
       dev_tmp1 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 0, sizeof(cl_mem), (void *)&dev_tmp2);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 1, sizeof(cl_mem), (void *)&dev_tmp1);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 2, sizeof(int), (void *)&radius);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 3, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 4, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 5, sizeof(int), (void *)&vblocksize);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 6, (vblocksize + 2 * radius) * sizeof(float),
-                               NULL);
+      dt_opencl_set_kernel_args(devid, gd->kernel_bloom_vblur, 0, CLARG(dev_tmp2), CLARG(dev_tmp1), CLARG(radius),
+        CLARG(width), CLARG(height), CLARG(vblocksize), CLLOCAL((vblocksize + 2 * radius) * sizeof(float)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_bloom_vblur, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -299,11 +283,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 1, sizeof(cl_mem), (void *)&dev_tmp1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 2, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 4, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_args(devid, gd->kernel_bloom_mix, 0, CLARG(dev_in), CLARG(dev_tmp1), CLARG(dev_out),
+    CLARG(width), CLARG(height));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_bloom_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 

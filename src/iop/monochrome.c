@@ -240,15 +240,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_bilateral_cl_t *b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
   if(!b) goto error;
 
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 2, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 3, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 4, sizeof(float), &d->a);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 5, sizeof(float), &d->b);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome_filter, 6, sizeof(float), &sigma2);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome_filter, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_monochrome_filter, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->a), CLARG(d->b), CLARG(sigma2));
   if(err != CL_SUCCESS) goto error;
 
   err = dt_bilateral_splat_cl(b, dev_out);
@@ -260,16 +253,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_bilateral_free_cl(b);
   b = NULL; // make sure we don't do double cleanup in case the next few lines err out
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 1, sizeof(cl_mem), &dev_tmp);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 2, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 3, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 4, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 5, sizeof(float), &d->a);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 6, sizeof(float), &d->b);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 7, sizeof(float), &sigma2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_monochrome, 8, sizeof(float), &d->highlights);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_monochrome, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_monochrome, width, height,
+    CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->a), CLARG(d->b),
+    CLARG(sigma2), CLARG(d->highlights));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_tmp);

@@ -272,16 +272,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float offset[4] = { 0.0f, data->a_offset, data->b_offset, 0.0f };
   const int unbound = data->unbound;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 4, 4 * sizeof(float), (void *)&scale);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 5, 4 * sizeof(float), (void *)&offset);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 6, sizeof(int), (void *)&unbound);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorcontrast, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcontrast, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(scale), CLARG(offset), CLARG(unbound));
 
   if(err != CL_SUCCESS) goto error;
   return TRUE;

@@ -138,12 +138,8 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
 
   // zero out grid
   int wd = b->size_x, ht = b->size_y * b->size_z;
-  size_t sizes[] = { ROUNDUPDWD(wd, b->devid), ROUNDUPDHT(ht, b->devid), 1 };
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_zero, 0, sizeof(cl_mem), (void *)&b->dev_grid);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_zero, 1, sizeof(int), (void *)&wd);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_zero, 2, sizeof(int), (void *)&ht);
-  cl_int err = -666;
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_zero, sizes);
+  cl_int err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_zero, wd, ht,
+    CLARG(b->dev_grid), CLARG(wd), CLARG(ht));
   if(err != CL_SUCCESS)
   {
     dt_bilateral_free_cl(b);
@@ -163,19 +159,9 @@ cl_int dt_bilateral_splat_cl(dt_bilateral_cl_t *b, cl_mem in)
   cl_int err = -666;
   size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
   size_t local[] = { b->blocksizex, b->blocksizey, 1 };
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 0, sizeof(cl_mem), (void *)&in);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 1, sizeof(cl_mem), (void *)&b->dev_grid);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 2, sizeof(int), (void *)&b->width);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 3, sizeof(int), (void *)&b->height);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 4, sizeof(int), (void *)&b->size_x);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 5, sizeof(int), (void *)&b->size_y);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 6, sizeof(int), (void *)&b->size_z);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 7, sizeof(float), (void *)&b->sigma_s);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 8, sizeof(float), (void *)&b->sigma_r);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 9, b->blocksizex * b->blocksizey * sizeof(int),
-                           NULL);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_splat, 10,
-                           b->blocksizex * b->blocksizey * 8 * sizeof(float), NULL);
+  dt_opencl_set_kernel_args(b->devid, b->global->kernel_splat, 0, CLARG(in), CLARG(b->dev_grid),
+    CLARG(b->width), CLARG(b->height), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s),
+    CLARG(b->sigma_r), CLLOCAL(b->blocksizex * b->blocksizey * sizeof(int)), CLLOCAL(b->blocksizex * b->blocksizey * 8 * sizeof(float)));
   err = dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_splat, sizes, local);
   return err;
 }
@@ -186,7 +172,7 @@ cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
   size_t sizes[3] = { 0, 0, 1 };
 
   err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
-                                                b->size_x * b->size_y * b->size_z * sizeof(float));
+                                                sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(err != CL_SUCCESS) return err;
 
   sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
@@ -195,14 +181,8 @@ cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
   stride1 = b->size_x * b->size_y;
   stride2 = b->size_x;
   stride3 = 1;
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 0, sizeof(cl_mem), (void *)&b->dev_grid_tmp);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 1, sizeof(cl_mem), (void *)&b->dev_grid);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 2, sizeof(int), (void *)&stride1);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 3, sizeof(int), (void *)&stride2);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 4, sizeof(int), (void *)&stride3);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 5, sizeof(int), (void *)&b->size_z);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 6, sizeof(int), (void *)&b->size_y);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 7, sizeof(int), (void *)&b->size_x);
+  dt_opencl_set_kernel_args(b->devid, b->global->kernel_blur_line, 0, CLARG(b->dev_grid_tmp), CLARG(b->dev_grid),
+    CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_y), CLARG(b->size_x));
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_blur_line, sizes);
   if(err != CL_SUCCESS) return err;
 
@@ -211,14 +191,8 @@ cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
   stride3 = b->size_x;
   sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
   sizes[1] = ROUNDUPDHT(b->size_x, b->devid);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 0, sizeof(cl_mem), (void *)&b->dev_grid);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 1, sizeof(cl_mem), (void *)&b->dev_grid_tmp);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 2, sizeof(int), (void *)&stride1);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 3, sizeof(int), (void *)&stride2);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 4, sizeof(int), (void *)&stride3);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 5, sizeof(int), (void *)&b->size_z);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 6, sizeof(int), (void *)&b->size_x);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line, 7, sizeof(int), (void *)&b->size_y);
+  dt_opencl_set_kernel_args(b->devid, b->global->kernel_blur_line, 0, CLARG(b->dev_grid), CLARG(b->dev_grid_tmp),
+    CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_z), CLARG(b->size_x), CLARG(b->size_y));
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_blur_line, sizes);
   if(err != CL_SUCCESS) return err;
 
@@ -227,15 +201,8 @@ cl_int dt_bilateral_blur_cl(dt_bilateral_cl_t *b)
   stride3 = b->size_x * b->size_y;
   sizes[0] = ROUNDUPDWD(b->size_x, b->devid);
   sizes[1] = ROUNDUPDHT(b->size_y, b->devid);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line_z, 0, sizeof(cl_mem),
-                           (void *)&b->dev_grid_tmp);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line_z, 1, sizeof(cl_mem), (void *)&b->dev_grid);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line_z, 2, sizeof(int), (void *)&stride1);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line_z, 3, sizeof(int), (void *)&stride2);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line_z, 4, sizeof(int), (void *)&stride3);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line_z, 5, sizeof(int), (void *)&b->size_x);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line_z, 6, sizeof(int), (void *)&b->size_y);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_blur_line_z, 7, sizeof(int), (void *)&b->size_z);
+  dt_opencl_set_kernel_args(b->devid, b->global->kernel_blur_line_z, 0, CLARG(b->dev_grid_tmp), CLARG(b->dev_grid),
+    CLARG(stride1), CLARG(stride2), CLARG(stride3), CLARG(b->size_x), CLARG(b->size_y), CLARG(b->size_z));
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_blur_line_z, sizes);
   return err;
 }
@@ -253,20 +220,9 @@ cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem o
   err = dt_opencl_enqueue_copy_image(b->devid, out, tmp, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 
-  size_t sizes[] = { ROUNDUPDWD(b->width, b->devid), ROUNDUPDHT(b->height, b->devid), 1 };
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 0, sizeof(cl_mem), (void *)&in);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 1, sizeof(cl_mem), (void *)&tmp);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 2, sizeof(cl_mem), (void *)&out);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 3, sizeof(cl_mem), (void *)&b->dev_grid);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 4, sizeof(int), (void *)&b->width);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 5, sizeof(int), (void *)&b->height);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 6, sizeof(int), (void *)&b->size_x);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 7, sizeof(int), (void *)&b->size_y);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 8, sizeof(int), (void *)&b->size_z);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 9, sizeof(float), (void *)&b->sigma_s);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 10, sizeof(float), (void *)&b->sigma_r);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice2, 11, sizeof(float), (void *)&detail);
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_slice2, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_slice2, b->width, b->height,
+    CLARG(in), CLARG(tmp), CLARG(out), CLARG(b->dev_grid), CLARG(b->width), CLARG(b->height), CLARG(b->size_x),
+    CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s), CLARG(b->sigma_r), CLARG(detail));
 
   dt_opencl_release_mem_object(tmp);
   return err;
@@ -279,19 +235,9 @@ error:
 cl_int dt_bilateral_slice_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem out, const float detail)
 {
   cl_int err = -666;
-  size_t sizes[] = { ROUNDUPDWD(b->width, b->devid), ROUNDUPDHT(b->height, b->devid), 1 };
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 0, sizeof(cl_mem), (void *)&in);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 1, sizeof(cl_mem), (void *)&out);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 2, sizeof(cl_mem), (void *)&b->dev_grid);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 3, sizeof(int), (void *)&b->width);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 4, sizeof(int), (void *)&b->height);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 5, sizeof(int), (void *)&b->size_x);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 6, sizeof(int), (void *)&b->size_y);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 7, sizeof(int), (void *)&b->size_z);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 8, sizeof(float), (void *)&b->sigma_s);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 9, sizeof(float), (void *)&b->sigma_r);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_slice, 10, sizeof(float), (void *)&detail);
-  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_slice, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(b->devid, b->global->kernel_slice, b->width, b->height,
+    CLARG(in), CLARG(out), CLARG(b->dev_grid), CLARG(b->width), CLARG(b->height), CLARG(b->size_x),
+    CLARG(b->size_y), CLARG(b->size_z), CLARG(b->sigma_s), CLARG(b->sigma_r), CLARG(detail));
   return err;
 }
 
