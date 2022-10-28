@@ -174,7 +174,7 @@ Optional dependencies (minimum version):
 * libavif 0.8.2 *(for AVIF import & export)*
 * libheif 1.9.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL export)*
-* WebP 0.3.0 *(for WebP export)*
+* WebP 0.3.0 *(for WebP import & export)*
 
 Optional dependencies (no version requirement):
 * Lensfun *(for automatic lens correction)*
