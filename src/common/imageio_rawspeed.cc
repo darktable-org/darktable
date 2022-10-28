@@ -257,20 +257,17 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     for(int i = 0; i < 4; i++)
       img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
+    // Grab the Adobe coeffs
     const int msize = r->metadata.colorMatrix.size();
-    // Grab the adobe coeff
     for(int k = 0; k < 4; k++)
       for(int i = 0; i < 3; i++)
       {
         const int idx = k*3 + i;
         if(idx < msize)
-          img->adobe_XYZ_to_CAM[k][i] =
-            (float)r->metadata.colorMatrix[idx] / (float)ADOBE_COEFF_FACTOR;
+          img->adobe_XYZ_to_CAM[k][i] = float(r->metadata.colorMatrix[idx]);
         else
           img->adobe_XYZ_to_CAM[k][i] = 0.0f;
       }
-
-    // FIXME: grab r->metadata.colorMatrix.
 
     // Get additional exif tags that are not cached in the database
     if(img->flags & DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS)
@@ -572,4 +569,3 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
