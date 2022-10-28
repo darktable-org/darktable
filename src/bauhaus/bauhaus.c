@@ -1024,6 +1024,7 @@ static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
     if(!is_changed && DT_IS_BAUHAUS_WIDGET(c->data) && gtk_widget_get_visible(c->data))
     {
       dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(c->data);
+      if(!b->field) continue;
       if(b->type == DT_BAUHAUS_SLIDER)
       {
         dt_bauhaus_slider_data_t *d = &b->data.slider;
@@ -1044,7 +1045,7 @@ static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
 
 void dt_bauhaus_update_module(dt_iop_module_t *self)
 {
-  GtkWidget *notebook = NULL;
+  GtkWidget *n = NULL;
   for(GSList *w = self->widget_list_bh; w; w = w->next)
   {
     dt_action_target_t *at = w->data;
@@ -1093,10 +1094,10 @@ void dt_bauhaus_update_module(dt_iop_module_t *self)
         fprintf(stderr, "[dt_bauhaus_update_module] invalid bauhaus widget type encountered\n");
     }
 
-    if(!notebook) notebook = gtk_widget_get_ancestor(widget, GTK_TYPE_NOTEBOOK);
+    if(!n && (n = gtk_widget_get_parent(widget)) && (n = gtk_widget_get_parent(n)) && !GTK_IS_NOTEBOOK(n)) n = NULL;
   }
 
-  if(notebook) gtk_container_foreach(GTK_CONTAINER(notebook), _highlight_changed_notebook_tab, NULL);
+  if(n) gtk_container_foreach(GTK_CONTAINER(n), _highlight_changed_notebook_tab, NULL);
 }
 
 // make this quad a toggle button:
