@@ -188,6 +188,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
   gchar *section = _section_from_package(&self);
 
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
+  dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
   dt_introspection_field_t *f = self->so->get_f(param);
 
   GtkWidget *combobox = dt_bauhaus_combobox_new(self);
@@ -210,6 +211,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     {
       dt_bauhaus_combobox_add(combobox, _("no"));
       dt_bauhaus_combobox_add(combobox, _("yes"));
+      dt_bauhaus_combobox_set_default(combobox, *(gboolean*)((uint8_t *)d + f->header.offset));
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_ENUM)
     {
@@ -220,6 +222,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
         if(*iter->description)
           dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
       }
+      dt_bauhaus_combobox_set_default(combobox, *(int*)((uint8_t *)d + f->header.offset));
 
       if(action && f->Enum.values)
         g_hash_table_insert(darktable.control->combo_introspection, action, f->Enum.values);

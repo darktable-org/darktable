@@ -2872,6 +2872,8 @@ static gboolean _notebook_button_press_callback(GtkNotebook *notebook, GdkEventB
     ++darktable.gui->reset;
     _reset_all_bauhaus(box, &module);
     --darktable.gui->reset;
+    dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
+
     if(module && module->type == DT_ACTION_TYPE_IOP_INSTANCE)
       dt_dev_add_history_item(darktable.develop, (dt_iop_module_t *)module, TRUE);
   }

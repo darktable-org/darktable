@@ -2264,3 +2264,8 @@ Details :
 {
   margin: 0.07em 0.28em;
 }
+
+.changed
+{
+  background-color: @field_active_bg;
+}
