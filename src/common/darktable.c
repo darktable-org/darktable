@@ -588,6 +588,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #else
                "  OpenEXR support disabled\n"
 #endif
+
+#ifdef HAVE_WEBP
+               "  WebP support enabled\n"
+#else
+               "  WebP support disabled\n"
+#endif
                ,
                darktable_package_string,
                darktable_last_commit_year,
