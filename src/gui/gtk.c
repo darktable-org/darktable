@@ -2723,6 +2723,32 @@ GdkModifierType dt_key_modifier_state()
 */
 }
 
+static void _reset_all_bauhaus(GtkNotebook *notebook, GtkWidget *box)
+{
+  dt_action_t *module = NULL;
+
+  ++darktable.gui->reset;
+
+  for(GList *c = gtk_container_get_children(GTK_CONTAINER(box)); c; c = g_list_delete_link(c, c))
+  {
+    if(DT_IS_BAUHAUS_WIDGET(c->data))
+    {
+      dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(c->data);
+      if(!b->field) continue;
+      module = b->module;
+
+      dt_bauhaus_widget_reset(GTK_WIDGET(b));
+    }
+  }
+
+  --darktable.gui->reset;
+
+  dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
+
+  if(module && module->type == DT_ACTION_TYPE_IOP_INSTANCE)
+    dt_dev_add_history_item(darktable.develop, (dt_iop_module_t *)module, TRUE);
+}
+
 static void _notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocation, gpointer *data)
 {
   const int n = gtk_notebook_get_n_pages(notebook);
@@ -2786,6 +2812,7 @@ static gboolean _notebook_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 static float _action_process_tabs(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
   GtkNotebook *notebook = GTK_NOTEBOOK(target);
+  GtkWidget *reset_page = gtk_notebook_get_nth_page(notebook, element);
   if(!isnan(move_size))
   {
     switch(effect)
@@ -2799,11 +2826,19 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
     case DT_ACTION_EFFECT_PREVIOUS:
       gtk_notebook_prev_page(notebook);
       break;
+    case DT_ACTION_EFFECT_RESET:;
+      _reset_all_bauhaus(notebook, reset_page);
+      dt_action_widget_toast(NULL, GTK_WIDGET(notebook), "%s %s",
+                             gtk_notebook_get_tab_label_text(notebook, reset_page), _("reset"));
+      break;
     default:
       fprintf(stderr, "[_action_process_tabs] unknown shortcut effect (%d) for tabs\n", effect);
       break;
     }
   }
+
+  if(effect == DT_ACTION_EFFECT_RESET)
+    return gtk_style_context_has_class(gtk_widget_get_style_context(gtk_notebook_get_tab_label(notebook, reset_page)), "changed");
 
   const int c = gtk_notebook_get_current_page(notebook);
 
@@ -2818,6 +2853,7 @@ const gchar *dt_action_effect_tabs[]
   = { N_("activate"),
       N_("next"),
       N_("previous"),
+      N_("reset"),
       NULL };
 
 static GtkNotebook *_current_notebook = NULL;
@@ -2848,35 +2884,10 @@ static gboolean _notebook_scroll_callback(GtkNotebook *notebook, GdkEventScroll 
   return TRUE;
 }
 
-
-static void _reset_all_bauhaus(GtkWidget *w, gpointer module)
-{
-  if(GTK_IS_CONTAINER(w))
-    gtk_container_foreach(GTK_CONTAINER(w), _reset_all_bauhaus, module);
-  else if(DT_IS_BAUHAUS_WIDGET(w))
-  {
-    dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(w);
-    *(dt_action_t **)module = b->module;
-
-    dt_bauhaus_widget_reset(w);
-  }
-}
-
 static gboolean _notebook_button_press_callback(GtkNotebook *notebook, GdkEventButton *event, gpointer user_data)
 {
   if(event->type == GDK_2BUTTON_PRESS)
-  {
-    dt_action_t *module = NULL;
-
-    GtkWidget *box = gtk_notebook_get_nth_page(notebook, gtk_notebook_get_current_page(notebook));
-    ++darktable.gui->reset;
-    _reset_all_bauhaus(box, &module);
-    --darktable.gui->reset;
-    dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
-
-    if(module && module->type == DT_ACTION_TYPE_IOP_INSTANCE)
-      dt_dev_add_history_item(darktable.develop, (dt_iop_module_t *)module, TRUE);
-  }
+    _reset_all_bauhaus(notebook, gtk_notebook_get_nth_page(notebook, gtk_notebook_get_current_page(notebook)));
 
   return FALSE;
 }
