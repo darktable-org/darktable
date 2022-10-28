@@ -1705,7 +1705,7 @@ treeview#delete-dialog:selected
 /* Bauhaus states */
 .dt_bauhaus_popup:disabled /* set categories titles in bauhaus combobox popup ; for example in collections module */
 {
-  color: white;
+  color: @bauhaus_fg_insensitive;
 }
 
 .dt_bauhaus_popup:hover
