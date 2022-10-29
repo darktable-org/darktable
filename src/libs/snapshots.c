@@ -60,7 +60,6 @@ typedef struct dt_lib_snapshots_t
   GtkWidget *snapshots_box;
 
   int selected;
-  dt_pthread_mutex_t lock;
   dt_lib_snapshot_params_t params;
   gboolean snap_requested;
   int expose_again_timeout_id;
@@ -164,7 +163,6 @@ static const char *mime(dt_imageio_module_data_t *data)
 static int _export_image(dt_lib_module_t *self, size_t width, size_t height)
 {
   dt_develop_t *dev = darktable.develop;
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
   dt_imageio_module_format_t buf;
   buf.mime = mime;
@@ -199,6 +197,7 @@ static int _export_image(dt_lib_module_t *self, size_t width, size_t height)
   const gboolean export_masks = FALSE;
   const gboolean is_scaling = FALSE;
 
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   dt_lib_snapshot_t *snap = &d->snapshot[d->selected];
 
   dt_imageio_export_with_flags
@@ -640,13 +639,15 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   for(int k = d->size - 1; k > 0; k--)
   {
     GtkWidget *b = d->snapshot[k].button;
+    GtkWidget *bp = d->snapshot[k - 1].button;
     d->snapshot[k] = d->snapshot[k - 1];
     d->snapshot[k].button = b;
 
-    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[k].button))),
-      gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[k - 1].button)))));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button),
-                                 gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->snapshot[k-1].button)));
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(b))),
+      gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(bp)))));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b),
+                                 gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bp)));
+    gtk_widget_set_tooltip_text(b, g_strdup(gtk_widget_get_tooltip_text(bp)));
   }
 
   /* update top slot with new snapshot */
@@ -671,11 +672,11 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   s->imgid = darktable.develop->image_storage.id;
   s->surface = NULL;
 
-  if(d->selected >= 0) d->selected++;
-
-  g_snprintf(label, sizeof(label), "%s (%d/%d)", name, s->imgid, s->history_end);
+  g_snprintf(label, sizeof(label), "%s (%d)", name, s->history_end);
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[0].button))), label);
 
+  gtk_widget_set_tooltip_text(d->snapshot[0].button,
+                              g_strdup(darktable.develop->image_storage.filename));
 
   /* update slots used */
   if(d->num_snapshots != d->size) d->num_snapshots++;
