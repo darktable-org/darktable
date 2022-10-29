@@ -119,7 +119,7 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
   GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
   gdouble value = gtk_adjustment_get_value(adjustment);
 
-  gboolean is_iop = !g_strcmp0("right", gtk_widget_get_name(gtk_widget_get_parent(sw)));
+  gboolean is_iop = !g_strcmp0("iop-expander", gtk_widget_get_name(widget));
 
   // try not to get dragged upwards if a module above is collapsing
   if(is_iop && allocation.y < _start_pos.y)
@@ -131,7 +131,7 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
   // if "scroll_to_module" is enabled scroll up or down
   // but don't scroll if not the whole module can be shown
   float prop = 1.0f;
-  const gboolean scroll_to_top = dt_conf_get_bool("darkroom/ui/scroll_to_module");
+  const gboolean scroll_to_top = dt_conf_get_bool(is_iop ? "darkroom/ui/scroll_to_module" : "lighttable/ui/scroll_to_module");
   const int spare = available.height - allocation.height;
   const int from_top = allocation.y - value;
   const int move = MAX(scroll_to_top ? from_top : from_top - MAX(0, MIN(from_top, spare)),
