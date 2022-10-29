@@ -369,6 +369,7 @@ if(USE_JXL)
     include_directories(SYSTEM ${JXL_INCLUDE_DIRS})
     list(APPEND LIBS ${JXL_LIBRARIES})
     add_definitions(${JXL_DEFINITIONS})
+    set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} jxl CACHE INTERNAL "")
   endif(JXL_FOUND)
 endif(USE_JXL)
 
