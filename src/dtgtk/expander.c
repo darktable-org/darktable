@@ -119,7 +119,7 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
   GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
   gdouble value = gtk_adjustment_get_value(adjustment);
 
-  gboolean is_iop = !g_strcmp0("iop-expander", gtk_widget_get_name(widget));
+  const gboolean is_iop = !g_strcmp0("iop-expander", gtk_widget_get_name(widget));
 
   // try not to get dragged upwards if a module above is collapsing
   if(is_iop && allocation.y < _start_pos.y)
@@ -213,4 +213,3 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
