@@ -1104,7 +1104,8 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = allocation.height;
+  const int width = allocation.width;
+  const int height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
