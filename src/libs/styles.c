@@ -167,7 +167,8 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
           {
             // a leaf
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
-                               DT_STYLES_COL_NAME, s, DT_STYLES_COL_TOOLTIP, tooltip, DT_STYLES_COL_FULLNAME, style->name, -1);
+                               DT_STYLES_COL_NAME, s, DT_STYLES_COL_TOOLTIP,
+                               tooltip, DT_STYLES_COL_FULLNAME, style->name, -1);
           }
         }
         k++;
