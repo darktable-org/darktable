@@ -679,9 +679,97 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   g_object_unref(is_active_pb);
   g_object_unref(is_inactive_pb);
 }
+
+// style preview
+
+typedef struct _preview_data_t
+{
+  char style_name[128];
+  uint32_t imgid;
+} _preview_data_t;
+
+static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+  _preview_data_t *data = (_preview_data_t *)user_data;
+  gboolean res = FALSE;
+
+  if(data->imgid != -1)
+  {
+    cairo_surface_t *surface = dt_gui_get_style_preview(data->imgid, data->style_name);
+    cairo_set_source_surface(cr, surface, 0, 0);
+    cairo_paint(cr);
+    cairo_surface_destroy(surface);
+
+    res=TRUE;
+  }
+
+  g_free(data);
+  return res;
+}
+
+GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
+{
+  char buf[1024];
+  GtkWidget *ht = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  // GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid);
+  GtkWidget *label = NULL;
+
+  // name
+  snprintf(buf, sizeof(buf), "<b>%s</b>", g_markup_escape_text(name, -1));
+  label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label), buf);
+  gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
+
+  // description
+  char *des = dt_styles_get_description(name);
+
+  if(strlen(des)>0)
+  {
+    snprintf(buf, sizeof(buf), "<b>%s</b>", g_markup_escape_text(des, -1));
+    label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label), buf);
+    gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
+  }
+
+  gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 2);
+
+  GList *items = dt_styles_get_item_list(name, FALSE, -1);
+  GList *l = items;
+  while(l)
+  {
+    dt_style_item_t *i = (dt_style_item_t *)l->data;
+    snprintf(buf, sizeof(buf), "  %s %s", i->enabled?"●":"○", i->name);
+    label = gtk_label_new(buf);
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
+    l = g_list_next(l);
+  }
+
+  gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 2);
+
+  // style preview
+  GtkWidget *da = gtk_drawing_area_new();
+  gtk_widget_set_size_request(da, 200, 200);
+  gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
+  gtk_widget_set_app_paintable(da, TRUE);
+  gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
+  _preview_data_t *data = g_malloc(sizeof(_preview_data_t));
+  g_strlcpy(data->style_name, name, sizeof(data->style_name));
+  data->imgid = imgid;
+  g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), data);
+
+  return ht;
+}
+
+cairo_surface_t *dt_gui_get_style_preview(const uint32_t imgid, const char *name)
+{
+  cairo_surface_t *surface = dt_imageio_preview(imgid, 200, 200, -1, name);
+  return surface;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
