@@ -734,12 +734,27 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 
   gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 2);
 
-  GList *items = dt_styles_get_item_list(name, FALSE, -1);
+  GList *items = dt_styles_get_item_list(name, FALSE, -1, FALSE);
   GList *l = items;
   while(l)
   {
+    char mn[64];
     dt_style_item_t *i = (dt_style_item_t *)l->data;
-    snprintf(buf, sizeof(buf), "  %s %s", i->enabled?"●":"○", i->name);
+
+    if(i->multi_name && strlen(i->multi_name) > 0)
+    {
+      snprintf(mn, sizeof(mn), "(%s)", i->multi_name);
+    }
+    else
+    {
+      snprintf(mn, sizeof(mn), "(%d)", i->multi_priority);
+    }
+
+    snprintf(buf, sizeof(buf), "  %s %s %s",
+             i->enabled ? "●" : "○",
+             gettext(i->name),
+             mn);
+
     label = gtk_label_new(buf);
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
