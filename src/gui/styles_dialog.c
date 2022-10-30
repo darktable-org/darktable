@@ -764,8 +764,9 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
   gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 2);
 
   // style preview
+  const int psize = dt_conf_get_int("ui/style/preview_size");
   GtkWidget *da = gtk_drawing_area_new();
-  gtk_widget_set_size_request(da, 200, 200);
+  gtk_widget_set_size_request(da, psize, psize);
   gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
   gtk_widget_set_app_paintable(da, TRUE);
   gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
@@ -779,7 +780,8 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 
 cairo_surface_t *dt_gui_get_style_preview(const uint32_t imgid, const char *name)
 {
-  cairo_surface_t *surface = dt_imageio_preview(imgid, 200, 200, -1, name);
+  const int psize = dt_conf_get_int("ui/style/preview_size");
+  cairo_surface_t *surface = dt_imageio_preview(imgid, psize, psize, -1, name);
   return surface;
 }
 
