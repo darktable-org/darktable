@@ -1032,7 +1032,7 @@ void dt_styles_delete_by_name(const char *name)
   dt_styles_delete_by_name_adv(name, TRUE);
 }
 
-GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
+GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gboolean with_multi_name)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
@@ -1113,7 +1113,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
         // when we get the parameters we do not want to get the operation localized as this
         // is used to compare against the internal module name.
 
-        if(has_multi_name)
+        if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", sqlite3_column_text(stmt, 3), multi_name);
         else
           g_snprintf(iname, sizeof(iname), "%s", sqlite3_column_text(stmt, 3));
@@ -1137,7 +1137,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
       {
         const gchar *itname = dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 3));
 
-        if(has_multi_name)
+        if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", itname, multi_name);
         else
           g_snprintf(iname, sizeof(iname), "%s", itname);
@@ -1163,7 +1163,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
 
 char *dt_styles_get_item_list_as_string(const char *name)
 {
-  GList *items = dt_styles_get_item_list(name, FALSE, -1);
+  GList *items = dt_styles_get_item_list(name, FALSE, -1, TRUE);
   if(items == NULL) return NULL;
 
   GList *names = NULL;

@@ -78,7 +78,7 @@ static int style_getnumber(lua_State *L)
   }
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -2);
-  GList *items = dt_styles_get_item_list(style.name, TRUE, -1);
+  GList *items = dt_styles_get_item_list(style.name, TRUE, -1, TRUE);
   dt_style_item_t *item = g_list_nth_data(items, index - 1);
   if(!item)
   {
@@ -97,7 +97,7 @@ static int style_length(lua_State *L)
 
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -1);
-  GList *items = dt_styles_get_item_list(style.name, TRUE, -1);
+  GList *items = dt_styles_get_item_list(style.name, TRUE, -1, TRUE);
   lua_pushinteger(L, g_list_length(items));
   g_list_free_full(items, dt_style_item_free);
   return 1;
