@@ -2846,6 +2846,8 @@ int mouse_moved(struct dt_iop_module_t *module,
         last_hovered->header.hovered = 0;
       // change in hover display
       dt_control_hinter_message(darktable.control, dt_liquify_layers[hit.layer].hint);
+      // also use when dragging later
+      dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint = dt_liquify_layers[hit.layer].hint;
       handled = TRUE;
       goto done;
     }
@@ -2868,9 +2870,13 @@ int mouse_moved(struct dt_iop_module_t *module,
       // not trigger any panning.
       handled = TRUE;
     }
+    else if(hit.elem == DT_LIQUIFY_LAYER_BACKGROUND && gtk_toggle_button_get_active(g->btn_node_tool))
+      dt_control_hinter_message(darktable.control, _("click to edit nodes"));
   }
   else // we are dragging
   {
+    dt_control_hinter_message(darktable.control, dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint);
+
     dt_liquify_path_data_t *d = g->dragging.elem;
     dt_liquify_path_data_t *n = node_next(pa, d);
     dt_liquify_path_data_t *p = node_prev(pa, d);
@@ -3278,7 +3284,6 @@ int button_released(struct dt_iop_module_t *module,
   // right click == cancel or delete
   if(which == 3)
   {
-    dt_control_hinter_message(darktable.control, "");
     end_drag(g);
 
     // cancel line or curve creation
@@ -3531,20 +3536,19 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
     gtk_toggle_button_set_active(g->btn_curve_tool, btn == g->btn_curve_tool);
     gtk_toggle_button_set_active(g->btn_node_tool,  btn == g->btn_node_tool);
 
-    if(btn == g->btn_point_tool)
-      dt_control_hinter_message
-        (darktable.control, _("click and drag to add point\nscroll to change size - "
-                              "shift+scroll to change strength - ctrl+scroll to change direction"));
-    else if(btn == g->btn_line_tool)
-      dt_control_hinter_message
-        (darktable.control, _("click to add line\nscroll to change size - "
-                              "shift+scroll to change strength - ctrl+scroll to change direction"));
-    else if(btn == g->btn_curve_tool)
-      dt_control_hinter_message
-        (darktable.control, _("click to add curve\nscroll to change size - "
-                              "shift+scroll to change strength - ctrl+scroll to change direction"));
-    else if(btn == g->btn_node_tool)
-      dt_control_hinter_message(darktable.control, _("click to edit nodes"));
+    gtk_toggle_button_set_active(g->btn_node_tool,  btn == g->btn_node_tool);
+
+    dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint
+        = btn == g->btn_point_tool
+        ? _("click and drag to add point\nscroll to change size - "
+            "shift+scroll to change strength - ctrl+scroll to change direction")
+        : btn == g->btn_line_tool
+        ? _("click to add line\nscroll to change size - "
+            "shift+scroll to change strength - ctrl+scroll to change direction")
+        : btn == g->btn_curve_tool
+        ? _("click to add curve\nscroll to change size - "
+            "shift+scroll to change strength - ctrl+scroll to change direction")
+        : "";
 
     //  start the preview mode to show the shape that will be created
 
@@ -3616,6 +3620,7 @@ void gui_init(dt_iop_module_t *self)
                                          G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                          _liquify_cairo_paint_point_tool, hbox));
 
+  dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint     = "";
   dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click: add node - right click: remove path\n"
                                                               "ctrl+alt+click: toggle line/curve");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click: show/hide feathering controls\n"

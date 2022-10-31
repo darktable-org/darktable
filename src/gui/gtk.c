@@ -314,6 +314,7 @@ static void _panel_toggle(dt_ui_border_t border, dt_ui_t *ui)
         dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, TRUE, TRUE);
       else
         dt_ui_panel_show(ui, DT_UI_PANEL_TOP, TRUE, TRUE);
+      dt_control_hinter_message(darktable.control, "");
     }
     break;
 

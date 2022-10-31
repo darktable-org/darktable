@@ -1002,6 +1002,7 @@ int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
   {
     dt_masks_form_gui_t *gui = darktable.develop->form_gui;
     gui->mouse_leaved_center = TRUE;
+    dt_control_hinter_message(darktable.control, "");
   }
   return 0;
 }
@@ -1068,7 +1069,11 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
                                   darktable.develop->mask_form_selected_id);
 
   if(form->functions)
-    return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
+  {
+    int ret = form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
+    form->functions->mouse_moved(module, pzx, pzy, 0, which, form, 0, gui, 0);
+    return ret;
+  }
 
   return 0;
 }
