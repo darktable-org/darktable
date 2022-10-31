@@ -71,6 +71,7 @@ typedef struct _widgets_sort_t
   GtkWidget *close;
 
   int num;
+  gboolean top;
   struct dt_lib_filtering_t *lib;
 } _widgets_sort_t;
 
@@ -105,6 +106,7 @@ typedef struct dt_lib_filtering_t
 
   _widgets_sort_t sort[DT_COLLECTION_MAX_RULES];
   int nb_sort;
+  _widgets_sort_t sorttop;
   GtkWidget *sort_box;
   gboolean manual_sort_set;
   gboolean leaving;
@@ -1238,7 +1240,7 @@ static void _sort_update_query(_widgets_sort_t *sort)
   // if needed, we sync the filter bar
   if(sort->num == 0)
   {
-    _widgets_sort_t *dest = &sort->lib->sort[0];
+    _widgets_sort_t *dest = (sort->top) ? &sort->lib->sort[0] : &sort->lib->sorttop;
     sort->lib->manual_sort_set++;
     const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dest->direction), active);
@@ -1331,6 +1333,8 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
   sort->num = num;
   sort->sortid = sortid;
 
+  const gboolean top = (sort == &d->sorttop);
+
   const gboolean ret = (!sort->box);
 
   if(!sort->box)
@@ -1414,7 +1418,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
 
   dt_bauhaus_combobox_set_from_value(sort->sort, sortid);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sort->direction), sortorder);
-  gtk_widget_set_visible(sort->close, (sort->lib->nb_sort > 1));
+  gtk_widget_set_visible(sort->close, (sort->lib->nb_sort > 1) && !top);
   _sort_update_arrow(sort->direction);
 
   gtk_widget_show_all(sort->box);
@@ -1452,6 +1456,17 @@ static void _sort_gui_update(dt_lib_module_t *self)
     // recreate main widget
     if(_sort_init(&d->sort[i], sort, sortorder, i, self))
       gtk_grid_attach(GTK_GRID(d->sort_box), d->sort[i].box, 1, i, 1, 1);
+
+    // we also put the first sort item into the topbar
+    if(i == 0)
+    {
+      d->sorttop.top = TRUE;
+      GtkWidget *sort_topbox = dt_view_filter_get_sort_box(darktable.view_manager);
+      if(sort_topbox && _sort_init(&d->sorttop, sort, sortorder, i, self))
+      {
+        gtk_box_pack_start(GTK_BOX(sort_topbox), d->sorttop.box, FALSE, TRUE, 0);
+      }
+    }
   }
 
   // remove all remaining rules
