@@ -760,6 +760,8 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
     l = g_list_next(l);
   }
 
+  g_list_free_full(items, dt_style_item_free);
+
   if(imgid >= 0)
   {
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
