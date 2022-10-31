@@ -731,7 +731,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
     gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
   }
 
-  gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
   GList *items = dt_styles_get_item_list(name, FALSE, -1, FALSE);
   GList *l = items;
@@ -760,19 +760,22 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
     l = g_list_next(l);
   }
 
-  gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 2);
+  if(imgid >= 0)
+  {
+    gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
-  // style preview
-  const int psize = dt_conf_get_int("ui/style/preview_size");
-  GtkWidget *da = gtk_drawing_area_new();
-  gtk_widget_set_size_request(da, psize, psize);
-  gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
-  gtk_widget_set_app_paintable(da, TRUE);
-  gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
-  _preview_data_t *data = g_malloc(sizeof(_preview_data_t));
-  g_strlcpy(data->style_name, name, sizeof(data->style_name));
-  data->imgid = imgid;
-  g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), data);
+    // style preview
+    const int psize = dt_conf_get_int("ui/style/preview_size");
+    GtkWidget *da = gtk_drawing_area_new();
+    gtk_widget_set_size_request(da, psize, psize);
+    gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
+    gtk_widget_set_app_paintable(da, TRUE);
+    gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
+    _preview_data_t *data = g_malloc(sizeof(_preview_data_t));
+    g_strlcpy(data->style_name, name, sizeof(data->style_name));
+    data->imgid = imgid;
+    g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), data);
+  }
 
   return ht;
 }
