@@ -1739,7 +1739,10 @@ void gui_cleanup(dt_lib_module_t *self)
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-  d->leaving = FALSE;
+  for(int i = 0; i < DT_COLLECTION_MAX_RULES; i++)
+  {
+    if(d->rule[i].filter) d->rule[i].filter->leaving = FALSE;
+  }
 
   // we change the tooltip of the reset button here, as we are sure the header is defined now
   gtk_widget_set_tooltip_text(self->reset_button, _("reset\nctrl-click to remove pinned rules too"));
@@ -1751,7 +1754,10 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   {
     // we are leaving dt, so we want to avoid pb with focus and such
     dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-    d->leaving = TRUE;
+    for(int i = 0; i < DT_COLLECTION_MAX_RULES; i++)
+    {
+      if(d->rule[i].filter) d->rule[i].filter->leaving = TRUE;
+    }
   }
 }
 // clang-format off

@@ -34,6 +34,7 @@ typedef struct dt_lib_filters_rule_t
 
   int manual_widget_set; // when we update manually the widget, we don't want events to be handled
   gboolean cleaning;     // if we have started a gui_cleanup (we don't want certain event to occurs)
+  gboolean leaving;      // if the lib that owned the filter lost focus because the view is changing
 
   gboolean topbar;
 

@@ -127,7 +127,7 @@ static void _range_changed(GtkWidget *widget, gpointer user_data)
 {
   _widgets_range_t *special = (_widgets_range_t *)user_data;
   if(special->rule->manual_widget_set) return;
-  // TODO if(special->rule->lib->leaving) return;
+  if(special->rule->leaving) return;
 
   // we recreate the right raw text and put it in the raw entry
   gchar *txt = dtgtk_range_select_get_raw_text(DTGTK_RANGE_SELECT(special->range_select));
