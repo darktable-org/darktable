@@ -1647,18 +1647,16 @@ void gui_init(dt_lib_module_t *self)
   d->nb_rules = 0;
   d->params = (dt_lib_filtering_params_t *)g_malloc0(sizeof(dt_lib_filtering_params_t));
 
+  // we initialize all the shortcuts provided by the different filters
   darktable.control->accel_initialising = TRUE;
   const int nb = dt_filters_get_count();
   for(int i = 0; i < nb; i++)
   {
-    /* TODO initialize all widgets for shortcut registering
-    dt_lib_filtering_rule_t temp_rule;
-    temp_rule.filter->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
-    filters[i].widget_init(&temp_rule, filters[i].prop, "", self, FALSE);
-
-    gtk_widget_destroy(temp_rule.filter->w_special_box);
-    g_free(temp_rule.w_specific);*/
+    // initialize all widgets for shortcut registering
+    dt_lib_filters_rule_t *temp_rule = (dt_lib_filters_rule_t *)g_malloc0(sizeof(dt_lib_filters_rule_t));
+    temp_rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    dt_filters_init(temp_rule, dt_filters_get_prop_by_pos(i), "", self, FALSE);
+    dt_filters_free(temp_rule);
   }
   darktable.control->accel_initialising = FALSE;
 
