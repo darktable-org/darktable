@@ -33,6 +33,7 @@ typedef struct _filter_t
   dt_collection_properties_t prop;
   _widget_init_func widget_init;
   _widget_update_func update;
+  gboolean allow_topbar;
 } _filter_t;
 
 typedef struct _widgets_range_t
@@ -72,25 +73,25 @@ static void _range_widget_add_to_rule(dt_lib_filters_rule_t *rule, _widgets_rang
 #include "libs/filters/search.c"
 
 static _filter_t filters[]
-    = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_init, _colors_update },
-        { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
-        { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update },
-        { DT_COLLECTION_PROP_DAY, _date_widget_init, _date_update },
-        { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
-        { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
-        { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
-        { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update },
-        { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update },
-        { DT_COLLECTION_PROP_RATING_RANGE, _rating_range_widget_init, _rating_range_update },
-        { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update },
-        { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
-        { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
-        { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
-        { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update },
-        { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
-        { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
-        { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update },
-        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update } };
+    = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_init, _colors_update, TRUE },
+        { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update, TRUE },
+        { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update, TRUE },
+        { DT_COLLECTION_PROP_DAY, _date_widget_init, _date_update, FALSE },
+        { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update, FALSE },
+        { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update, FALSE },
+        { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update, FALSE },
+        { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update, FALSE },
+        { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update, TRUE },
+        { DT_COLLECTION_PROP_RATING_RANGE, _rating_range_widget_init, _rating_range_update, TRUE },
+        { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update, TRUE },
+        { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update, TRUE },
+        { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update, TRUE },
+        { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update, TRUE },
+        { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update, TRUE },
+        { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update, TRUE },
+        { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update, TRUE },
+        { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update, TRUE },
+        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update, TRUE } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -153,9 +154,10 @@ static void _range_widget_add_to_rule(dt_lib_filters_rule_t *rule, _widgets_rang
   rule->w_specific = special;
 }
 
-gboolean dt_filters_exists(const dt_collection_properties_t prop)
+gboolean dt_filters_exists(const dt_collection_properties_t prop, const gboolean top)
 {
-  return (_filters_get(prop) != NULL);
+  _filter_t *f = _filters_get(prop);
+  return (f != NULL && (!top || f->allow_topbar));
 }
 
 gboolean dt_filters_update(dt_lib_filters_rule_t *rule, gchar *last_where_ext)
@@ -171,7 +173,7 @@ void dt_filters_init(dt_lib_filters_rule_t *rule, const dt_collection_properties
                      dt_lib_module_t *self, gboolean top)
 {
   _filter_t *f = _filters_get(prop);
-  if(f)
+  if(f && (!top || f->allow_topbar))
   {
     rule->prop = prop;
     f->widget_init(rule, prop, text, self, top);

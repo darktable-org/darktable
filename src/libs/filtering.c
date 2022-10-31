@@ -555,7 +555,7 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
   rule->filter->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->filter->w_special_box, TRUE, TRUE, 0);
 
-  if(dt_filters_exists(rule->prop))
+  if(dt_filters_exists(rule->prop, FALSE))
     dt_filters_init(rule->filter, rule->prop, text, self, FALSE);
   else
     return FALSE;
@@ -627,7 +627,7 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
                             GCallback callback, gpointer data, dt_lib_module_t *self, const float xalign)
 {
   // we first verify that the filter is defined
-  if(callback != G_CALLBACK(_sort_append_sort) && !title && !dt_filters_exists(id)) return;
+  if(callback != G_CALLBACK(_sort_append_sort) && !title && !dt_filters_exists(id, FALSE)) return;
 
   GtkWidget *smt = gtk_menu_item_new_with_label(name);
   if(title)
@@ -715,7 +715,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
 
 static void _rule_populate_prop_combo_add(GtkWidget *w, const dt_collection_properties_t prop)
 {
-  if(!dt_filters_exists(prop)) return;
+  if(!dt_filters_exists(prop, FALSE)) return;
   dt_bauhaus_combobox_add_full(w, dt_collection_name(prop), DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE,
                                GUINT_TO_POINTER(prop), NULL, TRUE);
 }
@@ -859,7 +859,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
                              const gchar *text, const dt_lib_collect_mode_t mode, gboolean off, const int pos,
                              dt_lib_module_t *self)
 {
-  if(!dt_filters_exists(prop)) return FALSE;
+  if(!dt_filters_exists(prop, FALSE)) return FALSE;
   rule->filter = (dt_lib_filters_rule_t *)g_malloc0(sizeof(dt_lib_filters_rule_t));
   rule->filter->rule_changed = _event_rule_change_raw_text;
   rule->filter->parent = rule;
@@ -983,7 +983,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
     // recreate main widget
     if(_widget_init(&d->rule[i], prop, txt, rmode, off, i, self))
       gtk_box_pack_start(GTK_BOX(d->rules_box), d->rule[i].w_main, FALSE, TRUE, 0);
-    else if(!dt_filters_exists(prop))
+    else if(!dt_filters_exists(prop, FALSE))
     {
       // that means that for some reason we have a filter with no implementation
       d->nb_rules--;

@@ -42,7 +42,7 @@ typedef struct dt_lib_filters_rule_t
   void (*rule_changed)(void *rule);
 } dt_lib_filters_rule_t;
 
-gboolean dt_filters_exists(const dt_collection_properties_t prop);
+gboolean dt_filters_exists(const dt_collection_properties_t prop, const gboolean top);
 gboolean dt_filters_update(dt_lib_filters_rule_t *rule, gchar *last_where_ext);
 void dt_filters_init(dt_lib_filters_rule_t *rule, const dt_collection_properties_t prop, const gchar *text,
                      dt_lib_module_t *self, gboolean top);

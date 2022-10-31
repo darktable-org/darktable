@@ -153,7 +153,7 @@ static dt_lib_filters_rule_t *_filter_create_new(const dt_collection_properties_
                                                  dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  if(!dt_filters_exists(prop)) return NULL;
+  if(!dt_filters_exists(prop, TRUE)) return NULL;
 
   // create a new filter structure
   dt_lib_filters_rule_t *rule = (dt_lib_filters_rule_t *)g_malloc0(sizeof(dt_lib_filters_rule_t));
@@ -280,7 +280,7 @@ static void _event_add_filter(GtkWidget *widget, dt_lib_module_t *self)
 
 static void _rule_populate_prop_combo_add(GtkWidget *w, const dt_collection_properties_t prop)
 {
-  if(!dt_filters_exists(prop)) return;
+  if(!dt_filters_exists(prop, TRUE)) return;
   dt_bauhaus_combobox_add_full(w, dt_collection_name(prop), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                GUINT_TO_POINTER(prop), NULL, TRUE);
 }
@@ -338,13 +338,14 @@ static gboolean _event_menu_show(GtkWidget *widget, GdkEventButton *event, dt_li
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
 
+  /* this section is disabled because related filters are not designed for the topbar
   dt_bauhaus_combobox_add_section(w, _("times"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);*/
 
   dt_bauhaus_combobox_add_section(w, _("capture details"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
@@ -401,7 +402,7 @@ void gui_init(dt_lib_module_t *self)
     // initialize all widgets for shortcut registering
     dt_lib_filters_rule_t *temp_rule = (dt_lib_filters_rule_t *)g_malloc0(sizeof(dt_lib_filters_rule_t));
     temp_rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    dt_filters_init(temp_rule, dt_filters_get_prop_by_pos(i), "", self, FALSE);
+    dt_filters_init(temp_rule, dt_filters_get_prop_by_pos(i), "", self, TRUE);
     dt_filters_free(temp_rule);
   }
   darktable.control->accel_initialising = FALSE;
