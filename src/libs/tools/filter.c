@@ -93,24 +93,32 @@ static GtkWidget *_lib_filter_get_count(dt_lib_module_t *self)
   return d->count;
 }
 
-static void _dt_collection_updated(gpointer instance, dt_collection_change_t query_change,
-                                   dt_collection_properties_t changed_property, gpointer imgs, int next,
-                                   gpointer self)
+static void _update_where_ext(dt_lib_module_t *self, const gboolean update)
 {
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)dm->data;
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
 
   gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
   if(g_strcmp0(where_ext, d->last_where_ext))
   {
     g_free(d->last_where_ext);
     d->last_where_ext = g_strdup(where_ext);
-    for(GList *iter = d->filters; iter; iter = g_list_next(iter))
+    if(update)
     {
-      dt_lib_filters_rule_t *rule = (dt_lib_filters_rule_t *)iter->data;
-      dt_filters_update(rule, d->last_where_ext);
+      for(GList *iter = d->filters; iter; iter = g_list_next(iter))
+      {
+        dt_lib_filters_rule_t *rule = (dt_lib_filters_rule_t *)iter->data;
+        dt_filters_update(rule, d->last_where_ext);
+      }
     }
   }
+}
+
+static void _dt_collection_updated(gpointer instance, dt_collection_change_t query_change,
+                                   dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                   gpointer self)
+{
+  dt_lib_module_t *dm = (dt_lib_module_t *)self;
+  _update_where_ext(dm, TRUE);
 }
 
 static void _filters_changed(void *data)
@@ -159,6 +167,8 @@ static dt_lib_filters_rule_t *_filter_create_new(const dt_collection_properties_
   gtk_widget_show_all(rule->w_special_box);
 
   d->filters = g_list_append(d->filters, rule);
+
+  dt_filters_update(rule, d->last_where_ext);
 
   return rule;
 }
@@ -433,6 +443,7 @@ void gui_init(dt_lib_module_t *self)
                                   G_CALLBACK(_dt_collection_updated), self);
 
   // initialize the filters
+  _update_where_ext(self, FALSE);
   _filters_init(self);
 >>>>>>> 07f7975e37 (filters : reactivate topbar)
 }
@@ -441,6 +452,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   g_list_free_full(d->filters, _filter_free);
+  if(d->last_where_ext) g_free(d->last_where_ext);
   g_free(self->data);
   self->data = NULL;
 

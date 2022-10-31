@@ -1728,6 +1728,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_updated), self);
   darktable.view_manager->proxy.module_filtering.module = NULL;
+  if(d->last_where_ext) g_free(d->last_where_ext);
   free(d->params);
 
   /* TODO: Make sure we are cleaning up all allocations */
