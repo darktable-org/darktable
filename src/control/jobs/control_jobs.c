@@ -1298,10 +1298,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
       if(img)
       {
-        const uint32_t flags = img->flags;
         dt_exif_read(img, sourcefile);
-        if(dt_conf_get_bool("ui_last/ignore_exif_rating"))
-          img->flags = flags;
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
       }
       else
