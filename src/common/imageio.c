@@ -791,7 +791,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   //  If a style is to be applied during export, add the iop params into the history
   if(use_style)
   {
-    GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1);
+    GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1, TRUE);
     if(!style_items)
     {
       dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);

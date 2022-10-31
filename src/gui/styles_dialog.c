@@ -567,7 +567,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                        DT_STYLE_ITEMS_COL_NUM,      -1,
                        -1);
     /* get history items for named style and populate the items list */
-    GList *items = dt_styles_get_item_list(name, FALSE, imgid);
+    GList *items = dt_styles_get_item_list(name, FALSE, imgid, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
