@@ -53,6 +53,7 @@ typedef struct dt_lib_snapshot_params_t
   int bpp;
   uint8_t *buf;
   uint32_t width, height;
+  uint32_t x, y;
 } dt_lib_snapshot_params_t;
 
 typedef struct dt_lib_snapshots_t
@@ -179,14 +180,19 @@ static int _export_image(dt_lib_module_t *self, size_t width, size_t height)
   // output with exact size as the current image in darkroom
   // if DT_ZOOM_FIT we use the current view port width/height
   // as-is for better overlay alignment.
-  const size_t w =  zoom == DT_ZOOM_FIT ? width  : roundf(iwidth);
-  const size_t h = (zoom == DT_ZOOM_FIT ? height : roundf(iheight)) + 2;
+  const size_t w = zoom == DT_ZOOM_FIT ? width  : ceilf(iwidth);
+  const size_t h = zoom == DT_ZOOM_FIT ? height : ceilf(iheight);
+
+  const float x = MAX(iwidth - w, .0f);
+  const float y = MAX(iheight - h, .0f);
 
   dt_lib_snapshot_params_t dat;
-  dat.head.max_width = w;
-  dat.head.max_height = h;
+  dat.head.max_width = w - ceilf(x);
+  dat.head.max_height = h - ceilf(y);
   dat.head.width = w;
   dat.head.height = h;
+  dat.head.x = x;
+  dat.head.y = y;
   dat.head.style[0] = '\0';
   dat.head.style_append = FALSE;
   dat.bpp = 8;
@@ -200,16 +206,18 @@ static int _export_image(dt_lib_module_t *self, size_t width, size_t height)
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   dt_lib_snapshot_t *snap = &d->snapshot[d->selected];
 
-  dt_imageio_export_with_flags
+  dt_imageio_snapshots
     (snap->imgid, "snapshot", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
      high_quality, upscale, is_scaling, FALSE, NULL, FALSE, export_masks,
      darktable.color_profiles->display_type, darktable.color_profiles->display_filename,
      DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
      snap->history_end);
 
-  d->params.buf = dat.buf;
-  d->params.width = dat.head.width;
+  d->params.buf    = dat.buf;
+  d->params.width  = dat.head.width;
   d->params.height = dat.head.height;
+  d->params.x      = dat.head.x;
+  d->params.y      = dat.head.y;
   dat.buf = NULL;
 
   return 0;
@@ -241,7 +249,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     {
       // export image with proper size, remove the darkroom borders
       _export_image(self, width - dev->border_size * 2, height- dev->border_size * 2);
-      const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->params.width);
+      const int32_t stride =
+        cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->params.width);
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = dt_cairo_image_surface_create_for_data
         (d->params.buf, CAIRO_FORMAT_RGB24, d->params.width, d->params.height, stride);
