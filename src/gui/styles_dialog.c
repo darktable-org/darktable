@@ -696,7 +696,10 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
   if(data->imgid != -1)
   {
     cairo_surface_t *surface = dt_gui_get_style_preview(data->imgid, data->style_name);
-    cairo_set_source_surface(cr, surface, 0, 0);
+    const int psize = dt_conf_get_int("ui/style/preview_size");
+    const int swidth = cairo_image_surface_get_width(surface);
+    const int sheight = cairo_image_surface_get_height(surface);
+    cairo_set_source_surface(cr, surface, .5f * (psize - swidth), .5f * (psize - sheight));
     cairo_paint(cr);
     cairo_surface_destroy(surface);
 
