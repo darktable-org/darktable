@@ -1669,8 +1669,6 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
 
   // read dttags and exif for database queries!
   if(dt_exif_read(img, normalized_filename)) img->exif_inited = 0;
-  if(dt_conf_get_bool("ui_last/ignore_exif_rating"))
-    img->flags = flags;
   char dtfilename[PATH_MAX] = { 0 };
   g_strlcpy(dtfilename, normalized_filename, sizeof(dtfilename));
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
