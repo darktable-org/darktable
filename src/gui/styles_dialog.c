@@ -712,7 +712,6 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
   char buf[1024];
   GtkWidget *ht = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  // GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid);
   GtkWidget *label = NULL;
 
   // name

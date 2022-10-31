@@ -71,7 +71,7 @@ static int style_duplicate(lua_State *L)
 
 static int style_getnumber(lua_State *L)
 {
-  int index = luaL_checknumber(L, -1);
+  const int index = luaL_checknumber(L, -1);
   if(index <= 0)
   {
     return luaL_error(L, "incorrect index for style");
@@ -163,7 +163,7 @@ static int style_item_gc(lua_State *L)
   return 0;
 }
 
-static GList *style_item_table_to_id_list(lua_State *L, int index)
+static GList *style_item_table_to_id_list(lua_State *L, const int index)
 {
   if(lua_isnoneornil(L, index)) return NULL;
   luaL_checktype(L, index, LUA_TTABLE);
@@ -185,7 +185,7 @@ static GList *style_item_table_to_id_list(lua_State *L, int index)
 /////////////////////////
 static int style_table_index(lua_State *L)
 {
-  int index = luaL_checkinteger(L, -1);
+  const int index = luaL_checkinteger(L, -1);
   if(index < 1)
   {
     return luaL_error(L, "incorrect index in database");
@@ -363,4 +363,3 @@ int dt_lua_init_styles(lua_State *L)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
