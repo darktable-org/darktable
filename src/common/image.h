@@ -140,6 +140,26 @@ typedef enum dt_image_orientation_t
   ORIENTATION_TRANSVERSE        = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY // 7
 } dt_image_orientation_t;
 
+typedef enum dt_image_correction_type_t
+{
+  CORRECTION_TYPE_NONE,
+  CORRECTION_TYPE_SONY,
+  CORRECTION_TYPE_FUJI
+} dt_image_correction_type_t;
+
+typedef union dt_image_correction_data_t
+{
+  struct {
+    int nc;
+    short distortion[16], ca_r[16], ca_b[16], vignetting[16];
+  } sony;
+  struct {
+    int nc;
+    float cropf;
+    float knots[9], distortion[9], ca_r[9], ca_b[9], vignetting[9];
+  } fuji;
+} dt_image_correction_data_t;
+
 typedef enum dt_image_loader_t
 {
   LOADER_UNKNOWN  =  0,
@@ -210,6 +230,9 @@ typedef struct dt_image_t
   char exif_model[64];
   char exif_lens[128];
   GTimeSpan exif_datetime_taken;
+
+  dt_image_correction_type_t exif_correction_type;
+  dt_image_correction_data_t exif_correction_data;
 
   char camera_maker[64];
   char camera_model[64];
