@@ -747,7 +747,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  dt_export_metadata_t *metadata)
 {
   dt_develop_t dev;
-  dt_dev_init(&dev, 0);
+  dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
 
   const gboolean buf_is_downscaled = (thumbnail_export && dt_conf_get_bool("ui/performance"));

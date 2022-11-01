@@ -722,7 +722,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
 
   // and now we can do the pipe stuff to get final image size
   dt_develop_t dev;
-  dt_dev_init(&dev, 0);
+  dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
 
   dt_dev_pixelpipe_t pipe;
@@ -2830,4 +2830,3 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
