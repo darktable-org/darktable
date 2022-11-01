@@ -130,7 +130,10 @@ gboolean _styles_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyb
   if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(self), &x, &y, FALSE, &model, &path, &iter))
   {
     gchar *name = NULL;
-    gtk_tree_model_get(model, &iter, DT_STYLES_COL_NAME, &name, -1);
+    gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
+
+    // only on leaf node
+    if(!name) return FALSE;
 
     GList *selected_image = dt_collection_get_selected(darktable.collection, 1);
 
