@@ -436,19 +436,22 @@ void expose(
     dev->gui_synch = 0;
   }
 
-  if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY || dev->image_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->image_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp)
   {
     dt_dev_process_image(dev);
   }
 
-  if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp)
   {
     dt_dev_process_preview(dev);
   }
 
-  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
   {
     dt_dev_process_preview2(dev);
@@ -501,10 +504,10 @@ void expose(
     dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
-  if(dev->pipe->output_backbuf && // do we have an image?
-    dev->pipe->output_imgid == dev->image_storage.id && // is the right image?
-    dev->pipe->backbuf_scale == backbuf_scale && // is this the zoom scale we want to display?
-    dev->pipe->backbuf_zoom_x == zoom_x && dev->pipe->backbuf_zoom_y == zoom_y)
+  if(dev->pipe->output_backbuf                            // do we have an image?
+     && dev->pipe->output_imgid == dev->image_storage.id  // is the right image?
+     && dev->pipe->backbuf_scale == backbuf_scale    // is this the zoom scale we want to display?
+     && dev->pipe->backbuf_zoom_x == zoom_x && dev->pipe->backbuf_zoom_y == zoom_y)
   {
     // draw image
     mutex = &dev->pipe->backbuf_mutex;
