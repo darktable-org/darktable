@@ -49,11 +49,8 @@ typedef struct dt_lib_snapshot_t
 
 typedef struct dt_lib_snapshot_params_t
 {
-  dt_imageio_module_data_t head;
-  int bpp;
   uint8_t *buf;
   uint32_t width, height;
-  uint32_t x, y;
 } dt_lib_snapshot_params_t;
 
 typedef struct dt_lib_snapshots_t
@@ -131,94 +128,55 @@ static void _draw_sym(cairo_t *cr, float x, float y, gboolean vertical, gboolean
   pango_font_description_free(desc);
   g_object_unref(layout);
 }
-static int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
-                       dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
-                       const gboolean export_masks)
-{
-  dt_lib_snapshot_params_t *d = (dt_lib_snapshot_params_t *)data;
-
-  memcpy(d->buf, in, sizeof(uint32_t) * data->width * data->height);
-  d->width = data->width;
-  d->height = data->height;
-
-  return 0;
-}
-
-static int bpp(dt_imageio_module_data_t *data)
-{
-  return 8;
-}
-
-static int levels(dt_imageio_module_data_t *data)
-{
-  return IMAGEIO_RGB | IMAGEIO_INT8;
-}
-
-static const char *mime(dt_imageio_module_data_t *data)
-{
-  return "memory";
-}
 
 // export image for the snapshot d->snapshot[d->selected]
-static int _export_image(dt_lib_module_t *self, size_t width, size_t height)
+static int _export_image(
+  dt_lib_module_t *self,
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end)
 {
-  dt_develop_t *dev = darktable.develop;
-
-  dt_imageio_module_format_t buf;
-  buf.mime = mime;
-  buf.levels = levels;
-  buf.bpp = bpp;
-  buf.write_image = write_image;
-
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-  const float iwidth = dev->preview_pipe->backbuf_width * zoom_scale;
-  const float iheight = dev->preview_pipe->backbuf_height * zoom_scale;
-
-  // output with exact size as the current image in darkroom
-  // if DT_ZOOM_FIT we use the current view port width/height
-  // as-is for better overlay alignment.
-  const size_t w = zoom == DT_ZOOM_FIT ? width  : ceilf(iwidth);
-  const size_t h = zoom == DT_ZOOM_FIT ? height : ceilf(iheight);
-
-  const float x = MAX(iwidth - w, .0f);
-  const float y = MAX(iheight - h, .0f);
-
-  dt_lib_snapshot_params_t dat;
-  dat.head.max_width = w - ceilf(x);
-  dat.head.max_height = h - ceilf(y);
-  dat.head.width = w;
-  dat.head.height = h;
-  dat.head.x = x;
-  dat.head.y = y;
-  dat.head.style[0] = '\0';
-  dat.head.style_append = FALSE;
-  dat.bpp = 8;
-  dat.buf = (uint8_t *)dt_alloc_align(64, sizeof(uint32_t) * w * h);
-
-  const gboolean high_quality = FALSE;
-  const gboolean upscale = TRUE;
-  const gboolean export_masks = FALSE;
-  const gboolean is_scaling = FALSE;
-
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  dt_lib_snapshot_t *snap = &d->snapshot[d->selected];
 
-  dt_imageio_snapshots
-    (snap->imgid, "snapshot", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
-     high_quality, upscale, is_scaling, FALSE, NULL, FALSE, export_masks,
-     darktable.color_profiles->display_type, darktable.color_profiles->display_filename,
-     DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
-     snap->history_end);
+  // create a dev
 
-  d->params.buf    = dat.buf;
-  d->params.width  = dat.head.width;
-  d->params.height = dat.head.height;
-  d->params.x      = dat.head.x;
-  d->params.y      = dat.head.y;
-  dat.buf = NULL;
+  dt_develop_t dev;
+  dt_dev_init(&dev, TRUE);
+  dev.border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+
+  // create the full pipe
+
+  dt_dev_pixelpipe_init(dev.pipe);
+
+  // load image and set history_end
+
+  dt_dev_load_image(&dev, imgid);
+
+  if(history_end != -1)
+    dt_dev_pop_history_items_ext(&dev, history_end);
+
+  // configure the actual dev width & height
+
+  dt_dev_configure(&dev, width, height);
+
+  // process the pipe
+
+  dev.gui_attached = FALSE;
+  dt_dev_process_image_job(&dev);
+
+  // record resulting image and dimentions
+
+  const uint32_t bufsize =
+    sizeof(uint32_t) * dev.pipe->backbuf_width * dev.pipe->backbuf_height;
+  d->params.buf = dt_alloc_align(64, bufsize);
+  memcpy(d->params.buf, dev.pipe->backbuf, bufsize);
+  d->params.width  = dev.pipe->backbuf_width;
+  d->params.height = dev.pipe->backbuf_height;
+
+  // we take the backbuf, avoid it to be released
+
+  dt_dev_cleanup(&dev);
 
   return 0;
 }
@@ -248,7 +206,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(d->snap_requested && snap->zoom_scale == zoom_scale)
     {
       // export image with proper size, remove the darkroom borders
-      _export_image(self, width - dev->border_size * 2, height- dev->border_size * 2);
+      _export_image(self, snap->imgid, width, height, snap->history_end);
       const int32_t stride =
         cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->params.width);
       if(snap->surface) cairo_surface_destroy(snap->surface);
@@ -336,16 +294,20 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
       cairo_rectangle(cri, x, y, w, h);
 
-      // center of viewport
-      const float zoom_y = dt_control_get_dev_zoom_y();
-      const float zoom_x = dt_control_get_dev_zoom_x();
+      // use the exact same formulae to place the snapshot on the view. this is
+      // important to have a fully aligned snapshot.
+
       const float sw = (float)snap->width;
       const float sh = (float)snap->height;
-      // offset are: center_area - zoom_offset
-      const float offset_x = (.5f * (float)width) - (sw * (zoom_x + .5f));
-      const float offset_y = (.5f * (float)height) - (sh * (zoom_y +  .5f));
 
-      cairo_translate(cri, offset_x, offset_y);
+      cairo_translate(cri, ceilf(.5f * (width - sw)), ceilf(.5f * (height - sh)));
+      if(closeup)
+      {
+        const double scale = 1<<closeup;
+        cairo_scale(cri, scale, scale);
+        cairo_translate(cri, -(.5 - 0.5/scale) * sw, -(.5 - 0.5/scale) * sh);
+      }
+
       cairo_set_source_surface (cri, snap->surface, 0, 0);
       cairo_pattern_set_filter
         (cairo_get_source(cri),
