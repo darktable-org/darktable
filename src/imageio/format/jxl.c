@@ -613,7 +613,7 @@ void gui_init(dt_imageio_module_format_t *self)
       dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_DEFAULT), 0);
   dt_bauhaus_slider_set(gui->tier, dt_conf_get_int("plugins/imageio/format/jxl/tier"));
   dt_bauhaus_widget_set_label(gui->tier, NULL, N_("decoding speed"));
-  gtk_widget_set_tooltip_text(gui->tier, _("the preffered decoding speed with some sacrifice of quality"));
+  gtk_widget_set_tooltip_text(gui->tier, _("the preferred decoding speed with some sacrifice of quality"));
   g_signal_connect(G_OBJECT(gui->tier), "value-changed", G_CALLBACK(tier_changed), NULL);
   gtk_box_pack_start(GTK_BOX(box), gui->tier, TRUE, TRUE, 0);
 }

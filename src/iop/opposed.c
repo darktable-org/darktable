@@ -56,7 +56,7 @@ static inline float _calc_linear_refavg(const float *in, const int row, const in
   return powf(croot_refavg[color], HL_POWERF);
 }
 
-// A slighly modified version for sraws
+// A slightly modified version for sraws
 static void _process_linear_opposed(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                          dt_iop_highlights_data_t *data)

@@ -116,7 +116,7 @@ typedef struct dt_iop_retouch_params_t
   dt_iop_retouch_fill_modes_t fill_mode; // $DEFAULT: DT_IOP_RETOUCH_FILL_ERASE $DESCRIPTION: "fill mode" mode for fill algorithm, erase or fill with color
   float fill_color[3];   // $DEFAULT: 0.0 color for fill algorithm
   float fill_brightness; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "brightness" value to be added to the color
-  int max_heal_iter;     // $DEFAULT: 2000 $DESCRIPTION: "max_iter" numbe of iteration for heal algorithm
+  int max_heal_iter;     // $DEFAULT: 2000 $DESCRIPTION: "max_iter" number of iterations for heal algorithm
 } dt_iop_retouch_params_t;
 
 typedef struct dt_iop_retouch_gui_data_t
