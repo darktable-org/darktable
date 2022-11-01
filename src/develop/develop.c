@@ -52,7 +52,7 @@
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
-void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
+void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
   dev->full_preview = FALSE;

@@ -261,7 +261,7 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
   // could use dt_image_altered() here, but it ignores flip module
   {
     dt_develop_t dev;
-    dt_dev_init(&dev, 0);
+    dt_dev_init(&dev, FALSE);
     dt_dev_load_image(&dev, imgid);
     dt_dev_pixelpipe_t pipe;
     const gboolean res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
@@ -375,4 +375,3 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

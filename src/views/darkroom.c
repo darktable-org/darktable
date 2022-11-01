@@ -117,7 +117,7 @@ static int display_image_cb(lua_State *L)
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
-  dt_dev_init((dt_develop_t *)self->data, 1);
+  dt_dev_init((dt_develop_t *)self->data, TRUE);
 
   darktable.view_manager->proxy.darkroom.view = self;
 
