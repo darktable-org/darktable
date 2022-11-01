@@ -337,7 +337,7 @@ static inline float4 Ych_to_pipe_RGB(float4 in, constant const float *const matr
 
 static inline float4 filmic_desaturate_v4(const float4 Ych_original, float4 Ych_final, const float saturation)
 {
-  // Note : Ych is normalized trough the LMS conversion,
+  // Note : Ych is normalized through the LMS conversion,
   // meaning c is actually a saturation (saturation ~= chroma / brightness).
   // So copy-pasting c and h from a different Y is equivalent to
   // tonemapping with a norm, which is equivalent to doing exposure compensation :

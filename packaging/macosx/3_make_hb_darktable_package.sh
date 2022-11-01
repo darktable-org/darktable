@@ -28,7 +28,7 @@ homebrewHome=$(brew --prefix)
 function install_dependencies {
     local hbDependencies
 
-    # Get depedencies of current executable
+    # Get dependencies of current executable
     oToolLDependencies=$(otool -L "$1" 2>/dev/null | grep compatibility | cut -d\( -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' | uniq)
 
     # Filter for homebrew dependencies

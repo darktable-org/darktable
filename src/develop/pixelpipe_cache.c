@@ -263,7 +263,7 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
       dt_vprint(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s %s HIT %16s, line%3i, age %4i, at %p, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
         dt_dev_pixelpipe_type_to_str(pipe->type), (cache->used[k] < 0) ? "important" : "         ", name, k, cache->used[k], cache->data[k],
         cache->hash[k], cache->basichash[k]); 
-      // in case of a hit its always good to keep the cachline as important
+      // in case of a hit its always good to keep the cacheline as important
       cache->used[k] = -cache->entries;
       return FALSE;
     }

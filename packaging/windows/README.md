@@ -126,7 +126,7 @@ Feel free to adjust the number of parallel jobs according to your needs: Ninja w
 
 If you are in a hurry you can now run darktable by executing the `darktable.exe` found in the `build/bin` folder, install in `/opt/darktable` as described earlier, or create an install image.
 
-If you like experimenting you could also install `mingw-w64-ucrt-x86_64-{clang,openmp}` and use that compiler instead of gcc/g++ by setting the `CC=clang` and `CXX=clang++` variables. Alternatively, you can use the CLANG64 environment instead of UCRT64 and try building darktable with its defaut toolchain (note that the prefix for installation of all the packages above then becomes `mingw-w64-clang-x86_64-`).
+If you like experimenting you could also install `mingw-w64-ucrt-x86_64-{clang,openmp}` and use that compiler instead of gcc/g++ by setting the `CC=clang` and `CXX=clang++` variables. Alternatively, you can use the CLANG64 environment instead of UCRT64 and try building darktable with its default toolchain (note that the prefix for installation of all the packages above then becomes `mingw-w64-clang-x86_64-`).
 
 
 Cross-platform compile on Linux

@@ -74,7 +74,7 @@ The chosen segmentation algorithm works like this:
      By doing so we avoid direction problems.
   2. Do a box-blur to suppress ridges, the radius depends on segment size.
   3. Possibly add some noise.
-  4. Do a sigmoid correction supressing artefacts at the borders.
+  4. Do a sigmoid correction suppressing artefacts at the borders.
      and write back data from this segment to the gradients plane
 
   The UI offers

@@ -153,7 +153,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
   // try to add the chromaticities
   cmsToneCurve *red_curve = NULL, *green_curve = NULL, *blue_curve = NULL;
   cmsCIEXYZ *red_color = NULL, *green_color = NULL, *blue_color = NULL;
-  Imf::Chromaticities chromaticities; // initialzed w/ Rec709 primaries and D65 white
+  Imf::Chromaticities chromaticities; // initialized w/ Rec709 primaries and D65 white
 
   // determine the actual (export vs colorout) color profile used
   const dt_colorspaces_color_profile_t *cp = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
