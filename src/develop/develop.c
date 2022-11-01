@@ -550,11 +550,6 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   }
 
-  dt_dev_zoom_t zoom;
-  float zoom_x = 0.0f, zoom_y = 0.0f, scale = 0.0f;
-  int window_width, window_height, x, y, closeup;
-  dt_dev_pixelpipe_change_t pipe_changed;
-
 // adjust pipeline according to changed flag set by {add,pop}_history_item.
 restart:
   if(dev->gui_leaving)
@@ -568,14 +563,14 @@ restart:
   }
   dev->pipe->input_timestamp = dev->timestamp;
   // dt_dev_pixelpipe_change() will clear the changed value
-  pipe_changed = dev->pipe->changed;
+  const dt_dev_pixelpipe_change_t pipe_changed = dev->pipe->changed;
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->pipe, dev);
   // determine scale according to new dimensions
-  zoom = dt_control_get_dev_zoom();
-  closeup = dt_control_get_dev_closeup();
-  zoom_x = dt_control_get_dev_zoom_x();
-  zoom_y = dt_control_get_dev_zoom_y();
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  float zoom_x = dt_control_get_dev_zoom_x();
+  float zoom_y = dt_control_get_dev_zoom_y();
   // if just changed to an image with a different aspect ratio or
   // altered image orientation, the prior zoom xy could now be beyond
   // the image boundary
@@ -586,9 +581,9 @@ restart:
     dt_control_set_dev_zoom_y(zoom_y);
   }
 
-  scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
-  window_width = dev->width * darktable.gui->ppd;
-  window_height = dev->height * darktable.gui->ppd;
+  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
+  int window_width = dev->width * darktable.gui->ppd;
+  int window_height = dev->height * darktable.gui->ppd;
   if(closeup)
   {
     window_width /= 1<<closeup;
@@ -596,8 +591,8 @@ restart:
   }
   const int wd = MIN(window_width, dev->pipe->processed_width * scale);
   const int ht = MIN(window_height, dev->pipe->processed_height * scale);
-  x = MAX(0, scale * dev->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
-  y = MAX(0, scale * dev->pipe->processed_height * (.5 + zoom_y) - ht / 2);
+  const int x = MAX(0, scale * dev->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
+  const int y = MAX(0, scale * dev->pipe->processed_height * (.5 + zoom_y) - ht / 2);
 
   dt_get_times(&start);
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, wd, ht, scale))
