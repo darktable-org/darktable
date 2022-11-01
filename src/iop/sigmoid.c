@@ -377,7 +377,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
     const float display_border_vs_chroma_white = (white_target - mapped_luma) / (pixel_max - mapped_luma + epsilon); // "Distance" to max channel = white_target
     const float display_border_vs_chroma_black = (black_target - mapped_luma) / (pixel_min - mapped_luma - epsilon); // "Distance" to min_channel = black_target
     const float display_border_vs_chroma = fminf(display_border_vs_chroma_white, display_border_vs_chroma_black); 
-    const float chroma_vs_mapping_border = (mapped_luma - pixel_min) / mapped_luma; // "Distance" to min channel = 0.0
+    const float chroma_vs_mapping_border = (mapped_luma - pixel_min) / (mapped_luma + epsilon); // "Distance" to min channel = 0.0
 
     // Hyperbolic gamut compression
     // Small chroma values, i.e., colors close to the acromatic axis are preserved while large chroma values are compressed.
