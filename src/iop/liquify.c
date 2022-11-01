@@ -2866,7 +2866,7 @@ int mouse_moved(struct dt_iop_module_t *module,
 
     if(g->last_hit.elem)
     {
-      // an item is selected, so this mouvement is handled and must
+      // an item is selected, so this movement is handled and must
       // not trigger any panning.
       handled = TRUE;
     }

@@ -1440,7 +1440,7 @@ static void _commit_params_lf(struct dt_iop_module_t *self, dt_iop_params_t *p1,
 
 /* embedded metadata processing start */
 
-/* This code is based on the alghoritm developed by Freddie Witherden <freddie@witherden.org>
+/* This code is based on the algorithm developed by Freddie Witherden <freddie@witherden.org>
  * in pull request
  * https://github.com/darktable-org/darktable/pull/7092 */
 

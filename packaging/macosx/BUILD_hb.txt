@@ -8,7 +8,7 @@ How to make disk image with darktable application bundle from source (using Home
 2). Build and install darktable using either option A or B:
      - Option A: Build using the default build.sh, which should work for most use cases 
      $ 2_build_hb_darktable_default.sh
-     - Option B: Build using custom cmake options, edit according to your specific needs/enviroment
+     - Option B: Build using custom cmake options, edit according to your specific needs/environment
      $ 2_build_hb_darktable_custom.sh
 
 3). Create application bundle from build files. To properly sign the app bundle you can optionally provide your developer certificate email/id by defining CODECERT:
@@ -20,7 +20,7 @@ How to make disk image with darktable application bundle from source (using Home
 
 The final result is a DMG file: darktable-<current version>+<latest commit>-{arm64|i386}.dmg
 
-Y). Forcefully remove any remainder of previous attemps
+Y). Forcefully remove any remainder of previous attempts
      $ Y_cleanup_hb_darktable.sh
 
 LIMITATIONS:
@@ -35,7 +35,7 @@ MACOS SECURITY:
 
 NOTES:
 - It will be automatically build for the architecture you are currently on, either Apple Silicon (arm64) or Intel (i386).
-- If you want to build for i386 on arm64 see https://stackoverflow.com/questions/64951024/how-can-i-run-two-isolated-installations-of-homebrew/68443301#68443301 about how to handle both enviroments in parallel.
+- If you want to build for i386 on arm64 see https://stackoverflow.com/questions/64951024/how-can-i-run-two-isolated-installations-of-homebrew/68443301#68443301 about how to handle both environments in parallel.
 - After creating the darktable application bundle (step 3) you can directly run the result by executing:
      $ package/darktable.app/Contents/MacOS/darktable --configdir .config/darktable/ --cachedir .cache/darktable/
 

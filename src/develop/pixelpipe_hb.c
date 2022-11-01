@@ -1327,7 +1327,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
   /*
     As the iop cache holds modules input data we check for an important hint in the current module and
-    keep that infor for the next processed module
+    keep that info for the next processed module
   */
   gboolean input_important = pipe->next_important_module;
   if(module)
