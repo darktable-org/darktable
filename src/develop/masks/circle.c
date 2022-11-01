@@ -494,18 +494,9 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
 
     dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
 
-    // we need the reference points
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
+    const float s = dt_masks_drag_factor(gui, index, gui->point_dragging, FALSE);
 
-    const int k = gui->point_dragging;
-    const float xref = gpt->points[0];
-    const float rx = gpt->points[k * 2] - xref;
-    const float deltax = gui->posx + gui->dx - xref;
-
-    gui->dx = xref - gui->posx;
-
-    circle->radius = CLAMP(circle->radius * (1.0f + deltax / rx), 0.0005f, max_mask_size);
+    circle->radius = CLAMP(circle->radius * s, 0.0005f, max_mask_size);
 
     // we recreate the form points
     dt_masks_gui_form_create(form, gui, index, module);
@@ -518,19 +509,9 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
 
     dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
 
+    const float s = dt_masks_drag_factor(gui, index, gui->point_border_dragging, TRUE);
 
-    // we need the reference points
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-
-    const int k = gui->point_border_dragging;
-    const float xref = gpt->points[0];
-    const float rx = gpt->border[k * 2] - xref;
-    const float deltax = gui->posx + gui->dx - xref;
-
-    gui->dx = xref - gui->posx;
-
-    circle->border = CLAMP((circle->radius + circle->border) * (1.0f + deltax / rx) - circle->radius, 0.001f, max_mask_border);
+    circle->border = CLAMP((circle->radius + circle->border) * s - circle->radius, 0.001f, max_mask_border);
 
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();

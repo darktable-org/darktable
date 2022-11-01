@@ -429,6 +429,7 @@ GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form);
 /** utils functions */
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count);
 int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near);
+float dt_masks_drag_factor(dt_masks_form_gui_t *gui, int index, int k, gboolean border);
 
 /** allow to select a shape inside an iop */
 void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel);

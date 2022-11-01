@@ -887,45 +887,8 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
   }
   else if(gui->point_dragging >= 1 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    // we get the ellipse
-    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
-
-    const int k = gui->point_dragging;
-
-    // we end the point dragging
+   // we end the point dragging
     gui->point_dragging = -1;
-
-    // we need the reference points
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-
-    const float xref = gpt->points[0];
-    const float yref = gpt->points[1];
-    const float rx = gpt->points[k * 2] - xref;
-    const float ry = gpt->points[k * 2 + 1] - yref;
-    const float deltax = gui->posx + gui->dx - xref;
-    const float deltay = gui->posy + gui->dy - yref;
-
-    const float r = sqrtf(rx * rx + ry * ry);
-    const float d = (rx * deltax + ry * deltay) / r;
-    const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
-
-    // make sure we adjust the right radius: anchor points and 1 and 2 correspond to the ellipse's longer axis
-    if(((k == 1 || k == 2) && ellipse->radius[0] > ellipse->radius[1])
-       || ((k == 3 || k == 4) && ellipse->radius[0] <= ellipse->radius[1]))
-    {
-      ellipse->radius[0] = MAX(0.002f, ellipse->radius[0] * s);
-      dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_a), ellipse->radius[0]);
-    }
-    else
-    {
-      ellipse->radius[1] = MAX(0.002f, ellipse->radius[1] * s);
-      dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_b), ellipse->radius[1]);
-    }
-
-    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-    // we recreate the form points
-    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the updated shape
     dt_masks_update_image(darktable.develop);
@@ -934,42 +897,8 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
   }
   else if(gui->point_border_dragging >= 1 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    // we get the ellipse
-    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
-
-    const int k = gui->point_border_dragging;
-
     // we end the point dragging
     gui->point_border_dragging = -1;
-
-    // we need the reference points
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-
-    const float xref = gpt->points[0];
-    const float yref = gpt->points[1];
-    const float rx = gpt->border[k * 2] - xref;
-    const float ry = gpt->border[k * 2 + 1] - yref;
-    const float deltax = gui->posx + gui->dx - xref;
-    const float deltay = gui->posy + gui->dy - yref;
-
-    const float r = sqrtf(rx * rx + ry * ry);
-    const float d = (rx * deltax + ry * deltay) / r;
-    const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
-
-    const float radius_limit = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
-    const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
-    const float reference = (prop ? 1.0f/fmin(ellipse->radius[0], ellipse->radius[1]) : 1.0f);
-
-    ellipse->border = CLAMP(prop ? (1.0f + ellipse->border) * s - 1.0f
-                                 : ((gui->point_border_dragging >= 3) ^ (ellipse->radius[0] > ellipse->radius[1]))
-                                 ? (ellipse->radius[0] + ellipse->border) * s - ellipse->radius[0]
-                                 : (ellipse->radius[1] + ellipse->border) * s - ellipse->radius[1],
-                            0.001f * reference, radius_limit *reference);
-
-    dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-    // we recreate the form points
-    dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the updated shape
     dt_masks_update_image(darktable.develop);
@@ -1054,24 +983,7 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
     const int k = gui->point_dragging;
 
-    // we need the reference points
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-
-    const float xref = gpt->points[0];
-    const float yref = gpt->points[1];
-    const float rx = gpt->points[k * 2] - xref;
-    const float ry = gpt->points[k * 2 + 1] - yref;
-    const float deltax = gui->posx + gui->dx - xref;
-    const float deltay = gui->posy + gui->dy - yref;
-
-    // we remap dx, dy to the right values, as it will be used in next movements
-    gui->dx = xref - gui->posx;
-    gui->dy = yref - gui->posy;
-
-    const float r = sqrtf(rx * rx + ry * ry);
-    const float d = (rx * deltax + ry * deltay) / r;
-    const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
+    const float s = dt_masks_drag_factor(gui, index, k, FALSE);
 
     // make sure we adjust the right radius: anchor points and 1 and 2 correspond to the ellipse's longer axis
     const gboolean dir = (ellipse->radius[0] > ellipse->radius[1]);
@@ -1125,24 +1037,7 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
     const int k = gui->point_border_dragging;
 
-    // we need the reference points
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-    if(!gpt) return 0;
-
-    const float xref = gpt->points[0];
-    const float yref = gpt->points[1];
-    const float rx = gpt->border[k * 2] - xref;
-    const float ry = gpt->border[k * 2 + 1] - yref;
-    const float deltax = gui->posx + gui->dx - xref;
-    const float deltay = gui->posy + gui->dy - yref;
-
-    // we remap dx, dy to the right values, as it will be used in next movements
-    gui->dx = xref - gui->posx;
-    gui->dy = yref - gui->posy;
-
-    const float r = sqrtf(rx * rx + ry * ry);
-    const float d = (rx * deltax + ry * deltay) / r;
-    const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
+    const float s = dt_masks_drag_factor(gui, index, k, TRUE);
 
     const float radius_limit = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
     const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;

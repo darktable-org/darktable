@@ -2185,6 +2185,31 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
   return 0;
 }
 
+float dt_masks_drag_factor(dt_masks_form_gui_t *gui, int index, int k, gboolean border)
+{
+  // we need the reference points
+  dt_masks_form_gui_points_t *gpt = g_list_nth_data(gui->points, index);
+  if(!gpt) return 0;
+
+  float *boundary = border ? gpt->border : gpt->points;
+  const float xref = gpt->points[0];
+  const float yref = gpt->points[1];
+  const float rx = boundary[k * 2] - xref;
+  const float ry = boundary[k * 2 + 1] - yref;
+  const float deltax = gui->posx + gui->dx - xref;
+  const float deltay = gui->posy + gui->dy - yref;
+
+  // we remap dx, dy to the right values, as it will be used in next movements
+  gui->dx = xref - gui->posx;
+  gui->dy = yref - gui->posy;
+
+  const float r = sqrtf(rx * rx + ry * ry);
+  const float d = (rx * deltax + ry * deltay) / r;
+  const float s = fmaxf(r > 0.0f ? (r + d) / r : 0.0f, 0.0f);
+
+  return s;
+}
+
 // allow to select a shape inside an iop
 void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel)
 {
@@ -2413,13 +2438,13 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
 
 void dt_masks_draw_anchor(cairo_t *cr, gboolean selected, const float zoom_scale, const float x, const float y)
 {
-  const float anchor_size = (selected ? 8.0f : 5.0f) / zoom_scale;
+  const float anchor_size = DT_PIXEL_APPLY_DPI(selected ? 8.0f : 5.0f) / zoom_scale;
 
   cairo_set_dash(cr, NULL, 0, 0);
   dt_draw_set_color_overlay(cr, TRUE, 0.8);
   cairo_rectangle(cr, x - (anchor_size * 0.5), y - (anchor_size * 0.5), anchor_size, anchor_size);
   cairo_fill_preserve(cr);
-  cairo_set_line_width(cr, (selected ? 2.0 : 1.0) / zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(selected ? 2.0 : 1.0) / zoom_scale);
   dt_draw_set_color_overlay(cr, FALSE, 0.8);
   cairo_stroke(cr);
 }
