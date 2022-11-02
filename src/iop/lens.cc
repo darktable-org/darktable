@@ -2197,15 +2197,6 @@ void reload_defaults(dt_iop_module_t *module)
     d->method = DT_IOP_LENS_METHOD_EMBEDDED_METADATA;
   }
 
-  if(!_have_lensfun(module) && !_have_embedded_metadata(module))
-  {
-    module->default_enabled = 0;
-  }
-  else
-  {
-    module->default_enabled = 1;
-  }
-
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)module->gui_data;
   if(g)
   {
