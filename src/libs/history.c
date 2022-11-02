@@ -1127,6 +1127,8 @@ static void _lib_history_truncate(gboolean compress)
   dt_dev_undo_end_record(darktable.develop);
 
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED);
 }
 
 

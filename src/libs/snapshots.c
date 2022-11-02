@@ -529,6 +529,11 @@ static void _signal_profile_changed(gpointer instance, uint8_t profile_type, gpo
   }
 }
 
+static void _signal_history_invalidated(gpointer instance, gpointer user_data)
+{
+  gui_reset(user_data);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -595,6 +600,8 @@ void gui_init(dt_lib_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                                   G_CALLBACK(_signal_profile_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED,
+                                  G_CALLBACK(_signal_history_invalidated), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
