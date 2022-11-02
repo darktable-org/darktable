@@ -422,9 +422,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  const gboolean isctrl = dt_modifier_is(state, GDK_CONTROL_MASK);
-
-  if(isctrl)
+  if(darktable.develop->darkroom_skip_mouse_events)
   {
     d->panning = TRUE;
     return 0;
