@@ -534,6 +534,52 @@ static void _signal_history_invalidated(gpointer instance, gpointer user_data)
   gui_reset(user_data);
 }
 
+static void _signal_image_changed(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+
+  const uint32_t imgid = darktable.develop->image_storage.id;
+
+  for(uint32_t k = 0; k < d->size; k++)
+  {
+    dt_lib_snapshot_t *s = &d->snapshot[k];
+
+    GtkWidget *b = d->snapshot[k].button;
+    GtkLabel *l = GTK_LABEL(gtk_bin_get_child(GTK_BIN(b)));
+
+    char lab[128];
+    char newlab[128];
+    g_strlcpy(lab, gtk_label_get_text(l), sizeof(lab));
+
+    // remove possible double asterisk at the start of the label
+    if(lab[0] == '*')
+      g_strlcpy(newlab, &lab[3], sizeof(newlab));
+    else
+      g_strlcpy(newlab, lab, sizeof(newlab));
+
+    if(s->imgid == imgid)
+    {
+      snprintf(lab, sizeof(lab), "%s", newlab);
+      gtk_widget_set_tooltip_text(b, "");
+    }
+    else
+    {
+      snprintf(lab, sizeof(lab), _("** %s"), newlab);
+      // tooltip
+      char *name = dt_image_get_filename(s->imgid);
+      snprintf(newlab, sizeof(newlab),
+               _("** %s '%s'"), _("this snapshot was taken from"), name);
+      g_free(name);
+      gtk_widget_set_tooltip_text(b, newlab);
+    }
+
+    gtk_label_set_text(l, lab);
+  }
+
+  dt_control_queue_redraw_center();
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -602,6 +648,8 @@ void gui_init(dt_lib_module_t *self)
                                   G_CALLBACK(_signal_profile_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED,
                                   G_CALLBACK(_signal_history_invalidated), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+                                  G_CALLBACK(_signal_image_changed), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -664,9 +712,6 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
 
   g_snprintf(label, sizeof(label), "%s (%d)", name, s->history_end);
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[0].button))), label);
-
-  gtk_widget_set_tooltip_text(d->snapshot[0].button,
-                              g_strdup(darktable.develop->image_storage.filename));
 
   /* update slots used */
   if(d->num_snapshots != d->size) d->num_snapshots++;
