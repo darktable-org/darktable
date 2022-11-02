@@ -56,7 +56,7 @@ typedef struct dt_lib_snapshot_t
 typedef struct dt_lib_snapshot_params_t
 {
   uint8_t *buf;
-  uint32_t width, height;
+  size_t width, height;
 } dt_lib_snapshot_params_t;
 
 typedef struct dt_lib_snapshots_t
@@ -145,45 +145,8 @@ static int _take_image_snapshot(
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
 
-  // create a dev
-
-  dt_develop_t dev;
-  dt_dev_init(&dev, TRUE);
-  dev.border_size = darktable.develop->border_size;
-  dev.iso_12646.enabled = darktable.develop->iso_12646.enabled;
-
-  // create the full pipe
-
-  dt_dev_pixelpipe_init(dev.pipe);
-
-  // load image and set history_end
-
-  dt_dev_load_image(&dev, imgid);
-
-  if(history_end != -1)
-    dt_dev_pop_history_items_ext(&dev, history_end);
-
-  // configure the actual dev width & height
-
-  dt_dev_configure(&dev, width, height);
-
-  // process the pipe
-
-  dev.gui_attached = FALSE;
-  dt_dev_process_image_job(&dev);
-
-  // record resulting image and dimentions
-
-  const uint32_t bufsize =
-    sizeof(uint32_t) * dev.pipe->backbuf_width * dev.pipe->backbuf_height;
-  d->params.buf = dt_alloc_align(64, bufsize);
-  memcpy(d->params.buf, dev.pipe->backbuf, bufsize);
-  d->params.width  = dev.pipe->backbuf_width;
-  d->params.height = dev.pipe->backbuf_height;
-
-  // we take the backbuf, avoid it to be released
-
-  dt_dev_cleanup(&dev);
+  dt_dev_image(imgid, width, height, history_end,
+               &d->params.buf, &d->params.width, &d->params.height);
 
   return 0;
 }
