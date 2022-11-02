@@ -168,6 +168,13 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
 
+  /** \brief This signal is raised when the history is compressed or removed.
+      in this case any module having a reference to the history must be
+      clear.
+  no param, no returned value
+    */
+  DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED,
+
   /** \brief This signal is raised when a module is removed from the history stack
     1 module
     no returned value
@@ -321,4 +328,3 @@ void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

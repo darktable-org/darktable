@@ -228,6 +228,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   // so now it's safe to clean up cache:
   dt_dev_pixelpipe_cache_cleanup(&(pipe->cache));
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
+
   dt_pthread_mutex_destroy(&(pipe->backbuf_mutex));
   dt_pthread_mutex_destroy(&(pipe->busy_mutex));
   pipe->icc_type = DT_COLORSPACE_NONE;
