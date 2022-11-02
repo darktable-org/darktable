@@ -135,7 +135,7 @@ static void _draw_sym(cairo_t *cr, float x, float y, gboolean vertical, gboolean
 }
 
 // export image for the snapshot d->snapshot[d->selected]
-static int _export_image(
+static int _take_image_snapshot(
   dt_lib_module_t *self,
   uint32_t imgid,
   size_t width,
@@ -213,7 +213,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(d->snap_requested && snap->zoom_scale == zoom_scale)
     {
       // export image with proper size, remove the darkroom borders
-      _export_image(self, snap->imgid, width, height, snap->history_end);
+      _take_image_snapshot(self, snap->imgid, width, height, snap->history_end);
       const int32_t stride =
         cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->params.width);
       if(snap->surface) cairo_surface_destroy(snap->surface);
