@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2020-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
-
 
 DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
 
@@ -146,7 +145,7 @@ static inline float generalized_loglogistic_sigmoid(const float value, const flo
   // Rewritten on a stable around zero form:
   const float film_response = powf(film_fog + clamped_value, film_power);
   const float paper_response = magnitude * powf(film_response / (paper_exp + film_response), paper_power);
-  
+
   // Safety check for very large floats that cause numerical errors
   return isnan(paper_response) ? magnitude : paper_response;
 }
@@ -156,7 +155,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_sigmoid_params_t *params = (dt_iop_sigmoid_params_t *)p1;
   dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
   /* Calculate actual skew log logistic parameters to fulfill the following:
-   * f(scene_zero) = display_black_target 
+   * f(scene_zero) = display_black_target
    * f(scene_grey) = MIDDLE_GREY
    * f(scene_inf)  = display_white_target
    * Slope at scene_grey independet of skewness i.e. only changed by the contrast parameter.
@@ -297,7 +296,7 @@ void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *
   schedule(static)
 #endif
   for(size_t k = 0; k < 4 * npixels; k += 4)
-  { 
+  {
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
     dt_aligned_pixel_t pix_in_strict_positive;
@@ -376,7 +375,7 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
     const float epsilon = 1e-6;
     const float display_border_vs_chroma_white = (white_target - mapped_luma) / (pixel_max - mapped_luma + epsilon); // "Distance" to max channel = white_target
     const float display_border_vs_chroma_black = (black_target - mapped_luma) / (pixel_min - mapped_luma - epsilon); // "Distance" to min_channel = black_target
-    const float display_border_vs_chroma = fminf(display_border_vs_chroma_white, display_border_vs_chroma_black); 
+    const float display_border_vs_chroma = fminf(display_border_vs_chroma_white, display_border_vs_chroma_black);
     const float chroma_vs_mapping_border = (mapped_luma - pixel_min) / (mapped_luma + epsilon); // "Distance" to min channel = 0.0
 
     // Hyperbolic gamut compression
@@ -583,7 +582,7 @@ void gui_init(dt_iop_module_t *self)
   g->display_white_slider = dt_bauhaus_slider_from_params(self, "display_white_target");
   dt_bauhaus_slider_set_soft_range(g->display_white_slider, 50.0f, 100.0f);
   dt_bauhaus_slider_set_format(g->display_white_slider, "%");
-  gtk_widget_set_tooltip_text(g->display_white_slider, _("The white luminance of the target display or print.\n"
+  gtk_widget_set_tooltip_text(g->display_white_slider, _("the white luminance of the target display or print.\n"
                                                          "can be used creatively for a faded look or blowing out whites earlier."));
 }
 
