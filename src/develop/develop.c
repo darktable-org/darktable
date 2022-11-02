@@ -3128,6 +3128,56 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
   }
 }
 
+void dt_dev_image(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height)
+{
+  // create a dev
+
+  dt_develop_t dev;
+  dt_dev_init(&dev, TRUE);
+  dev.border_size = darktable.develop->border_size;
+  dev.iso_12646.enabled = darktable.develop->iso_12646.enabled;
+
+  // create the full pipe
+
+  dt_dev_pixelpipe_init(dev.pipe);
+
+  // load image and set history_end
+
+  dt_dev_load_image(&dev, imgid);
+
+  if(history_end != -1)
+    dt_dev_pop_history_items_ext(&dev, history_end);
+
+  // configure the actual dev width & height
+
+  dt_dev_configure(&dev, width, height);
+
+  // process the pipe
+
+  dev.gui_attached = FALSE;
+  dt_dev_process_image_job(&dev);
+
+  // record resulting image and dimentions
+
+  const uint32_t bufsize =
+    sizeof(uint32_t) * dev.pipe->backbuf_width * dev.pipe->backbuf_height;
+  *buf = dt_alloc_align(64, bufsize);
+  memcpy(*buf, dev.pipe->backbuf, bufsize);
+  *processed_width  = dev.pipe->backbuf_width;
+  *processed_height = dev.pipe->backbuf_height;
+
+  // we take the backbuf, avoid it to be released
+
+  dt_dev_cleanup(&dev);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
