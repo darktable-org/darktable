@@ -20,7 +20,7 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
 * From the MSYS terminal, install x64 developer tools, x86_64 toolchain and git:
     ```bash
     pacman -S --needed base-devel intltool git
-    pacman -S --needed mingw-w64-ucrt-x86_64-{toolchain,cmake,ninja,nsis}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{cc,cmake,gcc-libs,ninja,nsis,omp}
     ```
 
 * Install required libraries and dependencies for darktable:
