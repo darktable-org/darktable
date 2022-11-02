@@ -377,6 +377,28 @@ void dt_image_full_path(const int32_t imgid, char *pathname, size_t pathname_len
   }
 }
 
+char *dt_image_get_filename(const int32_t imgid)
+{
+  sqlite3_stmt *stmt;
+
+  char filename[PATH_MAX] = { 0 };
+
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT filename FROM main.images"
+                              " WHERE id = ?1",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    g_strlcpy(filename, (char *)sqlite3_column_text(stmt, 0), PATH_MAX);
+  }
+  sqlite3_finalize(stmt);
+
+  return g_strdup(filename);
+}
+
 static void _image_local_copy_full_path(const int32_t imgid, char *pathname, size_t pathname_len)
 {
   sqlite3_stmt *stmt;
