@@ -2087,6 +2087,10 @@ static int _init_coeffs_md_v1(const dt_image_t *img,
 
   if(img->exif_correction_type == CORRECTION_TYPE_SONY)
   {
+    if (modify_flags_image_md)
+      *modify_flags_image_md
+          = DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_TCA | DT_IOP_LENS_MODIFY_FLAG_VIGNETTING;
+
     int nc = cd->sony.nc;
     for(int i = 0; i < nc; i++)
     {
@@ -2157,6 +2161,75 @@ static int _init_coeffs_md_v1(const dt_image_t *img,
     }
 
     return nc;
+  }
+  else if(img->exif_correction_type == CORRECTION_TYPE_OLYMPUS)
+  {
+    if (modify_flags_image_md)
+      *modify_flags_image_md = 0;
+    // Get the coefficients for the distortion polynomial
+    float dk0 = 1, dk2 = 0, dk4 = 0, dk6 = 0;
+    if(cd->olympus.has_ft_dist)
+    {
+      if (modify_flags_image_md)
+        *modify_flags_image_md |= DT_IOP_LENS_MODIFY_FLAG_DISTORTION;
+      // For Four Thirds lenses, the 9 element distortion tag contains 3 roughly
+      // similar sets of coefficients. The first always applies more correction,
+      // the second always applies less, and the third is always somewhere in
+      // between the other two. Here we use the third set.
+      dk0 = 1;
+      dk2 = cd->olympus.ft_dist[6];
+      dk4 = cd->olympus.ft_dist[7];
+      dk6 = cd->olympus.ft_dist[8];
+    }
+    else if (cd->olympus.has_mft_dist)
+    {
+      if (modify_flags_image_md)
+        *modify_flags_image_md |= DT_IOP_LENS_MODIFY_FLAG_DISTORTION;
+      dk0 = cd->olympus.mft_dist[3];
+      dk2 = cd->olympus.mft_dist[0];
+      dk4 = cd->olympus.mft_dist[1];
+      dk6 = cd->olympus.mft_dist[2];
+    }
+    // Get the coefficients for the CA polynomial
+    float car0 = 0, car2 = 0, car4 = 0, cab0 = 0, cab2 = 0, cab4 = 0;
+    if (cd->olympus.has_mft_ca)
+    {
+      if (modify_flags_image_md)
+        *modify_flags_image_md |= DT_IOP_LENS_MODIFY_FLAG_TCA;
+      car0 = cd->olympus.mft_ca[0];
+      car2 = cd->olympus.mft_ca[1];
+      car4 = cd->olympus.mft_ca[2];
+      cab0 = cd->olympus.mft_ca[3];
+      cab2 = cd->olympus.mft_ca[4];
+      cab4 = cd->olympus.mft_ca[5];
+    }
+
+    for(int i = 0; i < MAXKNOTS; i++)
+    {
+      float r = (float) i / (MAXKNOTS - 1);
+      knots[i] = r;
+
+      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
+      {
+        // Convert the polynomial to a spline by evaluating it at each knot
+        const float r_cor = dk0 + dk2 * powf(r, 2) + dk4 * powf(r, 4) + dk6 * powf(r, 6);
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (p->cor_dist_ft * (r_cor - 1) + 1) * scale;
+      }
+      else if(cor_rgb)
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = scale;
+
+      if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
+      {
+        const float rd = cor_rgb[1][i];
+        cor_rgb[0][i] += car0 + car2 * powf(rd, 2) + car4 * powf(rd, 4);
+        cor_rgb[2][i] += cab0 + cab2 * powf(rd, 2) + cab4 * powf(rd, 4);
+      }
+
+      if(vig)
+        vig[i] = 1;
+    }
+
+    return MAXKNOTS;
   }
 
   else if(img->exif_correction_type == CORRECTION_TYPE_DNG)
