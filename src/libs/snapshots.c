@@ -39,7 +39,12 @@ DT_MODULE(1)
 typedef struct dt_lib_snapshot_t
 {
   GtkWidget *button;
+  // the tree zoom float are to detect validity of a snapshot.
+  // it must be recalculated when zoom_scale (zoom) has changed
+  // or if pan has changed (zoom_x, zoom_y).
   float zoom_scale;
+  float zoom_x;
+  float zoom_y;
   uint32_t imgid;
   uint32_t history_end;
   /* snapshot cairo surface */
@@ -201,6 +206,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+    const float zoom_y = dt_control_get_dev_zoom_y();
+    const float zoom_x = dt_control_get_dev_zoom_x();
 
     // if a new snapshot is needed, do this now
     if(d->snap_requested && snap->zoom_scale == zoom_scale)
@@ -212,7 +219,10 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = dt_cairo_image_surface_create_for_data
         (d->params.buf, CAIRO_FORMAT_RGB24, d->params.width, d->params.height, stride);
+
       snap->zoom_scale = zoom_scale;
+      snap->zoom_x = zoom_x;
+      snap->zoom_y = zoom_y;
       snap->width  = d->params.width;
       snap->height = d->params.height;
       d->snap_requested = FALSE;
@@ -223,6 +233,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     // a time out to ensure we don't try to create many snapshot while zooming (this is
     // slow), so we wait to the zoom level to be stabilized to create the new snapshot.
     if(snap->zoom_scale != zoom_scale
+       || snap->zoom_x != zoom_x
+       || snap->zoom_y != zoom_y
        || !snap->surface)
     {
       d->snap_requested = TRUE;
