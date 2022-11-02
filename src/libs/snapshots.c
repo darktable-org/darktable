@@ -39,12 +39,13 @@ DT_MODULE(1)
 typedef struct dt_lib_snapshot_t
 {
   GtkWidget *button;
-  // the tree zoom float are to detect validity of a snapshot.
-  // it must be recalculated when zoom_scale (zoom) has changed
-  // or if pan has changed (zoom_x, zoom_y).
+  // the tree zoom float plus iso12646 boolean are to detect validity of a snapshot.
+  // it must be recalculated when zoom_scale (zoom) has changed,
+  // if pan has changed (zoom_x, zoom_y) or if iso12646 status has changed.
   float zoom_scale;
   float zoom_x;
   float zoom_y;
+  gboolean iso_12646;
   uint32_t imgid;
   uint32_t history_end;
   /* snapshot cairo surface */
@@ -148,7 +149,8 @@ static int _take_image_snapshot(
 
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
-  dev.border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  dev.border_size = darktable.develop->border_size;
+  dev.iso_12646.enabled = darktable.develop->iso_12646.enabled;
 
   // create the full pipe
 
@@ -223,6 +225,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       snap->zoom_scale = zoom_scale;
       snap->zoom_x = zoom_x;
       snap->zoom_y = zoom_y;
+      snap->iso_12646 = darktable.develop->iso_12646.enabled;
       snap->width  = d->params.width;
       snap->height = d->params.height;
       d->snap_requested = FALSE;
@@ -235,6 +238,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(snap->zoom_scale != zoom_scale
        || snap->zoom_x != zoom_x
        || snap->zoom_y != zoom_y
+       || snap->iso_12646 != darktable.develop->iso_12646.enabled
        || !snap->surface)
     {
       d->snap_requested = TRUE;
@@ -251,24 +255,12 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     d->vp_width = width;
     d->vp_height = height;
 
-    /* set x,y,w,h of surface depending on split align and invert */
-    const double x = d->vertical
-      ? (d->inverted ? width * d->vp_xpointer : 0)
-      : 0;
-    const double y = d->vertical
-      ? 0
-      : (d->inverted ? height * d->vp_ypointer : 0);
-    const double w = d->vertical
-      ? (d->inverted ? (width * (1.0 - d->vp_xpointer)) : width * d->vp_xpointer)
-      : width;
-    const double h = d->vertical
-      ? height
-      : (d->inverted ? (height * (1.0 - d->vp_ypointer)) : height * d->vp_ypointer);
-
-    const double size = DT_PIXEL_APPLY_DPI(d->inverted ? -15 : 15);
+    const int bs = darktable.develop->border_size;
 
     const double lx = width * d->vp_xpointer;
     const double ly = height * d->vp_ypointer;
+
+    const double size = DT_PIXEL_APPLY_DPI(d->inverted ? -15 : 15);
 
     // clear background
     dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
@@ -286,25 +278,13 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       else
         cairo_rectangle(cri, 0, 0, width, ly);
     }
+    cairo_clip(cri);
     cairo_fill(cri);
-
-    // preserve the darkroom border if defined. this is needed as the zoomed
-    // snapshot will be bigger than the area. we also expect that when zooming
-    // the whole area is taken
-    if(dev->border_size > 0)
-    {
-      const int bs = dev->border_size;
-      const int bs2 = dev->border_size * 2;
-      cairo_rectangle(cri, bs, bs, width - bs2, height - bs2);
-      cairo_clip(cri);
-    }
 
     if(!d->snap_requested)
     {
       // display snapshot image surface
       cairo_save(cri);
-
-      cairo_rectangle(cri, x, y, w, h);
 
       // use the exact same formulae to place the snapshot on the view. this is
       // important to have a fully aligned snapshot.
@@ -320,13 +300,25 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
         cairo_translate(cri, -(.5 - 0.5/scale) * sw, -(.5 - 0.5/scale) * sh);
       }
 
+      if(dev->iso_12646.enabled)
+      {
+        // draw the white frame around picture
+        const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
+        cairo_rectangle(cri, -tbw, -tbw, sw + 2.0 * tbw, sh + 2.0 * tbw);
+        cairo_set_source_rgb(cri, 1., 1., 1.);
+        cairo_fill(cri);
+        dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
+      }
+
       cairo_set_source_surface (cri, snap->surface, 0, 0);
       cairo_pattern_set_filter
         (cairo_get_source(cri),
          zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
-      cairo_fill(cri);
+      cairo_paint(cri);
       cairo_restore(cri);
     }
+
+    cairo_reset_clip(cri);
 
     // draw the split line using the selected overlay color
     dt_draw_set_color_overlay(cri, TRUE, 0.7);
