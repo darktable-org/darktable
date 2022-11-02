@@ -526,6 +526,21 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
 
+/*
+ * develop an image and returns the buf and processed width / height.
+ * this is done as in the context of the darkroom, meaning that the
+ * final processed sizes will align perfectly on the darkroom view.
+ *
+ */
+void dt_dev_image(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
