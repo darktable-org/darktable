@@ -78,7 +78,7 @@ typedef struct dt_lib_snapshots_t
   dt_lib_snapshot_t *snapshot;
 
   /* change snapshot overlay controls */
-  gboolean dragging, vertical, inverted;
+  gboolean dragging, vertical, inverted, panning;
   double vp_width, vp_height, vp_xpointer, vp_ypointer, vp_xrotate, vp_yrotate;
   gboolean on_going;
 
@@ -190,6 +190,9 @@ static int _take_image_snapshot(
 
 static gboolean _snap_expose_again(gpointer user_data)
 {
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)user_data;
+
+  d->snap_requested = TRUE;
   dt_control_queue_redraw_center();
   return FALSE;
 }
@@ -241,7 +244,9 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
        || snap->iso_12646 != darktable.develop->iso_12646.enabled
        || !snap->surface)
     {
-      d->snap_requested = TRUE;
+      // request a new snapshot now only if not panning, otherwise it will be
+      // requested by the cb timer below.
+      if(!d->panning) d->snap_requested = TRUE;
       snap->zoom_scale = zoom_scale;
       if(d->expose_again_timeout_id != -1) g_source_remove(d->expose_again_timeout_id);
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
@@ -395,6 +400,13 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+
+  if(d->panning)
+  {
+    d->panning = FALSE;
+    return 0;
+  }
+
   if(d->selected >= 0)
   {
     d->dragging = FALSE;
@@ -409,6 +421,14 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
                    uint32_t state)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+
+  const gboolean isctrl = dt_modifier_is(state, GDK_CONTROL_MASK);
+
+  if(isctrl)
+  {
+    d->panning = TRUE;
+    return 0;
+  }
 
   if(d->selected >= 0)
   {
@@ -458,6 +478,9 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int which)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+
+  // if panning, do not hanlde here, let darkroom do the job
+  if(d->panning) return 0;
 
   if(d->selected >= 0)
   {
