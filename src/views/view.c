@@ -241,9 +241,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   // reset the cursor to the default one
   dt_control_change_cursor(GDK_LEFT_PTR);
 
-  // also ignore what scrolling there was previously happening
-  memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
-
   // destroy old module list
 
   /*  clear the undo list, for now we do this unconditionally. At some point we will probably want to clear
@@ -948,6 +945,13 @@ GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm)
 {
   if(vm->proxy.filter.module && vm->proxy.filter.get_sort_box)
     return vm->proxy.filter.get_sort_box(vm->proxy.filter.module);
+  return NULL;
+}
+
+GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm)
+{
+  if(vm->proxy.filter.module && vm->proxy.filter.get_count)
+    return vm->proxy.filter.get_count(vm->proxy.filter.module);
   return NULL;
 }
 

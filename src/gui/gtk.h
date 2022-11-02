@@ -139,8 +139,6 @@ typedef struct dt_gui_gtk_t
   // store which gtkrc we loaded:
   char gtkrc[PATH_MAX];
 
-  GtkWidget *scroll_to[2]; // one for left, one for right
-
   gint scroll_mask;
   guint sidebar_scroll_mask;
 

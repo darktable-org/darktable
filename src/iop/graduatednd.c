@@ -236,7 +236,7 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
     if(r1 * r2 < 0) break;
   } while(v2 <= M_PI);
 
-  if(v2 == M_PI) return 9;
+  if(v2 == (float)M_PI) return 9;
 
   // set precision for the iterative check
   const float eps = .0001f;
@@ -957,7 +957,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_graduatednd_data_t *data = (dt_iop_graduatednd_data_t *)piece->data;
   dt_iop_graduatednd_global_data_t *gd = (dt_iop_graduatednd_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -991,20 +991,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float length_inc_y = -cosv * hh_inv * filter_hardness;
   const float length_inc_x = sinv * hw_inv * filter_hardness;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   int kernel = density > 0 ? gd->kernel_graduatedndp : gd->kernel_graduatedndm;
 
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, 4 * sizeof(float), (void *)data->color);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), (void *)&density);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), (void *)&length_base);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(float), (void *)&length_inc_x);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(float), (void *)&length_inc_y);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARRAY(4, data->color), CLARG(density),
+    CLARG(length_base), CLARG(length_inc_x), CLARG(length_inc_y));
   if(err != CL_SUCCESS) goto error;
   return TRUE;
 

@@ -898,7 +898,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colorbalancergb_global_data_t *const gd = (dt_iop_colorbalancergb_global_data_t *)self->global_data;
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   if(piece->colors != 4)
   {
@@ -986,43 +986,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     = { cosf(d->hue_angle), -sinf(d->hue_angle), sinf(d->hue_angle), cosf(d->hue_angle) };
   hue_rotation_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), hue_rotation_matrix);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 4, sizeof(cl_mem), (void *)&dev_profile_info);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 5, sizeof(cl_mem), (void *)&input_matrix_cl);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 6, sizeof(cl_mem), (void *)&output_matrix_cl);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 7, sizeof(cl_mem), (void *)&gamut_LUT);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 8, sizeof(float), (void *)&d->shadows_weight);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 9, sizeof(float), (void *)&d->highlights_weight);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 10, sizeof(float), (void *)&d->midtones_weight);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 11, sizeof(float), (void *)&d->mask_grey_fulcrum);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 12, sizeof(float), (void *)&d->hue_angle);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 13, sizeof(float), (void *)&d->chroma_global);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 14, 4 * sizeof(float), (void *)&d->chroma);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 15, sizeof(float), (void *)&d->vibrance);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 16, 4 * sizeof(float), (void *)&d->global);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 17, 4 * sizeof(float), (void *)&d->shadows);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 18, 4 * sizeof(float), (void *)&d->highlights);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 19, 4 * sizeof(float), (void *)&d->midtones);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 20, sizeof(float), (void *)&d->white_fulcrum);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 21, sizeof(float), (void *)&d->midtones_Y);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 22, sizeof(float), (void *)&d->grey_fulcrum);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 23, sizeof(float), (void *)&d->contrast);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 24, sizeof(float), (void *)&d->brilliance_global);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 25, 4 * sizeof(float), (void *)&d->brilliance);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 26, sizeof(float), (void *)&d->saturation_global);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 27, 4 * sizeof(float), (void *)&d->saturation);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 28, sizeof(int), (void *)&mask_display);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 29, sizeof(int), (void *)&mask_type);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 30, sizeof(int), (void *)&checker_1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 31, sizeof(int), (void *)&checker_2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 32, 4 * sizeof(float), (void *)&d->checker_color_1);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 33, 4 * sizeof(float), (void *)&d->checker_color_2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 34, sizeof(float), (void *)&L_white);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 35, sizeof(dt_iop_colorbalancrgb_saturation_t), (void *)&d->saturation_formula);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 36, sizeof(cl_mem), (void *)&hue_rotation_matrix_cl);
+  dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance_rgb, 0, CLARG(dev_in), CLARG(dev_out),
+    CLARG(width), CLARG(height), CLARG(dev_profile_info), CLARG(input_matrix_cl), CLARG(output_matrix_cl),
+    CLARG(gamut_LUT), CLARG(d->shadows_weight), CLARG(d->highlights_weight), CLARG(d->midtones_weight),
+    CLARG(d->mask_grey_fulcrum), CLARG(d->hue_angle), CLARG(d->chroma_global), CLARG(d->chroma), CLARG(d->vibrance),
+    CLARG(d->global), CLARG(d->shadows), CLARG(d->highlights), CLARG(d->midtones), CLARG(d->white_fulcrum),
+    CLARG(d->midtones_Y), CLARG(d->grey_fulcrum), CLARG(d->contrast), CLARG(d->brilliance_global),
+    CLARG(d->brilliance), CLARG(d->saturation_global), CLARG(d->saturation), CLARG(mask_display), CLARG(mask_type),
+    CLARG(checker_1), CLARG(checker_2), CLARG(d->checker_color_1), CLARG(d->checker_color_2), CLARG(L_white),
+    CLARG(d->saturation_formula), CLARG(hue_rotation_matrix_cl));
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_rgb, sizes);
   if(err != CL_SUCCESS) goto error;

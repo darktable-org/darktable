@@ -603,18 +603,13 @@ static cl_int dwt_subtract_layer_cl(cl_mem bl, cl_mem bh, dwt_params_cl_t *const
   const int devid = p->devid;
   const int kernel = p->global->kernel_dwt_subtract_layer;
 
-  size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
 
   const float lpass_mult = (1.f / 16.f);
   const int width = p->width;
   const int height = p->height;
 
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&bl);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&bh);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(width));
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(height));
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), (void *)&lpass_mult);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
+    CLARG(bl), CLARG(bh), CLARG((width)), CLARG((height)), CLARG(lpass_mult));
 
   return err;
 }
@@ -626,16 +621,12 @@ static cl_int dwt_add_layer_cl(cl_mem img, cl_mem layers, dwt_params_cl_t *const
   const int devid = p->devid;
   const int kernel = p->global->kernel_dwt_add_img_to_layer;
 
-  size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
 
   const int width = p->width;
   const int height = p->height;
 
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&img);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&layers);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(width));
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(height));
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
+    CLARG(img), CLARG(layers), CLARG((width)), CLARG((height)));
 
   return err;
 }
@@ -695,14 +686,11 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   {
     const int kernel = p->global->kernel_dwt_init_buffer;
 
-    size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
     const int width = p->width;
     const int height = p->height;
 
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&layers);
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(width));
-    dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(height));
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
+      CLARG(layers), CLARG((width)), CLARG((height)));
     if(err != CL_SUCCESS) goto cleanup;
   }
 
@@ -719,14 +707,11 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     {
       const int kernel = p->global->kernel_dwt_init_buffer;
 
-      size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
       const int width = p->width;
       const int height = p->height;
 
-      dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&merged_layers);
-      dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(width));
-      dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(height));
-      err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
+        CLARG(merged_layers), CLARG((width)), CLARG((height)));
       if(err != CL_SUCCESS) goto cleanup;
     }
   }
@@ -756,14 +741,8 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
       sc = (int)(sc * p->preview_scale);
       if(sc > p->width) sc = p->width;
 
-      size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
-
-      dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&temp);
-      dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&(buffer[hpass]));
-      dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(p->width));
-      dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(p->height));
-      dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&sc);
-      err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
+        CLARG(temp), CLARG((buffer[hpass])), CLARG((p->width)), CLARG((p->height)), CLARG(sc));
       if(err != CL_SUCCESS) goto cleanup;
     }
 
@@ -776,15 +755,8 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
       if(sc > p->height) sc = p->height;
       const float lpass_mult = (1.f / 16.f);
 
-      size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
-
-      dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&temp);
-      dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(p->width));
-      dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(p->height));
-      dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&sc);
-      dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&(buffer[lpass]));
-      dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(float), (void *)&lpass_mult);
-      err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+      err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, p->width, p->height,
+        CLARG(temp), CLARG((p->width)), CLARG((p->height)), CLARG(sc), CLARG((buffer[lpass])), CLARG(lpass_mult));
       if(err != CL_SUCCESS) goto cleanup;
     }
 

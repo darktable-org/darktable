@@ -49,6 +49,9 @@
 #ifdef HAVE_LIBHEIF
 #include "common/imageio_heif.h"
 #endif
+#ifdef HAVE_WEBP
+#include "common/imageio_webp.h"
+#endif
 #include "common/imageio_libraw.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
@@ -62,7 +65,11 @@
 #include <magick/api.h>
 #include <magick/blob.h>
 #elif defined HAVE_IMAGEMAGICK
-#include <MagickWand/MagickWand.h>
+  #ifdef HAVE_IMAGEMAGICK7
+  #include <MagickWand/MagickWand.h>
+  #else
+  #include <wand/MagickWand.h>
+  #endif
 #endif
 
 #include <assert.h>
@@ -78,14 +85,14 @@
 #include "lua/image.h"
 #endif
 
-// note `dng` is not included anywhere as it can be anything. For this images we'll need to open it for "real"
+// Note: 'dng' is not included as it can contain anything. We will need to open and examine dng images to find out the type of content.
 static const gchar *_supported_raw[]
     = { "3fr", "ari", "arw", "bay", "cr2", "cr3", "crw", "dc2", "dcr", "erf", "fff",
         "ia",  "iiq", "k25", "kc2", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw",
         "orf", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti", "x3f", NULL };
 static const gchar *_supported_ldr[]
     = { "bmp",  "bmq", "cap", "cine", "cs1", "dcm", "gif", "gpr", "j2c", "j2k", "jng", "jp2", "jpc", "jpeg", "jpg",
-        "miff", "mng", "ori", "pbm",  "pfm", "pgm", "png", "pnm", "ppm", "pxn", "qtk", "rdc", "tif", "tiff", NULL };
+        "miff", "mng", "ori", "pbm",  "pfm", "pgm", "png", "pnm", "ppm", "pxn", "qtk", "rdc", "tif", "tiff", "webp", NULL };
 static const gchar *_supported_hdr[] = { "avif", "exr", "hdr", "heic", "heif", "hif", "pfm", NULL };
 
 // get the type of image from its extension
@@ -474,7 +481,7 @@ return_label:
 
 /* magic data: exclusion,offset,length, xx, yy, ...
     just add magic bytes to match to this struct
-    to extend mathc on ldr formats.
+    to extend match on LDR formats.
 */
 static const uint8_t _imageio_ldr_magic[] = {
   /* jpeg magics */
@@ -487,6 +494,9 @@ static const uint8_t _imageio_ldr_magic[] = {
   /* jpeg 2000, j2k format */
   0x00, 0x00, 0x05, 0xFF, 0x4F, 0xFF, 0x51, 0x00,
 #endif
+
+  /* webp image */
+  0x00, 0x08, 0x04, 'W', 'E', 'B', 'P',
 
   /* png image */
   0x00, 0x01, 0x03, 0x50, 0x4E, 0x47, // ASCII 'PNG'
@@ -628,6 +638,21 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     return ret;
   }
 
+#ifdef HAVE_WEBP
+  ret = dt_imageio_open_webp(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->buf_dsc.cst = IOP_CS_RGB;
+    img->buf_dsc.filters = 0u;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_WEBP;
+    return ret;
+  }
+#endif
+
   ret = dt_imageio_open_png(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
@@ -722,7 +747,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  dt_export_metadata_t *metadata)
 {
   dt_develop_t dev;
-  dt_dev_init(&dev, 0);
+  dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
 
   const gboolean buf_is_downscaled = (thumbnail_export && dt_conf_get_bool("ui/performance"));
@@ -747,13 +772,14 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  gboolean res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
-                         : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
+  gboolean res = thumbnail_export
+    ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
+    : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
   if(!res)
   {
     dt_control_log(
-        _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
-        thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
+      _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
+      thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
     goto error;
   }
 
@@ -1098,7 +1124,6 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
   if(!ignore_exif)
   {
-    int length;
     uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes max, but if original size is close to that,
                                   // adding new tags could make it go over that... so let it be and see what
                                   // happens when we write the image
@@ -1106,7 +1131,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
     // last param is dng mode, it's false here
-    length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
+    const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
 
     res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, exif_profile, length, imgid,
                               num, total, &pipe, export_masks);
@@ -1310,4 +1335,3 @@ gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

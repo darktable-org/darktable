@@ -149,15 +149,13 @@ add_iop(colorbalancergb "colorbalancergb.c")
 add_iop(cacorrectrgb "cacorrectrgb.c")
 add_iop(diffuse "diffuse.c")
 add_iop(blurs "blurs.c")
-
+add_iop(sigmoid "sigmoid.c")
 
 if(Rsvg2_FOUND)
   add_iop(watermark "watermark.c")
 endif(Rsvg2_FOUND)
 
-if(LensFun_FOUND)
-  add_iop(lens "lens.cc" DEFAULT_VISIBLE)
-endif(LensFun_FOUND)
+add_iop(lens "lens.cc" DEFAULT_VISIBLE)
 
 # fix for Mac when OpenMP is only available in C compiler
 if(APPLE)

@@ -148,7 +148,7 @@ typedef struct dt_dev_proxy_exposure_t
 struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
-  int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
+  gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
                         // gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
@@ -268,7 +268,7 @@ typedef struct dt_develop_t
       void (*list_remove)(struct dt_lib_module_t *self, int formid, int parentid);
       void (*list_update)(struct dt_lib_module_t *self);
       /* selected forms change */
-      void (*selection_change)(struct dt_lib_module_t *self, struct dt_iop_module_t *module, const int selectid, const int throw_event);
+      void (*selection_change)(struct dt_lib_module_t *self, struct dt_iop_module_t *module, const int selectid);
     } masks;
 
     // what is the ID of the module currently doing pipeline chromatic adaptation ?
@@ -341,7 +341,7 @@ typedef struct dt_develop_t
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks
 } dt_develop_t;
 
-void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
+void dt_dev_init(dt_develop_t *dev, gboolean gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
 float dt_dev_get_preview_downsampling();
@@ -444,7 +444,7 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
 void dt_dev_masks_list_change(dt_develop_t *dev);
 void dt_dev_masks_list_update(dt_develop_t *dev);
 void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid);
-void dt_dev_masks_selection_change(dt_develop_t *dev, struct dt_iop_module_t *module, const int selectid, const int throw_event);
+void dt_dev_masks_selection_change(dt_develop_t *dev, struct dt_iop_module_t *module, const int selectid);
 
 /*
  * multi instances
@@ -540,4 +540,3 @@ void dt_dev_undo_end_record(dt_develop_t *dev);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

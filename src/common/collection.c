@@ -271,7 +271,8 @@ int dt_collection_update(const dt_collection_t *collection)
 
   /* build select part includes where */
   /* COLOR and PATH */
-  if(collection->params.sorts[DT_COLLECTION_SORT_COLOR] && collection->params.sorts[DT_COLLECTION_SORT_PATH]
+  if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
+     && collection->params.sorts[DT_COLLECTION_SORT_PATH]
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -283,7 +284,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* COLOR and TITLE */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR] && collection->params.sorts[DT_COLLECTION_SORT_TITLE]
+  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
+          && collection->params.sorts[DT_COLLECTION_SORT_TITLE]
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -308,7 +310,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* PATH and TITLE */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE] && collection->params.sorts[DT_COLLECTION_SORT_PATH]
+  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
+          && collection->params.sorts[DT_COLLECTION_SORT_PATH]
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -2412,8 +2415,15 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 
 gboolean dt_collection_hint_message_internal(void *message)
 {
-  dt_control_hinter_message(darktable.control, message);
-  g_free(message);
+  GtkWidget *count = dt_view_filter_get_count(darktable.view_manager);
+  if(count)
+  {
+    gtk_label_set_markup(GTK_LABEL(count), message);
+    gtk_widget_set_tooltip_markup(count, message);
+  }
+
+  dt_control_hinter_message(darktable.control, "");
+
   return FALSE;
 }
 
@@ -2438,14 +2448,14 @@ void dt_collection_hint_message(const dt_collection_t *collection)
       selected++;
     }
     g_list_free(selected_imgids);
-    message = g_strdup_printf(_("%d image of %d (#%d) in current collection is selected"), cs, c, selected);
+    message = g_strdup_printf(_("<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"), cs, selected, c);
   }
   else
   {
     message = g_strdup_printf(
       ngettext(
-        "%d image of %d in current collection is selected",
-        "%d images of %d in current collection are selected",
+        "<b>%d</b> image selected of <b>%d</b>",
+        "<b>%d</b> images selected of <b>%d</b>",
         cs),
       cs, c);
   }

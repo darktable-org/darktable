@@ -77,7 +77,7 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
   {
     if(!module->gui_init) goto api_h_error;
 
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION, module->plugin_name, module->name(module) };
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION, module->plugin_name, module->name() };
     dt_action_insert_sorted(&darktable.control->actions_format, &module->actions);
   }
   else

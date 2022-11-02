@@ -493,18 +493,29 @@ static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
   return changed;
 }
 
+static void _add_wrapped_box(GtkWidget *container, GtkBox *box, gchar *help_url)
+{
+  GtkWidget *event_box = gtk_event_box_new();
+  GtkWidget *revealer = gtk_revealer_new();
+  gtk_container_add(GTK_CONTAINER(revealer), GTK_WIDGET(box));
+  gtk_container_add(GTK_CONTAINER(event_box), revealer);
+  gtk_container_add(GTK_CONTAINER(container), event_box);
+  // event box is needed so that one can click into the area to get help
+  dt_gui_add_help_link(event_box, dt_get_help_url(help_url));
+}
+
+static void _box_set_visible(GtkBox *box, gboolean visible)
+{
+  GtkRevealer *revealer = GTK_REVEALER(gtk_widget_get_parent(GTK_WIDGET(box)));
+  gtk_revealer_set_transition_duration(revealer, dt_conf_get_int("darkroom/ui/transition_duration"));
+  gtk_revealer_set_reveal_child(revealer, visible);
+}
+
 static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gui_blend_data_t *data)
 {
   data->module->blend_params->mask_mode = mask_mode;
 
-  if(mask_mode & DEVELOP_MASK_ENABLED)
-  {
-    gtk_widget_show(GTK_WIDGET(data->top_box));
-  }
-  else
-  {
-    gtk_widget_hide(GTK_WIDGET(data->top_box));
-  }
+  _box_set_visible(data->top_box, mask_mode & DEVELOP_MASK_ENABLED);
 
   dt_iop_set_mask_mode(data->module, mask_mode);
 
@@ -557,16 +568,16 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
       gtk_widget_show(GTK_WIDGET(data->showmask));
     }
 
-    gtk_widget_show(GTK_WIDGET(data->bottom_box));
+    _box_set_visible(data->bottom_box, TRUE);
   }
   else
   {
-    gtk_widget_hide(GTK_WIDGET(data->bottom_box));
+    _box_set_visible(data->bottom_box, FALSE);
   }
 
   if(data->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
   {
-    gtk_widget_show(GTK_WIDGET(data->masks_box));
+    _box_set_visible(data->masks_box, TRUE);
   }
   else if(data->masks_inited)
   {
@@ -574,42 +585,31 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->masks_shapes[n]), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->masks_edit), FALSE);
     dt_masks_set_edit_mode(data->module, DT_MASKS_EDIT_OFF);
-    gtk_widget_hide(GTK_WIDGET(data->masks_box));
+    _box_set_visible(data->masks_box, FALSE);
   }
   else if(data->masks_support)
   {
     for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->masks_shapes[n]), FALSE);
-    gtk_widget_hide(GTK_WIDGET(data->masks_box));
+    _box_set_visible(data->masks_box, FALSE);
   }
 
-  if(data->raster_inited && (mask_mode & DEVELOP_MASK_RASTER))
-  {
-    gtk_widget_show(GTK_WIDGET(data->raster_box));
-  }
-  else if(data->raster_inited)
-  {
-    gtk_widget_hide(GTK_WIDGET(data->raster_box));
-  }
-  else
-  {
-    gtk_widget_hide(GTK_WIDGET(data->raster_box));
-  }
+  _box_set_visible(data->raster_box, data->raster_inited && (mask_mode & DEVELOP_MASK_RASTER));
 
   if(data->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
   {
-    gtk_widget_show(GTK_WIDGET(data->blendif_box));
+    _box_set_visible(data->blendif_box, TRUE);
   }
   else if(data->blendif_inited)
   {
     /* switch off color picker */
     dt_iop_color_picker_reset(data->module, FALSE);
 
-    gtk_widget_hide(GTK_WIDGET(data->blendif_box));
+    _box_set_visible(data->blendif_box, FALSE);
   }
   else
   {
-    gtk_widget_hide(GTK_WIDGET(data->blendif_box));
+    _box_set_visible(data->blendif_box, FALSE);
   }
 
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
@@ -1358,7 +1358,6 @@ static gboolean _blendop_masks_add_shape(GtkWidget *widget, GdkEventButton *even
   // we create the new form
   dt_masks_form_t *form = dt_masks_create(bd->masks_type[this]);
   dt_masks_change_form_gui(form);
-  darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = self;
 
   if(continuous)
@@ -2041,6 +2040,7 @@ const char *slider_tooltip[] = { N_("adjustment based on input received by this 
                                     "markers: blend fully\n* range defined by lower markers: do not blend at all\n* range "
                                     "between adjacent upper/lower markers: blend gradually") };
 
+
 void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = module->blend_data;
@@ -2110,16 +2110,13 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 }
 
 
-void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
+void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
   bd->blendif_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   // add event box so that one can click into the area to get help for parametric masks
-  GtkWidget* event_box = gtk_event_box_new();
-  dt_gui_add_help_link(GTK_WIDGET(event_box), dt_get_help_url("masks_parametric"));
-  gtk_container_add(GTK_CONTAINER(blendw), event_box);
-  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->blendif_box));
+  _add_wrapped_box(blendw, bd->blendif_box, "masks_parametric");
 
   /* create and add blendif support if module supports it */
   if(bd->blendif_support)
@@ -2298,15 +2295,12 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   --darktable.gui->reset;
 }
 
-void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
+void dt_iop_gui_init_masks(GtkWidget *blendw, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
   bd->masks_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  // add event box so that one can click into the area to get help for drawn masks
-  GtkWidget* event_box = gtk_event_box_new();
-  dt_gui_add_help_link(GTK_WIDGET(event_box), dt_get_help_url("masks_drawn"));
-  gtk_container_add(GTK_CONTAINER(blendw), event_box);
+  _add_wrapped_box(blendw, bd->masks_box, "masks_drawn");
 
   /* create and add masks support if module supports it */
   if(bd->masks_support)
@@ -2368,7 +2362,6 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->masks_inited = 1;
   }
-  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->masks_box));
 }
 
 typedef struct raster_combo_entry_t
@@ -2482,15 +2475,12 @@ static void _raster_polarity_callback(GtkToggleButton *togglebutton, dt_iop_modu
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 }
 
-void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
+void dt_iop_gui_init_raster(GtkWidget *blendw, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
   bd->raster_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  // add event box so that one can click into the area to get help for drawn masks
-  GtkWidget* event_box = gtk_event_box_new();
-  dt_gui_add_help_link(GTK_WIDGET(event_box), dt_get_help_url("masks_raster"));
-  gtk_container_add(GTK_CONTAINER(blendw), event_box);
+  _add_wrapped_box(blendw, bd->raster_box, "masks_raster");
 
   /* create and add raster support if module supports it (it's coupled to masks at the moment) */
   if(bd->masks_support)
@@ -2516,7 +2506,6 @@ void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->raster_inited = 1;
   }
-  gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->raster_box));
 }
 
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
@@ -2764,14 +2753,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   /* now show hide controls as required */
   const unsigned int mask_mode = module->blend_params->mask_mode;
 
-  if(mask_mode & DEVELOP_MASK_ENABLED)
-  {
-    gtk_widget_show(GTK_WIDGET(bd->top_box));
-  }
-  else
-  {
-    gtk_widget_hide(GTK_WIDGET(bd->top_box));
-  }
+  _box_set_visible(bd->top_box, mask_mode & DEVELOP_MASK_ENABLED);
 
   const dt_image_t img = module->dev->image_storage;
   gtk_widget_set_visible(bd->details_slider, dt_image_is_rawprepare_supported(&img));
@@ -2812,7 +2794,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
       gtk_widget_show(GTK_WIDGET(bd->showmask));
     }
 
-    gtk_widget_show(GTK_WIDGET(bd->bottom_box));
+    _box_set_visible(bd->bottom_box, TRUE);
   }
   else
   {
@@ -2824,53 +2806,40 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     module->suppress_mask = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
 
-    gtk_widget_hide(GTK_WIDGET(bd->bottom_box));
+    _box_set_visible(bd->bottom_box, FALSE);
   }
 
   if(bd->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
   {
-    gtk_widget_show(GTK_WIDGET(bd->masks_box));
+    _box_set_visible(bd->masks_box, TRUE);
   }
   else if(bd->masks_inited)
   {
     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
 
-    gtk_widget_hide(GTK_WIDGET(bd->masks_box));
+    _box_set_visible(bd->masks_box, FALSE);
   }
   else
   {
-    gtk_widget_hide(GTK_WIDGET(bd->masks_box));
+    _box_set_visible(bd->masks_box, FALSE);
   }
 
-  if(bd->raster_inited && (mask_mode & DEVELOP_MASK_RASTER))
-  {
-    gtk_widget_show(GTK_WIDGET(bd->raster_box));
-  }
-  else if(bd->raster_inited)
-  {
-//     dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
-
-    gtk_widget_hide(GTK_WIDGET(bd->raster_box));
-  }
-  else
-  {
-    gtk_widget_hide(GTK_WIDGET(bd->raster_box));
-  }
+  _box_set_visible(bd->raster_box, bd->raster_inited && (mask_mode & DEVELOP_MASK_RASTER));
 
   if(bd->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
   {
-    gtk_widget_show(GTK_WIDGET(bd->blendif_box));
+    _box_set_visible(bd->blendif_box, TRUE);
   }
   else if(bd->blendif_inited)
   {
     /* switch off color picker */
     dt_iop_color_picker_reset(module, FALSE);
 
-    gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
+    _box_set_visible(bd->blendif_box, FALSE);
   }
   else
   {
-    gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
+    _box_set_visible(bd->blendif_box, FALSE);
   }
 
   if(module->hide_enable_button)
@@ -3152,11 +3121,11 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->top_box), blend_modes_hbox, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->top_box), bd->blend_mode_parameter_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->top_box), bd->opacity_slider, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->top_box), TRUE, TRUE, 0);
+    _add_wrapped_box(box, bd->top_box, NULL);
 
-    dt_iop_gui_init_masks(GTK_BOX(iopw), module);
-    dt_iop_gui_init_raster(GTK_BOX(iopw), module);
-    dt_iop_gui_init_blendif(GTK_BOX(iopw), module);
+    dt_iop_gui_init_masks(iopw, module);
+    dt_iop_gui_init_raster(iopw, module);
+    dt_iop_gui_init_blendif(iopw, module);
 
     bd->bottom_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), GTK_WIDGET(bd->masks_combine_combo), TRUE, TRUE, 0);
@@ -3168,10 +3137,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->blur_radius_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->brightness_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), bd->contrast_slider, TRUE, TRUE, 0);
-    GtkWidget* event_box = gtk_event_box_new();
-    dt_gui_add_help_link(event_box, dt_get_help_url("masks_refinement"));
-    gtk_container_add(GTK_CONTAINER(event_box), GTK_WIDGET(bd->bottom_box));
-    gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(event_box), TRUE, TRUE, 0);
+    _add_wrapped_box(iopw, bd->bottom_box, "masks_refinement");
 
     gtk_widget_set_name(GTK_WIDGET(bd->top_box), "blending-box");
     gtk_widget_set_name(GTK_WIDGET(bd->masks_box), "blending-box");

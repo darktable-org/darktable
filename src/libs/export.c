@@ -978,7 +978,7 @@ static void _style_changed(GtkWidget *widget, dt_lib_export_t *d)
   }
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 0;
 }

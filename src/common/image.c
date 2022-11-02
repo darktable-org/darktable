@@ -722,7 +722,7 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
 
   // and now we can do the pipe stuff to get final image size
   dt_develop_t dev;
-  dt_dev_init(&dev, 0);
+  dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
 
   dt_dev_pixelpipe_t pipe;
@@ -1646,7 +1646,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   img->group_id = group_id;
 
   // read dttags and exif for database queries!
-  (void)dt_exif_read(img, normalized_filename);
+  if(dt_exif_read(img, normalized_filename)) img->exif_inited = 0;
   if(dt_conf_get_bool("ui_last/ignore_exif_rating"))
     img->flags = flags;
   char dtfilename[PATH_MAX] = { 0 };
@@ -1829,6 +1829,7 @@ void dt_image_init(dt_image_t *img)
   img->usercrop[0] = img->usercrop[1] = 0;
   img->usercrop[2] = img->usercrop[3] = 1;
   img->dng_gain_maps = NULL;
+  img->exif_correction_type = CORRECTION_TYPE_NONE;
   img->cache_entry = 0;
 
   for(int k=0; k<4; k++)
@@ -2829,4 +2830,3 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

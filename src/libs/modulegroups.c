@@ -211,7 +211,7 @@ int expandable(dt_lib_module_t *self)
   return 0;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 999;
 }
@@ -1577,6 +1577,7 @@ void init_presets(dt_lib_module_t *self)
   AM("levels");
   AM("rgbcurve");
   AM("rgblevels");
+  AM("sigmoid");
   AM("tonecurve");
 
   SMG(C_("modulegroup", "color"), "color");
@@ -1724,6 +1725,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("filmicrgb");
+  AM("sigmoid");
   AM("toneequal");
   AM("crop");
   AM("ashift");
@@ -2860,7 +2862,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_placeholder_text(GTK_ENTRY(d->text_entry), _("search modules by name or tag"));
   g_signal_connect(G_OBJECT(d->text_entry), "search-changed", G_CALLBACK(_text_entry_changed_callback), self);
   g_signal_connect(G_OBJECT(d->text_entry), "stop-search", G_CALLBACK(dt_gui_search_stop), dt_ui_center(darktable.gui->ui));
-  g_signal_connect_swapped(G_OBJECT(d->text_entry), "focus-in-event", G_CALLBACK(gtk_widget_show), d->hbox_search_box);
+  g_signal_connect_data(G_OBJECT(d->text_entry), "focus-in-event", G_CALLBACK(gtk_widget_show), d->hbox_search_box, NULL, G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 
   GtkWidget *visibility_wrapper = gtk_event_box_new(); // extra layer prevents disabling shortcuts when hidden
   gtk_container_add(GTK_CONTAINER(visibility_wrapper), d->text_entry);
@@ -4013,4 +4015,3 @@ gboolean preset_autoapply(dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

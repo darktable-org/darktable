@@ -93,7 +93,11 @@
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #elif defined HAVE_IMAGEMAGICK
-#include <MagickWand/MagickWand.h>
+  #ifdef HAVE_IMAGEMAGICK7
+  #include <MagickWand/MagickWand.h>
+  #else
+  #include <wand/MagickWand.h>
+  #endif
 #endif
 
 #include "dbus.h"
@@ -127,7 +131,7 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,act_on,cache,camctl,camsupport,control,demosaic,dev,imageio,\n");
   printf("      input,ioporder,lighttable,lua,masks,memory,nan,opencl,params,\n");
-  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose}\n");
+  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,roi}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
   // clang-format on
@@ -567,6 +571,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  gPhoto2 support disabled\n"
 #endif
 
+#ifdef HAVE_LENSFUN
+               "  Lensfun support enabled\n"
+#else
+               "  Lensfun support disabled\n"
+#endif
+
 #ifdef HAVE_GRAPHICSMAGICK
                "  GraphicsMagick support enabled\n"
 #else
@@ -579,10 +589,34 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  ImageMagick support disabled\n"
 #endif
 
+#ifdef HAVE_LIBAVIF
+               "  libavif support enabled\n"
+#else
+               "  libavif support disabled\n"
+#endif
+
+#ifdef HAVE_LIBHEIF
+               "  libheif support enabled\n"
+#else
+               "  libheif support disabled\n"
+#endif
+
+#ifdef HAVE_OPENJPEG
+               "  OpenJPEG support enabled\n"
+#else
+               "  OpenJPEG support disabled\n"
+#endif
+
 #ifdef HAVE_OPENEXR
                "  OpenEXR support enabled\n"
 #else
                "  OpenEXR support disabled\n"
+#endif
+
+#ifdef HAVE_WEBP
+               "  WebP support enabled\n"
+#else
+               "  WebP support disabled\n"
 #endif
                ,
                darktable_package_string,
@@ -691,6 +725,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_TILING;
         else if(!strcmp(argv[k + 1], "verbose"))
           darktable.unmuted |= DT_DEBUG_VERBOSE;
+        else if(!strcmp(argv[k + 1], "roi"))
+          darktable.unmuted |= DT_DEBUG_ROI;
         else
           return usage(argv[0]);
         k++;
@@ -1061,7 +1097,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
     darktable.gui->grouping = dt_conf_get_bool("ui_last/grouping");
-    memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
     dt_film_set_folder_status();
   }
 

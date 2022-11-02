@@ -194,8 +194,11 @@ typedef struct dt_opencl_device_t
   int disabled;
 
   // Some devices are known to be unused by other apps so there is no need to test for available memory at all.
-  // Also some devices might behave badly with the checking code, in this case we could enforce a headroom here.
   int forced_headroom;
+
+  // As the benchmarks are not good enough to calculate tiled-gpu vs untiled-cpu we have a parameter exposed
+  // in the cldevice conf key to balance this
+  float advantage;  
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -334,12 +337,36 @@ int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size,
                              const void *arg);
 
+/** wrap opencl arguments */
+/** the magic number is used for parameter checking; don't use it in your code! */
+#define CLWRAP(size, ptr) (const size_t)0xF111E8, (const size_t)size, (const void *)ptr
+
+/** wrap opencl single argument */
+#define CLARG(arg) CLWRAP(sizeof(arg), &arg)
+
+/** wrap opencl argument array */
+#define CLARRAY(num, arg) CLWRAP(num * sizeof(*arg), arg)
+
+/** wrap opencl local argument allocation */
+#define CLLOCAL(arg) CLWRAP(arg, NULL)
+
+/** attach args. */
+#define dt_opencl_set_kernel_args(dev, kernel, num, ...) \
+    dt_opencl_set_kernel_args_internal(dev, kernel, num, __VA_ARGS__, CLWRAP(SIZE_MAX, NULL))
+int dt_opencl_set_kernel_args_internal(const int dev, const int kernel, int num, ...);
+
 /** launch kernel! */
 int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes);
 
 /** launch kernel with defined local size! */
 int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
                                            const size_t *local);
+
+/** call kernel with arguments! */
+#define dt_opencl_enqueue_kernel_2d_args(dev, kernel, w, h, ...) \
+    dt_opencl_enqueue_kernel_2d_args_internal(dev, kernel, w, h, __VA_ARGS__, CLWRAP(SIZE_MAX, NULL))
+int dt_opencl_enqueue_kernel_2d_args_internal(const int dev, const int kernel,
+                                              const size_t w, const size_t h, ...);
 
 /** check if opencl is inited */
 int dt_opencl_is_inited(void);

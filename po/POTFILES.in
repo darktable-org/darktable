@@ -236,7 +236,7 @@ src/iop/grain.c
 src/iop/hazeremoval.c
 src/iop/highlights.c
 src/iop/highpass.c
-src/iop/hlrecovery.c
+src/iop/hlrecovery_v2.c
 src/iop/hotpixels.c
 src/iop/invert.c
 src/iop/lens.cc
@@ -264,6 +264,7 @@ src/iop/rotatepixels.c
 src/iop/scalepixels.c
 src/iop/shadhi.c
 src/iop/sharpen.c
+src/iop/sigmoid.c
 src/iop/soften.c
 src/iop/splittoning.c
 src/iop/spots.c

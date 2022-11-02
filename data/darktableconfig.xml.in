@@ -102,6 +102,13 @@
     <shortdescription></shortdescription>
     <longdescription></longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>storage/piwigo/overwrite</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription></shortdescription>
+    <longdescription></longdescription>
+  </dtconfig>
   <dtconfig prefs="storage" section="database">
     <name>database/maintenance_check</name>
     <type>
@@ -259,7 +266,7 @@
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
+  <dtconfig prefs="storage" section="XMP">
     <name>write_sidecar_files</name>
     <type>
       <enum>
@@ -272,7 +279,7 @@
     <shortdescription>write sidecar file for each image</shortdescription>
     <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written:\n - never\n - on import: immediately after importing the image\n - after edit: after any user change on the image</longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
+  <dtconfig prefs="storage" section="XMP">
     <name>compress_xmp_tags</name>
     <type>
       <enum>
@@ -282,8 +289,8 @@
       </enum>
     </type>
     <default>only large entries</default>
-    <shortdescription>store xmp tags in compressed format</shortdescription>
-    <longdescription>entries in xmp tags can get rather large and may exceed the available space to store the history stack in output files. this option allows xmp tags to be compressed and save space.</longdescription>
+    <shortdescription>store XMP tags in compressed format</shortdescription>
+    <longdescription>entries in XMP tags can get rather large and may exceed the available space to store the history stack in output files. this option allows XMP tags to be compressed and save space.</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="tags">
     <name>omit_tag_hierarchy</name>
@@ -992,7 +999,7 @@
     <name>ui_last/import_last_tags_imported</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>import tags from xmp</shortdescription>
+    <shortdescription>import tags from XMP</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -1281,7 +1288,7 @@
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_tooltip_pattern</name>
     <type>longstring</type>
-    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF_DAY)/$(EXIF_MONTH)/$(EXIF_YEAR) $(EXIF_HOUR):$(EXIF_MINUTE):$(EXIF_SECOND)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
+    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF.DATE.REGIONAL) $(EXIF.TIME.REGIONAL)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
@@ -2162,6 +2169,13 @@
     <shortdescription>always show panels' scrollbars</shortdescription>
     <longdescription>defines whether the panel scrollbars should be always visible or activated only depending on the content.  (need a restart)</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>darkroom/ui/transition_duration</name>
+    <type min="0" max="1000">int</type>
+    <default>250</default>
+    <shortdescription>duration of the ui transitions in ms</shortdescription>
+    <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other ui elements</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
@@ -2553,16 +2567,30 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/tiff/pixelformat</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/tiff/compress</name>
-    <type>int</type>
+    <type min="0" max="2">int</type>
     <default>2</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/compresslevel</name>
-    <type min="0" max="9">int</type>
+    <type min="1" max="9">int</type>
     <default>6</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/tiff/shortfile</name>
+    <type min="0" max="1">int</type>
+    <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -2582,6 +2610,56 @@
     <name>plugins/imageio/format/png/compression</name>
     <type min="0" max="9">int</type>
     <default>5</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>10</option>
+        <option>12</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
+    <default>8</default>
+    <shortdescription>JPEG XL bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/pixel_type</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/quality</name>
+    <type min="4" max="100">int</type>
+    <default>95</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/original</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/effort</name>
+    <type min="1" max="9">int</type>
+    <default>7</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/tier</name>
+    <type min="0" max="4">int</type>
+    <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -3198,12 +3276,12 @@
     <shortdescription>DPI value for exported files</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
+  <dtconfig prefs="storage" section="XMP">
     <name>run_crawler_on_start</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>look for updated xmp files on startup</shortdescription>
-    <longdescription>check file modification times of all xmp files on startup to check if any got updated in the meantime</longdescription>
+    <shortdescription>look for updated XMP files on startup</shortdescription>
+    <longdescription>check file modification times of all XMP files on startup to check if any got updated in the meantime</longdescription>
   </dtconfig>
   <dtconfig prefs="security" section="other">
     <name>plugins/lighttable/audio_player</name>

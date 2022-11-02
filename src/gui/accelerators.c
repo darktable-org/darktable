@@ -709,6 +709,8 @@ GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v)
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                       GtkTooltip *tooltip, gpointer user_data)
 {
+  if(dt_key_modifier_state() & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK)) return FALSE;
+
   gchar *markup_text = NULL;
   gchar *description = NULL;
   dt_action_t *action = NULL;
@@ -3746,7 +3748,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
         if(gtk_widget_event(focused_widget, event))
           return TRUE;
 
-        if(GTK_IS_ENTRY(focused_widget) &&
+        if((GTK_IS_ENTRY(focused_widget) || GTK_IS_TREE_VIEW(focused_widget)) &&
            (event->key.keyval == GDK_KEY_Tab ||
             event->key.keyval == GDK_KEY_KP_Tab ||
             event->key.keyval == GDK_KEY_ISO_Left_Tab))

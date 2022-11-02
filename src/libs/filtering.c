@@ -1342,7 +1342,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 350;
 }
@@ -1645,7 +1645,6 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
   {
     sort->lib = d;
     sort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_set_hexpand(sort->box, TRUE);
     // we only allow shortcut for the first sort order, always visible
     if(num == 0)
       sort->sort = dt_bauhaus_combobox_new_action(DT_ACTION(self));

@@ -43,12 +43,16 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
+#ifdef USE_LUA
+#include "lua/call.h"
+#endif
+
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
-void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
+void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
   dev->full_preview = FALSE;
@@ -546,11 +550,6 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   }
 
-  dt_dev_zoom_t zoom;
-  float zoom_x = 0.0f, zoom_y = 0.0f, scale = 0.0f;
-  int window_width, window_height, x, y, closeup;
-  dt_dev_pixelpipe_change_t pipe_changed;
-
 // adjust pipeline according to changed flag set by {add,pop}_history_item.
 restart:
   if(dev->gui_leaving)
@@ -564,14 +563,14 @@ restart:
   }
   dev->pipe->input_timestamp = dev->timestamp;
   // dt_dev_pixelpipe_change() will clear the changed value
-  pipe_changed = dev->pipe->changed;
+  const dt_dev_pixelpipe_change_t pipe_changed = dev->pipe->changed;
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->pipe, dev);
   // determine scale according to new dimensions
-  zoom = dt_control_get_dev_zoom();
-  closeup = dt_control_get_dev_closeup();
-  zoom_x = dt_control_get_dev_zoom_x();
-  zoom_y = dt_control_get_dev_zoom_y();
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  float zoom_x = dt_control_get_dev_zoom_x();
+  float zoom_y = dt_control_get_dev_zoom_y();
   // if just changed to an image with a different aspect ratio or
   // altered image orientation, the prior zoom xy could now be beyond
   // the image boundary
@@ -582,9 +581,9 @@ restart:
     dt_control_set_dev_zoom_y(zoom_y);
   }
 
-  scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
-  window_width = dev->width * darktable.gui->ppd;
-  window_height = dev->height * darktable.gui->ppd;
+  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
+  int window_width = dev->width * darktable.gui->ppd;
+  int window_height = dev->height * darktable.gui->ppd;
   if(closeup)
   {
     window_width /= 1<<closeup;
@@ -592,8 +591,8 @@ restart:
   }
   const int wd = MIN(window_width, dev->pipe->processed_width * scale);
   const int ht = MIN(window_height, dev->pipe->processed_height * scale);
-  x = MAX(0, scale * dev->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
-  y = MAX(0, scale * dev->pipe->processed_height * (.5 + zoom_y) - ht / 2);
+  const int x = MAX(0, scale * dev->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
+  const int y = MAX(0, scale * dev->pipe->processed_height * (.5 + zoom_y) - ht / 2);
 
   dt_get_times(&start);
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, wd, ht, scale))
@@ -631,6 +630,14 @@ restart:
   dt_control_log_busy_leave();
   dt_control_toast_busy_leave();
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
+
+#ifdef USE_LUA
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "pixelpipe-processing-complete",
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
+      LUA_ASYNC_DONE);
+#endif
 
   if(dev->gui_attached && !dev->gui_leaving)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
@@ -1056,8 +1063,6 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_modu
 
 void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
-  if(!darktable.gui || darktable.gui->reset) return;
-
   dt_dev_undo_start_record(dev);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
@@ -2388,10 +2393,10 @@ void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid)
     dev->proxy.masks.list_remove(dev->proxy.masks.module, formid, parentid);
 }
 void dt_dev_masks_selection_change(dt_develop_t *dev, struct dt_iop_module_t *module,
-                                   const int selectid, const int throw_event)
+                                   const int selectid)
 {
   if(dev->proxy.masks.module && dev->proxy.masks.selection_change)
-    dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid, throw_event);
+    dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);
 }
 
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)

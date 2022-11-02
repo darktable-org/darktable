@@ -107,9 +107,18 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
     // should be removed to take the potential changes in account (not done
     // by normal import image flow)
     const Imf::BlobAttribute *exif = header.findTypedAttribute<Imf::BlobAttribute>("exif");
-    // we append a jpg-compatible exif00 string, so get rid of that again:
-    if(exif && exif->value().size > 6)
-      dt_exif_read_from_blob(img, ((uint8_t *)(exif->value().data.get())) + 6, exif->value().size - 6);
+    if(exif)
+    {
+      uint8_t *exif_blob = exif->value().data.get();
+      uint32_t exif_size = exif->value().size;
+      /* skip any superfluous "Exif\0\0" APP1 prefix written by dt 4.0.0 and earlier */
+      if(exif_size >= 6 && !memcmp(exif_blob, "Exif\0\0", 6))
+      {
+        exif_blob += 6;
+        exif_size -= 6;
+      }
+      if(exif_size > 0) dt_exif_read_from_blob(img, exif_blob, exif_size);
+    }
   }
 
   /* Get image width and height from displayWindow */

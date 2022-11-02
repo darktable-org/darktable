@@ -404,7 +404,7 @@ static gboolean _lost_focus(GtkWidget *textview, GdkEventFocus *event, dt_lib_mo
   return FALSE;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 510;
 }

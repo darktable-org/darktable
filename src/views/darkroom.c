@@ -117,7 +117,7 @@ static int display_image_cb(lua_State *L)
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
-  dt_dev_init((dt_develop_t *)self->data, 1);
+  dt_dev_init((dt_develop_t *)self->data, TRUE);
 
   darktable.view_manager->proxy.darkroom.view = self;
 
@@ -436,19 +436,22 @@ void expose(
     dev->gui_synch = 0;
   }
 
-  if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY || dev->image_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->image_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp)
   {
     dt_dev_process_image(dev);
   }
 
-  if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp)
   {
     dt_dev_process_preview(dev);
   }
 
-  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
   {
     dt_dev_process_preview2(dev);
@@ -501,10 +504,10 @@ void expose(
     dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
-  if(dev->pipe->output_backbuf && // do we have an image?
-    dev->pipe->output_imgid == dev->image_storage.id && // is the right image?
-    dev->pipe->backbuf_scale == backbuf_scale && // is this the zoom scale we want to display?
-    dev->pipe->backbuf_zoom_x == zoom_x && dev->pipe->backbuf_zoom_y == zoom_y)
+  if(dev->pipe->output_backbuf                            // do we have an image?
+     && dev->pipe->output_imgid == dev->image_storage.id  // is the right image?
+     && dev->pipe->backbuf_scale == backbuf_scale    // is this the zoom scale we want to display?
+     && dev->pipe->backbuf_zoom_x == zoom_x && dev->pipe->backbuf_zoom_y == zoom_y)
   {
     // draw image
     mutex = &dev->pipe->backbuf_mutex;
@@ -541,7 +544,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      const double tbw = (float)(tb >> closeup) * 2.0 / 3.0;  
+      const double tbw = (float)(tb >> closeup) * 2.0 / 3.0;
       cairo_rectangle(cr, -tbw, -tbw, wd + 2.0 * tbw, ht + 2.0 * tbw);
       cairo_set_source_rgb(cr, 1., 1., 1.);
       cairo_fill(cr);
@@ -827,6 +830,20 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
+#ifdef USE_LUA
+
+static void _fire_darkroom_image_loaded_event(const bool clean, const int32_t imgid)
+{
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
+      LUA_ASYNC_TYPENAME, "bool", clean,
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(imgid),
+      LUA_ASYNC_DONE);
+}
+
+#endif
+
 static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
@@ -837,18 +854,6 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dev->proxy.chroma_adaptation = NULL;
   dev->proxy.wb_is_D65 = TRUE;
   dev->proxy.wb_coeffs[0] = 0.f;
-
-  memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
-
-#ifdef USE_LUA
-
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(imgid),
-      LUA_ASYNC_DONE);
-
-#endif
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);
@@ -910,17 +915,41 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // which in turn try to acquire the gdk lock.
   //
   // worst case, it'll drop some change image events. sorry.
-  if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex)) return;
+  if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex))
+  {
+
+  #ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(FALSE, imgid);
+
+#endif
+
+  return;
+  }
   if(dt_pthread_mutex_BAD_trylock(&dev->pipe_mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
-    return;
+
+ #ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(FALSE, imgid);
+
+#endif
+
+   return;
   }
   if(dt_pthread_mutex_BAD_trylock(&dev->preview2_pipe_mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->pipe_mutex);
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
-    return;
+
+ #ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(FALSE, imgid);
+
+#endif
+
+   return;
   }
 
   // get current plugin in focus before defocus
@@ -1080,8 +1109,6 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
 
-  dt_dev_masks_list_change(dev);
-
   /* cleanup histograms */
   g_list_foreach(dev->iop, (GFunc)dt_iop_cleanup_histogram, (gpointer)NULL);
 
@@ -1090,6 +1117,8 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
      A double history entry is not generated.
   */
   --darktable.gui->reset;
+
+  dt_dev_masks_list_change(dev);
 
   /* Now we can request focus again and write a safe plugins/darkroom/active */
   if(active_plugin)
@@ -1139,6 +1168,13 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
+
+#ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(TRUE, imgid);
+
+#endif
+
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_t imgid, gpointer user_data)
@@ -1312,23 +1348,11 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
     dt_control_log(_("no userdefined presets for favorite modules were found"));
 }
 
-static void _darkroom_ui_apply_style_activate_callback(gchar *name)
+static void _darkroom_ui_apply_style_activate_callback(const gchar *name)
 {
   dt_control_log(_("applied style `%s' on current image"), name);
 
-  /* write current history changes so nothing gets lost */
-  dt_dev_write_history(darktable.develop);
-
-  dt_dev_undo_start_record(darktable.develop);
-
-  /* apply style on image and reload*/
-  dt_styles_apply_to_image(name, FALSE, FALSE, darktable.develop->image_storage.id);
-  dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
-
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
-  /* record current history state : after change (needed for undo) */
-  dt_dev_undo_end_record(darktable.develop);
+  dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
 
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();
@@ -3046,16 +3070,6 @@ void enter(dt_view_t *self)
     }
   }
 
-#ifdef USE_LUA
-
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
-      LUA_ASYNC_DONE);
-
-#endif
-
   /* signal that darktable.develop is initialized and ready to be used */
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
 
@@ -3122,6 +3136,13 @@ void enter(dt_view_t *self)
   dt_iop_color_picker_init();
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
+
+#ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(TRUE, dev->image_storage.id);
+
+#endif
+
 }
 
 void leave(dt_view_t *self)

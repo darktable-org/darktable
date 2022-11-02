@@ -92,7 +92,7 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 1000;
 }
@@ -135,7 +135,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
     float pzx, pzy;
-    dt_dev_get_pointer_zoom_pos(darktable.develop, 0, 0, &pzx, &pzy);
+    dt_dev_get_pointer_zoom_pos(dev, 0, 0, &pzx, &pzy);
     pzx = fmin(pzx + 0.5f, 0.0f);
     pzy = fmin(pzy + 0.5f, 0.0f);
 
@@ -479,7 +479,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   /* get current snapshot index */
-  int which = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "snapshot"));
+  const int which = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "snapshot"));
 
   /* free current snapshot image if exists */
   if(d->snapshot_image)
@@ -799,4 +799,3 @@ void init(struct dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -390,7 +390,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_hsl_matrix = NULL;
   cl_mem dev_rgb_matrix = NULL;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -398,21 +398,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const _channelmixer_operation_mode_t operation_mode = data->operation_mode;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   dev_hsl_matrix = dt_opencl_copy_host_to_device_constant(devid, sizeof(data->hsl_matrix), data->hsl_matrix);
   if(dev_hsl_matrix == NULL) goto error;
   dev_rgb_matrix = dt_opencl_copy_host_to_device_constant(devid, sizeof(data->rgb_matrix), data->rgb_matrix);
   if(dev_rgb_matrix == NULL) goto error;
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 4, sizeof(int), (void *)&operation_mode);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 5, sizeof(cl_mem), (void *)&dev_hsl_matrix);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_channelmixer, 6, sizeof(cl_mem), (void *)&dev_rgb_matrix);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_channelmixer, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_channelmixer, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(operation_mode), CLARG(dev_hsl_matrix),
+    CLARG(dev_rgb_matrix));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_hsl_matrix);
