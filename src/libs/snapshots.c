@@ -250,6 +250,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       snap->zoom_scale = zoom_scale;
       if(d->expose_again_timeout_id != -1) g_source_remove(d->expose_again_timeout_id);
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
+      return;
     }
 
     float pzx, pzy;
