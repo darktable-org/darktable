@@ -250,15 +250,6 @@ typedef struct dt_develop_t
       gboolean (*basics_module_toggle)(struct dt_lib_module_t *self, GtkWidget *widget, gboolean doit);
     } modulegroups;
 
-    // snapshots plugin hooks
-    struct
-    {
-      // this flag is set by snapshot plugin to signal that expose of darkroom
-      // should store cairo surface as snapshot to disk using filename.
-      gboolean request;
-      const gchar *filename;
-    } snapshot;
-
     // masks plugin hooks
     struct
     {

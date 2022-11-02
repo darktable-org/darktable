@@ -731,7 +731,7 @@ int dt_imageio_export(const int32_t imgid, const char *filename, dt_imageio_modu
 
     return dt_imageio_export_with_flags(imgid, filename, format, format_params, FALSE, FALSE, high_quality, upscale, is_scaling,
                                         FALSE, NULL, copy_metadata, export_masks, icc_type, icc_filename, icc_intent,
-                                        storage, storage_params, num, total, metadata);
+                                        storage, storage_params, num, total, metadata, -1);
   }
 }
 
@@ -744,11 +744,13 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                                  dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
                                  dt_imageio_module_data_t *storage_params, int num, int total,
-                                 dt_export_metadata_t *metadata)
+                                 dt_export_metadata_t *metadata, const int history_end)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
+  if(history_end != -1)
+    dt_dev_pop_history_items_ext(&dev, history_end);
 
   const gboolean buf_is_downscaled = (thumbnail_export && dt_conf_get_bool("ui/performance"));
   dt_mipmap_buffer_t buf;
@@ -797,7 +799,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
     GList *modules_used = NULL;
 
-    dt_dev_pop_history_items_ext(&dev, appending ? dev.history_end : 0);
+    if(!appending) dt_dev_pop_history_items_ext(&dev, 0);
     dt_ioppr_update_for_style_items(&dev, style_items, appending);
 
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
