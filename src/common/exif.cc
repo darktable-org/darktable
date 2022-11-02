@@ -953,6 +953,121 @@ static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_
     }
   }
 
+  /*
+   * Olympus distortion correction for a Four Thirds SLR lens on a FT or MFT body
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && _exif_read_exif_tag(exifData, &pos, "Exif.OlympusIp.0x0800"))
+  {
+    if(pos->count() == 9)
+    {
+      for(int i = 0; i < 9; i++)
+      {
+        float kd = pos->toFloat(i);
+        if (kd != 0)
+        {
+          img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
+          img->exif_correction_data.olympus.has_ft_dist = TRUE;
+        }
+
+        img->exif_correction_data.olympus.ft_dist[i] = kd;
+      }
+    }
+  }
+
+  /*
+   * Olympus distortion correction for a Micro Four Thirds lens
+   *
+   * There are two tags that may contain distortion polynomials: 0x150a and
+   * 0x1510. Older cameras use 0x150a, some newer cameras use only 0x1510, and
+   * some cameras use both. For the case where both are defined, the only
+   * difference is that the coefficients in 0x1510 are scaled so that the
+   * undistorted image is slightly more cropped.
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && _exif_read_exif_tag(exifData, &pos, "Exif.OlympusIp.0x1510"))
+  {
+    if(pos->count() == 4)
+    {
+      for(int i = 0; i < 4; i++)
+      {
+        float kd = pos->toFloat(i);
+        img->exif_correction_data.olympus.mft_dist[i] = kd;
+        if (kd != 0 && i < 3)
+        {
+          // Assume it's valid if any of the first three elements are nonzero. Ignore the
+          // fourth element since the null value for no correction is '0 0 0 1'
+          img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
+          img->exif_correction_data.olympus.has_mft_dist = TRUE;
+        }
+      }
+    }
+  }
+
+  // If we didn't find a non-null 0x1510, then check for 0x150a
+  if(!(img->exif_correction_type == CORRECTION_TYPE_OLYMPUS && img->exif_correction_data.olympus.has_mft_dist)
+     && Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+     && _exif_read_exif_tag(exifData, &pos, "Exif.OlympusIp.0x150a"))
+  {
+    if(pos->count() == 4)
+    {
+      for(int i = 0; i < 4; i++)
+      {
+        float kd = pos->toFloat(i);
+        img->exif_correction_data.olympus.mft_dist[i] = kd;
+        if (kd != 0 && i < 3)
+        {
+          // Assume it's valid if any of the first three elements are nonzero. Ignore the
+          // fourth element since the null value for no correction is '0 0 0 1'
+          img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
+          img->exif_correction_data.olympus.has_mft_dist = TRUE;
+        }
+      }
+    }
+  }
+
+  /*
+   * Olympus CA correction for a Micro Four Thirds lens
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && _exif_read_exif_tag(exifData, &pos, "Exif.OlympusIp.0x150c"))
+  {
+    if(pos->count() == 6)
+    {
+      for(int i = 0; i < 6; i++)
+      {
+        float kc = pos->toFloat(i);
+        img->exif_correction_data.olympus.mft_ca[i] = kc;
+        if (kc != 0)
+        {
+          img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
+          img->exif_correction_data.olympus.has_mft_ca = TRUE;
+        }
+      }
+    }
+  }
+
+  /*
+   * Olympus vignetting correction
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && _exif_read_exif_tag(exifData, &pos, "Exif.OlympusIp.0x0801"))
+  {
+    if(pos->count() == 16)
+    {
+      for(int i = 0; i < 16; i++)
+      {
+        float kv = pos->toFloat(i);
+        img->exif_correction_data.olympus.vignetting[i] = kv;
+        if (kv != 0)
+        {
+          img->exif_correction_type = CORRECTION_TYPE_OLYMPUS;
+          img->exif_correction_data.olympus.has_vignetting = TRUE;
+        }
+      }
+    }
+  }
+
   return img->exif_correction_type != CORRECTION_TYPE_NONE;
 }
 
