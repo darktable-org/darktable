@@ -264,6 +264,7 @@ src/iop/rotatepixels.c
 src/iop/scalepixels.c
 src/iop/shadhi.c
 src/iop/sharpen.c
+src/iop/sigmoid.c
 src/iop/soften.c
 src/iop/splittoning.c
 src/iop/spots.c
