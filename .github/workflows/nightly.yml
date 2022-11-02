@@ -43,10 +43,12 @@ jobs:
             git
             intltool
           pacboy: >-
-            toolchain:p
+            cc:p
             cmake:p
+            gcc-libs:p
             ninja:p
             nsis:p
+            omp:p
             dbus-glib:p
             drmingw:p
             exiv2:p
