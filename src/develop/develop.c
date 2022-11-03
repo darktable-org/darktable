@@ -102,6 +102,8 @@ void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
     // FIXME: these are uint32_t, setting to -1 is confusing
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
+    dev->darkroom_mouse_in_center_area = FALSE;
+    dev->darkroom_skip_mouse_events = FALSE;
   }
 
   dev->iop_instance = 0;
