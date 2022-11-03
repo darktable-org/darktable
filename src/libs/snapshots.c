@@ -129,22 +129,6 @@ static void _draw_sym(cairo_t *cr, float x, float y, gboolean vertical, gboolean
   g_object_unref(layout);
 }
 
-// export image for the snapshot d->snapshot[d->selected]
-static int _take_image_snapshot(
-  dt_lib_module_t *self,
-  uint32_t imgid,
-  size_t width,
-  size_t height,
-  int history_end)
-{
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-
-  dt_dev_image(imgid, width, height, history_end,
-               &d->params.buf, &d->params.width, &d->params.height);
-
-  return 0;
-}
-
 static gboolean _snap_expose_again(gpointer user_data)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)user_data;
@@ -170,8 +154,9 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     // if a new snapshot is needed, do this now
     if(d->snap_requested)
     {
-      // export image with proper size, remove the darkroom borders
-      _take_image_snapshot(self, snap->imgid, width, height, snap->history_end);
+      // export image with proper size
+      dt_dev_image(snap->imgid, width, height, snap->history_end,
+                   &d->params.buf, &d->params.width, &d->params.height);
 
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = dt_view_create_surface(d->params.buf, d->params.width, d->params.height);
