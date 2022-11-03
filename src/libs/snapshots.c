@@ -152,7 +152,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     const dt_view_context_t ctx = dt_view_get_view_context();
 
     // if a new snapshot is needed, do this now
-    if(d->snap_requested)
+    if(d->snap_requested && snap->ctx == ctx)
     {
       // export image with proper size
       dt_dev_image(snap->imgid, width, height, snap->history_end,
@@ -178,8 +178,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       // request a new snapshot in the following conditions:
       //    1. we are not panning
       //    2. the mouse is not over the center area, probably panning with the navigation module
+      snap->ctx = ctx;
       if(!d->panning && dev->darkroom_mouse_in_center_area) d->snap_requested = TRUE;
       if(d->expose_again_timeout_id != -1) g_source_remove(d->expose_again_timeout_id);
+      if(snap->surface) cairo_surface_destroy(snap->surface);
+      snap->surface = NULL;
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
       return;
     }
@@ -196,6 +199,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     const double ly = height * d->vp_ypointer;
 
     const double size = DT_PIXEL_APPLY_DPI(d->inverted ? -15 : 15);
+
+    // if we have not yet a proper surface, return
+    // we let the main darkroom picture displayed and wait for the
+    // proper aligned snapshot to be ready.
+    if(!snap->surface) return;
 
     // clear background
     dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
