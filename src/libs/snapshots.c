@@ -39,13 +39,7 @@ DT_MODULE(1)
 typedef struct dt_lib_snapshot_t
 {
   GtkWidget *button;
-  // the tree zoom float plus iso12646 boolean are to detect validity of a snapshot.
-  // it must be recalculated when zoom_scale (zoom) has changed,
-  // if pan has changed (zoom_x, zoom_y) or if iso12646 status has changed.
-  float zoom_scale;
-  float zoom_x;
-  float zoom_y;
-  gboolean iso_12646;
+  dt_view_context_t ctx;
   uint32_t imgid;
   uint32_t history_end;
   /* snapshot cairo surface */
@@ -171,46 +165,34 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   {
     dt_lib_snapshot_t *snap = &d->snapshot[d->selected];
 
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const int closeup = dt_control_get_dev_closeup();
-    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-    const float zoom_y = dt_control_get_dev_zoom_y();
-    const float zoom_x = dt_control_get_dev_zoom_x();
+    const dt_view_context_t ctx = dt_view_get_view_context();
 
     // if a new snapshot is needed, do this now
-    if(d->snap_requested && snap->zoom_scale == zoom_scale)
+    if(d->snap_requested)
     {
       // export image with proper size, remove the darkroom borders
       _take_image_snapshot(self, snap->imgid, width, height, snap->history_end);
-      const int32_t stride =
-        cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->params.width);
-      if(snap->surface) cairo_surface_destroy(snap->surface);
-      snap->surface = dt_cairo_image_surface_create_for_data
-        (d->params.buf, CAIRO_FORMAT_RGB24, d->params.width, d->params.height, stride);
 
-      snap->zoom_scale = zoom_scale;
-      snap->zoom_x = zoom_x;
-      snap->zoom_y = zoom_y;
-      snap->iso_12646 = darktable.develop->iso_12646.enabled;
+      if(snap->surface) cairo_surface_destroy(snap->surface);
+      snap->surface = dt_view_create_surface(d->params.buf, d->params.width, d->params.height);
+
+      snap->ctx = ctx;
+
       snap->width  = d->params.width;
       snap->height = d->params.height;
       d->snap_requested = FALSE;
       d->expose_again_timeout_id = -1;
     }
 
-    // if zoom_scale changed, get a new snapshot at the right zoom level. this is using
+    // if ctx has changed, get a new snapshot at the right zoom level. this is using
     // a time out to ensure we don't try to create many snapshot while zooming (this is
     // slow), so we wait to the zoom level to be stabilized to create the new snapshot.
-    if(snap->zoom_scale != zoom_scale
-       || snap->zoom_x != zoom_x
-       || snap->zoom_y != zoom_y
-       || snap->iso_12646 != darktable.develop->iso_12646.enabled
+    if(snap->ctx != ctx
        || !snap->surface)
     {
       // request a new snapshot now only if not panning, otherwise it will be
       // requested by the cb timer below.
       if(!d->panning) d->snap_requested = TRUE;
-      snap->zoom_scale = zoom_scale;
       if(d->expose_again_timeout_id != -1) g_source_remove(d->expose_again_timeout_id);
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
       return;
@@ -223,8 +205,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
     d->vp_width = width;
     d->vp_height = height;
-
-    const int bs = darktable.develop->border_size;
 
     const double lx = width * d->vp_xpointer;
     const double ly = height * d->vp_ypointer;
@@ -255,35 +235,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       // display snapshot image surface
       cairo_save(cri);
 
-      // use the exact same formulae to place the snapshot on the view. this is
-      // important to have a fully aligned snapshot.
+      dt_view_paint_surface(cri, width, height, snap->surface, snap->width, snap->height);
 
-      const float sw = (float)snap->width;
-      const float sh = (float)snap->height;
-
-      cairo_translate(cri, ceilf(.5f * (width - sw)), ceilf(.5f * (height - sh)));
-      if(closeup)
-      {
-        const double scale = 1<<closeup;
-        cairo_scale(cri, scale, scale);
-        cairo_translate(cri, -(.5 - 0.5/scale) * sw, -(.5 - 0.5/scale) * sh);
-      }
-
-      if(dev->iso_12646.enabled)
-      {
-        // draw the white frame around picture
-        const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
-        cairo_rectangle(cri, -tbw, -tbw, sw + 2.0 * tbw, sh + 2.0 * tbw);
-        cairo_set_source_rgb(cri, 1., 1., 1.);
-        cairo_fill(cri);
-        dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
-      }
-
-      cairo_set_source_surface (cri, snap->surface, 0, 0);
-      cairo_pattern_set_filter
-        (cairo_get_source(cri),
-         zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
-      cairo_paint(cri);
       cairo_restore(cri);
     }
 
@@ -293,6 +246,10 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     dt_draw_set_color_overlay(cri, TRUE, 0.7);
 
     cairo_set_line_width(cri, 1.);
+
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
 
     if(d->vertical)
     {
@@ -483,7 +440,7 @@ void gui_reset(dt_lib_module_t *self)
 
     if(s->surface) cairo_surface_destroy(s->surface);
     s->surface = NULL;
-    s->zoom_scale = 0.f;
+    s->ctx = 0;
     gtk_widget_hide(s->button);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
   }
@@ -572,6 +529,7 @@ void gui_init(dt_lib_module_t *self)
   d->vp_yrotate = 0.0;
   d->vertical = TRUE;
   d->on_going = FALSE;
+  d->panning = FALSE;
   d->selected = -1;
   d->snap_requested = FALSE;
   d->expose_again_timeout_id = -1;
@@ -682,7 +640,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   }
 
   dt_lib_snapshot_t *s = &d->snapshot[0];
-  s->zoom_scale = .0f;
+  s->ctx = 0;
   s->history_end = darktable.develop->history_end;
   s->imgid = darktable.develop->image_storage.id;
   s->surface = NULL;
@@ -717,7 +675,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
     /* setup snapshot */
     d->selected = which - 1;
     dt_lib_snapshot_t *s = &d->snapshot[d->selected];
-    s->zoom_scale = 0.0f;
+    s->ctx = 0;
 
     dt_dev_invalidate(darktable.develop);
   }
