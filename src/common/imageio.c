@@ -785,12 +785,13 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     goto error;
   }
 
+  const int final_history_end = history_end == -1 ? dev.history_end : history_end;
   const gboolean use_style = !thumbnail_export && format_params->style[0] != '\0';
   const gboolean appending = format_params->style_append != FALSE;
   //  If a style is to be applied during export, add the iop params into the history
   if(use_style)
   {
-    GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1);
+    GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1, TRUE);
     if(!style_items)
     {
       dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
@@ -800,6 +801,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     GList *modules_used = NULL;
 
     if(!appending) dt_dev_pop_history_items_ext(&dev, 0);
+
     dt_ioppr_update_for_style_items(&dev, style_items, appending);
 
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
@@ -811,6 +813,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     g_list_free(modules_used);
     g_list_free_full(style_items, dt_style_item_free);
   }
+  else if(history_end != -1)
+    dt_dev_pop_history_items_ext(&dev, final_history_end);
 
   dt_ioppr_resync_modules_order(&dev);
 
@@ -1330,6 +1334,87 @@ gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
                                         al, al_len);
   }
   return found;
+}
+
+typedef struct _imageio_preview_t
+{
+  dt_imageio_module_data_t head;
+  int bpp;
+  uint8_t *buf;
+  uint32_t width, height;
+} _imageio_preview_t;
+
+static int _preview_write_image(dt_imageio_module_data_t *data,
+                                const char *filename, const void *in,
+                                dt_colorspaces_color_profile_type_t over_type,
+                                const char *over_filename,
+                                void *exif, int exif_len, int imgid, int num, int total,
+                                dt_dev_pixelpipe_t*pipe,
+                                const gboolean export_masks)
+{
+  _imageio_preview_t *d = (_imageio_preview_t *)data;
+
+  memcpy(d->buf, in, sizeof(uint32_t) * data->width * data->height);
+  d->width = data->width;
+  d->height = data->height;
+
+  return 0;
+}
+
+static int _preview_bpp(dt_imageio_module_data_t *data)
+{
+  return 8;
+}
+
+static int _preview_levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_INT8;
+}
+
+static const char *_preview_mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
+cairo_surface_t *dt_imageio_preview(const int32_t imgid,
+                                    const size_t width,
+                                    const size_t height,
+                                    const int history_end,
+                                    const char *style_name)
+{
+  dt_imageio_module_format_t buf;
+  buf.mime = _preview_mime;
+  buf.levels = _preview_levels;
+  buf.bpp = _preview_bpp;
+  buf.write_image = _preview_write_image;
+
+  _imageio_preview_t dat;
+  dat.head.max_width = width;
+  dat.head.max_height = height;
+  dat.head.width = width;
+  dat.head.height = height;
+  dat.head.style_append = TRUE;
+  dat.bpp = 8;
+  dat.buf = (uint8_t *)dt_alloc_align(64, sizeof(uint32_t) * width * height);
+
+  g_strlcpy(dat.head.style, style_name, sizeof(dat.head.style));
+
+  const gboolean high_quality = FALSE;
+  const gboolean upscale = TRUE;
+  const gboolean export_masks = FALSE;
+  const gboolean is_scaling = FALSE;
+
+  dt_imageio_export_with_flags
+    (imgid, "preview", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
+     high_quality, upscale, is_scaling, FALSE, NULL, FALSE, export_masks,
+     DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
+     history_end);
+
+  const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, dat.head.width);
+  cairo_surface_t *surface = dt_cairo_image_surface_create_for_data
+        (dat.buf, CAIRO_FORMAT_RGB24, dat.head.width, dat.head.height, stride);
+
+  return surface;
 }
 
 // clang-format off

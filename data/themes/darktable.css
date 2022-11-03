@@ -853,6 +853,13 @@ tooltip label,
   color: @tooltip_fg_color;
 }
 
+tooltip separator
+{
+  margin: 0.6em 2em;
+  padding-bottom: 0.07em;
+  background-color: @selected_bg_color;
+}
+
 combobox label
 {
   margin: 0 0.35em 0 0;
