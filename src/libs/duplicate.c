@@ -197,44 +197,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
   dt_dev_image(d->imgid, width, height, -1, &buf, &processed_width, &processed_height);
 
-  const int32_t stride =
-    cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
-  cairo_surface_t *surface = dt_cairo_image_surface_create_for_data
-    (buf, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
-
-  dt_develop_t *dev = darktable.develop;
-
-  const int bs = dev->border_size;
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
-
-  const float sw = (float)processed_width;
-  const float sh = (float)processed_height;
-
-  cairo_translate(cri, ceilf(.5f * (width - sw)), ceilf(.5f * (height - sh)));
-  if(closeup)
-  {
-    const double scale = 1<<closeup;
-    cairo_scale(cri, scale, scale);
-    cairo_translate(cri, -(.5 - 0.5/scale) * sw, -(.5 - 0.5/scale) * sh);
-  }
-
-  if(dev->iso_12646.enabled)
-  {
-    // draw the white frame around picture
-    const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
-    cairo_rectangle(cri, -tbw, -tbw, sw + 2.0 * tbw, sh + 2.0 * tbw);
-    cairo_set_source_rgb(cri, 1., 1., 1.);
-    cairo_fill(cri);
-    dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
-  }
-
-  cairo_set_source_surface (cri, surface, 0, 0);
-  cairo_pattern_set_filter
-    (cairo_get_source(cri),
-     zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
-  cairo_paint(cri);
+  dt_view_paint_buffer(cri, width, height, buf, processed_width, processed_height);
 }
 
 static void _thumb_remove(gpointer user_data)
