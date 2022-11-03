@@ -48,6 +48,7 @@
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
+#include "gui/styles.h"
 #include "libs/colorpicker.h"
 #include "libs/modulegroups.h"
 #include "views/view.h"
@@ -1332,6 +1333,28 @@ static void _darkroom_ui_apply_style_activate_callback(const gchar *name)
   dt_iop_connect_accels_all();
 }
 
+gboolean _styles_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyboard_mode,
+                                  GtkTooltip* tooltip, gpointer user_data)
+{
+  gchar *name = (char *)user_data;
+  uint32_t imgid = -1;
+
+  GList *selected_image = dt_collection_get_selected(darktable.collection, 1);
+
+  if(selected_image)
+  {
+    imgid = GPOINTER_TO_INT(selected_image->data);
+    g_list_free(selected_image);
+  }
+
+  GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
+  gtk_widget_show_all(ht);
+
+  gtk_tooltip_set_custom(tooltip, ht);
+
+  return TRUE;
+}
+
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 {
   /* show styles popup menu */
@@ -1343,18 +1366,6 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
     for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))
     {
       dt_style_t *style = (dt_style_t *)st_iter->data;
-
-      char *items_string = dt_styles_get_item_list_as_string(style->name);
-      gchar *tooltip = NULL;
-
-      if(style->description && *style->description)
-      {
-        tooltip = g_strconcat("<b>", g_markup_escape_text(style->description, -1), "</b>\n", items_string, NULL);
-      }
-      else
-      {
-        tooltip = g_strdup(items_string);
-      }
 
       gchar **split = g_strsplit(style->name, "|", 0);
 
@@ -1380,7 +1391,11 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
         mi_name = g_strdup(split[0]);
 
       GtkWidget *mi = gtk_menu_item_new_with_label(mi_name);
-      gtk_widget_set_tooltip_markup(mi, tooltip);
+      // need a tooltip for the signal below to be raised
+      gtk_widget_set_tooltip_markup(mi, "x");
+      g_signal_connect(mi, "query-tooltip",
+                       G_CALLBACK(_styles_tooltip_callback), g_strdup(style->name));
+
       g_free(mi_name);
 
       // check if we already have a sub-menu with this name
@@ -1424,8 +1439,6 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
                                (gpointer)g_strdup(style->name));
       gtk_widget_show(mi);
 
-      g_free(items_string);
-      g_free(tooltip);
       g_strfreev(split);
     }
     g_list_free_full(styles, dt_style_free);

@@ -25,6 +25,7 @@
 #include <glib.h>
 #include <stdio.h>
 
+#include <cairo.h>
 #include <inttypes.h>
 
 #define FILTERS_ARE_CYGM(filters)                                                                                 \
@@ -116,6 +117,12 @@ gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
 
 // get the type of image from its extension
 dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension);
+
+cairo_surface_t *dt_imageio_preview(const int32_t imgid,
+                                    const size_t width,
+                                    const size_t height,
+                                    const int history_end,
+                                    const char *style_name);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

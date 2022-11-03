@@ -2177,6 +2177,12 @@
     <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other ui elements</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>ui/style/preview_size</name>
+    <type min="100" max="500">int</type>
+    <default>250</default>
+    <shortdescription>max style preview size</shortdescription>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
     <default>0</default>
