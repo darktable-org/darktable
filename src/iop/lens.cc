@@ -2102,6 +2102,8 @@ void reload_defaults(dt_iop_module_t *module)
   d->crop = img->exif_crop;
   d->aperture = img->exif_aperture;
   d->focal = img->exif_focal_length;
+  d->scale = 1.0;
+  d->modify_flags = DT_IOP_LENS_MODFLAG_ALL;
 
   // if we did not find focus_distance in EXIF, lets default to 1000
   d->distance = img->exif_focus_distance == 0.0f ? 1000.0f : img->exif_focus_distance;
