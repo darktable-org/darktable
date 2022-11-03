@@ -120,23 +120,13 @@ void update(dt_lib_module_t *self)
     if(!found)
     {
       d->current_mode = DT_IOP_ORDER_CUSTOM;
-      gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(DT_IOP_ORDER_CUSTOM)));
+      gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(d->current_mode)));
     }
   }
-  else if(kind == DT_IOP_ORDER_LEGACY)
+  else
   {
     d->current_mode = kind;
-    gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(DT_IOP_ORDER_LEGACY)));
-  }
-  else if(kind == DT_IOP_ORDER_V30)
-  {
-    d->current_mode = kind;
-    gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(DT_IOP_ORDER_V30)));
-  }
-  else if(kind == DT_IOP_ORDER_V30_JPG)
-  {
-    d->current_mode = kind;
-    gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(DT_IOP_ORDER_V30_JPG)));
+    gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(d->current_mode)));
   }
 }
 
@@ -191,7 +181,7 @@ void gui_reset (dt_lib_module_t *self)
     dt_dev_pixelpipe_rebuild(darktable.develop);
 
     d->current_mode = DT_IOP_ORDER_V30;
-    if(d->widget) gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(DT_IOP_ORDER_V30)));
+    if(d->widget) gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(d->current_mode)));
 
     g_list_free_full(iop_order_list, free);
   }
