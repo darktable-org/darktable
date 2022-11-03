@@ -511,6 +511,12 @@ void dt_view_paint_surface(
   const size_t processed_width,
   const size_t processed_height);
 
+typedef uint64_t dt_view_context_t;
+
+dt_view_context_t dt_view_get_view_context(void);
+
+gboolean dt_view_check_view_context(dt_view_context_t *ctx);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

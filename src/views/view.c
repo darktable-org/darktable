@@ -1525,6 +1525,43 @@ void dt_view_paint_buffer(
   dt_view_paint_surface(cr, width, height, surface, processed_width, processed_height);
 }
 
+#define ADD_TO_CONTEXT(v) ctx = ((ctx << 5) + ctx) ^ (dt_view_context_t)(v);
+
+dt_view_context_t dt_view_get_view_context(void)
+{
+  dt_develop_t *dev = darktable.develop;
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const float zoom_y = dt_control_get_dev_zoom_y();
+  const float zoom_x = dt_control_get_dev_zoom_x();
+  const gboolean iso_12646 = dev->iso_12646.enabled;
+  const float flt_prec = 1.e6;
+
+  dt_view_context_t ctx = 0;
+  ADD_TO_CONTEXT(closeup);
+  ADD_TO_CONTEXT(zoom_scale * flt_prec);
+  ADD_TO_CONTEXT(zoom_x * flt_prec);
+  ADD_TO_CONTEXT(zoom_y * flt_prec);
+  ADD_TO_CONTEXT(iso_12646);
+
+  return ctx;
+}
+
+gboolean dt_view_check_view_context(dt_view_context_t *ctx)
+{
+  const dt_view_context_t curctx = dt_view_get_view_context();
+  if(curctx == *ctx)
+  {
+    return TRUE;
+  }
+  else
+  {
+    *ctx = curctx;
+    return FALSE;
+  }
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
