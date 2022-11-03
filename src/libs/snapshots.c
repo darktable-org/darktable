@@ -190,9 +190,10 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(snap->ctx != ctx
        || !snap->surface)
     {
-      // request a new snapshot now only if not panning, otherwise it will be
-      // requested by the cb timer below.
-      if(!d->panning) d->snap_requested = TRUE;
+      // request a new snapshot in the following conditions:
+      //    1. we are not panning
+      //    2. the mouse is not over the center area, probably panning with the navigation module
+      if(!d->panning && dev->darkroom_mouse_in_center_area) d->snap_requested = TRUE;
       if(d->expose_again_timeout_id != -1) g_source_remove(d->expose_again_timeout_id);
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
       return;
