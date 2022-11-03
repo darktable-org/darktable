@@ -41,15 +41,11 @@ typedef struct dt_lib_duplicate_t
 {
   GtkWidget *duplicate_box;
   int imgid;
-  gboolean busy;
-  int cur_final_width;
-  int cur_final_height;
-  int32_t preview_width;
-  int32_t preview_height;
-  gboolean allow_zoom;
 
   cairo_surface_t *preview_surf;
-  float preview_zoom;
+  size_t processed_width;
+  size_t processed_height;
+  dt_view_context_t view_ctx;
   int preview_id;
 
   GList *thumbs;
@@ -166,12 +162,6 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget, GdkEventBut
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
   d->imgid = 0;
-  if(d->busy)
-  {
-    dt_control_log_busy_leave();
-    dt_control_toast_busy_leave();
-  }
-  d->busy = FALSE;
   dt_control_queue_redraw_center();
 }
 
@@ -191,13 +181,27 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
   if(d->imgid == 0) return;
 
-  uint8_t *buf = NULL;
-  size_t processed_width;
-  size_t processed_height;
+  const gboolean view_ok = dt_view_check_view_context(&d->view_ctx);
 
-  dt_dev_image(d->imgid, width, height, -1, &buf, &processed_width, &processed_height);
+  if(!view_ok || d->preview_id != d->imgid)
+  {
+    uint8_t *buf = NULL;
+    size_t processed_width;
+    size_t processed_height;
 
-  dt_view_paint_buffer(cri, width, height, buf, processed_width, processed_height);
+    dt_dev_image(d->imgid, width, height, -1, &buf, &processed_width, &processed_height);
+
+    d->preview_id = d->imgid;
+    d->processed_width = processed_width;
+    d->processed_height = processed_height;
+
+    if(d->preview_surf)
+      cairo_surface_destroy(d->preview_surf);
+    d->preview_surf = dt_view_create_surface(buf, processed_width, processed_height);
+  }
+
+  dt_view_paint_surface(cri, width, height, d->preview_surf,
+                        d->processed_width, d->processed_height);
 }
 
 static void _thumb_remove(gpointer user_data)
@@ -308,13 +312,6 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_set_visible(bt, FALSE);
   }
 
-  // and reset the final size of the current image
-  if(dev->image_storage.id >= 0)
-  {
-    d->cur_final_width = 0;
-    d->cur_final_height = 0;
-  }
-
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_duplicate_init_callback), self); //unblock signals
 }
 
@@ -328,12 +325,6 @@ static void _lib_duplicate_collection_changed(gpointer instance, dt_collection_c
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance, int imgid, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  // we reset the final size of the current image
-  if(imgid > 0 && darktable.develop->image_storage.id == imgid)
-  {
-    d->cur_final_width = 0;
-    d->cur_final_height = 0;
-  }
 
   gtk_widget_queue_draw(d->duplicate_box);
   dt_control_queue_redraw_center();
@@ -341,12 +332,6 @@ static void _lib_duplicate_mipmap_updated_callback(gpointer instance, int imgid,
 static void _lib_duplicate_preview_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  // we reset the final size of the current image
-  if(darktable.develop->image_storage.id >= 0)
-  {
-    d->cur_final_width = 0;
-    d->cur_final_height = 0;
-  }
 
   gtk_widget_queue_draw (d->duplicate_box);
   dt_control_queue_redraw_center();
@@ -360,9 +345,9 @@ void gui_init(dt_lib_module_t *self)
 
   d->imgid = 0;
   d->preview_surf = NULL;
-  d->preview_zoom = 1.0;
-  d->preview_width = 0;
-  d->preview_height = 0;
+  d->processed_width = 0;
+  d->processed_height = 0;
+  d->view_ctx = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_class(self->widget, "dt_duplicate_ui");
