@@ -191,8 +191,8 @@ void gui_reset (dt_lib_module_t *self)
     dt_dev_pixelpipe_rebuild(darktable.develop);
 
     d->current_mode = DT_IOP_ORDER_V30;
-    if(d->widget)
-      gtk_label_set_text(GTK_LABEL(d->widget), _("v3.0"));
+    if(d->widget) gtk_label_set_text(GTK_LABEL(d->widget), _(dt_iop_order_string(DT_IOP_ORDER_V30)));
+
     g_list_free_full(iop_order_list, free);
   }
 }
