@@ -169,12 +169,9 @@ typedef struct dt_bauhaus_widget_t
   gboolean is_section;
 
   // margin and padding structure, defined in css, retrieve on each draw
-  GtkBorder *margin, *padding;
+  GtkBorder margin, padding;
   // gap to add to the top padding due to the vertical centering
   int top_gap;
-
-  // is the popup not attached to the main widget (shortcuts)
-  gboolean detached_popup;
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
