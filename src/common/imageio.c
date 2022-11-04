@@ -32,6 +32,9 @@
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
+#ifdef HAVE_LIBJXL
+#include "common/imageio_jpegxl.h"
+#endif
 #include "common/image_compression.h"
 #include "common/imageio_gm.h"
 #include "common/imageio_im.h"
@@ -1285,6 +1288,11 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
 
   /* check if file is ldr using magic's */
   if(dt_imageio_is_ldr(filename)) ret = dt_imageio_open_ldr(img, filename, buf);
+
+#ifdef HAVE_LIBJXL
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_jpegxl(img, filename, buf);
+#endif
 
   /* silly check using file extensions: */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))

@@ -601,6 +601,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  libheif support disabled\n"
 #endif
 
+#ifdef HAVE_LIBJXL
+               "  libjxl support enabled\n"
+#else
+               "  libjxl support disabled\n"
+#endif
+
 #ifdef HAVE_OPENJPEG
                "  OpenJPEG support enabled\n"
 #else
