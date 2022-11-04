@@ -161,8 +161,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = dt_view_create_surface(d->params.buf, d->params.width, d->params.height);
 
-      snap->ctx = ctx;
-
       snap->width  = d->params.width;
       snap->height = d->params.height;
       d->snap_requested = FALSE;
@@ -199,11 +197,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     const double ly = height * d->vp_ypointer;
 
     const double size = DT_PIXEL_APPLY_DPI(d->inverted ? -15 : 15);
-
-    // if we have not yet a proper surface, return
-    // we let the main darkroom picture displayed and wait for the
-    // proper aligned snapshot to be ready.
-    if(!snap->surface) return;
 
     // clear background
     dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
