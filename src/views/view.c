@@ -1500,6 +1500,16 @@ void dt_view_paint_surface(
     (cairo_get_source(cr),
      zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
   cairo_paint(cr);
+
+  if(darktable.gui->show_focus_peaking)
+  {
+    cairo_save(cr);
+    cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
+    dt_focuspeaking(cr, sw, sh, cairo_image_surface_get_data(surface),
+                    cairo_image_surface_get_width(surface),
+                    cairo_image_surface_get_height(surface));
+    cairo_restore(cr);
+  }
 }
 
 cairo_surface_t *dt_view_create_surface(
