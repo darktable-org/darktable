@@ -48,6 +48,7 @@ typedef enum dt_imageio_levels_t
   IMAGEIO_INT32 = 0x3,
   IMAGEIO_FLOAT = 0x4,
   IMAGEIO_BW = 0x5,
+  IMAGEIO_INT10 = 0x6,
   IMAGEIO_PREC_MASK = 0xFF,
 
   IMAGEIO_RGB = 0x100,
