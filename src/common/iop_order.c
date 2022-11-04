@@ -345,6 +345,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 44.0f }, "basecurve", 0 },     // conversion from scene-referred to display referred, reverse-engineered
                                      //    on camera JPEG default look
   { { 45.0f }, "filmic", 0 },        // same, but different (parametric) approach
+  { { 45.3f }, "sigmoid", 0},
   { { 46.0f }, "filmicrgb", 0 },     // same, upgraded
   { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
   { { 47.0f }, "colisa", 0 },        // edit contrast while damaging colour
