@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-04 19:20+0100\n"
-"PO-Revision-Date: 2022-11-04 19:21+0100\n"
+"POT-Creation-Date: 2022-11-04 19:38+0100\n"
+"PO-Revision-Date: 2022-11-04 19:39+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2755,6 +2755,8 @@ msgstr "pivot du gris du contraste"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:64
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:137
 #: ../src/gui/guides.c:740 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
 #: ../src/iop/colisa.c:298 ../src/iop/colorbalance.c:1872
 #: ../src/iop/colorbalance.c:1878 ../src/iop/filmic.c:1637
@@ -4019,6 +4021,40 @@ msgstr "saturation des ombres"
 #: ../build/lib/darktable/plugins/introspection_shadhi.c:235
 msgid "highlights color adjustment"
 msgstr "saturation des hautes lumières"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:70
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:141
+#: ../src/gui/accelerators.c:78
+msgid "skew"
+msgstr "incliner"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:76
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:145
+msgid "target white"
+msgstr "blanc cible"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:82
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:149
+msgid "target black"
+msgstr "noir cible"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:88
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:153
+msgid "color processing"
+msgstr "traitement couleur"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:94
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:157
+msgid "preserve hue"
+msgstr "préserver la teinte"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:171
+msgid "per channel"
+msgstr "par canal"
+
+#: ../build/lib/darktable/plugins/introspection_sigmoid.c:172
+msgid "rgb ratio"
+msgstr "ratio RGB"
 
 #: ../build/lib/darktable/plugins/introspection_temperature.c:66
 #: ../build/lib/darktable/plugins/introspection_temperature.c:121
@@ -8402,10 +8438,6 @@ msgstr "verticale"
 #: ../src/gui/accelerators.c:77
 msgid "diagonal"
 msgstr "diagonale"
-
-#: ../src/gui/accelerators.c:78
-msgid "skew"
-msgstr "incliner"
 
 #: ../src/gui/accelerators.c:79
 msgid "leftright"
