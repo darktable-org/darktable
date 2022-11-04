@@ -308,6 +308,9 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
         case IMAGEIO_INT8:
           *levels = 256;
           break;
+        case IMAGEIO_INT10:
+          *levels = 1024;
+          break;
         case IMAGEIO_INT12:
           *levels = 4096;
           break;
