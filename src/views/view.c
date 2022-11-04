@@ -1500,7 +1500,7 @@ void dt_view_paint_surface(
     cairo_translate(cr, -(.5 - 0.5/scale) * sw, -(.5 - 0.5/scale) * sh);
   }
 
-  if(window == DT_WINDOW_MAIN && dev->iso_12646.enabled)
+  if(dev->iso_12646.enabled)
   {
     // draw the white frame around picture
     const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
