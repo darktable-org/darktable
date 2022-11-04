@@ -3297,6 +3297,7 @@ void mouse_leave(dt_view_t *self)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_control_set_mouse_over_id(dev->image_storage.id);
 
+  dev->darkroom_mouse_in_center_area = FALSE;
   // masks
   int handled = dt_masks_events_mouse_leave(dev->gui_module);
   if(handled) return;
@@ -3330,6 +3331,7 @@ void mouse_enter(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // masks
+  dev->darkroom_mouse_in_center_area = TRUE;
   dt_masks_events_mouse_enter(dev->gui_module);
 }
 

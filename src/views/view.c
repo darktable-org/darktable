@@ -1459,9 +1459,111 @@ void dt_view_audio_stop(dt_view_manager_t *vm)
   g_spawn_close_pid(vm->audio.audio_player_pid);
   vm->audio.audio_player_id = -1;
 }
+
+void dt_view_paint_surface(
+  cairo_t *cr,
+  const size_t width,
+  const size_t height,
+  cairo_surface_t *surface,
+  const size_t processed_width,
+  const size_t processed_height)
+{
+  dt_develop_t *dev = darktable.develop;
+
+  const int bs = dev->border_size;
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+
+  const float sw = (float)processed_width;
+  const float sh = (float)processed_height;
+
+  cairo_translate(cr, ceilf(.5f * (width - sw)), ceilf(.5f * (height - sh)));
+  if(closeup)
+  {
+    const double scale = 1<<closeup;
+    cairo_scale(cr, scale, scale);
+    cairo_translate(cr, -(.5 - 0.5/scale) * sw, -(.5 - 0.5/scale) * sh);
+  }
+
+  if(dev->iso_12646.enabled)
+  {
+    // draw the white frame around picture
+    const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
+    cairo_rectangle(cr, -tbw, -tbw, sw + 2.0 * tbw, sh + 2.0 * tbw);
+    cairo_set_source_rgb(cr, 1., 1., 1.);
+    cairo_fill(cr);
+  }
+
+  cairo_set_source_surface (cr, surface, 0, 0);
+  cairo_pattern_set_filter
+    (cairo_get_source(cr),
+     zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
+  cairo_paint(cr);
+}
+
+cairo_surface_t *dt_view_create_surface(
+  uint8_t *buffer,
+  const size_t processed_width,
+  const size_t processed_height)
+{
+  const int32_t stride =
+    cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
+  return dt_cairo_image_surface_create_for_data
+    (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
+}
+
+void dt_view_paint_buffer(
+  cairo_t *cr,
+  const size_t width,
+  const size_t height,
+  uint8_t *buffer,
+  const size_t processed_width,
+  const size_t processed_height)
+{
+  cairo_surface_t *surface = dt_view_create_surface(buffer, processed_width, processed_height);
+  dt_view_paint_surface(cr, width, height, surface, processed_width, processed_height);
+}
+
+#define ADD_TO_CONTEXT(v) ctx = ((ctx << 5) + ctx) ^ (dt_view_context_t)(v);
+
+dt_view_context_t dt_view_get_view_context(void)
+{
+  dt_develop_t *dev = darktable.develop;
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const float zoom_y = dt_control_get_dev_zoom_y();
+  const float zoom_x = dt_control_get_dev_zoom_x();
+  const gboolean iso_12646 = dev->iso_12646.enabled;
+  const float flt_prec = 1.e6;
+
+  dt_view_context_t ctx = 0;
+  ADD_TO_CONTEXT(closeup);
+  ADD_TO_CONTEXT(zoom_scale * flt_prec);
+  ADD_TO_CONTEXT(zoom_x * flt_prec);
+  ADD_TO_CONTEXT(zoom_y * flt_prec);
+  ADD_TO_CONTEXT(iso_12646);
+
+  return ctx;
+}
+
+gboolean dt_view_check_view_context(dt_view_context_t *ctx)
+{
+  const dt_view_context_t curctx = dt_view_get_view_context();
+  if(curctx == *ctx)
+  {
+    return TRUE;
+  }
+  else
+  {
+    *ctx = curctx;
+    return FALSE;
+  }
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
