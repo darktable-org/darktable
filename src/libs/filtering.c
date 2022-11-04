@@ -1187,7 +1187,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     g_object_set_data(G_OBJECT(rule->w_prop), "rule", rule);
     dt_bauhaus_combobox_set_from_value(rule->w_prop, prop);
     g_signal_connect(G_OBJECT(rule->w_prop), "value-changed", G_CALLBACK(_event_rule_change_type), self);
-    gtk_box_pack_start(GTK_BOX(hbox), rule->w_prop, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), rule->w_prop, TRUE, FALSE, 0);
   }
   else if(newprop)
   {
