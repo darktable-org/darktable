@@ -1546,6 +1546,7 @@ dt_view_context_t dt_view_get_view_context(void)
   const float zoom_y = dt_control_get_dev_zoom_y();
   const float zoom_x = dt_control_get_dev_zoom_x();
   const gboolean iso_12646 = dev->iso_12646.enabled;
+  const gboolean focus_peaking = darktable.gui->show_focus_peaking;
   const float flt_prec = 1.e6;
 
   dt_view_context_t ctx = 0;
@@ -1554,6 +1555,7 @@ dt_view_context_t dt_view_get_view_context(void)
   ADD_TO_CONTEXT(zoom_x * flt_prec);
   ADD_TO_CONTEXT(zoom_y * flt_prec);
   ADD_TO_CONTEXT(iso_12646);
+  ADD_TO_CONTEXT(focus_peaking);
 
   return ctx;
 }
