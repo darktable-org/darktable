@@ -1007,8 +1007,45 @@ void dt_bauhaus_widget_set_field(GtkWidget *widget, gpointer field, dt_introspec
   w->field_type = field_type;
 }
 
+static void _highlight_changed_notebook_tab(GtkWidget *w, gpointer user_data)
+{
+  GtkWidget *notebook = gtk_widget_get_parent(w);
+  if(!GTK_IS_NOTEBOOK(notebook))
+  {
+    w = notebook;
+    if(!notebook || !(GTK_IS_NOTEBOOK(notebook = gtk_widget_get_parent(notebook))))
+      return;
+  }
+
+  gboolean is_changed = GPOINTER_TO_INT(user_data);
+
+  for(GList *c = gtk_container_get_children(GTK_CONTAINER(w)); c; c = g_list_delete_link(c, c))
+  {
+    if(!is_changed && DT_IS_BAUHAUS_WIDGET(c->data) && gtk_widget_get_visible(c->data))
+    {
+      dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(c->data);
+      if(!b->field) continue;
+      if(b->type == DT_BAUHAUS_SLIDER)
+      {
+        dt_bauhaus_slider_data_t *d = &b->data.slider;
+        is_changed = fabsf(d->pos - d->curve((d->defpos - d->min) / (d->max - d->min), DT_BAUHAUS_SET)) > 0.001f;
+      }
+      else
+        is_changed = b->data.combobox.entries->len && b->data.combobox.active != b->data.combobox.defpos;
+    }
+  }
+
+  GtkWidget *label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), w);
+
+  if(is_changed)
+    dt_gui_add_class(label, "changed");
+  else
+    dt_gui_remove_class(label, "changed");
+}
+
 void dt_bauhaus_update_module(dt_iop_module_t *self)
 {
+  GtkWidget *n = NULL;
   for(GSList *w = self->widget_list_bh; w; w = w->next)
   {
     dt_action_target_t *at = w->data;
@@ -1056,7 +1093,11 @@ void dt_bauhaus_update_module(dt_iop_module_t *self)
       default:
         fprintf(stderr, "[dt_bauhaus_update_module] invalid bauhaus widget type encountered\n");
     }
+
+    if(!n && (n = gtk_widget_get_parent(widget)) && (n = gtk_widget_get_parent(n)) && !GTK_IS_NOTEBOOK(n)) n = NULL;
   }
+
+  if(n) gtk_container_foreach(GTK_CONTAINER(n), _highlight_changed_notebook_tab, NULL);
 }
 
 // make this quad a toggle button:
@@ -1486,6 +1527,7 @@ static void _bauhaus_combobox_set(dt_bauhaus_widget_t *w, const int pos, const g
           fprintf(stderr, "[_bauhaus_combobox_set] unsupported combo data type\n");
       }
     }
+    _highlight_changed_notebook_tab(GTK_WIDGET(w), GINT_TO_POINTER(d->active != d->defpos));
     g_signal_emit_by_name(G_OBJECT(w), "value-changed");
   }
 }
@@ -2818,17 +2860,21 @@ int dt_bauhaus_slider_get_feedback(GtkWidget *widget)
   return d->fill_feedback;
 }
 
-void dt_bauhaus_slider_reset(GtkWidget *widget)
+void dt_bauhaus_widget_reset(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
 
-  if(w->type != DT_BAUHAUS_SLIDER) return;
-  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  if(w->type == DT_BAUHAUS_SLIDER)
+  {
+    dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-  d->min = d->soft_min;
-  d->max = d->soft_max;
+    d->min = d->soft_min;
+    d->max = d->soft_max;
 
-  dt_bauhaus_slider_set(widget, d->defpos);
+    dt_bauhaus_slider_set(widget, d->defpos);
+  }
+  else
+    dt_bauhaus_combobox_set(widget, w->data.combobox.defpos);
 
   return;
 }
@@ -2908,6 +2954,7 @@ static void _bauhaus_slider_value_change(dt_bauhaus_widget_t *w)
       }
     }
 
+    _highlight_changed_notebook_tab(GTK_WIDGET(w), NULL);
     g_signal_emit_by_name(G_OBJECT(w), "value-changed");
     d->is_changed = 0;
   }
@@ -3098,7 +3145,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     if(event->type == GDK_2BUTTON_PRESS)
     {
       d->is_dragging = 0;
-      dt_bauhaus_slider_reset(widget);
+      dt_bauhaus_widget_reset(widget);
     }
     else
     {
@@ -3329,7 +3376,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         --d->is_dragging;
         break;
       case DT_ACTION_EFFECT_RESET:
-        dt_bauhaus_slider_reset(widget);
+        dt_bauhaus_widget_reset(widget);
         break;
       case DT_ACTION_EFFECT_TOP:
         dt_bauhaus_slider_set(widget, element == DT_ACTION_ELEMENT_FORCE ? d->hard_max: d->max);
