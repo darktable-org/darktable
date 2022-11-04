@@ -201,7 +201,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   }
 
   dt_view_paint_surface(cri, width, height, d->preview_surf,
-                        d->processed_width, d->processed_height);
+                        d->processed_width, d->processed_height, DT_WINDOW_MAIN);
 }
 
 static void _thumb_remove(gpointer user_data)

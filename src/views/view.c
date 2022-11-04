@@ -1466,14 +1466,28 @@ void dt_view_paint_surface(
   const size_t height,
   cairo_surface_t *surface,
   const size_t processed_width,
-  const size_t processed_height)
+  const size_t processed_height,
+  const dt_window_t window)
 {
   dt_develop_t *dev = darktable.develop;
 
   const int bs = dev->border_size;
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const dt_dev_zoom_t zoom =
+    window == DT_WINDOW_MAIN
+    ? dt_control_get_dev_zoom()
+    : dt_second_window_get_dev_zoom(dev);
+  const int closeup =
+    window == DT_WINDOW_MAIN
+    ? dt_control_get_dev_closeup()
+    : dt_second_window_get_dev_closeup(dev);
+  const float zoom_scale =
+    window == DT_WINDOW_MAIN
+    ? dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1)
+    : dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const float ppd =
+    window == DT_WINDOW_MAIN
+    ? darktable.gui->ppd
+    : dev->second_window.ppd;
 
   const float sw = (float)processed_width;
   const float sh = (float)processed_height;
@@ -1486,7 +1500,7 @@ void dt_view_paint_surface(
     cairo_translate(cr, -(.5 - 0.5/scale) * sw, -(.5 - 0.5/scale) * sh);
   }
 
-  if(dev->iso_12646.enabled)
+  if(window == DT_WINDOW_MAIN && dev->iso_12646.enabled)
   {
     // draw the white frame around picture
     const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
@@ -1504,7 +1518,7 @@ void dt_view_paint_surface(
   if(darktable.gui->show_focus_peaking)
   {
     cairo_save(cr);
-    cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
+    cairo_scale(cr, 1. / ppd, 1. / ppd);
     dt_focuspeaking(cr, sw, sh, cairo_image_surface_get_data(surface),
                     cairo_image_surface_get_width(surface),
                     cairo_image_surface_get_height(surface));
@@ -1529,10 +1543,11 @@ void dt_view_paint_buffer(
   const size_t height,
   uint8_t *buffer,
   const size_t processed_width,
-  const size_t processed_height)
+  const size_t processed_height,
+  const dt_window_t window)
 {
   cairo_surface_t *surface = dt_view_create_surface(buffer, processed_width, processed_height);
-  dt_view_paint_surface(cr, width, height, surface, processed_width, processed_height);
+  dt_view_paint_surface(cr, width, height, surface, processed_width, processed_height, window);
 }
 
 #define ADD_TO_CONTEXT(v) ctx = ((ctx << 5) + ctx) ^ (dt_view_context_t)(v);
