@@ -450,7 +450,6 @@ void expose(
   }
 
   dt_pthread_mutex_t *mutex = NULL;
-  int stride;
   // FIXME: these four dt_control_get_dev_*() calls each lock/unlock global_mutex -- consolidate this work
   const float zoom_y = dt_control_get_dev_zoom_y();
   const float zoom_x = dt_control_get_dev_zoom_x();
@@ -506,8 +505,9 @@ void expose(
     dt_pthread_mutex_lock(mutex);
     float wd = dev->pipe->output_backbuf_width;
     float ht = dev->pipe->output_backbuf_height;
-    stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = dt_cairo_image_surface_create_for_data(dev->pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+
+    surface = dt_view_create_surface(dev->pipe->output_backbuf, wd, ht);
+
     wd /= darktable.gui->ppd;
     ht /= darktable.gui->ppd;
 
@@ -525,27 +525,7 @@ void expose(
     }
     cairo_paint(cr);
 
-    cairo_translate(cr, ceilf(.5f * (width - wd)), ceilf(.5f * (height - ht)));
-    if(closeup)
-    {
-      const double scale = 1<<closeup;
-      cairo_scale(cr, scale, scale);
-      cairo_translate(cr, -(.5 - 0.5/scale) * wd, -(.5 - 0.5/scale) * ht);
-    }
-
-    if(dev->iso_12646.enabled)
-    {
-      // draw the white frame around picture
-      const double tbw = (float)(tb >> closeup) * 2.0 / 3.0;
-      cairo_rectangle(cr, -tbw, -tbw, wd + 2.0 * tbw, ht + 2.0 * tbw);
-      cairo_set_source_rgb(cr, 1., 1., 1.);
-      cairo_fill(cr);
-    }
-
-    cairo_rectangle(cr, 0, 0, wd, ht);
-    cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev, zoom, closeup));
-    cairo_paint(cr);
+    dt_view_paint_surface(cr, width, height, surface, wd, ht);
 
     if(darktable.gui->show_focus_peaking)
     {
@@ -561,7 +541,8 @@ void expose(
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
-  else if(dev->preview_pipe->output_backbuf && dev->preview_pipe->output_imgid == dev->image_storage.id)
+  else if(dev->preview_pipe->output_backbuf
+          && dev->preview_pipe->output_imgid == dev->image_storage.id)
   {
     // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
@@ -594,8 +575,9 @@ void expose(
 
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_clip(cr);
-    stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+
+    surface = dt_view_create_surface(dev->preview_pipe->output_backbuf, wd, ht);
+
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
@@ -4005,8 +3987,9 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     cairo_paint(cr);
     cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
     cairo_clip(cr);
-    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+
+    surface = dt_view_create_surface(dev->preview_pipe->output_backbuf, wd, ht);
+
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
