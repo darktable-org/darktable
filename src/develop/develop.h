@@ -314,7 +314,9 @@ typedef struct dt_develop_t
   {
     GtkWidget *second_wnd;
     GtkWidget *widget;
+    int32_t orig_width, orig_height;
     int width, height;
+    int32_t border_size;
     double dpi, dpi_factor, ppd, ppd_thb;
 
     GtkWidget *button;

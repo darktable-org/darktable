@@ -1491,7 +1491,9 @@ static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
   dev->border_size = _iso_12646_get_border(dev);
   dt_dev_configure(dev, dev->width, dev->height);
 
+  dt_dev_second_window_configure(dev, dev->second_window.orig_width, dev->second_window.orig_width);
   dt_dev_reprocess_center(dev);
+  dt_control_queue_redraw_center();
 }
 
 /* overlay color */
@@ -3143,6 +3145,8 @@ void leave(dt_view_t *self)
     dev->iso_12646.enabled = FALSE;
     dev->width = dev->orig_width;
     dev->height = dev->orig_height;
+    dev->second_window.width = dev->second_window.orig_width;
+    dev->second_window.height = dev->second_window.orig_height;
     dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
   }
 
@@ -3883,7 +3887,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   cairo_set_source_rgb(cri, .2, .2, .2);
   cairo_save(cri);
 
-  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->second_window.border_size;
   // account for border, make it transparent for other modules called below:
   pointerx -= tb;
   pointery -= tb;
@@ -3983,7 +3987,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
 static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double x, double y, const int up,
                                    const int state)
 {
-  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->second_window.border_size;
   const int32_t capwd = dev->second_window.width - 2 * tb;
   const int32_t capht = dev->second_window.height - 2 * tb;
   const int32_t width_i = dev->second_window.width;
@@ -4123,7 +4127,7 @@ static void second_window_leave(dt_develop_t *dev)
 static int second_window_button_pressed(GtkWidget *widget, dt_develop_t *dev, double x, double y, const double pressure,
                                         const int which, const int type, const uint32_t state)
 {
-  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->second_window.border_size;
   const int32_t capwd = dev->second_window.width - 2 * tb;
   const int32_t capht = dev->second_window.height - 2 * tb;
   const int32_t width_i = dev->second_window.width;
@@ -4214,7 +4218,7 @@ static int second_window_button_released(dt_develop_t *dev, const double x, cons
 static void second_window_mouse_moved(GtkWidget *widget, dt_develop_t *dev, double x, double y,
                                       const double pressure, const int which)
 {
-  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->second_window.border_size;
   const int32_t capwd = dev->second_window.width - 2 * tb;
   const int32_t capht = dev->second_window.height - 2 * tb;
 
@@ -4297,8 +4301,8 @@ static gboolean _second_window_draw_callback(GtkWidget *widget, cairo_t *crf, dt
   const int32_t width = allocation.width;
   const int32_t height = allocation.height;
 
-  dev->second_window.width = width;
-  dev->second_window.height = height;
+  dt_dev_second_window_configure(dev, width, height);
+  dt_control_queue_redraw_center();
 
   gdk_window_get_device_position(gtk_widget_get_window(widget),
                                  gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
@@ -4370,6 +4374,8 @@ static gboolean _second_window_configure_callback(GtkWidget *da, GdkEventConfigu
   {
     dev->second_window.width = event->width;
     dev->second_window.height = event->height;
+    dev->second_window.orig_width = event->width;
+    dev->second_window.orig_height = event->height;
 
     // pipe needs to be reconstructed
     dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
@@ -4395,6 +4401,9 @@ static void _darkroom_ui_second_window_init(GtkWidget *widget, dt_develop_t *dev
 
   dev->second_window.width = width;
   dev->second_window.height = height;
+  dev->second_window.orig_width = width;
+  dev->second_window.orig_height = height;
+  dev->second_window.border_size = 0;
 
   const gint x = MAX(0, dt_conf_get_int("second_window/window_x"));
   const gint y = MAX(0, dt_conf_get_int("second_window/window_y"));
