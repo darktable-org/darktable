@@ -591,9 +591,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         {
           cairo_save(cr2);
           cairo_scale(cr2, 1.0f/scale, 1.0f/scale);
-          dt_focuspeaking(cr2, img_width, img_height, cairo_image_surface_get_data(thumb->img_surf),
-                          cairo_image_surface_get_width(thumb->img_surf),
-                          cairo_image_surface_get_height(thumb->img_surf));
+          dt_focuspeaking(cr2, img_width, img_height, cairo_image_surface_get_data(thumb->img_surf));
           cairo_restore(cr2);
         }
 

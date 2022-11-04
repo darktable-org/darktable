@@ -770,7 +770,7 @@ dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int heig
        So we pass the raw data to be processed, this is more data but correct.
     */
     if(darktable.gui->show_focus_peaking && mip == buf.size)
-      dt_focuspeaking(cr, img_width, img_height, rgbbuf, buf_wd, buf_ht);
+      dt_focuspeaking(cr, buf_wd, buf_ht, rgbbuf);
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
@@ -1519,9 +1519,7 @@ void dt_view_paint_surface(
   {
     cairo_save(cr);
     cairo_scale(cr, 1. / ppd, 1. / ppd);
-    dt_focuspeaking(cr, sw, sh, cairo_image_surface_get_data(surface),
-                    cairo_image_surface_get_width(surface),
-                    cairo_image_surface_get_height(surface));
+    dt_focuspeaking(cr, sw, sh, cairo_image_surface_get_data(surface));
     cairo_restore(cr);
   }
 }
