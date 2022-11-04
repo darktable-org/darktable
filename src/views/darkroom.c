@@ -1482,16 +1482,16 @@ static int _iso_12646_get_border(dt_develop_t *d)
 
 static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if(!d->gui_attached) return;
+  dt_develop_t *dev = (dt_develop_t *)user_data;
+  if(!dev->gui_attached) return;
 
-  d->iso_12646.enabled = !d->iso_12646.enabled;
-  d->width = d->orig_width;
-  d->height = d->orig_height;
-  d->border_size = _iso_12646_get_border(d);
-  dt_dev_configure(d, d->width, d->height);
+  dev->iso_12646.enabled = !dev->iso_12646.enabled;
+  dev->width = dev->orig_width;
+  dev->height = dev->orig_height;
+  dev->border_size = _iso_12646_get_border(dev);
+  dt_dev_configure(dev, dev->width, dev->height);
 
-  dt_dev_reprocess_center(d);
+  dt_dev_reprocess_center(dev);
 }
 
 /* overlay color */
