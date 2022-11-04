@@ -1337,15 +1337,13 @@ gboolean _styles_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyb
                                   GtkTooltip* tooltip, gpointer user_data)
 {
   gchar *name = (char *)user_data;
-  uint32_t imgid = -1;
+  dt_develop_t *dev = darktable.develop;
 
-  GList *selected_image = dt_collection_get_selected(darktable.collection, 1);
+  const uint32_t imgid = dev->image_storage.id;
 
-  if(selected_image)
-  {
-    imgid = GPOINTER_TO_INT(selected_image->data);
-    g_list_free(selected_image);
-  }
+  // write history to ensure the preview will be done with latest
+  // development history.
+  dt_dev_write_history(dev);
 
   GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
   gtk_widget_show_all(ht);
