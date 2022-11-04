@@ -3888,7 +3888,8 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   pointerx -= tb;
   pointery -= tb;
 
-  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
     dt_dev_process_preview2(dev);
 
@@ -3916,9 +3917,10 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   cairo_surface_t *surface;
   cairo_t *cr = cairo_create(image_surface);
 
-  if(dev->preview2_pipe->output_backbuf && // do we have an image?
-    dev->preview2_pipe->backbuf_scale == backbuf_scale && // is this the zoom scale we want to display?
-    dev->preview2_pipe->backbuf_zoom_x == zoom_x && dev->preview2_pipe->backbuf_zoom_y == zoom_y)
+  if(dev->preview2_pipe->output_backbuf  // do we have an image?
+     && dev->preview2_pipe->backbuf_scale == backbuf_scale // is this the zoom scale we want to display?
+     && dev->preview2_pipe->backbuf_zoom_x == zoom_x
+     && dev->preview2_pipe->backbuf_zoom_y == zoom_y)
   {
     // draw image
     mutex = &dev->preview2_pipe->backbuf_mutex;
