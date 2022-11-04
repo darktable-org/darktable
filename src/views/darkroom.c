@@ -503,13 +503,10 @@ void expose(
     // draw image
     mutex = &dev->pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
-    float wd = dev->pipe->output_backbuf_width;
-    float ht = dev->pipe->output_backbuf_height;
+    const float wd = dev->pipe->output_backbuf_width;
+    const float ht = dev->pipe->output_backbuf_height;
 
     surface = dt_view_create_surface(dev->pipe->output_backbuf, wd, ht);
-
-    wd /= darktable.gui->ppd;
-    ht /= darktable.gui->ppd;
 
     if(dev->iso_12646.enabled)
     {
@@ -526,16 +523,6 @@ void expose(
     cairo_paint(cr);
 
     dt_view_paint_surface(cr, width, height, surface, wd, ht);
-
-    if(darktable.gui->show_focus_peaking)
-    {
-      cairo_save(cr);
-      cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
-      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
-                                  cairo_image_surface_get_width(surface),
-                                  cairo_image_surface_get_height(surface));
-      cairo_restore(cr);
-    }
 
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
