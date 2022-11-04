@@ -82,9 +82,8 @@ static inline void get_indices(const size_t i, const size_t j, const size_t widt
   index[7] = lower_line + right_row;      // south east
 }
 
-static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
-                                   uint8_t *const restrict image,
-                                   const int buf_width, const int buf_height)
+static inline void dt_focuspeaking(cairo_t *cr, const int buf_width, const int buf_height,
+                                   uint8_t *const restrict image)
 {
   float *const restrict luma = dt_alloc_align_float((size_t)buf_width * buf_height);
   uint8_t *const restrict focus_peaking = dt_alloc_align(64, sizeof(uint8_t) * buf_width * buf_height * 4);
