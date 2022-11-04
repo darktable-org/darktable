@@ -522,7 +522,7 @@ void expose(
     }
     cairo_paint(cr);
 
-    dt_view_paint_surface(cr, width, height, surface, wd, ht);
+    dt_view_paint_surface(cr, width, height, surface, wd, ht, DT_WINDOW_MAIN);
 
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);

@@ -490,13 +490,20 @@ void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo,
  * on the viewport (size width x height).
  */
 
+typedef enum _window_t
+{
+  DT_WINDOW_MAIN,
+  DT_WINDOW_SECOND
+} dt_window_t;
+
 void dt_view_paint_buffer(
   cairo_t *cr,
   const size_t width,
   const size_t height,
   uint8_t *buffer,
   const size_t processed_width,
-  const size_t processed_height);
+  const size_t processed_height,
+  const dt_window_t window);
 
 cairo_surface_t *dt_view_create_surface(
   uint8_t *buffer,
@@ -509,7 +516,8 @@ void dt_view_paint_surface(
   const size_t height,
   cairo_surface_t *surface,
   const size_t processed_width,
-  const size_t processed_height);
+  const size_t processed_height,
+  const dt_window_t window);
 
 typedef uint64_t dt_view_context_t;
 
