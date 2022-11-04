@@ -3925,39 +3925,17 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     // draw image
     mutex = &dev->preview2_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
-    float wd = dev->preview2_pipe->output_backbuf_width;
-    float ht = dev->preview2_pipe->output_backbuf_height;
-    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data(dev->preview2_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    const float wd = dev->preview2_pipe->output_backbuf_width;
+    const float ht = dev->preview2_pipe->output_backbuf_height;
+
+    surface = dt_view_create_surface(dev->preview2_pipe->output_backbuf, wd, ht);
+
     cairo_surface_set_device_scale(surface, dev->second_window.ppd, dev->second_window.ppd);
-    wd /= dev->second_window.ppd;
-    ht /= dev->second_window.ppd;
+
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cr);
-    cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
 
-    if(closeup)
-    {
-      const double scale = 1<<closeup;
-      cairo_scale(cr, scale, scale);
-      cairo_translate(cr, -(.5 - 0.5/scale) * wd, -(.5 - 0.5/scale) * ht);
-    }
-
-    cairo_rectangle(cr, 0, 0, wd, ht);
-    cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_second_window_filtering_level(dev, zoom, closeup));
-    cairo_fill(cr);
-
-    if(darktable.gui->show_focus_peaking)
-    {
-      cairo_save(cr);
-      cairo_scale(cr, 1.0f / dev->second_window.ppd, 1.0f / dev->second_window.ppd);
-      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
-                                  cairo_image_surface_get_width(surface),
-                                  cairo_image_surface_get_height(surface));
-      cairo_restore(cr);
-    }
-
+    dt_view_paint_surface(cr, width, height, surface, wd, ht, DT_WINDOW_SECOND);
 
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
