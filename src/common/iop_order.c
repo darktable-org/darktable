@@ -819,7 +819,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           _insert_before(iop_order_list, "graduatednd", "crop");
           _insert_before(iop_order_list, "colorbalance", "diffuse");
           _insert_before(iop_order_list, "nlmeans", "blurs");
-          _insert_before(iop_order_list, "filmic", "sigmoid");
+          _insert_before(iop_order_list, "filmicrgb", "sigmoid");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
