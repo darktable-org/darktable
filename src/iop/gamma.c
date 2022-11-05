@@ -302,7 +302,7 @@ static void _copy_output(const float *const restrict in, uint8_t *const restrict
     // the output of this module is BGR(A) instead of RGBA, so we can't use for_each_channel
     for(size_t c = 0; c < 3; c++)
     {
-      out[j + 2 - c] = (uint8_t)(fminf(fmaxf(roundf(255.0f * in[j + c]), 0.0f), 255.0f));
+      out[j + 2 - c] = (uint8_t)(fminf(roundf(255.0f * fmaxf(in[j + c], 0.0f)), 255.0f));
     }
   }
 }
