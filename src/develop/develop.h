@@ -314,7 +314,9 @@ typedef struct dt_develop_t
   {
     GtkWidget *second_wnd;
     GtkWidget *widget;
+    int32_t orig_width, orig_height;
     int width, height;
+    int32_t border_size;
     double dpi, dpi_factor, ppd, ppd_thb;
 
     GtkWidget *button;
@@ -383,6 +385,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
                                  float *zoom_y);
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
+void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
 /*

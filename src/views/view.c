@@ -770,7 +770,7 @@ dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int heig
        So we pass the raw data to be processed, this is more data but correct.
     */
     if(darktable.gui->show_focus_peaking && mip == buf.size)
-      dt_focuspeaking(cr, img_width, img_height, rgbbuf, buf_wd, buf_ht);
+      dt_focuspeaking(cr, buf_wd, buf_ht, rgbbuf);
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
@@ -1466,17 +1466,33 @@ void dt_view_paint_surface(
   const size_t height,
   cairo_surface_t *surface,
   const size_t processed_width,
-  const size_t processed_height)
+  const size_t processed_height,
+  const dt_window_t window)
 {
   dt_develop_t *dev = darktable.develop;
 
   const int bs = dev->border_size;
-  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  const int closeup = dt_control_get_dev_closeup();
-  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const dt_dev_zoom_t zoom =
+    window == DT_WINDOW_MAIN
+    ? dt_control_get_dev_zoom()
+    : dt_second_window_get_dev_zoom(dev);
+  const int closeup =
+    window == DT_WINDOW_MAIN
+    ? dt_control_get_dev_closeup()
+    : dt_second_window_get_dev_closeup(dev);
+  const float zoom_scale =
+    window == DT_WINDOW_MAIN
+    ? dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1)
+    : dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const float ppd =
+    window == DT_WINDOW_MAIN
+    ? darktable.gui->ppd
+    : dev->second_window.ppd;
 
-  const float sw = (float)processed_width;
-  const float sh = (float)processed_height;
+  const float sw = (float)processed_width / ppd;
+  const float sh = (float)processed_height / ppd;
+
+  cairo_save(cr);
 
   cairo_translate(cr, ceilf(.5f * (width - sw)), ceilf(.5f * (height - sh)));
   if(closeup)
@@ -1495,11 +1511,21 @@ void dt_view_paint_surface(
     cairo_fill(cr);
   }
 
+  cairo_surface_set_device_scale(surface, ppd, ppd);
+
   cairo_set_source_surface (cr, surface, 0, 0);
   cairo_pattern_set_filter
     (cairo_get_source(cr),
      zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
   cairo_paint(cr);
+
+  if(darktable.gui->show_focus_peaking)
+  {
+    cairo_scale(cr, 1. / ppd, 1. / ppd);
+    dt_focuspeaking(cr, processed_width, processed_height, cairo_image_surface_get_data(surface));
+  }
+
+  cairo_restore(cr);
 }
 
 cairo_surface_t *dt_view_create_surface(
@@ -1509,7 +1535,7 @@ cairo_surface_t *dt_view_create_surface(
 {
   const int32_t stride =
     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
-  return dt_cairo_image_surface_create_for_data
+  return cairo_image_surface_create_for_data
     (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
 }
 
@@ -1519,10 +1545,12 @@ void dt_view_paint_buffer(
   const size_t height,
   uint8_t *buffer,
   const size_t processed_width,
-  const size_t processed_height)
+  const size_t processed_height,
+  const dt_window_t window)
 {
   cairo_surface_t *surface = dt_view_create_surface(buffer, processed_width, processed_height);
-  dt_view_paint_surface(cr, width, height, surface, processed_width, processed_height);
+  dt_view_paint_surface(cr, width, height, surface, processed_width, processed_height, window);
+  cairo_surface_destroy(surface);
 }
 
 #define ADD_TO_CONTEXT(v) ctx = ((ctx << 5) + ctx) ^ (dt_view_context_t)(v);
@@ -1536,6 +1564,7 @@ dt_view_context_t dt_view_get_view_context(void)
   const float zoom_y = dt_control_get_dev_zoom_y();
   const float zoom_x = dt_control_get_dev_zoom_x();
   const gboolean iso_12646 = dev->iso_12646.enabled;
+  const gboolean focus_peaking = darktable.gui->show_focus_peaking;
   const float flt_prec = 1.e6;
 
   dt_view_context_t ctx = 0;
@@ -1544,6 +1573,7 @@ dt_view_context_t dt_view_get_view_context(void)
   ADD_TO_CONTEXT(zoom_x * flt_prec);
   ADD_TO_CONTEXT(zoom_y * flt_prec);
   ADD_TO_CONTEXT(iso_12646);
+  ADD_TO_CONTEXT(focus_peaking);
 
   return ctx;
 }
