@@ -581,18 +581,7 @@ int dt_imageio_is_hdr(const char *filename)
 #ifdef HAVE_OPENEXR
        || !strcasecmp(c, ".exr")
 #endif
-#ifdef HAVE_LIBAVIF
-       || !strcasecmp(c, ".avif")
-#endif
-#ifdef HAVE_LIBHEIF
-       || !strcasecmp(c, ".heif")
-       || !strcasecmp(c, ".heic")
-       || !strcasecmp(c, ".hif")
-  #ifndef HAVE_LIBAVIF
-       || !strcasecmp(c, ".avif")
-  #endif
-#endif
-           )
+      )
       return 1;
   return 0;
 }
