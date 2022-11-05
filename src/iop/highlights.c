@@ -60,7 +60,6 @@ static void dump_PFM(const char *filename, const float* out, const uint32_t w, c
 }
 #endif
 
-
 DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
 
 /* As some of the internal algorithms use a smaller value for clipping than given by the UI
@@ -147,6 +146,8 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *strength;
   gboolean show_visualize;
   dt_segments_mask_t segmentation_mask_mode;
+  dt_aligned_pixel_t chroma_correction;
+  gboolean valid_chroma_correction;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -1934,18 +1935,18 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
                     const dt_iop_roi_t *const roi_in)
 {
   *roi_out = *roi_in;
+
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+  const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
 
-  if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
+  if(visualizing || !use_opposing)
     return;
 
   roi_out->x = MAX(0, roi_in->x);
   roi_out->y = MAX(0, roi_in->y);
-  // we can't do a proper sanity check here for width & height; that has to be done in the
-  // opposed and segmentation code!
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -1957,11 +1958,11 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
-
-  if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
+  const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
+  
+  if(visualizing || !use_opposing)
     return;
 
-  // we always take the full data provided by rawspeed
   roi_in->x = 0;
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
@@ -2002,7 +2003,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else
     {
-      _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      _process_linear_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data);
     }
     return;
   }
@@ -2080,9 +2081,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
       const dt_segments_mask_t vmode = ((g != NULL) && fullpipe) ? g->segmentation_mask_mode : DT_SEGMENTS_MASK_OFF;
+      const gboolean complete = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) == 0;
 
-      float *tmp = _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
-      if(tmp)
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, complete);
+      if(tmp && complete)
         _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, vmode, tmp);
       dt_free_align(tmp);
 
@@ -2112,7 +2114,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     default:
     case DT_IOP_HIGHLIGHTS_OPPOSED:
     {
-      float *tmp = _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, FALSE);
       dt_free_align(tmp);
       break;
     }
@@ -2253,6 +2255,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
     g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
   }
+
+  if(w == g->clip)
+    g->valid_chroma_correction = FALSE;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -2279,6 +2284,8 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT && basic)
      dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
+  g->valid_chroma_correction = FALSE;
+
   gui_changed(self, NULL, NULL);
 }
 
@@ -2341,6 +2348,7 @@ void reload_defaults(dt_iop_module_t *self)
         dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
     }
+    g->valid_chroma_correction = FALSE;
   }
 }
 
