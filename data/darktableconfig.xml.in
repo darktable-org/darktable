@@ -124,7 +124,7 @@
     <shortdescription>create database snapshot</shortdescription>
     <longdescription>database snapshots are created right before closing darktable. options allow you to choose how often to make snapshots:\nnever - simply don't do snapshots. that way the only snapshots done are mandatory version-upgrade snapshots\nonce a month - create snapshot if a month has passed since last snapshot\nonce a week - create snapshot if 7 days had passed since last snapshot\nonce a day - create snapshot if over 24h passed since last snapshot\non close - create snapshot every time darktable is closed</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig prefs="storage" section="database">
     <name>database/keep_snapshots</name>
     <type>int</type>
     <default>10</default>
