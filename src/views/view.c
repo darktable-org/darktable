@@ -1546,6 +1546,7 @@ void dt_view_paint_buffer(
 {
   cairo_surface_t *surface = dt_view_create_surface(buffer, processed_width, processed_height);
   dt_view_paint_surface(cr, width, height, surface, processed_width, processed_height, window);
+  cairo_surface_destroy(surface);
 }
 
 #define ADD_TO_CONTEXT(v) ctx = ((ctx << 5) + ctx) ^ (dt_view_context_t)(v);
