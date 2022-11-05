@@ -2081,10 +2081,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
       const dt_segments_mask_t vmode = ((g != NULL) && fullpipe) ? g->segmentation_mask_mode : DT_SEGMENTS_MASK_OFF;
-      const gboolean thumb = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL)) != 0;
+      const gboolean complete = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) == 0;
 
-      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data);
-      if(tmp && !thumb)
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, complete);
+      if(tmp && complete)
         _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, vmode, tmp);
       dt_free_align(tmp);
 
@@ -2114,7 +2114,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     default:
     case DT_IOP_HIGHLIGHTS_OPPOSED:
     {
-      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data);
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, FALSE);
       dt_free_align(tmp);
       break;
     }
