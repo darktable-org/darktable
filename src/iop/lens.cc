@@ -260,17 +260,6 @@ static gboolean _have_embedded_metadata(dt_iop_module_t *self)
 }
 
 #ifdef HAVE_LENSFUN
-static int _modflags_to_lensfun_mods(int modify_flags)
-{
-  int mods = LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
-
-  mods |= modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION ? LF_MODIFY_DISTORTION : 0;
-  mods |= modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING ? LF_MODIFY_VIGNETTING : 0;
-  mods |= modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA        ? LF_MODIFY_TCA        : 0;
-
-  return mods;
-}
-
 static int _modflags_from_lensfun_mods(int lf_mods)
 {
   int mods = 0;
@@ -306,9 +295,26 @@ static lfLensType _lenstype_to_lensfun_lenstype(int lt)
       return LF_UNKNOWN;
   }
 }
+#endif
 
-static int _lenstype_from_lensfun_lenstype(lfLensType lt)
+static int _modflags_to_lensfun_mods(int modify_flags)
 {
+#ifdef HAVE_LENSFUN
+  int mods = LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
+
+  mods |= modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION ? LF_MODIFY_DISTORTION : 0;
+  mods |= modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING ? LF_MODIFY_VIGNETTING : 0;
+  mods |= modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA        ? LF_MODIFY_TCA        : 0;
+
+  return mods;
+#else
+  return 0;
+#endif
+}
+
+static int _lenstype_from_lensfun_lenstype(/*lfLensType*/int lt)
+{
+#ifdef HAVE_LENSFUN
   switch(lt)
   {
     case LF_RECTILINEAR:
@@ -330,13 +336,14 @@ static int _lenstype_from_lensfun_lenstype(lfLensType lt)
     default:
       return DT_IOP_LENS_LENSTYPE_UNKNOWN;
   }
-}
+#else
+  return DT_IOP_LENS_LENSTYPE_UNKNOWN;
 #endif
+}
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-#ifdef HAVE_LENSFUN
   if(old_version == 2 && new_version == 6)
   {
     // legacy params of version 2; version 1 comes from ancient times and seems to be forgotten by now
@@ -379,6 +386,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tca_r = o->tca_b;
     n->tca_b = o->tca_r;
 
+    // new in v6
+    n->method = DT_IOP_LENS_METHOD_LENSFUN;
+    n->cor_dist_ft = 1.f;
+    n->cor_vig_ft = 1.f;
+
     return 0;
   }
 
@@ -417,13 +429,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tca_override = o->tca_override;
     g_strlcpy(n->camera, o->camera, sizeof(n->camera));
     g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    n->tca_r = o->tca_r;
+    n->tca_b = o->tca_b;
 
     // one more parameter and changed parameters in case we autodetect
     n->modified = 1;
 
-    // old versions had R and B swapped
-    n->tca_r = o->tca_b;
-    n->tca_b = o->tca_r;
+    // new in v6
+    n->method = DT_IOP_LENS_METHOD_LENSFUN;
+    n->cor_dist_ft = 1.f;
+    n->cor_vig_ft = 1.f;
 
     return 0;
   }
@@ -465,10 +480,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->camera, o->camera, sizeof(n->camera));
     g_strlcpy(n->lens, o->lens, sizeof(n->lens));
     n->modified = o->modified;
+    n->tca_r = o->tca_r;
+    n->tca_b = o->tca_b;
 
-    // old versions had R and B swapped
-    n->tca_r = o->tca_b;
-    n->tca_b = o->tca_r;
+    // new in v6
+    n->method = DT_IOP_LENS_METHOD_LENSFUN;
+    n->cor_dist_ft = 1.f;
+    n->cor_vig_ft = 1.f;
 
     return 0;
   }
@@ -499,7 +517,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     *n = *d; // start with a fresh copy of default parameters
 
     // The unique method in previous versions was lensfun
-    n->method = DT_IOP_LENS_METHOD_LENSFUN;
     n->modify_flags = _modflags_from_lensfun_mods(o->modify_flags);
     n->inverse = o->inverse;
     n->scale = o->scale;
@@ -512,11 +529,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     g_strlcpy(n->camera, o->camera, sizeof(n->camera));
     g_strlcpy(n->lens, o->lens, sizeof(n->lens));
     n->modified = o->modified;
+    n->tca_r = o->tca_r;
+    n->tca_b = o->tca_b;
+
+    // new in v6
+    n->method = DT_IOP_LENS_METHOD_LENSFUN;
+    n->cor_dist_ft = 1.f;
+    n->cor_vig_ft = 1.f;
 
     return 0;
   }
-
-#endif
 
   return 1;
 }
