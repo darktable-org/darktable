@@ -1489,8 +1489,10 @@ void dt_view_paint_surface(
     ? darktable.gui->ppd
     : dev->second_window.ppd;
 
-  const float sw = (float)processed_width;
-  const float sh = (float)processed_height;
+  const float sw = (float)processed_width / ppd;
+  const float sh = (float)processed_height / ppd;
+
+  cairo_save(cr);
 
   cairo_translate(cr, ceilf(.5f * (width - sw)), ceilf(.5f * (height - sh)));
   if(closeup)
@@ -1509,6 +1511,8 @@ void dt_view_paint_surface(
     cairo_fill(cr);
   }
 
+  cairo_surface_set_device_scale(surface, ppd, ppd);
+
   cairo_set_source_surface (cr, surface, 0, 0);
   cairo_pattern_set_filter
     (cairo_get_source(cr),
@@ -1517,11 +1521,11 @@ void dt_view_paint_surface(
 
   if(darktable.gui->show_focus_peaking)
   {
-    cairo_save(cr);
     cairo_scale(cr, 1. / ppd, 1. / ppd);
-    dt_focuspeaking(cr, sw, sh, cairo_image_surface_get_data(surface));
-    cairo_restore(cr);
+    dt_focuspeaking(cr, processed_width, processed_height, cairo_image_surface_get_data(surface));
   }
+
+  cairo_restore(cr);
 }
 
 cairo_surface_t *dt_view_create_surface(
@@ -1531,7 +1535,7 @@ cairo_surface_t *dt_view_create_surface(
 {
   const int32_t stride =
     cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
-  return dt_cairo_image_surface_create_for_data
+  return cairo_image_surface_create_for_data
     (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
 }
 

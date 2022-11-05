@@ -3934,8 +3934,6 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
 
     surface = dt_view_create_surface(dev->preview2_pipe->output_backbuf, wd, ht);
 
-    cairo_surface_set_device_scale(surface, dev->second_window.ppd, dev->second_window.ppd);
-
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cr);
 
