@@ -3170,6 +3170,7 @@ void dt_dev_image(
 
   // create the full pipe
 
+  dev.gui_attached = FALSE;
   dt_dev_pixelpipe_init(dev.pipe);
 
   // load image and set history_end
@@ -3185,7 +3186,6 @@ void dt_dev_image(
 
   // process the pipe
 
-  dev.gui_attached = FALSE;
   dt_dev_process_image_job(&dev);
 
   // record resulting image and dimentions
