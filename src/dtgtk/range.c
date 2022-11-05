@@ -576,7 +576,22 @@ static void _current_resized(GtkWidget *widget, GtkAllocation *allocation, GtkDa
   // we want to be sure that we have enough space to show it on top
   gint wx, wy;
   gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
-  gtk_popover_set_position(GTK_POPOVER(range->cur_window), (wy < allocation->height) ? GTK_POS_RIGHT : GTK_POS_TOP);
+  if(wy == range->y_root)
+    return; // this should ensure that we change the position only if the range position change
+  range->y_root = wy;
+  range->cur_pos = (wy < allocation->height) ? GTK_POS_RIGHT : GTK_POS_TOP;
+  gtk_popover_set_position(GTK_POPOVER(range->cur_window), range->cur_pos);
+  // if the position change for the right, we set the pointing area to the whole widget
+  // for the top, the pointing area is set in the motion event
+  if(range->cur_pos == GTK_POS_RIGHT)
+  {
+    GdkRectangle rect;
+    rect.x = 0;
+    rect.width = gtk_widget_get_allocated_width(range->band);
+    rect.y = 0;
+    rect.height = gtk_widget_get_allocated_height(range->band);
+    gtk_popover_set_pointing_to(GTK_POPOVER(range->cur_window), &rect);
+  }
 }
 
 static void _current_hide_popup(GtkDarktableRangeSelect *range)
@@ -593,10 +608,15 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
   gtk_widget_set_name(range->cur_window, "range-current");
   // we try to guess what is the best position before we show the popup.
   // Anyway this is rechecked on popup resizing
-  gint wx, wy;
-  gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
-  gtk_popover_set_position(GTK_POPOVER(range->cur_window),
-                           (wy < 2 * gtk_widget_get_allocated_height(range->band)) ? GTK_POS_RIGHT : GTK_POS_TOP);
+  if(range->y_root > 0)
+    gtk_popover_set_position(GTK_POPOVER(range->cur_window), range->cur_pos);
+  else
+  {
+    gint wx, wy;
+    gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
+    gtk_popover_set_position(GTK_POPOVER(range->cur_window),
+                             (wy < 2 * gtk_widget_get_allocated_height(range->band)) ? GTK_POS_RIGHT : GTK_POS_TOP);
+  }
   gtk_popover_set_modal(GTK_POPOVER(range->cur_window), FALSE);
   g_signal_connect(G_OBJECT(range->cur_window), "size-allocate", G_CALLBACK(_current_resized), range);
   range->cur_label = gtk_label_new(" ");

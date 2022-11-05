@@ -116,6 +116,8 @@ struct _GtkDarktableRangeSelect
   // window used to show the value under the cursor
   GtkWidget *cur_window;
   GtkWidget *cur_label;
+  int y_root; // y position in the main window
+  GtkPositionType cur_pos;
 
   struct _range_date_popup *date_popup;
 };
