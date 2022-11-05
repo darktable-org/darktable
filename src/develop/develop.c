@@ -756,6 +756,28 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
   }
 }
 
+void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht)
+{
+  // fixed border on every side
+  const int32_t tb =
+    dev->iso_12646.enabled
+    ? MIN(1.75 * dev->second_window.dpi, 0.3 * MIN(wd, ht))
+    : 0;
+
+  wd -= 2*tb;
+  ht -= 2*tb;
+
+  if(dev->second_window.width != wd || dev->second_window.height != ht)
+  {
+    dev->second_window.width = wd;
+    dev->second_window.height = ht;
+    dev->second_window.border_size = tb;
+    dev->preview2_pipe->changed |= DT_DEV_PIPE_ZOOMED;
+    dt_dev_invalidate(dev);
+    dt_dev_reprocess_center(dev);
+  }
+}
+
 // helper used to synch a single history item with db
 int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t num)
 {
@@ -3148,6 +3170,7 @@ void dt_dev_image(
 
   // create the full pipe
 
+  dev.gui_attached = FALSE;
   dt_dev_pixelpipe_init(dev.pipe);
 
   // load image and set history_end
@@ -3163,7 +3186,6 @@ void dt_dev_image(
 
   // process the pipe
 
-  dev.gui_attached = FALSE;
   dt_dev_process_image_job(&dev);
 
   // record resulting image and dimentions

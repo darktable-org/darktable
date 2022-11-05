@@ -220,11 +220,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(!d->snap_requested)
     {
       // display snapshot image surface
-      cairo_save(cri);
-
-      dt_view_paint_surface(cri, width, height, snap->surface, snap->width, snap->height);
-
-      cairo_restore(cri);
+      dt_view_paint_surface(cri, width, height,
+                            snap->surface, snap->width, snap->height, DT_WINDOW_MAIN);
     }
 
     cairo_reset_clip(cri);
