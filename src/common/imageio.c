@@ -463,12 +463,6 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, d
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 #endif
 
-#ifdef HAVE_LIBHEIF
-  ret = dt_imageio_open_heif(img, filename, buf);
-  loader = LOADER_HEIF;
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-#endif
-
 return_label:
   if(ret == DT_IMAGEIO_OK)
   {
@@ -1292,6 +1286,11 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
 #ifdef HAVE_LIBJXL
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_jpegxl(img, filename, buf);
+#endif
+
+#ifdef HAVE_LIBHEIF
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_heif(img, filename, buf);
 #endif
 
   /* silly check using file extensions: */
