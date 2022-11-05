@@ -139,20 +139,6 @@
     <longdescription>after successfully creating snapshot, how many older snapshots to keep (excluding mandatory version update ones). enter -1 to keep all snapshots\nkeep in mind that snapshots do take some space and you only need the most recent one for successful restore</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>min_panel_width</name>
-    <type>int</type>
-    <default>150</default>
-    <shortdescription>minimum width of the side panels in pixels</shortdescription>
-    <longdescription>(needs a restart)</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>max_panel_width</name>
-    <type>int</type>
-    <default>500</default>
-    <shortdescription>maximum width of the side panels in pixels</shortdescription>
-    <longdescription>(needs a restart)</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>min_panel_height</name>
     <type>int</type>
     <default>64</default>

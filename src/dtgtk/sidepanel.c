@@ -30,9 +30,9 @@ static GtkSizeRequestMode dtgtk_side_panel_get_request_mode(GtkWidget *widget)
 
 static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget, gint *minimum_size, gint *natural_size)
 {
-  GtkDarktableSidePanelClass *class = DTGTK_SIDE_PANEL_GET_CLASS(widget);
+  GTK_WIDGET_CLASS(dtgtk_side_panel_parent_class)->get_preferred_width(widget, minimum_size, NULL);
 
-  *minimum_size = *natural_size = class->width;
+  *natural_size = *minimum_size;
 }
 
 static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
@@ -41,9 +41,6 @@ static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
 
   widget_class->get_request_mode = dtgtk_side_panel_get_request_mode;
   widget_class->get_preferred_width = dtgtk_side_panel_get_preferred_width;
-
-  class->width
-      = dt_conf_get_int("min_panel_width"); // this is the miminum width, real size has to be applied after
 }
 
 static void dtgtk_side_panel_init(GtkDarktableSidePanel *panel)

@@ -35,15 +35,12 @@ G_BEGIN_DECLS
 
 typedef struct _GtkDarktableSidePanel
 {
-  GtkPaned panel;
+  GtkBox panel;
 } GtkDarktableSidePanel;
 
 typedef struct _GtkDarktableSidePanelClass
 {
-  GtkPanedClass parent_class;
-
-  /*< private >*/
-  gint width;
+  GtkBoxClass parent_class;
 } GtkDarktableSidePanelClass;
 
 GType dtgtk_side_panel_get_type(void);
