@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-04 19:38+0100\n"
-"PO-Revision-Date: 2022-11-04 22:17+0200\n"
+"POT-Creation-Date: 2022-11-04 22:57+0100\n"
+"PO-Revision-Date: 2022-11-05 09:51+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -2708,7 +2708,7 @@ msgstr "дуже велика хроматична аберація"
 #: ../src/common/collection.c:1432 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:329 ../src/develop/blend_gui.c:1988
 #: ../src/develop/blend_gui.c:2015 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:2893 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
+#: ../src/gui/gtk.c:2938 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
 #: ../src/iop/channelmixer.c:619 ../src/iop/channelmixer.c:629
 #: ../src/iop/channelmixerrgb.c:4183 ../src/iop/colorzones.c:2295
 #: ../src/iop/temperature.c:1774 ../src/iop/temperature.c:1947
@@ -2720,7 +2720,7 @@ msgstr "червоний"
 #: ../src/common/collection.c:1436 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:331 ../src/develop/blend_gui.c:1991
 #: ../src/develop/blend_gui.c:2018 ../src/develop/lightroom.c:838
-#: ../src/gui/gtk.c:2894 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
+#: ../src/gui/gtk.c:2939 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
 #: ../src/iop/channelmixer.c:620 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4184 ../src/iop/colorzones.c:2298
 #: ../src/iop/temperature.c:1758 ../src/iop/temperature.c:1776
@@ -2733,7 +2733,7 @@ msgstr "зелений"
 #: ../src/common/collection.c:1438 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:332 ../src/develop/blend_gui.c:1994
 #: ../src/develop/blend_gui.c:2021 ../src/develop/lightroom.c:840
-#: ../src/gui/gtk.c:2895 ../src/iop/bilateral.cc:315
+#: ../src/gui/gtk.c:2940 ../src/iop/bilateral.cc:315
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4185 ../src/iop/colorzones.c:2300
 #: ../src/iop/temperature.c:1778 ../src/iop/temperature.c:1949
@@ -3822,7 +3822,7 @@ msgstr "обробка сплайнів"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:533
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2756 ../src/common/variables.c:604
-#: ../src/develop/imageop_gui.c:211 ../src/imageio/format/pdf.c:636
+#: ../src/develop/imageop_gui.c:212 ../src/imageio/format/pdf.c:636
 #: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1202
 #: ../src/libs/export.c:1209 ../src/libs/export.c:1216
 #: ../src/libs/metadata_view.c:678
@@ -4754,40 +4754,40 @@ msgstr "Показ зображень на мапі"
 msgid "Print your images"
 msgstr "Друк зображень"
 
-#: ../src/bauhaus/bauhaus.c:3301
+#: ../src/bauhaus/bauhaus.c:3348
 msgid "button on"
 msgstr "кнопка on"
 
-#: ../src/bauhaus/bauhaus.c:3301
+#: ../src/bauhaus/bauhaus.c:3348
 msgid "button off"
 msgstr "кнопка off"
 
-#: ../src/bauhaus/bauhaus.c:3468 ../src/gui/accelerators.c:317
+#: ../src/bauhaus/bauhaus.c:3515 ../src/gui/accelerators.c:317
 msgid "value"
 msgstr "значення"
 
-#: ../src/bauhaus/bauhaus.c:3469 ../src/bauhaus/bauhaus.c:3475
+#: ../src/bauhaus/bauhaus.c:3516 ../src/bauhaus/bauhaus.c:3522
 #: ../src/gui/accelerators.c:295
 msgid "button"
 msgstr "кнопка"
 
-#: ../src/bauhaus/bauhaus.c:3470
+#: ../src/bauhaus/bauhaus.c:3517
 msgid "force"
 msgstr "необмежено"
 
-#: ../src/bauhaus/bauhaus.c:3471
+#: ../src/bauhaus/bauhaus.c:3518
 msgid "zoom"
 msgstr "масштаб"
 
-#: ../src/bauhaus/bauhaus.c:3474
+#: ../src/bauhaus/bauhaus.c:3521
 msgid "selection"
 msgstr "вибір"
 
-#: ../src/bauhaus/bauhaus.c:3493
+#: ../src/bauhaus/bauhaus.c:3540
 msgid "slider"
 msgstr "повзунок"
 
-#: ../src/bauhaus/bauhaus.c:3498
+#: ../src/bauhaus/bauhaus.c:3545
 msgid "dropdown"
 msgstr "спадне меню"
 
@@ -5866,7 +5866,7 @@ msgstr ""
 "ви дійсно хочете видалити файли блокування?\n"
 
 #: ../src/common/database.c:2756 ../src/common/database.c:3816
-#: ../src/common/variables.c:602 ../src/develop/imageop_gui.c:212
+#: ../src/common/variables.c:602 ../src/develop/imageop_gui.c:213
 #: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
 #: ../src/libs/export.c:1202 ../src/libs/export.c:1209
 #: ../src/libs/export.c:1216 ../src/libs/metadata_view.c:678
@@ -7906,7 +7906,7 @@ msgstr ""
 #: ../src/iop/filmic.c:1595 ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1647
 #: ../src/iop/filmicrgb.c:4128 ../src/iop/filmicrgb.c:4138
 #: ../src/iop/filmicrgb.c:4170 ../src/iop/filmicrgb.c:4180
-#: ../src/iop/graduatednd.c:1090 ../src/iop/negadoctor.c:969
+#: ../src/iop/graduatednd.c:1090 ../src/iop/negadoctor.c:968
 #: ../src/iop/profile_gamma.c:642 ../src/iop/profile_gamma.c:648
 #: ../src/iop/relight.c:259 ../src/iop/soften.c:382 ../src/iop/toneequal.c:3117
 #: ../src/iop/toneequal.c:3120 ../src/iop/toneequal.c:3123
@@ -8365,8 +8365,9 @@ msgid "instance"
 msgstr "екземпляр"
 
 #: ../src/develop/imageop.c:3243 ../src/gui/accelerators.c:105
-#: ../src/gui/accelerators.c:114 ../src/iop/atrous.c:1547
-#: ../src/libs/lib.c:1266 ../src/libs/modulegroups.c:3956
+#: ../src/gui/accelerators.c:114 ../src/gui/gtk.c:2833 ../src/gui/gtk.c:2857
+#: ../src/iop/atrous.c:1547 ../src/libs/lib.c:1266
+#: ../src/libs/modulegroups.c:3956
 msgid "reset"
 msgstr "скинути"
 
@@ -8380,7 +8381,7 @@ msgstr "пресети"
 msgid "processing module"
 msgstr "модуль обробки"
 
-#: ../src/develop/imageop_gui.c:298
+#: ../src/develop/imageop_gui.c:301
 #, c-format
 msgid ""
 "%s\n"
@@ -8939,7 +8940,7 @@ msgstr "встановити межу діапазону в це значенн�
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../src/dtgtk/range.c:1703 ../src/gui/accelerators.c:2060
-#: ../src/gui/accelerators.c:2139 ../src/gui/gtk.c:1193 ../src/gui/gtk.c:2892
+#: ../src/gui/accelerators.c:2139 ../src/gui/gtk.c:1193 ../src/gui/gtk.c:2937
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3443
 #: ../src/iop/lens.cc:3029 ../src/iop/rawdenoise.c:904
 #: ../src/libs/collect.c:3153 ../src/libs/filtering.c:1424
@@ -9232,12 +9233,12 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
-#: ../src/gui/gtk.c:2820 ../src/views/lighttable.c:749
+#: ../src/gui/gtk.c:2855 ../src/views/lighttable.c:749
 msgid "next"
 msgstr "вперед"
 
 #: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
-#: ../src/gui/gtk.c:2821 ../src/views/lighttable.c:750
+#: ../src/gui/gtk.c:2856 ../src/views/lighttable.c:750
 msgid "previous"
 msgstr "назад"
 
@@ -9273,7 +9274,7 @@ msgstr "права-перемикання"
 msgid "right-on"
 msgstr "права-вмикання"
 
-#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2819
+#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2854
 msgid "activate"
 msgstr "активація"
 
@@ -9885,11 +9886,11 @@ msgstr "%.1f"
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:2899 ../src/gui/gtk.c:2904 ../src/gui/gtk.c:2909
+#: ../src/gui/gtk.c:2944 ../src/gui/gtk.c:2949 ../src/gui/gtk.c:2954
 msgid "tabs"
 msgstr "вкладки"
 
-#: ../src/gui/gtk.c:3015
+#: ../src/gui/gtk.c:3060
 #, c-format
 msgid "never show more than %d lines"
 msgstr "ніколи не показувати більше %d рядків"
@@ -17855,7 +17856,7 @@ msgstr ""
 msgid "virtual print emulation"
 msgstr "емуляція віртуального друку"
 
-#: ../src/iop/negadoctor.c:970
+#: ../src/iop/negadoctor.c:969
 msgid ""
 "correct the printing exposure after inversion to adjust\n"
 "the global contrast and avoid clipping highlights."
@@ -17863,7 +17864,7 @@ msgstr ""
 "коригувати експозицію друку після інверсії, щоб відрегулювати\n"
 "глобальний контраст і уникнути кліппінгу світлих тонів."
 
-#: ../src/iop/negadoctor.c:978
+#: ../src/iop/negadoctor.c:977
 msgid "toggle on or off the color controls"
 msgstr "увімкнути/вимкнути управління кольором"
 
@@ -18574,7 +18575,7 @@ msgstr ""
 "та плавну тонову криву з опціональними методами збереження кольору."
 
 #: ../src/iop/sigmoid.c:122
-msgid "neutral grey"
+msgid "neutral gray"
 msgstr "нейтральний сірий"
 
 #: ../src/iop/sigmoid.c:127
