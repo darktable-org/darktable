@@ -570,6 +570,15 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
   pop->internal_change--;
 }
 
+
+static void _current_resized(GtkWidget *widget, GtkAllocation *allocation, GtkDarktableRangeSelect *range)
+{
+  // we want to be sure that we have enough space to show it on top
+  gint wx, wy;
+  gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
+  gtk_popover_set_position(GTK_POPOVER(range->cur_window), (wy < allocation->height) ? GTK_POS_RIGHT : GTK_POS_TOP);
+}
+
 static void _current_hide_popup(GtkDarktableRangeSelect *range)
 {
   if(!range->cur_window) return;
@@ -582,7 +591,14 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
   if(range->cur_window) return;
   range->cur_window = gtk_popover_new(range->band);
   gtk_widget_set_name(range->cur_window, "range-current");
+  // we try to guess what is the best position before we show the popup.
+  // Anyway this is rechecked on popup resizing
+  gint wx, wy;
+  gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
+  gtk_popover_set_position(GTK_POPOVER(range->cur_window),
+                           (wy < 2 * gtk_widget_get_allocated_height(range->band)) ? GTK_POS_RIGHT : GTK_POS_TOP);
   gtk_popover_set_modal(GTK_POPOVER(range->cur_window), FALSE);
+  g_signal_connect(G_OBJECT(range->cur_window), "size-allocate", G_CALLBACK(_current_resized), range);
   range->cur_label = gtk_label_new(" ");
   dt_gui_add_class(range->cur_label, "dt_transparent_background");
   gtk_container_add(GTK_CONTAINER(range->cur_window), range->cur_label);
@@ -1478,17 +1494,16 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
     return TRUE;
   }
   _current_show_popup(range);
-  // point the popup to the current position or to the right if no space
-  gint wx, wy;
-  gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
-  if(wy > gtk_widget_get_allocated_height(range->band))
+  // point the popup to the current position
+  if(gtk_popover_get_position(GTK_POPOVER(range->cur_window)) == GTK_POS_TOP)
   {
-    gtk_popover_set_position(GTK_POPOVER(range->cur_window), GTK_POS_TOP);
-    GdkRectangle rect = {event->x, 0, 1, 1};
+    GdkRectangle rect;
+    rect.x = event->x;
+    rect.width = 1;
+    rect.y = 0;
+    rect.height = gtk_widget_get_allocated_height(range->band);
     gtk_popover_set_pointing_to(GTK_POPOVER(range->cur_window), &rect);
   }
-  else
-    gtk_popover_set_position(GTK_POPOVER(range->cur_window), GTK_POS_RIGHT);
 
   const double smin_r = (range->bounds & DT_RANGE_BOUND_MIN) ? range->min_r : range->select_min_r;
   const double smax_r = (range->bounds & DT_RANGE_BOUND_MAX) ? range->max_r : range->select_max_r;
