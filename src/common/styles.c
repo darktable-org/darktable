@@ -727,7 +727,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
       g_strlcpy(module->multi_name, style_item->multi_name, sizeof(module->multi_name));
 
       // TODO: this is copied from dt_dev_read_history_ext(), maybe do a helper with this?
-      if(style_item->blendop_params && (style_item->blendop_version == dt_develop_blend_version())
+      if(style_item->blendop_params
+         && (style_item->blendop_version == dt_develop_blend_version())
          && (style_item->blendop_params_size == sizeof(dt_develop_blend_params_t)))
       {
         memcpy(module->blend_params, style_item->blendop_params, sizeof(dt_develop_blend_params_t));
@@ -743,7 +744,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
         memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
       }
 
-      if(module->version() != style_item->module_version || module->params_size != style_item->params_size
+      if(module->version() != style_item->module_version
+         || module->params_size != style_item->params_size
          || strcmp(style_item->operation, module->op))
       {
         if(!module->legacy_params
@@ -775,7 +777,9 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
          * by default, so if it is disabled, enable it, and replace params with
          * default_params. if user want to, he can disable it.
          */
-        if(!strcmp(module->op, "flip") && module->enabled == 0 && labs(style_item->module_version) == 1)
+        if(!strcmp(module->op, "flip")
+           && module->enabled == 0
+           && labs(style_item->module_version) == 1)
         {
           memcpy(module->params, module->default_params, module->params_size);
           module->enabled = 1;
