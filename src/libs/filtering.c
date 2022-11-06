@@ -959,6 +959,63 @@ static void _widget_special_destroy(dt_lib_filtering_rule_t *rule)
   }
 }
 
+static void _filters_cleanup(dt_lib_module_t *self)
+{
+  int nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
+  char confname[200] = { 0 };
+
+  // check and remove if needed all current rules
+  for(int i = 0; i < nb_rules; i++)
+  {
+    gboolean skip = FALSE;
+    // first check : if the topbar value is set, we skip the rule (old implementation)
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
+    if(dt_conf_key_exists(confname) && dt_conf_get_int(confname) == 1)
+      skip = TRUE;
+    else
+    {
+      // second check : is the filter implemented ?
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
+      if(!dt_filters_exists(dt_conf_get_int(confname), FALSE)) skip = TRUE;
+    }
+
+    // if the filter needs to be skipped, let's remove it
+    if(skip)
+    {
+      nb_rules--;
+      for(int j = i; j < nb_rules; j++)
+      {
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", j + 1);
+        const int mode = dt_conf_get_int(confname);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", j + 1);
+        const int item = dt_conf_get_int(confname);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", j + 1);
+        const int off = dt_conf_get_int(confname);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", j + 1);
+        gchar *string = dt_conf_get_string(confname);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", j + 1);
+        const int top = dt_conf_get_int(confname);
+        if(string)
+        {
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", j);
+          dt_conf_set_int(confname, mode);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", j);
+          dt_conf_set_int(confname, item);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", j);
+          dt_conf_set_int(confname, off);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", j);
+          dt_conf_set_string(confname, string);
+          g_free(string);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", j);
+          dt_conf_set_int(confname, top);
+        }
+      }
+      i--;
+    }
+  }
+  dt_conf_set_int("plugins/lighttable/filtering/num_rules", nb_rules);
+}
+
 static void _filters_gui_update(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
@@ -1699,6 +1756,9 @@ void gui_init(dt_lib_module_t *self)
                              _("revert to a previous set of sort orders"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
+
+  // cleanup the filters
+  _filters_cleanup(self);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_filtering.module = self;
