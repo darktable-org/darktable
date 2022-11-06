@@ -1573,18 +1573,9 @@ static cl_int_t _apply_global_distortion_map_cl(struct dt_iop_module_t *module,
       || dev_kdesc == NULL || dev_kernel == NULL)
     goto error;
 
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 2, sizeof(cl_mem), &dev_roi_in);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 3, sizeof(cl_mem), &dev_roi_out);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 4, sizeof(cl_mem), &dev_map);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 5, sizeof(cl_mem), &dev_map_extent);
-
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 6, sizeof(cl_mem), &dev_kdesc);
-  dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 7, sizeof(cl_mem), &dev_kernel);
-
-  const size_t sizes[] = { ROUNDUPDWD(map_extent->width, devid), ROUNDUPDHT(map_extent->height, devid) };
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->warp_kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->warp_kernel, map_extent->width, map_extent->height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(dev_roi_in), CLARG(dev_roi_out), CLARG(dev_map), CLARG(dev_map_extent),
+    CLARG(dev_kdesc), CLARG(dev_kernel));
 
 error:
 
@@ -2855,6 +2846,8 @@ int mouse_moved(struct dt_iop_module_t *module,
         last_hovered->header.hovered = 0;
       // change in hover display
       dt_control_hinter_message(darktable.control, dt_liquify_layers[hit.layer].hint);
+      // also use when dragging later
+      dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint = dt_liquify_layers[hit.layer].hint;
       handled = TRUE;
       goto done;
     }
@@ -2873,13 +2866,17 @@ int mouse_moved(struct dt_iop_module_t *module,
 
     if(g->last_hit.elem)
     {
-      // an item is selected, so this mouvement is handled and must
+      // an item is selected, so this movement is handled and must
       // not trigger any panning.
       handled = TRUE;
     }
+    else if(hit.elem == DT_LIQUIFY_LAYER_BACKGROUND && gtk_toggle_button_get_active(g->btn_node_tool))
+      dt_control_hinter_message(darktable.control, _("click to edit nodes"));
   }
   else // we are dragging
   {
+    dt_control_hinter_message(darktable.control, dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint);
+
     dt_liquify_path_data_t *d = g->dragging.elem;
     dt_liquify_path_data_t *n = node_next(pa, d);
     dt_liquify_path_data_t *p = node_prev(pa, d);
@@ -3287,7 +3284,6 @@ int button_released(struct dt_iop_module_t *module,
   // right click == cancel or delete
   if(which == 3)
   {
-    dt_control_hinter_message(darktable.control, "");
     end_drag(g);
 
     // cancel line or curve creation
@@ -3540,20 +3536,19 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
     gtk_toggle_button_set_active(g->btn_curve_tool, btn == g->btn_curve_tool);
     gtk_toggle_button_set_active(g->btn_node_tool,  btn == g->btn_node_tool);
 
-    if(btn == g->btn_point_tool)
-      dt_control_hinter_message
-        (darktable.control, _("click and drag to add point\nscroll to change size - "
-                              "shift+scroll to change strength - ctrl+scroll to change direction"));
-    else if(btn == g->btn_line_tool)
-      dt_control_hinter_message
-        (darktable.control, _("click to add line\nscroll to change size - "
-                              "shift+scroll to change strength - ctrl+scroll to change direction"));
-    else if(btn == g->btn_curve_tool)
-      dt_control_hinter_message
-        (darktable.control, _("click to add curve\nscroll to change size - "
-                              "shift+scroll to change strength - ctrl+scroll to change direction"));
-    else if(btn == g->btn_node_tool)
-      dt_control_hinter_message(darktable.control, _("click to edit nodes"));
+    gtk_toggle_button_set_active(g->btn_node_tool,  btn == g->btn_node_tool);
+
+    dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint
+        = btn == g->btn_point_tool
+        ? _("click and drag to add point\nscroll to change size - "
+            "shift+scroll to change strength - ctrl+scroll to change direction")
+        : btn == g->btn_line_tool
+        ? _("click to add line\nscroll to change size - "
+            "shift+scroll to change strength - ctrl+scroll to change direction")
+        : btn == g->btn_curve_tool
+        ? _("click to add curve\nscroll to change size - "
+            "shift+scroll to change strength - ctrl+scroll to change direction")
+        : "";
 
     //  start the preview mode to show the shape that will be created
 
@@ -3625,6 +3620,7 @@ void gui_init(dt_iop_module_t *self)
                                          G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                          _liquify_cairo_paint_point_tool, hbox));
 
+  dt_liquify_layers[DT_LIQUIFY_LAYER_BACKGROUND].hint     = "";
   dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click: add node - right click: remove path\n"
                                                               "ctrl+alt+click: toggle line/curve");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click: show/hide feathering controls\n"

@@ -82,7 +82,7 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
     if(expanded && gtk_widget_get_mapped(GTK_WIDGET(expander)))
     {
       GtkWidget *sw = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(GTK_WIDGET(expander))));
-      if(GTK_IS_SCROLLED_WINDOW(sw))
+      if(GTK_IS_SCROLLED_WINDOW(sw) && !g_strcmp0("right", gtk_widget_get_name(gtk_widget_get_parent(sw))))
       {
         gtk_widget_get_allocation(GTK_WIDGET(expander), &_start_pos);
         _start_pos.x = gtk_adjustment_get_value(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw)));
@@ -109,36 +109,47 @@ static GtkWidget *_scroll_widget = NULL;
 
 static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, gpointer user_data)
 {
-  GtkWidget *scrolled_window = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
-  g_return_val_if_fail(GTK_IS_SCROLLED_WINDOW(scrolled_window), G_SOURCE_REMOVE);
+  GtkWidget *sw = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
+  g_return_val_if_fail(GTK_IS_SCROLLED_WINDOW(sw), G_SOURCE_REMOVE);
 
   GtkAllocation allocation, available;
   gtk_widget_get_allocation(widget, &allocation);
-  gtk_widget_get_allocation(scrolled_window, &available);
+  gtk_widget_get_allocation(sw, &available);
 
-  GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
+  GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
   gdouble value = gtk_adjustment_get_value(adjustment);
 
-  if(allocation.y < _start_pos.y)
-  {
-    int offset = _start_pos.y - allocation.y - _start_pos.x + value;
-    value -= offset;
-    _start_pos.y = allocation.y;
-  }
+  const gboolean is_iop = !g_strcmp0("iop-expander", gtk_widget_get_name(widget));
 
+  // try not to get dragged upwards if a module above is collapsing
+  if(is_iop && allocation.y < _start_pos.y)
+  {
+    const int offset = _start_pos.y - allocation.y - _start_pos.x + value;
+    value -= offset;
+  }
+  // scroll up if more space is needed below
+  // if "scroll_to_module" is enabled scroll up or down
+  // but don't scroll if not the whole module can be shown
   float prop = 1.0f;
-  gboolean scroll_to_top = dt_conf_get_bool("darkroom/ui/scroll_to_module");
-  if((allocation.y + allocation.height - value > available.height && value < allocation.y) ||
-     (scroll_to_top && allocation.y != value))
+  const gboolean scroll_to_top = dt_conf_get_bool(is_iop ? "darkroom/ui/scroll_to_module" : "lighttable/ui/scroll_to_module");
+  const int spare = available.height - allocation.height;
+  const int from_top = allocation.y - value;
+  const int move = MAX(scroll_to_top ? from_top : from_top - MAX(0, MIN(from_top, spare)),
+                       - MAX(0, spare - from_top));
+  if(move)
   {
     gint64 interval = 0;
     gdk_frame_clock_get_refresh_info(frame_clock, 0, &interval, NULL);
-    int remaining = GPOINTER_TO_INT(user_data) - gdk_frame_clock_get_frame_time(frame_clock);
+    const int remaining = GPOINTER_TO_INT(user_data) - gdk_frame_clock_get_frame_time(frame_clock);
     prop = (float)interval / MAX(interval, remaining);
-    value = (1-prop) * value + prop * (allocation.y - (scroll_to_top ? 0 : MAX(available.height - allocation.height, 0)));
+    value += prop * move;
   }
 
-  _start_pos.x = value;
+  if(is_iop)
+  {
+    _start_pos = allocation;
+    _start_pos.x = value;
+  }
   gtk_adjustment_set_value(adjustment, value);
 
   if(prop != 1.0f) return G_SOURCE_CONTINUE;
@@ -149,9 +160,11 @@ static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, 
 
 static void _expander_resize(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
 {
+
   if(widget == _scroll_widget ||
-     (!(gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED) &&
-     (!darktable.lib->gui_module || darktable.lib->gui_module->expander != widget)))
+     ((!(gtk_widget_get_state_flags(user_data) & GTK_STATE_FLAG_SELECTED) ||
+       gtk_widget_get_allocated_height(widget) == _start_pos.height) &&
+      (!darktable.lib->gui_module || darktable.lib->gui_module->expander != widget)))
     return;
 
   _scroll_widget = widget;
@@ -200,4 +213,3 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

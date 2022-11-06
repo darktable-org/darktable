@@ -2289,6 +2289,41 @@ int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, con
   return (cl->dlocl->symbols->dt_clSetKernelArg)(cl->dev[dev].kernel[kernel], num, size, arg);
 }
 
+static int _opencl_set_kernel_args(const int dev, const int kernel, int num, va_list ap)
+{
+  static struct { const size_t marker; const size_t size; const void *ptr; }
+    test = { CLWRAP(0, 0) };
+
+  int err = CL_SUCCESS;
+  do
+  {
+    size_t marker = va_arg(ap, size_t);
+    if(marker != test.marker)
+    {
+      fprintf(stderr, "opencl parameters passed to dt_opencl_set_kernel_args or dt_opencl_enqueue_kernel_2d_with_args must be wrapped with CLARG or CLLOCAL\n");
+      err = CL_INVALID_KERNEL_ARGS;
+      break;
+    }
+
+    size_t size = va_arg(ap, size_t);
+    if(size == SIZE_MAX) break;
+
+    void *ptr = va_arg(ap, void *);
+
+    err = dt_opencl_set_kernel_arg(dev, kernel, num++, size, ptr);
+  } while(!err);
+
+  va_end(ap);
+  return err;
+}
+
+int dt_opencl_set_kernel_args_internal(const int dev, const int kernel, const int num, ...)
+{
+  va_list ap;
+  va_start(ap, num);
+  return _opencl_set_kernel_args(dev, kernel, num, ap);
+}
+
 int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes)
 {
   return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
@@ -2314,6 +2349,18 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
     dt_print(DT_DEBUG_OPENCL, "[dt_opencl_enqueue_kernel_2d_with_local] kernel %i on device %d: %s\n", kernel, dev, cl_errstr(err));
   _check_clmem_err(dev, err); 
   return err;
+}
+
+int dt_opencl_enqueue_kernel_2d_args_internal(const int dev, const int kernel, const size_t w, const size_t h, ...)
+{
+  va_list ap;
+  va_start(ap, h);
+  int err = _opencl_set_kernel_args(dev, kernel, 0, ap);
+  if(err) return err;
+
+  const size_t sizes[] = { ROUNDUPDWD(w, dev), ROUNDUPDHT(h, dev), 1 };
+
+  return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
 }
 
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width,

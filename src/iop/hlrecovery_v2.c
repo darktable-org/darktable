@@ -74,7 +74,7 @@ The chosen segmentation algorithm works like this:
      By doing so we avoid direction problems.
   2. Do a box-blur to suppress ridges, the radius depends on segment size.
   3. Possibly add some noise.
-  4. Do a sigmoid correction supressing artefacts at the borders.
+  4. Do a sigmoid correction suppressing artefacts at the borders.
      and write back data from this segment to the gradients plane
 
   The UI offers
@@ -444,8 +444,11 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
   const size_t p_size = dt_round_size((size_t) (pwidth + 4) * (pheight + 4), 16);
 
-  const size_t o_row_max = MIN(roi_out->height, roi_in->height - roi_out->y);
-  const size_t o_col_max = MIN(roi_out->width, roi_in->width - roi_out->y);
+  const size_t shift_x = roi_out->x;
+  const size_t shift_y = roi_out->y;
+
+  const size_t o_row_max = MIN(roi_out->height, roi_in->height - shift_y);
+  const size_t o_col_max = MIN(roi_out->width, roi_in->width - shift_x);
   const size_t o_width = roi_out->width;
   const size_t i_width = roi_in->width;
  
@@ -552,7 +555,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, roi_out, xtrans, isegments, plane) \
+  dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, xtrans, isegments, plane) \
   dt_omp_sharedconst(filters, pwidth, i_width) \
   schedule(static)
 #endif
@@ -648,15 +651,15 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       const float dshift = 2.0f + (float)recovery_closing[recovery_mode];
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, roi_out, xtrans, gradient, distance) \
-  dt_omp_sharedconst(filters, pwidth, dshift, strength, i_width) \
+  dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, xtrans, gradient, distance) \
+  dt_omp_sharedconst(filters, pwidth, dshift, strength, i_width, o_width) \
   schedule(static)
 #endif
       for(size_t row = 1; row < roi_in->height-1; row++)
       {
         float *out = tmpout + i_width * row + 1;
         float *in = (float *)ivoid + i_width * row + 1;
-        for(size_t col = 1; col < roi_out->width-1; col++)
+        for(size_t col = 1; col < o_width - 1; col++)
         {
           const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
           if(fmaxf(0.0f, in[0]) > clips[color])
@@ -674,14 +677,14 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, tmpout, roi_in, roi_out) \
-  dt_omp_sharedconst(o_row_max, o_col_max, o_width, i_width) \
+  dt_omp_firstprivate(ovoid, tmpout) \
+  dt_omp_sharedconst(o_row_max, o_col_max, o_width, i_width, shift_x, shift_y) \
   schedule(static)
 #endif
   for(size_t row = 0; row < o_row_max; row++)
   {
     float *out = (float *)ovoid + o_width * row;
-    float *in = tmpout + i_width * (row + roi_out->y) + roi_out->x;
+    float *in = tmpout + i_width * (row + shift_y) + shift_x;
     for(size_t col = 0; col < o_col_max; col++)
       out[col] = in[col];
   }
@@ -691,20 +694,20 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clips, ivoid, ovoid, roi_in, roi_out, xtrans, isegments, gradient) \
-  dt_omp_sharedconst(filters, pwidth, vmode, strength, o_row_max, o_col_max, o_width, i_width) \
+  dt_omp_sharedconst(filters, pwidth, vmode, strength, o_row_max, o_col_max, o_width, i_width, shift_x, shift_y) \
   schedule(static)
 #endif
     for(size_t row = 0; row < o_row_max; row++)
     {
       float *out = (float *)ovoid + o_width * row;
-      float *in = (float *)ivoid + i_width * (row + roi_out->y) + roi_out->x;
+      float *in = (float *)ivoid + i_width * (row + shift_y) + shift_x;
       for(size_t col = 0; col < o_col_max; col++)
       {
         out[0] = 0.1f * in[0];
         if((row > 0) && (col > 0) && (row < roi_out->height -1) && (col < i_width -1))
         {
-          const int color = (filters == 9u) ? FCxtrans(row+roi_out->y, col+roi_out->x, roi_in, xtrans) : FC(row+roi_out->y, col+roi_out->x, filters);
-          const size_t ppos = _raw_to_plane(pwidth, row+roi_out->y, col+roi_out->x);
+          const int color = (filters == 9u) ? FCxtrans(row + shift_y, col + shift_x, roi_in, xtrans) : FC(row + shift_y, col + shift_x, filters);
+          const size_t ppos = _raw_to_plane(pwidth, row + shift_y, col + shift_x);
 
           const int pid = _get_segment_id(&isegments[color], ppos);
           const gboolean iclipped = (in[0] >= clips[color]);

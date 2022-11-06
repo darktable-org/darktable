@@ -571,6 +571,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  gPhoto2 support disabled\n"
 #endif
 
+#ifdef HAVE_LENSFUN
+               "  Lensfun support enabled\n"
+#else
+               "  Lensfun support disabled\n"
+#endif
+
 #ifdef HAVE_GRAPHICSMAGICK
                "  GraphicsMagick support enabled\n"
 #else
@@ -583,10 +589,40 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  ImageMagick support disabled\n"
 #endif
 
+#ifdef HAVE_LIBAVIF
+               "  libavif support enabled\n"
+#else
+               "  libavif support disabled\n"
+#endif
+
+#ifdef HAVE_LIBHEIF
+               "  libheif support enabled\n"
+#else
+               "  libheif support disabled\n"
+#endif
+
+#ifdef HAVE_LIBJXL
+               "  libjxl support enabled\n"
+#else
+               "  libjxl support disabled\n"
+#endif
+
+#ifdef HAVE_OPENJPEG
+               "  OpenJPEG support enabled\n"
+#else
+               "  OpenJPEG support disabled\n"
+#endif
+
 #ifdef HAVE_OPENEXR
                "  OpenEXR support enabled\n"
 #else
                "  OpenEXR support disabled\n"
+#endif
+
+#ifdef HAVE_WEBP
+               "  WebP support enabled\n"
+#else
+               "  WebP support disabled\n"
 #endif
                ,
                darktable_package_string,
@@ -1028,12 +1064,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
-  //db maintenance on startup (if configured to do so)
-  if(dt_database_maybe_maintenance(darktable.db, init_gui, FALSE))
-  {
-    dt_database_perform_maintenance(darktable.db);
-  }
-
   // init darktable tags table
   dt_set_darktable_tags();
 
@@ -1376,7 +1406,7 @@ void dt_cleanup()
 
   // last chance to ask user for any input...
 
-  const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
+  const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db);
   const gboolean perform_snapshot = dt_database_maybe_snapshot(darktable.db);
   gchar **snaps_to_remove = NULL;
   if(perform_snapshot)

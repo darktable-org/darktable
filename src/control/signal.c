@@ -152,9 +152,11 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   { "dt-develop-ui-pipe-finished", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
   { "dt-develop-history-will-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 3,
-    history_will_change_arg, NULL, FALSE }, // DT_SIGNAL_HISTORY_WILL_CHANGE
+    history_will_change_arg, NULL, FALSE }, // DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE
   { "dt-develop-history-change", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
-    FALSE }, // DT_SIGNAL_HISTORY_CHANGE
+    FALSE }, // DT_SIGNAL_DEVELOP_HISTORY_CHANGE
+  { "dt-develop-history-invalidated", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
+    FALSE }, // DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED
   { "dt-develop-module-remove", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg, NULL,
     TRUE }, // DT_SIGNAL_MODULE_REMOVE
   { "dt-develop-module-moved", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
@@ -419,4 +421,3 @@ void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

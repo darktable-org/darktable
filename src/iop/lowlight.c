@@ -205,14 +205,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_m = dt_opencl_copy_host_to_device(devid, d->lut, 256, 256, sizeof(float));
   if(dev_m == NULL) goto error;
 
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 2, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 3, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 4, 4 * sizeof(float), &XYZ_sw);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_lowlight, 5, sizeof(cl_mem), &dev_m);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lowlight, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_lowlight, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(XYZ_sw), CLARG(dev_m));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_m);

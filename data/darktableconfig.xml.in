@@ -109,24 +109,7 @@
     <shortdescription></shortdescription>
     <longdescription></longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="database">
-    <name>database/maintenance_check</name>
-    <type>
-      <enum>
-        <option>never</option>
-        <option>on startup</option>
-        <option>on close</option>
-        <option>on both</option>
-        <option>on startup (don't ask)</option>
-        <option>on close (don't ask)</option>
-        <option>on both (don't ask)</option>
-      </enum>
-    </type>
-    <default>on close</default>
-    <shortdescription>check for database maintenance</shortdescription>
-    <longdescription>this option indicates when to check database fragmentation and perform maintenance</longdescription>
-  </dtconfig>
-  <dtconfig prefs="storage" section="database">
+  <dtconfig>
     <name>database/maintenance_freepage_ratio</name>
     <type>int</type>
     <default>25</default>
@@ -2177,6 +2160,12 @@
     <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other ui elements</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>ui/style/preview_size</name>
+    <type min="100" max="500">int</type>
+    <default>250</default>
+    <shortdescription>max style preview size</shortdescription>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
     <default>0</default>
@@ -2610,6 +2599,56 @@
     <name>plugins/imageio/format/png/compression</name>
     <type min="0" max="9">int</type>
     <default>5</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>10</option>
+        <option>12</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
+    <default>8</default>
+    <shortdescription>JPEG XL bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/pixel_type</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/quality</name>
+    <type min="4" max="100">int</type>
+    <default>95</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/original</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/effort</name>
+    <type min="1" max="9">int</type>
+    <default>7</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/tier</name>
+    <type min="0" max="4">int</type>
+    <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

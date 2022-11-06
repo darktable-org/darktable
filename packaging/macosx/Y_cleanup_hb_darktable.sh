@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Script to forcefully remove any remainder of previous attemps
+# Script to forcefully remove any remainder of previous attempts
 #
 
 removableDirs="../../build bin lib libexec share package .config .cache"

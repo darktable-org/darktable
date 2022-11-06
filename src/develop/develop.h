@@ -148,7 +148,7 @@ typedef struct dt_dev_proxy_exposure_t
 struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
-  int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
+  gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
                         // gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
@@ -250,15 +250,6 @@ typedef struct dt_develop_t
       gboolean (*basics_module_toggle)(struct dt_lib_module_t *self, GtkWidget *widget, gboolean doit);
     } modulegroups;
 
-    // snapshots plugin hooks
-    struct
-    {
-      // this flag is set by snapshot plugin to signal that expose of darkroom
-      // should store cairo surface as snapshot to disk using filename.
-      gboolean request;
-      const gchar *filename;
-    } snapshot;
-
     // masks plugin hooks
     struct
     {
@@ -323,7 +314,9 @@ typedef struct dt_develop_t
   {
     GtkWidget *second_wnd;
     GtkWidget *widget;
+    int32_t orig_width, orig_height;
     int width, height;
+    int32_t border_size;
     double dpi, dpi_factor, ppd, ppd_thb;
 
     GtkWidget *button;
@@ -339,9 +332,10 @@ typedef struct dt_develop_t
 
   int mask_form_selected_id; // select a mask inside an iop
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks
+  gboolean darkroom_mouse_in_center_area; // TRUE if the mouse cursor is in center area
 } dt_develop_t;
 
-void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
+void dt_dev_init(dt_develop_t *dev, gboolean gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
 float dt_dev_get_preview_downsampling();
@@ -391,6 +385,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
                                  float *zoom_y);
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
+void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
 /*
@@ -535,9 +530,23 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
 
+/*
+ * develop an image and returns the buf and processed width / height.
+ * this is done as in the context of the darkroom, meaning that the
+ * final processed sizes will align perfectly on the darkroom view.
+ *
+ */
+void dt_dev_image(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

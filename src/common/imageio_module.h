@@ -58,6 +58,7 @@ typedef enum dt_imageio_format_flags_t
  */
 typedef struct dt_imageio_module_data_t
 {
+  int x, y;
   int max_width, max_height;
   int width, height;
   char style[128];
@@ -157,4 +158,3 @@ gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

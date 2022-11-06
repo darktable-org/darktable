@@ -1609,21 +1609,23 @@ static gboolean _add_actions_to_tree(GtkTreeIter *parent, dt_action_t *action,
   gboolean any_leaves = FALSE;
 
   GtkTreeIter iter;
-  while(action)
+  for(; action; action = action->next)
   {
-    gtk_tree_store_insert_with_values(_actions_store, &iter, parent, -1, 0, action, -1);
-
-    gboolean module_is_needed = FALSE;
     if(action->type == DT_ACTION_TYPE_IOP)
     {
       const dt_iop_module_so_t *module = (dt_iop_module_so_t *)action;
-      module_is_needed = !(module->flags() & (IOP_FLAGS_HIDDEN | IOP_FLAGS_DEPRECATED));
+      if(module->flags() & (IOP_FLAGS_HIDDEN | IOP_FLAGS_DEPRECATED))
+        continue;
     }
-    else if(action->type == DT_ACTION_TYPE_LIB)
+
+    gboolean module_is_needed = FALSE;
+    if(action->type == DT_ACTION_TYPE_LIB)
     {
       dt_lib_module_t *module = (dt_lib_module_t *)action;
       module_is_needed = module->gui_reset || module->get_params || module->expandable(module);
     }
+
+    gtk_tree_store_insert_with_values(_actions_store, &iter, parent, -1, 0, action, -1);
 
     if(action->type <= DT_ACTION_TYPE_SECTION &&
        !_add_actions_to_tree(&iter, action->target, find, found) &&
@@ -1634,8 +1636,6 @@ static gboolean _add_actions_to_tree(GtkTreeIter *parent, dt_action_t *action,
       any_leaves = TRUE;
       if(action == find) *found = iter;
     }
-
-    action = action->next;
   }
 
   return any_leaves;

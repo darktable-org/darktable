@@ -419,8 +419,8 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str);
 
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form);
 float dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, float amount);
-void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up);
-int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
+void dt_masks_form_move(dt_masks_form_t *grp, const int formid, const int up);
+int dt_masks_form_duplicate(dt_develop_t *dev, const int formid);
 /* returns a duplicate tof form, including the formid */
 dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form);
 /* duplicate the list of forms, replace item in the list with form with the same formid */
@@ -429,6 +429,7 @@ GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form);
 /** utils functions */
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count);
 int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near);
+float dt_masks_drag_factor(dt_masks_form_gui_t *gui, int index, int k, gboolean border);
 
 /** allow to select a shape inside an iop */
 void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel);
@@ -657,4 +658,3 @@ void dt_masks_draw_anchor(cairo_t *cr, gboolean selected, const float zoom_scale
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

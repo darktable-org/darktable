@@ -512,7 +512,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE, TRUE, is_scaling,
                                  FALSE, "pre:rawprepare", FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
-                                 NULL, num, total, NULL);
+                                 NULL, num, total, NULL, -1);
 
     t = g_list_next(t);
 
@@ -1298,10 +1298,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
       if(img)
       {
-        const uint32_t flags = img->flags;
         dt_exif_read(img, sourcefile);
-        if(dt_conf_get_bool("ui_last/ignore_exif_rating"))
-          img->flags = flags;
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
       }
       else
@@ -2108,7 +2105,7 @@ static int _control_import_image_copy(const char *filename,
   }
 
   if(!g_file_set_contents(output, data, size, NULL))
-  { 
+  {
     dt_print(DT_DEBUG_CONTROL, "[import_from] failed to write file %s\n", output);
     res = FALSE;
   }

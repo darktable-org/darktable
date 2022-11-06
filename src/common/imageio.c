@@ -32,6 +32,9 @@
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
+#ifdef HAVE_LIBJXL
+#include "common/imageio_jpegxl.h"
+#endif
 #include "common/image_compression.h"
 #include "common/imageio_gm.h"
 #include "common/imageio_im.h"
@@ -731,7 +734,7 @@ int dt_imageio_export(const int32_t imgid, const char *filename, dt_imageio_modu
 
     return dt_imageio_export_with_flags(imgid, filename, format, format_params, FALSE, FALSE, high_quality, upscale, is_scaling,
                                         FALSE, NULL, copy_metadata, export_masks, icc_type, icc_filename, icc_intent,
-                                        storage, storage_params, num, total, metadata);
+                                        storage, storage_params, num, total, metadata, -1);
   }
 }
 
@@ -744,11 +747,13 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                                  dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
                                  dt_imageio_module_data_t *storage_params, int num, int total,
-                                 dt_export_metadata_t *metadata)
+                                 dt_export_metadata_t *metadata, const int history_end)
 {
   dt_develop_t dev;
-  dt_dev_init(&dev, 0);
+  dt_dev_init(&dev, FALSE);
   dt_dev_load_image(&dev, imgid);
+  if(history_end != -1)
+    dt_dev_pop_history_items_ext(&dev, history_end);
 
   const gboolean buf_is_downscaled = (thumbnail_export && dt_conf_get_bool("ui/performance"));
   dt_mipmap_buffer_t buf;
@@ -772,22 +777,24 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_t pipe;
-  gboolean res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
-                         : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
+  gboolean res = thumbnail_export
+    ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht)
+    : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params), export_masks);
   if(!res)
   {
     dt_control_log(
-        _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
-        thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
+      _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
+      thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
     goto error;
   }
 
+  const int final_history_end = history_end == -1 ? dev.history_end : history_end;
   const gboolean use_style = !thumbnail_export && format_params->style[0] != '\0';
   const gboolean appending = format_params->style_append != FALSE;
   //  If a style is to be applied during export, add the iop params into the history
   if(use_style)
   {
-    GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1);
+    GList *style_items = dt_styles_get_item_list(format_params->style, TRUE, -1, TRUE);
     if(!style_items)
     {
       dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
@@ -796,7 +803,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
     GList *modules_used = NULL;
 
-    dt_dev_pop_history_items_ext(&dev, appending ? dev.history_end : 0);
+    if(!appending) dt_dev_pop_history_items_ext(&dev, 0);
+
     dt_ioppr_update_for_style_items(&dev, style_items, appending);
 
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
@@ -808,6 +816,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     g_list_free(modules_used);
     g_list_free_full(style_items, dt_style_item_free);
   }
+  else if(history_end != -1)
+    dt_dev_pop_history_items_ext(&dev, final_history_end);
 
   dt_ioppr_resync_modules_order(&dev);
 
@@ -1123,7 +1133,6 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
   if(!ignore_exif)
   {
-    int length;
     uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes max, but if original size is close to that,
                                   // adding new tags could make it go over that... so let it be and see what
                                   // happens when we write the image
@@ -1131,7 +1140,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
     // last param is dng mode, it's false here
-    length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
+    const int length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
 
     res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, exif_profile, length, imgid,
                               num, total, &pipe, export_masks);
@@ -1280,6 +1289,11 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   /* check if file is ldr using magic's */
   if(dt_imageio_is_ldr(filename)) ret = dt_imageio_open_ldr(img, filename, buf);
 
+#ifdef HAVE_LIBJXL
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_jpegxl(img, filename, buf);
+#endif
+
   /* silly check using file extensions: */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))
     ret = dt_imageio_open_hdr(img, filename, buf);
@@ -1330,9 +1344,89 @@ gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
   return found;
 }
 
+typedef struct _imageio_preview_t
+{
+  dt_imageio_module_data_t head;
+  int bpp;
+  uint8_t *buf;
+  uint32_t width, height;
+} _imageio_preview_t;
+
+static int _preview_write_image(dt_imageio_module_data_t *data,
+                                const char *filename, const void *in,
+                                dt_colorspaces_color_profile_type_t over_type,
+                                const char *over_filename,
+                                void *exif, int exif_len, int imgid, int num, int total,
+                                dt_dev_pixelpipe_t*pipe,
+                                const gboolean export_masks)
+{
+  _imageio_preview_t *d = (_imageio_preview_t *)data;
+
+  memcpy(d->buf, in, sizeof(uint32_t) * data->width * data->height);
+  d->width = data->width;
+  d->height = data->height;
+
+  return 0;
+}
+
+static int _preview_bpp(dt_imageio_module_data_t *data)
+{
+  return 8;
+}
+
+static int _preview_levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_INT8;
+}
+
+static const char *_preview_mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
+cairo_surface_t *dt_imageio_preview(const int32_t imgid,
+                                    const size_t width,
+                                    const size_t height,
+                                    const int history_end,
+                                    const char *style_name)
+{
+  dt_imageio_module_format_t buf;
+  buf.mime = _preview_mime;
+  buf.levels = _preview_levels;
+  buf.bpp = _preview_bpp;
+  buf.write_image = _preview_write_image;
+
+  _imageio_preview_t dat;
+  dat.head.max_width = width;
+  dat.head.max_height = height;
+  dat.head.width = width;
+  dat.head.height = height;
+  dat.head.style_append = TRUE;
+  dat.bpp = 8;
+  dat.buf = (uint8_t *)dt_alloc_align(64, sizeof(uint32_t) * width * height);
+
+  g_strlcpy(dat.head.style, style_name, sizeof(dat.head.style));
+
+  const gboolean high_quality = FALSE;
+  const gboolean upscale = TRUE;
+  const gboolean export_masks = FALSE;
+  const gboolean is_scaling = FALSE;
+
+  dt_imageio_export_with_flags
+    (imgid, "preview", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
+     high_quality, upscale, is_scaling, FALSE, NULL, FALSE, export_masks,
+     DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL,
+     history_end);
+
+  const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, dat.head.width);
+  cairo_surface_t *surface = dt_cairo_image_surface_create_for_data
+        (dat.buf, CAIRO_FORMAT_RGB24, dat.head.width, dat.head.height, stride);
+
+  return surface;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

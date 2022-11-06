@@ -108,7 +108,6 @@ typedef enum dt_gui_color_t
 
 typedef struct dt_gui_gtk_t
 {
-
   struct dt_ui_t *ui;
 
   dt_gui_widgets_t widgets;
@@ -466,4 +465,3 @@ void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

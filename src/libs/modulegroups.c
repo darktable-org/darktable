@@ -1577,6 +1577,7 @@ void init_presets(dt_lib_module_t *self)
   AM("levels");
   AM("rgbcurve");
   AM("rgblevels");
+  AM("sigmoid");
   AM("tonecurve");
 
   SMG(C_("modulegroup", "color"), "color");
@@ -1724,6 +1725,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("filmicrgb");
+  AM("sigmoid");
   AM("toneequal");
   AM("crop");
   AM("ashift");
@@ -1758,6 +1760,7 @@ void init_presets(dt_lib_module_t *self)
   AM("watermark");
   AM("censorize");
   AM("blurs");
+  AM("diffuse");
 
   dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 

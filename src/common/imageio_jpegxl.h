@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,17 +18,10 @@
 
 #pragma once
 
-#include <cairo.h>
+#include "common/image.h"
+#include "common/mipmap_cache.h"
 
-/** shows a dialog for creating a new style */
-void dt_gui_styles_dialog_new(int imgid);
-
-/** shows a dialog for editing existing style */
-void dt_gui_styles_dialog_edit(const char *name);
-
-cairo_surface_t *dt_gui_get_style_preview(const uint32_t imgid, const char *name);
-
-GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid);
+dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

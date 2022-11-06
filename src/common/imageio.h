@@ -25,6 +25,7 @@
 #include <glib.h>
 #include <stdio.h>
 
+#include <cairo.h>
 #include <inttypes.h>
 
 #define FILTERS_ARE_CYGM(filters)                                                                                 \
@@ -89,7 +90,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  const gboolean export_masks, dt_colorspaces_color_profile_type_t icc_type,
                                  const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
                                  dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *storage_params,
-                                 int num, int total, dt_export_metadata_t *metadata);
+                                 int num, int total, dt_export_metadata_t *metadata, const int history_end);
 
 size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
                             dt_image_orientation_t orientation);
@@ -117,9 +118,14 @@ gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
 // get the type of image from its extension
 dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension);
 
+cairo_surface_t *dt_imageio_preview(const int32_t imgid,
+                                    const size_t width,
+                                    const size_t height,
+                                    const int history_end,
+                                    const char *style_name);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

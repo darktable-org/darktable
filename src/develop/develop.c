@@ -52,7 +52,7 @@
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
-void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
+void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
 {
   memset(dev, 0, sizeof(dt_develop_t));
   dev->full_preview = FALSE;
@@ -102,6 +102,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     // FIXME: these are uint32_t, setting to -1 is confusing
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
+    dev->darkroom_mouse_in_center_area = FALSE;
+    dev->darkroom_skip_mouse_events = FALSE;
   }
 
   dev->iop_instance = 0;
@@ -550,11 +552,6 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   }
 
-  dt_dev_zoom_t zoom;
-  float zoom_x = 0.0f, zoom_y = 0.0f, scale = 0.0f;
-  int window_width, window_height, x, y, closeup;
-  dt_dev_pixelpipe_change_t pipe_changed;
-
 // adjust pipeline according to changed flag set by {add,pop}_history_item.
 restart:
   if(dev->gui_leaving)
@@ -568,14 +565,14 @@ restart:
   }
   dev->pipe->input_timestamp = dev->timestamp;
   // dt_dev_pixelpipe_change() will clear the changed value
-  pipe_changed = dev->pipe->changed;
+  const dt_dev_pixelpipe_change_t pipe_changed = dev->pipe->changed;
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->pipe, dev);
   // determine scale according to new dimensions
-  zoom = dt_control_get_dev_zoom();
-  closeup = dt_control_get_dev_closeup();
-  zoom_x = dt_control_get_dev_zoom_x();
-  zoom_y = dt_control_get_dev_zoom_y();
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  float zoom_x = dt_control_get_dev_zoom_x();
+  float zoom_y = dt_control_get_dev_zoom_y();
   // if just changed to an image with a different aspect ratio or
   // altered image orientation, the prior zoom xy could now be beyond
   // the image boundary
@@ -586,9 +583,9 @@ restart:
     dt_control_set_dev_zoom_y(zoom_y);
   }
 
-  scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
-  window_width = dev->width * darktable.gui->ppd;
-  window_height = dev->height * darktable.gui->ppd;
+  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0) * darktable.gui->ppd;
+  int window_width = dev->width * darktable.gui->ppd;
+  int window_height = dev->height * darktable.gui->ppd;
   if(closeup)
   {
     window_width /= 1<<closeup;
@@ -596,8 +593,8 @@ restart:
   }
   const int wd = MIN(window_width, dev->pipe->processed_width * scale);
   const int ht = MIN(window_height, dev->pipe->processed_height * scale);
-  x = MAX(0, scale * dev->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
-  y = MAX(0, scale * dev->pipe->processed_height * (.5 + zoom_y) - ht / 2);
+  const int x = MAX(0, scale * dev->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
+  const int y = MAX(0, scale * dev->pipe->processed_height * (.5 + zoom_y) - ht / 2);
 
   dt_get_times(&start);
   if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, wd, ht, scale))
@@ -756,6 +753,28 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
     dev->preview2_pipe->changed |= DT_DEV_PIPE_ZOOMED;
     dev->pipe->changed |= DT_DEV_PIPE_ZOOMED;
     dt_dev_invalidate(dev);
+  }
+}
+
+void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht)
+{
+  // fixed border on every side
+  const int32_t tb =
+    dev->iso_12646.enabled
+    ? MIN(1.75 * dev->second_window.dpi, 0.3 * MIN(wd, ht))
+    : 0;
+
+  wd -= 2*tb;
+  ht -= 2*tb;
+
+  if(dev->second_window.width != wd || dev->second_window.height != ht)
+  {
+    dev->second_window.width = wd;
+    dev->second_window.height = ht;
+    dev->second_window.border_size = tb;
+    dev->preview2_pipe->changed |= DT_DEV_PIPE_ZOOMED;
+    dt_dev_invalidate(dev);
+    dt_dev_reprocess_center(dev);
   }
 }
 
@@ -2404,13 +2423,6 @@ void dt_dev_masks_selection_change(dt_develop_t *dev, struct dt_iop_module_t *mo
     dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);
 }
 
-void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
-{
-  dev->proxy.snapshot.filename = filename;
-  dev->proxy.snapshot.request = TRUE;
-  dt_control_queue_redraw_center();
-}
-
 void dt_dev_invalidate_from_gui(dt_develop_t *dev)
 {
   dt_dev_pop_history_items(darktable.develop, darktable.develop->history_end);
@@ -3138,6 +3150,56 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
   {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
+}
+
+void dt_dev_image(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height)
+{
+  // create a dev
+
+  dt_develop_t dev;
+  dt_dev_init(&dev, TRUE);
+  dev.border_size = darktable.develop->border_size;
+  dev.iso_12646.enabled = darktable.develop->iso_12646.enabled;
+
+  // create the full pipe
+
+  dev.gui_attached = FALSE;
+  dt_dev_pixelpipe_init(dev.pipe);
+
+  // load image and set history_end
+
+  dt_dev_load_image(&dev, imgid);
+
+  if(history_end != -1)
+    dt_dev_pop_history_items_ext(&dev, history_end);
+
+  // configure the actual dev width & height
+
+  dt_dev_configure(&dev, width, height);
+
+  // process the pipe
+
+  dt_dev_process_image_job(&dev);
+
+  // record resulting image and dimentions
+
+  const uint32_t bufsize =
+    sizeof(uint32_t) * dev.pipe->backbuf_width * dev.pipe->backbuf_height;
+  *buf = dt_alloc_align(64, bufsize);
+  memcpy(*buf, dev.pipe->backbuf, bufsize);
+  *processed_width  = dev.pipe->backbuf_width;
+  *processed_height = dev.pipe->backbuf_height;
+
+  // we take the backbuf, avoid it to be released
+
+  dt_dev_cleanup(&dev);
 }
 
 // clang-format off

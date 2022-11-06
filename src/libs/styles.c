@@ -71,7 +71,6 @@ int position(const dt_lib_module_t *self)
 typedef enum _styles_columns_t
 {
   DT_STYLES_COL_NAME = 0,
-  DT_STYLES_COL_TOOLTIP,
   DT_STYLES_COL_FULLNAME,
   DT_STYLES_NUM_COLS
 } _styles_columns_t;
@@ -120,6 +119,40 @@ static gboolean _get_node_for_name(GtkTreeModel *model, gboolean root, GtkTreeIt
   return FALSE;
 }
 
+gboolean _styles_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyboard_mode,
+                                  GtkTooltip* tooltip, gpointer user_data)
+{
+  GtkTreeModel* model;
+  GtkTreePath* path;
+  GtkTreeIter iter;
+  int imgid = -1;
+
+  if(gtk_tree_view_get_tooltip_context(GTK_TREE_VIEW(self), &x, &y, FALSE, &model, &path, &iter))
+  {
+    gchar *name = NULL;
+    gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
+
+    // only on leaf node
+    if(!name) return FALSE;
+
+    GList *selected_image = dt_collection_get_selected(darktable.collection, 1);
+
+    if(selected_image)
+    {
+      imgid = GPOINTER_TO_INT(selected_image->data);
+      g_list_free(selected_image);
+    }
+
+    GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
+    gtk_widget_show_all(ht);
+
+    gtk_tooltip_set_custom(tooltip, ht);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 static void _gui_styles_update_view(dt_lib_styles_t *d)
 {
   /* clear current list */
@@ -135,19 +168,6 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
     for(const GList *res_iter = result; res_iter; res_iter = g_list_next(res_iter))
     {
       dt_style_t *style = (dt_style_t *)res_iter->data;
-
-      gchar *items_string = (gchar *)dt_styles_get_item_list_as_string(style->name);
-      gchar *tooltip = NULL;
-
-      if(style->description && *style->description)
-      {
-        tooltip
-            = g_strconcat("<b>", g_markup_escape_text(style->description, -1), "</b>\n", items_string, NULL);
-      }
-      else
-      {
-        tooltip = g_strdup(items_string);
-      }
 
       gchar **split = g_strsplit(style->name, "|", 0);
       int k = 0;
@@ -167,20 +187,19 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
           {
             // a leaf
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
-                               DT_STYLES_COL_NAME, s, DT_STYLES_COL_TOOLTIP, tooltip, DT_STYLES_COL_FULLNAME, style->name, -1);
+                               DT_STYLES_COL_NAME, s,
+                               DT_STYLES_COL_FULLNAME, style->name, -1);
           }
         }
         k++;
       }
       g_strfreev(split);
-
-      g_free(items_string);
-      g_free(tooltip);
     }
     g_list_free_full(result, dt_style_free);
   }
 
-  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->tree), DT_STYLES_COL_TOOLTIP);
+  g_signal_connect(GTK_TREE_VIEW(d->tree), "query-tooltip",
+                   G_CALLBACK(_styles_tooltip_callback), d);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->tree), model);
   g_object_unref(model);
 }
