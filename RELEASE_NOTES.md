@@ -36,7 +36,7 @@ accompanying blog post.
 
 - New Sigmoid display transform module.
 
-- Two new hl recovery inpaint opposed and segmentation. new default
+- Two new hl recovery in-paint opposed and segmentation. new default
   in-paint opposed.
 
 - Rework image display + snapshots + duplicate + second window
@@ -46,7 +46,7 @@ accompanying blog post.
 
 - Support color assessment mode and focus-peaking on second window
 
-- The lens module buil-in support
+- The lens module built-in support
 
 - JPEG XL (read / write)
 
@@ -57,7 +57,7 @@ accompanying blog post.
 
 - Add support for manipulating masks without scrolling (for tablet
   users). The mask manager has been enhanced with a new collapsible
-  section containings controls for changing masks properties.
+  section containing controls for changing masks properties.
 
   It is also possible to change a properly shared by a group of mask.
 
@@ -65,6 +65,8 @@ accompanying blog post.
   with new on-canvas controls to change the size and feather.
 
 - Add WebP read support.
+
+- Embedded ICC profile in exported WebP file.
 
 - A double click on a notebook tab reset all widgets it contains.
 
@@ -86,10 +88,32 @@ accompanying blog post.
 
 - The White Balances presets have been migrated to an external JSON file.
 
-- Remove Color Balance layout from the preference as this can be done
-  directly on the module itself.
+- Remove Color Balance layout and White Balance control background
+  color from the preference as this can be done directly on the module
+  itself.
 
 - Improve profile support for AVIF & EXR format.
+
+- The current collection image count is now shown in the toolbox. This
+  makes this information available even if the top hinter area is
+  hidden.
+
+- Try to get color-space for PNG file from the cICP chunk. This was
+  added in a recent revision of the PNG spec, so we take advantage of
+  it is present.
+
+- The reading of 16-bit half float for TIFF format is now done using
+  the Imath library.
+
+- Enable actions on the export format and storage widgets. This means
+  that they can be mapped to shortcut.
+
+- Introduce balanced OpenCL vs CPU tiling. This makes it possible to
+  use CPU tiling if there is not enough memory on the OpenCL card and
+  so would require a lot of tiles to be handled on the card. At the
+  end, the large number of tiles plus the overlapping area will make
+  the use of the OpenCL code patch slower (or much slower) than
+  handling the image without tiling on CPU.
 
 ## Bug Fixes
 
@@ -97,16 +121,16 @@ accompanying blog post.
 
 - Fix iop-order name on reset.
 
-- Do not display deprecated module actions in preferences' shorcuts section.
+- Do not display deprecated module actions in preferences' shortcuts section.
 
 - Fix some bauhaus widgets popup positioning on Wayland.
 
-- Add support for scrolling through presets with shorcuts.
+- Add support for scrolling through presets with shortcuts.
 
 - Fix speed issue when importing large folders with XMP having lot of
   metadata.
 
-- Fix some missing GUI update in the liquify module. In some cases,
+- Fix some missing GUI update in the Liquify module. In some cases,
   changing the strength of a node in a curve or line was not properly
   updating the displacement values.
 
@@ -121,7 +145,7 @@ accompanying blog post.
   another collection mode was selected we use the default filmroll
   one.
 
-- Fix Lab convertion in TIFF import.
+- Fix Lab conversion in TIFF import.
 
 - Fix highlights visualization in all recovery mode.
 
@@ -133,6 +157,26 @@ accompanying blog post.
   presets. This gives a better stability to the UI.
 
 - Fix some refresh of the mask manager when changing images.
+
+- Fix mask selection after a continuous mask creation.
+
+- Fix name and tooltip in demosaic preferences to be correct for all
+  sensor kind.
+
+- Remove the automatic check for OpenCL headroom as this was causing
+  more problems than it solve.
+
+- Fix non blinking cursor in the processing module search dialog. This
+  was making the module looks like it was not active.
+
+- Properly record the libraw black level.
+
+- Fix state of some UI buttons in the retouch module when switch images.
+
+- Fix selection of unaltered images.
+
+- Widgets in collapsed section are not disabled anymore making them
+  actionable via shortcut.
 
 ## Lua
 
