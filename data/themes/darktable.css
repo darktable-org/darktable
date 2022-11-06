@@ -1605,8 +1605,8 @@ messagedialog .default,  /* this show that a button in confirmation action pop-u
 treeview *:selected:not(check),
 treeview *:checked:not(check)
 {
-  background-color: @field_selected_bg;
-  color: @field_selected_fg;
+  background-color: @field_active_bg;
+  color: @field_active_fg;
 }
 
 /* History currently selected button ; they don't need to set background */
@@ -1614,14 +1614,13 @@ treeview *:checked:not(check)
 .dt_history_items:checked *,
 button.dt_transparent_background:checked:not(:disabled):not(.dt_ignore_fg_state)
 {
-  color: @field_selected_fg;
+  color: @field_active_fg;
 }
 
 /* Hover states, some needed background only */
 .dt_history_items:hover,
 .dt_transparent_background:hover,
 button:hover:not(.combo):not(.dt_no_hover),
-button:hover:checked:not(.combo):not(.dt_no_hover),
 dialog .sidebar :hover,
 menuitem:hover,
 notebook tab:hover,
@@ -1637,6 +1636,11 @@ treeview:not(#lutname) *:hover:not(check),
   background-color: alpha(@button_hover_bg, 0.5);
   border-color: transparent;
   color: shade(@fg_color, 1.15);
+}
+
+button:hover:checked:not(.combo):not(.dt_no_hover) /* allow different background on hover+active state */
+{
+  background-color: alpha(@button_hover_bg, 0.65);
 }
 
 .combo:hover,
