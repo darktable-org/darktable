@@ -76,11 +76,6 @@ int position(const dt_lib_module_t *self)
   return 2001;
 }
 
-static GtkWidget *_lib_filter_get_filter_box(dt_lib_module_t *self)
-{
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  return d->filter_box;
-}
 static GtkWidget *_lib_filter_get_sort_box(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
@@ -434,11 +429,8 @@ void gui_init(dt_lib_module_t *self)
 
   /* initialize proxy */
   darktable.view_manager->proxy.filter.module = self;
-  darktable.view_manager->proxy.filter.get_filter_box = _lib_filter_get_filter_box;
   darktable.view_manager->proxy.filter.get_sort_box = _lib_filter_get_sort_box;
-<<<<<<< HEAD
   darktable.view_manager->proxy.filter.get_count = _lib_filter_get_count;
-=======
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                                   G_CALLBACK(_dt_collection_updated), self);
@@ -446,7 +438,13 @@ void gui_init(dt_lib_module_t *self)
   // initialize the filters
   _update_where_ext(self, FALSE);
   _filters_init(self);
->>>>>>> 07f7975e37 (filters : reactivate topbar)
+
+  // test if the filtering module is already load and update its gui in this case
+  // otherwise filtering module will do it in its gui_init()
+  if(darktable.view_manager->proxy.module_filtering.module)
+  {
+    darktable.view_manager->proxy.module_filtering.update(darktable.view_manager->proxy.module_filtering.module);
+  }
 }
 
 void gui_cleanup(dt_lib_module_t *self)
