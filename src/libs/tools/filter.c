@@ -408,7 +408,7 @@ void gui_init(dt_lib_module_t *self)
   // the hamburger button
   d->menu_btn = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   g_signal_connect(G_OBJECT(d->menu_btn), "button-press-event", G_CALLBACK(_event_menu_show), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->menu_btn, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->menu_btn, FALSE, TRUE, 0);
 
   // the filter box
   d->filter_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
