@@ -1368,10 +1368,9 @@ static void _modify_roi_in_lf(struct dt_iop_module_t *self, struct dt_dev_pixelp
   delete modifier;
 }
 
-static void _commit_params_lf(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+static void _commit_params_lf(struct dt_iop_module_t *self, dt_iop_lens_params_t *p, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)p1;
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
@@ -1565,9 +1564,8 @@ static float _get_autoscale_md(dt_iop_module_t *self, dt_iop_lens_params_t *p)
   return 1 / scale;
 }
 
-static void _commit_params_md(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+static void _commit_params_md(dt_iop_module_t *self, dt_iop_lens_params_t *p, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)p1;
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   const dt_image_t *img = &self->dev->image_storage;
 
@@ -1982,12 +1980,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(d->method == DT_IOP_LENS_METHOD_LENSFUN)
   {
 #ifdef HAVE_LENSFUN
-    _commit_params_lf(self, p1, pipe, piece);
+    _commit_params_lf(self, p, pipe, piece);
 #endif
   }
   else
   {
-    _commit_params_md(self, p1, pipe, piece);
+    _commit_params_md(self, p, pipe, piece);
   }
 }
 
