@@ -105,7 +105,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
       - use it to set same settings on all bauhaus (sliders and combobox)
   - dt_bauhaus_alignment:
       - used for icons that needs to be aligned with bauhaus widgets in libs
-      - ex : color picker for auto-tune setting in filmic or mask on same module and tone equalizer
+      - ex : mask display line on filmicrgb and tone equalizer
   - dt_bauhaus_popup:
       - used for all bauhaus popup
   - dt_spacing_sw:
@@ -1661,16 +1661,18 @@ button:checked cellview
   color: shade(@button_hover_fg, 0.99);
 }
 
-/* Treeviews and filechoosers states */
-treeview check, /* set specific background color about check buttons like in copy/paste dialog window */
-menuitem:not(.dt_transparent_background) check  /* be sure transparent background is applied to preset and blend menus */
+/* Treeviews, entries and filechoosers states */
+menuitem:not(.dt_transparent_background) check,  /* be sure transparent background is applied to preset and blend menus */
+treeview check /* set specific background color about check buttons like in copy/paste dialog window */
 {
   background-color: @field_active_bg;
   border-color: @border_color;
 }
 
-treeview *:active,
-filechooser *:active
+.changed,
+entry:active,
+filechooser *:active,
+treeview *:active
 {
   background-color: @field_active_bg;
   color: @field_active_fg;
@@ -1682,10 +1684,16 @@ treeview check:selected
   border-color: @plugin_bg_color;
 }
 
-treeview check:hover,
-menuitem check:hover
+menuitem check:hover,
+treeview check:hover
 {
   color: @bauhaus_fg_hover;
+}
+
+entry:hover
+{
+  color: @field_hover_fg;
+  background-color: @field_hover_bg;
 }
 
 /* Adjust delete folder dialog window */
@@ -1719,19 +1727,6 @@ treeview#delete-dialog:selected
 .dt_bauhaus_popup:hover
 {
   color: @bauhaus_fg_hover;
-}
-
-/* Entries states */
-entry:hover
-{
-  color: @field_hover_fg;
-  background-color: @field_hover_bg;
-}
-
-entry:active
-{
-  color: @field_active_fg;
-  background-color: @field_active_bg;
 }
 
 .iop_drag_icon
@@ -2271,9 +2266,4 @@ Details :
 #footer-toolbar scale
 {
   margin: 0.07em 0.28em;
-}
-
-.changed
-{
-  background-color: @field_active_bg;
 }
