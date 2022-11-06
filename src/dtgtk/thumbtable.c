@@ -659,7 +659,8 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       {
         // we stop when last image is fully shown (that means empty space at the bottom)
         // we just need to then ensure that the top row is fully shown
-        if(last->y + table->thumb_size < table->view_height && posy < 0 && table->thumbs_area.y == 0) return FALSE;
+        if(last->y + table->thumb_size < table->view_height
+           && posy < 0 && table->thumbs_area.y == 0) return FALSE;
       }
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)

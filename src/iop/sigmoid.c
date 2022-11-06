@@ -86,12 +86,12 @@ const char *aliases()
 const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply a view transform to make a image displayable\n"
-                                        "on a screen or print. Uses a robust and smooth\n"
+                                        "on a screen or print. uses a robust and smooth\n"
                                         "tone curve with optional color preservation methods."),
                                       _("corrective and creative"),
-                                      _("linear RGB, scene-referred"),
-                                      _("non-linear RGB"),
-                                      _("linear RGB, display-referred"));
+                                      _("linear, RGB, scene-referred"),
+                                      _("non-linear, RGB"),
+                                      _("linear, RGB, display-referred"));
 }
 
 int flags()
@@ -119,7 +119,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.middle_grey_contrast = 1.22f;
   p.contrast_skewness = 0.65f;
   p.hue_preservation = 100.0f;
-  dt_gui_presets_add_generic(_("neutral grey"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("neutral gray"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.middle_grey_contrast = 1.6f;
   p.contrast_skewness = -0.2f;
@@ -553,7 +553,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->contrast_slider, 0.7f, 3.0f);
   dt_bauhaus_slider_set_digits(g->contrast_slider, 3);
   gtk_widget_set_tooltip_text(g->contrast_slider, _("compression of the applied curve\n"
-                                                    "implicitly defines the supported input dynamic range."));
+                                                    "implicitly defines the supported input dynamic range"));
   g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
   gtk_widget_set_tooltip_text(g->skewness_slider, _("shift the compression towards shadows or highlights.\n"
                                                     "negative values increase contrast in shadows.\n"

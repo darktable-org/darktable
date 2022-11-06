@@ -20,10 +20,6 @@ add_library(tiff MODULE "tiff.c")
 if(JXL_FOUND)
   list(APPEND MODULES "jxl_format")
   add_library(jxl_format MODULE "jxl.c")
-  # At least on Windows, have to link to libjxl explicitly here as symbols
-  # from libdarktable get stripped (until read support is added). As a
-  # consequence, have to also change the module name to not be libjxl.
-  target_link_libraries(jxl_format PUBLIC ${JXL_LIBRARIES})
   set_target_properties(jxl_format PROPERTIES OUTPUT_NAME jpegxl)
 endif(JXL_FOUND)
 
