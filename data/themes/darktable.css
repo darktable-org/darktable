@@ -1258,7 +1258,7 @@ filechooser row:hover .sidebar-icon
 /*--------------------
   - Quick access tab -
   --------------------*/
-#basics-header-box
+#basics-box-labels widget
 {
   border-top: 0.07em solid @lighttable_bg_color;
 }
@@ -1269,7 +1269,7 @@ filechooser row:hover .sidebar-icon
   padding: 0.21em 0.7em;
 }
 
-#basics-box-labels #basics-header-box:first-child,
+#basics-box-labels widget:first-child,
 #basics-box-labels .dt_section_label,
 #thumb-localcopy:active
 {
@@ -1591,7 +1591,7 @@ progressbar progress
 .dt_history_items:active,
 .dt_history_items:checked,
 button:active,
-button:checked:not(:disabled):not(.dt_transparent_background),
+button:checked:not(:disabled):not(.dt_transparent_background):not(.dt_ignore_fg_state),
 button:selected,
 cell:selected,
 checkbutton check:checked,
