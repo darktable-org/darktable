@@ -306,7 +306,9 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   {
     // we haven't found a module to replace
     // check if there's a module with the same (operation, multi_name) on dev->iop
-    for(GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
+    for(GList *modules_dest = dev_dest->iop;
+        modules_dest;
+        modules_dest = g_list_next(modules_dest))
     {
       dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
@@ -1823,4 +1825,3 @@ gboolean dt_history_delete_on_list(const GList *list, gboolean undo)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
