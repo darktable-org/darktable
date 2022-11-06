@@ -64,9 +64,6 @@ typedef enum dt_pixelpipe_picker_source_t
 
 #include "develop/pixelpipe_cache.c"
 
-static void _get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
-                              dt_develop_t *dev, dt_iop_buffer_dsc_t *dsc);
-
 const char *dt_dev_pixelpipe_type_to_str(int pipe_type)
 {
   const gboolean fast = pipe_type & DT_DEV_PIXELPIPE_FAST;
@@ -199,6 +196,21 @@ gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int
   return dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, size, memlimit);
 }
 
+static void get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
+                              dt_develop_t *dev, dt_iop_buffer_dsc_t *dsc)
+{
+  if(module) return module->output_format(module, pipe, piece, dsc);
+
+  // first input.
+  *dsc = pipe->image.buf_dsc;
+
+  if(!(dt_image_is_raw(&pipe->image)))
+  {
+    // image max is normalized before
+    for(int k = 0; k < 4; k++) dsc->processed_maximum[k] = 1.0f;
+  }
+}
+
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height,
                                 float iscale)
 {
@@ -207,7 +219,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->iscale = iscale;
   pipe->input = input;
   pipe->image = dev->image_storage;
-  _get_output_format(NULL, pipe, NULL, dev, &pipe->dsc);
+  get_output_format(NULL, pipe, NULL, dev, &pipe->dsc);
 }
 
 void dt_dev_pixelpipe_set_icc(dt_dev_pixelpipe_t *pipe, dt_colorspaces_color_profile_type_t icc_type,
@@ -515,22 +527,6 @@ void dt_dev_pixelpipe_add_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int 
 void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int n)
 {
 }
-
-static void _get_output_format(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
-                              dt_develop_t *dev, dt_iop_buffer_dsc_t *dsc)
-{
-  if(module) return module->output_format(module, pipe, piece, dsc);
-
-  // first input.
-  *dsc = pipe->image.buf_dsc;
-
-  if(!(dt_image_is_raw(&pipe->image)))
-  {
-    // image max is normalized before
-    for(int k = 0; k < 4; k++) dsc->processed_maximum[k] = 1.0f;
-  }
-}
-
 
 // helper to get per module histogram
 static void _histogram_collect(dt_dev_pixelpipe_iop_t *piece, const void *pixel, const dt_iop_roi_t *roi,
@@ -1022,10 +1018,11 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   if(!fitting && piece->process_tiling_ready)
   {
     dt_print(DT_DEBUG_ROI,
-             "[process TILE] %17s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f\n",
+             "[process TILE] %17s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i, backbuf %ix%i\n",
              dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op,
              roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
-             roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
+             roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
+             piece->pipe->final_width, piece->pipe->final_height, piece->pipe->backbuf_width, piece->pipe->backbuf_height);
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
@@ -1038,11 +1035,11 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
               dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
 
     dt_print(DT_DEBUG_ROI,
-             "[process CPU] %15s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i\n",
+             "[process CPU] %15s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i, backbuf %ix%i\n",
              dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op,
              roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
              roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
-             piece->pipe->final_width, piece->pipe->final_height);
+             piece->pipe->final_width, piece->pipe->final_height, piece->pipe->backbuf_width, piece->pipe->backbuf_height);
 
     module->process(module, piece, input, *output, roi_in, roi_out);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
@@ -1164,8 +1161,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                           g_list_previous(modules), g_list_previous(pieces), pos - 1);
   }
 
-  if(module) g_strlcpy(module_name, module->op, MIN(sizeof(module_name), sizeof(module->op)));
-  _get_output_format(module, pipe, piece, dev, *out_format);
+  if(module)
+    g_strlcpy(module_name, module->op, MIN(sizeof(module_name), sizeof(module->op)));
+  get_output_format(module, pipe, piece, dev, *out_format);
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
   const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height;
 
@@ -1583,10 +1581,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         if(success_opencl)
         {
           dt_print(DT_DEBUG_ROI,
-                   "[process CL] %16s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i\n",
+                   "[process CL] %16s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i, backbuf %ix%i\n",
                    dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op, roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale,
                    roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
-                   piece->pipe->final_width, piece->pipe->final_height);
+                   piece->pipe->final_width, piece->pipe->final_height, piece->pipe->backbuf_width, piece->pipe->backbuf_height);
 
           success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
