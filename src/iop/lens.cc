@@ -311,7 +311,7 @@ static int _modflags_from_lensfun_mods(int lf_mods)
 
   return mods;
 #else
-  return 0;
+  return lf_mods;
 #endif
 }
 
@@ -340,7 +340,7 @@ static int _lenstype_from_lensfun_lenstype(lfLensType lt)
       return DT_IOP_LENS_LENSTYPE_UNKNOWN;
   }
 #else
-  return DT_IOP_LENS_LENSTYPE_UNKNOWN;
+  return lt;
 #endif
 }
 
