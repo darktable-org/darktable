@@ -36,22 +36,42 @@ accompanying blog post.
 
 - New Sigmoid display transform module.
 
-- Two new hl recovery in-paint opposed and segmentation. new default
-  in-paint opposed.
+- Two new highlight recovery algorithm are proposed: in-paint opposed
+  and segmentation. The in-paint opposed has proved to be very stable
+  and good in a lot of pictures so it has been made the default now.
 
-- Rework image display + snapshots + duplicate + second window
-  => alignment
+- A full rework of the image display has been done. An initial work
+  has been to create an easy to use image display on the central
+  area. This routine supports all display mode: focus-peaking and
+  color assessment. This routine is now used for the darkroom area,
+  for the second window and the duplicates.
 
-- Add style preview in lighttable style module and in darkroom style widget.
+  So the second window gets the focus-peaking display and more
+  importantly the color assessment mode which is an important feature.
 
-- Support color assessment mode and focus-peaking on second window
+  To achieve that properly a new routine has been created which run a
+  separate pixelpipe which is fully equivalent to the darkroom
+  one. This gives a properly aligned display.
 
-- The lens module built-in support
+  Using the new pixelpipe and display routines the snapshot routine
+  has been reworked. This new version has fully dynamic snapshots. The
+  snapshot can be panned and zoomed and still perfectly aligned with
+  the darkroom display which permit a proper comparison.
+
+- Add style preview in lighttable style module and in darkroom style
+  widget. The preview is displayed in the tooltip when overing the
+  style entries. The tooltip UI has been redesigned at the same time.
+
+- The lens module gains built-in support. Some cameras are recording
+  lens correction values into the EXIF. Those data are now retrieved
+  and used by the lens module to do the corresponding corrections.
 
 - JPEG XL (read / write)
 
 - Show modules with transition + keep them fully visible when opening
   or expanding.
+
+- Large pixelpipe cache overhaul.
 
 ## Other Changes
 
@@ -114,6 +134,13 @@ accompanying blog post.
   end, the large number of tiles plus the overlapping area will make
   the use of the OpenCL code patch slower (or much slower) than
   handling the image without tiling on CPU.
+
+- In preview mode the overlay display block is not shown by
+  default. Moving the cursor on the half top of the thumb will display
+  it. The block is still hidden automatically after some timeout.
+
+- Set light patterns for Behringer b-control midi rotors
+  (BCR2000/BCF2000)
 
 ## Bug Fixes
 
