@@ -986,8 +986,6 @@ static void _filters_gui_update(dt_lib_module_t *self)
     else if(!dt_filters_exists(prop, FALSE))
     {
       // that means that for some reason we have a filter with no implementation
-      d->nb_rules--;
-      i--;
       continue;
     }
     gtk_widget_show_all(d->rule[i].w_main);

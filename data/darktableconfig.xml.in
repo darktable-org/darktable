@@ -443,7 +443,7 @@
   <dtconfig>
     <name>plugins/lighttable/filtering/sort0</name>
     <type>int</type>
-    <default>0</default>
+    <default>1</default>
     <shortdescription>first sort orders</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
@@ -457,7 +457,7 @@
   <dtconfig>
     <name>plugins/lighttable/filtering/item0</name>
     <type>int</type>
-    <default>32</default>
+    <default>9</default>
     <shortdescription>first filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
@@ -476,23 +476,16 @@
     <longdescription></longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/filtering/top0</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription>first filter</shortdescription>
-    <longdescription></longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/filtering/string0</name>
     <type>string</type>
-    <default>%</default>
+    <default></default>
     <shortdescription>first filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/filtering/item1</name>
     <type>int</type>
-    <default>18</default>
+    <default>2</default>
     <shortdescription>second filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
@@ -511,13 +504,6 @@
     <longdescription></longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/filtering/top1</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription>second filter</shortdescription>
-    <longdescription></longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/filtering/string1</name>
     <type>string</type>
     <default></default>
@@ -527,7 +513,7 @@
   <dtconfig>
     <name>plugins/lighttable/filtering/item2</name>
     <type>int</type>
-    <default>33</default>
+    <default>8</default>
     <shortdescription>third filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
@@ -546,16 +532,9 @@
     <longdescription></longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/filtering/top2</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription>third filter</shortdescription>
-    <longdescription></longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/filtering/string2</name>
     <type>string</type>
-    <default>%%</default>
+    <default></default>
     <shortdescription>third filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
