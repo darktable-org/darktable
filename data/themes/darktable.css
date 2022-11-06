@@ -1767,8 +1767,7 @@ Hierarchy :
       #thumb-colorlabels                                             (GtkDarktableThumbnailBtn -- colorlabels icon, 1 icon with all labels)
       #thumb-localcopy                                               (GtkDarktableThumbnailBtn -- local copy triangle icon)
       #thumb-altered                                                 (GtkDarktableThumbnailBtn -- altered icon)
-      #thumb-group                                                   (GtkDarktableThumbnailBtn -- grouping icon)
-      #thumb-audio                                                   (GtkDarktableThumbnailBtn -- audio sidecar icon)
+      #thumb-group-audio                                             (GtkDarktableThumbnailBtn -- grouping and audio sidecar icons)
 
 Details :
 
@@ -1809,8 +1808,7 @@ Details :
   ----------------------------*/
 /* Background */
 .dt_thumbtable,
-.dt_culling,
-.dt_preview
+.dt_fullview
 {
   background-color: @lighttable_bg_color;
 }
@@ -2090,18 +2088,12 @@ Details :
 }
 
 /* Set hover group and audio effect */
-.dt_overlays_hover #thumb-main:hover #thumb-group:hover,
-.dt_overlays_hover #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-group:hover,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_always #thumb-main:hover #thumb-group:hover,
-.dt_overlays_always #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_always_extended #thumb-main:hover #thumb-group:hover,
-.dt_overlays_always_extended #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_mixed #thumb-main:hover #thumb-group:hover,
-.dt_overlays_mixed #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_hover_block #thumb-main:hover #thumb-group:hover,
-.dt_overlays_hover_block #thumb-main:hover #thumb-audio:hover
+.dt_overlays_hover #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_always #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_always_extended #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_mixed #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_hover_block #thumb-main:hover #thumb-group-audio:hover
 {
   color: @thumbnail_fg_color;
 }
@@ -2134,11 +2126,6 @@ Details :
   color: rgba(0,0,0,0.15); /* add some transparency to infos items in thumbnail */
 }
 
-.dt_thumbnail_rating_6 #thumb-star
-{
-  color: transparent; /* needed to hide completely stars in rejected images as they are not needed, except in hover mode if we want to un-reject images */
-}
-
 /* Set local copy mark */
 #thumb-localcopy
 {
@@ -2158,35 +2145,23 @@ Details :
 /*---------------------------------------------------------
   - Hide icons on all lighttable modes and duplicate ones -
   ---------------------------------------------------------*/
-.dt_culling #thumb-ext,
-.dt_culling #thumb-main:selected #thumb-ext,
-.dt_culling #thumb-main:hover #thumb-ext,
-.dt_overlays_always#culling #thumb-altered,
-.dt_overlays_always#culling #thumb-audio,
-.dt_overlays_always#culling #thumb-group,
-.dt_overlays_always_extended#culling #thumb-altered,
-.dt_overlays_always_extended#culling #thumb-audio,
-.dt_overlays_always_extended#culling #thumb-group,
-.dt_preview #thumb-ext,
-.dt_preview #thumb-main:selected #thumb-ext,
-.dt_preview #thumb-main:hover #thumb-ext,
-.dt_overlays_always#preview #thumb-altered,
-.dt_overlays_always#preview #thumb-audio,
-.dt_overlays_always#preview #thumb-group,
-.dt_overlays_always_extended#preview #thumb-altered,
-.dt_overlays_always_extended#preview #thumb-audio,
-.dt_overlays_always_extended#preview #thumb-group,
-.dt_duplicate_ui #thumb-main:hover #thumb-group,
+.dt_fullview #thumb-ext,
+.dt_fullview #thumb-main:selected #thumb-ext,
+.dt_fullview #thumb-main:hover #thumb-ext,
+.dt_duplicate_ui #thumb-main:hover #thumb-group-audio,
 .dt_duplicate_ui #thumb-main:hover #thumb-altered,
-.dt_duplicate_ui #thumb-main:hover #thumb-audio,
+.dt_duplicate_ui #thumb-group-audio,
 .dt_duplicate_ui #thumb-altered,
-.dt_duplicate_ui #thumb-audio,
-.dt_duplicate_ui #thumb-group
+.dt_overlays_always.dt_fullview #thumb-group-audio,
+.dt_overlays_always.dt_fullview #thumb-altered,
+.dt_overlays_always_extended.dt_fullview #thumb-group-audio,
+.dt_overlays_always_extended.dt_fullview #thumb-altered,
+.dt_thumbnail_rating_6 #thumb-star /* needed to hide completely stars in rejected images as they are not needed, except in hover mode if we want to un-reject images */
 {
   color: transparent;
 }
 
-.dt_overlays_always#preview #thumb-bottom > *
+.dt_overlays_always.dt_fullview #thumb-bottom > *
 {
   padding-top: 0.21em;
 }
@@ -2198,45 +2173,33 @@ Details :
   padding-right: 0.28em;
 }
 
-/*-----------------------------
-  - Culling and preview modes -
-  -----------------------------*/
+/*-------------------------------------------------
+  - Culling and preview modes (dt_fullview class) -
+  -----------------------------------------------*/
 /* Hide not wanted things on these modes: ext name and thumb_main border */
-.dt_culling #thumb-back,
-.dt_culling #thumb-main:selected #thumb-back,
-.dt_culling #thumb-main:hover #thumb-back,
-.dt_culling #thumb-main:active #thumb-back,
-.dt_preview #thumb-back,
-.dt_preview #thumb-main:selected #thumb-back,
-.dt_preview #thumb-main:hover #thumb-back,
-.dt_preview #thumb-main:active #thumb-back
+.dt_fullview #thumb-back,
+.dt_fullview #thumb-main:selected #thumb-back,
+.dt_fullview #thumb-main:hover #thumb-back,
+.dt_fullview #thumb-main:active #thumb-back
 {
   background-color: transparent;
   border: 0;
 }
 
 /* Set image borders */
-.dt_preview #thumb-image, .dt_preview_thumb_image#thumb-image
-{
-  margin : 0.7em;
-}
-.dt_culling #thumb-main:selected #thumb-image,
-.dt_preview #thumb-main:selected #thumb-image
+.dt_fullview #thumb-main:selected #thumb-image
 {
   border: 0.14em solid @plugin_bg_color;
 }
 
-.dt_culling #thumb-main:hover #thumb-image,
-.dt_preview #thumb-main:hover #thumb-image
+.dt_fullview #thumb-main:hover #thumb-image
 {
   border: 0.14em solid @thumbnail_hover_bg_color;
 }
 
 /* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
-.dt_overlays_always#culling #thumb-bottom,
-.dt_overlays_always_extended#culling #thumb-bottom,
-.dt_overlays_always#preview #thumb-bottom,
-.dt_overlays_always_extended#preview #thumb-bottom
+.dt_overlays_always.dt_fullview #thumb-bottom,
+.dt_overlays_always_extended.dt_fullview #thumb-bottom
 {
   background-color: shade(@lighttable_bg_color, 1.1);
 }
