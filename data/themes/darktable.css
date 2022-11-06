@@ -1621,6 +1621,7 @@ button.dt_transparent_background:checked:not(:disabled):not(.dt_ignore_fg_state)
 .dt_history_items:hover,
 .dt_transparent_background:hover,
 button:hover:not(.combo):not(.dt_no_hover),
+button:hover:checked:not(.combo):not(.dt_no_hover),
 dialog .sidebar :hover,
 menuitem:hover,
 notebook tab:hover,
