@@ -142,6 +142,12 @@ accompanying blog post.
 - Set light patterns for Behringer b-control midi rotors
   (BCR2000/BCF2000)
 
+- Fix reading of EXIF metadata when importing EXRs (if desired,
+  existing files must be re-imported, refreshing metadata is not an
+  option).
+
+- Add support for scrolling through presets with shortcuts.
+
 ## Bug Fixes
 
 - Fix bauhaus popup size and position.
@@ -151,8 +157,6 @@ accompanying blog post.
 - Do not display deprecated module actions in preferences' shortcuts section.
 
 - Fix some bauhaus widgets popup positioning on Wayland.
-
-- Add support for scrolling through presets with shortcuts.
 
 - Fix speed issue when importing large folders with XMP having lot of
   metadata.
