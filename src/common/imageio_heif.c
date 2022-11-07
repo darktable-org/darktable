@@ -146,9 +146,11 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   if(bit_depth > 8)
   {
     img->flags |= DT_IMAGE_HDR;
+    img->flags &= ~DT_IMAGE_LDR;
   }
   else
   {
+    img->flags |= DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_HDR;
   }
 
