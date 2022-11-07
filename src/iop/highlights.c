@@ -127,7 +127,7 @@ typedef struct dt_iop_highlights_params_t
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: DT_WAVELETS_6_SCALE $DESCRIPTION: "diameter of reconstruction"
   float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidating"
   float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
-  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "recovery"
+  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "rebuild"
   // params of v4
   float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
 } dt_iop_highlights_params_t;
@@ -1935,16 +1935,7 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
                     const dt_iop_roi_t *const roi_in)
 {
   *roi_out = *roi_in;
-
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
-  const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
-
-  if(visualizing || !use_opposing)
-    return;
-
+  // it can never hurt to make sure
   roi_out->x = MAX(0, roi_in->x);
   roi_out->y = MAX(0, roi_in->y);
 }
@@ -2446,7 +2437,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->clip,
                               _("manually adjust the clipping threshold mostly used against "
                                 "magenta highlights\nthe mask icon shows the clipped areas.\n"
-                                "you might use this for tuning 'laplacian' or 'segmentation' modes,\n"
+                                "you might use this for tuning 'laplacian', 'inpaint opposed' or 'segmentation' modes,\n"
                                 "especially if camera white point is incorrect."));
   dt_bauhaus_widget_set_quad_paint(g->clip, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->clip, TRUE);
@@ -2456,7 +2447,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
   gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations.\n"
-                                            "the mask button shows resulting segment borders."));
+                                            "the mask button shows the exact positions of resulting segment borders."));
   dt_bauhaus_widget_set_quad_paint(g->combine, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->combine, TRUE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
@@ -2465,7 +2456,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
   gtk_widget_set_tooltip_text(g->candidating, _("select inpainting after segmentation analysis.\n"
                                                 "increase to favour candidates found in segmentation analysis, decrease for opposed means inpainting.\n"
-                                                "the mask button shows selected segments."));
+                                                "the mask button shows segments that are concidered to have a good candidate."));
   dt_bauhaus_slider_set_format(g->candidating, "%");
   dt_bauhaus_slider_set_digits(g->candidating, 0);
   dt_bauhaus_widget_set_quad_paint(g->candidating, dtgtk_cairo_paint_showmask, 0, NULL);
@@ -2477,10 +2468,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->recovery, _("approximate lost data in regions with all photosites clipped, the effect depends on segment size and border gradients.\n"
                                              "choose a mode tuned for segment size or the generic mode that tries to find best settings for every segment.\n"
                                              "small means areas with a diameter less than 25 pixels, large is best for greater than 100.\n"
-                                             "the flat modes ignore narrow unclipped structures."));
+                                             "the flat modes ignore narrow unclipped structures (like powerlines) to keep highlights rebuilt and avoid gradients."));
 
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
-  gtk_widget_set_tooltip_text(g->strength, _("set strength of reconstruction in regions with all photosites clipped"));
+  gtk_widget_set_tooltip_text(g->strength, _("set strength of rebuilding in regions with all photosites clipped.\n"
+                                             "the mask buttons shows the effect that is added to already reconstructed data."));
   dt_bauhaus_slider_set_format(g->strength, "%");
   dt_bauhaus_slider_set_digits(g->strength, 0);
   dt_bauhaus_widget_set_quad_paint(g->strength, dtgtk_cairo_paint_showmask, 0, NULL);
