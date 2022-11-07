@@ -59,7 +59,7 @@ static inline float _calc_linear_refavg(const float *in, const int row, const in
 // A slightly modified version for sraws
 static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         dt_iop_highlights_data_t *data)
+                         dt_iop_highlights_data_t *data, const gboolean quality)
 {
   const float clipval = 0.987f * data->clip;
   const dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
@@ -114,10 +114,10 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
     goto finish;
   }
 
-  gboolean anyclipped = FALSE;
+  size_t anyclipped = 0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  reduction( | : anyclipped) \
+  reduction( + : anyclipped) \
   dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, mask_buffer) \
   dt_omp_sharedconst(p_size, pwidth, pheight, i_width) \
   schedule(static)
@@ -139,7 +139,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
           {
             tmp[c] = _calc_linear_refavg(&in[0], row, col, roi_in, c);
             mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
-            anyclipped |= TRUE;
+            anyclipped += 1;
           }
         }
       }
@@ -148,7 +148,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
     }
   }
 
-  if(!valid_chrominance && anyclipped)
+  if(!valid_chrominance && (anyclipped > 5) && quality)
   {
     for(size_t i = 0; i < 3; i++)
     {
@@ -186,14 +186,13 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
       }
     }
     for_each_channel(c)
-      chrominance[c] = cr_sum[c] / fmax(1.0, cr_cnt[c]);    
+      chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);    
 
     if(g && piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
     {
       for_each_channel(c)
         g->chroma_correction[c] = chrominance[c];
       g->valid_chroma_correction = TRUE;
-      // fprintf(stderr, "[opposed linear chroma corrections] %f, %f, %f\n", chrominance[0], chrominance[1], chrominance[2]);          
     }
   }
 
@@ -231,7 +230,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
 
 static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         dt_iop_highlights_data_t *data, const gboolean keep)
+                         dt_iop_highlights_data_t *data, const gboolean keep, const gboolean quality)
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -285,10 +284,10 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     return NULL;
   }
 
-  gboolean anyclipped = FALSE;
+  size_t anyclipped = 0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  reduction( | : anyclipped) \
+  reduction( + : anyclipped) \
   dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, xtrans, mask_buffer) \
   dt_omp_sharedconst(filters, p_size, pwidth, pheight, i_width, o_width) \
   schedule(static)
@@ -307,14 +306,14 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
         /* for the clipped photosites we later do the correction when the chrominance is available, we keep refavg in raw-RGB */
         tmp[0] = _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE);
         mask_buffer[color * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
-        anyclipped |= TRUE;
+        anyclipped += 1;
       }
       tmp++;
       in++;
     }
   }
 
-  if(!valid_chrominance && anyclipped)
+  if(!valid_chrominance && (anyclipped > 5) && quality)
   {
   /* We want to use the photosites closely around clipped data to be taken into account.
      The mask buffers holds data for each color channel, we dilate the mask buffer slightly
@@ -358,14 +357,15 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       }
     }
     for_each_channel(c)
-      chrominance[c] = cr_sum[c] / fmax(1.0, cr_cnt[c]);    
+      chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
+
+    // fprintf(stderr, "[opposed chroma corrections] %f, %f, %f\n", chrominance[0], chrominance[1], chrominance[2]);          
 
     if(g && piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
     {
       for_each_channel(c)
         g->chroma_correction[c] = chrominance[c];
       g->valid_chroma_correction = TRUE;
-      // fprintf(stderr, "[opposed chroma corrections] %f, %f, %f\n", chrominance[0], chrominance[1], chrominance[2]);          
     }
   }
 
