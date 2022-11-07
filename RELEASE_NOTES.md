@@ -150,6 +150,14 @@ accompanying blog post.
 
 ## Bug Fixes
 
+- Properly use the display color profile in the slideshow. This was
+  missing and so images where just ignoring the color profile and were
+  displayed (very) differently than on the lighttable or darkroom.
+
+- Properly honor the modules' off status of in a style. Using a style
+  in the export module can now be used to disable a module otherwise
+  enabled in the history stack.
+
 - Fix bauhaus popup size and position.
 
 - Fix iop-order name on reset.
