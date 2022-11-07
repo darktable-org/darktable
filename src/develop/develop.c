@@ -877,6 +877,22 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
 
   history = g_list_nth(dev->history, dev->history_end - 1);
   dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
+
+  // if module should be enabled, do it now
+  if(enable)
+  {
+    module->enabled = TRUE;
+    if(!no_image)
+    {
+      if(module->off)
+      {
+        ++darktable.gui->reset;
+        dt_iop_gui_set_enable_button(module);
+        --darktable.gui->reset;
+      }
+    }
+  }
+
   if(!history                                                  // no history yet, push new item
      || new_item                                               // a new item is requested
      || module != hist->module
@@ -896,19 +912,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     dev->history_end++;
 
     hist = (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
-    if(enable)
-    {
-      module->enabled = TRUE;
-      if(!no_image)
-      {
-        if(module->off)
-        {
-          ++darktable.gui->reset;
-          dt_iop_gui_set_enable_button(module);
-          --darktable.gui->reset;
-        }
-      }
-    }
+
     g_strlcpy(hist->op_name, module->op, sizeof(hist->op_name));
     hist->focus_hash = dev->focus_hash;
     hist->enabled = module->enabled;
@@ -944,20 +948,6 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
       memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
-    // if the user changed stuff and the module is still not enabled, do it:
-    if(!hist->enabled && !module->enabled)
-    {
-      module->enabled = 1;
-      if(!no_image)
-      {
-        if(module->off)
-        {
-          ++darktable.gui->reset;
-          dt_iop_gui_set_enable_button(module);
-          --darktable.gui->reset;
-        }
-      }
-    }
     hist->iop_order = module->iop_order;
     hist->multi_priority = module->multi_priority;
     memcpy(hist->multi_name, module->multi_name, sizeof(module->multi_name));

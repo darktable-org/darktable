@@ -291,7 +291,8 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   dt_iop_module_t *mod_replace = NULL;
 
   // one-instance modules always replace the existing one
-  if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE)
+  if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE
+    || !mod_src->enabled)
   {
     mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
     if(mod_replace == NULL)
