@@ -3829,8 +3829,12 @@ GSList *mouse_actions(const dt_view_t *self)
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("zoom in the image"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("unbounded zoom in the image"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_MIDDLE, 0, _("zoom to 100% 200% and back"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
-                                     _("[modules] expand module without closing others"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("pan a zoomed image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK, dt_conf_get_bool("darkroom/ui/single_module")
+                                     ? _("[modules] expand module without closing others")
+                                     : _("[modules] expand module and close others"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
+                                     _("[modules] rename module"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DRAG_DROP, GDK_SHIFT_MASK | GDK_CONTROL_MASK,
                                      _("[modules] change module position in pipe"));
 
