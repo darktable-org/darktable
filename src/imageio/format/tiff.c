@@ -788,7 +788,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("TIFF (8/16/32-bit)");
+  return _("TIFF");
 }
 
 static void bpp_combobox_changed(GtkWidget *widget, dt_imageio_tiff_gui_t *gui)

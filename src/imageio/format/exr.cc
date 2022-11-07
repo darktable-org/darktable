@@ -442,7 +442,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("OpenEXR (16/32-bit float)");
+  return _("OpenEXR");
 }
 
 static void bpp_combobox_changed(GtkWidget *widget, gpointer user_data)
@@ -469,7 +469,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp,self, NULL, N_("bit depth"), NULL,
                                (bpp_last >> 4) - EXR_PT_HALF, bpp_combobox_changed, self,
-                               N_("16 bit"), N_("32 bit"));
+                               N_("16 bit (float)"), N_("32 bit (float)"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
 
   // Compression combo box

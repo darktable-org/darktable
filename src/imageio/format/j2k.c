@@ -564,7 +564,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)calloc(1, sizeof(dt_imageio_j2k_t));
-  d->bpp = 16; // can be 8, 12 or 16
+  d->bpp = 12; // can be 8, 12 or 16
   d->format = dt_conf_get_int("plugins/imageio/format/j2k/format");
   d->preset = dt_conf_get_int("plugins/imageio/format/j2k/preset");
   d->quality = dt_conf_get_int("plugins/imageio/format/j2k/quality");
@@ -649,7 +649,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->format, self, NULL, N_("format"), NULL,
                                format_last, format_changed, self,
-                               N_("J2K"), N_("jp2"));
+                               N_("j2k"), N_("jp2"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->format, TRUE, TRUE, 0);
 
   gui->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
@@ -702,4 +702,3 @@ int flags(dt_imageio_module_data_t *data)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
