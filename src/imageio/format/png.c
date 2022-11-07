@@ -500,7 +500,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("PNG (8/16-bit)");
+  return _("PNG");
 }
 
 static void bit_depth_changed(GtkWidget *widget, gpointer user_data)

@@ -346,7 +346,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("WebP (8-bit)");
+  return _("WebP");
 }
 
 static void compression_changed(GtkWidget *widget, dt_imageio_webp_gui_data_t *gui)
