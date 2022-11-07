@@ -120,7 +120,7 @@ accompanying blog post.
   makes this information available even if the top hinter area is
   hidden.
 
-- Try to get color-space for PNG files from the cICP chunk. This was
+- Try to get color space for PNG files from the cICP chunk. This was
   added in a recent revision of the PNG spec, so we take advantage of
   it if present.
 
@@ -297,3 +297,4 @@ No samples on raw.pixls.us
 
 - Albanian
 - Turkish (New)
+
