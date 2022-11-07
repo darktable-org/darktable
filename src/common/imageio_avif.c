@@ -103,7 +103,6 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
-  img->flags |= DT_IMAGE_HDR;
 
   const float max_channel_f = (float)((1 << bit_depth) - 1);
 
@@ -114,6 +113,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   switch(bit_depth) {
   case 12:
   case 10: {
+    img->flags |= DT_IMAGE_HDR;
+    img->flags &= ~DT_IMAGE_LDR;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mipbuf, width, height, in, rowbytes, max_channel_f) \
@@ -137,6 +138,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     break;
   }
   case 8: {
+    img->flags |= DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_HDR;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mipbuf, width, height, in, rowbytes, max_channel_f) \
