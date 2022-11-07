@@ -79,7 +79,7 @@ accompanying blog post.
 
 - Add support for manipulating masks without scrolling (for tablet
   users). The mask manager has been enhanced with a new collapsible
-  section containing controls for changing masks properties.
+  section containing controls for changing the masks' properties.
 
   It is also possible to change a property shared by a group of mask.
 
@@ -120,7 +120,7 @@ accompanying blog post.
   makes this information available even if the top hinter area is
   hidden.
 
-- Try to get color-space for PNG file from the cICP chunk. This was
+- Try to get color-space for PNG files from the cICP chunk. This was
   added in a recent revision of the PNG spec, so we take advantage of
   it if present.
 
@@ -154,7 +154,7 @@ accompanying blog post.
 
 - Properly use the display color profile in the slideshow. This was
   missing, and so images were just ignoring the color profile and were
-  displayed (very) differently than on the lighttable or darkroom.
+  displayed (very) differently than on the lighttable or in the darkroom.
 
 - Properly honor the modules' off status of in a style. Using a style
   in the export module can now be used to disable a module otherwise
@@ -164,11 +164,11 @@ accompanying blog post.
 
 - Fix iop-order name on reset.
 
-- Do not display deprecated module actions in preferences' shortcuts section.
+- Do not display deprecated module actions in the preferences' shortcuts section.
 
 - Fix some bauhaus widgets popup positioning on Wayland.
 
-- Fix speed issue when importing large folders with XMP having lot of
+- Fix speed issue when importing large folders with XMP having a lot of
   metadata.
 
 - Fix some missing GUI updates in the Liquify module. In some cases,
@@ -195,7 +195,7 @@ accompanying blog post.
 - Fix undo/redo after a style applied via a shortcut.
 
 - Do not rebuild the whole tree when deleting or editing a
-  presets. This gives a better stability to the UI.
+  presets. This gives better stability to the UI.
 
 - Fix some refresh of the mask manager when changing images.
 
@@ -212,11 +212,11 @@ accompanying blog post.
 
 - Properly record the libraw black level.
 
-- Fix state of some UI buttons in the retouch module when switch images.
+- Fix state of some UI buttons in the retouch module when switching images.
 
 - Fix selection of unaltered images.
 
-- Widgets in collapsed section are not disabled anymore, making them
+- Widgets in collapsed sections are not disabled anymore, making them
   actionable via shortcut.
 
 ## Lua
