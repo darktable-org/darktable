@@ -2729,28 +2729,13 @@ GdkModifierType dt_key_modifier_state()
 
 static void _reset_all_bauhaus(GtkNotebook *notebook, GtkWidget *box)
 {
-  dt_action_t *module = NULL;
-
-  ++darktable.gui->reset;
-
   for(GList *c = gtk_container_get_children(GTK_CONTAINER(box)); c; c = g_list_delete_link(c, c))
   {
     if(DT_IS_BAUHAUS_WIDGET(c->data))
-    {
-      dt_bauhaus_widget_t *b = DT_BAUHAUS_WIDGET(c->data);
-      if(!b->field) continue;
-      module = b->module;
-
-      dt_bauhaus_widget_reset(GTK_WIDGET(b));
-    }
+      dt_bauhaus_widget_reset(GTK_WIDGET(c->data));
   }
 
-  --darktable.gui->reset;
-
   dt_gui_remove_class(gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook), box), "changed");
-
-  if(module && module->type == DT_ACTION_TYPE_IOP_INSTANCE)
-    dt_dev_add_history_item(darktable.develop, (dt_iop_module_t *)module, TRUE);
 }
 
 static void _notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocation, gpointer *data)
