@@ -177,19 +177,22 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     }
   }
 
+  /* Get the ICC profile if available */
+  size_t icc_size = heif_image_handle_get_raw_color_profile_size(handle);
+  if(icc_size)
+  {
+    img->profile = (uint8_t *)g_malloc0(icc_size);
+    heif_image_handle_get_raw_color_profile(handle, img->profile);
+    img->profile_size = icc_size;
+  }
+
   img->loader = LOADER_HEIF;
   ret = DT_IMAGEIO_OK;
 
-  out:
+out:
   // cleanup handles
-  if(heif_img)
-  {
-    heif_image_release(heif_img);
-  }
-  if(handle)
-  {
-    heif_image_handle_release(handle);
-  }
+  heif_image_release(heif_img);
+  heif_image_handle_release(handle);
   heif_context_free(ctx);
 
   return ret;
@@ -307,23 +310,17 @@ int dt_imageio_heif_read_profile(const char *filename,
       break;
   }
 
-  out:
+out:
   // cleanup handles
-  if(profile_info_nclx)
-  {
-    heif_nclx_color_profile_free(profile_info_nclx);
-  }
-  if(handle)
-  {
-    heif_image_handle_release(handle);
-  }
+  heif_nclx_color_profile_free(profile_info_nclx);
+  heif_image_handle_release(handle);
   heif_context_free(ctx);
 
   return size;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
