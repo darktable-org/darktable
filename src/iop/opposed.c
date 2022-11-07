@@ -186,7 +186,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
       }
     }
     for_each_channel(c)
-      chrominance[c] = cr_sum[c] / fmax(1.0, cr_cnt[c]);    
+      chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);    
 
     if(g && piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
     {
@@ -357,7 +357,7 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       }
     }
     for_each_channel(c)
-      chrominance[c] = cr_sum[c] / fmax(1.0, cr_cnt[c]);
+      chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
 
     // fprintf(stderr, "[opposed chroma corrections] %f, %f, %f\n", chrominance[0], chrominance[1], chrominance[2]);          
 
