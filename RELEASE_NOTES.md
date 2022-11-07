@@ -1,3 +1,5 @@
+
+
 We're proud to announce the new feature release of darktable, 4.2.0!
 
 The github release is here: [https://github.com/darktable-org/darktable/releases/tag/release-4.2.0](https://github.com/darktable-org/darktable/releases/tag/release-4.2.0).
@@ -36,33 +38,33 @@ accompanying blog post.
 
 - New Sigmoid display transform module.
 
-- Two new highlight recovery algorithm are proposed: in-paint opposed
+- Two new highlight recovery algorithms are proposed: in-paint opposed
   and segmentation. The in-paint opposed has proved to be very stable
-  and good in a lot of pictures so it has been made the default now.
+  and good in a lot of pictures, so it has been made the default now.
 
 - A full rework of the image display has been done. An initial work
-  has been to create an easy to use image display on the central
-  area. This routine supports all display mode: focus-peaking and
+  has been to create an easy-to-use image display on the central
+  area. This routine supports both focus-peaking and
   color assessment. This routine is now used for the darkroom area,
-  for the second window and the duplicates.
+  for the second window, and the duplicates.
 
-  So the second window gets the focus-peaking display and more
+  So, the second window gets the focus-peaking display and more
   importantly the color assessment mode which is an important feature.
 
-  To achieve that properly a new routine has been created which run a
+  To achieve that properly, a new routine has been created which runs a
   separate pixelpipe which is fully equivalent to the darkroom
   one. This gives a properly aligned display.
 
-  Using the new pixelpipe and display routines the snapshot routine
+  Using the new pixelpipe and display routines, the snapshot routine
   has been reworked. This new version has fully dynamic snapshots. The
   snapshot can be panned and zoomed and still perfectly aligned with
-  the darkroom display which permit a proper comparison.
+  the darkroom display which permits a proper comparison.
 
 - Add style preview in lighttable style module and in darkroom style
-  widget. The preview is displayed in the tooltip when overing the
+  widget. The preview is displayed in the tooltip when hovering over the
   style entries. The tooltip UI has been redesigned at the same time.
 
-- The lens module gains built-in support. Some cameras are recording
+- The lens module gains built-in support. Some cameras record
   lens correction values into the EXIF. Those data are now retrieved
   and used by the lens module to do the corresponding corrections.
 
@@ -79,18 +81,18 @@ accompanying blog post.
   users). The mask manager has been enhanced with a new collapsible
   section containing controls for changing masks properties.
 
-  It is also possible to change a properly shared by a group of mask.
+  It is also possible to change a property shared by a group of mask.
 
-  At the same time the circle and ellipse masks have been enhanced
+  At the same time, the circle and ellipse masks have been enhanced
   with new on-canvas controls to change the size and feather.
 
 - Add WebP read support.
 
 - Embedded ICC profile in exported WebP file.
 
-- A double click on a notebook tab reset all widgets it contains.
+- A double click on a notebook tab resets all widgets it contains.
 
-- Support regional data/time format in thumbnail tooltips.
+- Support regional date/time format in thumbnail tooltips.
 
 - Show lua command in action tooltip.
 
@@ -101,7 +103,7 @@ accompanying blog post.
   which is a standard JPEG.
 
 - The preference to auto-apply a sharpening has been removed. One can
-  add an auto-applied presets in the sharpen module and gain the same
+  add an auto-applied preset in the sharpen module and gain the same
   effect.
 
 - Add support for updating existing pictures in Piwigo export.
@@ -109,8 +111,8 @@ accompanying blog post.
 - The White Balances presets have been migrated to an external JSON file.
 
 - Remove Color Balance layout and White Balance control background
-  color from the preference as this can be done directly on the module
-  itself.
+  color from preferences as this can be done directly on the modules
+  themselves.
 
 - Improve profile support for AVIF & EXR format.
 
@@ -120,22 +122,22 @@ accompanying blog post.
 
 - Try to get color-space for PNG file from the cICP chunk. This was
   added in a recent revision of the PNG spec, so we take advantage of
-  it is present.
+  it if present.
 
 - The reading of 16-bit half float for TIFF format is now done using
   the Imath library.
 
 - Enable actions on the export format and storage widgets. This means
-  that they can be mapped to shortcut.
+  that they can be mapped to shortcuts.
 
 - Introduce balanced OpenCL vs CPU tiling. This makes it possible to
-  use CPU tiling if there is not enough memory on the OpenCL card and
+  use CPU tiling, if there is not enough memory on the OpenCL card and
   so would require a lot of tiles to be handled on the card. At the
   end, the large number of tiles plus the overlapping area will make
   the use of the OpenCL code patch slower (or much slower) than
   handling the image without tiling on CPU.
 
-- In preview mode the overlay display block is not shown by
+- In preview mode, the overlay display block is not shown by
   default. Moving the cursor on the half top of the thumb will display
   it. The block is still hidden automatically after some timeout.
 
@@ -151,7 +153,7 @@ accompanying blog post.
 ## Bug Fixes
 
 - Properly use the display color profile in the slideshow. This was
-  missing and so images where just ignoring the color profile and were
+  missing, and so images were just ignoring the color profile and were
   displayed (very) differently than on the lighttable or darkroom.
 
 - Properly honor the modules' off status of in a style. Using a style
@@ -169,7 +171,7 @@ accompanying blog post.
 - Fix speed issue when importing large folders with XMP having lot of
   metadata.
 
-- Fix some missing GUI update in the Liquify module. In some cases,
+- Fix some missing GUI updates in the Liquify module. In some cases,
   changing the strength of a node in a curve or line was not properly
   updating the displacement values.
 
@@ -180,19 +182,19 @@ accompanying blog post.
 
 - Fix translation of retouch module toast messages.
 
-- When importing we keep the folder or filmroll property if active. If
-  another collection mode was selected we use the default filmroll
+- When importing, we keep the folder or filmroll property, if active. If
+  another collection mode was selected, we use the default filmroll
   one.
 
 - Fix Lab conversion in TIFF import.
 
-- Fix highlights visualization in all recovery mode.
+- Fix highlights visualization in all recovery modes.
 
 - Fix X-Trans highlight reconstruction visual indicator.
 
 - Fix undo/redo after a style applied via a shortcut.
 
-- Do not rebuilt the whole tree when deleting or editing a
+- Do not rebuild the whole tree when deleting or editing a
   presets. This gives a better stability to the UI.
 
 - Fix some refresh of the mask manager when changing images.
@@ -202,11 +204,11 @@ accompanying blog post.
 - Fix name and tooltip in demosaic preferences to be correct for all
   sensor kind.
 
-- Remove the automatic check for OpenCL headroom as this was causing
-  more problems than it solve.
+- Remove the automatic check for OpenCL headroom as it caused
+  more problems than it solved.
 
-- Fix non blinking cursor in the processing module search dialog. This
-  was making the module looks like it was not active.
+- Fix non-blinking cursor in the processing module search dialog. This
+  was making the module look like it was not active.
 
 - Properly record the libraw black level.
 
@@ -214,7 +216,7 @@ accompanying blog post.
 
 - Fix selection of unaltered images.
 
-- Widgets in collapsed section are not disabled anymore making them
+- Widgets in collapsed section are not disabled anymore, making them
   actionable via shortcut.
 
 ## Lua
