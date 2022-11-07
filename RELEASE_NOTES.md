@@ -42,8 +42,8 @@ accompanying blog post.
   and segmentation. The in-paint opposed has proved to be very stable
   and good in a lot of pictures, so it has been made the default now.
 
-- A full rework of the image display has been done. An initial work
-  has been to create an easy-to-use image display on the central
+- A full rework of the image display has been done. Work has begun
+  to create an easy-to-use image display on the central
   area. This routine supports both focus-peaking and
   color assessment. This routine is now used for the darkroom area,
   for the second window, and the duplicates.
