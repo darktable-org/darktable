@@ -1640,7 +1640,7 @@ treeview:not(#lutname) *:hover:not(check),
 
 button:hover:checked:not(.combo):not(.dt_no_hover) /* allow different background on hover+active state */
 {
-  background-color: alpha(@button_hover_bg, 0.65);
+  background-color: alpha(@button_hover_bg, 0.8);
 }
 
 .combo:hover,
