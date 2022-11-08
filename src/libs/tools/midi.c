@@ -504,7 +504,7 @@ void midi_open_devices(dt_lib_module_t *self)
       }
       else
       {
-        fprintf(stderr, "[midi_open_devices] opened midi device '%s' via '%s' as midi%d\n", info->name, info->interf, dev);
+        dt_print(DT_DEBUG_INPUT, "[midi_open_devices] opened midi device '%s' via '%s' as midi%d\n", info->name, info->interf, dev);
       }
 
       midi_device *midi = (midi_device *)g_malloc0(sizeof(midi_device));
