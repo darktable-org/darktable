@@ -31,9 +31,8 @@
 
 DT_MODULE(1)
 
-#define DT_LIB_SNAPSHOTS_COUNT 4
-
 #define HANDLE_SIZE 0.02
+#define MAX_SNAPSHOT 10
 
 /* a snapshot */
 typedef struct dt_lib_snapshot_t
@@ -65,11 +64,8 @@ typedef struct dt_lib_snapshots_t
   /* current active snapshots */
   uint32_t num_snapshots;
 
-  /* size of snapshots */
-  uint32_t size;
-
   /* snapshots */
-  dt_lib_snapshot_t *snapshot;
+  dt_lib_snapshot_t snapshot[MAX_SNAPSHOT];
 
   /* change snapshot overlay controls */
   gboolean dragging, vertical, inverted, panning;
@@ -407,29 +403,77 @@ static void _lib_snapshots_toggle_last(dt_action_t *action)
 {
   dt_lib_snapshots_t *d = dt_action_lib(action)->data;
 
+  const int32_t index = d->num_snapshots - 1;
+
   if(d->num_snapshots)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button), !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button)));
+    gtk_toggle_button_set_active
+      (GTK_TOGGLE_BUTTON(d->snapshot[index].button),
+       !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->snapshot[index].button)));
+}
+
+static void _clear_snapshot_entry(dt_lib_snapshot_t *s)
+{
+  s->surface = NULL;
+  s->ctx = 0;
+  s->imgid = -1;
+  s->history_end = -1;
+}
+
+static void _clear_snapshots(dt_lib_module_t *self, const uint32_t imgid)
+{
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  d->selected = -1;
+  d->snap_requested = FALSE;
+
+  uint32_t pos = 0;
+  uint32_t removed_count = 0;
+
+  for(uint32_t k = 0; k < d->num_snapshots; k++)
+  {
+    dt_lib_snapshot_t *s = &d->snapshot[k];
+
+    if(imgid == -1 || s->imgid == imgid)
+    {
+      if(s->surface) cairo_surface_destroy(s->surface);
+      _clear_snapshot_entry(s);
+      gtk_widget_hide(s->button);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
+      removed_count++;
+    }
+    else
+    {
+      if(pos != k)
+      {
+        dt_lib_snapshot_t *n = &d->snapshot[pos];
+
+        GtkWidget *tmp = n->button;
+        n->button = s->button;
+        s->button = tmp;
+
+        n->imgid       = s->imgid;
+        n->ctx         = s->ctx;
+        n->surface     = s->surface;
+        n->history_end = s->history_end;
+        n->width       = s->width;
+        n->height      = s->height;
+
+        _clear_snapshot_entry(s);
+      }
+      pos++;
+    }
+  }
+
+  d->num_snapshots -= removed_count;
+
+  if(d->num_snapshots < MAX_SNAPSHOT)
+    gtk_widget_set_sensitive(d->take_button, TRUE);
+
+  dt_control_queue_redraw_center();
 }
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  d->num_snapshots = 0;
-  d->selected = -1;
-  d->snap_requested = FALSE;
-
-  for(uint32_t k = 0; k < d->size; k++)
-  {
-    dt_lib_snapshot_t *s = &d->snapshot[k];
-
-    if(s->surface) cairo_surface_destroy(s->surface);
-    s->surface = NULL;
-    s->ctx = 0;
-    gtk_widget_hide(s->button);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
-  }
-
-  dt_control_queue_redraw_center();
+  _clear_snapshots(self, -1);
 }
 
 static void _signal_profile_changed(gpointer instance, uint8_t profile_type, gpointer user_data)
@@ -449,7 +493,9 @@ static void _signal_profile_changed(gpointer instance, uint8_t profile_type, gpo
 
 static void _signal_history_invalidated(gpointer instance, gpointer user_data)
 {
-  gui_reset(user_data);
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  // we clear the snapshots for the image whose histroy is being invalidated
+  _clear_snapshots(self, darktable.develop->image_storage.id);
 }
 
 static void _signal_image_changed(gpointer instance, gpointer user_data)
@@ -459,7 +505,7 @@ static void _signal_image_changed(gpointer instance, gpointer user_data)
 
   const uint32_t imgid = darktable.develop->image_storage.id;
 
-  for(uint32_t k = 0; k < d->size; k++)
+  for(uint32_t k = 0; k < MAX_SNAPSHOT; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
 
@@ -505,8 +551,6 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   /* initialize snapshot storages */
-  d->size = 4;
-  d->snapshot = (dt_lib_snapshot_t *)g_malloc0_n(d->size, sizeof(dt_lib_snapshot_t));
   d->vp_xpointer = 0.5;
   d->vp_ypointer = 0.5;
   d->vp_xrotate = 0.0;
@@ -517,6 +561,7 @@ void gui_init(dt_lib_module_t *self)
   d->selected = -1;
   d->snap_requested = FALSE;
   d->expose_again_timeout_id = -1;
+  d->num_snapshots = 0;
 
   /* initialize ui containers */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -534,8 +579,10 @@ void gui_init(dt_lib_module_t *self)
   char localtmpdir[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(localtmpdir, sizeof(localtmpdir));
 
-  for(int k = 0; k < d->size; k++)
+  for(int k = 0; k < MAX_SNAPSHOT; k++)
   {
+    _clear_snapshot_entry(&d->snapshot[k]);
+
     /* create snapshot button */
     d->snapshot[k].button = gtk_toggle_button_new_with_label(wdname);
     GtkWidget *label = gtk_bin_get_child(GTK_BIN(d->snapshot[k].button));
@@ -543,11 +590,8 @@ void gui_init(dt_lib_module_t *self)
     gtk_label_set_xalign(GTK_LABEL(label), 0);
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
 
-    g_signal_connect(G_OBJECT(d->snapshot[k].button), "clicked",
+    g_signal_connect(G_OBJECT(d->snapshot[k].button), "toggled",
                      G_CALLBACK(_lib_snapshots_toggled_callback), self);
-
-    /* assign snapshot number to widget */
-    g_object_set_data(G_OBJECT(d->snapshot[k].button), "snapshot", GINT_TO_POINTER(k + 1));
 
     /* add button to snapshot box */
     gtk_box_pack_start(GTK_BOX(d->snapshots_box), d->snapshot[k].button, FALSE, FALSE, 0);
@@ -573,9 +617,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-
-  g_free(d->snapshot);
+  _clear_snapshots(self, -1);
 
   g_free(self->data);
   self->data = NULL;
@@ -589,62 +631,47 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   // first make sure the current history is properly written
   dt_dev_write_history(darktable.develop);
 
-  /* backup last snapshot slot */
-  dt_lib_snapshot_t last = d->snapshot[d->size - 1];
-
-  /* rotate slots down to make room for new one on top */
-  for(int k = d->size - 1; k > 0; k--)
-  {
-    GtkWidget *b = d->snapshot[k].button;
-    GtkWidget *bp = d->snapshot[k - 1].button;
-    d->snapshot[k] = d->snapshot[k - 1];
-    d->snapshot[k].button = b;
-
-    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(b))),
-      gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(bp)))));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b),
-                                 gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(bp)));
-    gtk_widget_set_tooltip_text(b, g_strdup(gtk_widget_get_tooltip_text(bp)));
-  }
-
-  /* update top slot with new snapshot */
-  char label[64];
-  GtkWidget *b = d->snapshot[0].button;
-  d->snapshot[0] = last;
-  d->snapshot[0].button = b;
   const gchar *name = _("original");
+
   if(darktable.develop->history_end > 0)
   {
-    dt_dev_history_item_t *history_item = g_list_nth_data(darktable.develop->history,
-                                                          darktable.develop->history_end - 1);
+    dt_dev_history_item_t *history_item =
+      g_list_nth_data(darktable.develop->history,
+                      darktable.develop->history_end - 1);
     if(history_item && history_item->module)
       name = history_item->module->name();
     else
       name = _("unknown");
   }
 
-  dt_lib_snapshot_t *s = &d->snapshot[0];
-  s->ctx = 0;
+  dt_lib_snapshot_t *s = &d->snapshot[d->num_snapshots];
+  _clear_snapshot_entry(s);
   s->history_end = darktable.develop->history_end;
   s->imgid = darktable.develop->image_storage.id;
-  s->surface = NULL;
 
+  char label[64];
   g_snprintf(label, sizeof(label), "%s (%d)", name, s->history_end);
-  gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[0].button))), label);
+  gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(s->button))), label);
 
   /* update slots used */
-  if(d->num_snapshots != d->size) d->num_snapshots++;
+  d->num_snapshots++;
 
   /* show active snapshot slots */
-  for(uint32_t k = 0; k < d->num_snapshots; k++) gtk_widget_show(d->snapshot[k].button);
+  for(uint32_t k = 0; k < d->num_snapshots; k++)
+    gtk_widget_show(d->snapshot[k].button);
+
+  if(d->num_snapshots == MAX_SNAPSHOT)
+    gtk_widget_set_sensitive(d->take_button, FALSE);
 }
 
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  /* get current snapshot index */
-  const int which = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "snapshot"));
+
+  if(darktable.gui->reset) return;
+
+  ++darktable.gui->reset;
 
   d->selected = -1;
 
@@ -652,17 +679,23 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   if(gtk_toggle_button_get_active(widget))
   {
     /* lets deactivate all togglebuttons except for self */
-    for(uint32_t k = 0; k < d->size; k++)
-      if(GTK_WIDGET(widget) != d->snapshot[k].button)
+    for(uint32_t k = 0; k < d->num_snapshots; k++)
+      if(GTK_WIDGET(widget) == d->snapshot[k].button)
+        d->selected = k;
+      else
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
 
     /* setup snapshot */
-    d->selected = which - 1;
-    dt_lib_snapshot_t *s = &d->snapshot[d->selected];
-    s->ctx = 0;
+    if(d->selected >= 0)
+    {
+      dt_lib_snapshot_t *s = &d->snapshot[d->selected];
+      s->ctx = 0;
+    }
 
     dt_dev_invalidate(darktable.develop);
   }
+
+  --darktable.gui->reset;
 
   /* redraw center view */
   dt_control_queue_redraw_center();
@@ -783,9 +816,7 @@ static int ratio_member(lua_State *L)
 
 static int max_snapshot_member(lua_State *L)
 {
-  dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  lua_pushinteger(L, d->size);
+  lua_pushinteger(L, MAX_SNAPSHOT);
   return 1;
 }
 
