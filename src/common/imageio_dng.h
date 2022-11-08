@@ -174,10 +174,10 @@ static inline void dt_imageio_dng_write_tiff_header(
   // ColorMatrix1 try to get camera matrix else m[k] like before
   if(!isnan(adobe_XYZ_to_CAM[0][0]))
   {
+    den = 10000;
     for(int k= 0; k < 3; k++)
       for(int i= 0; i < 3; i++)
-        m[k*3+i] = roundf(adobe_XYZ_to_CAM[k][i] * ADOBE_COEFF_FACTOR);
-    den = ADOBE_COEFF_FACTOR;
+        m[k*3+i] = roundf(adobe_XYZ_to_CAM[k][i] * den);
   }
 
   for(int k = 0; k < 9; k++)
@@ -234,4 +234,3 @@ static inline void dt_imageio_write_dng(
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

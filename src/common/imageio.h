@@ -37,9 +37,6 @@
 // FIXME: kill this pls.
 #define FILTERS_ARE_4BAYER(filters) (FILTERS_ARE_CYGM(filters) || FILTERS_ARE_RGBE(filters))
 
-// for Adobe coefficients from LibRaw & RawSpeed
-#define ADOBE_COEFF_FACTOR 10000
-
 typedef enum dt_imageio_levels_t
 {
   IMAGEIO_INT8 = 0x0,
