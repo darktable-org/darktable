@@ -832,17 +832,8 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   table->mode = mode;
   table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);
+  dt_gui_add_class(table->widget, "dt_fullview");
   // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
-
-  // set css name and class
-  if(mode == DT_CULLING_MODE_PREVIEW)
-    gtk_widget_set_name(table->widget, "preview");
-  else
-    gtk_widget_set_name(table->widget, "culling");
-  if(mode == DT_CULLING_MODE_PREVIEW)
-    dt_gui_add_class(table->widget, "dt_preview");
-  else
-    dt_gui_add_class(table->widget, "dt_culling");
 
   // overlays
   gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
