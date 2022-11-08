@@ -75,7 +75,7 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
                                const size_t size, void **data, struct dt_iop_buffer_dsc_t **dsc, char *modname, const gboolean important);
 
 /** test availability of a cache line without destroying another, if it is not found. */
-gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash);
+gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size);
 
 /** invalidates all cachelines. */
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache);
