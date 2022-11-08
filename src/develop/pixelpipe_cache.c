@@ -268,23 +268,34 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
 
   for(int k = 0; k < cache->entries; k++)
   {
-    if((cache->hash[k] == hash) && (cache->size[k] < size))
-      dt_print(DT_DEBUG_DEV, "[pixelpipe_cache_get identical hash SIZE ERROR] %12s %s HIT %16s, line%3i, age %4i, at %p, cache size %lu, requested %lu\n",
-        dt_dev_pixelpipe_type_to_str(pipe->type), (cache->used[k] < 0) ? "important" : "         ", name, k, cache->used[k], cache->data[k],
-        cache->size[k], size);
-
-    if((cache->hash[k] == hash) && (cache->size[k] >= size))
+    if(cache->hash[k] == hash)
     {
-      *data = cache->data[k];
-      *dsc = &cache->dsc[k];
-      ASAN_POISON_MEMORY_REGION(*data, cache->size[k]);
-      ASAN_UNPOISON_MEMORY_REGION(*data, size);
-      dt_vprint(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s %s HIT %16s, line%3i, age %4i, at %p, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-        dt_dev_pixelpipe_type_to_str(pipe->type), (cache->used[k] < 0) ? "important" : "         ", name, k, cache->used[k], cache->data[k],
-        cache->hash[k], cache->basichash[k]); 
-      // in case of a hit its always good to keep the cacheline as important
-      cache->used[k] = -cache->entries;
-      return FALSE;
+      if(cache->size[k] < size)
+      {
+        /* In rare sitations we might find an identical hash but the buffer size does not meet the requirements.
+           This can happen if the pixelpipe roi is expanded like in rotate&crop without a proper hash.
+           In this case we can't simply realloc or alike as there might be data in the pipeline just making use
+           of that buffer so we disable it and make the cleanup will free it.
+        */ 
+        dt_print(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s HIT SIZE ERROR in %16s, line%3i, age %4i, at %p, cache size %lu, requested %lu\n",
+          dt_dev_pixelpipe_type_to_str(pipe->type), name, k, cache->used[k], cache->data[k], cache->size[k], size);
+        cache->hash[k] = cache->basichash[k] = -1;
+        cache->used[k] = VERY_OLD_CACHE_WEIGHT;
+      }
+      else
+      {
+        // we have a proper hit
+        *data = cache->data[k];
+        *dsc = &cache->dsc[k];
+        ASAN_POISON_MEMORY_REGION(*data, cache->size[k]);
+        ASAN_UNPOISON_MEMORY_REGION(*data, size);
+        dt_vprint(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s %s HIT %16s, line%3i, age %4i, at %p, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
+          dt_dev_pixelpipe_type_to_str(pipe->type), (cache->used[k] < 0) ? "important" : "         ", name, k, cache->used[k], cache->data[k],
+          cache->hash[k], cache->basichash[k]); 
+        // in case of a hit its always good to keep the cacheline as important
+        cache->used[k] = -cache->entries;
+        return FALSE;
+      }
     }
   }
 
