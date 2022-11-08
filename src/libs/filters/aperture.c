@@ -67,13 +67,7 @@ static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
 
 static gchar *_aperture_print_func(const double value, const gboolean detailled)
 {
-  gchar *locale = strdup(setlocale(LC_ALL, NULL));
-  setlocale(LC_NUMERIC, "C");
-  gchar *txt = g_strdup_printf("%s%.1lf", detailled ? "f/" : "", value);
-  setlocale(LC_NUMERIC, locale);
-  g_free(locale);
-
-  return txt;
+  return g_strdup_printf("%s%.1lf", detailled ? "f/" : "", value);
 }
 
 static void _aperture_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
