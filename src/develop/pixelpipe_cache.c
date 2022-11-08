@@ -183,11 +183,12 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
   return hash;
 }
 
-gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash)
+gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size)
 {
   // search for hash in cache
-  for(int32_t k = 0; k < cache->entries; k++)
-    if(cache->hash[k] == hash) return TRUE;
+  for(int k = 0; k < cache->entries; k++)
+    if((cache->hash[k] == hash) && (cache->size[k] >= size))
+      return TRUE;
   return FALSE;
 }
 
@@ -277,8 +278,8 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
            In this case we can't simply realloc or alike as there might be data in the pipeline just making use
            of that buffer so we disable it and make the cleanup will free it.
         */ 
-        dt_print(DT_DEBUG_DEV, "[pixelpipe_cache_get] %12s HIT SIZE ERROR in %16s, line%3i, age %4i, at %p, cache size %lu, requested %lu\n",
-          dt_dev_pixelpipe_type_to_str(pipe->type), name, k, cache->used[k], cache->data[k], cache->size[k], size);
+        dt_print(DT_DEBUG_DEV, "[pixelpipe_cache_get] [%s] HIT SIZE ERROR in `%s', line%3i, age %4i, at %p, cache size %ikB, requested %ikB\n",
+          dt_dev_pixelpipe_type_to_str(pipe->type), name, k, cache->used[k], cache->data[k], (int)cache->size[k] / 1024, (int)size / 1024);
         cache->hash[k] = cache->basichash[k] = -1;
         cache->used[k] = VERY_OLD_CACHE_WEIGHT;
       }
