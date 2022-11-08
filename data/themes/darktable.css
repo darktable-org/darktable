@@ -1368,6 +1368,23 @@ filechooser row:hover .sidebar-icon
   margin-right: 0;
 }
 
+#dt-range-band-graph
+{
+  color: @range_graph_color;
+}
+#dt-range-band-selection
+{
+  color: @range_sel_color;
+}
+#dt-range-band-icons
+{
+  color: @range_icon_color;
+}
+#dt-range-band-cursor
+{
+  color: @range_cursor_color;
+}
+
 /*------------
   - Map view -
   ------------*/
