@@ -1246,12 +1246,22 @@ static int _graph_get_height(const int val, const int max, const int height)
   return sqrt(val / (double)max) * (height * 0.8) + height * 0.1;
 }
 
+static void _range_set_source_rgba(cairo_t *cr, GtkWidget *w, double alpha, const GtkStateFlags state)
+{
+  // retrieve the css color of a widget and apply it to cairo surface
+  GtkStyleContext *context = gtk_widget_get_style_context(w);
+  GdkRGBA coul;
+  gtk_style_context_get_color(context, state, &coul);
+  cairo_set_source_rgba(cr, coul.red, coul.green, coul.blue, coul.alpha * alpha);
+}
+
 static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
 
   // draw the graph (and create it if needed)
   if(!range->surface || range->alloc_main.width != allocation.width
@@ -1260,7 +1270,6 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     range->alloc_main = allocation;
     // get all the margins, paddings defined in css
     GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-    GtkStateFlags state = gtk_widget_get_state_flags(range->band);
     GtkBorder margin, padding;
     gtk_style_context_get_margin(context, state, &margin);
     gtk_style_context_get_padding(context, state, &padding);
@@ -1333,7 +1342,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     // draw the rectangles on the surface
     // we have to do some clever things in order to packed together blocks that will be shown at the same place
     // (see above)
-    dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_GRAPH, 1.0);
+    _range_set_source_rgba(scr, range->band_graph, 1.0, state);
     bl_min_px = 0;
     bl_count = 0;
     for(const GList *bl = range->blocks; bl; bl = g_list_next(bl))
@@ -1395,7 +1404,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   sel_min_px = MAX(sel_min_px, 0);
   sel_max_px = MIN(sel_max_px, range->alloc_padding.width);
   const int sel_width_px = MAX(2, sel_max_px - sel_min_px);
-  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_SELECTION, 1.0);
+  _range_set_source_rgba(cr, range->band_selection, 1.0, state);
   cairo_rectangle(cr, sel_min_px + range->alloc_padding.x, range->alloc_padding.y, sel_width_px,
                   range->alloc_padding.height);
   cairo_fill(cr);
@@ -1403,7 +1412,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   double current_value_r = _graph_value_from_pos(range, range->current_x_px, TRUE);
 
   // draw the markers
-  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
+  _range_set_source_rgba(cr, range->band_icons, 1.0, state);
   for(const GList *bl = range->markers; bl; bl = g_list_next(bl))
   {
     _range_marker *mark = bl->data;
@@ -1441,23 +1450,28 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
       const int posx_px = range->alloc_padding.width * icon->posx / 100 - size / 2;
       // we set prelight flag if the mouse value correspond
       gint f = icon->flags;
+      GtkStateFlags ic_state = GTK_STATE_FLAG_NORMAL;
       if(range->mouse_inside && range->current_x_px > 0 && icon->value_r == current_value_r)
       {
         f |= CPF_PRELIGHT;
-        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 0.6);
+        ic_state |= GTK_STATE_FLAG_PRELIGHT;
       }
       else
       {
         f &= ~CPF_PRELIGHT;
-        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
       }
 
       // we set the active flag if the icon value is inside the selection
       if((icon->value_r >= sel_min_r || (range->bounds & DT_RANGE_BOUND_MIN))
          && (icon->value_r <= sel_max_r || (range->bounds & DT_RANGE_BOUND_MAX)))
+      {
         f |= CPF_ACTIVE;
+        ic_state |= GTK_STATE_FLAG_ACTIVE;
+      }
       else
         f &= ~CPF_ACTIVE;
+
+      _range_set_source_rgba(cr, range->band_icons, 1.0, ic_state);
       // and we draw the icon
       icon->paint(cr, posx_px + range->alloc_padding.x, posy, size, size, f, icon->data);
     }
@@ -1466,7 +1480,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   // draw the current position line
   if(range->mouse_inside && range->current_x_px > 0)
   {
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_CURSOR, 1.0);
+    _range_set_source_rgba(cr, range->band_cursor, 1.0, state);
     const int posx_px = _graph_snap_position(range, range->current_x_px) + range->alloc_padding.x;
     cairo_move_to(cr, posx_px, range->alloc_padding.y);
     cairo_line_to(cr, posx_px, range->alloc_padding.height + range->alloc_padding.y);
@@ -1676,6 +1690,24 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
   gtk_widget_set_can_default(range->band, TRUE);
   gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
+
+  // always hidden widgets used to retrieve drawing colors
+  range->band_graph = gtk_drawing_area_new();
+  gtk_widget_set_name(GTK_WIDGET(range->band_graph), "dt-range-band-graph");
+  gtk_widget_set_no_show_all(range->band_graph, TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), range->band_graph, FALSE, FALSE, 0);
+  range->band_selection = gtk_drawing_area_new();
+  gtk_widget_set_name(GTK_WIDGET(range->band_selection), "dt-range-band-selection");
+  gtk_widget_set_no_show_all(range->band_selection, TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), range->band_selection, FALSE, FALSE, 0);
+  range->band_icons = gtk_drawing_area_new();
+  gtk_widget_set_name(GTK_WIDGET(range->band_icons), "dt-range-band-icons");
+  gtk_widget_set_no_show_all(range->band_icons, TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), range->band_icons, FALSE, FALSE, 0);
+  range->band_cursor = gtk_drawing_area_new();
+  gtk_widget_set_name(GTK_WIDGET(range->band_cursor), "dt-range-band-cursor");
+  gtk_widget_set_no_show_all(range->band_cursor, TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), range->band_cursor, FALSE, FALSE, 0);
 
   if(range->show_entries)
   {
