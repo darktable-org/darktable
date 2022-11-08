@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-07 20:04-0300\n"
-"PO-Revision-Date: 2022-11-07 20:04-0300\n"
+"POT-Creation-Date: 2022-11-08 10:26-0300\n"
+"PO-Revision-Date: 2022-11-08 10:50-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -4099,9 +4099,9 @@ msgstr "invalidado"
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
 #: ../src/views/darkroom.c:2189 ../src/views/darkroom.c:2584
 #: ../src/views/darkroom.c:2587 ../src/views/lighttable.c:761
-#: ../src/views/lighttable.c:770 ../src/views/lighttable.c:1234
-#: ../src/views/lighttable.c:1238 ../src/views/lighttable.c:1242
-#: ../src/views/lighttable.c:1246 ../src/views/lighttable.c:1250
+#: ../src/views/lighttable.c:770 ../src/views/lighttable.c:1246
+#: ../src/views/lighttable.c:1250 ../src/views/lighttable.c:1254
+#: ../src/views/lighttable.c:1258 ../src/views/lighttable.c:1262
 msgid "move"
 msgstr "mover"
 
@@ -6025,7 +6025,7 @@ msgstr ""
 "não é possível remover rolo de filme contendo cópias locais sem acesso aos "
 "originais"
 
-#: ../src/common/history.c:759
+#: ../src/common/history.c:767
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 
@@ -9036,7 +9036,7 @@ msgstr "arrastar"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5825 ../src/iop/clipping.c:1905
 #: ../src/iop/clipping.c:2097 ../src/iop/clipping.c:2113
-#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:1238
+#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "horizontal"
 
@@ -9044,7 +9044,7 @@ msgstr "horizontal"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5824 ../src/iop/clipping.c:1904
 #: ../src/iop/clipping.c:2098 ../src/iop/clipping.c:2112
-#: ../src/views/darkroom.c:2587 ../src/views/lighttable.c:1242
+#: ../src/views/darkroom.c:2587 ../src/views/lighttable.c:1254
 msgid "vertical"
 msgstr "vertical"
 
@@ -9639,7 +9639,7 @@ msgstr "%s não associado"
 msgid "%s assigned to %s"
 msgstr "%s associado a %s"
 
-#: ../src/gui/gtk.c:171 ../src/views/darkroom.c:4465
+#: ../src/gui/gtk.c:171 ../src/views/darkroom.c:4469
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualização de sala escura"
 
@@ -13072,7 +13072,7 @@ msgstr ""
 #: ../src/iop/colorbalancergb.c:1863 ../src/iop/filmicrgb.c:4109
 #: ../src/iop/negadoctor.c:789 ../src/iop/toneequal.c:3110
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2347
-#: ../src/views/lighttable.c:1246
+#: ../src/views/lighttable.c:1258
 msgid "page"
 msgstr "página"
 
@@ -14508,26 +14508,26 @@ msgstr "intenção de renderização"
 
 #: ../src/iop/colorout.c:858 ../src/libs/export.c:1273
 #: ../src/libs/print_settings.c:2325 ../src/libs/print_settings.c:2646
-#: ../src/views/darkroom.c:2425 ../src/views/lighttable.c:1161
+#: ../src/views/darkroom.c:2425 ../src/views/lighttable.c:1173
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:859 ../src/libs/export.c:1274
 #: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
-#: ../src/views/darkroom.c:2426 ../src/views/lighttable.c:1162
+#: ../src/views/darkroom.c:2426 ../src/views/lighttable.c:1174
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
 #: ../src/iop/colorout.c:860 ../src/libs/export.c:1275
 #: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
-#: ../src/views/darkroom.c:2427 ../src/views/lighttable.c:1163
+#: ../src/views/darkroom.c:2427 ../src/views/lighttable.c:1175
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
 #: ../src/iop/colorout.c:861 ../src/libs/export.c:1276
 #: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
-#: ../src/views/darkroom.c:2428 ../src/views/lighttable.c:1164
+#: ../src/views/darkroom.c:2428 ../src/views/lighttable.c:1176
 msgid "absolute colorimetric"
 msgstr "colorimétrico absoluto"
 
@@ -15826,7 +15826,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1689 ../src/libs/export.c:1249
 #: ../src/libs/print_settings.c:2323 ../src/libs/print_settings.c:2642
-#: ../src/views/darkroom.c:2431 ../src/views/lighttable.c:1167
+#: ../src/views/darkroom.c:2431 ../src/views/lighttable.c:1179
 msgid "intent"
 msgstr "intenção"
 
@@ -20707,7 +20707,7 @@ msgstr "abrir arquivo GPX"
 
 #. Preview key
 #: ../src/libs/geotagging.c:928 ../src/views/darkroom.c:2142
-#: ../src/views/lighttable.c:650 ../src/views/lighttable.c:1254
+#: ../src/views/lighttable.c:650 ../src/views/lighttable.c:1266
 msgid "preview"
 msgstr "pré-visualização"
 
@@ -23888,19 +23888,19 @@ msgstr ""
 #: ../src/views/darkroom.c:2431 ../src/views/darkroom.c:2433
 #: ../src/views/darkroom.c:2447 ../src/views/darkroom.c:2448
 #: ../src/views/darkroom.c:2449 ../src/views/darkroom.c:2450
-#: ../src/views/lighttable.c:1167 ../src/views/lighttable.c:1169
+#: ../src/views/lighttable.c:1179 ../src/views/lighttable.c:1181
 msgid "profiles"
 msgstr "perfis"
 
-#: ../src/views/darkroom.c:2433 ../src/views/lighttable.c:1169
+#: ../src/views/darkroom.c:2433 ../src/views/lighttable.c:1181
 msgid "preview intent"
 msgstr "intenção de visualização"
 
-#: ../src/views/darkroom.c:2447 ../src/views/lighttable.c:1173
+#: ../src/views/darkroom.c:2447 ../src/views/lighttable.c:1185
 msgid "display profile"
 msgstr "perfil do monitor"
 
-#: ../src/views/darkroom.c:2448 ../src/views/lighttable.c:1176
+#: ../src/views/darkroom.c:2448 ../src/views/lighttable.c:1188
 msgid "preview display profile"
 msgstr "perfil do monitor (segunda janela)"
 
@@ -23908,12 +23908,12 @@ msgstr "perfil do monitor (segunda janela)"
 msgid "histogram profile"
 msgstr "perfil de histograma"
 
-#: ../src/views/darkroom.c:2514 ../src/views/lighttable.c:1212
+#: ../src/views/darkroom.c:2514 ../src/views/lighttable.c:1224
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "perfis ICC do monitor em %s ou %s"
 
-#: ../src/views/darkroom.c:2517 ../src/views/lighttable.c:1215
+#: ../src/views/darkroom.c:2517 ../src/views/lighttable.c:1227
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "pré-visualização de perfis ICC do monitor em %s ou %s"
@@ -23961,11 +23961,11 @@ msgstr "zoom ajustado"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2597 ../src/views/lighttable.c:1272
+#: ../src/views/darkroom.c:2597 ../src/views/lighttable.c:1284
 msgid "zoom in"
 msgstr "aproximar"
 
-#: ../src/views/darkroom.c:2598 ../src/views/lighttable.c:1274
+#: ../src/views/darkroom.c:2598 ../src/views/lighttable.c:1286
 msgid "zoom out"
 msgstr "afastar"
 
@@ -24016,12 +24016,12 @@ msgid "decrease brush opacity"
 msgstr "diminuir opacidade do pincel"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:1264
+#: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:1276
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "desfazer"
 
-#: ../src/views/darkroom.c:2624 ../src/views/lighttable.c:1265
+#: ../src/views/darkroom.c:2624 ../src/views/lighttable.c:1277
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "refazer"
@@ -24059,11 +24059,23 @@ msgstr "zoom ilimitado na imagem"
 msgid "zoom to 100% 200% and back"
 msgstr "zoom para 100% 200% e volta"
 
-#: ../src/views/darkroom.c:3833
+#: ../src/views/darkroom.c:3832 ../src/views/lighttable.c:881
+msgid "pan a zoomed image"
+msgstr "arrastar uma imagem em zoom"
+
+#: ../src/views/darkroom.c:3834 ../src/views/lighttable.c:923
 msgid "[modules] expand module without closing others"
 msgstr "[módulos] expande módulo sem fechar outros"
 
-#: ../src/views/darkroom.c:3835
+#: ../src/views/darkroom.c:3835 ../src/views/lighttable.c:924
+msgid "[modules] expand module and close others"
+msgstr "[módulos] expande módulo e fecha outros"
+
+#: ../src/views/darkroom.c:3837
+msgid "[modules] rename module"
+msgstr "[módulos] renomeia módulo"
+
+#: ../src/views/darkroom.c:3839
 msgid "[modules] change module position in pipe"
 msgstr "[módulos] muda posição do módulo no fluxo"
 
@@ -24083,94 +24095,106 @@ msgstr "abrir imagem na sala escura"
 msgid "switch to next/previous image"
 msgstr "muda para imagem próxima/anterior"
 
-#: ../src/views/lighttable.c:880 ../src/views/lighttable.c:903
+#: ../src/views/lighttable.c:880 ../src/views/lighttable.c:911
 #, no-c-format
 msgid "zoom to 100% and back"
 msgstr "zoom para 100% e volta"
 
-#: ../src/views/lighttable.c:884 ../src/views/lighttable.c:896
+#: ../src/views/lighttable.c:885 ../src/views/lighttable.c:904
 msgid "scroll the collection"
 msgstr "fazer scroll pela coleção"
 
-#: ../src/views/lighttable.c:886
+#: ../src/views/lighttable.c:887
 msgid "change number of images per row"
 msgstr "número máximo de imagens por linha"
 
 #: ../src/views/lighttable.c:890
+msgid "select an image"
+msgstr "selecionar uma imagem"
+
+#: ../src/views/lighttable.c:892
+msgid "select range from last image"
+msgstr "selecionar desde a última imagem"
+
+#: ../src/views/lighttable.c:894
+msgid "add image to selection or remove"
+msgstr "adicionar imagem à seleção ou remover"
+
+#: ../src/views/lighttable.c:898
 msgid "change image order"
 msgstr "muda ordem das imagens"
 
-#: ../src/views/lighttable.c:897
+#: ../src/views/lighttable.c:905
 msgid "zoom all the images"
 msgstr "zoom em todas as imagens"
 
-#: ../src/views/lighttable.c:898
+#: ../src/views/lighttable.c:906
 msgid "pan inside all the images"
 msgstr "arrastar em todas as imagens"
 
-#: ../src/views/lighttable.c:900
+#: ../src/views/lighttable.c:908
 msgid "zoom current image"
 msgstr "zoom na imagem atual"
 
-#: ../src/views/lighttable.c:901
+#: ../src/views/lighttable.c:909
 msgid "pan inside current image"
 msgstr "arrastar na imagem corrente"
 
-#: ../src/views/lighttable.c:906
+#: ../src/views/lighttable.c:914
 #, no-c-format
 msgid "zoom current image to 100% and back"
 msgstr "zoom na imagem corrente para 100% e volta"
 
-#: ../src/views/lighttable.c:910
+#: ../src/views/lighttable.c:918
 msgid "zoom the main view"
 msgstr "zoom na visualização principal"
 
-#: ../src/views/lighttable.c:911
+#: ../src/views/lighttable.c:919
 msgid "pan inside the main view"
 msgstr "arrastar na visualização principal"
 
-#: ../src/views/lighttable.c:1141
+#: ../src/views/lighttable.c:1153
 msgid "set display profile"
 msgstr "define perfil do monitor"
 
-#: ../src/views/lighttable.c:1234
+#: ../src/views/lighttable.c:1246
 msgid "whole"
 msgstr "todo"
 
-#: ../src/views/lighttable.c:1250
+#: ../src/views/lighttable.c:1262
 msgid "leave"
 msgstr "sair"
 
-#: ../src/views/lighttable.c:1258
+#: ../src/views/lighttable.c:1270
 msgid "align images to grid"
 msgstr "alinhar imagens à grade"
 
-#: ../src/views/lighttable.c:1259
+#: ../src/views/lighttable.c:1271
 msgid "reset first image offset"
 msgstr "reposiciona a primeira imagem"
 
-#: ../src/views/lighttable.c:1260
+#: ../src/views/lighttable.c:1272
 msgid "select toggle image"
 msgstr "inverte seleção de imagem"
 
-#: ../src/views/lighttable.c:1261
+#: ../src/views/lighttable.c:1273
 msgid "select single image"
 msgstr "selecionar imagem única"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:1268
+#: ../src/views/lighttable.c:1280
 msgid "preview zoom 100%"
 msgstr "pré-visualização de zoom 100%"
 
-#: ../src/views/lighttable.c:1269
+#: ../src/views/lighttable.c:1281
 msgid "preview zoom fit"
 msgstr "pré-visualização de zoom ajustado"
 
-#: ../src/views/lighttable.c:1273
+#: ../src/views/lighttable.c:1285
 msgid "zoom max"
 msgstr "zoom máximo"
 
-#: ../src/views/lighttable.c:1275
+#: ../src/views/lighttable.c:1287
 msgid "zoom min"
 msgstr "zoom mínimo"
 
