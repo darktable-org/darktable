@@ -1182,7 +1182,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
      || strcmp(module->op, "gamma") != 0)
   {
     dt_dev_pixelpipe_cache_fullhash(pipe->image.id, roi_out, pipe, pos, &basichash, &hash);
-    cache_available = dt_dev_pixelpipe_cache_available(&(pipe->cache), hash);
+    cache_available = dt_dev_pixelpipe_cache_available(&(pipe->cache), hash, bufsize);
   }
   if(cache_available)
   {
