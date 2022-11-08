@@ -291,8 +291,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   dt_iop_module_t *mod_replace = NULL;
 
   // one-instance modules always replace the existing one
-  if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE
-    || !mod_src->enabled)
+  if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE)
   {
     mod_replace = dt_iop_get_module_by_op_priority(dev_dest->iop, mod_src->op, -1);
     if(mod_replace == NULL)
@@ -303,10 +302,16 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
     }
   }
 
-  if(module_added && mod_replace == NULL && !append)
+  if(module_added
+     && mod_replace == NULL
+     && (!append || !mod_src->enabled))
   {
     // we haven't found a module to replace
     // check if there's a module with the same (operation, multi_name) on dev->iop
+    // we do that if in overwrite mode or if the module being merged is disabled.
+    // In this later case we do want to disable a current instance of the same
+    // module & multi-priority.
+
     for(GList *modules_dest = dev_dest->iop;
         modules_dest;
         modules_dest = g_list_next(modules_dest))
