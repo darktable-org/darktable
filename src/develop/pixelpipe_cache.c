@@ -57,7 +57,8 @@ gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entrie
   {
     cache->size[k] = size;
     cache->data[k] = (void *)dt_alloc_align(64, size);
-    if(!cache->data[k]) goto alloc_memory_fail;
+    if(!cache->data[k])
+      goto alloc_memory_fail;
 #ifdef _DEBUG
     memset(cache->data[k], 0x5d, size);
 #endif
@@ -84,14 +85,25 @@ alloc_memory_fail:
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 {
-  for(int k = 0; k < cache->entries; k++) dt_free_align(cache->data[k]);
+  for(int k = 0; k < cache->entries; k++)
+  {
+    dt_free_align(cache->data[k]);
+    cache->data[k] = NULL;
+  }
   free(cache->data);
+  cache->data = NULL;
   free(cache->dsc);
+  cache->dsc = NULL;
   free(cache->basichash);
+  cache->basichash = NULL;
   free(cache->hash);
+  cache->hash = NULL;
   free(cache->used);
+  cache->used = NULL;
   free(cache->size);
+  cache->size = NULL;
   free(cache->modname);
+  cache->modname = NULL;
 }
 
 uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *pipe, int module)
@@ -114,12 +126,14 @@ uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *
         if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
         {
           const char *str = (const char *)darktable.lib->proxy.colorpicker.primary_sample->box;
-          for(size_t i = 0; i < sizeof(float) * 4; i++) hash = ((hash << 5) + hash) ^ str[i];
+          for(size_t i = 0; i < sizeof(float) * 4; i++)
+            hash = ((hash << 5) + hash) ^ str[i];
         }
         else if(darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
         {
           const char *str = (const char *)darktable.lib->proxy.colorpicker.primary_sample->point;
-          for(size_t i = 0; i < sizeof(float) * 2; i++) hash = ((hash << 5) + hash) ^ str[i];
+          for(size_t i = 0; i < sizeof(float) * 2; i++)
+            hash = ((hash << 5) + hash) ^ str[i];
         }
       }
     }
@@ -254,7 +268,12 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
 
   for(int k = 0; k < cache->entries; k++)
   {
-    if(cache->hash[k] == hash)
+    if((cache->hash[k] == hash) && (cache->size[k] < size))
+      dt_print(DT_DEBUG_DEV, "[pixelpipe_cache_get identical hash SIZE ERROR] %12s %s HIT %16s, line%3i, age %4i, at %p, cache size %lu, requested %lu\n",
+        dt_dev_pixelpipe_type_to_str(pipe->type), (cache->used[k] < 0) ? "important" : "         ", name, k, cache->used[k], cache->data[k],
+        cache->size[k], size);
+
+    if((cache->hash[k] == hash) && (cache->size[k] >= size))
     {
       *data = cache->data[k];
       *dsc = &cache->dsc[k];
@@ -372,6 +391,7 @@ static size_t _free_cacheline(dt_dev_pixelpipe_cache_t *cache, const int k, cons
   cache->data[k] = NULL;
   cache->hash[k] = -1;
   cache->basichash[k] = -1;
+  cache->modname[k] = NULL;
   cache->used[k] = VERY_OLD_CACHE_WEIGHT;
   return removed;
 }
