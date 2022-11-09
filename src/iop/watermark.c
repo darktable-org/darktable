@@ -588,8 +588,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float ih = piece->buf_in.height;
   const float uscale = data->scale / 100.0f; // user scale, from GUI in percent
 
-  // wbase, hbase are the base width and height, this is the multiplicator used for the offset computing
-  // scale is the scale of the watermark itself and is used only to render it.
+  // wbase, hbase are the base width and height, this is the
+  // multiplicator used for the offset computing scale is the scale of
+  // the watermark itself and is used only to render it.
 
   float wbase, hbase, scale;
 
@@ -605,7 +606,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    // in larger/smaller side mode, set wbase and hbase to the largest or smallest side of the image
+    // in larger/smaller side mode, set wbase and hbase to the largest
+    // or smallest side of the image
     const float larger = dimension.width > dimension.height
       ? (float)dimension.width
       : (float)dimension.height;
@@ -625,14 +627,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   scale *= uscale;
 
-  // compute the width and height of the SVG object in image dimension. This is only used to properly
-  // layout the watermark based on the alignment.
+  // compute the width and height of the SVG object in image
+  // dimension. This is only used to properly layout the watermark
+  // based on the alignment.
 
   float svg_width, svg_height;
 
   if(dimension.width > dimension.height)
   {
-    if(data->sizeto == DT_SCALE_IMAGE || (iw > ih && data->sizeto == DT_SCALE_LARGER_BORDER)
+    if(data->sizeto == DT_SCALE_IMAGE
+       || (iw > ih && data->sizeto == DT_SCALE_LARGER_BORDER)
        || (iw < ih && data->sizeto == DT_SCALE_SMALLER_BORDER))
     {
       svg_width = iw * uscale;
@@ -646,7 +650,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    if(data->sizeto == DT_SCALE_IMAGE || (ih > iw && data->sizeto == DT_SCALE_LARGER_BORDER)
+    if(data->sizeto == DT_SCALE_IMAGE
+       || (ih > iw && data->sizeto == DT_SCALE_LARGER_BORDER)
        || (ih < iw && data->sizeto == DT_SCALE_SMALLER_BORDER))
     {
       svg_height = ih * uscale;
@@ -659,8 +664,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  /* For the rotation we need an extra cairo image as rotations are buggy  via rsvg_handle_render_cairo.
-     distortions and blurred images are obvious but you also can easily have crashes.
+  /* For the rotation we need an extra cairo image as rotations are
+     buggy via rsvg_handle_render_cairo.  distortions and blurred
+     images are obvious but you also can easily have crashes.
   */
 
   float svg_offset_x = 0;
