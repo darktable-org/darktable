@@ -57,9 +57,9 @@
 
 /* text fields */
 @define-color field_bg @grey_45;
-@define-color field_active_bg @grey_55;
+@define-color field_active_bg @grey_45;
 @define-color field_active_fg @grey_95;
-@define-color field_selected_bg @grey_65;
+@define-color field_selected_bg @grey_60;
 @define-color field_selected_fg @grey_100;
 @define-color field_hover_bg @grey_75;
 @define-color field_hover_fg @grey_35;
