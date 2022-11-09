@@ -924,8 +924,8 @@ static void build_round_stamp(float complex **pstamp,
   // circle in quadrants and doing only the inside we have to calculate
   // hypotf only for PI / 16 = 0.196 of the stamp area.
   // We don't do octants to avoid false sharing of cache lines between threads.
-  // doesn't work for OSX see issue #7349
-  #if defined(_OPENMP) && !defined(__APPLE__)
+  
+  #if defined(_OPENMP)
   #pragma omp parallel for schedule(static) default(none) \
     dt_omp_firstprivate(iradius, strength, abs_strength, table_size)   \
     dt_omp_sharedconst(center, warp, stamp_extent, lookup_table, LOOKUP_OVERSAMPLE)
