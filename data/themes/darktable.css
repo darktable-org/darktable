@@ -160,9 +160,9 @@ Why that? Just because it's a developer choice and most classes use underscore i
 /* text fields */
 @define-color field_bg @grey_15;
 @define-color field_fg @fg_color;
-@define-color field_active_bg @grey_30;
+@define-color field_active_bg @grey_25;
 @define-color field_active_fg @grey_80;
-@define-color field_selected_bg @grey_45;
+@define-color field_selected_bg @grey_40;
 @define-color field_selected_fg @grey_85;
 @define-color field_hover_bg @grey_55;
 @define-color field_hover_fg @grey_95;
@@ -1605,8 +1605,8 @@ messagedialog .default,  /* this show that a button in confirmation action pop-u
 treeview *:selected:not(check),
 treeview *:checked:not(check)
 {
-  background-color: @field_active_bg;
-  color: @field_active_fg;
+  background-color: @field_selected_bg;
+  color: @field_selected_fg;
 }
 
 /* History currently selected button ; they don't need to set background */
