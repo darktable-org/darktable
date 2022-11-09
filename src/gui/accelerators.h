@@ -125,6 +125,19 @@ typedef struct dt_action_element_def_t
   const gchar **effects;
 } dt_action_element_def_t;
 
+#define DT_ACTION_ELEMENTS_NUM(effect)        \
+  (dt_action_element_def_t[])                 \
+  { { N_("1st"), dt_action_effect_##effect }, \
+    { N_("2nd"), dt_action_effect_##effect }, \
+    { N_("3rd"), dt_action_effect_##effect }, \
+    { N_("4th"), dt_action_effect_##effect }, \
+    { N_("5th"), dt_action_effect_##effect }, \
+    { N_("6th"), dt_action_effect_##effect }, \
+    { N_("7th"), dt_action_effect_##effect }, \
+    { N_("8th"), dt_action_effect_##effect }, \
+    { N_("9th"), dt_action_effect_##effect }, \
+    {} }
+
 extern const dt_action_element_def_t dt_action_elements_hold[];
 
 typedef struct dt_shortcut_fallback_t
