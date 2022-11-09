@@ -2456,7 +2456,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
   gtk_widget_set_tooltip_text(g->candidating, _("select inpainting after segmentation analysis.\n"
                                                 "increase to favour candidates found in segmentation analysis, decrease for opposed means inpainting.\n"
-                                                "the mask button shows segments that are concidered to have a good candidate."));
+                                                "the mask button shows segments that are considered to have a good candidate."));
   dt_bauhaus_slider_set_format(g->candidating, "%");
   dt_bauhaus_slider_set_digits(g->candidating, 0);
   dt_bauhaus_widget_set_quad_paint(g->candidating, dtgtk_cairo_paint_showmask, 0, NULL);
