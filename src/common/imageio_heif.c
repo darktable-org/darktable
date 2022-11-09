@@ -55,22 +55,21 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   }
 
   err = heif_context_read_from_file(ctx, filename, NULL);
-  if(err.code != 0)
+  if(err.code != heif_error_Ok)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to read HEIF file [%s]\n",
-             filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
-    switch(err.code)
+    if(err.code == heif_error_Unsupported_feature && err.subcode == heif_suberror_Unsupported_codec)
     {
-    case heif_error_Unsupported_filetype:
-    case heif_error_Unsupported_feature:
-      fprintf(stderr, "[imageio_heif] Unsupported file: `%s'! Is your libheif compiled with HEVC support?\n", filename);
-      break;
-    default:
-      break;
+      /* we want to feedback this to the user, so output to stderr */
+      fprintf(stderr,
+              "[imageio_heif] Unsupported codec for `%s'. Check if your libheif is built with HEVC and/or AV1 decoding support.\n",
+              filename);
     }
-
+    else if(err.code != heif_error_Unsupported_filetype && err.subcode != heif_suberror_No_ftyp_box)
+    {
+      /* print debug info only if genuine HEIF */
+      dt_print(DT_DEBUG_IMAGEIO, "Failed to read HEIF file [%s]: %s\n", filename, err.message);
+    }
+    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
 
@@ -87,7 +86,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   // We can only process a single image
   err = heif_context_get_primary_image_handle(ctx, &handle);
-  if(err.code != 0)
+  if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
@@ -98,7 +97,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   // Darktable only supports LITTLE_ENDIAN systems, so RRGGBB_LE should be fine
   err = heif_decode_image(handle, &heif_img, heif_colorspace_RGB, heif_chroma_interleaved_RRGGBB_LE, NULL);
-  if(err.code != 0)
+  if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to decode HEIF file [%s]\n",
@@ -227,7 +226,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   }
 
   err = heif_context_read_from_file(ctx, filename, NULL);
-  if(err.code != 0)
+  if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read HEIF file [%s]\n",
@@ -247,7 +246,7 @@ int dt_imageio_heif_read_profile(const char *filename,
 
   // We can only process a single image
   err = heif_context_get_primary_image_handle(ctx, &handle);
-  if(err.code != 0)
+  if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
@@ -265,7 +264,7 @@ int dt_imageio_heif_read_profile(const char *filename,
              "Found NCLX color profile for HEIF file [%s]\n",
              filename);
       err = heif_image_handle_get_nclx_color_profile(handle, &profile_info_nclx);
-      if(err.code != 0)
+      if(err.code != heif_error_Ok)
       {
         dt_print(DT_DEBUG_IMAGEIO,
                 "Failed to get NCLX color profile data from HEIF file [%s]\n",
@@ -287,7 +286,7 @@ int dt_imageio_heif_read_profile(const char *filename,
       }
       icc_data = (uint8_t *)g_malloc0(sizeof(uint8_t) * icc_size);
       err = heif_image_handle_get_raw_color_profile(handle, icc_data);
-      if(err.code != 0)
+      if(err.code != heif_error_Ok)
       {
         dt_print(DT_DEBUG_IMAGEIO,
                 "Failed to read embedded ICC profile from HEIF image [%s]\n",
