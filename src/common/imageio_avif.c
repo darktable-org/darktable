@@ -57,7 +57,11 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   result = avifDecoderReadFile(decoder, &avif_image, filename);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s\n", filename, avifResultToString(result));
+    if(result != AVIF_RESULT_INVALID_FTYP)
+    {
+      /* print debug info only if genuine AVIF */
+      dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s\n", filename, avifResultToString(result));
+    }
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
