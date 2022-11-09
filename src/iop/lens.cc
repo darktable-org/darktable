@@ -1965,9 +1965,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     /*
      * user did not modify anything in gui after autodetection - let's
-     * use current default_params as params - for presets and mass-export
+     * use current default_params as params with the exception of the method that must be kept
+     * For presets and mass-export
      */
+    const dt_iop_lens_method_t method = p->method;
     p = (dt_iop_lens_params_t *)self->default_params;
+    p->method = method;
   }
 
   d->method = p->method;
@@ -3250,9 +3253,12 @@ void gui_update(struct dt_iop_module_t *self)
   {
     /*
      * user did not modify anything in gui after autodetection - let's
-     * use current default_params as params - for presets and mass-export
+     * use current default_params as params with the exception of the method that must be kept
+     * For presets and mass-export
      */
+    const dt_iop_lens_method_t method = p->method;
     memcpy(self->params, self->default_params, sizeof(dt_iop_lens_params_t));
+    p->method = method;
   }
 
   int modflag = p->modify_flags;
