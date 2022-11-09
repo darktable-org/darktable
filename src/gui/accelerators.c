@@ -1302,7 +1302,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
         {
           dt_iop_module_so_t *iop = (dt_iop_module_so_t *)owner;
 
-          if(!(iop->flags() & IOP_FLAGS_ONE_INSTANCE))
+          if(owner != &darktable.control->actions_focus && !(iop->flags() & IOP_FLAGS_ONE_INSTANCE))
           {
             field_text = abs(s->instance) <= (NUM_INSTANCES - 1) /2
                        ? g_strdup(_(instance_label[abs(s->instance)*2 - (s->instance > 0)]))
@@ -1614,7 +1614,8 @@ static gboolean _add_actions_to_tree(GtkTreeIter *parent, dt_action_t *action,
     if(action->type == DT_ACTION_TYPE_IOP)
     {
       const dt_iop_module_so_t *module = (dt_iop_module_so_t *)action;
-      if(module->flags() & (IOP_FLAGS_HIDDEN | IOP_FLAGS_DEPRECATED))
+      if(action != &darktable.control->actions_focus
+         && module->flags() & (IOP_FLAGS_HIDDEN | IOP_FLAGS_DEPRECATED))
         continue;
     }
 
@@ -3067,7 +3068,13 @@ static float _process_action(dt_action_t *action, int instance,
     // find module instance
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)owner;
 
-    if(instance)
+    if(owner == &darktable.control->actions_focus)
+    {
+      action_target = darktable.develop->gui_module;
+      if(!action_target)
+        return return_value;
+    }
+    else if(instance)
     {
       int current_instance = abs(instance);
 

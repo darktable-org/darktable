@@ -2883,7 +2883,8 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
   dt_iop_module_t *accel_mod = NULL;  // The module to which accelerators are to be attached
 
   // if any instance has focus, use that one
-  if(prefer_focused && darktable.develop->gui_module && darktable.develop->gui_module->so == module)
+  if(prefer_focused && darktable.develop->gui_module
+     && (darktable.develop->gui_module->so == module || DT_ACTION(module) == &darktable.control->actions_focus))
     accel_mod = darktable.develop->gui_module;
   else
   {

@@ -118,6 +118,9 @@ void dt_control_init(dt_control_t *s)
   s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "fallbacks", C_("accel", "fallbacks") };
   s->actions = &s->actions_global;
 
+  s->actions_focus = (dt_action_t){ DT_ACTION_TYPE_IOP, "focus", C_("accel", "focused") };
+  dt_action_insert_sorted(&s->actions_iops, &s->actions_focus);
+
   s->widgets = g_hash_table_new(NULL, NULL);
   s->combo_introspection = g_hash_table_new(NULL, NULL);
   s->combo_list = g_hash_table_new(NULL, NULL);
