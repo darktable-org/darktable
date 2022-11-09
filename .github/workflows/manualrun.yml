@@ -18,7 +18,6 @@ jobs:
       matrix:
         os:
           - { label: ubuntu-20.04, code: focal }
-          - { label: ubuntu-18.04, code: bionic }
         compiler:
           - { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
           - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
