@@ -579,7 +579,7 @@ void gui_init(dt_lib_module_t *self)
   char localtmpdir[PATH_MAX] = { 0 };
   dt_loc_get_tmp_dir(localtmpdir, sizeof(localtmpdir));
 
-  for(int k = 0; k < MAX_SNAPSHOT; k++)
+  for(int k = MAX_SNAPSHOT-1; k >= 0; k--)
   {
     _clear_snapshot_entry(&d->snapshot[k]);
 
