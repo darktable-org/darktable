@@ -58,7 +58,6 @@ typedef enum dt_imageio_format_flags_t
  */
 typedef struct dt_imageio_module_data_t
 {
-  int x, y;
   int max_width, max_height;
   int width, height;
   char style[128];
