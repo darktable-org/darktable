@@ -659,7 +659,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       {
         float *out = tmpout + i_width * row + 1;
         float *in = (float *)ivoid + i_width * row + 1;
-        for(size_t col = 1; col < o_width - 1; col++)
+        for(size_t col = 1; col < i_width - 1; col++)
         {
           const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
           if(fmaxf(0.0f, in[0]) > clips[color])
