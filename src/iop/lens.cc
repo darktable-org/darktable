@@ -1955,6 +1955,33 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 }
 
+// _get_method returns the method to use based on the provided preferred method and available methods.
+const dt_iop_lens_method_t _get_method(struct dt_iop_module_t *self, dt_iop_lens_method_t method)
+{
+  if(!_have_embedded_metadata(self) && !_have_lensfun(self))
+  {
+    // no methods available, return the lensfun method that will be handled as a no-op.
+    return DT_IOP_LENS_METHOD_LENSFUN;
+  }
+
+  // currently we have only two methods. If new methods will be added a default
+  // order of fallback methods should be defined to keeps reproducibilty
+
+  // prefer provided method if available
+  if(method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA && !_have_embedded_metadata(self))
+  {
+    // fallback to lensfun method
+    method = DT_IOP_LENS_METHOD_LENSFUN;
+  }
+  else if(method == DT_IOP_LENS_METHOD_LENSFUN && !_have_lensfun(self))
+  {
+    // fallback to embedded metadata
+    method = DT_IOP_LENS_METHOD_EMBEDDED_METADATA;
+  }
+
+  return method;
+}
+
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1970,7 +1997,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
      */
     const dt_iop_lens_method_t method = p->method;
     p = (dt_iop_lens_params_t *)self->default_params;
-    p->method = method;
+    p->method = _get_method(self, method);
   }
 
   d->method = p->method;
@@ -3258,7 +3285,7 @@ void gui_update(struct dt_iop_module_t *self)
      */
     const dt_iop_lens_method_t method = p->method;
     memcpy(self->params, self->default_params, sizeof(dt_iop_lens_params_t));
-    p->method = method;
+    p->method = _get_method(self, method);
   }
 
   int modflag = p->modify_flags;
