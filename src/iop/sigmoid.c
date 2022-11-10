@@ -124,7 +124,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.middle_grey_contrast = 1.6f;
   p.contrast_skewness = -0.2f;
   p.hue_preservation = 0.0f;
-  dt_gui_presets_add_generic(_("aces 100-nits like"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("ACES 100-nit like"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.middle_grey_contrast = 1.0f;
   p.contrast_skewness = 0.0f;
