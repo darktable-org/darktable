@@ -59,7 +59,7 @@ The chosen segmentation algorithm works like this:
    - the candidates location
 */
 
-/* Recovery algorithm
+/* Rebuild algorithm
   In areas with all planes clipped we try to reconstruct (hopefully a good guess) data based on the border gradients and the
   segment's size - here we use a distance transformation.
   What do we need to do so?
@@ -220,9 +220,9 @@ static void _initial_gradients(const size_t w, const size_t height, float *lumin
   dt_omp_sharedconst(w, height) \
   schedule(static) collapse(2)
 #endif
-  for(size_t row = HL_BORDER; row < height - HL_BORDER; row++)
+  for(size_t row = HL_BORDER + 2; row < height - HL_BORDER - 2; row++)
   {
-    for(size_t col = HL_BORDER; col < w - HL_BORDER; col++)
+    for(size_t col = HL_BORDER + 2; col < w - HL_BORDER - 2; col++)
     {
       const size_t v = row * w + col;
       float g = 0.0f;
@@ -595,7 +595,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   if(do_recovery || (vmode != DT_SEGMENTS_MASK_OFF))
   {
     dt_segments_transform_closing(&isegments[3], seg_border);
-    dt_iop_image_fill(gradient, 0.0f, pwidth, pheight, 1);
+    dt_iop_image_fill(gradient, fminf(1.0f, 5.0f * strength), pwidth, pheight, 1);
     dt_iop_image_fill(distance, 0.0f, pwidth, pheight, 1);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -659,7 +659,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       {
         float *out = tmpout + i_width * row + 1;
         float *in = (float *)ivoid + i_width * row + 1;
-        for(size_t col = 1; col < o_width - 1; col++)
+        for(size_t col = 1; col < i_width - 1; col++)
         {
           const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
           if(fmaxf(0.0f, in[0]) > clips[color])
