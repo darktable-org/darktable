@@ -220,9 +220,9 @@ static void _initial_gradients(const size_t w, const size_t height, float *lumin
   dt_omp_sharedconst(w, height) \
   schedule(static) collapse(2)
 #endif
-  for(size_t row = HL_BORDER; row < height - HL_BORDER; row++)
+  for(size_t row = HL_BORDER + 2; row < height - HL_BORDER - 2; row++)
   {
-    for(size_t col = HL_BORDER; col < w - HL_BORDER; col++)
+    for(size_t col = HL_BORDER + 2; col < w - HL_BORDER - 2; col++)
     {
       const size_t v = row * w + col;
       float g = 0.0f;
@@ -595,7 +595,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   if(do_recovery || (vmode != DT_SEGMENTS_MASK_OFF))
   {
     dt_segments_transform_closing(&isegments[3], seg_border);
-    dt_iop_image_fill(gradient, 0.0f, pwidth, pheight, 1);
+    dt_iop_image_fill(gradient, fminf(1.0f, 5.0f * strength), pwidth, pheight, 1);
     dt_iop_image_fill(distance, 0.0f, pwidth, pheight, 1);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
