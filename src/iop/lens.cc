@@ -2981,9 +2981,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     gtk_widget_set_sensitive(GTK_WIDGET(g->message), TRUE);
   }
 
-  if(w)
+  // set modified if user did modify something with some widget (excluding the method selector)
+  if(w && w != g->methods_selector)
   {
-    // user did modify something with some widget
     p->modified = 1;
   }
 
