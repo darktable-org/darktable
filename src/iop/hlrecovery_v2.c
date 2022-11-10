@@ -59,7 +59,7 @@ The chosen segmentation algorithm works like this:
    - the candidates location
 */
 
-/* Recovery algorithm
+/* Rebuild algorithm
   In areas with all planes clipped we try to reconstruct (hopefully a good guess) data based on the border gradients and the
   segment's size - here we use a distance transformation.
   What do we need to do so?
