@@ -48,7 +48,7 @@
 #define DT_SUPPORTED_RISCV64 0
 #endif
 
-#if DT_SUPPORTED_X86 && DT_SUPPORTED_ARMv8A && DT_SUPPORTED_PPC64 && DT_SUPPORTED_RISCV64
+#if (DT_SUPPORTED_X86 + DT_SUPPORTED_ARMv8A + DT_SUPPORTED_PPC64 + DT_SUPPORTED_RISCV64) > 1
 #error "Looks like hardware platform detection macros are broken?"
 #endif
 
