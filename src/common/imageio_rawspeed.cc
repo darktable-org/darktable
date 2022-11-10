@@ -270,8 +270,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       }
 
     // Get additional exif tags that are not cached in the database
-    if(img->flags & DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS)
-      dt_exif_img_check_additional_tags(img, filename);
+    dt_exif_img_check_additional_tags(img, filename);
 
     if(r->getDataType() == TYPE_FLOAT32)
     {
