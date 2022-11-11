@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2021 darktable developers.
+    Copyright (C) 2018-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -196,7 +196,8 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strcasecmp(ext, ".pbm") && strcasecmp(ext, ".pgm") && strcasecmp(ext, ".ppm")) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(strcasecmp(ext, ".pbm") && strcasecmp(ext, ".pgm") && strcasecmp(ext, ".pnm") && strcasecmp(ext, ".ppm"))
+    return DT_IMAGEIO_FILE_CORRUPTED;
   FILE *f = g_fopen(filename, "rb");
   if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
   int ret = 0;
