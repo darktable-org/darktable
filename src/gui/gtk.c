@@ -65,8 +65,8 @@
  */
 
 #define DT_UI_PANEL_MODULE_SPACING 0
-#define DT_UI_PANEL_SIDE_DEFAULT_SIZE 350
-#define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE 120
+#define DT_UI_PANEL_SIDE_DEFAULT_SIZE_KEY "ui/panel_side_default_size"
+#define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE_KEY "ui/panel_bottom_default_size"
 
 typedef enum dt_gui_view_switch_t
 {
@@ -1676,24 +1676,26 @@ static void _ui_init_panel_size(GtkWidget *widget)
   if(strcmp(gtk_widget_get_name(widget), "right") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_RIGHT, "_size");
-    s = DT_UI_PANEL_SIDE_DEFAULT_SIZE; // default panel size
+    s = dt_conf_get_int(DT_UI_PANEL_SIDE_DEFAULT_SIZE_KEY);
     if(key && dt_conf_key_exists(key))
-      gtk_widget_set_size_request(widget, dt_conf_get_int(key), -1);
+      s = dt_conf_get_int(key);
+    gtk_widget_set_size_request(widget, s, -1);
   }
   else if(strcmp(gtk_widget_get_name(widget), "left") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_LEFT, "_size");
-    s = DT_UI_PANEL_SIDE_DEFAULT_SIZE; // default panel size
+    s = dt_conf_get_int(DT_UI_PANEL_SIDE_DEFAULT_SIZE_KEY);
     if(key && dt_conf_key_exists(key))
-      gtk_widget_set_size_request(widget, dt_conf_get_int(key), -1);
+      s = dt_conf_get_int(key);
+    gtk_widget_set_size_request(widget, s, -1);
   }
   else if(strcmp(gtk_widget_get_name(widget), "bottom") == 0)
   {
     key = _panels_get_panel_path(DT_UI_PANEL_BOTTOM, "_size");
-    s = DT_UI_PANEL_BOTTOM_DEFAULT_SIZE; // default panel size
+    s = dt_conf_get_int(DT_UI_PANEL_BOTTOM_DEFAULT_SIZE_KEY);
     if(key && dt_conf_key_exists(key))
       s = CLAMP(dt_conf_get_int(key), dt_conf_get_int("min_panel_height"), dt_conf_get_int("max_panel_height"));
-    if(key) gtk_widget_set_size_request(widget, -1, s);
+    gtk_widget_set_size_request(widget, -1, s);
   }
 
   g_free(key);
@@ -1889,9 +1891,9 @@ int dt_ui_panel_get_size(dt_ui_t *ui, const dt_ui_panel_t p)
     else // size hasn't been adjusted, so return default sizes
     {
       if(p == DT_UI_PANEL_BOTTOM)
-        size = DT_UI_PANEL_BOTTOM_DEFAULT_SIZE;
+        size = dt_conf_get_int(DT_UI_PANEL_BOTTOM_DEFAULT_SIZE_KEY);
       else
-        size = DT_UI_PANEL_SIDE_DEFAULT_SIZE;
+        size = dt_conf_get_int(DT_UI_PANEL_SIDE_DEFAULT_SIZE_KEY);
     }
     return size;
   }
