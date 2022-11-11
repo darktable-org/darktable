@@ -73,8 +73,13 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
 
   unsigned int max;
-  int ret = fscanf(f, "%u", &max);
-  if(ret != 1 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
+  // We expect at most a 5-digit number (65535) + a newline + '\0', so 7 characters.
+  char maxvalue_string[7];
+  if(fgets(maxvalue_string,7,f))
+    max = atoi(maxvalue_string);
+  else
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  if(max == 0 || max > 65535) return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(max <= 255)
   {
