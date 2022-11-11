@@ -1269,10 +1269,10 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
     case SHORTCUT_VIEW_EFFECT:
       if(_shortcut_is_speed(s)) break;
       elements = _action_find_elements(s->action);
-      if(elements && s->effect >= 0)
+      if(elements)
       {
         const gchar *cef = _action_find_effect_combo(s->action, &elements[s->element], s->effect);
-        if(cef || s->effect > 0 || s->action->type != DT_ACTION_TYPE_FALLBACK)
+        if(cef || s->effect > 0 || (s->effect == 0 && s->action->type != DT_ACTION_TYPE_FALLBACK))
           field_text = g_strdup(Q_(cef ? cef : elements[s->element].effects[s->effect]));
         if(s->effect == 0) weight = PANGO_WEIGHT_LIGHT;
         editable = TRUE;
