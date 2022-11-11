@@ -658,7 +658,6 @@ static void _process_lf(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, co
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_lens_data_t *const d = (dt_iop_lens_data_t *)piece->data;
-  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
@@ -861,13 +860,6 @@ static void _process_lf(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, co
     dt_free_align(buf);
   }
   delete modifier;
-
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
-  {
-    dt_iop_gui_enter_critical_section(self);
-    g->corrections_done = _modflags_from_lensfun_mods(modflags);
-    dt_iop_gui_leave_critical_section(self);
-  }
 }
 
 #ifdef HAVE_OPENCL
@@ -876,7 +868,6 @@ static int _process_cl_lf(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
-  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
@@ -1093,13 +1084,6 @@ static int _process_cl_lf(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       err = dt_opencl_enqueue_copy_image(devid, dev_tmp, dev_out, origin, origin, oregion);
       if(err != CL_SUCCESS) goto error;
     }
-  }
-
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
-  {
-    dt_iop_gui_enter_critical_section(self);
-    g->corrections_done = _modflags_from_lensfun_mods(modflags);
-    dt_iop_gui_leave_critical_section(self);
   }
 
   dt_opencl_release_mem_object(dev_tmpbuf);
@@ -1372,6 +1356,7 @@ static void _commit_params_lf(struct dt_iop_module_t *self, dt_iop_lens_params_t
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
@@ -1457,6 +1442,27 @@ static void _commit_params_lf(struct dt_iop_module_t *self, dt_iop_lens_params_t
   else if(d->target_geom == d->lens->Type)
   {
     d->do_nan_checks = FALSE;
+  }
+
+  /* calculate which corrections will be applied by lensfun */
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  {
+    const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
+    const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
+
+    dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+
+    int modflags;
+    /* we use the modifier only to get which corrections will be applied, we have
+     * to provide a size that won't be used so we use the image size */
+    _get_modifier(&modflags, self->dev->image_storage.width, self->dev->image_storage.height, d, used_lf_mask,
+                  FALSE);
+
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+    dt_iop_gui_enter_critical_section(self);
+    g->corrections_done = _modflags_from_lensfun_mods(modflags);
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 /* lensfun processing end*/
@@ -1567,6 +1573,8 @@ static float _get_autoscale_md(dt_iop_module_t *self, dt_iop_lens_params_t *p)
 static void _commit_params_md(dt_iop_module_t *self, dt_iop_lens_params_t *p, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
+  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
+
   const dt_image_t *img = &self->dev->image_storage;
 
   d->nc = 0;
@@ -1584,6 +1592,13 @@ static void _commit_params_md(dt_iop_module_t *self, dt_iop_lens_params_t *p, dt
 
   int nc = _init_coeffs_md(img, p, d->scale_md, d->knots, d->cor_rgb, d->vig);
   d->nc = nc;
+
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+  {
+    dt_iop_gui_enter_critical_section(self);
+    g->corrections_done = d->modify_flags;
+    dt_iop_gui_leave_critical_section(self);
+  }
 }
 
 static void _tiling_callback_md(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -1693,7 +1708,6 @@ static void _process_md(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
-  dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
 
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
   {
@@ -1754,13 +1768,6 @@ static void _process_md(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   }
 
   dt_free_align(buf);
-
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
-  {
-    dt_iop_gui_enter_critical_section(self);
-    g->corrections_done = d->modify_flags;
-    dt_iop_gui_leave_critical_section(self);
-  }
 }
 
 static void _modify_roi_in_md(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
