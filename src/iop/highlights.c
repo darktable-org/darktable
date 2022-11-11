@@ -2146,7 +2146,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT or DT_IOP_HIGHLIGHTS_SEGMENTS and DT_IOP_HIGHLIGHTS_OPPOSED
   piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)) ? 0 : 1;
-  if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) piece->process_tiling_ready = 0;
+
+  if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED))
+    piece->process_tiling_ready = 0;
 
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
@@ -2158,8 +2160,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   // check for heavy computing here to give an iop cache hint
   const gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
-                          || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
-                          || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED));
+                        || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS));
   self->cache_next_important = heavy;
 }
 
