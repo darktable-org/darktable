@@ -241,7 +241,7 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
-  const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 16);
+  const size_t p_size = (size_t) dt_round_size((size_t) (pwidth + 4) * (pheight + 4), 16);
 
   int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
   float *tmpout = dt_alloc_align_float(roi_in->width * roi_in->height);
