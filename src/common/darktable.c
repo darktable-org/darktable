@@ -571,12 +571,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  gPhoto2 support disabled\n"
 #endif
 
-#ifdef HAVE_LENSFUN
-               "  Lensfun support enabled\n"
-#else
-               "  Lensfun support disabled\n"
-#endif
-
 #ifdef HAVE_GRAPHICSMAGICK
                "  GraphicsMagick support enabled\n"
 #else
