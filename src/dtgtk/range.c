@@ -164,6 +164,9 @@ static void _range_select_destroy(GtkWidget *widget)
   if(range->surface) cairo_surface_destroy(range->surface);
   range->surface = NULL;
 
+  if(range->cur_help) g_free(range->cur_help);
+  range->cur_help = NULL;
+
   GTK_WIDGET_CLASS(_range_select_parent_class)->destroy(widget);
 }
 
@@ -229,10 +232,6 @@ static gboolean _default_decode_date_func(const gchar *text, double *value)
     return TRUE;
   }
   return FALSE;
-}
-static gchar *_default_current_text_func(GtkDarktableRangeSelect *range, const double current)
-{
-  return range->print(current, TRUE);
 }
 
 static void _date_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
@@ -570,6 +569,19 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
   pop->internal_change--;
 }
 
+static void _current_set_text(GtkDarktableRangeSelect *range, const double current_value_r)
+{
+  if(!range->cur_label) return;
+  gchar *val = range->print(current_value_r, TRUE);
+  gchar *sel = range->current_bounds(range);
+  gchar *txt = g_strdup_printf("<b>%s</b> | %s %s", val, _("selected"), sel);
+
+  gtk_label_set_markup(GTK_LABEL(range->cur_label), txt);
+  g_free(txt);
+  g_free(sel);
+  g_free(val);
+}
+
 static void _current_hide_popup(GtkDarktableRangeSelect *range)
 {
   if(!range->cur_window) return;
@@ -583,9 +595,21 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
   range->cur_window = gtk_popover_new(range->band);
   gtk_widget_set_name(range->cur_window, "range-current");
   gtk_popover_set_modal(GTK_POPOVER(range->cur_window), FALSE);
-  range->cur_label = gtk_label_new(" ");
+  gtk_popover_set_position(GTK_POPOVER(range->cur_window), GTK_POS_BOTTOM);
+
+  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  // the label for the current value / selection
+  range->cur_label = gtk_label_new("");
   dt_gui_add_class(range->cur_label, "dt_transparent_background");
-  gtk_container_add(GTK_CONTAINER(range->cur_window), range->cur_label);
+  _current_set_text(range, 0);
+  gtk_box_pack_start(GTK_BOX(vb), range->cur_label, FALSE, TRUE, 0);
+
+  // the label for the static infos
+  GtkWidget *lb = gtk_label_new("");
+  gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
+  if(range->cur_help) gtk_label_set_markup(GTK_LABEL(lb), range->cur_help);
+  gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(range->cur_window), vb);
   gtk_widget_show_all(range->cur_window);
 }
 
@@ -1442,9 +1466,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     cairo_move_to(cr, posx_px, range->alloc_padding.y);
     cairo_line_to(cr, posx_px, range->alloc_padding.height + range->alloc_padding.y);
     cairo_stroke(cr);
-    gchar *txt = range->current_text(range, current_value_r);
-    if(range->cur_window && range->cur_label) gtk_label_set_markup(GTK_LABEL(range->cur_label), txt);
-    g_free(txt);
+    _current_set_text(range, current_value_r);
   }
 
   return TRUE;
@@ -1478,17 +1500,11 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
     return TRUE;
   }
   _current_show_popup(range);
-  // point the popup to the current position or to the right if no space
+  // point the popup to the current position
   gint wx, wy;
   gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
-  if(wy > gtk_widget_get_allocated_height(range->band))
-  {
-    gtk_popover_set_position(GTK_POPOVER(range->cur_window), GTK_POS_TOP);
-    GdkRectangle rect = {event->x, 0, 1, 1};
-    gtk_popover_set_pointing_to(GTK_POPOVER(range->cur_window), &rect);
-  }
-  else
-    gtk_popover_set_position(GTK_POPOVER(range->cur_window), GTK_POS_RIGHT);
+  GdkRectangle rect = { event->x, 0, 1, gtk_widget_get_allocated_height(range->band) };
+  gtk_popover_set_pointing_to(GTK_POPOVER(range->cur_window), &rect);
 
   const double smin_r = (range->bounds & DT_RANGE_BOUND_MIN) ? range->min_r : range->select_min_r;
   const double smax_r = (range->bounds & DT_RANGE_BOUND_MAX) ? range->max_r : range->select_max_r;
@@ -1632,11 +1648,12 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   range->value_to_band = _default_value_translator;
   range->print = (type == DT_RANGE_TYPE_NUMERIC) ? _default_print_func : _default_print_date_func;
   range->decode = (type == DT_RANGE_TYPE_NUMERIC) ? _default_decode_func : _default_decode_date_func;
-  range->current_text = _default_current_text_func;
   range->show_entries = show_entries;
   range->type = type;
   range->alloc_main.width = 0;
   range->max_width_px = -1;
+  range->cur_help = NULL;
+  range->current_bounds = dtgtk_range_select_get_bounds_pretty;
 
   // the boxes widgets
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
