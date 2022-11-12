@@ -49,6 +49,9 @@ enum
 //DT_ACTION_ELEMENT_BUTTON = 1,
 };
 
+static const dt_action_def_t _action_def_slider, _action_def_combo,
+                             _action_def_focus_slider, _action_def_focus_combo, _action_def_focus_button;
+
 // INNER_PADDING is the horizontal space between slider and quad
 // and vertical space between labels and slider baseline
 static const double INNER_PADDING = 4.0;
@@ -757,6 +760,10 @@ void dt_bauhaus_init()
   g_signal_connect(area, "button-release-event", G_CALLBACK (dt_bauhaus_popup_button_release), NULL);
   g_signal_connect(area, "key-press-event", G_CALLBACK(dt_bauhaus_popup_key_press), NULL);
   g_signal_connect(area, "scroll-event", G_CALLBACK(dt_bauhaus_popup_scroll), NULL);
+
+  dt_action_define(&darktable.control->actions_focus, NULL, N_("sliders"), NULL, &_action_def_focus_slider);
+  dt_action_define(&darktable.control->actions_focus, NULL, N_("dropdowns"), NULL, &_action_def_focus_combo);
+  dt_action_define(&darktable.control->actions_focus, NULL, N_("buttons"), NULL, &_action_def_focus_button);
 }
 
 void dt_bauhaus_cleanup()
@@ -925,9 +932,6 @@ float dt_bauhaus_slider_get_default(GtkWidget *widget)
   return d->defpos;
 }
 
-extern const dt_action_def_t dt_action_def_slider;
-extern const dt_action_def_t dt_action_def_combo;
-
 dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
 {
   dt_action_t *ac = NULL;
@@ -941,7 +945,7 @@ dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section,
     if(!darktable.bauhaus->skip_accel || w->module->type != DT_ACTION_TYPE_IOP_INSTANCE)
     {
       ac = dt_action_define(w->module, section, label, widget,
-                            w->type == DT_BAUHAUS_SLIDER ? &dt_action_def_slider : &dt_action_def_combo);
+                            w->type == DT_BAUHAUS_SLIDER ? &_action_def_slider : &_action_def_combo);
       if(w->module->type != DT_ACTION_TYPE_IOP_INSTANCE) w->module = ac;
     }
 
@@ -3484,13 +3488,77 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
   return - 1 - value + (value == effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1 ? DT_VALUE_PATTERN_ACTIVE : 0);
 }
 
-const dt_action_element_def_t _action_elements_slider[]
+static gboolean _find_nth_bauhaus(GtkWidget **w, int *num, dt_bauhaus_type_t type)
+{
+  if(!gtk_widget_get_visible(*w))
+    return FALSE;
+  if(DT_IS_BAUHAUS_WIDGET(*w))
+  {
+    dt_bauhaus_widget_t *bhw = DT_BAUHAUS_WIDGET(*w);
+    return (bhw->type == type || (type == DT_BAUHAUS_BUTTON && bhw->quad_paint)) && !(*num)--;
+  }
+  if(GTK_IS_NOTEBOOK(*w) || GTK_IS_STACK(*w))
+  {
+    *w = GTK_IS_NOTEBOOK(*w)
+       ? gtk_notebook_get_nth_page(GTK_NOTEBOOK(*w), gtk_notebook_get_current_page(GTK_NOTEBOOK(*w)))
+       : gtk_stack_get_visible_child(GTK_STACK(*w));
+    return _find_nth_bauhaus(w, num, type);
+  }
+  if(GTK_IS_CONTAINER(*w))
+  {
+    GList *l = gtk_container_get_children(GTK_CONTAINER(*w));
+    for(GList *c = l; c && *num >= 0; c = c->next)
+    {
+      *w = c->data;
+      _find_nth_bauhaus(w, num, type);
+    }
+    g_list_free(l);
+  }
+  return *num < 0;
+}
+
+static float _action_process_focus_slider(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  GtkWidget *widget = ((dt_iop_module_t *)target)->widget;
+  if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_SLIDER))
+    return _action_process_slider(widget, DT_ACTION_ELEMENT_VALUE, effect, move_size);
+
+  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("not that many sliders"));
+  return NAN;
+}
+
+static float _action_process_focus_combo(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  GtkWidget *widget = ((dt_iop_module_t *)target)->widget;
+  if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_COMBOBOX))
+    return _action_process_combo(widget, DT_ACTION_ELEMENT_SELECTION, effect, move_size);
+
+  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("not that many dropdowns"));
+  return NAN;
+}
+
+static float _action_process_focus_button(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  GtkWidget *widget = ((dt_iop_module_t *)target)->widget;
+  if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_BUTTON))
+  {
+    if(!isnan(move_size))
+      _action_process_button(widget, effect);
+
+    return dt_bauhaus_widget_get_quad_active(widget);
+  }
+
+  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("not that many buttons"));
+  return NAN;
+}
+
+static const dt_action_element_def_t _action_elements_slider[]
   = { { N_("value"), dt_action_effect_value },
       { N_("button"), dt_action_effect_toggle },
       { N_("force"), dt_action_effect_value },
       { N_("zoom"), dt_action_effect_value },
       { NULL } };
-const dt_action_element_def_t _action_elements_combo[]
+static const dt_action_element_def_t _action_elements_combo[]
   = { { N_("selection"), dt_action_effect_selection },
       { N_("button"), dt_action_effect_toggle },
       { NULL } };
@@ -3509,16 +3577,32 @@ static const dt_shortcut_fallback_t _action_fallbacks_combo[]
       { .move    = DT_SHORTCUT_MOVE_VERTICAL,   .effect = DT_ACTION_EFFECT_DEFAULT_MOVE, .speed = -1 },
       { } };
 
-const dt_action_def_t dt_action_def_slider
+static const dt_action_def_t _action_def_slider
   = { N_("slider"),
       _action_process_slider,
       _action_elements_slider,
       _action_fallbacks_slider };
-const dt_action_def_t dt_action_def_combo
+static const dt_action_def_t _action_def_combo
   = { N_("dropdown"),
       _action_process_combo,
       _action_elements_combo,
       _action_fallbacks_combo };
+
+static const dt_action_def_t _action_def_focus_slider
+  = { N_("slider"),
+      _action_process_focus_slider,
+      DT_ACTION_ELEMENTS_NUM(value),
+      NULL, TRUE };
+static const dt_action_def_t _action_def_focus_combo
+  = { N_("dropdown"),
+      _action_process_focus_combo,
+      DT_ACTION_ELEMENTS_NUM(selection),
+      NULL, TRUE };
+static const dt_action_def_t _action_def_focus_button
+  = { N_("button"),
+      _action_process_focus_button,
+      DT_ACTION_ELEMENTS_NUM(toggle),
+      NULL, TRUE };
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

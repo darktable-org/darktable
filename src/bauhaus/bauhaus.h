@@ -51,6 +51,7 @@ extern GType DT_BAUHAUS_WIDGET_TYPE;
 
 typedef enum dt_bauhaus_type_t
 {
+  DT_BAUHAUS_BUTTON = 0,
   DT_BAUHAUS_SLIDER = 1,
   DT_BAUHAUS_COMBOBOX = 2,
   // TODO: all the fancy color sliders..
