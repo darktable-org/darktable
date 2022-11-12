@@ -3490,14 +3490,18 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
 
 static gboolean _find_nth_bauhaus(GtkWidget **w, int *num, dt_bauhaus_type_t type)
 {
+  if(!gtk_widget_get_visible(*w))
+    return FALSE;
   if(DT_IS_BAUHAUS_WIDGET(*w))
   {
     dt_bauhaus_widget_t *bhw = DT_BAUHAUS_WIDGET(*w);
     return (bhw->type == type || (type == DT_BAUHAUS_BUTTON && bhw->quad_paint)) && !(*num)--;
   }
-  if(GTK_IS_NOTEBOOK(*w))
+  if(GTK_IS_NOTEBOOK(*w) || GTK_IS_STACK(*w))
   {
-    *w = gtk_notebook_get_nth_page(GTK_NOTEBOOK(*w), gtk_notebook_get_current_page(GTK_NOTEBOOK(*w)));
+    *w = GTK_IS_NOTEBOOK(*w)
+       ? gtk_notebook_get_nth_page(GTK_NOTEBOOK(*w), gtk_notebook_get_current_page(GTK_NOTEBOOK(*w)))
+       : gtk_stack_get_visible_child(GTK_STACK(*w));
     return _find_nth_bauhaus(w, num, type);
   }
   if(GTK_IS_CONTAINER(*w))
@@ -3505,9 +3509,8 @@ static gboolean _find_nth_bauhaus(GtkWidget **w, int *num, dt_bauhaus_type_t typ
     GList *l = gtk_container_get_children(GTK_CONTAINER(*w));
     for(GList *c = l; c && *num >= 0; c = c->next)
     {
-        *w = c->data;
-        if(gtk_widget_get_visible(*w))
-          _find_nth_bauhaus(w, num, type);
+      *w = c->data;
+      _find_nth_bauhaus(w, num, type);
     }
     g_list_free(l);
   }
