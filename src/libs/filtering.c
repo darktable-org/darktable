@@ -1048,13 +1048,14 @@ static void _widget_header_update(dt_lib_filtering_rule_t *rule)
 
   if(rule->topbar)
   {
-    gtk_widget_set_tooltip_text(rule->w_pin, _("this rule is pinned to the top toolbar\nclick to un-pin"));
+    if(rule->w_pin)
+      gtk_widget_set_tooltip_text(rule->w_pin, _("this rule is pinned to the top toolbar\nclick to un-pin"));
     gtk_widget_set_tooltip_text(rule->w_off, _("you can't disable the rule as it is pinned to the toolbar"));
     gtk_widget_set_tooltip_text(rule->w_close, _("you can't remove the rule as it is pinned to the toolbar"));
   }
   else
   {
-    gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule to the top toolbar"));
+    if(rule->w_pin) gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule to the top toolbar"));
     gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
       gtk_widget_set_tooltip_text(rule->w_off, _("this rule is enabled"));
@@ -1070,7 +1071,10 @@ static void _rule_topbar_toggle(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   if(rule->manual_widget_set) return;
 
-  rule->topbar = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_pin));
+  if(rule->w_pin)
+    rule->topbar = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_pin));
+  else
+    rule->topbar = FALSE;
   // if the rule is pinned, then we force it to on
   if(rule->topbar && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
   {
@@ -1139,6 +1143,17 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, rule->prop, NULL);
   }
   else
+    return FALSE;
+
+  return TRUE;
+}
+
+static gboolean _rule_available_for_topbar(const dt_collection_properties_t prop)
+{
+  // we don't want to allow date filters for topbar as the design of the bar is not useful as it
+  if(prop == DT_COLLECTION_PROP_DAY || prop == DT_COLLECTION_PROP_TIME
+     || prop == DT_COLLECTION_PROP_CHANGE_TIMESTAMP || prop == DT_COLLECTION_PROP_EXPORT_TIMESTAMP
+     || prop == DT_COLLECTION_PROP_PRINT_TIMESTAMP || prop == DT_COLLECTION_PROP_IMPORT_TIMESTAMP)
     return FALSE;
 
   return TRUE;
@@ -1215,12 +1230,15 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
     // pin button
-    rule->w_pin = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
-    dt_gui_add_class(rule->w_pin, "dt_transparent_background");
-    g_object_set_data(G_OBJECT(rule->w_pin), "rule", rule);
-    g_signal_connect(G_OBJECT(rule->w_pin), "toggled", G_CALLBACK(_rule_topbar_toggle), self);
-    dt_gui_add_class(rule->w_pin, "dt_dimmed");
-    gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_pin, FALSE, FALSE, 0);
+    if(top || _rule_available_for_topbar(prop))
+    {
+      rule->w_pin = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
+      dt_gui_add_class(rule->w_pin, "dt_transparent_background");
+      g_object_set_data(G_OBJECT(rule->w_pin), "rule", rule);
+      g_signal_connect(G_OBJECT(rule->w_pin), "toggled", G_CALLBACK(_rule_topbar_toggle), self);
+      dt_gui_add_class(rule->w_pin, "dt_dimmed");
+      gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_pin, FALSE, FALSE, 0);
+    }
 
     // remove button
     rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
@@ -1230,7 +1248,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   }
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), top || !off);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_pin), top);
+  if(rule->w_pin) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_pin), top);
   _widget_header_update(rule);
 
   if(newmain)
