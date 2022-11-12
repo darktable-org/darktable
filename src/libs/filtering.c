@@ -974,8 +974,7 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
   if(rule->topbar)
   {
     _rule_populate_prop_combo_add(w, rule->prop);
-    gtk_widget_set_tooltip_text(w,
-                                _("rule property\nthis can't be changed as the rule is pinned into the toolbar"));
+    gtk_widget_set_tooltip_text(w, _("rule property\nthis can't be changed as the rule is pinned to the toolbar"));
     rule->manual_widget_set++;
     dt_bauhaus_combobox_set_from_value(rule->w_prop, rule->prop);
     rule->manual_widget_set--;
@@ -1049,13 +1048,13 @@ static void _widget_header_update(dt_lib_filtering_rule_t *rule)
 
   if(rule->topbar)
   {
-    gtk_widget_set_tooltip_text(rule->w_pin, _("this rule is pinned into the top toolbar\nclick to un-pin"));
-    gtk_widget_set_tooltip_text(rule->w_off, _("you can't disable the rule as it is pinned into the toolbar"));
-    gtk_widget_set_tooltip_text(rule->w_close, _("you can't remove the rule as it is pinned into the toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_pin, _("this rule is pinned to the top toolbar\nclick to un-pin"));
+    gtk_widget_set_tooltip_text(rule->w_off, _("you can't disable the rule as it is pinned to the toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_close, _("you can't remove the rule as it is pinned to the toolbar"));
   }
   else
   {
-    gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule into the top toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule to the top toolbar"));
     gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
       gtk_widget_set_tooltip_text(rule->w_off, _("this rule is enabled"));
@@ -1658,7 +1657,7 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   gtk_container_add(GTK_CONTAINER(pop), vbox);
 
   // fill the popover with all pinned rules
-  GtkWidget *lb = gtk_label_new(_("Shown filters"));
+  GtkWidget *lb = gtk_label_new(_("shown filters"));
   dt_gui_add_class(lb, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
 
@@ -1958,7 +1957,7 @@ static void _sort_gui_update(dt_lib_module_t *self)
     if(_sort_init(&d->sort[i], sort, sortorder, i, self))
       gtk_grid_attach(GTK_GRID(d->sort_box), d->sort[i].box, 1, i, 1, 1);
 
-    // we also put the first sort item into the topbar
+    // we also put the first sort item to the topbar
     if(i == 0)
     {
       d->sorttop.top = TRUE;
