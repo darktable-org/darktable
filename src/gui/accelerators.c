@@ -1269,10 +1269,10 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
     case SHORTCUT_VIEW_EFFECT:
       if(_shortcut_is_speed(s)) break;
       elements = _action_find_elements(s->action);
-      if(elements && s->effect >= 0)
+      if(elements)
       {
         const gchar *cef = _action_find_effect_combo(s->action, &elements[s->element], s->effect);
-        if(cef || s->effect > 0 || s->action->type != DT_ACTION_TYPE_FALLBACK)
+        if(cef || s->effect > 0 || (s->effect == 0 && s->action->type != DT_ACTION_TYPE_FALLBACK))
           field_text = g_strdup(Q_(cef ? cef : elements[s->element].effects[s->effect]));
         if(s->effect == 0) weight = PANGO_WEIGHT_LIGHT;
         editable = TRUE;
@@ -1302,7 +1302,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
         {
           dt_iop_module_so_t *iop = (dt_iop_module_so_t *)owner;
 
-          if(!(iop->flags() & IOP_FLAGS_ONE_INSTANCE))
+          if(owner != &darktable.control->actions_focus && !(iop->flags() & IOP_FLAGS_ONE_INSTANCE))
           {
             field_text = abs(s->instance) <= (NUM_INSTANCES - 1) /2
                        ? g_strdup(_(instance_label[abs(s->instance)*2 - (s->instance > 0)]))
@@ -1614,7 +1614,8 @@ static gboolean _add_actions_to_tree(GtkTreeIter *parent, dt_action_t *action,
     if(action->type == DT_ACTION_TYPE_IOP)
     {
       const dt_iop_module_so_t *module = (dt_iop_module_so_t *)action;
-      if(module->flags() & (IOP_FLAGS_HIDDEN | IOP_FLAGS_DEPRECATED))
+      if(action != &darktable.control->actions_focus
+         && module->flags() & (IOP_FLAGS_HIDDEN | IOP_FLAGS_DEPRECATED))
         continue;
     }
 
@@ -3067,7 +3068,13 @@ static float _process_action(dt_action_t *action, int instance,
     // find module instance
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)owner;
 
-    if(instance)
+    if(owner == &darktable.control->actions_focus)
+    {
+      action_target = darktable.develop->gui_module;
+      if(!action_target)
+        return return_value;
+    }
+    else if(instance)
     {
       int current_instance = abs(instance);
 
@@ -3935,7 +3942,9 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
   while(*insertion_point
         && strcmp(new_action->id, "preset")
         && (!strcmp((*insertion_point)->id, "preset")
-            || g_utf8_collate((*insertion_point)->label, new_action->label) < 0))
+            || g_utf8_collate((*insertion_point)->label, new_action->label) <
+               (*((*insertion_point)->label) == '<' ? 1000 : 0) -
+               (*(        new_action->label) == '<' ? 1000 : 0)))
   {
     insertion_point = &(*insertion_point)->next;
   }

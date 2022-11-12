@@ -1437,6 +1437,8 @@ static void _init_widgets(dt_gui_gtk_t *gui)
 
 }
 
+static const dt_action_def_t _action_def_focus_tabs;
+
 static void _init_main_table(GtkWidget *container)
 {
   GtkWidget *widget;
@@ -1576,6 +1578,8 @@ static void _init_main_table(GtkWidget *container)
 
   /* initialize right panel */
   _ui_init_panel_right(darktable.gui->ui, container);
+
+   dt_action_define(&darktable.control->actions_focus, NULL, N_("tabs"), NULL, &_action_def_focus_tabs);
 }
 
 GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c)
@@ -2796,6 +2800,27 @@ static float _action_process_tabs(gpointer target, dt_action_element_t element, 
   return -1 - c + (c == element ? DT_VALUE_PATTERN_ACTIVE : 0);
 }
 
+static void _find_notebook(GtkWidget *widget, GtkWidget **p)
+{
+  if(*p) return;
+  if(GTK_IS_NOTEBOOK(widget))
+    *p = widget;
+  else if(GTK_IS_CONTAINER(widget))
+    gtk_container_foreach(GTK_CONTAINER(widget), (GtkCallback)_find_notebook, p);
+}
+
+static float _action_process_focus_tabs(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  GtkWidget *widget = ((dt_iop_module_t *)target)->widget, *notebook = NULL;
+  _find_notebook(widget, &notebook);
+
+  if(notebook)
+    return _action_process_tabs(notebook, element, effect, move_size);
+
+  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("does not contain pages"));
+  return NAN;
+}
+
 const gchar *dt_action_effect_tabs[]
   = { N_("activate"),
       N_("next"),
@@ -2900,6 +2925,12 @@ const dt_action_def_t dt_action_def_tabs_none
   = { N_("tabs"),
       _action_process_tabs,
       _action_elements_tabs_all_rgb + 4 };
+
+static const dt_action_def_t _action_def_focus_tabs
+  = { N_("tabs"),
+      _action_process_focus_tabs,
+      DT_ACTION_ELEMENTS_NUM(tabs),
+      NULL, TRUE };
 
 static gint _get_container_row_heigth(GtkWidget *w)
 {
