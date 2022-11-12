@@ -3942,7 +3942,9 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
   while(*insertion_point
         && strcmp(new_action->id, "preset")
         && (!strcmp((*insertion_point)->id, "preset")
-            || g_utf8_collate((*insertion_point)->label, new_action->label) < 0))
+            || g_utf8_collate((*insertion_point)->label, new_action->label) <
+               (*((*insertion_point)->label) == '<' ? 1000 : 0) -
+               (*(        new_action->label) == '<' ? 1000 : 0)))
   {
     insertion_point = &(*insertion_point)->next;
   }
