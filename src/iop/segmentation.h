@@ -58,12 +58,18 @@ typedef struct dt_iop_segmentation_t
 typedef struct dt_ff_stack_t
 {
   int pos;
+  int size;
   dt_pos_t *el;
 } dt_ff_stack_t;
 
 static inline void _push_stack(int xpos, int ypos, dt_ff_stack_t *stack)
 {
   const int i = stack->pos;
+  if(i >= stack->size - 1)
+  {
+    fprintf(stderr, "[segmentation stack overflow] %i\n", stack->size);
+    return;
+  }
   stack->el[i].xpos = xpos;
   stack->el[i].ypos = ypos;
   stack->pos++;
@@ -71,12 +77,20 @@ static inline void _push_stack(int xpos, int ypos, dt_ff_stack_t *stack)
 
 static inline dt_pos_t * _pop_stack(dt_ff_stack_t *stack)
 {
-  if(stack->pos > 0) stack->pos--;  
+  if(stack->pos > 0)
+    stack->pos--;
+  else
+    fprintf(stderr, "[segmentation stack underflow]\n");
   return &stack->el[stack->pos];
 }
 
 static inline int _get_segment_id(dt_iop_segmentation_t *seg, const size_t loc)
 {
+  if(loc > (size_t)(seg->width * seg->height))
+  {
+    fprintf(stderr, "[_get_segment_id] out of range access loc=%lu in %ix%i\n", loc, seg->width, seg->height);
+    return 0;
+  }
   return seg->data[loc] & (DT_SEG_ID_MASK-1);
 }
 
@@ -342,9 +356,9 @@ static inline void _intimage_borderfill(int *d, const int width, const int heigh
   }
 }
 
-static int _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, const int w, const int h, const int id, dt_ff_stack_t *stack)
+static gboolean _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, const int w, const int h, const int id, dt_ff_stack_t *stack)
 {
-  if(id >= seg->slots - 1) return 0;
+  if(id >= seg->slots - 2) return FALSE;
 
   const int border = seg->border;
   int *d = seg->data;
@@ -550,7 +564,7 @@ static int _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, c
   seg->ymin[id] = min_y;
   seg->ymax[id] = max_y;
   if(cnt) seg->nr += 1;
-  return cnt;
+  return (cnt > 0);
 }
 
 // User interface
@@ -559,7 +573,8 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   dt_ff_stack_t stack;  
   const size_t width = seg->width;
   const size_t height = seg->height;
-  stack.el = dt_alloc_align(16, width * height * sizeof(int));
+  stack.size = width * height / 16;
+  stack.el = dt_alloc_align(16, stack.size * sizeof(dt_pos_t));
   if(!stack.el) return;
 
   const size_t border = seg->border;
@@ -568,18 +583,18 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   {
     for(size_t col = border; col < width - border; col++)
     {
-      if(id >= (seg->slots - 1)) goto finish;
+      if(id >= (seg->slots - 2)) goto finish;
       if(seg->data[width * row + col] == 1)
       {
-        if(_floodfill_segmentize(row, col, seg, width, height, id, &stack) > 0) id++;
+        if(_floodfill_segmentize(row, col, seg, width, height, id, &stack)) id++;
       }
     }
   }
 
   finish:
 
-  if((darktable.unmuted & DT_DEBUG_VERBOSE) && (id >= (seg->slots - 2)))
-    fprintf(stderr, "[segmentize_plane] number of segments exceed maximum\n");
+  if((id >= (seg->slots - 2)) && (darktable.unmuted & DT_DEBUG_VERBOSE))
+    fprintf(stderr, "[segmentize_plane] number of segments exceed maximum=%i\n", seg->slots);
 
   dt_free_align(stack.el);
 }
@@ -633,9 +648,9 @@ void dt_segments_transform_closing(dt_iop_segmentation_t *seg, const int radius)
 
 void dt_segmentation_init_struct(dt_iop_segmentation_t *seg, const int width, const int height, const int border, const int wanted_slots)
 {
-  const int slots = MIN(wanted_slots, DT_SEG_ID_MASK - 1);
+  const int slots = MIN(wanted_slots, DT_SEG_ID_MASK - 2);
   if(slots != wanted_slots)
-    fprintf(stderr, "number of wanted seg slots %i exceeds maximum %i\n", wanted_slots, DT_SEG_ID_MASK - 1);
+    fprintf(stderr, "number of wanted seg slots %i exceeds maximum %i\n", wanted_slots, DT_SEG_ID_MASK - 2);
 
   seg->nr = 0;
   seg->data =   dt_alloc_align(64, width * height * sizeof(int));
