@@ -131,7 +131,7 @@ static void _calc_plane_candidates(const float *plane, const float *refavg, dt_i
   dt_omp_sharedconst(clipval, badlevel) \
   schedule(dynamic)
 #endif
-  for(int id = 2; id < seg->nr + 2; id++)
+  for(int id = 2; id < seg->nr; id++)
   {
     seg->val1[id] = 0.0f;
     seg->val2[id] = 0.0f;
@@ -571,13 +571,16 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       {
         const size_t o = _raw_to_plane(pwidth, row, col);
         const int pid = _get_segment_id(&isegments[color], o);
-        const float candidate = isegments[color].val1[pid];
-        if((pid > 1) && (pid < isegments[color].nr+2) && (candidate != 0.0f))
+        if((pid > 1) && (pid < isegments[color].nr))
         {
-          const float cand_reference = isegments[color].val2[pid];
-          const float refavg_here = _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, FALSE);
-          const float oval = powf(refavg_here + candidate - cand_reference, HL_POWERF);
-          out[0] = plane[color][o] = fmaxf(inval, oval);
+          const float candidate = isegments[color].val1[pid];
+          if(candidate != 0.0f)
+          {
+            const float cand_reference = isegments[color].val2[pid];
+            const float refavg_here = _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, FALSE);
+            const float oval = powf(refavg_here + candidate - cand_reference, HL_POWERF);
+            out[0] = plane[color][o] = fmaxf(inval, oval);
+          }
         }
       }
       out++;
@@ -714,9 +717,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
           const gboolean isegment = ((pid > 1) && (pid <= isegments[color].nr));
           const gboolean goodseg = isegment && (isegments[color].val1[pid] != 0.0f);
 
-          if((vmode == DT_SEGMENTS_MASK_COMBINE) && isegment && !iclipped)        out[0] = 1.0f;
-          else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && isegment && goodseg) out[0] = 1.0f;
-          else if(vmode == DT_SEGMENTS_MASK_STRENGTH)                             out[0] += gradient[ppos] * strength;
+          if((vmode == DT_SEGMENTS_MASK_COMBINE) && isegment && !iclipped) out[0] = 1.0f;
+          else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && goodseg)      out[0] = 1.0f;
+          else if(vmode == DT_SEGMENTS_MASK_STRENGTH)                      out[0] += gradient[ppos] * strength;
         }
         out++;
         in++;
