@@ -644,22 +644,6 @@ static void _rule_set_raw_text(dt_lib_filtering_rule_t *rule, const gchar *text,
   if(signal) _event_rule_changed(NULL, rule);
 }
 
-static void _range_set_tooltip(_widgets_range_t *special)
-{
-  // we recreate the tooltip
-  gchar *val = dtgtk_range_select_get_bounds_pretty(DTGTK_RANGE_SELECT(special->range_select));
-  gchar *txt = g_strdup_printf("<b>%s</b>\n%s\n%s",
-                               dt_collection_name(special->rule->prop),
-                               _("click or click&#38;drag to select one or multiple values"),
-                               _("right-click opens a menu to select the available values"));
-
-  if(special->rule->prop != DT_COLLECTION_PROP_RATING_RANGE)
-    txt = g_strdup_printf("%s\n<b><i>%s:</i></b> %s", txt, _("actual selection"), val);
-  gtk_widget_set_tooltip_markup(special->range_select, txt);
-  g_free(txt);
-  g_free(val);
-}
-
 static void _range_changed(GtkWidget *widget, gpointer user_data)
 {
   _widgets_range_t *special = (_widgets_range_t *)user_data;
@@ -670,8 +654,6 @@ static void _range_changed(GtkWidget *widget, gpointer user_data)
   gchar *txt = dtgtk_range_select_get_raw_text(DTGTK_RANGE_SELECT(special->range_select));
   _rule_set_raw_text(special->rule, txt, TRUE);
   g_free(txt);
-
-  _range_set_tooltip(special);
 
   // synchronize the other widget if any
   _widgets_range_t *dest = NULL;
@@ -693,7 +675,13 @@ static void _range_widget_add_to_rule(dt_lib_filtering_rule_t *rule, _widgets_ra
 {
   special->rule = rule;
 
-  _range_set_tooltip(special);
+  // we create the static part of the tooltip
+  gchar *txt = g_strdup_printf("\n<b>%s</b>\n%s\n%s", dt_collection_name(special->rule->prop),
+                               _("click or click&#38;drag to select one or multiple values"),
+                               _("right-click opens a menu to select the available values"));
+  if(DTGTK_RANGE_SELECT(special->range_select)->cur_help)
+    g_free(DTGTK_RANGE_SELECT(special->range_select)->cur_help);
+  DTGTK_RANGE_SELECT(special->range_select)->cur_help = txt;
 
   gtk_box_pack_start(GTK_BOX((top) ? rule->w_special_box_top : rule->w_special_box), special->range_select, TRUE,
                      TRUE, 0);
