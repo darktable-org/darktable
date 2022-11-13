@@ -184,7 +184,7 @@ typedef struct dt_iop_filmicrgb_params_t
   float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
   float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
   float white_point_source;    // $MIN: 0.1 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
-  float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
+  float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: -2.0 $DESCRIPTION: "threshold"
   float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
   float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "bloom ↔ reconstruct"
   float reconstruct_grey_vs_color; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "gray ↔ colorful details"
@@ -502,6 +502,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
     convert_to_spline_v3(n);
+    n->enable_highlight_reconstruction = TRUE;
     return 0;
   }
   if(old_version == 2 && new_version == 6)
@@ -569,6 +570,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.f;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
+    n->enable_highlight_reconstruction = TRUE;
     convert_to_spline_v3(n);
     return 0;
   }
@@ -646,6 +648,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = d->noise_level;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
+    n->enable_highlight_reconstruction = TRUE;
     convert_to_spline_v3(n);
     return 0;
   }
@@ -701,6 +704,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       default:
         return 1;
     }
+    n->enable_highlight_reconstruction = TRUE;
     convert_to_spline_v3(n);
     return 0;
   }
