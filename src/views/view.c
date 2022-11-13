@@ -935,6 +935,12 @@ void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter)
     vm->proxy.module_filtering.reset_filter(vm->proxy.module_filtering.module, smart_filter);
 }
 
+void dt_view_filtering_show_pref_menu(const dt_view_manager_t *vm, GtkWidget *bt)
+{
+  if(vm->proxy.module_filtering.module && vm->proxy.module_filtering.show_pref_menu)
+    vm->proxy.module_filtering.show_pref_menu(vm->proxy.module_filtering.module, bt);
+}
+
 GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm)
 {
   if(vm->proxy.filter.module && vm->proxy.filter.get_filter_box)
