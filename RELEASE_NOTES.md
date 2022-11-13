@@ -148,6 +148,27 @@ accompanying blog post.
 
 - Add support for scrolling through presets with shortcuts.
 
+- The panel size are now using the natual size making the initial
+  display adjusting to the screen resolution.
+
+- Allow narrow geo-tagging module. If the panel is getting small the
+  widget will properly wrap around instead of ellipse texts.
+
+- Add some more actions in the main help screen (displayed with
+  <kbd>h</kbd> key).
+
+- The lensfun module is now a mandatory dependency. This will ensure
+  that all darktable build will have the lens correction module. Also,
+  an edit with this module won't get lost because a build is missing
+  it. At the same time this simplify the code, which is also good.
+
+- A new virtual module <focused> is introduced. This module can hold
+  key shortcuts that can be applied to the current module in
+  focus. For example a key shortcut in the 1st slider will be usable
+  to change exposure in the exposure module or the rotation in the
+  rotate and perspective module. It can be configured for sliders,
+  comboboxes, buttons and tabs.
+
 ## Bug Fixes
 
 - Properly use the display color profile in the slideshow. This was
@@ -216,6 +237,19 @@ accompanying blog post.
 
 - Widgets in collapsed section are not disabled anymore making them
   actionable via shortcut.
+
+- Fix typo preventing proper expansion of variable $(FOLDER.PICTURES).
+
+- Fix PNM loader (could display broken images and always wrong colors).
+
+- Fix drawing color picker area when in image edges. When mouse is
+  going outside the edges we don't loose anymore the editing action.
+
+- An old bug in the cache handling has been fixed. This could have
+  different effects like missing a recompute of the display after some
+  change in parameters or a simple crash when in darkroom.
+
+- Fix some toggle buttons UI state not properly updated.
 
 ## Lua
 
