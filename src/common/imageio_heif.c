@@ -1,6 +1,6 @@
 /*
  * This file is part of darktable,
- * Copyright (C) 2021 darktable developers.
+ * Copyright (C) 2021-2022 darktable developers.
  *
  *  darktable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
       /* print debug info only if genuine HEIF */
       dt_print(DT_DEBUG_IMAGEIO, "Failed to read HEIF file [%s]: %s\n", filename, err.message);
     }
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
@@ -80,7 +80,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO,
              "No images found in HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
@@ -91,7 +91,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
@@ -102,7 +102,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to decode HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
