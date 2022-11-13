@@ -33,8 +33,8 @@ typedef enum dt_imageio_retval_t
 {
   DT_IMAGEIO_OK = 0,         // all good :)
   DT_IMAGEIO_FILE_NOT_FOUND, // file has been lost
-  DT_IMAGEIO_FILE_CORRUPTED, // file contains garbage
-  DT_IMAGEIO_CACHE_FULL      // dt's caches are full :(
+  DT_IMAGEIO_LOAD_FAILED,    // file either corrupted or in a format not supported by the current loader
+  DT_IMAGEIO_CACHE_FULL      // buffer allocation for image data failed
 } dt_imageio_retval_t;
 
 typedef enum dt_imageio_write_xmp_t

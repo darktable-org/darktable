@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2021-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -241,13 +241,13 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
 
 dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  int err = DT_IMAGEIO_FILE_CORRUPTED;
+  int err = DT_IMAGEIO_LOAD_FAILED;
   int libraw_err = LIBRAW_SUCCESS;
-  if(!_supported_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(!_supported_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   libraw_data_t *raw = libraw_init(0);
-  if(!raw) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(!raw) return DT_IMAGEIO_LOAD_FAILED;
 
 #if defined(_WIN32) && (defined(UNICODE) || defined(_UNICODE))
   wchar_t *wfilename = g_utf8_to_utf16(filename, -1, NULL, NULL, NULL);

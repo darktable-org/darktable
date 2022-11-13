@@ -730,12 +730,12 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   // format (instead of the more common Exif metadata format)
   // See https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format
   if(g_ascii_strcasecmp(ext, ".jpg") && g_ascii_strcasecmp(ext, ".jpeg") && g_ascii_strcasecmp(ext, ".jfif"))
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_LOAD_FAILED;
   img->width = jpg.width;
   img->height = jpg.height;
 
@@ -743,7 +743,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     dt_free_align(tmp);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   img->buf_dsc.channels = 4;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -593,9 +593,9 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
   if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4))
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   FILE *f = g_fopen(filename, "rb");
-  if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(!f) return DT_IMAGEIO_LOAD_FAILED;
 
   rgbe_header_info info;
   if(RGBE_ReadHeader(f, &img->width, &img->height, &info)) goto error_corrupt;
@@ -630,7 +630,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
 
 error_corrupt:
   fclose(f);
-  return DT_IMAGEIO_FILE_CORRUPTED;
+  return DT_IMAGEIO_LOAD_FAILED;
 error_cache_full:
   fclose(f);
   return DT_IMAGEIO_CACHE_FULL;

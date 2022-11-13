@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -97,7 +97,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   opj_codec_t *d_codec = NULL;
   OPJ_CODEC_FORMAT codec;
   opj_stream_t *d_stream = NULL; /* Stream */
-  int ret = DT_IMAGEIO_FILE_CORRUPTED;
+  int ret = DT_IMAGEIO_LOAD_FAILED;
 
   /* set decoding parameters to default values */
   opj_set_default_decoder_parameters(&parameters);
@@ -105,7 +105,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   g_strlcpy(parameters.infile, filename, sizeof(parameters.infile));
 
   parameters.decod_format = get_file_format(filename);
-  if(parameters.decod_format == -1) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(parameters.decod_format == -1) return DT_IMAGEIO_LOAD_FAILED;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
@@ -134,7 +134,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   else // this will also reject jpt files.
   {
     fprintf(stderr, "[j2k_open] Error: `%s' has unsupported file format.\n", filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
 
@@ -148,14 +148,14 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     codec = OPJ_CODEC_JPT;
   else
   {
-    return DT_IMAGEIO_FILE_CORRUPTED; // can't happen
+    return DT_IMAGEIO_LOAD_FAILED; // can't happen
   }
 
   d_codec = opj_create_decompress(codec);
   if(!d_codec)
   {
     fprintf(stderr, "[j2k_open] Error: failed to create the decoder\n");
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   /* catch events using our callbacks and give a local context */
@@ -170,7 +170,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
      is a symptom of major resource exhaustion, bail out as quickly as possible */
     fprintf(stderr, "[j2k_open] Error: failed to setup the threads for decoder %s\n", parameters.infile);
     opj_destroy_codec(d_codec);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   /* setup the decoder decoding parameters using user parameters */
@@ -178,7 +178,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   {
     fprintf(stderr, "[j2k_open] Error: failed to setup the decoder %s\n", parameters.infile);
     opj_destroy_codec(d_codec);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   d_stream = opj_stream_create_default_file_stream(parameters.infile, 1);
@@ -186,7 +186,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   {
     fprintf(stderr, "[j2k_open] Error: failed to create the stream from the file %s\n", parameters.infile);
     opj_destroy_codec(d_codec);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   /* Read the main header of the codestream and if necessary the JP2 boxes*/
@@ -206,7 +206,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     opj_destroy_codec(d_codec);
     opj_stream_destroy(d_stream);
     opj_image_destroy(image);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   /* Close the byte stream */
@@ -215,7 +215,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   if(!image)
   {
     fprintf(stderr, "[j2k_open] Error: failed to decode image `%s'\n", filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto end_of_the_world;
   }
 
@@ -244,7 +244,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   if(image->numcomps == 0 || image->x1 == 0 || image->y1 == 0)
   {
     fprintf(stderr, "[j2k_open] Error: invalid raw image parameters in `%s'\n", filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto end_of_the_world;
   }
 
@@ -253,14 +253,14 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     if(image->comps[i].w != image->x1 || image->comps[i].h != image->y1)
     {
       fprintf(stderr, "[j2k_open] Error: some component has different size in `%s'\n", filename);
-      ret = DT_IMAGEIO_FILE_CORRUPTED;
+      ret = DT_IMAGEIO_LOAD_FAILED;
       goto end_of_the_world;
     }
     if(image->comps[i].prec > 16)
     {
       fprintf(stderr, "[j2k_open] Error: precision %d is larger than 16 in `%s'\n", image->comps[1].prec,
               filename);
-      ret = DT_IMAGEIO_FILE_CORRUPTED;
+      ret = DT_IMAGEIO_LOAD_FAILED;
       goto end_of_the_world;
     }
   }
@@ -337,7 +337,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   g_strlcpy(parameters.infile, filename, sizeof(parameters.infile));
 
   parameters.decod_format = get_file_format(filename);
-  if(parameters.decod_format == -1) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(parameters.decod_format == -1) return DT_IMAGEIO_LOAD_FAILED;
 
   /* read the input file and put it in memory */
   /* ---------------------------------------- */
@@ -378,21 +378,21 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   if(!d_codec)
   {
     fprintf(stderr, "[j2k_read_profile] Error: failed to create the decoder\n");
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   /* setup the decoder decoding parameters using user parameters */
   if(!opj_setup_decoder(d_codec, &parameters))
   {
     fprintf(stderr, "[j2k_read_profile] Error: failed to setup the decoder %s\n", parameters.infile);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   d_stream = opj_stream_create_default_file_stream(parameters.infile, 1);
   if(!d_stream)
   {
     fprintf(stderr, "[j2k_read_profile] Error: failed to create the stream from the file %s\n", parameters.infile);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   /* Read the main header of the codestream and if necessary the JP2 boxes*/
@@ -412,7 +412,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
     opj_destroy_codec(d_codec);
     opj_stream_destroy(d_stream);
     opj_image_destroy(image);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   // FIXME: how to do it without fully-decoding the whole image?
