@@ -45,7 +45,7 @@ typedef double (*DTGTKTranslateValueFunc)(const double value);
 typedef gchar *(*DTGTKPrintValueFunc)(const double value, const gboolean detailled);
 typedef gboolean (*DTGTKDecodeValueFunc)(const gchar *text, double *value);
 typedef struct _GtkDarktableRangeSelect GtkDarktableRangeSelect;
-typedef gchar *(*DTGTKCurrentTextFunc)(GtkDarktableRangeSelect *range, const double current);
+typedef gchar *(*DTGTKCurrentTextFunc)(GtkDarktableRangeSelect *range);
 
 typedef enum dt_range_bounds_t
 {
@@ -102,7 +102,7 @@ struct _GtkDarktableRangeSelect
   // print function has detailled mode for extended infos
   DTGTKPrintValueFunc print;
   DTGTKDecodeValueFunc decode;
-  DTGTKCurrentTextFunc current_text;
+  DTGTKCurrentTextFunc current_bounds;
   GList *blocks;
   GList *icons;
   GList *markers;
@@ -116,6 +116,7 @@ struct _GtkDarktableRangeSelect
   // window used to show the value under the cursor
   GtkWidget *cur_window;
   GtkWidget *cur_label;
+  gchar *cur_help;
 
   struct _range_date_popup *date_popup;
 };
