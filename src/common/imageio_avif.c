@@ -50,7 +50,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   if(decoder == NULL)
   {
     dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to create decoder for `%s'\n", filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
@@ -67,7 +67,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
       /* print debug info only if genuine AVIF */
       dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s\n", filename, avifResultToString(result));
     }
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
@@ -83,7 +83,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   {
     dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to convert `%s' from YUV to RGB: %s\n", filename,
              avifResultToString(result));
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 

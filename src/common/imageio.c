@@ -674,7 +674,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     return ret;
   }
 
-  return DT_IMAGEIO_FILE_CORRUPTED;
+  return DT_IMAGEIO_LOAD_FAILED;
 }
 
 void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
@@ -1234,7 +1234,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
   }
 #endif
 
-  return DT_IMAGEIO_FILE_CORRUPTED;
+  return DT_IMAGEIO_LOAD_FAILED;
 }
 
 void dt_imageio_update_monochrome_workflow_tag(int32_t id, int mask)
@@ -1277,7 +1277,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   const int32_t was_hdr = (img->flags & DT_IMAGE_HDR);
   const int32_t was_bw = dt_image_monochrome_flags(img);
 
-  dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
+  dt_imageio_retval_t ret = DT_IMAGEIO_LOAD_FAILED;
   img->loader = LOADER_UNKNOWN;
 
   /* check if file is ldr using magic's */
