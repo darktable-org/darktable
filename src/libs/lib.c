@@ -837,21 +837,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   gint flags = (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_RIGHT);
   dtgtk_button_set_paint(DTGTK_BUTTON(module->arrow), dtgtk_cairo_paint_solid_arrow, flags, NULL);
 
-  /* show / hide plugin widget */
-  if(expanded)
-  {
-    /* register to receive draw events */
-    darktable.lib->gui_module = module;
-  }
-  else
-  {
-    if(darktable.lib->gui_module == module)
-    {
-      darktable.lib->gui_module = NULL;
-
-      dt_control_queue_redraw();
-    }
-  }
+  darktable.lib->gui_module = expanded ? module : NULL;
 
   /* store expanded state of module */
   char var[1024];
