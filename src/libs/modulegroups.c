@@ -2470,6 +2470,13 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
   GtkWidget *new_base = NULL;
   while(actions)
   {
+    if(actions == &darktable.control->actions_focus ||
+       actions == &darktable.control->actions_blend)
+    {
+        actions = actions->next;
+        continue;
+    }
+
     if(actions->type == DT_ACTION_TYPE_IOP)
     {
       dt_iop_module_so_t *so = (dt_iop_module_so_t *)actions;
