@@ -68,8 +68,9 @@ accompanying blog post.
 
 - JPEG XL (read / write)
 
-- Show modules with transition + keep them fully visible when opening
-  or expanding.
+- Keep modules fully visible when opening or expanding and move with 
+  a smooth transition effect. The effect can be sped up or switched 
+  off with preferences/miscellaneous/duration of ui transitions.
 
 - Large pixelpipe cache overhaul.
 
@@ -168,7 +169,7 @@ accompanying blog post.
   focus. For example a key shortcut in the 1st slider will be usable
   to change exposure in the exposure module or the rotation in the
   rotate and perspective module. It can be configured for sliders,
-  comboboxes, buttons and tabs.
+  comboboxes, buttons, tabs and the focused module itself.
 
 ## Bug Fixes
 
@@ -215,7 +216,7 @@ accompanying blog post.
 - Fix undo/redo after a style applied via a shortcut.
 
 - Do not rebuilt the whole tree when deleting or editing a
-  presets. This gives a better stability to the UI.
+  preset in preferences. This gives a better stability to the UI.
 
 - Fix some refresh of the mask manager when changing images.
 
