@@ -2576,8 +2576,8 @@ void gui_init(dt_view_t *self)
   ac = dt_action_define(sa, NULL, N_("full preview"), NULL, &dt_action_def_preview);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
 
-  // add an option to allow skip mouse events while editing masks
-  ac = dt_action_define(sa, NULL, N_("allow to pan & zoom while editing masks"), NULL, &dt_action_def_skip_mouse);
+  // add an option to allow skip mouse events while other overlays are consuming mouse actions
+  ac = dt_action_define(sa, NULL, N_("force pan & zoom with mouse"), NULL, &dt_action_def_skip_mouse);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_a, 0);
 
   // move left/right/up/down
