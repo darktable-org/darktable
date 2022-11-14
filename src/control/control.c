@@ -667,6 +667,7 @@ void dt_control_toast_redraw()
 static int _widget_queue_draw(void *widget)
 {
   gtk_widget_queue_draw((GtkWidget*)widget);
+  g_object_unref(widget);
   return FALSE;
 }
 
@@ -674,6 +675,7 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
   {
+    g_object_ref(widget);
     g_idle_add(_widget_queue_draw, (void*)widget);
   }
 }
