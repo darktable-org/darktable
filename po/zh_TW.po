@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-11 10:11+0100\n"
-"PO-Revision-Date: 2022-11-14 09:46+0800\n"
+"PO-Revision-Date: 2022-11-14 09:49+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -17962,6 +17962,10 @@ msgstr "最低濃度區域藍色量"
 msgid "dynamic range of the film"
 msgstr "底片的動態範圍"
 
+#: ../src/iop/negadoctor.c:845
+msgid "D max"
+msgstr "最高濃度"
+
 #: ../src/iop/negadoctor.c:847
 msgid ""
 "maximum density of the film, corresponding to white after inversion.\n"
@@ -24862,9 +24866,6 @@ msgstr "切換回傳統視窗，在按鍵放開後仍保持開啟"
 #: ../src/views/view.c:1346
 msgid "mouse actions"
 msgstr "滑鼠動作"
-
-#~ msgid "D max"
-#~ msgstr "最高濃度"
 
 #~ msgid "recovery"
 #~ msgstr "亮部修復"
