@@ -112,7 +112,8 @@ accompanying blog post.
   color from the preference as this can be done directly on the module
   itself.
 
-- Improve profile support for AVIF & EXR format.
+- Improve profile support for AVIF & EXR format. Also relax AVIF
+  reader by not requiring full compliance.
 
 - The current collection image count is now shown in the toolbox. This
   makes this information available even if the top hinter area is
