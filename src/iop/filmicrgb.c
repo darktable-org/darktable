@@ -2532,10 +2532,11 @@ static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, g
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  ++darktable.gui->reset;
   g->show_mask = !(g->show_mask);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_highlight_mask), !g->show_mask);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_highlight_mask), g->show_mask);
+  --darktable.gui->reset;
   dt_dev_reprocess_center(self->dev);
 }
 
