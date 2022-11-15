@@ -3766,22 +3766,10 @@ static void _manage_preset_change(GtkWidget *widget, dt_lib_module_t *self)
 static void _manage_preset_delete(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  gint res = GTK_RESPONSE_YES;
 
-  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
-  {
-    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(d->dialog), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                               GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                               _("do you really want to delete the preset `%s'?"), d->edit_preset);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
+     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+                                  _("do you really want to delete the preset `%s'?"), d->edit_preset))
   {
     dt_lib_presets_remove(d->edit_preset, self->plugin_name, self->version());
 
