@@ -646,7 +646,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // advertise on the pipe if coeffs are D65 for validity check
     gboolean is_D65 = TRUE;
     for(int c = 0; c < 3; c++)
-      if(fabsf(d->coeffs[c] - (float)g->daylight_wb[c]) > DT_COEFF_EPS) is_D65 = FALSE;
+      if(!feqf(d->coeffs[c], (float)g->daylight_wb[c], DT_COEFF_EPS)) is_D65 = FALSE;
 
     self->dev->proxy.wb_is_D65 = is_D65;
   }
@@ -1099,7 +1099,7 @@ void gui_update(struct dt_iop_module_t *self)
   gboolean found = FALSE;
 
   // is this a "as shot" white balance?
-  if((fabsf(p->red - g->as_shot_wb[0]) < DT_COEFF_EPS) && (fabsf(p->green - g->as_shot_wb[1]) < DT_COEFF_EPS) && (fabsf(p->blue - g->as_shot_wb[2]) < DT_COEFF_EPS))
+  if(feqf(p->red, g->as_shot_wb[0], DT_COEFF_EPS) && feqf(p->green, g->as_shot_wb[1], DT_COEFF_EPS) && feqf(p->blue, g->as_shot_wb[2], DT_COEFF_EPS))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     found = TRUE;
@@ -1107,9 +1107,9 @@ void gui_update(struct dt_iop_module_t *self)
   else
   {
     // is this a "D65 white balance"?
-    if((fabsf(p->red - (float)g->daylight_wb[0]) < DT_COEFF_EPS) &&
-       (fabsf(p->green - (float)g->daylight_wb[1]) < DT_COEFF_EPS) &&
-       (fabsf(p->blue - (float)g->daylight_wb[2]) < DT_COEFF_EPS))
+    if(feqf(p->red, (float)g->daylight_wb[0], DT_COEFF_EPS)
+      && feqf(p->green, (float)g->daylight_wb[1], DT_COEFF_EPS)
+      && feqf(p->blue, (float)g->daylight_wb[2], DT_COEFF_EPS))
     {
       dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
       found = TRUE;
