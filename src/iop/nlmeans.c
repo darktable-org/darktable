@@ -387,7 +387,7 @@ static void process_cpu(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
   const dt_aligned_pixel_t norm2 = { nL * nL, nC * nC, nC * nC, 1.0f };
 
   // faster but less accurate processing by skipping half the patches on previews and thumbnails
-  int decimate = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL));
+  int decimate = (piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIE2 | DT_DEV_PIXELPIPE_THUMBNAIL));
 
   const dt_nlmeans_param_t params = { .scattering = 0,
                                       .scale = scale,
