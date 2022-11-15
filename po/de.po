@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-11 10:11+0100\n"
-"PO-Revision-Date: 2022-11-11 10:56+0100\n"
+"PO-Revision-Date: 2022-11-15 22:10+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -3944,7 +3944,7 @@ msgstr "Durchmesser der Rekonstruktion"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:165
 #: ../build/lib/darktable/plugins/introspection_highlights.c:258
 msgid "candidating"
-msgstr "Gewichtung Restinformation"
+msgstr "Farbermittlungspräferenz"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:171
 #: ../build/lib/darktable/plugins/introspection_highlights.c:262
@@ -4045,11 +4045,11 @@ msgstr "große Segmente"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:311
 msgid "flat small segments"
-msgstr "flache kleine Segmente"
+msgstr "flach kleine Segmente"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:312
 msgid "flat large segments"
-msgstr "flache große Segmente"
+msgstr "flach große Segmente"
 
 #: ../build/lib/darktable/plugins/introspection_highpass.c:44
 #: ../build/lib/darktable/plugins/introspection_highpass.c:91
@@ -5212,14 +5212,14 @@ msgstr "nicht definiert"
 #: ../src/common/collection.c:2451
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
-msgstr "<b>%d</b> Bild (#<b>%d</b>) von <b>%d</b> ausgewählt"
+msgstr "<b>%d</b> Bild (#<b>%d</b>) ausgewählt von <b>%d</b>"
 
 #: ../src/common/collection.c:2457
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
-msgstr[0] "<b>%d</b> Bild von <b>%d</b> ausgewählt"
-msgstr[1] "<b>%d</b> Bilder von <b>%d</b> ausgewählt"
+msgstr[0] "<b>%d</b> Bild ausgewählt von <b>%d</b>"
+msgstr[1] "<b>%d</b> Bilder ausgewählt von <b>%d</b>"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:1985
 #: ../src/develop/blend_gui.c:2012 ../src/gui/guides.c:729
@@ -16736,10 +16736,12 @@ msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
 msgstr ""
-"nah beieinanderliegende Segmente mit Clipping durch morphologische "
-"Operationen kombinieren.\n"
+"zusammengehörige Segmente mit Clipping bei Farbermittlung kombiniert "
+"behandeln.\n"
+"Wert erhöhen, wenn zusammengehörige Segmente geringe Farbababweichungen "
+"zeigen.\n"
 "Klick auf Maskensymbol zeigt die exakten Positionen der resultierenden "
-"Segmentgrenzen an."
+"Segmentgrenzen."
 
 #: ../src/iop/highlights.c:2456
 msgid ""
@@ -16748,12 +16750,11 @@ msgid ""
 "opposed means inpainting.\n"
 "the mask button shows segments that are considered to have a good candidate."
 msgstr ""
-"Inpainting nach Segmentierungsanalyse auswählen.\n"
-"erhöhen, um in der Segmentierungsanalyse gefundene Kandidaten zu "
-"bevorzugen, \n"
-"verringern, um ein Inpainting abzulehnen.\n"
-"Klick auf Maskensymbol zeigt Segmente an, die als gute Kandidaten geeignet "
-"sind."
+"Farbermittlungspräferenz nach Segmentierungsanalyse auswählen.\n"
+"erhöhen, um Referenzwert aus der Segmentierungsanalyse bevorzugen, \n"
+"verringern, um Mittelwerte analog Inpaint opposed Methode zu bevorzugen.\n"
+"Klick auf Maskensymbol zeigt Segmente, in denen gute Referenzwerte vermutet "
+"werden."
 
 #: ../src/iop/highlights.c:2467
 msgid ""
@@ -16783,7 +16784,7 @@ msgid ""
 msgstr ""
 "legt die Stärke der Rekonstruktion in Bereichen fest, in denen alle Pixel "
 "geclippt wurden.\n"
-"Klick auf Maskensymbol zeigt die Wirkung bei bereits rekonstruierte Daten."
+"Klick auf Maskensymbol zeigt die Wirkung auf rekonstruierte Daten."
 
 #: ../src/iop/highlights.c:2483
 msgid ""
