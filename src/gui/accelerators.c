@@ -1160,13 +1160,10 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 
     if(existing_labels)
     {
-      gchar *question = g_strdup_printf("%s\n%s",
-                                        _("remove these existing shortcuts?"),
-                                        existing_labels);
-      remove_existing = dt_gui_show_yes_no_dialog(_("clashing shortcuts exist"), question);
-
+      remove_existing = dt_gui_show_yes_no_dialog(_("clashing shortcuts exist"), "%s\n%s",
+                                                  _("remove these existing shortcuts?"),
+                                                  existing_labels);
       g_free(existing_labels);
-      g_free(question);
 
       if(!remove_existing)
       {
