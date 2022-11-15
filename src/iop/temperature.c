@@ -1134,9 +1134,9 @@ void gui_update(struct dt_iop_module_t *self)
           i++)
       {
         const dt_wb_data *wbp = dt_wb_preset(i);
-        if(p->red == (float)wbp->channels[0] &&
-           p->green == (float)wbp->channels[1] &&
-           p->blue == (float)wbp->channels[2])
+        if(feqf(p->red, (float)wbp->channels[0], DT_COEFF_EPS)
+           && feqf(p->green, (float)wbp->channels[1], DT_COEFF_EPS)
+           && feqf(p->blue, (float)wbp->channels[2], DT_COEFF_EPS))
         {
           // got exact match!
           dt_bauhaus_combobox_set(g->presets, j);
@@ -1194,9 +1194,9 @@ void gui_update(struct dt_iop_module_t *self)
             dt_wb_preset_interpolate(dt_wb_preset(i - 1),
                                      dt_wb_preset(i), &interpolated);
 
-            if(p->red == (float)interpolated.channels[0]
-               && p->green == (float)interpolated.channels[1]
-               && p->blue == (float)interpolated.channels[2])
+            if(feqf(p->red, (float)interpolated.channels[0], DT_COEFF_EPS)
+               && feqf(p->green, (float)interpolated.channels[1], DT_COEFF_EPS)
+               && feqf(p->blue, (float)interpolated.channels[2], DT_COEFF_EPS))
             {
               // got exact match!
 
