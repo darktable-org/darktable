@@ -187,7 +187,7 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
 
   expander
       = g_object_new(dtgtk_expander_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, "spacing", 0, NULL);
-  expander->expanded = -1;
+  expander->expanded = TRUE;
   expander->header = header;
   expander->body = body;
 
@@ -198,6 +198,8 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   GtkWidget *frame = gtk_frame_new(NULL);
   gtk_container_add(GTK_CONTAINER(frame), expander->body_evb);
   expander->frame = gtk_revealer_new();
+  gtk_revealer_set_transition_duration(GTK_REVEALER(expander->frame), 0);
+  gtk_revealer_set_reveal_child(GTK_REVEALER(expander->frame), TRUE);
   gtk_container_add(GTK_CONTAINER(expander->frame), frame);
 
   gtk_box_pack_start(GTK_BOX(expander), expander->header_evb, TRUE, FALSE, 0);
