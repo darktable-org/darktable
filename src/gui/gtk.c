@@ -2503,6 +2503,40 @@ char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup
   return NULL;
 }
 
+gboolean dt_gui_show_yes_no_dialog(const char *title, const char *format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+  gchar *question = g_strdup_vprintf(format, ap);
+  va_end(ap);
+
+  GtkWindow *win = NULL;
+  for(GList *wins = gtk_window_list_toplevels(); wins; wins = g_list_delete_link(wins, wins))
+    if(gtk_window_is_active(wins->data)) win = wins->data;
+
+  GtkWidget *dialog = gtk_message_dialog_new(win,
+                                             GTK_DIALOG_DESTROY_WITH_PARENT,
+                                             GTK_MESSAGE_QUESTION,
+                                             GTK_BUTTONS_NONE,
+                                             "%s", question);
+  gtk_dialog_add_buttons(GTK_DIALOG(dialog),
+                         _("yes"), GTK_RESPONSE_YES,
+                         _("no"), GTK_RESPONSE_NO,
+                         NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NO);
+  gtk_window_set_title(GTK_WINDOW(dialog), title);
+
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+
+  const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+  g_free(question);
+
+  return resp == GTK_RESPONSE_YES;
+}
+
 // TODO: should that go to another place than gtk.c?
 void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 {

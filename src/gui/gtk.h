@@ -405,6 +405,8 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
 char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup, const char *placeholder,
                                            const char *no_text, const char *yes_text);
 
+gboolean dt_gui_show_yes_no_dialog(const char *title, const char *format, ...);
+
 void dt_gui_add_help_link(GtkWidget *widget, const char *link);
 
 // load a CSS theme
