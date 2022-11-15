@@ -255,7 +255,15 @@ accompanying blog post.
 
 ## Lua
 
-N/A
+- API version changed to 9.0.0 
+
+- darktable.gui.libs.filter.sort|sort order|rating|rating comparator functions removed
+
+- filename removed from dt_lua_snapshot_t data type
+
+- darktable.gui.libs.snapshot now updates the screen after changing direction or rotation
+
+- lua snapshot datatype correctly retrieves snapshot name
 
 ## Notes
 
