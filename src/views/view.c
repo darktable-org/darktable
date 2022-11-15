@@ -351,18 +351,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
           dt_gui_add_help_link(w, dt_get_help_url("darkroom_bottom_panel"));
       }
 
-
-      /* add module to its container */
-      dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
-    }
-  }
-
-  /* hide/show modules as last config */
-  for(GList *iter = darktable.lib->plugins; iter; iter = g_list_next(iter))
-  {
-    dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
-    if(dt_lib_is_visible_in_view(plugin, new_view))
-    {
       /* set expanded if last mode was that */
       char var[1024];
       gboolean expanded = FALSE;
@@ -384,8 +372,13 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
           gtk_widget_hide(plugin->widget);
       }
       if(plugin->view_enter) plugin->view_enter(plugin, old_view, new_view);
+
+      /* add module to its container */
+      dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
     }
   }
+
+  darktable.lib->gui_module = NULL;
 
   /* enter view. crucially, do this before initing the plugins below,
       as e.g. modulegroups requires the dr stuff to be inited. */
