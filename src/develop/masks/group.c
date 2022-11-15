@@ -160,13 +160,12 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
     near = -1;
     const float xx = pzx * darktable.develop->preview_pipe->backbuf_width,
                 yy = pzy * darktable.develop->preview_pipe->backbuf_height;
-    if(frm->functions && frm->functions->get_distance)
+    if(frm && frm->functions && frm->functions->get_distance)
       frm->functions->get_distance(xx, yy, as, gui, pos, g_list_length(frm->points),
                                    &inside, &inside_border, &near, &inside_source, &dist);
 
     if(inside || inside_border || near >= 0 || inside_source)
     {
-
       if(sel_dist > dist)
       {
         sel = frm;
