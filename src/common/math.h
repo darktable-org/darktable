@@ -71,6 +71,12 @@ static inline float clamp_range_f(const float x, const float low, const float hi
   return x > high ? high : (x < low ? low : x);
 }
 
+// test floats difference smaller than eps 
+static inline gboolean feqf(const float v1, const float v2, const float eps)
+{
+  return (fabsf(v1 - v2) < eps);
+}
+
 // Kahan summation algorithm
 #ifdef _OPENMP
 #pragma omp declare simd aligned(c)
