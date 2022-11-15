@@ -646,7 +646,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // advertise on the pipe if coeffs are D65 for validity check
     gboolean is_D65 = TRUE;
     for(int c = 0; c < 3; c++)
-      if(!feqf(d->coeffs[c], (float)g->daylight_wb[c], DT_COEFF_EPS)) is_D65 = FALSE;
+      if(!feqf(d->coeffs[c], (float)g->daylight_wb[c], DT_COEFF_EPS))
+        is_D65 = FALSE;
 
     self->dev->proxy.wb_is_D65 = is_D65;
   }
@@ -1099,7 +1100,9 @@ void gui_update(struct dt_iop_module_t *self)
   gboolean found = FALSE;
 
   // is this a "as shot" white balance?
-  if(feqf(p->red, g->as_shot_wb[0], DT_COEFF_EPS) && feqf(p->green, g->as_shot_wb[1], DT_COEFF_EPS) && feqf(p->blue, g->as_shot_wb[2], DT_COEFF_EPS))
+  if(feqf(p->red, g->as_shot_wb[0], DT_COEFF_EPS)
+     && feqf(p->green, g->as_shot_wb[1], DT_COEFF_EPS)
+     && feqf(p->blue, g->as_shot_wb[2], DT_COEFF_EPS))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     found = TRUE;
@@ -1191,9 +1194,9 @@ void gui_update(struct dt_iop_module_t *self)
             dt_wb_preset_interpolate(dt_wb_preset(i - 1),
                                      dt_wb_preset(i), &interpolated);
 
-            if(p->red == (float)interpolated.channels[0] &&
-               p->green == (float)interpolated.channels[1] &&
-               p->blue == (float)interpolated.channels[2])
+            if(p->red == (float)interpolated.channels[0]
+               && p->green == (float)interpolated.channels[1]
+               && p->blue == (float)interpolated.channels[2])
             {
               // got exact match!
 
@@ -1322,12 +1325,13 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
   const dt_image_t *img = &module->dev->image_storage;
 
   // the raw should provide wb coeffs:
-  int ok = 1;
+  gboolean ok = TRUE;
   // Only check the first three values, the fourth is usually NAN for RGB
   const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
   for(int k = 0; ok && k < num_coeffs; k++)
   {
-    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) ok = 0;
+    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f)
+      ok = FALSE;
   }
   if(ok)
   {
