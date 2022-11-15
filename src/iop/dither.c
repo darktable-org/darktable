@@ -327,7 +327,7 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL))
+      if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL))
       {
         graymode = -1;
       }
