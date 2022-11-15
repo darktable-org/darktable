@@ -760,6 +760,7 @@ static int direction_member(lua_State *L)
       d->vertical = TRUE;
       d->inverted = TRUE;
     }
+    dt_control_queue_redraw_center();
     return 0;
   }
 }
@@ -810,6 +811,7 @@ static int ratio_member(lua_State *L)
     {
       d->vp_xpointer = 1.0 - ratio;
     }
+    dt_control_queue_redraw_center();
     return 0;
   }
 }
@@ -888,7 +890,7 @@ static int name_member(lua_State *L)
   {
     return luaL_error(L, "Accessing a non-existent snapshot");
   }
-  lua_pushstring(L, gtk_button_get_label(GTK_BUTTON(d->snapshot[index].button)));
+  lua_pushstring(L, gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[index].button)))));
   return 1;
 }
 
