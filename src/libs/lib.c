@@ -151,23 +151,9 @@ static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
 {
   char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
-  gint res = GTK_RESPONSE_YES;
-
-  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
-  {
-    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog
-      = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                               GTK_BUTTONS_YES_NO, _("do you really want to update the preset `%s'?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), _("update preset?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
+     || dt_gui_show_yes_no_dialog(_("update preset?"),
+                                  _("do you really want to update the preset `%s'?"), name))
   {
     // commit all the module fields
     sqlite3_stmt *stmt;
@@ -238,23 +224,9 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
   gchar *name = get_active_preset_name(minfo);
   if(name == NULL) return;
 
-  gint res = GTK_RESPONSE_YES;
-
-  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
-  {
-    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog
-      = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                               GTK_BUTTONS_YES_NO, _("do you really want to delete the preset `%s'?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
+     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+                                  _("do you really want to delete the preset `%s'?"), name))
   {
     dt_action_rename_preset(&minfo->module->actions, name, NULL);
 

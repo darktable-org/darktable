@@ -311,25 +311,11 @@ static void edit_clicked(GtkWidget *w, gpointer user_data)
 
 gboolean _ask_before_delete_style(const gint style_cnt)
 {
-  gint res = GTK_RESPONSE_YES;
-
-  if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
-  {
-    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog = gtk_message_dialog_new
-      (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-       ngettext("do you really want to remove %d style?", "do you really want to remove %d styles?", style_cnt),
-       style_cnt);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("remove style?", "remove styles?", style_cnt));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  return res == GTK_RESPONSE_YES;
+return !dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style")
+       || dt_gui_show_yes_no_dialog(
+            ngettext("remove style?", "remove styles?", style_cnt),
+            ngettext("do you really want to remove %d style?", "do you really want to remove %d styles?", style_cnt),
+            style_cnt);
 }
 
 static void delete_clicked(GtkWidget *w, gpointer user_data)

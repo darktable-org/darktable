@@ -1211,25 +1211,9 @@ void gui_reset(dt_lib_module_t *self)
   const int32_t imgid = darktable.develop->image_storage.id;
   if(!imgid) return;
 
-  gint res = GTK_RESPONSE_YES;
-
-  if(dt_conf_get_bool("ask_before_discard"))
-  {
-    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-
-    GtkWidget *dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        _("do you really want to clear history of current image?"));
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete image's history?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("ask_before_discard")
+     || dt_gui_show_yes_no_dialog(_("delete image's history?"),
+                                  _("do you really want to clear history of current image?")))
   {
     dt_dev_undo_start_record(darktable.develop);
 
