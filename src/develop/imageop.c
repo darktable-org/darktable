@@ -2559,6 +2559,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_widget_set_hexpand(module->widget, FALSE);
   gtk_widget_set_vexpand(module->widget, FALSE);
 
+  gtk_widget_show_all(expander);
   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }

@@ -332,7 +332,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
     dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
     if(dt_lib_is_visible_in_view(plugin, new_view))
     {
-
       /* try get the module expander  */
       GtkWidget *w = dt_lib_gui_get_expander(plugin);
 

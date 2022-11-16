@@ -110,7 +110,7 @@ static GtkWidget *_scroll_widget = NULL;
 static gboolean _expander_scroll(GtkWidget *widget, GdkFrameClock *frame_clock, gpointer user_data)
 {
   GtkWidget *sw = gtk_widget_get_parent(gtk_widget_get_parent(gtk_widget_get_parent(widget)));
-  g_return_val_if_fail(GTK_IS_SCROLLED_WINDOW(sw), G_SOURCE_REMOVE);
+  if(!GTK_IS_SCROLLED_WINDOW(sw)) return G_SOURCE_REMOVE;
 
   GtkAllocation allocation, available;
   gtk_widget_get_allocation(widget, &allocation);
