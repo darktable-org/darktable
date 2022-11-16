@@ -707,14 +707,14 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       for(size_t col = 0; col < o_col_max; col++)
       {
         out[0] = 0.1f * in[0];
-        if((row > 0) && (col > 0) && (row < roi_out->height -1) && (col < i_width -1))
+        if((row > 0) && (col > 0) && (row < o_row_max - 1) && (col < o_col_max - 1))
         {
           const int color = (filters == 9u) ? FCxtrans(row + shift_y, col + shift_x, roi_in, xtrans) : FC(row + shift_y, col + shift_x, filters);
           const size_t ppos = _raw_to_plane(pwidth, row + shift_y, col + shift_x);
 
           const int pid = _get_segment_id(&isegments[color], ppos);
           const gboolean iclipped = (in[0] >= clips[color]);
-          const gboolean isegment = ((pid > 1) && (pid <= isegments[color].nr));
+          const gboolean isegment = ((pid > 1) && (pid < isegments[color].nr));
           const gboolean goodseg = isegment && (isegments[color].val1[pid] != 0.0f);
 
           if((vmode == DT_SEGMENTS_MASK_COMBINE) && isegment && !iclipped) out[0] = 1.0f;
@@ -725,6 +725,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
         in++;
       }
     }
+    dt_dev_pixelpipe_flush_caches(piece->pipe);
   }
 
 //  fprintf(stderr, "[segmentation report]%5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all.\n",
