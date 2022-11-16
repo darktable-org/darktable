@@ -1740,7 +1740,8 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
 
       if(buf.buf)
       {
-        for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
+        for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4)
+          buf.buf[i] = UINT8_MAX;
 
         int w = ts, h = ts;
         if(buf.width < buf.height)

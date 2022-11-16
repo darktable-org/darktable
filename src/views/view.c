@@ -1469,7 +1469,6 @@ void dt_view_paint_surface(
 {
   dt_develop_t *dev = darktable.develop;
 
-  const int bs = dev->border_size;
   const dt_dev_zoom_t zoom =
     window == DT_WINDOW_MAIN
     ? dt_control_get_dev_zoom()
@@ -1503,6 +1502,7 @@ void dt_view_paint_surface(
   if(dev->iso_12646.enabled)
   {
     // draw the white frame around picture
+    const int bs = dev->border_size;
     const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
     cairo_rectangle(cr, -tbw, -tbw, sw + 2.0 * tbw, sh + 2.0 * tbw);
     cairo_set_source_rgb(cr, 1., 1., 1.);
