@@ -601,6 +601,11 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
   // the label for the current value / selection
   range->cur_label = gtk_label_new("");
   dt_gui_add_class(range->cur_label, "dt_transparent_background");
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoAttribute *attr = pango_attr_font_features_new("tnum");
+  pango_attr_list_insert(attrlist, attr);
+  gtk_label_set_attributes(GTK_LABEL(range->cur_label), attrlist);
+  pango_attr_list_unref(attrlist);
   _current_set_text(range, 0);
   gtk_box_pack_start(GTK_BOX(vb), range->cur_label, FALSE, TRUE, 0);
 
