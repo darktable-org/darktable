@@ -836,10 +836,15 @@ static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   // first, we hide the block overlays after a delay if the mouse hasn't move
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
   {
-    // check current mouse position, if lower-half never display the overlay
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    thumb->display_overlay = (event->y < allocation.height / 2.f);
+    if(widget != thumb->w_image)
+      thumb->display_overlay = FALSE;
+    else
+    {
+      // check current mouse position, if lower-half never display the overlay
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(widget, &allocation);
+      thumb->display_overlay = (event->y < allocation.height / 2.f);
+    }
 
     if(thumb->overlay_timeout_id > 0)
     {
