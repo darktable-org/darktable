@@ -3142,21 +3142,21 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
   }
 }
 
-void dt_dev_image(
+void dt_dev_image_ext(
   uint32_t imgid,
   size_t width,
   size_t height,
   int history_end,
   uint8_t **buf,
   size_t *processed_width,
-  size_t *processed_height)
+  size_t *processed_height,
+  int border_size,
+  gboolean iso_12646)
 {
-  // create a dev
-
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
-  dev.border_size = darktable.develop->border_size;
-  dev.iso_12646.enabled = darktable.develop->iso_12646.enabled;
+  dev.border_size = border_size;
+  dev.iso_12646.enabled = iso_12646;
 
   // create the full pipe
 
@@ -3190,6 +3190,24 @@ void dt_dev_image(
   // we take the backbuf, avoid it to be released
 
   dt_dev_cleanup(&dev);
+}
+
+void dt_dev_image(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height)
+{
+  // create a dev
+
+  dt_dev_image_ext(imgid, width, height,
+                   history_end,
+                   buf, processed_width, processed_height,
+                   darktable.develop->border_size,
+                   darktable.develop->iso_12646.enabled);
 }
 
 // clang-format off
