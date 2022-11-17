@@ -519,7 +519,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
     }
   }
 
-  if(!has_allclipped && vmode == DT_SEGMENTS_MASK_OFF)
+  if(!has_allclipped && vmode == DT_HIGHLIGHTS_MASK_OFF)
     goto finish; 
 
   for(int i = 0; i < HL_RGB_PLANES; i++)
@@ -595,7 +595,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   float *restrict tmp       = plane[HL_RGB_PLANES + 4];
 
   const gboolean do_recovery = (recovery_mode != DT_RECOVERY_MODE_OFF) && has_allclipped && (strength > 0.0f);
-  if(do_recovery || (vmode != DT_SEGMENTS_MASK_OFF))
+  if(do_recovery || (vmode != DT_HIGHLIGHTS_MASK_OFF))
   {
     dt_segments_transform_closing(&isegments[3], seg_border);
     dt_iop_image_fill(gradient, fminf(1.0f, 5.0f * strength), pwidth, pheight, 1);
@@ -631,7 +631,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       dt_masks_extend_border(recout, pwidth, pheight, HL_BORDER+1);
 
       // now we check for significant all-clipped-segments and reconstruct data
-      for(int id = 2; id < isegments[3].nr+2; id++)
+      for(int id = 2; id < isegments[3].nr; id++)
       {
         const float seg_dist = _segment_maxdistance(pwidth, pheight, distance, &isegments[3], id);
         isegments[3].val1[id] = seg_dist;
@@ -645,7 +645,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       const float noise_level = data->noise_level;
       if(noise_level > 0.0f)
       {
-        for(int id = 2; id < isegments[3].nr+2; id++)
+        for(int id = 2; id < isegments[3].nr; id++)
         {
           if(isegments[3].val1[id] > 3.0f)
             _add_poisson_noise(pwidth, pheight, gradient, &isegments[3], id, noise_level);
@@ -692,7 +692,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       out[col] = in[col];
   }
 
-  if((vmode != DT_SEGMENTS_MASK_OFF) && fullpipe)
+  if((vmode != DT_HIGHLIGHTS_MASK_OFF) && fullpipe)
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -706,7 +706,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
       float *in = (float *)ivoid + i_width * (row + shift_y) + shift_x;
       for(size_t col = 0; col < o_col_max; col++)
       {
-        out[0] = 0.1f * in[0];
+        out[0] = 0.1f * fmaxf(0.0f, in[0]);
         if((row > 0) && (col > 0) && (row < o_row_max - 1) && (col < o_col_max - 1))
         {
           const int color = (filters == 9u) ? FCxtrans(row + shift_y, col + shift_x, roi_in, xtrans) : FC(row + shift_y, col + shift_x, filters);
@@ -716,10 +716,11 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
           const gboolean iclipped = (in[0] >= clips[color]);
           const gboolean isegment = ((pid > 1) && (pid < isegments[color].nr));
           const gboolean goodseg = isegment && (isegments[color].val1[pid] != 0.0f);
-
-          if((vmode == DT_SEGMENTS_MASK_COMBINE) && isegment && !iclipped) out[0] = 1.0f;
-          else if((vmode == DT_SEGMENTS_MASK_CANDIDATING) && goodseg)      out[0] = 1.0f;
-          else if(vmode == DT_SEGMENTS_MASK_STRENGTH)                      out[0] += gradient[ppos] * strength;
+          const int allid = _get_segment_id(&isegments[3], ppos);
+          const gboolean allseg = ((allid > 1) && (allid < isegments[3].nr));
+          if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment && !iclipped) out[0] = 1.0f;
+          else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg)      out[0] = 1.0f;
+          else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)          out[0] += strength * gradient[ppos];
         }
         out++;
         in++;
@@ -729,7 +730,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   }
 
 //  fprintf(stderr, "[segmentation report]%5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all.\n",
-//    (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr, isegments[1].nr, isegments[2].nr, isegments[3].nr);
+//    (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr -2, isegments[1].nr-2, isegments[2].nr-2, isegments[3].nr-2);
 
   finish:
 
