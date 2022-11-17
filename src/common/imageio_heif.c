@@ -95,8 +95,11 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     goto out;
   }
 
+  struct heif_decoding_options *decode_options = heif_decoding_options_alloc();
+  decode_options->ignore_transformations = TRUE;
   // Darktable only supports LITTLE_ENDIAN systems, so RRGGBB_LE should be fine
-  err = heif_decode_image(handle, &heif_img, heif_colorspace_RGB, heif_chroma_interleaved_RRGGBB_LE, NULL);
+  err = heif_decode_image(handle, &heif_img, heif_colorspace_RGB, heif_chroma_interleaved_RRGGBB_LE, decode_options);
+  heif_decoding_options_free(decode_options);
   if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
