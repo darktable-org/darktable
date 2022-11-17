@@ -12,6 +12,7 @@ cscope.out
 .*.swp
 .vscode/
 .clangd/
+.cache
 tags
 cscope.*
 compile_commands.json
