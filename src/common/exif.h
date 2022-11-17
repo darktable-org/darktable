@@ -20,6 +20,7 @@
 
 #include "common/colorspaces.h"
 #include "common/image.h"
+#include "develop/pixelpipe.h"
 
 /** wrapper around exiv2, C++ */
 #ifdef __cplusplus
@@ -82,7 +83,8 @@ int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int
 int dt_exif_xmp_write(const int imgid, const char *filename);
 
 /** write xmp packet inside an image. */
-int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata);
+int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata,
+    dt_develop_t *dev, dt_dev_pixelpipe_t *pipe);
 
 /** get the xmp blob for imgid. */
 char *dt_exif_xmp_read_string(const int imgid);
