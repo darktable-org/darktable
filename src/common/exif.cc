@@ -4378,7 +4378,7 @@ void dt_transform_face_tags(Exiv2::XmpData &xmp, dt_develop_t *dev, dt_dev_pixel
   {
     const std::size_t idx = 8 * i;
     const auto x_minmax = std::minmax({ points[idx], points[idx + 2], points[idx + 4], points[idx + 6] });
-    const auto y_minmax = std::minmax({ points[idx + 1], points[i + 3], points[idx + 5], points[idx + 7] });
+    const auto y_minmax = std::minmax({ points[idx + 1], points[idx + 3], points[idx + 5], points[idx + 7] });
     /* Clamp to the final image*/
     const float x = std::max(x_minmax.first / finalWidth, 0.0f);
     const float y = std::max(y_minmax.first / finalHeight, 0.0f);
