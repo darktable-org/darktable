@@ -497,8 +497,9 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int w = allocation.width;
-  int h = allocation.height;
+  const int w = allocation.width;
+  const int h = allocation.height;
+
   if(event->x >= w - DT_NAVIGATION_INSET - d->zoom_h - d->zoom_w
      && event->y >= h - DT_NAVIGATION_INSET - d->zoom_h)
   {
