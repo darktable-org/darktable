@@ -193,7 +193,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // than as an ICC binary blob which is possible.
   // If we are unable to find the required color encoding data for libjxl we will
   // just fallback to providing an ICC blob (and hope we can at least do that!).
-  bool write_color_natively = true;
+  gboolean write_color_natively = TRUE;
 
   JxlColorEncoding color_encoding;
   color_encoding.color_space = JXL_COLOR_SPACE_RGB;
