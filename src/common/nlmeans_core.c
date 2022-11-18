@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -394,7 +394,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const dt_aligned_pixel_t weight = { params->luma, params->chroma, params->chroma, 1.0f };
   const dt_aligned_pixel_t invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
-  const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
+  const gboolean skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
@@ -618,7 +618,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const __m128 weight = { params->luma, params->chroma, params->chroma, 1.0f };
   const __m128 invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
-  const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
+  const gboolean skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
@@ -1077,4 +1077,3 @@ error:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
