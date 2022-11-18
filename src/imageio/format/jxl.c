@@ -247,7 +247,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
       color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
       break;
     default:
-      write_color_natively = false;
+      write_color_natively = FALSE;
       break;
   }
 
