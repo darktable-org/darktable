@@ -467,10 +467,12 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   for(int i = 0; i < HL_SEGMENT_PLANES; i++)
     dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER +1, segmentation_limit);
 
+  size_t anyclipped = 0;
   gboolean has_allclipped = FALSE;
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
   reduction( | : has_allclipped) \
+  reduction( + : anyclipped) \
   dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans) \
   dt_omp_sharedconst(pwidth, filters, i_width) \
   schedule(static)
@@ -514,12 +516,13 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
         }
         isegments[3].data[o] = (allclipped == 3) ? 1 : 0;
         has_allclipped |= (allclipped == 3) ? TRUE : FALSE;
+        anyclipped += allclipped;
       }
       in++;
     }
   }
 
-  if(!has_allclipped && vmode == DT_HIGHLIGHTS_MASK_OFF)
+  if((anyclipped < 20) && vmode == DT_HIGHLIGHTS_MASK_OFF)
     goto finish; 
 
   for(int i = 0; i < HL_RGB_PLANES; i++)
