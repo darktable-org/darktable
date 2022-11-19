@@ -126,15 +126,11 @@ static void _shift_left(dt_slideshow_t *d)
 {
   uint8_t *tmp_buf = d->buf[S_LEFT].buf;
 
-  for(int k=S_LEFT; k<S_RIGHT; k++)
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_RIGHT; slot++)
   {
-    d->buf[k].buf         = d->buf[k+1].buf;
-    d->buf[k].rank        = d->buf[k+1].rank;
-    d->buf[k].imgid       = d->buf[k+1].imgid;
-    d->buf[k].width       = d->buf[k+1].width;
-    d->buf[k].height      = d->buf[k+1].height;
-    d->buf[k].invalidated = d->buf[k+1].invalidated;
+    memcpy(&d->buf[slot], &d->buf[slot+1], sizeof(dt_slideshow_buf_t));
   }
+
   _init_slot(&d->buf[S_RIGHT]);
   d->buf[S_RIGHT].rank  = d->buf[S_CURRENT].rank + 1;
   d->buf[S_RIGHT].imgid = d->buf[S_RIGHT].rank <= d->col_count
@@ -149,15 +145,11 @@ static void _shift_right(dt_slideshow_t *d)
 {
   uint8_t *tmp_buf = d->buf[S_RIGHT].buf;
 
-  for(int k=S_RIGHT; k>S_LEFT; k--)
+  for(dt_slideshow_slot_t slot=S_RIGHT; slot>S_LEFT; slot--)
   {
-    d->buf[k].buf         = d->buf[k-1].buf;
-    d->buf[k].rank        = d->buf[k-1].rank;
-    d->buf[k].imgid       = d->buf[k-1].imgid;
-    d->buf[k].width       = d->buf[k-1].width;
-    d->buf[k].height      = d->buf[k-1].height;
-    d->buf[k].invalidated = d->buf[k-1].invalidated;
+    memcpy(&d->buf[slot], &d->buf[slot-1], sizeof(dt_slideshow_buf_t));
   }
+
   _init_slot(&d->buf[S_LEFT]);
   d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 1;
   d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0
@@ -225,9 +217,10 @@ static gboolean _is_slot_waiting(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 
 static gboolean _is_idle(dt_slideshow_t *d)
 {
-  return !_is_slot_waiting(d, S_LEFT)
-      && !_is_slot_waiting(d, S_CURRENT)
-      && !_is_slot_waiting(d, S_RIGHT);
+  gboolean idle = TRUE;
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
+    idle &= !_is_slot_waiting(d, slot);
+  return idle;
 }
 
 static gboolean _auto_advance(gpointer user_data)
@@ -408,9 +401,9 @@ void enter(dt_view_t *self)
   d->width = rect.width * darktable.gui->ppd;
   d->height = rect.height * darktable.gui->ppd;
 
-  for(int k=S_LEFT; k<S_SLOT_LAST; k++)
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
   {
-    _init_slot(&d->buf[k]);
+    _init_slot(&d->buf[slot]);
   }
 
   // if one selected start with it, otherwise start at the current lighttable offset
@@ -471,10 +464,10 @@ void leave(dt_view_t *self)
 
   dt_pthread_mutex_lock(&d->lock);
 
-  for(int k=S_LEFT; k<S_SLOT_LAST; k++)
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
   {
-    dt_free_align(d->buf[k].buf);
-    d->buf[k].buf = NULL;
+    dt_free_align(d->buf[slot].buf);
+    d->buf[slot].buf = NULL;
   }
   dt_pthread_mutex_unlock(&d->lock);
 }
