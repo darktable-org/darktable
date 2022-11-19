@@ -44,9 +44,11 @@ typedef enum dt_slideshow_event_t
 typedef enum dt_slideshow_slot_t
 {
   S_LEFT      = 0,
-  S_CURRENT   = 1,
-  S_RIGHT     = 2,
-  S_SLOT_LAST = 3
+  S_LEFT_M    = 1,
+  S_CURRENT   = 2,
+  S_RIGHT_M   = 3,
+  S_RIGHT     = 4,
+  S_SLOT_LAST = 5
 } dt_slideshow_slot_t;
 
 typedef struct _slideshow_buf_t
@@ -112,6 +114,21 @@ static int _get_image_at_rank(const int rank)
   return id;
 }
 
+static dt_slideshow_slot_t _get_slot_for_image(const dt_slideshow_t *d, const int imgid)
+{
+  dt_slideshow_slot_t slt = -1;
+
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
+  {
+    if(d->buf[slot].imgid == imgid)
+    {
+      slt = slot;
+      break;
+    }
+  }
+  return slt;
+}
+
 static void _init_slot(dt_slideshow_buf_t *s)
 {
   s->buf = NULL;
@@ -132,7 +149,7 @@ static void _shift_left(dt_slideshow_t *d)
   }
 
   _init_slot(&d->buf[S_RIGHT]);
-  d->buf[S_RIGHT].rank  = d->buf[S_CURRENT].rank + 1;
+  d->buf[S_RIGHT].rank  = d->buf[S_CURRENT].rank + 2;
   d->buf[S_RIGHT].imgid = d->buf[S_RIGHT].rank <= d->col_count
     ? _get_image_at_rank(d->buf[S_RIGHT].rank)
     : -1;
@@ -151,7 +168,7 @@ static void _shift_right(dt_slideshow_t *d)
   }
 
   _init_slot(&d->buf[S_LEFT]);
-  d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 1;
+  d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 2;
   d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0
     ? _get_image_at_rank(d->buf[S_LEFT].rank)
     : -1;
@@ -186,14 +203,23 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
     (imgid, d->width, d->height, -1, &buf, &width, &height, 0, FALSE);
 
   dt_pthread_mutex_lock(&d->lock);
+
+  // original slot for this image
+
+  dt_slideshow_slot_t slt = slot;
+
   // check if we have not moved the slideshow forward or backward, if the
-  // slot is still for the same image, we copy the data.
-  if(d->buf[slot].imgid == imgid)
+  // slot is not the same, check for a possible new slot for this image.
+
+  if(d->buf[slt].imgid != imgid)
+    slt = _get_slot_for_image(d, imgid);
+
+  if(slt != -1)
   {
-    d->buf[slot].width = width;
-    d->buf[slot].height = height;
-    d->buf[slot].buf = buf;
-    d->buf[slot].invalidated = FALSE;
+    d->buf[slt].width = width;
+    d->buf[slt].height = height;
+    d->buf[slt].buf = buf;
+    d->buf[slt].invalidated = FALSE;
   }
   else
   {
@@ -244,10 +270,20 @@ static int32_t _process_job_run(dt_job_t *job)
     _process_image(d, S_CURRENT);
     dt_control_queue_redraw_center();
   }
+  else if(_is_slot_waiting(d, S_RIGHT_M))
+  {
+    dt_pthread_mutex_unlock(&d->lock);
+    _process_image(d, S_RIGHT_M);
+  }
   else if(_is_slot_waiting(d, S_RIGHT))
   {
     dt_pthread_mutex_unlock(&d->lock);
     _process_image(d, S_RIGHT);
+  }
+  else if(_is_slot_waiting(d, S_LEFT_M))
+  {
+    dt_pthread_mutex_unlock(&d->lock);
+    _process_image(d, S_LEFT_M);
   }
   else if(_is_slot_waiting(d, S_LEFT))
   {
@@ -286,7 +322,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     if(d->buf[S_CURRENT].rank < d->col_count - 1)
     {
       _shift_left(d);
-      d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 1;
+      d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 2;
       d->buf[S_RIGHT].imgid = d->buf[S_RIGHT].rank < d->col_count
         ? _get_image_at_rank(d->buf[S_RIGHT].rank)
         : -1;
@@ -307,7 +343,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     if(d->buf[S_CURRENT].rank > 0)
     {
       _shift_right(d);
-      d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 1;
+      d->buf[S_LEFT].rank = d->buf[S_CURRENT].rank - 2;
       d->buf[S_LEFT].imgid = d->buf[S_LEFT].rank >= 0
         ? _get_image_at_rank(d->buf[S_LEFT].rank)
         : -1;
@@ -423,14 +459,19 @@ void enter(dt_view_t *self)
     sqlite3_finalize(stmt);
   }
 
-  d->buf[S_CURRENT].rank =
-    selrank == -1 ? dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui)) : selrank;
-  d->buf[S_LEFT].rank  = d->buf[S_CURRENT].rank - 1;
-  d->buf[S_RIGHT].rank = d->buf[S_CURRENT].rank + 1;
+  const int rank =
+    selrank == -1
+    ? dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui))
+    : selrank;
 
-  d->buf[S_LEFT].imgid    = _get_image_at_rank(d->buf[S_LEFT].rank);
-  d->buf[S_CURRENT].imgid = _get_image_at_rank(d->buf[S_CURRENT].rank);
-  d->buf[S_RIGHT].imgid   = _get_image_at_rank(d->buf[S_RIGHT].rank);
+  d->buf[S_LEFT].rank    = rank - 2;
+  d->buf[S_LEFT_M].rank  = rank - 1;
+  d->buf[S_CURRENT].rank = rank;
+  d->buf[S_RIGHT_M].rank = rank + 1;
+  d->buf[S_RIGHT].rank   = rank + 2;
+
+  for(dt_slideshow_slot_t slot=S_LEFT; slot<S_SLOT_LAST; slot++)
+    d->buf[slot].imgid = _get_image_at_rank(d->buf[slot].rank);
 
   d->col_count = dt_collection_get_count(darktable.collection);
 
