@@ -192,6 +192,8 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 {
   dt_pthread_mutex_lock(&d->lock);
   d->exporting++;
+  const size_t s_width = d->width;
+  const size_t s_height = d->height;
   const int imgid = d->buf[slot].imgid;
   size_t width = d->buf[slot].width;
   size_t height = d->buf[slot].height;
@@ -214,7 +216,12 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   if(d->buf[slt].imgid != imgid)
     slt = _get_slot_for_image(d, imgid);
 
-  if(slt != -1)
+  // also ensure that the screen has not been resized, otherwise we discard
+  // the image. it will get regenerated in another later job.
+
+  if(slt != -1
+     && d->width == s_width
+     && d->height == s_height)
   {
     d->buf[slt].width = width;
     d->buf[slt].height = height;
@@ -564,11 +571,10 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
 
-  dt_pthread_mutex_unlock(&d->lock);
-
-  // adjust image size to window size
   d->width = width * darktable.gui->ppd;
   d->height = height * darktable.gui->ppd;
+
+  dt_pthread_mutex_unlock(&d->lock);
 }
 
 static gboolean _hide_mouse(gpointer user_data)
