@@ -110,7 +110,9 @@ uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *
 {
   // bernstein hash (djb2)
   // the hash is made of imgid and the actual fast-pipe mode if activated
-  uint64_t hash = 5381 + imgid + (pipe->type & DT_DEV_PIXELPIPE_FAST);
+  uint64_t hash = 5381 + imgid + (pipe->type & DT_DEV_PIXELPIPE_FAST)
+    + ((pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU) ? 16 : 0)
+    + ((pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU_MONO) ? 17 : 0);
   // go through all modules up to module and compute a weird hash using the operation and params.
   GList *pieces = pipe->nodes;
   for(int k = 0; k < module && pieces; k++)
@@ -187,7 +189,7 @@ gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const
 {
   // search for hash in cache
   for(int k = 0; k < cache->entries; k++)
-    if((cache->hash[k] == hash) && (cache->size[k] >= size))
+    if((cache->hash[k] == hash) && (cache->size[k] == size))
       return TRUE;
   return FALSE;
 }
@@ -271,7 +273,7 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
   {
     if(cache->hash[k] == hash)
     {
-      if(cache->size[k] < size)
+      if(cache->size[k] != size)
       {
         /* In rare sitations we might find an identical hash but the buffer size does not meet the requirements.
            This can happen if the pixelpipe roi is expanded like in rotate&crop without a proper hash.
@@ -346,6 +348,7 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
 
 void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
 {
+  cache->queries = cache->misses = cache->queries & 1; // we don't use zero here for "swapping pipelines" having only two lines
   for(int k = 0; k < cache->entries; k++)
   {
     cache->basichash[k] = -1;
@@ -413,7 +416,7 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   if((cache->memlimit == 0) || !(pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_print(DT_DEBUG_DEV | DT_DEBUG_DEV, "[pixelpipe_process] [%s] using device %d. Cache: used=%luMB\n",
+    dt_print(DT_DEBUG_DEV, "[pixelpipe_process] [%s] using device %d. Cache: used=%luMB\n",
     dt_dev_pixelpipe_type_to_str(pipe->type), pipe->devid, cache->allmem / 1024lu / 1024lu);
     return;
   }
@@ -444,7 +447,7 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
     }
     oldest -= 1;
   }
-  dt_print(DT_DEBUG_DEV | DT_DEBUG_DEV, "[pixelpipe_process] [%s] using device %d. Cache: freed=%luMB (%i/%i), used=%luMB, limit=%luMB\n",
+  dt_print(DT_DEBUG_DEV, "[pixelpipe_process] [%s] using device %d. Cache: freed=%luMB (%i/%i), used=%luMB, limit=%luMB\n",
     dt_dev_pixelpipe_type_to_str(pipe->type), pipe->devid, freed / 1024lu / 1024lu, low_grp, high_grp,
     cache->allmem / 1024lu / 1024lu, cache->memlimit / 1024lu / 1024lu);
 }
