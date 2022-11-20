@@ -47,7 +47,7 @@ typedef struct dt_iop_segmentation_t
   size_t *ref;    // ref, val1 and val2 are free to be used by the segmentation user
   float *val1;
   float *val2;
-  int nr;         // number of found segments
+  int nr;         // next index for found segments, starting with 2
   int border;     // while segmentizing we have a border region not used by the algo
   int slots;      // available segment id's
   int width;
@@ -86,7 +86,7 @@ static inline dt_pos_t * _pop_stack(dt_ff_stack_t *stack)
 
 static inline int _get_segment_id(dt_iop_segmentation_t *seg, const size_t loc)
 {
-  if(loc > (size_t)(seg->width * seg->height))
+  if(loc >= (size_t)(seg->width * seg->height))
   {
     fprintf(stderr, "[_get_segment_id] out of range access loc=%lu in %ix%i\n", loc, seg->width, seg->height);
     return 0;
@@ -652,7 +652,7 @@ void dt_segmentation_init_struct(dt_iop_segmentation_t *seg, const int width, co
   if(slots != wanted_slots)
     fprintf(stderr, "number of wanted seg slots %i exceeds maximum %i\n", wanted_slots, DT_SEG_ID_MASK - 2);
 
-  seg->nr = 0;
+  seg->nr = 2;
   seg->data =   dt_alloc_align(64, width * height * sizeof(int));
   seg->size =   dt_alloc_align(64, slots * sizeof(int));
   seg->xmin =   dt_alloc_align(64, slots * sizeof(int));
