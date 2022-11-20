@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -217,7 +217,7 @@ static gboolean _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
 
   if(nb >= 64)
   {
-    dt_control_log(_("spot module is limited to 64 shapes. please add a new instance !"));
+    dt_control_log(_("spot module is limited to 64 shapes. please add a new instance!"));
   }
 
   if(nb < 64

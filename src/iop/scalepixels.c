@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable developers.
+    Copyright (C) 2014-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("internal module to setup technical specificities of raw sensor.\n\n"
-                                  "you should not touch values here !"),
+                                  "you should not touch values here!"),
                                 NULL, NULL, NULL, NULL);
 }
 
