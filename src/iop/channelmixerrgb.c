@@ -4226,7 +4226,7 @@ void gui_init(struct dt_iop_module_t *self)
                                   "neutral colors gives the lowest average delta E but a high maximum delta E\n"
                                   "saturated colors gives the lowest maximum delta E but a high average delta E\n"
                                   "none is a trade-off between both\n"
-                                  "the others are special behaviours to protect some hues"),
+                                  "the others are special behaviors to protect some hues"),
                                 0, optimize_changed_callback, self,
                                 N_("none"),
                                 N_("neutral colors"),
