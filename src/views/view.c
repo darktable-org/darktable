@@ -1469,21 +1469,20 @@ void dt_view_paint_surface(
 {
   dt_develop_t *dev = darktable.develop;
 
-  const int bs = dev->border_size;
   const dt_dev_zoom_t zoom =
-    window == DT_WINDOW_MAIN
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
     ? dt_control_get_dev_zoom()
     : dt_second_window_get_dev_zoom(dev);
   const int closeup =
-    window == DT_WINDOW_MAIN
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
     ? dt_control_get_dev_closeup()
     : dt_second_window_get_dev_closeup(dev);
   const float zoom_scale =
-    window == DT_WINDOW_MAIN
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
     ? dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1)
     : dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 1);
   const float ppd =
-    window == DT_WINDOW_MAIN
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
     ? darktable.gui->ppd
     : dev->second_window.ppd;
 
@@ -1500,9 +1499,11 @@ void dt_view_paint_surface(
     cairo_translate(cr, -(.5 - 0.5/scale) * sw, -(.5 - 0.5/scale) * sh);
   }
 
-  if(dev->iso_12646.enabled)
+  if(dev->iso_12646.enabled
+     && window != DT_WINDOW_SLIDESHOW)
   {
     // draw the white frame around picture
+    const int bs = dev->border_size;
     const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
     cairo_rectangle(cr, -tbw, -tbw, sw + 2.0 * tbw, sh + 2.0 * tbw);
     cairo_set_source_rgb(cr, 1., 1., 1.);
@@ -1517,7 +1518,8 @@ void dt_view_paint_surface(
      zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
   cairo_paint(cr);
 
-  if(darktable.gui->show_focus_peaking)
+  if(darktable.gui->show_focus_peaking
+     && window != DT_WINDOW_SLIDESHOW)
   {
     cairo_scale(cr, 1. / ppd, 1. / ppd);
     dt_focuspeaking(cr, processed_width, processed_height, cairo_image_surface_get_data(surface));
@@ -1549,6 +1551,79 @@ void dt_view_paint_buffer(
   cairo_surface_t *surface = dt_view_create_surface(buffer, processed_width, processed_height);
   dt_view_paint_surface(cr, width, height, surface, processed_width, processed_height, window);
   cairo_surface_destroy(surface);
+}
+
+void dt_view_paint_pixbuf(
+  cairo_t *cr,
+  const size_t width,
+  const size_t height,
+  uint8_t *buffer,
+  const size_t processed_width,
+  const size_t processed_height,
+  const dt_window_t window)
+{
+  dt_develop_t *dev = darktable.develop;
+
+  const dt_dev_zoom_t zoom =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? dt_control_get_dev_zoom()
+    : dt_second_window_get_dev_zoom(dev);
+  const int closeup =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? dt_control_get_dev_closeup()
+    : dt_second_window_get_dev_closeup(dev);
+  const float zoom_scale =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1)
+    : dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data
+    (buffer, GDK_COLORSPACE_RGB, TRUE, 8, processed_width, processed_height,
+     processed_width * 4, NULL, NULL);
+
+  int32_t w = 0, h = 0;
+  if(processed_width < processed_height)
+  {
+    // portrait
+    h = height;
+    w = processed_width * ((float)h / (float)processed_height);
+  }
+  else
+  {
+    // landscape
+    w = width;
+    h = processed_height * ((float)w / (float)processed_width);
+  }
+
+  // adjust dimention if needed
+  if(w > width)
+  {
+    const int32_t ow = w;
+    w = width;
+    h = h * ((float)w / (float)ow);
+  }
+  if(h > height)
+  {
+    const int32_t oh = h;
+    h = height;
+    w = w * ((float)h / (float)oh);
+  }
+
+  GdkPixbuf *scaled = gdk_pixbuf_scale_simple(pixbuf, w, h, GDK_INTERP_HYPER);
+
+  cairo_save(cr);
+
+  cairo_translate(cr, ceilf(.5f * (width - w)), ceilf(.5f * (height - h)));
+
+  cairo_pattern_set_filter
+    (cairo_get_source(cr),
+     zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
+  gdk_cairo_set_source_pixbuf(cr, scaled, 0, 0);
+
+  cairo_paint(cr);
+
+  if(pixbuf) g_object_unref(pixbuf);
+  if(scaled) g_object_unref(scaled);
 }
 
 #define ADD_TO_CONTEXT(v) ctx = ((ctx << 5) + ctx) ^ (dt_view_context_t)(v);
