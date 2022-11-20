@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2020 Aldric Renaudin.
+    Copyright (C) 2020-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -989,7 +989,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   {
     if(sel_count == 0)
     {
-      dt_control_log(_("no image selected !"));
+      dt_control_log(_("no image selected!"));
       first_id = -1;
     }
     table->navigate_inside_selection = TRUE;
