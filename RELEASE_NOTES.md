@@ -72,7 +72,8 @@ accompanying blog post.
   a smooth transition effect. The effect can be sped up or switched 
   off with preferences/miscellaneous/duration of ui transitions.
 
-- Large pixelpipe cache overhaul.
+- Large pixelpipe cache overhaul. Increased number of cachelines with
+  an improved hit-rate while controlling used overall memory.
 
 ## Other Changes
 
