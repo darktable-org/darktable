@@ -545,6 +545,17 @@ void dt_dev_image(
   size_t *processed_width,
   size_t *processed_height);
 
+void dt_dev_image_ext(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height,
+  int border_size,
+  gboolean iso_12646);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
