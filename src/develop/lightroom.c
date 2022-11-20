@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2021 darktable developers.
+    Copyright (C) 2013-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1112,7 +1112,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
-    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
     g_free(pathname);
     return FALSE;
   }
@@ -1134,7 +1134,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(xpathObj == NULL)
   {
-    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
     xmlXPathFreeContext(xpathCtx);
     g_free(pathname);
     xmlFreeDoc(doc);
@@ -1154,7 +1154,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       xmlXPathFreeObject(xpathObj);
       xmlFreeDoc(doc);
       xmlFree(value);
-      if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+      if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
       g_free(pathname);
       return FALSE;
     }
@@ -1166,7 +1166,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 //   {
 //     xmlXPathFreeObject(xpathObj);
 //     xmlXPathFreeContext(xpathCtx);
-//     if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+//     if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
 //     g_free(pathname);
 //     return;
 //   }
