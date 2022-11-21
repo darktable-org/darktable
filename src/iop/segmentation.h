@@ -627,15 +627,20 @@ void dt_segments_transform_erode(dt_iop_segmentation_t *seg, const int radius)
   _intimage_borderfill(img, width, height, 1, border);
   _eroding(img, seg->tmp, width, height, border, radius);
   memcpy(img, seg->tmp, width*height * sizeof(int));
+ _intimage_borderfill(img, width, height, 0, border);
 }
   
 void dt_segments_transform_closing(dt_iop_segmentation_t *seg, const int radius)
 {
-  if(radius < 1) return;
   int *img = seg->data;
   const int width = seg->width;
   const int height = seg->height;
   const int border = seg->border;
+  if(radius < 1)
+  {
+    _intimage_borderfill(img, width, height, 0, border);
+    return;
+  }
   if(!seg->tmp) seg->tmp = dt_alloc_align(64, width * height * sizeof(int));
   if(!seg->tmp) return;
 

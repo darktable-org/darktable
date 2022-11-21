@@ -38,7 +38,7 @@
    Again the algorithm has been developed in collaboration by @garagecoder and @Iain from gmic team and @jenshannoschwalm from dt.
 */
 
-static inline float _calc_linear_refavg(const float *in, const int row, const int col, const dt_iop_roi_t *const roi, const int color)
+static inline float _calc_linear_refavg(const float *in, const dt_iop_roi_t *const roi, const int color)
 {
   dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f };
   for(int dy = -1; dy < 2; dy++)
@@ -137,7 +137,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
         {
           if(in[c] >= clips[c])
           {
-            tmp[c] = _calc_linear_refavg(&in[0], row, col, roi_in, c);
+            tmp[c] = _calc_linear_refavg(&in[0], roi_in, c);
             mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
             anyclipped += 1;
           }
@@ -178,7 +178,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
           const float inval = fmaxf(0.0f, in[c]); 
           if((mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)]) && (inval > clipdark[c]) && (inval < clips[c]))
           {
-            cr_sum[c] += inval - _calc_linear_refavg(&in[0], row, col, roi_in, c);
+            cr_sum[c] += inval - _calc_linear_refavg(&in[0], roi_in, c);
             cr_cnt[c] += 1.0f;
           }
         }
