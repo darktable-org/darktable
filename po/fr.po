@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-20 23:26+0100\n"
-"PO-Revision-Date: 2022-11-20 23:29+0100\n"
+"POT-Creation-Date: 2022-11-21 22:59+0100\n"
+"PO-Revision-Date: 2022-11-21 23:04+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8765,12 +8765,14 @@ msgid "_edits"
 msgstr "_avant modif"
 
 #: ../src/gui/accelerators.c:1958
-msgid "restore default shortcuts\n"
-"  either as at startup\n"
-"  or when the configuration dialog was opened\n"
-msgstr "restaurer les raccourcis par défaut\n"
-" soit comme au démarrage\n"
-" soit comme lors de l'ouverture du dialogue de configuration\n"
+msgid "restore shortcuts from one of these states:\n"
+"  - default\n"
+"  - as at startup\n"
+"  - as when opening this dialog\n"
+msgstr "restaurer les raccourcis avec les valeurs :\n"
+" - par défaut\n"
+" - comme au démarrage\n"
+" - avant l'ouverture de ce dialogue\n"
 
 #: ../src/gui/accelerators.c:1961
 msgid "clear all newer shortcuts\n"
@@ -10840,7 +10842,7 @@ msgstr "correction automatique des distorsions horizontales de perspective\n"
 "maj+clic pour la correction de distorsion uniquement"
 
 #: ../src/iop/ashift.c:5797
-msgid "automatically correct for vertical and horizontal perspective distortions; fitting rotation,lens shift in both directions, and shear\n"
+msgid "automatically correct for vertical and horizontal perspective distortions, fitting rotation, lens shift in both directions, and shear\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift\n"
 "ctrl+shift+click to only fit rotation and lens shift"
@@ -13997,11 +13999,11 @@ msgstr "rayon des patchs à rechercher.\n"
 "si les détails sont trop lissés, réduire cette valeur ou augmenter le poids du pixel central."
 
 #: ../src/iop/denoiseprofile.c:3581
-msgid "emergency use only: radius of the neighbourhood to search patches in. increase for better denoising performance, but watch the long runtimes! large radii can be very slow. you have been warned"
+msgid "emergency use only: radius of the neighborhood to search patches in. increase for better denoising performance, but watch the long runtimes! large radii can be very slow. you have been warned"
 msgstr "à utiliser avec prudence : taille du rayon de recherche, augmenter pour une meilleure suppression du bruit au détriment de la performance qui peut très vite devenir très pénalisante"
 
 #: ../src/iop/denoiseprofile.c:3584
-msgid "scattering of the neighbourhood to search patches in.\n"
+msgid "scattering of the neighborhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
 "does not affect execution time."
 msgstr "diffusion du voisinage pour la recherche de similarité.\n"
@@ -14068,7 +14070,7 @@ msgstr "diffusion|déconvolution|flou|netteté"
 #: ../src/iop/diffuse.c:143
 msgid "simulate directional diffusion of light with heat transfer model\n"
 "to apply an iterative edge-oriented blur,\n"
-"inpaint damaged parts of the image,or to remove blur with blind deconvolution."
+"inpaint damaged parts of the image, or to remove blur with blind deconvolution."
 msgstr "simule la diffusion directionnelle de la lumière d'après un modèle de transfert de chaleur\n"
 "pour appliquer un flou itératif suivant les bords, reconstruire les zones endommagées d'une image,\n"
 "ou pour supprimer le flou en utilisant une déconvolution aveugle."
@@ -15014,7 +15016,7 @@ msgstr "active le dureté automatique en fonction des points blancs et noirs de 
 
 #: ../src/iop/filmicrgb.c:4432
 msgid "run extra passes of chromaticity reconstruction.\n"
-"more iterations means more color propagation from neighbourhood.\n"
+"more iterations means more color propagation from neighborhood.\n"
 "this will be slower but will yield more neutral highlights.\n"
 "it also helps with difficult cases of magenta highlights."
 msgstr "exécute une passe supplémentaire de reconstruction de la chromaticité.\n"
@@ -15397,7 +15399,7 @@ msgid "hot pixels"
 msgstr "pixels chauds"
 
 #: ../src/iop/hotpixels.c:72
-msgid "remove abnormally bright pixels by dampening them with neighbours"
+msgid "remove abnormally bright pixels by dampening them with neighbors"
 msgstr "supprime les pixels anormalement lumineux en les amortissant avec leur voisins"
 
 #: ../src/iop/hotpixels.c:363
@@ -22540,6 +22542,15 @@ msgstr "créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "actions souris"
+
+#~ msgid ""
+#~ "restore default shortcuts\n"
+#~ "  either as at startup\n"
+#~ "  or when the configuration dialog was opened\n"
+#~ msgstr ""
+#~ "restaurer les raccourcis par défaut\n"
+#~ " soit comme au démarrage\n"
+#~ " soit comme lors de l'ouverture du dialogue de configuration\n"
 
 #~ msgid "no image selected !"
 #~ msgstr "aucune image sélectionnée !"
