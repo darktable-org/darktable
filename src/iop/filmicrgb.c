@@ -4430,7 +4430,7 @@ void gui_init(dt_iop_module_t *self)
   g->high_quality_reconstruction = dt_bauhaus_slider_from_params(self, "high_quality_reconstruction");
   gtk_widget_set_tooltip_text(g->high_quality_reconstruction,
                               _("run extra passes of chromaticity reconstruction.\n"
-                                "more iterations means more color propagation from neighbourhood.\n"
+                                "more iterations means more color propagation from neighborhood.\n"
                                 "this will be slower but will yield more neutral highlights.\n"
                                 "it also helps with difficult cases of magenta highlights."));
 
