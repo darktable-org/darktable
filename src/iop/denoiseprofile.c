@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3578,10 +3578,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match.\n"
                                            "increase for more sharpness on strong edges, and better denoising of smooth areas.\n"
                                            "if details are oversmoothed, reduce this value or increase the central pixel weight slider."));
-  gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighbourhood to search patches in. "
+  gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighborhood to search patches in. "
                                            "increase for better denoising performance, but watch the long runtimes! "
                                            "large radii can be very slow. you have been warned"));
-  gtk_widget_set_tooltip_text(g->scattering, _("scattering of the neighbourhood to search patches in.\n"
+  gtk_widget_set_tooltip_text(g->scattering, _("scattering of the neighborhood to search patches in.\n"
                                                "increase for better coarse-grain noise reduction.\n"
                                                "does not affect execution time."));
   gtk_widget_set_tooltip_text(g->central_pixel_weight, _("increase the weight of the central pixel\n"
