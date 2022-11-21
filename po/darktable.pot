@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-20 23:26+0100\n"
+"POT-Creation-Date: 2022-11-21 22:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -8912,9 +8912,10 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1958
 msgid ""
-"restore default shortcuts\n"
-"  either as at startup\n"
-"  or when the configuration dialog was opened\n"
+"restore shortcuts from one of these states:\n"
+"  - default\n"
+"  - as at startup\n"
+"  - as when opening this dialog\n"
 msgstr ""
 
 #: ../src/gui/accelerators.c:1961
@@ -10983,8 +10984,8 @@ msgstr ""
 
 #: ../src/iop/ashift.c:5797
 msgid ""
-"automatically correct for vertical and horizontal perspective distortions; "
-"fitting rotation,lens shift in both directions, and shear\n"
+"automatically correct for vertical and horizontal perspective distortions, "
+"fitting rotation, lens shift in both directions, and shear\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift\n"
 "ctrl+shift+click to only fit rotation and lens shift"
@@ -14101,14 +14102,14 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3581
 msgid ""
-"emergency use only: radius of the neighbourhood to search patches in. "
+"emergency use only: radius of the neighborhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
 "large radii can be very slow. you have been warned"
 msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3584
 msgid ""
-"scattering of the neighbourhood to search patches in.\n"
+"scattering of the neighborhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
 "does not affect execution time."
 msgstr ""
@@ -14167,7 +14168,7 @@ msgstr ""
 msgid ""
 "simulate directional diffusion of light with heat transfer model\n"
 "to apply an iterative edge-oriented blur,\n"
-"inpaint damaged parts of the image,or to remove blur with blind "
+"inpaint damaged parts of the image, or to remove blur with blind "
 "deconvolution."
 msgstr ""
 
@@ -15036,7 +15037,7 @@ msgstr ""
 #: ../src/iop/filmicrgb.c:4432
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
-"more iterations means more color propagation from neighbourhood.\n"
+"more iterations means more color propagation from neighborhood.\n"
 "this will be slower but will yield more neutral highlights.\n"
 "it also helps with difficult cases of magenta highlights."
 msgstr ""
@@ -15422,7 +15423,7 @@ msgid "hot pixels"
 msgstr ""
 
 #: ../src/iop/hotpixels.c:72
-msgid "remove abnormally bright pixels by dampening them with neighbours"
+msgid "remove abnormally bright pixels by dampening them with neighbors"
 msgstr ""
 
 #: ../src/iop/hotpixels.c:363
