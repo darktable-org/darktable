@@ -141,9 +141,9 @@ static void _calc_plane_candidates(const float *plane, const float *refavg, dt_i
     {
       size_t testref = 0;
       float testweight = 0.0f;
-      for(int row = seg->ymin[id] -2 ; row < seg->ymax[id] + 3; row++)
+      for(int row = MAX(seg->border, seg->ymin[id] -2); row < MIN(seg->height - seg->border, seg->ymax[id] + 3); row++)
       {
-        for(int col = seg->xmin[id] -2; col < seg->xmax[id] + 3; col++)
+        for(int col = MAX(seg->border, seg->xmin[id] -2); col < MIN(seg->width - seg->border, seg->xmax[id] + 3); col++)
         {
           const size_t pos = row * seg->width + col;
           const int sid = _get_segment_id(seg, pos);
@@ -432,7 +432,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]}; 
   const dt_aligned_pixel_t cube_coeffs = { powf(clips[0], 1.0f / HL_POWERF), powf(clips[1], 1.0f / HL_POWERF), powf(clips[2], 1.0f / HL_POWERF)};
 
-  const int combining = (int) data->combine;
+  const int combining = MAX(1, (int) data->combine);
   const int recovery_mode = data->recovery;
   const float strength = data->strength;
 
@@ -531,12 +531,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   for(int p = 0; p < HL_RGB_PLANES; p++)
   {
     // We prefer to have slightly wider segment borders for a possibly better chosen candidate
-    if(combining > 0)
-    {
-      dt_segments_transform_dilate(&isegments[p], combining);
-      if(combining > 1)
-        dt_segments_transform_erode(&isegments[p], combining-1);
-    }
+    dt_segments_transform_dilate(&isegments[p], combining);
+    if(combining > 1)
+      dt_segments_transform_erode(&isegments[p], combining-1);
   }
   if(dt_get_num_threads() >= HL_RGB_PLANES)
   {
@@ -732,8 +729,10 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
     dt_dev_pixelpipe_flush_caches(piece->pipe);
   }
 
-//  fprintf(stderr, "[segmentation report]%5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all.\n",
-//    (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr -2, isegments[1].nr-2, isegments[2].nr-2, isegments[3].nr-2);
+  dt_vprint(DT_DEBUG_PERF, "[segmentation report %12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed.\n",
+      dt_dev_pixelpipe_type_to_str(piece->pipe->type),     
+      (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr -2, isegments[1].nr-2, isegments[2].nr-2, isegments[3].nr-2,
+      segmentation_limit-2);
 
   finish:
 
