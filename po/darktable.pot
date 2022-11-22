@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-21 22:59+0100\n"
+"POT-Creation-Date: 2022-11-22 19:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11830,7 +11830,7 @@ msgstr ""
 msgid ""
 "while calculating the correction parameters the internal maths failed so "
 "module is bypassed.\n"
-"you can get more info by running dt via the console."
+"you can get more info by running darktable via the console."
 msgstr ""
 
 #: ../src/iop/cacorrect.c:1344
@@ -18527,7 +18527,7 @@ msgid "export EXIF metadata"
 msgstr ""
 
 #: ../src/libs/export_metadata.c:311
-msgid "export dt XMP metadata (from metadata editor module)"
+msgid "export darktable XMP metadata (from metadata editor module)"
 msgstr ""
 
 #: ../src/libs/export_metadata.c:321
@@ -18538,9 +18538,10 @@ msgstr ""
 msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
-"to avoid this and let only image embedded dt XMP metadata, check this flag.\n"
-"if remote storage doesn't understand dt XMP metadata, you can use calculated "
-"metadata instead"
+"to avoid this and let only image embedded darktable XMP metadata, check this "
+"flag.\n"
+"if remote storage doesn't understand darktable XMP metadata, you can use "
+"calculated metadata instead"
 msgstr ""
 
 #: ../src/libs/export_metadata.c:328 ../src/libs/image.c:568
@@ -18595,8 +18596,8 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:354
 msgid ""
-"export dt development data (recovery purpose in case of loss of database or "
-"XMP file)"
+"export darktable development data (recovery purpose in case of loss of "
+"database or XMP file)"
 msgstr ""
 
 #: ../src/libs/export_metadata.c:361
@@ -19478,7 +19479,7 @@ msgid "select geo tags metadata"
 msgstr ""
 
 #: ../src/libs/image.c:578
-msgid "select dt metadata (from metadata editor module)"
+msgid "select darktable metadata (from metadata editor module)"
 msgstr ""
 
 #: ../src/libs/image.c:586
