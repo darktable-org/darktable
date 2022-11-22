@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2021 darktable developers.
+    Copyright (C) 2013-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -909,7 +909,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
         if(fname > dev->image_storage.filename) fname++;
 
         fprintf(stderr,
-                "[_dev_read_masks_history] %s (imgid `%i'): mask version mismatch: history is %d, dt %d.\n",
+                "[_dev_read_masks_history] %s (imgid `%i'): mask version mismatch: history is %d, darktable is %d.\n",
                 fname, imgid, form->version, dt_masks_version());
         dt_control_log(_("%s: mask version mismatch: %d != %d"), fname, dt_masks_version(), form->version);
 

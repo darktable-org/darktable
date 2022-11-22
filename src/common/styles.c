@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -752,7 +752,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
            || module->legacy_params(module, style_item->params, labs(style_item->module_version),
                                           module->params, labs(module->version())))
         {
-          fprintf(stderr, "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, dt %d.\n",
+          fprintf(stderr, "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, darktable is %d.\n",
                   module->op, style_item->module_version, module->version());
           dt_control_log(_("module `%s' version mismatch: %d != %d"), module->op,
                          module->version(), style_item->module_version);
