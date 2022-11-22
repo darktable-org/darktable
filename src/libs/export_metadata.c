@@ -308,7 +308,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_widget_set_tooltip_text(exiftag, _("export EXIF metadata"));
   gtk_box_pack_start(GTK_BOX(vbox2), exiftag, FALSE, TRUE, 0);
   GtkWidget *dtmetadata = gtk_check_button_new_with_label(_("metadata"));
-  gtk_widget_set_tooltip_text(dtmetadata, _("export dt XMP metadata (from metadata editor module)"));
+  gtk_widget_set_tooltip_text(dtmetadata, _("export darktable XMP metadata (from metadata editor module)"));
   gtk_box_pack_start(GTK_BOX(vbox2), dtmetadata, FALSE, TRUE, 0);
 
   GtkWidget *calculated;
@@ -320,8 +320,8 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
     gtk_box_pack_start(GTK_BOX(box), vbox3, FALSE, TRUE, 10);
     calculated = gtk_check_button_new_with_label(_("only embedded"));
     gtk_widget_set_tooltip_text(calculated, _("per default the interface sends some (limited) metadata beside the image to remote storage.\n"
-        "to avoid this and let only image embedded dt XMP metadata, check this flag.\n"
-        "if remote storage doesn't understand dt XMP metadata, you can use calculated metadata instead"));
+        "to avoid this and let only image embedded darktable XMP metadata, check this flag.\n"
+        "if remote storage doesn't understand darktable XMP metadata, you can use calculated metadata instead"));
     gtk_box_pack_start(GTK_BOX(vbox3), calculated, FALSE, TRUE, 0);
   }
 
@@ -351,7 +351,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_widget_set_tooltip_text(hierarchical, _("export hierarchical tags (to Xmp.lr.Hierarchical Subject)"));
   gtk_box_pack_start(GTK_BOX(vbox2), hierarchical, FALSE, TRUE, 0);
   GtkWidget *dthistory = gtk_check_button_new_with_label(_("develop history"));
-  gtk_widget_set_tooltip_text(dthistory, _("export dt development data (recovery purpose in case of loss of database or XMP file)"));
+  gtk_widget_set_tooltip_text(dthistory, _("export darktable development data (recovery purpose in case of loss of database or XMP file)"));
   gtk_box_pack_start(GTK_BOX(vbox2), dthistory, FALSE, TRUE, 0);
 
   // specific rules
