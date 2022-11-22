@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-21 22:59+0100\n"
-"PO-Revision-Date: 2022-11-21 23:04+0100\n"
+"POT-Creation-Date: 2022-11-22 19:31+0100\n"
+"PO-Revision-Date: 2022-11-22 19:33+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11694,7 +11694,7 @@ msgstr "sauté en zoomant"
 
 #: ../src/iop/cacorrect.c:1340
 msgid "while calculating the correction parameters the internal maths failed so module is bypassed.\n"
-"you can get more info by running dt via the console."
+"you can get more info by running darktable via the console."
 msgstr "le module est contourné car une erreur s'est produite lors du calcul des paramètres de la correction.\n"
 "vous pouvez obtenir plus d'information en exécutant darktable depuis une console."
 
@@ -18528,7 +18528,7 @@ msgid "export EXIF metadata"
 msgstr "exporter les métadonnées EXIF"
 
 #: ../src/libs/export_metadata.c:311
-msgid "export dt XMP metadata (from metadata editor module)"
+msgid "export darktable XMP metadata (from metadata editor module)"
 msgstr "exporter les métadonnées XMP (depuis l'éditeur de métadonnées)"
 
 #: ../src/libs/export_metadata.c:321
@@ -18537,8 +18537,8 @@ msgstr "seulement embarqué"
 
 #: ../src/libs/export_metadata.c:322
 msgid "per default the interface sends some (limited) metadata beside the image to remote storage.\n"
-"to avoid this and let only image embedded dt XMP metadata, check this flag.\n"
-"if remote storage doesn't understand dt XMP metadata, you can use calculated metadata instead"
+"to avoid this and let only image embedded darktable XMP metadata, check this flag.\n"
+"if remote storage doesn't understand darktable XMP metadata, you can use calculated metadata instead"
 msgstr "par défaut des métadonnées sont exporter en plus de celles embarquées dans l'image.\n"
 "si sélectionné alors uniquement les métadonnées XMP embarquées dans l'image sont exportées\n"
 "si le stockage distant ne supporte pas les métadonnées XMP de darktable, il est possible de les définir"
@@ -18592,7 +18592,7 @@ msgid "develop history"
 msgstr "historique"
 
 #: ../src/libs/export_metadata.c:354
-msgid "export dt development data (recovery purpose in case of loss of database or XMP file)"
+msgid "export darktable development data (recovery purpose in case of loss of database or XMP file)"
 msgstr "exporter l'historique de développement de darktable (pratique pour récupérer un développement en cas de perte des XMP et base de données)."
 
 #: ../src/libs/export_metadata.c:361
@@ -19496,8 +19496,8 @@ msgid "select geo tags metadata"
 msgstr "sélectionner les métadonnées géolocalisation"
 
 #: ../src/libs/image.c:578
-msgid "select dt metadata (from metadata editor module)"
-msgstr "sélectionner les métadonnées dt (du module d'édition des métadonnées)"
+msgid "select darktable metadata (from metadata editor module)"
+msgstr "sélectionner les métadonnées (du module d'édition des métadonnées)"
 
 #: ../src/libs/image.c:586
 msgid "set the selected image as source of metadata"
