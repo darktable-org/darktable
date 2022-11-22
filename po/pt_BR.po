@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-21 20:40-0300\n"
-"PO-Revision-Date: 2022-11-21 20:43-0300\n"
+"POT-Creation-Date: 2022-11-24 05:32-0300\n"
+"PO-Revision-Date: 2022-11-24 05:36-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -7019,7 +7019,7 @@ msgid "exporting %d / %d to %s"
 msgstr "exportando %d / %d para %s"
 
 #: ../src/control/jobs/control_jobs.c:1431 ../src/views/darkroom.c:768
-#: ../src/views/print.c:337
+#: ../src/views/print.c:342
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "imagem `%s' não está disponível"
@@ -10762,17 +10762,17 @@ msgstr "digite uma descrição para o novo estilo, esta descrição é pesquisá
 msgid "can't create style out of unaltered image"
 msgstr "não é possível criar estilo de uma imagem inalterada"
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:80
-#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:546
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "8 bit"
 msgstr "8 bit"
 
-#: ../src/imageio/format/avif.c:93
+#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:552
 msgid "10 bit"
 msgstr "10 bit"
 
-#: ../src/imageio/format/avif.c:97
+#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:552
 msgid "12 bit"
 msgstr "12 bit"
 
@@ -10786,8 +10786,9 @@ msgstr "AVIF"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:762 ../src/imageio/format/exr.cc:470
-#: ../src/imageio/format/pdf.c:661 ../src/imageio/format/png.c:544
-#: ../src/imageio/format/tiff.c:860 ../src/imageio/format/xcf.c:335
+#: ../src/imageio/format/jxl.c:551 ../src/imageio/format/pdf.c:661
+#: ../src/imageio/format/png.c:544 ../src/imageio/format/tiff.c:860
+#: ../src/imageio/format/xcf.c:335
 msgid "bit depth"
 msgstr "profundidade de bits"
 
@@ -10841,8 +10842,9 @@ msgstr "a compressão para a imagem"
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:838 ../src/imageio/format/j2k.c:661
-#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/webp.c:394
-#: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:565
+#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:575
+#: ../src/imageio/format/webp.c:394 ../src/iop/cacorrect.c:1343
+#: ../src/libs/camera.c:565
 msgid "quality"
 msgstr "qualidade"
 
@@ -10893,8 +10895,8 @@ msgstr "OpenEXR"
 msgid "16 bit (float)"
 msgstr "16 bit (ponto flutuante)"
 
-#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "32 bit (float)"
 msgstr "32 bit (ponto flutuante)"
 
@@ -10975,10 +10977,83 @@ msgstr "Cinema4K, 24FPS"
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
 
-#: ../src/imageio/format/pdf.c:81 ../src/imageio/format/png.c:546
-#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/jxl.c:467
+msgid "JPEG XL"
+msgstr "JPEG XL"
+
+#: ../src/imageio/format/jxl.c:552 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
+#: ../src/imageio/format/xcf.c:338
 msgid "16 bit"
 msgstr "16 bit"
+
+#. Pixel format combo box
+#: ../src/imageio/format/jxl.c:558 ../src/imageio/format/tiff.c:869
+msgid "pixel type"
+msgstr "tipo do pixel"
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "unsigned integer"
+msgstr "inteiro sem sinal"
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "floating point"
+msgstr "ponto flutuante"
+
+#: ../src/imageio/format/jxl.c:576
+msgid ""
+"the quality of the output image\n"
+"0-29 = very lossy\n"
+"30-99 = JPEG quality comparable\n"
+"100 = lossless (integer bit depth only)"
+msgstr ""
+"a qualidade da imagem de saída\n"
+"0-29 = com muita perda\n"
+"30-99 = qualidade comparável com JPEG\n"
+"100 = sem perda (somente para profundidade de bits inteira)"
+
+#: ../src/imageio/format/jxl.c:585
+msgid "encoding color profile"
+msgstr "perfil de codificação de cores"
+
+#: ../src/imageio/format/jxl.c:586
+msgid ""
+"the color profile used by the encoder\n"
+"permit internal XYB color space conversion for more efficient lossy "
+"compression,\n"
+"or ensure no conversion to keep original image color space (implied for "
+"lossless)"
+msgstr ""
+"o perfil de cores usado pelo codificador\n"
+"permite conversão para espaço interno de cores XYB para compressão com perda mais eficiente,\n"
+"ou garante que nenhuma conversão ocorre para manter o espaço de cores da imagem original (sem perda implica nisto)"
+
+#: ../src/imageio/format/jxl.c:589
+msgid "internal"
+msgstr "interno"
+
+#: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:358
+#: ../src/libs/history.c:1009 ../src/libs/snapshots.c:634
+msgid "original"
+msgstr "original"
+
+#: ../src/imageio/format/jxl.c:603
+msgid "encoding effort"
+msgstr "esforço de codificação"
+
+#: ../src/imageio/format/jxl.c:604
+msgid ""
+"the effort used to encode the image, higher efforts will have better results "
+"at the expense of longer encoding times"
+msgstr "o esforço usado para codificar a imagem, esforço maior terá melhor resultado com o custo de tempos de codificação maiores"
+
+#: ../src/imageio/format/jxl.c:615
+msgid "decoding speed"
+msgstr "velocidade de decodificação"
+
+#: ../src/imageio/format/jxl.c:616
+msgid "the preferred decoding speed with some sacrifice of quality"
+msgstr "a velocidade preferida para decodificação com algum sacrifício de qualidade"
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:480
 msgid "invalid paper size"
@@ -11169,19 +11244,6 @@ msgstr "exportará como imagem em tons de cinza"
 #: ../src/imageio/format/tiff.c:791
 msgid "TIFF"
 msgstr "TIFF"
-
-#. Pixel format combo box
-#: ../src/imageio/format/tiff.c:869
-msgid "pixel type"
-msgstr "tipo do pixel"
-
-#: ../src/imageio/format/tiff.c:870
-msgid "unsigned integer"
-msgstr "inteiro sem sinal"
-
-#: ../src/imageio/format/tiff.c:870
-msgid "floating point"
-msgstr "ponto flutuante"
 
 #: ../src/imageio/format/tiff.c:885
 msgid "deflate with predictor"
@@ -12565,7 +12627,7 @@ msgstr "ignorado ao ampliar"
 msgid ""
 "while calculating the correction parameters the internal maths failed so "
 "module is bypassed.\n"
-"you can get more info by running dt via the console."
+"you can get more info by running darktable via the console."
 msgstr ""
 "a matemática interna falhou ao calcular os parâmetros de correção então o "
 "módulo foi evitado.\n"
@@ -15118,7 +15180,10 @@ msgid ""
 "emergency use only: radius of the neighborhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
 "large radii can be very slow. you have been warned"
-msgstr "use somente em emergência: raio da vizinhança onde procurar patches. aumente para melhor denoising, mas cuidado com os longos tempos de execução! raios grandes podem ser muito lentos. você foi avisado"
+msgstr ""
+"use somente em emergência: raio da vizinhança onde procurar patches. aumente "
+"para melhor denoising, mas cuidado com os longos tempos de execução! raios "
+"grandes podem ser muito lentos. você foi avisado"
 
 #: ../src/iop/denoiseprofile.c:3584
 msgid ""
@@ -16744,7 +16809,9 @@ msgstr "pixels quentes"
 
 #: ../src/iop/hotpixels.c:72
 msgid "remove abnormally bright pixels by dampening them with neighbors"
-msgstr "remove pixels exageradamente brilhantes harmonizando-os com os pixels vizinhos"
+msgstr ""
+"remove pixels exageradamente brilhantes harmonizando-os com os pixels "
+"vizinhos"
 
 #: ../src/iop/hotpixels.c:363
 #, c-format
@@ -19902,11 +19969,6 @@ msgstr "salva histórico e etiquetas no arquivo XMP auxiliar"
 msgid "duplicate manager"
 msgstr "gerenciador de duplicatas"
 
-#: ../src/libs/duplicate.c:358 ../src/libs/history.c:1009
-#: ../src/libs/snapshots.c:634
-msgid "original"
-msgstr "original"
-
 #: ../src/libs/duplicate.c:359
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "cria uma duplicata da imagem sem nenhum processamento"
@@ -20157,8 +20219,8 @@ msgid "export EXIF metadata"
 msgstr "exportar metadados EXIF"
 
 #: ../src/libs/export_metadata.c:311
-msgid "export dt XMP metadata (from metadata editor module)"
-msgstr "exportar metadados dt xmp (do módulo editor de metadados)"
+msgid "export darktable XMP metadata (from metadata editor module)"
+msgstr "exportar metadados xmp do darktable (do módulo editor de metadados)"
 
 #: ../src/libs/export_metadata.c:321
 msgid "only embedded"
@@ -20168,14 +20230,15 @@ msgstr "só embarcado"
 msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
-"to avoid this and let only image embedded dt XMP metadata, check this flag.\n"
-"if remote storage doesn't understand dt XMP metadata, you can use calculated "
-"metadata instead"
+"to avoid this and let only image embedded darktable XMP metadata, check this "
+"flag.\n"
+"if remote storage doesn't understand darktable XMP metadata, you can use "
+"calculated metadata instead"
 msgstr ""
 "por padrão, a interface envia alguns metadados (limitados) além da imagem "
 "para o armazenamento remoto.\n"
-"para evitar isto e deixar que somente os metadados XMP incorporados na "
-"imagem sejam exportados, selecione esta opção.\n"
+"para evitar isto e deixar que somente os metadados XMP darktable "
+"incorporados na imagem sejam exportados, selecione esta opção.\n"
 "se o armazenamento remoto não entende metadados do darktable, você pode usar "
 "metadados XMP calculados."
 
@@ -20233,11 +20296,11 @@ msgstr "histórico de processamento"
 
 #: ../src/libs/export_metadata.c:354
 msgid ""
-"export dt development data (recovery purpose in case of loss of database or "
-"XMP file)"
+"export darktable development data (recovery purpose in case of loss of "
+"database or XMP file)"
 msgstr ""
-"exportar dados de desenvolvimento dt (para recuperação em caso de perda da "
-"base de dados ou arquivo XMP)"
+"exportar dados de desenvolvimento darktable (para recuperação em caso de "
+"perda da base de dados ou arquivo XMP)"
 
 #: ../src/libs/export_metadata.c:361
 msgid "per metadata settings"
@@ -21188,8 +21251,8 @@ msgid "select geo tags metadata"
 msgstr "selecionar metadados de etiquetas de geolocalização"
 
 #: ../src/libs/image.c:578
-msgid "select dt metadata (from metadata editor module)"
-msgstr "selecionar metadados dt (do módulo editor de metadados)"
+msgid "select darktable metadata (from metadata editor module)"
+msgstr "selecionar metadados darktable (do módulo editor de metadados)"
 
 #: ../src/libs/image.c:586
 msgid "set the selected image as source of metadata"
@@ -22596,11 +22659,11 @@ msgstr "nova área de imagem"
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
-"drag&drop image from film strip on it"
+"drag and drop image from film strip on it"
 msgstr ""
 "adiciona uma nova área da imagem na página\n"
 "clique e arraste na página para posicionar a área\n"
-"arraste&solte a imagem do rolo de filme nela"
+"arraste e solte a imagem do rolo de filme nela"
 
 #: ../src/libs/print_settings.c:2529
 msgid "delete image area"
@@ -23699,7 +23762,7 @@ msgid "soft proof"
 msgstr "prova digital"
 
 #. fail :(
-#: ../src/views/darkroom.c:755 ../src/views/print.c:324
+#: ../src/views/darkroom.c:755 ../src/views/print.c:329
 msgid "no image to open!"
 msgstr "nenhuma imagem para abrir!"
 
