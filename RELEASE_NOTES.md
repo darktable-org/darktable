@@ -68,13 +68,17 @@ accompanying blog post.
 
 - JPEG XL (read / write)
 
-- Keep modules fully visible when opening or expanding and move with 
-  a smooth transition effect. The effect can be sped up or switched 
+- Keep modules fully visible when opening or expanding and move with
+  a smooth transition effect. The effect can be sped up or switched
   off with preferences/miscellaneous/duration of ui transitions.
 
 - Large pixelpipe cache overhaul. Increased number of cachelines with
   an improved hit-rate while controlling used overall memory leading to
   a significantly faster user interface.
+
+- Rewrite a good part of the slideshow view for better user's
+  experience. A small preview is first displayed while computing the
+  full image giving feedback that something is happening.
 
 ## Other Changes
 
@@ -255,15 +259,22 @@ accompanying blog post.
 
 - Fix some toggle buttons UI state not properly updated.
 
+- Fix check of temperature coefficients for displaying the selected
+  presets. This avoid some missed hits.
+
+- Fix fast pixelpipe support in some modules for the second window.
+
 ## Lua
 
-- API version changed to 9.0.0 
+- API version changed to 9.0.0
 
-- darktable.gui.libs.filter.sort|sort order|rating|rating comparator functions removed
+- darktable.gui.libs.filter.sort|sort order|rating|rating comparator
+  functions removed
 
 - filename removed from dt_lua_snapshot_t data type
 
-- darktable.gui.libs.snapshot now updates the screen after changing direction or rotation
+- darktable.gui.libs.snapshot now updates the screen after changing
+  direction or rotation
 
 - lua snapshot datatype correctly retrieves snapshot name
 
