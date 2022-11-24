@@ -583,9 +583,9 @@ void gui_init(dt_imageio_module_format_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(
       gui->original, self, NULL, N_("encoding color profile"),
-      N_("the color profile used by the encoder\n"
-         "permit internal XYB color space conversion for more efficient lossy compression,\n"
-         "or ensure no conversion to keep original image color space (implied for lossless)"),
+      _("the color profile used by the encoder\n"
+        "permit internal XYB color space conversion for more efficient lossy compression,\n"
+        "or ensure no conversion to keep original image color space (implied for lossless)"),
       original, original_changed, NULL, N_("internal"), N_("original"));
   dt_bauhaus_combobox_set_default(gui->original,
                                   dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);
