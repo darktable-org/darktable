@@ -64,7 +64,7 @@ The chosen segmentation algorithm works like this:
   segment's size - here we use a distance transformation.
   What do we need to do so?
   1. We need a "luminance" plane, we use Y0 for this.
-  2. We have an additional cmask holding information about all-channels-clipped
+  2. We have an additional mask holding information about all-channels-clipped
   3. Based on the Y0 data and all-clipped info we prepare a gradient plane.
   4. We also do a segmentation for the all-clipped data.
 
@@ -141,9 +141,10 @@ static void _calc_plane_candidates(const float *plane, const float *refavg, dt_i
     {
       size_t testref = 0;
       float testweight = 0.0f;
-      for(int row = MAX(seg->border, seg->ymin[id] -2); row < MIN(seg->height - seg->border, seg->ymax[id] + 3); row++)
+      // make sure we don't calc a candidate from duplicated border data
+      for(int row = MAX(seg->border+2, seg->ymin[id]-2); row < MIN(seg->height - seg->border-2, seg->ymax[id]+3); row++)
       {
-        for(int col = MAX(seg->border, seg->xmin[id] -2); col < MIN(seg->width - seg->border, seg->xmax[id] + 3); col++)
+        for(int col = MAX(seg->border+2, seg->xmin[id]-2); col < MIN(seg->width - seg->border-2, seg->xmax[id]+3); col++)
         {
           const size_t pos = row * seg->width + col;
           const int sid = _get_segment_id(seg, pos);
@@ -438,7 +439,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
   const int recovery_closing[NUM_RECOVERY_MODES] = { 0, 0, 0, 2, 2, 0, 2};
   const int seg_border = recovery_closing[recovery_mode];
-  const int segmentation_limit = roi_in->width * roi_in->height / 4000; // segments per mpix
+  const int segmentation_limit = (piece->pipe->iwidth * piece->pipe->iheight) * sqf(piece->pipe->iscale) / 4000; // 250 segments per mpix
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
@@ -467,6 +468,8 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   for(int i = 0; i < HL_SEGMENT_PLANES; i++)
     dt_segmentation_init_struct(&isegments[i], pwidth, pheight, HL_BORDER +1, segmentation_limit);
 
+  const int xshifter = ((filters != 9u) && (FC(0, 0, filters) == 1)) ? 1 : 2;
+
   size_t anyclipped = 0;
   gboolean has_allclipped = FALSE;
 #ifdef _OPENMP
@@ -474,7 +477,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
   reduction( | : has_allclipped) \
   reduction( + : anyclipped) \
   dt_omp_firstprivate(tmpout, roi_in, plane, isegments, cube_coeffs, refavg, xtrans) \
-  dt_omp_sharedconst(pwidth, filters, i_width) \
+  dt_omp_sharedconst(pwidth, filters, i_width, xshifter) \
   schedule(static)
 #endif
   for(size_t row = 1; row < roi_in->height-1; row++)
@@ -482,8 +485,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
     float *in = tmpout + (size_t)i_width * row + 1;
     for(size_t col = 1; col < i_width - 1; col++)
     {
-      // calc all color planes for the centre of a 3x3 area
-      if((col % 3 == 1) && (row % 3 == 1))
+      // calc all color planes in a 3x3 area. For chroma noise stability in bayer sensors we make sure
+      // to align the box with a green photosite in centre so we always have a 5:2:2 ratio
+      if((col % 3 == xshifter) && (row % 3 == 1))
       {
         dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
         dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -713,14 +717,13 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
           const size_t ppos = _raw_to_plane(pwidth, row + shift_y, col + shift_x);
 
           const int pid = _get_segment_id(&isegments[color], ppos);
-          const gboolean iclipped = (in[0] >= clips[color]);
           const gboolean isegment = ((pid > 1) && (pid < isegments[color].nr));
           const gboolean goodseg = isegment && (isegments[color].val1[pid] != 0.0f);
           const int allid = _get_segment_id(&isegments[3], ppos);
           const gboolean allseg = ((allid > 1) && (allid < isegments[3].nr));
-          if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment && !iclipped) out[0] = 1.0f;
-          else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg)      out[0] = 1.0f;
-          else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)          out[0] += strength * gradient[ppos];
+          if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment)         out[0] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.5f;
+          else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg) out[0] = 1.0f;
+          else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)     out[0] += strength * gradient[ppos];
         }
         out++;
         in++;

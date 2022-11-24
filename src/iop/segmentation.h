@@ -563,8 +563,27 @@ static gboolean _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *s
   seg->xmax[id] = max_x;
   seg->ymin[id] = min_y;
   seg->ymax[id] = max_y;
-  if(cnt) seg->nr += 1;
-  return (cnt > 0);
+  if(cnt < 4)
+  {
+    // To avoid oversegmentizing we only use segments with a minimum size
+    // In any case we want to revert border markings too
+    for(int row = min_y-1; row <= max_y+1; row++)
+    {
+      for(int col = min_x-1; col <= max_x+1; col++)
+      {
+        size_t loc = w*row + col;
+        if(d[loc] == id)
+          d[loc] = 1;
+        else if(d[loc] == (id + DT_SEG_ID_MASK))
+          d[loc] = 0;
+      }
+    }  
+    return FALSE;
+  }
+  {
+    seg->nr += 1;
+    return TRUE;
+  }
 }
 
 // User interface
