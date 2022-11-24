@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-22 19:31+0100\n"
+"POT-Creation-Date: 2022-11-24 07:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6617,7 +6617,7 @@ msgid "exporting %d / %d to %s"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:1431 ../src/views/darkroom.c:768
-#: ../src/views/print.c:337
+#: ../src/views/print.c:342
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr ""
@@ -10135,17 +10135,17 @@ msgstr ""
 msgid "can't create style out of unaltered image"
 msgstr ""
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:80
-#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:546
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "8 bit"
 msgstr ""
 
-#: ../src/imageio/format/avif.c:93
+#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:552
 msgid "10 bit"
 msgstr ""
 
-#: ../src/imageio/format/avif.c:97
+#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:552
 msgid "12 bit"
 msgstr ""
 
@@ -10159,8 +10159,9 @@ msgstr ""
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:762 ../src/imageio/format/exr.cc:470
-#: ../src/imageio/format/pdf.c:661 ../src/imageio/format/png.c:544
-#: ../src/imageio/format/tiff.c:860 ../src/imageio/format/xcf.c:335
+#: ../src/imageio/format/jxl.c:551 ../src/imageio/format/pdf.c:661
+#: ../src/imageio/format/png.c:544 ../src/imageio/format/tiff.c:860
+#: ../src/imageio/format/xcf.c:335
 msgid "bit depth"
 msgstr ""
 
@@ -10209,8 +10210,9 @@ msgstr ""
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:838 ../src/imageio/format/j2k.c:661
-#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/webp.c:394
-#: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:565
+#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:575
+#: ../src/imageio/format/webp.c:394 ../src/iop/cacorrect.c:1343
+#: ../src/libs/camera.c:565
 msgid "quality"
 msgstr ""
 
@@ -10250,8 +10252,8 @@ msgstr ""
 msgid "16 bit (float)"
 msgstr ""
 
-#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "32 bit (float)"
 msgstr ""
 
@@ -10332,9 +10334,75 @@ msgstr ""
 msgid "JPEG (8-bit)"
 msgstr ""
 
-#: ../src/imageio/format/pdf.c:81 ../src/imageio/format/png.c:546
-#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/jxl.c:467
+msgid "JPEG XL"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:552 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
+#: ../src/imageio/format/xcf.c:338
 msgid "16 bit"
+msgstr ""
+
+#. Pixel format combo box
+#: ../src/imageio/format/jxl.c:558 ../src/imageio/format/tiff.c:869
+msgid "pixel type"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "unsigned integer"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "floating point"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:576
+msgid ""
+"the quality of the output image\n"
+"0-29 = very lossy\n"
+"30-99 = JPEG quality comparable\n"
+"100 = lossless (integer bit depth only)"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:585
+msgid "encoding color profile"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:586
+msgid ""
+"the color profile used by the encoder\n"
+"permit internal XYB color space conversion for more efficient lossy "
+"compression,\n"
+"or ensure no conversion to keep original image color space (implied for "
+"lossless)"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:589
+msgid "internal"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:358
+#: ../src/libs/history.c:1009 ../src/libs/snapshots.c:634
+msgid "original"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:603
+msgid "encoding effort"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:604
+msgid ""
+"the effort used to encode the image, higher efforts will have better results "
+"at the expense of longer encoding times"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:615
+msgid "decoding speed"
+msgstr ""
+
+#: ../src/imageio/format/jxl.c:616
+msgid "the preferred decoding speed with some sacrifice of quality"
 msgstr ""
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:480
@@ -10511,19 +10579,6 @@ msgstr ""
 
 #: ../src/imageio/format/tiff.c:791
 msgid "TIFF"
-msgstr ""
-
-#. Pixel format combo box
-#: ../src/imageio/format/tiff.c:869
-msgid "pixel type"
-msgstr ""
-
-#: ../src/imageio/format/tiff.c:870
-msgid "unsigned integer"
-msgstr ""
-
-#: ../src/imageio/format/tiff.c:870
-msgid "floating point"
 msgstr ""
 
 #: ../src/imageio/format/tiff.c:885
@@ -18299,11 +18354,6 @@ msgstr ""
 msgid "duplicate manager"
 msgstr ""
 
-#: ../src/libs/duplicate.c:358 ../src/libs/history.c:1009
-#: ../src/libs/snapshots.c:634
-msgid "original"
-msgstr ""
-
 #: ../src/libs/duplicate.c:359
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr ""
@@ -20816,7 +20866,7 @@ msgstr ""
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
-"drag&drop image from film strip on it"
+"drag and drop image from film strip on it"
 msgstr ""
 
 #: ../src/libs/print_settings.c:2529
@@ -21848,7 +21898,7 @@ msgid "soft proof"
 msgstr ""
 
 #. fail :(
-#: ../src/views/darkroom.c:755 ../src/views/print.c:324
+#: ../src/views/darkroom.c:755 ../src/views/print.c:329
 msgid "no image to open!"
 msgstr ""
 
