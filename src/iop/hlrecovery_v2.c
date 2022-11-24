@@ -421,13 +421,13 @@ static inline size_t _raw_to_plane(const int width, const int row, const int col
 
 static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         dt_iop_highlights_data_t *data, const int vmode, float *tmpout)
+                         dt_iop_highlights_data_t *data, float *tmpout)
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-
+  const int vmode = (fullpipe && (data->masking != DT_HIGHLIGHTS_MASK_OFF)) ? data->masking : DT_HIGHLIGHTS_MASK_OFF;
   const float clipval = fmaxf(0.1f, 0.987f * data->clip);
   const dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
   const dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2]}; 
@@ -729,7 +729,6 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
         in++;
       }
     }
-    dt_dev_pixelpipe_flush_caches(piece->pipe);
   }
 
   dt_vprint(DT_DEBUG_PERF, "[segmentation report %12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed.\n",

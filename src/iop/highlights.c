@@ -118,7 +118,7 @@ typedef struct dt_iop_highlights_params_t
   // params of v1
   dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
   float blendL; // unused $DEFAULT: 1.0
-  float blendC; // unused $DEFAULT: 0.0
+  int32_t masking; // $DEFAULT: DT_HIGHLIGHTS_MASK_OFF
   float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
   // params of v2
   float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
@@ -146,7 +146,6 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *recovery;
   GtkWidget *strength;
   dt_highlights_mask_t hlr_mask_mode;
-  dt_highlights_mask_t hlr_cached_mask_mode;
   dt_aligned_pixel_t chroma_correction;
   gboolean valid_chroma_correction;
 } dt_iop_highlights_gui_data_t;
@@ -274,7 +273,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
 
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -283,26 +281,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe : FALSE;
+  const gboolean visualizing = (d->masking == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_clips = NULL;
 
-  if(g && fullpipe)
+  if(fullpipe && (d->masking != DT_HIGHLIGHTS_MASK_OFF))
   {
-    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
-    {
-      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-      piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
-      dt_dev_pixelpipe_flush_caches(piece->pipe);
-    }
-    if(g->hlr_cached_mask_mode != g->hlr_mask_mode)
-    {
-      dt_print(DT_DEBUG_DEV, "[highlights reconstruction cl] flush iop cache because of mask mode change\n");
-      g->hlr_cached_mask_mode = g->hlr_mask_mode;
-      dt_dev_pixelpipe_flush_caches(piece->pipe);
-    }
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
   }
 
   // this works for bayer and X-Trans sensors
@@ -1962,9 +1950,8 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   *roi_in = *roi_out;
 
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean fullclipped = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe : FALSE;
+  const gboolean fullclipped = (d->masking == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe;
   const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   
   if(fullclipped || !use_opposing)
@@ -1981,24 +1968,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const uint32_t filters = piece->pipe->dsc.filters;
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-
+ 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe : FALSE;
+  const gboolean visualizing = (data->masking == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe;
 
-  if(g && fullpipe)
+  if(fullpipe && (data->masking != DT_HIGHLIGHTS_MASK_OFF))
   {
-    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
-    {
-      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-      piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
-    }
-    if(g->hlr_cached_mask_mode != g->hlr_mask_mode)
-    {
-      dt_print(DT_DEBUG_DEV, "[highlights reconstruction] flush iop cache because of mask mode change\n");
-      g->hlr_cached_mask_mode = g->hlr_mask_mode;
-      dt_dev_pixelpipe_flush_caches(piece->pipe);
-    }
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
   }
 
   if(visualizing)
@@ -2113,11 +2090,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
-      const dt_highlights_mask_t vmode = ((g != NULL) && fullpipe && (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_CLIPPED)) ? g->hlr_mask_mode : DT_HIGHLIGHTS_MASK_OFF;
-
       float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, TRUE, TRUE);
       if(tmp)
-        _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, vmode, tmp);
+        _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, tmp);
       dt_free_align(tmp);
       break;
     }
@@ -2173,16 +2148,23 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED))
     piece->process_tiling_ready = 0;
 
+  // We force the masking to be OFF in general.
+  d->masking = DT_HIGHLIGHTS_MASK_OFF;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
   {
     const gboolean linear = piece->pipe->dsc.filters == 0;
     const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-    if((g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
+    // UI buttons force a masking mode for the full pipe only.
+    d->masking = (fullpipe) ? g->hlr_mask_mode : DT_HIGHLIGHTS_MASK_OFF;
+    if((d->masking == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
       piece->process_cl_ready = FALSE;
   }
-  // check for heavy computing here to give an iop cache hint
-  const gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
+  // check for heavy computing here to give an iop cache hint if no masking mode is used.
+  // In case of masking modes the module is expanded and the input of the highlights module
+  // has the input hint. 
+  const gboolean heavy = (d->masking == DT_HIGHLIGHTS_MASK_OFF)
+                      && (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
                         || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS));
   self->cache_next_important = heavy;
 }
@@ -2309,7 +2291,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
-  g->hlr_cached_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
 
   const int menu_size = dt_bauhaus_combobox_length(g->mode);
   const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
