@@ -238,6 +238,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
   color: @fg_color;
   font-size: 1em;   /* avoid changing this settings or you will made the UI quite awful (too big or too small) */
   font-family: sans-serif;
+  font-feature-settings: "tnum";
   font-weight: normal;
   box-shadow:none;
   outline-style:none;
@@ -1026,6 +1027,12 @@ treeview header label
 {
   font-weight: bold;
   padding: 0.14em;
+}
+
+/* be sure spinbutton is displayed without alpha background on treeview */
+treeview spinbutton
+{
+  background-color: @field_active_bg;
 }
 
 /* set margin around treeview (need to be applied on scrolledwindow which is a direct parent) */
