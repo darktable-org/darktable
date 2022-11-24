@@ -14031,8 +14031,8 @@ msgid "method used in the denoising core.\n"
 "non-local means works best for `lightness' blending,\n"
 "wavelets work best for `color' blending"
 msgstr "méthode utilisée pour la réduction du bruit. \n"
-"'moyennes non-locales' fonctionne mieux pour le mode de fusion 'luminosité'. \n"
-"'ondelettes' fonctionne mieux pour le mode de fusion 'couleur'"
+"« moyennes non-locales » fonctionne mieux pour le mode de fusion « luminosité ». \n"
+"« ondelettes » fonctionne mieux pour le mode de fusion « couleur »"
 
 #: ../src/iop/denoiseprofile.c:3574
 msgid "color representation used within the algorithm.\n"
