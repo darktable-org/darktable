@@ -226,7 +226,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 @define-color colorlabel_red rgb(230,0,0);
 @define-color colorlabel_green rgb(0,230,0);
-@define-color colorlabel_blue rgb(0,0,230);
+@define-color colorlabel_blue rgb(47, 133, 255);
 @define-color colorlabel_yellow rgb(255,180,0);
 @define-color colorlabel_purple rgb(230,0,230);
 
