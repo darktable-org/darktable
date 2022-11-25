@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-21 22:59+0100\n"
-"PO-Revision-Date: 2022-11-22 00:26+0200\n"
+"POT-Creation-Date: 2022-11-24 07:31+0100\n"
+"PO-Revision-Date: 2022-11-25 11:20+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -7036,7 +7036,7 @@ msgid "exporting %d / %d to %s"
 msgstr "експорт %d / %d до %s"
 
 #: ../src/control/jobs/control_jobs.c:1431 ../src/views/darkroom.c:768
-#: ../src/views/print.c:337
+#: ../src/views/print.c:342
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "зображення `%s' наразі недоступне"
@@ -10794,17 +10794,17 @@ msgstr "вкажіть опис для нового стилю, цей опис 
 msgid "can't create style out of unaltered image"
 msgstr "неможливо створити стиль із незміненого зображення"
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:80
-#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:546
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "8 bit"
 msgstr "8 біт"
 
-#: ../src/imageio/format/avif.c:93
+#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:552
 msgid "10 bit"
 msgstr "10 біт"
 
-#: ../src/imageio/format/avif.c:97
+#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:552
 msgid "12 bit"
 msgstr "12 біт"
 
@@ -10818,8 +10818,9 @@ msgstr "AVIF"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:762 ../src/imageio/format/exr.cc:470
-#: ../src/imageio/format/pdf.c:661 ../src/imageio/format/png.c:544
-#: ../src/imageio/format/tiff.c:860 ../src/imageio/format/xcf.c:335
+#: ../src/imageio/format/jxl.c:551 ../src/imageio/format/pdf.c:661
+#: ../src/imageio/format/png.c:544 ../src/imageio/format/tiff.c:860
+#: ../src/imageio/format/xcf.c:335
 msgid "bit depth"
 msgstr "бітова глибина"
 
@@ -10872,8 +10873,9 @@ msgstr "тип стиснення для зображення"
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:838 ../src/imageio/format/j2k.c:661
-#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/webp.c:394
-#: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:565
+#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:575
+#: ../src/imageio/format/webp.c:394 ../src/iop/cacorrect.c:1343
+#: ../src/libs/camera.c:565
 msgid "quality"
 msgstr "якість"
 
@@ -10924,8 +10926,8 @@ msgstr "OpenEXR"
 msgid "16 bit (float)"
 msgstr "16 біт (рухома кома)"
 
-#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "32 bit (float)"
 msgstr "32 біти (рухома кома)"
 
@@ -11006,10 +11008,87 @@ msgstr "Cinema4K, 24FPS"
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8 біт)"
 
-#: ../src/imageio/format/pdf.c:81 ../src/imageio/format/png.c:546
-#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/jxl.c:467
+msgid "JPEG XL"
+msgstr "JPEG XL"
+
+#: ../src/imageio/format/jxl.c:552 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
+#: ../src/imageio/format/xcf.c:338
 msgid "16 bit"
 msgstr "16 біт"
+
+#. Pixel format combo box
+#: ../src/imageio/format/jxl.c:558 ../src/imageio/format/tiff.c:869
+msgid "pixel type"
+msgstr "тип пікселя"
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "unsigned integer"
+msgstr "беззнакове ціле"
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "floating point"
+msgstr "рухома кома"
+
+#: ../src/imageio/format/jxl.c:576
+msgid ""
+"the quality of the output image\n"
+"0-29 = very lossy\n"
+"30-99 = JPEG quality comparable\n"
+"100 = lossless (integer bit depth only)"
+msgstr ""
+"якість вихідного зображення\n"
+"0-29 = дуже втратно\n"
+"30-99 = порівнянна з відповідною якістю JPEG\n"
+"100 = без втрат (лише ціла бітова глибина)"
+
+#: ../src/imageio/format/jxl.c:585
+msgid "encoding color profile"
+msgstr "колірний профіль кодування"
+
+#: ../src/imageio/format/jxl.c:586
+msgid ""
+"the color profile used by the encoder\n"
+"permit internal XYB color space conversion for more efficient lossy "
+"compression,\n"
+"or ensure no conversion to keep original image color space (implied for "
+"lossless)"
+msgstr ""
+"колірний профіль, який використовує кодер\n"
+"дозволяє перетворення у внутрішній колірний простір XYB для більш "
+"ефективного стиснення з втратами,\n"
+"або забезпечує відсутність перетворення, щоб зберегти оригінальний колірний "
+"простір зображення (неявно встановлюється для кодування без втрат)"
+
+#: ../src/imageio/format/jxl.c:589
+msgid "internal"
+msgstr "внутрішній"
+
+#: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:358
+#: ../src/libs/history.c:1009 ../src/libs/snapshots.c:634
+msgid "original"
+msgstr "оригінал"
+
+#: ../src/imageio/format/jxl.c:603
+msgid "encoding effort"
+msgstr "зусилля кодування"
+
+#: ../src/imageio/format/jxl.c:604
+msgid ""
+"the effort used to encode the image, higher efforts will have better results "
+"at the expense of longer encoding times"
+msgstr ""
+"зусилля, використане для кодування зображення, більші зусилля дадуть кращі "
+"результати за рахунок довшого часу кодування"
+
+#: ../src/imageio/format/jxl.c:615
+msgid "decoding speed"
+msgstr "швидкість декодування"
+
+#: ../src/imageio/format/jxl.c:616
+msgid "the preferred decoding speed with some sacrifice of quality"
+msgstr "бажана швидкість декодування з певною втратою якості"
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:480
 msgid "invalid paper size"
@@ -11200,19 +11279,6 @@ msgstr "експортуватиме у вигляді відтінків сір
 #: ../src/imageio/format/tiff.c:791
 msgid "TIFF"
 msgstr "TIFF"
-
-#. Pixel format combo box
-#: ../src/imageio/format/tiff.c:869
-msgid "pixel type"
-msgstr "тип пікселя"
-
-#: ../src/imageio/format/tiff.c:870
-msgid "unsigned integer"
-msgstr "беззнакове ціле"
-
-#: ../src/imageio/format/tiff.c:870
-msgid "floating point"
-msgstr "рухома кома"
 
 #: ../src/imageio/format/tiff.c:885
 msgid "deflate with predictor"
@@ -12608,7 +12674,7 @@ msgstr "вимкнено при малій видимій області"
 msgid ""
 "while calculating the correction parameters the internal maths failed so "
 "module is bypassed.\n"
-"you can get more info by running dt via the console."
+"you can get more info by running darktable via the console."
 msgstr ""
 "алгоритм не зміг обчислити параметри корекції, тому дію модуля відключено.\n"
 "ви можете отримати більше інформації, запустивши darktable через консоль."
@@ -19992,11 +20058,6 @@ msgstr "записати історію змін і теги в XMP файли"
 msgid "duplicate manager"
 msgstr "менеджер дублікатів"
 
-#: ../src/libs/duplicate.c:358 ../src/libs/history.c:1009
-#: ../src/libs/snapshots.c:634
-msgid "original"
-msgstr "оригінал"
-
 #: ../src/libs/duplicate.c:359
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "створити дублікат зображення без жодної обробки"
@@ -20245,8 +20306,8 @@ msgid "export EXIF metadata"
 msgstr "експортувати метадані EXIF"
 
 #: ../src/libs/export_metadata.c:311
-msgid "export dt XMP metadata (from metadata editor module)"
-msgstr "експортувати XMP метадані dt (з модуля редактора метаданих)"
+msgid "export darktable XMP metadata (from metadata editor module)"
+msgstr "експортувати XMP метадані darktable (з модуля редактора метаданих)"
 
 #: ../src/libs/export_metadata.c:321
 msgid "only embedded"
@@ -20256,16 +20317,17 @@ msgstr "лише вбудовані"
 msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
-"to avoid this and let only image embedded dt XMP metadata, check this flag.\n"
-"if remote storage doesn't understand dt XMP metadata, you can use calculated "
-"metadata instead"
+"to avoid this and let only image embedded darktable XMP metadata, check this "
+"flag.\n"
+"if remote storage doesn't understand darktable XMP metadata, you can use "
+"calculated metadata instead"
 msgstr ""
 "за замовчуванням інтерфейс надсилає деякі (обмежені) метадані поряд із "
 "зображенням у віддалене сховище.\n"
-"щоб уникнути цього і дозволити лише вбудовані метадані dt XMP, поставте цей "
-"прапорець.\n"
-"якщо віддалене сховище не розуміє метадані dt XMP, ви можете замість них "
-"використовувати обчислені метадані"
+"щоб уникнути цього і дозволити лише вбудовані метадані darktable XMP, "
+"поставте цей прапорець.\n"
+"якщо віддалене сховище не розуміє метадані darktable XMP, ви можете замість "
+"них використовувати обчислені метадані"
 
 #: ../src/libs/export_metadata.c:328 ../src/libs/image.c:568
 msgid "geo tags"
@@ -20321,8 +20383,8 @@ msgstr "історія обробки"
 
 #: ../src/libs/export_metadata.c:354
 msgid ""
-"export dt development data (recovery purpose in case of loss of database or "
-"XMP file)"
+"export darktable development data (recovery purpose in case of loss of "
+"database or XMP file)"
 msgstr ""
 "експортувати дані про обробку в darktable (з метою її відновлення у разі "
 "втрати бази даних або файлу XMP)"
@@ -21282,8 +21344,8 @@ msgid "select geo tags metadata"
 msgstr "вибрати метадані, що містять геоінформацію"
 
 #: ../src/libs/image.c:578
-msgid "select dt metadata (from metadata editor module)"
-msgstr "вибрати метадані dt (з модуля редактора метаданих)"
+msgid "select darktable metadata (from metadata editor module)"
+msgstr "вибрати метадані darktable (з модуля редактора метаданих)"
 
 #: ../src/libs/image.c:586
 msgid "set the selected image as source of metadata"
@@ -22688,7 +22750,7 @@ msgstr "нова область зображення"
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
-"drag&drop image from film strip on it"
+"drag and drop image from film strip on it"
 msgstr ""
 "додати нову область зображення на сторінку\n"
 "клікніть і перетягніть на сторінці, щоб розмістити область\n"
@@ -23801,7 +23863,7 @@ msgid "soft proof"
 msgstr "екранна кольоропроба"
 
 #. fail :(
-#: ../src/views/darkroom.c:755 ../src/views/print.c:324
+#: ../src/views/darkroom.c:755 ../src/views/print.c:329
 msgid "no image to open!"
 msgstr "немає зображення для відкриття!"
 
