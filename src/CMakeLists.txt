@@ -1048,6 +1048,8 @@ if (USE_LIBRAW)
   if(NOT USE_OPENMP)
     set(ENABLE_OPENMP OFF CACHE BOOL "")
   endif()
+  set(ENABLE_LCMS OFF CACHE BOOL "")
+  set(ENABLE_JASPER OFF CACHE BOOL "")
 
   # LibRaw sub-module
   add_subdirectory(external/LibRaw-cmake)
