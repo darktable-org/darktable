@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-24 05:32-0300\n"
-"PO-Revision-Date: 2022-11-24 05:36-0300\n"
+"POT-Creation-Date: 2022-11-25 17:02-0300\n"
+"PO-Revision-Date: 2022-11-25 17:20-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1362,7 +1362,7 @@ msgstr ""
 "lanczos2, lanczos3)."
 
 #: ../build/bin/preferences_gen.h:5719
-msgid "3D lut root folder"
+msgid "LUT 3D root folder"
 msgstr "pasta raiz do LUT 3D"
 
 #: ../build/bin/preferences_gen.h:5724 ../src/control/jobs/control_jobs.c:1660
@@ -1378,11 +1378,9 @@ msgstr "selecione pasta"
 
 #: ../build/bin/preferences_gen.h:5740
 msgid ""
-"this folder (and sub-folders) contains Lut files used by lut3d modules. "
+"this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(need a restart)."
-msgstr ""
-"esta pasta (e subpastas) contém arquivos LUT usados pelos módulos lut3d. "
-"precisa reiniciar o darktable."
+msgstr "esta pasta (e subpastas) contém arquivos LUT usados pelo módulo LUT 3D. precisa reiniciar o darktable."
 
 #: ../build/bin/preferences_gen.h:5762
 msgid "auto-apply pixel workflow defaults"
@@ -1480,8 +1478,8 @@ msgid ""
 " - default: darktable takes ~50% of your systems resources and gives "
 "darktable enough to be still performant.\n"
 " - small: should be used if you are simultaneously running applications "
-"taking large parts of your systems memory or opencl/gl applications like "
-"games or hugin.\n"
+"taking large parts of your systems memory or OpenCL/GL applications like "
+"games or Hugin.\n"
 " - large: is the best option if you are mainly using darktable and want it "
 "to take most of your systems resources for performance.\n"
 " - unrestricted: should only be used for developing extremely large images "
@@ -1490,20 +1488,11 @@ msgid ""
 "recommended for general use!"
 msgstr ""
 "define quanto o darktable pode tomar dos recursos do sistema.\n"
-"diminua a configuração se estiver usando aplicações que tomam grandes partes "
-"da memória do seu sistema ou aplicações opencl/gl como jogos ou hugin. "
-"aumente se você estiver usando somente o darktable na sua máquina.\n"
-" - default: toma ~50% dos recursos do seu sistema e dá ao darktable o "
-"suficiente para ainda ter desempenho.\n"
-" - pequeno: pequeno o suficiente para ser usado simultaneamente com outras "
-"aplicações que tomam grande parte da memória ou opencl/gl, como jogos ou "
-"hugin.\n"
-" - grande: é a melhor opção se você está usando principalmente o darktable e "
-"quer que ele use o máximo de recursos do seu sistma para melhor desempenho.\n"
-" - irrestrito: deveria ser usado somente para tratar imagens extremamente "
-"grandes, já que o darktable tomará todos os recursos do seu sistema e pode "
-"levar a swapping e quedas de desempenho. use com cuidado, não é recomendado "
-"para uso geral!"
+"diminua a configuração se estiver usando aplicações que tomam grandes partes da memória do seu sistema ou aplicações opencl/gl como jogos ou hugin. aumente se você estiver usando somente o darktable na sua máquina.\n"
+" - default: toma ~50% dos recursos do seu sistema e dá ao darktable o suficiente para ainda ter desempenho.\n"
+" - pequeno: pequeno o suficiente para ser usado simultaneamente com outras aplicações que tomam grande parte da memória ou OpenCL/GL, como jogos ou Hugin.\n"
+" - grande: é a melhor opção se você está usando principalmente o darktable e quer que ele use o máximo de recursos do seu sistma para melhor desempenho.\n"
+" - irrestrito: deveria ser usado somente para tratar imagens extremamente grandes, já que o darktable tomará todos os recursos do seu sistema e pode levar a swapping e quedas de desempenho. use com cuidado, não é recomendado para uso geral!"
 
 #: ../build/bin/preferences_gen.h:6074
 msgid "prefer performance over quality"
@@ -6360,25 +6349,22 @@ msgstr "perfil de controle de ruído `%s' não é válido"
 
 #: ../src/common/opencl.c:1119
 msgid ""
-"due to a slow GPU hardware acceleration via opencl has been de-activated"
-msgstr "devido a baixa aceleração de hardware da GPU o opencl foi desativado."
+"due to a slow GPU hardware acceleration using OpenCL has been deactivated"
+msgstr "devido a baixa aceleração de hardware da GPU o opencl foi desativado"
 
 #: ../src/common/opencl.c:1126
 msgid ""
-"multiple GPUs detected - opencl scheduling profile has been set accordingly"
-msgstr ""
-"detectadas múltiplas GPUs - o perfil de escalonamento foi ajustado de acordo."
+"multiple GPUs detected - OpenCL scheduling profile has been set accordingly"
+msgstr "detectadas múltiplas GPUs - o perfil de escalonamento foi ajustado de acordo"
 
 #: ../src/common/opencl.c:1134
 msgid ""
-"very fast GPU detected - opencl scheduling profile has been set accordingly"
-msgstr ""
-"GPU muito rápida detectada - o perfil de escalonamento foi ajustado de "
-"acordo."
+"very fast GPU detected - OpenCL scheduling profile has been set accordingly"
+msgstr "GPU muito rápida detectada - o perfil de escalonamento foi ajustado de acordo"
 
 #: ../src/common/opencl.c:1141
-msgid "opencl scheduling profile set to default"
-msgstr "perfil de escalonamento OpenCL ajustado para padrão."
+msgid "OpenCL scheduling profile set to default"
+msgstr "perfil de escalonamento OpenCL ajustado para padrão"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:2658
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:83
@@ -11025,8 +11011,10 @@ msgid ""
 "lossless)"
 msgstr ""
 "o perfil de cores usado pelo codificador\n"
-"permite conversão para espaço interno de cores XYB para compressão com perda mais eficiente,\n"
-"ou garante que nenhuma conversão ocorre para manter o espaço de cores da imagem original (sem perda implica nisto)"
+"permite conversão para espaço interno de cores XYB para compressão com perda "
+"mais eficiente,\n"
+"ou garante que nenhuma conversão ocorre para manter o espaço de cores da "
+"imagem original (sem perda implica nisto)"
 
 #: ../src/imageio/format/jxl.c:589
 msgid "internal"
@@ -11045,7 +11033,9 @@ msgstr "esforço de codificação"
 msgid ""
 "the effort used to encode the image, higher efforts will have better results "
 "at the expense of longer encoding times"
-msgstr "o esforço usado para codificar a imagem, esforço maior terá melhor resultado com o custo de tempos de codificação maiores"
+msgstr ""
+"o esforço usado para codificar a imagem, esforço maior terá melhor resultado "
+"com o custo de tempos de codificação maiores"
 
 #: ../src/imageio/format/jxl.c:615
 msgid "decoding speed"
@@ -11053,7 +11043,8 @@ msgstr "velocidade de decodificação"
 
 #: ../src/imageio/format/jxl.c:616
 msgid "the preferred decoding speed with some sacrifice of quality"
-msgstr "a velocidade preferida para decodificação com algum sacrifício de qualidade"
+msgstr ""
+"a velocidade preferida para decodificação com algum sacrifício de qualidade"
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:480
 msgid "invalid paper size"
