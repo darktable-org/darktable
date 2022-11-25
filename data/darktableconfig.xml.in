@@ -3269,8 +3269,8 @@
     <name>plugins/darkroom/lut3d/def_path</name>
     <type>dir</type>
     <default>$(home)</default>
-    <shortdescription>3D lut root folder</shortdescription>
-    <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. (need a restart).</longdescription>
+    <shortdescription>LUT 3D root folder</shortdescription>
+    <longdescription>this folder (and sub-folders) contains LUT files used by LUT 3D module. (need a restart).</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
@@ -3351,7 +3351,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>allow XYZ and Lab color spaces as output</shortdescription>
-    <longdescription>this is mainly useful for debugging and to create colorchecker lut styles externally.</longdescription>
+    <longdescription>this is mainly useful for debugging and to create colorchecker LUT styles externally.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/rawprepare/allow_editing_crop</name>
