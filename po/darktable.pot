@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-24 07:31+0100\n"
+"POT-Creation-Date: 2022-11-25 18:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1271,7 +1271,7 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5719
-msgid "3D lut root folder"
+msgid "LUT 3D root folder"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5724 ../src/control/jobs/control_jobs.c:1660
@@ -1287,7 +1287,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5740
 msgid ""
-"this folder (and sub-folders) contains Lut files used by lut3d modules. "
+"this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(need a restart)."
 msgstr ""
 
@@ -1366,8 +1366,8 @@ msgid ""
 " - default: darktable takes ~50% of your systems resources and gives "
 "darktable enough to be still performant.\n"
 " - small: should be used if you are simultaneously running applications "
-"taking large parts of your systems memory or opencl/gl applications like "
-"games or hugin.\n"
+"taking large parts of your systems memory or OpenCL/GL applications like "
+"games or Hugin.\n"
 " - large: is the best option if you are mainly using darktable and want it "
 "to take most of your systems resources for performance.\n"
 " - unrestricted: should only be used for developing extremely large images "
@@ -5966,21 +5966,21 @@ msgstr ""
 
 #: ../src/common/opencl.c:1119
 msgid ""
-"due to a slow GPU hardware acceleration via opencl has been de-activated"
+"due to a slow GPU hardware acceleration using OpenCL has been deactivated"
 msgstr ""
 
 #: ../src/common/opencl.c:1126
 msgid ""
-"multiple GPUs detected - opencl scheduling profile has been set accordingly"
+"multiple GPUs detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
 
 #: ../src/common/opencl.c:1134
 msgid ""
-"very fast GPU detected - opencl scheduling profile has been set accordingly"
+"very fast GPU detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
 
 #: ../src/common/opencl.c:1141
-msgid "opencl scheduling profile set to default"
+msgid "OpenCL scheduling profile set to default"
 msgstr ""
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:2658
