@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-21 22:59+0100\n"
-"PO-Revision-Date: 2022-11-22 10:35+0800\n"
+"POT-Creation-Date: 2022-11-24 07:31+0100\n"
+"PO-Revision-Date: 2022-11-24 17:23+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -6928,7 +6928,7 @@ msgid "exporting %d / %d to %s"
 msgstr "匯出 %d 張（共 %d 張）影像到「%s」"
 
 #: ../src/control/jobs/control_jobs.c:1431 ../src/views/darkroom.c:768
-#: ../src/views/print.c:337
+#: ../src/views/print.c:342
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "影像「%s」目前無法使用"
@@ -10675,17 +10675,17 @@ msgstr "輸入風格檔的說明，該描述文字可用於搜尋"
 msgid "can't create style out of unaltered image"
 msgstr "不能從未改變的影像建立風格檔"
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:80
-#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:546
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "8 bit"
 msgstr "8 位元"
 
-#: ../src/imageio/format/avif.c:93
+#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:552
 msgid "10 bit"
 msgstr "10 位元"
 
-#: ../src/imageio/format/avif.c:97
+#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:552
 msgid "12 bit"
 msgstr "12 位元"
 
@@ -10699,8 +10699,9 @@ msgstr "AVIF"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:762 ../src/imageio/format/exr.cc:470
-#: ../src/imageio/format/pdf.c:661 ../src/imageio/format/png.c:544
-#: ../src/imageio/format/tiff.c:860 ../src/imageio/format/xcf.c:335
+#: ../src/imageio/format/jxl.c:551 ../src/imageio/format/pdf.c:661
+#: ../src/imageio/format/png.c:544 ../src/imageio/format/tiff.c:860
+#: ../src/imageio/format/xcf.c:335
 msgid "bit depth"
 msgstr "色彩深度"
 
@@ -10751,8 +10752,9 @@ msgstr "影像的壓縮方式"
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:838 ../src/imageio/format/j2k.c:661
-#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/webp.c:394
-#: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:565
+#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:575
+#: ../src/imageio/format/webp.c:394 ../src/iop/cacorrect.c:1343
+#: ../src/libs/camera.c:565
 msgid "quality"
 msgstr "影像品質"
 
@@ -10801,8 +10803,8 @@ msgstr "OpenEXR"
 msgid "16 bit (float)"
 msgstr "16 位元（浮點）"
 
-#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "32 bit (float)"
 msgstr "32 位元（浮點）"
 
@@ -10883,10 +10885,83 @@ msgstr "Cinema 4K 24FPS"
 msgid "JPEG (8-bit)"
 msgstr "JPEG（8 位元）"
 
-#: ../src/imageio/format/pdf.c:81 ../src/imageio/format/png.c:546
-#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/jxl.c:467
+msgid "JPEG XL"
+msgstr "JPEG XL"
+
+#: ../src/imageio/format/jxl.c:552 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
+#: ../src/imageio/format/xcf.c:338
 msgid "16 bit"
 msgstr "16 位元"
+
+#. Pixel format combo box
+#: ../src/imageio/format/jxl.c:558 ../src/imageio/format/tiff.c:869
+msgid "pixel type"
+msgstr "數值類別"
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "unsigned integer"
+msgstr "無符號整數"
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "floating point"
+msgstr "浮點數"
+
+#: ../src/imageio/format/jxl.c:576
+msgid ""
+"the quality of the output image\n"
+"0-29 = very lossy\n"
+"30-99 = JPEG quality comparable\n"
+"100 = lossless (integer bit depth only)"
+msgstr ""
+"匯出影像的品質設定\n"
+"0~29：品質低落\n"
+"30-99：和一般 JPEG 類似\n"
+"100：無損壓縮（僅限整數位元）"
+
+#: ../src/imageio/format/jxl.c:585
+msgid "encoding color profile"
+msgstr "編碼色彩空間"
+
+#: ../src/imageio/format/jxl.c:586
+msgid ""
+"the color profile used by the encoder\n"
+"permit internal XYB color space conversion for more efficient lossy "
+"compression,\n"
+"or ensure no conversion to keep original image color space (implied for "
+"lossless)"
+msgstr ""
+"編碼器使用的色彩空間\n"
+"固有設定使用 JPEG XL 制定的 XYB 色彩以獲得較好的有損壓縮效率\n"
+"選擇原始影像色彩空間將不轉換色彩編碼，同時意味著無損壓縮"
+
+#: ../src/imageio/format/jxl.c:589
+msgid "internal"
+msgstr "固有設定"
+
+#: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:358
+#: ../src/libs/history.c:1009 ../src/libs/snapshots.c:634
+msgid "original"
+msgstr "原始影像"
+
+#: ../src/imageio/format/jxl.c:603
+msgid "encoding effort"
+msgstr "編碼計算量"
+
+#: ../src/imageio/format/jxl.c:604
+msgid ""
+"the effort used to encode the image, higher efforts will have better results "
+"at the expense of longer encoding times"
+msgstr "影像編碼的計算量，越高的計算量可獲得更好的成果，但相對需花費更多時間"
+
+#: ../src/imageio/format/jxl.c:615
+msgid "decoding speed"
+msgstr "解碼速度"
+
+#: ../src/imageio/format/jxl.c:616
+msgid "the preferred decoding speed with some sacrifice of quality"
+msgstr "偏好的解碼速度，以犧牲品質為代價"
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:480
 msgid "invalid paper size"
@@ -11073,19 +11148,6 @@ msgstr "將匯出為灰階影像"
 #: ../src/imageio/format/tiff.c:791
 msgid "TIFF"
 msgstr "TIFF"
-
-#. Pixel format combo box
-#: ../src/imageio/format/tiff.c:869
-msgid "pixel type"
-msgstr "數值類別"
-
-#: ../src/imageio/format/tiff.c:870
-msgid "unsigned integer"
-msgstr "無符號整數"
-
-#: ../src/imageio/format/tiff.c:870
-msgid "floating point"
-msgstr "浮點數"
 
 #: ../src/imageio/format/tiff.c:885
 msgid "deflate with predictor"
@@ -12583,7 +12645,7 @@ msgstr ""
 msgid ""
 "while calculating the correction parameters the internal maths failed so "
 "module is bypassed.\n"
-"you can get more info by running dt via the console."
+"you can get more info by running darktable via the console."
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
 "計算校正參數時內部運算發生錯誤，因此模組被略過不執行\n"
@@ -20477,11 +20539,6 @@ msgstr ""
 msgid "duplicate manager"
 msgstr "複本管理器"
 
-#: ../src/libs/duplicate.c:358 ../src/libs/history.c:1009
-#: ../src/libs/snapshots.c:634
-msgid "original"
-msgstr "原始影像"
-
 #: ../src/libs/duplicate.c:359
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "建立一個沒有經過任何編輯的原始影像複本"
@@ -20735,7 +20792,7 @@ msgid "export EXIF metadata"
 msgstr "匯出 EXIF 詮釋資料"
 
 #: ../src/libs/export_metadata.c:311
-msgid "export dt XMP metadata (from metadata editor module)"
+msgid "export darktable XMP metadata (from metadata editor module)"
 msgstr "匯出 XMP 詮釋資料（從詮釋資料編輯模組）"
 
 #: ../src/libs/export_metadata.c:321
@@ -20746,9 +20803,10 @@ msgstr "僅已嵌入的資料"
 msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
-"to avoid this and let only image embedded dt XMP metadata, check this flag.\n"
-"if remote storage doesn't understand dt XMP metadata, you can use calculated "
-"metadata instead"
+"to avoid this and let only image embedded darktable XMP metadata, check this "
+"flag.\n"
+"if remote storage doesn't understand darktable XMP metadata, you can use "
+"calculated metadata instead"
 msgstr ""
 "在預設情況下，儲存至遠端空間時會同時額外發送一部份詮釋資料\n"
 "勾選此項之後將不會發送單獨資料，而是將 XMP 全部嵌入在影像檔案中\n"
@@ -20809,8 +20867,8 @@ msgstr "編輯記錄"
 
 #: ../src/libs/export_metadata.c:354
 msgid ""
-"export dt development data (recovery purpose in case of loss of database or "
-"XMP file)"
+"export darktable development data (recovery purpose in case of loss of "
+"database or XMP file)"
 msgstr ""
 "匯出全部編輯紀錄以及遮罩，儲存至 XMP 檔案中\n"
 "可用於之後若資料庫和附屬檔案遺失時復原原始編輯設定使用"
@@ -21777,7 +21835,7 @@ msgid "select geo tags metadata"
 msgstr "選取地理標籤的詮釋資料"
 
 #: ../src/libs/image.c:578
-msgid "select dt metadata (from metadata editor module)"
+msgid "select darktable metadata (from metadata editor module)"
 msgstr "選擇 darktable 詮釋資料（來自詮釋資料編輯模組）"
 
 #: ../src/libs/image.c:586
@@ -23164,10 +23222,11 @@ msgstr "新建影像區域"
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
-"drag&drop image from film strip on it"
+"drag and drop image from film strip on it"
 msgstr ""
 "在頁面上點擊並拖曳以設定區域\n"
-"再拖曳影像至影像區域上"
+"點擊並拖曳移動區域位置\n"
+"拖曳影像至影像區域上"
 
 #: ../src/libs/print_settings.c:2529
 msgid "delete image area"
@@ -24236,7 +24295,7 @@ msgid "soft proof"
 msgstr "軟打樣"
 
 #. fail :(
-#: ../src/views/darkroom.c:755 ../src/views/print.c:324
+#: ../src/views/darkroom.c:755 ../src/views/print.c:329
 msgid "no image to open!"
 msgstr "沒有開啟的影像"
 
