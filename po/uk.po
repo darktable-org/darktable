@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-24 07:31+0100\n"
-"PO-Revision-Date: 2022-11-25 11:20+0200\n"
+"POT-Creation-Date: 2022-11-25 18:39+0100\n"
+"PO-Revision-Date: 2022-11-25 20:28+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1371,8 +1371,8 @@ msgstr ""
 "бікубічний, lanczos2, lanczos3)."
 
 #: ../build/bin/preferences_gen.h:5719
-msgid "3D lut root folder"
-msgstr "кореневий каталог 3D lut"
+msgid "LUT 3D root folder"
+msgstr "кореневий каталог LUT 3D"
 
 #: ../build/bin/preferences_gen.h:5724 ../src/control/jobs/control_jobs.c:1660
 #: ../src/control/jobs/control_jobs.c:1714 ../src/gui/preferences.c:1070
@@ -1387,11 +1387,11 @@ msgstr "виберіть каталог"
 
 #: ../build/bin/preferences_gen.h:5740
 msgid ""
-"this folder (and sub-folders) contains Lut files used by lut3d modules. "
+"this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(need a restart)."
 msgstr ""
-"цей каталог (і вкладені каталоги) містить файли Lut, що використовуються "
-"модулями lut3d. (потрібен перезапуск)."
+"цей каталог (і вкладені каталоги) містить файли LUT, що використовуються "
+"модулем LUT 3D. (потрібен перезапуск)."
 
 #: ../build/bin/preferences_gen.h:5762
 msgid "auto-apply pixel workflow defaults"
@@ -1491,8 +1491,8 @@ msgid ""
 " - default: darktable takes ~50% of your systems resources and gives "
 "darktable enough to be still performant.\n"
 " - small: should be used if you are simultaneously running applications "
-"taking large parts of your systems memory or opencl/gl applications like "
-"games or hugin.\n"
+"taking large parts of your systems memory or OpenCL/GL applications like "
+"games or Hugin.\n"
 " - large: is the best option if you are mainly using darktable and want it "
 "to take most of your systems resources for performance.\n"
 " - unrestricted: should only be used for developing extremely large images "
@@ -6352,27 +6352,27 @@ msgstr "файл профілю шуму `%s' недійсний"
 
 #: ../src/common/opencl.c:1119
 msgid ""
-"due to a slow GPU hardware acceleration via opencl has been de-activated"
+"due to a slow GPU hardware acceleration using OpenCL has been deactivated"
 msgstr ""
-"через повільний GPU апаратне прискорення за допомогою opencl було "
+"через повільний GPU апаратне прискорення за допомогою OpenCL було "
 "деактивовано"
 
 #: ../src/common/opencl.c:1126
 msgid ""
-"multiple GPUs detected - opencl scheduling profile has been set accordingly"
+"multiple GPUs detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
-"виявлено кілька GPU - профіль планування opencl було встановлено відповідно"
+"виявлено кілька GPU - профіль планування OpenCL було встановлено відповідно"
 
 #: ../src/common/opencl.c:1134
 msgid ""
-"very fast GPU detected - opencl scheduling profile has been set accordingly"
+"very fast GPU detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
-"виявлено дуже швидкий GPU - профіль планування opencl було встановлено "
+"виявлено дуже швидкий GPU - профіль планування OpenCL було встановлено "
 "відповідно"
 
 #: ../src/common/opencl.c:1141
-msgid "opencl scheduling profile set to default"
-msgstr "профіль планування opencl встановлено за замовчуванням"
+msgid "OpenCL scheduling profile set to default"
+msgstr "профіль планування OpenCL встановлено за замовчуванням"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:2658
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:83
