@@ -679,7 +679,6 @@ typedef struct _preview_data_t
 static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   _preview_data_t *data = (_preview_data_t *)user_data;
-  gboolean res = FALSE;
 
   if(data->imgid != -1)
   {
@@ -690,12 +689,10 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
     cairo_set_source_surface(cr, surface, .5f * (psize - swidth), .5f * (psize - sheight));
     cairo_paint(cr);
     cairo_surface_destroy(surface);
-
-    res=TRUE;
   }
 
   g_free(data);
-  return res;
+  return TRUE;
 }
 
 GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
