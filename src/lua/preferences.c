@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2021 darktable developers.
+   Copyright (C) 2013-2022 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -679,7 +679,7 @@ static int register_pref_sub(lua_State *L)
 
       built_elt->widget = gtk_file_chooser_button_new(_("select file"), GTK_FILE_CHOOSER_ACTION_OPEN);
       gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(built_elt->widget), 20);
-      built_elt->tooltip_reset= g_strdup_printf( _("double click to reset to `%s'"), built_elt->type_data.file_data.default_value);
+      built_elt->tooltip_reset= g_strdup_printf( _("double-click to reset to `%s'"), built_elt->type_data.file_data.default_value);
       g_object_ref_sink(G_OBJECT(built_elt->widget));
       built_elt->update_widget = update_widget_file;
       break;
@@ -707,7 +707,7 @@ static int register_pref_sub(lua_State *L)
       built_elt->widget = gtk_check_button_new();
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(built_elt->widget), dt_conf_get_bool(pref_name));
       g_object_ref_sink(G_OBJECT(built_elt->widget));
-      built_elt->tooltip_reset = g_strdup_printf(  _("double click to reset to `%s'"),
+      built_elt->tooltip_reset = g_strdup_printf(  _("double-click to reset to `%s'"),
           built_elt->type_data.bool_data.default_value ? "true" : "false");
       built_elt->update_widget = update_widget_bool;
       break;
@@ -757,7 +757,7 @@ static int register_pref_sub(lua_State *L)
           dt_conf_set_float(pref_name, built_elt->type_data.float_data.default_value);
 
         built_elt->widget = gtk_spin_button_new_with_range(min, max, step);
-        built_elt->tooltip_reset = g_strdup_printf( _("double click to reset to `%f'"),
+        built_elt->tooltip_reset = g_strdup_printf( _("double-click to reset to `%f'"),
             built_elt->type_data.float_data.default_value);
         g_object_ref_sink(G_OBJECT(built_elt->widget));
         built_elt->update_widget = update_widget_float;

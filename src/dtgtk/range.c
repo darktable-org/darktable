@@ -960,7 +960,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   pop->calendar = gtk_calendar_new();
   gtk_widget_set_no_show_all(pop->calendar, TRUE);
   gtk_widget_set_tooltip_text(pop->calendar, _("simple click to select date\n"
-                                               "double click to use the date directly"));
+                                               "double-click to use the date directly"));
   g_signal_connect(G_OBJECT(pop->calendar), "day_selected", G_CALLBACK(_popup_date_changed), range);
   g_signal_connect(G_OBJECT(pop->calendar), "day_selected-double-click",
                    G_CALLBACK(_popup_date_day_selected_2click), range);
@@ -1026,7 +1026,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
                                                           G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT));
   pop->treeview = gtk_tree_view_new_with_model(model);
   gtk_widget_set_tooltip_text(pop->calendar, _("simple click to select date\n"
-                                               "double click to use the date directly"));
+                                               "double-click to use the date directly"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(pop->treeview), FALSE);
   g_signal_connect(G_OBJECT(pop->treeview), "row-activated", G_CALLBACK(_popup_date_tree_row_activated), range);
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(pop->treeview))), "changed",
