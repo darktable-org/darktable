@@ -61,6 +61,13 @@ typedef enum _preset_save_type_t
   _PRESET_ALL = _PRESET_FILTERS | _PRESET_SORT | _PRESET_ERASE_TOPBAR
 } _preset_save_type_t;
 
+typedef struct _topbar_popup_t
+{
+  GtkWidget *pop;
+  GtkWidget *filters_box;
+  GList *filters;
+} _topbar_popup_t;
+
 typedef struct _widgets_sort_t
 {
   dt_collection_sort_t sortid;
@@ -121,6 +128,8 @@ typedef struct dt_lib_filtering_t
   struct dt_lib_filtering_params_t *params;
 
   gchar *last_where_ext;
+
+  _topbar_popup_t topbar_popup;
 } dt_lib_filtering_t;
 
 typedef struct dt_lib_filtering_params_rule_t
@@ -1512,25 +1521,27 @@ static void _event_history_show(GtkWidget *widget, gpointer user_data)
 }
 
 static void _topbar_populate_prop_combo_add(GtkWidget *w, const dt_collection_properties_t prop,
-                                            dt_lib_filtering_t *d)
+                                            dt_lib_filtering_t *d, const dt_collection_properties_t actual_prop)
 {
   // if the filter is not implemented, we skip it
   if(!_filters_get(prop)) return;
   // if the filter is already in the topbar, we skip it too
-  for(int i = 0; i < d->nb_rules; i++)
+  if(prop != actual_prop)
   {
-    if(d->rule[i].topbar && d->rule[i].prop == prop) return;
+    for(int i = 0; i < d->nb_rules; i++)
+    {
+      if(d->rule[i].topbar && d->rule[i].prop == prop) return;
+    }
   }
 
   dt_bauhaus_combobox_add_full(w, dt_collection_name(prop), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                GUINT_TO_POINTER(prop), NULL, TRUE);
 }
 
-static void _topbar_populate_rules_combo(GtkWidget *w, dt_lib_filtering_t *d)
+static void _topbar_populate_rules_combo(GtkWidget *w, dt_lib_filtering_t *d,
+                                         const dt_collection_properties_t actual_prop)
 {
-  dt_bauhaus_combobox_add_full(w, "", DT_BAUHAUS_COMBOBOX_ALIGN_LEFT, GUINT_TO_POINTER(-1), NULL, TRUE);
-
-#define ADD_COLLECT_ENTRY(value) _topbar_populate_prop_combo_add(w, value, d);
+#define ADD_COLLECT_ENTRY(value) _topbar_populate_prop_combo_add(w, value, d, actual_prop);
   gtk_widget_set_tooltip_text(w, _("rule property"));
 
   dt_bauhaus_combobox_add_section(w, _("files"));
@@ -1590,39 +1601,100 @@ static void _topbar_populate_rules_combo(GtkWidget *w, dt_lib_filtering_t *d)
 #undef ADD_COLLECT_ENTRY
 }
 
+static void _topbar_popup_refresh_filters(dt_lib_module_t *self)
+{
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+
+  // refresh existing combobox content
+  darktable.gui->reset++;
+  for(GList *iter = d->topbar_popup.filters; iter; iter = g_list_next(iter))
+  {
+    GtkWidget *cb = (GtkWidget *)iter->data;
+    dt_bauhaus_combobox_clear(cb);
+    dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(cb), "rule");
+    _topbar_populate_rules_combo(cb, d, rule->prop);
+    dt_bauhaus_combobox_set_from_value(cb, rule->prop);
+  }
+  darktable.gui->reset--;
+}
+
 static gboolean _topbar_rule_remove(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
-  if(rule->manual_widget_set) return TRUE;
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+
+  GtkWidget *filter_cb = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "filter");
+  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(filter_cb), "rule");
+  if(rule->manual_widget_set) return TRUE;
 
   // unpin the rule
   rule->topbar = FALSE;
   _topbar_update(self);
 
   // remove the rule
-  _event_rule_close(widget, NULL, self);
+  _event_rule_close(filter_cb, NULL, self);
 
-  // reconstruct the combobox
-  GtkWidget *hb = gtk_widget_get_parent(widget);
-  GList *childs = gtk_container_get_children(GTK_CONTAINER(gtk_widget_get_parent(hb)));
-  GtkWidget *combo = g_list_last(childs)->data;
-  dt_bauhaus_combobox_clear(combo);
-  _topbar_populate_rules_combo(combo, d);
+  // remove the combobox in the popup
+  d->topbar_popup.filters = g_list_remove(d->topbar_popup.filters, filter_cb);
+  gtk_widget_destroy(gtk_widget_get_parent(filter_cb));
 
-  // remove the entry from the popover
-  gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(hb)), hb);
+  // reaffect the right rules for all the widgets
+  GList *top_filters = g_list_first(d->topbar_popup.filters);
+  for(int i = 0; i < d->nb_rules; i++)
+  {
+    if(d->rule[i].topbar && top_filters)
+    {
+      GtkWidget *cb = (GtkWidget *)top_filters->data;
+      g_object_set_data(G_OBJECT(cb), "rule", &d->rule[i]);
+      top_filters = g_list_next(top_filters);
+    }
+  }
+
+  // refresh existing combobox content
+  _topbar_popup_refresh_filters(self);
 
   return TRUE;
 }
 
+static void _topbar_rule_changed(GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+  if(rule->manual_widget_set) return;
+  if(darktable.gui->reset) return;
+  if(rule->prop == dt_bauhaus_combobox_get(widget)) return;
+
+  // unpin the rule
+  rule->topbar = FALSE;
+  _topbar_update(self);
+
+  // change the rule type
+  rule->prop = dt_bauhaus_combobox_get(widget);
+  dt_bauhaus_combobox_set_from_value(rule->w_prop, rule->prop);
+  _event_rule_change_type(widget, self);
+
+  // pin the rule back
+  rule->topbar = TRUE;
+  _topbar_update(self);
+  _conf_update_rule(rule);
+  _rule_populate_prop_combo(rule);
+
+  // refresh existing combobox content
+  _topbar_popup_refresh_filters(self);
+}
+
 static GtkWidget *_topbar_menu_new_rule(dt_lib_filtering_rule_t *rule, dt_lib_module_t *self)
 {
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *lb = gtk_label_new(dt_collection_name(rule->prop));
-  gtk_box_pack_start(GTK_BOX(hb), lb, TRUE, TRUE, 0);
+  GtkWidget *nr = dt_bauhaus_combobox_new(NULL);
+  _topbar_populate_rules_combo(nr, d, rule->prop);
+  dt_bauhaus_combobox_set_from_value(nr, rule->prop);
+  g_object_set_data(G_OBJECT(nr), "rule", rule);
+  g_signal_connect(G_OBJECT(nr), "value-changed", G_CALLBACK(_topbar_rule_changed), self);
+  gtk_box_pack_start(GTK_BOX(hb), nr, TRUE, TRUE, 0);
+  d->topbar_popup.filters = g_list_append(d->topbar_popup.filters, nr);
   GtkWidget *btr = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
-  g_object_set_data(G_OBJECT(btr), "rule", rule);
+  g_object_set_data(G_OBJECT(btr), "filter", nr);
   g_signal_connect(G_OBJECT(btr), "button-press-event", G_CALLBACK(_topbar_rule_remove), self);
   gtk_box_pack_start(GTK_BOX(hb), btr, FALSE, TRUE, 0);
   return hb;
@@ -1632,22 +1704,40 @@ static void _topbar_rule_add(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
 
-  const int prop = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
-  if(prop < 0) return;
+  // we find the first "not used" filter
+  dt_collection_properties_t prop = DT_COLLECTION_PROP_RATING_RANGE;
+  for(int i = 0; i < DT_COLLECTION_PROP_LAST; i++)
+  {
+    if(_filters_get(i))
+    {
+      gboolean ok = TRUE;
+      for(int j = 0; j < d->nb_rules; j++)
+      {
+        if(d->rule[j].topbar && d->rule[j].prop == i)
+        {
+          ok = FALSE;
+          break;
+        }
+      }
+      if(ok)
+      {
+        prop = i;
+        break;
+      }
+    }
+  }
 
   // add the new rule
   g_object_set_data(G_OBJECT(widget), "collect_id", GINT_TO_POINTER(prop));
   g_object_set_data(G_OBJECT(widget), "topbar", GINT_TO_POINTER(1));
   _event_append_rule(widget, self);
 
-  // reset the combobox
-  dt_bauhaus_combobox_set(widget, 0);
-  dt_bauhaus_combobox_clear(widget);
-  _topbar_populate_rules_combo(widget, d);
+  // refresh existing combobox content
+  _topbar_popup_refresh_filters(self);
 
   // add a new item to the popover list
-  gtk_box_pack_start(GTK_BOX(gtk_widget_get_parent(widget)),
-                     _topbar_menu_new_rule(&d->rule[d->nb_rules - 1], self), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(d->topbar_popup.filters_box), _topbar_menu_new_rule(&d->rule[d->nb_rules - 1], self),
+                     TRUE, TRUE, 0);
   gtk_widget_show_all(gtk_widget_get_parent(widget));
 }
 
@@ -1655,32 +1745,41 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
 
+  // if needed, we free the list of filters
+  if(d->topbar_popup.filters)
+  {
+    g_list_free(d->topbar_popup.filters);
+    d->topbar_popup.filters = NULL;
+  }
+
   // initialize the popover
-  GtkWidget *pop = gtk_popover_new(bt);
-  g_object_set(G_OBJECT(pop), "transitions-enabled", FALSE, NULL);
+  d->topbar_popup.pop = gtk_popover_new(bt);
+  g_object_set(G_OBJECT(d->topbar_popup.pop), "transitions-enabled", FALSE, NULL);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(pop), vbox);
+  gtk_container_add(GTK_CONTAINER(d->topbar_popup.pop), vbox);
 
   // fill the popover with all pinned rules
   GtkWidget *lb = gtk_label_new(_("shown filters"));
   dt_gui_add_class(lb, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
 
+  d->topbar_popup.filters_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), d->topbar_popup.filters_box, TRUE, TRUE, 0);
+
   for(int i = 0; i < d->nb_rules; i++)
   {
     if(d->rule[i].topbar)
     {
-      gtk_box_pack_start(GTK_BOX(vbox), _topbar_menu_new_rule(&d->rule[i], self), TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(d->topbar_popup.filters_box), _topbar_menu_new_rule(&d->rule[i], self), TRUE,
+                         TRUE, 0);
     }
   }
 
   // the "add new rule" part
-  GtkWidget *nr = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(nr, NULL, _("new filter"));
-  _topbar_populate_rules_combo(nr, d);
-  g_signal_connect(G_OBJECT(nr), "value-changed", G_CALLBACK(_topbar_rule_add), self);
-  gtk_box_pack_end(GTK_BOX(vbox), nr, TRUE, TRUE, 0);
+  GtkWidget *btn = gtk_button_new_with_label(_("append filter"));
+  g_signal_connect(G_OBJECT(btn), "clicked", G_CALLBACK(_topbar_rule_add), self);
+  gtk_box_pack_end(GTK_BOX(vbox), btn, TRUE, TRUE, 0);
 
   // show the popover
   GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
@@ -1695,9 +1794,9 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
   if(pointer_widget && bt != pointer_widget)
     gtk_widget_translate_coordinates(pointer_widget, bt, x, y, &rect.x, &rect.y);
 
-  gtk_popover_set_pointing_to(GTK_POPOVER(pop), &rect);
+  gtk_popover_set_pointing_to(GTK_POPOVER(d->topbar_popup.pop), &rect);
 
-  gtk_widget_show_all(pop);
+  gtk_widget_show_all(d->topbar_popup.pop);
 }
 
 // save a sort rule inside the conf
