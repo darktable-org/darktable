@@ -259,6 +259,9 @@ static gboolean dt_styles_create_style_header(const char *name, const char *desc
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
+  dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
+
   g_free(iop_list_txt);
   return TRUE;
 }
@@ -493,9 +496,6 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
     /* backup style to disk */
     dt_styles_save_to_file(newname, NULL, FALSE);
 
-    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
-    dt_action_register(stl, newname, _apply_style_shortcut_callback, 0, 0);
-
     dt_control_log(_("style named '%s' successfully created"), newname);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
@@ -569,9 +569,6 @@ gboolean dt_styles_create_from_image(const char *name, const char *description,
 
     /* backup style to disk */
     dt_styles_save_to_file(name, NULL, FALSE);
-
-    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
-    dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
     return TRUE;
@@ -1000,6 +997,11 @@ void dt_styles_apply_to_dev(const char *name, const int32_t imgid)
 
   /* record current history state : after change (needed for undo) */
   dt_dev_undo_end_record(darktable.develop);
+
+  // rebuild the accelerators (style might have changed order)
+  dt_iop_connect_accels_all();
+
+  dt_control_log(_("applied style `%s' on current image"), name);
 }
 
 void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
@@ -1024,7 +1026,7 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
 
     dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
                                         (gchar **)(const gchar *[]){"styles", name, NULL}, FALSE);
-    if(old) dt_action_rename(old, NULL);
+    dt_action_rename(old, NULL);
 
     if(raise)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);

@@ -1296,12 +1296,7 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
 
 static void _darkroom_ui_apply_style_activate_callback(const gchar *name)
 {
-  dt_control_log(_("applied style `%s' on current image"), name);
-
   dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
-
-  // rebuild the accelerators (style might have changed order)
-  dt_iop_connect_accels_all();
 }
 
 gboolean _styles_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyboard_mode,
