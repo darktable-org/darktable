@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_VIEWMANAGER_VIEW_CANNOT_CHANGE,
 
-  /** \bief This signal is raised when a thumb is doubleclicked in
+  /** \brief This signal is raised when a thumb is double-clicked in
     thumbtable (filemananger, filmstrip)
     1 : int the imageid of the thumbnail
     no returned value

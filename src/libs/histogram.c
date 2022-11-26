@@ -1311,12 +1311,12 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
               (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
-      gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets\nctrl+scroll to change display height"));
+      gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndouble-click resets\nctrl+scroll to change display height"));
     }
     else
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
-      gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
+      gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndouble-click resets\nctrl+scroll to change display height"));
     }
     if(prior_highlight != d->highlight)
     {
