@@ -4160,6 +4160,8 @@ void dt_action_define_preset(dt_action_t *action, const gchar *name)
 
 void dt_action_rename(dt_action_t *action, const gchar *new_name)
 {
+  if(!action) return;
+
   g_free((char*)action->id);
   g_free((char*)action->label);
 
