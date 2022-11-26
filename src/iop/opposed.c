@@ -38,22 +38,14 @@
    Again the algorithm has been developed in collaboration by @garagecoder and @Iain from gmic team and @jenshannoschwalm from dt.
 */
 
-static inline float _calc_linear_refavg(const float *in, const dt_iop_roi_t *const roi, const int color)
+static inline float _calc_linear_refavg(const float *in, const int color)
 {
-  dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f };
-  for(int dy = -1; dy < 2; dy++)
-  {
-    for(int dx = -1; dx < 2; dx++)
-    {
-      for_each_channel(c)
-        mean[c] += fmaxf(0.0f, in[roi->width * 4 * dy + 4 * dx + c]);
-    }
-  }
-  for_each_channel(c)
-    mean[c] = powf(mean[c] / 9.0f, 1.0f / HL_POWERF);
+  const dt_aligned_pixel_t ins = { powf(fmaxf(0.0f, in[0]), 1.0f / HL_POWERF),
+                                   powf(fmaxf(0.0f, in[1]), 1.0f / HL_POWERF),
+                                   powf(fmaxf(0.0f, in[2]), 1.0f / HL_POWERF), 0.0f };
+  const dt_aligned_pixel_t opp = { 0.5f*(ins[1]+ins[2]), 0.5f*(ins[0]+ins[2]), 0.5f*(ins[0]+ins[1]), 0.0f};
 
-  const dt_aligned_pixel_t croot_refavg = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
-  return powf(croot_refavg[color], HL_POWERF);
+  return powf(opp[color], HL_POWERF);
 }
 
 // A slightly modified version for sraws
@@ -137,7 +129,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
         {
           if(in[c] >= clips[c])
           {
-            tmp[c] = _calc_linear_refavg(&in[0], roi_in, c);
+            tmp[c] = _calc_linear_refavg(&in[0], c);
             mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
             anyclipped += 1;
           }
@@ -178,7 +170,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
           const float inval = fmaxf(0.0f, in[c]); 
           if((mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)]) && (inval > clipdark[c]) && (inval < clips[c]))
           {
-            cr_sum[c] += inval - _calc_linear_refavg(&in[0], roi_in, c);
+            cr_sum[c] += inval - _calc_linear_refavg(&in[0], c);
             cr_cnt[c] += 1.0f;
           }
         }
