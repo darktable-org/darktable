@@ -150,7 +150,7 @@ static void _calc_plane_candidates(const float *plane, const float *refavg, dt_i
           const int sid = _get_segment_id(seg, pos);
           if((sid == id) && (plane[pos] < clipval))
           {
-            const float wht = _calc_weight(plane, pos, seg->width, clipval);
+            const float wht = _calc_weight(plane, pos, seg->width, clipval) * ((seg->data[pos] & DT_SEG_ID_MASK) ? 1.0f : 0.75f);
             if(wht > testweight)
             {
               testweight = wht;
@@ -722,7 +722,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
           const int allid = _get_segment_id(&isegments[3], ppos);
           const gboolean allseg = ((allid > 1) && (allid < isegments[3].nr));
           if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment)         out[0] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.5f;
-          else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg) out[0] = 1.0f;
+          else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg) out[0] = (ppos == isegments[color].ref[pid]) ? 1.0f : 0.5f;
           else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)     out[0] += strength * gradient[ppos];
         }
         out++;
