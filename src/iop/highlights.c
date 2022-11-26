@@ -2188,17 +2188,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED))
     piece->process_tiling_ready = 0;
 
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
   {
     const gboolean linear = piece->pipe->dsc.filters == 0;
-    const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
     if((g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
       piece->process_cl_ready = FALSE;
   }
   // check for heavy computing here to give an iop cache hint
   const gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
-                        || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS));
+                        || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
+                        || ((d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) && fullpipe && (piece->pipe->dsc.filters == 0)));
   self->cache_next_important = heavy;
 }
 
