@@ -60,7 +60,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
-  const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 16);
+  const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 64);
 
   const size_t shift_x = roi_out->x;
   const size_t shift_y = roi_out->y;
@@ -168,7 +168,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
         for_each_channel(c)
         {
           const float inval = fmaxf(0.0f, in[c]); 
-          if((mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)]) && (inval > clipdark[c]) && (inval < clips[c]))
+          if((inval > clipdark[c]) && (inval < clips[c]) && (mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)]))
           {
             cr_sum[c] += inval - _calc_linear_refavg(&in[0], c);
             cr_cnt[c] += 1.0f;
@@ -233,7 +233,7 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
-  const size_t p_size = (size_t) dt_round_size((size_t) (pwidth + 4) * (pheight + 4), 16);
+  const size_t p_size = (size_t) dt_round_size((size_t) (pwidth + 4) * (pheight + 4), 64);
 
   int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
   float *tmpout = dt_alloc_align_float(roi_in->width * roi_in->height);
