@@ -1976,14 +1976,21 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   const gboolean clipmask = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) : FALSE;
   /*
        c) Certainly not if we show the clipped mask as that is also safe with current roi
+       d) linear raws all miss the automatic downscaler provided by the demosaicer stage, so
+          the expanding to full image data does not work as we do a downscaling very early in
+          the pixelpipe. So - no quality achieved but really bad performance.
+          FIXME For dt 4.4 we might want to implement a downscaling step for this modules in these cases.
+            For now we don't expand and keep the linear opposed simple.
+          See #12998 and #12993 for lengthy discussions
   */
-  if(fullpipe && clipmask)
+  if((fullpipe && clipmask) || piece->pipe->dsc.filters == 0)
     return;
 
   roi_in->x = 0;
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
   roi_in->height = piece->buf_in.height;
+  roi_in->scale = 1.0f;
  }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -2046,7 +2053,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else
     {
-      _process_linear_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, high_quality);
+      _process_linear_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data);
     }
     return;
   }
