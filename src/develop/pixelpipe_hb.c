@@ -1260,10 +1260,11 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         else
         {
           dt_print(DT_DEBUG_ROI | DT_DEBUG_PERF,
-            "[Clip&Zoom roi] %13s. (none) (%4i/%4i) %4ix%4i scale=%.5f --> (%4i/%4i) %4ix%4i scale=%.5f\n",
+            "[Clip&Zoom roi] %13s (none) ROI_IN (%i/%i) %ix%i scale=%.5f, ROI_OUT (%i/%i) %ix%i scale=%.5f, PIPE %ix%i\n",
             dt_dev_pixelpipe_type_to_str(pipe->type),
             roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale,
-            roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
+            roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
+            pipe->iwidth, pipe->iheight);
           roi_in.x /= roi_out->scale;
           roi_in.y /= roi_out->scale;
           roi_in.width = pipe->iwidth;
