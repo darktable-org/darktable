@@ -1520,7 +1520,7 @@ static dt_job_t *_control_gpx_apply_job_create(const gchar *filename, int32_t fi
 void dt_control_merge_hdr()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_merge_hdr_job_run, N_("merge hdr image"), 0,
+                     dt_control_generic_images_job_create(&dt_control_merge_hdr_job_run, N_("merge HDR image"), 0,
                                                           NULL, PROGRESS_CANCELLABLE, TRUE));
 }
 
