@@ -1677,6 +1677,7 @@ static void _topbar_show_pref_menu(dt_lib_module_t *self, GtkWidget *bt)
 
   // the "add new rule" part
   GtkWidget *nr = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_combobox_mute_scrolling(nr);
   dt_bauhaus_widget_set_label(nr, NULL, _("new filter"));
   _topbar_populate_rules_combo(nr, d);
   g_signal_connect(G_OBJECT(nr), "value-changed", G_CALLBACK(_topbar_rule_add), self);
