@@ -301,6 +301,12 @@ N/A
 
 ### Custom Color Matrices
 
+### Missing Compression Mode Support
+
+- Fujifilm "non-lossless"/lossy
+- Nikon HE
+- Sony lossless
+
 ### Suspended Support
 
 No samples on raw.pixls.us
