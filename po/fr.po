@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-26 18:33+0100\n"
-"PO-Revision-Date: 2022-11-26 18:35+0100\n"
+"POT-Creation-Date: 2022-11-27 16:51+0100\n"
+"PO-Revision-Date: 2022-11-27 16:52+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6468,8 +6468,8 @@ msgid "image `%s' is currently unavailable"
 msgstr "image « %s » non disponible actuellement"
 
 #: ../src/control/jobs/control_jobs.c:1523
-msgid "merge hdr image"
-msgstr "fusion hdr d'images"
+msgid "merge HDR image"
+msgstr "fusion HDR d'images"
 
 #: ../src/control/jobs/control_jobs.c:1537
 msgid "duplicate images"
@@ -9711,7 +9711,7 @@ msgstr "pas raw"
 msgid "raw"
 msgstr "raw"
 
-#: ../src/gui/presets.c:59
+#: ../src/gui/presets.c:59 ../src/libs/metadata_view.c:334
 msgid "HDR"
 msgstr "HDR"
 
@@ -10489,13 +10489,13 @@ msgstr "type d'image"
 
 #: ../src/imageio/format/webp.c:408
 msgid "image characteristics hint for the underlying encoder.\n"
-"picture : digital picture, like portrait, inner shot\n"
-"photo   : outdoor photograph, with natural lighting\n"
-"graphic : discrete tone image (graph, map-tile etc)"
+"picture: digital picture, like portrait, inner shot\n"
+"photo: outdoor photograph, with natural lighting\n"
+"graphic: discrete tone image (graph, map-tile etc)"
 msgstr "description de l'image pour l'encodeur.\n"
 "image : photographie d'intérieur, portrait\n"
 "photo : photographie d'extérieur, avec lumière naturelle\n"
-" graphique : image avec des couleurs uniformes (schéma, etc)"
+"graphique : image avec des couleurs uniformes (schéma, etc)"
 
 #: ../src/imageio/format/webp.c:413
 msgid "picture"
@@ -20246,12 +20246,8 @@ msgid "unused/deprecated"
 msgstr "non utilisé/déprécié"
 
 #: ../src/libs/metadata_view.c:332
-msgid "ldr"
-msgstr "ldr"
-
-#: ../src/libs/metadata_view.c:334
-msgid "hdr"
-msgstr "hdr"
+msgid "LDR"
+msgstr "LDR"
 
 #: ../src/libs/metadata_view.c:335
 msgid "marked for deletion"
@@ -21401,14 +21397,14 @@ msgid "tag dictionary,\n"
 "shift+click to fully expand the selected tag,\n"
 "right-click for other actions on selected tag,\n"
 "press shift+Tab to give the focus to entry,\n"
-"ctrl-scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr "dictionnaire des mots-clés,\n"
 "presser Enter ou double-clic pour attacher le mot-clé sélectionné aux images sélectionnées,\n"
 "idem pour maj+Enter mais donne le focus à la zone de saisie,\n"
-"maj-click pour développer complètement le mot-clé sélectionné,\n"
+"maj+clic pour développer complètement le mot-clé sélectionné,\n"
 "clic-droit pour les autres actions sur le mot-clé sélectionné,\n"
 "presser maj+Tab pour donner le focus à la zone de saisie,\n"
-"ctrl-molette pour redimensionner la fenêtre"
+"ctrl+molette pour redimensionner la fenêtre"
 
 #: ../src/libs/tagging.c:3247
 msgid "create a new tag with the\n"
@@ -22591,6 +22587,12 @@ msgstr "créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "actions souris"
+
+#~ msgid "ldr"
+#~ msgstr "ldr"
+
+#~ msgid "hdr"
+#~ msgstr "hdr"
 
 #, c-format
 #~ msgid "double click to reset to `%f'"
