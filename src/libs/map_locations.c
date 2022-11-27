@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -969,7 +969,7 @@ void gui_init(dt_lib_module_t *self)
                                 "\n - to remove a group of locations clear its name"
                                 "\n - press enter to validate the new name, escape to cancel the edit"
                                 "\nright-click for other actions: delete location and go to collection,"
-                                "\nctrl-wheel scroll to resize the window"));
+                                "\nctrl+scroll to resize the window"));
 
   // buttons
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
