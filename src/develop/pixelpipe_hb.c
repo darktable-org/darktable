@@ -1218,12 +1218,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_get_times(&start);
     // we're looking for the full buffer
     {
-      if(roi_out->scale == 1.0
+      if(roi_out->scale == 1.0f
          && roi_out->x == 0 && roi_out->y == 0
          && pipe->iwidth == roi_out->width
          && pipe->iheight == roi_out->height)
       {
         *output = pipe->input;
+        dt_print(DT_DEBUG_ROI | DT_DEBUG_PERF, "[full buff roi] %13s found as input data\n", dt_dev_pixelpipe_type_to_str(pipe->type));
       }
       else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, NULL, FALSE))
       {
@@ -1237,6 +1238,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           const int in_y = MAX(roi_in.y, 0);
           const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
+          dt_print(DT_DEBUG_ROI | DT_DEBUG_PERF,
+            "[Copy 1:1  roi] %13s input data %s\n",
+            dt_dev_pixelpipe_type_to_str(pipe->type),
+            (cp_width > 0) ? "copied" : "already available");
 
           if(cp_width > 0)
           {
@@ -1254,12 +1259,29 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
         else
         {
+          dt_print(DT_DEBUG_ROI | DT_DEBUG_PERF,
+            "[Clip&Zoom roi] %13s (none) ROI_IN (%i/%i) %ix%i scale=%.5f, ROI_OUT (%i/%i) %ix%i scale=%.5f, PIPE %ix%i\n",
+            dt_dev_pixelpipe_type_to_str(pipe->type),
+            roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale,
+            roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
+            pipe->iwidth, pipe->iheight);
           roi_in.x /= roi_out->scale;
           roi_in.y /= roi_out->scale;
           roi_in.width = pipe->iwidth;
           roi_in.height = pipe->iheight;
           roi_in.scale = 1.0f;
+ 
           dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
+
+          if(darktable.unmuted & (DT_DEBUG_PERF | DT_DEBUG_ROI)) // only check the clock in these cases for performance
+          {
+            dt_times_t zoomed;
+            dt_get_times(&zoomed);
+            dt_print(DT_DEBUG_ROI | DT_DEBUG_PERF,
+              "[Zooming roi]   %13s (none) took %.4f secs (%.4f CPU)\n",
+              dt_dev_pixelpipe_type_to_str(pipe->type),
+              zoomed.clock - start.clock, zoomed.user - start.user);
+          }
         }
       }
       // else found in cache.
