@@ -762,11 +762,17 @@ void dt_mipmap_cache_get_with_caller(
         // load the image:
         // make sure we access the r/w lock as shortly as possible!
         dt_image_t buffered_image;
+        gboolean gotit = FALSE;
         const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-        buffered_image = *cimg;
-        // dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-        // dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-        dt_image_cache_read_release(darktable.image_cache, cimg);
+        if(cimg)
+        {
+          buffered_image = *cimg;
+          // dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+          // dt_image_cache_write_release(darktable.image_cache, img,
+          // DT_IMAGE_CACHE_RELAXED);
+          dt_image_cache_read_release(darktable.image_cache, cimg);
+          gotit = TRUE;
+        }
 
         char filename[PATH_MAX] = { 0 };
         gboolean from_cache = TRUE;
@@ -798,13 +804,19 @@ void dt_mipmap_cache_get_with_caller(
         }
         else
         {
-          // swap back new image data:
-          dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-          *img = buffered_image;
-          // fprintf(stderr, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%p)\n",
-          // imgid, data[0], data[1], img->width, img->height, data);
-          // don't write xmp for this (we only changed db stuff):
-          dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+          if(gotit)
+          {
+            // swap back new image data:
+            dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+            if(img)
+            {
+              *img = buffered_image;
+              // fprintf(stderr, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%p)\n",
+              // imgid, data[0], data[1], img->width, img->height, data);
+              // don't write xmp for this (we only changed db stuff):
+              dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+            }
+          }
         }
       }
       else if(mip == DT_MIPMAP_F)
