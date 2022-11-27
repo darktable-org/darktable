@@ -403,7 +403,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   filename->name_tree = gtk_tree_view_new_with_model(model);
   gtk_widget_show(filename->name_tree);
   gtk_widget_set_tooltip_text(filename->name_tree, _("simple click to select filename\n"
-                                                     "ctrl-click to select multiple values"));
+                                                     "ctrl+click to select multiple values"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(filename->name_tree), FALSE);
   GtkTreeSelection *sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(filename->name_tree));
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
@@ -430,7 +430,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   filename->ext_tree = gtk_tree_view_new_with_model(model);
   gtk_widget_show(filename->ext_tree);
   gtk_widget_set_tooltip_text(filename->ext_tree, _("simple click to select extension\n"
-                                                    "ctrl-click to select multiple values"));
+                                                    "ctrl+click to select multiple values"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(filename->ext_tree), FALSE);
   sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(filename->ext_tree));
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
