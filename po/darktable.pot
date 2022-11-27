@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-26 18:33+0100\n"
+"POT-Creation-Date: 2022-11-27 16:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6627,7 +6627,7 @@ msgid "image `%s' is currently unavailable"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:1523
-msgid "merge hdr image"
+msgid "merge HDR image"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:1537
@@ -9861,7 +9861,7 @@ msgstr ""
 msgid "raw"
 msgstr ""
 
-#: ../src/gui/presets.c:59
+#: ../src/gui/presets.c:59 ../src/libs/metadata_view.c:334
 msgid "HDR"
 msgstr ""
 
@@ -10632,9 +10632,9 @@ msgstr ""
 #: ../src/imageio/format/webp.c:408
 msgid ""
 "image characteristics hint for the underlying encoder.\n"
-"picture : digital picture, like portrait, inner shot\n"
-"photo   : outdoor photograph, with natural lighting\n"
-"graphic : discrete tone image (graph, map-tile etc)"
+"picture: digital picture, like portrait, inner shot\n"
+"photo: outdoor photograph, with natural lighting\n"
+"graphic: discrete tone image (graph, map-tile etc)"
 msgstr ""
 
 #: ../src/imageio/format/webp.c:413
@@ -20205,11 +20205,7 @@ msgid "unused/deprecated"
 msgstr ""
 
 #: ../src/libs/metadata_view.c:332
-msgid "ldr"
-msgstr ""
-
-#: ../src/libs/metadata_view.c:334
-msgid "hdr"
+msgid "LDR"
 msgstr ""
 
 #: ../src/libs/metadata_view.c:335
@@ -21354,7 +21350,7 @@ msgid ""
 "shift+click to fully expand the selected tag,\n"
 "right-click for other actions on selected tag,\n"
 "press shift+Tab to give the focus to entry,\n"
-"ctrl-scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr ""
 
 #: ../src/libs/tagging.c:3247
