@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -778,7 +778,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_container_add(GTK_CONTAINER(labelev), d->label[i]);
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
     gtk_widget_set_tooltip_text(GTK_WIDGET(d->label[i]),
-              _("metadata text. ctrl-wheel scroll to resize the text box"
+              _("metadata text. ctrl+scroll to resize the text box"
               "\n ctrl-enter inserts a new line (caution, may not be compatible with standard metadata)."
               "\nif <leave unchanged> selected images have different metadata."
               "\nin that case, right-click gives the possibility to choose one of them."
