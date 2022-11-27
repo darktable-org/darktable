@@ -329,9 +329,9 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
   char *flags_tooltip = NULL;
   char *flag_descriptions[] = { N_("unused"),
                                 N_("unused/deprecated"),
-                                N_("ldr"),
+                                N_("LDR"),
                                 N_("raw"),
-                                N_("hdr"),
+                                N_("HDR"),
                                 N_("marked for deletion"),
                                 N_("auto-applying presets applied"),
                                 N_("legacy flag. set for all new images"),
