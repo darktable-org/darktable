@@ -1218,7 +1218,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_get_times(&start);
     // we're looking for the full buffer
     {
-      if(roi_out->scale == 1.0
+      if(roi_out->scale == 1.0f
          && roi_out->x == 0 && roi_out->y == 0
          && pipe->iwidth == roi_out->width
          && pipe->iheight == roi_out->height)
@@ -1260,6 +1260,16 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           roi_in.height = pipe->iheight;
           roi_in.scale = 1.0f;
           dt_iop_clip_and_zoom(*output, pipe->input, roi_out, &roi_in, roi_out->width, pipe->iwidth);
+
+          if(darktable.unmuted & (DT_DEBUG_PERF | DT_DEBUG_ROI)) // only check the clock in these cases for performance
+          {
+            dt_times_t zoomed;
+            dt_get_times(&zoomed);
+            dt_print(DT_DEBUG_ROI | DT_DEBUG_PERF,
+              "[Clip&Zoom roi] %13s. scale %.5f took %.4f secs (%.4f CPU)\n",
+              dt_dev_pixelpipe_type_to_str(pipe->type), roi_out->scale,
+              zoomed.clock - start.clock, zoomed.user - start.user);
+          }
         }
       }
       // else found in cache.
