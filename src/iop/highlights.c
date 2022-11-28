@@ -1965,27 +1965,28 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   /* When do we need to expand the roi to maximum of the full input data?
-     1. Certainly not if
-       a) any other than opposed or segmentation based algo is used.
-       b) we have another pipe than fullpipe as they all have roi correctly set
-  */
-  if(!use_opposing || !fullpipe)
+     1. Certainly not if any other than opposed or segmentation based algos is used.
+   */
+  if(!use_opposing)
     return;
 
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean clipmask = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) : FALSE;
   /*
-       c) Certainly not if we show the clipped mask as that is also safe with current roi
-       d) linear raws all miss the automatic downscaler provided by the demosaicer stage, so
-          the expanding to full image data does not work as we do a downscaling very early in
-          the pixelpipe. So - no quality achieved but really bad performance.
-          FIXME For dt 4.4 we might want to implement a downscaling step for this modules in these cases.
-            For now we don't expand and keep the linear opposed simple.
+     2. Certainly not if we show the clipped mask as that is also safe with current roi
+     3. Certainly not as linear raws all miss the automatic downscaler provided by the demosaicer stage, so
+        the expanding to full image data does not work as we do a downscaling very early in
+        the pixelpipe. So - no quality achieved but really bad performance.
+        FIXME For dt 4.4 we might want to implement a downscaling step for this modules in these cases.
+          For now we don't expand and keep the linear opposed simple.
           See #12998 and #12993 for lengthy discussions
   */
-  if((fullpipe && clipmask) || piece->pipe->dsc.filters == 0)
+  if((fullpipe && clipmask) || (piece->pipe->dsc.filters == 0))
     return;
 
+  /* We require the correct expansion with a defined scale for all pixelpipes for proper
+     aligning and scaling in the demosiacer
+  */ 
   roi_in->x = 0;
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
