@@ -175,7 +175,8 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
     for_each_channel(c)
       chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);    
 
-    if(g && piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
+         && ((int)(roi_out->width / roi_out->scale) == piece->buf_in.width))
     {
       for_each_channel(c)
         g->chroma_correction[c] = chrominance[c];
