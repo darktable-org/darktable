@@ -451,7 +451,6 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-10.15, xcode: 12.4,   deployment: 10.14 }
           - { os: macos-11,    xcode: 12.5.1, deployment: 11.3 }
           - { os: macos-11,    xcode: 13.2.1, deployment: 12.1 }
           - { os: macos-12,    xcode: 13.4,   deployment: 12.3 }
