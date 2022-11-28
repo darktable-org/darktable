@@ -673,7 +673,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 typedef struct _preview_data_t
 {
   char style_name[128];
-  uint32_t imgid;
+  int imgid;
 } _preview_data_t;
 
 static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
@@ -681,7 +681,7 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
   _preview_data_t *data = (_preview_data_t *)user_data;
   gboolean res = FALSE;
 
-  if(data->imgid != -1)
+  if(data->imgid > 0)
   {
     cairo_surface_t *surface = dt_gui_get_style_preview(data->imgid, data->style_name);
     const int psize = dt_conf_get_int("ui/style/preview_size");
@@ -753,7 +753,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 
   g_list_free_full(items, dt_style_item_free);
 
-  if(imgid >= 0)
+  if(imgid > 0)
   {
     gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
