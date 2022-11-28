@@ -694,7 +694,6 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
     res=TRUE;
   }
 
-  g_free(data);
   return res;
 }
 
@@ -767,7 +766,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
     _preview_data_t *data = g_malloc(sizeof(_preview_data_t));
     g_strlcpy(data->style_name, name, sizeof(data->style_name));
     data->imgid = imgid;
-    g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), data);
+    g_signal_connect_data(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), data, (GClosureNotify)g_free, 0);
   }
 
   return ht;
