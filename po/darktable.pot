@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-27 16:51+0100\n"
+"POT-Creation-Date: 2022-11-28 08:36+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18856,7 +18856,7 @@ msgstr ""
 #: ../src/libs/filtering.c:2258
 msgid ""
 "reset\n"
-"ctrl-click to remove pinned rules too"
+"ctrl+click to remove pinned rules too"
 msgstr ""
 
 #: ../src/libs/filters/colors.c:140
@@ -18914,14 +18914,14 @@ msgstr ""
 
 #: ../src/libs/filters/filename.c:405
 msgid ""
-"simple click to select filename\n"
-"ctrl-click to select multiple values"
+"click to select filename\n"
+"ctrl+click to select multiple values"
 msgstr ""
 
 #: ../src/libs/filters/filename.c:432
 msgid ""
-"simple click to select extension\n"
-"ctrl-click to select multiple values"
+"click to select extension\n"
+"ctrl+click to select multiple values"
 msgstr ""
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
@@ -19934,13 +19934,13 @@ msgid ""
 " - wheel scroll inside the shape to resize it\n"
 " - <shift> or <ctrl> scroll to modify the width or the height\n"
 " - click inside the shape and drag it to change its position\n"
-" - ctrl-click to move an image from inside the location\n"
-"ctrl-click to edit a location name\n"
+" - ctrl+click to move an image from inside the location\n"
+"ctrl+click to edit a location name\n"
 " - a pipe '|' symbol breaks the name into several levels\n"
 " - to remove a group of locations clear its name\n"
 " - press enter to validate the new name, escape to cancel the edit\n"
 "right-click for other actions: delete location and go to collection,\n"
-"ctrl-wheel scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr ""
 
 #: ../src/libs/map_locations.c:988
@@ -20070,7 +20070,7 @@ msgstr ""
 
 #: ../src/libs/metadata.c:781
 msgid ""
-"metadata text. ctrl-wheel scroll to resize the text box\n"
+"metadata text. ctrl+scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
 "metadata).\n"
 "if <leave unchanged> selected images have different metadata.\n"
@@ -21287,7 +21287,7 @@ msgid ""
 "press Delete or double-click to detach\n"
 "right-click for other actions on attached tag,\n"
 "press Tab to give the focus to entry,\n"
-"ctrl-wheel scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr ""
 
 #: ../src/libs/tagging.c:3109
