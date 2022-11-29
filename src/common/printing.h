@@ -23,7 +23,7 @@
 #include "common/pdf.h"
 #include "common/cups_print.h"
 #include "common/image.h"
-
+#include "common/math.h"
 
 #define MAX_IMAGE_PER_PAGE 20
 
