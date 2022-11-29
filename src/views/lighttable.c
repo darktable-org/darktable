@@ -891,7 +891,7 @@ GSList *mouse_actions(const dt_view_t *self)
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK,
                                       _("select range from last image"));
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
-                                      _("add image to selection or remove"));
+                                      _("add image to or remove it from a selection"));
 
     if(darktable.collection->params.sorts[DT_COLLECTION_SORT_CUSTOM_ORDER])
     {
