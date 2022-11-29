@@ -93,12 +93,6 @@ The chosen segmentation algorithm works like this:
 #include "iop/segmentation.h"
 #include "common/distance_transform.h"
 
-// We don't want to use the SIMD version as we might access unaligned memory
-static inline float sqrf(float a)
-{
-  return a * a;
-}
-
 static inline float _local_std_deviation(const float *p, const int w)
 {
   const int w2 = 2*w;
