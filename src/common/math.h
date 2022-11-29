@@ -77,6 +77,12 @@ static inline gboolean feqf(const float v1, const float v2, const float eps)
   return (fabsf(v1 - v2) < eps);
 }
 
+// We don't want to use the SIMD version sqf() in cases we might access unaligned memory
+static inline float sqrf(float a)
+{
+  return a * a;
+}
+
 // Kahan summation algorithm
 #ifdef _OPENMP
 #pragma omp declare simd aligned(c)
