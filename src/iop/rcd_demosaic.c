@@ -101,12 +101,6 @@ static INLINE float safe_in(float a, float scale)
   return fmaxf(0.0f, a) * scale;
 }
 
-// We don't want to use the SIMD version as we might access unaligned memory
-static INLINE float sqrf(float a)
-{
-  return a * a;
-}
-
 /** This is basically ppg adopted to only write data to RCD_MARGIN */
 static void rcd_ppg_border(float *const out, const float *const in, const int width, const int height, const uint32_t filters, const int margin)
 {

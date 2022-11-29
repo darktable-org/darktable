@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,11 +67,11 @@ static void _image_distance_transform(const float *f, float *z, float *d, int *v
   z[1] = DT_DISTANCE_TRANSFORM_MAX;
   for(int q = 1; q <= n-1; q++)
   {
-    float s = (f[q] + sqf((float)q)) - (f[v[k]] + sqf((float)v[k]));
+    float s = (f[q] + sqrf((float)q)) - (f[v[k]] + sqrf((float)v[k]));
     while(s <= z[k] * (float)(2*q - 2*v[k]))
     {
       k--;
-      s = (f[q] + sqf((float)q)) - (f[v[k]] + sqf((float)v[k]));
+      s = (f[q] + sqrf((float)q)) - (f[v[k]] + sqrf((float)v[k]));
     }
     s /= (float)(2*q - 2*v[k]);
     k++;
@@ -85,7 +85,7 @@ static void _image_distance_transform(const float *f, float *z, float *d, int *v
   {
     while(z[k+1] < (float)q)
       k++;
-    d[q] = sqf((float)(q-v[k])) + f[v[k]];
+    d[q] = sqrf((float)(q-v[k])) + f[v[k]];
   }
 }
 
