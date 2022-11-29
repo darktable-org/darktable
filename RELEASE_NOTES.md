@@ -176,6 +176,10 @@ accompanying blog post.
   to change exposure in the exposure module or the rotation in the
   rotate and perspective module. It can be configured for sliders,
   comboboxes, buttons, tabs and the focused module itself.
+  
+- Right-clicking on a module header in the quick access panel allows
+  quickly adding more widgets from the same module. The tooltip and 
+  icon show if those widgets are currently hidden in the full module.
 
 ## Bug Fixes
 
@@ -263,6 +267,10 @@ accompanying blog post.
   presets. This avoid some missed hits.
 
 - Fix fast pixelpipe support in some modules for the second window.
+  
+- In the quick access panel, widgets are hidden if they are also hidden
+  in the full module (due some combination of selected options). This
+  even works if those options are changed from another widget in the qap.
 
 ## Lua
 
