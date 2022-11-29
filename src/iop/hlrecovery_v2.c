@@ -103,11 +103,11 @@ static inline float _local_std_deviation(const float *p, const int w)
        p[w-2]   + p[w-1]   + p[w]   + p[w+1]   + p[w+2] +
        p[w2-2]  + p[w2-1]  + p[w2]  + p[w2+1]  + p[w2+2]);
   return sqrtf(0.04f *
-      (sqf(p[-w2-2]-av) + sqf(p[-w2-1]-av) + sqf(p[-w2]-av) + sqf(p[-w2+1]-av) + sqf(p[-w2+2]-av) +
-       sqf(p[-w-2]-av)  + sqf(p[-w-1]-av)  + sqf(p[-w]-av)  + sqf(p[-w+1]-av)  + sqf(p[-w+2]-av) +
-       sqf(p[-2]-av)    + sqf(p[-1]-av)    + sqf(p[0]-av)   + sqf(p[1]-av)     + sqf(p[2]-av) +
-       sqf(p[w-2]-av)   + sqf(p[w-1]-av)   + sqf(p[w]-av)   + sqf(p[w+1]-av)   + sqf(p[w+2]-av) +
-       sqf(p[w2-2]-av)  + sqf(p[w2-1]-av)  + sqf(p[w2]-av)  + sqf(p[w2+1]-av)  + sqf(p[w2+2]-av)));
+      (sqrf(p[-w2-2]-av) + sqrf(p[-w2-1]-av) + sqrf(p[-w2]-av) + sqrf(p[-w2+1]-av) + sqrf(p[-w2+2]-av) +
+       sqrf(p[-w-2]-av)  + sqrf(p[-w-1]-av)  + sqrf(p[-w]-av)  + sqrf(p[-w+1]-av)  + sqrf(p[-w+2]-av) +
+       sqrf(p[-2]-av)    + sqrf(p[-1]-av)    + sqrf(p[0]-av)   + sqrf(p[1]-av)     + sqrf(p[2]-av) +
+       sqrf(p[w-2]-av)   + sqrf(p[w-1]-av)   + sqrf(p[w]-av)   + sqrf(p[w+1]-av)   + sqrf(p[w+2]-av) +
+       sqrf(p[w2-2]-av)  + sqrf(p[w2-1]-av)  + sqrf(p[w2]-av)  + sqrf(p[w2+1]-av)  + sqrf(p[w2+2]-av)));
 }
 
 static float _calc_weight(const float *s, const size_t loc, const int w, const float clipval)
@@ -236,7 +236,7 @@ static void _initial_gradients(const size_t w, const size_t height, float *lumin
         const float gy = 47.0f * (luminance[v-w-1] - luminance[v+w-1])
                       + 162.0f * (luminance[v-w]   - luminance[v+w])
                        + 47.0f * (luminance[v-w+1] - luminance[v+w+1]);
-        g = 4.0f * sqrtf(sqf(gx / 256.0f) + sqf(gy / 256.0f));
+        g = 4.0f * sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
       }
       gradient[v] = g;
     }
@@ -439,7 +439,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
   const int recovery_closing[NUM_RECOVERY_MODES] = { 0, 0, 0, 2, 2, 0, 2};
   const int seg_border = recovery_closing[recovery_mode];
-  const int segmentation_limit = (piece->pipe->iwidth * piece->pipe->iheight) * sqf(piece->pipe->iscale) / 4000; // 250 segments per mpix
+  const int segmentation_limit = (piece->pipe->iwidth * piece->pipe->iheight) * sqrf(piece->pipe->iscale) / 4000; // 250 segments per mpix
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
