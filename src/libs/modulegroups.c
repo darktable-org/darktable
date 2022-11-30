@@ -376,11 +376,11 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
     }
   }
   // cleanup item
-  if(item->box) gtk_widget_destroy(item->box);
-  if(item->temp_widget) gtk_widget_destroy(item->temp_widget);
-  item->box = NULL;
-  item->temp_widget = NULL;
   item->widget = NULL;
+  if(item->box) gtk_widget_destroy(item->box);
+  item->box = NULL;
+  if(item->temp_widget) gtk_widget_destroy(item->temp_widget);
+  item->temp_widget = NULL;
   item->old_parent = NULL;
   item->module = NULL;
   if(item->tooltip)
@@ -604,6 +604,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     g_signal_connect(item->temp_widget, "show", G_CALLBACK(_sync_visibility), item);
     g_signal_connect(item->temp_widget, "hide", G_CALLBACK(_sync_visibility), item);
     g_signal_connect(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(gtk_widget_destroyed), &item->temp_widget);
+    g_signal_connect_swapped(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(_basics_remove_widget), item);
 
     _sync_visibility(item->widget, item);
   }
