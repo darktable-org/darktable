@@ -335,7 +335,7 @@ static void _basics_free_item(dt_lib_modulegroups_basic_item_t *item)
 
 static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
 {
-  if(item->widget && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
+  if(item->widget && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN && item->temp_widget)
   {
     g_signal_handlers_disconnect_by_data(item->widget, item);
     g_signal_handlers_disconnect_by_data(item->old_parent, item);
@@ -603,6 +603,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     gtk_widget_add_events(item->temp_widget, GDK_VISIBILITY_NOTIFY_MASK);
     g_signal_connect(item->temp_widget, "show", G_CALLBACK(_sync_visibility), item);
     g_signal_connect(item->temp_widget, "hide", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(gtk_widget_destroyed), &item->temp_widget);
 
     _sync_visibility(item->widget, item);
   }
