@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-28 08:36+0100\n"
+"POT-Creation-Date: 2022-11-30 11:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3656,32 +3656,32 @@ msgid "inpaint a flat color"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:284
-#: ../src/iop/highlights.c:2368 ../src/iop/highlights.c:2374
+#: ../src/iop/highlights.c:2387 ../src/iop/highlights.c:2393
 msgid "clip highlights"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:285
-#: ../src/iop/highlights.c:2372
+#: ../src/iop/highlights.c:2391
 msgid "reconstruct in LCh"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:2321 ../src/iop/highlights.c:2384
+#: ../src/iop/highlights.c:2340 ../src/iop/highlights.c:2403
 msgid "reconstruct color"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:2379
+#: ../src/iop/highlights.c:2398
 msgid "guided laplacians"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:2376
+#: ../src/iop/highlights.c:2395
 msgid "segmentation based"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:2364
+#: ../src/iop/highlights.c:2383
 msgid "inpaint opposed"
 msgstr ""
 
@@ -4776,7 +4776,7 @@ msgid "capture date"
 msgstr ""
 
 #: ../src/common/collection.c:680 ../src/libs/collect.c:3309
-#: ../src/libs/filtering.c:2187 ../src/libs/filtering.c:2207
+#: ../src/libs/filtering.c:2196 ../src/libs/filtering.c:2216
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr ""
@@ -8615,7 +8615,7 @@ msgid "first"
 msgstr ""
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1913
+#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
 #: ../src/libs/filters/rating_range.c:266 ../src/libs/tagging.c:3117
 #: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
 #: ../src/views/darkroom.c:2553
@@ -13749,11 +13749,11 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr ""
 
 #: ../src/iop/colorreconstruction.c:1265 ../src/iop/demosaic.c:5472
-#: ../src/iop/highlights.c:2527
+#: ../src/iop/highlights.c:2546
 msgid "not applicable"
 msgstr ""
 
-#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2528
+#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2547
 msgid "no highlights reconstruction for monochrome images"
 msgstr ""
 
@@ -15372,17 +15372,17 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr ""
 
-#: ../src/iop/highlights.c:2261
+#: ../src/iop/highlights.c:2280
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
 msgstr ""
 
-#: ../src/iop/highlights.c:2460
+#: ../src/iop/highlights.c:2479
 msgid "highlight reconstruction method"
 msgstr ""
 
-#: ../src/iop/highlights.c:2465
+#: ../src/iop/highlights.c:2484
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -15392,13 +15392,13 @@ msgid ""
 "especially if camera white point is incorrect."
 msgstr ""
 
-#: ../src/iop/highlights.c:2476
+#: ../src/iop/highlights.c:2495
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
 msgstr ""
 
-#: ../src/iop/highlights.c:2484
+#: ../src/iop/highlights.c:2503
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -15406,7 +15406,7 @@ msgid ""
 "the mask button shows segments that are considered to have a good candidate."
 msgstr ""
 
-#: ../src/iop/highlights.c:2495
+#: ../src/iop/highlights.c:2514
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -15418,32 +15418,32 @@ msgid ""
 "highlights rebuilt and avoid gradients."
 msgstr ""
 
-#: ../src/iop/highlights.c:2501
+#: ../src/iop/highlights.c:2520
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
 "data."
 msgstr ""
 
-#: ../src/iop/highlights.c:2511
+#: ../src/iop/highlights.c:2530
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 msgstr ""
 
-#: ../src/iop/highlights.c:2515
+#: ../src/iop/highlights.c:2534
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 msgstr ""
 
-#: ../src/iop/highlights.c:2520
+#: ../src/iop/highlights.c:2539
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
 msgstr ""
 
-#: ../src/iop/highlights.c:2524
+#: ../src/iop/highlights.c:2543
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -16576,7 +16576,7 @@ msgid ""
 "only works for the sensors that need it."
 msgstr ""
 
-#: ../src/iop/rcd_demosaic.c:310
+#: ../src/iop/rcd_demosaic.c:304
 msgid "[rcd_demosaic] too small area"
 msgstr ""
 
@@ -18171,7 +18171,7 @@ msgstr ""
 msgid "BUT NOT"
 msgstr ""
 
-#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2188
+#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2197
 msgid "revert to a previous set of rules"
 msgstr ""
 
@@ -18790,70 +18790,74 @@ msgstr ""
 msgid " (off)"
 msgstr ""
 
+#: ../src/libs/filtering.c:1641
+msgid "you can't add more rules."
+msgstr ""
+
 #. fill the popover with all pinned rules
-#: ../src/libs/filtering.c:1666
+#: ../src/libs/filtering.c:1674
 msgid "shown filters"
 msgstr ""
 
-#: ../src/libs/filtering.c:1680
+#: ../src/libs/filtering.c:1689
 msgid "new filter"
 msgstr ""
 
-#: ../src/libs/filtering.c:1855
+#: ../src/libs/filtering.c:1864
 msgid "sort order"
 msgstr ""
 
-#: ../src/libs/filtering.c:1857
+#: ../src/libs/filtering.c:1866
 msgid "determine the sort order of shown images"
 msgstr ""
 
-#: ../src/libs/filtering.c:1914
+#: ../src/libs/filtering.c:1923
 msgid "sort direction"
 msgstr ""
 
-#: ../src/libs/filtering.c:1920
+#: ../src/libs/filtering.c:1929
 msgid "remove this sort order"
 msgstr ""
 
-#: ../src/libs/filtering.c:2004
+#: ../src/libs/filtering.c:2013
 #, c-format
 msgid "you can't have more than %d sort orders"
 msgstr ""
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "DESC"
 msgstr ""
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "ASC"
 msgstr ""
 
-#: ../src/libs/filtering.c:2184
+#: ../src/libs/filtering.c:2193
 msgid "new rule"
 msgstr ""
 
-#: ../src/libs/filtering.c:2185
+#: ../src/libs/filtering.c:2194
 msgid "append new rule to collect images"
 msgstr ""
 
-#: ../src/libs/filtering.c:2196 ../src/libs/tools/filter.c:117
+#: ../src/libs/filtering.c:2205 ../src/libs/tools/filter.c:117
 msgid "sort by"
 msgstr ""
 
-#: ../src/libs/filtering.c:2204
+#: ../src/libs/filtering.c:2213
 msgid "new sort"
 msgstr ""
 
-#: ../src/libs/filtering.c:2205
+#: ../src/libs/filtering.c:2214
 msgid "append new sort to order images"
 msgstr ""
 
-#: ../src/libs/filtering.c:2208
+#: ../src/libs/filtering.c:2217
 msgid "revert to a previous set of sort orders"
 msgstr ""
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2258
+#: ../src/libs/filtering.c:2267
 msgid ""
 "reset\n"
 "ctrl+click to remove pinned rules too"
@@ -22315,7 +22319,7 @@ msgid "select range from last image"
 msgstr ""
 
 #: ../src/views/lighttable.c:894
-msgid "add image to selection or remove"
+msgid "add image to or remove it from a selection"
 msgstr ""
 
 #: ../src/views/lighttable.c:898
