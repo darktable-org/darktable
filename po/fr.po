@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-28 08:36+0100\n"
-"PO-Revision-Date: 2022-11-28 08:41+0100\n"
+"POT-Creation-Date: 2022-11-30 11:59+0100\n"
+"PO-Revision-Date: 2022-11-30 12:01+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3513,32 +3513,32 @@ msgid "inpaint a flat color"
 msgstr "reconstruit une couleur uniforme"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:284
-#: ../src/iop/highlights.c:2368 ../src/iop/highlights.c:2374
+#: ../src/iop/highlights.c:2387 ../src/iop/highlights.c:2393
 msgid "clip highlights"
 msgstr "tronquer les hautes lumières"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:285
-#: ../src/iop/highlights.c:2372
+#: ../src/iop/highlights.c:2391
 msgid "reconstruct in LCh"
 msgstr "reconstruire dans LCh"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:2321 ../src/iop/highlights.c:2384
+#: ../src/iop/highlights.c:2340 ../src/iop/highlights.c:2403
 msgid "reconstruct color"
 msgstr "reconstruire les couleurs"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:2379
+#: ../src/iop/highlights.c:2398
 msgid "guided laplacians"
 msgstr "laplaciens guidés"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:2376
+#: ../src/iop/highlights.c:2395
 msgid "segmentation based"
 msgstr "par segmentation"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:2364
+#: ../src/iop/highlights.c:2383
 msgid "inpaint opposed"
 msgstr "peinture opposée"
 
@@ -4621,7 +4621,7 @@ msgid "capture date"
 msgstr "date de capture"
 
 #: ../src/common/collection.c:680 ../src/libs/collect.c:3309
-#: ../src/libs/filtering.c:2187 ../src/libs/filtering.c:2207
+#: ../src/libs/filtering.c:2196 ../src/libs/filtering.c:2216
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "historique"
@@ -8464,7 +8464,7 @@ msgid "first"
 msgstr "premier"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1913
+#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
 #: ../src/libs/filters/rating_range.c:266 ../src/libs/tagging.c:3117
 #: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
 #: ../src/views/darkroom.c:2553
@@ -13635,11 +13635,11 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "la teinte à laquelle on donne priorité sur les autres teintes"
 
 #: ../src/iop/colorreconstruction.c:1265 ../src/iop/demosaic.c:5472
-#: ../src/iop/highlights.c:2527
+#: ../src/iop/highlights.c:2546
 msgid "not applicable"
 msgstr "non applicable"
 
-#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2528
+#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2547
 msgid "no highlights reconstruction for monochrome images"
 msgstr "pas de reconstruction des hautes lumières pour les images monochromes"
 
@@ -15352,15 +15352,15 @@ msgstr "éviter les hautes lumières magenta et essayer de recouvrer les couleur
 msgid "reconstruction, raw"
 msgstr "reconstruire, raw"
 
-#: ../src/iop/highlights.c:2261
+#: ../src/iop/highlights.c:2280
 msgid "highlights: mode not available for this type of image. falling back to inpaint opposed."
 msgstr "reconstruction hautes lumières: modes non disponibles pour ce type d'image. repli sur « peinture opposée »"
 
-#: ../src/iop/highlights.c:2460
+#: ../src/iop/highlights.c:2479
 msgid "highlight reconstruction method"
 msgstr "méthode de reconstruction des hautes lumières"
 
-#: ../src/iop/highlights.c:2465
+#: ../src/iop/highlights.c:2484
 msgid "manually adjust the clipping threshold mostly used against magenta highlights\n"
 "the mask icon shows the clipped areas.\n"
 "you might use this for tuning 'laplacian', 'inpaint opposed' or 'segmentation' modes,\n"
@@ -15370,13 +15370,13 @@ msgstr "ajuste le seuil de troncature pour éviter les hautes lumières magenta\
 "vous pouvez l'utiliser pour régler les modes  « laplacien »,  « peinture opposée »,  « segmentation »,\n"
 "surtout si le point blanc de la caméra est incorrect."
 
-#: ../src/iop/highlights.c:2476
+#: ../src/iop/highlights.c:2495
 msgid "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
 msgstr "combiner des segments écrêtés proches par des opérations morphologiques.\n"
 "le bouton masque montre les positions exactes des bords des segments résultants."
 
-#: ../src/iop/highlights.c:2484
+#: ../src/iop/highlights.c:2503
 msgid "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for opposed means inpainting.\n"
 "the mask button shows segments that are considered to have a good candidate."
@@ -15384,7 +15384,7 @@ msgstr "sélectionner après l'analyse de la segmentation.\n"
 "augmenter pour favoriser les candidats trouvés dans l'analyse de segmentation, diminuer pour la signification opposée « inpainting ».\n"
 "le bouton masque montre les segments qui sont considérés comme bon candidats."
 
-#: ../src/iop/highlights.c:2495
+#: ../src/iop/highlights.c:2514
 msgid "approximate lost data in regions with all photosites clipped, the effect depends on segment size and border gradients.\n"
 "choose a mode tuned for segment size or the generic mode that tries to find best settings for every segment.\n"
 "small means areas with a diameter less than 25 pixels, large is best for greater than 100.\n"
@@ -15394,31 +15394,31 @@ msgstr "reconstruit les données perdues dans les régions ou tous les canaux so
 "petit veut dire une zone d'un diamètre de moins de 25 pixels, grand est adapté au grandeur supérieur à 100.\n"
 "les modes uniformes ignorent les structures non tronquées proches (comme les lignes électriques) pour garder les hautes-lumières reconstruites et éviter les gradients."
 
-#: ../src/iop/highlights.c:2501
+#: ../src/iop/highlights.c:2520
 msgid "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed data."
 msgstr "défini la force de reconstruction dans les régions avec tous les photosites tronqués.\n"
 "le bouton masque montre l'effet qui est ajouté au données déjà reconstruites."
 
-#: ../src/iop/highlights.c:2511
+#: ../src/iop/highlights.c:2530
 msgid "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 msgstr "ajoute du bruit pour fusionner visuellement les zones reconstruites\n"
 "dans le reste de l'image bruitées. Utile pour les hauts ISO."
 
-#: ../src/iop/highlights.c:2515
+#: ../src/iop/highlights.c:2534
 msgid "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 msgstr "augmenter si le magenta des hautes lumières n'est pas complètement corrigé\n"
 "chaque nouvelle itération ajoute une pénalité de temps."
 
-#: ../src/iop/highlights.c:2520
+#: ../src/iop/highlights.c:2539
 msgid "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
 msgstr "augmenter si le magenta des hautes lumières n'est pas complètement corrigé.\n"
 "cela peut produire des délimitations tranchées entre les régions valides et tronquées."
 
-#: ../src/iop/highlights.c:2524
+#: ../src/iop/highlights.c:2543
 msgid "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
 msgstr "augmenter pour corriger les larges zones tronquées.\n"
@@ -16559,7 +16559,7 @@ msgid "raw black/white point correction\n"
 msgstr "correction du point noir/blanc des raw\n"
 "seulement pour les capteurs le nécessitant."
 
-#: ../src/iop/rcd_demosaic.c:310
+#: ../src/iop/rcd_demosaic.c:304
 msgid "[rcd_demosaic] too small area"
 msgstr "[dématriçage rcd] zone trop petite"
 
@@ -18172,7 +18172,7 @@ msgstr "OU"
 msgid "BUT NOT"
 msgstr "SAUF"
 
-#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2188
+#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2197
 msgid "revert to a previous set of rules"
 msgstr "bascule vers une règle précédente"
 
@@ -18786,70 +18786,74 @@ msgstr "défini comment cette règle interagie avec la précédente"
 msgid " (off)"
 msgstr "(désactivé)"
 
+#: ../src/libs/filtering.c:1641
+msgid "you can't add more rules."
+msgstr "vous ne pouvez pas créer plus de règle"
+
 #. fill the popover with all pinned rules
-#: ../src/libs/filtering.c:1666
+#: ../src/libs/filtering.c:1674
 msgid "shown filters"
 msgstr "filtres affichés"
 
-#: ../src/libs/filtering.c:1680
+#: ../src/libs/filtering.c:1689
 msgid "new filter"
 msgstr "nouveau filtre"
 
-#: ../src/libs/filtering.c:1855
+#: ../src/libs/filtering.c:1864
 msgid "sort order"
 msgstr "ordre de tri"
 
-#: ../src/libs/filtering.c:1857
+#: ../src/libs/filtering.c:1866
 msgid "determine the sort order of shown images"
 msgstr "spécifie l'ordre de tri des images affichées"
 
-#: ../src/libs/filtering.c:1914
+#: ../src/libs/filtering.c:1923
 msgid "sort direction"
 msgstr "direction du tri"
 
-#: ../src/libs/filtering.c:1920
+#: ../src/libs/filtering.c:1929
 msgid "remove this sort order"
 msgstr "supprimer ce tri"
 
-#: ../src/libs/filtering.c:2004
+#: ../src/libs/filtering.c:2013
 #, c-format
 msgid "you can't have more than %d sort orders"
 msgstr "vous ne pouvez pas créer plus de %d ordres de tri"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "DESC"
 msgstr "DES"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "ASC"
 msgstr "ASC"
 
-#: ../src/libs/filtering.c:2184
+#: ../src/libs/filtering.c:2193
 msgid "new rule"
 msgstr "nouvelle règle"
 
-#: ../src/libs/filtering.c:2185
+#: ../src/libs/filtering.c:2194
 msgid "append new rule to collect images"
 msgstr "appliquer une nouvelle règle pour collecter des images"
 
-#: ../src/libs/filtering.c:2196 ../src/libs/tools/filter.c:117
+#: ../src/libs/filtering.c:2205 ../src/libs/tools/filter.c:117
 msgid "sort by"
 msgstr "trier par"
 
-#: ../src/libs/filtering.c:2204
+#: ../src/libs/filtering.c:2213
 msgid "new sort"
 msgstr "nouveau tri"
 
-#: ../src/libs/filtering.c:2205
+#: ../src/libs/filtering.c:2214
 msgid "append new sort to order images"
 msgstr "ajouter un nouveau tri pour ordonner les images"
 
-#: ../src/libs/filtering.c:2208
+#: ../src/libs/filtering.c:2217
 msgid "revert to a previous set of sort orders"
 msgstr "bascule vers un tri précédent"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2258
+#: ../src/libs/filtering.c:2267
 msgid "reset\n"
 "ctrl+click to remove pinned rules too"
 msgstr "réinitialiser\n"
@@ -22381,8 +22385,8 @@ msgid "select range from last image"
 msgstr "sélectionne une étendue depuis la dernière image"
 
 #: ../src/views/lighttable.c:894
-msgid "add image to selection or remove"
-msgstr "ajouter des images à la sélection ou supprimer"
+msgid "add image to or remove it from a selection"
+msgstr "ajouter ou supprimer des images à/de la sélection"
 
 #: ../src/views/lighttable.c:898
 msgid "change image order"
@@ -22588,6 +22592,9 @@ msgstr "créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "actions souris"
+
+#~ msgid "add image to selection or remove"
+#~ msgstr "ajouter des images à la sélection ou supprimer"
 
 #~ msgid "ldr"
 #~ msgstr "ldr"
