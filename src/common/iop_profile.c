@@ -67,6 +67,28 @@ static void _clear_lut_curves(dt_iop_order_iccprofile_info_t *const profile_info
   }
 }
 
+static char *_colorspace_to_name(dt_iop_colorspace_type_t type)
+{
+  switch(type)
+  {
+    case IOP_CS_NONE:
+      return "IOP_CS_NONE";
+    case IOP_CS_RAW:
+      return "IOP_CS_RAW";
+    case IOP_CS_LAB:
+      return "IOP_CS_LAB";
+    case IOP_CS_RGB:
+      return "IOP_CS_RGB";
+    case IOP_CS_LCH:
+      return "IOP_CS_LCH";
+    case IOP_CS_HSL:
+      return "IOP_CS_HSL";
+    case IOP_CS_JZCZHZ:
+      return "IOP_CS_JZCZHZ";
+  }
+  return "invalid IOP_CS";
+}
+
 static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float *const image_out, const int width,
                                              const int height, const dt_colorspaces_color_profile_type_t type,
                                              const char *filename, const int intent, const int direction)
@@ -282,7 +304,7 @@ static void _transform_lcms2(struct dt_iop_module_t *self, const float *const im
   else
   {
     *converted_cst = cst_from;
-    fprintf(stderr, "[_transform_lcms2] invalid conversion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[_transform_lcms2] invalid conversion from %s to %s\n", _colorspace_to_name(cst_from), _colorspace_to_name(cst_to));
   }
 }
 
@@ -591,7 +613,7 @@ static inline void _transform_matrix(struct dt_iop_module_t *self,
   else
   {
     *converted_cst = cst_from;
-    fprintf(stderr, "[_transform_matrix] invalid conversion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[_transform_matrix] invalid conversion from %s to %s\n", _colorspace_to_name(cst_from), _colorspace_to_name(cst_to));
   }
 }
 
@@ -1085,7 +1107,7 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
     {
       dt_get_times(&end_time);
       fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f CPU) [%s %s]\n",
-          (cst_from == IOP_CS_RGB) ? "RGB": "Lab", (cst_to == IOP_CS_RGB) ? "RGB": "Lab",
+          _colorspace_to_name(cst_from), _colorspace_to_name(cst_to),
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
@@ -1097,13 +1119,15 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
     {
       dt_get_times(&end_time);
       fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f lcms2) [%s %s]\n",
-          (cst_from == IOP_CS_RGB) ? "RGB": "Lab", (cst_to == IOP_CS_RGB) ? "RGB": "Lab",
+          _colorspace_to_name(cst_from), _colorspace_to_name(cst_to),
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
 
   if(*converted_cst == cst_from)
-    fprintf(stderr, "[dt_ioppr_transform_image_colorspace] invalid conversion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[dt_ioppr_transform_image_colorspace] in `%s', profile `%s', invalid conversion from %s to %s\n",
+      self->so->op, dt_colorspaces_get_name(profile_info->type, profile_info->filename),
+      _colorspace_to_name(cst_from), _colorspace_to_name(cst_to));
 }
 
 
@@ -1348,7 +1372,9 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
     {
       err = CL_INVALID_KERNEL;
       *converted_cst = cst_from;
-      fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] invalid conversion from %i to %i\n", cst_from, cst_to);
+      fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] in `%s', profile `%s', invalid conversion from %s to %s\n",
+        self->so->op, dt_colorspaces_get_name(profile_info->type, profile_info->filename),
+        _colorspace_to_name(cst_from), _colorspace_to_name(cst_to));
       goto cleanup;
     }
 
@@ -1407,7 +1433,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
     {
       dt_get_times(&end_time);
       fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f GPU) [%s %s]\n",
-          (cst_from == IOP_CS_RGB) ? "RGB": "Lab", (cst_to == IOP_CS_RGB) ? "RGB": "Lab",
+          _colorspace_to_name(cst_from), _colorspace_to_name(cst_to),
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
