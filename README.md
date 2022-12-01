@@ -60,6 +60,8 @@ Requirements
 * Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c), or later
 * macOS
 
+*Big-endian platforms are not supported.*
+
 *32-bit platforms are not officially supported - they might or might not work.*
 
 *Windows support is still young and suffers from bugs that do not affect Linux. If possible,
