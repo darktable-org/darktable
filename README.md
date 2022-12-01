@@ -55,12 +55,12 @@ Requirements
 
 ### Supported platforms
 
-* Linux (64 bit)
-* FreeBSD (64 bit)
-* Windows (64 bit), 8.1 and later
+* Linux (64-bit)
+* FreeBSD (64-bit)
+* Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c), or later
 * macOS
 
-*32 bit platforms are not officially supported - they might or might not work.*
+*32-bit platforms are not officially supported - they might or might not work.*
 
 *Windows support is still young and suffers from bugs that do not affect Linux. If possible,
 prefer using darktable on Linux.*
@@ -91,7 +91,7 @@ you can build the software yourself following the instructions [below](#building
 
 * [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.0.1/darktable-4.0.1-win64.exe)
 * [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.0.1/darktable-4.0.1.1_x86_64.dmg)
-* [Download executable for macOS on Apple Silicon (M1)](https://github.com/darktable-org/darktable/releases/download/release-4.0.1/darktable-4.0.1.1_arm64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.0.1/darktable-4.0.1.1_arm64.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -170,7 +170,7 @@ Optional dependencies (minimum version):
 * OpenCL 1.2 *(for GPU-accelerated computing)*
 * Lua 5.4 *(for plugins and extension scripting)*
 * libgphoto2 2.5 *(for camera tethering)*
-* Imath 3.1.0 *(for 16-bit half float TIFF export and faster import)*
+* Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
 * libavif 0.8.2 *(for AVIF import & export)*
 * libheif 1.9.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
