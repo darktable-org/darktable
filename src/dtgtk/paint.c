@@ -1721,28 +1721,24 @@ void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_push_group(cr);
-
-  // we create the path
+  // we create background star
   dt_draw_star(cr, 1 / 2., 1. / 2., 1. / 2., 1. / 5.);
 
-  // we create the cross line
-  cairo_move_to(cr, 0.05, 0.95);
-  cairo_line_to(cr, 0.85, 0.0);
-  cairo_stroke(cr);
+  double r, g, b, a;
+  if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) == CAIRO_STATUS_SUCCESS)
+  {
+    cairo_set_source_rgba(cr, r, g, b, a*.3);
+    cairo_stroke(cr);
+    cairo_set_line_width(cr, 1.6 * cairo_get_line_width(cr));
+    if((flags & CPF_PRELIGHT) || (flags & CPF_ACTIVE))
+      cairo_set_source_rgba(cr, r, g, b, a);
+    else
+      cairo_set_source_rgba(cr, r, g, b, a*.7);
 
-  // then erase some parts around cross line
-  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-  cairo_set_line_width(cr, cairo_get_line_width(cr) * 0.7);
-  cairo_move_to(cr, 0.0, 0.88);
-  cairo_line_to(cr, 0.78, 0.0);
-  cairo_move_to(cr, 0.10, 1.0);
-  cairo_line_to(cr, 0.92, 0.0);
-  cairo_set_source_rgba(cr, 0, 1.0, 0, 1.0);
-  cairo_stroke(cr);
-
-  cairo_pop_group_to_source(cr);
-  cairo_paint(cr);
+    cairo_move_to(cr, .9, .1);
+    cairo_line_to(cr, .1, .9);
+    cairo_stroke(cr);
+  }
 
   FINISH
 }

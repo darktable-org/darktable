@@ -1742,7 +1742,8 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_changed),
                                   range);
-
+  gtk_widget_set_name((GtkWidget *)range, "dt-range");
+  
   return (GtkWidget *)range;
 }
 
