@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-26 18:33+0100\n"
-"PO-Revision-Date: 2022-11-27 00:02+0100\n"
+"POT-Creation-Date: 2022-11-30 11:59+0100\n"
+"PO-Revision-Date: 2022-12-02 09:43+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Bookmarks: 3066,376,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:7871
@@ -961,8 +961,7 @@ msgstr "nur ein Leuchttisch-Modul wird eingeblendet"
 #: ../build/bin/preferences_gen.h:4004
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
-"Diese Option schaltet das Verhalten von Umschalt+Klick in der Leuchttisch-"
-"Ansicht um"
+"Diese Option schaltet das Verhalten von Shift+Klick in der Leuchttisch-Ansicht um"
 
 #: ../build/bin/preferences_gen.h:4026
 msgid "scroll utility modules to the top when expanded"
@@ -1249,8 +1248,8 @@ msgstr "nur ein Dunkelkammer-Modul wird eingeblendet"
 #: ../build/bin/preferences_gen.h:5227
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
-"Diese Option schaltet das Verhalten von Umschalt+Klick in der Dunkelkammer-"
-"Ansicht um"
+"Diese Option schaltet das Verhalten von Shift+Klick in der Dunkelkammer-Ansicht "
+"um"
 
 #: ../build/bin/preferences_gen.h:5249
 msgid "only collapse modules in current group"
@@ -1445,8 +1444,8 @@ msgid ""
 "one if there is one available (needs a restart).\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
-"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
-"\" should be set to \"none\""
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
+"defaults\" should be set to \"none\""
 msgstr ""
 "Falls vorhanden standardmäßig die kamera-spezifische Basiskurve statt der "
 "generischen Basiskurve des Kameraherstellers verwenden. \n"
@@ -3964,32 +3963,32 @@ msgid "inpaint a flat color"
 msgstr "einfarbig ausfüllen"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:284
-#: ../src/iop/highlights.c:2368 ../src/iop/highlights.c:2374
+#: ../src/iop/highlights.c:2387 ../src/iop/highlights.c:2393
 msgid "clip highlights"
 msgstr "Spitzlichter abschneiden"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:285
-#: ../src/iop/highlights.c:2372
+#: ../src/iop/highlights.c:2391
 msgid "reconstruct in LCh"
 msgstr "in LCh rekonstruieren"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:2321 ../src/iop/highlights.c:2384
+#: ../src/iop/highlights.c:2340 ../src/iop/highlights.c:2403
 msgid "reconstruct color"
 msgstr "Farbe rekonstruieren"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:2379
+#: ../src/iop/highlights.c:2398
 msgid "guided laplacians"
 msgstr "Geführter Laplacian-Modus"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:2376
+#: ../src/iop/highlights.c:2395
 msgid "segmentation based"
 msgstr "Segmentierungsbasiert"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:2364
+#: ../src/iop/highlights.c:2383
 msgid "inpaint opposed"
 msgstr "Inpaint Opposed"
 
@@ -5120,7 +5119,7 @@ msgid "capture date"
 msgstr "Aufnahmedatum"
 
 #: ../src/common/collection.c:680 ../src/libs/collect.c:3309
-#: ../src/libs/filtering.c:2187 ../src/libs/filtering.c:2207
+#: ../src/libs/filtering.c:2196 ../src/libs/filtering.c:2216
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "Verlauf"
@@ -7098,7 +7097,7 @@ msgid "image `%s' is currently unavailable"
 msgstr "Bild „%s” ist momentan nicht verfügbar"
 
 #: ../src/control/jobs/control_jobs.c:1523
-msgid "merge hdr image"
+msgid "merge HDR image"
 msgstr "HDR-Bild zusammenfassen"
 
 #: ../src/control/jobs/control_jobs.c:1537
@@ -8176,7 +8175,7 @@ msgid ""
 msgstr ""
 "Maske und/oder Farbkanal anzeigen. \n"
 "Strg+Klick, um die Maske zu zeigen, \n"
-"Umschalt+Klick für Kanalanzeige. \n"
+"Shift+Klick für Kanalanzeige. \n"
 "Mit der Maus über die Kanalregler fahren, um den anzuzeigenden Kanal "
 "auszuwählen."
 
@@ -8428,7 +8427,7 @@ msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Größe</b>: scroll, <b>Härte</b>: Umschalt+scrollen\n"
+"<b>Größe</b>: scroll, <b>Härte</b>: Shift+scrollen\n"
 "<b>Deckkraft</b>: Strg+scrollen (%d%%)"
 
 #: ../src/develop/masks/brush.c:2865
@@ -8465,7 +8464,7 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Größe</b>: scrollen, <b>Ausblendegröße</b>: Umschalt+scrollen\n"
+"<b>Größe</b>: scrollen, <b>Ausblendegröße</b>: Shift+scrollen\n"
 "<b>Deckkraft</b>: Strg+scrollen (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:434 ../src/develop/masks/ellipse.c:507
@@ -8504,8 +8503,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Größe</b>: scrollen, <b>Ausblendegröße</b>: Umschalt+scrollen\n"
-"<b>Drehen</b>: Strg+Umschalt+scrollen, <b>Deckkraft</b>: Strg+scrollen (%d%%)"
+"<b>Größe</b>: scrollen, <b>Ausblendegröße</b>: Shift+scrollen\n"
+"<b>Drehen</b>: Strg+Shift+scrollen, <b>Deckkraft</b>: Strg+scrollen (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:1972
 msgid "<b>rotate</b>: ctrl+drag"
@@ -8515,12 +8514,12 @@ msgstr "<b>drehen</b>: Strg+ziehen"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
-"+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
+"ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Ausblendemodus</b>: Umschalt+Klick, <b>drehen</b>: Strg+ziehen\n"
-"<b>Größe</b>: scrollen, <b>Ausblendegöße</b>: Umschalt+scrollen, "
-"<b>Deckkraft</b>: Strg+scrollen (%d%%)"
+"<b>Ausblendemodus</b>: Shift+Klick, <b>drehen</b>: Strg+ziehen\n"
+"<b>Größe</b>: scrollen, <b>Ausblendegöße</b>: Shift+scrollen, <b>Deckkraft</b>: "
+"Strg+scrollen (%d%%)"
 
 #: ../src/develop/masks/gradient.c:101 ../src/develop/masks/gradient.c:140
 #, c-format
@@ -8563,7 +8562,7 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Krümmung</b>: scrollen, <b>Kompression</b>: Umschalt+scrollen\n"
+"<b>Krümmung</b>: scrollen, <b>Kompression</b>: Shift+scrollen\n"
 "<b>Drehung</b>klicken+ziehen<b>>Deckkraft</b>: Strg+scrollen (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1445
@@ -8572,7 +8571,7 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>Krümmung</b>: scrollen, <b>Kompression</b>: Umschalt+scrollen\n"
+"<b>Krümmung</b>: scrollen, <b>Kompression</b>: Shift+scrollen\n"
 "<b>>Deckkraft</b>: Strg+scrollen (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1448
@@ -8660,8 +8659,8 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>Knoten hinzufügen</b>: Klick, <b>Spitzen Knoten hinzufügen</b>: Strg"
-"+Klick\n"
+"<b>Knoten hinzufügen</b>: Klick, <b>Spitzen Knoten hinzufügen</b>: "
+"Strg+Klick\n"
 "<b>Abbrechen</b>: Rechtsklick"
 
 #: ../src/develop/masks/path.c:3038
@@ -8669,8 +8668,8 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>Knoten hinzufügen</b>: Klick, <b>spitzen Knoten hinzufügen</b>: Strg"
-"+klick\n"
+"<b>Knoten hinzufügen</b>: Klick, <b>spitzen Knoten hinzufügen</b>: "
+"Strg+klick\n"
 "<b>Pfad abschließen</b>: Rechtsklick"
 
 #: ../src/develop/masks/path.c:3041
@@ -9184,7 +9183,7 @@ msgstr "Bildauf/ab"
 
 #: ../src/gui/accelerators.c:89 ../src/views/view.c:1186
 msgid "shift"
-msgstr "shift"
+msgstr "Shift"
 
 #: ../src/gui/accelerators.c:90 ../src/views/view.c:1187
 msgid "ctrl"
@@ -9242,7 +9241,7 @@ msgid "first"
 msgstr "erster"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1913
+#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
 #: ../src/libs/filters/rating_range.c:266 ../src/libs/tagging.c:3117
 #: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
 #: ../src/views/darkroom.c:2553
@@ -9524,7 +9523,7 @@ msgid ""
 "right-click to cancel"
 msgstr ""
 "einen Shortcut durch Drücken einer Taste definieren; optional kombiniert mit "
-"Modifikatortasten (Strg/shift/alt)\n"
+"Modifikatortasten (Strg/Shift/alt)\n"
 "eine Taste kann doppelt oder dreifach gedrückt werden, mit einem langen "
 "letzten Druck\n"
 "während die Taste gehalten wird, kann eine Kombination von Maustasten "
@@ -10559,7 +10558,7 @@ msgstr "non-Raw"
 msgid "raw"
 msgstr "Raw"
 
-#: ../src/gui/presets.c:59
+#: ../src/gui/presets.c:59 ../src/libs/metadata_view.c:334
 msgid "HDR"
 msgstr "HDR"
 
@@ -11391,9 +11390,9 @@ msgstr "Bild-Hinweis"
 #: ../src/imageio/format/webp.c:408
 msgid ""
 "image characteristics hint for the underlying encoder.\n"
-"picture : digital picture, like portrait, inner shot\n"
-"photo   : outdoor photograph, with natural lighting\n"
-"graphic : discrete tone image (graph, map-tile etc)"
+"picture: digital picture, like portrait, inner shot\n"
+"photo: outdoor photograph, with natural lighting\n"
+"graphic: discrete tone image (graph, map-tile etc)"
 msgstr ""
 "Hinweis auf die Bildcharakteristik für den zugrundeliegenden Encoder.\n"
 "Bild: Digitales Bild wie ein Porträt, Innenaufnahme\n"
@@ -11826,7 +11825,7 @@ msgid ""
 msgstr ""
 "automatisch die vertikale perspektivische Verzerrung korrigieren\n"
 "Strg+Klick um nur die Drehung anzupassen\n"
-"Umschalt+Klick um nur die Objektivverschiebung anzupassen"
+"Shift+Klick um nur die Objektivverschiebung anzupassen"
 
 #: ../src/iop/ashift.c:5794
 msgid ""
@@ -11836,7 +11835,7 @@ msgid ""
 msgstr ""
 "automatisch die horizontale perspektivische Verzerrung korrigieren\n"
 "Strg+Klick, um nur die Drehung anzupassen\n"
-"Umschalt+Klick, um nur die Objektivverschiebung anzupassen"
+"Shift+Klick, um nur die Objektivverschiebung anzupassen"
 
 #: ../src/iop/ashift.c:5797
 msgid ""
@@ -11850,8 +11849,8 @@ msgstr ""
 "korrigieren; passt Drehung, Verschiebung in beide Richtungen und Scherung "
 "an\n"
 "Strg+Klick, um nur die Drehung anzupassen\n"
-"Umschalt+Klick, um nur die Objektivverschiebung anzupassen\n"
-"Strg+Umschalt+Klick, um nur Drehung und Objektivverschiebung anzupassen"
+"Shift+Klick, um nur die Objektivverschiebung anzupassen\n"
+"Strg+Shift+Klick, um nur Drehung und Objektivverschiebung anzupassen"
 
 #: ../src/iop/ashift.c:5803
 msgid ""
@@ -11862,8 +11861,8 @@ msgid ""
 msgstr ""
 "automatische Analyse der Linienstrukturen im Bild\n"
 "Strg+Klick für eine zusätzliche Kanten-Verbesserung\n"
-"Umschalt+Klick für eine zusätzliche Detail-Verbesserung\n"
-"Strg+Umschalt+Klick für eine Kombination beider Methoden"
+"Shift+Klick für eine zusätzliche Detail-Verbesserung\n"
+"Strg+Shift+Klick für eine Kombination beider Methoden"
 
 #: ../src/iop/ashift.c:5807
 msgid "manually define perspective rectangle"
@@ -13814,8 +13813,7 @@ msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: Umschalt"
-"+ziehen\n"
+"<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: Shift+ziehen\n"
 "<b>Ausrichten</b>: Rechtsclick-ziehen"
 
 #: ../src/iop/clipping.c:3069
@@ -13843,7 +13841,7 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
-"<b>Verschieben</b>: ziehen, <b>Vertikal verschieben</b>: Umschalt+ziehen, "
+"<b>Verschieben</b>: ziehen, <b>Vertikal verschieben</b>: Shift+ziehen, "
 "<b>Horizontal verschieben</b>: Strg+ziehen\n"
 "<b>Ausrichten</b>: Rechtsklick-ziehen, <b>Bestätigen</b>: Doppelklick"
 
@@ -14410,8 +14408,8 @@ msgstr ""
 "Klick zum Auswählen. \n"
 "Doppelklick zum Zurücksetzen. \n"
 "Rechtsklick zum Löschen des Felds. \n"
-"Umschalt-Taste drücken während Farbwahl mittels Pipette, um die Farbe des "
-"Feldes zu ersetzen."
+"Shift+Taste drücken während Farbwahl mittels Pipette, um die Farbe des Feldes zu "
+"ersetzen."
 
 #: ../src/iop/colorchecker.c:1343
 msgid "patch"
@@ -14801,11 +14799,11 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "der Farbton, der gegenüber anderen bevorzugt werden soll"
 
 #: ../src/iop/colorreconstruction.c:1265 ../src/iop/demosaic.c:5472
-#: ../src/iop/highlights.c:2527
+#: ../src/iop/highlights.c:2546
 msgid "not applicable"
 msgstr "nicht anwendbar"
 
-#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2528
+#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2547
 msgid "no highlights reconstruction for monochrome images"
 msgstr "keine Spitzlichtrekonstruktion bei monochromen Bildern"
 
@@ -14899,10 +14897,9 @@ msgid ""
 "shift+drag to create a negative curve"
 msgstr ""
 "Kurve basierend auf einem Bildausschnitt erstellen. \n"
-"Mit der Maus rechteckige Auswahl definieren, um eine flache Kurve zu "
-"erstellen. \n"
-"Auswahl bei gedrückter Strg-Taste erstellt eine positive Kurve. \n"
-"Auswahl bei gedrückter Umschalttaste-Taste erstellt eine negative Kurve."
+"rechteckige Auswahl erstellt eine flache Kurve\n"
+"Strg+Auswahl erstellt eine positive Kurve. \n"
+"Shift+Auswahlerstellt eine negative Kurve."
 
 #. edit by area
 #: ../src/iop/colorzones.c:2462
@@ -14985,15 +14982,14 @@ msgstr "Änderungen übernehmen"
 #: ../src/iop/crop.c:1522
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: Umschalt"
-"+ziehen"
+"<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: Shift+ziehen"
 
 #: ../src/iop/crop.c:1529
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
 msgstr ""
-"<b>Verschieben</b>: ziehen, <b>Vertikal verschieben</b>: Umschalt+ziehen, "
+"<b>Verschieben</b>: ziehen, <b>Vertikal verschieben</b>: Shift+ziehen, "
 "<b>Horizontal verschieben</b>: Strg+ziehen"
 
 #: ../src/iop/defringe.c:70
@@ -16815,7 +16811,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "Rekonstruktion, RAW"
 
-#: ../src/iop/highlights.c:2261
+#: ../src/iop/highlights.c:2280
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -16823,11 +16819,11 @@ msgstr ""
 "Highlights: Modus ist für dieses Bild-Format nicht verfügbar. Fallback auf "
 "„Inpaint Opposed“."
 
-#: ../src/iop/highlights.c:2460
+#: ../src/iop/highlights.c:2479
 msgid "highlight reconstruction method"
 msgstr "Methode zur Rekonstruktion der Spitzlichter"
 
-#: ../src/iop/highlights.c:2465
+#: ../src/iop/highlights.c:2484
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -16843,7 +16839,7 @@ msgstr ""
 "Segmentierungsbasierten Modus verwendet werden, insbesondere wenn der "
 "Weißpunkt der Kamera nicht korrekt ist."
 
-#: ../src/iop/highlights.c:2476
+#: ../src/iop/highlights.c:2495
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
@@ -16855,7 +16851,7 @@ msgstr ""
 "Klick auf Maskensymbol zeigt die exakten Positionen der resultierenden "
 "Segmentgrenzen."
 
-#: ../src/iop/highlights.c:2484
+#: ../src/iop/highlights.c:2503
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -16868,7 +16864,7 @@ msgstr ""
 "Klick auf Maskensymbol zeigt Segmente, in denen gute Referenzwerte vermutet "
 "werden."
 
-#: ../src/iop/highlights.c:2495
+#: ../src/iop/highlights.c:2514
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -16888,7 +16884,7 @@ msgstr ""
 "Die flachen Modi ignorieren schmale Strukturen ohne Clipping (z. B. "
 "Stromleitungen) bei der Rekonstruktion und vermeiden Gradienten."
 
-#: ../src/iop/highlights.c:2501
+#: ../src/iop/highlights.c:2520
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -16898,7 +16894,7 @@ msgstr ""
 "geclippt wurden.\n"
 "Klick auf Maskensymbol zeigt die Wirkung auf rekonstruierte Daten."
 
-#: ../src/iop/highlights.c:2511
+#: ../src/iop/highlights.c:2530
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -16906,7 +16902,7 @@ msgstr ""
 "Rauschen hinzufügen, um die rekonstruierten Bereiche visuell mit dem Rest\n"
 "des verrauschten Bildes zu verschmelzen. Nützlich bei hohen ISO-Werten."
 
-#: ../src/iop/highlights.c:2515
+#: ../src/iop/highlights.c:2534
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16915,7 +16911,7 @@ msgstr ""
 "werden\n"
 "jede neue Iteration bringt einen Leistungsverlust mit sich."
 
-#: ../src/iop/highlights.c:2520
+#: ../src/iop/highlights.c:2539
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -16925,7 +16921,7 @@ msgstr ""
 "Dies kann dazu führen, dass die Grenzen zwischen gültigen und beschnittenen "
 "Bereichen nicht fließend sind."
 
-#: ../src/iop/highlights.c:2524
+#: ../src/iop/highlights.c:2543
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17305,8 +17301,8 @@ msgid ""
 "change direction"
 msgstr ""
 "Klick und ziehen fügt Punkt hinzu.\n"
-"Scrollen, um die Größe zu ändern. - Umschalt+scrollen, um die Stärke zu "
-"ändern. - Strg+scrollen, um die Richtung zu ändern."
+"Scrollen, um die Größe zu ändern. - Shift+scrollen, um die Stärke zu ändern. - "
+"Strg+scrollen, um die Richtung zu ändern."
 
 #: ../src/iop/liquify.c:3546
 msgid ""
@@ -17315,8 +17311,8 @@ msgid ""
 "change direction"
 msgstr ""
 "Mausklick fügt eine Linie hinzu.\n"
-"Scrollen, um die Größe zu ändern. - Umschalt+scrollen, um die Stärke zu "
-"ändern. - Strg+scrollen, um die Richtung zu ändern."
+"Scrollen, um die Größe zu ändern. - Shift+scrollen, um die Stärke zu ändern. - "
+"Strg+scrollen, um die Richtung zu ändern."
 
 #: ../src/iop/liquify.c:3549
 msgid ""
@@ -17325,8 +17321,8 @@ msgid ""
 "change direction"
 msgstr ""
 "Mausklick fügt eine Kurve hinzu.\n"
-"Scrollen, um die Größe zu ändern. - Umschalt+scrollen, um die Stärke zu "
-"ändern. - Strg+scrollen, um die Richtung zu ändern."
+"Scrollen, um die Größe zu ändern. - Shift+scrollen, um die Stärke zu ändern. - "
+"Strg+scrollen, um die Richtung zu ändern."
 
 #: ../src/iop/liquify.c:3596
 msgid ""
@@ -18165,7 +18161,7 @@ msgstr ""
 "funktioniert nur für Sensoren,\n"
 "die es benötigen."
 
-#: ../src/iop/rcd_demosaic.c:310
+#: ../src/iop/rcd_demosaic.c:304
 msgid "[rcd_demosaic] too small area"
 msgstr "[rcd_demosaic] Bereich zu klein"
 
@@ -18315,7 +18311,7 @@ msgstr "Strg+Klick: für aktuelle Form verwenden"
 
 #: ../src/iop/retouch.c:2239
 msgid "shift+click to set the tool as default"
-msgstr "Umschalt+Klick: als Standard setzen"
+msgstr "Shift+Klick: als Standard setzen"
 
 #: ../src/iop/retouch.c:2258
 msgid "scales:"
@@ -19143,8 +19139,7 @@ msgid ""
 msgstr ""
 "Über Bild scrollen, um Belichtung des ausgewählten Tonwertbereichs zu "
 "ändern,\n"
-"mit Umschalt+scrollen in großen Schritten, mit Strg+scrollen in kleinen "
-"Schritten."
+"mit Shift+scrollen in großen Schritten, mit Strg+scrollen in kleinen Schritten."
 
 #: ../src/iop/toneequal.c:2071
 msgid "some parameters are out-of-bounds"
@@ -19817,7 +19812,7 @@ msgid ""
 msgstr ""
 "`%’ als Platzhalter verwenden\n"
 "Klick, um Hierarchie + Unterhierarchien einzuschließen (Suffix `*’)\n"
-"Umschalt+Klick, um nur die aktuelle Hierarchie einzuschließen (kein Suffix)\n"
+"Shift+Klick, um nur die aktuelle Hierarchie einzuschließen (kein Suffix)\n"
 "Strg+Klick, um nur Unterhierarchien einzuschließen (Suffix `|%’)"
 
 #: ../src/libs/collect.c:2172
@@ -19830,7 +19825,7 @@ msgid ""
 msgstr ""
 "`%’ als Platzhalter verwenden\n"
 "Klick, um Ort + Unterorte einzuschließen (Suffix `*’)\n"
-"Umschalt+Klick, um nur den aktuellen Ort einzuschließen (kein Suffix)\n"
+"Shift+Klick, um nur den aktuellen Ort einzuschließen (kein Suffix)\n"
 "Strg+Klick, um nur Unterorte einzuschließen (Suffix `|%’)"
 
 #: ../src/libs/collect.c:2184
@@ -19843,7 +19838,7 @@ msgid ""
 msgstr ""
 "`%’ als Platzhalter verwenden\n"
 "Klick, um den aktuellen Ordner + Unterordner einzuschließen (Suffix `*’)\n"
-"Umschalt+Klick, um nur den aktuellen Ordner einzuschließen (kein Suffix)\n"
+"Shift+Klick, um nur den aktuellen Ordner einzuschließen (kein Suffix)\n"
 "Strg+Klick, um nur Unterordner einzuschließen (Suffix `|%’)"
 
 #: ../src/libs/collect.c:2195
@@ -19945,7 +19940,7 @@ msgstr "ODER"
 msgid "BUT NOT"
 msgstr "ABER NICHT"
 
-#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2188
+#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2197
 msgid "revert to a previous set of rules"
 msgstr "zu einem früheren Satz von Filterregeln zurückkehren"
 
@@ -20630,76 +20625,80 @@ msgstr "festlegen, wie diese Filteregel mit der vorherigen zusammenwirken soll"
 msgid " (off)"
 msgstr " (aus)"
 
+#: ../src/libs/filtering.c:1641
+msgid "you can't add more rules."
+msgstr "keine weiteren Regeln möglich"
+
 #. fill the popover with all pinned rules
-#: ../src/libs/filtering.c:1666
+#: ../src/libs/filtering.c:1674
 msgid "shown filters"
 msgstr "angezeigte Filter"
 
-#: ../src/libs/filtering.c:1680
+#: ../src/libs/filtering.c:1689
 msgid "new filter"
 msgstr "neuer Filter"
 
-#: ../src/libs/filtering.c:1855
+#: ../src/libs/filtering.c:1864
 msgid "sort order"
 msgstr "Sortierung"
 
-#: ../src/libs/filtering.c:1857
+#: ../src/libs/filtering.c:1866
 msgid "determine the sort order of shown images"
 msgstr "die Sortierreihenfolge der angezeigten Bilder festlegen"
 
-#: ../src/libs/filtering.c:1914
+#: ../src/libs/filtering.c:1923
 msgid "sort direction"
 msgstr "Sortierung Richtung"
 
-#: ../src/libs/filtering.c:1920
+#: ../src/libs/filtering.c:1929
 msgid "remove this sort order"
 msgstr "diese Sortierung entfernen"
 
-#: ../src/libs/filtering.c:2004
+#: ../src/libs/filtering.c:2013
 #, c-format
 msgid "you can't have more than %d sort orders"
 msgstr "max %d Sortierreihenfolgen zulässig"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "DESC"
 msgstr "absteigend"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "ASC"
 msgstr "aufsteigend"
 
-#: ../src/libs/filtering.c:2184
+#: ../src/libs/filtering.c:2193
 msgid "new rule"
 msgstr "neue Filterregel"
 
-#: ../src/libs/filtering.c:2185
+#: ../src/libs/filtering.c:2194
 msgid "append new rule to collect images"
 msgstr "neue Filterregel anhängen"
 
-#: ../src/libs/filtering.c:2196 ../src/libs/tools/filter.c:117
+#: ../src/libs/filtering.c:2205 ../src/libs/tools/filter.c:117
 msgid "sort by"
 msgstr "sortieren nach"
 
-#: ../src/libs/filtering.c:2204
+#: ../src/libs/filtering.c:2213
 msgid "new sort"
 msgstr "neue Sortierregel"
 
-#: ../src/libs/filtering.c:2205
+#: ../src/libs/filtering.c:2214
 msgid "append new sort to order images"
 msgstr "neue Sortierung anhängen"
 
-#: ../src/libs/filtering.c:2208
+#: ../src/libs/filtering.c:2217
 msgid "revert to a previous set of sort orders"
 msgstr "zu einem früheren Satz von Sortierungen  zurückkehren"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2258
+#: ../src/libs/filtering.c:2267
 msgid ""
 "reset\n"
-"ctrl-click to remove pinned rules too"
+"ctrl+click to remove pinned rules too"
 msgstr ""
 "zurücksetzen\n"
-"Strg-Klick um angeheftete Regeln auch zu entfernen"
+"Strg+Klick um auch angeheftete Regeln zu entfernen"
 
 #: ../src/libs/filters/colors.c:140
 msgid "Y"
@@ -20772,19 +20771,19 @@ msgstr ""
 
 #: ../src/libs/filters/filename.c:405
 msgid ""
-"simple click to select filename\n"
-"ctrl-click to select multiple values"
+"click to select filename\n"
+"ctrl+click to select multiple values"
 msgstr ""
 "Mausklick zur Auswahl des Dateinamens\n"
-"Strg-Klick, um mehrere Werte auszuwählen"
+"Strg+Klick, um mehrere Werte auszuwählen"
 
 #: ../src/libs/filters/filename.c:432
 msgid ""
-"simple click to select extension\n"
-"ctrl-click to select multiple values"
+"click to select extension\n"
+"ctrl+click to select multiple values"
 msgstr ""
 "Mausklick zur Auswahl der Erweiterung\n"
-"ctrl-Klick zur Auswahl mehrerer Werte"
+"Strg+Klick zur Auswahl mehrerer Werte"
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
 msgid "ungrouped images"
@@ -21103,8 +21102,8 @@ msgid ""
 "double-click resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
-"Ziehen, um den Schwarzpunkt zu ändern, Doppelklick zum Zurücksetzen. Strg"
-"+Scrollen ändert die Höhe des Histogramms."
+"Ziehen, um den Schwarzpunkt zu ändern, Doppelklick zum Zurücksetzen. "
+"Strg+Scrollen ändert die Höhe des Histogramms."
 
 #: ../src/libs/histogram.c:1319
 msgid ""
@@ -21112,8 +21111,8 @@ msgid ""
 "double-click resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
-"Ziehen, um die Belichtung zu ändern, Doppelklick zum Zurücksetzen. Strg"
-"+Scrollen ändert die Höhe des Histogramms."
+"Ziehen, um die Belichtung zu ändern, Doppelklick zum Zurücksetzen. "
+"Strg+Scrollen ändert die Höhe des Histogramms."
 
 #: ../src/libs/histogram.c:1432 ../src/libs/histogram.c:1472
 msgid "set scale to linear"
@@ -21850,27 +21849,27 @@ msgid ""
 " - wheel scroll inside the shape to resize it\n"
 " - <shift> or <ctrl> scroll to modify the width or the height\n"
 " - click inside the shape and drag it to change its position\n"
-" - ctrl-click to move an image from inside the location\n"
-"ctrl-click to edit a location name\n"
+" - ctrl+click to move an image from inside the location\n"
+"ctrl+click to edit a location name\n"
 " - a pipe '|' symbol breaks the name into several levels\n"
 " - to remove a group of locations clear its name\n"
 " - press enter to validate the new name, escape to cancel the edit\n"
 "right-click for other actions: delete location and go to collection,\n"
-"ctrl-wheel scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr ""
 "Liste benutzerdefinierter Orte\n"
 "klicken, um einen Standort auf der Karte ein- oder auszublenden:\n"
 " - Scrollen innerhalb des Umrisses, um die Größe zu ändern\n"
-" - <Shift> oder <ctrl>+ scrollen, um die Breite oder Höhe zu ändern\n"
+" - Shift oder Strg+ scrollen, um die Breite oder Höhe zu ändern\n"
 " - in die Kontur klicken und ziehen, um die Position zu ändern.\n"
-" - Strg-Klick zum Verschieben eines Bildes\n"
-"Strg-Klick, um einen Ortsnamen zu bearbeiten\n"
+" - Strg+Klick zum Verschieben eines Bildes\n"
+"Strg+Klick, um einen Ortsnamen zu bearbeiten\n"
 " - Das Pipe-Symbol ‚|‘ ermöglicht die Strukturierung des Namens in mehrere "
 "Ebenen\n"
 " - um eine Gruppe von Orten zu entfernen, den Gruppennamen löschen\n"
 " - Eingabetaste bestätigt Namensänderung, Escape bricht Änderung ab.\n"
 "Rechtsklick für andere Aktionen: Ort löschen und zur Sammlung gehen\n"
-"Strg-Scrollen, um die Größe des Fensters zu ändern"
+"Strg+Scrollen, um die Größe des Fensters zu ändern"
 
 #: ../src/libs/map_locations.c:988
 msgid ""
@@ -22010,7 +22009,7 @@ msgstr ""
 
 #: ../src/libs/metadata.c:781
 msgid ""
-"metadata text. ctrl-wheel scroll to resize the text box\n"
+"metadata text. ctrl+scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
 "metadata).\n"
 "if <leave unchanged> selected images have different metadata.\n"
@@ -22160,12 +22159,8 @@ msgid "unused/deprecated"
 msgstr "unbenutzt/veraltet"
 
 #: ../src/libs/metadata_view.c:332
-msgid "ldr"
+msgid "LDR"
 msgstr "LDR"
-
-#: ../src/libs/metadata_view.c:334
-msgid "hdr"
-msgstr "HDR"
 
 #: ../src/libs/metadata_view.c:335
 msgid "marked for deletion"
@@ -23297,12 +23292,12 @@ msgid ""
 "press Delete or double-click to detach\n"
 "right-click for other actions on attached tag,\n"
 "press Tab to give the focus to entry,\n"
-"ctrl-wheel scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr ""
 "zugewiesene Tags\n"
 "Delete Taste oder Doppelklick zum Entfernen\n"
 "Rechtsklick für andere Aktionen des zugewiesenen Tags,\n"
-"Strg-Mausrad, um die Größe des Fensters zu ändern"
+"Strg+Mausrad, um die Größe des Fensters zu ändern"
 
 #: ../src/libs/tagging.c:3109
 msgid "attach"
@@ -23356,7 +23351,7 @@ msgstr ""
 "Bildern zuzuweisen\n"
 "Tabulator oder Abwärtstaste drücken, um zum ersten passenden Tag zu "
 "gelangen\n"
-"Umschalt+Tab drücken, um den ersten zugewiesenen Benutzer-Tag auszuwählen"
+"Shift+Tab drücken, um den ersten zugewiesenen Benutzer-Tag auszuwählen"
 
 #: ../src/libs/tagging.c:3158 ../src/libs/tagging.c:3164
 msgid "clear entry"
@@ -23370,15 +23365,15 @@ msgid ""
 "shift+click to fully expand the selected tag,\n"
 "right-click for other actions on selected tag,\n"
 "press shift+Tab to give the focus to entry,\n"
-"ctrl-scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr ""
 "Tag-Verzeichnis,\n"
 "Eingabetaste drücken oder doppelklicken, um das ausgewählte Tag an die "
 "ausgewählten Bilder zuzuweisen,\n"
-"Umschalt+Eingabe plus zusätzlich Fokus auf das Eingabefeld,\n"
-"Umschalt+Klick, um das ausgewählte Tag vollständig zu erweitern,\n"
+"Shift+Eingabe plus zusätzlich Fokus auf das Eingabefeld,\n"
+"Shift+Klick, um das ausgewählte Tag vollständig zu erweitern,\n"
 "Rechtsklick für andere Aktionen auf dem ausgewählten Tag,\n"
-"Umschalt+Tab drücken, um den Fokus auf das Eingabefeld zu setzen,\n"
+"Shift+Tab drücken, um den Fokus auf das Eingabefeld zu setzen,\n"
 "ctrl-scroll zur Größenänderung des Fensters"
 
 #: ../src/libs/tagging.c:3247
@@ -24408,8 +24403,8 @@ msgid "select range from last image"
 msgstr "Bereich ausgehend vom letzen Bild auswählen"
 
 #: ../src/views/lighttable.c:894
-msgid "add image to selection or remove"
-msgstr "Bild zur Auswahl hinzufügen oder entfernen"
+msgid "add image to or remove it from a selection"
+msgstr ""
 
 #: ../src/views/lighttable.c:898
 msgid "change image order"
@@ -24619,6 +24614,15 @@ msgstr ""
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "Mausaktionen"
+
+#~ msgid "ldr"
+#~ msgstr "LDR"
+
+#~ msgid "hdr"
+#~ msgstr "HDR"
+
+#~ msgid "add image to selection or remove"
+#~ msgstr "Bild zur Auswahl hinzufügen oder entfernen"
 
 #, c-format
 #~ msgid "double click to reset to `%f'"
@@ -26067,8 +26071,8 @@ msgstr "Mausaktionen"
 #~ msgstr ""
 #~ "„%” als Platzhalter benutzen\n"
 #~ "„|%“ bezieht alle Unterhierarchien ein (Strg+Klick)\n"
-#~ "„*“ bezieht alle Hierarchien mit ihren Unterhierarchien ein (Umschalt"
-#~ "+Klick)"
+#~ "„*“ bezieht alle Hierarchien mit ihren Unterhierarchien ein "
+#~ "(Umschalt+Klick)"
 
 #, no-c-format
 #~ msgid ""
