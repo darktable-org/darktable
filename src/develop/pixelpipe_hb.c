@@ -963,7 +963,7 @@ static void _collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
     *pixelpipe_flow |= (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
-    if(piece->histogram && (module->request_histogram & DT_REQUEST_ON) && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
+    if(piece->histogram && (module->request_histogram & DT_REQUEST_ON) && (pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
     {
       const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
       module->histogram = realloc(module->histogram, buf_size);
@@ -1559,8 +1559,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           pixelpipe_flow |= (PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
 
-          if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
-             && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+          if(piece->histogram && (module->request_histogram & DT_REQUEST_ON) && (pipe->type == DT_DEV_PIXELPIPE_PREVIEW))
           {
             const size_t buf_size = sizeof(uint32_t) * 4 * piece->histogram_stats.bins_count;
             module->histogram = realloc(module->histogram, buf_size);
