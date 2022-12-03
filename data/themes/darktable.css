@@ -405,7 +405,8 @@ header button,
   color: @button_fg;
 }
 
-spinbutton > button
+spinbutton > button,
+#top-hinter box
 {
   margin: 0.07em;
 }

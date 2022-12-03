@@ -2145,6 +2145,7 @@ static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container)
   ui->panels[DT_UI_PANEL_TOP] = widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_hexpand(GTK_WIDGET(widget), TRUE);
   gtk_grid_attach(GTK_GRID(container), widget, 1, 0, 3, 1);
+  gtk_widget_set_name(widget, "top-hinter");
 
   /* add container for top left */
   ui->containers[DT_UI_CONTAINER_PANEL_TOP_LEFT] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
