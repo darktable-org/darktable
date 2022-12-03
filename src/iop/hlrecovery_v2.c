@@ -443,7 +443,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
-  const size_t p_size = dt_round_size((size_t) (pwidth + 4) * (pheight + 4), 16);
+  const size_t p_size =  dt_round_size((size_t) pwidth * pheight, 64);
 
   const size_t shift_x = roi_out->x;
   const size_t shift_y = roi_out->y;
@@ -729,10 +729,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const void *con
         in++;
       }
     }
-    dt_dev_pixelpipe_flush_caches(piece->pipe);
   }
 
-  dt_vprint(DT_DEBUG_PERF, "[segmentation report %12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed.\n",
+  dt_print(DT_DEBUG_PERF, "[segmentation report %12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed.\n",
       dt_dev_pixelpipe_type_to_str(piece->pipe->type),     
       (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr -2, isegments[1].nr-2, isegments[2].nr-2, isegments[3].nr-2,
       segmentation_limit-2);

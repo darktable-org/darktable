@@ -60,7 +60,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
-  const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 64);
+  const size_t p_size =  dt_round_size(pwidth * pheight, 64);
 
   const size_t i_width = roi_in->width;
   const size_t i_height = roi_in->height;
@@ -75,7 +75,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
       chrominance[c] = g->chroma_correction[c];          
   }
 
-  int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
+  int *mask_buffer = dt_alloc_align(64, 4 * p_size * sizeof(int));
   float *tmpout = dt_alloc_align_float(4 * roi_in->width * roi_in->height);
 
   if(!tmpout || !mask_buffer)
@@ -141,7 +141,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
     {
       int *mask = mask_buffer + i * p_size;
       int *tmp = mask_buffer + 3 * p_size;
-      _intimage_borderfill(mask, pwidth, pheight, 0, HL_BORDER);
+      _intimage_borderfill(mask, pwidth, pheight, 0, HL_BORDER+1);
       _dilating(mask, tmp, pwidth, pheight, HL_BORDER, 3);
       memcpy(mask, tmp, p_size * sizeof(int));
     }
@@ -229,9 +229,9 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
-  const size_t p_size = (size_t) dt_round_size((size_t) (pwidth + 4) * (pheight + 4), 64);
+  const size_t p_size =  dt_round_size((size_t) pwidth * pheight, 64);
 
-  int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
+  int *mask_buffer = dt_alloc_align(64, 4 * p_size * sizeof(int));
   float *tmpout = dt_alloc_align_float(roi_in->width * roi_in->height);
 
   const size_t shift_x = roi_out->x;
@@ -312,7 +312,7 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     {
       int *mask = mask_buffer + i * p_size;
       int *tmp = mask_buffer + 3 * p_size;
-      _intimage_borderfill(mask, pwidth, pheight, 0, HL_BORDER);
+      _intimage_borderfill(mask, pwidth, pheight, 0, HL_BORDER+1);
       _dilating(mask, tmp, pwidth, pheight, HL_BORDER, 3);
       memcpy(mask, tmp, p_size * sizeof(int));
     }
@@ -418,7 +418,6 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       }
     }
   }
-
   dt_free_align(mask_buffer);
   return tmpout;
 }
