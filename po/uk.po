@@ -8,16 +8,16 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-30 11:59+0100\n"
-"PO-Revision-Date: 2022-12-01 08:08+0200\n"
+"PO-Revision-Date: 2022-12-04 12:56+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.2\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Generator: Poedit 3.2.2\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:7871
 msgctxt "preferences"
@@ -1435,8 +1435,8 @@ msgid ""
 "one if there is one available (needs a restart).\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
-"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
-"\" should be set to \"none\""
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
+"defaults\" should be set to \"none\""
 msgstr ""
 "використовувати за замовчуванням базову криву для кожної камери замість "
 "загальної для виробника, якщо вона доступна (потрібен перезапуск).\n"
@@ -4555,7 +4555,7 @@ msgstr "резонанс"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:97
 #: ../build/lib/darktable/plugins/introspection_vignette.c:204
 msgid "fall-off strength"
-msgstr "інтенсивність затемнення"
+msgstr "кінець затемнення"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:115
 #: ../build/lib/darktable/plugins/introspection_vignette.c:216
@@ -8472,8 +8472,8 @@ msgstr "<b>обертання</b>: ctrl+перетягування"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
-"+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
+"ctrl+scroll (%d%%)"
 msgstr ""
 "<b>режим розтушовки</b>: shift+клік, <b>rotate</b>: ctrl+перетягування\n"
 "<b>розмір</b>: прокрутка, <b>розмір розтушовки</b>: shift+прокрутка, "
@@ -8521,8 +8521,8 @@ msgid ""
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>вигин</b>: прокрутка, <b>стиснення</b>: shift+прокрутка\n"
-"<b>обертання</b>: клік+перетягування, <b>непрозорість</b>: ctrl+прокрутка (%d"
-"%%)"
+"<b>обертання</b>: клік+перетягування, <b>непрозорість</b>: ctrl+прокрутка "
+"(%d%%)"
 
 #: ../src/develop/masks/gradient.c:1445
 #, c-format
@@ -13788,8 +13788,8 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
-"<b>переміщення</b>: перетягування, <b>переміщення по вертикалі</b>: shift"
-"+перетягування, <b>переміщення по горизонталі</b>: ctrl+перетягування\n"
+"<b>переміщення</b>: перетягування, <b>переміщення по вертикалі</b>: "
+"shift+перетягування, <b>переміщення по горизонталі</b>: ctrl+перетягування\n"
 "<b>випрямлення</b>: перетягування правою кнопкою, <b>фіксація змін</b>: "
 "подвійний клік"
 
@@ -14937,8 +14937,8 @@ msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
 msgstr ""
-"<b>переміщення</b>: перетягування, <b>переміщення по вертикалі</b>: shift"
-"+перетягування, <b>переміщення по горизонталі</b>: ctrl+перетягування"
+"<b>переміщення</b>: перетягування, <b>переміщення по вертикалі</b>: "
+"shift+перетягування, <b>переміщення по горизонталі</b>: ctrl+перетягування"
 
 #: ../src/iop/defringe.c:70
 msgid "defringe"
@@ -17227,8 +17227,8 @@ msgid ""
 "change direction"
 msgstr ""
 "натисніть і перетягніть, щоб додати точку\n"
-"прокрутіть, щоб змінити розмір -- shift+прокрутка для зміни сили -- ctrl"
-"+прокрутка для зміни напрямку"
+"прокрутіть, щоб змінити розмір -- shift+прокрутка для зміни сили -- "
+"ctrl+прокрутка для зміни напрямку"
 
 #: ../src/iop/liquify.c:3546
 msgid ""
@@ -17237,8 +17237,8 @@ msgid ""
 "change direction"
 msgstr ""
 "натисніть, щоб додати лінію\n"
-"прокрутіть, щоб змінити розмір -- shift+прокрутка для зміни сили -- ctrl"
-"+прокрутка для зміни напрямку"
+"прокрутіть, щоб змінити розмір -- shift+прокрутка для зміни сили -- "
+"ctrl+прокрутка для зміни напрямку"
 
 #: ../src/iop/liquify.c:3549
 msgid ""
@@ -17247,8 +17247,8 @@ msgid ""
 "change direction"
 msgstr ""
 "натисніть, щоб додати криву\n"
-"прокрутіть, щоб змінити розмір -- shift+прокрутка для зміни сили -- ctrl"
-"+прокрутка для зміни напрямку"
+"прокрутіть, щоб змінити розмір -- shift+прокрутка для зміни сили -- "
+"ctrl+прокрутка для зміни напрямку"
 
 #: ../src/iop/liquify.c:3596
 msgid ""
@@ -19364,7 +19364,7 @@ msgstr "радіальний масштаб початку затемнення 
 
 #: ../src/iop/vignette.c:992
 msgid "the radii scale of vignette for end of fall-off"
-msgstr "радіальний масштаб завершення затемнення віньєтки"
+msgstr "радіальний масштаб кінця затемнення віньєтки"
 
 #: ../src/iop/vignette.c:993
 msgid "strength of effect on brightness"
