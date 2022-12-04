@@ -111,8 +111,12 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   int rowbytes = 0;
   const uint8_t* data = heif_image_get_plane_readonly(heif_img, heif_channel_interleaved, &rowbytes);
-  const size_t width = heif_image_handle_get_width(handle);
-  const size_t height = heif_image_handle_get_height(handle);
+  // Get the image dimensions from the 'ispe' box. This is the original image dimensions without
+  // any transformations applied to it.
+  // Note that we use these functions due to use of ignore_transformations option. If we didn't use
+  // ignore_transformations, we would have to use non-ispe versions of the "get dimensions" functions.
+  const size_t width = heif_image_handle_get_ispe_width(handle);
+  const size_t height = heif_image_handle_get_ispe_height(handle);
 
   /* Initialize cached image buffer */
   img->width = width;
