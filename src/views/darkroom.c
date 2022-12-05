@@ -2999,6 +2999,10 @@ void enter(dt_view_t *self)
   /*
    * add IOP modules to plugin list
    */
+  GtkWidget *box = GTK_WIDGET(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER));
+  GtkScrolledWindow *sw = GTK_SCROLLED_WINDOW(gtk_widget_get_ancestor(box, GTK_TYPE_SCROLLED_WINDOW));
+  if(sw) gtk_scrolled_window_set_propagate_natural_width(sw, FALSE);
+
   char option[1024];
   for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
   {
@@ -3224,6 +3228,10 @@ void leave(dt_view_t *self)
     free(dev->alliop->data);
     dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
+
+  GtkWidget *box = GTK_WIDGET(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER));
+  GtkScrolledWindow *sw = GTK_SCROLLED_WINDOW(gtk_widget_get_ancestor(box, GTK_TYPE_SCROLLED_WINDOW));
+  if(sw) gtk_scrolled_window_set_propagate_natural_width(sw, TRUE);
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
