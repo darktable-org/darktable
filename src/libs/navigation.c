@@ -250,7 +250,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 
-      char zoomline[5];
+      char zoomline[6];
       snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale * 100 * darktable.gui->ppd);
 
       pango_layout_set_text(layout, zoomline, -1);
