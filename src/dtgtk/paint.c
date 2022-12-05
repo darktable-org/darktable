@@ -3261,6 +3261,36 @@ void dtgtk_cairo_paint_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
   FINISH
 }
 
+void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  // the filtering icon
+  cairo_move_to(cr, 0.1, 0.0);
+  cairo_line_to(cr, 0.8, 0.0);
+  cairo_arc(cr, 0.8, 0.1, 0.1, -0.5 * M_PI, 0.2 * M_PI);
+  cairo_move_to(cr, 0.85, 0.15);
+  cairo_line_to(cr, 0.55, 0.5);
+  cairo_line_to(cr, 0.55, 1.0);
+  cairo_line_to(cr, 0.35, 0.8);
+  cairo_line_to(cr, 0.35, 0.5);
+  cairo_line_to(cr, 0.05, 0.15);
+  cairo_arc(cr, 0.1, 0.1, 0.1, 0.8 * M_PI, 1.5 * M_PI);
+  cairo_stroke(cr);
+
+  // the "hamburger" menu icon
+  cairo_move_to(cr, 0.75, 1.0);
+  cairo_line_to(cr, 1.0, 1.0);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.75, 0.8);
+  cairo_line_to(cr, 1.0, 0.8);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.75, 0.6);
+  cairo_line_to(cr, 1.0, 0.6);
+  cairo_stroke(cr);
+  FINISH
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
