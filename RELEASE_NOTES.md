@@ -272,6 +272,12 @@ accompanying blog post.
   in the full module (due some combination of selected options). This
   even works if those options are changed from another widget in the qap.
 
+- Slightly improve the blue color label for better visibility in the
+  dark theme.
+
+- Fix navigation window zoom indicator label display. It was sometime
+  cut on the right or bottom as misplaced on the window.
+
 ## Lua
 
 - API version changed to 9.0.0
