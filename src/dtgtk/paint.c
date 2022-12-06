@@ -1735,8 +1735,8 @@ void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, g
     else
       cairo_set_source_rgba(cr, r, g, b, a*.7);
 
-    cairo_move_to(cr, .9, .1);
-    cairo_line_to(cr, .1, .9);
+    cairo_move_to(cr, .1, .5);
+    cairo_line_to(cr, .9, .5);
     cairo_stroke(cr);
   }
 
