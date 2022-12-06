@@ -89,6 +89,8 @@
 @define-color graph_grid @grey_20;
 @define-color inset_histogram alpha(@grey_80, 0.50);
 
+@define-color colorlabel_blue rgb(0,40,255);
+
 /* Set background on thumbnails hover overlays */
 .dt_overlays_hover_extended #thumb-main:hover #thumb-bottom,
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom,

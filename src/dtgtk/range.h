@@ -89,6 +89,11 @@ struct _GtkDarktableRangeSelect
   GtkWidget *entry_min;
   GtkWidget *entry_max;
   GtkWidget *band;
+  // next widgets are always hidden and used only to define the color with css
+  GtkWidget *band_graph;
+  GtkWidget *band_selection;
+  GtkWidget *band_icons;
+  GtkWidget *band_cursor;
 
   // function used to translate "real" value into band positions
   // this allow to have special value repartitions on the band
