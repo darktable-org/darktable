@@ -507,6 +507,13 @@ separator
   min-width: 1.7em;
 }
 
+#header-toolbar .dt_module_btn
+{
+    margin-left: 0;
+    padding-left: 0;
+    margin-right: 0.56em;
+}
+
 /* Rating stars on left footer toolbar on lighttable view */
 #lib-rating-stars
 {
