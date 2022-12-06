@@ -1531,12 +1531,16 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   const int smax_px = _graph_value_to_pos(range, smax_r) + range->step_bd / range->band_factor;
 
   // change the cursor if we are close to an extrema
-  if(!range->set_selection && fabs(range->current_x_px - smin_px) <= SNAP_SIZE)
+  if(range->allow_resize
+     && !range->set_selection
+     && fabs(range->current_x_px - smin_px) <= SNAP_SIZE)
   {
     range->mouse_inside = HOVER_MIN;
     dt_control_change_cursor(GDK_LEFT_SIDE);
   }
-  else if(!range->set_selection && fabs(range->current_x_px - smax_px) <= SNAP_SIZE)
+  else if(range->allow_resize
+          && !range->set_selection
+          && fabs(range->current_x_px - smax_px) <= SNAP_SIZE)
   {
     range->mouse_inside = HOVER_MAX;
     dt_control_change_cursor(GDK_RIGHT_SIDE);
@@ -1673,6 +1677,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   range->max_width_px = -1;
   range->cur_help = NULL;
   range->current_bounds = dtgtk_range_select_get_bounds_pretty;
+  range->allow_resize = TRUE;
 
   // the boxes widgets
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

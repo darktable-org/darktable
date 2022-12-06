@@ -71,6 +71,7 @@ struct _GtkDarktableRangeSelect
   dt_range_type_t type;
 
   gboolean show_entries; // do we show the line with the entry boxes ?
+  gboolean allow_resize; // do we allow to resize the selection once it is set ?
   double min_r;          // minimal value shown
   double max_r;          // maximal value shown
   double step_bd;        // minimal step value in band reference
