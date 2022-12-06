@@ -201,7 +201,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color range_bg_color alpha(@fg_color, 0.12);
 @define-color range_cursor_color alpha(@fg_color, 0.75);
 @define-color range_sel_color alpha(@bauhaus_fill, 0.6);
-@define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.8);
+@define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.35);
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
@@ -226,7 +226,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 @define-color colorlabel_red rgb(230,0,0);
 @define-color colorlabel_green rgb(0,230,0);
-@define-color colorlabel_blue rgb(0,0,230);
+@define-color colorlabel_blue rgb(40,140,255);
 @define-color colorlabel_yellow rgb(255,180,0);
 @define-color colorlabel_purple rgb(230,0,230);
 
@@ -1306,7 +1306,7 @@ filechooser row:hover .sidebar-icon
 #module-filtering #collect-rule-widget   /* set filter widget box */
 {
   background-color: @collapsible_bg_color;
-  margin: 0.3em 0 0.5em 0;
+  margin: 0.2em 0;
   padding: 0.07em 0.28em;
   border-radius: 0.21em;
 }
@@ -1338,7 +1338,7 @@ filechooser row:hover .sidebar-icon
 
 /* set range parts and quick filter box in header toolbar */
 .search,
-#range-select #dt-range-band,
+#dt-range-band,
 #header-toolbar #bauhaus-combobox:not(.dt_transparent_background)
 {
   background-color: @range_bg_color;
@@ -1367,6 +1367,42 @@ filechooser row:hover .sidebar-icon
 #collect-header-box button
 {
   margin-right: 0;
+}
+
+#dt-range-band-graph
+{
+  color: @range_graph_color;
+}
+
+#dt-range-band-selection
+{
+  color: @range_sel_color;
+}
+
+#dt-range-band-icons
+{
+  color: @range_icon_color;
+}
+
+#dt-range-band-cursor
+{
+  color: @range_cursor_color;
+}
+
+#dt-range-rating #dt-range-band-cursor,
+#dt-range-rating #dt-range-band-selection
+{
+  color: transparent;
+}
+
+#dt-range-band-icons:active
+{
+  color: @bauhaus_fg;
+}
+
+#dt-range-band-icons:hover
+{
+  color: @bauhaus_fg_hover;
 }
 
 /*------------
