@@ -26,6 +26,7 @@
               "Fujifilm",
               "Hasselblad",
               "LGE",
+              "Leaf",
               "Leica",
               "Leica Camera AG",
               "Kodak",
@@ -38,8 +39,7 @@
               "Ricoh",
               "Samsung",
               "Sony",
-              "YI TECHNOLOGY",
-              "Leaf"
+              "YI TECHNOLOGY"
             ]
           },
           "models": {
