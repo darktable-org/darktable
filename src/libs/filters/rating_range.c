@@ -299,6 +299,7 @@ static void _rating_range_widget_init(dt_lib_filtering_rule_t *rule, const dt_co
   // to keep a nice ratio, we don't want the widget to exceed a certain value
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
   GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  range->allow_resize = FALSE;
   int mh = -1;
   gtk_style_context_get(context, state, "min-height", &mh, NULL);
   if(mh > 0) range->max_width_px = 8 * mh * 0.8;
