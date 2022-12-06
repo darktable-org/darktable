@@ -30513,6 +30513,52 @@
       ]
     },
     {
+      "maker": "Leaf",
+      "models": [
+        {
+          "model": "Credo 40",
+          "presets": [
+            {
+              "name": "Daylight",
+              "channels": [
+                1.31208,
+                1,
+                1.40452,
+                0
+              ]
+            },
+            {
+              "name": "Fluorescent",
+              "channels": [
+                0.946667,
+                1,
+                2.272153,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "channels": [
+                0.87193,
+                1,
+                2.202474,
+                0
+              ]
+            },
+            {
+              "name": "Flash",
+              "channels": [
+                1.26238,
+                1,
+                1.48148,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "maker": "Leica",
       "models": [
         {
@@ -30641,207 +30687,7 @@
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "maker": "Leica Camera AG",
-      "models": [
-        {
-          "model": "R8 - Digital Back DMR",
-          "presets": [
-            {
-              "name": "Incandescent",
-              "channels": [
-                1,
-                1.109985,
-                2.430664,
-                0
-              ]
-            },
-            {
-              "name": "Fluorescent",
-              "channels": [
-                1.234985,
-                1,
-                1.791138,
-                0
-              ]
-            },
-            {
-              "name": "Daylight",
-              "channels": [
-                1.459961,
-                1,
-                1.184937,
-                0
-              ]
-            },
-            {
-              "name": "Flash",
-              "channels": [
-                1.39502,
-                1,
-                1.144897,
-                0
-              ]
-            },
-            {
-              "name": "Cloudy",
-              "channels": [
-                1.541992,
-                1,
-                1.052856,
-                0
-              ]
-            },
-            {
-              "name": "Shade",
-              "channels": [
-                1.644897,
-                1.033936,
-                1,
-                0
-              ]
-            },
-            {
-              "name": "2700K",
-              "channels": [
-                1,
-                1.172607,
-                2.747192,
-                0
-              ]
-            },
-            {
-              "name": "3000K",
-              "channels": [
-                1,
-                1.049438,
-                2.156494,
-                0
-              ]
-            },
-            {
-              "name": "3300K",
-              "channels": [
-                1.032349,
-                1,
-                1.841187,
-                0
-              ]
-            },
-            {
-              "name": "5000K",
-              "channels": [
-                1.34436,
-                1,
-                1.233032,
-                0
-              ]
-            }
-          ]
         },
-        {
-          "model": "R9 - Digital Back DMR",
-          "presets": [
-            {
-              "name": "Incandescent",
-              "channels": [
-                1,
-                1.109985,
-                2.430664,
-                0
-              ]
-            },
-            {
-              "name": "Fluorescent",
-              "channels": [
-                1.234985,
-                1,
-                1.791138,
-                0
-              ]
-            },
-            {
-              "name": "Daylight",
-              "channels": [
-                1.459961,
-                1,
-                1.184937,
-                0
-              ]
-            },
-            {
-              "name": "Flash",
-              "channels": [
-                1.39502,
-                1,
-                1.144897,
-                0
-              ]
-            },
-            {
-              "name": "Cloudy",
-              "channels": [
-                1.541992,
-                1,
-                1.052856,
-                0
-              ]
-            },
-            {
-              "name": "Shade",
-              "channels": [
-                1.644897,
-                1.033936,
-                1,
-                0
-              ]
-            },
-            {
-              "name": "2700K",
-              "channels": [
-                1,
-                1.172607,
-                2.747192,
-                0
-              ]
-            },
-            {
-              "name": "3000K",
-              "channels": [
-                1,
-                1.049438,
-                2.156494,
-                0
-              ]
-            },
-            {
-              "name": "3300K",
-              "channels": [
-                1.032349,
-                1,
-                1.841187,
-                0
-              ]
-            },
-            {
-              "name": "5000K",
-              "channels": [
-                1.34436,
-                1,
-                1.233032,
-                0
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "maker": "Leica",
-      "models": [
         {
           "model": "Digilux 2",
           "presets": [
@@ -31041,6 +30887,251 @@
                 2.020508,
                 1,
                 1.367188,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "model": "D-LUX 6",
+          "presets": [
+            {
+              "name": "Daylight",
+              "channels": [
+                1.992453,
+                1,
+                1.750943,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                2.143396,
+                1,
+                1.603774,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "channels": [
+                2.286792,
+                1,
+                1.498113,
+                0
+              ]
+            },
+            {
+              "name": "Flash",
+              "channels": [
+                2.219697,
+                1,
+                1.659091,
+                0
+              ]
+            },
+            {
+              "name": "Incandescent",
+              "channels": [
+                1.335849,
+                1,
+                2.762264,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "maker": "Leica Camera AG",
+      "models": [
+        {
+          "model": "R8 - Digital Back DMR",
+          "presets": [
+            {
+              "name": "Incandescent",
+              "channels": [
+                1,
+                1.109985,
+                2.430664,
+                0
+              ]
+            },
+            {
+              "name": "Fluorescent",
+              "channels": [
+                1.234985,
+                1,
+                1.791138,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "channels": [
+                1.459961,
+                1,
+                1.184937,
+                0
+              ]
+            },
+            {
+              "name": "Flash",
+              "channels": [
+                1.39502,
+                1,
+                1.144897,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                1.541992,
+                1,
+                1.052856,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "channels": [
+                1.644897,
+                1.033936,
+                1,
+                0
+              ]
+            },
+            {
+              "name": "2700K",
+              "channels": [
+                1,
+                1.172607,
+                2.747192,
+                0
+              ]
+            },
+            {
+              "name": "3000K",
+              "channels": [
+                1,
+                1.049438,
+                2.156494,
+                0
+              ]
+            },
+            {
+              "name": "3300K",
+              "channels": [
+                1.032349,
+                1,
+                1.841187,
+                0
+              ]
+            },
+            {
+              "name": "5000K",
+              "channels": [
+                1.34436,
+                1,
+                1.233032,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "model": "R9 - Digital Back DMR",
+          "presets": [
+            {
+              "name": "Incandescent",
+              "channels": [
+                1,
+                1.109985,
+                2.430664,
+                0
+              ]
+            },
+            {
+              "name": "Fluorescent",
+              "channels": [
+                1.234985,
+                1,
+                1.791138,
+                0
+              ]
+            },
+            {
+              "name": "Daylight",
+              "channels": [
+                1.459961,
+                1,
+                1.184937,
+                0
+              ]
+            },
+            {
+              "name": "Flash",
+              "channels": [
+                1.39502,
+                1,
+                1.144897,
+                0
+              ]
+            },
+            {
+              "name": "Cloudy",
+              "channels": [
+                1.541992,
+                1,
+                1.052856,
+                0
+              ]
+            },
+            {
+              "name": "Shade",
+              "channels": [
+                1.644897,
+                1.033936,
+                1,
+                0
+              ]
+            },
+            {
+              "name": "2700K",
+              "channels": [
+                1,
+                1.172607,
+                2.747192,
+                0
+              ]
+            },
+            {
+              "name": "3000K",
+              "channels": [
+                1,
+                1.049438,
+                2.156494,
+                0
+              ]
+            },
+            {
+              "name": "3300K",
+              "channels": [
+                1.032349,
+                1,
+                1.841187,
+                0
+              ]
+            },
+            {
+              "name": "5000K",
+              "channels": [
+                1.34436,
+                1,
+                1.233032,
                 0
               ]
             }
@@ -92749,12 +92840,7 @@
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "maker": "Olympus",
-      "models": [
+        },
         {
           "model": "E-PL8",
           "presets": [
@@ -92822,12 +92908,7 @@
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "maker": "Olympus",
-      "models": [
+        },
         {
           "model": "E-PM1",
           "presets": [
@@ -109519,61 +109600,6 @@
                 1.964844,
                 1,
                 2.011719,
-                0
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "maker": "Leica",
-      "models": [
-        {
-          "model": "D-LUX 6",
-          "presets": [
-            {
-              "name": "Daylight",
-              "channels": [
-                1.992453,
-                1,
-                1.750943,
-                0
-              ]
-            },
-            {
-              "name": "Cloudy",
-              "channels": [
-                2.143396,
-                1,
-                1.603774,
-                0
-              ]
-            },
-            {
-              "name": "Shade",
-              "channels": [
-                2.286792,
-                1,
-                1.498113,
-                0
-              ]
-            },
-            {
-              "name": "Flash",
-              "channels": [
-                2.219697,
-                1,
-                1.659091,
-                0
-              ]
-            },
-            {
-              "name": "Incandescent",
-              "channels": [
-                1.335849,
-                1,
-                2.762264,
                 0
               ]
             }
@@ -126312,12 +126338,7 @@
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "maker": "Sony",
-      "models": [
+        },
         {
           "model": "DSC-RX100M6",
           "presets": [
@@ -126448,12 +126469,7 @@
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "maker": "Sony",
-      "models": [
+        },
         {
           "model": "DSLR-A100",
           "presets": [
@@ -142439,52 +142455,6 @@
                 2.707031,
                 1,
                 1.320312,
-                0
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "maker": "Leaf",
-      "models": [
-        {
-          "model": "Credo 40",
-          "presets": [
-            {
-              "name": "Daylight",
-              "channels": [
-                1.31208,
-                1,
-                1.40452,
-                0
-              ]
-            },
-            {
-              "name": "Fluorescent",
-              "channels": [
-                0.946667,
-                1,
-                2.272153,
-                0
-              ]
-            },
-            {
-              "name": "Incandescent",
-              "channels": [
-                0.87193,
-                1,
-                2.202474,
-                0
-              ]
-            },
-            {
-              "name": "Flash",
-              "channels": [
-                1.26238,
-                1,
-                1.48148,
                 0
               ]
             }
