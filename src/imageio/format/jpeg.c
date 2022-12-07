@@ -374,7 +374,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
 
-  dt_exif_write_blob(exif, exif_len, filename, 1);
+  if(exif) dt_exif_write_blob(exif, exif_len, filename, 1);
 
   return 0;
 }
