@@ -246,7 +246,7 @@ error:
   WebPDataClear(&assembled_data);
   WebPMuxDelete(mux);
   fclose(out);
-  if(!res) dt_exif_write_blob(exif, exif_len, filename, 1);
+  if(!res && exif) dt_exif_write_blob(exif, exif_len, filename, 1);
   return res;
 }
 

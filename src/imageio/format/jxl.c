@@ -275,7 +275,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // We assume that the user wants the JXL image in a BMFF container.
   // JXL images can be stored without any container so they are smaller, but
   // this removes the possibility of storing extra metadata like Exif and XMP.
-  LIBJXL_ASSERT(JxlEncoderUseBoxes(encoder));
+  if(exif && exif_len > 0) LIBJXL_ASSERT(JxlEncoderUseBoxes(encoder));
 
   JxlPixelFormat pixel_format = { 3, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 0 };
 
@@ -317,12 +317,16 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   }
 
   /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and update flags() */
-  xmp_string = dt_exif_xmp_read_string(imgid);
-  size_t xmp_len;
-  if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+  /* TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested */
+  if(exif && exif_len > 0)
   {
-    // Exiv2 doesn't support Brotli compressed boxes
-    LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ", (const uint8_t *)xmp_string, xmp_len, JXL_FALSE));
+    xmp_string = dt_exif_xmp_read_string(imgid);
+    size_t xmp_len;
+    if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+    {
+      // Exiv2 doesn't support Brotli compressed boxes
+      LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ", (const uint8_t *)xmp_string, xmp_len, JXL_FALSE));
+    }
   }
 
   // No more image frames nor metadata boxes to add
