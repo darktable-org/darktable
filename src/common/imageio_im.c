@@ -38,7 +38,7 @@
 #endif
 
 /* we only support images with certain filename extensions via ImageMagick,
- * derived from what it declared as "supported" with GraphicsMagick; RAWs
+ * derived from what it declared as "supported" with ImageMagick; RAWs
  * are excluded as ImageMagick would render them with third party libraries
  * in reduced quality - slow and only 8-bit */
 static gboolean _supported_image(const gchar *filename)
