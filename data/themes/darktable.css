@@ -507,13 +507,6 @@ separator
   min-width: 1.7em;
 }
 
-#header-toolbar .dt_module_btn
-{
-    margin-left: 0;
-    padding-left: 0;
-    margin-right: 0.56em;
-}
-
 /* Rating stars on left footer toolbar on lighttable view */
 #lib-rating-stars
 {
@@ -1355,9 +1348,16 @@ filechooser row:hover .sidebar-icon
 .dt_quick_filter,
 #filter-sort-box label,
 #header-rule-box label,
-#header-sort-box label
+#header-sort-box label,
+#header-toolbar .dt_module_btn
 {
   margin-right: 0.56em;
+}
+
+#header-toolbar .dt_module_btn
+{
+    margin-left: 0;
+    padding-left: 0;
 }
 
 #filter-colors-box .dt_module_btn
