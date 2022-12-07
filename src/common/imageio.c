@@ -1108,7 +1108,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   format_params->width = processed_width;
   format_params->height = processed_height;
 
-  if(!ignore_exif)
+  if(!ignore_exif && metadata->flags != DT_META_NONE)
   {
     uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes max, but if original size is close to that,
                                   // adding new tags could make it go over that... so let it be and see what
