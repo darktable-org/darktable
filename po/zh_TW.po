@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-28 08:36+0100\n"
-"PO-Revision-Date: 2022-11-29 09:36+0800\n"
+"POT-Creation-Date: 2022-11-30 11:59+0100\n"
+"PO-Revision-Date: 2022-12-07 10:08+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.1\n"
+"X-Generator: Poedit 3.2.2\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:7871
 msgctxt "preferences"
@@ -1410,8 +1410,8 @@ msgid ""
 "one if there is one available (needs a restart).\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
-"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
-"\" should be set to \"none\""
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
+"defaults\" should be set to \"none\""
 msgstr ""
 "預設套用相機專屬的基礎曲線，而不是通用的曲線\n"
 "當內部運算工作流程為「顯示參照」時，可自動套用相應的基礎曲線設定"
@@ -3865,32 +3865,32 @@ msgid "inpaint a flat color"
 msgstr "單色修復"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:284
-#: ../src/iop/highlights.c:2368 ../src/iop/highlights.c:2374
+#: ../src/iop/highlights.c:2387 ../src/iop/highlights.c:2393
 msgid "clip highlights"
 msgstr "裁切亮部"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:285
-#: ../src/iop/highlights.c:2372
+#: ../src/iop/highlights.c:2391
 msgid "reconstruct in LCh"
 msgstr "LCh 重建亮部"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:2321 ../src/iop/highlights.c:2384
+#: ../src/iop/highlights.c:2340 ../src/iop/highlights.c:2403
 msgid "reconstruct color"
 msgstr "重建亮部色彩"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:2379
+#: ../src/iop/highlights.c:2398
 msgid "guided laplacians"
 msgstr "導引拉普拉斯"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:2376
+#: ../src/iop/highlights.c:2395
 msgid "segmentation based"
 msgstr "基於分段修復"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:2364
+#: ../src/iop/highlights.c:2383
 msgid "inpaint opposed"
 msgstr "對立色版修復"
 
@@ -4502,7 +4502,7 @@ msgstr "自然飽和度"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:97
 #: ../build/lib/darktable/plugins/introspection_vignette.c:204
 msgid "fall-off strength"
-msgstr "光衰程度"
+msgstr "漸暗範圍"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:115
 #: ../build/lib/darktable/plugins/introspection_vignette.c:216
@@ -5024,7 +5024,7 @@ msgid "capture date"
 msgstr "拍攝日期"
 
 #: ../src/common/collection.c:680 ../src/libs/collect.c:3309
-#: ../src/libs/filtering.c:2187 ../src/libs/filtering.c:2207
+#: ../src/libs/filtering.c:2196 ../src/libs/filtering.c:2216
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "歷史紀錄"
@@ -8384,8 +8384,8 @@ msgstr "ctrl + 拖曳以旋轉"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
-"+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
+"ctrl+scroll (%d%%)"
 msgstr ""
 "shift + 點擊變更羽化模式，ctrl + 拖曳旋轉角度\n"
 "滑鼠滾輪調整尺寸，shift + 滾輪調整羽化範圍，ctrl + 滾輪調整不透明度（%d%%）"
@@ -9103,7 +9103,7 @@ msgid "first"
 msgstr "第一個"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1913
+#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
 #: ../src/libs/filters/rating_range.c:266 ../src/libs/tagging.c:3117
 #: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
 #: ../src/views/darkroom.c:2553
@@ -14883,11 +14883,11 @@ msgstr ""
 "選擇膚色系的色相可以避免附近高亮度的其他顏色混入造成不自然感"
 
 #: ../src/iop/colorreconstruction.c:1265 ../src/iop/demosaic.c:5472
-#: ../src/iop/highlights.c:2527
+#: ../src/iop/highlights.c:2546
 msgid "not applicable"
 msgstr "不適用"
 
-#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2528
+#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2547
 msgid "no highlights reconstruction for monochrome images"
 msgstr "黑白影像無法重建亮部色彩"
 
@@ -16967,7 +16967,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "修復、RAW"
 
-#: ../src/iop/highlights.c:2261
+#: ../src/iop/highlights.c:2280
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -16975,7 +16975,7 @@ msgstr ""
 "⚠️ 警告 ⚠️\n"
 "X-Trans 感光元件不適用目前選擇的重建方法，恢復預設的「對立色版修復」方法"
 
-#: ../src/iop/highlights.c:2460
+#: ../src/iop/highlights.c:2479
 msgid "highlight reconstruction method"
 msgstr ""
 "選擇亮部重建方式\n"
@@ -17004,7 +17004,7 @@ msgstr ""
 "使用類似「漫射或反卷積銳化」模組的演算法把細節複製到被裁切的色版\n"
 "這是一種緩慢且耗用大量計算資源的方法，主要用於重建聚光燈和鏡面反射"
 
-#: ../src/iop/highlights.c:2465
+#: ../src/iop/highlights.c:2484
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -17017,7 +17017,7 @@ msgstr ""
 "可以用此參數微調對立色版、基於分段、拉普拉斯模式，尤其是當相機白點錯誤時\n"
 "右側遮罩按鈕可顯示目前被裁切的影像範圍"
 
-#: ../src/iop/highlights.c:2476
+#: ../src/iop/highlights.c:2495
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
@@ -17025,7 +17025,7 @@ msgstr ""
 "藉由型態分析結合密切相關的亮部裁切區段\n"
 "使用遮罩按鈕顯示處理後的分段邊緣"
 
-#: ../src/iop/highlights.c:2484
+#: ../src/iop/highlights.c:2503
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -17036,7 +17036,7 @@ msgstr ""
 "提高數值有利於納入更多候選分段，調低數值使用對立色版數值平均\n"
 "使用遮罩按鈕顯示可能是良好候選的分段"
 
-#: ../src/iop/highlights.c:2495
+#: ../src/iop/highlights.c:2514
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -17052,7 +17052,7 @@ msgstr ""
 "小分段指直徑小於 25 像素的區域，大分段適合大於 100 像素的區域\n"
 "平坦模式會略過狹小且未剪裁的影像內容（如電線）以避免亮部重建產生漸層"
 
-#: ../src/iop/highlights.c:2501
+#: ../src/iop/highlights.c:2520
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -17061,7 +17061,7 @@ msgstr ""
 "設定亮部裁切區域的重建強度\n"
 "遮罩按鈕可顯示已加到重建區域的效果"
 
-#: ../src/iop/highlights.c:2511
+#: ../src/iop/highlights.c:2530
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -17069,7 +17069,7 @@ msgstr ""
 "在被剪裁重建的亮部區域加入帕松分布的雜訊\n"
 "效果和感光元件中的雜訊類似，以塑造更為自然的視覺效果"
 
-#: ../src/iop/highlights.c:2515
+#: ../src/iop/highlights.c:2534
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -17077,7 +17077,7 @@ msgstr ""
 "每次的導引拉普拉斯計算都可改進前一次的效果\n"
 "如果剪裁亮點無法完全修復可以調高此值，但相對地犧牲處理速度"
 
-#: ../src/iop/highlights.c:2520
+#: ../src/iop/highlights.c:2539
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -17085,7 +17085,7 @@ msgstr ""
 "利用平滑 RGB 比例來恢復亮部顏色，調高數值以消除難以處理的洋紅色澤\n"
 "然而這會使重建不太準確，可能導致正常及裁切區域間的不平滑邊界"
 
-#: ../src/iop/highlights.c:2524
+#: ../src/iop/highlights.c:2543
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -18443,7 +18443,7 @@ msgid ""
 "only works for the sensors that need it."
 msgstr "「RAW 檔黑、白點」僅適用於需要的感光元件"
 
-#: ../src/iop/rcd_demosaic.c:310
+#: ../src/iop/rcd_demosaic.c:304
 msgid "[rcd_demosaic] too small area"
 msgstr "RCD 去馬賽克區域過小"
 
@@ -19825,13 +19825,13 @@ msgstr "位置 / 形狀"
 #: ../src/iop/vignette.c:991
 msgid "the radii scale of vignette for start of fall-off"
 msgstr ""
-"亮度開始衰減的區域大小\n"
+"亮度開始衰減前的區域大小\n"
 "數值是相對於影像長邊的比例，範圍內保持亮度不變"
 
 #: ../src/iop/vignette.c:992
 msgid "the radii scale of vignette for end of fall-off"
 msgstr ""
-"亮度衰減至最低的區域大小\n"
+"亮度衰減至設定值的漸變區域大小\n"
 "數值是相對於影像長邊的比例，範圍外亮度降為以下設定"
 
 #: ../src/iop/vignette.c:993
@@ -20331,7 +20331,7 @@ msgstr "或是"
 msgid "BUT NOT"
 msgstr "不包括"
 
-#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2188
+#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2197
 msgid "revert to a previous set of rules"
 msgstr "使用過去的篩選設定"
 
@@ -21026,72 +21026,76 @@ msgstr "定義此條件如何與上一項交互作用"
 msgid " (off)"
 msgstr " （關閉）"
 
+#: ../src/libs/filtering.c:1641
+msgid "you can't add more rules."
+msgstr "篩選條件上限是 %d 個"
+
 #. fill the popover with all pinned rules
-#: ../src/libs/filtering.c:1666
+#: ../src/libs/filtering.c:1674
 msgid "shown filters"
 msgstr "顯示篩選條件"
 
-#: ../src/libs/filtering.c:1680
+#: ../src/libs/filtering.c:1689
 msgid "new filter"
 msgstr "新增條件"
 
-#: ../src/libs/filtering.c:1855
+#: ../src/libs/filtering.c:1864
 msgid "sort order"
 msgstr "排列順序"
 
-#: ../src/libs/filtering.c:1857
+#: ../src/libs/filtering.c:1866
 msgid "determine the sort order of shown images"
 msgstr ""
 "影像排列順序的方式\n"
 "點擊可變更，或使用滑鼠滾輪快速切換"
 
-#: ../src/libs/filtering.c:1914
+#: ../src/libs/filtering.c:1923
 msgid "sort direction"
 msgstr "排序方向"
 
-#: ../src/libs/filtering.c:1920
+#: ../src/libs/filtering.c:1929
 msgid "remove this sort order"
 msgstr "移除這個排序條件"
 
-#: ../src/libs/filtering.c:2004
+#: ../src/libs/filtering.c:2013
 #, c-format
 msgid "you can't have more than %d sort orders"
 msgstr "排序條件上限是 %d 個"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "DESC"
 msgstr "降序排列"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "ASC"
 msgstr "升序排列"
 
-#: ../src/libs/filtering.c:2184
+#: ../src/libs/filtering.c:2193
 msgid "new rule"
 msgstr "新增篩選條件"
 
-#: ../src/libs/filtering.c:2185
+#: ../src/libs/filtering.c:2194
 msgid "append new rule to collect images"
 msgstr "新增條件到目前的相冊上"
 
-#: ../src/libs/filtering.c:2196 ../src/libs/tools/filter.c:117
+#: ../src/libs/filtering.c:2205 ../src/libs/tools/filter.c:117
 msgid "sort by"
 msgstr "排列方式"
 
-#: ../src/libs/filtering.c:2204
+#: ../src/libs/filtering.c:2213
 msgid "new sort"
 msgstr "新增排序條件"
 
-#: ../src/libs/filtering.c:2205
+#: ../src/libs/filtering.c:2214
 msgid "append new sort to order images"
 msgstr "新增排序方式到目前的相冊上"
 
-#: ../src/libs/filtering.c:2208
+#: ../src/libs/filtering.c:2217
 msgid "revert to a previous set of sort orders"
 msgstr "使用過去的排序設定"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2258
+#: ../src/libs/filtering.c:2267
 msgid ""
 "reset\n"
 "ctrl+click to remove pinned rules too"
@@ -24750,7 +24754,7 @@ msgid "select range from last image"
 msgstr "選取至上一張選取位置內範圍的影像"
 
 #: ../src/views/lighttable.c:894
-msgid "add image to selection or remove"
+msgid "add image to or remove it from a selection"
 msgstr "增加或取消影像選取"
 
 #: ../src/views/lighttable.c:898
@@ -24956,6 +24960,9 @@ msgstr "切換回傳統視窗，在按鍵放開後仍保持開啟"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "滑鼠動作"
+
+#~ msgid "add image to selection or remove"
+#~ msgstr "增加或取消影像選取"
 
 #~ msgid "ldr"
 #~ msgstr "LDR"
