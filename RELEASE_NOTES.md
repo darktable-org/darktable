@@ -79,10 +79,13 @@ accompanying blog post.
 - Rewrite a good part of the slideshow view for better user's
   experience. A small preview is first displayed while computing the
   full image giving feedback that something is happening.
-  
-- A menu with a whole new icon had been added to add/remove filters directly on topbar. Some range widgets have been removed from the list as they are not readable on that bar.
 
-- New range rating widget have a new UI for better readability. This new widget should be easier to use and more efficient.
+- A menu with a new icon had been added to add/remove filters
+  directly on topbar. Some range widgets have been removed from the
+  list as they are not readable on the topbar.
+
+- Rework the range rating widget UI for better readability. This
+  new widget should be easier to use and more efficient.
 
 ## Other Changes
 
