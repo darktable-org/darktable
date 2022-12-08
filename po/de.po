@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-30 11:59+0100\n"
-"PO-Revision-Date: 2022-12-02 09:43+0100\n"
+"PO-Revision-Date: 2022-12-08 22:02+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -961,7 +961,8 @@ msgstr "nur ein Leuchttisch-Modul wird eingeblendet"
 #: ../build/bin/preferences_gen.h:4004
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
-"Diese Option schaltet das Verhalten von Shift+Klick in der Leuchttisch-Ansicht um"
+"Diese Option schaltet das Verhalten von Shift+Klick in der Leuchttisch-"
+"Ansicht um"
 
 #: ../build/bin/preferences_gen.h:4026
 msgid "scroll utility modules to the top when expanded"
@@ -1248,8 +1249,8 @@ msgstr "nur ein Dunkelkammer-Modul wird eingeblendet"
 #: ../build/bin/preferences_gen.h:5227
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
-"Diese Option schaltet das Verhalten von Shift+Klick in der Dunkelkammer-Ansicht "
-"um"
+"Diese Option schaltet das Verhalten von Shift+Klick in der Dunkelkammer-"
+"Ansicht um"
 
 #: ../build/bin/preferences_gen.h:5249
 msgid "only collapse modules in current group"
@@ -8518,8 +8519,8 @@ msgid ""
 "ctrl+scroll (%d%%)"
 msgstr ""
 "<b>Ausblendemodus</b>: Shift+Klick, <b>drehen</b>: Strg+ziehen\n"
-"<b>Größe</b>: scrollen, <b>Ausblendegöße</b>: Shift+scrollen, <b>Deckkraft</b>: "
-"Strg+scrollen (%d%%)"
+"<b>Größe</b>: scrollen, <b>Ausblendegöße</b>: Shift+scrollen, <b>Deckkraft</"
+"b>: Strg+scrollen (%d%%)"
 
 #: ../src/develop/masks/gradient.c:101 ../src/develop/masks/gradient.c:140
 #, c-format
@@ -13813,7 +13814,8 @@ msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: Shift+ziehen\n"
+"<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: "
+"Shift+ziehen\n"
 "<b>Ausrichten</b>: Rechtsclick-ziehen"
 
 #: ../src/iop/clipping.c:3069
@@ -14408,8 +14410,8 @@ msgstr ""
 "Klick zum Auswählen. \n"
 "Doppelklick zum Zurücksetzen. \n"
 "Rechtsklick zum Löschen des Felds. \n"
-"Shift+Taste drücken während Farbwahl mittels Pipette, um die Farbe des Feldes zu "
-"ersetzen."
+"Shift+Taste drücken während Farbwahl mittels Pipette, um die Farbe des "
+"Feldes zu ersetzen."
 
 #: ../src/iop/colorchecker.c:1343
 msgid "patch"
@@ -14982,7 +14984,8 @@ msgstr "Änderungen übernehmen"
 #: ../src/iop/crop.c:1522
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: Shift+ziehen"
+"<b>Größe ändern</b>: ziehen, <b>Seitenverhältnis beibehalten</b>: "
+"Shift+ziehen"
 
 #: ../src/iop/crop.c:1529
 msgid ""
@@ -17301,8 +17304,8 @@ msgid ""
 "change direction"
 msgstr ""
 "Klick und ziehen fügt Punkt hinzu.\n"
-"Scrollen, um die Größe zu ändern. - Shift+scrollen, um die Stärke zu ändern. - "
-"Strg+scrollen, um die Richtung zu ändern."
+"Scrollen, um die Größe zu ändern. - Shift+scrollen, um die Stärke zu ändern. "
+"- Strg+scrollen, um die Richtung zu ändern."
 
 #: ../src/iop/liquify.c:3546
 msgid ""
@@ -17311,8 +17314,8 @@ msgid ""
 "change direction"
 msgstr ""
 "Mausklick fügt eine Linie hinzu.\n"
-"Scrollen, um die Größe zu ändern. - Shift+scrollen, um die Stärke zu ändern. - "
-"Strg+scrollen, um die Richtung zu ändern."
+"Scrollen, um die Größe zu ändern. - Shift+scrollen, um die Stärke zu ändern. "
+"- Strg+scrollen, um die Richtung zu ändern."
 
 #: ../src/iop/liquify.c:3549
 msgid ""
@@ -17321,8 +17324,8 @@ msgid ""
 "change direction"
 msgstr ""
 "Mausklick fügt eine Kurve hinzu.\n"
-"Scrollen, um die Größe zu ändern. - Shift+scrollen, um die Stärke zu ändern. - "
-"Strg+scrollen, um die Richtung zu ändern."
+"Scrollen, um die Größe zu ändern. - Shift+scrollen, um die Stärke zu ändern. "
+"- Strg+scrollen, um die Richtung zu ändern."
 
 #: ../src/iop/liquify.c:3596
 msgid ""
@@ -19139,7 +19142,8 @@ msgid ""
 msgstr ""
 "Über Bild scrollen, um Belichtung des ausgewählten Tonwertbereichs zu "
 "ändern,\n"
-"mit Shift+scrollen in großen Schritten, mit Strg+scrollen in kleinen Schritten."
+"mit Shift+scrollen in großen Schritten, mit Strg+scrollen in kleinen "
+"Schritten."
 
 #: ../src/iop/toneequal.c:2071
 msgid "some parameters are out-of-bounds"
@@ -24404,7 +24408,7 @@ msgstr "Bereich ausgehend vom letzen Bild auswählen"
 
 #: ../src/views/lighttable.c:894
 msgid "add image to or remove it from a selection"
-msgstr ""
+msgstr "Bild in Auswahl hinzufügen oder entfernen"
 
 #: ../src/views/lighttable.c:898
 msgid "change image order"
