@@ -6,16 +6,6 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      macosx_deployment_target 10.14
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
-    You will also need to add a patch for gnutls
-    (that patch fixes certificate storage):
-     $ mkdir -p ~/ports/devel/gnutls/files
-     $ cp -R "$(port dir gnutls)" ~/ports/devel
-     $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.patch
-    then append this line:
-     patchfiles-append patch.diff
-    to ~/ports/*/*/Portfile file you just copied and run:
-     $ portindex ~/ports
-    Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
      $ sudo port install exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic-lib libheif portmidi libsdl2 libavif libjxl
     Clone darktable git repository (in this example into ~/src):

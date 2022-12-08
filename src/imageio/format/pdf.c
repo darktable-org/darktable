@@ -687,7 +687,7 @@ void gui_init(dt_imageio_module_format_t *self)
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->mode, self, NULL, N_("image mode"),
                                _("normal -- just put the images into the pdf\n"
                                  "draft -- images are replaced with boxes\n"
-                                 "debug -- only show the outlines and bounding boxen"),
+                                 "debug -- only show the outlines and bounding boxes"),
                                dt_conf_get_int("plugins/imageio/format/pdf/mode"),
                                mode_toggle_callback, self,
                                N_("normal"), N_("draft"), N_("debug"));
@@ -817,4 +817,3 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

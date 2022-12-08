@@ -1,7 +1,7 @@
 name: CI
 
 concurrency: 
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 # Keep in sync with manualrun.yml!
@@ -50,7 +50,6 @@ jobs:
       matrix:
         os:
           - { label: ubuntu-20.04, code: focal }
-          #- { label: ubuntu-18.04, code: bionic }
         compiler:
           #- { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
           - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
@@ -69,17 +68,6 @@ jobs:
         generator:
           #- Unix Makefiles
           - Ninja
-        include:
-          - os: { label: ubuntu-18.04, code: bionic }
-            btype: RelWithDebInfo
-            compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
-            target: nofeatures
-            generator: Ninja
-          - os: { label: ubuntu-18.04, code: bionic }
-            btype: RelWithDebInfo
-            compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
-            target: nofeatures_nosse
-            generator: Ninja
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -183,7 +171,6 @@ jobs:
       matrix:
         os:
           - { label: ubuntu-20.04, code: focal }
-          #- { label: ubuntu-18.04, code: bionic }
         compiler:
           #- { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
           - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
@@ -204,16 +191,6 @@ jobs:
           #- Unix Makefiles
           - Ninja
         include:
-          - os: { label: ubuntu-18.04, code: bionic }
-            btype: RelWithDebInfo
-            compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
-            target: build
-            generator: Ninja
-          - os: { label: ubuntu-18.04, code: bionic }
-            btype: Release
-            compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
-            target: build
-            generator: Ninja
           - os: { label: ubuntu-latest, code: latest }
             btype: Debug
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
@@ -396,11 +373,13 @@ jobs:
             git
             intltool
           pacboy: >-
-            toolchain:p
+            cc:p
             cmake:p
             cmocka:p
+            gcc-libs:p
             ninja:p
             nsis:p
+            omp:p
             dbus-glib:p
             drmingw:p
             exiv2:p
@@ -472,7 +451,6 @@ jobs:
       fail-fast: true
       matrix:
         build:
-          - { os: macos-10.15, xcode: 12.4,   deployment: 10.14 }
           - { os: macos-11,    xcode: 12.5.1, deployment: 11.3 }
           - { os: macos-11,    xcode: 13.2.1, deployment: 12.1 }
           - { os: macos-12,    xcode: 13.4,   deployment: 12.3 }

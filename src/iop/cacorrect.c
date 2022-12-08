@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1338,7 +1338,7 @@ static void _display_ca_error(struct dt_iop_module_t *self)
   else if(g->error == CACORRECT_ERROR_MATH)
      dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
                                       _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"
-                                        "you can get more info by running dt via the console."), NULL);
+                                        "you can get more info by running darktable via the console."), NULL);
   else if(g->error == CACORRECT_ERROR_LIN)
      dt_iop_set_module_trouble_message(self, _("quality"),
                                       _("internals maths found too few data points so restricted the order of the fit to linear.\n"

@@ -105,7 +105,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
       - use it to set same settings on all bauhaus (sliders and combobox)
   - dt_bauhaus_alignment:
       - used for icons that needs to be aligned with bauhaus widgets in libs
-      - ex : color picker for auto-tune setting in filmic or mask on same module and tone equalizer
+      - ex : mask display line on filmicrgb and tone equalizer
   - dt_bauhaus_popup:
       - used for all bauhaus popup
   - dt_spacing_sw:
@@ -160,9 +160,9 @@ Why that? Just because it's a developer choice and most classes use underscore i
 /* text fields */
 @define-color field_bg @grey_15;
 @define-color field_fg @fg_color;
-@define-color field_active_bg @grey_30;
+@define-color field_active_bg @grey_25;
 @define-color field_active_fg @grey_80;
-@define-color field_selected_bg @grey_45;
+@define-color field_selected_bg @grey_40;
 @define-color field_selected_fg @grey_85;
 @define-color field_hover_bg @grey_55;
 @define-color field_hover_fg @grey_95;
@@ -201,7 +201,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color range_bg_color alpha(@fg_color, 0.12);
 @define-color range_cursor_color alpha(@fg_color, 0.75);
 @define-color range_sel_color alpha(@bauhaus_fill, 0.6);
-@define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.8);
+@define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.35);
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
@@ -226,7 +226,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 @define-color colorlabel_red rgb(230,0,0);
 @define-color colorlabel_green rgb(0,230,0);
-@define-color colorlabel_blue rgb(0,0,230);
+@define-color colorlabel_blue rgb(40,140,255);
 @define-color colorlabel_yellow rgb(255,180,0);
 @define-color colorlabel_purple rgb(230,0,230);
 
@@ -238,6 +238,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
   color: @fg_color;
   font-size: 1em;   /* avoid changing this settings or you will made the UI quite awful (too big or too small) */
   font-family: sans-serif;
+  font-feature-settings: "tnum";
   font-weight: normal;
   box-shadow:none;
   outline-style:none;
@@ -404,7 +405,8 @@ header button,
   color: @button_fg;
 }
 
-spinbutton > button
+spinbutton > button,
+#top-hinter box
 {
   margin: 0.07em;
 }
@@ -853,6 +855,13 @@ tooltip label,
   color: @tooltip_fg_color;
 }
 
+tooltip separator
+{
+  margin: 0.6em 2em;
+  padding-bottom: 0.07em;
+  background-color: @selected_bg_color;
+}
+
 combobox label
 {
   margin: 0 0.35em 0 0;
@@ -920,19 +929,20 @@ notebook tabs,
 /* Set notebook tabs */
 notebook tab label
 {
+  border-bottom: 0.1em solid transparent;
   color: shade(@field_selected_fg, 0.75);
   padding: 0.28em 0.07em;
 }
 
 notebook tab:hover label
 {
-  border-bottom: 0.1em solid shade(@field_selected_fg, 0.7);
+  border-bottom-color: shade(@field_selected_fg, 0.7);
   color: shade(@field_selected_fg, 0.9);
 }
 
 notebook tab:checked label
 {
-  border-bottom: 0.1em solid @field_selected_fg;
+  border-bottom-color: @field_selected_fg;
   color: @field_selected_fg;
 }
 
@@ -1018,6 +1028,12 @@ treeview header label
 {
   font-weight: bold;
   padding: 0.14em;
+}
+
+/* be sure spinbutton is displayed without alpha background on treeview */
+treeview spinbutton
+{
+  background-color: @field_active_bg;
 }
 
 /* set margin around treeview (need to be applied on scrolledwindow which is a direct parent) */
@@ -1250,7 +1266,7 @@ filechooser row:hover .sidebar-icon
 /*--------------------
   - Quick access tab -
   --------------------*/
-#basics-header-box
+#basics-box-labels widget
 {
   border-top: 0.07em solid @lighttable_bg_color;
 }
@@ -1261,7 +1277,7 @@ filechooser row:hover .sidebar-icon
   padding: 0.21em 0.7em;
 }
 
-#basics-box-labels #basics-header-box:first-child,
+#basics-box-labels widget:first-child,
 #basics-box-labels .dt_section_label,
 #thumb-localcopy:active
 {
@@ -1290,7 +1306,7 @@ filechooser row:hover .sidebar-icon
 #module-filtering #collect-rule-widget   /* set filter widget box */
 {
   background-color: @collapsible_bg_color;
-  margin: 0.3em 0 0.5em 0;
+  margin: 0.2em 0;
   padding: 0.07em 0.28em;
   border-radius: 0.21em;
 }
@@ -1322,7 +1338,7 @@ filechooser row:hover .sidebar-icon
 
 /* set range parts and quick filter box in header toolbar */
 .search,
-#range-select #dt-range-band,
+#dt-range-band,
 #header-toolbar #bauhaus-combobox:not(.dt_transparent_background)
 {
   background-color: @range_bg_color;
@@ -1332,9 +1348,16 @@ filechooser row:hover .sidebar-icon
 .dt_quick_filter,
 #filter-sort-box label,
 #header-rule-box label,
-#header-sort-box label
+#header-sort-box label,
+#header-toolbar .dt_module_btn
 {
   margin-right: 0.56em;
+}
+
+#header-toolbar .dt_module_btn
+{
+    margin-left: 0;
+    padding-left: 0;
 }
 
 #filter-colors-box .dt_module_btn
@@ -1351,6 +1374,42 @@ filechooser row:hover .sidebar-icon
 #collect-header-box button
 {
   margin-right: 0;
+}
+
+#dt-range-band-graph
+{
+  color: @range_graph_color;
+}
+
+#dt-range-band-selection
+{
+  color: @range_sel_color;
+}
+
+#dt-range-band-icons
+{
+  color: @range_icon_color;
+}
+
+#dt-range-band-cursor
+{
+  color: @range_cursor_color;
+}
+
+#dt-range-rating #dt-range-band-cursor,
+#dt-range-rating #dt-range-band-selection
+{
+  color: transparent;
+}
+
+#dt-range-band-icons:active
+{
+  color: @bauhaus_fg;
+}
+
+#dt-range-band-icons:hover
+{
+  color: @bauhaus_fg_hover;
 }
 
 /*------------
@@ -1583,7 +1642,7 @@ progressbar progress
 .dt_history_items:active,
 .dt_history_items:checked,
 button:active,
-button:checked:not(:disabled):not(.dt_transparent_background),
+button:checked:not(:disabled):not(.dt_transparent_background):not(.dt_ignore_fg_state),
 button:selected,
 cell:selected,
 checkbutton check:checked,
@@ -1606,7 +1665,7 @@ treeview *:checked:not(check)
 .dt_history_items:checked *,
 button.dt_transparent_background:checked:not(:disabled):not(.dt_ignore_fg_state)
 {
-  color: @field_selected_fg;
+  color: @field_active_fg;
 }
 
 /* Hover states, some needed background only */
@@ -1628,6 +1687,11 @@ treeview:not(#lutname) *:hover:not(check),
   background-color: alpha(@button_hover_bg, 0.5);
   border-color: transparent;
   color: shade(@fg_color, 1.15);
+}
+
+button:hover:checked:not(.combo):not(.dt_no_hover) /* allow different background on hover+active state */
+{
+  background-color: alpha(@button_hover_bg, 0.8);
 }
 
 .combo:hover,
@@ -1653,16 +1717,18 @@ button:checked cellview
   color: shade(@button_hover_fg, 0.99);
 }
 
-/* Treeviews and filechoosers states */
-treeview check, /* set specific background color about check buttons like in copy/paste dialog window */
-menuitem:not(.dt_transparent_background) check  /* be sure transparent background is applied to preset and blend menus */
+/* Treeviews, entries and filechoosers states */
+menuitem:not(.dt_transparent_background) check,  /* be sure transparent background is applied to preset and blend menus */
+treeview check /* set specific background color about check buttons like in copy/paste dialog window */
 {
   background-color: @field_active_bg;
   border-color: @border_color;
 }
 
-treeview *:active,
-filechooser *:active
+.changed,
+entry:active,
+filechooser *:active,
+treeview *:active
 {
   background-color: @field_active_bg;
   color: @field_active_fg;
@@ -1674,10 +1740,16 @@ treeview check:selected
   border-color: @plugin_bg_color;
 }
 
-treeview check:hover,
-menuitem check:hover
+menuitem check:hover,
+treeview check:hover
 {
   color: @bauhaus_fg_hover;
+}
+
+entry:hover
+{
+  color: @field_hover_fg;
+  background-color: @field_hover_bg;
 }
 
 /* Adjust delete folder dialog window */
@@ -1713,19 +1785,6 @@ treeview#delete-dialog:selected
   color: @bauhaus_fg_hover;
 }
 
-/* Entries states */
-entry:hover
-{
-  color: @field_hover_fg;
-  background-color: @field_hover_bg;
-}
-
-entry:active
-{
-  color: @field_active_fg;
-  background-color: @field_active_bg;
-}
-
 .iop_drag_icon
 {
   border: 0.07em solid @plugin_bg_color;
@@ -1759,8 +1818,7 @@ Hierarchy :
       #thumb-colorlabels                                             (GtkDarktableThumbnailBtn -- colorlabels icon, 1 icon with all labels)
       #thumb-localcopy                                               (GtkDarktableThumbnailBtn -- local copy triangle icon)
       #thumb-altered                                                 (GtkDarktableThumbnailBtn -- altered icon)
-      #thumb-group                                                   (GtkDarktableThumbnailBtn -- grouping icon)
-      #thumb-audio                                                   (GtkDarktableThumbnailBtn -- audio sidecar icon)
+      #thumb-group-audio                                             (GtkDarktableThumbnailBtn -- grouping and audio sidecar icons)
 
 Details :
 
@@ -1801,8 +1859,7 @@ Details :
   ----------------------------*/
 /* Background */
 .dt_thumbtable,
-.dt_culling,
-.dt_preview
+.dt_fullview
 {
   background-color: @lighttable_bg_color;
 }
@@ -2082,18 +2139,12 @@ Details :
 }
 
 /* Set hover group and audio effect */
-.dt_overlays_hover #thumb-main:hover #thumb-group:hover,
-.dt_overlays_hover #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-group:hover,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_always #thumb-main:hover #thumb-group:hover,
-.dt_overlays_always #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_always_extended #thumb-main:hover #thumb-group:hover,
-.dt_overlays_always_extended #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_mixed #thumb-main:hover #thumb-group:hover,
-.dt_overlays_mixed #thumb-main:hover #thumb-audio:hover,
-.dt_overlays_hover_block #thumb-main:hover #thumb-group:hover,
-.dt_overlays_hover_block #thumb-main:hover #thumb-audio:hover
+.dt_overlays_hover #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_always #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_always_extended #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_mixed #thumb-main:hover #thumb-group-audio:hover,
+.dt_overlays_hover_block #thumb-main:hover #thumb-group-audio:hover
 {
   color: @thumbnail_fg_color;
 }
@@ -2126,11 +2177,6 @@ Details :
   color: rgba(0,0,0,0.15); /* add some transparency to infos items in thumbnail */
 }
 
-.dt_thumbnail_rating_6 #thumb-star
-{
-  color: transparent; /* needed to hide completely stars in rejected images as they are not needed, except in hover mode if we want to un-reject images */
-}
-
 /* Set local copy mark */
 #thumb-localcopy
 {
@@ -2150,35 +2196,23 @@ Details :
 /*---------------------------------------------------------
   - Hide icons on all lighttable modes and duplicate ones -
   ---------------------------------------------------------*/
-.dt_culling #thumb-ext,
-.dt_culling #thumb-main:selected #thumb-ext,
-.dt_culling #thumb-main:hover #thumb-ext,
-.dt_overlays_always#culling #thumb-altered,
-.dt_overlays_always#culling #thumb-audio,
-.dt_overlays_always#culling #thumb-group,
-.dt_overlays_always_extended#culling #thumb-altered,
-.dt_overlays_always_extended#culling #thumb-audio,
-.dt_overlays_always_extended#culling #thumb-group,
-.dt_preview #thumb-ext,
-.dt_preview #thumb-main:selected #thumb-ext,
-.dt_preview #thumb-main:hover #thumb-ext,
-.dt_overlays_always#preview #thumb-altered,
-.dt_overlays_always#preview #thumb-audio,
-.dt_overlays_always#preview #thumb-group,
-.dt_overlays_always_extended#preview #thumb-altered,
-.dt_overlays_always_extended#preview #thumb-audio,
-.dt_overlays_always_extended#preview #thumb-group,
-.dt_duplicate_ui #thumb-main:hover #thumb-group,
+.dt_fullview #thumb-ext,
+.dt_fullview #thumb-main:selected #thumb-ext,
+.dt_fullview #thumb-main:hover #thumb-ext,
+.dt_duplicate_ui #thumb-main:hover #thumb-group-audio,
 .dt_duplicate_ui #thumb-main:hover #thumb-altered,
-.dt_duplicate_ui #thumb-main:hover #thumb-audio,
+.dt_duplicate_ui #thumb-group-audio,
 .dt_duplicate_ui #thumb-altered,
-.dt_duplicate_ui #thumb-audio,
-.dt_duplicate_ui #thumb-group
+.dt_overlays_always.dt_fullview #thumb-group-audio,
+.dt_overlays_always.dt_fullview #thumb-altered,
+.dt_overlays_always_extended.dt_fullview #thumb-group-audio,
+.dt_overlays_always_extended.dt_fullview #thumb-altered,
+.dt_thumbnail_rating_6 #thumb-star /* needed to hide completely stars in rejected images as they are not needed, except in hover mode if we want to un-reject images */
 {
   color: transparent;
 }
 
-.dt_overlays_always#preview #thumb-bottom > *
+.dt_overlays_always.dt_fullview #thumb-bottom > *
 {
   padding-top: 0.21em;
 }
@@ -2190,45 +2224,33 @@ Details :
   padding-right: 0.28em;
 }
 
-/*-----------------------------
-  - Culling and preview modes -
-  -----------------------------*/
+/*-------------------------------------------------
+  - Culling and preview modes (dt_fullview class) -
+  -----------------------------------------------*/
 /* Hide not wanted things on these modes: ext name and thumb_main border */
-.dt_culling #thumb-back,
-.dt_culling #thumb-main:selected #thumb-back,
-.dt_culling #thumb-main:hover #thumb-back,
-.dt_culling #thumb-main:active #thumb-back,
-.dt_preview #thumb-back,
-.dt_preview #thumb-main:selected #thumb-back,
-.dt_preview #thumb-main:hover #thumb-back,
-.dt_preview #thumb-main:active #thumb-back
+.dt_fullview #thumb-back,
+.dt_fullview #thumb-main:selected #thumb-back,
+.dt_fullview #thumb-main:hover #thumb-back,
+.dt_fullview #thumb-main:active #thumb-back
 {
   background-color: transparent;
   border: 0;
 }
 
 /* Set image borders */
-.dt_preview #thumb-image, .dt_preview_thumb_image#thumb-image
-{
-  margin : 0.7em;
-}
-.dt_culling #thumb-main:selected #thumb-image,
-.dt_preview #thumb-main:selected #thumb-image
+.dt_fullview #thumb-main:selected #thumb-image
 {
   border: 0.14em solid @plugin_bg_color;
 }
 
-.dt_culling #thumb-main:hover #thumb-image,
-.dt_preview #thumb-main:hover #thumb-image
+.dt_fullview #thumb-main:hover #thumb-image
 {
   border: 0.14em solid @thumbnail_hover_bg_color;
 }
 
 /* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
-.dt_overlays_always#culling #thumb-bottom,
-.dt_overlays_always_extended#culling #thumb-bottom,
-.dt_overlays_always#preview #thumb-bottom,
-.dt_overlays_always_extended#preview #thumb-bottom
+.dt_overlays_always.dt_fullview #thumb-bottom,
+.dt_overlays_always_extended.dt_fullview #thumb-bottom
 {
   background-color: shade(@lighttable_bg_color, 1.1);
 }

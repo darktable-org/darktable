@@ -193,7 +193,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // than as an ICC binary blob which is possible.
   // If we are unable to find the required color encoding data for libjxl we will
   // just fallback to providing an ICC blob (and hope we can at least do that!).
-  bool write_color_natively = true;
+  gboolean write_color_natively = TRUE;
 
   JxlColorEncoding color_encoding;
   color_encoding.color_space = JXL_COLOR_SPACE_RGB;
@@ -247,7 +247,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
       color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
       break;
     default:
-      write_color_natively = false;
+      write_color_natively = FALSE;
       break;
   }
 
@@ -583,9 +583,9 @@ void gui_init(dt_imageio_module_format_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(
       gui->original, self, NULL, N_("encoding color profile"),
-      N_("the color profile used by the encoder\n"
-         "permit internal XYB color space conversion for more efficient lossy compression,\n"
-         "or ensure no conversion to keep original image color space (implied for lossless)"),
+      _("the color profile used by the encoder\n"
+        "permit internal XYB color space conversion for more efficient lossy compression,\n"
+        "or ensure no conversion to keep original image color space (implied for lossless)"),
       original, original_changed, NULL, N_("internal"), N_("original"));
   dt_bauhaus_combobox_set_default(gui->original,
                                   dt_confgen_get_bool("plugins/imageio/format/jxl/original", DT_DEFAULT) & 1);

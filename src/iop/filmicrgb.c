@@ -62,7 +62,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
 
-DT_MODULE_INTROSPECTION(5, dt_iop_filmicrgb_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_filmicrgb_params_t)
 
 /**
  * DOCUMENTATION
@@ -117,6 +117,7 @@ typedef enum dt_iop_filmicrgb_methods_type_t
   DT_FILMIC_METHOD_POWER_NORM = 3,        // $DESCRIPTION: "RGB power norm"
   DT_FILMIC_METHOD_EUCLIDEAN_NORM_V2 = 5, // $DESCRIPTION: "RGB euclidean norm"
   DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1 = 4, // $DESCRIPTION: "RGB euclidean norm (legacy)"
+  DT_FILMIC_METHOD_LAST = 6, // this must always be greatest of the numbers above + 1
 } dt_iop_filmicrgb_methods_type_t;
 
 
@@ -183,7 +184,7 @@ typedef struct dt_iop_filmicrgb_params_t
   float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
   float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
   float white_point_source;    // $MIN: 0.1 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
-  float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
+  float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: 0.0 $DESCRIPTION: "threshold"
   float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
   float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "bloom ↔ reconstruct"
   float reconstruct_grey_vs_color; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "gray ↔ colorful details"
@@ -198,7 +199,7 @@ typedef struct dt_iop_filmicrgb_params_t
   float saturation;         // $MIN: -200 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
   float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "add noise in highlights"
-  dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_MAX_RGB $DESCRIPTION: "preserve chrominance"
+  dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve chrominance"
   dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V4 $DESCRIPTION: "color science"
   gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
   gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
@@ -208,6 +209,7 @@ typedef struct dt_iop_filmicrgb_params_t
   dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in highlights"
   gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
   dt_iop_filmicrgb_spline_version_type_t spline_version; // $DEFAULT: DT_FILMIC_SPLINE_VERSION_V3 $DESCRIPTION: "spline handling"
+  gboolean enable_highlight_reconstruction; // $DEFAULT: FALSE $DESCRIPTION: "enable highlight reconstruction"
 } dt_iop_filmicrgb_params_t;
 // clang-format on
 
@@ -268,6 +270,7 @@ typedef struct dt_iop_filmicrgb_gui_data_t
   GtkWidget *high_quality_reconstruction;
   GtkWidget *noise_level, *noise_distribution;
   GtkWidget *compensate_icc_black;
+  GtkWidget *enable_highlight_reconstruction;
   GtkNotebook *notebook;
   GtkDrawingArea *area;
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
@@ -317,6 +320,7 @@ typedef struct dt_iop_filmicrgb_data_t
   int high_quality_reconstruction;
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
   dt_noise_distribution_t noise_distribution;
+  gboolean enable_highlight_reconstruction;
 } dt_iop_filmicrgb_data_t;
 
 
@@ -443,7 +447,7 @@ static inline void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 5)
+  if(old_version == 1 && new_version == 6)
   {
     typedef struct dt_iop_filmicrgb_params_v1_t
     {
@@ -498,9 +502,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
     convert_to_spline_v3(n);
+    n->enable_highlight_reconstruction = TRUE;
     return 0;
   }
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2 && new_version == 6)
   {
     typedef struct dt_iop_filmicrgb_params_v2_t
     {
@@ -565,10 +570,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.f;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
+    n->enable_highlight_reconstruction = TRUE;
     convert_to_spline_v3(n);
     return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3 && new_version == 6)
   {
     typedef struct dt_iop_filmicrgb_params_v3_t
     {
@@ -642,10 +648,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = d->noise_level;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
+    n->enable_highlight_reconstruction = TRUE;
     convert_to_spline_v3(n);
     return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4 && new_version == 6)
   {
     typedef struct dt_iop_filmicrgb_params_v4_t
     {
@@ -697,7 +704,83 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       default:
         return 1;
     }
+    n->enable_highlight_reconstruction = TRUE;
     convert_to_spline_v3(n);
+    return 0;
+  }
+  if(old_version == 5 && new_version == 6)
+  {
+    typedef struct dt_iop_filmicrgb_params_v5_t
+    {
+      float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
+      float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
+      float white_point_source;    // $MIN: 0.1 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
+      float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
+      float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
+      float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "bloom ↔ reconstruct"
+      float reconstruct_grey_vs_color; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "gray ↔ colorful details"
+      float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "structure ↔ texture"
+      float security_factor;                  // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
+      float grey_point_target;                // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle gray"
+      float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
+      float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
+      float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
+      float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 0.01
+      float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.0
+      float saturation;         // $MIN: -200 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
+      float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
+      float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "add noise in highlights"
+      dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve chrominance"
+      dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V4 $DESCRIPTION: "color science"
+      gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
+      gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
+      int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
+      dt_iop_filmic_noise_distribution_t noise_distribution; // $DEFAULT: DT_NOISE_GAUSSIAN $DESCRIPTION: "type of noise"
+      dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in shadows"
+      dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in highlights"
+      gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
+      dt_iop_filmicrgb_spline_version_type_t spline_version; // $DEFAULT: DT_FILMIC_SPLINE_VERSION_V3 $DESCRIPTION: "spline handling"
+    } dt_iop_filmicrgb_params_v5_t;
+
+    dt_iop_filmicrgb_params_v5_t *o = (dt_iop_filmicrgb_params_v5_t *)old_params;
+    dt_iop_filmicrgb_params_t *n = (dt_iop_filmicrgb_params_t *)new_params;
+
+    // Init params with defaults
+    memcpy(new_params, self->default_params, sizeof(dt_iop_filmicrgb_params_t));
+
+    // Copy over the old parameters
+    n->grey_point_source = o->grey_point_source;
+    n->black_point_source = o->black_point_source;
+    n->white_point_source = o->white_point_source;
+    n->reconstruct_threshold = o->reconstruct_threshold;
+    n->reconstruct_feather = o->reconstruct_feather;
+    n->reconstruct_bloom_vs_details = o->reconstruct_bloom_vs_details;
+    n->reconstruct_grey_vs_color = o->reconstruct_grey_vs_color;
+    n->reconstruct_structure_vs_texture = o->reconstruct_structure_vs_texture;
+    n->security_factor = o->security_factor;
+    n->grey_point_target = o->grey_point_target;
+    n->black_point_target = o->black_point_target;
+    n->white_point_target = o->white_point_target;
+    n->output_power = o->output_power;
+    n->latitude = o->latitude;
+    n->contrast = o->contrast;
+    n->saturation = o->saturation;
+    n->balance = o->balance;
+    n->noise_level = o->noise_level;
+    n->preserve_color = o->preserve_color;
+    n->version = o->version;
+    n->auto_hardness = o->auto_hardness;
+    n->custom_grey = o->custom_grey;
+    n->high_quality_reconstruction = o->high_quality_reconstruction;
+    n->noise_distribution = o->noise_distribution;
+    n->shadows = o->shadows;
+    n->highlights = o->highlights;
+    n->compensate_icc_black = o->compensate_icc_black;
+    n->spline_version = o->spline_version;
+
+    // New parameter
+    n->enable_highlight_reconstruction = TRUE;
+
     return 0;
   }
   return 1;
@@ -1864,7 +1947,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
 
   // build a mask of clipped pixels
-  const int recover_highlights = mask_clipped_pixels(in, mask, data->normalize, data->reconstruct_feather, roi_out->width, roi_out->height, 4);
+  const int recover_highlights = data->enable_highlight_reconstruction
+    && mask_clipped_pixels(in, mask, data->normalize, data->reconstruct_feather, roi_out->width, roi_out->height, 4);
 
   // display mask and exit
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && mask)
@@ -2191,7 +2275,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  if(!run_fast && is_clipped > 0)
+  if(!run_fast && is_clipped > 0 && d->enable_highlight_reconstruction)
   {
     // Inpaint noise
     const float noise_level = d->noise_level / scale;
@@ -2448,10 +2532,11 @@ static void show_mask_callback(GtkToggleButton *button, GdkEventButton *event, g
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
+  ++darktable.gui->reset;
   g->show_mask = !(g->show_mask);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_highlight_mask), !g->show_mask);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_highlight_mask), g->show_mask);
+  --darktable.gui->reset;
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -2829,6 +2914,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->reconstruct_structure_vs_texture = (p->reconstruct_structure_vs_texture / 100.0f + 1.f) / 2.f;
   d->reconstruct_bloom_vs_details = (p->reconstruct_bloom_vs_details / 100.0f + 1.f) / 2.f;
   d->reconstruct_grey_vs_color = (p->reconstruct_grey_vs_color / 100.0f + 1.f) / 2.f;
+
+  d->enable_highlight_reconstruction = p->enable_highlight_reconstruction;
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -2873,6 +2960,13 @@ void gui_update(dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_hardness), p->auto_hardness);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->custom_grey), p->custom_grey);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->enable_highlight_reconstruction), p->enable_highlight_reconstruction);
+
+  if(p->preserve_color == DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1 && dt_bauhaus_combobox_length(g->preserve_color) < DT_FILMIC_METHOD_LAST)
+  {
+    dt_bauhaus_combobox_add_full(g->preserve_color, _("RGB euclidean norm (legacy)"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                 GINT_TO_POINTER(DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1), NULL, TRUE);
+  }
 
   gui_changed(self, NULL, NULL);
 }
@@ -4151,7 +4245,6 @@ void gui_init(dt_iop_module_t *self)
   // Auto tune slider
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
   dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
-  dt_gui_add_class(g->auto_button, "dt_bauhaus_alignment");
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
                                                 "works better for landscapes and evenly-lit pictures\n"
@@ -4165,6 +4258,8 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *label = dt_ui_section_label_new(_("highlights clipping"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
+
+  g->enable_highlight_reconstruction = dt_bauhaus_toggle_from_params(self, "enable_highlight_reconstruction");
 
   g->reconstruct_threshold = dt_bauhaus_slider_from_params(self, "reconstruct_threshold");
   dt_bauhaus_slider_set_format(g->reconstruct_threshold, _(" EV"));
@@ -4305,6 +4400,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original colors are preserved.\n"
                                                    "may reinforce chromatic aberrations and chroma noise,\n"
                                                    "so ensure they are properly corrected elsewhere."));
+  dt_bauhaus_combobox_remove_at(g->preserve_color, DT_FILMIC_METHOD_LAST - 1); // hide legacy Euclidean norm by default
 
   // Curve type
   g->highlights = dt_bauhaus_combobox_from_params(self, "highlights");
@@ -4334,7 +4430,7 @@ void gui_init(dt_iop_module_t *self)
   g->high_quality_reconstruction = dt_bauhaus_slider_from_params(self, "high_quality_reconstruction");
   gtk_widget_set_tooltip_text(g->high_quality_reconstruction,
                               _("run extra passes of chromaticity reconstruction.\n"
-                                "more iterations means more color propagation from neighbourhood.\n"
+                                "more iterations means more color propagation from neighborhood.\n"
                                 "this will be slower but will yield more neutral highlights.\n"
                                 "it also helps with difficult cases of magenta highlights."));
 
@@ -4422,6 +4518,26 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     }
   }
 
+  if(w == g->reconstruct_threshold || w == g->reconstruct_feather)
+  {
+    // Sliding threshold or feather sliders enables the highlight reconstruction
+    gtk_widget_set_sensitive(g->reconstruct_bloom_vs_details, TRUE);
+    gtk_widget_set_sensitive(g->reconstruct_grey_vs_color, TRUE);
+    gtk_widget_set_sensitive(g->reconstruct_structure_vs_texture, TRUE);
+
+    ++darktable.gui->reset;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->enable_highlight_reconstruction), TRUE);
+    p->enable_highlight_reconstruction = TRUE;
+    --darktable.gui->reset;
+  }
+
+  if(!w || w == g->enable_highlight_reconstruction)
+  {
+    gtk_widget_set_sensitive(g->reconstruct_bloom_vs_details, p->enable_highlight_reconstruction);
+    gtk_widget_set_sensitive(g->reconstruct_grey_vs_color, p->enable_highlight_reconstruction);
+    gtk_widget_set_sensitive(g->reconstruct_structure_vs_texture, p->enable_highlight_reconstruction);
+  }
+
   if(!w || w == g->reconstruct_bloom_vs_details)
   {
     if(p->reconstruct_bloom_vs_details == -100.f)
@@ -4433,7 +4549,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     }
     else
     {
-      gtk_widget_set_sensitive(g->reconstruct_structure_vs_texture, TRUE);
+      gtk_widget_set_sensitive(g->reconstruct_structure_vs_texture, p->enable_highlight_reconstruction);
     }
   }
 

@@ -24,9 +24,15 @@
 #include <AppKit/AppKit.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkquartz.h>
+#include <gio/gio.h>
 #include <glib.h>
+#include <string.h>
 #ifdef MAC_INTEGRATION
 #include <gtkosxapplication.h>
+#endif
+#ifdef HAVE_P11KIT
+#define P11_KIT_FUTURE_UNSTABLE_API
+#include <p11-kit/p11-kit.h>
 #endif
 #include "osx.h"
 #include "libintl.h"
@@ -160,6 +166,39 @@ static char* _get_user_locale()
   }
 }
 
+static void _setup_ssl_trust(const char* const res_path)
+{
+#ifdef HAVE_P11KIT
+  gchar* const hash = g_compute_checksum_for_string(G_CHECKSUM_SHA1, res_path, strlen(res_path));
+  gchar* const file_path = g_build_filename(g_get_user_data_dir(), "darktable", "pkcs11", hash, "p11-kit-trust.module", NULL);
+  g_free(hash);
+  {
+    GFile* const cfg_file = g_file_new_for_path(file_path);
+    {
+      GFile* const cfg_dir = g_file_get_parent(cfg_file);
+      g_file_make_directory_with_parents(cfg_dir, NULL, NULL);
+      {
+        const char* const dir_path = g_file_get_path(cfg_dir);
+        p11_kit_override_system_files("", NULL, "", dir_path, NULL);
+        // p11_kit_override_system_files function doesn't copy its parameters,
+        // so do NOT call g_free(dir_path);
+      }
+      g_object_unref(cfg_dir);
+    }
+    {
+      gchar* const buf = g_strdup_printf("module: %s/lib/pkcs11/p11-kit-trust.so\n"
+                                         "trust-policy: yes\n"
+                                         "x-init-reserved: paths=%s/share/curl/curl-ca-bundle.crt\n",
+                                         res_path, res_path);
+      g_file_replace_contents(cfg_file, buf, strlen(buf), NULL, FALSE, G_FILE_CREATE_NONE, NULL, NULL, NULL);
+      g_free(buf);
+    }
+    g_object_unref(cfg_file);
+  }
+  g_free(file_path);
+#endif
+}
+
 void dt_osx_prepare_environment()
 {
   // check that LC_CTYPE is set to something sane
@@ -240,6 +279,7 @@ void dt_osx_prepare_environment()
       }
       g_free(lib_path);
     }
+    _setup_ssl_trust(res_path); //uses GIO, so call after GIO_MODULE_DIR is set
     g_free(res_path);
   }
 }

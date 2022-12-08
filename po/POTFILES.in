@@ -73,6 +73,7 @@ build/lib/darktable/plugins/introspection_rotatepixels.c
 build/lib/darktable/plugins/introspection_scalepixels.c
 build/lib/darktable/plugins/introspection_shadhi.c
 build/lib/darktable/plugins/introspection_sharpen.c
+build/lib/darktable/plugins/introspection_sigmoid.c
 build/lib/darktable/plugins/introspection_soften.c
 build/lib/darktable/plugins/introspection_splittoning.c
 build/lib/darktable/plugins/introspection_spots.c
@@ -173,6 +174,7 @@ src/imageio/format/copy.c
 src/imageio/format/exr.cc
 src/imageio/format/j2k.c
 src/imageio/format/jpeg.c
+src/imageio/format/jxl.c
 src/imageio/format/pdf.c
 src/imageio/format/pfm.c
 src/imageio/format/png.c

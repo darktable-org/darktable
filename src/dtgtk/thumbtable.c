@@ -659,7 +659,8 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       {
         // we stop when last image is fully shown (that means empty space at the bottom)
         // we just need to then ensure that the top row is fully shown
-        if(last->y + table->thumb_size < table->view_height && posy < 0 && table->thumbs_area.y == 0) return FALSE;
+        if(last->y + table->thumb_size < table->view_height
+           && posy < 0 && table->thumbs_area.y == 0) return FALSE;
       }
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
@@ -1246,9 +1247,6 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 
   if(min_level < max_level)
   {
-    GtkWidget *dialog;
-    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-
     gchar *txt = g_strdup(_("you have changed the settings related to how thumbnails are generated.\n"));
     if(max_level >= DT_MIPMAP_8 && min_level == DT_MIPMAP_0)
       txt = dt_util_dstrcat(txt, _("all cached thumbnails need to be invalidated.\n\n"));
@@ -1263,17 +1261,8 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 
     txt = dt_util_dstrcat(txt, _("do you want to do that now?"));
 
-    dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                                    GTK_BUTTONS_YES_NO, "%s", txt);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-
-    gtk_window_set_title(GTK_WINDOW(dialog), _("cached thumbnails invalidation"));
-    const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    g_free(txt);
-    if(res == GTK_RESPONSE_YES)
+    if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"),
+                                 "%s", txt))
     {
       sqlite3_stmt *stmt = NULL;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images", -1, &stmt, NULL);
@@ -1287,6 +1276,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
       }
       sqlite3_finalize(stmt);
     }
+    g_free(txt);
   }
   // in any case, we update thumbtable prefs values to new ones
   table->pref_hq = hql;
@@ -1750,7 +1740,8 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
 
       if(buf.buf)
       {
-        for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
+        for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4)
+          buf.buf[i] = UINT8_MAX;
 
         int w = ts, h = ts;
         if(buf.width < buf.height)

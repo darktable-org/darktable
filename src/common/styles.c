@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -259,6 +259,9 @@ static gboolean dt_styles_create_style_header(const char *name, const char *desc
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
+  dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
+
   g_free(iop_list_txt);
   return TRUE;
 }
@@ -493,9 +496,6 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
     /* backup style to disk */
     dt_styles_save_to_file(newname, NULL, FALSE);
 
-    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
-    dt_action_register(stl, newname, _apply_style_shortcut_callback, 0, 0);
-
     dt_control_log(_("style named '%s' successfully created"), newname);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
@@ -569,9 +569,6 @@ gboolean dt_styles_create_from_image(const char *name, const char *description,
 
     /* backup style to disk */
     dt_styles_save_to_file(name, NULL, FALSE);
-
-    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
-    dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
     return TRUE;
@@ -727,7 +724,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
       g_strlcpy(module->multi_name, style_item->multi_name, sizeof(module->multi_name));
 
       // TODO: this is copied from dt_dev_read_history_ext(), maybe do a helper with this?
-      if(style_item->blendop_params && (style_item->blendop_version == dt_develop_blend_version())
+      if(style_item->blendop_params
+         && (style_item->blendop_version == dt_develop_blend_version())
          && (style_item->blendop_params_size == sizeof(dt_develop_blend_params_t)))
       {
         memcpy(module->blend_params, style_item->blendop_params, sizeof(dt_develop_blend_params_t));
@@ -743,14 +741,15 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
         memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
       }
 
-      if(module->version() != style_item->module_version || module->params_size != style_item->params_size
+      if(module->version() != style_item->module_version
+         || module->params_size != style_item->params_size
          || strcmp(style_item->operation, module->op))
       {
         if(!module->legacy_params
            || module->legacy_params(module, style_item->params, labs(style_item->module_version),
                                           module->params, labs(module->version())))
         {
-          fprintf(stderr, "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, dt %d.\n",
+          fprintf(stderr, "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, darktable is %d.\n",
                   module->op, style_item->module_version, module->version());
           dt_control_log(_("module `%s' version mismatch: %d != %d"), module->op,
                          module->version(), style_item->module_version);
@@ -775,7 +774,9 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
          * by default, so if it is disabled, enable it, and replace params with
          * default_params. if user want to, he can disable it.
          */
-        if(!strcmp(module->op, "flip") && module->enabled == 0 && labs(style_item->module_version) == 1)
+        if(!strcmp(module->op, "flip")
+           && module->enabled == 0
+           && labs(style_item->module_version) == 1)
         {
           memcpy(module->params, module->default_params, module->params_size);
           module->enabled = 1;
@@ -996,6 +997,11 @@ void dt_styles_apply_to_dev(const char *name, const int32_t imgid)
 
   /* record current history state : after change (needed for undo) */
   dt_dev_undo_end_record(darktable.develop);
+
+  // rebuild the accelerators (style might have changed order)
+  dt_iop_connect_accels_all();
+
+  dt_control_log(_("applied style `%s' on current image"), name);
 }
 
 void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
@@ -1020,7 +1026,7 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
 
     dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
                                         (gchar **)(const gchar *[]){"styles", name, NULL}, FALSE);
-    if(old) dt_action_rename(old, NULL);
+    dt_action_rename(old, NULL);
 
     if(raise)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
@@ -1032,7 +1038,7 @@ void dt_styles_delete_by_name(const char *name)
   dt_styles_delete_by_name_adv(name, TRUE);
 }
 
-GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
+GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gboolean with_multi_name)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
@@ -1113,7 +1119,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
         // when we get the parameters we do not want to get the operation localized as this
         // is used to compare against the internal module name.
 
-        if(has_multi_name)
+        if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", sqlite3_column_text(stmt, 3), multi_name);
         else
           g_snprintf(iname, sizeof(iname), "%s", sqlite3_column_text(stmt, 3));
@@ -1137,7 +1143,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
       {
         const gchar *itname = dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 3));
 
-        if(has_multi_name)
+        if(has_multi_name && with_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", itname, multi_name);
         else
           g_snprintf(iname, sizeof(iname), "%s", itname);
@@ -1163,7 +1169,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
 
 char *dt_styles_get_item_list_as_string(const char *name)
 {
-  GList *items = dt_styles_get_item_list(name, FALSE, -1);
+  GList *items = dt_styles_get_item_list(name, FALSE, -1, TRUE);
   if(items == NULL) return NULL;
 
   GList *names = NULL;

@@ -302,11 +302,19 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
     }
   }
 
-  if(module_added && mod_replace == NULL && !append)
+  if(module_added
+     && mod_replace == NULL
+     && (!append || !mod_src->enabled))
   {
     // we haven't found a module to replace
     // check if there's a module with the same (operation, multi_name) on dev->iop
-    for(GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
+    // we do that if in overwrite mode or if the module being merged is disabled.
+    // In this later case we do want to disable a current instance of the same
+    // module & multi-priority.
+
+    for(GList *modules_dest = dev_dest->iop;
+        modules_dest;
+        modules_dest = g_list_next(modules_dest))
     {
       dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
@@ -328,7 +336,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   if(module_added && mod_replace == NULL)
   {
     // we haven't found a module to replace, so we will create a new instance
-    // but if there's an un-used instance on dev->iop we will use that
+    // but if there's an un-used instance on dev->iop we will use that.
 
     if(_search_history_by_op(dev_dest, mod_src) == NULL)
     {
@@ -402,9 +410,12 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
     if(mod_src->iop_order <= 0.0 || mod_src->iop_order == INT_MAX)
       fprintf(stderr, "[dt_history_merge_module_into_history] invalid source module %s %s(%d)(%i)\n",
           mod_src->op, mod_src->multi_name, mod_src->iop_order, mod_src->multi_priority);
-    if(module_duplicate && (module_duplicate->iop_order <= 0.0 || module_duplicate->iop_order == INT_MAX))
+
+    if(module_duplicate
+       && (module_duplicate->iop_order <= 0.0 || module_duplicate->iop_order == INT_MAX))
       fprintf(stderr, "[dt_history_merge_module_into_history] invalid duplicate module module %s %s(%d)(%i)\n",
           module_duplicate->op, module_duplicate->multi_name, module_duplicate->iop_order, module_duplicate->multi_priority);
+
     if(module->iop_order <= 0.0 || module->iop_order == INT_MAX)
       fprintf(stderr, "[dt_history_merge_module_into_history] invalid iop_order for module %s %s(%d)(%i)\n",
           module->op, module->multi_name, module->iop_order, module->multi_priority);
@@ -1823,4 +1834,3 @@ gboolean dt_history_delete_on_list(const GList *list, gboolean undo)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

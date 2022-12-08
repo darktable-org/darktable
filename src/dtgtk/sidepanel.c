@@ -18,6 +18,7 @@
 
 #include "dtgtk/sidepanel.h"
 #include "develop/imageop.h"
+#include "gui/gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -30,9 +31,13 @@ static GtkSizeRequestMode dtgtk_side_panel_get_request_mode(GtkWidget *widget)
 
 static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget, gint *minimum_size, gint *natural_size)
 {
-  GtkDarktableSidePanelClass *class = DTGTK_SIDE_PANEL_GET_CLASS(widget);
+  GTK_WIDGET_CLASS(dtgtk_side_panel_parent_class)->get_preferred_width(widget, minimum_size, natural_size);
 
-  *minimum_size = *natural_size = class->width;
+  const int width = dt_ui_panel_get_size(darktable.gui->ui, strcmp(gtk_widget_get_name(widget), "right")
+                                                          ? DT_UI_PANEL_LEFT : DT_UI_PANEL_RIGHT);
+
+  if(width > 10)
+    *natural_size = MAX(*minimum_size, width);
 }
 
 static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
@@ -41,9 +46,6 @@ static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
 
   widget_class->get_request_mode = dtgtk_side_panel_get_request_mode;
   widget_class->get_preferred_width = dtgtk_side_panel_get_preferred_width;
-
-  class->width
-      = dt_conf_get_int("min_panel_width"); // this is the miminum width, real size has to be applied after
 }
 
 static void dtgtk_side_panel_init(GtkDarktableSidePanel *panel)

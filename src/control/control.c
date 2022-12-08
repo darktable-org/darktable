@@ -113,10 +113,13 @@ void dt_control_init(dt_control_t *s)
   s->actions_format = (dt_action_t){ DT_ACTION_TYPE_SECTION, "format", C_("accel", "format") };   // will be placed under lib/export
   s->actions_storage = (dt_action_t){ DT_ACTION_TYPE_SECTION, "storage", C_("accel", "storage")}; // will be placed under lib/export
   s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "iop", C_("accel", "processing modules"), .next = &s->actions_lua, .target = &s->actions_blend };
-  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND, "blend", C_("accel", "blending"), .owner = &s->actions_iops };
+  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND, "blend", C_("accel", "<blending>"), .owner = &s->actions_iops };
   s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lua", C_("accel", "lua scripts"), .next = &s->actions_fallbacks };
   s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "fallbacks", C_("accel", "fallbacks") };
   s->actions = &s->actions_global;
+
+  s->actions_focus = (dt_action_t){ DT_ACTION_TYPE_IOP, "focus", C_("accel", "<focused>") };
+  dt_action_insert_sorted(&s->actions_iops, &s->actions_focus);
 
   s->widgets = g_hash_table_new(NULL, NULL);
   s->combo_introspection = g_hash_table_new(NULL, NULL);
@@ -664,6 +667,7 @@ void dt_control_toast_redraw()
 static int _widget_queue_draw(void *widget)
 {
   gtk_widget_queue_draw((GtkWidget*)widget);
+  g_object_unref(widget);
   return FALSE;
 }
 
@@ -671,6 +675,7 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
   {
+    g_object_ref(widget);
     g_idle_add(_widget_queue_draw, (void*)widget);
   }
 }

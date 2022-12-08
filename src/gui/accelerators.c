@@ -1039,27 +1039,6 @@ static void _shortcut_row_inserted(GtkTreeModel *tree_model, GtkTreePath *path, 
   gtk_tree_path_free(filter_path);
 }
 
-static gboolean _yes_no_dialog(gchar *title, gchar *question)
-{
-  GtkWindow *win = NULL;
-  for(GList *wins = gtk_window_list_toplevels(); wins; wins = g_list_delete_link(wins, wins))
-    if(gtk_window_is_active(wins->data)) win = wins->data;
-
-  GtkWidget *dialog = gtk_message_dialog_new(win, GTK_DIALOG_DESTROY_WITH_PARENT,
-                                             GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s", question);
-  gtk_window_set_title(GTK_WINDOW(dialog), title);
-
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-
-  const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
-
-  gtk_widget_destroy(dialog);
-
-  return resp == GTK_RESPONSE_YES;
-}
-
 static gboolean _insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 {
   if(!shortcut->speed && shortcut->effect != DT_ACTION_EFFECT_SET)
@@ -1103,8 +1082,8 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
             if(_shortcut_is_move(e) && e->effect != DT_ACTION_EFFECT_DEFAULT_MOVE)
             {
               if(!confirm ||
-                 _yes_no_dialog(_("shortcut for move exists with single effect"),
-                                _("create separate shortcuts for up and down move?")))
+                 dt_gui_show_yes_no_dialog(_("shortcut for move exists with single effect"),
+                                           _("create separate shortcuts for up and down move?")))
               {
                 e->direction = (DT_SHORTCUT_UP | DT_SHORTCUT_DOWN) ^ s->direction;
                 if(s->effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
@@ -1136,8 +1115,8 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
                     e->instance != s->instance )
             {
               if(!confirm ||
-                 _yes_no_dialog(_("shortcut exists with different settings"),
-                                _("reset the settings of the shortcut?")))
+                 dt_gui_show_yes_no_dialog(_("shortcut exists with different settings"),
+                                           _("reset the settings of the shortcut?")))
               {
                 _remove_shortcut(existing);
                 _add_shortcut(s, view);
@@ -1148,8 +1127,8 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
             {
               // there should be no other clashes because same mapping already existed
               if(confirm &&
-                 _yes_no_dialog(_("shortcut already exists"),
-                                _("remove the shortcut?")))
+                 dt_gui_show_yes_no_dialog(_("shortcut already exists"),
+                                           _("remove the shortcut?")))
               {
                 _remove_shortcut(existing);
               }
@@ -1181,13 +1160,10 @@ static gboolean _insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 
     if(existing_labels)
     {
-      gchar *question = g_strdup_printf("%s\n%s",
-                                        _("remove these existing shortcuts?"),
-                                        existing_labels);
-      remove_existing = _yes_no_dialog(_("clashing shortcuts exist"), question);
-
+      remove_existing = dt_gui_show_yes_no_dialog(_("clashing shortcuts exist"), "%s\n%s",
+                                                  _("remove these existing shortcuts?"),
+                                                  existing_labels);
       g_free(existing_labels);
-      g_free(question);
 
       if(!remove_existing)
       {
@@ -1269,10 +1245,10 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
     case SHORTCUT_VIEW_EFFECT:
       if(_shortcut_is_speed(s)) break;
       elements = _action_find_elements(s->action);
-      if(elements && s->effect >= 0)
+      if(elements)
       {
         const gchar *cef = _action_find_effect_combo(s->action, &elements[s->element], s->effect);
-        if(cef || s->effect > 0 || s->action->type != DT_ACTION_TYPE_FALLBACK)
+        if(cef || s->effect > 0 || (s->effect == 0 && s->action->type != DT_ACTION_TYPE_FALLBACK))
           field_text = g_strdup(Q_(cef ? cef : elements[s->element].effects[s->effect]));
         if(s->effect == 0) weight = PANGO_WEIGHT_LIGHT;
         editable = TRUE;
@@ -1302,7 +1278,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
         {
           dt_iop_module_so_t *iop = (dt_iop_module_so_t *)owner;
 
-          if(!(iop->flags() & IOP_FLAGS_ONE_INSTANCE))
+          if(owner != &darktable.control->actions_focus && !(iop->flags() & IOP_FLAGS_ONE_INSTANCE))
           {
             field_text = abs(s->instance) <= (NUM_INSTANCES - 1) /2
                        ? g_strdup(_(instance_label[abs(s->instance)*2 - (s->instance > 0)]))
@@ -1567,8 +1543,8 @@ static gboolean _shortcut_key_pressed(GtkWidget *widget, GdkEventKey *event, gpo
       // GDK_KEY_BackSpace moves to parent in tree
       if(event->keyval == GDK_KEY_Delete || event->keyval == GDK_KEY_KP_Delete)
       {
-        if(_yes_no_dialog(_("removing shortcut"),
-                          _("remove the selected shortcut?")))
+        if(dt_gui_show_yes_no_dialog(_("removing shortcut"),
+                                     _("remove the selected shortcut?")))
         {
           _remove_shortcut(shortcut_iter);
 
@@ -1609,21 +1585,24 @@ static gboolean _add_actions_to_tree(GtkTreeIter *parent, dt_action_t *action,
   gboolean any_leaves = FALSE;
 
   GtkTreeIter iter;
-  while(action)
+  for(; action; action = action->next)
   {
-    gtk_tree_store_insert_with_values(_actions_store, &iter, parent, -1, 0, action, -1);
-
-    gboolean module_is_needed = FALSE;
     if(action->type == DT_ACTION_TYPE_IOP)
     {
       const dt_iop_module_so_t *module = (dt_iop_module_so_t *)action;
-      module_is_needed = !(module->flags() & (IOP_FLAGS_HIDDEN | IOP_FLAGS_DEPRECATED));
+      if(action != &darktable.control->actions_focus
+         && module->flags() & (IOP_FLAGS_HIDDEN | IOP_FLAGS_DEPRECATED))
+        continue;
     }
-    else if(action->type == DT_ACTION_TYPE_LIB)
+
+    gboolean module_is_needed = FALSE;
+    if(action->type == DT_ACTION_TYPE_LIB)
     {
       dt_lib_module_t *module = (dt_lib_module_t *)action;
       module_is_needed = module->gui_reset || module->get_params || module->expandable(module);
     }
+
+    gtk_tree_store_insert_with_values(_actions_store, &iter, parent, -1, 0, action, -1);
 
     if(action->type <= DT_ACTION_TYPE_SECTION &&
        !_add_actions_to_tree(&iter, action->target, find, found) &&
@@ -1634,8 +1613,6 @@ static gboolean _add_actions_to_tree(GtkTreeIter *parent, dt_action_t *action,
       any_leaves = TRUE;
       if(action == find) *found = iter;
     }
-
-    action = action->next;
   }
 
   return any_leaves;
@@ -1978,7 +1955,7 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_REJECT);
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG (dialog)));
-  GtkWidget *label = gtk_label_new(_("restore default shortcuts\n  or as at startup\n  or when the configuration dialog was opened\n"));
+  GtkWidget *label = gtk_label_new(_("restore shortcuts from one of these states:\n  - default\n  - as at startup\n  - as when opening this dialog\n"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_container_add(content_area, label);
   GtkWidget *clear = gtk_check_button_new_with_label(_("clear all newer shortcuts\n(instead of just restoring changed ones)"));
@@ -3067,7 +3044,13 @@ static float _process_action(dt_action_t *action, int instance,
     // find module instance
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)owner;
 
-    if(instance)
+    if(owner == &darktable.control->actions_focus)
+    {
+      action_target = darktable.develop->gui_module;
+      if(!action_target)
+        return return_value;
+    }
+    else if(instance)
     {
       int current_instance = abs(instance);
 
@@ -3935,7 +3918,9 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
   while(*insertion_point
         && strcmp(new_action->id, "preset")
         && (!strcmp((*insertion_point)->id, "preset")
-            || g_utf8_collate((*insertion_point)->label, new_action->label) < 0))
+            || g_utf8_collate((*insertion_point)->label, new_action->label) <
+               (*((*insertion_point)->label) == '<' ? 1000 : 0) -
+               (*(        new_action->label) == '<' ? 1000 : 0)))
   {
     insertion_point = &(*insertion_point)->next;
   }
@@ -4175,6 +4160,8 @@ void dt_action_define_preset(dt_action_t *action, const gchar *name)
 
 void dt_action_rename(dt_action_t *action, const gchar *new_name)
 {
+  if(!action) return;
+
   g_free((char*)action->id);
   g_free((char*)action->label);
 

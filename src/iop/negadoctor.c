@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -437,7 +437,7 @@ static void toggle_stock_controls(dt_iop_module_t *const self)
   else
   {
     // We shouldn't be there
-    fprintf(stderr, "negadoctor film stock: undefined behaviour\n");
+    fprintf(stderr, "negadoctor film stock: undefined behavior\n");
   }
 }
 
@@ -957,7 +957,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->soft_clip, "%");
   gtk_widget_set_tooltip_text(g->soft_clip, _("gradually compress specular highlights past this value\n"
                                               "to avoid clipping while pushing the exposure for mid-tones.\n"
-                                              "this somewhat reproduces the behaviour of matte paper."));
+                                              "this somewhat reproduces the behavior of matte paper."));
 
   gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual print emulation")), FALSE, FALSE, 0);
 
@@ -965,7 +965,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_hard_min(g->exposure, -1.0);
   dt_bauhaus_slider_set_soft_min(g->exposure, -1.0);
   dt_bauhaus_slider_set_hard_max(g->exposure, 1.0);
-  dt_bauhaus_slider_set_default(g->exposure, 0.0);
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   gtk_widget_set_tooltip_text(g->exposure, _("correct the printing exposure after inversion to adjust\n"
                                              "the global contrast and avoid clipping highlights."));
@@ -1026,6 +1025,7 @@ void gui_update(dt_iop_module_t *const self)
 
 
   dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
+  dt_bauhaus_slider_set_default(g->exposure, log2f(p->exposure)); // otherwise always showes as "changed"
 
   // Update custom stuff
   gui_changed(self, NULL, NULL);

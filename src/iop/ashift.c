@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2021 darktable developers.
+  Copyright (C) 2016-2022 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -5795,7 +5795,7 @@ void gui_init(struct dt_iop_module_t *self)
                                           "ctrl+click to only fit rotation\n"
                                           "shift+click to only fit lens shift"));
   gtk_widget_set_tooltip_text(g->fit_both, _("automatically correct for vertical and "
-                                             "horizontal perspective distortions; fitting rotation,"
+                                             "horizontal perspective distortions, fitting rotation, "
                                              "lens shift in both directions, and shear\n"
                                              "ctrl+click to only fit rotation\n"
                                              "shift+click to only fit lens shift\n"

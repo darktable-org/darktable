@@ -2536,6 +2536,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   {
     GtkWidget *lb = gtk_label_new(module->deprecated_msg());
     gtk_label_set_line_wrap(GTK_LABEL(lb), TRUE);
+    gtk_label_set_max_width_chars(GTK_LABEL(lb), 0); // don't propagate natural width
     gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
     dt_gui_add_class(lb, "dt_warning");
     gtk_box_pack_start(GTK_BOX(iopw), lb, TRUE, TRUE, 0);
@@ -2558,6 +2559,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_widget_set_hexpand(module->widget, FALSE);
   gtk_widget_set_vexpand(module->widget, FALSE);
 
+  gtk_widget_show_all(expander);
   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
@@ -2883,7 +2885,8 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
   dt_iop_module_t *accel_mod = NULL;  // The module to which accelerators are to be attached
 
   // if any instance has focus, use that one
-  if(prefer_focused && darktable.develop->gui_module && darktable.develop->gui_module->so == module)
+  if(prefer_focused && darktable.develop->gui_module
+     && (darktable.develop->gui_module->so == module || DT_ACTION(module) == &darktable.control->actions_focus))
     accel_mod = darktable.develop->gui_module;
   else
   {

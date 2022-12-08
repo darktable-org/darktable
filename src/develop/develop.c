@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -102,6 +102,8 @@ void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
     // FIXME: these are uint32_t, setting to -1 is confusing
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
+    dev->darkroom_mouse_in_center_area = FALSE;
+    dev->darkroom_skip_mouse_events = FALSE;
   }
 
   dev->iop_instance = 0;
@@ -754,6 +756,28 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
   }
 }
 
+void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht)
+{
+  // fixed border on every side
+  const int32_t tb =
+    dev->iso_12646.enabled
+    ? MIN(1.75 * dev->second_window.dpi, 0.3 * MIN(wd, ht))
+    : 0;
+
+  wd -= 2*tb;
+  ht -= 2*tb;
+
+  if(dev->second_window.width != wd || dev->second_window.height != ht)
+  {
+    dev->second_window.width = wd;
+    dev->second_window.height = ht;
+    dev->second_window.border_size = tb;
+    dev->preview2_pipe->changed |= DT_DEV_PIPE_ZOOMED;
+    dt_dev_invalidate(dev);
+    dt_dev_reprocess_center(dev);
+  }
+}
+
 // helper used to synch a single history item with db
 int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t num)
 {
@@ -853,6 +877,22 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
 
   history = g_list_nth(dev->history, dev->history_end - 1);
   dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
+
+  // if module should be enabled, do it now
+  if(enable)
+  {
+    module->enabled = TRUE;
+    if(!no_image)
+    {
+      if(module->off)
+      {
+        ++darktable.gui->reset;
+        dt_iop_gui_set_enable_button(module);
+        --darktable.gui->reset;
+      }
+    }
+  }
+
   if(!history                                                  // no history yet, push new item
      || new_item                                               // a new item is requested
      || module != hist->module
@@ -872,19 +912,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     dev->history_end++;
 
     hist = (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
-    if(enable)
-    {
-      module->enabled = TRUE;
-      if(!no_image)
-      {
-        if(module->off)
-        {
-          ++darktable.gui->reset;
-          dt_iop_gui_set_enable_button(module);
-          --darktable.gui->reset;
-        }
-      }
-    }
+
     g_strlcpy(hist->op_name, module->op, sizeof(hist->op_name));
     hist->focus_hash = dev->focus_hash;
     hist->enabled = module->enabled;
@@ -920,20 +948,6 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
       memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
-    // if the user changed stuff and the module is still not enabled, do it:
-    if(!hist->enabled && !module->enabled)
-    {
-      module->enabled = 1;
-      if(!no_image)
-      {
-        if(module->off)
-        {
-          ++darktable.gui->reset;
-          dt_iop_gui_set_enable_button(module);
-          --darktable.gui->reset;
-        }
-      }
-    }
     hist->iop_order = module->iop_order;
     hist->multi_priority = module->multi_priority;
     memcpy(hist->multi_name, module->multi_name, sizeof(module->multi_name));
@@ -1995,7 +2009,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
          || hist->module->legacy_params(hist->module, module_params, labs(modversion),
                                         hist->params, labs(hist->module->version())))
       {
-        fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, dt %d.\n",
+        fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, darktable is %d.\n",
                 hist->module->op, modversion, hist->module->version());
 
         const char *fname = dev->image_storage.filename + strlen(dev->image_storage.filename);
@@ -2397,13 +2411,6 @@ void dt_dev_masks_selection_change(dt_develop_t *dev, struct dt_iop_module_t *mo
 {
   if(dev->proxy.masks.module && dev->proxy.masks.selection_change)
     dev->proxy.masks.selection_change(dev->proxy.masks.module, module, selectid);
-}
-
-void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
-{
-  dev->proxy.snapshot.filename = filename;
-  dev->proxy.snapshot.request = TRUE;
-  dt_control_queue_redraw_center();
 }
 
 void dt_dev_invalidate_from_gui(dt_develop_t *dev)
@@ -3133,6 +3140,74 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
   {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
+}
+
+void dt_dev_image_ext(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height,
+  int border_size,
+  gboolean iso_12646)
+{
+  dt_develop_t dev;
+  dt_dev_init(&dev, TRUE);
+  dev.border_size = border_size;
+  dev.iso_12646.enabled = iso_12646;
+
+  // create the full pipe
+
+  dev.gui_attached = FALSE;
+  dt_dev_pixelpipe_init(dev.pipe);
+
+  // load image and set history_end
+
+  dt_dev_load_image(&dev, imgid);
+
+  if(history_end != -1)
+    dt_dev_pop_history_items_ext(&dev, history_end);
+
+  // configure the actual dev width & height
+
+  dt_dev_configure(&dev, width, height);
+
+  // process the pipe
+
+  dt_dev_process_image_job(&dev);
+
+  // record resulting image and dimentions
+
+  const uint32_t bufsize =
+    sizeof(uint32_t) * dev.pipe->backbuf_width * dev.pipe->backbuf_height;
+  *buf = dt_alloc_align(64, bufsize);
+  memcpy(*buf, dev.pipe->backbuf, bufsize);
+  *processed_width  = dev.pipe->backbuf_width;
+  *processed_height = dev.pipe->backbuf_height;
+
+  // we take the backbuf, avoid it to be released
+
+  dt_dev_cleanup(&dev);
+}
+
+void dt_dev_image(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height)
+{
+  // create a dev
+
+  dt_dev_image_ext(imgid, width, height,
+                   history_end,
+                   buf, processed_width, processed_height,
+                   darktable.develop->border_size,
+                   darktable.develop->iso_12646.enabled);
 }
 
 // clang-format off

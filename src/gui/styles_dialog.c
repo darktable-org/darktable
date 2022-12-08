@@ -202,21 +202,9 @@ static void _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, 
       /* show prompt dialog when style already exists */
       if(name && (dt_styles_exists(name)) != 0)
       {
-        GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-        GtkWidget *dlg_overwrite = gtk_message_dialog_new(
-            GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
-            _("style `%s' already exists.\ndo you want to overwrite?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-        dt_osx_disallow_fullscreen(dlg_overwrite);
-#endif
-
-        gtk_window_set_title(GTK_WINDOW(dlg_overwrite), _("overwrite style?"));
-
-        const gint dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
-        gtk_widget_destroy(dlg_overwrite);
-
         /* on button yes delete style name for overwriting */
-        if(dlg_ret == GTK_RESPONSE_YES)
+        if(dt_gui_show_yes_no_dialog(_("overwrite style?"),
+                                     _("style `%s' already exists.\ndo you want to overwrite?"), name))
         {
           dt_styles_delete_by_name(name);
         }
@@ -567,7 +555,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                        DT_STYLE_ITEMS_COL_NUM,      -1,
                        -1);
     /* get history items for named style and populate the items list */
-    GList *items = dt_styles_get_item_list(name, FALSE, imgid);
+    GList *items = dt_styles_get_item_list(name, FALSE, imgid, TRUE);
     if(items)
     {
       for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
@@ -679,9 +667,120 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   g_object_unref(is_active_pb);
   g_object_unref(is_inactive_pb);
 }
+
+// style preview
+
+typedef struct _preview_data_t
+{
+  char style_name[128];
+  int imgid;
+} _preview_data_t;
+
+static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+  _preview_data_t *data = (_preview_data_t *)user_data;
+  gboolean res = FALSE;
+
+  if(data->imgid > 0)
+  {
+    cairo_surface_t *surface = dt_gui_get_style_preview(data->imgid, data->style_name);
+    const int psize = dt_conf_get_int("ui/style/preview_size");
+    const int swidth = cairo_image_surface_get_width(surface);
+    const int sheight = cairo_image_surface_get_height(surface);
+    cairo_set_source_surface(cr, surface, .5f * (psize - swidth), .5f * (psize - sheight));
+    cairo_paint(cr);
+    cairo_surface_destroy(surface);
+
+    res=TRUE;
+  }
+
+  return res;
+}
+
+GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
+{
+  char buf[1024];
+  GtkWidget *ht = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  GtkWidget *label = NULL;
+
+  // name
+  snprintf(buf, sizeof(buf), "<b>%s</b>", g_markup_escape_text(name, -1));
+  label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label), buf);
+  gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
+
+  // description
+  char *des = dt_styles_get_description(name);
+
+  if(strlen(des)>0)
+  {
+    snprintf(buf, sizeof(buf), "<b>%s</b>", g_markup_escape_text(des, -1));
+    label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label), buf);
+    gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
+  }
+
+  gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
+
+  GList *items = dt_styles_get_item_list(name, FALSE, -1, FALSE);
+  GList *l = items;
+  while(l)
+  {
+    char mn[64];
+    dt_style_item_t *i = (dt_style_item_t *)l->data;
+
+    if(i->multi_name && strlen(i->multi_name) > 0)
+    {
+      snprintf(mn, sizeof(mn), "(%s)", i->multi_name);
+    }
+    else
+    {
+      snprintf(mn, sizeof(mn), "(%d)", i->multi_priority);
+    }
+
+    snprintf(buf, sizeof(buf), "  %s %s %s",
+             i->enabled ? "●" : "○",
+             gettext(i->name),
+             mn);
+
+    label = gtk_label_new(buf);
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
+    l = g_list_next(l);
+  }
+
+  g_list_free_full(items, dt_style_item_free);
+
+  if(imgid > 0)
+  {
+    gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
+
+    // style preview
+    const int psize = dt_conf_get_int("ui/style/preview_size");
+    GtkWidget *da = gtk_drawing_area_new();
+    gtk_widget_set_size_request(da, psize, psize);
+    gtk_widget_set_halign(da, GTK_ALIGN_CENTER);
+    gtk_widget_set_app_paintable(da, TRUE);
+    gtk_box_pack_start(GTK_BOX(ht), da, TRUE, TRUE, 0);
+    _preview_data_t *data = g_malloc(sizeof(_preview_data_t));
+    g_strlcpy(data->style_name, name, sizeof(data->style_name));
+    data->imgid = imgid;
+    g_signal_connect_data(G_OBJECT(da), "draw", G_CALLBACK(_preview_draw), data, (GClosureNotify)g_free, 0);
+  }
+
+  return ht;
+}
+
+cairo_surface_t *dt_gui_get_style_preview(const uint32_t imgid, const char *name)
+{
+  const int psize = dt_conf_get_int("ui/style/preview_size");
+  cairo_surface_t *surface = dt_imageio_preview(imgid, psize, psize, -1, name);
+  return surface;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

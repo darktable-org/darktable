@@ -661,7 +661,18 @@ int bpp(struct dt_imageio_module_data_t *data)
 
 int levels(struct dt_imageio_module_data_t *data)
 {
-  return IMAGEIO_RGB|IMAGEIO_FLOAT;
+  const dt_imageio_avif_t *d = (dt_imageio_avif_t *)data;
+
+  int ret = IMAGEIO_RGB;
+
+  if(d->bit_depth == 8)
+    ret |= IMAGEIO_INT8;
+  else if(d->bit_depth == 10)
+    ret |= IMAGEIO_INT10;
+  else
+    ret |= IMAGEIO_INT12;
+
+  return ret;
 }
 
 const char *mime(dt_imageio_module_data_t *data)
@@ -676,7 +687,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("AVIF (8/10/12-bit)");
+  return _("AVIF");
 }
 
 int flags(struct dt_imageio_module_data_t *data)
@@ -891,4 +902,3 @@ void gui_reset(dt_imageio_module_format_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

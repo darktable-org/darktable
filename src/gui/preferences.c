@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -996,7 +996,7 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event, gp
                        P_MODULE_COLUMN, &operation, P_EDITABLE_COLUMN, &editable, -1);
     if(editable == NULL)
     {
-      if(dt_gui_presets_confirm_and_delete(_preferences_dialog, name, operation, rowid))
+      if(dt_gui_presets_confirm_and_delete(name, operation, rowid))
         _delete_line_and_empty_parent(model, &iter);
     }
     else

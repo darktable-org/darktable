@@ -41,15 +41,11 @@ typedef struct dt_lib_duplicate_t
 {
   GtkWidget *duplicate_box;
   int imgid;
-  gboolean busy;
-  int cur_final_width;
-  int cur_final_height;
-  int32_t preview_width;
-  int32_t preview_height;
-  gboolean allow_zoom;
 
   cairo_surface_t *preview_surf;
-  float preview_zoom;
+  size_t processed_width;
+  size_t processed_height;
+  dt_view_context_t view_ctx;
   int preview_id;
 
   GList *thumbs;
@@ -150,24 +146,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
   {
     if(event->type == GDK_BUTTON_PRESS)
     {
-      dt_develop_t *dev = darktable.develop;
-      if(!dev) return;
-
-      dt_dev_invalidate(dev);
-      dt_control_queue_redraw_center();
-
-      dt_dev_invalidate(darktable.develop);
-
       d->imgid = imgid;
-      int fw, fh;
-      fw = fh = 0;
-      dt_image_get_final_size(imgid, &fw, &fh);
-      if(d->cur_final_width <= 0)
-        dt_image_get_final_size(dev->image_storage.id, &d->cur_final_width, &d->cur_final_height);
-      d->allow_zoom
-          = (d->cur_final_width - fw < DUPLICATE_COMPARE_SIZE && d->cur_final_width - fw > -DUPLICATE_COMPARE_SIZE
-             && d->cur_final_height - fh < DUPLICATE_COMPARE_SIZE
-             && d->cur_final_height - fh > -DUPLICATE_COMPARE_SIZE);
       dt_control_queue_redraw_center();
     }
     else if(event->type == GDK_2BUTTON_PRESS)
@@ -183,12 +162,6 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget, GdkEventBut
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
   d->imgid = 0;
-  if(d->busy)
-  {
-    dt_control_log_busy_leave();
-    dt_control_toast_busy_leave();
-  }
-  d->busy = FALSE;
   dt_control_queue_redraw_center();
 }
 
@@ -205,166 +178,31 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+
   if(d->imgid == 0) return;
-  dt_develop_t *dev = darktable.develop;
-  if(!dev->preview_pipe->backbuf || dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
 
-  // use the same resolution as main previem image to avoid blur
-  float img_wd, img_ht;
-  if(d->allow_zoom)
-  {
-    img_wd = dev->preview_pipe->backbuf_width;
-    img_ht = dev->preview_pipe->backbuf_height;
-  }
-  else
-  {
-    int w2, h2;
-    dt_image_get_final_size(d->imgid, &w2, &h2);
-    img_wd = w2;
-    img_ht = h2;
-  }
+  const gboolean view_ok = dt_view_check_view_context(&d->view_ctx);
 
-  const int32_t tb = darktable.develop->border_size;
+  if(!view_ok || d->preview_id != d->imgid)
+  {
+    uint8_t *buf = NULL;
+    size_t processed_width;
+    size_t processed_height;
 
-  // we rescale the sizes to the screen size
-  if(img_ht * (width - 2 * tb) > img_wd * (height - 2 * tb))
-  {
-    img_wd = img_wd*(height - 2 * tb)/img_ht;
-    img_ht = (height - 2 * tb);
-  }
-  else
-  {
-    img_ht = img_ht*(width - 2 * tb)/img_wd;
-    img_wd = (width - 2 * tb);
+    dt_dev_image(d->imgid, width, height, -1, &buf, &processed_width, &processed_height);
+
+    d->preview_id = d->imgid;
+    d->processed_width = processed_width;
+    d->processed_height = processed_height;
+
+    if(d->preview_surf)
+      cairo_surface_destroy(d->preview_surf);
+    d->preview_surf = dt_view_create_surface(buf, processed_width, processed_height);
   }
 
-  // Get the resizing from borders - only to check validity of mipmap cache size
-  float zoom_ratio = 1.f;
-  if(dev->iso_12646.enabled)
-  {
-    if(img_wd - 2 * tb < img_ht - 2 * tb)
-      zoom_ratio = (img_ht - 2 * tb) / img_ht;
-    else
-      zoom_ratio = (img_wd - 2 * tb) / img_wd;
-  }
-
-  // if image have too different sizes, we show the full preview not zoomed
-  float nz = 1.0f;
-  if(d->allow_zoom)
-  {
-    const int closeup = dt_control_get_dev_closeup();
-    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1 << closeup, 0);
-    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 0);
-    // if cur_scale is >=2.0f (200%) we disable preview as it can hit cairo size limits without warnings
-    if(cur_scale >= 2.0f)
-    {
-      /* xgettext:no-c-format */
-      dt_control_log(_("preview is only possible for zoom lower than 200%%"));
-      return;
-    }
-    nz = cur_scale / min_scale;
-  }
-
-  // if not cached, load or reload a mipmap
-  dt_view_surface_value_t res = DT_VIEW_SURFACE_OK;
-  if(d->preview_id != d->imgid || d->preview_zoom != nz * zoom_ratio || !d->preview_surf
-     || d->preview_width != width || d->preview_height != height)
-  {
-    d->preview_width = width;
-    d->preview_height = height;
-
-    res = dt_view_image_get_surface(d->imgid, img_wd * nz, img_ht * nz, &d->preview_surf, TRUE);
-
-    if(res == DT_VIEW_SURFACE_OK)
-    {
-      d->preview_id = d->imgid;
-      d->preview_zoom = nz * zoom_ratio; //  only to check validity of mipmap cache size
-    }
-  }
-
-  // if ready, we draw the surface
   if(d->preview_surf)
-  {
-    cairo_save(cri);
-    // force middle grey in background
-    if(dev->iso_12646.enabled)
-      cairo_set_source_rgb(cri, 0.4663, 0.4663, 0.4663);
-    else
-      dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
-
-    // draw background
-    cairo_paint(cri);
-
-    // move coordinates according to margin
-    float wd, ht;
-    if(d->allow_zoom)
-    {
-      wd = dev->pipe->output_backbuf_width / darktable.gui->ppd;
-      ht = dev->pipe->output_backbuf_height / darktable.gui->ppd;
-    }
-    else
-    {
-      wd = img_wd / darktable.gui->ppd;
-      ht = img_ht / darktable.gui->ppd;
-    }
-    const float margin_left = ceilf(.5f * (width - wd));
-    const float margin_top = ceilf(.5f * (height - ht));
-    cairo_translate(cri, margin_left, margin_top);
-
-    if(dev->iso_12646.enabled)
-    {
-      // draw the white frame around picture
-      cairo_rectangle(cri, -tb / 3., -tb / 3., wd + 2. * tb / 3., ht + 2. * tb / 3.);
-      cairo_set_source_rgb(cri, 1., 1., 1.);
-      cairo_fill(cri);
-    }
-
-    // finally, draw the image
-    cairo_rectangle(cri, 0, 0, wd, ht);
-    cairo_clip_preserve(cri);
-
-    const float scaler = 1.0f / darktable.gui->ppd_thb;
-    cairo_scale(cri, scaler, scaler);
-
-
-    if(d->allow_zoom)
-    {
-      // compute the surface pixel shift to match reference image FIXME!
-      const float zoom_y = dt_control_get_dev_zoom_y();
-      const float zoom_x = dt_control_get_dev_zoom_x();
-      const float dx = -floorf(zoom_x * (img_wd)*nz + img_wd * nz / 2. - width / 2.) - margin_left;
-      const float dy = -floorf(zoom_y * (img_ht)*nz + img_ht * nz / 2. - height / 2.) - margin_top;
-      cairo_set_source_surface(cri, d->preview_surf, dx / scaler, dy / scaler);
-    }
-    else
-      cairo_set_source_surface(cri, d->preview_surf, 0, 0);
-
-    cairo_pattern_set_filter(cairo_get_source(cri), (darktable.gui->filter_image == CAIRO_FILTER_FAST)
-      ? CAIRO_FILTER_GOOD : darktable.gui->filter_image) ;
-    cairo_paint(cri);
-
-    cairo_restore(cri);
-  }
-
-  if(res != DT_VIEW_SURFACE_OK)
-  {
-    if(!d->busy)
-    {
-      dt_control_log_busy_enter();
-      dt_control_toast_busy_enter();
-    }
-    d->busy = TRUE;
-  }
-  else
-  {
-    if(d->busy)
-    {
-      dt_control_log_busy_leave();
-      dt_control_toast_busy_leave();
-    }
-    d->busy = FALSE;
-  }
+    dt_view_paint_surface(cri, width, height, d->preview_surf,
+                          d->processed_width, d->processed_height, DT_WINDOW_MAIN);
 }
 
 static void _thumb_remove(gpointer user_data)
@@ -475,13 +313,6 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_set_visible(bt, FALSE);
   }
 
-  // and reset the final size of the current image
-  if(dev->image_storage.id >= 0)
-  {
-    d->cur_final_width = 0;
-    d->cur_final_height = 0;
-  }
-
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_duplicate_init_callback), self); //unblock signals
 }
 
@@ -495,12 +326,6 @@ static void _lib_duplicate_collection_changed(gpointer instance, dt_collection_c
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance, int imgid, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  // we reset the final size of the current image
-  if(imgid > 0 && darktable.develop->image_storage.id == imgid)
-  {
-    d->cur_final_width = 0;
-    d->cur_final_height = 0;
-  }
 
   gtk_widget_queue_draw(d->duplicate_box);
   dt_control_queue_redraw_center();
@@ -508,12 +333,6 @@ static void _lib_duplicate_mipmap_updated_callback(gpointer instance, int imgid,
 static void _lib_duplicate_preview_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
-  // we reset the final size of the current image
-  if(darktable.develop->image_storage.id >= 0)
-  {
-    d->cur_final_width = 0;
-    d->cur_final_height = 0;
-  }
 
   gtk_widget_queue_draw (d->duplicate_box);
   dt_control_queue_redraw_center();
@@ -527,9 +346,9 @@ void gui_init(dt_lib_module_t *self)
 
   d->imgid = 0;
   d->preview_surf = NULL;
-  d->preview_zoom = 1.0;
-  d->preview_width = 0;
-  d->preview_height = 0;
+  d->processed_width = 0;
+  d->processed_height = 0;
+  d->view_ctx = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_class(self->widget, "dt_duplicate_ui");

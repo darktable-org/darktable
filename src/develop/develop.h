@@ -250,15 +250,6 @@ typedef struct dt_develop_t
       gboolean (*basics_module_toggle)(struct dt_lib_module_t *self, GtkWidget *widget, gboolean doit);
     } modulegroups;
 
-    // snapshots plugin hooks
-    struct
-    {
-      // this flag is set by snapshot plugin to signal that expose of darkroom
-      // should store cairo surface as snapshot to disk using filename.
-      gboolean request;
-      const gchar *filename;
-    } snapshot;
-
     // masks plugin hooks
     struct
     {
@@ -323,7 +314,9 @@ typedef struct dt_develop_t
   {
     GtkWidget *second_wnd;
     GtkWidget *widget;
+    int32_t orig_width, orig_height;
     int width, height;
+    int32_t border_size;
     double dpi, dpi_factor, ppd, ppd_thb;
 
     GtkWidget *button;
@@ -339,6 +332,7 @@ typedef struct dt_develop_t
 
   int mask_form_selected_id; // select a mask inside an iop
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks
+  gboolean darkroom_mouse_in_center_area; // TRUE if the mouse cursor is in center area
 } dt_develop_t;
 
 void dt_dev_init(dt_develop_t *dev, gboolean gui_attached);
@@ -391,6 +385,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
                                  float *zoom_y);
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
+void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
 /*
@@ -534,6 +529,32 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 /* all history change must be enclosed into a start / end call */
 void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
+
+/*
+ * develop an image and returns the buf and processed width / height.
+ * this is done as in the context of the darkroom, meaning that the
+ * final processed sizes will align perfectly on the darkroom view.
+ *
+ */
+void dt_dev_image(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height);
+
+void dt_dev_image_ext(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height,
+  int border_size,
+  gboolean iso_12646);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

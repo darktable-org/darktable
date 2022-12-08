@@ -282,6 +282,7 @@ typedef struct dt_view_manager_t
       void (*update)(struct dt_lib_module_t *);
       void (*set_sort)(struct dt_lib_module_t *, int sort, gboolean asc);
       void (*reset_filter)(struct dt_lib_module_t *, gboolean smart_filter);
+      void (*show_pref_menu)(struct dt_lib_module_t *, GtkWidget *bt);
     } module_filtering;
 
     /* filmstrip proxy object */
@@ -424,6 +425,7 @@ void dt_view_collection_update_history_state(const dt_view_manager_t *vm);
  * Filter dropdown proxy
  */
 void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter);
+void dt_view_filtering_show_pref_menu(const dt_view_manager_t *vm, GtkWidget *bt);
 GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm);
 GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm);
 GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm);
@@ -485,9 +487,58 @@ void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *cont
 void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo, dt_images_box *imgs);
 #endif
 
+/*
+ * Paint buffer (size processed_width x processed_height) in cairo (as a surface)
+ * on the viewport (size width x height).
+ */
+
+typedef enum _window_t
+{
+  DT_WINDOW_MAIN,
+  DT_WINDOW_SECOND,
+  DT_WINDOW_SLIDESHOW
+} dt_window_t;
+
+void dt_view_paint_buffer(
+  cairo_t *cr,
+  const size_t width,
+  const size_t height,
+  uint8_t *buffer,
+  const size_t processed_width,
+  const size_t processed_height,
+  const dt_window_t window);
+
+void dt_view_paint_pixbuf(
+  cairo_t *cr,
+  const size_t width,
+  const size_t height,
+  uint8_t *buffer,
+  const size_t processed_width,
+  const size_t processed_height,
+  const dt_window_t window);
+
+cairo_surface_t *dt_view_create_surface(
+  uint8_t *buffer,
+  const size_t processed_width,
+  const size_t processed_height);
+
+void dt_view_paint_surface(
+  cairo_t *cr,
+  const size_t width,
+  const size_t height,
+  cairo_surface_t *surface,
+  const size_t processed_width,
+  const size_t processed_height,
+  const dt_window_t window);
+
+typedef uint64_t dt_view_context_t;
+
+dt_view_context_t dt_view_get_view_context(void);
+
+gboolean dt_view_check_view_context(dt_view_context_t *ctx);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -335,7 +335,7 @@ static void _basics_free_item(dt_lib_modulegroups_basic_item_t *item)
 
 static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
 {
-  if(item->widget && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
+  if(item->widget && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN && item->temp_widget)
   {
     g_signal_handlers_disconnect_by_data(item->widget, item);
     g_signal_handlers_disconnect_by_data(item->old_parent, item);
@@ -603,6 +603,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     gtk_widget_add_events(item->temp_widget, GDK_VISIBILITY_NOTIFY_MASK);
     g_signal_connect(item->temp_widget, "show", G_CALLBACK(_sync_visibility), item);
     g_signal_connect(item->temp_widget, "hide", G_CALLBACK(_sync_visibility), item);
+    g_signal_connect(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(gtk_widget_destroyed), &item->temp_widget);
 
     _sync_visibility(item->widget, item);
   }
@@ -1760,6 +1761,7 @@ void init_presets(dt_lib_module_t *self)
   AM("watermark");
   AM("censorize");
   AM("blurs");
+  AM("diffuse");
 
   dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
@@ -2469,6 +2471,13 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
   GtkWidget *new_base = NULL;
   while(actions)
   {
+    if(actions == &darktable.control->actions_focus ||
+       actions == &darktable.control->actions_blend)
+    {
+        actions = actions->next;
+        continue;
+    }
+
     if(actions->type == DT_ACTION_TYPE_IOP)
     {
       dt_iop_module_so_t *so = (dt_iop_module_so_t *)actions;
@@ -2868,6 +2877,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(visibility_wrapper), d->text_entry);
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), visibility_wrapper, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
+  gtk_entry_set_max_width_chars(GTK_ENTRY(d->text_entry), 35);
   gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, _("clear text"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_buttons, TRUE, TRUE, 0);
@@ -3758,22 +3768,10 @@ static void _manage_preset_change(GtkWidget *widget, dt_lib_module_t *self)
 static void _manage_preset_delete(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  gint res = GTK_RESPONSE_YES;
 
-  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
-  {
-    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(d->dialog), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                               GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                               _("do you really want to delete the preset `%s'?"), d->edit_preset);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
+     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+                                  _("do you really want to delete the preset `%s'?"), d->edit_preset))
   {
     dt_lib_presets_remove(d->edit_preset, self->plugin_name, self->version());
 

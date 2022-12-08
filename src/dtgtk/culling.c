@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2020 Aldric Renaudin.
+    Copyright (C) 2020-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -832,17 +832,8 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   table->mode = mode;
   table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);
+  dt_gui_add_class(table->widget, "dt_fullview");
   // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
-
-  // set css name and class
-  if(mode == DT_CULLING_MODE_PREVIEW)
-    gtk_widget_set_name(table->widget, "preview");
-  else
-    gtk_widget_set_name(table->widget, "culling");
-  if(mode == DT_CULLING_MODE_PREVIEW)
-    dt_gui_add_class(table->widget, "dt_preview");
-  else
-    dt_gui_add_class(table->widget, "dt_culling");
 
   // overlays
   gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
@@ -998,7 +989,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   {
     if(sel_count == 0)
     {
-      dt_control_log(_("no image selected !"));
+      dt_control_log(_("no image selected!"));
       first_id = -1;
     }
     table->navigate_inside_selection = TRUE;

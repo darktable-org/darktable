@@ -128,7 +128,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_navigation_leave_notify_callback), self);
 
   /* set size of navigation draw area */
-  gtk_widget_set_size_request(self->widget, -1, 175);
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(175));
   gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
   dt_action_t *ac = dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL,
                                      N_("hide navigation thumbnail"), self->widget, NULL);
@@ -234,21 +234,23 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_stroke(cr);
     }
     cairo_restore(cr);
+
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    layout = pango_cairo_create_layout(cr);
+    const float fontsize = DT_PIXEL_APPLY_DPI(14);
+    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+    pango_layout_set_font_description(layout, desc);
+
     if(fabsf(cur_scale - min_scale) > 0.001f)
     {
       /* Zoom % */
-      PangoLayout *layout;
-      PangoRectangle ink;
-      PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-      layout = pango_cairo_create_layout(cr);
-      const float fontsize = DT_PIXEL_APPLY_DPI(14);
-      pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
-      pango_layout_set_font_description(layout, desc);
       cairo_translate(cr, 0, height);
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 
-      char zoomline[5];
+      char zoomline[6];
       snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale * 100 * darktable.gui->ppd);
 
       pango_layout_set_text(layout, zoomline, -1);
@@ -256,7 +258,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       h = d->zoom_h = ink.height;
       w = d->zoom_w = ink.width;
 
-      cairo_move_to(cr, width - w - h * 1.1 - ink.x, - fontsize);
+      cairo_move_to(cr, width - w - h * 1.1 - ink.x, - h - ink.y);
 
       cairo_save(cr);
       cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
@@ -272,34 +274,16 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_restore(cr);
 
       gdk_rgba_free(color);
-      pango_font_description_free(desc);
-      g_object_unref(layout);
-
     }
     else
     {
       // draw the zoom-to-fit icon
       cairo_translate(cr, 0, height);
       cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
+      pango_layout_set_text(layout, "100%", -1); // dummy text, just to get the height
+      pango_layout_get_pixel_extents(layout, &ink, NULL);
 
-      static int font_height = -1;
-      if(font_height == -1)
-      {
-        PangoLayout *layout;
-        PangoRectangle ink;
-        PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-        pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-        layout = pango_cairo_create_layout(cr);
-        pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(14) * PANGO_SCALE);
-        pango_layout_set_font_description(layout, desc);
-        pango_layout_set_text(layout, "100%", -1); // dummy text, just to get the height
-        pango_layout_get_pixel_extents(layout, &ink, NULL);
-        font_height = ink.height;
-        pango_font_description_free(desc);
-        g_object_unref(layout);
-      }
-
-      h = d->zoom_h = font_height;
+      h = d->zoom_h = ink.height;
       w = h * 1.5;
       float sp = h * 0.6;
       d->zoom_w = w + sp;
@@ -329,6 +313,9 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_line_to(cr, width - w * 0.2 - h - sp, -1.0 * h);
       cairo_stroke(cr);
     }
+
+    pango_font_description_free(desc);
+    g_object_unref(layout);
 
     cairo_move_to(cr, width - 0.95 * h, -0.9 * h);
     cairo_line_to(cr, width - 0.05 * h, -0.9 * h);
@@ -497,8 +484,9 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int w = allocation.width;
-  int h = allocation.height;
+  const int w = allocation.width;
+  const int h = allocation.height;
+
   if(event->x >= w - DT_NAVIGATION_INSET - d->zoom_h - d->zoom_w
      && event->y >= h - DT_NAVIGATION_INSET - d->zoom_h)
   {

@@ -130,6 +130,7 @@ typedef struct dt_dev_pixelpipe_t
   // output buffer (for display)
   uint8_t *output_backbuf;
   int output_backbuf_width, output_backbuf_height;
+  int final_width, final_height;
 
   // the data for the luminance mask are kept in a buffer written by demosaic or rawprepare
   // as we have to scale the mask later ke keep roi at that stage

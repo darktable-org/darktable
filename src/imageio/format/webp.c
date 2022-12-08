@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2021 darktable developers.
+    Copyright (C) 2013-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -346,7 +346,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("WebP (8-bit)");
+  return _("WebP");
 }
 
 static void compression_changed(GtkWidget *widget, dt_imageio_webp_gui_data_t *gui)
@@ -406,9 +406,9 @@ void gui_init(dt_imageio_module_format_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->hint, self, NULL, N_("image hint"),
                                _("image characteristics hint for the underlying encoder.\n"
-                                 "picture : digital picture, like portrait, inner shot\n"
-                                 "photo   : outdoor photograph, with natural lighting\n"
-                                 "graphic : discrete tone image (graph, map-tile etc)"),
+                                 "picture: digital picture, like portrait, inner shot\n"
+                                 "photo: outdoor photograph, with natural lighting\n"
+                                 "graphic: discrete tone image (graph, map-tile etc)"),
                                hint, hint_combobox_changed, self,
                                N_("default"), N_("picture"), N_("photo"), N_("graphic"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->hint, TRUE, TRUE, 0);

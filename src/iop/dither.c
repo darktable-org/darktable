@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -308,6 +308,9 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
         case IMAGEIO_INT8:
           *levels = 256;
           break;
+        case IMAGEIO_INT10:
+          *levels = 1024;
+          break;
         case IMAGEIO_INT12:
           *levels = 4096;
           break;
@@ -324,7 +327,7 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_THUMBNAIL))
+      if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL))
       {
         graymode = -1;
       }

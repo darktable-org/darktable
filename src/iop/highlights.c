@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2020 darktable developers.
+   Copyright (C) 2010-2022 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -60,7 +60,6 @@ static void dump_PFM(const char *filename, const float* out, const uint32_t w, c
 }
 #endif
 
-
 DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
 
 /* As some of the internal algorithms use a smaller value for clipping than given by the UI
@@ -105,13 +104,14 @@ typedef enum dt_recovery_mode_t
 } dt_recovery_mode_t;
 #define NUM_RECOVERY_MODES 7
 
-typedef enum dt_segments_mask_t
+typedef enum dt_highlights_mask_t
 {
-  DT_SEGMENTS_MASK_OFF,
-  DT_SEGMENTS_MASK_COMBINE,
-  DT_SEGMENTS_MASK_CANDIDATING,
-  DT_SEGMENTS_MASK_STRENGTH
-} dt_segments_mask_t;
+  DT_HIGHLIGHTS_MASK_OFF,
+  DT_HIGHLIGHTS_MASK_COMBINE,
+  DT_HIGHLIGHTS_MASK_CANDIDATING,
+  DT_HIGHLIGHTS_MASK_STRENGTH,
+  DT_HIGHLIGHTS_MASK_CLIPPED
+} dt_highlights_mask_t;
 
 typedef struct dt_iop_highlights_params_t
 {
@@ -128,7 +128,7 @@ typedef struct dt_iop_highlights_params_t
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: DT_WAVELETS_6_SCALE $DESCRIPTION: "diameter of reconstruction"
   float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidating"
   float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
-  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "recovery"
+  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "rebuild"
   // params of v4
   float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
 } dt_iop_highlights_params_t;
@@ -145,8 +145,10 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *combine;
   GtkWidget *recovery;
   GtkWidget *strength;
-  gboolean show_visualize;
-  dt_segments_mask_t segmentation_mask_mode;
+  dt_highlights_mask_t hlr_mask_mode;
+  dt_highlights_mask_t hlr_cached_mask_mode;
+  dt_aligned_pixel_t chroma_correction;
+  gboolean valid_chroma_correction;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -281,11 +283,28 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+  const gboolean visualizing = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe : FALSE;
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_xtrans = NULL;
   cl_mem dev_clips = NULL;
+
+  if(g && fullpipe)
+  {
+    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
+    {
+      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+      piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
+      dt_dev_pixelpipe_flush_caches(piece->pipe);
+    }
+    if(g->hlr_cached_mask_mode != g->hlr_mask_mode)
+    {
+      dt_print(DT_DEBUG_DEV, "[highlights reconstruction cl] flush iop cache because of mask mode change\n");
+      g->hlr_cached_mask_mode = g->hlr_mask_mode;
+      dt_dev_pixelpipe_flush_caches(piece->pipe);
+    }
+  }
+
   // this works for bayer and X-Trans sensors
   if(visualizing)
   {
@@ -310,8 +329,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_false_color, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-    piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
     dt_opencl_release_mem_object(dev_clips);
     dt_opencl_release_mem_object(dev_xtrans);
     return TRUE;
@@ -1934,18 +1951,9 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
                     const dt_iop_roi_t *const roi_in)
 {
   *roi_out = *roi_in;
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
-
-  if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
-    return;
-
+  // it can never hurt to make sure
   roi_out->x = MAX(0, roi_in->x);
   roi_out->y = MAX(0, roi_in->y);
-  // we can't do a proper sanity check here for width & height; that has to be done in the
-  // opposed and segmentation code!
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -1954,19 +1962,37 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   *roi_in = *roi_out;
 
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
-
-  if(visualizing || (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED && d->mode != DT_IOP_HIGHLIGHTS_SEGMENTS))
+  /* When do we need to expand the roi to maximum of the full input data?
+     1. Certainly not if any other than opposed or segmentation based algos is used.
+   */
+  if(!use_opposing)
     return;
 
-  // we always take the full data provided by rawspeed
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  const gboolean clipmask = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) : FALSE;
+  /*
+     2. Certainly not if we show the clipped mask as that is also safe with current roi
+     3. Certainly not as linear raws all miss the automatic downscaler provided by the demosaicer stage, so
+        the expanding to full image data does not work as we do a downscaling very early in
+        the pixelpipe. So - no quality achieved but really bad performance.
+        FIXME For dt 4.4 we might want to implement a downscaling step for this modules in these cases.
+          For now we don't expand and keep the linear opposed simple.
+          See #12998 and #12993 for lengthy discussions
+  */
+  if((fullpipe && clipmask) || (piece->pipe->dsc.filters == 0))
+    return;
+
+  /* We require the correct expansion with a defined scale for all pixelpipes for proper
+     aligning and scaling in the demosiacer
+  */ 
   roi_in->x = 0;
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
   roi_in->height = piece->buf_in.height;
-}
+  roi_in->scale = 1.0f;
+ }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -1976,14 +2002,40 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+  const gboolean visualizing = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe : FALSE;
+
+  if(g && fullpipe)
+  {
+    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
+    {
+      piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+      piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
+    }
+    if(g->hlr_cached_mask_mode != g->hlr_mask_mode)
+    {
+      dt_print(DT_DEBUG_DEV, "[highlights reconstruction] flush iop cache because of mask mode change\n");
+      g->hlr_cached_mask_mode = g->hlr_mask_mode;
+      dt_dev_pixelpipe_flush_caches(piece->pipe);
+    }
+  }
 
   if(visualizing)
   {
     process_visualize(piece, ivoid, ovoid, roi_in, roi_out, data);
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-    piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
     return;
+  }
+
+  /* Some of the HLR algorithms can be pretty slow, while rendering thumnbnails we looks for an acceptable
+     lower quality like we do in demosaic and can tune the reconstruction code. So far only used by
+     opposed and segmentations algos as they make use of the full image data instead of ROI 
+  */
+  gboolean high_quality = TRUE;
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
+  {
+    const int level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, piece->pipe->final_width, piece->pipe->final_height);
+    const char *min = dt_conf_get_string_const("plugins/lighttable/thumbnail_hq_min_level");
+    const dt_mipmap_size_t min_s = dt_mipmap_cache_get_min_mip_from_pref(min);
+    high_quality = (level >= min_s);
   }
 
   const float clip
@@ -2002,7 +2054,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else
     {
-      _process_linear_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      _process_linear_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data);
     }
     return;
   }
@@ -2079,18 +2131,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     case DT_IOP_HIGHLIGHTS_SEGMENTS:
     {
-      const dt_segments_mask_t vmode = ((g != NULL) && fullpipe) ? g->segmentation_mask_mode : DT_SEGMENTS_MASK_OFF;
+      const dt_highlights_mask_t vmode = ((g != NULL) && fullpipe && (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_CLIPPED)) ? g->hlr_mask_mode : DT_HIGHLIGHTS_MASK_OFF;
 
-      float *tmp = _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, TRUE, TRUE);
       if(tmp)
         _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, vmode, tmp);
       dt_free_align(tmp);
-
-      if(vmode != DT_SEGMENTS_MASK_OFF)
-      {
-        piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-        piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
-      }
       break;
     }
 
@@ -2112,7 +2158,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     default:
     case DT_IOP_HIGHLIGHTS_OPPOSED:
     {
-      float *tmp = _process_opposed(piece, ivoid, ovoid, roi_in, roi_out, data);
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, FALSE, high_quality);
       dt_free_align(tmp);
       break;
     }
@@ -2141,20 +2187,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT or DT_IOP_HIGHLIGHTS_SEGMENTS and DT_IOP_HIGHLIGHTS_OPPOSED
   piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)) ? 0 : 1;
-  if(d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) piece->process_tiling_ready = 0;
 
+  if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED))
+    piece->process_tiling_ready = 0;
+
+  const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
   {
     const gboolean linear = piece->pipe->dsc.filters == 0;
-    const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-    if(g->show_visualize && linear && fullpipe)
+    if((g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
       piece->process_cl_ready = FALSE;
   }
   // check for heavy computing here to give an iop cache hint
   const gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
-                          || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
-                          || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED));
+                        || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
+                        || ((d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) && fullpipe && (piece->pipe->dsc.filters == 0)));
   self->cache_next_important = heavy;
 }
 
@@ -2248,10 +2296,22 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_bauhaus_widget_set_quad_visibility(g->strength, use_recovery);
 
   // The special case for strength button active needs further care here
-  if((use_segmentation && (p->recovery == DT_RECOVERY_MODE_OFF)) && (g->segmentation_mask_mode == DT_SEGMENTS_MASK_STRENGTH))
+  if((use_segmentation && (p->recovery == DT_RECOVERY_MODE_OFF)) && (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_STRENGTH))
   {
     dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-    g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
+    g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
+  }
+
+  if(w == g->clip)
+    g->valid_chroma_correction = FALSE;
+
+  if(w == g->mode)
+  {
+    dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
+    g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
   }
 }
 
@@ -2264,11 +2324,11 @@ void gui_update(struct dt_iop_module_t *self)
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
-  g->show_visualize = FALSE;
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
+  g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
+  g->hlr_cached_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
 
   const int menu_size = dt_bauhaus_combobox_length(g->mode);
   const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
@@ -2279,6 +2339,8 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT && basic)
      dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
+  g->valid_chroma_correction = FALSE;
+
   gui_changed(self, NULL, NULL);
 }
 
@@ -2341,6 +2403,7 @@ void reload_defaults(dt_iop_module_t *self)
         dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
     }
+    g->valid_chroma_correction = FALSE;
   }
 }
 
@@ -2349,11 +2412,10 @@ static void _visualize_callback(GtkWidget *quad, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->show_visualize = dt_bauhaus_widget_get_quad_active(quad);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
+  g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_CLIPPED : DT_HIGHLIGHTS_MASK_OFF;
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -2362,11 +2424,10 @@ static void _candidating_callback(GtkWidget *quad, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->segmentation_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_SEGMENTS_MASK_CANDIDATING : DT_SEGMENTS_MASK_OFF;
+  g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_CANDIDATING : DT_HIGHLIGHTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  g->show_visualize = FALSE;
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -2375,11 +2436,10 @@ static void _combine_callback(GtkWidget *quad, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->segmentation_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_SEGMENTS_MASK_COMBINE : DT_SEGMENTS_MASK_OFF;
+  g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_COMBINE : DT_HIGHLIGHTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-  g->show_visualize = FALSE;
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -2388,11 +2448,10 @@ static void _strength_callback(GtkWidget *quad, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->segmentation_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_SEGMENTS_MASK_STRENGTH : DT_SEGMENTS_MASK_OFF;
+  g->hlr_mask_mode = (dt_bauhaus_widget_get_quad_active(quad)) ? DT_HIGHLIGHTS_MASK_STRENGTH : DT_HIGHLIGHTS_MASK_OFF;
   dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
-  g->show_visualize = FALSE;
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -2401,13 +2460,12 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(!in)
   {
-    const gboolean was_visualize = g->show_visualize || g->segmentation_mask_mode;
+    const gboolean was_visualize = (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF);
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
     dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
     dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
     dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
-    g->show_visualize = FALSE;
-    g->segmentation_mask_mode = DT_SEGMENTS_MASK_OFF;
+    g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
     if(was_visualize) dt_dev_reprocess_center(self->dev);
   }
 }
@@ -2425,7 +2483,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->clip,
                               _("manually adjust the clipping threshold mostly used against "
                                 "magenta highlights\nthe mask icon shows the clipped areas.\n"
-                                "you might use this for tuning 'laplacian' or 'segmentation' modes,\n"
+                                "you might use this for tuning 'laplacian', 'inpaint opposed' or 'segmentation' modes,\n"
                                 "especially if camera white point is incorrect."));
   dt_bauhaus_widget_set_quad_paint(g->clip, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->clip, TRUE);
@@ -2435,7 +2493,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
   gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations.\n"
-                                            "the mask button shows resulting segment borders."));
+                                            "the mask button shows the exact positions of resulting segment borders."));
   dt_bauhaus_widget_set_quad_paint(g->combine, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->combine, TRUE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
@@ -2444,7 +2502,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
   gtk_widget_set_tooltip_text(g->candidating, _("select inpainting after segmentation analysis.\n"
                                                 "increase to favour candidates found in segmentation analysis, decrease for opposed means inpainting.\n"
-                                                "the mask button shows selected segments."));
+                                                "the mask button shows segments that are considered to have a good candidate."));
   dt_bauhaus_slider_set_format(g->candidating, "%");
   dt_bauhaus_slider_set_digits(g->candidating, 0);
   dt_bauhaus_widget_set_quad_paint(g->candidating, dtgtk_cairo_paint_showmask, 0, NULL);
@@ -2456,10 +2514,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->recovery, _("approximate lost data in regions with all photosites clipped, the effect depends on segment size and border gradients.\n"
                                              "choose a mode tuned for segment size or the generic mode that tries to find best settings for every segment.\n"
                                              "small means areas with a diameter less than 25 pixels, large is best for greater than 100.\n"
-                                             "the flat modes ignore narrow unclipped structures."));
+                                             "the flat modes ignore narrow unclipped structures (like powerlines) to keep highlights rebuilt and avoid gradients."));
 
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
-  gtk_widget_set_tooltip_text(g->strength, _("set strength of reconstruction in regions with all photosites clipped"));
+  gtk_widget_set_tooltip_text(g->strength, _("set strength of rebuilding in regions with all photosites clipped.\n"
+                                             "the mask buttons shows the effect that is added to already reconstructed data."));
   dt_bauhaus_slider_set_format(g->strength, "%");
   dt_bauhaus_slider_set_digits(g->strength, 0);
   dt_bauhaus_widget_set_quad_paint(g->strength, dtgtk_cairo_paint_showmask, 0, NULL);
