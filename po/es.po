@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.1/4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-01 01:21-0600\n"
-"PO-Revision-Date: 2022-12-06 23:27-0600\n"
+"POT-Creation-Date: 2022-12-08 13:00-0600\n"
+"PO-Revision-Date: 2022-12-08 15:16-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1173,7 +1173,6 @@ msgid "demosaicing for zoomed out darkroom mode"
 msgstr "Interpolación cromática usada para ampliar en el modo de cuarto oscuro"
 
 #: ../build/bin/preferences_gen.h:4945
-#, fuzzy
 msgid ""
 "demosaicer when not viewing 1:1 in darkroom mode: 'bilinear' is fast but "
 "slightly blurry. 'default' uses the default demosaicer for the used sensor "
@@ -1182,10 +1181,9 @@ msgid ""
 msgstr ""
 "Indica la interpolación cromática usada en el cuarto oscuro cuando no está "
 "en la escala 1:1: la bilineal es más rápida, pero sin tanta nitidez. La "
-"opción intermedia utiliza RCD + el especificado en la opción «Interpolador "
-"de pixel» de la pestaña «procesamiento». Son los mismos valores que se "
-"usarán en la exportación para el tamaño final. Los sensores X-Trans usan VNG "
-"en vez de RCD."
+"opción predeterminada utiliza RCD o Markesteijn según sea el sensor de "
+"cámara. La opción «Total» tendrá los mismos valores que se usarán en la "
+"exportación para el tamaño final."
 
 #: ../build/bin/preferences_gen.h:4967
 msgid "reduce resolution of preview image"
@@ -2675,7 +2673,7 @@ msgstr "aberración cromática muy acentuada"
 #: ../src/common/collection.c:1432 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:329 ../src/develop/blend_gui.c:1988
 #: ../src/develop/blend_gui.c:2015 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:2942 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
+#: ../src/gui/gtk.c:2938 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
 #: ../src/iop/channelmixer.c:619 ../src/iop/channelmixer.c:629
 #: ../src/iop/channelmixerrgb.c:4183 ../src/iop/colorzones.c:2284
 #: ../src/iop/temperature.c:1780 ../src/iop/temperature.c:1953
@@ -2687,7 +2685,7 @@ msgstr "rojo"
 #: ../src/common/collection.c:1436 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:331 ../src/develop/blend_gui.c:1991
 #: ../src/develop/blend_gui.c:2018 ../src/develop/lightroom.c:838
-#: ../src/gui/gtk.c:2943 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
+#: ../src/gui/gtk.c:2939 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
 #: ../src/iop/channelmixer.c:620 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4184 ../src/iop/colorzones.c:2287
 #: ../src/iop/temperature.c:1764 ../src/iop/temperature.c:1782
@@ -2700,7 +2698,7 @@ msgstr "verde"
 #: ../src/common/collection.c:1438 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:332 ../src/develop/blend_gui.c:1994
 #: ../src/develop/blend_gui.c:2021 ../src/develop/lightroom.c:840
-#: ../src/gui/gtk.c:2944 ../src/iop/bilateral.cc:315
+#: ../src/gui/gtk.c:2940 ../src/iop/bilateral.cc:315
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4185 ../src/iop/colorzones.c:2289
 #: ../src/iop/temperature.c:1784 ../src/iop/temperature.c:1955
@@ -3790,7 +3788,7 @@ msgstr "versión de curva segmentaria"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:533
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2756 ../src/common/variables.c:604
-#: ../src/develop/imageop_gui.c:212 ../src/gui/gtk.c:2523
+#: ../src/develop/imageop_gui.c:212 ../src/gui/gtk.c:2524
 #: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
 #: ../src/libs/export.c:1193 ../src/libs/export.c:1200
 #: ../src/libs/export.c:1207 ../src/libs/metadata_view.c:678
@@ -5886,7 +5884,7 @@ msgstr ""
 "¿Desea realmente eliminar los archivos de bloqueo?\n"
 
 #: ../src/common/database.c:2756 ../src/common/variables.c:602
-#: ../src/develop/imageop_gui.c:213 ../src/gui/gtk.c:2522
+#: ../src/develop/imageop_gui.c:213 ../src/gui/gtk.c:2523
 #: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
 #: ../src/libs/export.c:1193 ../src/libs/export.c:1200
 #: ../src/libs/export.c:1207 ../src/libs/metadata_view.c:678
@@ -6298,9 +6296,8 @@ msgid "webp"
 msgstr "WebP"
 
 #: ../src/common/image.h:207
-#, fuzzy
 msgid "jpeg xl"
-msgstr "JPEG"
+msgstr "JPEG XL"
 
 #: ../src/common/imagebuf.c:131
 msgid "insufficient memory"
@@ -6533,23 +6530,23 @@ msgstr "decrementar"
 msgid "zero"
 msgstr "Cero"
 
-#: ../src/common/ratings.c:312 ../src/libs/filters/rating_range.c:275
+#: ../src/common/ratings.c:312 ../src/libs/filters/rating_range.c:277
 msgid "one"
 msgstr "Una"
 
-#: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:276
+#: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:278
 msgid "two"
 msgstr "Dos"
 
-#: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:277
+#: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:279
 msgid "three"
 msgstr "Tres"
 
-#: ../src/common/ratings.c:315 ../src/libs/filters/rating_range.c:278
+#: ../src/common/ratings.c:315 ../src/libs/filters/rating_range.c:280
 msgid "four"
 msgstr "Cuatro"
 
-#: ../src/common/ratings.c:316 ../src/libs/filters/rating_range.c:279
+#: ../src/common/ratings.c:316 ../src/libs/filters/rating_range.c:281
 msgid "five"
 msgstr "Cinco"
 
@@ -8330,7 +8327,7 @@ msgstr "mostrar"
 msgid "new"
 msgstr "nueva"
 
-#: ../src/develop/imageop.c:3238 ../src/libs/duplicate.c:361
+#: ../src/develop/imageop.c:3238 ../src/libs/duplicate.c:362
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3885
 msgid "duplicate"
 msgstr "duplicar"
@@ -8348,7 +8345,7 @@ msgid "instance"
 msgstr "módulo"
 
 #: ../src/develop/imageop.c:3246 ../src/gui/accelerators.c:105
-#: ../src/gui/accelerators.c:114 ../src/gui/gtk.c:2816 ../src/gui/gtk.c:2861
+#: ../src/gui/accelerators.c:114 ../src/gui/gtk.c:2812 ../src/gui/gtk.c:2857
 #: ../src/iop/atrous.c:1547 ../src/libs/lib.c:1224
 #: ../src/libs/modulegroups.c:3953
 msgid "reset"
@@ -8859,13 +8856,13 @@ msgstr "relativo"
 msgid "selected"
 msgstr "seleccionado"
 
-#: ../src/dtgtk/range.c:624 ../src/dtgtk/range.c:1730 ../src/dtgtk/range.c:1781
+#: ../src/dtgtk/range.c:624 ../src/dtgtk/range.c:1768 ../src/dtgtk/range.c:1819
 #: ../src/libs/colorpicker.c:53
 msgid "min"
 msgstr "mín."
 
-#: ../src/dtgtk/range.c:630 ../src/dtgtk/range.c:1742 ../src/dtgtk/range.c:1793
-#: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:280
+#: ../src/dtgtk/range.c:630 ../src/dtgtk/range.c:1780 ../src/dtgtk/range.c:1831
+#: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:282
 msgid "max"
 msgstr "máx."
 
@@ -8907,8 +8904,8 @@ msgstr "tiempo"
 msgid "current date: "
 msgstr "fecha actual:"
 
-#: ../src/dtgtk/range.c:1053 ../src/dtgtk/range.c:1749
-#: ../src/dtgtk/range.c:1800
+#: ../src/dtgtk/range.c:1053 ../src/dtgtk/range.c:1787
+#: ../src/dtgtk/range.c:1838
 msgid "now"
 msgstr "ahora"
 
@@ -8929,8 +8926,8 @@ msgstr "Establecer el límite del rango con este valor"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1725 ../src/gui/accelerators.c:2037
-#: ../src/gui/accelerators.c:2116 ../src/gui/gtk.c:1195 ../src/gui/gtk.c:2941
+#: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2037
+#: ../src/gui/accelerators.c:2116 ../src/gui/gtk.c:1195 ../src/gui/gtk.c:2937
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3443
 #: ../src/iop/lens.cc:2994 ../src/iop/rawdenoise.c:904
 #: ../src/libs/collect.c:3153 ../src/libs/filtering.c:1437
@@ -9223,12 +9220,12 @@ msgid "popup"
 msgstr "emerger"
 
 #: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
-#: ../src/gui/gtk.c:2859 ../src/views/lighttable.c:756
+#: ../src/gui/gtk.c:2855 ../src/views/lighttable.c:756
 msgid "next"
 msgstr "siguiente"
 
 #: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
-#: ../src/gui/gtk.c:2860 ../src/views/lighttable.c:757
+#: ../src/gui/gtk.c:2856 ../src/views/lighttable.c:757
 msgid "previous"
 msgstr "anterior"
 
@@ -9242,7 +9239,7 @@ msgstr "Inicio"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
 #: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
-#: ../src/libs/filters/rating_range.c:266 ../src/libs/tagging.c:3117
+#: ../src/libs/filters/rating_range.c:268 ../src/libs/tagging.c:3117
 #: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
 #: ../src/views/darkroom.c:2553
 msgid "toggle"
@@ -9264,7 +9261,7 @@ msgstr "clic secundario + alternar"
 msgid "right-on"
 msgstr "clic secundario + encender"
 
-#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2858
+#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2854
 msgid "activate"
 msgstr "activar"
 
@@ -9294,14 +9291,12 @@ msgid "apply on new instance"
 msgstr "establecer en un nuevo módulo"
 
 #: ../src/gui/accelerators.c:154
-#, fuzzy
 msgid "start"
-msgstr "_Al principio"
+msgstr "al principio"
 
 #: ../src/gui/accelerators.c:155
-#, fuzzy
 msgid "end"
-msgstr "fusión"
+msgstr "al final"
 
 #: ../src/gui/accelerators.c:301
 #, fuzzy
@@ -9759,7 +9754,7 @@ msgstr "%s sin asignar"
 msgid "%s assigned to %s"
 msgstr "%s asignado a %s"
 
-#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4468
+#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4476
 msgid "darktable - darkroom preview"
 msgstr "darktable: vista previa del cuarto oscuro"
 
@@ -9869,28 +9864,28 @@ msgstr "Modo de detección de máximo enfoque"
 msgid "toggle focus peaking"
 msgstr "activar o desactivar detección de máximo enfoque"
 
-#: ../src/gui/gtk.c:1582 ../src/gui/gtk.c:2948 ../src/gui/gtk.c:2953
-#: ../src/gui/gtk.c:2958 ../src/gui/gtk.c:2963
+#: ../src/gui/gtk.c:1582 ../src/gui/gtk.c:2944 ../src/gui/gtk.c:2949
+#: ../src/gui/gtk.c:2954 ../src/gui/gtk.c:2959
 msgid "tabs"
 msgstr "Pestañas"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:2562
+#: ../src/gui/gtk.c:2563
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:2564
+#: ../src/gui/gtk.c:2565
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:2853
+#: ../src/gui/gtk.c:2849
 msgid "does not contain pages"
 msgstr ""
 
-#: ../src/gui/gtk.c:3070
+#: ../src/gui/gtk.c:3066
 #, c-format
 msgid "never show more than %d lines"
 msgstr "No mostrar más de %d líneas"
@@ -10371,7 +10366,6 @@ msgstr ""
 "Pulsar en «preestablecidos» para borrar todas las entradas."
 
 #: ../src/gui/import_metadata.c:430
-#, fuzzy
 msgid "from XMP"
 msgstr "desde el archivo XMP"
 
@@ -10740,26 +10734,25 @@ msgid "do you really want to update the preset `%s'?"
 msgstr "¿Realmente desea actualizar el ajuste definido como «%s»?"
 
 #: ../src/gui/presets.c:896
-#, fuzzy
 msgid "(first)"
-msgstr "Inicio"
+msgstr "(primero)"
 
 #: ../src/gui/presets.c:896
-#, fuzzy
 msgid "(last)"
-msgstr "Fin"
+msgstr "(último)"
 
 #: ../src/gui/presets.c:928
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "preset %s\n"
 "%s"
-msgstr "preajustes"
+msgstr ""
+"preajuste %s\n"
+"%s"
 
 #: ../src/gui/presets.c:929
-#, fuzzy
 msgid "no presets"
-msgstr "preajustes"
+msgstr "Sin preajustes"
 
 #: ../src/gui/presets.c:1107 ../src/libs/modulegroups.c:3853
 #: ../src/libs/modulegroups.c:3862
@@ -11122,11 +11115,10 @@ msgid ""
 msgstr ""
 
 #: ../src/imageio/format/jxl.c:589
-#, fuzzy
 msgid "internal"
-msgstr "Pista"
+msgstr "Interno"
 
-#: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:358
+#: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:359
 #: ../src/libs/history.c:1009 ../src/libs/snapshots.c:634
 msgid "original"
 msgstr "original"
@@ -11644,18 +11636,17 @@ msgid "cannot create a new piwigo album!"
 msgstr "No se pudo crear un álbum nuevo en Piwigo"
 
 #: ../src/imageio/storage/piwigo.c:1155
-#, fuzzy
 msgid "could not update to piwigo!"
-msgstr "No se pudo subir a Piwigo"
+msgstr "No se pudo actualizar Piwigo"
 
 #: ../src/imageio/storage/piwigo.c:1169
 msgid "could not upload to piwigo!"
 msgstr "No se pudo subir a Piwigo"
 
 #: ../src/imageio/storage/piwigo.c:1198
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d skipped (already exists)"
-msgstr "El atajo del teclado ya existe"
+msgstr "%d/%d omitida (la imagen ya existe)"
 
 # piwigo es un servicio web para crear galerias de fotos
 #. this makes sense only if the export was successful
@@ -13497,9 +13488,8 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:4213 ../src/iop/channelmixerrgb.c:4224
 #: ../src/iop/channelmixerrgb.c:4242 ../src/iop/channelmixerrgb.c:4256
 #: ../src/iop/channelmixerrgb.c:4262 ../src/iop/channelmixerrgb.c:4268
-#, fuzzy
 msgid "calibrate"
-msgstr "LibRaw"
+msgstr "calibrar"
 
 #: ../src/iop/channelmixerrgb.c:4213
 msgid "chart"
@@ -13607,9 +13597,8 @@ msgid "accept the computed profile and set it in the module"
 msgstr "Aceptar el perfil calculado y fijarlo en el módulo"
 
 #: ../src/iop/channelmixerrgb.c:4262
-#, fuzzy
 msgid "recompute"
-msgstr "compensación de exposición calculada: "
+msgstr "recalcular"
 
 #: ../src/iop/channelmixerrgb.c:4264
 msgid "recompute the profile"
@@ -14983,7 +14972,6 @@ msgstr "curva segmentaria monótona"
 
 #: ../src/iop/colorzones.c:2526 ../src/iop/rgbcurve.c:1415
 #: ../src/iop/tonecurve.c:1177
-#, fuzzy
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
 "- cubic spline is better to produce smooth curves but oscillates when nodes "
@@ -14995,12 +14983,12 @@ msgid ""
 msgstr ""
 "Cambie el método de interpolación si ve oscilaciones o cúspides en la "
 "curva:\n"
-"- La curva segmentaria cúbica es mejor para producir curvas suaves, pero "
+"• La curva segmentaria cúbica es mejor para producir curvas suaves, pero "
 "oscila cuando los nodos están demasiado cerca.\n"
-"- La centrípeta es mejor para evitar cúspides y oscilaciones con nódulos "
-"cercanos, pero es menos suave.\n"
-"- La monótona es mejor para la precisión de las funciones analíticas puras "
-"(log, gamma, exp)\n"
+"• La centrípeta es mejor para evitar cúspides y oscilaciones con nodos "
+"cercanos entre sí, pero es menos suave.\n"
+"• La monótona es mejor para la precisión de las funciones analíticas puras "
+"(logarítmica, gamma, exponencial)"
 
 #: ../src/iop/crop.c:128 ../src/iop/rawprepare.c:842
 msgid "crop"
@@ -15344,7 +15332,6 @@ msgstr ""
 "peso del pixel central."
 
 #: ../src/iop/denoiseprofile.c:3581
-#, fuzzy
 msgid ""
 "emergency use only: radius of the neighborhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -15352,11 +15339,10 @@ msgid ""
 msgstr ""
 "Úsese solo en caso de emergencia: radio de proximidad para buscar "
 "coincidencias en el área de los bordes. Incrementar para un mejor desempeño "
-"en la eliminación de ruido a costa de un mayor tiempo de ejecución. Los "
-"radios grandes pueden ser muy lentos. Ha sido advertido."
+"en la eliminación de ruido a costa de un mayor tiempo de ejecución. "
+"Advertencia: los radios grandes pueden ser bastante lentos."
 
 #: ../src/iop/denoiseprofile.c:3584
-#, fuzzy
 msgid ""
 "scattering of the neighborhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
@@ -18681,7 +18667,7 @@ msgstr "Umbral para activar el enfoque"
 
 #: ../src/iop/sigmoid.c:78
 msgid "sigmoid"
-msgstr ""
+msgstr "sigmoidal"
 
 #: ../src/iop/sigmoid.c:83
 #, fuzzy
@@ -20190,11 +20176,11 @@ msgstr ""
 msgid "duplicate manager"
 msgstr "administrador de duplicado"
 
-#: ../src/libs/duplicate.c:359
+#: ../src/libs/duplicate.c:360
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Crear un duplicado 'virgen' de la imagen (sin ningún revelado)"
 
-#: ../src/libs/duplicate.c:362
+#: ../src/libs/duplicate.c:363
 msgid "create a duplicate of the image with same history stack"
 msgstr "Crear un duplicado de la imagen con el mismo historial"
 
@@ -20613,7 +20599,6 @@ msgid "rule property"
 msgstr "propiedades de la regla"
 
 #: ../src/libs/filtering.c:965
-#, fuzzy
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned to the toolbar"
@@ -20627,7 +20612,6 @@ msgid "filter"
 msgstr "filtro"
 
 #: ../src/libs/filtering.c:1040
-#, fuzzy
 msgid ""
 "this rule is pinned to the top toolbar\n"
 "click to un-pin"
@@ -20636,21 +20620,18 @@ msgstr ""
 "Pulse para desanclar."
 
 #: ../src/libs/filtering.c:1041
-#, fuzzy
 msgid "you can't disable the rule as it is pinned to the toolbar"
 msgstr ""
 "No se puede desactivar la regla mientras esté anclada en la barra de "
 "herramientas"
 
 #: ../src/libs/filtering.c:1042
-#, fuzzy
 msgid "you can't remove the rule as it is pinned to the toolbar"
 msgstr ""
 "No se puede eliminar la regla mientras esté anclada en la barra de "
 "herramientas"
 
 #: ../src/libs/filtering.c:1046
-#, fuzzy
 msgid "click to pin this rule to the top toolbar"
 msgstr "Pulse para anclar esta regla en la barra de herramientas superior"
 
@@ -20787,7 +20768,7 @@ msgstr ""
 "El botón gris afecta a todas las marcas de color."
 
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
-#: ../src/libs/filters/rating_range.c:320
+#: ../src/libs/filters/rating_range.c:325
 msgid "rules"
 msgstr "reglas"
 
@@ -20833,7 +20814,6 @@ msgstr ""
 "Pulse el botón secundario para obtener las extensiones existentes."
 
 #: ../src/libs/filters/filename.c:405
-#, fuzzy
 msgid ""
 "click to select filename\n"
 "ctrl+click to select multiple values"
@@ -20842,7 +20822,6 @@ msgstr ""
 "Use Ctrl+Clic para seleccionar varios elementos."
 
 #: ../src/libs/filters/filename.c:432
-#, fuzzy
 msgid ""
 "click to select extension\n"
 "ctrl+click to select multiple values"
@@ -20929,13 +20908,13 @@ msgstr "únicamente sin puntuar"
 
 #: ../src/libs/filters/rating_range.c:99 ../src/libs/filters/rating_range.c:126
 #: ../src/libs/filters/rating_range.c:131
-#: ../src/libs/filters/rating_range.c:273
+#: ../src/libs/filters/rating_range.c:275
 msgid "rejected"
 msgstr "rechazado"
 
 #: ../src/libs/filters/rating_range.c:101
 #: ../src/libs/filters/rating_range.c:126
-#: ../src/libs/filters/rating_range.c:274
+#: ../src/libs/filters/rating_range.c:276
 msgid "not rated"
 msgstr "sin puntuar"
 
@@ -20943,19 +20922,19 @@ msgstr "sin puntuar"
 msgid "only"
 msgstr "únicamente"
 
-#: ../src/libs/filters/rating_range.c:267
+#: ../src/libs/filters/rating_range.c:269
 msgid "better"
 msgstr "mejor"
 
-#: ../src/libs/filters/rating_range.c:268
+#: ../src/libs/filters/rating_range.c:270
 msgid "worse"
 msgstr "peor"
 
-#: ../src/libs/filters/rating_range.c:269
+#: ../src/libs/filters/rating_range.c:271
 msgid "cap"
 msgstr "límite máximo"
 
-#: ../src/libs/filters/rating_range.c:284
+#: ../src/libs/filters/rating_range.c:286
 msgid "rating filter"
 msgstr "filtro de puntuación"
 
@@ -21163,7 +21142,6 @@ msgid "ctrl+scroll to change display height"
 msgstr "Para cambiar la altura del visor: Ctrl+Desplazamiento"
 
 #: ../src/libs/histogram.c:1314
-#, fuzzy
 msgid ""
 "drag to change black point,\n"
 "double-click resets\n"
@@ -21174,7 +21152,6 @@ msgstr ""
 "Para cambiar la altura del visor: Ctrl+Desplazamiento"
 
 #: ../src/libs/histogram.c:1319
-#, fuzzy
 msgid ""
 "drag to change exposure,\n"
 "double-click resets\n"
@@ -21495,9 +21472,9 @@ msgid "select geo tags metadata"
 msgstr "Seleccionar los metadatos de las geoetiquetas"
 
 #: ../src/libs/image.c:578
-#, fuzzy
 msgid "select darktable metadata (from metadata editor module)"
-msgstr "Seleccionar metadatos de dt (desde el módulo editor de metadatos)"
+msgstr ""
+"Seleccionar metadatos de darktable (desde el módulo editor de metadatos)"
 
 #: ../src/libs/image.c:586
 msgid "set the selected image as source of metadata"
@@ -21911,7 +21888,6 @@ msgstr ""
 "ubicación"
 
 #: ../src/libs/map_locations.c:961
-#, fuzzy
 msgid ""
 "list of user locations,\n"
 "click to show or hide a location on the map:\n"
@@ -21929,13 +21905,12 @@ msgstr ""
 "Lista de lugares añadidos.\n"
 "Pulse para mostrar u ocultar un lugar en el mapa:\n"
 "• Use Rueda del ratón dentro de la figura para redimensionarla\n"
-"• Para un rectángulo, pulse <Mayús> o <Ctrl> + Desplazamiento para modificar "
-"la altura o anchura\n"
+"• Pulse <Mayús> o <Ctrl> + Desplazamiento para cambiar la altura o anchura\n"
 "• Pulse dentro de la figura y arrastre para cambiarla de posición\n"
 "• Use Ctrl+Clic para mover una imagen desde el interior de un lugar\n"
 "Use Ctrl+Clic para editar el nombre de un lugar\n"
 "• Use la barra vertical '|' para separar el nombre en niveles\n"
-"• Para eliminar un grupo, borre el nombre del mismo\n"
+"• Para eliminar un grupo de lugares, borre el nombre del mismo\n"
 "• Pulse Entrar para confirmar el nombre, Esc para cancelar la edición\n"
 "Pulse el botón secundario para más opciones: eliminar un lugar e ir a la "
 "colección.\n"
@@ -21995,9 +21970,8 @@ msgid "delete this shape"
 msgstr "borrar esta figura"
 
 #: ../src/libs/masks.c:1080
-#, fuzzy
 msgid "delete group"
-msgstr "borrar etiqueta"
+msgstr "borrar grupo"
 
 #: ../src/libs/masks.c:1087
 msgid "remove from group"
@@ -23547,9 +23521,8 @@ msgid "filter"
 msgstr "filtro"
 
 #: ../src/libs/tools/filter.c:105
-#, fuzzy
 msgid "filter preferences"
-msgstr "preferencias"
+msgstr "Configuración de filtros"
 
 #: ../src/libs/tools/gamepad.c:37
 msgid "gamepad"
@@ -23856,9 +23829,9 @@ msgid "hinter"
 msgstr "Pista"
 
 #: ../src/libs/tools/hinter.c:99
-#, fuzzy, c-format
+#, c-format
 msgid "%s in current collection"
-msgstr "Seleccionar todas las imágenes en la colección actual"
+msgstr "%s en la colección actual"
 
 #: ../src/libs/tools/image_infos.c:40
 msgid "image infos"
@@ -24396,54 +24369,51 @@ msgstr "rehacer"
 msgid "change keyboard shortcut slider precision"
 msgstr "Cambiar la precisión del control deslizante con un atajo de teclado"
 
-#: ../src/views/darkroom.c:3805
+#: ../src/views/darkroom.c:3813
 msgid "keyboard shortcut slider precision: fine"
 msgstr "Precisión del control deslizante con el atajo de teclado: alta"
 
-#: ../src/views/darkroom.c:3807
+#: ../src/views/darkroom.c:3815
 msgid "keyboard shortcut slider precision: normal"
 msgstr "Precisión del control deslizante con el atajo de teclado: normal"
 
-#: ../src/views/darkroom.c:3809
+#: ../src/views/darkroom.c:3817
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "Precisión del control deslizante con el atajo de teclado: baja"
 
-#: ../src/views/darkroom.c:3825
+#: ../src/views/darkroom.c:3833
 msgid "switch to lighttable"
 msgstr "cambiar a mesa de luz"
 
-#: ../src/views/darkroom.c:3826 ../src/views/lighttable.c:878
+#: ../src/views/darkroom.c:3834 ../src/views/lighttable.c:878
 msgid "zoom in the image"
 msgstr "ampliar la imagen"
 
-#: ../src/views/darkroom.c:3827
+#: ../src/views/darkroom.c:3835
 msgid "unbounded zoom in the image"
 msgstr "ampliar y reducir la vista de la imagen"
 
-#: ../src/views/darkroom.c:3828
+#: ../src/views/darkroom.c:3836
 msgid "zoom to 100% 200% and back"
 msgstr "ampliar a 100% y a 200% cíclicamente"
 
-#: ../src/views/darkroom.c:3829 ../src/views/lighttable.c:881
-#, fuzzy
+#: ../src/views/darkroom.c:3837 ../src/views/lighttable.c:881
 msgid "pan a zoomed image"
-msgstr "imágenes huérfanas"
+msgstr "Panorámica a imagen ampliada"
 
-#: ../src/views/darkroom.c:3831 ../src/views/lighttable.c:923
+#: ../src/views/darkroom.c:3839 ../src/views/lighttable.c:923
 msgid "[modules] expand module without closing others"
 msgstr "[módulos] desplegar el módulo sin cerrar los otros"
 
-#: ../src/views/darkroom.c:3832 ../src/views/lighttable.c:924
-#, fuzzy
+#: ../src/views/darkroom.c:3840 ../src/views/lighttable.c:924
 msgid "[modules] expand module and close others"
-msgstr "[módulos] desplegar el módulo sin cerrar los otros"
+msgstr "[módulos] desplegar el módulo y plegar los demás"
 
-#: ../src/views/darkroom.c:3834
-#, fuzzy
+#: ../src/views/darkroom.c:3842
 msgid "[modules] rename module"
-msgstr "Módulo habilitado por defecto"
+msgstr "[módulos] renombrar módulo"
 
-#: ../src/views/darkroom.c:3836
+#: ../src/views/darkroom.c:3844
 msgid "[modules] change module position in pipe"
 msgstr "[módulos] reordenar módulos (cambia el procesado)"
 
