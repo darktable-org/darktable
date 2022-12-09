@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.1/4.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-12-08 13:00-0600\n"
-"PO-Revision-Date: 2022-12-08 15:16-0600\n"
+"PO-Revision-Date: 2022-12-09 00:25-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -4051,7 +4051,6 @@ msgstr "detección por 3 pixeles cercanos"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:121
 #: ../build/lib/darktable/plugins/introspection_lens.cc:272
-#, fuzzy
 msgid "correction method"
 msgstr "modo de corrección"
 
@@ -6414,12 +6413,11 @@ msgid "noiseprofile file `%s' is not valid"
 msgstr "Archivo de perfil de ruido «%s» no es válido"
 
 #: ../src/common/opencl.c:1119
-#, fuzzy
 msgid ""
 "due to a slow GPU hardware acceleration using OpenCL has been deactivated"
 msgstr ""
-"Debido al lento comportamiento de la GPU para la aceleración vía OpenCl, el "
-"hardware se ha desactivado."
+"Derivado del lento comportamiento de la aceleración por hardware de la GPU, "
+"OpenCl se ha desactivado."
 
 #: ../src/common/opencl.c:1126
 #, fuzzy
@@ -6439,7 +6437,6 @@ msgstr ""
 "función de la misma."
 
 #: ../src/common/opencl.c:1141
-#, fuzzy
 msgid "OpenCL scheduling profile set to default"
 msgstr "El perfil de control para OpenCL se ha ajustado al predefinido."
 
@@ -6808,9 +6805,8 @@ msgid "path"
 msgstr "ruta"
 
 #: ../src/control/crawler.c:633
-#, fuzzy
 msgid "XMP timestamp"
-msgstr "fecha y hora del xmp"
+msgstr "fecha y hora del XMP"
 
 #: ../src/control/crawler.c:637
 msgid "database timestamp"
@@ -6825,9 +6821,8 @@ msgid "time difference"
 msgstr "diferencia temporal"
 
 #: ../src/control/crawler.c:656
-#, fuzzy
 msgid "updated XMP sidecar files found"
-msgstr "Se han encontrado archivos asociados XMP actualizados"
+msgstr "Se encontraron archivos asociados XMP actualizados"
 
 #: ../src/control/crawler.c:657
 msgid "_close"
@@ -9883,7 +9878,7 @@ msgstr "Sans %s"
 
 #: ../src/gui/gtk.c:2849
 msgid "does not contain pages"
-msgstr ""
+msgstr "No contiene páginas"
 
 #: ../src/gui/gtk.c:3066
 #, c-format
@@ -10370,7 +10365,6 @@ msgid "from XMP"
 msgstr "desde el archivo XMP"
 
 #: ../src/gui/import_metadata.c:433
-#, fuzzy
 msgid ""
 "selected metadata are imported from image and override the default value\n"
 " this drives also the 'look for updated XMP files' and 'load sidecar file' "
@@ -10380,7 +10374,7 @@ msgstr ""
 "Los metadatos seleccionados se importan desde la imagen y anulan el valor "
 "predeterminado.\n"
 "Esto implica también a las acciones de \"Buscar archivos XMP actualizados al "
-"iniciar\" y \"cargar archivo xmp\".\n"
+"iniciar\" y \"cargar archivo XMP\".\n"
 "PRECAUCIÓN: los metadatos no seleccionados se borran cuando se actualiza el "
 "archivo XMP."
 
@@ -11099,6 +11093,10 @@ msgid ""
 "30-99 = JPEG quality comparable\n"
 "100 = lossless (integer bit depth only)"
 msgstr ""
+"Calidad de la imagen de salida:\n"
+"0-29 = con notable pérdida\n"
+"30-99 = comparable a la calidad de un JPEG\n"
+"100 = sin pérdida (profundidad de bits entera)"
 
 #: ../src/imageio/format/jxl.c:585
 #, fuzzy
@@ -11113,6 +11111,11 @@ msgid ""
 "or ensure no conversion to keep original image color space (implied for "
 "lossless)"
 msgstr ""
+"Perfil de color utilizado por el codificador\n"
+"Posibilita la conversión interna del espacio de color XYB para una "
+"compresión con pérdidas más eficaz,\n"
+"o mantiene intacto el espacio de color original de la imagen (implícito para "
+"la compresión sin pérdidas)."
 
 #: ../src/imageio/format/jxl.c:589
 msgid "internal"
@@ -11134,9 +11137,8 @@ msgid ""
 msgstr ""
 
 #: ../src/imageio/format/jxl.c:615
-#, fuzzy
 msgid "decoding speed"
-msgstr "2º orden de velocidad"
+msgstr "velocidad de decodificación"
 
 #: ../src/imageio/format/jxl.c:616
 msgid "the preferred decoding speed with some sacrifice of quality"
@@ -11163,7 +11165,7 @@ msgstr "PDF"
 
 #: ../src/imageio/format/pdf.c:577
 msgid "enter the title of the pdf"
-msgstr "introduzca el título del pdf"
+msgstr "introduzca el título del PDF"
 
 #. paper size
 #. // papers
@@ -11291,15 +11293,14 @@ msgid "image mode"
 msgstr "modo de imagen"
 
 #: ../src/imageio/format/pdf.c:688
-#, fuzzy
 msgid ""
 "normal -- just put the images into the pdf\n"
 "draft -- images are replaced with boxes\n"
 "debug -- only show the outlines and bounding boxes"
 msgstr ""
-"Normal: Sólo coloca las imágenes en el pdf\n"
-"Borrador: Las imágenes son reemplazadas por cajas\n"
-"Depurar: Sólo muestra el contorno de las cajas delimitadoras"
+"Normal: Sólo coloca las imágenes en el PDF.\n"
+"Borrador: Las imágenes son reemplazadas por cajas.\n"
+"Depurar: Sólo muestra el contorno de las cajas delimitadoras."
 
 #: ../src/imageio/format/pdf.c:693
 msgid "normal"
@@ -11378,7 +11379,6 @@ msgid "image hint"
 msgstr "indicio de imagen"
 
 #: ../src/imageio/format/webp.c:408
-#, fuzzy
 msgid ""
 "image characteristics hint for the underlying encoder.\n"
 "picture: digital picture, like portrait, inner shot\n"
@@ -11386,9 +11386,9 @@ msgid ""
 "graphic: discrete tone image (graph, map-tile etc)"
 msgstr ""
 "Indicios relacionados con la imagen para el codificador.\n"
-"Imagen: imagen digital, toma interior, como el retrato\n"
-"Foto   : fotografía de exteriores, con iluminación natural\n"
-"Gráfico : tono discreto de la imagen (gráfico, patrón, etc)"
+"Imagen : imagen digital, toma interior como el retrato.\n"
+"Foto : fotografía de exteriores con iluminación natural.\n"
+"Gráfico : tono discreto de la imagen (gráfico, patrón, etc)."
 
 #: ../src/imageio/format/webp.c:413
 msgid "picture"
@@ -11622,14 +11622,12 @@ msgid "click login button to start"
 msgstr "Para empezar, pulse el botón acceder"
 
 #: ../src/imageio/storage/piwigo.c:1014
-#, fuzzy
 msgid "don't check"
-msgstr "revisión de gama"
+msgstr "no verificar"
 
 #: ../src/imageio/storage/piwigo.c:1016
-#, fuzzy
 msgid "update metadata"
-msgstr "pegar metadatos"
+msgstr "actualizar metadatos"
 
 #: ../src/imageio/storage/piwigo.c:1137
 msgid "cannot create a new piwigo album!"
@@ -11832,7 +11830,6 @@ msgstr ""
 "Mayús+Clic para solo corregir el desplazamiento del lente"
 
 #: ../src/iop/ashift.c:5797
-#, fuzzy
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions, "
 "fitting rotation, lens shift in both directions, and shear\n"
@@ -11841,10 +11838,11 @@ msgid ""
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
 "Corrección automática para distorsiones de perspectiva verticales y "
-"horizontales: rotación, desplazamiento del lente en ambos sentidos, y corte\n"
-"Ctrl+Clic para solo corregir la rotación\n"
-"Mayús+Clic para solo corregir el desplazamiento del lente\n"
-"Ctrl+Mayús+Clic para ajustar la rotación y el desplazamiento del lente"
+"horizontales: rotación, desplazamiento del lente en ambos sentidos, y "
+"corte.\n"
+"Pulse Ctrl+Clic para corregir solo la rotación.\n"
+"Pulse Mayús+Clic para corregir solo el desplazamiento del lente.\n"
+"Pulse Ctrl+Mayús+Clic para ajustar la rotación y el desplazamiento del lente."
 
 #: ../src/iop/ashift.c:5803
 msgid ""
@@ -12724,14 +12722,13 @@ msgid "bypassed while zooming in"
 msgstr "Se ignoró al ampliarse"
 
 #: ../src/iop/cacorrect.c:1340
-#, fuzzy
 msgid ""
 "while calculating the correction parameters the internal maths failed so "
 "module is bypassed.\n"
 "you can get more info by running darktable via the console."
 msgstr ""
 "Hubo un fallo al calcular los parámetros de corrección, por lo que el módulo "
-"se ignora.\n"
+"se ha ignorado.\n"
 "Se puede obtener más información ejecutando darktable a través de la "
 "terminal."
 
@@ -13528,7 +13525,6 @@ msgid "optimize for"
 msgstr "optimizado para"
 
 #: ../src/iop/channelmixerrgb.c:4225
-#, fuzzy
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -16887,12 +16883,18 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/highlights.c:2503
+#, fuzzy
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
 "opposed means inpainting.\n"
 "the mask button shows segments that are considered to have a good candidate."
 msgstr ""
+"Selecciona la restauración después del análisis de la segmentación.\n"
+"Incremente el valor para favorecer a los candidatos encontrados en el "
+"análisis de segmentación, disminuir para oponerse significa inpainting.\\n\n"
+"el botón máscara muestra los segmentos que se considera que tienen un buen "
+"candidato."
 
 #: ../src/iop/highlights.c:2514
 msgid ""
@@ -16905,6 +16907,16 @@ msgid ""
 "the flat modes ignore narrow unclipped structures (like powerlines) to keep "
 "highlights rebuilt and avoid gradients."
 msgstr ""
+"Realiza una aproximación de la información perdida en las regiones "
+"recortadas. El efecto depende del tamaño del segmento y de los gradientes de "
+"los bordes.\n"
+"Elija el modo en función del tamaño del segmento o el modo genérico que "
+"explora los mejores ajustes para cada segmento.\n"
+"\"Pequeño\" significa que son áreas con un diámetro inferior a 25 pixeles, "
+"\"grande\" es recomendable para áreas mayores a 100 pixeles.\n"
+"Los modos planos ignoran las estructuras estrechas no recortadas (como las "
+"líneas eléctricas) para que al reconstruir las luces se eviten los "
+"degradados."
 
 #: ../src/iop/highlights.c:2520
 msgid ""
@@ -18727,12 +18739,18 @@ msgid ""
 "the black luminance of the target display or print.\n"
 "can be used creatively for a faded look."
 msgstr ""
+"Luminosidad del negro del destino (pantalla o impresión).\n"
+"Puede utilizarse con intenciones creativas para obtener un aspecto "
+"difuminado."
 
 #: ../src/iop/sigmoid.c:585
 msgid ""
 "the white luminance of the target display or print.\n"
 "can be used creatively for a faded look or blowing out whites earlier."
 msgstr ""
+"Luminosidad del blanco del destino (pantalla o impresión)\n"
+"Puede utilizarse con intenciones creativas para obtener un aspecto "
+"difuminado o atenuar las luces."
 
 #: ../src/iop/soften.c:84
 msgid "soften"
@@ -23065,13 +23083,12 @@ msgid "darktable style files"
 msgstr "archivos de estilo darktable"
 
 #: ../src/libs/styles.c:803
-#, fuzzy
 msgid ""
 "available styles,\n"
 "double-click to apply"
 msgstr ""
 "Estilos disponibles: \n"
-"pulsación doble para aplicarlo"
+"haga pulsación doble para aplicarlo."
 
 #: ../src/libs/styles.c:810 ../src/libs/styles.c:811
 msgid "filter style names"
