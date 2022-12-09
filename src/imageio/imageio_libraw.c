@@ -208,15 +208,31 @@ const model_map_t modelMap[] = {
 
 static gboolean _supported_image(const gchar *filename)
 {
-  const char *extensions_whitelist[] = { "cr3", NULL };
-  char *ext = g_strrstr(filename, ".");
+  // At the moment of writing this code CR3 files are not supported by RawSpeed,
+  // so they are always processed by LibRaw.
+  gchar *extensions_whitelist;
+  const gchar *always_by_libraw = "cr3";
+
+  gchar *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
   ext++;
-  for(const char **i = extensions_whitelist; *i != NULL; i++)
-    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
-    {
-      return TRUE;
-    }
+
+  if(dt_conf_key_not_empty("libraw_extensions"))
+    extensions_whitelist = g_strjoin(" ", always_by_libraw, dt_conf_get_string_const("libraw_extensions"), NULL);
+  else
+    extensions_whitelist = g_strdup(always_by_libraw);
+
+  fprintf(stderr, "[libraw_open] extensions whitelist: `%s'\n", extensions_whitelist);
+
+  gchar *ext_lowercased = g_ascii_strdown(ext,-1);
+  if(g_strstr_len(extensions_whitelist,-1,ext_lowercased))
+  {
+    g_free(ext_lowercased);
+    g_free(extensions_whitelist);
+    return TRUE;
+  }
+  g_free(ext_lowercased);
+  g_free(extensions_whitelist);
   return FALSE;
 }
 
