@@ -1108,7 +1108,24 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   format_params->width = processed_width;
   format_params->height = processed_height;
 
-  if(!ignore_exif)
+  // Check if all the metadata export flags are set for AVIF/EXR/JPEG XL (opt-in)
+  // TODO: this is a workround as these formats do not support fine grained metadata control through
+  // dt_exif_xmp_attach_export() below due to lack of exiv2 write support
+  // Note: that this is done only when we do not ignore_exif, so we have a proper filename
+  //       otherwise the export is done in a memory buffer.
+  gboolean md_flags_set = TRUE;
+  if(!ignore_exif
+     && (!strcmp(format->mime(NULL), "image/avif")
+         || !strcmp(format->mime(NULL), "image/x-exr")
+         || !strcmp(format->mime(NULL), "image/jxl")))
+  {
+    const int32_t meta_all = DT_META_EXIF | DT_META_METADATA | DT_META_GEOTAG | DT_META_TAG
+                             | DT_META_HIERARCHICAL_TAG | DT_META_DT_HISTORY | DT_META_PRIVATE_TAG
+                             | DT_META_SYNONYMS_TAG | DT_META_OMIT_HIERARCHY;
+    md_flags_set = metadata ? (metadata->flags & meta_all) == meta_all : FALSE;
+  }
+
+  if(!ignore_exif && md_flags_set)
   {
     uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes max, but if original size is close to that,
                                   // adding new tags could make it go over that... so let it be and see what

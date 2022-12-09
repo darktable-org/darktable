@@ -137,17 +137,23 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
   header.insert("comment", Imf::StringAttribute(comment));
 
+  // TODO: workaround; remove when exiv2 implements EXR write support and use dt_exif_write_blob() at the end
   if(exif && exif_len > 0)
   {
     Imf::Blob exif_blob(exif_len, (uint8_t *)exif);
     header.insert("exif", Imf::BlobAttribute(exif_blob));
   }
 
-  char *xmp_string = dt_exif_xmp_read_string(imgid);
-  if(xmp_string && strlen(xmp_string) > 0)
+  // TODO: workaround; remove when exiv2 implements EXR write support and update flags()
+  // TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested
+  if(exif && exif_len > 0)
   {
-    header.insert("xmp", Imf::StringAttribute(xmp_string));
-    g_free(xmp_string);
+    char *xmp_string = dt_exif_xmp_read_string(imgid);
+    if(xmp_string && strlen(xmp_string) > 0)
+    {
+      header.insert("xmp", Imf::StringAttribute(xmp_string));
+      g_free(xmp_string);
+    }
   }
 
   // try to add the chromaticities

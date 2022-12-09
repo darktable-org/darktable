@@ -440,12 +440,16 @@ int write_image(struct dt_imageio_module_data_t *data,
     avifImageSetMetadataExif(image, exif, exif_len);
 
   /* TODO: workaround; remove when exiv2 implements AVIF write support and update flags() */
-  char *xmp_string = dt_exif_xmp_read_string(imgid);
-  size_t xmp_len;
-  if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+  /* TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested */
+  if(exif && exif_len > 0)
   {
-    avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
-    g_free(xmp_string);
+    char *xmp_string = dt_exif_xmp_read_string(imgid);
+    size_t xmp_len;
+    if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+    {
+      avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
+      g_free(xmp_string);
+    }
   }
 
   encoder = avifEncoderCreate();
