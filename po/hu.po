@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-28 08:36+0100\n"
-"PO-Revision-Date: 2022-11-28 13:10+0100\n"
+"POT-Creation-Date: 2022-11-30 11:59+0100\n"
+"PO-Revision-Date: 2022-12-10 21:57+0100\n"
 "Last-Translator: Báthory Péter <bathory86p@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -3907,32 +3907,32 @@ msgid "inpaint a flat color"
 msgstr "egy kilapult szín befestése"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:284
-#: ../src/iop/highlights.c:2368 ../src/iop/highlights.c:2374
+#: ../src/iop/highlights.c:2387 ../src/iop/highlights.c:2393
 msgid "clip highlights"
 msgstr "csúcsfények vágása"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:285
-#: ../src/iop/highlights.c:2372
+#: ../src/iop/highlights.c:2391
 msgid "reconstruct in LCh"
 msgstr "rekonstruálás LCh modellben"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:2321 ../src/iop/highlights.c:2384
+#: ../src/iop/highlights.c:2340 ../src/iop/highlights.c:2403
 msgid "reconstruct color"
 msgstr "szín rekonstruálása"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:2379
+#: ../src/iop/highlights.c:2398
 msgid "guided laplacians"
 msgstr "irányított Laplace"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:2376
+#: ../src/iop/highlights.c:2395
 msgid "segmentation based"
 msgstr "szakaszolás alapú"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:2364
+#: ../src/iop/highlights.c:2383
 msgid "inpaint opposed"
 msgstr "ellentétes befestése"
 
@@ -5059,7 +5059,7 @@ msgid "capture date"
 msgstr "készítés dátuma"
 
 #: ../src/common/collection.c:680 ../src/libs/collect.c:3309
-#: ../src/libs/filtering.c:2187 ../src/libs/filtering.c:2207
+#: ../src/libs/filtering.c:2196 ../src/libs/filtering.c:2216
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "előzmények"
@@ -9157,7 +9157,7 @@ msgid "first"
 msgstr "első"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1913
+#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
 #: ../src/libs/filters/rating_range.c:266 ../src/libs/tagging.c:3117
 #: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
 #: ../src/views/darkroom.c:2553
@@ -14696,11 +14696,11 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "más árnyalat tónusokkal szemben előnyben részesítendő árnyalat tónus"
 
 #: ../src/iop/colorreconstruction.c:1265 ../src/iop/demosaic.c:5472
-#: ../src/iop/highlights.c:2527
+#: ../src/iop/highlights.c:2546
 msgid "not applicable"
 msgstr "nem alkalmazható"
 
-#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2528
+#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2547
 msgid "no highlights reconstruction for monochrome images"
 msgstr "a monokróm képeknél nincs csúcsfény-rekonstrukció"
 
@@ -16683,7 +16683,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "rekonstrukció, raw"
 
-#: ../src/iop/highlights.c:2261
+#: ../src/iop/highlights.c:2280
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -16691,11 +16691,11 @@ msgstr ""
 "csúcsfények: a mód nem érhető el ilyen típusú képeknél. visszatérés az "
 "ellentétes befestésére."
 
-#: ../src/iop/highlights.c:2460
+#: ../src/iop/highlights.c:2479
 msgid "highlight reconstruction method"
 msgstr "csúcsfény-rekonstrukciós módszer"
 
-#: ../src/iop/highlights.c:2465
+#: ../src/iop/highlights.c:2484
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -16711,7 +16711,7 @@ msgstr ""
 "finomhangolására,\n"
 "különösen, ha a kamera fehérpontja nem megfelelő."
 
-#: ../src/iop/highlights.c:2476
+#: ../src/iop/highlights.c:2495
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
@@ -16721,7 +16721,7 @@ msgstr ""
 "a maszk gomb az eredményül kapott szegmensek szegélyeinek pontos helyzetét "
 "mutatja."
 
-#: ../src/iop/highlights.c:2484
+#: ../src/iop/highlights.c:2503
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -16734,7 +16734,7 @@ msgstr ""
 "a maszk gomb azokat a szakaszokat jeleníti meg, amelyek jó jelöltnek lettek "
 "elkönyvelve."
 
-#: ../src/iop/highlights.c:2495
+#: ../src/iop/highlights.c:2514
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -16755,7 +16755,7 @@ msgstr ""
 "(például elektromos vezetékeket), hogy a megőrizzék az újjáépített "
 "csúcsfényeket és elkerüljék az átmeneteket."
 
-#: ../src/iop/highlights.c:2501
+#: ../src/iop/highlights.c:2520
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -16765,7 +16765,7 @@ msgstr ""
 "erősségét\n"
 "a maszk gombok a már rekonstruált adatokhoz hozzáadott hatást mutatják."
 
-#: ../src/iop/highlights.c:2511
+#: ../src/iop/highlights.c:2530
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -16773,7 +16773,7 @@ msgstr ""
 "zajt ad hozzá, hogy a rekonstruált területek vizuálisan beleolvadjanak\n"
 "a zajos kép többi részébe. magas ISO-nál hasznos"
 
-#: ../src/iop/highlights.c:2515
+#: ../src/iop/highlights.c:2534
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16781,7 +16781,7 @@ msgstr ""
 "növelje, ha a bíbor csúcsfények nem lettek tökéletesen korrigálva\n"
 "minden egyes újabb iteráció teljesítményvesztéssel jár."
 
-#: ../src/iop/highlights.c:2520
+#: ../src/iop/highlights.c:2539
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -16789,7 +16789,7 @@ msgstr ""
 "növelje, ha a bíbor csúcsfények nem lettek tökéletesen korrigálva\n"
 "az érvényes és a levágott területek között egyenetlen határokat hozhat létre."
 
-#: ../src/iop/highlights.c:2524
+#: ../src/iop/highlights.c:2543
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -18015,7 +18015,7 @@ msgstr ""
 "a raw fekete-/fehérpont korrekció\n"
 "csak az azt igénylő szenzoroknál működik."
 
-#: ../src/iop/rcd_demosaic.c:310
+#: ../src/iop/rcd_demosaic.c:304
 msgid "[rcd_demosaic] too small area"
 msgstr "[rcd_demosaic] túl kicsi terület"
 
@@ -19791,7 +19791,7 @@ msgstr "VAGY"
 msgid "BUT NOT"
 msgstr "DE NEM"
 
-#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2188
+#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2197
 msgid "revert to a previous set of rules"
 msgstr "visszaállítás egy korábbi szabályrendszerre"
 
@@ -20479,70 +20479,74 @@ msgstr "meghatározza, hogy ez a szabály hogyan hat az előzőre"
 msgid " (off)"
 msgstr "(ki)"
 
+#: ../src/libs/filtering.c:1641
+msgid "you can't add more rules."
+msgstr "több szabályt is hozzáadhat."
+
 #. fill the popover with all pinned rules
-#: ../src/libs/filtering.c:1666
+#: ../src/libs/filtering.c:1674
 msgid "shown filters"
 msgstr "megjelenített szűrők"
 
-#: ../src/libs/filtering.c:1680
+#: ../src/libs/filtering.c:1689
 msgid "new filter"
 msgstr "új szűrő"
 
-#: ../src/libs/filtering.c:1855
+#: ../src/libs/filtering.c:1864
 msgid "sort order"
 msgstr "sorrend"
 
-#: ../src/libs/filtering.c:1857
+#: ../src/libs/filtering.c:1866
 msgid "determine the sort order of shown images"
 msgstr "meghatározza a megjelenített képek sorrendjét"
 
-#: ../src/libs/filtering.c:1914
+#: ../src/libs/filtering.c:1923
 msgid "sort direction"
 msgstr "rendezés iránya"
 
-#: ../src/libs/filtering.c:1920
+#: ../src/libs/filtering.c:1929
 msgid "remove this sort order"
 msgstr "eltávolítja ezt a rendezést"
 
-#: ../src/libs/filtering.c:2004
+#: ../src/libs/filtering.c:2013
 #, c-format
 msgid "you can't have more than %d sort orders"
 msgstr "legfeljebb %d rendezési sorrendje lehet"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "DESC"
 msgstr "CSÖK"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "ASC"
 msgstr "NÖV"
 
-#: ../src/libs/filtering.c:2184
+#: ../src/libs/filtering.c:2193
 msgid "new rule"
 msgstr "új szabály"
 
-#: ../src/libs/filtering.c:2185
+#: ../src/libs/filtering.c:2194
 msgid "append new rule to collect images"
 msgstr "új képkigyűjtési szabály hozzáfűzése"
 
-#: ../src/libs/filtering.c:2196 ../src/libs/tools/filter.c:117
+#: ../src/libs/filtering.c:2205 ../src/libs/tools/filter.c:117
 msgid "sort by"
 msgstr "rendezés"
 
-#: ../src/libs/filtering.c:2204
+#: ../src/libs/filtering.c:2213
 msgid "new sort"
 msgstr "új rendezés"
 
-#: ../src/libs/filtering.c:2205
+#: ../src/libs/filtering.c:2214
 msgid "append new sort to order images"
 msgstr "új sorrend hozzáadása a képek rendezéséhez"
 
-#: ../src/libs/filtering.c:2208
+#: ../src/libs/filtering.c:2217
 msgid "revert to a previous set of sort orders"
 msgstr "visszaállítás egy korábbi rendezési definícióra"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2258
+#: ../src/libs/filtering.c:2267
 msgid ""
 "reset\n"
 "ctrl+click to remove pinned rules too"
@@ -24220,8 +24224,8 @@ msgid "select range from last image"
 msgstr "tartomány kiválasztása a legutóbbi képből"
 
 #: ../src/views/lighttable.c:894
-msgid "add image to selection or remove"
-msgstr "kép hozzáadása a kijelöléshez vagy eltávolítása"
+msgid "add image to or remove it from a selection"
+msgstr "kép hozzáadása vagy eltávolítása a kijelölésből"
 
 #: ../src/views/lighttable.c:898
 msgid "change image order"
@@ -24320,12 +24324,12 @@ msgstr "nyomtatás"
 
 #: ../src/views/slideshow.c:344
 msgid "end of images"
-msgstr "a képek vége"
+msgstr "elfogytak a képek"
 
 #: ../src/views/slideshow.c:365
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
-"a képek végére értél. nyomj egy gombot, hogy visszatérj az átvilágító módba"
+"a képek végére ért. nyomjon egy gombot, hogy visszatérjen az átvilágító módba"
 
 #: ../src/views/slideshow.c:495
 msgid "waiting to start slideshow"
@@ -24423,12 +24427,15 @@ msgstr "darktable – gyorsbillentyű ablak"
 #: ../src/views/view.c:1285
 msgid "switch to a classic window which will stay open after key release"
 msgstr ""
-"váltás klasszikus ablakra, ami nyitva marad billentyű felengedés után is"
+"váltás klasszikus ablakra, ami nyitva marad a billentyű felengedése után is"
 
 #. we add the mouse actions too
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "egérműveletek"
+
+#~ msgid "add image to selection or remove"
+#~ msgstr "kép hozzáadása a kijelöléshez vagy eltávolítása"
 
 #~ msgid "3D lut root folder"
 #~ msgstr "3D lut gyökérkönyvtár"
