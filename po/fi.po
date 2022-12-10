@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-12-06 13:32+0200\n"
-"PO-Revision-Date: 2022-12-06 13:32+0200\n"
+"PO-Revision-Date: 2022-12-10 18:04+0200\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -2001,7 +2001,7 @@ msgid ""
 msgstr ""
 "Jos kohdistus on moduulin instanssissa, aseta pikavalinta kyseiseen "
 "instanssiin.\n"
-"Huomioi: Yhdistyksen pikavalinnat asetetaan aina kohdistettuun instanssiin."
+"Huomioi: Yhdistämisen pikavalinnat asetetaan aina kohdistettuun instanssiin."
 
 #: ../build/bin/preferences_gen.h:7752
 msgid "prefer expanded instances"
@@ -4517,7 +4517,7 @@ msgstr "RGB keskiarvo"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:380
 msgid "HSL lightness"
-msgstr "HSL kirkkaus"
+msgstr "HSL vaaleus"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
@@ -4529,7 +4529,7 @@ msgstr "RGB summa"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:385
 msgid "RGB geometric mean"
-msgstr "RGB geometrinen keskiarvo"
+msgstr "RGB geometrisesti keskiarvoistava"
 
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:39
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:88
@@ -6615,7 +6615,7 @@ msgstr "Käsittelymoduulit"
 #: ../src/control/control.c:116
 msgctxt "accel"
 msgid "<blending>"
-msgstr "<yhdistys>"
+msgstr "<yhdistäminen>"
 
 #: ../src/control/control.c:117
 msgctxt "accel"
@@ -7269,7 +7269,7 @@ msgstr "Tuo kuva"
 
 #: ../src/develop/blend.c:291
 msgid "detail mask blending error"
-msgstr "Yksityiskohtaisen maskin yhdistysvirhe."
+msgstr "Yksityiskohtaisen maskin yhdistämisen virhe."
 
 #: ../src/develop/blend.c:459 ../src/develop/blend.c:828
 #, c-format
@@ -7312,17 +7312,17 @@ msgstr "Kertova"
 #: ../src/develop/blend_gui.c:51
 msgctxt "blendmode"
 msgid "average"
-msgstr "Keskiarvoista"
+msgstr "Keskiarvoistava"
 
 #: ../src/develop/blend_gui.c:52
 msgctxt "blendmode"
 msgid "addition"
-msgstr "Lisäys"
+msgstr "Lisäävä"
 
 #: ../src/develop/blend_gui.c:53
 msgctxt "blendmode"
 msgid "subtract"
-msgstr "Vähennä"
+msgstr "Vähentävä"
 
 #: ../src/develop/blend_gui.c:54 ../src/libs/live_view.c:348
 msgctxt "blendmode"
@@ -7392,7 +7392,7 @@ msgstr "Värinsäätö"
 #: ../src/develop/blend_gui.c:67
 msgctxt "blendmode"
 msgid "Lab lightness"
-msgstr "Lab kirkkaus"
+msgstr "Lab vaaleus"
 
 #: ../src/develop/blend_gui.c:68
 msgctxt "blendmode"
@@ -7442,17 +7442,17 @@ msgstr "RGB sininen kanava"
 #: ../src/develop/blend_gui.c:77
 msgctxt "blendmode"
 msgid "divide"
-msgstr "Jako"
+msgstr "Jakava"
 
 #: ../src/develop/blend_gui.c:78
 msgctxt "blendmode"
 msgid "geometric mean"
-msgstr "Geometrinen keskiarvo"
+msgstr "Geometrisesti keskiarvoistava"
 
 #: ../src/develop/blend_gui.c:79
 msgctxt "blendmode"
 msgid "harmonic mean"
-msgstr "Harmoniset keskiarvot"
+msgstr "Harmonisesti keskiarvoistava"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
 #: ../src/develop/blend_gui.c:82
@@ -7463,12 +7463,12 @@ msgstr "Erottava (vanhentunut)"
 #: ../src/develop/blend_gui.c:83
 msgctxt "blendmode"
 msgid "subtract inverse (deprecated)"
-msgstr "Vähennä käänteinen (vanhentunut)"
+msgstr "Käänteinen vähentävä(vanhentunut)"
 
 #: ../src/develop/blend_gui.c:84
 msgctxt "blendmode"
 msgid "divide inverse (deprecated)"
-msgstr "Jaa käänteinen (vanhentunut)"
+msgstr "Käänteinen jakava(vanhentunut)"
 
 #: ../src/develop/blend_gui.c:88
 msgctxt "blendoperation"
@@ -7539,7 +7539,7 @@ msgstr "Käänteinen mukaan lukeva"
 
 #: ../src/develop/blend_gui.c:117
 msgid "output before blur"
-msgstr "Ulostulo ennen sumennusta"
+msgstr "Lähtö ennen sumennusta"
 
 #: ../src/develop/blend_gui.c:118
 msgid "input before blur"
@@ -7547,7 +7547,7 @@ msgstr "Tulo ennen sumennusta"
 
 #: ../src/develop/blend_gui.c:119
 msgid "output after blur"
-msgstr "Lähdön sumennuksen jälkeen"
+msgstr "Lähtö sumennuksen jälkeen"
 
 #: ../src/develop/blend_gui.c:120
 msgid "input after blur"
@@ -7581,7 +7581,7 @@ msgstr " (log)"
 
 #: ../src/develop/blend_gui.c:1703
 msgid "reset to default blend colorspace"
-msgstr "Palauta sekoituksen oletusväriavaruus"
+msgstr "Palauta yhdistämisen oletusväriavaruus"
 
 #: ../src/develop/blend_gui.c:1750
 msgid "reset and hide output channels"
@@ -7745,7 +7745,7 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"Moduulin sulauttamattomaan ulostuloon perustuvat säädöt.\n"
+"Moduulin yhdistämättömään ulostuloon perustuvat säädöt.\n"
 "* Ylempään merkkiin perustuva toimintasäde: Yhdistä täysin\n"
 "* Alempaan merkkiin perustuva toimintasäde: Älä yhdistä lainkaan\n"
 "* Ylemmän/alemman merkin läheisyyteen perustuva toimintasäde: Yhdistä "
@@ -7753,7 +7753,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2129
 msgid "reset blend mask settings"
-msgstr "Palauta yhdistelmämaskin asetukset."
+msgstr "Palauta yhdistämisen maskin oletukset."
 
 #: ../src/develop/blend_gui.c:2140 ../src/iop/atrous.c:1701
 #: ../src/iop/colorzones.c:2420 ../src/iop/denoiseprofile.c:3442
@@ -7787,8 +7787,7 @@ msgstr "Vaihda kaikkien kanavien napaisuus."
 
 #: ../src/develop/blend_gui.c:2181
 msgid "toggle polarity. best seen by enabling 'display mask'"
-msgstr ""
-"Vaihda polarisaatio. Erottuu parhaiten, kun \"näytä maski\" on käytössä"
+msgstr "Vaihda napaisuus. Erottuu parhaiten, kun \"näytä maski\" on käytössä"
 
 #: ../src/develop/blend_gui.c:2208
 msgid ""
@@ -7827,7 +7826,7 @@ msgstr " EV"
 #: ../src/develop/blend_gui.c:3064 ../src/develop/blend_gui.c:3070
 #: ../src/develop/blend_gui.c:3076 ../src/develop/blend_gui.c:3084
 msgid "blend"
-msgstr "Yhdistelmä"
+msgstr "Yhdistä"
 
 #: ../src/develop/blend_gui.c:2226
 msgid "boost factor"
@@ -7851,7 +7850,7 @@ msgstr "Maskia ei käytössä"
 
 #: ../src/develop/blend_gui.c:2324
 msgid "toggle polarity of drawn mask"
-msgstr "Vaihda piirretyn maskin polarisaatio"
+msgstr "Vaihda piirretyn maskin napaisuus"
 
 #: ../src/develop/blend_gui.c:2331
 msgid "show and edit mask elements"
@@ -7914,7 +7913,7 @@ msgstr "lisää useita ympyröitä"
 
 #: ../src/develop/blend_gui.c:2500
 msgid "toggle polarity of raster mask"
-msgstr "Vaihda rasterimaskin polarisaatio."
+msgstr "Vaihda rasterimaskin napaisuus."
 
 #: ../src/develop/blend_gui.c:2633
 msgid "normal & difference modes"
@@ -7956,15 +7955,15 @@ msgstr "Yhdistämisen asetukset"
 
 #: ../src/develop/blend_gui.c:3007 ../src/libs/history.c:870
 msgid "blend mode"
-msgstr "Yhdistelmän tila"
+msgstr "Yhdistämisen tila"
 
 #: ../src/develop/blend_gui.c:3008
 msgid "choose blending mode"
-msgstr "Valitse yhdistelytila."
+msgstr "Valitse yhdistämisen tila."
 
 #: ../src/develop/blend_gui.c:3015
 msgid "toggle blend order"
-msgstr "Vaihda yhdistyksen järjestys"
+msgstr "Vaihda yhdistämisen järjestys"
 
 #: ../src/develop/blend_gui.c:3018
 msgid ""
@@ -7972,7 +7971,7 @@ msgid ""
 "by default the output will be blended on top of the input,\n"
 "order can be reversed by clicking on the icon (input on top of output)"
 msgstr ""
-"Vaihda yhdistyksen järjestystä moduulin tulon ja lähdön välillä.\n"
+"Vaihda yhdistämisen järjestystä moduulin tulon ja lähdön välillä.\n"
 "Oletuksena lähtö yhdistetään tulon päälle.\n"
 "Järjestys voidaan kääntää napsauttamalla kuvaketta (tulo lähdön päällä)"
 
@@ -7992,7 +7991,7 @@ msgstr "Läpinäkyvyys"
 
 #: ../src/develop/blend_gui.c:3036
 msgid "set the opacity of the blending"
-msgstr "Aseta yhdistelmän läpinäkyvyys."
+msgstr "Aseta yhdistämisen läpinäkyvyys."
 
 #: ../src/develop/blend_gui.c:3038 ../src/libs/history.c:874
 msgid "combine masks"
@@ -8052,7 +8051,7 @@ msgstr "Sumennuksen säde"
 
 #: ../src/develop/blend_gui.c:3072
 msgid "radius for gaussian blur of blend mask"
-msgstr "Gauss-sumennuksen säde yhdistelmämaskeille"
+msgstr "Gauss-sumennuksen säde yhdistämisen maskile"
 
 #: ../src/develop/blend_gui.c:3076 ../src/iop/retouch.c:2414
 #: ../src/libs/history.c:873
@@ -8064,8 +8063,8 @@ msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness "
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
-"Siirtää ja kallistaa yhdistelmämaskin sävykäyrää sen kirkkauden säätämiseksi "
-"muuttamatta täysin läpinäkyviä tai läpinäkymättömiä alueita."
+"Siirtää ja kallistaa yhdistämisen maskin sävykäyrää sen kirkkauden "
+"säätämiseksi muuttamatta täysin läpinäkyviä tai läpinäkymättömiä alueita."
 
 #: ../src/develop/blend_gui.c:3084 ../src/libs/history.c:878
 msgid "mask contrast"
@@ -8074,7 +8073,8 @@ msgstr "Maskin kontrasti"
 #: ../src/develop/blend_gui.c:3086
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
-msgstr "Muuttaa yhdistelmämaskin sävykäyrän S-muotoon kontrastin säätämiseksi."
+msgstr ""
+"Muuttaa yhdistämisen maskin sävykäyrän S-muotoon kontrastin säätämiseksi."
 
 #: ../src/develop/blend_gui.c:3090
 msgid "mask refinement"
@@ -8096,13 +8096,13 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:3100
 msgid "temporarily switch off blend mask"
-msgstr "Poista yhdistelmämaski väliaikaisesti käytöstä"
+msgstr "Poista yhdistämisen maskin väliaikaisesti käytöstä"
 
 #: ../src/develop/blend_gui.c:3102
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
-"Poista yhdistelmämaski väliaikaisesti käytöstä. Koskee ainoastaan valittua "
-"moduulia."
+"Poista yhdistämisen maskin väliaikaisesti käytöstä. Koskee ainoastaan "
+"valittua moduulia."
 
 #: ../src/develop/develop.c:1538 ../src/gui/presets.c:970
 msgid "display-referred default"
@@ -11972,7 +11972,7 @@ msgstr "Luma"
 
 #: ../src/iop/atrous.c:1702
 msgid "change lightness at each feature size"
-msgstr "Muuta kaikenkokoisten yksityiskohtien valoisuutta."
+msgstr "Muuta kaikenkokoisten yksityiskohtien vaaleutta."
 
 #: ../src/iop/atrous.c:1703
 msgid "change color saturation at each feature size"
@@ -14011,7 +14011,7 @@ msgstr "Väritasapaino toimii ainoastaan RGB-tulolla."
 #: ../src/iop/colorbalancergb.c:1474 ../src/iop/colorzones.c:2185
 #: ../src/iop/retouch.c:1848 ../src/iop/toneequal.c:1871
 msgid "cannot display masks when the blending mask is displayed"
-msgstr "Maskien näyttö ei onnistu, kun yhdistelmämaski on käytössä."
+msgstr "Maskien näyttö ei onnistu, kun yhdistämisen maski on käytössä."
 
 #: ../src/iop/colorbalancergb.c:1866
 msgid "global grading"
@@ -15106,7 +15106,7 @@ msgstr ""
 "kertoimella. Tulisi olla valittuna ensimmäiselle\n"
 "instanssille paremman kohinanpoiston saavuttamiseksi.\n"
 "Valinta tulisi poistaa, jos aiemmassa instanssissa on\n"
-"käytetty värin yhdistystilaa."
+"käytetty värin yhdistämisen tilaa."
 
 #: ../src/iop/denoiseprofile.c:3561
 msgid ""
@@ -15140,7 +15140,7 @@ msgid ""
 "wavelets work best for `color' blending"
 msgstr ""
 "Kohinanpoiston ytimen menetelmä.\n"
-"Epäpaikallinen keskiarvo toimii parhaiten `valoisuuden' yhdistykselle.\n"
+"Epäpaikallinen keskiarvo toimii parhaiten `vaaleuden' yhdistykselle.\n"
 "Aallokkeet toimii parhaiten 'värin' yhdistykselle."
 
 #: ../src/iop/denoiseprofile.c:3574
@@ -18044,7 +18044,7 @@ msgstr ""
 
 #: ../src/iop/relight.c:273
 msgid "toggle tool for picking median lightness in image"
-msgstr "Vaihda työkalua kuvan keskimmäisen kirkkauden valitsemiseen"
+msgstr "Vaihda työkalua kuvan keskimmäisen vaaleuden valitsemiseen"
 
 #: ../src/iop/relight.c:276 ../src/libs/export.c:1136
 #: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2378
@@ -18073,7 +18073,7 @@ msgstr "Geometrinen ja taajuudellinen, RGB"
 
 #: ../src/iop/retouch.c:1512
 msgid "cannot display scales when the blending mask is displayed"
-msgstr "Asteikon näyttö ei onnistu, kun yhdistelmämaski on käytössä."
+msgstr "Asteikon näyttö ei onnistu, kun yhdistämisen maski on käytössä."
 
 #: ../src/iop/retouch.c:1827 ../src/iop/retouch.c:1829
 #: ../src/iop/retouch.c:1831 ../src/iop/retouch.c:1833
@@ -21104,7 +21104,7 @@ msgstr "Rasterimaskin tunniste"
 
 #: ../src/libs/history.c:884
 msgid "drawn mask polarity"
-msgstr "Piirretyn maskin polarisaatio"
+msgstr "Piirretyn maskin napaisuus"
 
 #: ../src/libs/history.c:888
 #, c-format
@@ -21563,7 +21563,7 @@ msgstr "XOR"
 #: ../src/libs/live_view.c:337
 msgctxt "blendmode"
 msgid "add"
-msgstr "Lisää"
+msgstr "Lisäävä"
 
 #: ../src/libs/live_view.c:338
 msgctxt "blendmode"
