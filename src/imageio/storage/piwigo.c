@@ -124,6 +124,17 @@ typedef struct dt_storage_piwigo_params_t
 
 dt_storage_piwigo_conflict_actions_t conflict_action;
 
+static char *_get_filename(dt_image_t *img)
+{
+  char filename[PATH_MAX] = { 0 };
+  g_strlcpy (filename, img->filename, sizeof(filename));
+
+  if(img->version > 0)
+    dt_image_path_append_version_no_db(img->version, filename, sizeof(filename));
+
+  return g_strdup(filename);
+}
+
 /* low-level routine doing the HTTP POST request */
 static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth);
 
@@ -739,6 +750,8 @@ static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *i
 
   g_list_free(args);
 
+  char *filename = _get_filename(img);
+
   if(p->api->response && !p->api->error_occured && json_object_has_member(p->api->response, "result"))
   {
     JsonNode *result_node = json_object_get_member(p->api->response, "result");
@@ -764,12 +777,14 @@ static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *i
               JsonObject *existing_image = json_array_get_object_element(existing_images, i);
               if(json_object_has_member(existing_image, "file"))
               {
-                if(strcmp(img->filename, json_object_get_string_member(existing_image, "file")) == 0)
+                if(strcmp(filename, json_object_get_string_member(existing_image, "file")) == 0)
                 {
+                  g_free(filename);
                   return json_object_get_int_member(existing_image, "id");
                 }
               }
             }
+            g_free(filename);
             return _piwigo_api_get_image_id(p, img, page+1);
           }
         }
@@ -777,6 +792,7 @@ static int _piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *i
     }
   }
 
+  g_free(filename);
   return -1;
 }
 
@@ -1076,7 +1092,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
-  gchar *fname = g_strconcat(darktable.tmpdir, "/", img->filename, NULL);
+  char *filename = _get_filename(img);
+  gchar *fname = g_strconcat(darktable.tmpdir, "/", filename, NULL);
 
   if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
@@ -1089,7 +1106,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     }
     else
     {
-      caption = g_path_get_basename(img->filename);
+      caption = g_path_get_basename(filename);
       gchar *dot = g_strrstr(caption, ".");
       if(dot) dot[0] = '\0'; // chop extension...
     }
@@ -1108,6 +1125,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       g_list_free_full(auth, &g_free);
     }
   }
+
+  g_free(filename);
 
   dt_image_cache_read_release(darktable.image_cache, img);
 
@@ -1358,4 +1377,3 @@ void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *pa
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
