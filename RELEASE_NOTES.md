@@ -301,6 +301,11 @@ accompanying blog post.
 
 ## Notes
 
+- With the support of JXL, AVIF and EXR for export, selecting specific
+  metadata (eg. geo tag, creator) is not currently possible. For
+  formats JXL, AVIF and EXR, darktable will not include the metadata
+  fields unless the user selects all of the checkboxes in the export
+  preference options.
 
 ## Changed Dependencies
 
