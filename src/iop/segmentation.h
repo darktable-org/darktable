@@ -592,10 +592,13 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
   dt_ff_stack_t stack;  
   const size_t width = seg->width;
   const size_t height = seg->height;
-  stack.size = width * height / 16;
-  stack.el = dt_alloc_align(16, stack.size * sizeof(dt_pos_t));
-  if(!stack.el) return;
-
+  stack.size = width * height / 32;
+  stack.el = dt_alloc_align(64, stack.size * sizeof(dt_pos_t));
+  if(!stack.el)
+  {
+    fprintf(stderr, "[segmentize_plane] can't allocate segmentation stack\n");
+    return;
+  }
   const size_t border = seg->border;
   int id = 2;
   for(size_t row = border; row < height - border; row++)
@@ -612,8 +615,9 @@ void dt_segmentize_plane(dt_iop_segmentation_t *seg)
 
   finish:
 
-  if((id >= (seg->slots - 2)) && (darktable.unmuted & DT_DEBUG_VERBOSE))
-    fprintf(stderr, "[segmentize_plane] number of segments exceed maximum=%i\n", seg->slots);
+  if(id >= (seg->slots - 2))
+    fprintf(stderr, "[segmentize_plane] %ix%i number of segments exceeds maximum=%i\n",
+      (int)width, (int)height, seg->slots);
 
   dt_free_align(stack.el);
 }

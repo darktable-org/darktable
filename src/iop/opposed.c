@@ -48,10 +48,21 @@ static inline float _calc_linear_refavg(const float *in, const int color)
   return powf(opp[color], HL_POWERF);
 }
 
+#define DT_COLOR_MAGIC_THRESHOLD 1e-6f
+static float _color_magic(dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
+  dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
+
+  const float points = fmaxf(0.0f, (dsc->rawprepare.raw_black_level + dsc->rawprepare.raw_white_point)) / 32000.0f;
+  const float coeffs = fmaxf(0.0f, (dsc->temperature.coeffs[0] + dsc->temperature.coeffs[1] + dsc->temperature.coeffs[2])) / 3.0f;
+  return data->clip * (points + coeffs);
+}
+
 // A slightly modified version for sraws
 static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         dt_iop_highlights_data_t *data)
+                         dt_iop_highlights_data_t *data, const gboolean quality)
 {
   const float clipval = 0.987f * data->clip;
   const dt_aligned_pixel_t icoeffs = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2]};
@@ -60,163 +71,134 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
-  const size_t p_size = (size_t) dt_round_size(pwidth * pheight, 64);
-
-  const size_t i_width = roi_in->width;
-  const size_t i_height = roi_in->height;
+  const size_t p_size =  dt_round_size(pwidth * pheight, 64);
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
-  gboolean valid_chrominance = FALSE;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  if(g && g->valid_chroma_correction)
+  const float testchroma = _color_magic(piece);
+  const gboolean validchroma = feqf(testchroma, data->chroma_correction[0], DT_COLOR_MAGIC_THRESHOLD);
+
+  if(validchroma)
   {
-    valid_chrominance = TRUE;
-    for_each_channel(c)
-      chrominance[c] = g->chroma_correction[c];          
+    for(int c=0; c<3; c++)
+      chrominance[c] = data->chroma_correction[c+1];
+    dt_print(DT_DEBUG_PARAMS, "[%s] found linear chroma correction %f %f %f for %f\n",
+      dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
   }
-
-  int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
-  float *tmpout = dt_alloc_align_float(4 * roi_in->width * roi_in->height);
-
-  if(!tmpout || !mask_buffer)
+  else
   {
+    int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
+    if(mask_buffer && quality)
+    {
+      gboolean anyclipped = FALSE;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, ivoid) \
-  dt_omp_sharedconst(i_width, i_height) \
+  reduction( | : anyclipped) \
+  dt_omp_firstprivate(clips, ivoid, roi_in, mask_buffer) \
+  dt_omp_sharedconst(p_size, pwidth) \
   schedule(static)
 #endif
-    for(size_t row = 0; row < i_height; row++)
-    {
-      float *out = (float *)ovoid + i_width * row * 4;
-      float *in = (float *)ivoid + 4 * i_width * row;
-      for(size_t col = 0; col < i_width; col++)
+      for(size_t row = 1; row < roi_in->height -1; row++)
       {
-        for_each_channel(c)
-          out[c] = fmaxf(0.0f, in[c]);
-        out += 4;
-        in += 4;
-      }
-    }
-    goto finish;
-  }
-
-  size_t anyclipped = 0;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  reduction( + : anyclipped) \
-  dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, mask_buffer) \
-  dt_omp_sharedconst(p_size, pwidth, pheight, i_width, i_height) \
-  schedule(static)
-#endif
-  for(size_t row = 0; row < i_height; row++)
-  {
-    float *tmp = tmpout + i_width * row * 4;
-    float *in = (float *)ivoid + i_width * row * 4;
-    for(size_t col = 0; col < i_width; col++)
-    {
-      for_each_channel(c)
-        tmp[c] = fmaxf(0.0f, in[c]);
-
-      if((col > 0) && (col < i_width - 1) && (row > 0) && (row < i_height - 1))
-      {
-        for_each_channel(c)
+        float *in = (float *)ivoid + roi_in->width * row * 4 + 4;
+        for(size_t col = 1; col < roi_in->width -1; col++)
         {
-          if(in[c] >= clips[c])
+          for_each_channel(c)
           {
-            tmp[c] = _calc_linear_refavg(&in[0], c);
-            mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
-            anyclipped += 1;
+            if(in[c] >= clips[c])
+            {
+              mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
+              anyclipped |= TRUE;
+            }
           }
         }
+        in += 4;
       }
-      in += 4;
-      tmp += 4;
-    }
-  }
-
-  if(!valid_chrominance && (anyclipped > 5))
-  {
-    for(size_t i = 0; i < 3; i++)
-    {
-      int *mask = mask_buffer + i * p_size;
-      int *tmp = mask_buffer + 3 * p_size;
-      _intimage_borderfill(mask, pwidth, pheight, 0, HL_BORDER);
-      _dilating(mask, tmp, pwidth, pheight, HL_BORDER, 3);
-      memcpy(mask, tmp, p_size * sizeof(int));
-    }
-
-    dt_aligned_pixel_t cr_sum = {0.0f, 0.0f, 0.0f, 0.0f};
-    dt_aligned_pixel_t cr_cnt = {0.0f, 0.0f, 0.0f, 0.0f};
+      /* We want to use the photosites closely around clipped data to be taken into account.
+         The mask buffers holds data for each color channel, we dilate the mask buffer slightly
+         to get those locations.
+      */
+      if(anyclipped)
+      {
+        for(size_t i = 0; i < 3; i++)
+        {
+          int *mask = mask_buffer + i * p_size;
+          int *tmp = mask_buffer + 3 * p_size;
+          _intimage_borderfill(mask, pwidth, pheight, 0, HL_BORDER+1);
+          _dilating(mask, tmp, pwidth, pheight, HL_BORDER, 3);
+          memcpy(mask, tmp, p_size * sizeof(int));
+        }
+        dt_aligned_pixel_t cr_sum = {0.0f, 0.0f, 0.0f, 0.0f};
+        dt_aligned_pixel_t cr_cnt = {0.0f, 0.0f, 0.0f, 0.0f};
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ivoid, roi_in, clips, clipdark, mask_buffer) \
   reduction(+ : cr_sum, cr_cnt) \
-  dt_omp_sharedconst(p_size, pwidth, i_width, i_height) \
+  dt_omp_sharedconst(p_size, pwidth) \
   schedule(static)
 #endif
-    for(size_t row = 1; row < i_height-1; row++)
-    {
-      float *in  = (float *)ivoid + i_width * row * 4 + 4;
-      for(size_t col = 1; col < i_width - 1; col++)
-      {
-        for_each_channel(c)
+        for(size_t row = 1; row < roi_in->height-1; row++)
         {
-          const float inval = fmaxf(0.0f, in[c]); 
-          if((inval > clipdark[c]) && (inval < clips[c]) && (mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)]))
+          float *in  = (float *)ivoid + roi_in->width * row * 4 + 4;
+          for(size_t col = 1; col < roi_in->width - 1; col++)
           {
-            cr_sum[c] += inval - _calc_linear_refavg(&in[0], c);
-            cr_cnt[c] += 1.0f;
+            for_each_channel(c)
+            {
+              const float inval = fmaxf(0.0f, in[c]); 
+              if((inval > clipdark[c]) && (inval < clips[c]) && (mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)]))
+              {
+                cr_sum[c] += inval - _calc_linear_refavg(&in[0], c);
+                cr_cnt[c] += 1.0f;
+              }
+            }
+            in += 4;
           }
         }
-        in += 4;
+        for_each_channel(c)
+          chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);    
       }
+      if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+         && (abs((int)(roi_out->width / roi_out->scale) - piece->buf_in.width) < 10)
+         && (abs((int)(roi_out->height / roi_out->scale) - piece->buf_in.height) < 10))
+      {
+        dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+        for(int c = 0; c < 3; c++)
+          data->chroma_correction[c+1] = p->chroma_correction[c+1] = chrominance[c];
+        data->chroma_correction[0] = p->chroma_correction[0] = testchroma;
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_print(DT_DEBUG_PARAMS, "[%s] update linear chroma correction %f %f %f for %f\n",
+          dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
+      }
+      else
+        dt_print(DT_DEBUG_PARAMS, "[%s] temporary linear chroma correction %f %f %f for %f\n",
+          dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
     }
-    for_each_channel(c)
-      chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);    
-
-    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
-         && ((int)(roi_out->width / roi_out->scale) == piece->buf_in.width))
-    {
-      for_each_channel(c)
-        g->chroma_correction[c] = chrominance[c];
-      g->valid_chroma_correction = TRUE;
-    }
+    dt_free_align(mask_buffer);
   }
 
-/* We kept the refavg data in tmpout[] in the first loop, just overwrite output data with
-   chrominance corrections now.
-*/
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, ivoid, tmpout, chrominance, clips) \
-  dt_omp_sharedconst(i_width, i_height) \
+  dt_omp_firstprivate(ovoid, ivoid, roi_in, chrominance, clips) \
   schedule(static)
 #endif
-  for(size_t row = 0; row < i_height; row++)
+  for(size_t row = 0; row < roi_in->height; row++)
   {
-    float *out = (float *)ovoid + i_width * row * 4;
-    float *tmp = tmpout + 4 * i_width * row;
-    float *in = (float *)ivoid + 4 * i_width * row;
-    for(size_t col = 0; col < i_width; col++)
+    float *out = (float *)ovoid + roi_in->width * row * 4;
+    float *in = (float *)ivoid + 4 * roi_in->width * row;
+    for(size_t col = 0; col < roi_in->width; col++)
     {
       for_each_channel(c)
       {
+        const float ref = _calc_linear_refavg(&in[0], c);
         const float inval = fmaxf(0.0f, in[c]);
-        out[c] = (inval >= clips[c]) ? fmaxf(inval, tmp[c] + chrominance[c]) : inval;
+        out[c] = (inval >= clips[c]) ? fmaxf(inval, ref + chrominance[c]) : inval;
       }
       out += 4;
-      tmp += 4;
       in += 4;
     }
   }
-
-  finish:
-  dt_free_align(tmpout);
-  dt_free_align(mask_buffer);
 }
 
-static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const input, float *const output,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                          dt_iop_highlights_data_t *data, const gboolean keep, const gboolean quality)
 {
@@ -229,199 +211,164 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   const size_t pwidth  = dt_round_size(roi_in->width / 3, 2) + 2 * HL_BORDER;
   const size_t pheight = dt_round_size(roi_in->height / 3, 2) + 2 * HL_BORDER;
-  const size_t p_size = (size_t) dt_round_size((size_t) (pwidth + 4) * (pheight + 4), 64);
-
-  int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
-  float *tmpout = dt_alloc_align_float(roi_in->width * roi_in->height);
-
-  const size_t shift_x = roi_out->x;
-  const size_t shift_y = roi_out->y;
-
-  const size_t o_row_max = MIN(roi_out->height, roi_in->height - shift_y);
-  const size_t o_col_max = MIN(roi_out->width, roi_in->width - shift_x);
-  const size_t o_width = roi_out->width;
-  const size_t i_width = roi_in->width;
-  if((o_row_max != roi_out->height) || (o_col_max != roi_out->width))
-    dt_iop_image_fill((float *)ovoid, 0.0f, roi_out->width, roi_out->height, 1);
+  const size_t p_size =  dt_round_size((size_t) pwidth * pheight, 64);
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
-  gboolean valid_chrominance = FALSE;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  if(g && g->valid_chroma_correction)
+  const float testchroma = _color_magic(piece);
+  const gboolean validchroma = feqf(testchroma, data->chroma_correction[0], DT_COLOR_MAGIC_THRESHOLD);
+
+  if(validchroma)
   {
-    valid_chrominance = TRUE;
-    for_each_channel(c)
-      chrominance[c] = g->chroma_correction[c];          
-  }
-
-  if(!tmpout || !mask_buffer)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, ivoid) \
-  dt_omp_sharedconst(o_row_max, o_col_max, o_width, i_width, shift_x, shift_y) \
-  schedule(static)
-#endif
-    for(size_t row = 0; row < o_row_max; row++)
-    {
-      float *out = (float *)ovoid + o_width * row;
-      float *in = (float *)ivoid + i_width * (row + shift_y) + shift_x;
-      for(size_t col = 0; col < o_col_max; col++)
-        out[col] = fmaxf(0.0f, in[col]);
-    }
-    dt_free_align(tmpout);
-    dt_free_align(mask_buffer);
-    return NULL;
-  }
-
-  size_t anyclipped = 0;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  reduction( + : anyclipped) \
-  dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, xtrans, mask_buffer) \
-  dt_omp_sharedconst(filters, p_size, pwidth, pheight, i_width, o_width) \
-  schedule(static)
-#endif
-  for(size_t row = 0; row < roi_in->height; row++)
-  {
-    float *tmp = tmpout + i_width * row;
-    float *in = (float *)ivoid + i_width * row;
-    for(size_t col = 0; col < i_width; col++)
-    {
-      const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-      tmp[0] = fmaxf(0.0f, in[0]);
-      
-      if((tmp[0] >= clips[color]) && (col > 0) && (col < i_width - 1) && (row > 0) && (row < roi_in->height - 1))
-      {
-        /* for the clipped photosites we later do the correction when the chrominance is available, we keep refavg in raw-RGB */
-        tmp[0] = _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE);
-        mask_buffer[color * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
-        anyclipped += 1;
-      }
-      tmp++;
-      in++;
-    }
-  }
-
-  if(!valid_chrominance && (anyclipped > 5) && quality)
-  {
-  /* We want to use the photosites closely around clipped data to be taken into account.
-     The mask buffers holds data for each color channel, we dilate the mask buffer slightly
-     to get those locations.
-     As the mask buffers are scaled down by 3 the dilate is very fast. 
-  */      
-    for(size_t i = 0; i < 3; i++)
-    {
-      int *mask = mask_buffer + i * p_size;
-      int *tmp = mask_buffer + 3 * p_size;
-      _intimage_borderfill(mask, pwidth, pheight, 0, HL_BORDER);
-      _dilating(mask, tmp, pwidth, pheight, HL_BORDER, 3);
-      memcpy(mask, tmp, p_size * sizeof(int));
-    }
-
-  /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */ 
-    dt_aligned_pixel_t cr_sum = {0.0f, 0.0f, 0.0f, 0.0f};
-    dt_aligned_pixel_t cr_cnt = {0.0f, 0.0f, 0.0f, 0.0f};
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, roi_in, xtrans, clips, clipdark, mask_buffer) \
-  reduction(+ : cr_sum, cr_cnt) \
-  dt_omp_sharedconst(filters, p_size, pwidth, i_width) \
-  schedule(static)
-#endif
-    for(size_t row = 1; row < roi_in->height - 1; row++)
-    {
-      float *in  = (float *)ivoid + i_width * row + 1;
-      for(size_t col = 1; col < i_width - 1; col++)
-      {
-        const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-        const float inval = fmaxf(0.0f, in[0]); 
-        /* we only use the unclipped photosites very close the true clipped data
-           to calculate the chrominance offset */
-        if((mask_buffer[color * p_size + _raw_to_plane(pwidth, row, col)]) && (inval > clipdark[color]) && (inval < clips[color]))
-        {
-          cr_sum[color] += inval - _calc_refavg(&in[0], xtrans, filters, row, col, roi_in, TRUE);
-          cr_cnt[color] += 1.0f;
-        }
-        in++;
-      }
-    }
-    for_each_channel(c)
-      chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
-
-    // fprintf(stderr, "[opposed chroma corrections] %f, %f, %f\n", chrominance[0], chrominance[1], chrominance[2]);          
-
-    if(g && piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
-    {
-      for_each_channel(c)
-        g->chroma_correction[c] = chrominance[c];
-      g->valid_chroma_correction = TRUE;
-    }
-  }
-
-  if(keep && anyclipped)
-  {
-/* We kept the refavg data in tmpout[] in the first loop, just overwrite output data with
-   chrominance corrections now. Also leave in tmpout for further postprocessing.
-*/
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(clips, ivoid, tmpout, roi_in, xtrans, chrominance) \
-  dt_omp_sharedconst(filters, o_row_max, o_col_max, i_width) \
-  schedule(static)
-#endif
-    for(size_t row = 0; row < roi_in->height; row++)
-    {
-      float *in = (float *)ivoid + i_width * row;
-      float *tmp = tmpout + i_width * row;
-      for(size_t col = 0; col < i_width; col++)
-      {
-        const float inval = fmaxf(0.0f, in[0]);
-        const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-        if(inval > clips[color])
-          tmp[0] = fmaxf(inval, tmp[0] + chrominance[color]);
-        in++;
-        tmp++;
-      }
-    }
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, tmpout) \
-  dt_omp_sharedconst(o_row_max, o_col_max, i_width, o_width, shift_x, shift_y) \
-  schedule(static)
-#endif
-    for(size_t row = 0; row < o_row_max; row++)
-    {
-      float *out = (float *)ovoid + o_width * row;
-      float *tmp = tmpout + i_width * (row + shift_y) + shift_x;
-      for(size_t col = 0; col < o_col_max; col++)
-        out[col] = tmp[col];
-    }
+    for(int c=0; c<3; c++)
+      chrominance[c] = data->chroma_correction[c+1];
+    dt_print(DT_DEBUG_PARAMS, "[%s] found chroma correction %f %f %f for %f\n",
+      dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
   }
   else
   {
+    int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
+    if(mask_buffer && quality)
+    {
+      gboolean anyclipped = FALSE;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, ivoid, tmpout, chrominance, clips, xtrans, roi_in) \
-  dt_omp_sharedconst(filters, o_row_max, o_col_max, o_width, i_width, shift_x, shift_y) \
-  schedule(static)
+  reduction( | : anyclipped) \
+  dt_omp_firstprivate(clips, input, roi_in, xtrans, mask_buffer) \
+  dt_omp_sharedconst(filters, p_size, pwidth) \
+  schedule(static) collapse(2)
 #endif
-    for(size_t row = 0; row < o_row_max; row++)
-    {
-      float *out = (float *)ovoid + o_width * row;
-      float *tmp = tmpout + i_width * (row + shift_y) + shift_x;
-      float *in = (float *)ivoid + i_width * (row + shift_y) + shift_x;
-      for(size_t col = 0; col < o_col_max; col++)
+      for(size_t row = 1; row < roi_in->height -1; row++)
       {
-        const float inval = fmaxf(0.0f, in[col]);
+        for(size_t col = 1; col < roi_in->width -1; col++)
+        {
+          const size_t idx = row * roi_in->width + col;
+          const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
+          if(fmaxf(0.0f, input[idx]) >= clips[color])
+          {
+            mask_buffer[color * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
+            anyclipped |= TRUE;
+          }
+        }
+      }
+      /* We want to use the photosites closely around clipped data to be taken into account.
+         The mask buffers holds data for each color channel, we dilate the mask buffer slightly
+         to get those locations.
+         If there are no clipped locations we keep the chrominance correction at 0 but make it valid 
+      */
+      
+      if(anyclipped)
+      {
+        for(size_t i = 0; i < 3; i++)
+        {
+          int *mask = mask_buffer + i * p_size;
+          int *tmpm = mask_buffer + 3 * p_size;
+          _intimage_borderfill(mask, pwidth, pheight, 0, HL_BORDER+1);
+          _dilating(mask, tmpm, pwidth, pheight, HL_BORDER, 3);
+          memcpy(mask, tmpm, p_size * sizeof(int));
+        }
+
+        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */ 
+        dt_aligned_pixel_t cr_sum = {0.0f, 0.0f, 0.0f, 0.0f};
+        dt_aligned_pixel_t cr_cnt = {0.0f, 0.0f, 0.0f, 0.0f};
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(input, roi_in, xtrans, clips, clipdark, mask_buffer) \
+  reduction(+ : cr_sum, cr_cnt) \
+  dt_omp_sharedconst(filters, p_size, pwidth) \
+  schedule(static) collapse(2)
+#endif
+        for(size_t row = 1; row < roi_in->height - 1; row++)
+        {
+          for(size_t col = 1; col < roi_in->width - 1; col++)
+          {
+            const size_t idx = row * roi_in->width + col;
+            const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
+            const float inval = fmaxf(0.0f, input[idx]); 
+            /* we only use the unclipped photosites very close the true clipped data to calculate the chrominance offset */
+            if((mask_buffer[color * p_size + _raw_to_plane(pwidth, row, col)]) && (inval > clipdark[color]) && (inval < clips[color]))
+            {
+              cr_sum[color] += inval - _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
+              cr_cnt[color] += 1.0f;
+            }
+          }
+        }
+        for_each_channel(c)
+          chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
+      }
+
+      if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+      {
+        dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+        for(int c = 0; c < 3; c++)
+          data->chroma_correction[c+1] = p->chroma_correction[c+1] = chrominance[c];
+        data->chroma_correction[0] = p->chroma_correction[0] = testchroma;
+        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_print(DT_DEBUG_PARAMS, "[%s] update chroma correction %f %f %f for %f\n",
+          dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
+      }
+      else
+        dt_print(DT_DEBUG_PARAMS, "[%s] temporary chroma correction %f %f %f for %f\n",
+          dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
+    }
+    dt_free_align(mask_buffer);
+  }
+ 
+  float *tmpout = (keep) ? dt_alloc_align_float(roi_in->width * roi_in->height) : NULL;
+  if(tmpout && keep)
+  {  
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, chrominance) \
+  dt_omp_sharedconst(filters, p_size, pwidth) \
+  schedule(static) collapse(2)
+#endif
+    for(size_t row = 0; row < roi_in->height; row++)
+    {
+      for(size_t col = 0; col < roi_in->width; col++)
+      {
+        const size_t idx = row * roi_in->width + col;
         const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-        out[col] = (inval >= clips[color]) ? fmaxf(inval, tmp[col] + chrominance[color]) : inval;
+        const float inval = fmaxf(0.0f, input[idx]);
+        if((inval >= clips[color]) && (col > 0) && (col < roi_in->width - 1) && (row > 0) && (row < roi_in->height - 1))
+        {
+          const float ref = _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
+          tmpout[idx] = fmaxf(inval, ref + chrominance[color]);
+        }
+        else
+          tmpout[idx] = inval;
       }
     }
   }
-
-  dt_free_align(mask_buffer);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(output, input, tmpout, chrominance, clips, xtrans, roi_in, roi_out) \
+  dt_omp_sharedconst(filters, keep) \
+  schedule(static) collapse(2)
+#endif
+  for(ssize_t row = 0; row < roi_out->height; row++)
+  {
+    for(ssize_t col = 0; col < roi_out->width; col++) 
+    {
+      const ssize_t odx = row * roi_out->width + col;
+      const ssize_t inrow = MIN(MAX(0, row + roi_out->y), roi_in->height-1);
+      const ssize_t incol = MIN(MAX(0, col + roi_out->x), roi_in->width-1);
+      const ssize_t idx = inrow * roi_in->width + incol;
+      if(tmpout && keep)
+        output[odx] = tmpout[idx];
+      else
+      {
+        const int color = (filters == 9u) ? FCxtrans(inrow, incol, roi_in, xtrans) : FC(inrow, incol, filters);
+        const float inval = fmaxf(0.0f, input[idx]);
+        if((inval >= clips[color]) && (incol > 0) && (incol < roi_in->width - 1) && (inrow > 0) && (inrow < roi_in->height - 1))
+        {
+          const float ref = _calc_refavg(&input[idx], xtrans, filters, inrow, incol, roi_in, TRUE);
+          output[odx] = fmaxf(inval, ref + chrominance[color]);
+        }
+        else
+         output[odx] = inval;          
+      }
+    }
+  }
   return tmpout;
 }
 
