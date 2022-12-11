@@ -534,12 +534,41 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int e
       // exclude the one rule from extended where
       if(i != exclude || mode == 1)
         complete_string = dt_util_dstrcat(complete_string, "%s", collection->where_ext[i]);
+      else if(i == 0)
+        complete_string = dt_util_dstrcat(complete_string, "1=1");
     }
   }
   else
-    complete_string = g_strjoinv(complete_string, ((dt_collection_t *)collection)->where_ext);
+  {
+    // WHERE part is composed by (COLLECT) AND (FILTERING)
+    // first, the COLLECT PART (never empty, use 1=1 in this case)
+    complete_string = g_strdup("");
+    const int nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
+    gchar *rules_txt = g_strdup("");
+    for(int i = 0; (i < nb_rules && collection->where_ext[i] != NULL); i++)
+    {
+      rules_txt = dt_util_dstrcat(rules_txt, "%s", collection->where_ext[i]);
+    }
+    if(g_strcmp0(rules_txt, ""))
+      complete_string = dt_util_dstrcat(complete_string, "(%s)", rules_txt);
+    else
+      complete_string = dt_util_dstrcat(complete_string, "1=1");
+    g_free(rules_txt);
 
-  gchar *where_ext = g_strdup_printf("(1=1%s)", complete_string);
+    // and now the FILTERING part (can be empty)
+    rules_txt = g_strdup("");
+    const int nb_filters = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, 10);
+    for(int i = 0; (i < nb_filters && collection->where_ext[i + nb_rules] != NULL); i++)
+    {
+      rules_txt = dt_util_dstrcat(rules_txt, "%s", collection->where_ext[i + nb_rules]);
+    }
+    if(g_strcmp0(rules_txt, "")) complete_string = dt_util_dstrcat(complete_string, " AND (%s)", rules_txt);
+    g_free(rules_txt);
+  }
+
+  if(!g_strcmp0(complete_string, "")) complete_string = dt_util_dstrcat(complete_string, "1=1");
+
+  gchar *where_ext = g_strdup_printf("(%s)", complete_string);
   g_free(complete_string);
 
   return where_ext;
@@ -2332,7 +2361,10 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       gchar *query = get_query_string(property, text);
 
-      query_parts[i] =  g_strdup_printf(" %s %s", conj[mode], query);
+      if(i == 0)
+        query_parts[i] = g_strdup_printf(" %s", query);
+      else
+        query_parts[i] = g_strdup_printf(" %s %s", conj[mode], query);
 
       g_free(query);
     }
@@ -2362,7 +2394,10 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       gchar *query = get_query_string(property, text);
 
-      query_parts[i + num_rules] = g_strdup_printf(" %s %s", conj[mode], query);
+      if(i == 0)
+        query_parts[i + num_rules] = g_strdup_printf(" %s", query);
+      else
+        query_parts[i + num_rules] = g_strdup_printf(" %s %s", conj[mode], query);
 
       g_free(query);
     }
