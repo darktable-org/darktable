@@ -1435,9 +1435,9 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
       ids = g_list_next(ids);
 
       GtkTreeIter iter;
-      gtk_tree_model_get_iter_first(model, &iter);
       // get formid in group for the given module
-      const gboolean found = _find_mask_iter_by_values(model, &iter, mod, fid, 1);
+      const gboolean found = gtk_tree_model_get_iter_first(model, &iter)
+                             && _find_mask_iter_by_values(model, &iter, mod, fid, 1);
 
       if(found)
       {
