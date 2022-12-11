@@ -60,7 +60,7 @@ static float _color_magic(dt_dev_pixelpipe_iop_t *piece)
 }
 
 // A slightly modified version for sraws
-static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const input, float *const output,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                          dt_iop_highlights_data_t *data, const gboolean quality)
 {
@@ -93,25 +93,24 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   reduction( | : anyclipped) \
-  dt_omp_firstprivate(clips, ivoid, roi_in, mask_buffer) \
+  dt_omp_firstprivate(clips, input, roi_in, mask_buffer) \
   dt_omp_sharedconst(p_size, pwidth) \
   schedule(static)
 #endif
       for(size_t row = 1; row < roi_in->height -1; row++)
       {
-        float *in = (float *)ivoid + roi_in->width * row * 4 + 4;
         for(size_t col = 1; col < roi_in->width -1; col++)
         {
+          const size_t idx = (row * roi_in->width + col) * 4;
           for_each_channel(c)
           {
-            if(in[c] >= clips[c])
+            if(input[idx+c] >= clips[c])
             {
               mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)] |= 1;
               anyclipped |= TRUE;
             }
           }
         }
-        in += 4;
       }
       /* We want to use the photosites closely around clipped data to be taken into account.
          The mask buffers holds data for each color channel, we dilate the mask buffer slightly
@@ -131,26 +130,25 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
         dt_aligned_pixel_t cr_cnt = {0.0f, 0.0f, 0.0f, 0.0f};
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, roi_in, clips, clipdark, mask_buffer) \
+  dt_omp_firstprivate(input, roi_in, clips, clipdark, mask_buffer) \
   reduction(+ : cr_sum, cr_cnt) \
   dt_omp_sharedconst(p_size, pwidth) \
   schedule(static)
 #endif
         for(size_t row = 1; row < roi_in->height-1; row++)
         {
-          float *in  = (float *)ivoid + roi_in->width * row * 4 + 4;
           for(size_t col = 1; col < roi_in->width - 1; col++)
           {
+            const size_t idx = (row * roi_in->width + col) * 4;
             for_each_channel(c)
             {
-              const float inval = fmaxf(0.0f, in[c]); 
+              const float inval = fmaxf(0.0f, input[idx+c]); 
               if((inval > clipdark[c]) && (inval < clips[c]) && (mask_buffer[c * p_size + _raw_to_plane(pwidth, row, col)]))
               {
-                cr_sum[c] += inval - _calc_linear_refavg(&in[0], c);
+                cr_sum[c] += inval - _calc_linear_refavg(&input[idx], c);
                 cr_cnt[c] += 1.0f;
               }
             }
-            in += 4;
           }
         }
         for_each_channel(c)
@@ -174,26 +172,25 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
     }
     dt_free_align(mask_buffer);
   }
-
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, ivoid, roi_in, chrominance, clips) \
-  schedule(static)
+  dt_omp_firstprivate(output, input, roi_in, roi_out, chrominance, clips) \
+  schedule(static) collapse(2)
 #endif
-  for(size_t row = 0; row < roi_in->height; row++)
+  for(ssize_t row = 0; row < roi_out->height; row++)
   {
-    float *out = (float *)ovoid + roi_in->width * row * 4;
-    float *in = (float *)ivoid + 4 * roi_in->width * row;
-    for(size_t col = 0; col < roi_in->width; col++)
+    for(ssize_t col = 0; col < roi_out->width; col++)
     {
+      const ssize_t odx = (row * roi_out->width + col) * 4;
+      const ssize_t inrow = MIN(row, roi_in->height-1);
+      const ssize_t incol = MIN(col, roi_in->width-1);
+      const ssize_t idx = (inrow * roi_in->width + incol) * 4;
       for_each_channel(c)
       {
-        const float ref = _calc_linear_refavg(&in[0], c);
-        const float inval = fmaxf(0.0f, in[c]);
-        out[c] = (inval >= clips[c]) ? fmaxf(inval, ref + chrominance[c]) : inval;
+        const float ref = _calc_linear_refavg(&input[idx], c);
+        const float inval = fmaxf(0.0f, input[idx+c]);
+        output[odx+c] = (inval >= clips[c]) ? fmaxf(inval, ref + chrominance[c]) : inval;
       }
-      out += 4;
-      in += 4;
     }
   }
 }
