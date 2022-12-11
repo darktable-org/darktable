@@ -347,6 +347,9 @@ int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, con
 /** wrap opencl argument array */
 #define CLARRAY(num, arg) CLWRAP(num * sizeof(*arg), arg)
 
+/** wrap opencl float argument array */
+#define CLFLARRAY(num, arg) CLWRAP(num * sizeof(float), arg)
+
 /** wrap opencl local argument allocation */
 #define CLLOCAL(arg) CLWRAP(arg, NULL)
 
