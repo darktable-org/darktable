@@ -610,7 +610,7 @@ error:
 
 cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
 {
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = g->devid;
 
   const int width = g->width;
@@ -670,17 +670,23 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
     CLARG(width), CLARG(height), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
     CLARG(coefp), CLARG(coefn), CLARG(Labmax), CLARG(Labmin));
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
-  if(err != CL_SUCCESS) return err;
-
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[dt_gaussian_blur_cl] first blur kernel_gaussian_column: %s\n", cl_errstr(err));
+    return err;
+  }
   // intermediate step: transpose dev_temp2 -> dev_temp1
   sizes[0] = bwidth;
   sizes[1] = bheight;
   sizes[2] = 1;
   dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_temp1),
-    CLARG(width), CLARG(height), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
+    width, height, CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
-  if(err != CL_SUCCESS) return err;
-
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[dt_gaussian_blur_cl] first kernel_gaussian_transpose: %s\n", cl_errstr(err));
+    return err;
+  }
 
   // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width
   // !!)
@@ -691,8 +697,11 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
     CLARG(height), CLARG(width), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
     CLARG(coefp), CLARG(coefn), CLARG(Labmax), CLARG(Labmin));
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
-  if(err != CL_SUCCESS) return err;
-
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[dt_gaussian_blur_cl] second step kernel_gaussian_column: %s\n", cl_errstr(err));
+    return err;
+  }
 
   // transpose back dev_temp2 -> dev_temp1
   sizes[0] = bheight;
@@ -701,8 +710,11 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_temp1),
     CLARG(height), CLARG(width), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
-  if(err != CL_SUCCESS) return err;
-
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[dt_gaussian_blur_cl] second kernel_gaussian_transpose: %s\n", cl_errstr(err));
+    return err;
+  }
   // finally produce output in dev_out
   err = dt_opencl_enqueue_copy_buffer_to_image(devid, dev_temp1, dev_out, 0, origin, region);
   if(err != CL_SUCCESS) return err;
