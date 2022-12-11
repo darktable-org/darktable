@@ -666,9 +666,19 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = 1;
   sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2),
-    CLARG(width), CLARG(height), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
-    CLARG(coefp), CLARG(coefn), CLARG(Labmax), CLARG(Labmin));
+
+  if(channels == 1)
+  {
+    dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2),
+      CLARG(width), CLARG(height), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
+      CLARG(coefp), CLARG(coefn), CLARG(Labmax[0]), CLARG(Labmin[0]));
+  }
+  else
+  {
+    dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2),
+      CLARG(width), CLARG(height), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
+      CLARG(coefp), CLARG(coefn), CLARG(Labmax), CLARG(Labmin));
+  }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS)
   {
@@ -680,7 +690,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   sizes[1] = bheight;
   sizes[2] = 1;
   dt_opencl_set_kernel_args(devid, kernel_gaussian_transpose, 0, CLARG(dev_temp2), CLARG(dev_temp1),
-    width, height, CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
+    CLARG(width), CLARG(height), CLARG(blocksize), CLLOCAL(bpp * blocksize * (blocksize + 1)));
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel_gaussian_transpose, sizes, local);
   if(err != CL_SUCCESS)
   {
@@ -693,9 +703,19 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   sizes[0] = ROUNDUPDHT(height, devid);
   sizes[1] = 1;
   sizes[2] = 1;
-  dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2),
-    CLARG(height), CLARG(width), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
-    CLARG(coefp), CLARG(coefn), CLARG(Labmax), CLARG(Labmin));
+  if(channels == 1)
+  {
+    dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2),
+      CLARG(height), CLARG(width), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
+      CLARG(coefp), CLARG(coefn), CLARG(Labmax[0]), CLARG(Labmin[0]));
+  }
+  else
+  {
+    dt_opencl_set_kernel_args(devid, kernel_gaussian_column, 0, CLARG(dev_temp1), CLARG(dev_temp2),
+      CLARG(height), CLARG(width), CLARG(a0), CLARG(a1), CLARG(a2), CLARG(a3), CLARG(b1), CLARG(b2),
+      CLARG(coefp), CLARG(coefn), CLARG(Labmax), CLARG(Labmin));
+  }
+ 
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS)
   {
