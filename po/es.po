@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.1/4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-08 13:00-0600\n"
-"PO-Revision-Date: 2022-12-09 00:25-0600\n"
+"POT-Creation-Date: 2022-12-10 16:21-0600\n"
+"PO-Revision-Date: 2022-12-11 00:03-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2336,7 +2336,7 @@ msgstr "específico"
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2943 ../src/develop/develop.c:2265
 #: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:130
-#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:800
+#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:804
 #: ../src/imageio/format/j2k.c:669 ../src/libs/live_view.c:361
 msgid "off"
 msgstr "inactivo"
@@ -2413,7 +2413,7 @@ msgstr "luminancia"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:264
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:251
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:534
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:550
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:253
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:155
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:272
@@ -2552,7 +2552,7 @@ msgid "motion"
 msgstr "movimiento"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:222
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:550
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:567
 #: ../build/lib/darktable/plugins/introspection_lowpass.c:189
 #: ../build/lib/darktable/plugins/introspection_retouch.c:452
 #: ../build/lib/darktable/plugins/introspection_shadhi.c:267
@@ -3294,8 +3294,8 @@ msgstr "radio de detección de bordes"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:53
 #: ../build/lib/darktable/plugins/introspection_defringe.c:106
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:224
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:423
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:230
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:435
 #: ../src/iop/atrous.c:1607 ../src/iop/bloom.c:375
 #: ../src/iop/colorbalancergb.c:2079 ../src/iop/colorreconstruction.c:1240
 #: ../src/iop/hotpixels.c:384 ../src/iop/sharpen.c:441
@@ -3336,11 +3336,14 @@ msgstr "umbral del borde"
 msgid "color smoothing"
 msgstr "suavizado de color"
 
-# Demosaicing -> Algoritmo de interpolación cromática.
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:108
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:175
-msgid "demosaicing method"
-msgstr "método de interpolación cromática"
+#: ../build/lib/darktable/plugins/introspection_dither.c:62
+#: ../build/lib/darktable/plugins/introspection_dither.c:141
+#: ../build/lib/darktable/plugins/introspection_highlights.c:117
+#: ../build/lib/darktable/plugins/introspection_highlights.c:226
+msgid "method"
+msgstr "método"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:114
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:179
@@ -3508,7 +3511,7 @@ msgstr "Actualización del modelo"
 #.
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:782 ../src/libs/colorpicker.c:577
+#: ../src/imageio/format/avif.c:786 ../src/libs/colorpicker.c:577
 msgid "color mode"
 msgstr "modo de color"
 
@@ -3587,13 +3590,6 @@ msgstr "4º orden de velocidad"
 msgid "central radius"
 msgstr "radio central"
 
-#: ../build/lib/darktable/plugins/introspection_dither.c:62
-#: ../build/lib/darktable/plugins/introspection_dither.c:141
-#: ../build/lib/darktable/plugins/introspection_highlights.c:117
-#: ../build/lib/darktable/plugins/introspection_highlights.c:226
-msgid "method"
-msgstr "método"
-
 #: ../build/lib/darktable/plugins/introspection_dither.c:92
 #: ../build/lib/darktable/plugins/introspection_dither.c:161
 msgid "damping"
@@ -3648,144 +3644,149 @@ msgstr "manual"
 msgid "automatic"
 msgstr "automático"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:206
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:411
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:212
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:423
 #: ../src/iop/filmic.c:1582
 msgid "middle gray luminance"
 msgstr "luminancia del gris medio"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:212
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:415
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:218
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:427
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:97
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:166
 #: ../src/iop/filmic.c:1605
 msgid "black relative exposure"
 msgstr "exposición negra relativa"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:218
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:419
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:224
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:431
 #: ../src/iop/filmic.c:1593
 msgid "white relative exposure"
 msgstr "exposición blanca relativa"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:230
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:427
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:236
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:439
 msgid "transition"
 msgstr "transición"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:236
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:431
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:242
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:443
 msgid "bloom ↔ reconstruct"
 msgstr "resplandor ↔ reconstrucción"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:242
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:435
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:248
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:447
 msgid "gray ↔ colorful details"
 msgstr "detalles: grises ↔ coloridos"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:248
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:439
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:254
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:451
 msgid "structure ↔ texture"
 msgstr "estructura ↔ textura"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:254
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:443
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:260
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:455
 msgid "dynamic range scaling"
 msgstr "escala de rango dinámico"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:260
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:447
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:266
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:459
 #: ../src/iop/filmic.c:1735
 msgid "target middle gray"
 msgstr "gris medio de destino"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:266
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:451
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:272
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:463
 #: ../src/iop/filmic.c:1726
 msgid "target black luminance"
 msgstr "luminancia negra de destino"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:272
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:455
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:278
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:467
 #: ../src/iop/filmic.c:1744
 msgid "target white luminance"
 msgstr "luminancia blanca de destino"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:278
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:459
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:284
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:69
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:140
 #: ../src/libs/masks.c:104
 msgid "hardness"
 msgstr "transición"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:296
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:302
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:483
 #: ../src/iop/filmic.c:1675 ../src/iop/filmicrgb.c:4507
 msgid "extreme luminance saturation"
 msgstr "saturación de luminancia extrema"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:302
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:475
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:308
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:487
 msgid "shadows ↔ highlights balance"
 msgstr "equilibrar: sombras ↔ luces"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:308
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:479
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:314
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:491
 msgid "add noise in highlights"
 msgstr "añadir ruido a las luces"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:314
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:483
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:320
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:495
 msgid "preserve chrominance"
 msgstr "preservar crominancia"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:320
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:487
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:326
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:499
 msgid "color science"
 msgstr "ciencia del color (método)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:326
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:491
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:332
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:503
 msgid "auto adjust hardness"
 msgstr "dureza automática"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:332
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:495
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:338
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:507
 msgid "use custom middle-gray values"
 msgstr "usar valores personalizados del gris medio"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:338
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:499
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:344
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:511
 msgid "iterations of high-quality reconstruction"
 msgstr "iteraciones para reconstrucción de alta calidad"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:344
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:503
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:350
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:515
 msgid "type of noise"
 msgstr "tipo de ruido"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:350
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:507
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:356
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:519
 msgid "contrast in shadows"
 msgstr "contraste en las sombras"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:356
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:511
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:362
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:523
 msgid "contrast in highlights"
 msgstr "contraste en las luces"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:362
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:515
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:368
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:527
 msgid "compensate output ICC profile black point"
 msgstr "compensar el punto negro del perfil ICC de salida"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:368
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:519
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:374
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:531
 msgid "spline handling"
 msgstr "versión de curva segmentaria"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:533
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:380
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:535
+msgid "enable highlight reconstruction"
+msgstr "activar reconstrucción de luces"
+
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2756 ../src/common/variables.c:604
 #: ../src/develop/imageop_gui.c:212 ../src/gui/gtk.c:2524
@@ -3795,70 +3796,70 @@ msgstr "versión de curva segmentaria"
 msgid "no"
 msgstr "no"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:535
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:551
 msgid "luminance Y"
 msgstr "luminancia Y"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:536
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:552
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:384
 msgid "RGB power norm"
 msgstr "RGB potencia estándar"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:537
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:553
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:383
 msgid "RGB euclidean norm"
 msgstr "RGB norma euclidiana"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:538
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:554
 #: ../src/iop/filmicrgb.c:2967
 msgid "RGB euclidean norm (legacy)"
 msgstr "RGB norma euclidiana (heredado)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:542
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:559
 msgid "v3 (2019)"
 msgstr "v3 (2019)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:543
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:560
 msgid "v4 (2020)"
 msgstr "v4 (2020)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:544
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:561
 msgid "v5 (2021)"
 msgstr "v5 (2021)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:545
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:562
 msgid "v6 (2022)"
 msgstr "v6 (2022)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:566
 msgid "uniform"
 msgstr "uniforme"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:551
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:568
 msgid "poissonian"
 msgstr "poissoniano"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:555
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:572
 msgid "hard"
 msgstr "intenso"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:556
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:573
 msgid "soft"
 msgstr "suave"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:557
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:574
 msgid "safe"
 msgstr "fiable"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:561
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:578
 msgid "v1 (2019)"
 msgstr "v1 (2019)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:562
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:579
 msgid "v2 (2020)"
 msgstr "v2 (2020)"
 
-#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:563
+#: ../build/lib/darktable/plugins/introspection_filmicrgb.c:580
 msgid "v3 (2021)"
 msgstr "v3 (2021)"
 
@@ -3929,9 +3930,8 @@ msgstr "aunar"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:177
 #: ../build/lib/darktable/plugins/introspection_highlights.c:266
-#, fuzzy
-msgid "recovery"
-msgstr "superponer"
+msgid "rebuild"
+msgstr "Reconstruir"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:183
 #: ../build/lib/darktable/plugins/introspection_highlights.c:270
@@ -3965,9 +3965,8 @@ msgstr "segmentación"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
 #: ../src/iop/highlights.c:2383
-#, fuzzy
 msgid "inpaint opposed"
-msgstr "vista de imprimir"
+msgstr "restauración contrapuesta"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:293
 msgid "4 px"
@@ -4010,29 +4009,24 @@ msgid "2048 px (insanely slow)"
 msgstr "2048 px (extremadamente lento)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:308
-#, fuzzy
 msgid "flat generic"
-msgstr "genérico"
+msgstr "genérico liso"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:309
-#, fuzzy
 msgid "small segments"
-msgstr "combinar segmentos"
+msgstr "segmentos pequeños"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:310
-#, fuzzy
 msgid "large segments"
-msgstr "combinar segmentos"
+msgstr "segmentos grandes"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:311
-#, fuzzy
 msgid "flat small segments"
-msgstr "Segmentos de recorrido del archivo GPX"
+msgstr "segmentos lisos pequeños"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:312
-#, fuzzy
 msgid "flat large segments"
-msgstr "Solo entradas extensas"
+msgstr "segmentos lisos grandes"
 
 #: ../build/lib/darktable/plugins/introspection_highpass.c:44
 #: ../build/lib/darktable/plugins/introspection_highpass.c:91
@@ -4744,9 +4738,8 @@ msgid "dropdowns"
 msgstr "Lista deplegable"
 
 #: ../src/bauhaus/bauhaus.c:766
-#, fuzzy
 msgid "buttons"
-msgstr "botón"
+msgstr "botones"
 
 #: ../src/bauhaus/bauhaus.c:3325
 msgid "button on"
@@ -5070,7 +5063,7 @@ msgstr "orden personalizado"
 #: ../src/common/collection.c:637 ../src/common/metadata.c:48
 #: ../src/imageio/format/pdf.c:574 ../src/imageio/format/pdf.c:576
 #: ../src/imageio/storage/gallery.c:169 ../src/imageio/storage/gallery.c:170
-#: ../src/imageio/storage/latex.c:169 ../src/imageio/storage/piwigo.c:992
+#: ../src/imageio/storage/latex.c:169 ../src/imageio/storage/piwigo.c:1008
 msgid "title"
 msgstr "título"
 
@@ -6420,16 +6413,14 @@ msgstr ""
 "OpenCl se ha desactivado."
 
 #: ../src/common/opencl.c:1126
-#, fuzzy
 msgid ""
 "multiple GPUs detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
-"Se detectaron varias GPU. Por ende, se ha reconfigurado el perfil de control "
-"de OpenCL."
+"Se detectaron varias GPU: el perfil de control de OpenCL se ha reconfigurado "
+"como consecuencia."
 
 # Ignorar advertencia: en el texto original GPU va en mayúsculas.
 #: ../src/common/opencl.c:1134
-#, fuzzy
 msgid ""
 "very fast GPU detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
@@ -7626,7 +7617,7 @@ msgstr "entrada después del desenfoque"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2265
 #: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:129
-#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:800
+#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:804
 #: ../src/libs/live_view.c:362
 msgid "on"
 msgstr "activo"
@@ -10843,17 +10834,17 @@ msgstr ""
 msgid "can't create style out of unaltered image"
 msgstr "No se puede crear el estilo de una imagen no editada"
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:556
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:546
 #: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "8 bit"
 msgstr "8 bit"
 
-#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:556
 msgid "10 bit"
 msgstr "10 bits"
 
-#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:556
 msgid "12 bit"
 msgstr "12 bits"
 
@@ -10861,46 +10852,46 @@ msgstr "12 bits"
 msgid "invalid AVIF bit depth!"
 msgstr "Profundidad de bits AVIF no válida"
 
-#: ../src/imageio/format/avif.c:690
+#: ../src/imageio/format/avif.c:694
 msgid "AVIF"
 msgstr "AVIF"
 
 #. Bit depth combo box
-#: ../src/imageio/format/avif.c:762 ../src/imageio/format/exr.cc:470
-#: ../src/imageio/format/jxl.c:551 ../src/imageio/format/pdf.c:661
+#: ../src/imageio/format/avif.c:766 ../src/imageio/format/exr.cc:476
+#: ../src/imageio/format/jxl.c:555 ../src/imageio/format/pdf.c:661
 #: ../src/imageio/format/png.c:544 ../src/imageio/format/tiff.c:860
 #: ../src/imageio/format/xcf.c:335
 msgid "bit depth"
 msgstr "profundidad de bit"
 
-#: ../src/imageio/format/avif.c:775
+#: ../src/imageio/format/avif.c:779
 msgid "color information stored in an image, higher is better"
 msgstr ""
 "La información de color que contiene una imagen. Cuanto más alto el valor, "
 "mayor información."
 
-#: ../src/imageio/format/avif.c:783
+#: ../src/imageio/format/avif.c:787
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
 "Guardar como \"escala de grises\" reducirá el tamaño de las imágenes en "
 "blanco y negro"
 
-#: ../src/imageio/format/avif.c:785
+#: ../src/imageio/format/avif.c:789
 msgid "rgb colors"
 msgstr "colores rgb"
 
-#: ../src/imageio/format/avif.c:785
+#: ../src/imageio/format/avif.c:789
 msgid "grayscale"
 msgstr "escala de grises"
 
 #.
 #. * Tiling combo box
 #.
-#: ../src/imageio/format/avif.c:795
+#: ../src/imageio/format/avif.c:799
 msgid "tiling"
 msgstr "proceso por bandas"
 
-#: ../src/imageio/format/avif.c:796
+#: ../src/imageio/format/avif.c:800
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -10912,11 +10903,11 @@ msgstr ""
 "Hace que la codificación sea más rápida. La reducción en la calidad es "
 "insignificante, aunque aumenta el tamaño del archivo."
 
-#: ../src/imageio/format/avif.c:813 ../src/imageio/format/webp.c:382
+#: ../src/imageio/format/avif.c:817 ../src/imageio/format/webp.c:383
 msgid "compression type"
 msgstr "tipo de compresión"
 
-#: ../src/imageio/format/avif.c:821
+#: ../src/imageio/format/avif.c:825
 msgid "the compression for the image"
 msgstr "Compresión de la imagen"
 
@@ -10925,14 +10916,14 @@ msgstr "Compresión de la imagen"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:838 ../src/imageio/format/j2k.c:661
-#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:575
+#: ../src/imageio/format/avif.c:842 ../src/imageio/format/j2k.c:661
+#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:579
 #: ../src/imageio/format/webp.c:394 ../src/iop/cacorrect.c:1343
 #: ../src/libs/camera.c:565
 msgid "quality"
 msgstr "calidad"
 
-#: ../src/imageio/format/avif.c:843
+#: ../src/imageio/format/avif.c:847
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -10968,69 +10959,69 @@ msgstr ""
 "Realiza una copia 1:1 de los archivos seleccionados.\n"
 "Las opciones generales de abajo se ignoran."
 
-#: ../src/imageio/format/exr.cc:213
+#: ../src/imageio/format/exr.cc:219
 msgid "the selected output profile doesn't work well with exr"
 msgstr "el perfil de salida seleccionado no funciona bien con exr"
 
-#: ../src/imageio/format/exr.cc:445
+#: ../src/imageio/format/exr.cc:451
 msgid "OpenEXR"
 msgstr "OpenEXR"
 
-#: ../src/imageio/format/exr.cc:472
+#: ../src/imageio/format/exr.cc:478
 msgid "16 bit (float)"
 msgstr "16 bits (flotante)"
 
-#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/exr.cc:478 ../src/imageio/format/jxl.c:556
 #: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "32 bit (float)"
 msgstr "32 bit (flotante)"
 
 #. compression
 #. Compression method combo box
-#: ../src/imageio/format/exr.cc:478 ../src/imageio/format/pdf.c:676
+#: ../src/imageio/format/exr.cc:484 ../src/imageio/format/pdf.c:676
 #: ../src/imageio/format/png.c:558 ../src/imageio/format/tiff.c:883
 #: ../src/libs/masks.c:108
 msgid "compression"
 msgstr "compresión"
 
-#: ../src/imageio/format/exr.cc:480 ../src/imageio/format/pdf.c:682
+#: ../src/imageio/format/exr.cc:486 ../src/imageio/format/pdf.c:682
 #: ../src/imageio/format/tiff.c:884
 msgid "uncompressed"
 msgstr "sin comprimir"
 
-#: ../src/imageio/format/exr.cc:481
+#: ../src/imageio/format/exr.cc:487
 msgid "RLE"
 msgstr "RLE"
 
-#: ../src/imageio/format/exr.cc:482
+#: ../src/imageio/format/exr.cc:488
 msgid "ZIPS"
 msgstr "ZIPS"
 
-#: ../src/imageio/format/exr.cc:483
+#: ../src/imageio/format/exr.cc:489
 msgid "ZIP"
 msgstr "ZIP"
 
-#: ../src/imageio/format/exr.cc:484
+#: ../src/imageio/format/exr.cc:490
 msgid "PIZ"
 msgstr "PIZ"
 
-#: ../src/imageio/format/exr.cc:485
+#: ../src/imageio/format/exr.cc:491
 msgid "PXR24"
 msgstr "PXR24"
 
-#: ../src/imageio/format/exr.cc:486
+#: ../src/imageio/format/exr.cc:492
 msgid "B44"
 msgstr "B44"
 
-#: ../src/imageio/format/exr.cc:487
+#: ../src/imageio/format/exr.cc:493
 msgid "B44A"
 msgstr "B44A"
 
-#: ../src/imageio/format/exr.cc:488
+#: ../src/imageio/format/exr.cc:494
 msgid "DWAA"
 msgstr "DWAA"
 
-#: ../src/imageio/format/exr.cc:489
+#: ../src/imageio/format/exr.cc:495
 msgid "DWAB"
 msgstr "DWAB"
 
@@ -11062,31 +11053,30 @@ msgstr "Cinema4K, 24FPS"
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8 bits)"
 
-#: ../src/imageio/format/jxl.c:467
+#: ../src/imageio/format/jxl.c:471
 msgid "JPEG XL"
 msgstr "JPEG XL"
 
-#: ../src/imageio/format/jxl.c:552 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/jxl.c:556 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
 #: ../src/imageio/format/xcf.c:338
 msgid "16 bit"
 msgstr "16 bit"
 
 #. Pixel format combo box
-#: ../src/imageio/format/jxl.c:558 ../src/imageio/format/tiff.c:869
-#, fuzzy
+#: ../src/imageio/format/jxl.c:562 ../src/imageio/format/tiff.c:869
 msgid "pixel type"
-msgstr "pixelado"
+msgstr "tipo de pixel"
 
-#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+#: ../src/imageio/format/jxl.c:563 ../src/imageio/format/tiff.c:870
 msgid "unsigned integer"
 msgstr "Entero positivo"
 
-#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+#: ../src/imageio/format/jxl.c:563 ../src/imageio/format/tiff.c:870
 msgid "floating point"
 msgstr "Punto flotante"
 
-#: ../src/imageio/format/jxl.c:576
+#: ../src/imageio/format/jxl.c:580
 msgid ""
 "the quality of the output image\n"
 "0-29 = very lossy\n"
@@ -11098,12 +11088,11 @@ msgstr ""
 "30-99 = comparable a la calidad de un JPEG\n"
 "100 = sin pérdida (profundidad de bits entera)"
 
-#: ../src/imageio/format/jxl.c:585
-#, fuzzy
+#: ../src/imageio/format/jxl.c:589
 msgid "encoding color profile"
-msgstr "perfil de color de entrada"
+msgstr "Codificación del perfil de color"
 
-#: ../src/imageio/format/jxl.c:586
+#: ../src/imageio/format/jxl.c:590
 msgid ""
 "the color profile used by the encoder\n"
 "permit internal XYB color space conversion for more efficient lossy "
@@ -11117,30 +11106,30 @@ msgstr ""
 "o mantiene intacto el espacio de color original de la imagen (implícito para "
 "la compresión sin pérdidas)."
 
-#: ../src/imageio/format/jxl.c:589
+#: ../src/imageio/format/jxl.c:593
 msgid "internal"
 msgstr "Interno"
 
-#: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:359
+#: ../src/imageio/format/jxl.c:593 ../src/libs/duplicate.c:359
 #: ../src/libs/history.c:1009 ../src/libs/snapshots.c:634
 msgid "original"
 msgstr "original"
 
-#: ../src/imageio/format/jxl.c:603
+#: ../src/imageio/format/jxl.c:607
 msgid "encoding effort"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:604
+#: ../src/imageio/format/jxl.c:608
 msgid ""
 "the effort used to encode the image, higher efforts will have better results "
 "at the expense of longer encoding times"
 msgstr ""
 
-#: ../src/imageio/format/jxl.c:615
+#: ../src/imageio/format/jxl.c:619
 msgid "decoding speed"
 msgstr "velocidad de decodificación"
 
-#: ../src/imageio/format/jxl.c:616
+#: ../src/imageio/format/jxl.c:620
 msgid "the preferred decoding speed with some sacrifice of quality"
 msgstr ""
 
@@ -11154,7 +11143,7 @@ msgstr "tamaño de borde inválido, usando 0"
 
 #: ../src/imageio/format/pdf.c:257 ../src/imageio/storage/disk.c:316
 #: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:331
-#: ../src/imageio/storage/gallery.c:370 ../src/imageio/storage/piwigo.c:1118
+#: ../src/imageio/storage/gallery.c:370 ../src/imageio/storage/piwigo.c:1137
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "no se puede exportar el archivo %s"
@@ -11359,11 +11348,11 @@ msgstr "escala de grises"
 msgid "WebP"
 msgstr "WebP"
 
-#: ../src/imageio/format/webp.c:384
+#: ../src/imageio/format/webp.c:385
 msgid "lossy"
 msgstr "con pérdida"
 
-#: ../src/imageio/format/webp.c:384
+#: ../src/imageio/format/webp.c:385
 msgid "lossless"
 msgstr "sin pérdida"
 
@@ -11422,7 +11411,7 @@ msgstr ""
 "Teclee '$(' para iniciar la autocompleción y desplegar la lista de las "
 "variables disponibles."
 
-#: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/piwigo.c:1013
+#: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/piwigo.c:1029
 msgid "on conflict"
 msgstr "en conflicto"
 
@@ -11430,13 +11419,13 @@ msgstr "en conflicto"
 msgid "create unique filename"
 msgstr "crear nombre único"
 
-#: ../src/imageio/storage/disk.c:186 ../src/imageio/storage/piwigo.c:1017
+#: ../src/imageio/storage/disk.c:186 ../src/imageio/storage/piwigo.c:1033
 #: ../src/libs/copy_history.c:362 ../src/libs/image.c:603
 #: ../src/libs/styles.c:430 ../src/libs/styles.c:613 ../src/libs/styles.c:834
 msgid "overwrite"
 msgstr "sobreescribir"
 
-#: ../src/imageio/storage/disk.c:187 ../src/imageio/storage/piwigo.c:1015
+#: ../src/imageio/storage/disk.c:187 ../src/imageio/storage/piwigo.c:1031
 #: ../src/libs/styles.c:429 ../src/libs/styles.c:612
 msgid "skip"
 msgstr "omitir"
@@ -11468,15 +11457,14 @@ msgstr[0] "%d/%d exportado a «%s»"
 msgstr[1] "%d/%d exportados a «%s»"
 
 #: ../src/imageio/storage/disk.c:380
-#, fuzzy
 msgid ""
 "you are going to export in overwrite mode, this will overwrite any existing "
 "images\n"
 "\n"
 "do you really want to continue?"
 msgstr ""
-"Se exportará en modo de sobrescritura, lo cual sobrescribirá cualquier "
-"imagen existente\n"
+"Se exportará en modo de sobrescritura, lo cual reemplazará cualquier imagen "
+"existente\n"
 "\n"
 "¿Realmente desea continuar?"
 
@@ -11508,44 +11496,44 @@ msgstr "plantilla de libro LaTeX"
 msgid "enter the title of the book"
 msgstr "Introduzca el título del libro"
 
-#: ../src/imageio/storage/piwigo.c:489
+#: ../src/imageio/storage/piwigo.c:500
 msgid "authenticated"
 msgstr "autentificado"
 
-#: ../src/imageio/storage/piwigo.c:497 ../src/imageio/storage/piwigo.c:512
-#: ../src/imageio/storage/piwigo.c:524
+#: ../src/imageio/storage/piwigo.c:508 ../src/imageio/storage/piwigo.c:523
+#: ../src/imageio/storage/piwigo.c:535
 msgid "not authenticated"
 msgstr "no autentificado"
 
-#: ../src/imageio/storage/piwigo.c:503
+#: ../src/imageio/storage/piwigo.c:514
 msgid "not authenticated, cannot reach server"
 msgstr "No autentificado; no se pudo conectar con el servidor"
 
-#: ../src/imageio/storage/piwigo.c:552 ../src/imageio/storage/piwigo.c:639
+#: ../src/imageio/storage/piwigo.c:563 ../src/imageio/storage/piwigo.c:650
 msgid "create new album"
 msgstr "crear álbum nuevo"
 
-#: ../src/imageio/storage/piwigo.c:640
+#: ../src/imageio/storage/piwigo.c:651
 msgid "---"
 msgstr "(---)"
 
-#: ../src/imageio/storage/piwigo.c:682
+#: ../src/imageio/storage/piwigo.c:693
 msgid "cannot refresh albums"
 msgstr "No se puedieron actualizar los álbumes"
 
-#: ../src/imageio/storage/piwigo.c:875
+#: ../src/imageio/storage/piwigo.c:891
 msgid "piwigo"
 msgstr "Piwigo"
 
-#: ../src/imageio/storage/piwigo.c:900
+#: ../src/imageio/storage/piwigo.c:916
 msgid "accounts"
 msgstr "cuentas"
 
-#: ../src/imageio/storage/piwigo.c:915 ../src/imageio/storage/piwigo.c:919
+#: ../src/imageio/storage/piwigo.c:931 ../src/imageio/storage/piwigo.c:935
 msgid "server"
 msgstr "servidor"
 
-#: ../src/imageio/storage/piwigo.c:916 ../src/imageio/storage/piwigo.c:927
+#: ../src/imageio/storage/piwigo.c:932 ../src/imageio/storage/piwigo.c:943
 msgid ""
 "the server name\n"
 "default protocol is https\n"
@@ -11555,100 +11543,100 @@ msgstr ""
 "El protocolo por defecto es https\n"
 "Si no es un servidor seguro, especificar con http:// "
 
-#: ../src/imageio/storage/piwigo.c:926 ../src/imageio/storage/piwigo.c:930
+#: ../src/imageio/storage/piwigo.c:942 ../src/imageio/storage/piwigo.c:946
 msgid "user"
 msgstr "usuario"
 
-#: ../src/imageio/storage/piwigo.c:936 ../src/imageio/storage/piwigo.c:940
+#: ../src/imageio/storage/piwigo.c:952 ../src/imageio/storage/piwigo.c:956
 msgid "password"
 msgstr "contraseña"
 
 #. login button
-#: ../src/imageio/storage/piwigo.c:945
+#: ../src/imageio/storage/piwigo.c:961
 msgid "login"
 msgstr "acceder"
 
-#: ../src/imageio/storage/piwigo.c:946
+#: ../src/imageio/storage/piwigo.c:962
 msgid "piwigo login"
 msgstr "Iniciar sesión en Piwigo"
 
 #. permissions list
-#: ../src/imageio/storage/piwigo.c:960
+#: ../src/imageio/storage/piwigo.c:976
 msgid "visible to"
 msgstr "visible para"
 
-#: ../src/imageio/storage/piwigo.c:962
+#: ../src/imageio/storage/piwigo.c:978
 msgid "everyone"
 msgstr "todos"
 
-#: ../src/imageio/storage/piwigo.c:963
+#: ../src/imageio/storage/piwigo.c:979
 msgid "contacts"
 msgstr "hoja de contactos"
 
-#: ../src/imageio/storage/piwigo.c:964
+#: ../src/imageio/storage/piwigo.c:980
 msgid "friends"
 msgstr "amigos"
 
-#: ../src/imageio/storage/piwigo.c:965
+#: ../src/imageio/storage/piwigo.c:981
 msgid "family"
 msgstr "familia"
 
-#: ../src/imageio/storage/piwigo.c:966
+#: ../src/imageio/storage/piwigo.c:982
 msgid "you"
 msgstr "usted"
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:973
+#: ../src/imageio/storage/piwigo.c:989
 msgid "album"
 msgstr "álbum"
 
-#: ../src/imageio/storage/piwigo.c:979
+#: ../src/imageio/storage/piwigo.c:995
 msgid "refresh album list"
 msgstr "Actualizar lista de álbumes"
 
 #. Album title
-#: ../src/imageio/storage/piwigo.c:997
+#: ../src/imageio/storage/piwigo.c:1013
 msgid "new album"
 msgstr "álbum nuevo"
 
 #. parent album list
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:1005
+#: ../src/imageio/storage/piwigo.c:1021
 msgid "parent album"
 msgstr "álbum principal"
 
-#: ../src/imageio/storage/piwigo.c:1009
+#: ../src/imageio/storage/piwigo.c:1025
 msgid "click login button to start"
-msgstr "Para empezar, pulse el botón acceder"
+msgstr "Para comenzar, pulse el botón acceder"
 
-#: ../src/imageio/storage/piwigo.c:1014
+#: ../src/imageio/storage/piwigo.c:1030
 msgid "don't check"
 msgstr "no verificar"
 
-#: ../src/imageio/storage/piwigo.c:1016
+#: ../src/imageio/storage/piwigo.c:1032
 msgid "update metadata"
 msgstr "actualizar metadatos"
 
-#: ../src/imageio/storage/piwigo.c:1137
+#: ../src/imageio/storage/piwigo.c:1156
 msgid "cannot create a new piwigo album!"
 msgstr "No se pudo crear un álbum nuevo en Piwigo"
 
-#: ../src/imageio/storage/piwigo.c:1155
+#: ../src/imageio/storage/piwigo.c:1174
 msgid "could not update to piwigo!"
 msgstr "No se pudo actualizar Piwigo"
 
-#: ../src/imageio/storage/piwigo.c:1169
+#: ../src/imageio/storage/piwigo.c:1188
 msgid "could not upload to piwigo!"
 msgstr "No se pudo subir a Piwigo"
 
-#: ../src/imageio/storage/piwigo.c:1198
+#: ../src/imageio/storage/piwigo.c:1217
 #, c-format
 msgid "%d/%d skipped (already exists)"
 msgstr "%d/%d omitida (la imagen ya existe)"
 
 # piwigo es un servicio web para crear galerias de fotos
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/piwigo.c:1203
+#: ../src/imageio/storage/piwigo.c:1222
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
@@ -16849,20 +16837,18 @@ msgid "reconstruction, raw"
 msgstr "Reconstrucción, negativo digital"
 
 #: ../src/iop/highlights.c:2280
-#, fuzzy
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
 msgstr ""
-"Luces: los modos «laplaciano guiado» y «recuperación» no están disponibles "
-"para los sensores tipo X-Trans. Volviendo al recorte."
+"Luces: modo no disponible para este tipo de imagen. Volviendo a restauración "
+"contrapuesta."
 
 #: ../src/iop/highlights.c:2479
 msgid "highlight reconstruction method"
 msgstr "Método de reconstrucción de luces"
 
 #: ../src/iop/highlights.c:2484
-#, fuzzy
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -16873,7 +16859,8 @@ msgid ""
 msgstr ""
 "Ajustar manualmente el umbral de recorte contra las luces magenta.\n"
 "El ícono de la máscara muestra el área recortada.\n"
-"Se puede utilizar para refinar los modos «laplaciano» o «recuperación»,\n"
+"Se puede utilizar para refinar los modos «laplaciano», «restauración "
+"contrapuesta» o «segmentación»,\n"
 "especialmente si el punto blanco de la cámara es incorrecto."
 
 #: ../src/iop/highlights.c:2495
@@ -18553,7 +18540,6 @@ msgid "rotate pixels"
 msgstr "rotar pixeles"
 
 #: ../src/iop/rotatepixels.c:97 ../src/iop/scalepixels.c:81
-#, fuzzy
 msgid ""
 "internal module to setup technical specificities of raw sensor.\n"
 "\n"
@@ -18562,7 +18548,7 @@ msgstr ""
 "Módulo configurado internamente para fijar los parámetros técnicos del "
 "sensor.\n"
 "\n"
-"Evite modificar los valores aquí."
+"Evite modificar aquí los valores."
 
 #: ../src/iop/rotatepixels.c:366
 msgid "automatic pixel rotation"
@@ -20691,9 +20677,8 @@ msgstr "No es posible añadir más reglas."
 
 #. fill the popover with all pinned rules
 #: ../src/libs/filtering.c:1674
-#, fuzzy
 msgid "shown filters"
-msgstr "reiniciar los filtros"
+msgstr "filtros indicados"
 
 #: ../src/libs/filtering.c:1689
 msgid "new filter"
@@ -23024,7 +23009,7 @@ msgstr "** %s «%s»"
 
 #: ../src/libs/snapshots.c:536
 msgid "this snapshot was taken from"
-msgstr ""
+msgstr "Esta instantánea se tomó de"
 
 #. create take snapshot button
 #: ../src/libs/snapshots.c:571
@@ -24684,6 +24669,14 @@ msgstr ""
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "acciones con el ratón"
+
+# Demosaicing -> Algoritmo de interpolación cromática.
+#~ msgid "demosaicing method"
+#~ msgstr "método de interpolación cromática"
+
+#, fuzzy
+#~ msgid "recovery"
+#~ msgstr "superponer"
 
 #~ msgid "no image selected !"
 #~ msgstr "No se ha seleccionado ninguna imagen."
@@ -30497,9 +30490,6 @@ msgstr "acciones con el ratón"
 #~ "percentage of bright values\n"
 #~ "to be clipped out"
 #~ msgstr "porcentaje de valores de brillo recortados"
-
-#~ msgid "rebuild"
-#~ msgstr "Reconstruire"
 
 #~ msgid ""
 #~ "write a history file for\n"
