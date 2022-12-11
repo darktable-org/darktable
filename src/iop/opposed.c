@@ -241,6 +241,8 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const size_t o_col_max = MIN(roi_out->width, roi_in->width - shift_x);
   const size_t o_width = roi_out->width;
   const size_t i_width = roi_in->width;
+  if((o_row_max != roi_out->height) || (o_col_max != roi_out->width))
+    dt_iop_image_fill((float *)ovoid, 0.0f, roi_out->width, roi_out->height, 1);
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
   gboolean valid_chrominance = FALSE;
