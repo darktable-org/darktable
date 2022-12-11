@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-28 08:36+0100\n"
-"PO-Revision-Date: 2022-11-28 14:51+0100\n"
+"POT-Creation-Date: 2022-11-30 11:59+0100\n"
+"PO-Revision-Date: 2022-11-30 12:00+0100\n"
 "Last-Translator: Besmir Godole <bgodole@gmail.com>\n"
 "Language-Team: Albanian\n"
 "Language: sq_AL\n"
@@ -3879,32 +3879,32 @@ msgid "inpaint a flat color"
 msgstr "pikturimi me ngjyrë të sheshtë"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:284
-#: ../src/iop/highlights.c:2368 ../src/iop/highlights.c:2374
+#: ../src/iop/highlights.c:2387 ../src/iop/highlights.c:2393
 msgid "clip highlights"
 msgstr "shkurtoj reflekset"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:285
-#: ../src/iop/highlights.c:2372
+#: ../src/iop/highlights.c:2391
 msgid "reconstruct in LCh"
 msgstr "rindërtoj në LCh"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:2321 ../src/iop/highlights.c:2384
+#: ../src/iop/highlights.c:2340 ../src/iop/highlights.c:2403
 msgid "reconstruct color"
 msgstr "rindërtoj ngjyrat"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:2379
+#: ../src/iop/highlights.c:2398
 msgid "guided laplacians"
 msgstr "laplacianët drejtues"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:2376
+#: ../src/iop/highlights.c:2395
 msgid "segmentation based"
 msgstr "segmentoj"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:2364
+#: ../src/iop/highlights.c:2383
 msgid "inpaint opposed"
 msgstr "kundërpikturoj"
 
@@ -4375,7 +4375,7 @@ msgstr "për kanal"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:172
 msgid "rgb ratio"
-msgstr "sipas raportit rgb"
+msgstr "në raport rgb"
 
 #: ../build/lib/darktable/plugins/introspection_temperature.c:66
 #: ../build/lib/darktable/plugins/introspection_temperature.c:121
@@ -5028,7 +5028,7 @@ msgid "capture date"
 msgstr "data e shkrepjes"
 
 #: ../src/common/collection.c:680 ../src/libs/collect.c:3309
-#: ../src/libs/filtering.c:2187 ../src/libs/filtering.c:2207
+#: ../src/libs/filtering.c:2196 ../src/libs/filtering.c:2216
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "historiku"
@@ -9115,7 +9115,7 @@ msgid "first"
 msgstr "e para"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1913
+#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
 #: ../src/libs/filters/rating_range.c:266 ../src/libs/tagging.c:3117
 #: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
 #: ../src/views/darkroom.c:2553
@@ -12537,11 +12537,11 @@ msgstr "ngjyra e vijës së kornizës"
 
 #: ../src/iop/borders.c:1087
 msgid "select frame line color"
-msgstr "përzgjidhni ngjyrën e vijës së kuadrit"
+msgstr "përzgjidhni ngjyrën e vijës së kornizës"
 
 #: ../src/iop/borders.c:1091
 msgid "pick frame line color from image"
-msgstr "mbledh ngjyrën e vijës së kuadrit nga imazhi"
+msgstr "mblidhni ngjyrën e vijës së kornizës nga imazhi"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:82
@@ -14639,11 +14639,11 @@ msgstr ""
 "toni i nuancës që duhet të ketë përparësi mbi tonet e nuancave të tjera"
 
 #: ../src/iop/colorreconstruction.c:1265 ../src/iop/demosaic.c:5472
-#: ../src/iop/highlights.c:2527
+#: ../src/iop/highlights.c:2546
 msgid "not applicable"
 msgstr "nuk aplikohet"
 
-#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2528
+#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2547
 msgid "no highlights reconstruction for monochrome images"
 msgstr "nuk rindërtohen reflekset e imazheve monokromatike"
 
@@ -16616,7 +16616,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "rindërtimi, bruto"
 
-#: ../src/iop/highlights.c:2261
+#: ../src/iop/highlights.c:2280
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -16624,11 +16624,11 @@ msgstr ""
 "reflekset: kjo metodë nuk vlen për këtë lloj imazhi. do të përdoret "
 "kundërpikturimi."
 
-#: ../src/iop/highlights.c:2460
+#: ../src/iop/highlights.c:2479
 msgid "highlight reconstruction method"
 msgstr "metoda e rindërtimit të reflekseve"
 
-#: ../src/iop/highlights.c:2465
+#: ../src/iop/highlights.c:2484
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -16644,7 +16644,7 @@ msgstr ""
 "'segmentim',\n"
 "sidomos kur pika e bardhë e kamerës nuk është përcaktuar saktë."
 
-#: ../src/iop/highlights.c:2476
+#: ../src/iop/highlights.c:2495
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
@@ -16653,7 +16653,7 @@ msgstr ""
 "morfologjike.\n"
 "butoni i maskës tregon pozicionet ekzakte të kufijve finalë të segmentit."
 
-#: ../src/iop/highlights.c:2484
+#: ../src/iop/highlights.c:2503
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -16665,7 +16665,7 @@ msgstr ""
 "kundërpikturimin.\n"
 "butoni i maskës tregon segmentet me kandidatët që konsiderohen të mirë."
 
-#: ../src/iop/highlights.c:2495
+#: ../src/iop/highlights.c:2514
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -16686,7 +16686,7 @@ msgstr ""
 "mënyrat e sheshta nuk i marrin parasysh strukturat e pashkurtuara (si linjat "
 "e elektrotransmetimit) për të evituar shfaqjen e gradientëve."
 
-#: ../src/iop/highlights.c:2501
+#: ../src/iop/highlights.c:2520
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -16696,7 +16696,7 @@ msgstr ""
 "plotësisht.\n"
 "butoni i maskës tregon efektin në të dhënat e rindërtuara paraprakisht."
 
-#: ../src/iop/highlights.c:2511
+#: ../src/iop/highlights.c:2530
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -16704,7 +16704,7 @@ msgstr ""
 "shtoni zhurmë për të bashkuar vizualisht zonat e rindërtuara\n"
 "me pjesën tjetër të imazhit të zhurmshëm. me dobi për ISO të larta."
 
-#: ../src/iop/highlights.c:2515
+#: ../src/iop/highlights.c:2534
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16712,7 +16712,7 @@ msgstr ""
 "rriteni nëse reflekset e kuqërreme nuk korrigjohen plotësisht\n"
 "çdo përsëritje e veprimit kryhet në dëm të performancës."
 
-#: ../src/iop/highlights.c:2520
+#: ../src/iop/highlights.c:2539
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -16720,7 +16720,7 @@ msgstr ""
 "rriteni nëse reflekset e kuqërreme nuk korrigjohen plotësisht.\n"
 "mund të shfaqen caqe jo të rrafshëta në zonat e duhura dhe të shkurtuara."
 
-#: ../src/iop/highlights.c:2524
+#: ../src/iop/highlights.c:2543
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17948,7 +17948,7 @@ msgstr ""
 "korrigjimi bruto i pikës së zezë/bardhë\n"
 "vetëm për sensorët që e kanë të nevojshëm."
 
-#: ../src/iop/rcd_demosaic.c:310
+#: ../src/iop/rcd_demosaic.c:304
 msgid "[rcd_demosaic] too small area"
 msgstr "[rcd_demosaic] zonë shumë e vogël"
 
@@ -19096,7 +19096,7 @@ msgid ""
 msgstr ""
 "precizioni i sfumaturës:\n"
 "vlerat më të larta e detyrojnë maskën të shkojë më afër cepave\n"
-"por mund të evitojnë efektin rrafshues\n"
+"por mund të eliminojnë efektin rrafshues\n"
 "vlerat më të ulëta krijojnë gradientë më të rrafshët, por mund\n"
 "të rezultojnë me aureola ose pasaktësi rreth cepave"
 
@@ -19717,7 +19717,7 @@ msgstr "OSE"
 msgid "BUT NOT"
 msgstr "POR JO"
 
-#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2188
+#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2197
 msgid "revert to a previous set of rules"
 msgstr "ktheni grupin e mëparshëm të rregullave"
 
@@ -20400,70 +20400,74 @@ msgstr "përcaktoni si ndërvepron kjo rregullë me pararendësen"
 msgid " (off)"
 msgstr " (fikur)"
 
+#: ../src/libs/filtering.c:1641
+msgid "you can't add more rules."
+msgstr "nuk mund të shtoni rregulla të tjera."
+
 #. fill the popover with all pinned rules
-#: ../src/libs/filtering.c:1666
+#: ../src/libs/filtering.c:1674
 msgid "shown filters"
 msgstr "filtrat e shfaqur"
 
-#: ../src/libs/filtering.c:1680
+#: ../src/libs/filtering.c:1689
 msgid "new filter"
 msgstr "filtër të ri"
 
-#: ../src/libs/filtering.c:1855
+#: ../src/libs/filtering.c:1864
 msgid "sort order"
 msgstr "parimi i renditjes"
 
-#: ../src/libs/filtering.c:1857
+#: ../src/libs/filtering.c:1866
 msgid "determine the sort order of shown images"
 msgstr "përcaktoni parimin e renditjes së imazheve që tregohen"
 
-#: ../src/libs/filtering.c:1914
+#: ../src/libs/filtering.c:1923
 msgid "sort direction"
 msgstr "drejtimi i renditjes"
 
-#: ../src/libs/filtering.c:1920
+#: ../src/libs/filtering.c:1929
 msgid "remove this sort order"
 msgstr "hiqni parimin e renditjes"
 
-#: ../src/libs/filtering.c:2004
+#: ../src/libs/filtering.c:2013
 #, c-format
 msgid "you can't have more than %d sort orders"
 msgstr "nuk mund të keni më shumë se %d parime për renditjen"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "DESC"
 msgstr "ZBRIT"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "ASC"
 msgstr "NGJIT"
 
-#: ../src/libs/filtering.c:2184
+#: ../src/libs/filtering.c:2193
 msgid "new rule"
 msgstr "rregullë të re"
 
-#: ../src/libs/filtering.c:2185
+#: ../src/libs/filtering.c:2194
 msgid "append new rule to collect images"
 msgstr "bashkëlidhni rregullën e re për koleksionimin e imazheve"
 
-#: ../src/libs/filtering.c:2196 ../src/libs/tools/filter.c:117
+#: ../src/libs/filtering.c:2205 ../src/libs/tools/filter.c:117
 msgid "sort by"
 msgstr "renditje nga"
 
-#: ../src/libs/filtering.c:2204
+#: ../src/libs/filtering.c:2213
 msgid "new sort"
 msgstr "renditje të re"
 
-#: ../src/libs/filtering.c:2205
+#: ../src/libs/filtering.c:2214
 msgid "append new sort to order images"
 msgstr "bashkëlidhni parimin e ri për renditjen e imazheve"
 
-#: ../src/libs/filtering.c:2208
+#: ../src/libs/filtering.c:2217
 msgid "revert to a previous set of sort orders"
 msgstr "ktheni grupin e mëparshëm të parimeve të renditjes"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2258
+#: ../src/libs/filtering.c:2267
 msgid ""
 "reset\n"
 "ctrl+click to remove pinned rules too"
@@ -23354,7 +23358,7 @@ msgstr "aksi i gamepad i pasaktë"
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:217
 msgid "thumbnails overlays for size"
-msgstr "shtresat mbi miniatura sipas përmasave"
+msgstr "mbishtresat mbi miniatura sipas përmasave"
 
 #: ../src/libs/tools/global_toolbox.c:251
 #: ../src/libs/tools/global_toolbox.c:314
@@ -23418,25 +23422,25 @@ msgstr "pa mbishtresa"
 
 #: ../src/libs/tools/global_toolbox.c:439
 msgid "overlays on mouse hover"
-msgstr "mbishtresat me mausin sipër"
+msgstr "mbishtresa me mausin sipër"
 
 #: ../src/libs/tools/global_toolbox.c:440
 msgid "extended overlays on mouse hover"
-msgstr "mbishtresat e zgjeruara me mausin sipër"
+msgstr "mbishtresa të zgjeruara me mausin sipër"
 
 #: ../src/libs/tools/global_toolbox.c:441
 #: ../src/libs/tools/global_toolbox.c:468
 msgid "permanent overlays"
-msgstr "mbishtresat e përhershme"
+msgstr "mbishtresa të përhershme"
 
 #: ../src/libs/tools/global_toolbox.c:442
 #: ../src/libs/tools/global_toolbox.c:469
 msgid "permanent extended overlays"
-msgstr "mbishtresat e zgjeruara të përhershme"
+msgstr "mbishtresa të zgjeruara të përhershme"
 
 #: ../src/libs/tools/global_toolbox.c:443
 msgid "permanent overlays extended on mouse hover"
-msgstr "mbishtresat e zgjeruara të përhershme me mausin sipër"
+msgstr "mbishtresa të zgjeruara të përhershme me mausin sipër"
 
 #: ../src/libs/tools/global_toolbox.c:445
 #: ../src/libs/tools/global_toolbox.c:471
@@ -24133,7 +24137,7 @@ msgid "select range from last image"
 msgstr "përzgjidhni intervalin nga imazhi i fundit"
 
 #: ../src/views/lighttable.c:894
-msgid "add image to selection or remove"
+msgid "add image to or remove it from a selection"
 msgstr "shtoni ose hiqni imazhin nga përzgjedhja"
 
 #: ../src/views/lighttable.c:898
