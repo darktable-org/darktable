@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.1/4.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-12-10 16:21-0600\n"
-"PO-Revision-Date: 2022-12-11 00:03-0600\n"
+"PO-Revision-Date: 2022-12-12 01:03-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1664,7 +1664,7 @@ msgstr "Preguntar siempre antes de descartar el historial de acciones."
 
 #: ../build/bin/preferences_gen.h:6508
 msgid "try to use trash when deleting images"
-msgstr "Al eliminar las imágenes, procura enviarlas a la papelera"
+msgstr "Al eliminar las imágenes, se opta enviarlas a la papelera"
 
 #: ../build/bin/preferences_gen.h:6522
 msgid ""
@@ -4095,21 +4095,18 @@ msgstr "ACT azul"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:217
 #: ../build/lib/darktable/plugins/introspection_lens.cc:336
-#, fuzzy
 msgid "distortion fine-tune"
-msgstr "distorsión y viñeteado"
+msgstr "ajuste de corrección de distorsión"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:223
 #: ../build/lib/darktable/plugins/introspection_lens.cc:340
-#, fuzzy
 msgid "vignetting fine-tune"
-msgstr "viñeteado"
+msgstr "configuración del viñeteado"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:358
 #: ../src/iop/lens.cc:2190
-#, fuzzy
 msgid "embedded metadata"
-msgstr "metadatos"
+msgstr "metadatos incluidos"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:359
 msgid "lensfun database"
@@ -4728,12 +4725,10 @@ msgid "Print your images"
 msgstr "Imprimir las imágenes"
 
 #: ../src/bauhaus/bauhaus.c:764
-#, fuzzy
 msgid "sliders"
 msgstr "Control deslizante"
 
 #: ../src/bauhaus/bauhaus.c:765
-#, fuzzy
 msgid "dropdowns"
 msgstr "Lista deplegable"
 
@@ -4751,15 +4746,15 @@ msgstr "botón desactivado"
 
 #: ../src/bauhaus/bauhaus.c:3526
 msgid "not that many sliders"
-msgstr ""
+msgstr "No hay suficientes controles deslizantes"
 
 #: ../src/bauhaus/bauhaus.c:3536
 msgid "not that many dropdowns"
-msgstr ""
+msgstr "No hay suficientes listas deplegables"
 
 #: ../src/bauhaus/bauhaus.c:3551
 msgid "not that many buttons"
-msgstr ""
+msgstr "No hay suficientes botones"
 
 #: ../src/bauhaus/bauhaus.c:3556 ../src/gui/accelerators.c:317
 msgid "value"
@@ -9285,9 +9280,8 @@ msgid "end"
 msgstr "al final"
 
 #: ../src/gui/accelerators.c:301
-#, fuzzy
 msgid "entry"
-msgstr "Borrar texto"
+msgstr "Ingreso de texto"
 
 #: ../src/gui/accelerators.c:370
 #, fuzzy
@@ -9296,7 +9290,7 @@ msgstr "Color no encontrado"
 
 #: ../src/gui/accelerators.c:524
 msgid "(keypad)"
-msgstr ""
+msgstr "(panel de teclas)"
 
 #: ../src/gui/accelerators.c:533
 msgid "tablet button"
@@ -9546,12 +9540,17 @@ msgid "_edits"
 msgstr "_Antes del cambio"
 
 #: ../src/gui/accelerators.c:1958
+#, fuzzy
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
 "  - as at startup\n"
 "  - as when opening this dialog\n"
 msgstr ""
+"Restablecer los accesos directos desde alguna de estas condiciones:\n"
+"  • por defecto\n"
+"  • como al inicio\n"
+"  • como al abrir este diálogo\n"
 
 #: ../src/gui/accelerators.c:1961
 msgid ""
@@ -11117,13 +11116,15 @@ msgstr "original"
 
 #: ../src/imageio/format/jxl.c:607
 msgid "encoding effort"
-msgstr ""
+msgstr "potencia de codificación"
 
 #: ../src/imageio/format/jxl.c:608
 msgid ""
 "the effort used to encode the image, higher efforts will have better results "
 "at the expense of longer encoding times"
 msgstr ""
+"La potencia con la que se codificará la imagen. Entre más potencia exista, "
+"se obtendrán mejores resultados a expensas del tiempo de codificación."
 
 #: ../src/imageio/format/jxl.c:619
 msgid "decoding speed"
@@ -11132,6 +11133,8 @@ msgstr "velocidad de decodificación"
 #: ../src/imageio/format/jxl.c:620
 msgid "the preferred decoding speed with some sacrifice of quality"
 msgstr ""
+"La velocidad de descodificación preferible con cierto grado de pérdida de la "
+"calidad."
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:480
 msgid "invalid paper size"
@@ -13574,7 +13577,7 @@ msgstr "Delta E está usando la fórmula CIE 2000 (∆E00)"
 
 #: ../src/iop/channelmixerrgb.c:4256
 msgid "accept"
-msgstr ""
+msgstr "aceptar"
 
 #: ../src/iop/channelmixerrgb.c:4259
 msgid "accept the computed profile and set it in the module"
@@ -13589,9 +13592,8 @@ msgid "recompute the profile"
 msgstr "Recalcular el perfil"
 
 #: ../src/iop/channelmixerrgb.c:4268
-#, fuzzy
 msgid "validate"
-msgstr "anulado"
+msgstr "comprobar"
 
 #: ../src/iop/channelmixerrgb.c:4270
 msgid "check the output delta E"
@@ -16316,7 +16318,7 @@ msgid ""
 "this is not an artificial intelligence, but a simple guess.\n"
 "ensure you understand its assumptions before using it."
 msgstr ""
-"Procura optimizar los ajustes con algunas estimaciones estadísticas.\n"
+"Busca optimizar los ajustes con algunas estimaciones estadísticas.\n"
 "Se ajustará al rango de luminancia dentro de los límites del histograma.\n"
 "Funciona mejor en paisajes y fotos uniformemente iluminadas\n"
 "pero es falible con la clave alta, la clave baja e ISO alto.\n"
@@ -16478,7 +16480,7 @@ msgid ""
 "may reinforce chromatic aberrations and chroma noise,\n"
 "so ensure they are properly corrected elsewhere."
 msgstr ""
-"Procura preservar el color original. \n"
+"Busca preservar el color original. \n"
 "Puede acentuar el ruido de croma y las aberraciones cromáticas, \n"
 "por lo que se recomienda corregir mediante otros módulos."
 
@@ -18668,9 +18670,8 @@ msgid "sigmoid"
 msgstr "sigmoidal"
 
 #: ../src/iop/sigmoid.c:83
-#, fuzzy
 msgid "tone mapping|view transform|display transform"
-msgstr "mapeo de tonos|curva|cambiar aspecto|contraste|saturación|luces"
+msgstr "mapeo de tonos|cambiar aspecto|cambiar visualización"
 
 #: ../src/iop/sigmoid.c:88
 msgid ""
@@ -20438,7 +20439,6 @@ msgid "only embedded"
 msgstr "solo incrustado"
 
 #: ../src/libs/export_metadata.c:322
-#, fuzzy
 msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
@@ -20449,9 +20449,10 @@ msgid ""
 msgstr ""
 "De manera predeterminada, la interfaz envía algunos metadatos (limitados) "
 "con la imagen al almacenamiento remoto.\n"
-"Marcar para dejar únicamente la imagen con metadatos incrustados XMP de dt.\n"
-"Si el almacenamiento remoto no comprende los metadatos XMP de dt, puede usar "
-"en su lugar metadatos calculados."
+"Marcar si se desea evitar la opción predeterminada y dejar la imagen "
+"únicamente con metadatos incrustados XMP de darktable.\n"
+"Si el almacenamiento remoto no comprende los metadatos XMP de darktable, "
+"puede usar en su lugar metadatos calculados."
 
 #: ../src/libs/export_metadata.c:328 ../src/libs/image.c:568
 msgid "geo tags"
@@ -20678,7 +20679,7 @@ msgstr "No es posible añadir más reglas."
 #. fill the popover with all pinned rules
 #: ../src/libs/filtering.c:1674
 msgid "shown filters"
-msgstr "filtros indicados"
+msgstr "filtros visibles"
 
 #: ../src/libs/filtering.c:1689
 msgid "new filter"
@@ -21955,9 +21956,8 @@ msgid "select the source of the map. some entries might not work"
 msgstr "Elegir la fuente del mapa. Algunas entradas podrían no funcionar"
 
 #: ../src/libs/masks.c:105
-#, fuzzy
 msgid "feather"
-msgstr "otros"
+msgstr "difuminado"
 
 #: ../src/libs/masks.c:317
 #, c-format
@@ -23021,8 +23021,8 @@ msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
 msgstr ""
-"Crea una instantánea para comparar con la misma imagen pero en un momento "
-"diferente del proceso o con otra imagen"
+"Se crea una instantánea de la imagen en proceso para compararse con otro "
+"paso de revelado de la misma o incluso, con otra imagen."
 
 #: ../src/libs/snapshots.c:608
 msgid "toggle last snapshot"
@@ -24459,7 +24459,7 @@ msgstr "selección de imagen única"
 
 #: ../src/views/lighttable.c:894
 msgid "add image to or remove it from a selection"
-msgstr ""
+msgstr "Añadir o quitar imágenes de la selección"
 
 #: ../src/views/lighttable.c:898
 msgid "change image order"
