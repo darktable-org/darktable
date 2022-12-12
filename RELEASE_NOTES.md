@@ -61,7 +61,7 @@ The following is a summary of the main features added to darktable
   view in subtle ways. Use of the new pipe routine now means that these previews
   will be identical to those produced during darkroom editing.
 
-- It is now possible to preview the affect of a user-generated style on
+- It is now possible to preview the effect of a user-generated style on
   an image before applying it. Simply hover over the style name in either
   the lighttable styles module or the darkroom quick-access menu and a
   new tooltip will appear, showing the image with the style applied along
@@ -80,15 +80,15 @@ The following is a summary of the main features added to darktable
   For users who currently use the "scroll to the top when expanded" preference
   setting to achieve this effect, this change may provide a better alternative.
 
-  As part of this change, a new animation effect has been added when 
+  As part of this change, a new animation effect has been added when
   expanding/collapsing modules. The speed of the expand/collapse animation
   can be controlled via a preference setting
   (`preferences > miscellaneous > duration of ui transitions`).
   Set this to zero to disable the animation.
 
 - The pixelpipe caching functionality has been completely overhauled. More
-  cachelines are used with an improved hit-rate while controlling 
-  the total amount of memory used, leading to a significantly faster 
+  cachelines are used with an improved hit-rate while controlling
+  the total amount of memory used, leading to a significantly faster
   interface.
 
 - The slideshow has been rewritten for a better user experience.
@@ -160,14 +160,14 @@ The following is a summary of the main features added to darktable
 - Reading of 16-bit half float for the TIFF format is now undertaken using
   the Imath library.
 
-- The format and storage parameters in the export module can now be mapped to
+- The format and storage parameters in the export module can now be mapped
   to shortcuts.
 
 - Introduced balanced "OpenCL vs CPU" tiling. This makes it possible to
   use CPU tiling if there is not enough memory on the OpenCL card
   (which would require a lot of tiles to be handled on the card). In the
   end, the large number of tiles plus the overlapping area would make
-  the use of the OpenCL code patch slower (or much slower) than
+  the use of the OpenCL code path slower (or much slower) than
   handling the image without tiling on the CPU.
 
 - In preview mode (when pressing <kbd>Ctrl+w</kbd>) the image information overlay
@@ -187,10 +187,10 @@ The following is a summary of the main features added to darktable
 - Panels now use "natural sizes" by default, meaning that their initial
   size adjusts according to screen resolution.
 
-- The geo-tagging module now better supports narrow side-panels by 
+- The geo-tagging module now better supports narrow side-panels by
   wrapping rather than ellipsizing text.
 
-- More actions have been added to the main help screen (displayed by 
+- More actions have been added to the main help screen (displayed by
   pressing the <kbd>h</kbd> key).
 
 - The lensfun library is now a mandatory dependency. This ensures
