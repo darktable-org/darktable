@@ -2341,6 +2341,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   query_parts[num_rules + num_filters] = NULL;
 
   // the main rules part
+  int nb = 0; // number of non empty rules
   for(int i = 0; i < num_rules; i++)
   {
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
@@ -2353,7 +2354,10 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     if(!text || text[0] == '\0')
     {
       if(mode == 1) // for OR show all
+      {
         query_parts[i] = g_strdup(" OR 1=1");
+        nb++;
+      }
       else
         query_parts[i] = g_strdup("");
     }
@@ -2361,17 +2365,19 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       gchar *query = get_query_string(property, text);
 
-      if(i == 0)
+      if(nb == 0)
         query_parts[i] = g_strdup_printf(" %s", query);
       else
         query_parts[i] = g_strdup_printf(" %s %s", conj[mode], query);
 
       g_free(query);
+      nb++;
     }
     g_free(text);
   }
 
   // the filtering part (same syntax as for collect rules)
+  nb = 0; // number of non empty rules
   for(int i = 0; i < num_filters; i++)
   {
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
@@ -2386,7 +2392,10 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     if(off || !text || text[0] == '\0')
     {
       if(!off && mode == 1) // for OR show all
+      {
         query_parts[i + num_rules] = g_strdup(" OR 1=1");
+        nb++;
+      }
       else
         query_parts[i + num_rules] = g_strdup("");
     }
@@ -2394,12 +2403,13 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       gchar *query = get_query_string(property, text);
 
-      if(i == 0)
+      if(nb == 0)
         query_parts[i + num_rules] = g_strdup_printf(" %s", query);
       else
         query_parts[i + num_rules] = g_strdup_printf(" %s %s", conj[mode], query);
 
       g_free(query);
+      nb++;
     }
     g_free(text);
   }
