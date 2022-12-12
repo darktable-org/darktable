@@ -170,9 +170,10 @@ The following is a summary of the main features added to darktable
   the use of the OpenCL code patch slower (or much slower) than
   handling the image without tiling on the CPU.
 
-- In preview mode the overlay display block is not shown by
-  default. Moving the cursor on the half top of the thumb will display
-  it. The block is still hidden automatically after some timeout.
+- In preview mode (when pressing <kbd>Ctrl+w</kbd>) the image information overlay
+  display block is no longer shown by default. Moving the cursor within the top
+  half of the preview image will cause the overlay to appear, and it will then
+  disappear again after a brief period.
 
 - Light patterns are set for Behringer b-control midi rotors
   (BCR2000/BCF2000)
