@@ -747,9 +747,6 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
-  // we first discard all visible shapes
-  dt_masks_change_form_gui(NULL);
-
   // now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
@@ -1438,9 +1435,9 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
       ids = g_list_next(ids);
 
       GtkTreeIter iter;
-      gtk_tree_model_get_iter_first(model, &iter);
       // get formid in group for the given module
-      const gboolean found = _find_mask_iter_by_values(model, &iter, mod, fid, 1);
+      const gboolean found = gtk_tree_model_get_iter_first(model, &iter)
+                             && _find_mask_iter_by_values(model, &iter, mod, fid, 1);
 
       if(found)
       {
