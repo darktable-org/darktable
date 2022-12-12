@@ -38,7 +38,7 @@
 #endif
 
 /* we only support images with certain filename extensions via ImageMagick,
- * derived from what it declared as "supported" with GraphicsMagick; RAWs
+ * derived from what it declared as "supported" with ImageMagick; RAWs
  * are excluded as ImageMagick would render them with third party libraries
  * in reduced quality - slow and only 8-bit */
 static gboolean _supported_image(const gchar *filename)
@@ -69,7 +69,6 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
-  MagickWandGenesis();
   image = NewMagickWand();
   if(image == NULL) goto error;
 
@@ -126,8 +125,10 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
     MagickRelinquishMemory(profile_data);
   }
 
+  // As a warning to those who will modify the loader in the future:
+  // MagickWandTerminus() cannot be called on successful image reading.
+  // See https://github.com/darktable-org/darktable/issues/13090 regarding the consequences.
   DestroyMagickWand(image);
-  MagickWandTerminus();
 
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
@@ -140,7 +141,6 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
 
 error:
   DestroyMagickWand(image);
-  MagickWandTerminus();
   return err;
 }
 #endif
