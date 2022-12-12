@@ -1035,7 +1035,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
               dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
 
     dt_print(DT_DEBUG_ROI,
-             "[process CPU] %15s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i, backbuf %ix%i\n",
+             "[process CPU] %20s %16s. IN (%4i/%4i) %4ix%4i scale=%.5f. OUT (%4i/%4i) %4ix%4i scale=%.5f, final %ix%i, backbuf %ix%i\n",
              dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op,
              roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
              roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
@@ -1218,12 +1218,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_get_times(&start);
     // we're looking for the full buffer
     {
-      if(roi_out->scale == 1.0
+      if(roi_out->scale == 1.0f
          && roi_out->x == 0 && roi_out->y == 0
          && pipe->iwidth == roi_out->width
          && pipe->iheight == roi_out->height)
       {
         *output = pipe->input;
+        dt_print(DT_DEBUG_ROI | DT_DEBUG_PERF, "[full buff roi] %18s found as input data\n", dt_dev_pixelpipe_type_to_str(pipe->type));
       }
       else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, NULL, FALSE))
       {
@@ -1237,7 +1238,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           const int in_y = MAX(roi_in.y, 0);
           const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
-
+          dt_print(DT_DEBUG_ROI | DT_DEBUG_PERF,
+            "[Copy 1:1  roi] %13s input data %s\n",
+            dt_dev_pixelpipe_type_to_str(pipe->type),
+            (cp_width > 0) ? "copied" : "already available");
           if(cp_width > 0)
           {
 #ifdef _OPENMP
@@ -1254,6 +1258,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
         else
         {
+          dt_print(DT_DEBUG_ROI | DT_DEBUG_PERF,
+            "[Clip&Zoom roi] %13s (none) ROI_IN (%i/%i) %ix%i scale=%.5f, ROI_OUT (%i/%i) %ix%i scale=%.5f, PIPE %ix%i\n",
+            dt_dev_pixelpipe_type_to_str(pipe->type),
+            roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale,
+            roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
+            pipe->iwidth, pipe->iheight);
           roi_in.x /= roi_out->scale;
           roi_in.y /= roi_out->scale;
           roi_in.width = pipe->iwidth;
@@ -1280,15 +1290,15 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     return 1;
   }
-  dt_print(DT_DEBUG_ROI,
-           "[modify roi IN] %13s %16s.    (%4i/%4i) %4ix%4i scale=%.2f",
-           dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op,
-           roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale);
-
+  dt_iop_roi_t roi_old;
+  memcpy(&roi_old, &roi_in, sizeof(dt_iop_roi_t));
   module->modify_roi_in(module, piece, roi_out, &roi_in);
 
-  dt_print_nts(DT_DEBUG_ROI, "  --> (%4i/%4i) %4ix%4i scale=%.2f\n",
-    roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale);
+  dt_print(DT_DEBUG_ROI, "[modify roi IN] %18s %16s.    (%4i/%4i) %4ix%4i scale=%.5f --> (%4i/%4i) %4ix%4i scale=%.5f\n",
+           dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op,
+           roi_old.x, roi_old.y, roi_old.width, roi_old.height, roi_old.scale,
+           roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale); 
+
   // recurse to get actual data of input buffer
 
   dt_iop_buffer_dsc_t _input_format = { 0 };
@@ -1581,7 +1591,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         if(success_opencl)
         {
           dt_print(DT_DEBUG_ROI,
-                   "[process CL] %16s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i, backbuf %ix%i\n",
+                   "[process CL] %21s %16s. IN (%4i/%4i) %4ix%4i scale=%.5f. OUT (%4i/%4i) %4ix%4i scale=%.5f, final %ix%i, backbuf %ix%i\n",
                    dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op, roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale,
                    roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
                    piece->pipe->final_width, piece->pipe->final_height, piece->pipe->backbuf_width, piece->pipe->backbuf_height);
@@ -2390,11 +2400,14 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
        && !(dev->gui_module && dev->gui_module != module
             && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
-      dt_print(DT_DEBUG_ROI, "[modify roi OUT] %12s %16s.    (%4i/%4i) %4ix%4i scale=%.2f",
-        dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op, roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale);
+      dt_iop_roi_t roi_old;
+      memcpy(&roi_old, &roi_out, sizeof(dt_iop_roi_t));
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
-      dt_print_nts(DT_DEBUG_ROI, "  --> (%4i/%4i) %4i*%4i scale=%.2f\n",
-        roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale);
+ 
+      dt_print(DT_DEBUG_ROI, "[modify roi OUT] %17s %16s.    (%4i/%4i) %4ix%4i scale=%.5f --> (%4i/%4i) %4i*%4i scale=%.5f\n",
+        dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op,
+        roi_old.x, roi_old.y, roi_old.width, roi_old.height, roi_old.scale,
+        roi_out.x, roi_out.y, roi_out.width, roi_out.height, roi_out.scale);
     }
     else
     {
