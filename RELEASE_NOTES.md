@@ -82,8 +82,9 @@ The following is a summary of the main features added to darktable
 
   As part of this change, a new animation effect has been added when 
   expanding/collapsing modules. The speed of the expand/collapse animation
-  can be controlled via a preference setting (preferences > miscellaneous
-  > duration of ui transitions). Set this to zero to disable the animation.
+  can be controlled via a preference setting
+  (`preferences > miscellaneous > duration of ui transitions`).
+  Set this to zero to disable the animation.
 
 - The pixelpipe caching functionality has been completely overhauled. More
   cachelines are used with an improved hit-rate while controlling 
