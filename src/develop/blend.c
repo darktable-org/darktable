@@ -681,6 +681,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   cl_mem tmp = NULL;
   cl_mem blur = NULL;
   cl_mem out = NULL;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   dt_dev_pixelpipe_t *p = piece->pipe;
   if(p->rawdetail_mask_data == NULL) return;
@@ -700,23 +701,33 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   blur = dt_opencl_alloc_device_buffer(devid, sizeof(float) * iwidth * iheight);
   if(blur == NULL) goto error;
 
+  err = dt_opencl_write_host_to_device(devid, p->rawdetail_mask_data, tmp, iwidth, iheight, sizeof(float));
+  if(err != CL_SUCCESS)
   {
-    const int err = dt_opencl_write_host_to_device(devid, p->rawdetail_mask_data, tmp, iwidth, iheight, sizeof(float));
-    if(err != CL_SUCCESS) goto error;
+    dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] write rawdetail_mask_data: %s\n", cl_errstr(err));
+    goto error;
   }
 
   {
     const int kernel = darktable.opencl->blendop->kernel_read_mask;
-    const int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, iwidth, iheight,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, iwidth, iheight,
       CLARG(out), CLARG(tmp), CLARG(iwidth), CLARG(iheight));
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] kernel_read_mask: %s\n", cl_errstr(err));
+      goto error;
+    }
   }
 
   {
     const int kernel = darktable.opencl->blendop->kernel_calc_blend;
-    const int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, iwidth, iheight,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, iwidth, iheight,
       CLARG(out), CLARG(blur), CLARG(iwidth), CLARG(iheight), CLARG(threshold), CLARG(detail));
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] kernel_calc_blend: %s\n", cl_errstr(err));
+      goto error;
+    }
   }
 
   {
@@ -727,10 +738,14 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     if(dev_blurmat != NULL)
     {
       const int clkernel = darktable.opencl->blendop->kernel_mask_blur;
-      const int err = dt_opencl_enqueue_kernel_2d_args(devid, clkernel, iwidth, iheight,
+      err = dt_opencl_enqueue_kernel_2d_args(devid, clkernel, iwidth, iheight,
         CLARG(blur), CLARG(out), CLARG(iwidth), CLARG(iheight), CLARG(dev_blurmat));
       dt_opencl_release_mem_object(dev_blurmat);
-      if(err != CL_SUCCESS) goto error;
+      if(err != CL_SUCCESS)
+      {
+        dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] kernel_mask_blur: %s\n", cl_errstr(err));
+        goto error;
+      }
     }
     else
     {
@@ -741,15 +756,17 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
 
   {
     const int kernel = darktable.opencl->blendop->kernel_write_mask;
-    const int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, iwidth, iheight,
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, iwidth, iheight,
       CLARG(out), CLARG(tmp), CLARG(iwidth), CLARG(iheight));
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[refine_with_detail_mask_cl] kernel_write_mask: %s\n", cl_errstr(err));
+      goto error;
+    }
   }
 
-  {
-    const int err = dt_opencl_read_host_from_device(devid, lum, tmp, iwidth, iheight, sizeof(float));
-    if(err != CL_SUCCESS) goto error;
-  }
+  err = dt_opencl_read_host_from_device(devid, lum, tmp, iwidth, iheight, sizeof(float));
+  if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(blur);
@@ -899,7 +916,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const int offs[2] = { xoffs, yoffs };
   const size_t sizes[] = { ROUNDUPDWD(owidth, devid), ROUNDUPDHT(oheight, devid), 1 };
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_blendif_params = NULL;
   cl_mem dev_boost_factors = NULL;
   cl_mem dev_mask_1 = NULL;
@@ -936,8 +953,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   err = dt_ioppr_build_iccprofile_params_cl(use_profile ? &profile : NULL, devid, &profile_info_cl,
                                             &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
-  if(err != CL_SUCCESS) goto error;
-
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] profile_info_cl: %s\n", cl_errstr(err));
+    goto error;
+  }
   if(mask_mode == DEVELOP_MASK_ENABLED || suppress_mask)
   {
     // blend uniformly (no drawn or parametric mask)
@@ -946,7 +966,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_args(devid, kernel_set_mask, 0, CLARG(dev_mask_1), CLARG(owidth), CLARG(oheight),
       CLARG(opacity));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_set_mask, sizes);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] kernel_set_mask: %s\n", cl_errstr(err));
+      goto error;
+    }
   }
   else if(mask_mode & DEVELOP_MASK_RASTER)
   {
@@ -979,7 +1003,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     }
 
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] write raster mask dev_mask_1: %s\n", cl_errstr(err));
+      goto error;
+    }
   }
   else
   {
@@ -1017,8 +1045,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dev_mask_2 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
     if(dev_mask_2 == NULL) goto error;
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
-    if(err != CL_SUCCESS) goto error;
-
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] write drawn mask dev_mask_1: %s\n", cl_errstr(err));
+      goto error;
+    }
     // The following call to clFinish() works around a bug in some OpenCL
     // drivers (namely AMD).
     // Without this synchronization point, reads to dev_in would often not
@@ -1037,7 +1068,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
     if(err != CL_SUCCESS)
     {
-      fprintf(stderr, "[dt_develop_blend_process_cl] error %i enqueue kernel\n", err);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] apply global opacity: %s\n", cl_errstr(err));
       goto error;
     }
 
@@ -1096,7 +1127,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         if(!g) goto error;
         err = dt_gaussian_blur_cl(g, dev_mask_1, dev_mask_2);
         dt_gaussian_free_cl(g);
-        if(err != CL_SUCCESS) goto error;
+        if(err != CL_SUCCESS)
+        {
+          dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] DEVELOP_MASK_POST_BLUR: %s\n", cl_errstr(err));
+          goto error;
+        }
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
       }
       else if(operation == DEVELOP_MASK_POST_TONE_CURVE)
@@ -1106,7 +1141,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         dt_opencl_set_kernel_args(devid, kernel_mask_tone_curve, 0, CLARG(dev_mask_1), CLARG(dev_mask_2),
           CLARG(owidth), CLARG(oheight), CLARG(e), CLARG(brightness), CLARG(opacity));
         err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask_tone_curve, sizes);
-        if(err != CL_SUCCESS) goto error;
+        if(err != CL_SUCCESS)
+        {
+          dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] DEVELOP_MASK_POST_TONE_CURVE: %s\n", cl_errstr(err));
+          goto error;
+        }
         _blend_process_cl_exchange(&dev_mask_1, &dev_mask_2);
       }
     }
@@ -1137,8 +1176,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
     err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &work_profile_info_cl, &work_profile_lut_cl,
                                               &dev_work_profile_info, &dev_work_profile_lut);
-    if(err != CL_SUCCESS) goto error;
-
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] work_profile_info_cl: %s\n", cl_errstr(err));
+      goto error;
+    }
     // let us display a specific channel
     dt_opencl_set_kernel_args(devid, kernel_display_channel, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_mask_1),
       CLARG(dev_out), CLARG(owidth), CLARG(oheight), CLARRAY(2, offs), CLARG(request_mask_display), CLARG(dev_boost_factors),
@@ -1147,7 +1189,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_display_channel, sizes);
     if(err != CL_SUCCESS)
     {
-      fprintf(stderr, "[dt_develop_blend_process_cl] error %i enqueue kernel\n", err);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] kernel_display_channel: %s\n", cl_errstr(err));
       goto error;
     }
   }
@@ -1159,7 +1201,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_tmp), CLARG(dev_mask_1), CLARG(dev_out),
       CLARG(owidth), CLARG(oheight), CLARG(blend_mode), CLARG(blend_parameter), CLARRAY(2, offs), CLARG(mask_display));
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] blend_parameter: %s\n", cl_errstr(err));
+      goto error;
+    }
   }
 
   // register if _this_ module should expose mask or display channel
@@ -1207,7 +1253,7 @@ error:
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_ioppr_free_iccprofile_params_cl(&work_profile_info_cl, &work_profile_lut_cl, &dev_work_profile_info,
                                      &dev_work_profile_lut);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] error: %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
