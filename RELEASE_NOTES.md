@@ -73,16 +73,17 @@ The following is a summary of the main features added to darktable
 
 - darktable is now able to read and write JPEG XL images
 
-- A new animation effect has been added when expanding/collapsing modules.
-  As part of this change, when you expand a module it will be automatically
-  scrolled to ensure the entire module is visible on-screen.
-
-  The speed of the expand/collapse animation can be controlled via a preference
-  setting (preferences > miscellaneous > duration of ui transitions). Set this
-  to zero to disable the animation.
+- Processing and utility modules have been altered so that if a module is
+  not entirely visible when expanded, it will be automatically scrolled
+  until the entire UI is visible on screen.
 
   For users who currently use the "scroll to the top when expanded" preference
   setting to achieve this effect, this change may provide a better alternative.
+
+  As part of this change, a new animation effect has been added when 
+  expanding/collapsing modules. The speed of the expand/collapse animation
+  can be controlled via a preference setting (preferences > miscellaneous
+  > duration of ui transitions). Set this to zero to disable the animation.
 
 - The pixelpipe caching functionality has been completely overhauled. More
   cachelines are used with an improved hit-rate while controlling 
@@ -104,13 +105,13 @@ The following is a summary of the main features added to darktable
 
 ## Other Changes
 
-- Added support for manipulating masks without using the mouse scroll-wheel
+- Added support for manipulating shapes without using the mouse scroll-wheel
   (for tablet users). The mask manager has been enhanced with a new collapsible
-  section containing controls for changing masks properties.
+  section containing controls for changing shapes properties.
 
-  It is also possible to change a property that is shared by a group of masks.
+  It is also possible to change a property that is shared by a group of shapes.
 
-  The circle and ellipse masks have also been enhanced with new on-canvas
+  The circle and ellipse shapes have also been enhanced with new on-canvas
   controls to change the mask size and feathering.
 
 - WebP read support has been added.
@@ -267,8 +268,8 @@ The following is a summary of the main features added to darktable
 - Remove the automatic check for OpenCL headroom - it was causing
   more problems than it solved.
 
-- Fix non-blinking cursor in the darkroom search dialog. This
-  was making the dialog look as if it was inactive.
+- Fix non-blinking cursor in the darkroom module search bar. This
+  was making the search bar look as if it was inactive.
 
 - Properly record the libraw black level.
 
@@ -305,7 +306,7 @@ The following is a summary of the main features added to darktable
 - Slightly improve the blue color label for better visibility in the
   dark theme.
 
-- Fix navigation window zoom indicator label display. It was sometime
+- Fix navigation window zoom indicator label display. It was sometimes
   cut on the right or bottom or displaced within the window.
 
 ## Lua
