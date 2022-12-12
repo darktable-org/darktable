@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-30 11:59+0100\n"
-"PO-Revision-Date: 2022-12-04 12:56+0200\n"
+"PO-Revision-Date: 2022-12-12 14:26+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -4555,7 +4555,7 @@ msgstr "резонанс"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:97
 #: ../build/lib/darktable/plugins/introspection_vignette.c:204
 msgid "fall-off strength"
-msgstr "кінець затемнення"
+msgstr "довжина зони затемнення"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:115
 #: ../build/lib/darktable/plugins/introspection_vignette.c:216
