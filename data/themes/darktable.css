@@ -353,7 +353,6 @@ textview,
   border: 1px solid @button_border; /* this too */
   border-radius: 0.21em;
   background-color: @button_bg;
-  font-family: sans-serif;
 }
 
 /* then set specific settings for all text zones and combo */
@@ -591,7 +590,6 @@ dialog .sidebar row:selected:hover label,
   color: @plugin_label_color;
   padding: 0 0.14em 0.14em 0.45em;
   font-weight: normal;
-  font-family: sans-serif;
   font-size: 1.1em;
 }
 
@@ -607,7 +605,6 @@ dialog .sidebar row:selected:hover label,
 {
   padding: 0.14em 0;
   color: @section_label;
-  font-family: sans-serif;
   font-weight: 500;
 }
 
@@ -883,14 +880,6 @@ combobox separator
 /*----------------------
   - GTK Notebooks tabs -
   ----------------------*/
-notebook tabs,
-#blending-tabs,
-#guides-line,
-#modules-tabs
-{
-  font-family: sans-serif;
-}
-
 #blending-tabs,
 #guides-line,
 #modules-tabs

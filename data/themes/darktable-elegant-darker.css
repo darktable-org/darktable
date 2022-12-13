@@ -23,6 +23,16 @@
 /* hide selection frame in culling */
 @define-color culling_selected_border_color transparent;
 
+*
+{
+  font-family: "Roboto",                  	/* best case scenario */
+               "Segoe UI",              	/* Windows 10 default */
+               "SF Pro Display",  			/* Mac OS X default */
+               "Ubuntu", "IPAPGothic",  	/* Ubuntu default */
+               "Cantarell",                 /* Gnome default */
+                sans-serif;                 /* default default */
+}
+
 .dt_plugin_ui,
 .dt_bauhaus,
 .dt_bauhaus_popup,
@@ -67,35 +77,13 @@ eventbox *,
 box,
 box *
 {
-  font-family: "Roboto Light", "Roboto",                  /* best case scenario */
-               "Segoe UI Light", "Segoe UI",              /* Windows 10 default */
-               "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
-               "Ubuntu Light", "Ubuntu", "IPAPGothic",    /* Ubuntu default */
-               "Cantarell",                               /* Gnome default */
-                sans-serif;                                /* default default */
-}
-
-.dt_section_label:not(#blending-box),
-#blending-box .dt_section_label label,
-#blending-box .dt_section_label .dt_bauhaus
-{
-  font-family: "Roboto Medium", "Roboto",
-               "Segoe UI Semibold", "Segoe UI",
-               "SF Pro Display Medium", "SF Pro Display",
-               "Ubuntu Medium", "Ubuntu", "IPAPGothic",
-               "Cantarell",
-                sans-serif;
+  font-weight: 300;
 }
 
 #iop-panel-label,
 #lib-panel-label
 {
-  font-family: "Roboto Condensed", "Roboto",
-               "Segoe UI Condensed", "Segoe UI",
-               "SF Pro Display", "SF Pro Display",
-               "Ubuntu Condensed", "Ubuntu", "IPAPGothic",
-               "Cantarell",
-               sans-serif;
+  font-stretch: condensed;
 }
 
 .active_menu_item *, /* needed for some Pango issues not rendering synthetic bold for all OS */
@@ -110,4 +98,5 @@ tooltip label,
                "Ubuntu", "IPAPGothic",
                "Cantarell",
                 sans-serif;
+  font-weight: normal;
 }
