@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.1/4.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-12-10 16:21-0600\n"
-"PO-Revision-Date: 2022-12-12 01:03-0600\n"
+"PO-Revision-Date: 2022-12-13 00:05-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -3919,9 +3919,8 @@ msgstr "diámetro de reconstrucción"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:165
 #: ../build/lib/darktable/plugins/introspection_highlights.c:258
-#, fuzzy
 msgid "candidating"
-msgstr "Modificando"
+msgstr "coincidencia cromática"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:171
 #: ../build/lib/darktable/plugins/introspection_highlights.c:262
@@ -3931,7 +3930,7 @@ msgstr "aunar"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:177
 #: ../build/lib/darktable/plugins/introspection_highlights.c:266
 msgid "rebuild"
-msgstr "Reconstruir"
+msgstr "reconstruir"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:183
 #: ../build/lib/darktable/plugins/introspection_highlights.c:270
@@ -9284,9 +9283,8 @@ msgid "entry"
 msgstr "Ingreso de texto"
 
 #: ../src/gui/accelerators.c:370
-#, fuzzy
 msgid "combo effect not found"
-msgstr "Color no encontrado"
+msgstr "No se ha encontrado el efecto combinado"
 
 #: ../src/gui/accelerators.c:524
 msgid "(keypad)"
@@ -9540,17 +9538,16 @@ msgid "_edits"
 msgstr "_Antes del cambio"
 
 #: ../src/gui/accelerators.c:1958
-#, fuzzy
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
 "  - as at startup\n"
 "  - as when opening this dialog\n"
 msgstr ""
-"Restablecer los accesos directos desde alguna de estas condiciones:\n"
-"  • por defecto\n"
+"Restablecer los accesos directos con los valores:\n"
+"  • predeterminados\n"
 "  • como al inicio\n"
-"  • como al abrir este diálogo\n"
+"  • anteriores de la apertura de este diálogo\n"
 
 #: ../src/gui/accelerators.c:1961
 msgid ""
@@ -11365,6 +11362,10 @@ msgid ""
 "for lossless, 0 is the fastest but gives larger files compared\n"
 "to the slowest 100."
 msgstr ""
+"Para la opción con pérdida de calidad, el 0 corresponde a el tamaño más "
+"pequeño y el 100 a la mejor calidad.\n"
+"Para la opción sin pérdida de calidad, 0 es la más rápida pero produce "
+"archivos más grandes comparado con el modo más lento a 100."
 
 #: ../src/imageio/format/webp.c:407
 msgid "image hint"
@@ -13355,13 +13356,17 @@ msgid ""
 "part of your subject or a non-moving and consistently-lit surface over your "
 "series of images."
 msgstr ""
+"Determina la cromaticidad destino (tono y crominancia) para una región concreta "
+"de la imagen (muestra de control) y que posteriormente comparará con la "
+"misma cromaticidad destino de otras imágenes. La muestra de control puede "
+"ser una parte esencial del motivo principal o bien, de una superficie fija "
+"con iluminación constante a lo largo de la serie de imágenes."
 
 #: ../src/iop/channelmixerrgb.c:4081 ../src/iop/channelmixerrgb.c:4094
 #: ../src/iop/channelmixerrgb.c:4137 ../src/iop/channelmixerrgb.c:4144
 #: ../src/iop/channelmixerrgb.c:4151
-#, fuzzy
 msgid "mapping"
-msgstr "mapeo de tonos"
+msgstr "mapeo"
 
 #: ../src/iop/channelmixerrgb.c:4081 ../src/iop/exposure.c:1079
 msgid "spot mode"
@@ -15416,7 +15421,7 @@ msgstr ""
 "Imita la dispersión direccional de la luz basándose\n"
 "en un modelo de transferencia de calor para generar\n"
 "un desenfoque iterativo a lo largo de los bordes,\n"
-"reconstruir zonas dañadas de la imagen o\n"
+"restaurar zonas dañadas de la imagen o\n"
 "reducir el desenfoque por el método de deconvolución ciega."
 
 #: ../src/iop/diffuse.c:236
@@ -15843,8 +15848,8 @@ msgstr ""
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
-"Donde se medirá el histograma para eliminar el parpadeo (p.ej. 50% es "
-"mediano)"
+"Punto en donde se medirá el histograma para eliminar el parpadeo (Ejemplo: "
+"el 50% es mediano)"
 
 #: ../src/iop/exposure.c:1042
 msgid ""
@@ -15886,6 +15891,11 @@ msgid ""
 "of your subject or a non-moving and consistently-lit surface over your "
 "series of images."
 msgstr ""
+"Determina el brillo de destino, en términos de exposición, para una región "
+"seleccionada de la imagen (muestra de control), que posteriormente comparará "
+"con el mismo brillo de destino en otras imágenes. La muestra de control "
+"puede ser una parte esencial del motivo principal o bien, de una superficie "
+"fija con iluminación constante a lo largo de la serie de imágenes."
 
 #: ../src/iop/exposure.c:1080
 msgid ""
@@ -16870,20 +16880,25 @@ msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
 msgstr ""
+"Combinar segmentos recortados estrechamente relacionados mediante "
+"operaciones morfológicas.\n"
+"El botón de máscara muestra las posiciones exactas de los bordes de los "
+"segmentos resultantes."
 
 #: ../src/iop/highlights.c:2503
-#, fuzzy
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
 "opposed means inpainting.\n"
 "the mask button shows segments that are considered to have a good candidate."
 msgstr ""
-"Selecciona la restauración después del análisis de la segmentación.\n"
-"Incremente el valor para favorecer a los candidatos encontrados en el "
-"análisis de segmentación, disminuir para oponerse significa inpainting.\\n\n"
-"el botón máscara muestra los segmentos que se considera que tienen un buen "
-"candidato."
+"Selecciona la mejor coincidencia de color después del análisis de la "
+"segmentación.\n"
+"Incremente para priorizar el valor de referencia encontrado en el análisis "
+"de segmentación. Disminuya para priorizar los valores medios análogos de "
+"restauración.\n"
+"El botón de máscara muestra los segmentos que se consideran que tienen un "
+"buenos valores de referencia."
 
 #: ../src/iop/highlights.c:2514
 msgid ""
@@ -16896,8 +16911,8 @@ msgid ""
 "the flat modes ignore narrow unclipped structures (like powerlines) to keep "
 "highlights rebuilt and avoid gradients."
 msgstr ""
-"Realiza una aproximación de la información perdida en las regiones "
-"recortadas. El efecto depende del tamaño del segmento y de los gradientes de "
+"Estima la información perdida de las regiones con todos los fotositos "
+"recortados. El efecto depende del tamaño del segmento y de los gradientes de "
 "los bordes.\n"
 "Elija el modo en función del tamaño del segmento o el modo genérico que "
 "explora los mejores ajustes para cada segmento.\n"
@@ -16913,6 +16928,10 @@ msgid ""
 "the mask buttons shows the effect that is added to already reconstructed "
 "data."
 msgstr ""
+"Ajusta la intensidad de la reconstrucción en regiones con todos las "
+"fotositos recortados.\n"
+"El botón de máscara muestra el efecto que se añade a los datos ya "
+"reconstruidos."
 
 #: ../src/iop/highlights.c:2530
 msgid ""
@@ -18697,6 +18716,8 @@ msgid ""
 "compression of the applied curve\n"
 "implicitly defines the supported input dynamic range"
 msgstr ""
+"Compresión de la curva utilizada.\n"
+"Define implícitamente el rango dinámico de entrada admitido."
 
 #: ../src/iop/sigmoid.c:558
 msgid ""
@@ -18715,6 +18736,8 @@ msgid ""
 "optional correction of the hue twist introduced by\n"
 "the per-channel processing method."
 msgstr ""
+"Corrección opcional de la variación de tono introducida por\n"
+"el método de procesamiento por canal."
 
 #. Target display
 #: ../src/iop/sigmoid.c:571
@@ -20507,13 +20530,12 @@ msgid "develop history"
 msgstr "historial de revelado"
 
 #: ../src/libs/export_metadata.c:354
-#, fuzzy
 msgid ""
 "export darktable development data (recovery purpose in case of loss of "
 "database or XMP file)"
 msgstr ""
-"Exportar el historial de acciones de revelado de darktable (si se pierde la "
-"base de datos o el archivo XMP, podría usarse para restauración)"
+"Exportar la información de revelado de darktable (si se pierde la base de "
+"datos o el archivo XMP, podría usarse para restauración)."
 
 #: ../src/libs/export_metadata.c:361
 msgid "per metadata settings"
@@ -22022,7 +22044,7 @@ msgstr "editor de metadatos"
 
 #: ../src/libs/metadata.c:193 ../src/libs/metadata.c:459
 msgid "<leave unchanged>"
-msgstr "<dejar sin cambios>"
+msgstr "<no modificar>"
 
 #: ../src/libs/metadata.c:572 ../src/libs/metadata_view.c:1191
 msgid "metadata settings"
@@ -22057,7 +22079,6 @@ msgstr ""
 
 # Verificar en contexto
 #: ../src/libs/metadata.c:781
-#, fuzzy
 msgid ""
 "metadata text. ctrl+scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -22066,13 +22087,13 @@ msgid ""
 "in that case, right-click gives the possibility to choose one of them.\n"
 "press escape to exit the popup window"
 msgstr ""
-"Texto de los metadatos. Use Ctrl+Rueda del Ratón para redimensionar el "
-"cuadro de texto,\n"
-"Ctrl+Entrar introduce una nueva línea (Precaución: puede no ser compatible "
-"con los metadatos estándar).\n"
-"Si <leave unchanged> las imágenes seleccionadas tienen diferentes "
-"metadatos,\n"
-"En ese caso, con clic secundario se puede de elegir una de ellas.\n"
+"Texto de los metadatos. Use Ctrl+Desplazamiento para redimensionar el cuadro "
+"de texto.\n"
+"Use Ctrl+Entrar para ingresar una nueva línea de texto (Advertencia: puede "
+"ser incompatible con los metadatos estándar).\n"
+"Si se muestra <no modificar>, las imágenes seleccionadas tienen diferentes "
+"metadatos.\n"
+"En tal caso, con clic secundario se posibilita elegir una de ellas.\n"
 "Pulse Esc para salir de la ventana emergente."
 
 #: ../src/libs/metadata.c:827
@@ -22473,7 +22494,7 @@ msgstr "quitar módulo"
 
 #: ../src/libs/modulegroups.c:2550
 msgid "header needed for other widgets"
-msgstr ""
+msgstr "Encabezado necesario para otros componentes de control"
 
 #: ../src/libs/modulegroups.c:2566 ../src/libs/modulegroups.c:2573
 msgid "add this widget"
@@ -22504,14 +22525,13 @@ msgstr ""
 "independientemente de si actualmente están o no habilitados"
 
 #: ../src/libs/modulegroups.c:2819 ../src/libs/modulegroups.c:2888
-#, fuzzy
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes that can't be corrected and alternative modules that correct them.\n"
 "they will be removed for new edits in the next release."
 msgstr ""
-"Los siguientes módulos quedan obsoletos debido a defectos internos de diseño "
-"que no pueden ser resueltos y a que existen módulos alternativos o "
+"Los siguientes módulos quedan descontinuados debido a defectos internos de "
+"diseño que no pueden ser resueltos y a que existen módulos alternativos o "
 "sustitutos.\n"
 "Se desactivarán para nuevos revelados en la próxima versión."
 
@@ -22890,7 +22910,6 @@ msgid "new image area"
 msgstr "nueva área de imagen"
 
 #: ../src/libs/print_settings.c:2525
-#, fuzzy
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
@@ -23335,7 +23354,6 @@ msgid "drop to root"
 msgstr "volver a la raíz"
 
 #: ../src/libs/tagging.c:3097
-#, fuzzy
 msgid ""
 "attached tags,\n"
 "press Delete or double-click to detach\n"
@@ -23344,9 +23362,10 @@ msgid ""
 "ctrl+scroll to resize the window"
 msgstr ""
 "Etiquetas adjuntas. \n"
-"Para disociarlas, pulse dos veces.\n"
+"Para disociarlas, pulse dos veces o la tecla Supr.\n"
 "Pulse clic secundario para mostrar más opciones.\n"
-"Ctrl+Rueda del Ratón para cambiar el tamaño de la ventana."
+"Pulse Tab para tener el foco en el campo para el ingreso de texto.\n"
+"Use Ctrl+Desplazamiento para cambiar el tamaño de la ventana."
 
 #: ../src/libs/tagging.c:3109
 msgid "attach"
@@ -23406,7 +23425,6 @@ msgid "clear entry"
 msgstr "Borrar texto"
 
 #: ../src/libs/tagging.c:3211
-#, fuzzy
 msgid ""
 "tag dictionary,\n"
 "press Enter or double-click to attach selected tag on selected images,\n"
@@ -23419,12 +23437,13 @@ msgstr ""
 "Diccionario de etiquetas.\n"
 "Pulse Entrar o haga doble clic para adjuntar la etiqueta seleccionada a la "
 "selección de imágenes.\n"
-"Pulse Mayús+Entrar para el efecto anterior y además dando el foco a la "
-"entrada.\n"
+"Pulse Mayús+Entrar para lograr el efecto anterior y además tener el foco "
+"para el ingreso de texto en el campo correspondiente.\n"
 "Pulse Mayús+Clic para expandir completamente la etiqueta seleccionada.\n"
-"Pulse el botón secundario del ratón para realizar otras acciones en la "
-"etiqueta seleccionada.\n"
-"Pulse Mayús+Tab para tener el foco en la entrada,\n"
+"Pulse el botón secundario del ratón en la etiqueta seleccionada para elegir "
+"otras acciones disponibles.\n"
+"Pulse Mayús+Tab para tener el foco para el ingreso de texto en el campo "
+"correspondiente,\n"
 "Use Ctrl+Desplazamiento para cambiar el tamaño de la ventana."
 
 #: ../src/libs/tagging.c:3247
@@ -24284,7 +24303,7 @@ msgstr "vista previa completa"
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
 #: ../src/views/darkroom.c:2577
 msgid "force pan & zoom with mouse"
-msgstr ""
+msgstr "forzar alejar o acercar con el ratón"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:2589
@@ -24453,9 +24472,8 @@ msgid "select an image"
 msgstr "seleccionar imagen"
 
 #: ../src/views/lighttable.c:892
-#, fuzzy
 msgid "select range from last image"
-msgstr "selección de imagen única"
+msgstr "iniciar selección desde la última imagen"
 
 #: ../src/views/lighttable.c:894
 msgid "add image to or remove it from a selection"
