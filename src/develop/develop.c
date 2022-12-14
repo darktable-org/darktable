@@ -1425,8 +1425,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean is_raw = dt_image_is_raw(image);
   const gboolean is_modern_chroma = dt_is_scene_referred();
 
-  // flag was already set? only apply presets once in the lifetime of a history stack.
-  // (the flag will be cleared when removing it).
+  // flag was already set? only apply presets once in the lifetime of
+  // a history stack.  (the flag will be cleared when removing it).
   if(!run || image->id <= 0)
   {
     // Next section is to recover old edits where all modules with
@@ -1464,14 +1464,15 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
           // raw file we need to add one now with the default legacy
           // parameters. And we want to do this only for old edits.
           //
-          // For new edits the temperature will be added back depending on the chromatic
-          // adaptation the standard way.
+          // For new edits the temperature will be added back
+          // depending on the chromatic adaptation the standard way.
 
           if(!strcmp(module->op, "temperature")
              && (image->change_timestamp == -1))
           {
-            // it is important to recover temperature in this case (modern chroma and
-            // not module present as we need to have the pre 3.0 default parameters used.
+            // it is important to recover temperature in this case
+            // (modern chroma and not module present as we need to
+            // have the pre 3.0 default parameters used.
 
             dt_conf_set_string("plugins/darkroom/workflow", "display-referred (legacy)");
             dt_iop_reload_defaults(module);
@@ -1526,8 +1527,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     }
   }
 
-  // select all presets from one of the following table and add them into memory.history. Note that
-  // this is appended to possibly already present default modules.
+  // select all presets from one of the following table and add them
+  // into memory.history. Note that this is appended to possibly
+  // already present default modules.
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
