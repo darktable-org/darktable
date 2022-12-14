@@ -446,5 +446,19 @@ No samples on raw.pixls.us
 
 ## Translations
 
+- German
+- European Spanish
+- Finnish
+- French
+- Hungarian
+- Italian
+- Japanese
+- Dutch
+- Polish
+- Brazilian Portuguese
+- Russian
+- Slovenian
 - Albanian
 - Turkish (New)
+- Ukrainian
+- Chinese - Taiwan
