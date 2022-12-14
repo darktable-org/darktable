@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-30 11:59+0100\n"
-"PO-Revision-Date: 2022-12-12 14:26+0200\n"
+"PO-Revision-Date: 2022-12-14 15:00+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -8693,19 +8693,19 @@ msgstr "невдалий тайлінг для модуля '%s'. вихід м�
 
 #: ../src/dtgtk/culling.c:232
 msgid "you have reached the start of your selection"
-msgstr "ви дійшли до початку своєї колекції"
+msgstr "ви досягли початку своєї вибірки"
 
 #: ../src/dtgtk/culling.c:241
 msgid "you have reached the start of your collection"
-msgstr "ви дійшли до початку своєї колекції"
+msgstr "ви досягли початку своєї колекції"
 
 #: ../src/dtgtk/culling.c:286
 msgid "you have reached the end of your selection"
-msgstr "ви дійшли до кінця своєї колекції"
+msgstr "ви досягли кінця своєї вибірки"
 
 #: ../src/dtgtk/culling.c:311
 msgid "you have reached the end of your collection"
-msgstr "ви дійшли до кінця своєї колекції"
+msgstr "ви досягли кінця своєї колекції"
 
 #: ../src/dtgtk/culling.c:405
 #, c-format
@@ -18775,7 +18775,7 @@ msgid ""
 "set the white balance here to camera reference (D65)\n"
 "or disable chromatic adaptation in color calibration."
 msgstr ""
-"модуль калібрування кольорів увімкнено\n"
+"модуль калібрування кольору увімкнено\n"
 "і він виконує хроматичну адаптацію.\n"
 "встановіть тут баланс білого на референс з камери (D65)\n"
 "або вимкніть хроматичну адаптацію при калібруванні кольорів."
@@ -21276,7 +21276,7 @@ msgstr "створити HDR"
 
 #: ../src/libs/image.c:494
 msgid "create a high dynamic range image from selected shots"
-msgstr "створити HDR зображення з виділених знімків"
+msgstr "створити HDR зображення з вибраних знімків"
 
 #: ../src/libs/image.c:498
 msgid "add a duplicate to the image library, including its history stack"
@@ -21382,12 +21382,12 @@ msgstr "оновити інформацію про зображення відп
 #: ../src/libs/image.c:611
 msgid "set selection as monochrome images and activate monochrome workflow"
 msgstr ""
-"позначити виділені зображення як монохромні і активувати монохромний робочий "
+"позначити вибрані зображення як монохромні і активувати монохромний робочий "
 "процес"
 
 #: ../src/libs/image.c:615
 msgid "set selection as color images"
-msgstr "позначити виділені зображення як кольорові"
+msgstr "позначити вибрані зображення як кольорові"
 
 #: ../src/libs/image.c:627
 msgid "duplicate virgin"
