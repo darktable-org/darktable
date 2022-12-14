@@ -342,27 +342,33 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   dt_omp_sharedconst(filters, keep) \
   schedule(static) collapse(2)
 #endif
-  for(ssize_t row = 0; row < roi_out->height; row++)
+  for(size_t row = 0; row < roi_out->height; row++)
   {
-    for(ssize_t col = 0; col < roi_out->width; col++) 
+    for(size_t col = 0; col < roi_out->width; col++) 
     {
-      const ssize_t odx = row * roi_out->width + col;
-      const ssize_t inrow = MIN(MAX(0, row + roi_out->y), roi_in->height-1);
-      const ssize_t incol = MIN(MAX(0, col + roi_out->x), roi_in->width-1);
-      const ssize_t idx = inrow * roi_in->width + incol;
+      const size_t odx = row * roi_out->width + col;
+      const size_t irow = row + roi_out->y;
+      const size_t icol = col + roi_out->x;
+      const size_t ix = irow * roi_in->width + icol;
+      const gboolean inbounds = (irow < roi_in->height) && (icol < roi_in->width);
       if(tmpout && keep)
-        output[odx] = tmpout[idx];
+        output[odx] = (inbounds) ? tmpout[ix] : 0.0f;
       else
       {
-        const int color = (filters == 9u) ? FCxtrans(inrow, incol, roi_in, xtrans) : FC(inrow, incol, filters);
-        const float inval = fmaxf(0.0f, input[idx]);
-        if((inval >= clips[color]) && (incol > 0) && (incol < roi_in->width - 1) && (inrow > 0) && (inrow < roi_in->height - 1))
-        {
-          const float ref = _calc_refavg(&input[idx], xtrans, filters, inrow, incol, roi_in, TRUE);
-          output[odx] = fmaxf(inval, ref + chrominance[color]);
-        }
+        if(!inbounds)
+          output[odx] = 0.0f;
         else
-         output[odx] = inval;          
+        { 
+          const int color = (filters == 9u) ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
+          const gboolean inrefs = (irow > 0) && (icol > 0) && (irow < roi_in->height-1) && (icol < roi_in->width-1);
+          float oval = fmaxf(0.0f, input[ix]);
+          if(inrefs && (oval >= clips[color]))
+          {
+            const float ref = _calc_refavg(&input[ix], xtrans, filters, irow, icol, roi_in, TRUE);
+            oval = fmaxf(oval, ref + chrominance[color]);
+          }
+          output[odx] = oval;
+        }          
       }
     }
   }

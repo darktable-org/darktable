@@ -672,31 +672,35 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
   dt_omp_sharedconst(filters, pwidth, vmode, strength, fullpipe) \
   schedule(static) collapse(2)
 #endif
-  for(ssize_t row = 0; row < roi_out->height; row++)
+  for(size_t row = 0; row < roi_out->height; row++)
   {
-    for(ssize_t col = 0; col < roi_out->width; col++)
+    for(size_t col = 0; col < roi_out->width; col++)
     {
-      const ssize_t odx = row * roi_out->width + col;
-      const ssize_t inrow = MIN(MAX(0, row + roi_out->y), roi_in->height-1);
-      const ssize_t incol = MIN(MAX(0, col + roi_out->x), roi_in->width-1);
-      const ssize_t idx = inrow * roi_in->width + incol;
-      output[odx] = tmpout[idx];
-      if((vmode != DT_HIGHLIGHTS_MASK_OFF) && fullpipe)
+      const size_t odx = row * roi_out->width + col;
+      const size_t inrow = row + roi_out->y;
+      const size_t incol = col + roi_out->x;
+      const size_t idx = inrow * roi_in->width + incol;
+      const gboolean inbounds = (inrow < roi_in->height) && (incol < roi_in->width);
+      if(inbounds)
       {
-        output[odx] *= 0.1f;
-        if((inrow > 0) && (incol > 0) && (inrow < roi_in->height - 1) && (incol < roi_in->width - 1))
+        output[odx] = tmpout[idx];
+        if((vmode != DT_HIGHLIGHTS_MASK_OFF) && fullpipe)
         {
-          const int color = (filters == 9u) ? FCxtrans(inrow, incol, roi_in, xtrans) : FC(inrow, incol, filters);
-          const size_t ppos = _raw_to_plane(pwidth, inrow, incol);
-
-          const int pid = _get_segment_id(&isegments[color], ppos);
-          const gboolean isegment = ((pid > 1) && (pid < isegments[color].nr));
-          const gboolean goodseg = isegment && (isegments[color].val1[pid] != 0.0f);
-          const int allid = _get_segment_id(&isegments[3], ppos);
-          const gboolean allseg = ((allid > 1) && (allid < isegments[3].nr));
-          if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment)         output[odx] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.6f;
-          else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg) output[odx] = (ppos == isegments[color].ref[pid]) ? 1.0f : 0.6f;
-          else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)     output[odx] += strength * gradient[ppos];
+          output[odx] *= 0.1f;
+          const gboolean inrefs = (inrow > 0) && (incol > 0) && (inrow < roi_in->height-1) && (incol < roi_in->width-1);
+          if(inrefs)
+          {
+            const int color = (filters == 9u) ? FCxtrans(inrow, incol, roi_in, xtrans) : FC(inrow, incol, filters);
+            const size_t ppos = _raw_to_plane(pwidth, inrow, incol);
+            const int pid = _get_segment_id(&isegments[color], ppos);
+            const gboolean isegment = ((pid > 1) && (pid < isegments[color].nr));
+            const gboolean goodseg = isegment && (isegments[color].val1[pid] != 0.0f);
+            const int allid = _get_segment_id(&isegments[3], ppos);
+            const gboolean allseg = ((allid > 1) && (allid < isegments[3].nr));
+            if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment)         output[odx] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.6f;
+            else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg) output[odx] = (ppos == isegments[color].ref[pid]) ? 1.0f : 0.6f;
+            else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)     output[odx] += strength * gradient[ppos];
+          }
         }
       }
     }
