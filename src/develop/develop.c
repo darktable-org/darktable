@@ -1534,10 +1534,13 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
   // clang-format off
+
   snprintf(query, sizeof(query),
-           "INSERT INTO memory.history"
+           "INSERT OR REPLACE INTO memory.history"
            " SELECT ?1, 0, op_version, operation, op_params,"
-           "       enabled, blendop_params, blendop_version, multi_priority, multi_name"
+           "       enabled, blendop_params, blendop_version,"
+           "       ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1,"
+           "       COALESCE(NULLIF(multi_name,''), NULLIF(name,''))"
            " FROM %s"
            " WHERE ( (autoapply=1"
            "          AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
@@ -1621,27 +1624,35 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
+
+    GList *iop_list = NULL;
+
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const char *params = (char *)sqlite3_column_blob(stmt, 0);
       const int32_t params_len = sqlite3_column_bytes(stmt, 0);
-      GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
-      dt_ioppr_write_iop_order_list(iop_list, imgid);
-      g_list_free_full(iop_list, free);
-      dt_ioppr_set_default_iop_order(dev, imgid);
+      iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
     }
     else
     {
       // we have no auto-apply order, so apply iop order, depending of the workflow
-      GList *iop_list;
       if(is_scene_referred || is_workflow_none)
         iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
       else
         iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
-      dt_ioppr_write_iop_order_list(iop_list, imgid);
-      g_list_free_full(iop_list, free);
-      dt_ioppr_set_default_iop_order(dev, imgid);
     }
+
+    // add multi-instance entries that could have been added if more
+    // than one auto-applied preset was found for a single iop.
+
+    GList *mi_list = dt_ioppr_get_multiple_instances_iop_order_list(imgid, TRUE);
+    GList *final_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi_list);
+
+    dt_ioppr_write_iop_order_list(final_list, imgid);
+    g_list_free_full(mi_list, free);
+    g_list_free_full(final_list, free);
+    dt_ioppr_set_default_iop_order(dev, imgid);
+
     sqlite3_finalize(stmt);
   }
 
