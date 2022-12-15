@@ -680,8 +680,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
       const size_t inrow = row + roi_out->y;
       const size_t incol = col + roi_out->x;
       const size_t idx = inrow * roi_in->width + incol;
-      const gboolean inbounds = (inrow < roi_in->height) && (incol < roi_in->width);
-      if(inbounds)
+      if((inrow < roi_in->height) && (incol < roi_in->width))
       {
         output[odx] = tmpout[idx];
         if((vmode != DT_HIGHLIGHTS_MASK_OFF) && fullpipe)

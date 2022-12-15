@@ -81,13 +81,11 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
   {
     for(int c=0; c<3; c++)
       chrominance[c] = data->chroma_correction[c+1];
-    dt_print(DT_DEBUG_PARAMS, "[%s] found linear chroma correction %f %f %f for %f\n",
-      dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
   }
   else
   {
-    int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
-    if(mask_buffer && quality)
+    int *mask_buffer = (quality) ? dt_calloc_align(64, 4 * p_size * sizeof(int)) : NULL;
+    if(mask_buffer)
     {
       gboolean anyclipped = FALSE;
 #ifdef _OPENMP
@@ -163,12 +161,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
           data->chroma_correction[c+1] = p->chroma_correction[c+1] = chrominance[c];
         data->chroma_correction[0] = p->chroma_correction[0] = testchroma;
         dt_dev_add_history_item(darktable.develop, self, TRUE);
-        dt_print(DT_DEBUG_PARAMS, "[%s] update linear chroma correction %f %f %f for %f\n",
-          dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
       }
-      else
-        dt_print(DT_DEBUG_PARAMS, "[%s] temporary linear chroma correction %f %f %f for %f\n",
-          dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
     }
     dt_free_align(mask_buffer);
   }
@@ -218,13 +211,11 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   {
     for(int c=0; c<3; c++)
       chrominance[c] = data->chroma_correction[c+1];
-    dt_print(DT_DEBUG_PARAMS, "[%s] found chroma correction %f %f %f for %f\n",
-      dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
   }
   else
   {
-    int *mask_buffer = dt_calloc_align(64, 4 * p_size * sizeof(int));
-    if(mask_buffer && quality)
+    int *mask_buffer = (quality) ? dt_calloc_align(64, 4 * p_size * sizeof(int)) : NULL;
+    if(mask_buffer)
     {
       gboolean anyclipped = FALSE;
 #ifdef _OPENMP
@@ -300,23 +291,18 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
           data->chroma_correction[c+1] = p->chroma_correction[c+1] = chrominance[c];
         data->chroma_correction[0] = p->chroma_correction[0] = testchroma;
         dt_dev_add_history_item(darktable.develop, self, TRUE);
-        dt_print(DT_DEBUG_PARAMS, "[%s] update chroma correction %f %f %f for %f\n",
-          dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
       }
-      else
-        dt_print(DT_DEBUG_PARAMS, "[%s] temporary chroma correction %f %f %f for %f\n",
-          dt_dev_pixelpipe_type_to_str(piece->pipe->type), chrominance[0], chrominance[1], chrominance[2], testchroma);
     }
     dt_free_align(mask_buffer);
   }
  
   float *tmpout = (keep) ? dt_alloc_align_float(roi_in->width * roi_in->height) : NULL;
-  if(tmpout && keep)
+  if(tmpout)
   {  
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clips, input, tmpout, roi_in, xtrans, chrominance) \
-  dt_omp_sharedconst(filters, p_size, pwidth) \
+  dt_omp_sharedconst(filters) \
   schedule(static) collapse(2)
 #endif
     for(size_t row = 0; row < roi_in->height; row++)
@@ -339,7 +325,7 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(output, input, tmpout, chrominance, clips, xtrans, roi_in, roi_out) \
-  dt_omp_sharedconst(filters, keep) \
+  dt_omp_sharedconst(filters) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = 0; row < roi_out->height; row++)
@@ -350,26 +336,24 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       const size_t irow = row + roi_out->y;
       const size_t icol = col + roi_out->x;
       const size_t ix = irow * roi_in->width + icol;
-      const gboolean inbounds = (irow < roi_in->height) && (icol < roi_in->width);
-      if(tmpout && keep)
-        output[odx] = (inbounds) ? tmpout[ix] : 0.0f;
-      else
+      float oval = 0.0f;
+      if((irow < roi_in->height) && (icol < roi_in->width))
       {
-        if(!inbounds)
-          output[odx] = 0.0f;
+        if(tmpout)
+          oval = tmpout[ix];
         else
         { 
           const int color = (filters == 9u) ? FCxtrans(irow, icol, roi_in, xtrans) : FC(irow, icol, filters);
           const gboolean inrefs = (irow > 0) && (icol > 0) && (irow < roi_in->height-1) && (icol < roi_in->width-1);
-          float oval = fmaxf(0.0f, input[ix]);
+          oval = fmaxf(0.0f, input[ix]);
           if(inrefs && (oval >= clips[color]))
           {
             const float ref = _calc_refavg(&input[ix], xtrans, filters, irow, icol, roi_in, TRUE);
             oval = fmaxf(oval, ref + chrominance[color]);
           }
-          output[odx] = oval;
         }          
       }
+      output[odx] = oval;
     }
   }
   return tmpout;
