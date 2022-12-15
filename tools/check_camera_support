@@ -6,7 +6,7 @@ require 'json'
 class CameraSupportState
   SOURCE_FILES={
     :cameras => "src/external/rawspeed/data/cameras.xml",
-    :wbpresets => "src/external/wb_presets.c",
+    :wbpresets => "data/wb_presets.json",
     :colormatrices => "src/common/colormatrices.c",
     :noiseprofiles => "data/noiseprofiles.json",
   }
@@ -140,10 +140,11 @@ class CameraSupportState
     @rawspeed_cameras = @rawspeed_cameras.keys
 
     @presets_cameras = {}
-    @sources[:wbpresets].each do |line|
-      if line[0..2] == "  {"
-        lineparts = line.split('"')
-        @presets_cameras["#{lineparts[1]} #{lineparts[3]}"] = 0
+    JSON.parse(@sources[:wbpresets].read)['wb_presets'].each do |mak|
+      maker = mak['maker']
+      mak['models'].each do |mod|
+        model = mod['model']
+        @presets_cameras["#{maker} #{model}"] = 0
       end
     end
 
