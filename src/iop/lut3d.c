@@ -895,12 +895,12 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
               return 0;
             }
             buf_size = level * level * level * 3;
-            dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube LUT - level %d\n", buf_size, level);
+            dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for 3dl LUT - level %d\n", buf_size, level);
             lclut = dt_alloc_align(16, sizeof(float) * buf_size);
             if(!lclut)
             {
-              fprintf(stderr, "[lut3d] error - allocating buffer for cube LUT\n");
-              dt_control_log(_("error - allocating buffer for cube LUT"));
+              fprintf(stderr, "[lut3d] error - allocating buffer for 3dl LUT\n");
+              dt_control_log(_("error - allocating buffer for 3dl LUT"));
               free(line);
               fclose(cube_file);
               return 0;
@@ -912,8 +912,8 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
       {
         if(!level)
         {
-          fprintf(stderr, "[lut3d] error - cube LUT size is not defined\n");
-          dt_control_log(_("error - cube LUT size is not defined"));
+          fprintf(stderr, "[lut3d] error - 3dl LUT size is not defined\n");
+          dt_control_log(_("error - 3dl LUT size is not defined"));
           free(line);
           fclose(cube_file);
           return 0;
@@ -940,8 +940,8 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
   }
   if(i * 3 != buf_size || i == 0)
   {
-    fprintf(stderr, "[lut3d] error - cube LUT lines number is not correct\n");
-    dt_control_log(_("error - cube LUT lines number is not correct"));
+    fprintf(stderr, "[lut3d] error - 3dl LUT lines number is not correct\n");
+    dt_control_log(_("error - 3dl LUT lines number is not correct"));
     dt_free_align(lclut);
     free(line);
     fclose(cube_file);
