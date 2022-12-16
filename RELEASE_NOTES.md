@@ -401,10 +401,7 @@ N/A
 
 No samples on raw.pixls.us
 
-- Canon EOS M2
 - Creo/Leaf Aptus 22(LF3779)/Hasselblad H1
-- Fujifilm FinePix HS50EXR
-- Fujifilm FinePix S6000fd
 - Fujifilm FinePix S9600fd
 - Fujifilm IS-1
 - GoPro FUSION
@@ -412,36 +409,17 @@ No samples on raw.pixls.us
 - Leaf Aptus-II 5(LI300059)/Mamiya 645 AFD
 - Leaf Credo 60
 - Leaf Credo 80
-- Leica D-LUX 6
 - Minolta DiMAGE 5
-- Nikon 1 J4
-- Nikon 1 S1
-- Nikon Coolpix P7700
-- Nikon D1H
-- Nikon D2H
-- Nikon D3S
-- Olympus E-10
 - Olympus SP320
-- Olympus SP570UZ
 - Panasonic DMC-FX150
-- Panasonic DMC-G2
-- Pentax K200D
-- Pentax K2000
 - Pentax Q10
 - Phase One IQ250
 - Samsung GX10
 - Samsung GX20
-- Samsung NX5
-- Samsung NX10
-- Samsung NX11
-- Samsung NX20
-- Samsung NX2000
 - Samsung EK-GN120
 - Samsung SM-G920F
 - Samsung SM-G935F
 - Sinar Hy6/ Sinarback eXact
-- Sony DSLR-A380
-- Sony DSLR-A560
 - ST Micro STV680
 
 ## Translations
