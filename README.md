@@ -158,7 +158,7 @@ Compatible compilers:
 
 Required dependencies (minimum version):
 * CMake 3.10
-* GTK 3.22
+* GTK 3.24.15
 * GLib 2.40
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
 * Exiv2 0.24 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
