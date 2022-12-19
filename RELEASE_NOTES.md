@@ -337,7 +337,7 @@ The following is a summary of the main features added to darktable
 
 ## Changed Dependencies
 
-N/A
+Bump Gtk minimum release from 3.22 to 3.24.15
 
 ## RawSpeed changes
 
