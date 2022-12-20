@@ -67,9 +67,9 @@ The following is a summary of the main features added to darktable
   new tooltip will appear, showing the image with the style applied along
   with details of the modules that are included.
 
-- Some cameras record lens correction information within the image EXIF metadata.
-  The lens correction module has been enhanced so that it can extract this data
-  and use it to correct lens distortions.
+- Some cameras record lens correction information within the image
+  EXIF metadata.  The lens correction module has been enhanced so that
+  it can extract this data and use it to correct lens distortions.
 
 - darktable is now able to read and write JPEG XL images
 
@@ -170,10 +170,11 @@ The following is a summary of the main features added to darktable
   the use of the OpenCL code path slower (or much slower) than
   handling the image without tiling on the CPU.
 
-- In preview mode (when pressing <kbd>Ctrl+w</kbd>) the image information overlay
-  display block is no longer shown by default. Moving the cursor within the top
-  half of the preview image will cause the overlay to appear, and it will then
-  disappear again after a brief period.
+- In preview mode (when pressing <kbd>Ctrl+w</kbd>) the image
+  information overlay display block is no longer shown by
+  default. Moving the cursor within the top half of the preview image
+  will cause the overlay to appear, and it will then disappear again
+  after a brief period.
 
 - Light patterns are set for Behringer b-control midi rotors
   (BCR2000/BCF2000)
@@ -198,14 +199,15 @@ The following is a summary of the main features added to darktable
   This also means that an edit made using this module won't be inadvertently
   lost due to missing build dependencies.
 
-- It is now possible to assign shortcuts to the "currently focused" processing module.
-  This allows a common set of shortcuts to be created and reused in multiple
-  modules simply by focusing that module. For example a single key shortcut
-  applied to the "first slider" will affect the "exposure" slider when the
-  exposure module is focused, and the "rotation" slider when the "rotate and
-  perspective" module is focused. Similar functionality can be used to affect
-  the "nth" slider, combobox, button or tab as well as the focused module
-  itself.
+- It is now possible to assign shortcuts to the "currently focused"
+  processing module.  This allows a common set of shortcuts to be
+  created and reused in multiple modules simply by focusing that
+  module. For example a single key shortcut applied to the "first
+  slider" will affect the "exposure" slider when the exposure module
+  is focused, and the "rotation" slider when the "rotate and
+  perspective" module is focused. Similar functionality can be used to
+  affect the "nth" slider, combobox, button or tab as well as the
+  focused module itself.
 
 - Right-clicking on a module header in the quick access panel now allows
   more widgets from the same module to be quickly added. The tooltip and
@@ -332,8 +334,12 @@ The following is a summary of the main features added to darktable
   formats JXL, AVIF and EXR, darktable will not include the metadata
   fields unless the user selects all of the checkboxes in the export
   preference options.
-  
-- With adding of font-feature-settings: tnum; line that allow correct display of numbers, minimal Gtk release needed (that add support of that new line) is 3.24.15. If you have older one, just remove line 241 of darktable.css file on your system. See: https://github.com/darktable-org/darktable/issues/13166
+
+- With adding of font-feature-settings: tnum; line that allow correct
+  display of numbers, minimal Gtk release needed (that add support of
+  that new line) is 3.24.15. If you have older one, just remove line
+  241 of darktable.css file on your system. See:
+  https://github.com/darktable-org/darktable/issues/13166
 
 ## Changed Dependencies
 
