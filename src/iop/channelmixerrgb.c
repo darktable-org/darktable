@@ -4218,7 +4218,8 @@ void gui_init(struct dt_iop_module_t *self)
                                 N_("Datacolor SpyderCheckr 24 pre-2018"),
                                 N_("Datacolor SpyderCheckr 24 post-2018"),
                                 N_("Datacolor SpyderCheckr 48 pre-2018"),
-                                N_("Datacolor SpyderCheckr 48 post-2018"));
+                                N_("Datacolor SpyderCheckr 48 post-2018"),
+                                N_("Datacolor SpyderCheckr Photo"));
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->optimize, self, N_("calibrate"), N_("optimize for"),
