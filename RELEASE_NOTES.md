@@ -332,10 +332,12 @@ The following is a summary of the main features added to darktable
   formats JXL, AVIF and EXR, darktable will not include the metadata
   fields unless the user selects all of the checkboxes in the export
   preference options.
+  
+- With adding of font-feature-settings: tnum; line that allow correct display of numbers, minimal Gtk release needed (that add support of that new line) is 3.24.15. If you have older one, just remove line 241 of darktable.css file on your system. See: https://github.com/darktable-org/darktable/issues/13166
 
 ## Changed Dependencies
 
-N/A
+Bump Gtk minimum release from 3.22 to 3.24.15
 
 ## RawSpeed changes
 
