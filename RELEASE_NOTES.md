@@ -344,7 +344,20 @@ The following is a summary of the main features added to darktable
 
 ## Changed Dependencies
 
-Bump Gtk minimum release from 3.22 to 3.24.15
+### Mandatory
+
+- Bump Gtk minimum required version from 3.22 to 3.24.15.
+
+- lensfun is now a mandatory dependency, not optional.
+  Supported versions are stable releases (e.g. 0.3.3),
+  not alpha 0.3.95 pre-release or master branch.
+
+### Optional
+
+- Bump libavif minimum required version from 0.8.2 to 0.9.1.
+
+- New optional dependency: libjxl, minimum required version 0.7.0.
+
 
 ## RawSpeed changes
 
