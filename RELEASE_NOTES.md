@@ -335,10 +335,11 @@ The following is a summary of the main features added to darktable
   fields unless the user selects all of the checkboxes in the export
   preference options.
 
-- With adding of font-feature-settings: tnum; line that allow correct
-  display of numbers, minimal Gtk release needed (that add support of
-  that new line) is 3.24.15. If you have older one, just remove line
-  241 of darktable.css file on your system. See:
+- In order to support the correct display of numbers in darktable, the
+  minimum supported Gtk version has had to be increased to
+  3.24.15. For people who need to build darktable with an older
+  version, this can be supported by reverting the following change:
+  remove line 241 of darktable.css file on your system. See:
   https://github.com/darktable-org/darktable/issues/13166
 
 ## Changed Dependencies
