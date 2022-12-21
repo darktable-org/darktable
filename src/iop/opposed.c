@@ -48,7 +48,6 @@ static inline float _calc_linear_refavg(const float *in, const int color)
   return powf(opp[color], HL_POWERF);
 }
 
-#define DT_COLOR_MAGIC_THRESHOLD 1e-6f
 static float _color_magic(dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
@@ -74,10 +73,8 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
   const size_t p_size =  dt_round_size(pwidth * pheight, 64);
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
-  const float testchroma = _color_magic(piece);
-  const gboolean validchroma = feqf(testchroma, data->chroma_correction[0], DT_COLOR_MAGIC_THRESHOLD);
 
-  if(validchroma)
+  if(feqf(_color_magic(piece), data->chroma_correction[0], 1e-6f))
   {
     for(int c=0; c<3; c++)
       chrominance[c] = data->chroma_correction[c+1];
@@ -152,14 +149,17 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
         for_each_channel(c)
           chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);    
       }
+
+      // also checking for an altered image to avoid xmp writing if not desired
       if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
          && (abs((int)(roi_out->width / roi_out->scale) - piece->buf_in.width) < 10)
-         && (abs((int)(roi_out->height / roi_out->scale) - piece->buf_in.height) < 10))
+         && (abs((int)(roi_out->height / roi_out->scale) - piece->buf_in.height) < 10)
+         && dt_image_altered(piece->pipe->image.id))
       {
         dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
         for(int c = 0; c < 3; c++)
           data->chroma_correction[c+1] = p->chroma_correction[c+1] = chrominance[c];
-        data->chroma_correction[0] = p->chroma_correction[0] = testchroma;
+        data->chroma_correction[0] = p->chroma_correction[0] = _color_magic(piece);
         dt_dev_add_history_item(darktable.develop, self, TRUE);
       }
     }
@@ -204,10 +204,8 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const size_t p_size =  dt_round_size((size_t) pwidth * pheight, 64);
 
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
-  const float testchroma = _color_magic(piece);
-  const gboolean validchroma = feqf(testchroma, data->chroma_correction[0], DT_COLOR_MAGIC_THRESHOLD);
 
-  if(validchroma)
+  if(feqf(_color_magic(piece), data->chroma_correction[0], 1e-6f))
   {
     for(int c=0; c<3; c++)
       chrominance[c] = data->chroma_correction[c+1];
@@ -243,7 +241,6 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
          to get those locations.
          If there are no clipped locations we keep the chrominance correction at 0 but make it valid 
       */
-      
       if(anyclipped)
       {
         for(size_t i = 0; i < 3; i++)
@@ -284,12 +281,13 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
           chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
       }
 
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+      // also checking for an altered image to avoid xmp writing if not desired
+      if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL) && dt_image_altered(piece->pipe->image.id))
       {
         dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
         for(int c = 0; c < 3; c++)
           data->chroma_correction[c+1] = p->chroma_correction[c+1] = chrominance[c];
-        data->chroma_correction[0] = p->chroma_correction[0] = testchroma;
+        data->chroma_correction[0] = p->chroma_correction[0] = _color_magic(piece);
         dt_dev_add_history_item(darktable.develop, self, TRUE);
       }
     }
