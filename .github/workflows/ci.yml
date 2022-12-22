@@ -483,7 +483,13 @@ jobs:
           brew update > /dev/null || true
           brew unlink python@3.8
           sudo rm '/usr/local/bin/2to3'
-          # brew link --overwrite python@3.9 # workaround introduced 30.12.2020, replace asap.
+          # We need to remove following symlinks to avoid possible conflicts between python versions, resulting in CI run failing.
+          # This workaround introduced 22.12.2022 and can be removed when python 3.10 package install/upgrade will not be triggered by our bundle.
+          sudo rm '/usr/local/bin/idle3'
+          sudo rm '/usr/local/bin/pydoc3'
+          sudo rm '/usr/local/bin/python3'
+          sudo rm '/usr/local/bin/python3-config'
+          brew link --overwrite python@3.10 # workaround due to dependency on python 3.10
           # brew upgrade --ignore-pinned # workaround introduced 18.07.2021, replace asap
           brew tap Homebrew/bundle
           cd src/.ci
