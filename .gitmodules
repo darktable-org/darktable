@@ -1,7 +1,7 @@
 [submodule "src/external/rawspeed"]
 	path = src/external/rawspeed
 	url = https://github.com/sarunasb/rawspeed.git
-	branch = om-system
+	branch = om-cameras
 [submodule "src/external/OpenCL"]
 	path = src/external/OpenCL
 	url = https://github.com/KhronosGroup/OpenCL-Headers.git
