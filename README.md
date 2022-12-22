@@ -265,7 +265,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 4.2.0
 
-The darktable project releases two major versions every year, in mid-Summer and at Christmas, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
+The darktable project releases two major versions every year, on Summer and Winter Solstices, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
 Minor revisions are tagged with a third digit (e.g. 4.0.1, 4.0.2) and mostly provide bug fixes and camera support.
 You may want to compile these stable releases yourself to get better performance for your particular computer:
 
