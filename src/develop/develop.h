@@ -148,7 +148,7 @@ typedef struct dt_dev_proxy_exposure_t
 struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
-  int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
+  gboolean gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
                         // gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
@@ -244,22 +244,11 @@ typedef struct dt_develop_t
       void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
       /* update modulegroup visibility */
       void (*update_visibility)(struct dt_lib_module_t *self);
-      /* set focus to the search module text box */
-      void (*search_text_focus)(struct dt_lib_module_t *self);
       /* test if module is preset in one of the current groups */
       gboolean (*test_visible)(struct dt_lib_module_t *self, gchar *module);
       /* add or remove module or widget in current quick access list */
       gboolean (*basics_module_toggle)(struct dt_lib_module_t *self, GtkWidget *widget, gboolean doit);
     } modulegroups;
-
-    // snapshots plugin hooks
-    struct
-    {
-      // this flag is set by snapshot plugin to signal that expose of darkroom
-      // should store cairo surface as snapshot to disk using filename.
-      gboolean request;
-      const gchar *filename;
-    } snapshot;
 
     // masks plugin hooks
     struct
@@ -270,7 +259,7 @@ typedef struct dt_develop_t
       void (*list_remove)(struct dt_lib_module_t *self, int formid, int parentid);
       void (*list_update)(struct dt_lib_module_t *self);
       /* selected forms change */
-      void (*selection_change)(struct dt_lib_module_t *self, struct dt_iop_module_t *module, const int selectid, const int throw_event);
+      void (*selection_change)(struct dt_lib_module_t *self, struct dt_iop_module_t *module, const int selectid);
     } masks;
 
     // what is the ID of the module currently doing pipeline chromatic adaptation ?
@@ -325,7 +314,9 @@ typedef struct dt_develop_t
   {
     GtkWidget *second_wnd;
     GtkWidget *widget;
+    int32_t orig_width, orig_height;
     int width, height;
+    int32_t border_size;
     double dpi, dpi_factor, ppd, ppd_thb;
 
     GtkWidget *button;
@@ -341,9 +332,10 @@ typedef struct dt_develop_t
 
   int mask_form_selected_id; // select a mask inside an iop
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks
+  gboolean darkroom_mouse_in_center_area; // TRUE if the mouse cursor is in center area
 } dt_develop_t;
 
-void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
+void dt_dev_init(dt_develop_t *dev, gboolean gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
 float dt_dev_get_preview_downsampling();
@@ -393,6 +385,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
                                  float *zoom_y);
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
+void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
 /*
@@ -419,8 +412,6 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
 void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** update modulegroup visibility */
 void dt_dev_modulegroups_update_visibility(dt_develop_t *dev);
-/** set the focus to modulegroup search text */
-void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev);
 /** set the active modulegroup */
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */
@@ -448,7 +439,7 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
 void dt_dev_masks_list_change(dt_develop_t *dev);
 void dt_dev_masks_list_update(dt_develop_t *dev);
 void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid);
-void dt_dev_masks_selection_change(dt_develop_t *dev, struct dt_iop_module_t *module, const int selectid, const int throw_event);
+void dt_dev_masks_selection_change(dt_develop_t *dev, struct dt_iop_module_t *module, const int selectid);
 
 /*
  * multi instances
@@ -539,9 +530,34 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 void dt_dev_undo_start_record(dt_develop_t *dev);
 void dt_dev_undo_end_record(dt_develop_t *dev);
 
+/*
+ * develop an image and returns the buf and processed width / height.
+ * this is done as in the context of the darkroom, meaning that the
+ * final processed sizes will align perfectly on the darkroom view.
+ *
+ */
+void dt_dev_image(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height);
+
+void dt_dev_image_ext(
+  uint32_t imgid,
+  size_t width,
+  size_t height,
+  int history_end,
+  uint8_t **buf,
+  size_t *processed_width,
+  size_t *processed_height,
+  int border_size,
+  gboolean iso_12646);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

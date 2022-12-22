@@ -63,7 +63,7 @@ void gui_reset(dt_lib_module_t *self)
 {
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 999;
 }
@@ -127,4 +127,3 @@ void gui_cleanup(dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

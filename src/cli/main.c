@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@
 
 static void usage(const char *progname)
 {
-  fprintf(stderr, "usage: %s [<input file or dir>] [<xmp file>] <output destination> [options] [--core <darktable options>]\n", progname);
+  fprintf(stderr, "usage: %s [<input file or dir>] [<XMP file>] <output destination> [options] [--core <darktable options>]\n", progname);
   fprintf(stderr, "\n");
   fprintf(stderr, "options:\n");
   fprintf(stderr, "   --width <max width> default: 0 = full resolution\n");
@@ -328,7 +328,7 @@ int main(int argc, char *arg[])
           usage(arg[0]);
           exit(1);
         }
-        if (*arg[k] == '.')
+        if(*arg[k] == '.')
         {
           //remove dot ;)
           arg[k]++;
@@ -440,7 +440,7 @@ int main(int argc, char *arg[])
     output_filename = g_strdup(input_filename);
     input_filename = xmp_filename = NULL;
   }
-  else if (inputs && file_counter == 2)
+  else if(inputs && file_counter == 2)
   {
     // inputs as options, xmp & output specified
     if(output_filename)
@@ -449,7 +449,7 @@ int main(int argc, char *arg[])
     xmp_filename = input_filename;
     input_filename = NULL;
   }
-  else if (inputs && file_counter == 3)
+  else if(inputs && file_counter == 3)
   {
     fprintf(stderr, _("error: input file and import opts specified! that's not supported!\n"));
     usage(arg[0]);
@@ -580,7 +580,7 @@ int main(int argc, char *arg[])
       dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
       if(dt_exif_xmp_read(image, xmp_filename, 1) != 0)
       {
-        fprintf(stderr, _("error: can't open xmp file %s"), xmp_filename);
+        fprintf(stderr, _("error: can't open XMP file %s"), xmp_filename);
         fprintf(stderr, "\n");
         free(m_arg);
         g_free(output_filename);

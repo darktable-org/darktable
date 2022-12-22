@@ -160,13 +160,12 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
     near = -1;
     const float xx = pzx * darktable.develop->preview_pipe->backbuf_width,
                 yy = pzy * darktable.develop->preview_pipe->backbuf_height;
-    if(frm->functions && frm->functions->get_distance)
+    if(frm && frm->functions && frm->functions->get_distance)
       frm->functions->get_distance(xx, yy, as, gui, pos, g_list_length(frm->points),
                                    &inside, &inside_border, &near, &inside_source, &dist);
 
     if(inside || inside_border || near >= 0 || inside_source)
     {
-
       if(sel_dist > dist)
       {
         sel = frm;
@@ -196,7 +195,7 @@ void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_t 
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-    if (!sel) return;
+    if(!sel) return;
     if(sel->functions)
       sel->functions->post_expose(cr, zoom_scale, gui, pos, g_list_length(sel->points));
     pos++;
@@ -404,7 +403,7 @@ error:
 static void _combine_masks_union(float *const restrict dest, float *const restrict newmask, const size_t npixels,
                                  const float opacity, const int inverted)
 {
-  if (inverted)
+  if(inverted)
   {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
@@ -445,7 +444,7 @@ static void _combine_masks_union(float *const restrict dest, float *const restri
 static void _combine_masks_intersect(float *const restrict dest, float *const restrict newmask, const size_t npixels,
                                      const float opacity, const int inverted)
 {
-  if (inverted)
+  if(inverted)
   {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
@@ -495,7 +494,7 @@ static inline int both_positive(const float val1, const float val2)
 static void _combine_masks_difference(float *const restrict dest, float *const restrict newmask, const size_t npixels,
                                       const float opacity, const int inverted)
 {
-  if (inverted)
+  if(inverted)
   {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
@@ -536,7 +535,7 @@ static void _combine_masks_difference(float *const restrict dest, float *const r
 static void _combine_masks_exclusion(float *const restrict dest, float *const restrict newmask, const size_t npixels,
                                      const float opacity, const int inverted)
 {
-  if (inverted)
+  if(inverted)
   {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
@@ -686,9 +685,9 @@ static GSList *_group_setup_mouse_actions(const struct dt_masks_form_t *const fo
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-    if (!sel || (sel->type & ~seen_types) == 0)
+    if(!sel || (sel->type & ~seen_types) == 0)
       continue;
-    if (sel->functions && sel->functions->setup_mouse_actions)
+    if(sel->functions && sel->functions->setup_mouse_actions)
     {
       GSList *new_actions = sel->functions->setup_mouse_actions(sel);
       lm = g_slist_concat(lm, new_actions);

@@ -1,6 +1,6 @@
 /*
  * This file is part of darktable,
- * Copyright (C) 2019-2021 darktable developers.
+ * Copyright (C) 2019-2022 darktable developers.
  *
  *  darktable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,7 +40,6 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 {
   dt_imageio_retval_t ret;
   avifImage avif_image = {0};
-  avifImage *avif = NULL;
   avifRGBImage rgb = {
       .format = AVIF_RGB_FORMAT_RGB,
   };
@@ -55,23 +54,29 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
+  /* Be permissive so we can load even slightly-offspec files */
+  decoder->strictFlags = AVIF_STRICT_DISABLED;
+
   result = avifDecoderReadFile(decoder, &avif_image, filename);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s\n", filename, avifResultToString(result));
+    if(result != AVIF_RESULT_INVALID_FTYP)
+    {
+      /* print debug info only if genuine AVIF */
+      dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s\n", filename, avifResultToString(result));
+    }
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
-  avif = &avif_image;
 
   /* This will set the depth from the avif */
-  avifRGBImageSetDefaults(&rgb, avif);
+  avifRGBImageSetDefaults(&rgb, &avif_image);
 
   rgb.format = AVIF_RGB_FORMAT_RGB;
 
   avifRGBImageAllocatePixels(&rgb);
 
-  result = avifImageYUVToRGB(avif, &rgb);
+  result = avifImageYUVToRGB(&avif_image, &rgb);
   if(result != AVIF_RESULT_OK)
   {
     dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to convert `%s' from YUV to RGB: %s\n", filename,
@@ -105,7 +110,6 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
-  img->flags |= DT_IMAGE_HDR;
 
   const float max_channel_f = (float)((1 << bit_depth) - 1);
 
@@ -113,18 +117,20 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
 
   const uint8_t *const restrict in = (const uint8_t *)rgb.pixels;
 
-  switch (bit_depth) {
+  switch(bit_depth) {
   case 12:
   case 10: {
+    img->flags |= DT_IMAGE_HDR;
+    img->flags &= ~DT_IMAGE_LDR;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mipbuf, width, height, in, rowbytes, max_channel_f) \
   schedule(simd:static) \
   collapse(2)
 #endif
-    for (size_t y = 0; y < height; y++)
+    for(size_t y = 0; y < height; y++)
     {
-      for (size_t x = 0; x < width; x++)
+      for(size_t x = 0; x < width; x++)
       {
           uint16_t *in_pixel = (uint16_t *)&in[(y * rowbytes) + (3 * sizeof(uint16_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
@@ -139,15 +145,17 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     break;
   }
   case 8: {
+    img->flags |= DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_HDR;
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mipbuf, width, height, in, rowbytes, max_channel_f) \
   schedule(simd:static) \
   collapse(2)
 #endif
-    for (size_t y = 0; y < height; y++)
+    for(size_t y = 0; y < height; y++)
     {
-      for (size_t x = 0; x < width; x++)
+      for(size_t x = 0; x < width; x++)
       {
           uint8_t *in_pixel = (uint8_t *)&in[(y * rowbytes) + (3 * sizeof(uint8_t) * x)];
           float *out_pixel = &mipbuf[(size_t)4 * ((y * width) + x)];
@@ -165,6 +173,15 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO, "[avif_open] invalid bit depth for `%s'\n", filename);
     ret = DT_IMAGEIO_CACHE_FULL;
     goto out;
+  }
+
+  /* Get the ICC profile if available */
+  avifRWData *icc = &avif_image.icc;
+  if(icc->size && icc->data)
+  {
+    img->profile = (uint8_t *)g_malloc0(icc->size);
+    memcpy(img->profile, icc->data, icc->size);
+    img->profile_size = icc->size;
   }
 
   img->loader = LOADER_AVIF;
@@ -203,12 +220,9 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
     goto out;
   }
 
-  if(avif_image.icc.size > 0)
+  avifRWData *icc = &avif_image.icc;
+  if(icc->size && icc->data)
   {
-    avifRWData *icc = &avif_image.icc;
-
-    if(icc->data == NULL) goto out;
-
     *out = (uint8_t *)g_malloc0(icc->size);
     memcpy(*out, icc->data, icc->size);
     size = icc->size;
@@ -260,4 +274,3 @@ out:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

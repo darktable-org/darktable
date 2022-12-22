@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2021 darktable developers.
+   Copyright (C) 2010-2022 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #endif
 #include "common/camera_control.h"
 #include "common/exif.h"
-#include "common/datetime.h"
+#include "common/image.h"
 #include "common/imageio_jpeg.h"
 #include "control/control.h"
 #include <gphoto2/gphoto2-file.h>
@@ -120,9 +120,9 @@ static gpointer _camera_get_job(const dt_camctl_t *c, const dt_camera_t *camera)
 static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job);
 
 /** Dispatch functions for listener interfaces */
-static const char *_dispatch_request_image_path(const dt_camctl_t *c, char *exif_time, const dt_camera_t *camera);
+static const char *_dispatch_request_image_path(const dt_camctl_t *c, const dt_image_basic_exif_t *basic_exif, const dt_camera_t *camera);
 static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *filename,
-                                                    const char *exif_time, const dt_camera_t *camera);
+                                                    const dt_image_basic_exif_t *basic_exif, const dt_camera_t *camera);
 static void _dispatch_camera_image_downloaded(const dt_camctl_t *c, const dt_camera_t *camera,
                                               const char *in_path, const char *in_filename, const char *filename);
 static void _dispatch_camera_connected(const dt_camctl_t *c, const dt_camera_t *camera);
@@ -607,7 +607,10 @@ static void _camctl_unlock(const dt_camctl_t *c)
   const dt_camera_t *cam = camctl->active_camera;
   camctl->active_camera = NULL;
   dt_pthread_mutex_BAD_unlock(&camctl->lock);
-  dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for %s\n", cam->model);
+  if(cam)
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for %s\n", cam->model);
+  else
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] camera control un-locked for unknown camera\n");
   _dispatch_control_status(c, CAMERA_CONTROL_AVAILABLE);
 }
 
@@ -1113,7 +1116,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     int res = GP_OK;
     char *data = NULL;
     gsize size = 0;
-    char exif_time[DT_DATETIME_LENGTH];
+    dt_image_basic_exif_t basic_exif = {0};
 
     gp_file_new(&camfile);
     if((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK)
@@ -1145,10 +1148,10 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     }
     else
     {
-      dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
+      dt_exif_get_basic_data((uint8_t *)data, size, &basic_exif);
 
-      const char *output_path = _dispatch_request_image_path(c, exif_time, cam);
-      const char *fname = _dispatch_request_image_filename(c, filename, exif_time[0] ? exif_time : NULL, cam);
+      const char *output_path = _dispatch_request_image_path(c, &basic_exif, cam);
+      const char *fname = _dispatch_request_image_filename(c, filename, &basic_exif, cam);
       if(!fname)
       {
         gp_file_free(camfile);
@@ -1930,7 +1933,7 @@ static void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t
 }
 
 static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *filename,
-                                                    const char *exif_time, const dt_camera_t *camera)
+                                                    const dt_image_basic_exif_t *basic_exif, const dt_camera_t *camera)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
 
@@ -1941,7 +1944,7 @@ static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const 
       dt_camctl_listener_t *lstnr = (dt_camctl_listener_t *)listener->data;
       if(lstnr->request_image_filename)
       {
-        path = lstnr->request_image_filename(camera, filename, exif_time, lstnr->data);
+        path = lstnr->request_image_filename(camera, filename, basic_exif, lstnr->data);
         //TODO: break here?  Do we want the first or last match?
       }
     }
@@ -1949,7 +1952,7 @@ static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const 
   return path;
 }
 
-static const char *_dispatch_request_image_path(const dt_camctl_t *c, char *exif_time, const dt_camera_t *camera)
+static const char *_dispatch_request_image_path(const dt_camctl_t *c, const dt_image_basic_exif_t *basic_exif, const dt_camera_t *camera)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   const char *path = NULL;
@@ -1959,7 +1962,7 @@ static const char *_dispatch_request_image_path(const dt_camctl_t *c, char *exif
     dt_camctl_listener_t *lstnr = (dt_camctl_listener_t *)listener->data;
     if(lstnr->request_image_path)
     {
-      path = lstnr->request_image_path(camera, exif_time, lstnr->data);
+      path = lstnr->request_image_path(camera, basic_exif, lstnr->data);
       //TODO: break here?  Do we want the first or last match?
     }
   }
@@ -2052,4 +2055,3 @@ static void _dispatch_camera_error(const dt_camctl_t *c, const dt_camera_t *came
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

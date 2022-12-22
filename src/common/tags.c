@@ -261,12 +261,12 @@ void dt_tag_delete_tag_batch(const char *flatlist)
 
 guint dt_tag_remove_list(GList *tag_list)
 {
-  if (!tag_list) return 0;
+  if(!tag_list) return 0;
 
   char *flatlist = NULL;
   guint count = 0;
   guint tcount = 0;
-  for (GList *taglist = tag_list; taglist ; taglist = g_list_next(taglist))
+  for(GList *taglist = tag_list; taglist ; taglist = g_list_next(taglist))
   {
     const guint tagid = ((dt_tag_t *)taglist->data)->id;
     flatlist = dt_util_dstrcat(flatlist, "%u,", tagid);
@@ -728,7 +728,7 @@ static gint sort_tag_by_count(gconstpointer a, gconstpointer b)
 GList *dt_sort_tag(GList *tags, gint sort_type)
 {
   GList *sorted_tags;
-  if (sort_type <= 1)
+  if(sort_type <= 1)
   {
     for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
     {
@@ -892,7 +892,7 @@ GList *dt_tag_get_list_export(gint imgid, int32_t flags)
   for(; sorted_tags; sorted_tags = g_list_next(sorted_tags))
   {
     dt_tag_t *t = (dt_tag_t *)sorted_tags->data;
-    if ((export_private_tags || !(t->flags & DT_TF_PRIVATE))
+    if((export_private_tags || !(t->flags & DT_TF_PRIVATE))
         && !(t->flags & DT_TF_CATEGORY))
     {
       gchar *tagname = t->leave;
@@ -904,11 +904,11 @@ GList *dt_tag_get_list_export(gint imgid, int32_t flags)
       {
         GList *next = g_list_next(sorted_tags);
         gchar *end = g_strrstr(t->tag, "|");
-        while (end)
+        while(end)
         {
           end[0] = '\0';
           end = g_strrstr(t->tag, "|");
-          if (!next ||
+          if(!next ||
               !g_list_find_custom(next, t, (GCompareFunc)_is_not_exportable_tag))
           {
             const gchar *tag = end ? end + 1 : t->tag;
@@ -918,10 +918,10 @@ GList *dt_tag_get_list_export(gint imgid, int32_t flags)
       }
 
       // add synonyms as necessary
-      if (export_tag_synonyms)
+      if(export_tag_synonyms)
       {
         gchar *synonyms = t->synonym;
-        if (synonyms && synonyms[0])
+        if(synonyms && synonyms[0])
           {
           gchar **tokens = g_strsplit(synonyms, ",", 0);
           if(tokens)
@@ -930,7 +930,7 @@ GList *dt_tag_get_list_export(gint imgid, int32_t flags)
             while(*entry)
             {
               char *e = *entry;
-              if (*e == ' ') e++;
+              if(*e == ' ') e++;
               tags = g_list_append(tags, g_strdup(e));
               entry++;
             }
@@ -958,7 +958,7 @@ GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags)
   for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
     dt_tag_t *t = (dt_tag_t *)tag_iter->data;
-    if (export_private_tags || !(t->flags & DT_TF_PRIVATE))
+    if(export_private_tags || !(t->flags & DT_TF_PRIVATE))
     {
       tags = g_list_prepend(tags, g_strdup(t->tag));
     }
@@ -1363,7 +1363,7 @@ static gchar *dt_cleanup_synonyms(gchar *synonyms_entry)
   if(tokens)
   {
     gchar **entry = tokens;
-    while (*entry)
+    while(*entry)
     {
       char *e = g_strstrip(*entry);
       if(*e)
@@ -1372,7 +1372,7 @@ static gchar *dt_cleanup_synonyms(gchar *synonyms_entry)
       }
       entry++;
     }
-    if (synonyms)
+    if(synonyms)
       synonyms[strlen(synonyms) - 2] = '\0';
   }
   g_strfreev(tokens);
@@ -1389,7 +1389,7 @@ gchar *dt_tag_get_synonyms(gint tagid)
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
 
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     synonyms = g_strdup((char *)sqlite3_column_text(stmt, 0));
   }
@@ -1399,7 +1399,7 @@ gchar *dt_tag_get_synonyms(gint tagid)
 
 void dt_tag_set_synonyms(gint tagid, gchar *synonyms_entry)
 {
-  if (!synonyms_entry) return;
+  if(!synonyms_entry) return;
   char *synonyms = dt_cleanup_synonyms(synonyms_entry);
 
   sqlite3_stmt *stmt;
@@ -1423,7 +1423,7 @@ gint dt_tag_get_flags(gint tagid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
 
   gint flags = 0;
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     flags = sqlite3_column_int(stmt, 0);
   }
@@ -1447,7 +1447,7 @@ void dt_tag_set_flags(gint tagid, gint flags)
 void dt_tag_add_synonym(gint tagid, gchar *synonym)
 {
   char *synonyms = dt_tag_get_synonyms(tagid);
-  if (synonyms)
+  if(synonyms)
   {
     synonyms = dt_util_dstrcat(synonyms, ", %s", synonym);
   }
@@ -1528,13 +1528,13 @@ ssize_t dt_tag_import(const char *filename)
     gboolean skip = FALSE;
     gboolean category = FALSE;
     gboolean synonym = FALSE;
-    if (*start == '[' && *end == ']') // categories
+    if(*start == '[' && *end == ']') // categories
     {
       category = TRUE;
       start++;
       *end-- = '\0';
     }
-    else if (*start == '{' && *end == '}')  // synonyms
+    else if(*start == '{' && *end == '}')  // synonyms
     {
       synonym = TRUE;
       start++;
@@ -1546,14 +1546,14 @@ ssize_t dt_tag_import(const char *filename)
       start++;
     }
 
-    if (synonym)
+    if(synonym)
     {
       // associate the synonym to last tag
-      if (tagid)
+      if(tagid)
       {
         char *tagname = g_strdup(start);
         // clear synonyms before importing the new ones => allows export, modification and back import
-        if (!previous_synonym) dt_tag_set_synonyms(tagid, "");
+        if(!previous_synonym) dt_tag_set_synonyms(tagid, "");
         dt_tag_add_synonym(tagid, tagname);
         g_free(tagname);
       }
@@ -1576,11 +1576,11 @@ ssize_t dt_tag_import(const char *filename)
       if(!skip)
       {
         char *tag = dt_util_glist_to_str("|", hierarchy);
-        if (previous_category && (depth > previous_category_depth + 1))
+        if(previous_category && (depth > previous_category_depth + 1))
         {
           // reuse previous tag
           dt_tag_rename(tagid, tag);
-          if (!category)
+          if(!category)
             dt_tag_set_flags(tagid, 0);
         }
         else
@@ -1589,7 +1589,7 @@ ssize_t dt_tag_import(const char *filename)
           count++;
           tagid = 1;  // if 0, dt_tag_new creates a new one even if  the tag already exists
           dt_tag_new(tag, &tagid);
-          if (category)
+          if(category)
             dt_tag_set_flags(tagid, DT_TF_CATEGORY);
         }
         g_free(tag);
@@ -1665,11 +1665,11 @@ ssize_t dt_tag_export(const char *filename)
       if(!tokens[i + 1])
       {
         count++;
-        if (flags & DT_TF_CATEGORY)
+        if(flags & DT_TF_CATEGORY)
           fprintf(fd, "[%s]\n", tokens[i]);
         else
           fprintf(fd, "%s\n", tokens[i]);
-        if (synonyms && synonyms[0])
+        if(synonyms && synonyms[0])
         {
           gchar **tokens2 = g_strsplit(synonyms, ",", 0);
           if(tokens2)
@@ -1678,7 +1678,7 @@ ssize_t dt_tag_export(const char *filename)
             while(*entry)
             {
               char *e = *entry;
-              if (*e == ' ') e++;
+              if(*e == ' ') e++;
               for(int j = 0; j < tabs+1; j++) fputc('\t', fd);
               fprintf(fd, "{%s}\n", e);
               entry++;
@@ -1703,7 +1703,7 @@ ssize_t dt_tag_export(const char *filename)
 
 char *dt_tag_get_subtags(const gint imgid, const char *category, const int level)
 {
-  if (!category) return NULL;
+  if(!category) return NULL;
   const guint rootnb = dt_util_string_count_char(category, '|');
   char *tags = NULL;
   sqlite3_stmt *stmt;
@@ -1721,7 +1721,7 @@ char *dt_tag_get_subtags(const gint imgid, const char *category, const int level
   {
     char *tag = (char *)sqlite3_column_text(stmt, 0);
     const guint tagnb = dt_util_string_count_char(tag, '|');
-    if (tagnb >= rootnb + level)
+    if(tagnb >= rootnb + level)
     {
       gchar **pch = g_strsplit(tag, "|", -1);
       char *subtag = pch[rootnb + level];

@@ -348,17 +348,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  cl_int err = -999;
-
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { roi_out->width, roi_out->height, 1 };
-  err = dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out, origin, origin, region);
+  cl_int err = dt_opencl_enqueue_copy_image(piece->pipe->devid, dev_in, dev_out, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_crop] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_crop] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1306,7 +1304,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
-    snprintf(dimensions, sizeof(dimensions), "%.0f x %.0f", (float)procw * g->clip_w, (float)proch * g->clip_h);
+    snprintf(dimensions, sizeof(dimensions), "%i x %i", (int)(procw * g->clip_w), (int)(proch * g->clip_h));
 
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);

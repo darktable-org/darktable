@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/darktable.h"
+#include "common/image.h"
 
 #include <glib.h>
 
@@ -202,11 +203,11 @@ typedef struct dt_camctl_listener_t
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That
    * only one listener should implement this at time... */
-  const char *(*request_image_path)(const dt_camera_t *camera, char *exif_time, void *data);
+  const char *(*request_image_path)(const dt_camera_t *camera, const dt_image_basic_exif_t *basic_exif, void *data);
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That
    * only one listener should implement this at time... */
-  const char *(*request_image_filename)(const dt_camera_t *camera, const char *filename, const char *exif_time,
+  const char *(*request_image_filename)(const dt_camera_t *camera, const char *filename, const dt_image_basic_exif_t *basic_exif,
                                         void *data);
 
   /** Invoked when a image is downloaded while in tethered mode or by import */
@@ -331,4 +332,3 @@ void dt_camctl_camera_build_property_menu(const dt_camctl_t *c, const dt_camera_
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

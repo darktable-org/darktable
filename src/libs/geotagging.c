@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -156,7 +156,7 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 450;
 }
@@ -1421,8 +1421,8 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
     int increment = 0;
     if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
     {
-      if (delta_y < 0) increment = 1;
-      else if (delta_y > 0) increment = -1;
+      if(delta_y < 0) increment = 1;
+      else if(delta_y > 0) increment = -1;
     }
 
     if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
@@ -1463,11 +1463,21 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
 }
 
 // type 0 date/time, 1 original date/time, 2 offset
-static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_lib_module_t *self)
+static GtkWidget *_gui_init_datetime(gchar *text, dt_lib_datetime_t *dt, const int type, dt_lib_module_t *self,
+                                    GtkSizeGroup *group, GtkWidget *button, gchar *tip)
 {
   GtkWidget *flow = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(flow), 2);
-  gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(flow), 3);
+
+  GtkWidget *t = dt_ui_label_new(text);
+  gtk_size_group_add_widget(group, t);
+  gtk_container_add(GTK_CONTAINER(flow), t);
+  gtk_widget_set_tooltip_text(flow, tip);
+
+  GtkWidget *flow2 = gtk_flow_box_new();
+  gtk_flow_box_set_homogeneous(GTK_FLOW_BOX(flow2), TRUE); // otherwise weird behavior
+  gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(flow2), 2);
+  gtk_container_add(GTK_CONTAINER(flow), flow2);
 
   GtkBox *box = NULL;
   for(int i = 0; i < DT_GEOTAG_PARTS_NB; i++)
@@ -1476,6 +1486,8 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
 
     if(i == 0 && type == 2)
     {
+      gtk_box_set_homogeneous(box, TRUE); // creates some spacing
+      gtk_box_pack_start(box, button, TRUE, TRUE, 0);
       dt->sign = gtk_label_new("");
       gtk_box_pack_start(box, dt->sign, FALSE, FALSE, 0);
     }
@@ -1487,6 +1499,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
       gtk_box_pack_start(box, dt->widget[i], FALSE, FALSE, 0);
       if(type == 0)
       {
+        dt_action_define(DT_ACTION(self), NULL, i <= 2 ? N_("date") : N_("time"), dt->widget[i], &dt_action_def_entry);
         gtk_widget_add_events(dt->widget[i], darktable.gui->scroll_mask);
       }
       else
@@ -1499,7 +1512,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
     {
       gtk_widget_set_halign(GTK_WIDGET(box), GTK_ALIGN_END);
       gtk_widget_set_hexpand(GTK_WIDGET(box), TRUE);
-      gtk_container_add(GTK_CONTAINER(flow), GTK_WIDGET(box));
+      gtk_container_add(GTK_CONTAINER(flow2), GTK_WIDGET(box));
       box = NULL;
     }
     else if(i > 2 || type != 2)
@@ -1511,7 +1524,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
     }
   }
 
-  gtk_container_foreach(GTK_CONTAINER(flow), (GtkCallback)gtk_widget_set_can_focus, GINT_TO_POINTER(FALSE));
+  gtk_container_foreach(GTK_CONTAINER(flow2), (GtkCallback)gtk_widget_set_can_focus, GINT_TO_POINTER(FALSE));
 
   return flow;
 }
@@ -1722,32 +1735,23 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   int line = 0;
 
-  GtkWidget *label = dt_ui_label_new(_("date/time"));
-  gtk_grid_attach(grid, label, 0, line, 2, 1);
-  gtk_widget_set_tooltip_text(label, _("enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])"
-                                       "\nkey in the new numbers or scroll over the cell"));
+  GtkSizeGroup *group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+  GtkWidget *box = _gui_init_datetime(_("date/time"), &d->dt, 0, self, group, NULL,
+                                      _("enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])"
+                                        "\nkey in the new numbers or scroll over the cell"));
+  gtk_grid_attach(grid, box, 0, line++, 4, 1);
 
-  GtkWidget *box = _gui_init_datetime(&d->dt, 0, self);
-  gtk_grid_attach(grid, box, 2, line++, 2, 1);
-
-  label = dt_ui_label_new(_("original date/time"));
-  gtk_grid_attach(grid, label, 0, line, 2, 1);
-
-  box = _gui_init_datetime(&d->dt0, 1, self);
-  gtk_grid_attach(grid, box, 2, line++, 2, 1);
-
-  label = dt_ui_label_new(_("date/time offset"));
-  gtk_grid_attach(grid, label, 0, line, 2, 1);
-  gtk_widget_set_tooltip_text(label, _("offset or difference ([-]dd hh:mm:ss[.sss])"));
+  box = _gui_init_datetime(_("original date/time"), &d->dt0, 1, self, group, NULL, NULL);
+  gtk_grid_attach(grid, box, 0, line++, 4, 1);
 
   d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
   gtk_widget_set_tooltip_text(d->lock_offset, _("lock date/time offset value to apply it onto another selection"));
   gtk_widget_set_halign(d->lock_offset, GTK_ALIGN_START);
-  gtk_grid_attach(grid, d->lock_offset, 2, line, 1, 1);
   g_signal_connect(G_OBJECT(d->lock_offset), "clicked", G_CALLBACK(_toggle_lock_button_callback), (gpointer)self);
 
-  box = _gui_init_datetime(&d->of, 2, self);
-  gtk_grid_attach(grid, box, 3, line++, 1, 1);
+  box = _gui_init_datetime(_("date/time offset"), &d->of, 2, self, group, d->lock_offset,
+                           _("offset or difference ([-]dd hh:mm:ss[.sss])"));
+  gtk_grid_attach(grid, box, 0, line++, 4, 1);
 
   // apply
   d->apply_offset = dt_action_button_new(self, N_("apply offset"), _apply_offset_callback, self,
@@ -1759,7 +1763,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->apply_datetime , 2, line++, 2, 1);
 
   // time zone entry
-  label = dt_ui_label_new(_(dt_confgen_get_label("plugins/lighttable/geotagging/tz")));
+  GtkWidget *label = dt_ui_label_new(_(dt_confgen_get_label("plugins/lighttable/geotagging/tz")));
   gtk_widget_set_tooltip_text(label, _(dt_confgen_get_tooltip("plugins/lighttable/geotagging/tz")));
 
   gtk_grid_attach(grid, label, 0, line, 2, 1);
@@ -1767,6 +1771,7 @@ void gui_init(dt_lib_module_t *self)
   d->timezone = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->timezone, _("start typing to show a list of permitted values and select your timezone.\npress enter to confirm, so that the asterisk * disappears"));
   d->timezone_changed = dt_ui_label_new("");
+  gtk_entry_set_width_chars(GTK_ENTRY(d->timezone), 0);
 
   GtkWidget *timezone_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(timezone_box), d->timezone, TRUE, TRUE, 0);
@@ -1986,4 +1991,3 @@ void gui_cleanup(dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

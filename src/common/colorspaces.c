@@ -343,7 +343,7 @@ static double _PQ_fct(double x)
   static const double C2 = (2413.0 / 4096.0) * 32.0;
   static const double C3 = (2392.0 / 4096.0) * 32.0;
 
-  if (x == 0.0) return 0.0;
+  if(x == 0.0) return 0.0;
   const double sign = x;
   x = fabs(x);
 
@@ -366,14 +366,14 @@ static double _HLG_fct(double x)
 
   double e = MAX(x * (1.0 - Beta) + Beta, 0.0);
 
-  if (e == 0.0) return 0.0;
+  if(e == 0.0) return 0.0;
 
   const double sign = e;
   e = fabs(e);
 
   double res = 0.0;
 
-  if (e <= 0.5)
+  if(e <= 0.5)
   {
     res = e * e / 3.0;
   }
@@ -389,7 +389,7 @@ static cmsToneCurve* _colorspaces_create_transfer(int32_t size, double (*fct)(do
 {
   float *values = g_malloc(sizeof(float) * size);
 
-  for (int32_t i = 0; i < size; ++i)
+  for(int32_t i = 0; i < size; ++i)
   {
     const double x = (float)i / (size - 1);
     const double y = MIN(fct(x), 1.0f);
@@ -1645,7 +1645,7 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
 const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
                                     const char *filename)
 {
-  switch (type)
+  switch(type)
   {
      case DT_COLORSPACE_NONE:
        return NULL;
@@ -1974,7 +1974,7 @@ static gboolean _colorspaces_is_base_name(const char *profile)
 static const char *_colorspaces_get_base_name(const char *profile)
 {
   const char* f = profile + strlen(profile);
-  for (; f >= profile; f--)
+  for(; f >= profile; f--)
   {
     if(*f == '/' || *f == '\\')
       return ++f;   // path separator found - return the filename only, without the leading separator
@@ -2379,16 +2379,16 @@ void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int nu
 {
   // Create the CAM to RGB with applied WB matrix
   double CAM_to_RGB_WB[3][4];
-  for (int a=0; a<3; a++)
-    for (int b=0; b<4; b++)
+  for(int a=0; a<3; a++)
+    for(int b=0; b<4; b++)
       CAM_to_RGB_WB[a][b] = CAM_to_RGB[a][b] * coeffs[b];
 
   // Create the RGB->RGB+WB matrix
   double RGB_to_RGB_WB[3][3];
-  for (int a=0; a<3; a++)
-    for (int b=0; b<3; b++) {
+  for(int a=0; a<3; a++)
+    for(int b=0; b<3; b++) {
       RGB_to_RGB_WB[a][b] = 0.0f;
-      for (int c=0; c<4; c++)
+      for(int c=0; c<4; c++)
         RGB_to_RGB_WB[a][b] += CAM_to_RGB_WB[a][c] * RGB_to_CAM[c][b];
     }
 
@@ -2400,8 +2400,8 @@ void dt_colorspaces_cygm_apply_coeffs_to_rgb(float *out, const float *in, int nu
     const float *inpos = &in[i*4];
     float *outpos = &out[i*4];
     outpos[0]=outpos[1]=outpos[2] = 0.0f;
-    for (int a=0; a<3; a++)
-      for (int b=0; b<3; b++)
+    for(int a=0; a<3; a++)
+      for(int b=0; b<3; b++)
         outpos[a] += RGB_to_RGB_WB[a][b] * inpos[b];
   }
 }

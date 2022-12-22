@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2021 darktable developers.
+  Copyright (C) 2016-2022 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -3249,8 +3249,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch_width = ch * roi_in->width;
 
   // only for preview pipe: collect input buffer data and do some other evaluations
-  if(g && self->dev->gui_attached
-     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
@@ -3382,11 +3381,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_homo = NULL;
 
   // only for preview pipe: collect input buffer data and do some other evaluations
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
@@ -3473,7 +3472,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float out_scale = roi_out->scale;
   const float clip[2] = { cx, cy };
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
@@ -3497,19 +3495,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       goto error;
   }
 
-  dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 4, sizeof(int), (void *)&iwidth);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 5, sizeof(int), (void *)&iheight);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 6, 2 * sizeof(int), (void *)iroi);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 7, 2 * sizeof(int), (void *)oroi);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(float), (void *)&in_scale);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(float), (void *)&out_scale);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 10, 2 * sizeof(float), (void *)clip);
-  dt_opencl_set_kernel_arg(devid, ldkernel, 11, sizeof(cl_mem), (void *)&dev_homo);
-  err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, ldkernel, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(iwidth), CLARG(iheight), CLARRAY(2, iroi),
+    CLARRAY(2, oroi),
+    CLARG(in_scale), CLARG(out_scale), CLARRAY(2, clip), CLARG(dev_homo));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_homo);
@@ -3517,7 +3506,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   dt_opencl_release_mem_object(dev_homo);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_ashift] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_ashift] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -5806,7 +5795,7 @@ void gui_init(struct dt_iop_module_t *self)
                                           "ctrl+click to only fit rotation\n"
                                           "shift+click to only fit lens shift"));
   gtk_widget_set_tooltip_text(g->fit_both, _("automatically correct for vertical and "
-                                             "horizontal perspective distortions; fitting rotation,"
+                                             "horizontal perspective distortions, fitting rotation, "
                                              "lens shift in both directions, and shear\n"
                                              "ctrl+click to only fit rotation\n"
                                              "shift+click to only fit lens shift\n"

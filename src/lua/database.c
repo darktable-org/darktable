@@ -243,7 +243,7 @@ static int collection_numindex(lua_State *L)
     return luaL_error(L, "incorrect index in database");
   }
   int imgid = dt_collection_get_nth(darktable.collection,index-1);
-  if (imgid >0)
+  if(imgid >0)
   {
     luaA_push(L, dt_lua_image_t, &imgid);
   } else {

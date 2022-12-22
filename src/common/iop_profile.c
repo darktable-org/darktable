@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -870,7 +870,7 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
   {
-    if (type != DT_COLORSPACE_DISPLAY)
+    if(type != DT_COLORSPACE_DISPLAY)
     {
       // ??? this error output has been disabled for a display profile.
       // see discussion in https://github.com/darktable-org/darktable/issues/6774
@@ -1393,15 +1393,8 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
       goto cleanup;
     }
 
-    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 0, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 1, sizeof(cl_mem), (void *)&dev_img_out);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 4, sizeof(cl_mem), (void *)&dev_profile_info);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 5, sizeof(cl_mem), (void *)&dev_lut);
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel_transform, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_transform, width, height,
+      CLARG(dev_tmp), CLARG(dev_img_out), CLARG(width), CLARG(height), CLARG(dev_profile_info), CLARG(dev_lut));
     if(err != CL_SUCCESS)
     {
       fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] error %i enqueue kernel for color transformation\n", err);
@@ -1602,18 +1595,9 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
       goto cleanup;
     }
 
-    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 0, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 1, sizeof(cl_mem), (void *)&dev_img_out);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 4, sizeof(cl_mem), (void *)&dev_profile_info_from);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 5, sizeof(cl_mem), (void *)&dev_lut_from);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 6, sizeof(cl_mem), (void *)&dev_profile_info_to);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 7, sizeof(cl_mem), (void *)&dev_lut_to);
-    dt_opencl_set_kernel_arg(devid, kernel_transform, 8, sizeof(cl_mem), (void *)&matrix_cl);
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel_transform, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_transform, width, height,
+      CLARG(dev_tmp), CLARG(dev_img_out), CLARG(width), CLARG(height), CLARG(dev_profile_info_from),
+      CLARG(dev_lut_from), CLARG(dev_profile_info_to), CLARG(dev_lut_to), CLARG(matrix_cl));
     if(err != CL_SUCCESS)
     {
       fprintf(stderr,

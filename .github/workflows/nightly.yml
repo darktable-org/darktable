@@ -5,6 +5,9 @@ on:
     - cron: "0 0 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   Win64:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
@@ -34,47 +37,51 @@ jobs:
     steps:
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: ucrt64
           install: >-
             base-devel
             git
             intltool
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
-            mingw-w64-x86_64-nsis
-            mingw-w64-x86_64-dbus-glib
-            mingw-w64-x86_64-drmingw
-            mingw-w64-x86_64-exiv2
-            mingw-w64-x86_64-gettext
-            mingw-w64-x86_64-gmic
-            mingw-w64-x86_64-graphicsmagick
-            mingw-w64-x86_64-gtk3
-            mingw-w64-x86_64-iso-codes
-            mingw-w64-x86_64-lcms2
-            mingw-w64-x86_64-lensfun
-            mingw-w64-x86_64-libavif
-            mingw-w64-x86_64-libexif
-            mingw-w64-x86_64-libgphoto2
-            mingw-w64-x86_64-libheif
-            mingw-w64-x86_64-libjpeg-turbo
-            mingw-w64-x86_64-libsecret
-            mingw-w64-x86_64-libsoup
-            mingw-w64-x86_64-libwebp
-            mingw-w64-x86_64-libxml2
-            mingw-w64-x86_64-libxslt
-            mingw-w64-x86_64-lua
-            mingw-w64-x86_64-openexr
-            mingw-w64-x86_64-openjpeg2
-            mingw-w64-x86_64-osm-gps-map
-            mingw-w64-x86_64-portmidi
-            mingw-w64-x86_64-pugixml
-            mingw-w64-x86_64-python3
-            mingw-w64-x86_64-python3-jsonschema
-            mingw-w64-x86_64-python3-setuptools
-            mingw-w64-x86_64-python3-six
-            mingw-w64-x86_64-sqlite3
-            mingw-w64-x86_64-zlib
+          pacboy: >-
+            cc:p
+            cmake:p
+            gcc-libs:p
+            ninja:p
+            nsis:p
+            omp:p
+            dbus-glib:p
+            drmingw:p
+            exiv2:p
+            gettext:p
+            gmic:p
+            graphicsmagick:p
+            gtk3:p
+            iso-codes:p
+            lcms2:p
+            lensfun:p
+            libavif:p
+            libexif:p
+            libgphoto2:p
+            libheif:p
+            libjpeg-turbo:p
+            libjxl:p
+            libsecret:p
+            libsoup:p
+            libwebp:p
+            libxml2:p
+            libxslt:p
+            lua:p
+            openexr:p
+            openjpeg2:p
+            osm-gps-map:p
+            portmidi:p
+            pugixml:p
+            python3:p
+            python3-jsonschema:p
+            python3-setuptools:p
+            python3-six:p
+            sqlite3:p
+            zlib:p
           update: true
       - run: git config --global core.autocrlf input
         shell: bash
@@ -85,6 +92,7 @@ jobs:
           path: src
       - name: Update lensfun data
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        continue-on-error: true
         run: |
           lensfun-update-data
       - name: Build and Install

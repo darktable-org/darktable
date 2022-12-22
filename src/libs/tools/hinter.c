@@ -58,7 +58,7 @@ int expandable(dt_lib_module_t *self)
   return 0;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 1;
 }
@@ -90,11 +90,23 @@ void gui_cleanup(dt_lib_module_t *self)
 void _lib_hinter_set_message(dt_lib_module_t *self, const char *message)
 {
   dt_lib_hinter_t *d = (dt_lib_hinter_t *)self->data;
-  gtk_label_set_markup(GTK_LABEL(d->label), message);
+
+  if(message && !*message && !dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP))
+  {
+    GtkWidget *count = dt_view_filter_get_count(darktable.view_manager);
+    if(count)
+    {
+      gchar *count_message = g_strdup_printf(_("%s in current collection"),
+                                            gtk_label_get_text(GTK_LABEL(count)));
+      gtk_label_set_markup(GTK_LABEL(d->label), count_message);
+      g_free(count_message);
+    }
+  }
+  else
+    gtk_label_set_markup(GTK_LABEL(d->label), message);
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

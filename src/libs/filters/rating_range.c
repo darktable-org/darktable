@@ -108,11 +108,9 @@ static gchar *_rating_get_bounds_pretty(GtkDarktableRangeSelect *range)
 {
   if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all images"));
 
-  if((range->bounds & DT_RANGE_BOUND_MIN)) 
-    range->select_min_r = range->min_r;
-  if((range->bounds & DT_RANGE_BOUND_MAX)) 
-    range->select_max_r = range->max_r;
-    
+  if((range->bounds & DT_RANGE_BOUND_MIN)) range->select_min_r = range->min_r;
+  if((range->bounds & DT_RANGE_BOUND_MAX)) range->select_max_r = range->max_r;
+
   if(range->select_min_r == range->select_max_r)
   {
     gchar *printed_min = range->print(range->select_min_r, TRUE);
@@ -157,35 +155,20 @@ static gchar *_rating_get_bounds_pretty(GtkDarktableRangeSelect *range)
   return dtgtk_range_select_get_bounds_pretty(range);
 }
 
-static gchar *_rating_current_text_func(GtkDarktableRangeSelect *range, const double current)
-{
-  gchar *hovered = range->print(current, TRUE);
-  gchar *hovered_escaped = g_markup_escape_text(hovered, -1);
-  gchar *selected = _rating_get_bounds_pretty(range);
-  gchar *selected_escaped = g_markup_escape_text(selected, -1);
-
-  gchar *rating_text = g_strdup_printf("  <b>%s</b> | %s: %s  ", 
-        hovered_escaped, _("selected"), selected_escaped);
-  
-  g_free(hovered);
-  g_free(hovered_escaped);
-  g_free(selected);
-  g_free(selected_escaped);
-  return rating_text;
-}
-
 static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   // first, we set the color depending on the flags
-  void *my_data = data;
+  void *my_data = NULL;
+  GdkRGBA shade_color;
 
   if((flags & CPF_PRELIGHT) || (flags & CPF_ACTIVE))
   {
     // we want a filled icon
-    GdkRGBA bc = darktable.gui->colors[DT_GUI_COLOR_RANGE_ICONS];
-    GdkRGBA *shade_color = gdk_rgba_copy(&bc);
-    shade_color->alpha *= 0.6;
-    my_data = shade_color;
+    cairo_get_source(cr);
+    cairo_pattern_get_rgba(cairo_get_source(cr), &shade_color.red, &shade_color.green, &shade_color.blue,
+                           &shade_color.alpha);
+    shade_color.alpha *= 0.6;
+    my_data = &shade_color;
   }
 
   // then we draw the regular icon
@@ -312,22 +295,25 @@ static void _rating_range_widget_init(dt_lib_filtering_rule_t *rule, const dt_co
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE, DT_RANGE_TYPE_NUMERIC);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  gtk_widget_set_name(special->range_select, "dt-range-rating");
   // to keep a nice ratio, we don't want the widget to exceed a certain value
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
   GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  range->allow_resize = FALSE;
   int mh = -1;
   gtk_style_context_get(context, state, "min-height", &mh, NULL);
   if(mh > 0) range->max_width_px = 8 * mh * 0.8;
   range->step_bd = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
   dtgtk_range_select_add_icon(range, 22, 0, dtgtk_cairo_paint_unratestar, 0, NULL);
+
   dtgtk_range_select_add_icon(range, 36, 1, _rating_paint_icon, 0, NULL);
   dtgtk_range_select_add_icon(range, 50, 2, _rating_paint_icon, 0, NULL);
   dtgtk_range_select_add_icon(range, 64, 3, _rating_paint_icon, 0, NULL);
   dtgtk_range_select_add_icon(range, 78, 4, _rating_paint_icon, 0, NULL);
   dtgtk_range_select_add_icon(range, 93, 5, _rating_paint_icon, 0, NULL);
   range->print = _rating_print_func;
-  range->current_text = _rating_current_text_func;
+  range->current_bounds = _rating_get_bounds_pretty;
 
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
 
@@ -338,6 +324,9 @@ static void _rating_range_widget_init(dt_lib_filtering_rule_t *rule, const dt_co
 
   dt_action_define(DT_ACTION(self), N_("rules"), dt_collection_name_untranslated(prop),
                    special->range_select, &dt_action_def_ratings_rule);
+
+  // avoid the action tooltips to interfere with the current value popup
+  gtk_widget_set_has_tooltip(special->range_select, FALSE);
 }
 
 // clang-format off

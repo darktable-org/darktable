@@ -278,7 +278,7 @@ void init_presets (dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
                              &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
                                                          .black = -0.000244140625f,
-                                                         .exposure = 0.5f,
+                                                         .exposure = 0.7f,
                                                          .deflicker_percentile = 50.0f,
                                                          .deflicker_target_level = -4.0f,
                                                          .compensate_exposure_bias = TRUE},
@@ -405,7 +405,7 @@ static void _process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
     }
 
     // second, show computed correction in UI.
-    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+    if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
     {
       dt_iop_gui_enter_critical_section(self);
       g->deflicker_computed_exposure = exposure;
@@ -426,26 +426,20 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   _process_common_setup(self, piece);
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 4, sizeof(float), (void *)&(d->black));
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&(d->scale));
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_exposure, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG((d->black)), CLARG((d->scale)));
   if(err != CL_SUCCESS) goto error;
   for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
 
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_exposure] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_exposure] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1080,16 +1074,17 @@ void gui_init(struct dt_iop_module_t *self)
      _("spot exposure mapping"),
      GTK_BOX(self->widget));
 
+  gtk_widget_set_tooltip_text(g->cs.expander, _("define a target brightness, in terms of exposure, for a selected region of the image (the control sample), which you then match against the same target brightness in other images. the control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
+
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
                                 _("\"correction\" automatically adjust exposure\n"
                                   "such that the input lightness is mapped to the target.\n"
                                   "\"measure\" simply shows how an input color is mapped by the exposure compensation\n"
                                   "and can be used to define a target."),
-                                0, NULL, self,
+                                0, _spot_settings_changed_callback, self,
                                 N_("correction"),
                                 N_("measure"));
   gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);

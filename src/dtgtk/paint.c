@@ -1622,7 +1622,7 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   }
 
   /* then improve hover effect for same blue icon */
-  if (flags & CPF_PRELIGHT)
+  if(flags & CPF_PRELIGHT)
   {
     cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
   }
@@ -1721,28 +1721,24 @@ void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_push_group(cr);
-
-  // we create the path
+  // we create background star
   dt_draw_star(cr, 1 / 2., 1. / 2., 1. / 2., 1. / 5.);
 
-  // we create the cross line
-  cairo_move_to(cr, 0.05, 0.95);
-  cairo_line_to(cr, 0.85, 0.0);
-  cairo_stroke(cr);
+  double r, g, b, a;
+  if(cairo_pattern_get_rgba(cairo_get_source(cr), &r, &g, &b, &a) == CAIRO_STATUS_SUCCESS)
+  {
+    cairo_set_source_rgba(cr, r, g, b, a*.3);
+    cairo_stroke(cr);
+    cairo_set_line_width(cr, 1.6 * cairo_get_line_width(cr));
+    if((flags & CPF_PRELIGHT) || (flags & CPF_ACTIVE))
+      cairo_set_source_rgba(cr, r, g, b, a);
+    else
+      cairo_set_source_rgba(cr, r, g, b, a*.7);
 
-  // then erase some parts around cross line
-  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-  cairo_set_line_width(cr, cairo_get_line_width(cr) * 0.7);
-  cairo_move_to(cr, 0.0, 0.88);
-  cairo_line_to(cr, 0.78, 0.0);
-  cairo_move_to(cr, 0.10, 1.0);
-  cairo_line_to(cr, 0.92, 0.0);
-  cairo_set_source_rgba(cr, 0, 1.0, 0, 1.0);
-  cairo_stroke(cr);
-
-  cairo_pop_group_to_source(cr);
-  cairo_paint(cr);
+    cairo_move_to(cr, .1, .5);
+    cairo_line_to(cr, .9, .5);
+    cairo_stroke(cr);
+  }
 
   FINISH
 }
@@ -3262,6 +3258,36 @@ void dtgtk_cairo_paint_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
   cairo_close_path(cr);
   cairo_fill(cr);
 
+  FINISH
+}
+
+void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  // the filtering icon
+  cairo_move_to(cr, 0.1, 0.0);
+  cairo_line_to(cr, 0.8, 0.0);
+  cairo_arc(cr, 0.8, 0.1, 0.1, -0.5 * M_PI, 0.2 * M_PI);
+  cairo_move_to(cr, 0.85, 0.15);
+  cairo_line_to(cr, 0.55, 0.5);
+  cairo_line_to(cr, 0.55, 1.0);
+  cairo_line_to(cr, 0.35, 0.8);
+  cairo_line_to(cr, 0.35, 0.5);
+  cairo_line_to(cr, 0.05, 0.15);
+  cairo_arc(cr, 0.1, 0.1, 0.1, 0.8 * M_PI, 1.5 * M_PI);
+  cairo_stroke(cr);
+
+  // the "hamburger" menu icon
+  cairo_move_to(cr, 0.75, 1.0);
+  cairo_line_to(cr, 1.0, 1.0);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.75, 0.8);
+  cairo_line_to(cr, 1.0, 0.8);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.75, 0.6);
+  cairo_line_to(cr, 1.0, 0.6);
+  cairo_stroke(cr);
   FINISH
 }
 

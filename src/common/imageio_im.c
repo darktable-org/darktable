@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,17 +31,20 @@
 #include <strings.h>
 #include <assert.h>
 
+#ifdef HAVE_IMAGEMAGICK7
 #include <MagickWand/MagickWand.h>
-
+#else
+#include <wand/MagickWand.h>
+#endif
 
 /* we only support images with certain filename extensions via ImageMagick,
- * derived from what it declared as "supported" with GraphicsMagick; RAWs
+ * derived from what it declared as "supported" with ImageMagick; RAWs
  * are excluded as ImageMagick would render them with third party libraries
  * in reduced quality - slow and only 8-bit */
 static gboolean _supported_image(const gchar *filename)
 {
-  const char *extensions_whitelist[] = { "tif",  "tiff", "gif", "jpc", "jp2", "bmp", "dcm", "jng",
-                                         "miff", "mng",  "pbm", "pnm", "ppm", "pgm", NULL };
+  const char *extensions_whitelist[] = { "tif", "tiff", "pbm", "pgm",  "ppm", "pnm", "gif",  "jpc", "jp2",
+                                         "bmp", "dcm",  "jng", "miff", "mng", "pam", "webp", "jxl", NULL };
   gboolean supported = FALSE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
@@ -67,10 +70,10 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   image = NewMagickWand();
-  if (image == NULL) goto error;
+  if(image == NULL) goto error;
 
   ret = MagickReadImage(image, filename);
-  if (ret != MagickTrue) {
+  if(ret != MagickTrue) {
     fprintf(stderr, "[ImageMagick_open] cannot open `%s'\n", img->filename);
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
@@ -95,7 +98,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   img->buf_dsc.datatype = TYPE_FLOAT;
 
   float *mipbuf = dt_mipmap_cache_alloc(mbuf, img);
-  if (mipbuf == NULL) {
+  if(mipbuf == NULL) {
     fprintf(stderr,
         "[ImageMagick_open] could not alloc full buffer for image `%s'\n",
         img->filename);
@@ -104,12 +107,27 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   }
 
   ret = MagickExportImagePixels(image, 0, 0, img->width, img->height, "RGBP", FloatPixel, mipbuf);
-  if (ret != MagickTrue) {
+  if(ret != MagickTrue) {
     fprintf(stderr,
         "[ImageMagick_open] error reading image `%s'\n", img->filename);
     goto error;
   }
 
+  size_t profile_length;
+  uint8_t *profile_data = (uint8_t *)MagickGetImageProfile(image, "icc", &profile_length);
+  /* no alias support like GraphicsMagick, have to check both locations */
+  if(profile_data == NULL) profile_data = (uint8_t *)MagickGetImageProfile(image, "icm", &profile_length);
+  if(profile_data)
+  {
+    img->profile_size = profile_length;
+    img->profile = (uint8_t *)g_malloc0(profile_length);
+    memcpy(img->profile, profile_data, profile_length);
+    MagickRelinquishMemory(profile_data);
+  }
+
+  // As a warning to those who will modify the loader in the future:
+  // MagickWandTerminus() cannot be called on successful image reading.
+  // See https://github.com/darktable-org/darktable/issues/13090 regarding the consequences.
   DestroyMagickWand(image);
 
   img->buf_dsc.filters = 0u;
@@ -132,4 +150,3 @@ error:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

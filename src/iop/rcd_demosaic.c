@@ -101,12 +101,6 @@ static INLINE float safe_in(float a, float scale)
   return fmaxf(0.0f, a) * scale;
 }
 
-// We don't want to use the SIMD version as we might access unaligned memory
-static INLINE float sqrf(float a)
-{
-  return a * a;
-}
-
 /** This is basically ppg adopted to only write data to RCD_MARGIN */
 static void rcd_ppg_border(float *const out, const float *const in, const int width, const int height, const uint32_t filters, const int margin)
 {
@@ -355,9 +349,9 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         const int tileRows = MIN(rowEnd - rowStart, RCD_TILESIZE);
         const int tileCols = MIN(colEnd - colStart, RCD_TILESIZE);
 
-        if (rowStart + RCD_TILESIZE > height || colStart + RCD_TILESIZE > width)
+        if(rowStart + RCD_TILESIZE > height || colStart + RCD_TILESIZE > width)
         {
-          // VH_Dir is only filled for (4,4)..(height-4,width-4), but the refinement code reads (3,3)...(h-3,w-3),
+          // VH_Dir is only filled for(4,4)..(height-4,width-4), but the refinement code reads (3,3)...(h-3,w-3),
           // so we need to ensure that the border is zeroed for partial tiles to get consistent results
           memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
           // TODO: figure out what part of rgb is being accessed without initialization on partial tiles

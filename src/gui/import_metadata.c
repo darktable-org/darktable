@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -427,12 +427,12 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   GtkWidget *presets = _set_up_combobox(metadata->m_model, DT_META_META_HEADER, metadata);
   g_signal_connect(presets, "changed", G_CALLBACK(_import_metadata_presets_changed), metadata);
 
-  label = gtk_label_new(_("from xmp"));
+  label = gtk_label_new(_("from XMP"));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label),
                               _("selected metadata are imported from image and override the default value"
-                                "\n this drives also the \'look for updated xmp files\' and \'load sidecar file\' actions"
-                                "\n CAUTION: not selected metadata are cleaned up when xmp file is updated"
+                                "\n this drives also the \'look for updated XMP files\' and \'load sidecar file\' actions"
+                                "\n CAUTION: not selected metadata are cleaned up when XMP file is updated"
                               ));
   gtk_grid_attach(GTK_GRID(grid), label, 2, DT_META_META_HEADER, 1, 1);
 

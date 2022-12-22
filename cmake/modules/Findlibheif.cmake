@@ -22,7 +22,7 @@
 #
 # If ``libheif_FOUND`` is TRUE, it will also define the following imported target:
 #
-# ``libheif::libheif``
+# ``heif``
 #     The libheif library
 #
 # In general we recommend using the imported target, as it is easier to use.
@@ -57,9 +57,9 @@ find_package_handle_standard_args(libheif
     VERSION_VAR libheif_VERSION
 )
 
-if (libheif_FOUND AND NOT TARGET libheif::libheif)
-    add_library(libheif::libheif UNKNOWN IMPORTED)
-    set_target_properties(libheif::libheif PROPERTIES
+if (libheif_FOUND AND NOT TARGET heif)
+    add_library(heif UNKNOWN IMPORTED)
+    set_target_properties(heif PROPERTIES
         IMPORTED_LOCATION "${libheif_LIBRARY}"
         INTERFACE_COMPILE_OPTIONS "${libheif_DEFINITIONS}"
         INTERFACE_INCLUDE_DIRECTORIES "${libheif_INCLUDE_DIR}"

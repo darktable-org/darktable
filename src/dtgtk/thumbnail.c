@@ -591,9 +591,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         {
           cairo_save(cr2);
           cairo_scale(cr2, 1.0f/scale, 1.0f/scale);
-          dt_focuspeaking(cr2, img_width, img_height, cairo_image_surface_get_data(thumb->img_surf),
-                          cairo_image_surface_get_width(thumb->img_surf),
-                          cairo_image_surface_get_height(thumb->img_surf));
+          dt_focuspeaking(cr2, img_width, img_height, cairo_image_surface_get_data(thumb->img_surf));
           cairo_restore(cr2);
         }
 
@@ -729,26 +727,28 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
 
 static void _thumb_update_icons(dt_thumbnail_t *thumb)
 {
-  gtk_widget_set_visible(thumb->w_local_copy, thumb->has_localcopy);
-  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
-  gtk_widget_set_visible(thumb->w_group, thumb->is_grouped);
-  gtk_widget_set_visible(thumb->w_audio, thumb->has_audio);
-  gtk_widget_set_visible(thumb->w_color, thumb->colorlabels != 0);
-  gtk_widget_set_visible(thumb->w_zoom_eb, (thumb->zoomable && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK));
-  gtk_widget_show(thumb->w_bottom_eb);
-  gtk_widget_show(thumb->w_reject);
-  gtk_widget_show(thumb->w_ext);
-  gtk_widget_show(thumb->w_cursor);
-  for(int i = 0; i < MAX_STARS; i++) gtk_widget_show(thumb->w_stars[i]);
+  if(thumb->display_overlay)
+  {
+    gtk_widget_set_visible(thumb->w_local_copy, thumb->has_localcopy);
+    gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
+    gtk_widget_set_visible(thumb->w_group, thumb->is_grouped);
+    gtk_widget_set_visible(thumb->w_audio, thumb->has_audio);
+    gtk_widget_set_visible(thumb->w_color, thumb->colorlabels != 0);
+    gtk_widget_set_visible(thumb->w_zoom_eb, (thumb->zoomable && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK));
+    gtk_widget_show(thumb->w_bottom_eb);
+    gtk_widget_show(thumb->w_reject);
+    gtk_widget_show(thumb->w_ext);
+    gtk_widget_show(thumb->w_cursor);
+    for(int i = 0; i < MAX_STARS; i++) gtk_widget_show(thumb->w_stars[i]);
+
+    _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
+    for(int i = 0; i < MAX_STARS; i++)
+      _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i && thumb->rating < DT_VIEW_REJECT));
+    _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
+  }
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
   _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, thumb->active);
-
-  _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
-  for(int i = 0; i < MAX_STARS; i++)
-    _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i && thumb->rating < DT_VIEW_REJECT));
-  _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
-
   _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, thumb->selected);
 
   // and the tooltip
@@ -785,8 +785,11 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   g_free(pattern);
 
   // we recompte the history tooltip if needed
-  thumb->is_altered = dt_image_altered(thumb->imgid);
-  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
+  if(thumb->display_overlay)
+  {
+    thumb->is_altered = dt_image_altered(thumb->imgid);
+    gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
+  }
   if(thumb->is_altered)
   {
     char *tooltip = dt_history_get_items_as_string(thumb->imgid);
@@ -817,6 +820,7 @@ static gboolean _thumbs_hide_overlays(gpointer user_data)
   gtk_widget_hide(thumb->w_ext);
   return G_SOURCE_REMOVE;
 }
+
 static gboolean _thumbs_show_overlays(gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
@@ -832,20 +836,40 @@ static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   // first, we hide the block overlays after a delay if the mouse hasn't move
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
   {
+    if(widget != thumb->w_image)
+      thumb->display_overlay = FALSE;
+    else
+    {
+      // check current mouse position, if lower-half never display the overlay
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(widget, &allocation);
+      thumb->display_overlay = (event->y < allocation.height / 2.f);
+    }
+
     if(thumb->overlay_timeout_id > 0)
     {
       g_source_remove(thumb->overlay_timeout_id);
       thumb->overlay_timeout_id = 0;
     }
-    _thumbs_show_overlays(thumb);
-    if(thumb->overlay_timeout_duration >= 0)
+
+    if(thumb->display_overlay)
     {
-      thumb->overlay_timeout_id
-          = g_timeout_add_seconds(thumb->overlay_timeout_duration, _thumbs_hide_overlays, thumb);
+      _thumbs_show_overlays(thumb);
+      if(thumb->overlay_timeout_duration >= 0)
+      {
+        thumb->overlay_timeout_id
+          = g_timeout_add_seconds(thumb->overlay_timeout_duration,
+                                  _thumbs_hide_overlays, thumb);
+      }
+    }
+    else
+    {
+      _thumbs_hide_overlays(thumb);
     }
   }
 
-  if(!thumb->mouse_over && !thumb->disable_mouseover) dt_control_set_mouse_over_id(thumb->imgid);
+  if(!thumb->mouse_over && !thumb->disable_mouseover)
+    dt_control_set_mouse_over_id(thumb->imgid);
   return FALSE;
 }
 
@@ -1112,10 +1136,15 @@ static gboolean _event_box_enter_leave(GtkWidget *widget, GdkEventCrossing *even
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   // if we leave for ancestor, that means we leave for blank thumbtable area
-  if(event->type == GDK_LEAVE_NOTIFY && event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(-1);
+  if(event->type == GDK_LEAVE_NOTIFY
+     && event->detail == GDK_NOTIFY_ANCESTOR)
+    dt_control_set_mouse_over_id(-1);
 
-  if(!thumb->mouse_over && event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
+  if(!thumb->mouse_over
+     && event->type == GDK_ENTER_NOTIFY
+     && !thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
+
   _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
   _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
   return FALSE;
@@ -1288,10 +1317,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_widget_show(evt_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), evt_image);
     thumb->w_image = gtk_drawing_area_new();
-    if(thumb->container == DT_THUMBNAIL_CONTAINER_PREVIEW)
-      dt_gui_add_class(thumb->w_image, "dt_preview_thumb_image");
-    else if(thumb->container == DT_THUMBNAIL_CONTAINER_CULLING)
-      dt_gui_add_class(thumb->w_image, "dt_culling_thumb_image");
     gtk_widget_set_name(thumb->w_image, "thumb-image");
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
@@ -1318,7 +1343,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // determine the overlays parents
     GtkWidget *overlays_parent = thumb->w_main;
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) overlays_parent = thumb->w_image_box;
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+      overlays_parent = thumb->w_image_box;
 
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
@@ -1418,7 +1444,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the group bouton
     thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, 0, NULL);
-    gtk_widget_set_name(thumb->w_group, "thumb-group");
+    gtk_widget_set_name(thumb->w_group, "thumb-group-audio");
     g_signal_connect(G_OBJECT(thumb->w_group), "button-release-event", G_CALLBACK(_event_grouping_release), thumb);
     g_signal_connect(G_OBJECT(thumb->w_group), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
     g_signal_connect(G_OBJECT(thumb->w_group), "leave-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
@@ -1429,7 +1455,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the sound icon
     thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, 0, NULL);
-    gtk_widget_set_name(thumb->w_audio, "thumb-audio");
+    gtk_widget_set_name(thumb->w_audio, "thumb-group-audio");
     g_signal_connect(G_OBJECT(thumb->w_audio), "button-release-event", G_CALLBACK(_event_audio_release), thumb);
     g_signal_connect(G_OBJECT(thumb->w_audio), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
     g_signal_connect(G_OBJECT(thumb->w_audio), "leave-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
@@ -1457,6 +1483,10 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
   }
   gtk_widget_show(thumb->w_main);
   g_object_ref(G_OBJECT(thumb->w_main));
+
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+    _thumbs_hide_overlays(thumb);
+
   return thumb->w_main;
 }
 
@@ -1476,6 +1506,7 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int im
   thumb->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
   thumb->tooltip = tooltip;
   thumb->expose_again_timeout_id = 0;
+  thumb->display_overlay = (thumb->over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK);
 
   // we read and cache all the infos from dt_image_t that we need
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
@@ -1504,7 +1535,8 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int im
   // let's see if the images are selected or active or mouse_overed
   _dt_active_images_callback(NULL, thumb);
   _dt_selection_changed_callback(NULL, thumb);
-  if(dt_control_get_mouse_over_id() == thumb->imgid) dt_thumbnail_set_mouseover(thumb, TRUE);
+  if(dt_control_get_mouse_over_id() == thumb->imgid)
+    dt_thumbnail_set_mouseover(thumb, TRUE);
 
   // set tooltip for altered icon if needed
   if(thumb->is_altered)
@@ -1943,14 +1975,16 @@ void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over
   thumb->overlay_timeout_duration = timeout;
   // if no change, do nothing...
   if(thumb->over == over) return;
-  dt_thumbnail_overlay_t old_over = thumb->over;
+  const dt_thumbnail_overlay_t old_over = thumb->over;
   thumb->over = over;
 
   // first, if we change from/to hover/block, we need to change some parent widgets
-  if(old_over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK || over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+  if(old_over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK
+     || over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
   {
     GtkOverlay *overlays_parent = GTK_OVERLAY(thumb->w_main);
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) overlays_parent = GTK_OVERLAY(thumb->w_image_box);
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+      overlays_parent = GTK_OVERLAY(thumb->w_image_box);
 
     _widget_change_parent_overlay(thumb->w_bottom_eb, overlays_parent);
     _widget_change_parent_overlay(thumb->w_reject, overlays_parent);
@@ -2061,4 +2095,3 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

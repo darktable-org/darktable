@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -315,33 +315,20 @@ int process_cl(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const
   const dt_iop_negadoctor_data_t *const d = (dt_iop_negadoctor_data_t *)piece->data;
   const dt_iop_negadoctor_global_data_t *const gd = (dt_iop_negadoctor_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 4, 4 * sizeof(float), (void *)&d->Dmin);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 5, 4 * sizeof(float), (void *)&d->wb_high);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 6, 4 * sizeof(float), (void *)&d->offset);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 7, sizeof(float), (void *)&d->exposure);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 8, sizeof(float), (void *)&d->black);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 9, sizeof(float), (void *)&d->gamma);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 10, sizeof(float), (void *)&d->soft_clip);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_negadoctor, 11, sizeof(float), (void *)&d->soft_clip_comp);
-
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_negadoctor, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_negadoctor, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->Dmin), CLARG(d->wb_high),
+    CLARG(d->offset), CLARG(d->exposure), CLARG(d->black), CLARG(d->gamma), CLARG(d->soft_clip), CLARG(d->soft_clip_comp));
   if(err != CL_SUCCESS) goto error;
     return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_negadoctor] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_negadoctor] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -450,7 +437,7 @@ static void toggle_stock_controls(dt_iop_module_t *const self)
   else
   {
     // We shouldn't be there
-    fprintf(stderr, "negadoctor film stock: undefined behaviour\n");
+    fprintf(stderr, "negadoctor film stock: undefined behavior\n");
   }
 }
 
@@ -865,7 +852,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->offset = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "offset"));
   dt_bauhaus_slider_set_format(g->offset, " dB");
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->offset);
   gtk_widget_set_tooltip_text(g->offset, _("correct the exposure of the scanner, for all RGB channels,\n"
                                            "before the inversion, so blacks are neither clipped or too pale."));
 
@@ -971,7 +957,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->soft_clip, "%");
   gtk_widget_set_tooltip_text(g->soft_clip, _("gradually compress specular highlights past this value\n"
                                               "to avoid clipping while pushing the exposure for mid-tones.\n"
-                                              "this somewhat reproduces the behaviour of matte paper."));
+                                              "this somewhat reproduces the behavior of matte paper."));
 
   gtk_box_pack_start(GTK_BOX(page3), dt_ui_section_label_new(_("virtual print emulation")), FALSE, FALSE, 0);
 
@@ -979,7 +965,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_hard_min(g->exposure, -1.0);
   dt_bauhaus_slider_set_soft_min(g->exposure, -1.0);
   dt_bauhaus_slider_set_hard_max(g->exposure, 1.0);
-  dt_bauhaus_slider_set_default(g->exposure, 0.0);
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   gtk_widget_set_tooltip_text(g->exposure, _("correct the printing exposure after inversion to adjust\n"
                                              "the global contrast and avoid clipping highlights."));
@@ -1040,6 +1025,7 @@ void gui_update(dt_iop_module_t *const self)
 
 
   dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
+  dt_bauhaus_slider_set_default(g->exposure, log2f(p->exposure)); // otherwise always showes as "changed"
 
   // Update custom stuff
   gui_changed(self, NULL, NULL);

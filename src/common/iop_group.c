@@ -23,10 +23,10 @@
 static int _group_number(int group_id)
 {
   if      (group_id == IOP_GROUP_EFFECT)  return 5;
-  else if (group_id == IOP_GROUP_CORRECT) return 4;
-  else if (group_id == IOP_GROUP_COLOR)   return 3;
-  else if (group_id == IOP_GROUP_TONE)    return 2;
-  else if (group_id == IOP_GROUP_BASIC)   return 1;
+  else if(group_id == IOP_GROUP_CORRECT) return 4;
+  else if(group_id == IOP_GROUP_COLOR)   return 3;
+  else if(group_id == IOP_GROUP_TONE)    return 2;
+  else if(group_id == IOP_GROUP_BASIC)   return 1;
   else                                    return 0;
 }
 
@@ -36,7 +36,7 @@ int dt_iop_get_group(const dt_iop_module_t *module)
   int prefs = dt_conf_get_int(key);
 
   /* if zero, not found, record it */
-  if (!prefs)
+  if(!prefs)
   {
     const int default_group = module->default_group();
     dt_conf_set_int(key, _group_number(default_group));
@@ -49,9 +49,9 @@ int dt_iop_get_group(const dt_iop_module_t *module)
 
     prefs = 1 << (prefs - 1);
 
-    if (prefs > IOP_GROUP_EFFECT)
+    if(prefs > IOP_GROUP_EFFECT)
       prefs = IOP_GROUP_EFFECT;
-    else if (prefs < IOP_GROUP_BASIC)
+    else if(prefs < IOP_GROUP_BASIC)
       prefs = IOP_GROUP_BASIC;
 
     g_free(g_key);

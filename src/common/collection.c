@@ -271,7 +271,8 @@ int dt_collection_update(const dt_collection_t *collection)
 
   /* build select part includes where */
   /* COLOR and PATH */
-  if(collection->params.sorts[DT_COLLECTION_SORT_COLOR] && collection->params.sorts[DT_COLLECTION_SORT_PATH]
+  if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
+     && collection->params.sorts[DT_COLLECTION_SORT_PATH]
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -283,7 +284,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* COLOR and TITLE */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR] && collection->params.sorts[DT_COLLECTION_SORT_TITLE]
+  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
+          && collection->params.sorts[DT_COLLECTION_SORT_TITLE]
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -308,7 +310,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* PATH and TITLE */
-  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE] && collection->params.sorts[DT_COLLECTION_SORT_PATH]
+  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
+          && collection->params.sorts[DT_COLLECTION_SORT_PATH]
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -518,7 +521,7 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int e
 {
   gchar *complete_string = NULL;
 
-  if (exclude >= 0)
+  if(exclude >= 0)
   {
     complete_string = g_strdup("");
     char confname[200];
@@ -531,12 +534,41 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int e
       // exclude the one rule from extended where
       if(i != exclude || mode == 1)
         complete_string = dt_util_dstrcat(complete_string, "%s", collection->where_ext[i]);
+      else if(i == 0)
+        complete_string = dt_util_dstrcat(complete_string, "1=1");
     }
   }
   else
-    complete_string = g_strjoinv(complete_string, ((dt_collection_t *)collection)->where_ext);
+  {
+    // WHERE part is composed by (COLLECT) AND (FILTERING)
+    // first, the COLLECT PART (never empty, use 1=1 in this case)
+    complete_string = g_strdup("");
+    const int nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
+    gchar *rules_txt = g_strdup("");
+    for(int i = 0; (i < nb_rules && collection->where_ext[i] != NULL); i++)
+    {
+      rules_txt = dt_util_dstrcat(rules_txt, "%s", collection->where_ext[i]);
+    }
+    if(g_strcmp0(rules_txt, ""))
+      complete_string = dt_util_dstrcat(complete_string, "(%s)", rules_txt);
+    else
+      complete_string = dt_util_dstrcat(complete_string, "1=1");
+    g_free(rules_txt);
 
-  gchar *where_ext = g_strdup_printf("(1=1%s)", complete_string);
+    // and now the FILTERING part (can be empty)
+    rules_txt = g_strdup("");
+    const int nb_filters = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, 10);
+    for(int i = 0; (i < nb_filters && collection->where_ext[i + nb_rules] != NULL); i++)
+    {
+      rules_txt = dt_util_dstrcat(rules_txt, "%s", collection->where_ext[i + nb_rules]);
+    }
+    if(g_strcmp0(rules_txt, "")) complete_string = dt_util_dstrcat(complete_string, " AND (%s)", rules_txt);
+    g_free(rules_txt);
+  }
+
+  if(!g_strcmp0(complete_string, "")) complete_string = dt_util_dstrcat(complete_string, "1=1");
+
+  gchar *where_ext = g_strdup_printf("(%s)", complete_string);
   g_free(complete_string);
 
   return where_ext;
@@ -1248,10 +1280,10 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
   gboolean wildcard = FALSE;
 
   GHashTable *names = NULL;
-  if (sanitized)
+  if(sanitized)
     names = g_hash_table_new(g_str_hash, g_str_equal);
 
-  if (filter && filter[0] != '\0')
+  if(filter && filter[0] != '\0')
   {
     needle = g_utf8_strdown(filter, -1);
     wildcard = (needle && needle[strlen(needle) - 1] == '%') ? TRUE : FALSE;
@@ -1270,10 +1302,10 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
     gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
 
     gchar *haystack = g_utf8_strdown(makermodel, -1);
-    if (!needle || (wildcard && g_strrstr(haystack, needle) != NULL)
+    if(!needle || (wildcard && g_strrstr(haystack, needle) != NULL)
                 || (!wildcard && !g_strcmp0(haystack, needle)))
     {
-      if (exif)
+      if(exif)
       {
         // Append a two element list with maker and model
         GList *inner_list = NULL;
@@ -1282,7 +1314,7 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
         *exif = g_list_append(*exif, inner_list);
       }
 
-      if (sanitized)
+      if(sanitized)
       {
         gchar *key = g_strdup(makermodel);
         g_hash_table_add(names, key);
@@ -1341,7 +1373,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_FOLDERS: // folders
       {
         // replace * at the end with OR-clause to include subfolders
-        if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        if((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
         {
           escaped_text[escaped_length-1] = '\0';
           // clang-format off
@@ -1351,7 +1383,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // clang-format on
         }
         // replace |% at the end with /% to only show subfolders
-        else if ((escaped_length > 1) && (strcmp(escaped_text+escaped_length-2, "|%") == 0 ))
+        else if((escaped_length > 1) && (strcmp(escaped_text+escaped_length-2, "|%") == 0 ))
         {
           escaped_text[escaped_length-2] = '\0';
           // clang-format off
@@ -1381,7 +1413,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // test the "mask" case (used by filters)
         if(g_str_has_prefix(text, "0x"))
         {
-          const int val = strtol(&escaped_text[2], NULL, 16);
+          const int val = strtoll(&escaped_text[2], NULL, 16);
           const int colors_set = val & 0xFFF;
           const int colors_unset = (val & 0xFFF000) >> 12;
           const gboolean op = val & 0x80000000;
@@ -1479,7 +1511,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         char *name_clause = g_strdup_printf("t.name LIKE \'%s\' || \'%s\'",
             dt_map_location_data_tag_root(), escaped_text2 ? escaped_text2 : "%");
 
-        if (escaped_text2 && (escaped_text2[strlen(escaped_text2)-1] == '*'))
+        if(escaped_text2 && (escaped_text2[strlen(escaped_text2)-1] == '*'))
         {
           escaped_text2[strlen(escaped_text2)-1] = '\0';
           name_clause = g_strdup_printf("(t.name LIKE \'%s\' || \'%s\' OR t.name LIKE \'%s\' || \'%s|%%\')",
@@ -1577,7 +1609,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       else if(is_insensitive)
       {
-        if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        if((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
         {
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
@@ -1600,7 +1632,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       else
       {
-        if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        if((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
         {
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
@@ -1613,7 +1645,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                                   escaped_text, escaped_text, escaped_text);
           // clang-format on
         }
-        else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
+        else if((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
         {
           // ends with % or |%
           escaped_text[escaped_length-1] = '\0';
@@ -2309,6 +2341,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   query_parts[num_rules + num_filters] = NULL;
 
   // the main rules part
+  int nb = 0; // number of non empty rules
   for(int i = 0; i < num_rules; i++)
   {
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
@@ -2320,8 +2353,11 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 
     if(!text || text[0] == '\0')
     {
-      if (mode == 1) // for OR show all
+      if(mode == 1) // for OR show all
+      {
         query_parts[i] = g_strdup(" OR 1=1");
+        nb++;
+      }
       else
         query_parts[i] = g_strdup("");
     }
@@ -2329,14 +2365,19 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       gchar *query = get_query_string(property, text);
 
-      query_parts[i] =  g_strdup_printf(" %s %s", conj[mode], query);
+      if(nb == 0)
+        query_parts[i] = g_strdup_printf(" %s", query);
+      else
+        query_parts[i] = g_strdup_printf(" %s %s", conj[mode], query);
 
       g_free(query);
+      nb++;
     }
     g_free(text);
   }
 
   // the filtering part (same syntax as for collect rules)
+  nb = 0; // number of non empty rules
   for(int i = 0; i < num_filters; i++)
   {
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
@@ -2351,7 +2392,10 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     if(off || !text || text[0] == '\0')
     {
       if(!off && mode == 1) // for OR show all
+      {
         query_parts[i + num_rules] = g_strdup(" OR 1=1");
+        nb++;
+      }
       else
         query_parts[i + num_rules] = g_strdup("");
     }
@@ -2359,9 +2403,13 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       gchar *query = get_query_string(property, text);
 
-      query_parts[i + num_rules] = g_strdup_printf(" %s %s", conj[mode], query);
+      if(nb == 0)
+        query_parts[i + num_rules] = g_strdup_printf(" %s", query);
+      else
+        query_parts[i + num_rules] = g_strdup_printf(" %s %s", conj[mode], query);
 
       g_free(query);
+      nb++;
     }
     g_free(text);
   }
@@ -2412,8 +2460,15 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 
 gboolean dt_collection_hint_message_internal(void *message)
 {
-  dt_control_hinter_message(darktable.control, message);
-  g_free(message);
+  GtkWidget *count = dt_view_filter_get_count(darktable.view_manager);
+  if(count)
+  {
+    gtk_label_set_markup(GTK_LABEL(count), message);
+    gtk_widget_set_tooltip_markup(count, message);
+  }
+
+  dt_control_hinter_message(darktable.control, "");
+
   return FALSE;
 }
 
@@ -2438,14 +2493,14 @@ void dt_collection_hint_message(const dt_collection_t *collection)
       selected++;
     }
     g_list_free(selected_imgids);
-    message = g_strdup_printf(_("%d image of %d (#%d) in current collection is selected"), cs, c, selected);
+    message = g_strdup_printf(_("<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"), cs, selected, c);
   }
   else
   {
     message = g_strdup_printf(
       ngettext(
-        "%d image of %d in current collection is selected",
-        "%d images of %d in current collection are selected",
+        "<b>%d</b> image selected of <b>%d</b>",
+        "<b>%d</b> images selected of <b>%d</b>",
         cs),
       cs, c);
   }
@@ -2523,7 +2578,7 @@ int64_t dt_collection_get_image_position(const int32_t image_id, const int32_t t
 {
   int64_t image_position = -1;
 
-  if (image_id >= 0)
+  if(image_id >= 0)
   {
     sqlite3_stmt *stmt = NULL;
     // clang-format off
@@ -2597,7 +2652,7 @@ void dt_collection_shift_image_positions(const unsigned int length,
 */
 void dt_collection_move_before(const int32_t image_id, GList * selected_images)
 {
-  if (!selected_images)
+  if(!selected_images)
   {
     return;
   }
@@ -2605,7 +2660,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
   const uint32_t tagid = darktable.collection->tagid;
   // getting the position of the target image
   const int64_t target_image_pos = dt_collection_get_image_position(image_id, tagid);
-  if (target_image_pos >= 0)
+  if(target_image_pos >= 0)
   {
     const guint selected_images_length = g_list_length(selected_images);
 
@@ -2630,7 +2685,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
                                 -1, &stmt, NULL);
     // clang-format on
 
-    for (const GList * selected_images_iter = selected_images;
+    for(const GList * selected_images_iter = selected_images;
          selected_images_iter != NULL;
          selected_images_iter = g_list_next(selected_images_iter))
     {
@@ -2663,7 +2718,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
                                 -1, &stmt, NULL);
     // clang-format on
 
-    if (sqlite3_step(stmt) == SQLITE_ROW)
+    if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       max_position = sqlite3_column_int64(stmt, 0);
       max_position = (max_position & 0xFFFFFFFF00000000) >> 32;
@@ -2689,7 +2744,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
                                 -1, &update_stmt, NULL);
     // clang-format on
 
-    for (const GList * selected_images_iter = selected_images;
+    for(const GList * selected_images_iter = selected_images;
          selected_images_iter != NULL;
          selected_images_iter = g_list_next(selected_images_iter))
     {

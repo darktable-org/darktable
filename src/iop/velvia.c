@@ -175,7 +175,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_velvia_data_t *data = (dt_iop_velvia_data_t *)piece->data;
   dt_iop_velvia_global_data_t *gd = (dt_iop_velvia_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -184,7 +184,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float strength = data->strength / 100.0f;
   const float bias = data->bias;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   if(strength <= 0.0f)
   {
@@ -195,20 +194,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   else
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_velvia, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_velvia, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_velvia, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_velvia, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_velvia, 4, sizeof(float), (void *)&strength);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_velvia, 5, sizeof(float), (void *)&bias);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_velvia, sizes);
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_velvia, width, height,
+      CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(strength), CLARG(bias));
     if(err != CL_SUCCESS) goto error;
   }
 
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_velvia] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_velvia] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

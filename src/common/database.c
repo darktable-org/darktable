@@ -49,7 +49,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 36
+#define CURRENT_DATABASE_VERSION_LIBRARY 37
 #define CURRENT_DATABASE_VERSION_DATA     9
 
 // #define USE_NESTED_TRANSACTIONS
@@ -1462,7 +1462,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // note that images without history don't get hash and are considered as basic
     sqlite3_stmt *h_stmt;
     const gboolean basecurve_auto_apply = dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
-    const gboolean sharpen_auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
     // clang-format off
     char *query = g_strdup_printf(
                             "SELECT id, CASE WHEN imgid IS NULL THEN 0 ELSE 1 END as altered "
@@ -1471,10 +1470,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
                             "LEFT JOIN (SELECT DISTINCT imgid FROM main.images JOIN main.history ON imgid = id "
                             "           WHERE num < history_end AND enabled = 1"
                             "             AND operation NOT IN ('flip', 'dither', 'highlights', 'rawprepare', "
-                            "             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)) "
+                            "             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s)) "
                             "ON imgid = id",
-                             basecurve_auto_apply ? ", 'basecurve'" : "",
-                             sharpen_auto_apply ? ", 'sharpen'" : "");
+                             basecurve_auto_apply ? ", 'basecurve'" : "");
     // clang-format on
     TRY_PREPARE(h_stmt, query,
                 "[init] can't prepare selecting history for history_hash migration\n");
@@ -2154,6 +2152,12 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("DROP TABLE `images_new`", "[init] can't drop temp images table\n");
     new_version = 36;
   }
+  else if(version == 36)
+  {
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS `metadata_index_value` ON meta_data (value)",
+             "[init] can't create metadata_index_value\n");
+    new_version = 37;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2517,6 +2521,7 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken COLLATE NOCASE)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_value ON meta_data (value)", NULL, NULL, NULL);
   // clang-format on
 }
 
@@ -3619,12 +3624,12 @@ error:
 void dt_database_destroy(const dt_database_t *db)
 {
   sqlite3_close(db->handle);
-  if (db->lockfile_data)
+  if(db->lockfile_data)
   {
     g_unlink(db->lockfile_data);
     g_free(db->lockfile_data);
   }
-  if (db->lockfile_library)
+  if(db->lockfile_library)
   {
     g_unlink(db->lockfile_library);
     g_free(db->lockfile_library);
@@ -3719,7 +3724,7 @@ void dt_database_cleanup_busy_statements(const struct dt_database_t *db)
   }
 }
 
-#define ERRCHECK {if (err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'\n",err); sqlite3_free(err); err=NULL;}}
+#define ERRCHECK {if(err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'\n",err); sqlite3_free(err); err=NULL;}}
 void dt_database_perform_maintenance(const struct dt_database_t *db)
 {
   char* err = NULL;
@@ -3774,87 +3779,15 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
 }
 #undef ERRCHECK
 
-gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_time, const guint64 size)
-{
-  if(!has_gui)
-  {
-    return FALSE;
-  }
-
-  char *later_info = NULL;
-  char *size_info = g_format_size(size);
-  const char *config = dt_conf_get_string_const("database/maintenance_check");
-  if((closing_time && (!g_strcmp0(config, "on both"))) || !g_strcmp0(config, "on startup"))
-  {
-    later_info = _("click later to be asked on next startup");
-  }
-  else if (!closing_time && (!g_strcmp0(config, "on both")))
-  {
-    later_info = _("click later to be asked when closing darktable");
-  }
-  else if (!g_strcmp0(config, "on close"))
-  {
-    later_info = _("click later to be asked next time when closing darktable");
-  }
-
-  char *label_text = g_markup_printf_escaped(_("the database could use some maintenance\n"
-                                                 "\n"
-                                                 "there's <span style='italic'>%s</span> to be freed"
-                                                 "\n\n"
-                                                 "do you want to proceed now?\n\n"
-                                                 "%s\n"
-                                                 "you can always change maintenance preferences in core options"),
-                                                 size_info, later_info);
-
-    const gboolean shall_perform_maintenance =
-      dt_gui_show_standalone_yes_no_dialog(_("darktable - schema maintenance"), label_text,
-                                           _("later"), _("yes"));
-
-    g_free(label_text);
-    g_free(size_info);
-
-    return shall_perform_maintenance;
-}
-
 static inline gboolean _is_mem_db(const struct dt_database_t *db)
 {
   return !g_strcmp0(db->dbfilename_data, ":memory:") || !g_strcmp0(db->dbfilename_library, ":memory:");
 }
 
-gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
+gboolean dt_database_maybe_maintenance(const struct dt_database_t *db)
 {
   if(_is_mem_db(db))
     return FALSE;
-
-  const char *config = dt_conf_get_string_const("database/maintenance_check");
-
-  if(!g_strcmp0(config, "never"))
-  {
-    // early bail out on "never"
-    dt_print(DT_DEBUG_SQL, "[db maintenance] please consider enabling database maintenance.\n");
-    return FALSE;
-  }
-
-  gboolean check_for_maintenance = FALSE;
-  const gboolean force_maintenance = g_str_has_suffix (config, "(don't ask)");
-
-  if(config)
-  {
-    if((strstr(config, "on both")) // should cover "(don't ask) suffix
-        || (closing_time && (strstr(config, "on close")))
-        || (!closing_time && (strstr(config, "on startup"))))
-    {
-      // we have "on both/on close/on startup" setting, so - checking!
-      dt_print(DT_DEBUG_SQL, "[db maintenance] checking for maintenance, due to rule: '%s'.\n", config);
-      check_for_maintenance = TRUE;
-    }
-    // if the config was "never", check_for_vacuum is false.
-  }
-
-  if(!check_for_maintenance)
-  {
-    return FALSE;
-  }
 
   // checking free pages
   const int main_free_count = _get_pragma_int_val(db->handle, "main.freelist_count");
@@ -3885,16 +3818,13 @@ gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gbo
   const int freepage_ratio = dt_conf_get_int("database/maintenance_freepage_ratio");
 
   if((main_free_percentage >= freepage_ratio)
-      || (data_free_percentage >= freepage_ratio))
+     || (data_free_percentage >= freepage_ratio))
   {
     const guint64 calc_size = (main_free_count*main_page_size) + (data_free_count*data_page_size);
-    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance suggested, %" G_GUINT64_FORMAT " bytes to free.\n", calc_size);
-
-    if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
-    {
-      return TRUE;
-    }
+    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance, %" G_GUINT64_FORMAT " bytes to free.\n", calc_size);
+    return TRUE;
   }
+
   return FALSE;
 }
 
@@ -4093,7 +4023,7 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   GFileInfo *info = NULL;
   guint64 last_snap = 0;
 
-  while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+  while((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
   {
     const char* fname = g_file_info_get_name(info);
     if(g_str_has_prefix(fname, lib_snap_format) || g_str_has_prefix(fname, lib_backup_format))
@@ -4154,13 +4084,13 @@ static gboolean _get_iso8601_int (const gchar *text, gsize length, gint *value)
   gsize i;
   guint v = 0;
 
-  if (length < 1 || length > 4)
+  if(length < 1 || length > 4)
     return FALSE;
 
-  for (i = 0; i < length; i++)
+  for(i = 0; i < length; i++)
   {
     const gchar c = text[i];
-    if (c < '0' || c > '9')
+    if(c < '0' || c > '9')
       return FALSE;
     v = v * 10 + (c - '0');
   }
@@ -4296,7 +4226,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
 
     GFileInfo *info = NULL;
 
-    while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+    while((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
     {
       const char* fname = g_file_info_get_name(info);
       if(g_str_has_prefix(fname, lib_snap_format))
@@ -4383,7 +4313,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
 
     GFileInfo *info = NULL;
 
-    while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+    while((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
     {
       const char* fname = g_file_info_get_name(info);
       if(g_str_has_prefix(fname, lib_snap_format))
@@ -4421,7 +4351,7 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
     g_file_enumerator_close(library_dir_files, NULL, NULL);
     g_object_unref(library_dir_files);
 
-    while ((info = g_file_enumerator_next_file(data_dir_files, NULL, &error)))
+    while((info = g_file_enumerator_next_file(data_dir_files, NULL, &error)))
     {
       const char* fname = g_file_info_get_name(info);
       if(g_str_has_prefix(fname, dat_snap_format))
@@ -4546,7 +4476,7 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   guint64 last_snap = 0;
   gchar *last_snap_name = NULL;
 
-  while ((info = g_file_enumerator_next_file(db_dir_files, NULL, &error)))
+  while((info = g_file_enumerator_next_file(db_dir_files, NULL, &error)))
   {
     const char* fname = g_file_info_get_name(info);
     if(g_str_has_prefix(fname, db_snap_format) || g_str_has_prefix(fname, db_backup_format))
@@ -4686,4 +4616,3 @@ void dt_database_rollback_transaction(const struct dt_database_t *db)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

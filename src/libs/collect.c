@@ -397,7 +397,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
 
   model = gtk_tree_view_get_model(treeview);
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-  if (!gtk_tree_selection_get_selected(selection, &model, &iter))
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter))
     return;
 
   child = iter;
@@ -505,7 +505,7 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
   /* Get info about the filmroll (or parent) selected */
   model = gtk_tree_view_get_model(treeview);
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-  if (gtk_tree_selection_get_selected(selection, &model, &iter))
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     gchar *filmroll_path = NULL;
     gchar *fullq = NULL;
@@ -525,11 +525,11 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
     g_free(filmroll_path);
 
-    if (dt_control_remove_images())
+    if(dt_control_remove_images())
     {
       gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model), &model_iter, &iter);
 
-      if (gtk_tree_model_get_flags(model) == GTK_TREE_MODEL_LIST_ONLY)
+      if(gtk_tree_model_get_flags(model) == GTK_TREE_MODEL_LIST_ONLY)
       {
         gtk_list_store_remove(GTK_LIST_STORE(gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model))),
                               &model_iter);
@@ -862,11 +862,11 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
     g_free(number);
     g_free(number2);
   }
-  else if (property == DT_COLLECTION_PROP_FILENAME && strchr(needle,',') != NULL)
+  else if(property == DT_COLLECTION_PROP_FILENAME && strchr(needle,',') != NULL)
   {
     GList *list = dt_util_str_to_glist(",", needle);
 
-    for (const GList *l = list; l; l = g_list_next(l))
+    for(const GList *l = list; l; l = g_list_next(l))
     {
       const char *name = (char *)l->data;
       if((visible = (g_strrstr(haystack, name + (name[0]=='%')) != NULL))) break;
@@ -877,14 +877,14 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   }
   else
   {
-    if (needle[0] == '%')
+    if(needle[0] == '%')
       needle++;
-    if (!needle[0])
+    if(!needle[0])
     {
       // empty search string matches all
       visible = TRUE;
     }
-    else if (!needle[1])
+    else if(!needle[1])
     {
       // single-char search, use faster strchr instead of strstr
       visible = (strchr(haystack, needle[0]) != NULL);
@@ -898,7 +898,7 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   g_free(haystack);
   g_free(str);
 
-  if (visible != was_visible)
+  if(visible != was_visible)
     gtk_list_store_set(GTK_LIST_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
   return FALSE;
 }
@@ -944,7 +944,7 @@ static gboolean tree_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
     }
     else if(!dr->searchstring || !dr->searchstring[0])
       visible = TRUE;
-    else if (dr->startwildcard)
+    else if(dr->startwildcard)
       visible = g_strrstr(haystack, dr->searchstring) != NULL;
     else
       visible = g_str_has_prefix(haystack, dr->searchstring);
@@ -1181,7 +1181,7 @@ void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeM
   guint count;
 
   gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_TEXT, &name, DT_LIB_COLLECT_COL_COUNT, &count, -1);
-  if (!count)
+  if(!count)
   {
     g_object_set(renderer, "text", name, NULL);
   }
@@ -1445,7 +1445,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     // this order should not be altered. the right feeding of the tree relies on it.
     sorted_names = g_list_sort(sorted_names, sort_folder_tag);
     const gboolean sort_descend = dt_conf_get_bool("plugins/collect/descending");
-    if (!sort_descend)
+    if(!sort_descend)
       sorted_names = g_list_reverse(sorted_names);
 
     gboolean no_uncategorized = (property == DT_COLLECTION_PROP_TAG)
@@ -2608,7 +2608,7 @@ static void entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr)
   update_view(dr);
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 400;
 }
@@ -2725,7 +2725,7 @@ static void filmrolls_removed(gpointer instance, gpointer self)
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
 
   // update tree
-  if (d->view_rule != DT_COLLECTION_PROP_FOLDERS)
+  if(d->view_rule != DT_COLLECTION_PROP_FOLDERS)
   {
     d->view_rule = -1;
   }

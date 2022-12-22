@@ -77,7 +77,7 @@ int expandable(dt_lib_module_t *self)
   return 0;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 1001;
 }
@@ -640,18 +640,8 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
             last_base_url = base_url;
 
             // ask the user if darktable.org may be accessed
-            GtkWidget *dialog = gtk_message_dialog_new
-              (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-               GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-               _("do you want to access `%s'?"), last_base_url);
-#ifdef GDK_WINDOWING_QUARTZ
-            dt_osx_disallow_fullscreen(dialog);
-#endif
-
-            gtk_window_set_title(GTK_WINDOW(dialog), _("access the online usermanual?"));
-            const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-            gtk_widget_destroy(dialog);
-            if(res == GTK_RESPONSE_YES)
+            if(dt_gui_show_yes_no_dialog(_("access the online usermanual?"),
+                                         _("do you want to access `%s'?"), last_base_url))
             {
               dt_conf_set_string("context_help/last_url", last_base_url);
             }
@@ -678,7 +668,7 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
               dt_l10n_language_t *language = NULL;
               if(darktable.l10n->selected != -1)
                   language = (dt_l10n_language_t *)g_list_nth(darktable.l10n->languages, darktable.l10n->selected)->data;
-              if (language != NULL)
+              if(language != NULL)
                 lang = language->code;
               while(supported_languages[lang_index])
               {
@@ -725,7 +715,7 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
             else
             {
               dt_control_log(_("error while opening help url in web browser"));
-              if (error != NULL) // uri_success being FALSE should guarantee that
+              if(error != NULL) // uri_success being FALSE should guarantee that
               {
                 fprintf (stderr, "unable to read file: %s\n", error->message);
                 g_error_free (error);
@@ -1030,4 +1020,3 @@ void init(struct dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

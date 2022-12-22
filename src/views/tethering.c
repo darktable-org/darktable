@@ -397,7 +397,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     // FIXME: instead export image in work profile, then pass that to histogram process as well as converting to display profile for output, eliminating dt_view_image_get_surface() above
     if(!dt_imageio_export_with_flags(lib->image_id, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE,
                                      FALSE, FALSE, FALSE, FALSE, FALSE, NULL, FALSE, FALSE, histogram_type, histogram_filename,
-                                     DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL))
+                                     DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL, -1))
     {
       const dt_iop_order_iccprofile_info_t *const histogram_profile =
         dt_ioppr_add_profile_info_to_list(darktable.develop, histogram_type, histogram_filename,
@@ -465,7 +465,7 @@ static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgi
 
 /** callbacks to deal with images taken in tethering mode */
 static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename,
-                                                  const char *exif_time, void *data)
+                                                  const dt_image_basic_exif_t *basic_exif, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
 
@@ -479,7 +479,7 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   return g_strdup(file);
 }
 
-static const char *_camera_request_image_path(const dt_camera_t *camera, char *exif_time, void *data)
+static const char *_camera_request_image_path(const dt_camera_t *camera, const dt_image_basic_exif_t *basic_exif, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
   return dt_import_session_path(lib->session, FALSE);
@@ -642,4 +642,3 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

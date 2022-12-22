@@ -36,8 +36,9 @@
 // 3.2.0 was 6.0.0 (removed facebook, flickr, and picasa from types.dt_imageio_storage_module_t)
 // 3.6.0 was 7.0.0 (added naming to events, selections, and actions)
 // 3.8.0 was 8.0.0 (moved to lua 5.4 and added some events)
+// 4.2.0 was 9.0.0 (view toolbox functions and snapshot filename removed)
 /* incompatible API change */
-#define LUA_API_VERSION_MAJOR 8
+#define LUA_API_VERSION_MAJOR 9
 /* backward compatible API change */
 #define LUA_API_VERSION_MINOR 0
 /* bugfixes that should not change anything to the API */

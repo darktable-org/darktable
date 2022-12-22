@@ -308,7 +308,7 @@ int dt_pdf_add_icc(dt_pdf_t *pdf, const char *filename)
 {
   size_t len;
   unsigned char *data = (unsigned char *)dt_read_file(filename, &len);
-  if (data)
+  if(data)
   {
     int icc_id = dt_pdf_add_icc_from_data(pdf, data, len);
     free(data);

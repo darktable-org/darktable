@@ -1906,7 +1906,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       }
     }
     // check if another location is clicked - ctrl gives priority to images
-    if (!dt_modifier_is(e->state, GDK_CONTROL_MASK) &&
+    if(!dt_modifier_is(e->state, GDK_CONTROL_MASK) &&
         dt_conf_get_bool("plugins/map/showalllocations"))
     {
       OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, e);
@@ -2282,7 +2282,6 @@ static OsmGpsMapPolygon *_view_map_add_polygon_location(dt_map_t *lib, dt_locati
   bbox.lat2 = CLAMP(bbox.lat2 - mlat, -90.0, 90);
 
   int i = 0;
-  int j = 0;
   float prev_lat = 0.0;
   float prev_lon = 0.0;
   for(GList *iter = ld->data.polygons; iter; iter = g_list_next(iter), i++)
@@ -2297,14 +2296,12 @@ static OsmGpsMapPolygon *_view_map_add_polygon_location(dt_map_t *lib, dt_locati
         osm_gps_map_track_add_point(track, point);
         prev_lat = p->lat;
         prev_lon = p->lon;
-        j++;
       }
     }
     else if(!(i % mod2))
     {
       OsmGpsMapPoint* point = osm_gps_map_point_new_degrees(p->lat, p->lon);
       osm_gps_map_track_add_point(track, point);
-      j++;
     }
   }
 
@@ -2897,7 +2894,7 @@ static int _dbscan_expand(unsigned int index)
   db.seeds->num_members = 0;
   _get_epsilon_neighbours(db.seeds, index);
 
-  if (db.seeds->num_members < db.minpts)
+  if(db.seeds->num_members < db.minpts)
     db.points[index].cluster_id = NOISE;
   else
   {

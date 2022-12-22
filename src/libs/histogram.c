@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ int expandable(dt_lib_module_t *self)
   return 0;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 1000;
 }
@@ -964,7 +964,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 {
   const float vs_radius = d->vectorscope_radius;
   const int diam_px = d->vectorscope_diameter_px;
-  const int min_size = MIN(width, height);
+  const double node_radius = DT_PIXEL_APPLY_DPI(2.);
+  const int min_size = MIN(width, height) - node_radius * 2.0;
   const double scale = min_size / (vs_radius * 2.);
 
   cairo_save(cr);
@@ -1048,7 +1049,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   {
     const float x = d->hue_ring[n][0][0];
     const float y = d->hue_ring[n][0][1];
-    cairo_arc(cr, x*scale, y*scale, DT_PIXEL_APPLY_DPI(2.), 0., M_PI * 2.);
+    cairo_arc(cr, x*scale, y*scale, node_radius, 0., M_PI * 2.);
     cairo_set_source(cr, bkgd_pat);
     cairo_fill_preserve(cr);
     set_color(cr, darktable.bauhaus->graph_grid);
@@ -1310,12 +1311,12 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
               (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
-      gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets\nctrl+scroll to change display height"));
+      gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndouble-click resets\nctrl+scroll to change display height"));
     }
     else
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
-      gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
+      gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndouble-click resets\nctrl+scroll to change display height"));
     }
     if(prior_highlight != d->highlight)
     {
@@ -2121,4 +2122,3 @@ void gui_cleanup(dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

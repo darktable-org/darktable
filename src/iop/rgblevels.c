@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -465,7 +465,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     else
       hist_max = self->histogram_max[ch];
 
-    if (!is_linear)
+    if(!is_linear)
       hist_max = logf(1.0 + hist_max);
 
     if(hist && hist_max > 0.0f)
@@ -835,7 +835,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_rgblevels_data_t *d = (dt_iop_rgblevels_data_t *)piece->data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)p1;
 
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     piece->request_histogram |= (DT_REQUEST_ON);
   else
     piece->request_histogram &= ~(DT_REQUEST_ON);
@@ -1228,7 +1228,7 @@ static void _auto_levels(const float *const img, const int width, const int heig
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -1238,7 +1238,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_levels == 1 && !darktable.gui->reset)
@@ -1270,7 +1270,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const float *const restrict in = (const float*)ivoid;
   float *const restrict out = (float*)ovoid;
-  if (d->params.autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS || d->params.preserve_colors == DT_RGB_NORM_NONE)
+  if(d->params.autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS || d->params.preserve_colors == DT_RGB_NORM_NONE)
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -1383,7 +1383,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int height = roi_out->height;
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_levels == 1 && !darktable.gui->reset)
@@ -1472,22 +1472,10 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto cleanup;
 
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 3, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 4, sizeof(int), (void *)&autoscale);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 5, sizeof(int), (void *)&preserve_colors);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 6, sizeof(cl_mem), &dev_lutr);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 7, sizeof(cl_mem), &dev_lutg);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 8, sizeof(cl_mem), &dev_lutb);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 9, sizeof(cl_mem), (void *)&dev_levels);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 10, sizeof(cl_mem), (void *)&dev_inv_gamma);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 11, sizeof(cl_mem), (void *)&dev_profile_info);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 12, sizeof(cl_mem), (void *)&dev_profile_lut);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 13, sizeof(int), (void *)&use_work_profile);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_levels, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_levels, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(autoscale), CLARG(preserve_colors),
+    CLARG(dev_lutr), CLARG(dev_lutg), CLARG(dev_lutb), CLARG(dev_levels), CLARG(dev_inv_gamma), CLARG(dev_profile_info),
+    CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
     fprintf(stderr, "[rgblevels process_cl] error %i enqueue kernel\n", err);
@@ -1504,7 +1492,7 @@ cleanup:
 
   if(src_buffer) dt_free_align(src_buffer);
 
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_rgblevels] couldn't enqueue kernel! %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_rgblevels] couldn't enqueue kernel! %s\n", cl_errstr(err));
 
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }

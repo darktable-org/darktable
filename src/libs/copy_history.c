@@ -219,31 +219,15 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  gint res = GTK_RESPONSE_YES;
-
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
   if(!imgs) return;
 
-  if(dt_conf_get_bool("ask_before_discard"))
-  {
-    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  const int number = g_list_length((GList *)imgs);
 
-    const int number = g_list_length((GList *)imgs);
-
-    GtkWidget *dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to clear history of %d selected image?",
-                 "do you really want to clear history of %d selected images?", number), number);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete images' history?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("ask_before_discard")
+     || dt_gui_show_yes_no_dialog(_("delete images' history?"),
+          ngettext("do you really want to clear history of %d selected image?",
+                   "do you really want to clear history of %d selected images?", number), number))
   {
     dt_history_delete_on_list(imgs, TRUE);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
@@ -325,7 +309,7 @@ void gui_reset(dt_lib_module_t *self)
   _update(self);
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 600;
 }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -491,7 +491,7 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
     gtk_list_store_clear(GTK_LIST_STORE(store));
     if(count > 0 && tags)
     {
-      for (GList *tag = tags; tag; tag = g_list_next(tag))
+      for(GList *tag = tags; tag; tag = g_list_next(tag))
       {
         const char *subtag = g_strrstr(((dt_tag_t *)tag->data)->tag, "|");
         gtk_list_store_append(GTK_LIST_STORE(store), &iter);
@@ -656,7 +656,7 @@ static gboolean _find_tag_iter_tagid(GtkTreeModel *model, GtkTreeIter *iter, con
         *iter = child;
         return TRUE;
       }
-  } while (gtk_tree_model_iter_next(model, iter));
+  } while(gtk_tree_model_iter_next(model, iter));
   return FALSE;
 }
 
@@ -674,7 +674,7 @@ static void _calculate_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, const
     }
     if(gtk_tree_model_iter_children(model, &child, &parent))
       _calculate_sel_on_path(model, &child, FALSE);
-  } while (!root && gtk_tree_model_iter_next(model, &parent));
+  } while(!root && gtk_tree_model_iter_next(model, &parent));
 }
 
 // reset the indeterminated selection (1) on the tree
@@ -694,7 +694,7 @@ static void _reset_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, const gbo
       }
       _reset_sel_on_path(model, &child, FALSE);
     }
-  } while (!root && gtk_tree_model_iter_next(model, &parent));
+  } while(!root && gtk_tree_model_iter_next(model, &parent));
 }
 
 // reset all selection (1 & 2) on the tree
@@ -715,7 +715,7 @@ static void _reset_sel_on_path_full(GtkTreeModel *model, GtkTreeIter *iter, cons
       gtk_list_store_set(GTK_LIST_STORE(model), &parent,
                          DT_LIB_TAGGING_COL_SEL, DT_TS_NO_IMAGE, -1);
     }
-  } while (!root && gtk_tree_model_iter_next(model, &parent));
+  } while(!root && gtk_tree_model_iter_next(model, &parent));
 }
 
 //  try to find a node fully attached (2) which is the root of the update loop. If not the full tree will be used
@@ -723,7 +723,7 @@ static void _find_root_iter_iter(GtkTreeModel *model, GtkTreeIter *iter, GtkTree
 {
   guint sel;
   GtkTreeIter child = *iter;
-  while (gtk_tree_model_iter_parent(model, parent, &child))
+  while(gtk_tree_model_iter_parent(model, parent, &child))
   {
     gtk_tree_model_get(model, parent, DT_LIB_TAGGING_COL_SEL, &sel, -1);
     if(sel == DT_TS_ALL_IMAGES)
@@ -772,7 +772,7 @@ static void _update_sel_on_tree(GtkTreeModel *model)
   if(gtk_tree_model_get_iter_first(model, &parent))
   {
     _reset_sel_on_path_full(model, &parent, FALSE);
-    for (GList *tag = tags; tag; tag = g_list_next(tag))
+    for(GList *tag = tags; tag; tag = g_list_next(tag))
     {
       GtkTreeIter iter = parent;
       if(_find_tag_iter_tagid(model, &iter, ((dt_tag_t *)tag->data)->id))
@@ -849,7 +849,7 @@ static void _delete_tree_path(GtkTreeModel *model, GtkTreeIter *iter, gboolean r
       gtk_tree_model_get(model, &tobedel, DT_LIB_TAGGING_COL_PATH, &path, -1);
       g_free(path);
       gtk_tree_store_remove(GTK_TREE_STORE(model), &tobedel);
-    } while (!root && valid);
+    } while(!root && valid);
   }
   else  // treeview is a list. The hierarchy of tags is found with the root (left part) of tagname
   {
@@ -1881,7 +1881,7 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
 
       // check if one of the new tagnames already exists.
       gboolean tagname_exists = FALSE;
-      for (GList *taglist = tag_family; taglist && !tagname_exists; taglist = g_list_next(taglist))
+      for(GList *taglist = tag_family; taglist && !tagname_exists; taglist = g_list_next(taglist))
       {
         char *new_tagname = g_strconcat(new_prefix_tag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
         tagname_exists = dt_tag_exists(new_tagname, NULL);
@@ -1902,7 +1902,7 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
       }
 
       // rename related tags
-      for (GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
+      for(GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
       {
         char *new_tagname = g_strconcat(new_prefix_tag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
         dt_tag_rename(((dt_tag_t *)taglist->data)->id, new_tagname);
@@ -2006,7 +2006,7 @@ static gboolean _apply_rename_path(GtkWidget *dialog, const char *tagname,
 
   if(!tagname_exists)
   {
-    for (GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
+    for(GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
     {
       char *new_tagname = g_strconcat(newtag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
       dt_tag_rename(((dt_tag_t *)taglist->data)->id, new_tagname);
@@ -2710,7 +2710,7 @@ void gui_reset(dt_lib_module_t *self)
   _update_atdetach_buttons(self);
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 500;
 }
@@ -3098,7 +3098,7 @@ void gui_init(dt_lib_module_t *self)
                                                   "\npress Delete or double-click to detach"
                                                   "\nright-click for other actions on attached tag,"
                                                   "\npress Tab to give the focus to entry,"
-                                                  "\nctrl-wheel scroll to resize the window"));
+                                                  "\nctrl+scroll to resize the window"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_attached_key_pressed), (gpointer)self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
@@ -3214,7 +3214,7 @@ void gui_init(dt_lib_module_t *self)
                                                   "\nshift+click to fully expand the selected tag,"
                                                   "\nright-click for other actions on selected tag,"
                                                   "\npress shift+Tab to give the focus to entry,"
-                                                  "\nctrl-scroll to resize the window"));
+                                                  "\nctrl+scroll to resize the window"));
 
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_dictionary_key_pressed), (gpointer)self);

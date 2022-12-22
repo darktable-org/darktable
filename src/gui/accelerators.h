@@ -125,6 +125,19 @@ typedef struct dt_action_element_def_t
   const gchar **effects;
 } dt_action_element_def_t;
 
+#define DT_ACTION_ELEMENTS_NUM(effect)        \
+  (dt_action_element_def_t[])                 \
+  { { N_("1st"), dt_action_effect_##effect }, \
+    { N_("2nd"), dt_action_effect_##effect }, \
+    { N_("3rd"), dt_action_effect_##effect }, \
+    { N_("4th"), dt_action_effect_##effect }, \
+    { N_("5th"), dt_action_effect_##effect }, \
+    { N_("6th"), dt_action_effect_##effect }, \
+    { N_("7th"), dt_action_effect_##effect }, \
+    { N_("8th"), dt_action_effect_##effect }, \
+    { N_("9th"), dt_action_effect_##effect }, \
+    {} }
+
 extern const dt_action_element_def_t dt_action_elements_hold[];
 
 typedef struct dt_shortcut_fallback_t
@@ -156,6 +169,7 @@ typedef struct dt_action_def_t
 
 extern const dt_action_def_t dt_action_def_toggle;
 extern const dt_action_def_t dt_action_def_button;
+extern const dt_action_def_t dt_action_def_entry;
 extern const dt_action_def_t dt_action_def_value;
 
 dt_action_t *dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
@@ -182,13 +196,19 @@ void dt_accel_connect_instance_iop(dt_iop_module_t *module);
 void dt_action_cleanup_instance_iop(dt_iop_module_t *module);
 
 // UX miscellaneous functions
-void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *text);
+void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *msg, ...);
+
+// check if widget intentionally hidden (to disable it)
+gboolean dt_action_widget_invisible(GtkWidget *w);
 
 // Get the speed multiplier for adjusting sliders and other widgets
 float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state);
 
 // create a shortcutable button with ellipsized label and tooltip
 GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, guint accel_key, GdkModifierType mods);
+
+// create a shortcutable entry field
+GtkWidget *dt_action_entry_new(dt_action_t *ac, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, const gchar *text);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

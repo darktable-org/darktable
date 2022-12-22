@@ -157,7 +157,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -213,7 +213,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -227,7 +227,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   // iterate over all output pixels (same coordinates as input)
   const int npixels = roi_out->height * roi_out->width;
-  if (d->unbound)
+  if(d->unbound)
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -262,7 +262,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_colorcontrast_data_t *data = (dt_iop_colorcontrast_data_t *)piece->data;
   dt_iop_colorcontrast_global_data_t *gd = (dt_iop_colorcontrast_global_data_t *)self->global_data;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -272,22 +272,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float offset[4] = { 0.0f, data->a_offset, data->b_offset, 0.0f };
   const int unbound = data->unbound;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 4, 4 * sizeof(float), (void *)&scale);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 5, 4 * sizeof(float), (void *)&offset);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 6, sizeof(int), (void *)&unbound);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorcontrast, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcontrast, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(scale), CLARG(offset), CLARG(unbound));
 
   if(err != CL_SUCCESS) goto error;
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcontrast] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcontrast] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

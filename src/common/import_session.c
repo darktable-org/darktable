@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #include "common/film.h"
+#include "common/image.h"
 #include "common/import_session.h"
 #include "common/variables.h"
 #include "control/conf.h"
@@ -220,10 +221,9 @@ void dt_import_session_set_time(struct dt_import_session_t *self, const char *ti
 }
 
 
-void
-dt_import_session_set_exif_time(struct dt_import_session_t *self, const char *exif_time)
+void dt_import_session_set_exif_basic_info(struct dt_import_session_t *self, const dt_image_basic_exif_t *basic_exif)
 {
-  dt_variables_set_exif_time(self->vp, exif_time);
+  dt_variables_set_exif_basic_info(self->vp, basic_exif);
 }
 
 
@@ -381,4 +381,3 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean cu
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -311,21 +311,6 @@ done
 CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:-}
 CMAKE_MORE_OPTIONS="${CMAKE_MORE_OPTIONS} ${CMAKE_PREFIX_PATH}"
 
-
-# ---------------------------------------------------------------------------
-# Determine CPU architecture
-# ---------------------------------------------------------------------------
-
-CPU_ARCHITECTURE=""
-if [[ `uname -a` =~ ^Darwin.* ]] && [[ `uname -a` =~ .*arm64$ ]]
-then
-    CPU_ARCHITECTURE="ARM64"
-    CMAKE_MORE_OPTIONS="${CMAKE_MORE_OPTIONS} -DBUILD_SSE2_CODEPATHS=OFF"
-else
-	CPU_ARCHITECTURE="Intel"
-fi
-
-
 # ---------------------------------------------------------------------------
 # Let's go
 # ---------------------------------------------------------------------------
@@ -338,7 +323,6 @@ Installation prefix: $INSTALL_PREFIX
 Build type:          $BUILD_TYPE
 Build generator:     $BUILD_GENERATOR
 Build tasks:         $MAKE_TASKS
-CPU Architecture:    $CPU_ARCHITECTURE
 
 EOF
 

@@ -45,7 +45,7 @@ typedef double (*DTGTKTranslateValueFunc)(const double value);
 typedef gchar *(*DTGTKPrintValueFunc)(const double value, const gboolean detailled);
 typedef gboolean (*DTGTKDecodeValueFunc)(const gchar *text, double *value);
 typedef struct _GtkDarktableRangeSelect GtkDarktableRangeSelect;
-typedef gchar *(*DTGTKCurrentTextFunc)(GtkDarktableRangeSelect *range, const double current);
+typedef gchar *(*DTGTKCurrentTextFunc)(GtkDarktableRangeSelect *range);
 
 typedef enum dt_range_bounds_t
 {
@@ -71,12 +71,13 @@ struct _GtkDarktableRangeSelect
   dt_range_type_t type;
 
   gboolean show_entries; // do we show the line with the entry boxes ?
+  gboolean allow_resize; // do we allow to resize the selection once it is set ?
   double min_r;          // minimal value shown
   double max_r;          // maximal value shown
   double step_bd;        // minimal step value in band reference
 
   double select_min_r;      // low bound of the selection
-  double select_max_r;      // hight bound of the selection
+  double select_max_r;      // high bound of the selection
   dt_datetime_t select_relative_date_r; // relative date
   dt_range_bounds_t bounds; // type of selection bounds
 
@@ -89,8 +90,13 @@ struct _GtkDarktableRangeSelect
   GtkWidget *entry_min;
   GtkWidget *entry_max;
   GtkWidget *band;
+  // next widgets are always hidden and used only to define the color with css
+  GtkWidget *band_graph;
+  GtkWidget *band_selection;
+  GtkWidget *band_icons;
+  GtkWidget *band_cursor;
 
-  // fonction used to translate "real" value into band positions
+  // function used to translate "real" value into band positions
   // this allow to have special value repartitions on the band
   // if NULL, band values == real values
   DTGTKTranslateValueFunc value_to_band;
@@ -102,7 +108,7 @@ struct _GtkDarktableRangeSelect
   // print function has detailled mode for extended infos
   DTGTKPrintValueFunc print;
   DTGTKDecodeValueFunc decode;
-  DTGTKCurrentTextFunc current_text;
+  DTGTKCurrentTextFunc current_bounds;
   GList *blocks;
   GList *icons;
   GList *markers;
@@ -116,6 +122,7 @@ struct _GtkDarktableRangeSelect
   // window used to show the value under the cursor
   GtkWidget *cur_window;
   GtkWidget *cur_label;
+  gchar *cur_help;
 
   struct _range_date_popup *date_popup;
 };
@@ -137,7 +144,7 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
 // directly decode raw_text and apply it to selection
 void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *range, const gchar *txt,
                                                     gboolean signal);
-// get selction range
+// get selection range
 dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *range, double *min_r, double *max_r);
 
 // get the text used for collection queries
@@ -154,7 +161,7 @@ void dtgtk_range_select_add_range_block(GtkDarktableRangeSelect *range, const do
 void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
 
 // set the function to switch from real value to band value
-// this is usefull to have non-linear value repartitions
+// this is useful to have non-linear value repartitions
 void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc value_from_band,
                                       DTGTKTranslateValueFunc value_to_band);
 // set functions to switch between real values and text representation

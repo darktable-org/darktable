@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2021 darktable developers.
+    Copyright (C) 2014-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -148,7 +148,7 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
 }
 
 static gboolean _drag_motion_received(GtkWidget *widget, GdkDragContext *dc,
-                                      gint x, gint y, guint time,
+                                      const gint x, const gint y, const guint time,
                                       gpointer data)
 {
   const dt_view_t *self = (dt_view_t *)data;
@@ -178,12 +178,13 @@ void cleanup(dt_view_t *self)
   free(prt);
 }
 
-static void expose_print_page(dt_view_t *self, cairo_t *cr,
-                              int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
+static void _expose_print_page(dt_view_t *self, cairo_t *cr,
+                              const int32_t width, const int32_t height,
+                              const int32_t pointerx, const int32_t pointery)
 {
   dt_print_t *prt = (dt_print_t *)self->data;
 
-  if (prt->pinfo == NULL)
+  if(prt->pinfo == NULL)
     return;
 
   float px=.0f, py=.0f, pwidth=.0f, pheight=.0f;
@@ -283,15 +284,19 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_PRINT_BG);
   cairo_paint(cri);
 
-  // print page & borders only. Images are displayed in gui_post_expose in print_settings module
-  expose_print_page(self, cri, width_i, height_i, pointerx, pointery);
+  // print page & borders only. Images are displayed in
+  // gui_post_expose in print_settings module.
+
+  _expose_print_page(self, cri, width_i, height_i, pointerx, pointery);
 }
 
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   const dt_print_t *prt = (dt_print_t *)self->data;
 
-  // if we are not hovering over a thumbnail in the filmstrip -> show metadata of first opened image.
+  // if we are not hovering over a thumbnail in the filmstrip -> show
+  // metadata of first opened image.
+
   const int32_t mouse_over_id = dt_control_get_mouse_over_id();
 
   if(prt->imgs->count == 1 && mouse_over_id != prt->imgs->box[0].imgid)
@@ -321,7 +326,7 @@ int try_enter(dt_view_t *self)
   if(imgid < 0)
   {
     // fail :(
-    dt_control_log(_("no image to open !"));
+    dt_control_log(_("no image to open!"));
     return 1;
   }
 
@@ -402,4 +407,3 @@ void leave(dt_view_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

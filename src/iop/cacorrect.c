@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -289,9 +289,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const uint32_t filters = piece->pipe->dsc.filters;
 
-  const gboolean full_pipe  = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean full_pipe  = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   const gboolean valid = MAX(width, height) >= CA_SIZE_MINIMUM;
-  const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+  const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   dt_iop_cacorrect_data_t     *d = (dt_iop_cacorrect_data_t *)piece->data;
   dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
@@ -389,7 +389,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float eps = 1e-5f, eps2 = 1e-10f; // tolerance to avoid dividing by zero
 
-  for (size_t it = 0; it < iterations && processpasstwo; it++)
+  for(size_t it = 0; it < iterations && processpasstwo; it++)
   {
 
 #ifdef _OPENMP
@@ -1099,7 +1099,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             // some parameters for the bilinear interpolation
             shiftvfloor[c] = floor((float)lblockshifts[c >> 1][0]);
             shiftvceil[c] = ceil((float)lblockshifts[c >> 1][0]);
-            if (lblockshifts[c>>1][0] < 0.f) {
+            if(lblockshifts[c>>1][0] < 0.f) {
               float tmp = shiftvfloor[c];
               shiftvfloor[c] = shiftvceil[c];
               shiftvceil[c] = tmp;
@@ -1108,7 +1108,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
             shifthfloor[c] = floor((float)lblockshifts[c >> 1][1]);
             shifthceil[c] = ceil((float)lblockshifts[c >> 1][1]);
-            if (lblockshifts[c>>1][1] < 0.f) {
+            if(lblockshifts[c>>1][1] < 0.f) {
               float tmp = shifthfloor[c];
               shifthfloor[c] = shifthceil[c];
               shifthceil[c] = tmp;
@@ -1338,7 +1338,7 @@ static void _display_ca_error(struct dt_iop_module_t *self)
   else if(g->error == CACORRECT_ERROR_MATH)
      dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
                                       _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"
-                                        "you can get more info by running dt via the console."), NULL);
+                                        "you can get more info by running darktable via the console."), NULL);
   else if(g->error == CACORRECT_ERROR_LIN)
      dt_iop_set_module_trouble_message(self, _("quality"),
                                       _("internals maths found too few data points so restricted the order of the fit to linear.\n"

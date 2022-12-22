@@ -167,31 +167,42 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
   // metadata has to be written before the pixels
 
   // embed icc profile
-  if(imgid > 0)
+  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  uint32_t len = 0;
+  cmsSaveProfileToMem(out_profile, NULL, &len);
+  if(len > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
-    uint32_t len = 0;
-    cmsSaveProfileToMem(out_profile, 0, &len);
-    if(len > 0)
+    char *buf = malloc(sizeof(char) * len);
+    if(buf)
     {
-      char *buf = malloc(sizeof(char) * len);
-      char name[512] = { 0 };
       cmsSaveProfileToMem(out_profile, buf, &len);
+      char name[512] = { 0 };
       dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
 
       png_set_iCCP(png_ptr, info_ptr, *name ? name : "icc", 0,
 #if(PNG_LIBPNG_VER < 10500)
-                   (png_charp)buf,
+                    (png_charp)buf,
 #else
-                   (png_const_bytep)buf,
+                    (png_const_bytep)buf,
 #endif
-                   len);
+                    len);
       free(buf);
     }
   }
 
   // write exif data
-  PNGwriteRawProfile(png_ptr, info_ptr, "exif", exif, exif_len);
+  if(exif && exif_len > 0)
+  {
+    /* The legacy tEXt chunk storage scheme implies the "Exif\0\0" APP1 prefix */
+    uint8_t *buf = malloc(exif_len + 6);
+    if(buf)
+    {
+      memcpy(buf, "Exif\0\0", 6);
+      memcpy(buf + 6, exif, exif_len);
+      PNGwriteRawProfile(png_ptr, info_ptr, "exif", buf, exif_len + 6);
+      free(buf);
+    }
+  }
 
   png_write_info(png_ptr, info_ptr);
 
@@ -305,7 +316,7 @@ static int __attribute__((__unused__)) read_header(const char *filename, dt_imag
 #if 0
 int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
 {
-  if (setjmp(png_jmpbuf(png->png_ptr)))
+  if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, NULL, NULL);
@@ -313,7 +324,7 @@ int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
   }
   uint32_t bit_depth = png_get_bit_depth(png->png_ptr, png->info_ptr);
   // strip down to 8 bit channels
-  if (bit_depth == 16)
+  if(bit_depth == 16)
     png_set_strip_16(png->png_ptr);
 
   return 0;
@@ -458,6 +469,15 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   return 0;
 }
 
+int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data, uint32_t *width,
+              uint32_t *height)
+{
+  /* maximum dimensions supported by PNG images */
+  *width = 2147483647U;
+  *height = 2147483647U;
+  return 1;
+}
+
 int bpp(dt_imageio_module_data_t *p)
 {
   return ((dt_imageio_png_t *)p)->bpp;
@@ -480,7 +500,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("PNG (8/16-bit)");
+  return _("PNG");
 }
 
 static void bit_depth_changed(GtkWidget *widget, gpointer user_data)
@@ -521,21 +541,15 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // Bit depth combo box
-  gui->bit_depth = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->bit_depth, NULL, N_("bit depth"));
-  dt_bauhaus_combobox_add(gui->bit_depth, _("8 bit"));
-  dt_bauhaus_combobox_add(gui->bit_depth, _("16 bit"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bit_depth, self, NULL, N_("bit depth"), NULL,
+                               0, bit_depth_changed, self,
+                               N_("8 bit"), N_("16 bit"));
   if(bpp == 16)
     dt_bauhaus_combobox_set(gui->bit_depth, 1);
-  else {
-    bpp = 8; // We know only about 8 or 16 bits, at least for now
-    dt_bauhaus_combobox_set(gui->bit_depth, 0);
-  }
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bit_depth, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->bit_depth), "value-changed", G_CALLBACK(bit_depth_changed), NULL);
 
   // Compression level slider
-  gui->compression = dt_bauhaus_slider_new_with_range(NULL,
+  gui->compression = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
                                                       dt_confgen_get_int("plugins/imageio/format/png/compression", DT_MIN),
                                                       dt_confgen_get_int("plugins/imageio/format/png/compression", DT_MAX),
                                                       1,
@@ -569,4 +583,3 @@ int flags(dt_imageio_module_data_t *data)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

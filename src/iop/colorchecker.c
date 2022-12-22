@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -553,7 +553,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_out->height;
   const int num_patches = d->num_patches;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem dev_params = NULL;
 
   const size_t params_size = (size_t)(4 * (2 * num_patches + 4)) * sizeof(float);
@@ -580,14 +580,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_params = dt_opencl_copy_host_to_device_constant(devid, params_size, params);
   if(dev_params == NULL) goto error;
 
-  size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 4, sizeof(int), (void *)&num_patches);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorchecker, 5, sizeof(cl_mem), (void *)&dev_params);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorchecker, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorchecker, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(num_patches), CLARG(dev_params));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_params);
@@ -597,7 +591,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 error:
   free(params);
   dt_opencl_release_mem_object(dev_params);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorchecker] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorchecker] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -787,7 +781,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         A[j*N4+i] = 0;
     // make coefficient matrix triangular
     int *pivot = malloc(sizeof(*pivot) * N4);
-    if (gauss_make_triangular(A, pivot, N4))
+    if(gauss_make_triangular(A, pivot, N4))
     {
       // calculate coefficients for L channel
       for(int i=0;i<N;i++) b[i] = p->target_L[i];
@@ -1110,7 +1104,8 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = allocation.height;
+  const int width = allocation.width;
+  const int height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
@@ -1161,18 +1156,21 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     }
   }
 
-  const int draw_i = g->drawn_patch % cells_x;
-  const int draw_j = g->drawn_patch / cells_x;
-  float color = 1.0;
-  if(p->source_L[g->drawn_patch] > 80) color = 0.0;
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-  cairo_set_source_rgb(cr, color, color, color);
-  cairo_rectangle(cr,
-      width * draw_i / (float) cells_x + DT_PIXEL_APPLY_DPI(5),
-      height * draw_j / (float) cells_y + DT_PIXEL_APPLY_DPI(5),
-      width / (float) cells_x - DT_PIXEL_APPLY_DPI(11),
-      height / (float) cells_y - DT_PIXEL_APPLY_DPI(11));
-  cairo_stroke(cr);
+  if(g->drawn_patch != -1)
+  {
+    const int draw_i = g->drawn_patch % cells_x;
+    const int draw_j = g->drawn_patch / cells_x;
+    float color = 1.0;
+    if(p->source_L[g->drawn_patch] > 80) color = 0.0;
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+    cairo_set_source_rgb(cr, color, color, color);
+    cairo_rectangle(cr,
+                    width * draw_i / (float) cells_x + DT_PIXEL_APPLY_DPI(5),
+                    height * draw_j / (float) cells_y + DT_PIXEL_APPLY_DPI(5),
+                    width / (float) cells_x - DT_PIXEL_APPLY_DPI(11),
+                    height / (float) cells_y - DT_PIXEL_APPLY_DPI(11));
+    cairo_stroke(cr);
+  }
 
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
@@ -1404,4 +1402,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

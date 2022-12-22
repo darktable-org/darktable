@@ -110,7 +110,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colisa_data_t *d = (dt_iop_colisa_data_t *)piece->data;
   dt_iop_colisa_global_data_t *gd = (dt_iop_colisa_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
   const int width = roi_in->width;
@@ -136,15 +136,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colisa, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colisa, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colisa, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colisa, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colisa, 4, sizeof(float), (void *)&saturation);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colisa, 5, sizeof(cl_mem), (void *)&dev_cm);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colisa, 6, sizeof(cl_mem), (void *)&dev_ccoeffs);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colisa, 7, sizeof(cl_mem), (void *)&dev_lm);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colisa, 8, sizeof(cl_mem), (void *)&dev_lcoeffs);
+  dt_opencl_set_kernel_args(devid, gd->kernel_colisa, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+    CLARG(height), CLARG(saturation), CLARG(dev_cm), CLARG(dev_ccoeffs), CLARG(dev_lm), CLARG(dev_lcoeffs));
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colisa, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -160,7 +153,7 @@ error:
   dt_opencl_release_mem_object(dev_lm);
   dt_opencl_release_mem_object(dev_ccoeffs);
   dt_opencl_release_mem_object(dev_cm);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colisa] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colisa] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

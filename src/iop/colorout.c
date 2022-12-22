@@ -287,7 +287,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->global_data;
   cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -301,7 +301,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return TRUE;
   }
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   float cmatrix[9];
   pack_3xSSE_to_3x3(d->cmatrix, cmatrix);
@@ -316,16 +315,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_coeffs
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3, (float *)d->unbounded_coeffs);
   if(dev_coeffs == NULL) goto error;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 4, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 5, sizeof(cl_mem), (void *)&dev_r);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 6, sizeof(cl_mem), (void *)&dev_g);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 7, sizeof(cl_mem), (void *)&dev_b);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_colorout, 8, sizeof(cl_mem), (void *)&dev_coeffs);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorout, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorout, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_m), CLARG(dev_r), CLARG(dev_g),
+    CLARG(dev_b), CLARG(dev_coeffs));
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
@@ -341,7 +333,7 @@ error:
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorout] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorout] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -401,7 +393,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
@@ -589,7 +581,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   cmsHPROFILE softproof = NULL;
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
-  d->mode = (pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
+  d->mode = (pipe->type & DT_DEV_PIXELPIPE_FULL) ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
 
   if(d->xform)
   {
@@ -603,7 +595,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   piece->process_cl_ready = 1;
 
   /* if we are exporting then check and set usage of override profile */
-  if((pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT)
+  if(pipe->type & DT_DEV_PIXELPIPE_EXPORT)
   {
     if(pipe->icc_type != DT_COLORSPACE_NONE)
     {
@@ -616,13 +608,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     out_filename = p->filename;
     out_intent = p->intent;
   }
-  else if((pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
+  else if(pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
   {
     out_type = dt_mipmap_cache_get_colorspace();
     out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
     out_intent = darktable.color_profiles->display_intent;
   }
-  else if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW2) == DT_DEV_PIXELPIPE_PREVIEW2)
+  else if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW2)
   {
     /* preview2 is only used in second darkroom window, using display2 profile as output */
     out_type = darktable.color_profiles->display2_type;
@@ -675,7 +667,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   /* creating softproof profile if softproof is enabled */
-  if(d->mode != DT_PROFILE_NORMAL && (pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if((d->mode != DT_PROFILE_NORMAL) && (pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile
       (darktable.color_profiles->softproof_type,
@@ -860,14 +852,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  // TODO:
-  g->output_intent = dt_bauhaus_combobox_new(self);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->output_intent, self, NULL, N_("output intent"),
+                               _("rendering intent"),
+                               0, intent_changed, self,
+                               N_("perceptual"),
+                               N_("relative colorimetric"),
+                               NC_("rendering intent", "saturation"),
+                               N_("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_intent, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->output_intent, NULL, N_("output intent"));
-  dt_bauhaus_combobox_add(g->output_intent, _("perceptual"));
-  dt_bauhaus_combobox_add(g->output_intent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(g->output_intent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(g->output_intent, _("absolute colorimetric"));
 
   if(!force_lcms2)
   {
@@ -884,7 +876,6 @@ void gui_init(struct dt_iop_module_t *self)
     if(prof->out_pos > -1) dt_bauhaus_combobox_add(g->output_profile, prof->name);
   }
 
-  gtk_widget_set_tooltip_text(g->output_intent, _("rendering intent"));
   char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
   char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
   char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
@@ -893,7 +884,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_free(user_profile_dir);
   g_free(tooltip);
 
-  g_signal_connect(G_OBJECT(g->output_intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed", G_CALLBACK(output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!

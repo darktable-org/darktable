@@ -302,7 +302,7 @@ static void _copy_output(const float *const restrict in, uint8_t *const restrict
     // the output of this module is BGR(A) instead of RGBA, so we can't use for_each_channel
     for(size_t c = 0; c < 3; c++)
     {
-      out[j + 2 - c] = (uint8_t)(fminf(fmaxf(roundf(255.0f * in[j + c]), 0.0f), 255.0f));
+      out[j + 2 - c] = (uint8_t)(fminf(roundf(255.0f * fmaxf(in[j + c], 0.0f)), 255.0f));
     }
   }
 }
@@ -311,7 +311,7 @@ static void _copy_output(const float *const restrict in, uint8_t *const restrict
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          i, o, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 

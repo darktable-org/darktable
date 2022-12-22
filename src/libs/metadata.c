@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 #include "common/metadata.h"
 #include "common/collection.h"
-#include "common/selection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "control/conf.h"
@@ -51,7 +50,10 @@ typedef struct dt_lib_metadata_t
   GtkWidget *swindow[DT_METADATA_NUMBER];
   GList *metadata_list[DT_METADATA_NUMBER];
   char *setting_name[DT_METADATA_NUMBER];
-  gboolean editing;
+  char *edited[DT_METADATA_NUMBER];
+  gboolean editing[DT_METADATA_NUMBER];
+  char *name[DT_METADATA_NUMBER];
+  GtkWidget *label[DT_METADATA_NUMBER];
   GtkWidget *apply_button;
   GList *last_act_on;
 } dt_lib_metadata_t;
@@ -113,13 +115,76 @@ static void _set_text_buffer(GtkTextBuffer *buffer, const char *text)
   g_signal_handlers_unblock_matched(buffer, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _textbuffer_changed, NULL);
 }
 
+static int _textview_index(GtkTextView *textview)
+{
+  return GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
+}
+
+static void _set_textview_editing(const gboolean editing, const int i, dt_lib_metadata_t *d)
+{
+  if(!editing && d->editing[i] && d->last_act_on)
+  {
+    g_list_free(d->last_act_on);
+    d->last_act_on = NULL;
+  }
+  d->editing[i] = editing;
+  if(editing)
+  {
+    gchar *markup = g_strdup_printf("<u><i>%s</i></u>", d->name[i]);
+    gtk_label_set_markup(GTK_LABEL(d->label[i]), markup);
+    g_free(markup);
+  }
+  else if(d->label[i])
+    gtk_label_set_text(GTK_LABEL(d->label[i]), d->name[i]);
+}
+
+static gboolean _is_textview_editing(const int i, dt_lib_metadata_t *d)
+{
+  return(d->editing[i]);
+}
+
+static void _save_edited_textview(const int i, dt_lib_metadata_t *d)
+{
+  if(d->editing[i])
+  {
+    if(d->edited[i])
+      g_free(d->edited[i]);
+    d->edited[i] = _get_buffer_text(GTK_TEXT_VIEW(d->textview[i]));
+    _set_textview_editing(FALSE, i, d);
+  }
+}
+
+static void _restore_edited_textview(const int i, dt_lib_metadata_t *d)
+{
+  if(d->edited[i])
+  {
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
+    _set_text_buffer(buffer, d->edited[i]);
+    g_free(d->edited[i]);
+    d->edited[i] = NULL;
+    _set_textview_editing(TRUE, i, d);
+  }
+}
+
+static void _reset_edited_state(const int i, dt_lib_metadata_t *d)
+{
+  _set_textview_editing(FALSE, i, d);
+  if(d->edited[i])
+  {
+    g_free(d->edited[i]);
+    d->edited[i] = NULL;
+  }
+}
+
 static void _fill_text_view(const uint32_t i, const uint32_t count, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   gboolean multi = FALSE;
 
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
-  if(count == 0)  // no metadata value
+  if(_is_textview_editing(i, d))
+  {}
+  else if(count == 0)  // no metadata value
   {
     _set_text_buffer(buffer, "");
   }
@@ -146,7 +211,7 @@ static void _update(dt_lib_module_t *self)
   // first we want to make sure the list of images to act on has changed
   // this is not the case if mouse hover change but still stay in selection for ex.
   if(!imgs && !d->last_act_on) return;
-  if(imgs && d->last_act_on)
+  if(imgs && d->last_act_on && g_list_length(imgs) == g_list_length(d->last_act_on))
   {
     gboolean changed = FALSE;
     GList *l = d->last_act_on;
@@ -229,6 +294,8 @@ static void _update(dt_lib_module_t *self)
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    _reset_edited_state(i, (dt_lib_metadata_t *)self->data);
   _update(self);
 }
 
@@ -236,6 +303,8 @@ static void _collection_updated_callback(gpointer instance, dt_collection_change
                                          dt_collection_properties_t changed_property, gpointer imgs, int next,
                                          dt_lib_module_t *self)
 {
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    _reset_edited_state(i, (dt_lib_metadata_t *)self->data);
   _update(self);
 }
 
@@ -262,29 +331,20 @@ static void _write_metadata(GtkTextView *textview, dt_lib_module_t *self)
   GList *key_value = NULL;
   if(textview)
   {
-    const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
+    const int i = _textview_index(textview);
     _metadata_set_list(i, &key_value, d);
+    _reset_edited_state(i, d);
   }
   else
   {
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
       _metadata_set_list(i, &key_value, d);
+      _reset_edited_state(i, d);
+    }
   }
 
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
-  // workaround: if hovered image instead of selected, aborts
-  if(imgs && !imgs->next)
-  {
-    GList *sels = dt_selection_get_list(darktable.selection, FALSE, FALSE);
-    if(sels && (sels->next || (!sels->next && GPOINTER_TO_INT(sels->data) != GPOINTER_TO_INT(imgs->data))))
-    {
-      g_list_free(sels);
-      g_list_free(imgs);
-      return;
-    }
-    g_list_free(sels);
-  }
-
   dt_metadata_set_list(imgs, key_value, TRUE);
 
   for(GList *l = key_value; l; l = l->next)
@@ -300,7 +360,6 @@ static void _write_metadata(GtkTextView *textview, dt_lib_module_t *self)
   dt_image_synch_xmps(imgs);
   g_list_free(imgs);
   _update(self);
-  d->editing = FALSE;
 }
 
 static void _apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
@@ -320,7 +379,7 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
       case GDK_KEY_KP_Enter:
         // insert new line
         event->state &= ~GDK_CONTROL_MASK;  //TODO: on Mac, remap Ctrl to Cmd key
-        d->editing = TRUE;
+        _set_textview_editing(TRUE, _textview_index(GTK_TEXT_VIEW(textview)), d);
         break;
       default:
         break;
@@ -345,9 +404,10 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
       {
         if(dt_modifier_is(event->state, 0))
         {
+          for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+            _reset_edited_state(i, d);
           _update(self);
           gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
-          d->editing = FALSE;
           return TRUE;
         }
         break;
@@ -363,8 +423,8 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
 void _textbuffer_changed(GtkTextBuffer *textbuffer, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  d->editing = TRUE;
   GtkTextView *textview = GINT_TO_POINTER(g_object_get_data(G_OBJECT(textbuffer), "buffer_tv"));
+  _set_textview_editing(TRUE, _textview_index(textview), d);
   g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
 }
 
@@ -378,7 +438,7 @@ gboolean _textview_focus(GtkWidget *widget, GtkDirectionType d, gpointer user_da
 static gboolean _got_focus(GtkWidget *textview, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  if(!d->editing)
+  if(!_is_textview_editing(_textview_index(GTK_TEXT_VIEW(textview)), d))
   {
     if(_is_leave_unchanged(GTK_TEXT_VIEW(textview)))
     {
@@ -393,8 +453,6 @@ static gboolean _got_focus(GtkWidget *textview, dt_lib_module_t *self)
 
 static gboolean _lost_focus(GtkWidget *textview, GdkEventFocus *event, dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  d->editing = FALSE;
   if(_is_leave_unchanged(GTK_TEXT_VIEW(textview)))
   {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
@@ -404,7 +462,7 @@ static gboolean _lost_focus(GtkWidget *textview, GdkEventFocus *event, dt_lib_mo
   return FALSE;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 510;
 }
@@ -470,7 +528,16 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   // if editing don't lose the current entry
-  if (d->editing) return;
+  const int32_t img = dt_control_get_mouse_over_id();
+
+  if(img == -1)
+  { // exits thumbnails zone
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+      _restore_edited_textview(i, d);
+  }
+  else
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+      _save_edited_textview(i, d);
 
   dt_lib_queue_postponed_update(self, _update);
 }
@@ -655,9 +722,9 @@ static void _populate_popup_multi(GtkTextView *textview, GtkWidget *popup, dt_li
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
   // get grid line number
-  const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
+  const int i = _textview_index(textview);
 
-  if (!d->metadata_list[i] || !_is_leave_unchanged(GTK_TEXT_VIEW(textview))) return;
+  if(!d->metadata_list[i] || !_is_leave_unchanged(GTK_TEXT_VIEW(textview))) return;
 
   gtk_menu_shell_append(GTK_MENU_SHELL(popup),gtk_separator_menu_item_new());
 
@@ -704,13 +771,14 @@ void gui_init(dt_lib_module_t *self)
   {
     if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
       continue;
-    GtkWidget *label = dt_ui_label_new(_(dt_metadata_get_name_by_display_order(i)));
+    d->name[i] = _(dt_metadata_get_name_by_display_order(i));
+    d->label[i] = dt_ui_label_new(d->name[i]);
     GtkWidget *labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(labelev), label);
+    gtk_container_add(GTK_CONTAINER(labelev), d->label[i]);
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(label),
-              _("metadata text. ctrl-wheel scroll to resize the text box"
+    gtk_widget_set_tooltip_text(GTK_WIDGET(d->label[i]),
+              _("metadata text. ctrl+scroll to resize the text box"
               "\n ctrl-enter inserts a new line (caution, may not be compatible with standard metadata)."
               "\nif <leave unchanged> selected images have different metadata."
               "\nin that case, right-click gives the possibility to choose one of them."
@@ -780,7 +848,7 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
-  const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
@@ -791,6 +859,7 @@ void gui_cleanup(dt_lib_module_t *self)
       continue;
     g_signal_handlers_block_by_func(d->textview[i], _lost_focus, self);
     g_free(d->setting_name[i]);
+    _reset_edited_state(i, d);
   }
   free(self->data);
   self->data = NULL;

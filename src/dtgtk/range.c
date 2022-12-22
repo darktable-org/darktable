@@ -164,6 +164,9 @@ static void _range_select_destroy(GtkWidget *widget)
   if(range->surface) cairo_surface_destroy(range->surface);
   range->surface = NULL;
 
+  if(range->cur_help) g_free(range->cur_help);
+  range->cur_help = NULL;
+
   GTK_WIDGET_CLASS(_range_select_parent_class)->destroy(widget);
 }
 
@@ -229,10 +232,6 @@ static gboolean _default_decode_date_func(const gchar *text, double *value)
     return TRUE;
   }
   return FALSE;
-}
-static gchar *_default_current_text_func(GtkDarktableRangeSelect *range, const double current)
-{
-  return range->print(current, TRUE);
 }
 
 static void _date_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
@@ -570,13 +569,17 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
   pop->internal_change--;
 }
 
-
-static void _current_resized(GtkWidget *widget, GtkAllocation *allocation, GtkDarktableRangeSelect *range)
+static void _current_set_text(GtkDarktableRangeSelect *range, const double current_value_r)
 {
-  // we want to be sure that we have enough space to show it on top
-  gint wx, wy;
-  gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
-  gtk_popover_set_position(GTK_POPOVER(range->cur_window), (wy < allocation->height) ? GTK_POS_RIGHT : GTK_POS_TOP);
+  if(!range->cur_label) return;
+  gchar *val = range->print(current_value_r, TRUE);
+  gchar *sel = range->current_bounds(range);
+  gchar *txt = g_strdup_printf("<b>%s</b> | %s %s", val, _("selected"), sel);
+
+  gtk_label_set_markup(GTK_LABEL(range->cur_label), txt);
+  g_free(txt);
+  g_free(sel);
+  g_free(val);
 }
 
 static void _current_hide_popup(GtkDarktableRangeSelect *range)
@@ -591,17 +594,27 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
   if(range->cur_window) return;
   range->cur_window = gtk_popover_new(range->band);
   gtk_widget_set_name(range->cur_window, "range-current");
-  // we try to guess what is the best position before we show the popup.
-  // Anyway this is rechecked on popup resizing
-  gint wx, wy;
-  gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
-  gtk_popover_set_position(GTK_POPOVER(range->cur_window),
-                           (wy < 2 * gtk_widget_get_allocated_height(range->band)) ? GTK_POS_RIGHT : GTK_POS_TOP);
   gtk_popover_set_modal(GTK_POPOVER(range->cur_window), FALSE);
-  g_signal_connect(G_OBJECT(range->cur_window), "size-allocate", G_CALLBACK(_current_resized), range);
-  range->cur_label = gtk_label_new(" ");
+  gtk_popover_set_position(GTK_POPOVER(range->cur_window), GTK_POS_BOTTOM);
+
+  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  // the label for the current value / selection
+  range->cur_label = gtk_label_new("");
   dt_gui_add_class(range->cur_label, "dt_transparent_background");
-  gtk_container_add(GTK_CONTAINER(range->cur_window), range->cur_label);
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoAttribute *attr = pango_attr_font_features_new("tnum");
+  pango_attr_list_insert(attrlist, attr);
+  gtk_label_set_attributes(GTK_LABEL(range->cur_label), attrlist);
+  pango_attr_list_unref(attrlist);
+  _current_set_text(range, 0);
+  gtk_box_pack_start(GTK_BOX(vb), range->cur_label, FALSE, TRUE, 0);
+
+  // the label for the static infos
+  GtkWidget *lb = gtk_label_new("");
+  gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
+  if(range->cur_help) gtk_label_set_markup(GTK_LABEL(lb), range->cur_help);
+  gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(range->cur_window), vb);
   gtk_widget_show_all(range->cur_window);
 }
 
@@ -760,7 +773,7 @@ static void _popup_date_tree_selection_change(GtkTreeView *self, GtkDarktableRan
   }
   else
   {
-    // intialize value depending of the source widget
+    // initialize value depending of the source widget
     if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_max)
     {
       m = 12;
@@ -946,8 +959,8 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   // the calendar
   pop->calendar = gtk_calendar_new();
   gtk_widget_set_no_show_all(pop->calendar, TRUE);
-  gtk_widget_set_tooltip_text(pop->calendar, _("simple click to select date\n"
-                                               "double click to use the date directly"));
+  gtk_widget_set_tooltip_text(pop->calendar, _("click to select date\n"
+                                               "double-click to use the date directly"));
   g_signal_connect(G_OBJECT(pop->calendar), "day_selected", G_CALLBACK(_popup_date_changed), range);
   g_signal_connect(G_OBJECT(pop->calendar), "day_selected-double-click",
                    G_CALLBACK(_popup_date_day_selected_2click), range);
@@ -1012,8 +1025,8 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(DATETIME_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT,
                                                           G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT));
   pop->treeview = gtk_tree_view_new_with_model(model);
-  gtk_widget_set_tooltip_text(pop->calendar, _("simple click to select date\n"
-                                               "double click to use the date directly"));
+  gtk_widget_set_tooltip_text(pop->calendar, _("click to select date\n"
+                                               "double-click to use the date directly"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(pop->treeview), FALSE);
   g_signal_connect(G_OBJECT(pop->treeview), "row-activated", G_CALLBACK(_popup_date_tree_row_activated), range);
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(pop->treeview))), "changed",
@@ -1051,7 +1064,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 static void _popup_item_activate(GtkWidget *w, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  // retrive block and source values
+  // retrieve block and source values
   GtkWidget *source = GTK_WIDGET(g_object_get_data(G_OBJECT(w), "source_widget"));
   _range_block *blo = (_range_block *)g_object_get_data(G_OBJECT(w), "range_block");
 
@@ -1233,12 +1246,22 @@ static int _graph_get_height(const int val, const int max, const int height)
   return sqrt(val / (double)max) * (height * 0.8) + height * 0.1;
 }
 
+static void _range_set_source_rgba(cairo_t *cr, GtkWidget *w, double alpha, const GtkStateFlags state)
+{
+  // retrieve the css color of a widget and apply it to cairo surface
+  GtkStyleContext *context = gtk_widget_get_style_context(w);
+  GdkRGBA coul;
+  gtk_style_context_get_color(context, state, &coul);
+  cairo_set_source_rgba(cr, coul.red, coul.green, coul.blue, coul.alpha * alpha);
+}
+
 static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
 
   // draw the graph (and create it if needed)
   if(!range->surface || range->alloc_main.width != allocation.width
@@ -1247,7 +1270,6 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     range->alloc_main = allocation;
     // get all the margins, paddings defined in css
     GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-    GtkStateFlags state = gtk_widget_get_state_flags(range->band);
     GtkBorder margin, padding;
     gtk_style_context_get_margin(context, state, &margin);
     gtk_style_context_get_padding(context, state, &padding);
@@ -1318,9 +1340,9 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
                      range->alloc_margin.height);
 
     // draw the rectangles on the surface
-    // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
+    // we have to do some clever things in order to packed together blocks that will be shown at the same place
     // (see above)
-    dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_GRAPH, 1.0);
+    _range_set_source_rgba(scr, range->band_graph, 1.0, state);
     bl_min_px = 0;
     bl_count = 0;
     for(const GList *bl = range->blocks; bl; bl = g_list_next(bl))
@@ -1382,7 +1404,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   sel_min_px = MAX(sel_min_px, 0);
   sel_max_px = MIN(sel_max_px, range->alloc_padding.width);
   const int sel_width_px = MAX(2, sel_max_px - sel_min_px);
-  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_SELECTION, 1.0);
+  _range_set_source_rgba(cr, range->band_selection, 1.0, state);
   cairo_rectangle(cr, sel_min_px + range->alloc_padding.x, range->alloc_padding.y, sel_width_px,
                   range->alloc_padding.height);
   cairo_fill(cr);
@@ -1390,7 +1412,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   double current_value_r = _graph_value_from_pos(range, range->current_x_px, TRUE);
 
   // draw the markers
-  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
+  _range_set_source_rgba(cr, range->band_icons, 1.0, state);
   for(const GList *bl = range->markers; bl; bl = g_list_next(bl))
   {
     _range_marker *mark = bl->data;
@@ -1416,7 +1438,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
       last = icon->posx;
     }
     min_percent = MIN(min_percent, (100 - last) * 2);
-    // we want to let some marging between icons
+    // we want to let some margin between icons
     min_percent *= 0.9;
     // and we don't want to exceed 60% of the height
     const int size = MIN(range->alloc_padding.height * 0.6, range->alloc_padding.width * min_percent / 100);
@@ -1428,23 +1450,28 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
       const int posx_px = range->alloc_padding.width * icon->posx / 100 - size / 2;
       // we set prelight flag if the mouse value correspond
       gint f = icon->flags;
+      GtkStateFlags ic_state = GTK_STATE_FLAG_NORMAL;
       if(range->mouse_inside && range->current_x_px > 0 && icon->value_r == current_value_r)
       {
         f |= CPF_PRELIGHT;
-        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 0.6);
+        ic_state |= GTK_STATE_FLAG_PRELIGHT;
       }
       else
       {
         f &= ~CPF_PRELIGHT;
-        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
       }
 
       // we set the active flag if the icon value is inside the selection
       if((icon->value_r >= sel_min_r || (range->bounds & DT_RANGE_BOUND_MIN))
          && (icon->value_r <= sel_max_r || (range->bounds & DT_RANGE_BOUND_MAX)))
+      {
         f |= CPF_ACTIVE;
+        ic_state |= GTK_STATE_FLAG_ACTIVE;
+      }
       else
         f &= ~CPF_ACTIVE;
+
+      _range_set_source_rgba(cr, range->band_icons, 1.0, ic_state);
       // and we draw the icon
       icon->paint(cr, posx_px + range->alloc_padding.x, posy, size, size, f, icon->data);
     }
@@ -1453,14 +1480,12 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   // draw the current position line
   if(range->mouse_inside && range->current_x_px > 0)
   {
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_CURSOR, 1.0);
+    _range_set_source_rgba(cr, range->band_cursor, 1.0, state);
     const int posx_px = _graph_snap_position(range, range->current_x_px) + range->alloc_padding.x;
     cairo_move_to(cr, posx_px, range->alloc_padding.y);
     cairo_line_to(cr, posx_px, range->alloc_padding.height + range->alloc_padding.y);
     cairo_stroke(cr);
-    gchar *txt = range->current_text(range, current_value_r);
-    if(range->cur_window && range->cur_label) gtk_label_set_markup(GTK_LABEL(range->cur_label), txt);
-    g_free(txt);
+    _current_set_text(range, current_value_r);
   }
 
   return TRUE;
@@ -1495,15 +1520,10 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   }
   _current_show_popup(range);
   // point the popup to the current position
-  if(gtk_popover_get_position(GTK_POPOVER(range->cur_window)) == GTK_POS_TOP)
-  {
-    GdkRectangle rect;
-    rect.x = event->x;
-    rect.width = 1;
-    rect.y = 0;
-    rect.height = gtk_widget_get_allocated_height(range->band);
-    gtk_popover_set_pointing_to(GTK_POPOVER(range->cur_window), &rect);
-  }
+  gint wx, wy;
+  gtk_widget_translate_coordinates(range->band, gtk_widget_get_toplevel(range->band), 0, 0, &wx, &wy);
+  GdkRectangle rect = { event->x, 0, 1, gtk_widget_get_allocated_height(range->band) };
+  gtk_popover_set_pointing_to(GTK_POPOVER(range->cur_window), &rect);
 
   const double smin_r = (range->bounds & DT_RANGE_BOUND_MIN) ? range->min_r : range->select_min_r;
   const double smax_r = (range->bounds & DT_RANGE_BOUND_MAX) ? range->max_r : range->select_max_r;
@@ -1511,12 +1531,16 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   const int smax_px = _graph_value_to_pos(range, smax_r) + range->step_bd / range->band_factor;
 
   // change the cursor if we are close to an extrema
-  if(!range->set_selection && fabs(range->current_x_px - smin_px) <= SNAP_SIZE)
+  if(range->allow_resize
+     && !range->set_selection
+     && fabs(range->current_x_px - smin_px) <= SNAP_SIZE)
   {
     range->mouse_inside = HOVER_MIN;
     dt_control_change_cursor(GDK_LEFT_SIDE);
   }
-  else if(!range->set_selection && fabs(range->current_x_px - smax_px) <= SNAP_SIZE)
+  else if(range->allow_resize
+          && !range->set_selection
+          && fabs(range->current_x_px - smax_px) <= SNAP_SIZE)
   {
     range->mouse_inside = HOVER_MAX;
     dt_control_change_cursor(GDK_RIGHT_SIDE);
@@ -1647,11 +1671,13 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   range->value_to_band = _default_value_translator;
   range->print = (type == DT_RANGE_TYPE_NUMERIC) ? _default_print_func : _default_print_date_func;
   range->decode = (type == DT_RANGE_TYPE_NUMERIC) ? _default_decode_func : _default_decode_date_func;
-  range->current_text = _default_current_text_func;
   range->show_entries = show_entries;
   range->type = type;
   range->alloc_main.width = 0;
   range->max_width_px = -1;
+  range->cur_help = NULL;
+  range->current_bounds = dtgtk_range_select_get_bounds_pretty;
+  range->allow_resize = TRUE;
 
   // the boxes widgets
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1669,6 +1695,24 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
   gtk_widget_set_can_default(range->band, TRUE);
   gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
+
+  // always hidden widgets used to retrieve drawing colors
+  range->band_graph = gtk_drawing_area_new();
+  gtk_widget_set_name(GTK_WIDGET(range->band_graph), "dt-range-band-graph");
+  gtk_widget_set_no_show_all(range->band_graph, TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), range->band_graph, FALSE, FALSE, 0);
+  range->band_selection = gtk_drawing_area_new();
+  gtk_widget_set_name(GTK_WIDGET(range->band_selection), "dt-range-band-selection");
+  gtk_widget_set_no_show_all(range->band_selection, TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), range->band_selection, FALSE, FALSE, 0);
+  range->band_icons = gtk_drawing_area_new();
+  gtk_widget_set_name(GTK_WIDGET(range->band_icons), "dt-range-band-icons");
+  gtk_widget_set_no_show_all(range->band_icons, TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), range->band_icons, FALSE, FALSE, 0);
+  range->band_cursor = gtk_drawing_area_new();
+  gtk_widget_set_name(GTK_WIDGET(range->band_cursor), "dt-range-band-cursor");
+  gtk_widget_set_no_show_all(range->band_cursor, TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), range->band_cursor, FALSE, FALSE, 0);
 
   if(range->show_entries)
   {
@@ -1703,7 +1747,8 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_changed),
                                   range);
-
+  gtk_widget_set_name((GtkWidget *)range, "dt-range");
+  
   return (GtkWidget *)range;
 }
 

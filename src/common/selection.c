@@ -393,24 +393,20 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
 {
   if(!selection->collection) return;
 
-  /* set unaltered collection filter and update query */
-  const uint32_t old_filter_flags = dt_collection_get_filter_flags(selection->collection);
-  dt_collection_set_filter_flags(selection->collection, (dt_collection_get_filter_flags(selection->collection)
-                                                         | COLLECTION_FILTER_UNALTERED));
-  dt_collection_update(selection->collection);
-
-  char *fullq = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images %s",
-                                dt_collection_get_query(selection->collection));
-
   /* clean current selection and select unaltered images */
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
-  /* restore collection filter and update query */
-  dt_collection_set_filter_flags(selection->collection, old_filter_flags);
-  dt_collection_update(selection->collection);
-
-  g_free(fullq);
+  DT_DEBUG_SQLITE3_EXEC
+    (dt_database_get(darktable.db),
+     "INSERT OR IGNORE"
+     " INTO main.selected_images"
+     " SELECT h.imgid"
+     "  FROM memory.collected_images as ci, main.history_hash as h"
+     "  WHERE ci.imgid = h.imgid"
+     "    AND (h.current_hash = h.auto_hash"
+     "         OR h.current_hash IS NULL)",
+     NULL, NULL, NULL);
 
   selection->last_single_id = -1;
   _selection_raise_signal();
@@ -511,4 +507,3 @@ GList *dt_selection_get_list(struct dt_selection_t *selection, const gboolean on
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

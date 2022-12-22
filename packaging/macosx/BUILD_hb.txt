@@ -1,0 +1,47 @@
+How to make disk image with darktable application bundle from source (using Homebrew):
+
+0). Install Homebrew (instructions and prerequisites can be found on official website https://brew.sh/), ideally use default installation path (/opt/homebrew for arm64, /usr/local for i386).
+
+1). Install required homebrew packages:
+     $ 1_install_hb_dependencies.sh
+
+2). Build and install darktable using either option A or B:
+     - Option A: Build using the default build.sh, which should work for most use cases 
+     $ 2_build_hb_darktable_default.sh
+     - Option B: Build using custom cmake options, edit according to your specific needs/environment
+     $ 2_build_hb_darktable_custom.sh
+
+3). Create application bundle from build files. To properly sign the app bundle you can optionally provide your developer certificate email/id by defining CODECERT:
+     $ export CODECERT="your.developer@apple.id" # optional, not required
+     $ 3_make_hb_darktable_package.sh
+
+4). Generate DMG image from application bundle:
+     $ 4_make_hb_darktable_dmg.sh
+
+The final result is a DMG file: darktable-<current version>+<latest commit>-{arm64|i386}.dmg
+
+Y). Forcefully remove any remainder of previous attempts
+     $ Y_cleanup_hb_darktable.sh
+
+LIMITATIONS:
+- Created DMG will only be compatible to the macOS version it was created upon.
+- Naturally the libraries that darktable is built upon will be as good as its currently provided homebrew packages. You might want to use "$ brew pin <package>" to lock your working/verified setup.
+- As of today homebrew ships lensfun 0.3.3 that is the successor of the last stable release 0.3.2. It is expected to be compatible and should not break existing edits based on 0.3.2 or before.
+- For now additional darktable tools like darktable-curve-tool or darktable-noiseprofile are not part of the default application bundle.
+
+MACOS SECURITY:
+- The DMG is not notarized with/at Apple by using this approach. If it is still required see the official BUILD.txt for further instructions.
+- As the DMG is not notarized and the app bundle may not even be properly signed, it is still possible to install/run darktable at your own risk. To do so make sure to run "$ xattr -d com.apple.quarantine <darktable-app>.dmg" on the DMG before installing.
+
+NOTES:
+- It will be automatically build for the architecture you are currently on, either Apple Silicon (arm64) or Intel (i386).
+- If you want to build for i386 on arm64 see https://stackoverflow.com/questions/64951024/how-can-i-run-two-isolated-installations-of-homebrew/68443301#68443301 about how to handle both environments in parallel.
+- After creating the darktable application bundle (step 3) you can directly run the result by executing:
+     $ package/darktable.app/Contents/MacOS/darktable --configdir .config/darktable/ --cachedir .cache/darktable/
+
+REFERENCES:
+This approach is heavily based on and inspired by:
+- The official BUILD.txt instructions (MacPorts-based) by the darktable community
+- http://clarkkromenaker.com/post/library-dynamic-loading-mac/
+- https://gitlab.gnome.org/GNOME/gtk-mac-bundler
+- https://github.com/auriamg/macdylibbundler/ 

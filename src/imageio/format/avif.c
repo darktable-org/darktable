@@ -223,7 +223,6 @@ int write_image(struct dt_imageio_module_data_t *data,
   avifRGBImage rgb = { .format = AVIF_RGB_FORMAT_RGB, };
   avifEncoder *encoder = NULL;
   uint8_t *icc_profile_data = NULL;
-  uint32_t icc_profile_len;
   avifResult result;
   int rc;
 
@@ -282,93 +281,75 @@ int write_image(struct dt_imageio_module_data_t *data,
            avif_get_compression_string(d->compression_type),
            d->quality);
 
-  if(imgid > 0)
+  /* Determine the actual (export vs colorout) color profile used */
+  const dt_colorspaces_color_profile_t *cp = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
+
+  /*
+   * Set these in advance so any upcoming RGB -> YUV use the proper
+   * coefficients.
+   */
+  switch(cp->type)
   {
-    gboolean use_icc = FALSE;
+    case DT_COLORSPACE_SRGB:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT470BG;
+      break;
+    case DT_COLORSPACE_REC709:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
+      break;
+    case DT_COLORSPACE_LIN_REC709:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
+      break;
+    case DT_COLORSPACE_LIN_REC2020:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
+      break;
+    case DT_COLORSPACE_PQ_REC2020:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
+      break;
+    case DT_COLORSPACE_HLG_REC2020:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
+      break;
+    case DT_COLORSPACE_PQ_P3:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
+      break;
+    case DT_COLORSPACE_HLG_P3:
+      image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
+      image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
+      image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
+      break;
+    default:
+      break;
+  }
 
-    /*
-     * Set these in advance so any upcoming RGB -> YUV use the proper
-     * coefficients.
-     */
-    switch(over_type)
+  dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s]\n", dt_colorspaces_get_name(cp->type, filename));
+
+  /* Compliant AVIF readers should prefer ICC profiles, so always try to include it */
+  uint32_t icc_profile_len;
+  cmsSaveProfileToMem(cp->profile, NULL, &icc_profile_len);
+  if(icc_profile_len > 0)
+  {
+    icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
+    if(icc_profile_data == NULL)
     {
-      case DT_COLORSPACE_SRGB:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SRGB;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT470BG;
-          break;
-      case DT_COLORSPACE_REC709:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
-        break;
-      case DT_COLORSPACE_LIN_REC709:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT709;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT709;
-        break;
-      case DT_COLORSPACE_LIN_REC2020:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_LINEAR;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
-        break;
-      case DT_COLORSPACE_PQ_REC2020:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
-        break;
-      case DT_COLORSPACE_HLG_REC2020:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_BT2020;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_BT2020_NCL;
-        break;
-      case DT_COLORSPACE_PQ_P3:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_SMPTE2084;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
-        break;
-      case DT_COLORSPACE_HLG_P3:
-          image->colorPrimaries = AVIF_COLOR_PRIMARIES_SMPTE432;
-          image->transferCharacteristics = AVIF_TRANSFER_CHARACTERISTICS_HLG;
-          image->matrixCoefficients = AVIF_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
-        break;
-      default:
-        break;
+      dt_print(DT_DEBUG_IMAGEIO, "Failed to allocate %u bytes for ICC profile\n", icc_profile_len);
+      rc = 1;
+      goto out;
     }
-
-    // no change from default, unspecified CICP (2/2/2)
-    if(image->colorPrimaries == AVIF_COLOR_PRIMARIES_UNSPECIFIED)
-    {
-      use_icc = TRUE;
-    }
-
-    dt_print(DT_DEBUG_IMAGEIO, "[avif colorprofile profile: %s - %s]\n",
-             dt_colorspaces_get_name(over_type, filename),
-             use_icc ? "icc" : "nclx");
-
-    if(use_icc)
-    {
-      const dt_colorspaces_color_profile_t *cp =
-        dt_colorspaces_get_output_profile(imgid,
-                                          over_type,
-                                          over_filename);
-      cmsHPROFILE out_profile = cp->profile;
-
-      cmsSaveProfileToMem(out_profile, 0, &icc_profile_len);
-      if(icc_profile_len > 0)
-      {
-        icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
-        if(icc_profile_data == NULL)
-        {
-          rc = 1;
-          goto out;
-        }
-        cmsSaveProfileToMem(out_profile, icc_profile_data, &icc_profile_len);
-        avifImageSetProfileICC(image,
-                               icc_profile_data,
-                               icc_profile_len);
-      }
-    }
+    cmsSaveProfileToMem(cp->profile, icc_profile_data, &icc_profile_len);
+    avifImageSetProfileICC(image, icc_profile_data, icc_profile_len);
   }
 
   /*
@@ -454,16 +435,21 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   avifImageRGBToYUV(image, &rgb);
 
+  /* TODO: workaround; remove when exiv2 implements AVIF write support and use dt_exif_write_blob() at the end */
   if(exif && exif_len > 0)
     avifImageSetMetadataExif(image, exif, exif_len);
 
   /* TODO: workaround; remove when exiv2 implements AVIF write support and update flags() */
-  char *xmp_string = dt_exif_xmp_read_string(imgid);
-  size_t xmp_len;
-  if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+  /* TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested */
+  if(exif && exif_len > 0)
   {
-    avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
-    g_free(xmp_string);
+    char *xmp_string = dt_exif_xmp_read_string(imgid);
+    size_t xmp_len;
+    if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+    {
+      avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
+      g_free(xmp_string);
+    }
   }
 
   encoder = avifEncoderCreate();
@@ -516,14 +502,14 @@ int write_image(struct dt_imageio_module_data_t *data,
       {
         width_tile_size = AVIF_MIN_TILE_SIZE * 4;
       }
-      else if (width >= 8192) {
+      else if(width >= 8192) {
         width_tile_size = AVIF_MAX_TILE_SIZE;
       }
       if(height >= 6144)
       {
         height_tile_size = AVIF_MIN_TILE_SIZE * 4;
       }
-      else if (height >= 8192) {
+      else if(height >= 8192) {
         height_tile_size = AVIF_MAX_TILE_SIZE;
       }
 
@@ -679,7 +665,18 @@ int bpp(struct dt_imageio_module_data_t *data)
 
 int levels(struct dt_imageio_module_data_t *data)
 {
-  return IMAGEIO_RGB|IMAGEIO_FLOAT;
+  const dt_imageio_avif_t *d = (dt_imageio_avif_t *)data;
+
+  int ret = IMAGEIO_RGB;
+
+  if(d->bit_depth == 8)
+    ret |= IMAGEIO_INT8;
+  else if(d->bit_depth == 10)
+    ret |= IMAGEIO_INT10;
+  else
+    ret |= IMAGEIO_INT12;
+
+  return ret;
 }
 
 const char *mime(dt_imageio_module_data_t *data)
@@ -694,7 +691,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("AVIF (8/10/12-bit)");
+  return _("AVIF");
 }
 
 int flags(struct dt_imageio_module_data_t *data)
@@ -738,15 +735,7 @@ static void compression_type_changed(GtkWidget *widget, gpointer user_data)
 
   dt_conf_set_int("plugins/imageio/format/avif/compression_type", compression_type);
 
-  switch(compression_type)
-  {
-    case AVIF_COMP_LOSSLESS:
-      gtk_widget_set_sensitive(gui->quality, FALSE);
-      break;
-    case AVIF_COMP_LOSSY:
-      gtk_widget_set_sensitive(gui->quality, TRUE);
-      break;
-  }
+  gtk_widget_set_visible(gui->quality, compression_type != AVIF_COMP_LOSSLESS);
 }
 
 static void quality_changed(GtkWidget *slider, gpointer user_data)
@@ -772,7 +761,7 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Bit depth combo box
    */
-  gui->bit_depth = dt_bauhaus_combobox_new(NULL);
+  gui->bit_depth = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
   dt_bauhaus_widget_set_label(gui->bit_depth, NULL, N_("bit depth"));
   size_t idx = 0;
@@ -794,18 +783,10 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Color mode combo box
    */
-  gui->color_mode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->color_mode,
-                              NULL,
-                              _("color mode"));
-  dt_bauhaus_combobox_add(gui->color_mode,
-                          _("rgb colors"));
-  dt_bauhaus_combobox_add(gui->color_mode,
-                          _("grayscale"));
-  dt_bauhaus_combobox_set(gui->color_mode, color_mode);
-
-  gtk_widget_set_tooltip_text(gui->color_mode,
-          _("saving as grayscale will reduce the size for black & white images"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->color_mode, self, NULL, N_("color mode"),
+                               _("saving as grayscale will reduce the size for black & white images"),
+                               color_mode, color_mode_changed, self,
+                               N_("rgb colors"), N_("grayscale"));
 
   gtk_box_pack_start(GTK_BOX(self->widget),
                      gui->color_mode,
@@ -815,22 +796,12 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Tiling combo box
    */
-  gui->tiling = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->tiling,
-                              NULL,
-                              N_("tiling"));
-  dt_bauhaus_combobox_add(gui->tiling,
-                          _("on"));
-  dt_bauhaus_combobox_add(gui->tiling,
-                          _("off"));
-  dt_bauhaus_combobox_set(gui->tiling, tiling);
-
-  gtk_widget_set_tooltip_text(gui->tiling,
-          _("tile an image into segments.\n"
-            "\n"
-            "makes encoding faster. the impact on quality reduction "
-            "is negligible, but increases the file size."));
-
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->tiling, self, NULL, N_("tiling"),
+                               _("tile an image into segments.\n\n"
+                                 "makes encoding faster. the impact on quality reduction "
+                                 "is negligible, but increases the file size."),
+                               tiling, tiling_changed, self,
+                               N_("on"), N_("off"));
   gtk_box_pack_start(GTK_BOX(self->widget),
                      gui->tiling,
                      TRUE,
@@ -840,7 +811,7 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Compression type combo box
    */
-  gui->compression_type = dt_bauhaus_combobox_new(NULL);
+  gui->compression_type = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(gui->compression_type,
                               NULL,
                               N_("compression type"));
@@ -862,7 +833,7 @@ void gui_init(dt_imageio_module_format_t *self)
   /*
    * Quality combo box
    */
-  gui->quality = dt_bauhaus_slider_new_with_range(NULL,
+  gui->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
                                                   dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_MIN), /* min */
                                                   dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_MAX), /* max */
                                                   1, /* step */
@@ -889,27 +860,13 @@ void gui_init(dt_imageio_module_format_t *self)
   }
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
 
-  switch(compression_type)
-  {
-    case AVIF_COMP_LOSSLESS:
-      gtk_widget_set_sensitive(gui->quality, FALSE);
-      break;
-    case AVIF_COMP_LOSSY:
-      break;
-  }
+  gtk_widget_set_visible(gui->quality, compression_type != AVIF_COMP_LOSSLESS);
+  gtk_widget_set_no_show_all(gui->quality, TRUE);
 
   g_signal_connect(G_OBJECT(gui->bit_depth),
                    "value-changed",
                    G_CALLBACK(bit_depth_changed),
                    NULL);
-  g_signal_connect(G_OBJECT(gui->color_mode),
-                   "value-changed",
-                   G_CALLBACK(color_mode_changed),
-                   (gpointer)self);
-  g_signal_connect(G_OBJECT(gui->tiling),
-                   "value-changed",
-                   G_CALLBACK(tiling_changed),
-                   (gpointer)self);
   g_signal_connect(G_OBJECT(gui->compression_type),
                    "value-changed",
                    G_CALLBACK(compression_type_changed),
@@ -949,4 +906,3 @@ void gui_reset(dt_imageio_module_format_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "dtgtk/paint.h"
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
+#include "gui/accelerators.h"
 #include "imageio/storage/imageio_storage_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -149,22 +150,12 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   GtkWidget *widget;
 
-  widget = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
-  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  const char *dir = dt_conf_get_string_const("plugins/imageio/storage/latex/file_directory");
-  if(dir)
-  {
-    gtk_entry_set_text(GTK_ENTRY(widget), dir);
-  }
-  d->entry = GTK_ENTRY(widget);
-
-  dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
-
-  gtk_widget_set_tooltip_text(widget,
-      _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
-      "type '$(' to activate the completion and see the list of variables"));
-  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
+  d->entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(entry_changed_callback), self,
+                                           _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+                                             "type '$(' to activate the completion and see the list of variables"),
+                                           dt_conf_get_string_const("plugins/imageio/storage/latex/file_directory")));
+  dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->entry), TRUE, TRUE, 0);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
@@ -177,17 +168,12 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("title")), FALSE, FALSE, 0);
 
-  d->title_entry = GTK_ENTRY(gtk_entry_new());
-  gtk_entry_set_width_chars(d->title_entry, 0);
+  d->title_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(title_changed_callback), self,
+                                           _("enter the title of the book"),
+                                           dt_conf_get_string_const("plugins/imageio/storage/latex/title")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
+
   // TODO: support title, author, subject, keywords (collect tags?)
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->title_entry), _("enter the title of the book"));
-  dir = dt_conf_get_string_const("plugins/imageio/storage/latex/title");
-  if(dir)
-  {
-    gtk_entry_set_text(GTK_ENTRY(d->title_entry), dir);
-  }
-  g_signal_connect(G_OBJECT(d->title_entry), "changed", G_CALLBACK(title_changed_callback), self);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
@@ -343,7 +329,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     // g_list_free_full(res_subj, &g_free);
     // g_free(tags);
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
-    free(pair);
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 

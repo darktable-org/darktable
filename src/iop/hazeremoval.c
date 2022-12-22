@@ -453,7 +453,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // only see part of the image (region of interest).  Therefore, we
   // try to get A0 and distance_max from the PREVIEW pixelpipe which
   // luckily stores it for us.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_gui_enter_critical_section(self);
     const uint64_t hash = g->hash;
@@ -478,7 +478,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light(img_in, w1, &A0);
   // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_iop_gui_enter_critical_section(self);
@@ -563,21 +563,15 @@ static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   void *temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
 
   const int kernel_x = gd->kernel_hazeremoval_box_min_x;
-  dt_opencl_set_kernel_arg(devid, kernel_x, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 2, sizeof(in), &in);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 3, sizeof(temp), &temp);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 4, sizeof(w), &w);
+  dt_opencl_set_kernel_args(devid, kernel_x, 0, CLARG(width), CLARG(height), CLARG(in), CLARG(temp),
+    CLARG(w));
   const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) goto error;
 
   const int kernel_y = gd->kernel_hazeremoval_box_min_y;
-  dt_opencl_set_kernel_arg(devid, kernel_y, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 2, sizeof(temp), &temp);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 3, sizeof(out), &out);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 4, sizeof(w), &w);
+  dt_opencl_set_kernel_args(devid, kernel_y, 0, CLARG(width), CLARG(height), CLARG(temp), CLARG(out),
+    CLARG(w));
   const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 
@@ -596,21 +590,15 @@ static int box_max_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   void *temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
 
   const int kernel_x = gd->kernel_hazeremoval_box_max_x;
-  dt_opencl_set_kernel_arg(devid, kernel_x, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 2, sizeof(in), &in);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 3, sizeof(temp), &temp);
-  dt_opencl_set_kernel_arg(devid, kernel_x, 4, sizeof(w), &w);
+  dt_opencl_set_kernel_args(devid, kernel_x, 0, CLARG(width), CLARG(height), CLARG(in), CLARG(temp),
+    CLARG(w));
   const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) goto error;
 
   const int kernel_y = gd->kernel_hazeremoval_box_max_y;
-  dt_opencl_set_kernel_arg(devid, kernel_y, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 2, sizeof(temp), &temp);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 3, sizeof(out), &out);
-  dt_opencl_set_kernel_arg(devid, kernel_y, 4, sizeof(w), &w);
+  dt_opencl_set_kernel_args(devid, kernel_y, 0, CLARG(width), CLARG(height), CLARG(temp), CLARG(out),
+    CLARG(w));
   const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 
@@ -629,16 +617,9 @@ static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img
   const int height = dt_opencl_get_image_height(img1);
 
   const int kernel = gd->kernel_hazeremoval_transision_map;
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(img1), &img1);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(img2), &img2);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(strength), &strength);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(A0[0]), &A0[0]);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(A0[1]), &A0[1]);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(A0[2]), &A0[2]);
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(width), CLARG(height), CLARG(img1), CLARG(img2), CLARG(strength), CLARG(A0[0]), CLARG(A0[1]),
+    CLARG(A0[2]));
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL, "[hazeremoval, transition_map_cl] unknown error: %d\n", err);
@@ -658,17 +639,9 @@ static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_
   const int height = dt_opencl_get_image_height(img_in);
 
   const int kernel = gd->kernel_hazeremoval_dehaze;
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(width), &width);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(height), &height);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(img_in), &img_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(trans_map), &trans_map);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(img_out), &img_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(t_min), &t_min);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(A0[0]), &A0[0]);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(A0[1]), &A0[1]);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(A0[2]), &A0[2]);
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  int err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(width), CLARG(height), CLARG(img_in), CLARG(trans_map), CLARG(img_out), CLARG(t_min), CLARG(A0[0]),
+    CLARG(A0[1]), CLARG(A0[2]));
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[hazeremoval, dehaze_cl] unknown error: %d\n", err);
   return err;
 }
@@ -718,7 +691,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // only see part of the image (region of interest).  Therefore, we
   // try to get A0 and distance_max from the PREVIEW pixelpipe which
   // luckily stores it for us.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     dt_iop_gui_enter_critical_section(self);
     const uint64_t hash = g->hash;
@@ -743,7 +716,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light_cl(self, devid, img_in, w1, &A0);
   // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_iop_gui_enter_critical_section(self);

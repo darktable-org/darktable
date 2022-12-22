@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -233,7 +233,7 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "PUBLISHER", N_("$(PUBLISHER) - publisher from metadata") },
           { "RIGHTS", N_("$(RIGHTS) - rights from metadata") },
           { "USERNAME", N_("$(USERNAME) - login name") },
-          { "FOLDER.PICTURE", N_("$(FOLDER.PICTURES) - pictures folder") },
+          { "FOLDER.PICTURES", N_("$(FOLDER.PICTURES) - pictures folder") },
           { "FOLDER.HOME", N_("$(FOLDER.HOME) - home folder") },
           { "FOLDER.DESKTOP", N_("$(FOLDER.DESKTOP) - desktop folder") },
           { "OPENCL.ACTIVATED", N_("$(OPENCL.ACTIVATED) - whether OpenCL is activated") },

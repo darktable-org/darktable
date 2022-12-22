@@ -83,6 +83,20 @@ const model_map_t modelMap[] = {
   },
   {
     .exif_make = "Canon",
+    .exif_model = "Canon EOS R7",
+    .clean_make = "Canon",
+    .clean_model = "EOS R7",
+    .clean_alias = "EOS R7"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R10",
+    .clean_make = "Canon",
+    .clean_model = "EOS R10",
+    .clean_alias = "EOS R10"
+  },
+  {
+    .exif_make = "Canon",
     .exif_model = "Canon EOS M50",
     .clean_make = "Canon",
     .clean_model = "EOS M50",
@@ -136,6 +150,13 @@ const model_map_t modelMap[] = {
     .clean_make = "Canon",
     .clean_model = "EOS 250D",
     .clean_alias = "EOS Rebel SL3"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS 200D II",
+    .clean_make = "Canon",
+    .clean_model = "EOS 250D",
+    .clean_alias = "EOS 200D Mark II"
   },
   {
     .exif_make = "Canon",
@@ -254,6 +275,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   img->raw_white_point = raw->rawdata.color.linear_max[0] ? raw->rawdata.color.linear_max[0] :raw->rawdata.color.maximum;
 
   // Copy black level
+  img->raw_black_level = raw->rawdata.color.black;
   for(size_t c = 0; c < 4; ++c)
     img->raw_black_level_separate[c] = raw->rawdata.color.black + raw->rawdata.color.cblack[c];
 

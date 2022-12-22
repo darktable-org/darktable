@@ -156,7 +156,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_relight_data_t *data = (dt_iop_relight_data_t *)piece->data;
   dt_iop_relight_global_data_t *gd = (dt_iop_relight_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -165,21 +165,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float wings = data->width;
   const float ev = data->ev;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 4, sizeof(float), (void *)&center);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 5, sizeof(float), (void *)&wings);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_relight, 6, sizeof(float), (void *)&ev);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_relight, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_relight, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(center), CLARG(wings), CLARG(ev));
   if(err != CL_SUCCESS) goto error;
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_relight] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_relight] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

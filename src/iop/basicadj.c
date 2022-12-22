@@ -1286,7 +1286,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)
@@ -1376,41 +1376,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     goto cleanup;
   }
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 3, sizeof(int), (void *)&height);
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 4, sizeof(cl_mem), (void *)&dev_gamma);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 5, sizeof(cl_mem), (void *)&dev_contrast);
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 6, sizeof(float), (void *)&black_point);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 7, sizeof(float), (void *)&scale);
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 8, sizeof(int), (void *)&process_gamma);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 9, sizeof(float), (void *)&gamma);
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 10, sizeof(int), (void *)&plain_contrast);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 11, sizeof(int), (void *)&preserve_colors);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 12, sizeof(float), (void *)&contrast);
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 13, sizeof(int), (void *)&process_saturation_vibrance);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 14, sizeof(float), (void *)&saturation);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 15, sizeof(float), (void *)&vibrance);
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 16, sizeof(int), (void *)&process_hlcompr);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 17, sizeof(float), (void *)&hlcomp);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 18, sizeof(float), (void *)&hlrange);
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 19, sizeof(float), (void *)&middle_grey);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 20, sizeof(float), (void *)&inv_middle_grey);
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 21, sizeof(cl_mem), (void *)&dev_profile_info);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 22, sizeof(cl_mem), (void *)&dev_profile_lut);
-
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 23, sizeof(int), (void *)&use_work_profile);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basicadj, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_basicadj, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_gamma), CLARG(dev_contrast),
+    CLARG(black_point), CLARG(scale), CLARG(process_gamma), CLARG(gamma), CLARG(plain_contrast), CLARG(preserve_colors),
+    CLARG(contrast), CLARG(process_saturation_vibrance), CLARG(saturation), CLARG(vibrance), CLARG(process_hlcompr),
+    CLARG(hlcomp), CLARG(hlrange), CLARG(middle_grey), CLARG(inv_middle_grey), CLARG(dev_profile_info),
+    CLARG(dev_profile_lut), CLARG(use_work_profile));
   if(err != CL_SUCCESS)
   {
     fprintf(stderr, "[basicadj process_cl] error %i enqueue kernel\n", err);
@@ -1424,7 +1395,7 @@ cleanup:
 
   if(src_buffer) dt_free_align(src_buffer);
 
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_basicadj] couldn't enqueue kernel! %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_basicadj] couldn't enqueue kernel! %s\n", cl_errstr(err));
 
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
@@ -1441,7 +1412,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
 
   // process auto levels
-  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)

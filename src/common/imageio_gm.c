@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,8 +38,8 @@
 // libraries in reduced quality - slow and only 8-bit
 static gboolean _supported_image(const gchar *filename)
 {
-  const char *extensions_whitelist[] = { "tif",  "tiff", "gif", "jpc", "jp2", "bmp", "dcm", "jng",
-                                         "miff", "mng",  "pbm", "pnm", "ppm", "pgm", NULL };
+  const char *extensions_whitelist[] = { "tif", "tiff", "pbm", "pgm",  "ppm", "pnm", "gif",  "jpc", "jp2",
+                                         "bmp", "dcm",  "jng", "miff", "mng", "pam", "webp", "jxl", NULL };
   gboolean supported = FALSE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
@@ -119,6 +119,15 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
     }
   }
 
+  size_t profile_length;
+  const uint8_t *profile_data = (const uint8_t *)GetImageProfile(image, "ICM", &profile_length);
+  if(profile_data)
+  {
+    img->profile_size = profile_length;
+    img->profile = (uint8_t *)g_malloc0(profile_length);
+    memcpy(img->profile, profile_data, profile_length);
+  }
+
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
@@ -145,4 +154,3 @@ error:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -115,7 +115,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("PFM (float)");
+  return _("PFM");
 }
 
 void init(dt_imageio_module_format_t *self)
@@ -139,4 +139,3 @@ void gui_reset(dt_imageio_module_format_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

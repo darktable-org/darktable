@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2020 Aldric Renaudin.
+    Copyright (C) 2020-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -634,7 +634,7 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images) return FALSE;
 
   float fz = 1.0f;
-  for (GList *l = table->list; l; l = g_list_next(l))
+  for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     fz = fmaxf(fz, th->zoom);
@@ -723,6 +723,7 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
     dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
   }
   dt_get_sysresource_level();
+  dt_opencl_update_settings();
   dt_configure_ppd_dpi(darktable.gui);
 }
 
@@ -831,17 +832,8 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   table->mode = mode;
   table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);
+  dt_gui_add_class(table->widget, "dt_fullview");
   // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
-
-  // set css name and class
-  if(mode == DT_CULLING_MODE_PREVIEW)
-    gtk_widget_set_name(table->widget, "preview");
-  else
-    gtk_widget_set_name(table->widget, "culling");
-  if(mode == DT_CULLING_MODE_PREVIEW)
-    dt_gui_add_class(table->widget, "dt_preview");
-  else
-    dt_gui_add_class(table->widget, "dt_culling");
 
   // overlays
   gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
@@ -919,6 +911,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   table->navigate_inside_selection = FALSE;
   table->selection_sync = FALSE;
   table->zoom_ratio = IMG_TO_FIT;
+  table->view_width = 0; // in order to force a full redraw
 
   // reset remaining zooming values if any
   for(GList *l = table->list; l; l = g_list_next(l))
@@ -996,7 +989,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   {
     if(sel_count == 0)
     {
-      dt_control_log(_("no image selected !"));
+      dt_control_log(_("no image selected!"));
       first_id = -1;
     }
     table->navigate_inside_selection = TRUE;
@@ -1180,7 +1173,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   }
 
   GList *newlist = NULL;
-  int nbnew = 0;
   int pos = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW && g_list_shorter_than(newlist, table->thumbs_count+1))
@@ -1242,7 +1234,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
       }
       thumb->aspect_ratio = aspect_ratio;
       newlist = g_list_prepend(newlist, thumb);
-      nbnew++;
     }
     // if it's the offset, we record the imgid
     if(nrow == table->offset) table->offset_imgid = nid;
@@ -1320,7 +1311,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
           }
           thumb->aspect_ratio = aspect_ratio;
           newlist = g_list_prepend(newlist, thumb);
-          nbnew++;
         }
         // if it's the offset, we record the imgid
         if(nrow == table->offset) table->offset_imgid = nid;
@@ -1634,7 +1624,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
     // select all active images
     GList *ls = NULL;
-    for (GList *l = table->list; l; l = g_list_next(l))
+    for(GList *l = table->list; l; l = g_list_next(l))
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
       ls = g_list_prepend(ls, GINT_TO_POINTER(thumb->imgid));

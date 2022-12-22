@@ -523,7 +523,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
   // display selection if requested
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g && g->display_mask && self->dev->gui_attached
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) && g && g->display_mask && self->dev->gui_attached
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
     process_display(self, piece, ivoid, ovoid, roi_in, roi_out);
   else if(d->mode == DT_IOP_COLORZONES_MODE_SMOOTH)
@@ -539,7 +539,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)piece->data;
   dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)self->global_data;
   cl_mem dev_L, dev_a, dev_b = NULL;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -547,21 +547,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int kernel_colorzones
       = (d->mode == DT_IOP_COLORZONES_MODE_SMOOTH) ? gd->kernel_colorzones_v3 : gd->kernel_colorzones;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dev_L = dt_opencl_copy_host_to_device(devid, d->lut[0], 256, 256, sizeof(float));
   dev_a = dt_opencl_copy_host_to_device(devid, d->lut[1], 256, 256, sizeof(float));
   dev_b = dt_opencl_copy_host_to_device(devid, d->lut[2], 256, 256, sizeof(float));
   if(dev_L == NULL || dev_a == NULL || dev_b == NULL) goto error;
 
-  dt_opencl_set_kernel_arg(devid, kernel_colorzones, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel_colorzones, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel_colorzones, 2, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, kernel_colorzones, 3, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, kernel_colorzones, 4, sizeof(int), &d->channel);
-  dt_opencl_set_kernel_arg(devid, kernel_colorzones, 5, sizeof(cl_mem), &dev_L);
-  dt_opencl_set_kernel_arg(devid, kernel_colorzones, 6, sizeof(cl_mem), &dev_a);
-  dt_opencl_set_kernel_arg(devid, kernel_colorzones, 7, sizeof(cl_mem), &dev_b);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel_colorzones, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel_colorzones, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->channel), CLARG(dev_L), CLARG(dev_a),
+    CLARG(dev_b));
 
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_L);
@@ -573,7 +566,7 @@ error:
   dt_opencl_release_mem_object(dev_L);
   dt_opencl_release_mem_object(dev_a);
   dt_opencl_release_mem_object(dev_b);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorzones] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorzones] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -814,9 +807,9 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
                                const float *const picker_color, const float *const picker_min,
                                const float *const picker_max)
 {
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE
+     && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values))))
   {
     // the global live samples ...
     GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
@@ -904,9 +897,9 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
     }
   }
 
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
-     ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)) ||
-       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values)) ))
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE
+     && (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker))
+         || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker_set_values))))
   {
     // draw marker for currently selected color:
     float picked_i = -1.0f;
@@ -2077,17 +2070,6 @@ static gboolean _area_leave_notify_callback(GtkWidget *widget, GdkEventCrossing 
   return TRUE;
 }
 
-static gboolean _area_resized_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-{
-  GtkRequisition r;
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  r.width = allocation.width;
-  r.height = allocation.width;
-  gtk_widget_get_preferred_size(widget, &r, NULL);
-  return TRUE;
-}
-
 static gboolean _area_key_press_callback(GtkWidget *widget, GdkEventKey *event, dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
@@ -2374,9 +2356,17 @@ void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
-  dt_iop_color_picker_reset(self, TRUE);
+  dt_iop_color_picker_reset(self, FALSE);
 
   c->zoom_factor = 1.f;
+  c->offset_x = c->offset_y = 0.f;
+  c->selected = -1;
+  c->dragging = 0;
+  c->edit_by_area = 0;
+  c->display_mask = FALSE;
+  self->timeout_handle = 0;
+  c->mouse_radius = 1.f / DT_IOP_COLORZONES_BANDS;
+
   _reset_display_selection(self);
 }
 
@@ -2385,6 +2375,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     _reset_display_selection(self);
+    dt_iop_color_picker_reset(self, FALSE);
   }
 }
 
@@ -2513,7 +2504,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(_area_leave_notify_callback), self);
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(_area_enter_notify_callback), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_area_scrolled_callback), self);
-  g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(_area_resized_callback), self);
   g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(_area_key_press_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->bottom_area), GDK_BUTTON_PRESS_MASK);
@@ -2536,7 +2526,7 @@ void gui_init(struct dt_iop_module_t *self)
       _("change this method if you see oscillations or cusps in the curve\n"
         "- cubic spline is better to produce smooth curves but oscillates when nodes are too close\n"
         "- centripetal is better to avoids cusps and oscillations with close nodes but is less smooth\n"
-        "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)\n"));
+        "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)"));
   g_signal_connect(G_OBJECT(c->interpolator), "value-changed", G_CALLBACK(_interpolator_callback), self);
 }
 
@@ -2592,7 +2582,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)p1;
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
-  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     piece->request_histogram |= (DT_REQUEST_ON);
   else
     piece->request_histogram &= ~(DT_REQUEST_ON);
@@ -2738,4 +2728,3 @@ void init(dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

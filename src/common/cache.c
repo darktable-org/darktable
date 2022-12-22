@@ -88,7 +88,7 @@ int dt_cache_for_all(
   gpointer key, value;
 
   g_hash_table_iter_init (&iter, cache->hashtable);
-  while (g_hash_table_iter_next (&iter, &key, &value))
+  while(g_hash_table_iter_next (&iter, &key, &value))
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
     const int err = process(GPOINTER_TO_INT(key), entry->data, user_data);
@@ -320,10 +320,8 @@ restart:
 void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
   GList *l = cache->lru;
-  int cnt = 0;
   while(l)
   {
-    cnt++;
     dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
     assert(entry->link->data == entry);
     l = g_list_next(l); // we might remove this element, so walk to the next one while we still have the pointer..
@@ -367,9 +365,9 @@ void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, co
 #ifdef _DEBUG
 
 # if defined(HAVE_THREAD_RWLOCK_ARCH_T_READERS)
-  if (entry->lock.lock.__data.__readers <= 1)
+  if(entry->lock.lock.__data.__readers <= 1)
 # elif defined(HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS)
-  if (entry->lock.lock.__data.__nr_readers <= 1)
+  if(entry->lock.lock.__data.__nr_readers <= 1)
 # else /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
 #  error "No valid reader member"
 # endif /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */
@@ -377,7 +375,7 @@ void dt_cache_release_with_caller(dt_cache_t *cache, dt_cache_entry_t *entry, co
 #else /* _DEBUG */
 
 # if defined(HAVE_THREAD_RWLOCK_ARCH_T_READERS)
-  if (entry->lock.__data.__readers <= 1)
+  if(entry->lock.__data.__readers <= 1)
 # elif defined(HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS)
   if(entry->lock.__data.__nr_readers <= 1)
 # else /* HAVE_THREAD_RWLOCK_ARCH_T_(NR_)READERS */

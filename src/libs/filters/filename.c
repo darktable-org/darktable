@@ -57,7 +57,7 @@ static void _filename_decode(const gchar *txt, gchar **name, gchar **ext)
   if(!txt || strlen(txt) == 0) return;
 
   // split the path to find filename and extension parts
-  gchar **elems = g_strsplit(txt, "/", -1);
+  gchar **elems = g_strsplit(txt, G_DIR_SEPARATOR_S, -1);
   const unsigned int size = g_strv_length(elems);
   if(size == 2)
   {
@@ -106,7 +106,7 @@ void _filename_tree_update(_widgets_filename_t *filename)
   gtk_list_store_clear(GTK_LIST_STORE(ext_model));
 
   // how do we separate filename and extension directly in sqlite :
-  // starting exemple : 'nice.bird.cr2'
+  // starting example : 'nice.bird.cr2'
   // replace(filename, '.', '') => nicebirdcr2 (remove all the point)
   // rtrim(filename, replace(filename, '.', '')) => nice.bird. (remove ending chars presents in 'nice.bird.cr2' and
   // 'nicebirdcr2') rtrim(rtrim(filename, replace(filename, '.', '')), '.') => nice.bird (remove ending '.')
@@ -402,8 +402,8 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   filename->name_tree = gtk_tree_view_new_with_model(model);
   gtk_widget_show(filename->name_tree);
-  gtk_widget_set_tooltip_text(filename->name_tree, _("simple click to select filename\n"
-                                                     "ctrl-click to select multiple values"));
+  gtk_widget_set_tooltip_text(filename->name_tree, _("click to select filename\n"
+                                                     "ctrl+click to select multiple values"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(filename->name_tree), FALSE);
   GtkTreeSelection *sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(filename->name_tree));
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
@@ -429,8 +429,8 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
       = GTK_TREE_MODEL(gtk_list_store_new(TREE_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT));
   filename->ext_tree = gtk_tree_view_new_with_model(model);
   gtk_widget_show(filename->ext_tree);
-  gtk_widget_set_tooltip_text(filename->ext_tree, _("simple click to select extension\n"
-                                                    "ctrl-click to select multiple values"));
+  gtk_widget_set_tooltip_text(filename->ext_tree, _("click to select extension\n"
+                                                    "ctrl+click to select multiple values"));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(filename->ext_tree), FALSE);
   sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(filename->ext_tree));
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);

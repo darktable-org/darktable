@@ -37,7 +37,7 @@
 // some pseudo error codes in dt opencl usage
 #define DT_OPENCL_DEFAULT_ERROR -999
 #define DT_OPENCL_SYSMEM_ALLOCATION -998
-
+#define DT_OPENCL_PROCESS_CL -997
 #include "common/darktable.h"
 
 #ifdef HAVE_OPENCL
@@ -77,13 +77,6 @@ typedef enum dt_opencl_scheduling_profile_t
   OPENCL_PROFILE_VERYFAST_GPU
 } dt_opencl_scheduling_profile_t;
 
-typedef enum dt_opencl_sync_cache_t
-{
-  OPENCL_SYNC_TRUE,
-  OPENCL_SYNC_ACTIVE_MODULE,
-  OPENCL_SYNC_FALSE
-} dt_opencl_sync_cache_t;
-
 /**
  * Accounting information used for OpenCL events.
  */
@@ -105,8 +98,7 @@ typedef enum dt_opencl_pinmode_t
 {
   DT_OPENCL_PINNING_OFF = 0,
   DT_OPENCL_PINNING_ON = 1,
-  DT_OPENCL_PINNING_DISABLED = 2,
-  DT_OPENCL_PINNING_ERROR = 4
+  DT_OPENCL_PINNING_DISABLED = 2
 } dt_opencl_pinmode_t;
 
 /**
@@ -148,9 +140,11 @@ typedef struct dt_opencl_device_t
   float benchmark;
   size_t memory_in_use;
   size_t peak_memory;
-  size_t tuned_available;
   size_t used_available;
-
+  // flags what tuning modes should be used
+  int tuneactive; 
+  // flags detected errors
+  int runtime_error;
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
   // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
@@ -200,8 +194,11 @@ typedef struct dt_opencl_device_t
   int disabled;
 
   // Some devices are known to be unused by other apps so there is no need to test for available memory at all.
-  // Also some devices might behave badly with the checking code, in this case we could enforce a headroom here.
   int forced_headroom;
+
+  // As the benchmarks are not good enough to calculate tiled-gpu vs untiled-cpu we have a parameter exposed
+  // in the cldevice conf key to balance this
+  float advantage;  
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -220,7 +217,6 @@ typedef struct dt_opencl_t
   dt_pthread_mutex_t lock;
   int inited;
   int print_statistics;
-  dt_opencl_sync_cache_t sync_cache;
   int enabled;
   int stopped;
   int num_devs;
@@ -341,12 +337,39 @@ int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size,
                              const void *arg);
 
+/** wrap opencl arguments */
+/** the magic number is used for parameter checking; don't use it in your code! */
+#define CLWRAP(size, ptr) (const size_t)0xF111E8, (const size_t)size, (const void *)ptr
+
+/** wrap opencl single argument */
+#define CLARG(arg) CLWRAP(sizeof(arg), &arg)
+
+/** wrap opencl argument array */
+#define CLARRAY(num, arg) CLWRAP(num * sizeof(*arg), arg)
+
+/** wrap opencl float argument array */
+#define CLFLARRAY(num, arg) CLWRAP(num * sizeof(float), arg)
+
+/** wrap opencl local argument allocation */
+#define CLLOCAL(arg) CLWRAP(arg, NULL)
+
+/** attach args. */
+#define dt_opencl_set_kernel_args(dev, kernel, num, ...) \
+    dt_opencl_set_kernel_args_internal(dev, kernel, num, __VA_ARGS__, CLWRAP(SIZE_MAX, NULL))
+int dt_opencl_set_kernel_args_internal(const int dev, const int kernel, int num, ...);
+
 /** launch kernel! */
 int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes);
 
 /** launch kernel with defined local size! */
 int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
                                            const size_t *local);
+
+/** call kernel with arguments! */
+#define dt_opencl_enqueue_kernel_2d_args(dev, kernel, w, h, ...) \
+    dt_opencl_enqueue_kernel_2d_args_internal(dev, kernel, w, h, __VA_ARGS__, CLWRAP(SIZE_MAX, NULL))
+int dt_opencl_enqueue_kernel_2d_args_internal(const int dev, const int kernel,
+                                              const size_t w, const size_t h, ...);
 
 /** check if opencl is inited */
 int dt_opencl_is_inited(void);
@@ -360,8 +383,11 @@ void dt_opencl_disable(void);
 /** get OpenCL tuning mode flags */
 int dt_opencl_get_tuning_mode(void);
 
-/** update enabled flag and profile with value from preferences, returns enabled flag */
-int dt_opencl_update_settings(void);
+/** runtime check for cl system running */
+gboolean dt_opencl_running(void);
+
+/** update enabled flag and profile with value from preferences */
+void dt_opencl_update_settings(void);
 
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width,
@@ -458,8 +484,9 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
                                 const float factor, const size_t overhead);
 /** get available memory for the device */
 cl_ulong dt_opencl_get_device_available(const int devid);
-/** check available memory for the device */
-void dt_opencl_check_device_available(const int devid);
+
+/** check tuning settings and available memory for the device */
+void dt_opencl_check_tuning(const int devid);
 
 /** get size of allocatable single buffer */
 cl_ulong dt_opencl_get_device_memalloc(const int devid);
@@ -493,7 +520,7 @@ void dt_opencl_write_device_config(const int devid);
 gboolean dt_opencl_read_device_config(const int devid);
 int dt_opencl_avoid_atomics(const int devid);
 int dt_opencl_micro_nap(const int devid);
-int dt_opencl_pinned_memory(const int devid);
+gboolean dt_opencl_use_pinned_memory(const int devid);
 
 #else
 #include "control/conf.h"
@@ -594,9 +621,13 @@ static inline int dt_opencl_get_tuning_mode(void)
 {
   return 0;
 }
-static inline int dt_opencl_update_settings(void)
+static inline gboolean dt_opencl_running(void)
 {
-  return 0;
+  return FALSE;
+}
+static inline void dt_opencl_update_settings(void)
+{
+  return ;
 }
 static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
                                               const unsigned bpp, const float factor, const size_t overhead)
@@ -607,7 +638,7 @@ static inline size_t dt_opencl_get_device_available(const int devid)
 {
   return 0;
 }
-static inline void dt_opencl_check_device_available(const int devid)
+static inline void dt_opencl_check_tuning(const int devid)
 {
   return;
 }

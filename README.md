@@ -55,12 +55,14 @@ Requirements
 
 ### Supported platforms
 
-* Linux (64 bit)
-* Free BSD (64 bit)
-* Windows 8 (64 bit), Windows 10 (64 bit)
+* Linux (64-bit)
+* FreeBSD (64-bit)
+* Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c), or later
 * macOS
 
-*32 bit platforms are not officially supported - they might or might not work.*
+*Big-endian platforms are not supported.*
+
+*32-bit platforms are not officially supported - they might or might not work.*
 
 *Windows support is still young and suffers from bugs that do not affect Linux. If possible,
 prefer using darktable on Linux.*
@@ -69,7 +71,7 @@ prefer using darktable on Linux.*
 
 (workable minimum / **recommended minimum**):
 * RAM: 4 GB / **8 GB**
-* CPU: Intel Pentium 4 / **Intel Core i5 4×2.4 GHz**
+* CPU: Intel Pentium 4 (Core 2 for Windows) / **Intel Core i5 4×2.4 GHz**
 * GPU: none / **Nvidia with 1024 CUDA cores, 4 GB, OpenCL 1.2 compatible**
 * free disk space: 250 MB / **1 GB**
 
@@ -87,10 +89,11 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-4.0.0 (stable)
+4.2.0 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.0.0/darktable-4.0.0-win64.exe)
-* [Download executable for mac OS](https://github.com/darktable-org/darktable/releases/download/release-4.0.0/darktable-4.0.0.dmg)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-4.2.0/darktable-4.2.0-win64.exe)
+* [Download executable for macOS on Intel](https://github.com/darktable-org/darktable/releases/download/release-4.2.0/darktable-4.2.0_x86_64.dmg)
+* [Download executable for macOS on Apple Silicon](https://github.com/darktable-org/darktable/releases/download/release-4.2.0/darktable-4.2.0_arm64.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -155,28 +158,36 @@ Compatible compilers:
 
 Required dependencies (minimum version):
 * CMake 3.10
-* Gtk 3.22
-* Glib 2.40
-* SQLite 3.15 (but 3.24 strongly recommended)
-* Exiv2, will require at least 0.27.4 built with ISOBMFF support for Canon CR3 files to be supported.
+* GTK 3.24.15
+* GLib 2.40
+* SQLite 3.15 *(but 3.24 or newer strongly recommended)*
+* Exiv2 0.24 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
+
+Required dependencies (no version requirement):
+* Little CMS 2
 
 Optional dependencies (minimum version):
 * OpenMP 4.5 *(for CPU multi-threading and SIMD vectorization)*
 * LLVM 3.9 *(for OpenCL checks at compilation time)*
 * OpenCL 1.2 *(for GPU-accelerated computing)*
 * Lua 5.4 *(for plugins and extension scripting)*
-* libavif 0.7.2 *(for AVIF import/export)*
-* WebP 0.3.0 *(for WebP exports)*
+* libgphoto2 2.5 *(for camera tethering)*
+* Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
+* libavif 0.8.2 *(for AVIF import & export)*
+* libheif 1.9.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
+* libjxl 0.7.0 *(for JPEG XL import & export)*
+* WebP 0.3.0 *(for WebP import & export)*
 
 Optional dependencies (no version requirement):
-* Gphoto2 *(for camera tethering)*
 * Lensfun *(for automatic lens correction)*
-* OpenEXR *(for EXR import and export)*
-* OpenJPEG *(for Jpeg2000 export)*
-* Colord, Xatom *(for fetching the system display color profile)*
-* G'Mic *(for gmz compressed lut support)*
+* colord, Xatom *(for fetching the system display color profile)*
+* G'MIC *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*
 * SDL2 *(for gamepad input support)*
+* CUPS *(for print mode support)*
+* OpenEXR *(for EXR import & export)*
+* OpenJPEG *(for JPEG 2000 import & export)*
+* GraphicsMagick or ImageMagick *(for misc image format import)*
 
 To install all the dependencies on Linux systems, you may use the source repositories of your distribution
 (provided they are up-to-date):
@@ -252,22 +263,22 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-4.0.0
+4.2.0
 
-The darktable project releases two major versions every year, in mid-Summer and at Christmas, tagged with even numbers (e.g. 3.0, 3.2, 3.4, 3.6).
-Minor revisions are tagged with a third digit (e.g. 3.0.1, 3.0.2) and mostly provide bug fixes and camera support.
+The darktable project releases two major versions every year, in mid-Summer and at Christmas, tagged with even numbers (e.g. 4.0, 4.2, 4.4, 4.6).
+Minor revisions are tagged with a third digit (e.g. 4.0.1, 4.0.2) and mostly provide bug fixes and camera support.
 You may want to compile these stable releases yourself to get better performance for your particular computer:
 
 ```bash
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-4.0.0
+git checkout tags/release-4.2.0
 ```
 
 ### Get submodules
 
-Note that [LibXCF](https://github.com/houz/libxcf.git), [OpenCL](https://github.com/KhronosGroup/OpenCL-Headers.git), [rawspeed](https://github.com/darktable-org/rawspeed), [whereami](https://github.com/gpakosz/whereami) and [LibRaw](https://github.com/LibRaw/LibRaw) are tracked via git submodules, so after checking-out darktable, you need to update/checkout the submodules too:
+Note that [libxcf](https://github.com/houz/libxcf.git), [OpenCL](https://github.com/KhronosGroup/OpenCL-Headers.git), [RawSpeed](https://github.com/darktable-org/rawspeed), [whereami](https://github.com/gpakosz/whereami) and [LibRaw](https://github.com/LibRaw/LibRaw) are tracked via git submodules, so after checking-out darktable, you need to update/checkout the submodules too:
 
 ```bash
 git submodule update --init
@@ -326,7 +337,7 @@ sudo make install
 
 ##### Windows
 
-See https://github.com/darktable-org/darktable/blob/master/packaging/windows/BUILD.md
+See https://github.com/darktable-org/darktable/tree/master/packaging/windows
 
 ### Using
 
@@ -351,7 +362,7 @@ sudo ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applic
 ```
 
 You may find darktable configuration files in `~/.config/darktable`.
-If you experience crashes at startup, try launching darktable without OpenCL, from a terminal, with `darktable --conf opencl=FALSE`.
+If you experience crashes at startup, try launching darktable from a terminal with OpenCL disabled using `darktable --disable-opencl`.
 
 ### Further reading
 
@@ -425,6 +436,5 @@ Wiki
 Mailing lists
 -------------
 
-* Users [[subscribe](mailto:darktable-user+subscribe@lists.darktable.org) | [archive](https://www.mail-archive.com/darktable-user@lists.darktable.org/)]
-* Developer [[subscribe](mailto:darktable-dev+subscribe@lists.darktable.org) | [archive](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)]
-* CI (read-only, high traffic!) [[subscribe](mailto:darktable-ci+subscribe@lists.darktable.org) | [archive](https://www.mail-archive.com/darktable-ci@lists.darktable.org/)]
+* User's [[subscribe](mailto:darktable-user+subscribe@lists.darktable.org) | [archive](https://www.mail-archive.com/darktable-user@lists.darktable.org/)]
+* Developer's [[subscribe](mailto:darktable-dev+subscribe@lists.darktable.org) | [archive](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)]

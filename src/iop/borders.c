@@ -221,7 +221,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const int border_size_l = border_tot_width * d->pos_h;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if (border_size_l == 0 && border_size_t == 0) return 1;
+  if(border_size_l == 0 && border_size_t == 0) return 1;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -247,7 +247,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const int border_size_l = border_tot_width * d->pos_h;
 
   // nothing to be done if parameters are set to neutral values (no top/left border)
-  if (border_size_l == 0 && border_size_t == 0) return 1;
+  if(border_size_l == 0 && border_size_t == 0) return 1;
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -402,12 +402,12 @@ struct border_positions_t
 // this will be called from inside an OpenMP parallel section, so no need to parallelize further
 static inline void set_pixels(float *buf, const dt_aligned_pixel_t color, const int npixels)
 {
-  for (int i = 0; i < npixels; i++)
+  for(int i = 0; i < npixels; i++)
   {
 #ifdef _OPENMP
 #pragma omp simd aligned(buf, color : 16)
 #endif
-    for (int c = 0; c < 4; c++)
+    for(int c = 0; c < 4; c++)
     {
       buf[4*i+c] = color[c];
     }
@@ -417,12 +417,12 @@ static inline void set_pixels(float *buf, const dt_aligned_pixel_t color, const 
 // this will be called from inside an OpenMP parallel section, so no need to parallelize further
 static inline void copy_pixels(float *out, const float *const in, const int npixels)
 {
-  for (int i = 0; i < npixels; i++)
+  for(int i = 0; i < npixels; i++)
   {
 #ifdef _OPENMP
 #pragma omp simd aligned(in, out : 16)
 #endif
-    for (int c = 0; c < 4; c++)
+    for(int c = 0; c < 4; c++)
     {
       out[4*i+c] = in[4*i+c];
     }
@@ -437,22 +437,22 @@ void copy_image_with_border(float *out, const float *const in, const struct bord
   dt_omp_firstprivate(in, out, binfo, image_width) \
   schedule(static)
 #endif
-  for (size_t row = 0; row < binfo->height; row++)
+  for(size_t row = 0; row < binfo->height; row++)
   {
     float *outrow = out + 4 * row * binfo->width;
-    if (row < binfo->border_top || row >= binfo->border_bot)
+    if(row < binfo->border_top || row >= binfo->border_bot)
     {
       // top/bottom border outside the frameline: entirely the border color
       set_pixels(outrow, binfo->bcolor, binfo->width);
     }
-    else if (row < binfo->fl_top || row >= binfo->fl_bot)
+    else if(row < binfo->fl_top || row >= binfo->fl_bot)
     {
       // top/bottom frameline
       set_pixels(outrow, binfo->bcolor, binfo->border_left);
       set_pixels(outrow + 4*binfo->border_left, binfo->flcolor, binfo->border_right - binfo->border_left);
       set_pixels(outrow + 4*binfo->border_right, binfo->bcolor, binfo->width - binfo->border_right);
     }
-    else if (row < binfo->image_top || row >= binfo->image_bot)
+    else if(row < binfo->image_top || row >= binfo->image_bot)
     {
       // top/bottom border inside the frameline
       set_pixels(outrow, binfo->bcolor, binfo->border_left);
@@ -466,7 +466,7 @@ void copy_image_with_border(float *out, const float *const in, const struct bord
       // image area: set left border (w/optional frame line), copy image row, set right border (w/optional frame line)
       // set outer border
       set_pixels(outrow, binfo->bcolor, binfo->border_left);
-      if (binfo->image_left > binfo->border_left)
+      if(binfo->image_left > binfo->border_left)
       {
         // we have a frameline, so set it and the inner border
         set_pixels(outrow + 4*binfo->border_left, binfo->flcolor, binfo->fl_left - binfo->border_left);
@@ -476,7 +476,7 @@ void copy_image_with_border(float *out, const float *const in, const struct bord
       copy_pixels(outrow + 4*binfo->image_left, in + 4 * (row - binfo->image_top) * binfo->stride, image_width);
       // set right border
       set_pixels(outrow + 4*binfo->image_right, binfo->bcolor, binfo->fl_right - binfo->image_right);
-      if (binfo->width > binfo->fl_right)
+      if(binfo->width > binfo->fl_right)
       {
         // we have a frameline, so set it and the outer border
         set_pixels(outrow + 4*binfo->fl_right, binfo->flcolor, binfo->border_right - binfo->fl_right);
@@ -525,7 +525,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       .height = roi_out->height,
       .stride = roi_in->width
   };
-  if (frame_size > 0)
+  if(frame_size > 0)
   {
     const int image_lx = border_size_l - roi_out->x;
     const int image_ty = border_size_t - roi_out->y;
@@ -569,11 +569,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
   dt_iop_borders_global_data_t *gd = (dt_iop_borders_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
   const int width = roi_out->width;
   const int height = roi_out->height;
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
 
   const int border_tot_width = (piece->buf_out.width - piece->buf_in.width) * roi_in->scale;
   const int border_tot_height = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
@@ -586,14 +587,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // ----- Filling border
   const float col[4] = { d->color[0], d->color[1], d->color[2], 1.0f };
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   const int zero = 0;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 0, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &zero);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 2, sizeof(int), &zero);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 3, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 4, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 5, 4 * sizeof(float), &col);
+  dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0, CLARG(dev_out), CLARG(zero), CLARG(zero),
+    CLARG(width), CLARG(height), CLARG(col));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -632,21 +628,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     const int roi_frame_out_width = frame_br_out_x - frame_tl_out_x;
     const int roi_frame_out_height = frame_br_out_y - frame_tl_out_y;
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 0, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &frame_tl_out_x);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 2, sizeof(int), &frame_tl_out_y);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 3, sizeof(int), &roi_frame_out_width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 4, sizeof(int), &roi_frame_out_height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 5, 4 * sizeof(float), &col_frame);
+    dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0, CLARG(dev_out), CLARG(frame_tl_out_x),
+      CLARG(frame_tl_out_y), CLARG(roi_frame_out_width), CLARG(roi_frame_out_height), CLARG(col_frame));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 0, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 1, sizeof(int), &frame_tl_in_x);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 2, sizeof(int), &frame_tl_in_y);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 3, sizeof(int), &roi_frame_in_width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 4, sizeof(int), &roi_frame_in_height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_borders_fill, 5, 4 * sizeof(float), &col);
+    dt_opencl_set_kernel_args(devid, gd->kernel_borders_fill, 0, CLARG(dev_out), CLARG(frame_tl_in_x),
+      CLARG(frame_tl_in_y), CLARG(roi_frame_in_width), CLARG(roi_frame_in_height), CLARG(col));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_borders_fill, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -662,7 +650,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_borders] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_borders] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -844,7 +832,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
 
-  if (w == g->aspect_slider)
+  if(w == g->aspect_slider)
   {
     dt_bauhaus_combobox_set(g->aspect, DT_IOP_BORDERS_ASPECT_COUNT);
   }

@@ -142,7 +142,7 @@ const char **description(struct dt_iop_module_t *self)
   return dt_iop_set_description(self,
                                 _("simulate directional diffusion of light with heat transfer model\n"
                                   "to apply an iterative edge-oriented blur,\n"
-                                  "inpaint damaged parts of the image,"
+                                  "inpaint damaged parts of the image, "
                                   "or to remove blur with blind deconvolution."),
                                 _("corrective and creative"),
                                 _("linear, RGB, scene-referred"),
@@ -1059,10 +1059,20 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
              void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
 
   const size_t width = roi_out->width;
   const size_t height = roi_out->height;
+
+  // allow fast mode, just copy input to output
+  if(fastmode)
+  {
+    const size_t ch = piece->colors;
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    return;
+  }
 
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
@@ -1081,6 +1091,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+
+  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16);
 
   gboolean out_of_memory = FALSE;
 
@@ -1164,7 +1176,7 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
                                          cl_mem LF_odd,
                                          cl_mem LF_even)
 {
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const dt_aligned_pixel_t anisotropy
       = { compute_anisotropy_factor(data->anisotropy_first),
@@ -1220,29 +1232,20 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
     }
 
     // Compute wavelets low-frequency scales
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 0, sizeof(cl_mem), (void *)&buffer_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 1, sizeof(cl_mem), (void *)&HF[s]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 4, sizeof(int), (void *)&mult);
+    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_horizontal, 0, CLARG(buffer_in), CLARG(HF[s]),
+      CLARG(width), CLARG(height), CLARG(mult));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_horizontal, sizes);
     if(err != CL_SUCCESS) return err;
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 0, sizeof(cl_mem), (void *)&HF[s]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 1, sizeof(cl_mem), (void *)&buffer_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 4, sizeof(int), (void *)&mult);
+    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_bspline_vertical, 0, CLARG(HF[s]), CLARG(buffer_out),
+      CLARG(width), CLARG(height), CLARG(mult));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_vertical, sizes);
     if(err != CL_SUCCESS) return err;
 
     // Compute wavelets high-frequency scales and backup the maximum of texture over the RGB channels
     // Note : HF = detail - LF
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 0, sizeof(cl_mem), (void *)&buffer_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 1, sizeof(cl_mem), (void *)&buffer_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 2, sizeof(cl_mem), (void *)&HF[s]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_args(devid, gd->kernel_filmic_wavelets_detail, 0, CLARG(buffer_in), CLARG(buffer_out),
+      CLARG(HF[s]), CLARG(width), CLARG(height));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_wavelets_detail, sizes);
     if(err != CL_SUCCESS) return err;
 
@@ -1287,21 +1290,10 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
     if(s == 0) buffer_out = reconstructed;
 
     // Compute wavelets low-frequency scales
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 0, sizeof(cl_mem), (void *)&HF[s]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 1, sizeof(cl_mem), (void *)&buffer_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 2, sizeof(cl_mem), (void *)&mask);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 3, sizeof(int), (void *)&has_mask);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 4, sizeof(cl_mem), (void *)&buffer_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 5, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 6, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 7, 4 * sizeof(float), (void *)&anisotropy);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 8, 4 * sizeof(dt_isotropy_t), (void *)&isotropy_type);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 9, sizeof(float), (void *)&regularization);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 10, sizeof(float), (void *)&variance_threshold);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 11, sizeof(float), (void *)&current_radius_square);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 12, sizeof(int), (void *)&mult);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 13, 4 * sizeof(float), (void *)&ABCD);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_pde, 14, sizeof(float), (void *)&strength);
+    dt_opencl_set_kernel_args(devid, gd->kernel_diffuse_pde, 0, CLARG(HF[s]), CLARG(buffer_in), CLARG(mask),
+      CLARG(has_mask), CLARG(buffer_out), CLARG(width), CLARG(height), CLARG(anisotropy), CLARG(isotropy_type),
+      CLARG(regularization), CLARG(variance_threshold), CLARG(current_radius_square), CLARG(mult), CLARG(ABCD),
+      CLARG(strength));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse_pde, sizes);
     if(err != CL_SUCCESS) return err;
 
@@ -1314,16 +1306,27 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
+
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
   dt_iop_diffuse_global_data_t *const gd = (dt_iop_diffuse_global_data_t *)self->global_data;
 
   int out_of_memory = FALSE;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
+
+  // allow fast mode, just copy input to output
+  if(fastmode)
+  {
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    return err == CL_SUCCESS;
+  }
 
   size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
@@ -1343,6 +1346,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+
+  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16);
 
   // wavelets scales buffers
   cl_mem HF[MAX_NUM_SCALES];
@@ -1371,20 +1376,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(has_mask)
   {
     // build a boolean mask, TRUE where image is above threshold, FALSE otherwise
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 0, sizeof(cl_mem), (void *)&in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 1, sizeof(cl_mem), (void *)&mask);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 2, sizeof(float), (void *)&data->threshold);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 3, sizeof(int), (void *)&roi_out->width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_build_mask, 4, sizeof(int), (void *)&roi_out->height);
+    dt_opencl_set_kernel_args(devid, gd->kernel_diffuse_build_mask, 0, CLARG(in), CLARG(mask), CLARG(data->threshold),
+      CLARG(roi_out->width), CLARG(roi_out->height));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse_build_mask, sizes);
     if(err != CL_SUCCESS) goto error;
 
     // init the inpainting area with noise
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 0, sizeof(cl_mem), (void *)&temp1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 1, sizeof(cl_mem), (void *)&in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 2, sizeof(cl_mem), (void *)&mask);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 3, sizeof(int), (void *)&roi_out->width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_diffuse_inpaint_mask, 4, sizeof(int), (void *)&roi_out->height);
+    dt_opencl_set_kernel_args(devid, gd->kernel_diffuse_inpaint_mask, 0, CLARG(temp1), CLARG(in), CLARG(mask),
+      CLARG(roi_out->width), CLARG(roi_out->height));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_diffuse_inpaint_mask, sizes);
     if(err != CL_SUCCESS) goto error;
 
@@ -1431,7 +1430,7 @@ error:
   if(LF_odd) dt_opencl_release_mem_object(LF_odd);
   for(int s = 0; s < scales; s++) if(HF[s]) dt_opencl_release_mem_object(HF[s]);
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_diffuse] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_diffuse] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
@@ -1582,7 +1581,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
   dt_bauhaus_slider_set_format(g->sharpness, "%");
   gtk_widget_set_tooltip_text(g->sharpness,
-                              _("increase or decrease the sharpness of the highest frequencies.\n"                              
+                              _("increase or decrease the sharpness of the highest frequencies.\n"
                               "can be used to keep details after blooming,\n"
                               "for standalone sharpening set speed to negative values."));
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -108,7 +108,7 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
   int decimate = params->decimate;
   // determine how many patches we have
   int n_patches = (2 * search_radius + 1) * (2 * search_radius + 1);
-  if (decimate)
+  if(decimate)
     n_patches = (n_patches + 1) / 2;
   *num_patches = n_patches ;
   // allocate a cacheline-aligned buffer
@@ -116,19 +116,19 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
   // set up the patch offsets
   int patch_num = 0;
   int shift = 0;
-  for (int row_index = -search_radius; row_index <= search_radius; row_index++)
+  for(int row_index = -search_radius; row_index <= search_radius; row_index++)
   {
-    for (int col_index = -search_radius; col_index <= search_radius; col_index++)
+    for(int col_index = -search_radius; col_index <= search_radius; col_index++)
     {
-      if (decimate && (++decimate & 1)) continue; // skip every other patch
+      if(decimate && (++decimate & 1)) continue; // skip every other patch
       int r = scatter(scale,scattering,row_index,col_index);
       int c = scatter(scale,scattering,col_index,row_index);
       patches[patch_num].rows = r;
       patches[patch_num].cols = c;
-      if (r > shift) shift = r;
-      else if (-r > shift) shift = -r;
-      if (c > shift) shift = c;
-      else if (-c > shift) shift = -c;
+      if(r > shift) shift = r;
+      else if(-r > shift) shift = -r;
+      if(c > shift) shift = c;
+      else if(-c > shift) shift = -c;
       patches[patch_num].offset = (r * stride + c * 4);
       patch_num++;
     }
@@ -223,7 +223,7 @@ static inline float pixdiff_column_sum(const float *const col_sums, const int ra
 {
   const int stride = SLICE_WIDTH + 2*radius;
   float sum = col_sums[stride+col];
-  for (int i = 2; i <= (2*radius+1) ; i++)
+  for(int i = 2; i <= (2*radius+1) ; i++)
     sum  += col_sums[i*stride+col];
   return sum;
 }
@@ -247,7 +247,7 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
   const int srow = patch->rows;
   const int rmin = row - MIN(radius,MIN(row,row+srow));
   const int rmax = row + MIN(radius,MIN(height-1-row,height-1-(row+srow)));
-  for (int col = chunk_left-radius-1; col < MIN(col_min,chunk_right+radius); col++)
+  for(int col = chunk_left-radius-1; col < MIN(col_min,chunk_right+radius); col++)
   {
     col_sums[col] = 0;
 #ifdef CACHE_PIXDIFFS
@@ -255,10 +255,10 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
       set_pixdiff(col_sums,radius,i,col,0.0f);
 #endif
   }
-  for (int col = col_min; col < col_max; col++)
+  for(int col = col_min; col < col_max; col++)
   {
     float sum = 0;
-    for (int r = rmin; r <= rmax; r++)
+    for(int r = rmin; r <= rmax; r++)
     {
       const float *pixel = in + r*stride + 4*col;
       const float diff = pixel_difference(pixel,pixel+patch->offset,norm);
@@ -270,7 +270,7 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
     col_sums[col] = sum;
   }
   // clear out any columns where the patch column would be outside the RoI, as well as our overrun area
-  for (int col = MAX(col_min,col_max); col < chunk_right + radius; col++)
+  for(int col = MAX(col_min,col_max); col < chunk_right + radius; col++)
   {
     col_sums[col] = 0;
 #ifdef CACHE_PIXDIFFS
@@ -300,7 +300,7 @@ static void init_column_sums_sse2(float *const col_sums, const patch_t *const pa
   const int srow = patch->rows;
   const int rmin = row - MIN(radius,MIN(row,row+srow));
   const int rmax = row + MIN(radius,MIN(height-1-row,height-1-(row+srow)));
-  for (int col = chunk_left-radius-1; col < MIN(col_min,chunk_right+radius); col++)
+  for(int col = chunk_left-radius-1; col < MIN(col_min,chunk_right+radius); col++)
   {
     col_sums[col] = 0;
 #ifdef CACHE_PIXDIFFS_SSE
@@ -308,10 +308,10 @@ static void init_column_sums_sse2(float *const col_sums, const patch_t *const pa
       set_pixdiff(col_sums,radius,i,col,0.0f);
 #endif
   }
-  for (int col = col_min; col < col_max; col++)
+  for(int col = col_min; col < col_max; col++)
   {
     float sum = 0;
-    for (int r = rmin; r <= rmax; r++)
+    for(int r = rmin; r <= rmax; r++)
     {
       const float *pixel = in + r*stride + 4*col;
       const float diff = pixel_difference_sse2(pixel,pixel+patch->offset,norm);
@@ -325,7 +325,7 @@ static void init_column_sums_sse2(float *const col_sums, const patch_t *const pa
   // clear out any columns where the patch column would be outside the RoI, as well as our overrun area
   // (When the chunk is sufficiently narrow, col_max can become less than col_min, which would cause a buffer
   // under-run if we didn't check for that condition here.)
-  for (int col = MAX(col_min,col_max); col < chunk_right + radius; col++)
+  for(int col = MAX(col_min,col_max); col < chunk_right + radius; col++)
   {
     col_sums[col] = 0;
 #ifdef CACHE_PIXDIFFS_SSE
@@ -340,25 +340,25 @@ static void init_column_sums_sse2(float *const col_sums, const patch_t *const pa
 // determine the height of the horizontal slice each thread will process
 static int compute_slice_height(const int height)
 {
-  if (height % SLICE_HEIGHT == 0)
+  if(height % SLICE_HEIGHT == 0)
     return SLICE_HEIGHT;
   // try to make the heights of the chunks as even as possible
   int best = height % SLICE_HEIGHT;
   int best_incr = 0;
-  for (int incr = 1; incr < 10; incr++)
+  for(int incr = 1; incr < 10; incr++)
   {
     int plus_rem = height % (SLICE_HEIGHT + incr);
-    if (plus_rem == 0)
+    if(plus_rem == 0)
       return SLICE_HEIGHT + incr;
-    else if (plus_rem > best)
+    else if(plus_rem > best)
     {
       best_incr = +incr;
       best = plus_rem;
     }
     int minus_rem = height % (SLICE_HEIGHT - incr);
-    if (minus_rem == 0)
+    if(minus_rem == 0)
       return SLICE_HEIGHT - incr;
-    else if (minus_rem > best)
+    else if(minus_rem > best)
     {
       best_incr = -incr;
       best = minus_rem;
@@ -374,12 +374,12 @@ static int compute_slice_width(const int width)
   // if there's just a sliver left over for the last column, see whether slicing a few pixels off each gives
   // us a more nearly full final chunk
   int rem = width % sl_width;
-  if (rem < SLICE_WIDTH/2 && (width % (sl_width-4)) > rem)
+  if(rem < SLICE_WIDTH/2 && (width % (sl_width-4)) > rem)
   {
     sl_width -= 4;
     // check whether removing an additional sliver improves things even more
     rem = width % sl_width;
-    if (rem < SLICE_WIDTH/2 && (width % (sl_width-4)) > rem)
+    if(rem < SLICE_WIDTH/2 && (width % (sl_width-4)) > rem)
       sl_width -= 4;
   }
   return sl_width;
@@ -394,7 +394,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const dt_aligned_pixel_t weight = { params->luma, params->chroma, params->chroma, 1.0f };
   const dt_aligned_pixel_t invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
-  const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
+  const gboolean skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
@@ -423,9 +423,9 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
       schedule(static) \
       collapse(2)
 #endif
-  for (int chunk_top = 0 ; chunk_top < roi_out->height; chunk_top += chk_height)
+  for(int chunk_top = 0 ; chunk_top < roi_out->height; chunk_top += chk_height)
   {
-    for (int chunk_left = 0; chunk_left < roi_out->width; chunk_left += chk_width)
+    for(int chunk_left = 0; chunk_left < roi_out->width; chunk_left += chk_width)
     {
       // locate our scratch space within the big buffer allocated above
       // we'll offset by chunk_left so that we don't have to subtract on every access
@@ -436,12 +436,12 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
       // determine which vertical slice of the image to process
       const int chunk_right = MIN(chunk_left + chk_width, roi_out->width);
       // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
-      for (int i = chunk_top; i < chunk_bot; i++)
+      for(int i = chunk_top; i < chunk_bot; i++)
       {
         memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', sizeof(float) * 4 * (chunk_right-chunk_left));
       }
       // cycle through all of the patches over our slice of the image
-      for (int p = 0; p < num_patches; p++)
+      for(int p = 0; p < num_patches; p++)
       {
         // retrieve info about the current patch
         const patch_t *patch = &patches[p];
@@ -461,11 +461,11 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
 
         init_column_sums(col_sums,patch,inbuf,row_min,chunk_left,chunk_right,height,width,
                          stride,radius,params->norm);
-        for (int row = row_min; row < row_max; row++)
+        for(int row = row_min; row < row_max; row++)
         {
           // add up the initial columns of the sliding window of total patch distortion
           float distortion = 0.0;
-          for (int i = col_min - radius; i < MIN(col_min+radius, col_max); i++)
+          for(int i = col_min - radius; i < MIN(col_min+radius, col_max); i++)
           {
             distortion += col_sums[i];
           }
@@ -474,10 +474,10 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
           float *const out = outbuf + (size_t)4 * width * row;
           const int offset = patch->offset;
           const float sharpness = params->sharpness;
-          if (params->center_weight < 0)
+          if(params->center_weight < 0)
           {
             // computation as used by denoise(non-local) iop
-            for (int col = col_min; col < col_max; col++)
+            for(int col = col_min; col < col_max; col++)
             {
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
               const float wt = gh(distortion * sharpness);
@@ -493,7 +493,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
           else
           {
             // computation as used by denoiseprofiled iop with non-local means
-            for (int col = col_min; col < col_max; col++)
+            for(int col = col_min; col < col_max; col++)
             {
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
               const float dissimilarity = (distortion + pixel_difference(in+4*col,in+4*col+offset,center_norm))
@@ -510,11 +510,11 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
           }
           const int pcol_min = chunk_left - MIN(radius,MIN(chunk_left,chunk_left+scol));
           const int pcol_max = chunk_right + MIN(radius,MIN(width-chunk_right,width-(chunk_right+scol)));
-          if (row < MIN(row_top, row_bot))
+          if(row < MIN(row_top, row_bot))
           {
             // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
             const float *bot_row = inbuf + (row+1+radius)*stride;
-            for (int col = pcol_min; col < pcol_max; col++)
+            for(int col = pcol_min; col < pcol_max; col++)
             {
               const float *const bot_px = bot_row + 4*col;
               const float diff = pixel_difference(bot_px,bot_px+offset,params->norm);
@@ -526,14 +526,14 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
               _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
             }
           }
-          else if (row < row_bot)
+          else if(row < row_bot)
           {
 #ifndef CACHE_PIXDIFFS
             const float *const top_row = inbuf + (row-radius)*stride   /* +(2*radius+1)*stride*/ ;
 #endif /* !CACHE_PIXDIFFS */
             const float *const bot_row = inbuf + (row+1+radius)*stride ;
             // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
-            for (int col = pcol_min; col < pcol_max; col++)
+            for(int col = pcol_min; col < pcol_max; col++)
             {
 #ifdef CACHE_PIXDIFFS
               const float *const bot_px = bot_row + 4*col;
@@ -551,13 +551,13 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
               _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
             }
           }
-          else if (row >= row_top && row + 1 < row_max) // don't bother updating if last iteration
+          else if(row >= row_top && row + 1 < row_max) // don't bother updating if last iteration
           {
             // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
 #ifndef CACHE_PIXDIFFS
             const float *top_row = inbuf + (row-radius)*stride;
 #endif /* !CACHE_PIXDIFFS */
-            for (int col = pcol_min; col < pcol_max; col++)
+            for(int col = pcol_min; col < pcol_max; col++)
             {
 #ifdef CACHE_PIXDIFFS
               col_sums[col] -= get_pixdiff(col_sums,radius,row-radius,col);
@@ -569,13 +569,13 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
           }
         }
       }
-      if (skip_blend)
+      if(skip_blend)
       {
         // normalize the pixels
-        for (int row = chunk_top; row < chunk_bot; row++)
+        for(int row = chunk_top; row < chunk_bot; row++)
         {
           float *const out = outbuf + 4 * row * roi_out->width;
-          for (int col = chunk_left; col < chunk_right; col++)
+          for(int col = chunk_left; col < chunk_right; col++)
           {
             for_each_channel(c,aligned(out:16))
             {
@@ -587,11 +587,11 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
       else
       {
         // normalize and apply chroma/luma blending
-        for (int row = chunk_top; row < chunk_bot; row++)
+        for(int row = chunk_top; row < chunk_bot; row++)
         {
           const float *in = inbuf + row * stride;
           float *out = outbuf + row * 4 * roi_out->width;
-          for (int col = chunk_left; col < chunk_right; col++)
+          for(int col = chunk_left; col < chunk_right; col++)
           {
             for_each_channel(c,aligned(in,out,weight,invert:16))
             {
@@ -618,7 +618,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const __m128 weight = { params->luma, params->chroma, params->chroma, 1.0f };
   const __m128 invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
-  const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
+  const gboolean skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
@@ -647,9 +647,9 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
       schedule(static) \
       collapse(2)
 #endif
-  for (int chunk_top = 0 ; chunk_top < roi_out->height; chunk_top += chk_height)
+  for(int chunk_top = 0 ; chunk_top < roi_out->height; chunk_top += chk_height)
   {
-    for (int chunk_left = 0; chunk_left < roi_out->width; chunk_left += chk_width)
+    for(int chunk_left = 0; chunk_left < roi_out->width; chunk_left += chk_width)
     {
       // locate our scratch space within the big buffer allocated above
       // we'll offset by chunk_left so that we don't have to subtract on every access
@@ -660,12 +660,12 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
       // determine which vertical slice of the image to process
       const int chunk_right = MIN(chunk_left + chk_width, roi_out->width);
       // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
-      for (int i = chunk_top; i < chunk_bot; i++)
+      for(int i = chunk_top; i < chunk_bot; i++)
       {
         memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', sizeof(float) * 4 * (chunk_right-chunk_left));
       }
       // cycle through all of the patches over our slice of the image
-      for (int p = 0; p < num_patches; p++)
+      for(int p = 0; p < num_patches; p++)
       {
         // retrieve info about the current patch
         const patch_t *patch = &patches[p];
@@ -685,11 +685,11 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
 
         init_column_sums_sse2(col_sums,patch,inbuf,row_min,chunk_left,chunk_right,height,width,
                               stride,radius,params->norm);
-        for (int row = row_min; row < row_max; row++)
+        for(int row = row_min; row < row_max; row++)
         {
           // add up the initial columns of the sliding window of total patch distortion
           float distortion = 0.0;
-          for (int i = col_min - radius; i < MIN(col_min+radius, col_max); i++)
+          for(int i = col_min - radius; i < MIN(col_min+radius, col_max); i++)
           {
             distortion += col_sums[i];
           }
@@ -698,10 +698,10 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
           __m128 *const out = (__m128*)outbuf + (size_t)width * row;
           const int offset = patch->offset;
           const float sharpness = params->sharpness;
-          if (params->center_weight < 0)
+          if(params->center_weight < 0)
           {
             // computation as used by denoise(non-local) iop
-            for (int col = col_min; col < col_max; col++)
+            for(int col = col_min; col < col_max; col++)
             {
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
               const __m128 wt = _mm_set1_ps(gh(distortion * sharpness));
@@ -714,7 +714,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
           else
           {
             // computation as used by denoiseprofiled iop with non-local means
-            for (int col = col_min; col < col_max; col++)
+            for(int col = col_min; col < col_max; col++)
             {
               distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
               const float dissimilarity = (distortion + pixel_difference_sse2(in+4*col,in+4*col+offset,center_norm))
@@ -728,11 +728,11 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
           }
           const int pcol_min = chunk_left - MIN(radius,MIN(chunk_left,chunk_left+scol));
           const int pcol_max = chunk_right + MIN(radius,MIN(width-chunk_right,width-(chunk_right+scol)));
-          if (row < MIN(row_top, row_bot))
+          if(row < MIN(row_top, row_bot))
           {
             // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
             const float *bot_row = inbuf + (row+1+radius)*stride;
-            for (int col = pcol_min; col < pcol_max; col++)
+            for(int col = pcol_min; col < pcol_max; col++)
             {
               const float *const bot_px = bot_row + 4*col;
               const float diff = pixel_difference_sse2(bot_px,bot_px+offset,params->norm);
@@ -744,14 +744,14 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
               _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
             }
           }
-          else if (row < row_bot)
+          else if(row < row_bot)
           {
 #ifndef CACHE_PIXDIFFS_SSE
             const float *const top_row = inbuf + (row-radius)*stride   /* +(2*radius+1)*stride*/ ;
 #endif /* !CACHE_PIXDIFFS_SSE */
             const float *const bot_row = inbuf + (row+1+radius)*stride ;
             // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
-            for (int col = pcol_min; col < pcol_max; col++)
+            for(int col = pcol_min; col < pcol_max; col++)
             {
 #ifdef CACHE_PIXDIFFS_SSE
               const float *const bot_px = bot_row + 4*col;
@@ -770,13 +770,13 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
               _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
             }
           }
-          else if (row >= row_top && row + 1 < row_max) // don't bother updating if last iteration
+          else if(row >= row_top && row + 1 < row_max) // don't bother updating if last iteration
           {
             // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
 #ifndef CACHE_PIXDIFFS_SSE
             const float *top_row = inbuf + (row-radius)*stride;
 #endif /* !CACHE_PIXDIFFS_SSE */
-            for (int col = pcol_min; col < pcol_max; col++)
+            for(int col = pcol_min; col < pcol_max; col++)
             {
 #ifdef CACHE_PIXDIFFS_SSE
               col_sums[col] -= get_pixdiff(col_sums,radius,row-radius,col);
@@ -788,13 +788,13 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
           }
         }
       }
-      if (skip_blend)
+      if(skip_blend)
       {
         // normalize the pixels
-        for (int row = chunk_top; row < chunk_bot; row++)
+        for(int row = chunk_top; row < chunk_bot; row++)
         {
           float *const out = outbuf + 4 * row * roi_out->width;
-          for (int col = chunk_left; col < chunk_right; col++)
+          for(int col = chunk_left; col < chunk_right; col++)
           {
             const __m128 outpx = _mm_load_ps(out + 4*col);
             const __m128 scale = _mm_set1_ps(outpx[3]);
@@ -805,11 +805,11 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
       else
       {
         // normalize and apply chroma/luma blending
-        for (int row = chunk_top; row < chunk_bot; row++)
+        for(int row = chunk_top; row < chunk_bot; row++)
         {
           const float *const in = inbuf + row * stride;
           float *const out = outbuf + 4 * row * roi_out->width;
-          for (int col = chunk_left; col < chunk_right; col++)
+          for(int col = chunk_left; col < chunk_right; col++)
           {
             const __m128 inpx = _mm_load_ps(in + 4*col);
             const __m128 outpx = _mm_load_ps(out + 4*col);
@@ -872,11 +872,8 @@ static void get_blocksizes(int *h, int *v, const int radius, const int devid,
 static inline cl_int nlmeans_cl_init(const int devid, const int kernel, cl_mem dev_out, const int height,
                                      const int width)
 {
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&height);
-  return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(dev_out), CLARG(width), CLARG(height));
 }
 #endif /* HAVE_OPENCL */
 
@@ -888,13 +885,8 @@ static inline cl_int nlmeans_cl_horiz(const int devid, const int kernel, cl_mem 
 {
   const size_t sizesl[3] = { bwidth, ROUNDUPDHT(height, devid), 1 };
   const size_t local[3] = { hblocksize, 1, 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_U4);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_U4_t);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, 2 * sizeof(int), (void *)&q);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&P);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, (hblocksize + 2 * P) * sizeof(float), NULL);
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_U4), CLARG(dev_U4_t), CLARG(width), CLARG(height), CLARRAY(2, q),
+    CLARG(P), CLLOCAL((hblocksize + 2 * P) * sizeof(float)));
   return dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizesl, local);
 }
 #endif /* HAVE_OPENCL */
@@ -905,12 +897,8 @@ static inline cl_int nlmeans_cl_accu(const int devid, const int kernel, cl_mem d
                                      cl_mem dev_out, const int q[2], const int height, const int width,
                                      const size_t sizes[3])
 {
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_U4_tt);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, 2 * sizeof(int), (void *)&q);
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width),
+    CLARG(height), CLARRAY(2, q));
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 #endif /* HAVE_OPENCL */
@@ -950,22 +938,17 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   for(int p = 0; p < num_patches; p++)
   {
     const patch_t *patch = &patches[p];
     int q[2] = { patch->rows, patch->cols };
+    const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     // compute channel-normed squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 4, 2 * sizeof(int), (void *)&q);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 5, sizeof(float), (void *)&nL2);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 6, sizeof(float), (void *)&nC2);
+    dt_opencl_set_kernel_args(devid, params->kernel_dist, 0, CLARG(dev_in), CLARG(dev_U4), CLARG(width),
+      CLARG(height), CLARG(q), CLARG(nL2), CLARG(nC2));
     err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_dist, sizes);
     if(err != CL_SUCCESS) break;
 
@@ -979,14 +962,8 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
     const size_t local[3] = { 1, vblocksize, 1 };
     const float sharpness = params->sharpness;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 4, 2 * sizeof(int), (void *)&q);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 5, sizeof(int), (void *)&P);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 6, sizeof(float), (void *)&sharpness);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 7, (vblocksize + 2 * P) * sizeof(float), NULL);
+    dt_opencl_set_kernel_args(devid, params->kernel_vert, 0, CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width),
+      CLARG(height), CLARG(q), CLARG(P), CLARG(sharpness), CLLOCAL((vblocksize + 2 * P) * sizeof(float)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_vert, sizesl, local);
     if(err != CL_SUCCESS) break;
 
@@ -1045,20 +1022,17 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   for(int p = 0; p < num_patches; p++)
   {
     const patch_t *patch = &patches[p];
     int q[2] = { patch->rows, patch->cols };
+    const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     // compute squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 4, 2 * sizeof(int), (void *)&q);
+    dt_opencl_set_kernel_args(devid, params->kernel_dist, 0, CLARG(dev_in), CLARG(dev_U4), CLARG(width),
+      CLARG(height), CLARG(q));
     err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_dist, sizes);
     if(err != CL_SUCCESS) break;
 
@@ -1072,16 +1046,9 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
     const size_t local[3] = { 1, vblocksize, 1 };
     const float central_pixel_weight = params->center_weight;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 4, 2 * sizeof(int), (void *)&q);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 5, sizeof(int), (void *)&P);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 6, sizeof(float), (void *)&norm);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 7, (vblocksize + 2 * P) * sizeof(float), NULL);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 8, sizeof(float), (void *)&central_pixel_weight);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 9, sizeof(cl_mem), ((void *)&dev_U4));
+    dt_opencl_set_kernel_args(devid, params->kernel_vert, 0, CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width),
+      CLARG(height), CLARG(q), CLARG(P), CLARG(norm), CLLOCAL((vblocksize + 2 * P) * sizeof(float)),
+      CLARG(central_pixel_weight), CLARG(dev_U4));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_vert, sizesl, local);
     if(err != CL_SUCCESS) break;
 
@@ -1110,4 +1077,3 @@ error:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -102,24 +102,14 @@
     <shortdescription></shortdescription>
     <longdescription></longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="database">
-    <name>database/maintenance_check</name>
-    <type>
-      <enum>
-        <option>never</option>
-        <option>on startup</option>
-        <option>on close</option>
-        <option>on both</option>
-        <option>on startup (don't ask)</option>
-        <option>on close (don't ask)</option>
-        <option>on both (don't ask)</option>
-      </enum>
-    </type>
-    <default>on close</default>
-    <shortdescription>check for database maintenance</shortdescription>
-    <longdescription>this option indicates when to check database fragmentation and perform maintenance</longdescription>
+  <dtconfig>
+    <name>storage/piwigo/overwrite</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription></shortdescription>
+    <longdescription></longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="database">
+  <dtconfig>
     <name>database/maintenance_freepage_ratio</name>
     <type>int</type>
     <default>25</default>
@@ -147,20 +137,6 @@
     <default>10</default>
     <shortdescription>how many snapshots to keep</shortdescription>
     <longdescription>after successfully creating snapshot, how many older snapshots to keep (excluding mandatory version update ones). enter -1 to keep all snapshots\nkeep in mind that snapshots do take some space and you only need the most recent one for successful restore</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>min_panel_width</name>
-    <type>int</type>
-    <default>150</default>
-    <shortdescription>minimum width of the side panels in pixels</shortdescription>
-    <longdescription>(needs a restart)</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>max_panel_width</name>
-    <type>int</type>
-    <default>500</default>
-    <shortdescription>maximum width of the side panels in pixels</shortdescription>
-    <longdescription>(needs a restart)</longdescription>
   </dtconfig>
   <dtconfig>
     <name>min_panel_height</name>
@@ -201,7 +177,7 @@
     </type>
     <default>default</default>
     <shortdescription>darktable resources</shortdescription>
-    <longdescription>defines how much darktable may take from your system resources.\n - default: darktable takes ~50% of your systems resources and gives darktable enough to be still performant.\n - small: should be used if you are simultaneously running applications taking large parts of your systems memory or opencl/gl applications like games or hugin.\n - large: is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.\n - unrestricted: should only be used for developing extremely large images as darktable will take all of your systems resources and thus might lead to swapping and unexpected performance drops. use with caution and not recommended for general use!</longdescription>
+    <longdescription>defines how much darktable may take from your system resources.\n - default: darktable takes ~50% of your systems resources and gives darktable enough to be still performant.\n - small: should be used if you are simultaneously running applications taking large parts of your systems memory or OpenCL/GL applications like games or Hugin.\n - large: is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.\n - unrestricted: should only be used for developing extremely large images as darktable will take all of your systems resources and thus might lead to swapping and unexpected performance drops. use with caution and not recommended for general use!</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>ui/performance</name>
@@ -259,7 +235,7 @@
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
+  <dtconfig prefs="storage" section="XMP">
     <name>write_sidecar_files</name>
     <type>
       <enum>
@@ -272,7 +248,7 @@
     <shortdescription>write sidecar file for each image</shortdescription>
     <longdescription>the sidecar files hold information about all your development steps to allow flawless re-importing of image files.\n\ndepending on the selected mode sidecar files will be written:\n - never\n - on import: immediately after importing the image\n - after edit: after any user change on the image</longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
+  <dtconfig prefs="storage" section="XMP">
     <name>compress_xmp_tags</name>
     <type>
       <enum>
@@ -282,8 +258,8 @@
       </enum>
     </type>
     <default>only large entries</default>
-    <shortdescription>store xmp tags in compressed format</shortdescription>
-    <longdescription>entries in xmp tags can get rather large and may exceed the available space to store the history stack in output files. this option allows xmp tags to be compressed and save space.</longdescription>
+    <shortdescription>store XMP tags in compressed format</shortdescription>
+    <longdescription>entries in XMP tags can get rather large and may exceed the available space to store the history stack in output files. this option allows XMP tags to be compressed and save space.</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="tags">
     <name>omit_tag_hierarchy</name>
@@ -309,7 +285,7 @@
     </type>
     <default>insensitive</default>
     <shortdescription>tags case sensitivity</shortdescription>
-    <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 26 latin letters</longdescription>
+    <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensitivity works only for the 26 latin letters</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl</name>
@@ -343,20 +319,7 @@
     </type>
     <default>nothing</default>
     <shortdescription>tune OpenCL performance</shortdescription>
-    <longdescription>allows runtime tuning of OpenCL devices. 'memory size' tests for available graphics ram, 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>opencl_synch_cache</name>
-    <type>
-      <enum>
-        <option>true</option>
-        <option>active module</option>
-        <option>false</option>
-      </enum>
-    </type>
-    <default>active module</default>
-    <shortdescription>cache intermediate OpenCL output</shortdescription>
-    <longdescription>active module (default) - cache the input to the currently focused module, which allows for faster response time when making multiple adjustments to that module (though the whole pipeline may need to be reprocessed when another module is changed); true - cache the output after each module, which may improve speed, as the whole pixelpipe won't be reprocessed on every parameter change, though will require more memory transfers from the GPU; false - do not sync the pixelpipe cache from OpenCL, which avoids memory transfers from GPUs fast enough to smoothly reprocess the whole pixelpipe.</longdescription>
+    <longdescription>allows runtime tuning of OpenCL devices. 'memory size' uses a fixed headroom (400MB as default), 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
@@ -1005,7 +968,7 @@
     <name>ui_last/import_last_tags_imported</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>import tags from xmp</shortdescription>
+    <shortdescription>import tags from XMP</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -1294,7 +1257,7 @@
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_tooltip_pattern</name>
     <type>longstring</type>
-    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF_DAY)/$(EXIF_MONTH)/$(EXIF_YEAR) $(EXIF_HOUR):$(EXIF_MINUTE):$(EXIF_SECOND)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
+    <default>&lt;b&gt;$(FILE_NAME).$(FILE_EXTENSION)&lt;/b&gt;$(NL)$(EXIF.DATE.REGIONAL) $(EXIF.TIME.REGIONAL)$(NL)$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
@@ -2175,6 +2138,19 @@
     <shortdescription>always show panels' scrollbars</shortdescription>
     <longdescription>defines whether the panel scrollbars should be always visible or activated only depending on the content.  (need a restart)</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>darkroom/ui/transition_duration</name>
+    <type min="0" max="1000">int</type>
+    <default>250</default>
+    <shortdescription>duration of the ui transitions in ms</shortdescription>
+    <longdescription>how long the transitions take (in ms) for expanding or collapsing modules and other ui elements</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>ui/style/preview_size</name>
+    <type min="100" max="500">int</type>
+    <default>250</default>
+    <shortdescription>max style preview size</shortdescription>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
@@ -2318,13 +2294,13 @@
     <type>
       <enum>
         <option>always bilinear (fast)</option>
-        <option>at most RCD (reasonable)</option>
+        <option>default</option>
         <option>full (possibly slow)</option>
       </enum>
     </type>
-    <default>at most RCD (reasonable)</default>
+    <default>default</default>
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using RCD + interpolation modes specified on the 'pixel interpolator' option (processing tab), full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than RCD as middle ground.</longdescription>
+    <longdescription>demosaicer when not viewing 1:1 in darkroom mode: 'bilinear' is fast but slightly blurry. 'default' uses the default demosaicer for the used sensor (RCD or Markesteijn). 'full' will use exactly the settings as for full-size export.</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>preview_downsampling</name>
@@ -2566,16 +2542,30 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/tiff/pixelformat</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/tiff/compress</name>
-    <type>int</type>
+    <type min="0" max="2">int</type>
     <default>2</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/compresslevel</name>
-    <type min="0" max="9">int</type>
+    <type min="1" max="9">int</type>
     <default>6</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/tiff/shortfile</name>
+    <type min="0" max="1">int</type>
+    <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -2599,6 +2589,56 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/jxl/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>10</option>
+        <option>12</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
+    <default>8</default>
+    <shortdescription>JPEG XL bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/pixel_type</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/quality</name>
+    <type min="4" max="100">int</type>
+    <default>95</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/original</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/effort</name>
+    <type min="1" max="9">int</type>
+    <default>7</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/jxl/tier</name>
+    <type min="0" max="4">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/webp/comp_type</name>
     <type min="0" max="1">int</type>
     <default>0</default>
@@ -2607,7 +2647,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/webp/quality</name>
-    <type min="5" max="100">int</type>
+    <type min="0" max="100">int</type>
     <default>95</default>
     <shortdescription/>
     <longdescription/>
@@ -3211,12 +3251,12 @@
     <shortdescription>DPI value for exported files</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
+  <dtconfig prefs="storage" section="XMP">
     <name>run_crawler_on_start</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>look for updated xmp files on startup</shortdescription>
-    <longdescription>check file modification times of all xmp files on startup to check if any got updated in the meantime</longdescription>
+    <shortdescription>look for updated XMP files on startup</shortdescription>
+    <longdescription>check file modification times of all XMP files on startup to check if any got updated in the meantime</longdescription>
   </dtconfig>
   <dtconfig prefs="security" section="other">
     <name>plugins/lighttable/audio_player</name>
@@ -3229,8 +3269,8 @@
     <name>plugins/darkroom/lut3d/def_path</name>
     <type>dir</type>
     <default>$(home)</default>
-    <shortdescription>3D lut root folder</shortdescription>
-    <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. (need a restart).</longdescription>
+    <shortdescription>LUT 3D root folder</shortdescription>
+    <longdescription>this folder (and sub-folders) contains LUT files used by LUT 3D module. (need a restart).</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/workflow</name>
@@ -3263,13 +3303,6 @@
     <default>false</default>
     <shortdescription>auto-apply per camera basecurve presets</shortdescription>
     <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs a restart).\nthis option is taken into account when the \"auto-apply pixel workflow defaults\" is set to \"display-referred\".\nto prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults\" should be set to \"none\"</longdescription>
-  </dtconfig>
-  <dtconfig prefs="processing" section="general">
-    <name>plugins/darkroom/sharpen/auto_apply</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>auto-apply sharpen</shortdescription>
-    <longdescription>this added sharpen is not recommended on cameras without a low-pass filter. you should disable this option if you use one of those more recent cameras or sharpen your images with other means.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
     <name>ui/detect_mono_exif</name>
@@ -3318,7 +3351,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>allow XYZ and Lab color spaces as output</shortdescription>
-    <longdescription>this is mainly useful for debugging and to create colorchecker lut styles externally.</longdescription>
+    <longdescription>this is mainly useful for debugging and to create colorchecker LUT styles externally.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/rawprepare/allow_editing_crop</name>
@@ -3386,7 +3419,7 @@
     <shortdescription>Geotagging search URL</shortdescription>
     <longdescription>this can be changed when the default OpenStreetMap search URL is broken</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="modules">
+  <dtconfig>
     <name>plugins/darkroom/temperature/colored_sliders</name>
     <type>
       <enum>
@@ -3441,7 +3474,7 @@
     <shortdescription>saturation factor of the color zones background</shortdescription>
     <longdescription>higher value means more saturated backgrounds in color zones</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="modules">
+  <dtconfig>
     <name>plugins/darkroom/colorbalance/layout</name>
     <type>
       <enum>

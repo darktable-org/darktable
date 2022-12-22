@@ -92,24 +92,25 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
   {
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
-      float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
+      float compression = MIN(1.0f, dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, compression)));
       if(up)
         compression = fminf(fmaxf(compression, 0.001f) * 1.0f / 0.8f, 1.0f);
       else
         compression = fmaxf(compression, 0.001f) * 0.8f;
-      dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
+      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, compression), compression);
       dt_toast_log(_("compression: %3.2f%%"), compression*100.0f);
     }
-    else if (dt_modifier_is(state, 0)) // simple scroll to adjust curvature, calling func adjusts opacity with Ctrl
+    else if(dt_modifier_is(state, 0)) // simple scroll to adjust curvature, calling func adjusts opacity with Ctrl
     {
-      float curvature = dt_conf_get_float("plugins/darkroom/masks/gradient/curvature");
+      float curvature = dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, curvature));
       if(up)
         curvature = fminf(curvature + 0.01f, 2.0f);
       else
         curvature = fmaxf(curvature - 0.01f, -2.0f);
-      dt_conf_set_float("plugins/darkroom/masks/gradient/curvature", curvature);
+      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, curvature), curvature);
       dt_toast_log(_("curvature: %3.2f%%"), curvature * 50.0f);
     }
+    dt_dev_masks_list_change(darktable.develop);
     return 1;
   }
 
@@ -124,7 +125,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
     if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
-      dt_masks_form_change_opacity(form, parentid, up);
+      dt_masks_form_change_opacity(form, parentid, up ? 0.05f : -0.05f);
     }
     else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
@@ -134,9 +135,8 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
       else
         gradient->compression = fmaxf(gradient->compression, 0.001f) * 0.8f;
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-      dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index, module);
-      dt_conf_set_float("plugins/darkroom/masks/gradient/compression", gradient->compression);
+      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, compression), gradient->compression);
       dt_toast_log(_("compression: %3.2f%%"), gradient->compression*100.0f);
       dt_masks_update_image(darktable.develop);
     }
@@ -149,7 +149,6 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
         gradient->curvature = fmaxf(gradient->curvature - 0.01f, -2.0f);
       dt_toast_log(_("curvature: %3.2f%%"), gradient->curvature*50.0f);
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
-      dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index, module);
       dt_masks_update_image(darktable.develop);
     }
@@ -172,7 +171,6 @@ static int _gradient_events_button_pressed(struct dt_iop_module_t *module, float
     gradient->curvature = 0.0f;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     dt_masks_update_image(darktable.develop);
@@ -265,11 +263,11 @@ static void _gradient_init_values(float zoom_scale, dt_masks_form_gui_t *gui, fl
   check_angle = atan2f(sinf(check_angle), cosf(check_angle));
   if(check_angle < 0.0f) rot -= M_PI;
 
-  const float compr = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
+  const float compr = MIN(1.0f, dt_conf_get_float(DT_MASKS_CONF(0, gradient, compression)));
 
   *rotation = -rot / M_PI * 180.0f;
   *compression = MAX(0.0f, compr);
-  *curvature = MAX(-2.0f, MIN(2.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/curvature")));
+  *curvature = MAX(-2.0f, MIN(2.0f, dt_conf_get_float(DT_MASKS_CONF(0, gradient, curvature))));
 }
 
 static int _gradient_events_button_released(struct dt_iop_module_t *module, float pzx, float pzy, int which,
@@ -324,7 +322,6 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the move
@@ -362,7 +359,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     float check_angle = atan2f(pts2[7] - pts2[1], pts2[6] - pts2[0]) - atan2f(pts2[5] - pts2[1], pts2[4] - pts2[0]);
     // Normalize to the range -180 to 180 degrees
     check_angle = atan2f(sinf(check_angle), cosf(check_angle));
-    if (check_angle < 0)
+    if(check_angle < 0)
       gradient->rotation += dv / M_PI * 180.0f;
     else
       gradient->rotation -= dv / M_PI * 180.0f;
@@ -370,7 +367,6 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the rotation
@@ -395,7 +391,6 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
 
     // we save the new parameters
@@ -437,13 +432,13 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
       // and we switch in edit mode to show all the forms
       dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
-      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid, TRUE);
+      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
       gui->creation_module = NULL;
     }
     else
     {
       // we select the new form
-      dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, TRUE);
+      dt_dev_masks_selection_change(darktable.develop, NULL, form->formid);
     }
 
     if(crea_module && gui->creation_continuous)
@@ -456,7 +451,6 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
       dt_masks_form_t *newform = dt_masks_create(form->type);
       dt_masks_change_form_gui(newform);
-      darktable.develop->form_gui->creation = TRUE;
       darktable.develop->form_gui->creation_module = crea_module;
       darktable.develop->form_gui->creation_continuous = TRUE;
       darktable.develop->form_gui->creation_continuous_module = crea_module;
@@ -491,7 +485,6 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
     gradient->anchor[1] = pts[1] / darktable.develop->preview_pipe->iheight;
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -531,7 +524,6 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
       gradient->rotation -= dv / M_PI * 180.0f;
 
     // we recreate the form points
-    dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
     dt_control_queue_redraw_center();
     return 1;
@@ -600,7 +592,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
   return 0;
 }
 
-// check if (x,y) lies within reasonable limits relative to image frame
+// check if(x,y) lies within reasonable limits relative to image frame
 static inline int _gradient_is_canonical(const float x, const float y, const float wd, const float ht)
 {
   return (isnormal(x) && isnormal(y) && x >= -wd && x <= 2 * wd && y >= -ht && y <= 2 * ht) ? TRUE : FALSE;
@@ -878,21 +870,7 @@ static void _gradient_draw_arrow(cairo_t *cr, double *dashed, const float len, c
   const float pivot_start_y = pts[5];
 
   // draw anchor point
-  {
-    cairo_set_dash(cr, dashed, 0, 0);
-    const float anchor_size = (selected) ? 7.0f / zoom_scale : 5.0f / zoom_scale;
-    dt_draw_set_color_overlay(cr, TRUE, 0.8);
-    cairo_rectangle(cr, anchor_x - (anchor_size * 0.5), anchor_y - (anchor_size * 0.5), anchor_size, anchor_size);
-    cairo_fill_preserve(cr);
-
-    if(selected)
-      cairo_set_line_width(cr, 2.0 / zoom_scale);
-    else
-      cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, FALSE, 0.8);
-    cairo_stroke(cr);
-  }
-
+  dt_masks_draw_anchor(cr, selected, zoom_scale, anchor_x, anchor_y);
 
   // draw pivot points
   {
@@ -1009,7 +987,7 @@ static void _gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   // draw main line
   _gradient_draw_lines(FALSE, cr, dashed, len, selected, zoom_scale, gpt->points, gpt->points_count, xref, yref);
   // draw borders
-  if(gui->group_selected == index)
+  if(gui->show_all_feathers || gui->group_selected == index)
     _gradient_draw_lines(TRUE, cr, dashed, len, gui->border_selected, zoom_scale, gpt->border, gpt->border_count,
                          xref, yref);
 
@@ -1447,7 +1425,7 @@ static GSList *_gradient_setup_mouse_actions(const struct dt_masks_form_t *const
 static void _gradient_sanitize_config(dt_masks_type_t type)
 {
   // we always want to start with no curvature
-  dt_conf_set_float("plugins/darkroom/masks/gradient/curvature", 0.0f);
+  dt_conf_set_float(DT_MASKS_CONF(type, gradient, curvature), 0.0f);
 }
 
 static void _gradient_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
@@ -1482,6 +1460,51 @@ static void _gradient_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const
   }
 }
 
+static void _gradient_modify_property(dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max)
+{
+  dt_masks_point_gradient_t *gradient = form->points ? form->points->data : NULL;
+
+  switch(prop)
+  {
+    case DT_MASKS_PROPERTY_CURVATURE:;
+      float curvature = gradient ? gradient->curvature : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, curvature));
+      curvature = CLAMP(curvature + new_val - old_val, -2.0f, 2.0f);
+
+      if(gradient) gradient->curvature = curvature;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, curvature), curvature);
+
+      *sum += curvature * 0.5;
+      *max = fminf(*max,  1.0f - 0.5 * curvature);
+      *min = fmaxf(*min, -1.0f - 0.5 * curvature);
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_COMPRESSION:;
+      float ratio = (!old_val || !new_val) ? 1.0f : new_val / old_val;
+      float compression = gradient ? gradient->compression : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, compression));
+      compression = CLAMP(compression * ratio, 0.001f, 1.0f);
+
+      if(gradient) gradient->compression = compression;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, compression), compression);
+
+      *sum += compression;
+      *max = fminf(*max, 1.0f / compression);
+      *min = fmaxf(*min, 0.0005f / compression);
+      ++*count;
+      break;
+    case DT_MASKS_PROPERTY_ROTATION:;
+      float rotation = gradient ? gradient->rotation : dt_conf_get_float(DT_MASKS_CONF(form->type, gradient, rotation));
+      rotation = fmodf(rotation - new_val + old_val + 360.0f, 360.0f);
+
+      if(gradient) gradient->rotation = rotation;
+      dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, rotation), rotation);
+
+      *sum += 360.0f - rotation;
+      ++*count;
+      break;
+    default:;
+  }
+}
+
 // The function table for gradients.  This must be public, i.e. no "static" keyword.
 const dt_masks_functions_t dt_masks_functions_gradient = {
   .point_struct_size = sizeof(struct dt_masks_point_gradient_t),
@@ -1489,6 +1512,7 @@ const dt_masks_functions_t dt_masks_functions_gradient = {
   .setup_mouse_actions = _gradient_setup_mouse_actions,
   .set_form_name = _gradient_set_form_name,
   .set_hint_message = _gradient_set_hint_message,
+  .modify_property = _gradient_modify_property,
   .duplicate_points = _gradient_duplicate_points,
   .get_distance = _gradient_get_distance,
   .get_points_border = _gradient_get_points_border,

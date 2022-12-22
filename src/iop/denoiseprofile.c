@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -349,12 +349,12 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
 static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece, const char *const namespec,
                            const float* const restrict buf, const int width, const int height, const int scale)
 {
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW)
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
   {
     char filename[512];
     snprintf(filename, sizeof(filename), namespec, scale);
     FILE *f = g_fopen(filename, "wb");
-    if (f)
+    if(f)
     {
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       const size_t n = (size_t)width * height;
@@ -1308,7 +1308,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float *restrict precond = NULL;
   float *restrict tmp = NULL;
 
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
   {
     dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
     return;
@@ -1396,7 +1396,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #ifdef _OPENMP
 #pragma omp simd aligned(buf1, out : 64)
 #endif
-  for (size_t k = 0; k < 4U * npixels; k++)
+  for(size_t k = 0; k < 4U * npixels; k++)
     out[k] += buf1[k];
 
   if(!d->use_new_vst)
@@ -1453,15 +1453,14 @@ static float nlmeans_scattering(int *nbhood, const dt_iop_denoiseprofile_data_t 
   int K = *nbhood;
   float scattering = d->scattering;
 
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
-     || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
+  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // much faster slightly more inaccurate preview
     const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
     K = MIN(3, K);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
   {
     // much faster slightly more inaccurate preview
     const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
@@ -1580,12 +1579,12 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   const dt_iop_denoiseprofile_data_t *const d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
   float *restrict in;
-  if (!dt_iop_alloc_image_buffers(piece->module, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+  if(!dt_iop_alloc_image_buffers(piece->module, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
   // adjust to zoom size:
@@ -1710,13 +1709,13 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   size_t npixels = (size_t)width * height;
 
   memcpy(ovoid, ivoid, sizeof(float) * 4 * npixels);
-  if(((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
   {
     return;
   }
 
   float *restrict in;
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+  if(!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
   dt_aligned_pixel_t wb;  // the "unused" fourth element enables vectorization
@@ -1780,7 +1779,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const float scale = fminf(fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f), 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
@@ -1810,32 +1809,22 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   if(!d->use_new_vst)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 5, 4 * sizeof(float), (void *)&sigma2);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition, 0, CLARG(dev_in), CLARG(dev_tmp),
+      CLARG(width), CLARG(height), CLARG(aa), CLARG(sigma2));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
   }
   else
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 5, 4 * sizeof(float), (void *)&p);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 6, 4 * sizeof(float), (void *)&bb);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 7, 4 * sizeof(float), (void *)&wb);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition_v2, 0, CLARG(dev_in), CLARG(dev_tmp),
+      CLARG(width), CLARG(height), CLARG(aa), CLARG(p), CLARG(bb), CLARG(wb));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition_v2, sizes);
   }
 
   // allocate a buffer to receive the denoised image
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
-  if(dev_U2 == NULL) err = -999;
+  if(dev_U2 == NULL) err = DT_OPENCL_DEFAULT_ERROR;
 
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
   {
     const dt_aligned_pixel_t norm2 = { 1.0f, 1.0f, 1.0f, 1.0f };
     const dt_nlmeans_param_t params =
@@ -1859,47 +1848,34 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       };
     err = nlmeans_denoiseprofile_cl(&params, devid, dev_tmp, dev_U2, roi_in);
   }
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
   {
     if(!d->use_new_vst)
     {
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 2, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 3, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 4, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 5, 4 * sizeof(float), (void *)&aa);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 6, 4 * sizeof(float), (void *)&sigma2);
+      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_finish, 0, CLARG(dev_in), CLARG(dev_U2),
+        CLARG(dev_out), CLARG(width), CLARG(height), CLARG(aa), CLARG(sigma2));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish, sizes);
     }
     else
     {
       const float bias = d->bias - 0.5 * logf(scale);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 1, sizeof(cl_mem), (void *)&dev_U2);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 2, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 3, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 4, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 5, 4 * sizeof(float), (void *)&aa);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 6, 4 * sizeof(float), (void *)&p);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 7, 4 * sizeof(float), (void *)&bb);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 8, sizeof(float), (void *)&bias);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 9, 4 * sizeof(float), (void *)&wb);
+      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_finish_v2, 0, CLARG(dev_in), CLARG(dev_U2),
+        CLARG(dev_out), CLARG(width), CLARG(height), CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish_v2, sizes);
     }
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  if (err == CL_SUCCESS)
+  if(err == CL_SUCCESS)
     return TRUE;
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 
 #else
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const float scale = fminf(fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f), 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
@@ -1961,32 +1937,21 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   if(!d->use_new_vst)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 5, 4 * sizeof(float), (void *)&sigma2);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition, 0, CLARG(dev_in), CLARG(dev_tmp),
+      CLARG(width), CLARG(height), CLARG(aa), CLARG(sigma2));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
     if(err != CL_SUCCESS) goto error;
   }
   else
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 1, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 5, 4 * sizeof(float), (void *)&p);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 6, 4 * sizeof(float), (void *)&bb);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 7, 4 * sizeof(float), (void *)&wb);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition_v2, 0, CLARG(dev_in), CLARG(dev_tmp),
+      CLARG(width), CLARG(height), CLARG(aa), CLARG(p), CLARG(bb), CLARG(wb));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition_v2, sizes);
     if(err != CL_SUCCESS) goto error;
   }
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 0, sizeof(cl_mem), (void *)&dev_U2);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 1, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 2, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_init, 0, CLARG(dev_U2), CLARG(width),
+    CLARG(height));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_init, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -2008,11 +1973,8 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       int q[2] = { i, j };
 
       cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 0, sizeof(cl_mem), (void *)&dev_tmp);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_dist, 4, 2 * sizeof(int), (void *)&q);
+      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_dist, 0, CLARG(dev_tmp), CLARG(dev_U4),
+        CLARG(width), CLARG(height), CLARG(q));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_dist, sizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -2023,14 +1985,8 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       local[1] = 1;
       local[2] = 1;
       cl_mem dev_U4_t = buckets[bucket_next(&state, NUM_BUCKETS)];
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 0, sizeof(cl_mem), (void *)&dev_U4);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 1, sizeof(cl_mem), (void *)&dev_U4_t);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 4, 2 * sizeof(int), (void *)&q);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 5, sizeof(int), (void *)&P);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_horiz, 6, sizeof(float) * (hblocksize + 2 * P),
-                               NULL);
+      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_horiz, 0, CLARG(dev_U4), CLARG(dev_U4_t),
+        CLARG(width), CLARG(height), CLARG(q), CLARG(P), CLLOCAL(sizeof(float) * (hblocksize + 2 * P)));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_horiz, sizesl, local);
       if(err != CL_SUCCESS) goto error;
 
@@ -2041,28 +1997,15 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       local[1] = vblocksize;
       local[2] = 1;
       cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 4, 2 * sizeof(int), (void *)&q);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 5, sizeof(int), (void *)&P);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 6, sizeof(float), (void *)&norm);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 7, sizeof(float) * (vblocksize + 2 * P),
-                               NULL);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 8, sizeof(float),
-                               (void *)&central_pixel_weight);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_vert, 9, sizeof(cl_mem), ((void *)&dev_U4));
+      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_vert, 0, CLARG(dev_U4_t), CLARG(dev_U4_tt),
+        CLARG(width), CLARG(height), CLARG(q), CLARG(P), CLARG(norm), CLLOCAL(sizeof(float) * (vblocksize + 2 * P)),
+        CLARG(central_pixel_weight), CLARG(dev_U4));
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_vert, sizesl, local);
       if(err != CL_SUCCESS) goto error;
 
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 0, sizeof(cl_mem), (void *)&dev_tmp);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 1, sizeof(cl_mem), (void *)&dev_U2);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 2, sizeof(cl_mem), (void *)&dev_U4_tt);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 3, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 4, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_accu, 5, 2 * sizeof(int), (void *)&q);
+      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_accu, 0, CLARG(dev_tmp), CLARG(dev_U2),
+        CLARG(dev_U4_tt), CLARG(width), CLARG(height), CLARG(q));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_accu, sizes);
       if(err != CL_SUCCESS) goto error;
 
@@ -2075,29 +2018,16 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   if(!d->use_new_vst)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 2, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 4, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 5, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 6, 4 * sizeof(float), (void *)&sigma2);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_finish, 0, CLARG(dev_in), CLARG(dev_U2),
+      CLARG(dev_out), CLARG(width), CLARG(height), CLARG(aa), CLARG(sigma2));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish, sizes);
     if(err != CL_SUCCESS) goto error;
   }
   else
   {
     const float bias = d->bias - 0.5 * logf(scale);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 1, sizeof(cl_mem), (void *)&dev_U2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 2, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 4, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 5, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 6, 4 * sizeof(float), (void *)&p);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 7, 4 * sizeof(float), (void *)&bb);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 8, sizeof(float), (void *)&bias);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish_v2, 9, 4 * sizeof(float), (void *)&wb);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_finish_v2, 0, CLARG(dev_in), CLARG(dev_U2),
+      CLARG(dev_out), CLARG(width), CLARG(height), CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_finish_v2, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -2117,7 +2047,7 @@ error:
   }
   dt_opencl_release_mem_object(dev_U2);
   dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 #endif /* USE_NEW_IMPL_CL */
 }
@@ -2151,7 +2081,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   }
 
   const int devid = piece->pipe->devid;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int width = roi_in->width;
   const int height = roi_in->height;
   const size_t npixels = (size_t)width * height;
@@ -2282,25 +2212,15 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   if(!d->use_new_vst)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 5, 4 * sizeof(float), (void *)&sigma2);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition, 0, CLARG(dev_in), CLARG(dev_out),
+      CLARG(width), CLARG(height), CLARG(aa), CLARG(sigma2));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
     if(err != CL_SUCCESS) goto error;
   }
   else if(d->wavelet_color_mode == MODE_RGB)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 5, 4 * sizeof(float), (void *)&p);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 6, 4 * sizeof(float), (void *)&bb);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_v2, 7, 4 * sizeof(float), (void *)&wb);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition_v2, 0, CLARG(dev_in), CLARG(dev_out),
+      CLARG(width), CLARG(height), CLARG(aa), CLARG(p), CLARG(bb), CLARG(wb));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition_v2, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -2310,14 +2230,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     dev_Y0U0V0 = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, toY0U0V0);
     if(dev_Y0U0V0 != NULL)
     {
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 4, 4 * sizeof(float), (void *)&aa);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 5, 4 * sizeof(float), (void *)&p);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 6, 4 * sizeof(float), (void *)&bb);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 7, sizeof(cl_mem), (void *)&dev_Y0U0V0);
+      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, 0, CLARG(dev_in),
+        CLARG(dev_out), CLARG(width), CLARG(height), CLARG(aa), CLARG(p), CLARG(bb), CLARG(dev_Y0U0V0));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition_Y0U0V0, sizes);
       dt_opencl_release_mem_object(dev_Y0U0V0);
       if(err != CL_SUCCESS) goto error;
@@ -2340,18 +2254,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float sigma_band = powf(varf, s) * sigma;
     const float inv_sigma2 = 1.0f / (sigma_band * sigma_band);
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 0, sizeof(cl_mem), (void *)&dev_buf1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 1, sizeof(cl_mem), (void *)&dev_buf2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 2, sizeof(cl_mem),
-                             (void *)&dev_detail[s]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 4, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 5, sizeof(unsigned int),
-                             (void *)&s);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 6, sizeof(float),
-                             (void *)&inv_sigma2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 7, sizeof(cl_mem),
-                             (void *)&dev_filter);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_decompose, 0, CLARG(dev_buf1), CLARG(dev_buf2),
+      CLARG(dev_detail[s]), CLARG(width), CLARG(height), CLARG(s), CLARG(inv_sigma2), CLARG(dev_filter));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
 
@@ -2385,13 +2289,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     llocal[0] = flocopt.sizex;
     llocal[1] = flocopt.sizey;
     llocal[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 0, sizeof(cl_mem),
-                             &(dev_detail[s]));
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 1, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 2, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 3, sizeof(cl_mem), &dev_m);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 4,
-                             sizeof(float) * 4 * flocopt.sizex * flocopt.sizey, NULL);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_reduce_first, 0, CLARG((dev_detail[s])),
+      CLARG(width), CLARG(height), CLARG(dev_m), CLLOCAL(sizeof(float) * 4 * flocopt.sizex * flocopt.sizey));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_reduce_first, lsizes,
                                                  llocal);
     if(err != CL_SUCCESS) goto error;
@@ -2403,11 +2302,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     llocal[0] = slocopt.sizex;
     llocal[1] = 1;
     llocal[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 0, sizeof(cl_mem), &dev_m);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 1, sizeof(cl_mem), &dev_r);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 2, sizeof(int), &bufsize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 3, sizeof(float) * 4 * slocopt.sizex,
-                             NULL);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_reduce_second, 0, CLARG(dev_m), CLARG(dev_r),
+      CLARG(bufsize), CLLOCAL(sizeof(float) * 4 * slocopt.sizex));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_reduce_second, lsizes,
                                                  llocal);
     if(err != CL_SUCCESS) goto error;
@@ -2483,25 +2379,9 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
     const dt_aligned_pixel_t boost = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 0, sizeof(cl_mem),
-                             (void *)&dev_buf1);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 1, sizeof(cl_mem),
-                             (void *)&dev_detail[s]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 2, sizeof(cl_mem),
-                             (void *)&dev_buf2);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 3, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 4, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 5, sizeof(float), (void *)&thrs[0]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 6, sizeof(float), (void *)&thrs[1]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 7, sizeof(float), (void *)&thrs[2]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 8, sizeof(float), (void *)&thrs[3]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 9, sizeof(float), (void *)&boost[0]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 10, sizeof(float),
-                             (void *)&boost[1]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 11, sizeof(float),
-                             (void *)&boost[2]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 12, sizeof(float),
-                             (void *)&boost[3]);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_synthesize, 0, CLARG(dev_buf1), CLARG(dev_detail[s]),
+      CLARG(dev_buf2), CLARG(width), CLARG(height), CLARG(thrs[0]), CLARG(thrs[1]), CLARG(thrs[2]), CLARG(thrs[3]),
+      CLARG(boost[0]), CLARG(boost[1]), CLARG(boost[2]), CLARG(boost[3]));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_synthesize, sizes);
     if(err != CL_SUCCESS) goto error;
 
@@ -2526,27 +2406,16 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   if(!d->use_new_vst)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 0, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 5, 4 * sizeof(float), (void *)&sigma2);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_backtransform, 0, CLARG(dev_tmp), CLARG(dev_out),
+      CLARG(width), CLARG(height), CLARG(aa), CLARG(sigma2));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_backtransform, sizes);
     if(err != CL_SUCCESS) goto error;
   }
   else if(d->wavelet_color_mode == MODE_RGB)
   {
     const float bias = d->bias - 0.5 * logf(scale);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 0, sizeof(cl_mem), (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 5, 4 * sizeof(float), (void *)&p);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 6, 4 * sizeof(float), (void *)&bb);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 7, sizeof(float), (void *)&bias);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_v2, 8, 4 * sizeof(float), (void *)&wb);
+    dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_backtransform_v2, 0, CLARG(dev_tmp),
+      CLARG(dev_out), CLARG(width), CLARG(height), CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb));
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_backtransform_v2, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -2557,16 +2426,9 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     if(dev_RGB != NULL)
     {
       const float bias = d->bias - 0.5 * logf(scale);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 0, sizeof(cl_mem), (void *)&dev_tmp);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 4, 4 * sizeof(float), (void *)&aa);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 5, 4 * sizeof(float), (void *)&p);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 6, 4 * sizeof(float), (void *)&bb);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 7, sizeof(float), (void *)&bias);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 8, 4 * sizeof(float), (void *)&wb);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 9, sizeof(cl_mem), (void *)&dev_RGB);
+      dt_opencl_set_kernel_args(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, 0, CLARG(dev_tmp),
+        CLARG(dev_out), CLARG(width), CLARG(height), CLARG(aa), CLARG(p), CLARG(bb), CLARG(bias), CLARG(wb),
+        CLARG(dev_RGB));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_backtransform_Y0U0V0, sizes);
       dt_opencl_release_mem_object(dev_RGB);
       if(err != CL_SUCCESS) goto error;
@@ -2599,7 +2461,7 @@ error:
     dt_opencl_release_mem_object(dev_detail[k]);
   free(dev_detail);
   dt_free_align(sumsum);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %s, devid %d\n", cl_errstr(err), devid);
   return FALSE;
 }
 
@@ -3053,7 +2915,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->profile, -1);
   unsigned combobox_index = 0;
-  switch (p->mode)
+  switch(p->mode)
   {
     case MODE_NLMEANS:
       combobox_index = 0;
@@ -3716,10 +3578,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match.\n"
                                            "increase for more sharpness on strong edges, and better denoising of smooth areas.\n"
                                            "if details are oversmoothed, reduce this value or increase the central pixel weight slider."));
-  gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighbourhood to search patches in. "
+  gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighborhood to search patches in. "
                                            "increase for better denoising performance, but watch the long runtimes! "
                                            "large radii can be very slow. you have been warned"));
-  gtk_widget_set_tooltip_text(g->scattering, _("scattering of the neighbourhood to search patches in.\n"
+  gtk_widget_set_tooltip_text(g->scattering, _("scattering of the neighborhood to search patches in.\n"
                                                "increase for better coarse-grain noise reduction.\n"
                                                "does not affect execution time."));
   gtk_widget_set_tooltip_text(g->central_pixel_weight, _("increase the weight of the central pixel\n"

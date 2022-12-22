@@ -186,7 +186,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values (no top/left crop)
-  if (d->x == 0 && d->y == 0) return 1;
+  if(d->x == 0 && d->y == 0) return 1;
 
   const float scale = piece->buf_in.scale / piece->iscale;
 
@@ -213,7 +213,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values (no top/left crop)
-  if (d->x == 0 && d->y == 0) return 1;
+  if(d->x == 0 && d->y == 0) return 1;
 
   const float scale = piece->buf_in.scale / piece->iscale;
 
@@ -459,7 +459,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem dev_sub = NULL;
   cl_mem dev_div = NULL;
   cl_mem dev_gainmap[4] = {0};
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   int kernel = -1;
   gboolean gainmap_args = FALSE;
@@ -505,16 +505,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int height = roi_out->height;
 
   size_t sizes[] = { ROUNDUPDWD(roi_in->width, devid), ROUNDUPDHT(roi_in->height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(width));
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(height));
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&csx);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&csy);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_sub);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_div);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(uint32_t), (void *)&roi_out->x);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(uint32_t), (void *)&roi_out->y);
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG((width)), CLARG((height)),
+    CLARG(csx), CLARG(csy), CLARG(dev_sub), CLARG(dev_div), CLARG(roi_out->x), CLARG(roi_out->y));
   if(gainmap_args)
   {
     const int map_size[2] = { d->gainmaps[0]->map_points_h, d->gainmaps[0]->map_points_v };
@@ -531,14 +523,8 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       if(err != CL_SUCCESS) goto error;
     }
 
-    dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), &dev_gainmap[0]);
-    dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(cl_mem), &dev_gainmap[1]);
-    dt_opencl_set_kernel_arg(devid, kernel, 12, sizeof(cl_mem), &dev_gainmap[2]);
-    dt_opencl_set_kernel_arg(devid, kernel, 13, sizeof(cl_mem), &dev_gainmap[3]);
-    dt_opencl_set_kernel_arg(devid, kernel, 14, 2 * sizeof(int), &map_size);
-    dt_opencl_set_kernel_arg(devid, kernel, 15, 2 * sizeof(float), &im_to_rel);
-    dt_opencl_set_kernel_arg(devid, kernel, 16, 2 * sizeof(float), &rel_to_map);
-    dt_opencl_set_kernel_arg(devid, kernel, 17, 2 * sizeof(float), &map_origin);
+    dt_opencl_set_kernel_args(devid, kernel, 10, CLARG(dev_gainmap[0]), CLARG(dev_gainmap[1]), CLARG(dev_gainmap[2]),
+      CLARG(dev_gainmap[3]), CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
   }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -564,7 +550,7 @@ error:
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
   for(int i = 0; i < 4; i++) dt_opencl_release_mem_object(dev_gainmap[i]);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_rawprepare] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_rawprepare] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif

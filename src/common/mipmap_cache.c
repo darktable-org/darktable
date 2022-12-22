@@ -473,14 +473,14 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
                    get_imgid(entry->key));
           // Don't write existing files as both performance and quality (lossy jpg) suffer
           FILE *f = NULL;
-          if (!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = g_fopen(filename, "wb")))
+          if(!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = g_fopen(filename, "wb")))
           {
             // first check the disk isn't full
             struct statvfs vfsbuf;
-            if (!statvfs(filename, &vfsbuf))
+            if(!statvfs(filename, &vfsbuf))
             {
               const int64_t free_mb = ((vfsbuf.f_frsize * vfsbuf.f_bavail) >> 20);
-              if (free_mb < 100)
+              if(free_mb < 100)
               {
                 fprintf(stderr, "Aborting image write as only %" PRId64 " MB free to write %s\n", free_mb, filename);
                 goto write_error;
@@ -1271,11 +1271,11 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     dat.head.max_width = wd;
     dat.head.max_height = ht;
     dat.buf = buf;
-    // export with flags: ignore exif (don't load from disk), don't swap byte order, don't do hq processing,
+    // export with flags: ignore exif(don't load from disk), don't swap byte order, don't do hq processing,
     // no upscaling and signal we want thumbnail export
     res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
                                        FALSE, FALSE, TRUE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
-                                       NULL, 1, 1, NULL);
+                                       NULL, 1, 1, NULL, -1);
     if(!res)
     {
       dt_print(DT_DEBUG_CACHE, "[mipmap_cache] generate mip %d for image %d from scratch\n", size, imgid);
@@ -1341,4 +1341,3 @@ void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint3
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

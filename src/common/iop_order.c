@@ -132,6 +132,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {43.0f }, "colorzones", 0},
   { {44.0f }, "lowlight", 0},
   { {45.0f }, "monochrome", 0},
+  { {45.3f }, "sigmoid", 0},
   { {46.0f }, "filmic", 0},
   { {46.5f }, "filmicrgb", 0},
   { {47.0f }, "colisa", 0},
@@ -232,6 +233,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
                                   //    on camera JPEG default look
   { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
+  { {45.3f }, "sigmoid", 0},
   { {46.0f }, "filmicrgb", 0},       // same, upgraded
   { {36.0f }, "lut3d", 0},           // apply a creative style or film emulation, possibly non-linear
   { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
@@ -343,6 +345,7 @@ const dt_iop_order_entry_t v30_jpg_order[] = {
   { { 44.0f }, "basecurve", 0 },     // conversion from scene-referred to display referred, reverse-engineered
                                      //    on camera JPEG default look
   { { 45.0f }, "filmic", 0 },        // same, but different (parametric) approach
+  { { 45.3f }, "sigmoid", 0},
   { { 46.0f }, "filmicrgb", 0 },     // same, upgraded
   { { 36.0f }, "lut3d", 0 },         // apply a creative style or film emulation, possibly non-linear
   { { 47.0f }, "colisa", 0 },        // edit contrast while damaging colour
@@ -816,6 +819,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           _insert_before(iop_order_list, "graduatednd", "crop");
           _insert_before(iop_order_list, "colorbalance", "diffuse");
           _insert_before(iop_order_list, "nlmeans", "blurs");
+          _insert_before(iop_order_list, "filmicrgb", "sigmoid");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
@@ -948,9 +952,11 @@ void dt_ioppr_change_iop_order(struct dt_develop_t *dev, const int32_t imgid, GL
 
   if(mi) iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
 
+  g_list_free_full(mi, g_free);
+
   dt_dev_write_history(darktable.develop);
   dt_ioppr_write_iop_order(DT_IOP_ORDER_CUSTOM, iop_list, imgid);
-  g_list_free_full(iop_list, free);
+  g_list_free_full(iop_list, g_free);
 
   dt_ioppr_migrate_iop_order(darktable.develop, imgid);
 }
@@ -1139,7 +1145,6 @@ int _get_multi_priority(dt_develop_t *dev, const char *operation, const int n, c
 
 void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, gboolean append)
 {
-
   // for each priority list to be checked
   for(GList *e_list = entry_list; e_list; e_list = g_list_next(e_list))
   {

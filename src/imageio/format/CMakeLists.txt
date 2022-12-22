@@ -17,6 +17,12 @@ add_library(ppm MODULE "ppm.c")
 add_library(pfm MODULE "pfm.c")
 add_library(tiff MODULE "tiff.c")
 
+if(JXL_FOUND)
+  list(APPEND MODULES "jxl_format")
+  add_library(jxl_format MODULE "jxl.c")
+  set_target_properties(jxl_format PROPERTIES OUTPUT_NAME jpegxl)
+endif(JXL_FOUND)
+
 if(WebP_FOUND)
   list(APPEND MODULES "webp")
   add_library(webp MODULE "webp.c")
@@ -52,7 +58,7 @@ foreach(module ${MODULES})
     else()
         set_target_properties(${module}
                               PROPERTIES
-                              INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
+                              INSTALL_RPATH ${RPATH_ORIGIN}/../../..)
     endif(WIN32)
     install(TARGETS ${module} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins/imageio/format COMPONENT DTApplication)
 endforeach(module)

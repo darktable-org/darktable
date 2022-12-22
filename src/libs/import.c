@@ -184,7 +184,7 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 999;
 }
@@ -428,11 +428,11 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
       // Scale the image to the correct size
       GdkPixbuf *tmp;
       GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
-      if (!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) goto cleanup;
+      if(!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) goto cleanup;
       // Calling gdk_pixbuf_loader_close forces the data to be parsed by the
       // loader. We must do this before calling gdk_pixbuf_loader_get_pixbuf.
       if(!gdk_pixbuf_loader_close(loader, NULL)) goto cleanup;
-      if (!(tmp = gdk_pixbuf_loader_get_pixbuf(loader))) goto cleanup;
+      if(!(tmp = gdk_pixbuf_loader_get_pixbuf(loader))) goto cleanup;
       const float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
       const int width = 128;
       const int height = 128 * ratio;
@@ -1294,10 +1294,10 @@ static void _update_places_list(dt_lib_module_t* self)
     GList *drives, *drive, *volumes, *volume;
     drives = g_volume_monitor_get_connected_drives(placesMonitor);
 
-    for (drive = drives; drive; drive = drive->next)
+    for(drive = drives; drive; drive = drive->next)
     {
       volumes = g_drive_get_volumes(drive->data);
-      for (volume = volumes; volume; volume = volume->next)
+      for(volume = volumes; volume; volume = volume->next)
       {
         GMount *placesMount = g_volume_get_mount(volume->data);
         if(placesMount)
@@ -1324,7 +1324,7 @@ static void _update_places_list(dt_lib_module_t* self)
   // add folders added by user
   GList *places = _get_custom_places();
 
-  for (GList *places_iter = places; places_iter; places_iter = places_iter->next)
+  for(GList *places_iter = places; places_iter; places_iter = places_iter->next)
   {
     gchar *basename = g_path_get_basename(places_iter->data);
 
@@ -1802,8 +1802,18 @@ static void _import_set_collection(const char *dirname)
 {
   if(dirname)
   {
+    dt_collection_properties_t property = dt_conf_get_int("plugins/lighttable/collect/item0");
+
+    if(property != DT_COLLECTION_PROP_FOLDERS
+       && property != DT_COLLECTION_PROP_FILMROLL)
+    {
+      // the current collection is not based on filmrolls or folders
+      // fallback to DT_COLLECTION_PROP_FILMROLL. Otherwise we keep
+      // the current property of the collection.
+      property = DT_COLLECTION_PROP_FILMROLL;
+    }
     dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
-    dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+    dt_conf_set_int("plugins/lighttable/collect/item0", property);
     dt_conf_set_string("plugins/lighttable/collect/string0", dirname);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
                                NULL);
@@ -2282,4 +2292,3 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -272,7 +272,7 @@ typedef struct dt_iop_gui_blendif_filter_t
 
 typedef struct dt_iop_blend_name_value_t
 {
-  char name[32];
+  char name[40];
   int value;
 } dt_develop_name_value_t;
 
@@ -456,7 +456,6 @@ void dt_develop_blendif_rgb_jzczhz_blend(struct dt_dev_pixelpipe_iop_t *piece, c
 
 
 /** gui related stuff */
-void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module);
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module);
 void dt_iop_gui_update_blending(dt_iop_module_t *module);
 void dt_iop_gui_update_blendif(dt_iop_module_t *module);

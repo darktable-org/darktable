@@ -55,6 +55,18 @@ typedef enum dt_masks_state_t
   DT_MASKS_STATE_EXCLUSION = 1 << 6
 } dt_masks_state_t;
 
+typedef enum dt_masks_property_t
+{
+  DT_MASKS_PROPERTY_OPACITY,
+  DT_MASKS_PROPERTY_SIZE,
+  DT_MASKS_PROPERTY_HARDNESS,
+  DT_MASKS_PROPERTY_FEATHER,
+  DT_MASKS_PROPERTY_ROTATION,
+  DT_MASKS_PROPERTY_CURVATURE,
+  DT_MASKS_PROPERTY_COMPRESSION,
+  DT_MASKS_PROPERTY_LAST
+} dt_masks_property_t;
+
 typedef enum dt_masks_points_states_t
 {
   DT_MASKS_POINT_STATE_NORMAL = 1,
@@ -167,6 +179,7 @@ typedef struct dt_masks_functions_t
   void (*set_form_name)(struct dt_masks_form_t *const form, const size_t nb);
   void (*set_hint_message)(const struct dt_masks_form_gui_t *const gui, const struct dt_masks_form_t *const form,
                            const int opacity, char *const __restrict__ msgbuf, const size_t msgbuf_len);
+  void (*modify_property)(struct dt_masks_form_t *const form, dt_masks_property_t prop, float old_val, float new_val, float *sum, int *count, float *min, float *max);
   void (*duplicate_points)(struct dt_develop_t *const dev, struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
   void (*initial_source_pos)(const float iwd, const float iht, float *x, float *y);
   void (*get_distance)(float x, float y, float as, struct dt_masks_form_gui_t *gui, int index, int num_points,
@@ -275,6 +288,7 @@ typedef struct dt_masks_form_gui_t
   int group_edited;
   int group_selected;
 
+  guint show_all_feathers;
 
   gboolean creation;
   gboolean creation_continuous;
@@ -404,9 +418,9 @@ int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form);
 char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str);
 
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form);
-void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up);
-void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up);
-int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
+float dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, float amount);
+void dt_masks_form_move(dt_masks_form_t *grp, const int formid, const int up);
+int dt_masks_form_duplicate(dt_develop_t *dev, const int formid);
 /* returns a duplicate tof form, including the formid */
 dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form);
 /* duplicate the list of forms, replace item in the list with form with the same formid */
@@ -415,6 +429,7 @@ GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form);
 /** utils functions */
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count);
 int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near);
+float dt_masks_drag_factor(dt_masks_form_gui_t *gui, int index, int k, gboolean border);
 
 /** allow to select a shape inside an iop */
 void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel);
@@ -436,8 +451,6 @@ void dt_masks_blur_9x9(float *const src, float *const out, const int width, cons
 void dt_masks_calc_rawdetail_mask(float *const src, float *const out, float *const tmp, const int width,
                                   const int height, const dt_aligned_pixel_t wb);
 void dt_masks_calc_detail_mask(float *const src, float *const out, float *const tmp, const int width, const int height, const float threshold, const gboolean detail);
-
-void dt_masks_blur_approx_weighed(float *const src, float *const out, float *const weight, const int width, const int height);
 
 /** the output data are blurred-val * gain and are clipped to be within 0 to clip
     The returned int might be used to expand the border as this depends on sigma */
@@ -635,10 +648,13 @@ int dt_masks_roundup(int num, int mult)
   return (rem == 0) ? num : num + mult - rem;
 }
 
+#define DT_MASKS_CONF(type, shape, param) \
+  (type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? "plugins/darkroom/spots/" #shape "_" #param : "plugins/darkroom/masks/" #shape "/" #param)
+
+void dt_masks_draw_anchor(cairo_t *cr, gboolean selected, const float zoom_scale, const float x, const float y);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

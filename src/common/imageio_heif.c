@@ -1,6 +1,6 @@
 /*
  * This file is part of darktable,
- * Copyright (C) 2021 darktable developers.
+ * Copyright (C) 2021-2022 darktable developers.
  *
  *  darktable is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -55,22 +55,21 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   }
 
   err = heif_context_read_from_file(ctx, filename, NULL);
-  if(err.code != 0)
+  if(err.code != heif_error_Ok)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to read HEIF file [%s]\n",
-             filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
-    switch(err.code)
+    if(err.code == heif_error_Unsupported_feature && err.subcode == heif_suberror_Unsupported_codec)
     {
-    case heif_error_Unsupported_filetype:
-    case heif_error_Unsupported_feature:
-      fprintf(stderr, "[imageio_heif] Unsupported file: `%s'! Is your libheif compiled with HEVC support?\n", filename);
-      break;
-    default:
-      break;
+      /* we want to feedback this to the user, so output to stderr */
+      fprintf(stderr,
+              "[imageio_heif] Unsupported codec for `%s'. Check if your libheif is built with HEVC and/or AV1 decoding support.\n",
+              filename);
     }
-
+    else if(err.code != heif_error_Unsupported_filetype && err.subcode != heif_suberror_No_ftyp_box)
+    {
+      /* print debug info only if genuine HEIF */
+      dt_print(DT_DEBUG_IMAGEIO, "Failed to read HEIF file [%s]: %s\n", filename, err.message);
+    }
+    ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
 
@@ -87,7 +86,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   // We can only process a single image
   err = heif_context_get_primary_image_handle(ctx, &handle);
-  if(err.code != 0)
+  if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
@@ -96,9 +95,12 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     goto out;
   }
 
+  struct heif_decoding_options *decode_options = heif_decoding_options_alloc();
+  decode_options->ignore_transformations = TRUE;
   // Darktable only supports LITTLE_ENDIAN systems, so RRGGBB_LE should be fine
-  err = heif_decode_image(handle, &heif_img, heif_colorspace_RGB, heif_chroma_interleaved_RRGGBB_LE, NULL);
-  if(err.code != 0)
+  err = heif_decode_image(handle, &heif_img, heif_colorspace_RGB, heif_chroma_interleaved_RRGGBB_LE, decode_options);
+  heif_decoding_options_free(decode_options);
+  if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to decode HEIF file [%s]\n",
@@ -109,8 +111,12 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   int rowbytes = 0;
   const uint8_t* data = heif_image_get_plane_readonly(heif_img, heif_channel_interleaved, &rowbytes);
-  const size_t width = heif_image_handle_get_width(handle);
-  const size_t height = heif_image_handle_get_height(handle);
+  // Get the image dimensions from the 'ispe' box. This is the original image dimensions without
+  // any transformations applied to it.
+  // Note that we use these functions due to use of ignore_transformations option. If we didn't use
+  // ignore_transformations, we would have to use non-ispe versions of the "get dimensions" functions.
+  const size_t width = heif_image_handle_get_ispe_width(handle);
+  const size_t height = heif_image_handle_get_ispe_height(handle);
 
   /* Initialize cached image buffer */
   img->width = width;
@@ -146,9 +152,11 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   if(bit_depth > 8)
   {
     img->flags |= DT_IMAGE_HDR;
+    img->flags &= ~DT_IMAGE_LDR;
   }
   else
   {
+    img->flags |= DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_HDR;
   }
 
@@ -177,19 +185,22 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     }
   }
 
+  /* Get the ICC profile if available */
+  size_t icc_size = heif_image_handle_get_raw_color_profile_size(handle);
+  if(icc_size)
+  {
+    img->profile = (uint8_t *)g_malloc0(icc_size);
+    heif_image_handle_get_raw_color_profile(handle, img->profile);
+    img->profile_size = icc_size;
+  }
+
   img->loader = LOADER_HEIF;
   ret = DT_IMAGEIO_OK;
 
-  out:
+out:
   // cleanup handles
-  if(heif_img)
-  {
-    heif_image_release(heif_img);
-  }
-  if(handle)
-  {
-    heif_image_handle_release(handle);
-  }
+  heif_image_release(heif_img);
+  heif_image_handle_release(handle);
   heif_context_free(ctx);
 
   return ret;
@@ -222,7 +233,7 @@ int dt_imageio_heif_read_profile(const char *filename,
   }
 
   err = heif_context_read_from_file(ctx, filename, NULL);
-  if(err.code != 0)
+  if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read HEIF file [%s]\n",
@@ -242,7 +253,7 @@ int dt_imageio_heif_read_profile(const char *filename,
 
   // We can only process a single image
   err = heif_context_get_primary_image_handle(ctx, &handle);
-  if(err.code != 0)
+  if(err.code != heif_error_Ok)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
@@ -253,14 +264,14 @@ int dt_imageio_heif_read_profile(const char *filename,
   // Get profile information from HEIF file
   enum heif_color_profile_type profile_type = heif_image_handle_get_color_profile_type(handle);
 
-  switch (profile_type)
+  switch(profile_type)
   {
     case heif_color_profile_type_nclx:
       dt_print(DT_DEBUG_IMAGEIO,
              "Found NCLX color profile for HEIF file [%s]\n",
              filename);
       err = heif_image_handle_get_nclx_color_profile(handle, &profile_info_nclx);
-      if(err.code != 0)
+      if(err.code != heif_error_Ok)
       {
         dt_print(DT_DEBUG_IMAGEIO,
                 "Failed to get NCLX color profile data from HEIF file [%s]\n",
@@ -282,7 +293,7 @@ int dt_imageio_heif_read_profile(const char *filename,
       }
       icc_data = (uint8_t *)g_malloc0(sizeof(uint8_t) * icc_size);
       err = heif_image_handle_get_raw_color_profile(handle, icc_data);
-      if(err.code != 0)
+      if(err.code != heif_error_Ok)
       {
         dt_print(DT_DEBUG_IMAGEIO,
                 "Failed to read embedded ICC profile from HEIF image [%s]\n",
@@ -307,23 +318,17 @@ int dt_imageio_heif_read_profile(const char *filename,
       break;
   }
 
-  out:
+out:
   // cleanup handles
-  if(profile_info_nclx)
-  {
-    heif_nclx_color_profile_free(profile_info_nclx);
-  }
-  if(handle)
-  {
-    heif_image_handle_release(handle);
-  }
+  heif_nclx_color_profile_free(profile_info_nclx);
+  heif_image_handle_release(handle);
   heif_context_free(ctx);
 
   return size;
 }
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

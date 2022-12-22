@@ -24,6 +24,7 @@
   <binary>${prefix}/lib/gdk-pixbuf-2.0/${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}/loaders</binary>
   <binary>${prefix}/lib/gio/modules/libgiognutls.so</binary>
   <binary>${prefix}/lib/gio/modules/libgiolibproxy.so</binary>
+  <binary>${prefix}/lib/pkcs11/p11-kit-trust.so</binary>
   <translations name="libgphoto2-6">${prefix}/share/locale</translations>
   <translations name="gtk30">${prefix}/share/locale</translations>
   <translations name="gtk-mac-integration">${prefix}/share/locale</translations>

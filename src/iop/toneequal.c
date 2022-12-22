@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2021 darktable developers.
+    Copyright (C) 2018-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -617,7 +617,7 @@ static float get_luminance_from_buffer(const float *const buffer,
                             y };			    // padding for vectorization
 
   float luminance = 0.0f;
-  if (x > 0 && x < width - 2)
+  if(x > 0 && x < width - 2)
   {
     // no clamping needed on x, which allows us to vectorize
     // apply the convolution
@@ -960,7 +960,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       dt_iop_gui_leave_critical_section(self);
     }
 
-    if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
     {
       // For DT_DEV_PIXELPIPE_FULL, we cache the luminance mask for performance
       // but it's not accessed from GUI
@@ -979,7 +979,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       cached = TRUE;
     }
 
-    else if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     {
       // For DT_DEV_PIXELPIPE_PREVIEW, we need to cache is too to compute the full image stats
       // upon user request in GUI
@@ -1025,7 +1025,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   {
     // caching path : store the luminance mask for GUI access
 
-    if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+    if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
     {
       uint64_t saved_hash;
       hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
@@ -1041,7 +1041,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
         hash_set_get(&hash, &g->ui_preview_hash, &self->gui_lock);
       }
     }
-    else if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+    else if(piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW)
     {
       uint64_t saved_hash;
       hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
@@ -1073,7 +1073,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
 
   // Display output
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
     if(g->mask_display)
     {
@@ -1674,12 +1674,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     invalidate_luminance_cache(self);
   }
-  else if (w == g->details)
+  else if(w == g->details)
   {
     invalidate_luminance_cache(self);
     show_guiding_controls(self);
   }
-  else if (w == g->contrast_boost || w == g->exposure_boost)
+  else if(w == g->contrast_boost || w == g->exposure_boost)
   {
     invalidate_luminance_cache(self);
     dt_bauhaus_widget_set_quad_active(w, FALSE);

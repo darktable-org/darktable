@@ -88,6 +88,10 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
 /** applies the style to image by imgid, takes care of overwrite and duplicate modes */
 void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const gboolean overwrite, const int32_t imgid);
 
+/** applies the style to the currently edited image in the darkroom.
+    does nothing if not called with a proper dev struct initialized */
+void dt_styles_apply_to_dev(const char *name, const int32_t imgid);
+
 /** delete a style by name */
 void dt_styles_delete_by_name_adv(const char *name, const gboolean raise);
 
@@ -107,10 +111,11 @@ gboolean dt_styles_has_module_order(const char *name);
 GList *dt_styles_get_list(const char *filter);
 
 /** get a list of items for a named style
-    if imgid != -1, then styles from the corresponding image are also reported if they are not already part of
-   the style
+    if imgid != -1, then styles from the corresponding image are also reported if they are
+    not already part of the style. If with_multi_name is TRUE the name field will contains
+    the multi_name.
 */
-GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid);
+GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gboolean with_multi_name);
 
 /** get list of items for a named style as a nice string */
 char *dt_styles_get_item_list_as_string(const char *name);
@@ -132,4 +137,3 @@ void dt_init_styles_actions();
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2021 darktable developers.
+    Copyright (C) 2013-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1004,22 +1004,22 @@ static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, int imgid, xmlXPathCon
 {
   xmlXPathObject *xpathObj = xmlXPathEvalExpression(xpath, ctx);
 
-  if (xpathObj != NULL)
+  if(xpathObj != NULL)
     {
       const xmlNodeSetPtr xnodes = xpathObj->nodesetval;
       const int n = xnodes->nodeNr;
 
-      for (int k=0; k<n; k++)
+      for(int k=0; k<n; k++)
         {
           const xmlNode *node = xnodes->nodeTab[k];
 
-          if (_has_list((char *)node->name))
+          if(_has_list((char *)node->name))
             {
               xmlNodePtr listnode = node->xmlChildrenNode;
-              if (listnode) listnode = listnode->next;
-              if (listnode) listnode = listnode->xmlChildrenNode;
-              if (listnode) listnode = listnode->next;
-              if (listnode) _lrop(dev, doc, imgid, node->name, NULL, listnode, data);
+              if(listnode) listnode = listnode->next;
+              if(listnode) listnode = listnode->xmlChildrenNode;
+              if(listnode) listnode = listnode->next;
+              if(listnode) _lrop(dev, doc, imgid, node->name, NULL, listnode, data);
             }
           else
             {
@@ -1112,7 +1112,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
-    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
     g_free(pathname);
     return FALSE;
   }
@@ -1134,7 +1134,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(xpathObj == NULL)
   {
-    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
     xmlXPathFreeContext(xpathCtx);
     g_free(pathname);
     xmlFreeDoc(doc);
@@ -1154,7 +1154,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       xmlXPathFreeObject(xpathObj);
       xmlFreeDoc(doc);
       xmlFree(value);
-      if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+      if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
       g_free(pathname);
       return FALSE;
     }
@@ -1166,7 +1166,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 //   {
 //     xmlXPathFreeObject(xpathObj);
 //     xmlXPathFreeContext(xpathCtx);
-//     if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+//     if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
 //     g_free(pathname);
 //     return;
 //   }
@@ -1235,7 +1235,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   // All prefixes to parse from the XMP document
   static char *names[] = { "crs", "dc", "tiff", "xmp", "exif", "lr", NULL };
 
-  for (int i=0; names[i]!=NULL; i++)
+  for(int i=0; names[i]!=NULL; i++)
     {
       char expr[50];
 

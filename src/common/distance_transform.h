@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,14 +51,6 @@
    The returned float of this function is the maximum calculated distance
 */
 
-#include "common/imagebuf.h"
-
-// We don't want to use the SIMD version as we might access unaligned memory
-static inline float sqrf(float a)
-{
-  return a * a;
-}
-
 typedef enum dt_distance_transform_t
 {
   DT_DISTANCE_TRANSFORM_NONE = 0,
@@ -97,7 +89,7 @@ static void _image_distance_transform(const float *f, float *z, float *d, int *v
   }
 }
 
-float dt_image_distance_transform(float *const restrict src, float *const restrict out, const size_t width, const size_t height, const float clip, const dt_distance_transform_t mode)
+float dt_image_distance_transform(float *const src, float *const out, const size_t width, const size_t height, const float clip, const dt_distance_transform_t mode)
 {
   switch(mode)
   {
@@ -105,10 +97,10 @@ float dt_image_distance_transform(float *const restrict src, float *const restri
       break;
     case DT_DISTANCE_TRANSFORM_MASK:
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(src, out) \
   dt_omp_sharedconst(clip, width, height) \
-  schedule(static) aligned(src, out : 64)
+  schedule(static)
 #endif
       for(size_t i = 0; i < width * height; i++)
         out[i] = (src[i] < clip) ? 0.0f : DT_DISTANCE_TRANSFORM_MAX;
@@ -135,7 +127,7 @@ float dt_image_distance_transform(float *const restrict src, float *const restri
 
     // transform along columns
 #ifdef _OPENMP
-  #pragma omp for schedule(simd:static)
+  #pragma omp for schedule (static)
 #endif
     for(size_t x = 0; x < width; x++)
     {
@@ -148,7 +140,7 @@ float dt_image_distance_transform(float *const restrict src, float *const restri
     // implicit barrier :-)
     // transform along rows
 #ifdef _OPENMP
-  #pragma omp for schedule(simd:static) nowait
+  #pragma omp for schedule (static) nowait
 #endif
     for(size_t y = 0; y < height; y++)
     {
