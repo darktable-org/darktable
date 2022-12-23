@@ -2081,9 +2081,9 @@ Details :
 .dt_overlays_mixed #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom-label,
-.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn,
-.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn:active,
-.dt_overlays_hover_block #thumb-main:hover #thumb-bottom-label
+.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn,
+.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn:active,
+.dt_overlays_hover_block #thumb-image:hover #thumb-bottom-label
 {
   color: @thumbnail_font_color;
 }
@@ -2132,7 +2132,7 @@ Details :
 .dt_overlays_always #thumb-main:hover #thumb-star:hover,
 .dt_overlays_always_extended #thumb-main:hover #thumb-star:hover,
 .dt_overlays_mixed #thumb-main:hover #thumb-star:hover,
-.dt_overlays_hover_block #thumb-main:hover #thumb-star:hover
+.dt_overlays_hover_block #thumb-image:hover #thumb-star:hover
 {
   color: @thumbnail_star_hover_color;
   background-color: @thumbnail_star_bg_color;
@@ -2144,7 +2144,7 @@ Details :
 .dt_overlays_always #thumb-main:hover #thumb-group-audio:hover,
 .dt_overlays_always_extended #thumb-main:hover #thumb-group-audio:hover,
 .dt_overlays_mixed #thumb-main:hover #thumb-group-audio:hover,
-.dt_overlays_hover_block #thumb-main:hover #thumb-group-audio:hover
+.dt_overlays_hover_block #thumb-image:hover #thumb-group-audio:hover
 {
   color: @thumbnail_fg_color;
 }
