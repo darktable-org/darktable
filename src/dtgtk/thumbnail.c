@@ -816,18 +816,8 @@ static gboolean _thumbs_hide_overlays(gpointer user_data)
   return G_SOURCE_REMOVE;
 }
 
-static gboolean _thumbs_show_overlays(gpointer user_data)
+static void _thumbs_show_overlays(dt_thumbnail_t *thumb)
 {
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  _thumb_update_icons(thumb);
-  return G_SOURCE_REMOVE;
-}
-
-static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
-{
-  if(!user_data) return TRUE;
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-
   // first, we hide the block overlays after a delay if the mouse hasn't move
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
   {
@@ -836,13 +826,22 @@ static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpo
       g_source_remove(thumb->overlay_timeout_id);
       thumb->overlay_timeout_id = 0;
     }
-    _thumbs_show_overlays(thumb);
+    _thumb_update_icons(thumb);
     if(thumb->overlay_timeout_duration >= 0)
     {
       thumb->overlay_timeout_id
           = g_timeout_add_seconds(thumb->overlay_timeout_duration, _thumbs_hide_overlays, thumb);
     }
   }
+}
+
+static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+  if(!user_data) return TRUE;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+
+  // first, we hide the block overlays after a delay if the mouse hasn't move
+  _thumbs_show_overlays(thumb);
 
   if(!thumb->mouse_over && !thumb->disable_mouseover)
     dt_control_set_mouse_over_id(thumb->imgid);
@@ -1943,9 +1942,27 @@ static void _widget_change_parent_overlay(GtkWidget *w, GtkOverlay *new_parent)
 }
 void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over, int timeout)
 {
+  // if no change...
+  if(thumb->over == over)
+  {
+    // eventual timeout change
+    if(thumb->overlay_timeout_duration != timeout)
+    {
+      thumb->overlay_timeout_duration = timeout;
+      if(thumb->overlay_timeout_id > 0)
+      {
+        g_source_remove(thumb->overlay_timeout_id);
+        thumb->overlay_timeout_id = 0;
+      }
+      if(timeout < 0)
+        _thumbs_show_overlays(thumb);
+      else
+        _thumbs_hide_overlays(thumb);
+    }
+    return;
+  }
+
   thumb->overlay_timeout_duration = timeout;
-  // if no change, do nothing...
-  if(thumb->over == over) return;
   const dt_thumbnail_overlay_t old_over = thumb->over;
   thumb->over = over;
 
