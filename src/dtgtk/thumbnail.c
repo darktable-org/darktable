@@ -841,7 +841,6 @@ static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpo
 {
   if(!user_data) return TRUE;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-
   // first, we hide the block overlays after a delay if the mouse hasn't move
   _thumbs_show_overlays(thumb);
 
@@ -1898,10 +1897,11 @@ void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over)
   thumb->mouse_over = over;
   _thumbs_show_overlays(thumb);
 
-  if(!thumb->mouse_over)
-  {
-    _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
-  }
+  if(!thumb->mouse_over) _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
+
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
+  _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
+
   gtk_widget_queue_draw(thumb->w_main);
 }
 
