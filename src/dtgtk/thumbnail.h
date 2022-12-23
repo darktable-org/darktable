@@ -124,7 +124,6 @@ typedef struct
   dt_thumbnail_overlay_t over;  // type of overlays
   int overlay_timeout_duration; // for hover_block overlay, we hide the it after a delay
   int overlay_timeout_id;       // id of the g_source timeout fct
-  gboolean display_overlay;     // FALSE if not displayed (based on mouse position)
   gboolean tooltip;             // should we show the tooltip ?
 
   int expose_again_timeout_id;  // source id of the expose_again timeout
@@ -185,3 +184,4 @@ float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
+
