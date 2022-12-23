@@ -95,6 +95,7 @@ void dt_culling_zoom_fit(dt_culling_t *table);
 
 // set the overlays type
 void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t over);
+void dt_culling_force_overlay(dt_culling_t *table, gboolean force);
 
 // update active images list
 void dt_culling_update_active_images_list(dt_culling_t *table);
