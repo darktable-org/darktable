@@ -81,28 +81,28 @@ endif(NOT WIN32)
 
 if(${VALIDATE_APPDATA_FILE})
   add_custom_command(
-    OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml
-    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml
+    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
     COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/metainfo
-    COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml"
-    COMMAND ${appstream_util_BIN} validate --nonet ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml
-    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml"
+    COMMAND ${appstream_util_BIN} validate --nonet ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
     DEPENDS ${PO_FILES}
   )
 else()
   add_custom_command(
-    OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml
-    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    OUTPUT ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml
+    SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
     COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/metainfo
-    COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml"
-    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
+    COMMAND sh -c "${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml"
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/org.darktable.darktable.appdata.xml.in
     DEPENDS ${PO_FILES}
   )
 endif()
 
-add_custom_target(darktable.appdata_file ALL DEPENDS ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml)
+add_custom_target(darktable.appdata_file ALL DEPENDS ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml)
 
-install(FILES ${DARKTABLE_SHAREDIR}/metainfo/darktable.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo COMPONENT DTApplication)
+install(FILES ${DARKTABLE_SHAREDIR}/metainfo/org.darktable.darktable.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo COMPONENT DTApplication)
 
 #
 # Install watermarks
