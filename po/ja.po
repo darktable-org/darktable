@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-30 11:59+0100\n"
-"PO-Revision-Date: 2022-12-13 01:48+0900\n"
+"PO-Revision-Date: 2022-12-24 23:04+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -11044,7 +11044,7 @@ msgstr "内部"
 #: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:358
 #: ../src/libs/history.c:1009 ../src/libs/snapshots.c:634
 msgid "original"
-msgstr "元のまま"
+msgstr "未編集"
 
 #: ../src/imageio/format/jxl.c:603
 msgid "encoding effort"
