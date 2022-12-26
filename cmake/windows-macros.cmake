@@ -156,8 +156,35 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #GRAPHICKSMAGICK
       ${MINGW_PATH}/libltdl*.dll
-      ${MINGW_PATH}/libGraphicsMagick++*.dll
-      ${MINGW_PATH}/libGraphicsMagickWand*.dll
+      ${MINGW_PATH}/libGraphicsMagick-*.dll
+      #CODERS
+      ${MINGW_PATH}/libbrotli*.dll
+      ${MINGW_PATH}/libbz2*.dll
+      ${MINGW_PATH}/libhwy.dll
+      ${MINGW_PATH}/libjasper.dll
+      ${MINGW_PATH}/libjxl*.dll
+      ${MINGW_PATH}/libwebp-*.dll
+      ${MINGW_PATH}/libwebpmux*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
+  if(ImageMagick_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #IMAGEMAGICK
+      ${MINGW_PATH}/libltdl*.dll
+      ${MINGW_PATH}/libMagickCore-*.dll
+      ${MINGW_PATH}/libMagickWand-*.dll
+      #CODERS
+      ${MINGW_PATH}/libbrotli*.dll
+      ${MINGW_PATH}/libbz2*.dll
+      ${MINGW_PATH}/libhwy.dll
+      ${MINGW_PATH}/libjxl*.dll
+      ${MINGW_PATH}/liblzma*.dll
+      ${MINGW_PATH}/libopenjp2*.dll
+      ${MINGW_PATH}/libwebp-*.dll
+      ${MINGW_PATH}/libwebpdemux*.dll
+      ${MINGW_PATH}/libwebpmux*.dll
     )
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
@@ -271,6 +298,17 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
         FILES_MATCHING PATTERN "*"
         PATTERN "*.a" EXCLUDE
         PATTERN "*.la" EXCLUDE)
+  endif()
+
+  # Add ImageMagick libraries
+  if(ImageMagick_FOUND)
+    install(DIRECTORY
+        "${MINGW_PATH}/../lib/ImageMagick-${ImageMagick_VERSION}/modules-Q16HDRI/coders"
+        DESTINATION lib/ImageMagick-${ImageMagick_VERSION}/modules-Q16HDRI/
+        COMPONENT DTApplication
+        FILES_MATCHING PATTERN "*"
+        # For some reason *.la files must be kept alongside DLLs (unlike GM)
+        PATTERN "*.a" EXCLUDE)
   endif()
 
   # Add lensfun libraries
