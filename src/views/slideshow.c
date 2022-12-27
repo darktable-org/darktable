@@ -202,7 +202,7 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   dt_pthread_mutex_unlock(&d->lock);
 
   dt_dev_image_ext
-    (imgid, d->width, d->height, -1, &buf, &width, &height, 0, FALSE);
+    (imgid, d->width, d->height, -1, &buf, &width, &height, 0, FALSE, -1);
 
   dt_pthread_mutex_lock(&d->lock);
 

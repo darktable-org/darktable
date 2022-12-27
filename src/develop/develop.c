@@ -712,7 +712,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
   return zoom_scale;
 }
 
-void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
+void dt_dev_load_image_ext(dt_develop_t *dev, const uint32_t imgid, const int32_t snapshot_id)
 {
   dt_lock_image(imgid);
 
@@ -731,12 +731,17 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dt_pthread_mutex_lock(&darktable.dev_threadsafe);
   dev->iop = dt_iop_load_modules(dev);
 
-  dt_dev_read_history(dev);
+  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE, snapshot_id);
   dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
 
   dev->first_load = FALSE;
 
   dt_unlock_image(imgid);
+}
+
+void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
+{
+  dt_dev_load_image_ext(dev, imgid, -1);
 }
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
@@ -1789,7 +1794,10 @@ char * _print_validity(gboolean state)
     return "WRONG";
 }
 
-void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
+void dt_dev_read_history_ext(dt_develop_t *dev,
+                             const int imgid,
+                             const gboolean no_image,
+                             const int32_t snapshot_id)
 {
   if(imgid <= 0) return;
   if(!dev->iop) return;
@@ -1804,7 +1812,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   dt_ioppr_set_default_iop_order(dev, imgid);
 
-  if(!no_image)
+  if(!no_image && snapshot_id != -1)
   {
     // cleanup
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
@@ -1850,16 +1858,31 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   // Load current image history from DB
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT imgid, num, module, operation,"
-                              "       op_params, enabled, blendop_params,"
-                              "       blendop_version, multi_priority, multi_name"
-                              " FROM main.history"
-                              " WHERE imgid = ?1"
-                              " ORDER BY num",
-                              -1, &stmt, NULL);
+  if(snapshot_id != -1)
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT imgid, num, module, operation,"
+                                "       op_params, enabled, blendop_params,"
+                                "       blendop_version, multi_priority, multi_name"
+                                " FROM memory.history_snapshot"
+                                " WHERE imgid = ?1"
+                                " ORDER BY num",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snapshot_id);
+  }
+  else
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT imgid, num, module, operation,"
+                                "       op_params, enabled, blendop_params,"
+                                "       blendop_version, multi_priority, multi_name"
+                                " FROM main.history"
+                                " WHERE imgid = ?1"
+                                " ORDER BY num",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  }
   // clang-format on
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   dev->history_end = 0;
 
@@ -2121,7 +2144,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
+  dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE, -1);
 }
 
 void dt_dev_reprocess_all(dt_develop_t *dev)
@@ -3151,7 +3174,8 @@ void dt_dev_image_ext(
   size_t *processed_width,
   size_t *processed_height,
   int border_size,
-  gboolean iso_12646)
+  gboolean iso_12646,
+  int32_t snapshot_id)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, TRUE);
@@ -3165,7 +3189,7 @@ void dt_dev_image_ext(
 
   // load image and set history_end
 
-  dt_dev_load_image(&dev, imgid);
+  dt_dev_load_image_ext(&dev, imgid, snapshot_id);
 
   if(history_end != -1)
     dt_dev_pop_history_items_ext(&dev, history_end);
@@ -3207,7 +3231,7 @@ void dt_dev_image(
                    history_end,
                    buf, processed_width, processed_height,
                    darktable.develop->border_size,
-                   darktable.develop->iso_12646.enabled);
+                   darktable.develop->iso_12646.enabled, -1);
 }
 
 // clang-format off
