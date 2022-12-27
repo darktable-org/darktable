@@ -833,11 +833,16 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
         g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
         dt_dev_add_history_item(module->dev, module, TRUE);
       }
+
+      // this has been hand edited, the name should not be changed when
+      // applying a preset or a style.
+      module->multi_name_hand_edited = TRUE;
     }
     else
     {
       // clear out multi-name (set 1st char to 0)
       module->multi_name[0] = 0;
+      module->multi_name_hand_edited = FALSE;
       dt_dev_add_history_item(module->dev, module, TRUE);
     }
 

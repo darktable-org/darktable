@@ -858,6 +858,9 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
     {
       memcpy(module->params, op_params, op_length);
       module->enabled = enabled;
+      // if module name has not been hand edited, use preset name as module label
+      if(!module->multi_name_hand_edited)
+        g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
     }
     if(blendop_params && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))
