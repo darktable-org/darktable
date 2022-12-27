@@ -92,9 +92,9 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   float red[CHANNEL_SIZE];         // $MIN: COLOR_MIN $MAX: COLOR_MAX
   float green[CHANNEL_SIZE];       // $MIN: COLOR_MIN $MAX: COLOR_MAX
   float blue[CHANNEL_SIZE];        // $MIN: COLOR_MIN $MAX: COLOR_MAX
-  float saturation[CHANNEL_SIZE];  // $MIN: -1.0 $MAX: 1.0
-  float lightness[CHANNEL_SIZE];   // $MIN: -1.0 $MAX: 1.0
-  float grey[CHANNEL_SIZE];        // $MIN: 0.0 $MAX: 1.0
+  float saturation[CHANNEL_SIZE];  // $MIN: -2.0 $MAX: 2.0
+  float lightness[CHANNEL_SIZE];   // $MIN: -2.0 $MAX: 2.0
+  float grey[CHANNEL_SIZE];        // $MIN: -2.0 $MAX: 2.0
   gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "normalize channels"
   dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
   dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
@@ -4158,35 +4158,38 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->csspot.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
   GtkWidget *first, *second, *third;
-#define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap)              \
-  self->widget = dt_ui_notebook_page(g->notebook, label, _(tooltip));         \
-                                                                              \
-  first = dt_bauhaus_slider_from_params(self, swap ? #var "[2]" : #var "[0]");\
-  dt_bauhaus_slider_set_digits(first, 3);                                     \
-  dt_bauhaus_widget_set_label(first, section, N_("input R"));                 \
-                                                                              \
-  second = dt_bauhaus_slider_from_params(self, #var "[1]");                   \
-  dt_bauhaus_slider_set_digits(second, 3);                                    \
-  dt_bauhaus_widget_set_label(second, section, N_("input G"));                \
-                                                                              \
-  third = dt_bauhaus_slider_from_params(self, swap ? #var "[0]" : #var "[2]");\
-  dt_bauhaus_slider_set_digits(third, 3);                                     \
-  dt_bauhaus_widget_set_label(third, section, N_("input B"));                 \
-                                                                              \
-  g->scale_##var##_R = swap ? third : first;                                  \
-  g->scale_##var##_G = second;                                                \
-  g->scale_##var##_B = swap ? first : third;                                  \
-                                                                              \
-  g->normalize_##short = dt_bauhaus_toggle_from_params                        \
+#define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap, soft_range, sr_min, sr_max) \
+  self->widget = dt_ui_notebook_page(g->notebook, label, _(tooltip));                        \
+                                                                                             \
+  first = dt_bauhaus_slider_from_params(self, swap ? #var "[2]" : #var "[0]");               \
+  dt_bauhaus_slider_set_digits(first, 3);                                                    \
+  dt_bauhaus_widget_set_label(first, section, N_("input R"));                                \
+  if(soft_range) dt_bauhaus_slider_set_soft_range(first, sr_min, sr_max);                    \
+                                                                                             \
+  second = dt_bauhaus_slider_from_params(self, #var "[1]");                                  \
+  dt_bauhaus_slider_set_digits(second, 3);                                                   \
+  dt_bauhaus_widget_set_label(second, section, N_("input G"));                               \
+  if(soft_range) dt_bauhaus_slider_set_soft_range(second, sr_min, sr_max);                   \
+                                                                                             \
+  third = dt_bauhaus_slider_from_params(self, swap ? #var "[0]" : #var "[2]");               \
+  dt_bauhaus_slider_set_digits(third, 3);                                                    \
+  dt_bauhaus_widget_set_label(third, section, N_("input B"));                                \
+  if(soft_range) dt_bauhaus_slider_set_soft_range(third, sr_min, sr_max);                    \
+                                                                                             \
+  g->scale_##var##_R = swap ? third : first;                                                 \
+  g->scale_##var##_G = second;                                                               \
+  g->scale_##var##_B = swap ? first : third;                                                 \
+                                                                                             \
+  g->normalize_##short = dt_bauhaus_toggle_from_params                                       \
                (DT_IOP_SECTION_FOR_PARAMS(self, section), "normalize_" #short);
 
-  NOTEBOOK_PAGE(red, R, N_("R"), N_("output R"), N_("red"), FALSE)
-  NOTEBOOK_PAGE(green, G, N_("G"), N_("output G"), N_("green"), FALSE)
-  NOTEBOOK_PAGE(blue, B, N_("B"), N_("output B"), N_("blue"), FALSE)
-  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("output colorfulness"), N_("colorfulness"), FALSE)
+  NOTEBOOK_PAGE(red, R, N_("R"), N_("output R"), N_("red"), FALSE, FALSE, 0.0, 0.0)
+  NOTEBOOK_PAGE(green, G, N_("G"), N_("output G"), N_("green"), FALSE, FALSE, 0.0, 0.0)
+  NOTEBOOK_PAGE(blue, B, N_("B"), N_("output B"), N_("blue"), FALSE, FALSE, 0.0, 0.0)
+  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("output colorfulness"), N_("colorfulness"), FALSE, TRUE, -1.0, 1.0)
   g->saturation_version = dt_bauhaus_combobox_from_params(self, "version");
-  NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("output brightness"), N_("brightness"), FALSE)
-  NOTEBOOK_PAGE(grey, grey, N_("gray"), N_("output gray"), N_("gray"), FALSE)
+  NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("output brightness"), N_("brightness"), FALSE, TRUE, -1.0, 1.0)
+  NOTEBOOK_PAGE(grey, grey, N_("gray"), N_("output gray"), N_("gray"), FALSE, TRUE, 0.0, 1.0)
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
