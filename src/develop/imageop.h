@@ -110,7 +110,7 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
   IOP_FLAGS_GUIDES_WIDGET = 1 << 15,       // require the guides widget
   IOP_FLAGS_CACHE_IMPORTANT_NOW = 1 << 16, // hints for higher priority in iop cache
-  IOP_FLAGS_CACHE_IMPORTANT_NEXT = 1 << 17  
+  IOP_FLAGS_CACHE_IMPORTANT_NEXT = 1 << 17
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -517,4 +517,3 @@ void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

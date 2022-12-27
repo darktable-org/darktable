@@ -986,7 +986,9 @@ void dt_history_compress_on_image(const int32_t imgid)
   // get history_end for image
   int my_history_end = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "SELECT history_end FROM main.images WHERE id=?1", -1, &stmt, NULL);
+    "SELECT history_end"
+    " FROM main.images"
+    " WHERE id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1010,7 +1012,9 @@ void dt_history_compress_on_image(const int32_t imgid)
   // because only if this is **not** true history nums and history_end must be increased
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "SELECT COUNT(*) FROM main.history WHERE imgid = ?1 AND operation = ?2 AND num = 0", -1, &stmt, NULL);
+    "SELECT COUNT(*)"
+    " FROM main.history"
+    " WHERE imgid = ?1 AND operation = ?2 AND num = 0", -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
