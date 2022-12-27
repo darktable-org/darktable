@@ -355,6 +355,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_stats.bins_count = 0;
   module->histogram_stats.pixels = 0;
   module->multi_priority = 0;
+  module->multi_name_hand_edited = 0;
   module->iop_order = 0;
   module->cache_next_important = FALSE;
   for(int k = 0; k < 3; k++)
@@ -831,12 +832,11 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
       if(g_strcmp0(module->multi_name, name) != 0)
       {
         g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+        // this has been hand edited, the name should not be changed when
+        // applying a preset or a style.
+        module->multi_name_hand_edited = TRUE;
         dt_dev_add_history_item(module->dev, module, TRUE);
       }
-
-      // this has been hand edited, the name should not be changed when
-      // applying a preset or a style.
-      module->multi_name_hand_edited = TRUE;
     }
     else
     {
@@ -3154,16 +3154,20 @@ void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
   if(!action || action->type != DT_ACTION_TYPE_IOP_INSTANCE) return;
   dt_iop_module_t *module = (dt_iop_module_t *)action;
 
+  const gboolean module_was_enabled = module->enabled;
+
   if(module->gui_changed) module->gui_changed(module, widget, data);
 
   dt_iop_color_picker_reset(module, TRUE);
 
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 
-  // module is enabled, module label has not been hand edited and the name is set.
-  // reset to multi-prioriry or empty is main instance.
+  // module was enabled and still is enabled, module label has not
+  // been hand edited and the name is set.  reset to multi-prioriry or
+  // empty if main instance.
 
-  if(module->enabled
+  if(module_was_enabled
+     && module->enabled
      && !module->multi_name_hand_edited)
   {
     char nl[5] = { 0 };

@@ -811,7 +811,7 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.history"
                               " SET operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
-                              "     blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = ?10"
+                              "     blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = ?10, multi_name_hand_edited = ?11"
                               " WHERE imgid = ?5 AND num = ?6",
                               -1, &stmt, NULL);
   // clang-format on
@@ -825,6 +825,7 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, dt_develop_blend_version());
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, h->multi_priority);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, h->multi_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, h->multi_name_hand_edited);
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -929,6 +930,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     hist->params = malloc(module->params_size);
     hist->iop_order = module->iop_order;
     hist->multi_priority = module->multi_priority;
+    hist->multi_name_hand_edited = module->multi_name_hand_edited;
     g_strlcpy(hist->multi_name, module->multi_name, sizeof(hist->multi_name));
     /* allocate and set hist blend_params */
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
@@ -959,6 +961,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
 
     hist->iop_order = module->iop_order;
     hist->multi_priority = module->multi_priority;
+    hist->multi_name_hand_edited = module->multi_name_hand_edited;
     memcpy(hist->multi_name, module->multi_name, sizeof(module->multi_name));
     hist->enabled = module->enabled;
 
@@ -1220,6 +1223,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
     hist->module->enabled = hist->enabled;
     g_strlcpy(hist->module->multi_name, hist->multi_name, sizeof(hist->module->multi_name));
     if(hist->forms) forms = hist->forms;
+    hist->module->multi_name_hand_edited = hist->multi_name_hand_edited;
 
     history = g_list_next(history);
   }
@@ -1398,7 +1402,7 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
-    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '')",
+    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '', 0)",
     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
@@ -1540,7 +1544,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            " SELECT ?1, 0, op_version, operation, op_params,"
            "       enabled, blendop_params, blendop_version,"
            "       ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1,"
-           "       COALESCE(NULLIF(multi_name,''), NULLIF(name,''))"
+           "       COALESCE(NULLIF(multi_name,''), NULLIF(name,'')), 0"
            " FROM %s"
            " WHERE ( (autoapply=1"
            "          AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
@@ -1787,7 +1791,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
             "INSERT INTO main.history"
             " SELECT imgid, num, module, operation, op_params, enabled, "
             "        blendop_params, blendop_version, multi_priority,"
-            "        multi_name"
+            "        multi_name, multi_name_hand_edited"
             " FROM memory.history",
             -1, &stmt, NULL);
           // clang-format on
@@ -1904,7 +1908,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT imgid, num, module, operation,"
                                 "       op_params, enabled, blendop_params,"
-                                "       blendop_version, multi_priority, multi_name"
+                                "       blendop_version, multi_priority, multi_name,"
+                                "       multi_name_hand_edited"
                                 " FROM main.history"
                                 " WHERE imgid = ?1"
                                 " ORDER BY num",
@@ -1917,7 +1922,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT id, num, module, operation,"
                                 "       op_params, enabled, blendop_params,"
-                                "       blendop_version, multi_priority, multi_name"
+                                "       blendop_version, multi_priority, multi_name,"
+                                "       multi_name_hand_edited"
                                 " FROM memory.history_snapshot"
                                 " WHERE id = ?1"
                                 " ORDER BY num",
@@ -1942,6 +1948,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     const int blendop_version = sqlite3_column_int(stmt, 7);
     const int multi_priority = sqlite3_column_int(stmt, 8);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 9);
+    const int multi_name_hand_edited = sqlite3_column_int(stmt, 10);
 
     const int param_length = sqlite3_column_bytes(stmt, 4);
     const int bl_length = sqlite3_column_bytes(stmt, 6);
@@ -1976,6 +1983,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
             g_strlcpy(module->multi_name, multi_name, sizeof(module->multi_name));
           else
             memset(module->multi_name, 0, sizeof(module->multi_name));
+          module->multi_name_hand_edited = multi_name_hand_edited;
           break;
         }
         else if(multi_priority > 0)
@@ -1995,6 +2003,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
         new_module->iop_order = iop_order;
 
         g_strlcpy(new_module->multi_name, multi_name, sizeof(new_module->multi_name));
+        new_module->multi_name_hand_edited = multi_name_hand_edited;
 
         dev->iop = g_list_append(dev->iop, new_module);
 
@@ -2039,6 +2048,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     hist->num = num;
     hist->iop_order = iop_order;
     hist->multi_priority = multi_priority;
+    hist->multi_name_hand_edited = multi_name_hand_edited;
     g_strlcpy(hist->op_name, hist->module->op, sizeof(hist->op_name));
     g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));
     hist->params = malloc(hist->module->params_size);
@@ -2558,6 +2568,8 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
 
   // the multi instance name
   g_strlcpy(module->multi_name, mname, sizeof(module->multi_name));
+  module->multi_name_hand_edited = 0;
+
   // we insert this module into dev->iop
   base->dev->iop = g_list_insert_sorted(base->dev->iop, module, dt_sort_iop_by_order);
 

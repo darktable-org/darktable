@@ -627,7 +627,8 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
     (dt_database_get(darktable.db),
      "INSERT INTO memory.history_snapshot"
      " SELECT ?1, num, module, operation, op_params,"
-     "        enabled, blendop_params, blendop_version, multi_priority, multi_name"
+     "        enabled, blendop_params, blendop_version, multi_priority,"
+     "        multi_name, multi_name_hand_edited"
      " FROM main.history"
      " WHERE imgid = ?2 AND num < ?3",
      -1, &stmt, NULL);
