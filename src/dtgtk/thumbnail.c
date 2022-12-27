@@ -1129,6 +1129,11 @@ static gboolean _event_box_enter_leave(GtkWidget *widget, GdkEventCrossing *even
 static gboolean _event_image_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+
+  // we ensure that the image has mouse over
+  if(!thumb->mouse_over && event->type == GDK_ENTER_NOTIFY && !thumb->disable_mouseover)
+    dt_control_set_mouse_over_id(thumb->imgid);
+
   _set_flag(thumb->w_image_box, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
   return FALSE;
 }
