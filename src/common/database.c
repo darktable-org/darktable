@@ -2602,6 +2602,12 @@ static void _create_memory_schema(dt_database_t *db)
       NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
+      "CREATE TABLE memory.history_snapshot (id INTEGER, num INTEGER, module INTEGER, "
+      "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      NULL, NULL, NULL);
+  sqlite3_exec(
+      db->handle,
       "CREATE TABLE memory.undo_history (id INTEGER, imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",

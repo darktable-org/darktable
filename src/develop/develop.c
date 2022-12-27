@@ -1812,7 +1812,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   dt_ioppr_set_default_iop_order(dev, imgid);
 
-  if(!no_image && snapshot_id != -1)
+  if(!no_image)
   {
     // cleanup
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
@@ -1839,6 +1839,19 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     //  first time we are loading the image, try to import lightroom .xmp if any
     if(dev->image_loading && first_run) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
+
+    // if a snapshot move all auto-presets into the history_snapshot table
+
+    if(snapshot_id != -1)
+    {
+      DT_DEBUG_SQLITE3_EXEC
+        (dt_database_get(darktable.db),
+         "INSERT INTO memory.history_snapshot SELECT * FROM memory.history",
+         NULL, NULL, NULL);
+      DT_DEBUG_SQLITE3_EXEC
+        (dt_database_get(darktable.db),
+         "DELETE FROM memory.history", NULL, NULL, NULL);
+    }
   }
 
   sqlite3_stmt *stmt;
@@ -1858,20 +1871,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   // Load current image history from DB
   // clang-format off
-  if(snapshot_id != -1)
+  if(snapshot_id == -1)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT imgid, num, module, operation,"
-                                "       op_params, enabled, blendop_params,"
-                                "       blendop_version, multi_priority, multi_name"
-                                " FROM memory.history_snapshot"
-                                " WHERE imgid = ?1"
-                                " ORDER BY num",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snapshot_id);
-  }
-  else
-  {
+    // not a snapshot, read from main history
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT imgid, num, module, operation,"
                                 "       op_params, enabled, blendop_params,"
@@ -1881,6 +1883,19 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
                                 " ORDER BY num",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  }
+  else
+  {
+    // a snapshot, read from history_snapshot
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT id, num, module, operation,"
+                                "       op_params, enabled, blendop_params,"
+                                "       blendop_version, multi_priority, multi_name"
+                                " FROM memory.history_snapshot"
+                                " WHERE id = ?1"
+                                " ORDER BY num",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snapshot_id);
   }
   // clang-format on
 
@@ -1905,12 +1920,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     const int bl_length = sqlite3_column_bytes(stmt, 6);
 
     // Sanity checks
-    const gboolean is_valid_id = (id == imgid);
+    const gboolean is_valid_id = (id == imgid || (snapshot_id != -1));
     const gboolean has_module_name = (module_name != NULL);
 
     if(!(has_module_name && is_valid_id))
     {
-      fprintf(stderr, "[dev_read_history] database history for image `%s' seems to be corrupted!\n",
+      fprintf(stderr, "[dev_read_history_ext] database history for image `%s' seems to be corrupted!\n",
               dev->image_storage.filename);
       continue;
     }
@@ -2078,15 +2093,18 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   dt_ioppr_resync_modules_order(dev);
 
-  // find the new history end
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT history_end FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
-    if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
-      dev->history_end = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  if(snapshot_id == -1)
+  {
+    // find the new history end
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT history_end FROM main.images WHERE id = ?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
+      if(sqlite3_column_type(stmt, 0) != SQLITE_NULL)
+        dev->history_end = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
 
   dt_ioppr_check_iop_order(dev, imgid, "dt_dev_read_history_no_image end");
 
@@ -2106,8 +2124,11 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   dt_dev_masks_list_change(dev);
 
   // make sure module_dev is in sync with history
+  if(snapshot_id != -1) goto end_rh;
+
   _dev_write_history(dev, imgid);
   dt_ioppr_write_iop_order_list(dev->iop_order_list, imgid);
+
   dt_history_hash_t flags = DT_HISTORY_HASH_CURRENT;
   if(first_run)
   {
@@ -2139,6 +2160,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     dt_history_hash_write_from_history(imgid, flags);
   }
 
+  end_rh:
   dt_unlock_image(imgid);
 }
 
@@ -3191,7 +3213,7 @@ void dt_dev_image_ext(
 
   dt_dev_load_image_ext(&dev, imgid, snapshot_id);
 
-  if(history_end != -1)
+  if(history_end != -1 && snapshot_id == -1)
     dt_dev_pop_history_items_ext(&dev, history_end);
 
   // configure the actual dev width & height

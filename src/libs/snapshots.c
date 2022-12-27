@@ -41,6 +41,7 @@ typedef struct dt_lib_snapshot_t
   dt_view_context_t ctx;
   uint32_t imgid;
   uint32_t history_end;
+  uint32_t id;
   /* snapshot cairo surface */
   cairo_surface_t *surface;
   uint32_t width, height;
@@ -151,8 +152,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     if(d->snap_requested && snap->ctx == ctx)
     {
       // export image with proper size
-      dt_dev_image(snap->imgid, width, height, snap->history_end,
-                   &d->params.buf, &d->params.width, &d->params.height);
+      dt_dev_image_ext(snap->imgid, width, height, snap->history_end,
+                       &d->params.buf, &d->params.width, &d->params.height,
+                       darktable.develop->border_size,
+                       darktable.develop->iso_12646.enabled,
+                       snap->id);
 
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = dt_view_create_surface(d->params.buf, d->params.width, d->params.height);
@@ -425,48 +429,21 @@ static void _clear_snapshots(dt_lib_module_t *self, const uint32_t imgid)
   d->selected = -1;
   d->snap_requested = FALSE;
 
-  uint32_t pos = 0;
-  uint32_t removed_count = 0;
-
   for(uint32_t k = 0; k < d->num_snapshots; k++)
   {
     dt_lib_snapshot_t *s = &d->snapshot[k];
 
-    if(imgid == -1 || s->imgid == imgid)
-    {
-      if(s->surface) cairo_surface_destroy(s->surface);
-      _clear_snapshot_entry(s);
-      gtk_widget_hide(s->button);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
-      removed_count++;
-    }
-    else
-    {
-      if(pos != k)
-      {
-        dt_lib_snapshot_t *n = &d->snapshot[pos];
-
-        GtkWidget *tmp = n->button;
-        n->button = s->button;
-        s->button = tmp;
-
-        n->imgid       = s->imgid;
-        n->ctx         = s->ctx;
-        n->surface     = s->surface;
-        n->history_end = s->history_end;
-        n->width       = s->width;
-        n->height      = s->height;
-
-        _clear_snapshot_entry(s);
-      }
-      pos++;
-    }
+    if(s->surface) cairo_surface_destroy(s->surface);
+    _clear_snapshot_entry(s);
+    gtk_widget_hide(s->button);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(s->button), FALSE);
   }
 
-  d->num_snapshots -= removed_count;
+  d->num_snapshots = 0;
+  gtk_widget_set_sensitive(d->take_button, TRUE);
 
-  if(d->num_snapshots < MAX_SNAPSHOT)
-    gtk_widget_set_sensitive(d->take_button, TRUE);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "DELETE FROM memory.history_snapshot", NULL, NULL, NULL);
 
   dt_control_queue_redraw_center();
 }
@@ -489,13 +466,6 @@ static void _signal_profile_changed(gpointer instance, uint8_t profile_type, gpo
 
     dt_control_queue_redraw_center();
   }
-}
-
-static void _signal_history_invalidated(gpointer instance, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  // we clear the snapshots for the image whose histroy is being invalidated
-  _clear_snapshots(self, darktable.develop->image_storage.id);
 }
 
 static void _signal_image_changed(gpointer instance, gpointer user_data)
@@ -609,8 +579,6 @@ void gui_init(dt_lib_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                                   G_CALLBACK(_signal_profile_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_INVALIDATED,
-                                  G_CALLBACK(_signal_history_invalidated), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                                   G_CALLBACK(_signal_image_changed), self);
 }
@@ -648,6 +616,27 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   _clear_snapshot_entry(s);
   s->history_end = darktable.develop->history_end;
   s->imgid = darktable.develop->image_storage.id;
+
+  // set new snapshot_id
+
+  s->id = d->num_snapshots;
+
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "INSERT INTO memory.history_snapshot"
+     " SELECT ?1, num, module, operation, op_params,"
+     "        enabled, blendop_params, blendop_version, multi_priority, multi_name"
+     " FROM main.history"
+     " WHERE imgid = ?2 AND num < ?3",
+     -1, &stmt, NULL);
+
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, s->id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, s->imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, s->history_end);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
   char label[64];
   g_snprintf(label, sizeof(label), "%s (%d)", name, s->history_end);
