@@ -1639,7 +1639,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   // we prefetch next/previous images
   _thumbs_prefetch(table);
 
-  // ensure one of the shown image as the focus (to avoid to keep focus to hidden image)
+  // ensure that no hidden image as the focus
   const int selid = dt_control_get_mouse_over_id();
   if(selid >= 0)
   {
@@ -1653,10 +1653,9 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
         break;
       }
     }
-    if(!in_list && table->list)
+    if(!in_list)
     {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)table->list->data;
-      dt_control_set_mouse_over_id(thumb->imgid);
+      dt_control_set_mouse_over_id(-1);
     }
   }
 
