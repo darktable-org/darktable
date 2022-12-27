@@ -3159,6 +3159,22 @@ void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
   dt_iop_color_picker_reset(module, TRUE);
 
   dt_dev_add_history_item(darktable.develop, module, TRUE);
+
+  // module is enabled, module label has not been hand edited and the name is set.
+  // reset to multi-prioriry or empty is main instance.
+
+  if(module->enabled
+     && !module->multi_name_hand_edited)
+  {
+    char nl[5] = { 0 };
+    snprintf(nl, sizeof(nl), "%d", module->multi_priority);
+
+    g_strlcpy(module->multi_name,
+              module->multi_priority == 0 ? "" : nl,
+              sizeof(module->multi_name));
+
+    dt_iop_gui_update_header(module);
+  }
 }
 
 enum
