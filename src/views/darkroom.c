@@ -3745,19 +3745,21 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       scale = 8.0f / ppd;
   }
 
-  if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
-  {
-    if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
-    if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-    scale = fmaxf(scale, 0.5 * fitscale);
+  if(constrained) {
+    if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
+    {
+      if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
+      if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
+      scale = fmaxf(scale, 0.5 * fitscale);
+    }
+    else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
+    {
+      if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
+      if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
+      scale = fmaxf(scale, 0.5 * fitscale);
+    }
+    else scale = fmaxf(scale, 1.0f / ppd); // for small image size, minimum at 1:1
   }
-  else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
-  {
-    if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
-    if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-    scale = fmaxf(scale, 0.5 * fitscale);
-  }
-  else scale = fmaxf(scale, 1.0f / ppd); // for small image size, minimum at 1:1
   scale = fminf(scale, 16.0f / ppd);
 
   // pixel doubling instead of interpolation at >= 200% lodpi, >= 400% hidpi
