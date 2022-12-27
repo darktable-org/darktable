@@ -3660,6 +3660,56 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
   dt_control_navigation_redraw();
 }
 
+float calculate_new_scroll_zoom_tscale (const int up, const gboolean constrained,
+                                 const float tscaleold, const float tscalefit)
+{
+  enum {
+    SIZE_SMALL,
+    SIZE_MEDIUM,
+    SIZE_LARGE
+  } image_size;
+
+  if (tscalefit <= 1.0f) image_size = SIZE_LARGE;
+  else if (tscalefit <= 2.0f) image_size = SIZE_MEDIUM;
+  else image_size = SIZE_SMALL;
+
+  // at 200% zoom level or more, we use a step of 2x, while at lower level we use 1.1x
+  const float step = up ? (tscaleold >= 2.0f ? 2.0f : 1.1f) : (tscaleold > 2.0f ? 2.0f : 1.1f);
+
+  // we calculate the new scale
+  float tscalenew = up ? tscaleold * step : tscaleold / step;
+
+  // when zooming, secure we include 2:1, 1:1 and FIT levels anyway in the zoom stops
+  if ((tscalenew - tscalefit) * (tscaleold - tscalefit) < 0 && image_size != SIZE_SMALL) tscalenew = tscalefit;
+  else if ((tscalenew - 1.0f) * (tscaleold - 1.0f) < 0) tscalenew = 1.0f;
+  else if ((tscalenew - 2.0f) * (tscaleold - 2.0f) < 0) tscalenew = 2.0f;
+
+  float tscalemax, tscalemin;            // the zoom soft limits
+  const float tscaletop = 16.0f; // the zoom hard limits
+  const float tscalefloor = MIN(0.5f * tscalefit, 1.0f);
+
+  switch (image_size) // here we set the logic of zoom limits
+    {
+    case SIZE_LARGE:
+      tscalemax = constrained ? (tscaleold > 2.0f ? tscaletop : (tscaleold > 1.0f ? 2.0f : 1.0f)) : tscaletop;
+      tscalemin = constrained ? (tscaleold < tscalefit ? tscalefloor : tscalefit) : tscalefloor;
+      break;
+    case SIZE_MEDIUM:
+      tscalemax = constrained ? (tscaleold > 2.0f ? tscaletop : 2.0f) : tscaletop;
+      tscalemin = constrained ? (tscaleold < tscalefit ? tscalefloor : tscalefit) : tscalefloor;
+      break;
+    case SIZE_SMALL:
+      tscalemax = constrained ? (tscaleold > 2.0f ? tscaletop : tscalefit) : tscaletop;
+      tscalemin = tscalefloor;
+      break;
+    }
+
+  // we enforce the zoom limits
+  tscalenew = up ? MIN(tscalenew, tscalemax) : MAX(tscalenew, tscalemin);
+
+  return tscalenew;
+}
+
 void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
@@ -3690,7 +3740,6 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
   const float ppd = darktable.gui->ppd;
   const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-  const float oldscale = scale;
 
   // offset from center now (current zoom_{x,y} points there)
   const float mouse_off_x = x - 0.5f * dev->width;
@@ -3702,84 +3751,32 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
   const gboolean low_ppd = (darktable.gui->ppd == 1);
-  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd;
 
-  if(up)
-  {
-    if(fitscale <= 1.0f && (scale == (1.0f / ppd) || scale == (2.0f / ppd)) && constrained) return; // for large image size
-    else if(fitscale > 1.0f && fitscale <= 2.0f && scale == (2.0f / ppd) && constrained) return; // for medium image size
-
-    if((oldscale <= 1.0f / ppd) && constrained && (scale + stepup >= 1.0f / ppd))
-      scale = 1.0f / ppd;
-    else if((oldscale <= 2.0f / ppd) && constrained && (scale + stepup >= 2.0f / ppd))
-      scale = 2.0f / ppd;
-    // calculate new scale
-    else if(scale >= 16.0f / ppd)
-      return;
-    else if(scale >= 8.0f / ppd)
-      scale = 16.0f / ppd;
-    else if(scale >= 4.0f / ppd)
-      scale = 8.0f / ppd;
-    else if(scale >= 2.0f / ppd)
-      scale = 4.0f / ppd;
-    else if(scale >= fitscale)
-      scale += stepup;
-    else
-      scale += 0.5f * stepup;
-  }
-  else
-  {
-    if(fitscale <= 2.0f && ((scale == fitscale && constrained) || scale < 0.5 * fitscale)) return; // for large and medium image size
-    else if(fitscale > 2.0f && scale < 1.0f / ppd) return; // for small image size
-
-    // calculate new scale
-    if(scale <= fitscale)
-      scale -= 0.5f * stepup;
-    else if(scale <= 2.0f / ppd)
-      scale -= stepup;
-    else if(scale <= 4.0f / ppd)
-      scale = 2.0f / ppd;
-    else if(scale <= 8.0f / ppd)
-      scale = 4.0f / ppd;
-    else
-      scale = 8.0f / ppd;
-  }
-
-  if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
-  {
-    if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
-    if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-    scale = fmaxf(scale, 0.5 * fitscale);
-  }
-  else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
-  {
-    if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
-    if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-    scale = fmaxf(scale, 0.5 * fitscale);
-  }
-  else scale = fmaxf(scale, 1.0f / ppd); // for small image size, minimum at 1:1
-  scale = fminf(scale, 16.0f / ppd);
+  const float tscaleold = scale * ppd;
+  const float tscale = calculate_new_scroll_zoom_tscale (up, constrained, tscaleold, fitscale * ppd);
+  if(tscale == tscaleold) return;  // no op
+  scale = tscale / ppd;
 
   // pixel doubling instead of interpolation at >= 200% lodpi, >= 400% hidpi
-  if(scale > 15.9999f / ppd)
+  if(tscale > 15.9999)
   {
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     closeup = low_ppd ? 4 : 3;
   }
-  else if(scale > 7.9999f / ppd)
+  else if(tscale > 7.9999f)
   {
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     closeup = low_ppd ? 3 : 2;
   }
-  else if(scale > 3.9999f / ppd)
+  else if(tscale > 3.9999f)
   {
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     closeup = low_ppd ? 2 : 1;
   }
-  else if(scale > 1.9999f / ppd)
+  else if(tscale > 1.9999)
   {
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
@@ -4012,7 +4009,6 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
   float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
   const float ppd = dev->second_window.ppd;
   const float fitscale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-  const float oldscale = scale;
 
   // offset from center now (current zoom_{x,y} points there)
   const float mouse_off_x = x - 0.5f * dev->second_window.width;
@@ -4024,82 +4020,32 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
 
   const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
   const gboolean low_ppd = (dev->second_window.ppd == 1);
-  const float stepup = 0.1f * fabsf(1.0f - fitscale) / ppd;
-  if(up)
-  {
-    if(fitscale <= 1.0f && (scale == (1.0f / ppd) || scale == (2.0f / ppd)) && constrained) return; // for large image size
-    else if(fitscale > 1.0f && fitscale <= 2.0f && scale == (2.0f / ppd) && constrained) return; // for medium image size
 
-    if((oldscale <= 1.0f / ppd) && constrained && (scale + stepup >= 1.0f / ppd))
-      scale = 1.0f / ppd;
-    else if((oldscale <= 2.0f / ppd) && constrained && (scale + stepup >= 2.0f / ppd))
-      scale = 2.0f / ppd;
-    // calculate new scale
-    else if(scale >= 16.0f / ppd)
-      return;
-    else if(scale >= 8.0f / ppd)
-      scale = 16.0f / ppd;
-    else if(scale >= 4.0f / ppd)
-      scale = 8.0f / ppd;
-    else if(scale >= 2.0f / ppd)
-      scale = 4.0f / ppd;
-    else if(scale >= fitscale)
-      scale += stepup;
-    else
-      scale += 0.5f * stepup;
-  }
-  else
-  {
-    if(fitscale <= 2.0f && ((scale == fitscale && constrained) || scale < 0.5 * fitscale)) return; // for large and medium image size
-    else if(fitscale > 2.0f && scale < 1.0f / ppd) return; // for small image size
-
-    // calculate new scale
-    if(scale <= fitscale)
-      scale -= 0.5f * stepup;
-    else if(scale <= 2.0f / ppd)
-      scale -= stepup;
-    else if(scale <= 4.0f / ppd)
-      scale = 2.0f / ppd;
-    else if(scale <= 8.0f / ppd)
-      scale = 4.0f / ppd;
-    else
-      scale = 8.0f / ppd;
-  }
-  if(fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
-  {
-    if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f / ppd;
-    if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-    scale = fmaxf(scale, 0.5 * fitscale);
-  }
-  else if(fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
-  {
-    if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f / ppd;
-    if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-    scale = fmaxf(scale, 0.5 * fitscale);
-  }
-  else scale = fmaxf(scale, 1.0f / ppd); // for small image size, minimum at 1:1
-  scale = fminf(scale, 16.0f / ppd);
+  const float tscaleold = scale * ppd;
+  const float tscale = calculate_new_scroll_zoom_tscale (up, constrained, tscaleold, fitscale * ppd);
+  if(tscale == tscaleold) return;  // no op
+  scale = tscale / ppd;
 
   // pixel doubling instead of interpolation at >= 200% lodpi, >= 400% hidpi
-  if(scale > 15.9999f / ppd)
+  if(tscale > 15.9999f)
   {
     scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     closeup = low_ppd ? 4 : 3;
   }
-  else if(scale > 7.9999f / ppd)
+  else if(tscale > 7.9999f)
   {
     scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     closeup = low_ppd ? 3 : 2;
   }
-  else if(scale > 3.9999f / ppd)
+  else if(tscale > 3.9999f)
   {
     scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     closeup = low_ppd ? 2 : 1;
   }
-  else if(scale > 1.9999f / ppd)
+  else if(tscale > 1.9999f)
   {
    scale = dt_second_window_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
    zoom = DT_ZOOM_1;
