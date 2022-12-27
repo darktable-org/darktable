@@ -338,21 +338,28 @@ static void read_xmp_timestamps(Exiv2::XmpData &xmpData, dt_image_t *img, const 
 
 // this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[]
-    = { "Xmp.dc.subject", "Xmp.lr.hierarchicalSubject", "Xmp.darktable.colorlabels", "Xmp.darktable.history",
-        "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled", "Xmp.darktable.history_end",
-        "Xmp.darktable.iop_order_version", "Xmp.darktable.iop_order_list",
-        "Xmp.darktable.history_operation", "Xmp.darktable.history_params", "Xmp.darktable.blendop_params",
-        "Xmp.darktable.blendop_version", "Xmp.darktable.multi_priority", "Xmp.darktable.multi_name",
-        "Xmp.darktable.iop_order",
-        "Xmp.darktable.xmp_version", "Xmp.darktable.raw_params", "Xmp.darktable.auto_presets_applied",
-        "Xmp.darktable.mask_id", "Xmp.darktable.mask_type", "Xmp.darktable.mask_name",
-        "Xmp.darktable.masks_history", "Xmp.darktable.mask_num", "Xmp.darktable.mask_points",
-        "Xmp.darktable.mask_version", "Xmp.darktable.mask", "Xmp.darktable.mask_nb", "Xmp.darktable.mask_src",
-        "Xmp.darktable.history_basic_hash", "Xmp.darktable.history_auto_hash", "Xmp.darktable.history_current_hash",
-        "Xmp.darktable.import_timestamp", "Xmp.darktable.change_timestamp",
-        "Xmp.darktable.export_timestamp", "Xmp.darktable.print_timestamp",
-        "Xmp.acdsee.notes", "Xmp.darktable.version_name",
-        "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
+    = { "Xmp.dc.subject",                     "Xmp.lr.hierarchicalSubject",
+        "Xmp.darktable.colorlabels",          "Xmp.darktable.history",
+        "Xmp.darktable.history_modversion",   "Xmp.darktable.history_enabled",
+        "Xmp.darktable.history_end",          "Xmp.darktable.iop_order_version",
+        "Xmp.darktable.iop_order_list",       "Xmp.darktable.history_operation",
+        "Xmp.darktable.history_params",       "Xmp.darktable.blendop_params",
+        "Xmp.darktable.blendop_version",      "Xmp.darktable.multi_priority",
+        "Xmp.darktable.multi_name",           "Xmp.darktable.multi_name_hand_edited",
+        "Xmp.darktable.iop_order",            "Xmp.darktable.xmp_version",
+        "Xmp.darktable.raw_params",           "Xmp.darktable.auto_presets_applied",
+        "Xmp.darktable.mask_id",              "Xmp.darktable.mask_type",
+        "Xmp.darktable.mask_name",            "Xmp.darktable.masks_history",
+        "Xmp.darktable.mask_num",             "Xmp.darktable.mask_points",
+        "Xmp.darktable.mask_version",         "Xmp.darktable.mask",
+        "Xmp.darktable.mask_nb",              "Xmp.darktable.mask_src",
+        "Xmp.darktable.history_basic_hash",   "Xmp.darktable.history_auto_hash",
+        "Xmp.darktable.history_current_hash", "Xmp.darktable.import_timestamp",
+        "Xmp.darktable.change_timestamp",     "Xmp.darktable.export_timestamp",
+        "Xmp.darktable.print_timestamp",      "Xmp.acdsee.notes",
+        "Xmp.darktable.version_name",         "Xmp.dc.creator",
+        "Xmp.dc.publisher",                   "Xmp.dc.title",
+        "Xmp.dc.description",                 "Xmp.dc.rights",
         "Xmp.xmpMM.DerivedFrom" };
 
 static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of XmpBag XmpSeq keys that dt uses
@@ -2404,6 +2411,7 @@ typedef struct history_entry_t
   unsigned char *params;
   int params_len;
   char *multi_name;
+  int multi_name_hand_edited;
   int multi_priority;
   int blendop_version;
   unsigned char *blendop_params;
@@ -2681,6 +2689,10 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
         current_entry->have_params = TRUE;
         current_entry->params = dt_exif_xmp_decode(history->value().toString().c_str(), history->value().size(),
                                                    &current_entry->params_len);
+      }
+      else if(g_str_has_prefix(key_iter, "darktable:multi_name_hand_edited"))
+      {
+        current_entry->multi_name_hand_edited = history->value().toLong() == 1;
       }
       else if(g_str_has_prefix(key_iter, "darktable:multi_name"))
       {
@@ -3247,8 +3259,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       }
       else
       {
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, "", -1, SQLITE_TRANSIENT); // "" instead of " " should be fine now
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, "", -1, SQLITE_TRANSIENT);
       }
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, entry->multi_name_hand_edited);
 
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
@@ -3576,7 +3589,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT module, operation, op_params, enabled, blendop_params, "
-      "       blendop_version, multi_priority, multi_name, num"
+      "       blendop_version, multi_priority, multi_name, num, multi_name_hand_edited"
       " FROM main.history"
       " WHERE imgid = ?1"
       " ORDER BY num",
@@ -3596,6 +3609,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
     int32_t multi_priority = sqlite3_column_int(stmt, 6);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
     int32_t hist_num = sqlite3_column_int(stmt, 8);
+    const int32_t multi_name_hand_edited = sqlite3_column_int(stmt, 9);
 
     if(!operation) continue; // no op is fatal.
 
@@ -3613,6 +3627,8 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
     xmpData[key] = params;
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_name", num);
     xmpData[key] = multi_name ? multi_name : "";
+    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_name_hand_edited", num);
+    xmpData[key] = multi_name_hand_edited;
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_priority", num);
     xmpData[key] = multi_priority;
 

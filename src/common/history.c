@@ -649,9 +649,9 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
     gchar *query = g_strdup_printf
       ("INSERT INTO main.history "
        "            (imgid,num,module,operation,op_params,enabled,blendop_params, "
-       "             blendop_version,multi_priority,multi_name)"
+       "             blendop_version,multi_priority,multi_name,multi_name_hand_edited)"
        " SELECT ?1,num,module,operation,op_params,enabled,blendop_params, "
-       "        blendop_version,multi_priority,multi_name "
+       "        blendop_version,multi_priority,multi_name,multi_name_hand_edited "
        " FROM main.history"
        " WHERE imgid=?2"
        "       AND operation NOT IN (%s)"
