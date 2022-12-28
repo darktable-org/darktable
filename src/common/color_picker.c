@@ -30,7 +30,7 @@ static inline size_t _box_size(const int *const box)
   return (size_t)((box[3] - box[1]) * (box[2] - box[0]));
 }
 
-// define custom reduction operations to handle a 3-vector of floats
+// define custom reduction operations to handle pixels
 // we can't return an array from a function, so wrap the array type in a struct
 typedef struct _aligned_pixel { dt_aligned_pixel_t v; } _aligned_pixel;
 #define OPENMP_CUSTOM_REDUCTIONS OPENMP && !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
@@ -85,17 +85,18 @@ static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width, w)
+#pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width)
 #endif
 static inline void _color_picker_rgb_or_lab(dt_aligned_pixel_t avg, dt_aligned_pixel_t min, dt_aligned_pixel_t max,
-                                            const float *const pixels, const float w, const size_t width)
+                                            const float *const pixels, const size_t width)
 {
   for(size_t i = 0; i < width; i += 4)
   {
-    dt_aligned_pixel_t pick = { pixels[i], pixels[i + 1], pixels[i + 2], 0.0f };
-    for(size_t k = 0; k < 4; k++)
+    dt_aligned_pixel_t pick;
+    copy_pixel(pick, pixels + i);
+    for_each_channel(k)
     {
-      avg[k] += w * pick[k];
+      avg[k] += pick[k];
       min[k] = fminf(min[k], pick[k]);
       max[k] = fmaxf(max[k], pick[k]);
     }
@@ -103,10 +104,10 @@ static inline void _color_picker_rgb_or_lab(dt_aligned_pixel_t avg, dt_aligned_p
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width, w)
+#pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width)
 #endif
 static inline void _color_picker_lch(dt_aligned_pixel_t avg, dt_aligned_pixel_t min, dt_aligned_pixel_t max,
-                                     const float *const pixels, const float w, const size_t width)
+                                     const float *const pixels, const size_t width)
 {
   for(size_t i = 0; i < width; i += 4)
   {
@@ -115,7 +116,7 @@ static inline void _color_picker_lch(dt_aligned_pixel_t avg, dt_aligned_pixel_t 
     pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
     for(size_t k = 0; k < 4; k++)
     {
-      avg[k] += w * pick[k];
+      avg[k] += pick[k];
       min[k] = fminf(min[k], pick[k]);
       max[k] = fmaxf(max[k], pick[k]);
     }
@@ -123,10 +124,10 @@ static inline void _color_picker_lch(dt_aligned_pixel_t avg, dt_aligned_pixel_t 
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width, w)
+#pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width)
 #endif
 static inline void _color_picker_hsl(dt_aligned_pixel_t avg, dt_aligned_pixel_t min, dt_aligned_pixel_t max,
-                                     const float *const pixels, const float w, const size_t width)
+                                     const float *const pixels, const size_t width)
 {
   for(size_t i = 0; i < width; i += 4)
   {
@@ -135,7 +136,7 @@ static inline void _color_picker_hsl(dt_aligned_pixel_t avg, dt_aligned_pixel_t 
     pick[3] = pick[0] < 0.5f ? pick[0] + 0.5f : pick[0] - 0.5f;
     for(size_t k = 0; k < 4; k++)
     {
-      avg[k] += w * pick[k];
+      avg[k] += pick[k];
       min[k] = fminf(min[k], pick[k]);
       max[k] = fmaxf(max[k], pick[k]);
     }
@@ -143,10 +144,10 @@ static inline void _color_picker_hsl(dt_aligned_pixel_t avg, dt_aligned_pixel_t 
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width, w, profile)
+#pragma omp declare simd aligned(avg, min, max, pixels: 16) uniform(width, profile)
 #endif
 static inline void _color_picker_jzczhz(dt_aligned_pixel_t avg, dt_aligned_pixel_t min, dt_aligned_pixel_t max,
-                                        const float *const pixels, const float w, const size_t width,
+                                        const float *const pixels, const size_t width,
                                         const dt_iop_order_iccprofile_info_t *const profile)
 {
   for(size_t i = 0; i < width; i += 4)
@@ -156,7 +157,7 @@ static inline void _color_picker_jzczhz(dt_aligned_pixel_t avg, dt_aligned_pixel
     pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
     for(size_t k = 0; k < 4; k++)
     {
-      avg[k] += w * pick[k];
+      avg[k] += pick[k];
       min[k] = fminf(min[k], pick[k]);
       max[k] = fmaxf(max[k], pick[k]);
     }
@@ -178,16 +179,14 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
   const size_t off_mul = 4 * width;
   const size_t off_add = 4 * box[0];
 
-  const float w = 1.0f / (float)size;
-
   _aligned_pixel macc = { { *picked_color } };
   _aligned_pixel mmin = { { *picked_color_min } };
   _aligned_pixel mmax = { { *picked_color_max } };
 
 #ifdef OPENMP_CUSTOM_REDUCTIONS
-#pragma omp parallel default(none) if (size > 100)                        \
-  dt_omp_firstprivate(cst_from, cst_to, profile, w, pixel, width, stride, \
-                      off_mul, off_add, box)                              \
+#pragma omp parallel default(none) if (size > 100)                       \
+  dt_omp_firstprivate(cst_from, cst_to, profile, pixel, width, stride,   \
+                      off_mul, off_add, box)                             \
   reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
 #endif
   if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_LCH)
@@ -197,7 +196,7 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
-      _color_picker_lch(macc.v, mmin.v, mmax.v, pixel + offset, w, stride);
+      _color_picker_lch(macc.v, mmin.v, mmax.v, pixel + offset, stride);
     }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_HSL)
 #ifdef OPENMP_CUSTOM_REDUCTIONS
@@ -206,7 +205,7 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
-      _color_picker_hsl(macc.v, mmin.v, mmax.v, pixel + offset, w, stride);
+      _color_picker_hsl(macc.v, mmin.v, mmax.v, pixel + offset, stride);
     }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_JZCZHZ)
 #ifdef OPENMP_CUSTOM_REDUCTIONS
@@ -215,11 +214,10 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
-      _color_picker_jzczhz(macc.v, mmin.v, mmax.v, pixel + offset, w, stride, profile);
+      _color_picker_jzczhz(macc.v, mmin.v, mmax.v, pixel + offset, stride, profile);
     }
   else
   {
-    printf("parallel %d to %d\n", cst_from, cst_to);
     // fallback, better than crashing as happens with monochromes
     if(cst_from != cst_to && cst_to != IOP_CS_NONE)
       dt_print(DT_DEBUG_DEV, "[color_picker_helper_4ch_parallel] unknown colorspace conversion from %d to %d\n", cst_from, cst_to);
@@ -230,13 +228,13 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
-      _color_picker_rgb_or_lab(macc.v, mmin.v, mmax.v, pixel + offset, w, stride);
+      _color_picker_rgb_or_lab(macc.v, mmin.v, mmax.v, pixel + offset, stride);
     }
   }
 
   for_each_channel(c)
   {
-    picked_color[c] = macc.v[c];
+    picked_color[c] = macc.v[c] / (float)size;
     picked_color_min[c] = mmin.v[c];
     picked_color_max[c] = mmax.v[c];
   }
