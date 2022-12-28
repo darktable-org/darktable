@@ -194,39 +194,47 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
                          .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
-#if defined(_OPENMP) && _CUSTOM_REDUCTIONS
-#pragma omp parallel default(none) if (size > 100)                       \
-  dt_omp_firstprivate(cst_from, cst_to, profile, pixel, width, stride,   \
-                      off_mul, off_add, box)                             \
-  reduction(vstats : stats)
-#endif
+  // cutoffs for using threads depends on # of samples and complexity
+  // of the colorspace conversion
   if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_LCH)
+  {
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
-#pragma omp for schedule(static)
+#pragma omp parallel for default(none) if (size > 500)                  \
+  dt_omp_firstprivate(pixel, stride, off_mul, off_add, box)             \
+  reduction(vstats : stats) schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
       _color_picker_lch(stats.acc, stats.min, stats.max, pixel + offset, stride);
     }
+  }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_HSL)
+  {
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
-#pragma omp for schedule(static)
+#pragma omp parallel for default(none) if (size > 250)                  \
+  dt_omp_firstprivate(pixel, stride, off_mul, off_add, box)             \
+  reduction(vstats : stats) schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
       _color_picker_hsl(stats.acc, stats.min, stats.max, pixel + offset, stride);
     }
+  }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_JZCZHZ)
+  {
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
-#pragma omp for schedule(static)
+#pragma omp parallel for default(none) if (size > 100)                  \
+  dt_omp_firstprivate(pixel, stride, off_mul, off_add, box, profile)    \
+  reduction(vstats : stats) schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
       _color_picker_jzczhz(stats.acc, stats.min, stats.max, pixel + offset, stride, profile);
     }
+  }
   else
   {
     // fallback, better than crashing as happens with monochromes
@@ -234,7 +242,9 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
       dt_print(DT_DEBUG_DEV, "[color_picker_helper_4ch_parallel] unknown colorspace conversion from %d to %d\n", cst_from, cst_to);
 
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
-#pragma omp for schedule(static)
+#pragma omp parallel for default(none) if (size > 1000)                 \
+  dt_omp_firstprivate(pixel, stride, off_mul, off_add, box)             \
+  reduction(vstats : stats) schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
@@ -264,8 +274,9 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
                          .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
+  // cutoff for using threads depends on # of samples
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
-#pragma omp parallel for default(none) if (_box_size(box) > 100)        \
+#pragma omp parallel for default(none) if (_box_size(box) > 25000)      \
   dt_omp_firstprivate(pixel, width, roi, filters, box)                  \
   reduction(vstats : stats) reduction(vsum : weights)                   \
   schedule(static)
@@ -304,8 +315,9 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
                          .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
+  // cutoff for using threads depends on # of samples
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
-#pragma omp parallel for default(none) if (_box_size(box) > 100)        \
+#pragma omp parallel for default(none) if (_box_size(box) > 20000)      \
   dt_omp_firstprivate(pixel, width, roi, xtrans, box)                   \
   reduction(vstats : stats) reduction(vsum : weights)                   \
   schedule(static)
