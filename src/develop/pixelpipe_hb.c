@@ -679,6 +679,7 @@ static int _pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t 
   return 0;
 }
 
+// color picking for module
 static void _pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_iop_buffer_dsc_t *dsc,
                              const float *pixel, const dt_iop_roi_t *roi, float *picked_color,
                              float *picked_color_min, float *picked_color_max,
@@ -686,31 +687,22 @@ static void _pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
 {
   int box[4] = { 0 };
 
-  if(_pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
-  {
-    for(int k = 0; k < 4; k++)
-    {
-      picked_color_min[k] = INFINITY;
-      picked_color_max[k] = -INFINITY;
-      picked_color[k] = 0.0f;
-    }
-
-    return;
-  }
-
   dt_aligned_pixel_t min, max, avg;
-  for(int k = 0; k < 4; k++)
+  for_four_channels(k)
   {
     min[k] = INFINITY;
     max[k] = -INFINITY;
     avg[k] = 0.0f;
   }
 
-  const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
-  dt_color_picker_helper(dsc, pixel, roi, box, avg, min, max, image_cst,
-                         dt_iop_color_picker_get_active_cst(module), profile);
+  if(!_pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
+  {
+    const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
+    dt_color_picker_helper(dsc, pixel, roi, box, avg, min, max, image_cst,
+                           dt_iop_color_picker_get_active_cst(module), profile);
+  }
 
-  for(int k = 0; k < 4; k++)
+  for_four_channels(k)
   {
     picked_color_min[k] = min[k];
     picked_color_max[k] = max[k];
@@ -720,10 +712,11 @@ static void _pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
 
 
 #ifdef HAVE_OPENCL
-// helper for OpenCL color picking
+// helper for OpenCL color picking for module
 //
 // this algorithm is inefficient as hell when it comes to larger images. it's only acceptable
 // as long as we work on small image sizes like in image preview
+// an OpenCL picker implementation would help
 static void _pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                 dt_iop_buffer_dsc_t *dsc, cl_mem img, const dt_iop_roi_t *roi,
                                 float *picked_color, float *picked_color_min, float *picked_color_max,
@@ -734,7 +727,7 @@ static void _pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixe
 
   if(_pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
   {
-    for(int k = 0; k < 4; k++)
+    for_four_channels(k)
     {
       picked_color_min[k] = INFINITY;
       picked_color_max[k] = -INFINITY;
@@ -775,7 +768,7 @@ static void _pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixe
   box[3] = region[1];
 
   dt_aligned_pixel_t min, max, avg;
-  for(int k = 0; k < 4; k++)
+  for_four_channels(k)
   {
     min[k] = INFINITY;
     max[k] = -INFINITY;
@@ -786,7 +779,7 @@ static void _pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixe
   dt_color_picker_helper(dsc, pixel, &roi_copy, box, avg, min, max, image_cst,
                          dt_iop_color_picker_get_active_cst(module), profile);
 
-  for(int k = 0; k < 4; k++)
+  for_four_channels(k)
   {
     picked_color_min[k] = min[k];
     picked_color_max[k] = max[k];
@@ -1054,10 +1047,11 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
     return 1;
   }
 
-  // Lab color picking for module
+  // color picking for module
   if(_request_color_pick(pipe, dev, module))
   {
     // ensure that we are using the right color space
+    // FIXME: do we have to convert entire image colorspace if just picking a point?
     dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
     dt_ioppr_transform_image_colorspace(module, input, input, roi_in->width, roi_in->height,
                                         input_format->cst, picker_cst, &input_format->cst,
@@ -1600,7 +1594,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           return 1;
         }
 
-        // Lab color picking for module
+        // color picking for module
         if(success_opencl && _request_color_pick(pipe, dev, module))
         {
           // ensure that we are using the right color space
@@ -1738,7 +1732,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           return 1;
         }
 
-        // Lab color picking for module
+        // color picking for module
         if(success_opencl && _request_color_pick(pipe, dev, module))
         {
           // ensure that we are using the right color space
