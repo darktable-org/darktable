@@ -846,6 +846,11 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
       dt_dev_add_history_item(module->dev, module, TRUE);
     }
 
+    // make sure we write history & xmp to ensure that the new module name
+    // gets recorded into the XMP and won't be lost in case of crash.
+    dt_dev_write_history(darktable.develop);
+    dt_image_synch_xmp(darktable.develop->image_storage.id);
+
     ended = 1;
   }
   else if(event->keyval == GDK_KEY_Escape)
