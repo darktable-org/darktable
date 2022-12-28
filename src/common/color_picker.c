@@ -252,7 +252,6 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
                                       dt_aligned_pixel_t picked_color_max)
 {
   const int width = roi->width;
-  const size_t size = _box_size(box);
   const uint32_t filters = dsc->filters;
 
   _count_pixel weights = { { 0u, 0u, 0u, 0u } };
@@ -261,9 +260,9 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
 #if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
-#pragma omp parallel for default(none) if (size > 100)                   \
-  dt_omp_firstprivate(pixel, width, roi, filters, box)                   \
-  reduction(vstats : stats) reduction(vsum : weights)                    \
+#pragma omp parallel for default(none) if (_box_size(box) > 100)        \
+  dt_omp_firstprivate(pixel, width, roi, filters, box)                  \
+  reduction(vstats : stats) reduction(vsum : weights)                   \
   schedule(static)
 #endif
   for(size_t j = box[1]; j < box[3]; j++)
@@ -293,7 +292,6 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
                                        dt_aligned_pixel_t picked_color_max)
 {
   const int width = roi->width;
-  const size_t size = _box_size(box);
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])dsc->xtrans;
 
   _count_pixel weights = { { 0u, 0u, 0u, 0u } };
@@ -302,9 +300,9 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
 #if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
-#pragma omp parallel for default(none) if (size > 100)                   \
-  dt_omp_firstprivate(pixel, width, roi, xtrans, box)                    \
-  reduction(vstats : stats) reduction(vsum : weights)                    \
+#pragma omp parallel for default(none) if (_box_size(box) > 100)        \
+  dt_omp_firstprivate(pixel, width, roi, xtrans, box)                   \
+  reduction(vstats : stats) reduction(vsum : weights)                   \
   schedule(static)
 #endif
   for(size_t j = box[1]; j < box[3]; j++)
