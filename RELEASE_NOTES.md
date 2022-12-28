@@ -354,8 +354,6 @@ The following is a summary of the main features added to darktable
 
 ### Optional
 
-- Bump libavif minimum required version from 0.8.2 to 0.9.1.
-
 - New optional dependency: libjxl, minimum required version 0.7.0.
 
 

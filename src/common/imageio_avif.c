@@ -54,8 +54,10 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
-  /* Be permissive so we can load even slightly-offspec files */
+  /* Be permissive so we can load even slightly-offspec files (libavif 0.9.1 or later) */
+#if AVIF_VERSION >= 90100
   decoder->strictFlags = AVIF_STRICT_DISABLED;
+#endif
 
   result = avifDecoderReadFile(decoder, &avif_image, filename);
   if(result != AVIF_RESULT_OK)
