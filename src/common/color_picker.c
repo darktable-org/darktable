@@ -248,17 +248,27 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
   }
 }
 
-static void color_picker_helper_bayer_seq(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
-                                          const dt_iop_roi_t *const roi, const int *const box,
-                                          dt_aligned_pixel_t picked_color, dt_aligned_pixel_t picked_color_min,
-                                          dt_aligned_pixel_t picked_color_max)
+static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
+                                      const dt_iop_roi_t *const roi, const int *const box,
+                                      dt_aligned_pixel_t picked_color, dt_aligned_pixel_t picked_color_min,
+                                      dt_aligned_pixel_t picked_color_max)
 {
   const int width = roi->width;
+  const size_t size = _box_size(box);
   const uint32_t filters = dsc->filters;
 
-  uint32_t weights[4] = { 0u, 0u, 0u, 0u };
+  _aligned_vec_uint weights = { { 0u, 0u, 0u, 0u } };
+  _aligned_pixel macc = { { *picked_color } };
+  _aligned_pixel mmin = { { *picked_color_min } };
+  _aligned_pixel mmax = { { *picked_color_max } };
 
-  // code path for small region, especially for color picker point mode
+#ifdef OPENMP_CUSTOM_REDUCTIONS
+#pragma omp parallel for default(none) if (size > 100)                   \
+  dt_omp_firstprivate(pixel, width, roi, filters, box)                   \
+  reduction(vminf : mmin) reduction(vmaxf : mmax)                        \
+  reduction(vsumf : macc) reduction(vsumi : weights)                     \
+  schedule(static)
+#endif
   for(size_t j = box[1]; j < box[3]; j++)
   {
     for(size_t i = box[0]; i < box[2]; i++)
@@ -266,100 +276,21 @@ static void color_picker_helper_bayer_seq(const dt_iop_buffer_dsc_t *const dsc, 
       const int c = FC(j + roi->y, i + roi->x, filters);
       const size_t k = width * j + i;
 
-      const float v = pixel[k];
+      const float px = pixel[k];
 
-      picked_color[c] += v;
-      picked_color_min[c] = fminf(picked_color_min[c], v);
-      picked_color_max[c] = fmaxf(picked_color_max[c], v);
-      weights[c]++;
+      macc.v[c] += px;
+      mmin.v[c] = fminf(mmin.v[c], px);
+      mmax.v[c] = fmaxf(mmax.v[c], px);
+      weights.v[c]++;
     }
   }
 
-  // and finally normalize data. For bayer, there is twice as much green.
-  for(int c = 0; c < 4; c++)
+  for_each_channel(c)
   {
-    picked_color[c] = weights[c] ? (picked_color[c] / (float)weights[c]) : 0.0f;
-  }
-}
-
-static void color_picker_helper_bayer_parallel(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
-                                               const dt_iop_roi_t *const roi, const int *const box,
-                                               dt_aligned_pixel_t picked_color, dt_aligned_pixel_t picked_color_min,
-                                               dt_aligned_pixel_t picked_color_max)
-{
-  const int width = roi->width;
-  const uint32_t filters = dsc->filters;
-
-  uint32_t weights[4] = { 0u, 0u, 0u, 0u };
-
-  const size_t numthreads = dt_get_num_threads();
-
-  //TODO: convert to use dt_alloc_perthread
-  float *const msum = malloc(sizeof(float) * numthreads * 4);
-  float *const mmin = malloc(sizeof(float) * numthreads * 4);
-  float *const mmax = malloc(sizeof(float) * numthreads * 4);
-  uint32_t *const cnt = malloc(sizeof(uint32_t) * numthreads * 4);
-
-  for(int n = 0; n < 4 * numthreads; n++)
-  {
-    msum[n] = 0.0f;
-    mmin[n] = INFINITY;
-    mmax[n] = -INFINITY;
-    cnt[n] = 0u;
-  }
-
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(pixel, width, roi, filters, box, msum, mmin, mmax, cnt)
-#endif
-  {
-    const int tnum = dt_get_thread_num();
-
-    float *const tsum = msum + 4 * tnum;
-    float *const tmmin = mmin + 4 * tnum;
-    float *const tmmax = mmax + 4 * tnum;
-    uint32_t *const tcnt = cnt + 4 * tnum;
-
-#ifdef _OPENMP
-#pragma omp for schedule(static) collapse(2)
-#endif
-    for(size_t j = box[1]; j < box[3]; j++)
-    {
-      for(size_t i = box[0]; i < box[2]; i++)
-      {
-        const int c = FC(j + roi->y, i + roi->x, filters);
-        const size_t k = width * j + i;
-
-        const float v = pixel[k];
-
-        tsum[c] += v;
-        tmmin[c] = fminf(tmmin[c], v);
-        tmmax[c] = fmaxf(tmmax[c], v);
-        tcnt[c]++;
-      }
-    }
-  }
-
-  for(int n = 0; n < numthreads; n++)
-  {
-    for(int c = 0; c < 4; c++)
-    {
-      picked_color[c] += msum[4 * n + c];
-      picked_color_min[c] = fminf(picked_color_min[c], mmin[4 * n + c]);
-      picked_color_max[c] = fmaxf(picked_color_max[c], mmax[4 * n + c]);
-      weights[c] += cnt[4 * n + c];
-    }
-  }
-
-  free(cnt);
-  free(mmax);
-  free(mmin);
-  free(msum);
-
-  // and finally normalize data. For bayer, there is twice as much green.
-  for(int c = 0; c < 4; c++)
-  {
-    picked_color[c] = weights[c] ? (picked_color[c] / (float)weights[c]) : 0.0f;
+    // and finally normalize data. For bayer, there is twice as much green.
+    picked_color[c] = weights.v[c] ? (macc.v[c] / (float)weights.v[c]) : 0.0f;
+    picked_color_min[c] = mmin.v[c];
+    picked_color_max[c] = mmax.v[c];
   }
 }
 
@@ -420,9 +351,6 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
   dt_times_t start_time = { 0 }, end_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
-  // avoid inefficient multi-threading in case of small region size (arbitrary limit)
-  const gboolean parallel_pick = _box_size(box) > 100;
-
   if(dsc->channels == 4u)
   {
     // Denoise the image
@@ -442,12 +370,8 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
   }
   else if(dsc->channels == 1u && dsc->filters != 0u && dsc->filters != 9u)
   {
-    if(parallel_pick)
-      color_picker_helper_bayer_parallel(dsc, pixel, roi, box, picked_color,
-                                         picked_color_min, picked_color_max);
-    else
-      color_picker_helper_bayer_seq(dsc, pixel, roi, box, picked_color,
-                                    picked_color_min, picked_color_max);
+    color_picker_helper_bayer(dsc, pixel, roi, box, picked_color,
+                              picked_color_min, picked_color_max);
   }
   else if(dsc->channels == 1u && dsc->filters == 9u)
   {
