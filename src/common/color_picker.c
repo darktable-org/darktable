@@ -163,69 +163,13 @@ static inline void _color_picker_jzczhz(dt_aligned_pixel_t avg, dt_aligned_pixel
   }
 }
 
-static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
-                                        const dt_iop_roi_t *const roi, const int *const box,
-                                        dt_aligned_pixel_t picked_color, dt_aligned_pixel_t picked_color_min,
-                                        dt_aligned_pixel_t picked_color_max,
-                                        const dt_iop_colorspace_type_t cst_from,
-                                        const dt_iop_colorspace_type_t cst_to,
-                                        const dt_iop_order_iccprofile_info_t *const profile)
-{
-  const int width = roi->width;
-
-  const size_t size = _box_size(box);
-  const size_t stride = 4 * (size_t)(box[2] - box[0]);
-  const size_t off_mul = 4 * width;
-  const size_t off_add = 4 * box[0];
-
-  const float w = 1.0f / (float)size;
-
-  // code path for small region, especially for color picker point mode
-  if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_LCH)
-  {
-    for(size_t j = box[1]; j < box[3]; j++)
-    {
-      const size_t offset = j * off_mul + off_add;
-      _color_picker_lch(picked_color, picked_color_min, picked_color_max, pixel + offset, w, stride);
-    }
-  }
-  else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_HSL)
-  {
-    for(size_t j = box[1]; j < box[3]; j++)
-    {
-      const size_t offset = j * off_mul + off_add;
-      _color_picker_hsl(picked_color, picked_color_min, picked_color_max, pixel + offset, w, stride);
-    }
-  }
-  else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_JZCZHZ)
-  {
-    for(size_t j = box[1]; j < box[3]; j++)
-    {
-      const size_t offset = j * off_mul + off_add;
-      _color_picker_jzczhz(picked_color, picked_color_min, picked_color_max, pixel + offset, w, stride, profile);
-    }
-  }
-  else
-  {
-    // fallback, better than crashing as happens with monochromes
-    if(cst_from != cst_to && cst_to != IOP_CS_NONE)
-      dt_print(DT_DEBUG_DEV, "[color_picker_helper_4ch_seq] unknown colorspace conversion from %d to %d\n", cst_from, cst_to);
-
-    for(size_t j = box[1]; j < box[3]; j++)
-    {
-      const size_t offset = j * off_mul + off_add;
-      _color_picker_rgb_or_lab(picked_color, picked_color_min, picked_color_max, pixel + offset, w, stride);
-    }
-  }
-}
-
-static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
-                                             const dt_iop_roi_t *const roi, const int *const box,
-                                             dt_aligned_pixel_t picked_color, dt_aligned_pixel_t picked_color_min,
-                                             dt_aligned_pixel_t picked_color_max,
-                                             const dt_iop_colorspace_type_t cst_from,
-                                             const dt_iop_colorspace_type_t cst_to,
-                                             const dt_iop_order_iccprofile_info_t *const profile)
+static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
+                                    const dt_iop_roi_t *const roi, const int *const box,
+                                    dt_aligned_pixel_t picked_color, dt_aligned_pixel_t picked_color_min,
+                                    dt_aligned_pixel_t picked_color_max,
+                                    const dt_iop_colorspace_type_t cst_from,
+                                    const dt_iop_colorspace_type_t cst_to,
+                                    const dt_iop_order_iccprofile_info_t *const profile)
 {
   const int width = roi->width;
 
@@ -240,11 +184,15 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
   _aligned_pixel mmin = { { *picked_color_min } };
   _aligned_pixel mmax = { { *picked_color_max } };
 
+#ifdef OPENMP_CUSTOM_REDUCTIONS
+#pragma omp parallel default(none) if (size > 100)                        \
+  dt_omp_firstprivate(cst_from, cst_to, profile, w, pixel, width, stride, \
+                      off_mul, off_add, box)                              \
+  reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
+#endif
   if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_LCH)
 #ifdef OPENMP_CUSTOM_REDUCTIONS
-#pragma omp parallel for default(none) schedule(static)                 \
-  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box)   \
-  reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
+#pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
@@ -253,9 +201,7 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
     }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_HSL)
 #ifdef OPENMP_CUSTOM_REDUCTIONS
-#pragma omp parallel for default(none) schedule(static)                 \
-  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box)   \
-  reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
+#pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
@@ -264,9 +210,7 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
     }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_JZCZHZ)
 #ifdef OPENMP_CUSTOM_REDUCTIONS
-#pragma omp parallel for default(none) schedule(static)                         \
-  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box, profile)  \
-  reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
+#pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
@@ -275,14 +219,13 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
     }
   else
   {
+    printf("parallel %d to %d\n", cst_from, cst_to);
     // fallback, better than crashing as happens with monochromes
     if(cst_from != cst_to && cst_to != IOP_CS_NONE)
       dt_print(DT_DEBUG_DEV, "[color_picker_helper_4ch_parallel] unknown colorspace conversion from %d to %d\n", cst_from, cst_to);
 
 #ifdef OPENMP_CUSTOM_REDUCTIONS
-#pragma omp parallel for default(none) schedule(static)                 \
-  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box)   \
-  reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
+#pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
@@ -554,14 +497,9 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
     // blur without clipping negatives because Lab a and b channels can be legitimately negative
     blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
 
-    if(parallel_pick)
-      color_picker_helper_4ch_parallel(dsc, denoised, roi, box,
-                                       picked_color, picked_color_min, picked_color_max,
-                                       image_cst, picker_cst, profile);
-    else
-      color_picker_helper_4ch_seq(dsc, denoised, roi, box,
-                                  picked_color, picked_color_min, picked_color_max,
-                                  image_cst, picker_cst, profile);
+    color_picker_helper_4ch(dsc, denoised, roi, box,
+                            picked_color, picked_color_min, picked_color_max,
+                            image_cst, picker_cst, profile);
 
     dt_free_align(denoised);
     dt_free_align(tempbuf);
