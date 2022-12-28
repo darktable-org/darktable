@@ -55,6 +55,9 @@ static gboolean _supported_image(const gchar *filename)
       supported = TRUE;
       break;
     }
+#ifdef HAVE_IMAGEMAGICK7
+  supported |= g_ascii_strncasecmp(ext, "qoi", 3) == 0;
+#endif
   return supported;
 }
 
