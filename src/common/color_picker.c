@@ -30,40 +30,38 @@ static inline size_t _box_size(const int *const box)
   return (size_t)((box[3] - box[1]) * (box[2] - box[0]));
 }
 
-// define custom reduction operations to handle vectors of floats/ints
+// define custom reduction operations to handle pixel stats/weights
 // we can't return an array from a function, so wrap the array type in a struct
-typedef struct _aligned_pixel { dt_aligned_pixel_t v; } _aligned_pixel;
-typedef struct _aligned_vec_uint { DT_ALIGNED_PIXEL uint32_t v[4]; } _aligned_vec_uint;
-#define OPENMP_CUSTOM_REDUCTIONS OPENMP && !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
-#ifdef OPENMP_CUSTOM_REDUCTIONS
-static inline _aligned_pixel _add_float4(_aligned_pixel acc, _aligned_pixel newval)
+typedef struct _stats_pixel {
+  dt_aligned_pixel_t acc, min, max;
+} _stats_pixel;
+typedef struct _count_pixel { DT_ALIGNED_PIXEL uint32_t v[4]; } _count_pixel;
+
+#define OPENMP_CUSTOM_REDUCTIONS !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
+
+#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
+
+static inline _stats_pixel _reduce_stats_pixel(_stats_pixel stats, _stats_pixel newval)
 {
-  for_four_channels(c) acc.v[c] += newval.v[c];
-  return acc;
+  for_four_channels(c)
+  {
+    stats.acc[c] += newval.acc[c];
+    stats.min[c] = fminf(stats.min[c], newval.min[c]);
+    stats.max[c] = fmaxf(stats.max[c], newval.max[c]);
+  }
+  return stats;
 }
-static inline _aligned_pixel _min_float4(_aligned_pixel cur, _aligned_pixel newval)
-{
-  for_four_channels(c) cur.v[c] = fminf(cur.v[c], newval.v[c]);
-  return cur;
-}
-static inline _aligned_pixel _max_float4(_aligned_pixel cur, _aligned_pixel newval)
-{
-  for_four_channels(c) cur.v[c] = fmaxf(cur.v[c], newval.v[c]);
-  return cur;
-}
-static inline _aligned_vec_uint _add_uint4(_aligned_vec_uint acc, _aligned_vec_uint newval)
+#pragma omp declare reduction(vstats:_stats_pixel:omp_out=_reduce_stats_pixel(omp_out,omp_in)) \
+  initializer(omp_priv = omp_orig)
+
+static inline _count_pixel _add_counts(_count_pixel acc, _count_pixel newval)
 {
   for_each_channel(c) acc.v[c] += newval.v[c];
   return acc;
 }
-#pragma omp declare reduction(vsumf:_aligned_pixel:omp_out=_add_float4(omp_out,omp_in)) \
+#pragma omp declare reduction(vsum:_count_pixel:omp_out=_add_counts(omp_out,omp_in)) \
   initializer(omp_priv = omp_orig)
-#pragma omp declare reduction(vminf:_aligned_pixel:omp_out=_min_float4(omp_out,omp_in)) \
-  initializer(omp_priv = omp_orig)
-#pragma omp declare reduction(vmaxf:_aligned_pixel:omp_out=_max_float4(omp_out,omp_in)) \
-  initializer(omp_priv = omp_orig)
-#pragma omp declare reduction(vsumi:_aligned_vec_uint:omp_out=_add_uint4(omp_out,omp_in)) \
-  initializer(omp_priv = omp_orig)
+
 #endif
 
 #ifdef _OPENMP
@@ -187,42 +185,42 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
   const size_t off_mul = 4 * width;
   const size_t off_add = 4 * box[0];
 
-  _aligned_pixel macc = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-  _aligned_pixel mmin = { { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX } };
-  _aligned_pixel mmax = { { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
+  _stats_pixel stats = { .acc = { 0.0f, 0.0f, 0.0f, 0.0f },
+                         .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
+                         .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
-#ifdef OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
 #pragma omp parallel default(none) if (size > 100)                       \
   dt_omp_firstprivate(cst_from, cst_to, profile, pixel, width, stride,   \
                       off_mul, off_add, box)                             \
-  reduction(vminf : mmin) reduction(vmaxf : mmax) reduction(vsumf : macc)
+  reduction(vstats : stats)
 #endif
   if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_LCH)
-#ifdef OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
 #pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
-      _color_picker_lch(macc.v, mmin.v, mmax.v, pixel + offset, stride);
+      _color_picker_lch(stats.acc, stats.min, stats.max, pixel + offset, stride);
     }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_HSL)
-#ifdef OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
 #pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
-      _color_picker_hsl(macc.v, mmin.v, mmax.v, pixel + offset, stride);
+      _color_picker_hsl(stats.acc, stats.min, stats.max, pixel + offset, stride);
     }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_JZCZHZ)
-#ifdef OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
 #pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
-      _color_picker_jzczhz(macc.v, mmin.v, mmax.v, pixel + offset, stride, profile);
+      _color_picker_jzczhz(stats.acc, stats.min, stats.max, pixel + offset, stride, profile);
     }
   else
   {
@@ -230,21 +228,21 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
     if(cst_from != cst_to && cst_to != IOP_CS_NONE)
       dt_print(DT_DEBUG_DEV, "[color_picker_helper_4ch_parallel] unknown colorspace conversion from %d to %d\n", cst_from, cst_to);
 
-#ifdef OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
 #pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
     {
       const size_t offset = j * off_mul + off_add;
-      _color_picker_rgb_or_lab(macc.v, mmin.v, mmax.v, pixel + offset, stride);
+      _color_picker_rgb_or_lab(stats.acc, stats.min, stats.max, pixel + offset, stride);
     }
   }
 
   for_four_channels(c)
   {
-    picked_color[c] = macc.v[c] / (float)size;
-    picked_color_min[c] = mmin.v[c];
-    picked_color_max[c] = mmax.v[c];
+    picked_color[c] = stats.acc[c] / (float)size;
+    picked_color_min[c] = stats.min[c];
+    picked_color_max[c] = stats.max[c];
   }
 }
 
@@ -257,20 +255,18 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
   const size_t size = _box_size(box);
   const uint32_t filters = dsc->filters;
 
-  _aligned_vec_uint weights = { { 0u, 0u, 0u, 0u } };
-  _aligned_pixel macc = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-  _aligned_pixel mmin = { { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX } };
-  _aligned_pixel mmax = { { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
+  _count_pixel weights = { { 0u, 0u, 0u, 0u } };
+  _stats_pixel stats = { .acc = { 0.0f, 0.0f, 0.0f, 0.0f },
+                         .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
+                         .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
-#ifdef OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
 #pragma omp parallel for default(none) if (size > 100)                   \
   dt_omp_firstprivate(pixel, width, roi, filters, box)                   \
-  reduction(vminf : mmin) reduction(vmaxf : mmax)                        \
-  reduction(vsumf : macc) reduction(vsumi : weights)                     \
+  reduction(vstats : stats) reduction(vsum : weights)                    \
   schedule(static)
 #endif
   for(size_t j = box[1]; j < box[3]; j++)
-  {
     for(size_t i = box[0]; i < box[2]; i++)
     {
       const int c = FC(j + roi->y, i + roi->x, filters);
@@ -278,20 +274,17 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
 
       const float px = pixel[k];
 
-      macc.v[c] += px;
-      mmin.v[c] = fminf(mmin.v[c], px);
-      mmax.v[c] = fmaxf(mmax.v[c], px);
+      stats.acc[c] += px;
+      stats.min[c] = fminf(stats.min[c], px);
+      stats.max[c] = fmaxf(stats.max[c], px);
       weights.v[c]++;
     }
-  }
 
+  copy_pixel(picked_color_min, stats.min);
+  copy_pixel(picked_color_max, stats.max);
+  // and finally normalize data. For bayer, there is twice as much green.
   for_each_channel(c)
-  {
-    // and finally normalize data. For bayer, there is twice as much green.
-    picked_color[c] = weights.v[c] ? (macc.v[c] / (float)weights.v[c]) : 0.0f;
-    picked_color_min[c] = mmin.v[c];
-    picked_color_max[c] = mmax.v[c];
-  }
+    picked_color[c] = weights.v[c] ? (stats.acc[c] / (float)weights.v[c]) : 0.0f;
 }
 
 static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
@@ -303,20 +296,18 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
   const size_t size = _box_size(box);
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])dsc->xtrans;
 
-  _aligned_vec_uint weights = { { 0u, 0u, 0u, 0u } };
-  _aligned_pixel macc = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-  _aligned_pixel mmin = { { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX } };
-  _aligned_pixel mmax = { { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
+  _count_pixel weights = { { 0u, 0u, 0u, 0u } };
+  _stats_pixel stats = { .acc = { 0.0f, 0.0f, 0.0f, 0.0f },
+                         .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
+                         .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
-#ifdef OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
 #pragma omp parallel for default(none) if (size > 100)                   \
   dt_omp_firstprivate(pixel, width, roi, xtrans, box)                    \
-  reduction(vminf : mmin) reduction(vmaxf : mmax)                        \
-  reduction(vsumf : macc) reduction(vsumi : weights)                     \
+  reduction(vstats : stats) reduction(vsum : weights)                    \
   schedule(static)
 #endif
   for(size_t j = box[1]; j < box[3]; j++)
-  {
     for(size_t i = box[0]; i < box[2]; i++)
     {
       const int c = FCxtrans(j, i, roi, xtrans);
@@ -324,21 +315,18 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
 
       const float px = pixel[k];
 
-      macc.v[c] += px;
-      mmin.v[c] = fminf(mmin.v[c], px);
-      mmax.v[c] = fmaxf(mmax.v[c], px);
+      stats.acc[c] += px;
+      stats.min[c] = fminf(stats.min[c], px);
+      stats.max[c] = fmaxf(stats.max[c], px);
       weights.v[c]++;
     }
-  }
 
+  copy_pixel(picked_color_min, stats.min);
+  copy_pixel(picked_color_max, stats.max);
+  // and finally normalize data.
+  // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
   for_each_channel(c)
-  {
-    // and finally normalize data.
-    // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
-    picked_color[c] = weights.v[c] ? (macc.v[c] / (float)weights.v[c]) : 0.0f;
-    picked_color_min[c] = mmin.v[c];
-    picked_color_max[c] = mmax.v[c];
-  }
+    picked_color[c] = weights.v[c] ? (stats.acc[c] / (float)weights.v[c]) : 0.0f;
 }
 
 // picked_color, picked_color_min and picked_color_max should be aligned
