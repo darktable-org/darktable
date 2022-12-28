@@ -37,9 +37,14 @@ typedef struct _stats_pixel {
 } _stats_pixel;
 typedef struct _count_pixel { DT_ALIGNED_PIXEL uint32_t v[4]; } _count_pixel;
 
-#define OPENMP_CUSTOM_REDUCTIONS !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
+// custom reductions make Xcode 11.3.1 compiler crash?
+#if defined(__apple_build_version__) && __apple_build_version__ < 11030000
+#define _CUSTOM_REDUCTIONS 0
+#else
+#define _CUSTOM_REDUCTIONS 1
+#endif
 
-#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 
 static inline _stats_pixel _reduce_stats_pixel(_stats_pixel stats, _stats_pixel newval)
 {
@@ -189,14 +194,14 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
                          .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
-#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp parallel default(none) if (size > 100)                       \
   dt_omp_firstprivate(cst_from, cst_to, profile, pixel, width, stride,   \
                       off_mul, off_add, box)                             \
   reduction(vstats : stats)
 #endif
   if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_LCH)
-#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
@@ -205,7 +210,7 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
       _color_picker_lch(stats.acc, stats.min, stats.max, pixel + offset, stride);
     }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_HSL)
-#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
@@ -214,7 +219,7 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
       _color_picker_hsl(stats.acc, stats.min, stats.max, pixel + offset, stride);
     }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_JZCZHZ)
-#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
@@ -228,7 +233,7 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
     if(cst_from != cst_to && cst_to != IOP_CS_NONE)
       dt_print(DT_DEBUG_DEV, "[color_picker_helper_4ch_parallel] unknown colorspace conversion from %d to %d\n", cst_from, cst_to);
 
-#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp for schedule(static)
 #endif
     for(size_t j = box[1]; j < box[3]; j++)
@@ -259,7 +264,7 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
                          .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
-#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp parallel for default(none) if (_box_size(box) > 100)        \
   dt_omp_firstprivate(pixel, width, roi, filters, box)                  \
   reduction(vstats : stats) reduction(vsum : weights)                   \
@@ -299,7 +304,7 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
                          .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
-#if defined(_OPENMP) && OPENMP_CUSTOM_REDUCTIONS
+#if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp parallel for default(none) if (_box_size(box) > 100)        \
   dt_omp_firstprivate(pixel, width, roi, xtrans, box)                   \
   reduction(vstats : stats) reduction(vsum : weights)                   \
