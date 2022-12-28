@@ -1769,7 +1769,7 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
 }
 
 // force the overlays to be shown
-void dt_culling_force_overlay(dt_culling_t *table, gboolean force)
+void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
 {
   if(!table) return;
 

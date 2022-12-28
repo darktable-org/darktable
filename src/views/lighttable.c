@@ -607,7 +607,7 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
     dt_thumbtable_scrollbar_changed(dt_ui_thumbtable(darktable.gui->ui), x, y);
 }
 
-static void _overlays_force(dt_view_t *self, gboolean show)
+static void _overlays_force(dt_view_t *self, const gboolean show)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
@@ -675,8 +675,8 @@ const dt_action_def_t dt_action_def_preview
       _action_elements_preview,
       NULL, TRUE };
 
-static float _action_process_infos(gpointer target, dt_action_element_t element, dt_action_effect_t effect,
-                                   float move_size)
+static float _action_process_infos(gpointer target, const dt_action_element_t element,
+                                   const dt_action_effect_t effect, const float move_size)
 {
   dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   dt_library_t *lib = (dt_library_t *)self->data;
