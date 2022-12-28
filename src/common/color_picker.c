@@ -187,9 +187,9 @@ static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *const dsc, const 
   const size_t off_mul = 4 * width;
   const size_t off_add = 4 * box[0];
 
-  _aligned_pixel macc = { { *picked_color } };
-  _aligned_pixel mmin = { { *picked_color_min } };
-  _aligned_pixel mmax = { { *picked_color_max } };
+  _aligned_pixel macc = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+  _aligned_pixel mmin = { { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX } };
+  _aligned_pixel mmax = { { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
 #ifdef OPENMP_CUSTOM_REDUCTIONS
 #pragma omp parallel default(none) if (size > 100)                       \
@@ -258,9 +258,9 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
   const uint32_t filters = dsc->filters;
 
   _aligned_vec_uint weights = { { 0u, 0u, 0u, 0u } };
-  _aligned_pixel macc = { { *picked_color } };
-  _aligned_pixel mmin = { { *picked_color_min } };
-  _aligned_pixel mmax = { { *picked_color_max } };
+  _aligned_pixel macc = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+  _aligned_pixel mmin = { { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX } };
+  _aligned_pixel mmax = { { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
 #ifdef OPENMP_CUSTOM_REDUCTIONS
 #pragma omp parallel for default(none) if (size > 100)                   \
@@ -304,9 +304,9 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])dsc->xtrans;
 
   _aligned_vec_uint weights = { { 0u, 0u, 0u, 0u } };
-  _aligned_pixel macc = { { *picked_color } };
-  _aligned_pixel mmin = { { *picked_color_min } };
-  _aligned_pixel mmax = { { *picked_color_max } };
+  _aligned_pixel macc = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+  _aligned_pixel mmin = { { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX } };
+  _aligned_pixel mmax = { { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
 #ifdef OPENMP_CUSTOM_REDUCTIONS
 #pragma omp parallel for default(none) if (size > 100)                   \
