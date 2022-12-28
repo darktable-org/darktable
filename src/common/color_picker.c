@@ -30,6 +30,34 @@ static inline size_t _box_size(const int *const box)
   return (size_t)((box[3] - box[1]) * (box[2] - box[0]));
 }
 
+// define custom reduction operations to handle a 3-vector of floats
+// we can't return an array from a function, so wrap the array type in a struct
+typedef struct _aligned_pixel { dt_aligned_pixel_t v; } _aligned_pixel;
+#define OPENMP_CUSTOM_REDUCTIONS OPENMP && !(defined(__apple_build_version__) && __apple_build_version__ < 11030000) //makes Xcode 11.3.1 compiler crash
+#ifdef OPENMP_CUSTOM_REDUCTIONS
+static inline _aligned_pixel _add_float4(_aligned_pixel acc, _aligned_pixel newval)
+{
+  for_each_channel(c) acc.v[c] += newval.v[c];
+  return acc;
+}
+static inline _aligned_pixel _min_float4(_aligned_pixel cur, _aligned_pixel newval)
+{
+  for_each_channel(c) cur.v[c] = fminf(cur.v[c], newval.v[c]);
+  return cur;
+}
+static inline _aligned_pixel _max_float4(_aligned_pixel cur, _aligned_pixel newval)
+{
+  for_each_channel(c) cur.v[c] = fmaxf(cur.v[c], newval.v[c]);
+  return cur;
+}
+#pragma omp declare reduction(vsum:_aligned_pixel:omp_out=_add_float4(omp_out,omp_in)) \
+  initializer(omp_priv = omp_orig)
+#pragma omp declare reduction(vmin:_aligned_pixel:omp_out=_min_float4(omp_out,omp_in)) \
+  initializer(omp_priv = omp_orig)
+#pragma omp declare reduction(vmax:_aligned_pixel:omp_out=_max_float4(omp_out,omp_in)) \
+  initializer(omp_priv = omp_orig)
+#endif
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(rgb, JzCzhz: 16) uniform(profile)
 #endif
@@ -208,122 +236,67 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
 
   const float w = 1.0f / (float)size;
 
-  const size_t numthreads = dt_get_num_threads();
-
-  size_t allocsize;
-  float *const restrict mean = dt_alloc_perthread_float(4, &allocsize);
-  float *const restrict mmin = dt_alloc_perthread_float(4, &allocsize);
-  float *const restrict mmax = dt_alloc_perthread_float(4, &allocsize);
-
-  for(int n = 0; n < allocsize * numthreads; n++)
-  {
-    mean[n] = 0.0f;
-    mmin[n] = INFINITY;
-    mmax[n] = -INFINITY;
-  }
+  _aligned_pixel macc = { { *picked_color } };
+  _aligned_pixel mmin = { { *picked_color_min } };
+  _aligned_pixel mmax = { { *picked_color_max } };
 
   if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_LCH)
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box, mean, mmin, mmax, allocsize)
+#ifdef OPENMP_CUSTOM_REDUCTIONS
+#pragma omp parallel for default(none) schedule(static)                 \
+  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box)   \
+  reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
 #endif
+    for(size_t j = box[1]; j < box[3]; j++)
     {
-      float *const restrict tmean = dt_get_perthread(mean,allocsize);
-      float *const restrict tmmin = dt_get_perthread(mmin,allocsize);
-      float *const restrict tmmax = dt_get_perthread(mmax,allocsize);
-
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(size_t j = box[1]; j < box[3]; j++)
-      {
-        const size_t offset = j * off_mul + off_add;
-        _color_picker_lch(tmean, tmmin, tmmax, pixel + offset, w, stride);
-      }
+      const size_t offset = j * off_mul + off_add;
+      _color_picker_lch(macc.v, mmin.v, mmax.v, pixel + offset, w, stride);
     }
-  }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_HSL)
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box, mean, mmin, mmax, allocsize)
+#ifdef OPENMP_CUSTOM_REDUCTIONS
+#pragma omp parallel for default(none) schedule(static)                 \
+  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box)   \
+  reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
 #endif
+    for(size_t j = box[1]; j < box[3]; j++)
     {
-      float *const restrict tmean = dt_get_perthread(mean,allocsize);
-      float *const restrict tmmin = dt_get_perthread(mmin,allocsize);
-      float *const restrict tmmax = dt_get_perthread(mmax,allocsize);
-
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(size_t j = box[1]; j < box[3]; j++)
-      {
-        const size_t offset = j * off_mul + off_add;
-        _color_picker_hsl(tmean, tmmin, tmmax, pixel + offset, w, stride);
-      }
+      const size_t offset = j * off_mul + off_add;
+      _color_picker_hsl(macc.v, mmin.v, mmax.v, pixel + offset, w, stride);
     }
-  }
   else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_JZCZHZ)
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box, mean, mmin, mmax, profile, allocsize)
+#ifdef OPENMP_CUSTOM_REDUCTIONS
+#pragma omp parallel for default(none) schedule(static)                         \
+  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box, profile)  \
+  reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
 #endif
+    for(size_t j = box[1]; j < box[3]; j++)
     {
-      float *const restrict tmean = dt_get_perthread(mean,allocsize);
-      float *const restrict tmmin = dt_get_perthread(mmin,allocsize);
-      float *const restrict tmmax = dt_get_perthread(mmax,allocsize);
-
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(size_t j = box[1]; j < box[3]; j++)
-      {
-        const size_t offset = j * off_mul + off_add;
-        _color_picker_jzczhz(tmean, tmmin, tmmax, pixel + offset, w, stride, profile);
-      }
+      const size_t offset = j * off_mul + off_add;
+      _color_picker_jzczhz(macc.v, mmin.v, mmax.v, pixel + offset, w, stride, profile);
     }
-  }
   else
   {
     // fallback, better than crashing as happens with monochromes
     if(cst_from != cst_to && cst_to != IOP_CS_NONE)
       dt_print(DT_DEBUG_DEV, "[color_picker_helper_4ch_parallel] unknown colorspace conversion from %d to %d\n", cst_from, cst_to);
 
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box, mean, mmin, mmax, allocsize)
+#ifdef OPENMP_CUSTOM_REDUCTIONS
+#pragma omp parallel for default(none) schedule(static)                 \
+  dt_omp_firstprivate(w, pixel, width, stride, off_mul, off_add, box)   \
+  reduction(vmin : mmin) reduction(vmax : mmax) reduction(vsum : macc)
 #endif
+    for(size_t j = box[1]; j < box[3]; j++)
     {
-      float *const restrict tmean = dt_get_perthread(mean,allocsize);
-      float *const restrict tmmin = dt_get_perthread(mmin,allocsize);
-      float *const restrict tmmax = dt_get_perthread(mmax,allocsize);
-
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(size_t j = box[1]; j < box[3]; j++)
-      {
-        const size_t offset = j * off_mul + off_add;
-        _color_picker_rgb_or_lab(tmean, tmmin, tmmax, pixel + offset, w, stride);
-      }
+      const size_t offset = j * off_mul + off_add;
+      _color_picker_rgb_or_lab(macc.v, mmin.v, mmax.v, pixel + offset, w, stride);
     }
   }
 
-  for(int n = 0; n < numthreads; n++)
+  for_each_channel(c)
   {
-    for(int k = 0; k < 4; k++)
-    {
-      picked_color[k] += mean[allocsize * n + k];
-      picked_color_min[k] = fminf(picked_color_min[k], mmin[allocsize * n + k]);
-      picked_color_max[k] = fmaxf(picked_color_max[k], mmax[allocsize * n + k]);
-    }
+    picked_color[c] = macc.v[c];
+    picked_color_min[c] = mmin.v[c];
+    picked_color_max[c] = mmax.v[c];
   }
-
-  dt_free_align(mmax);
-  dt_free_align(mmin);
-  dt_free_align(mean);
 }
 
 static void color_picker_helper_bayer_seq(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
