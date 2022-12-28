@@ -1947,7 +1947,7 @@ static void _widget_change_parent_overlay(GtkWidget *w, GtkOverlay *new_parent)
   gtk_widget_show(w);
   g_object_unref(w);
 }
-void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over, int timeout)
+void dt_thumbnail_set_overlay(dt_thumbnail_t *thumb, dt_thumbnail_overlay_t over, const int timeout)
 {
   // if no change...
   if(thumb->over == over)
