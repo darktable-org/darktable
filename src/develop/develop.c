@@ -808,12 +808,14 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   // *(float *)h->params, *(((float *)h->params)+1));
   sqlite3_finalize(stmt);
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.history"
-                              " SET operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
-                              "     blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = ?10, multi_name_hand_edited = ?11"
-                              " WHERE imgid = ?5 AND num = ?6",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE main.history"
+     " SET operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
+     "     blendop_params = ?7, blendop_version = ?8, multi_priority = ?9,"
+     "     multi_name = ?10, multi_name_hand_edited = ?11"
+     " WHERE imgid = ?5 AND num = ?6",
+     -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);

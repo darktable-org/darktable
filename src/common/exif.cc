@@ -3198,7 +3198,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
     dt_database_start_transaction(darktable.db);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "DELETE FROM main.history WHERE imgid = ?1", -1,
                                 &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     if(sqlite3_step(stmt) != SQLITE_DONE)
