@@ -1424,6 +1424,7 @@ void gui_init(dt_lib_module_t *self)
   // we update the selection with actual collect rules
   _lib_timeline_collection_changed(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL, -1, self);
 
+  gtk_widget_show_all(self->widget);
   /* initialize view manager proxy */
   darktable.view_manager->proxy.timeline.module = self;
 

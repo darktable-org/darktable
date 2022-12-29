@@ -124,7 +124,6 @@ typedef struct
   dt_thumbnail_overlay_t over;  // type of overlays
   int overlay_timeout_duration; // for hover_block overlay, we hide the it after a delay
   int overlay_timeout_id;       // id of the g_source timeout fct
-  gboolean display_overlay;     // FALSE if not displayed (based on mouse position)
   gboolean tooltip;             // should we show the tooltip ?
 
   int expose_again_timeout_id;  // source id of the expose_again timeout

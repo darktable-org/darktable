@@ -607,6 +607,29 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
     dt_thumbtable_scrollbar_changed(dt_ui_thumbtable(darktable.gui->ui), x, y);
 }
 
+static void _overlays_force(dt_view_t *self, const gboolean show)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // full_preview change
+  if(lib->preview_state
+     && (!show || lib->preview->overlays == DT_THUMBNAIL_OVERLAYS_NONE
+         || lib->preview->overlays == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK))
+  {
+    dt_culling_force_overlay(lib->preview, show);
+  }
+
+  // culling change (note that full_preview can be combined with culling)
+  if((lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
+      || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+     && (!show || lib->preview->overlays == DT_THUMBNAIL_OVERLAYS_NONE
+         || lib->preview->overlays == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK))
+  {
+    dt_culling_force_overlay(lib->culling, show);
+  }
+}
+
+
 enum
 {
   DT_ACTION_ELEMENT_FOCUS_DETECT = 1,
@@ -651,6 +674,33 @@ const dt_action_def_t dt_action_def_preview
       _action_process_preview,
       _action_elements_preview,
       NULL, TRUE };
+
+static float _action_process_infos(gpointer target, const dt_action_element_t element,
+                                   const dt_action_effect_t effect, const float move_size)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  if(!isnan(move_size))
+  {
+    if(effect != DT_ACTION_EFFECT_ON)
+    {
+      _overlays_force(self, FALSE);
+    }
+    else if(effect != DT_ACTION_EFFECT_OFF)
+    {
+      _overlays_force(self, TRUE);
+    }
+  }
+
+  return lib->preview_state;
+}
+
+const dt_action_element_def_t _action_elements_infos[] = { { "normal", dt_action_effect_hold }, { NULL } };
+
+const dt_action_def_t dt_action_def_infos
+    = { N_("show infos"), _action_process_infos, _action_elements_infos, NULL, TRUE };
+
 
 enum
 {
@@ -1266,6 +1316,10 @@ void gui_init(dt_view_t *self)
   ac = dt_action_define(sa, NULL, N_("preview"), NULL, &dt_action_def_preview);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
+
+  // Show infos key
+  ac = dt_action_define(sa, NULL, N_("show infos"), NULL, &dt_action_def_infos);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_i, 0);
 
   dt_action_register(DT_ACTION(self), N_("align images to grid"), _accel_align_to_grid, 0, 0);
   dt_action_register(DT_ACTION(self), N_("reset first image offset"), _accel_reset_first_offset, 0, 0);
