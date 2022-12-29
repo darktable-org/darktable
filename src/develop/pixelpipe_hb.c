@@ -611,10 +611,10 @@ static void _histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif
 
-// helper for per-module color picking
-static int _pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *roi, dt_aligned_pixel_t picked_color,
-                                   dt_aligned_pixel_t picked_color_min, dt_aligned_pixel_t picked_color_max,
-                                   dt_pixelpipe_picker_source_t picker_source, int *box)
+// calculate box in current module's coordinates for the color picker
+static int _pixelpipe_picker_box(dt_iop_module_t *module, const dt_iop_roi_t *roi,
+                                 const dt_colorpicker_sample_t *const sample,
+                                 dt_pixelpipe_picker_source_t picker_source, int *box)
 {
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -623,7 +623,6 @@ static int _pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t 
   const dt_image_t image = darktable.develop->image_storage;
   const int op_after_demosaic = dt_ioppr_is_iop_before(darktable.develop->preview_pipe->iop_order_list,
                                                        module->op, "demosaic", 0);
-  const dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
 
   dt_boundingbox_t fbox = { 0.0f };
 
@@ -695,7 +694,9 @@ static void _pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
     avg[k] = 0.0f;
   }
 
-  if(!_pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
+  if(!_pixelpipe_picker_box(module, roi,
+                            darktable.lib->proxy.colorpicker.primary_sample,
+                            picker_source, box))
   {
     const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
     dt_color_picker_helper(dsc, pixel, roi, box, avg, min, max, image_cst,
@@ -725,7 +726,9 @@ static void _pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixe
 {
   int box[4] = { 0 };
 
-  if(_pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
+  if(_pixelpipe_picker_box(module, roi,
+                           darktable.lib->proxy.colorpicker.primary_sample,
+                           picker_source, box))
   {
     for_four_channels(k)
     {
@@ -800,22 +803,9 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
 {
   lib_colorpicker_sample_statistics picked_rgb;
   int box[4];
-  // FIXME: is _pixelpipe_picker_helper() to set this up?
-  if(sample->size == DT_LIB_COLORPICKER_SIZE_BOX)
-  {
-    box[0] = CLAMP(sample->box[0] * roi_in->width, 0, roi_in->width - 1);
-    box[1] = CLAMP(sample->box[1] * roi_in->height, 0, roi_in->height - 1);
-    box[2] = CLAMP(sample->box[2] * roi_in->width, 0, roi_in->width);
-    box[3] = CLAMP(sample->box[3] * roi_in->height, 0, roi_in->height);
-  }
-  else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-  {
-    box[0] = CLAMP(sample->point[0] * roi_in->width, 0, roi_in->width - 1);
-    box[1] = CLAMP(sample->point[1] * roi_in->height, 0, roi_in->height - 1);
-    box[2] = box[0] + 1;
-    box[3] = box[1] + 1;
-  }
-  else return;
+
+  if(_pixelpipe_picker_box(module, roi_in, sample, PIXELPIPE_PICKER_OUTPUT, box))
+    return;
 
   dt_color_picker_helper(dsc, pixel, roi_in, box,
                          picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MEAN],
