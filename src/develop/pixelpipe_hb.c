@@ -612,6 +612,7 @@ static void _histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_m
 #endif
 
 // calculate box in current module's coordinates for the color picker
+// FIXME: move this to common color picker code?
 static int _pixelpipe_picker_box(dt_iop_module_t *module, const dt_iop_roi_t *roi,
                                  const dt_colorpicker_sample_t *const sample,
                                  dt_pixelpipe_picker_source_t picker_source, int *box)
@@ -801,33 +802,30 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
                                        const dt_iop_order_iccprofile_info_t *const histogram_profile,
                                        dt_colorpicker_sample_t *const sample)
 {
-  lib_colorpicker_sample_statistics picked_rgb;
   int box[4];
 
   if(_pixelpipe_picker_box(module, roi_in, sample, PIXELPIPE_PICKER_OUTPUT, box))
     return;
 
+  // pixel input is in display profile, hence the sample output will be as well
   dt_color_picker_helper(dsc, pixel, roi_in, box,
-                         picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MEAN],
-                         picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MIN],
-                         picked_rgb[DT_LIB_COLORPICKER_STATISTIC_MAX],
+                         sample->display[DT_LIB_COLORPICKER_STATISTIC_MEAN],
+                         sample->display[DT_LIB_COLORPICKER_STATISTIC_MIN],
+                         sample->display[DT_LIB_COLORPICKER_STATISTIC_MAX],
                          IOP_CS_RGB, IOP_CS_RGB,
                          // FIXME: this is ignored, just use NULL?
                          histogram_profile);
-
-  // convenient to have pixels in display profile, which makes them easy to display
-  memcpy(sample->display[0], picked_rgb[0], sizeof(lib_colorpicker_sample_statistics));
 
   // NOTE: conversions assume that dt_aligned_pixel_t[x] has no
   // padding, e.g. is equivalent to float[x*4], and that on failure
   // it's OK not to touch output
   int converted_cst;
-  dt_ioppr_transform_image_colorspace(module, picked_rgb[0], sample->lab[0], 3, 1,
+  dt_ioppr_transform_image_colorspace(module, sample->display[0], sample->lab[0], 3, 1,
                                       IOP_CS_RGB, IOP_CS_LAB,
                                       &converted_cst, display_profile);
   if(display_profile && histogram_profile)
     dt_ioppr_transform_image_colorspace_rgb
-      (picked_rgb[0], sample->scope[0], 3, 1,
+      (sample->display[0], sample->scope[0], 3, 1,
        display_profile, histogram_profile, "primary picker");
 }
 
@@ -836,12 +834,14 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,
                                     const float *const input,
                                     const dt_iop_roi_t *roi_in)
 {
+  // FIXME: can just inline here the _pixelpipe_pick_from_image() code, and at the end do all the colorspace conversions as needed?
   const dt_iop_order_iccprofile_info_t *const histogram_profile = dt_ioppr_get_histogram_profile_info(dev);
   const dt_iop_order_iccprofile_info_t *const display_profile
     = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
                                         darktable.color_profiles->display_filename,
                                         INTENT_RELATIVE_COLORIMETRIC);
 
+  // FIXME: locally crete a GSList item which contains as data the primary picker if it exists, pointing to the start of the live samples, or if not the first of the live samples. Then this can be a single loop, with the colorspace changing code included.
   GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
   while(samples)
   {
@@ -1020,7 +1020,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   if(_request_color_pick(pipe, dev, module))
   {
     // ensure that we are using the right color space
-    // FIXME: do we have to convert entire image colorspace if just picking a point?
+    // FIXME: do we have to convert entire image colorspace if just picking a point? what if we sample in whatever the current colorspace is, then convert it to picker colorspace (work profile)?
     dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
     dt_ioppr_transform_image_colorspace(module, input, input, roi_in->width, roi_in->height,
                                         input_format->cst, picker_cst, &input_format->cst,
