@@ -173,7 +173,8 @@ static int _gui_has_focus(struct dt_iop_module_t *self)
           && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS);
 }
 
-static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop_crop_params_t *p)
+static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop_crop_params_t *p,
+                        const gboolean invalidate_pipe)
 {
   if(darktable.gui->reset) return;
   if(self->dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
@@ -211,7 +212,10 @@ static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop
   }
   const gboolean changed = fabs(p->cx - old[0]) > eps || fabs(p->cy - old[1]) > eps || fabs(p->cw - old[2]) > eps || fabs(p->ch - old[3]) > eps;
   // fprintf(stderr, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
-  if(changed) dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
+  if(changed)
+  {
+    dt_dev_add_history_item(darktable.develop, self, TRUE, invalidate_pipe);
+  }
 }
 
 static int _set_max_clip(struct dt_iop_module_t *self)
@@ -423,7 +427,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       // so we temporary put back gui_module to crop and revert once finished
       dt_iop_module_t *old_gui = self->dev->gui_module;
       self->dev->gui_module = self;
-      _commit_box(self, g, p);
+      _commit_box(self, g, p, TRUE);
       self->dev->gui_module = old_gui;
       g->clip_max_pipe_hash = 0;
     }
@@ -912,7 +916,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   --darktable.gui->reset;
 
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, FALSE);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
@@ -989,7 +993,7 @@ static void _event_commit_clicked(GtkButton *button, dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, FALSE);
 }
 
 static void _event_aspect_flip(GtkWidget *button, dt_iop_module_t *self)
@@ -1547,7 +1551,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   dt_control_change_cursor(GDK_LEFT_PTR);
 
   // we save the crop into the params now so params are kept in synch with gui settings
-  _commit_box(self, g, p);
+  _commit_box(self, g, p, FALSE);
   return 1;
 }
 
@@ -1575,7 +1579,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
 
     // switch module on already, other code depends in this:
-    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, FALSE);
 
     g->button_down_x = x;
     g->button_down_y = y;
