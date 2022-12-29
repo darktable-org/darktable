@@ -259,7 +259,7 @@ static void radius_callback(GtkWidget *slider, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
   p->radius = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void slope_callback(GtkWidget *slider, gpointer user_data)
@@ -268,7 +268,7 @@ static void slope_callback(GtkWidget *slider, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
   p->slope = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 

@@ -816,7 +816,7 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   int n = dt_bauhaus_combobox_get(g->watermarks);
   g_strlcpy(p->filename, (char *)g_list_nth_data(g->watermarks_filenames, n), sizeof(p->filename));
   _text_color_font_set_sensitive(g, p->filename);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
@@ -842,7 +842,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   p->color[2] = self->picked_color[2];
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &c);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
@@ -943,7 +943,7 @@ static void alignment_callback(GtkWidget *tb, gpointer user_data)
     g_signal_handlers_unblock_by_func(g->align[i], alignment_callback, user_data);
   }
   p->alignment = index;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void text_callback(GtkWidget *entry, gpointer user_data)
@@ -953,7 +953,7 @@ static void text_callback(GtkWidget *entry, gpointer user_data)
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   g_strlcpy(p->text, gtk_entry_get_text(GTK_ENTRY(entry)), sizeof(p->text));
   dt_conf_set_string("plugins/darkroom/watermark/text", p->text);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void colorpick_color_set(GtkColorButton *widget, gpointer user_data)
@@ -971,7 +971,7 @@ static void colorpick_color_set(GtkColorButton *widget, gpointer user_data)
   dt_conf_set_float("plugins/darkroom/watermark/color_red", p->color[0]);
   dt_conf_set_float("plugins/darkroom/watermark/color_green", p->color[1]);
   dt_conf_set_float("plugins/darkroom/watermark/color_blue", p->color[2]);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void fontsel_callback(GtkWidget *button, gpointer user_data)
@@ -984,7 +984,7 @@ static void fontsel_callback(GtkWidget *button, gpointer user_data)
   g_strlcpy(p->font, fontname, sizeof(p->font));
   g_free(fontname);
   dt_conf_set_string("plugins/darkroom/watermark/font", p->font);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,

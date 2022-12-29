@@ -366,7 +366,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module,
     dt_dev_add_masks_history_item(dev, module, TRUE);
     // we update module gui
     if(gui) dt_masks_iop_update(module);
-    //dt_dev_add_history_item(dev, module, TRUE);
+    //dt_dev_add_history_item(dev, module, TRUE, TRUE);
   }
   // show the form if needed
   if(gui) dev->form_gui->formid = form->formid;
@@ -1389,7 +1389,7 @@ static void _menu_no_masks(struct dt_iop_module_t *module)
   dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
   dt_masks_iop_update(module);
 
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_add_history_item(darktable.develop, module, TRUE, TRUE);
 }
 
 static void _menu_add_shape(struct dt_iop_module_t *module, dt_masks_type_t type)
@@ -1620,7 +1620,7 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
         dt_iop_module_t *m = (dt_iop_module_t *)g_list_nth_data(module->dev->iop, val);
         dt_masks_iop_use_same_as(module, m);
         // and we ensure that we are in edit mode
-        //dt_dev_add_history_item(darktable.develop, module, TRUE);
+        //dt_dev_add_history_item(darktable.develop, module, TRUE, TRUE);
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_iop_update(module);
         dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
@@ -1703,7 +1703,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
       {
         m->blend_params->mask_id = 0;
         dt_masks_iop_update(m);
-        dt_dev_add_history_item(darktable.develop, m, TRUE);
+        dt_dev_add_history_item(darktable.develop, m, TRUE, TRUE);
       }
       else
       {
@@ -2101,7 +2101,7 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
   dt_masks_replace_current_forms(dev, forms);
 
   if(module)
-    dt_dev_add_history_item(dev, module, module->enabled);
+    dt_dev_add_history_item(dev, module, module->enabled, TRUE);
   else
     dt_dev_add_masks_history_item(dev, NULL, TRUE);
 }

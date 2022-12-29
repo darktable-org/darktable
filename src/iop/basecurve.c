@@ -1709,7 +1709,7 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     {
       // no vertex was close, create a new one!
       c->selected = _add_node(basecurve, &p->basecurve_nodes[ch], linx, liny);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
   }
   else
@@ -1802,7 +1802,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
             if(dist < min) c->selected = selected;
           }
 
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
           gtk_widget_queue_draw(self->widget);
         }
       }
@@ -1819,7 +1819,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
         p->basecurve[ch][k].y = d->basecurve[ch][k].y;
       }
       c->selected = -2; // avoid motion notify re-inserting immediately.
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
       gtk_widget_queue_draw(self->widget);
       return TRUE;
     }
@@ -1831,7 +1831,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
       float reset_value = c->selected == 0 ? 0 : 1;
       basecurve[c->selected].y = basecurve[c->selected].x = reset_value;
       gtk_widget_queue_draw(self->widget);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
       return TRUE;
     }
 
@@ -1844,7 +1844,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->basecurve_nodes[ch]--;
     gtk_widget_queue_draw(self->widget);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     return TRUE;
   }
   return FALSE;

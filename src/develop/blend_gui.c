@@ -612,7 +612,7 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
     _box_set_visible(data->blendif_box, FALSE);
   }
 
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE, TRUE);
 
   if(dt_conf_get_bool("accel/prefer_unmasked"))
   {
@@ -640,7 +640,7 @@ static void _blendop_blend_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
       dt_bauhaus_slider_set(data->blend_mode_parameter_slider, bp->blend_parameter);
       gtk_widget_set_sensitive(data->blend_mode_parameter_slider, FALSE);
     }
-    dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+    dt_dev_add_history_item(darktable.develop, data->module, TRUE, TRUE);
   }
 }
 
@@ -657,7 +657,7 @@ static gboolean _blendop_blend_order_clicked(GtkWidget *button, GdkEventButton *
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), active);
 
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_add_history_item(darktable.develop, module, TRUE, TRUE);
   dt_control_queue_redraw_widget(GTK_WIDGET(button));
 
   return TRUE;
@@ -685,7 +685,7 @@ static void _blendop_masks_combine_callback(GtkWidget *combo, dt_iop_gui_blend_d
   }
 
   _blendif_clean_output_channels(data->module);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE, TRUE);
 }
 
 static void _blendop_masks_invert_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
@@ -697,7 +697,7 @@ static void _blendop_masks_invert_callback(GtkWidget *combo, dt_iop_gui_blend_da
   else
     data->module->blend_params->mask_combine &= ~DEVELOP_COMBINE_INV;
   _blendif_clean_output_channels(data->module);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE, TRUE);
 }
 
 static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider, dt_iop_gui_blend_data_t *data)
@@ -738,7 +738,7 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
   else
     bp->blendif |= (1 << ch);
 
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE, TRUE);
 }
 
 static void _blendop_blendif_sliders_reset_callback(GtkDarktableGradientSlider *slider,
@@ -759,7 +759,7 @@ static void _blendop_blendif_sliders_reset_callback(GtkDarktableGradientSlider *
   else
     bp->blendif &= ~(1 << (16 + ch));
 
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE, TRUE);
   _blendop_blendif_update_tab(data->module, data->tab);
 }
 
@@ -791,7 +791,7 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt
   dtgtk_gradient_slider_multivalue_set_marker(
       slider, active ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
 
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE, TRUE);
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 }
 
@@ -1118,7 +1118,7 @@ static void _blendop_blendif_boost_factor_callback(GtkWidget *slider, dt_iop_gui
   }
   _blendop_blendif_update_tab(data->module, tab);
 
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE, TRUE);
 }
 
 static void _blendop_blendif_details_callback(GtkWidget *slider, dt_iop_gui_blend_data_t *data)
@@ -1127,7 +1127,7 @@ static void _blendop_blendif_details_callback(GtkWidget *slider, dt_iop_gui_blen
   dt_develop_blend_params_t *bp = data->module->blend_params;
   const float oldval = bp->details;
   bp->details = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE, TRUE);
 
   if((oldval == 0.0f) && (bp->details != 0.0f))
   {
@@ -1287,7 +1287,7 @@ static gboolean _blendop_blendif_reset(GtkButton *button, GdkEventButton *event,
 
   dt_iop_color_picker_reset(module, FALSE);
   dt_iop_gui_update_blendif(module);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_add_history_item(darktable.develop, module, TRUE, TRUE);
 
   return TRUE;
 }
@@ -1319,7 +1319,7 @@ static gboolean _blendop_blendif_invert(GtkButton *button, GdkEventButton *event
   module->blend_params->mask_combine ^= DEVELOP_COMBINE_MASKS_POS;
   module->blend_params->mask_combine ^= DEVELOP_COMBINE_INCL;
   dt_iop_gui_update_blending(module);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_add_history_item(darktable.develop, module, TRUE, TRUE);
 
   return TRUE;
 }
@@ -1439,7 +1439,7 @@ static gboolean _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, 
   else
     bp->mask_combine &= ~DEVELOP_COMBINE_MASKS_POS;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 
   return TRUE;
@@ -1576,7 +1576,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     else
       bp->blendif |= 1 << (16 + ch);
 
-    dt_dev_add_history_item(darktable.develop, module, TRUE);
+    dt_dev_add_history_item(darktable.develop, module, TRUE, TRUE);
     _blendop_blendif_update_tab(module, tab);
 
     return TRUE;
@@ -1675,7 +1675,7 @@ static void _blendif_hide_output_channels(GtkMenuItem *menuitem, dt_iop_module_t
     bd->output_channels_shown = FALSE;
     if(_blendif_clean_output_channels(module))
     {
-      dt_dev_add_history_item(darktable.develop, module, TRUE);
+      dt_dev_add_history_item(darktable.develop, module, TRUE, TRUE);
     }
     dt_iop_gui_update(module);
   }
@@ -2445,7 +2445,7 @@ static void _raster_value_changed_callback(GtkWidget *widget, struct dt_iop_modu
     module->blend_params->raster_mask_id = 0;
   }
 
-  dt_dev_add_history_item(module->dev, module, TRUE);
+  dt_dev_add_history_item(module->dev, module, TRUE, TRUE);
 
   if(reprocess)
     dt_dev_reprocess_all(module->dev);
@@ -2471,7 +2471,7 @@ static void _raster_polarity_callback(GtkToggleButton *togglebutton, dt_iop_modu
 
   bp->raster_mask_invert = gtk_toggle_button_get_active(togglebutton);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 }
 

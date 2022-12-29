@@ -297,7 +297,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
        || previous_color[1] != p->levels[1]
        || previous_color[2] != p->levels[2])
     {
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
   }
 }
@@ -874,7 +874,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
 
       dt_iop_levels_move_handle(self, c->handle_move, mx, p->levels, c->drag_start_percentage);
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
   else
   {
@@ -914,7 +914,7 @@ static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *ev
       // Needed in case the user scrolls or drags immediately after a reset,
       // as drag_start_percentage is only updated when the mouse is moved.
       c->drag_start_percentage = 0.5;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
       gtk_widget_queue_draw(self->widget);
     }
     else
@@ -975,7 +975,7 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
   {
     float new_position = p->levels[c->handle_move] - interval * delta_y;
     dt_iop_levels_move_handle(self, c->handle_move, new_position, p->levels, c->drag_start_percentage);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     return TRUE;
   }
 
@@ -995,7 +995,7 @@ static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *
   if(c->activeToggleButton != NULL) gtk_toggle_button_set_active(c->activeToggleButton, FALSE);
   c->last_picked_color = -1;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 // clang-format off

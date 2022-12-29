@@ -2767,7 +2767,7 @@ static void sync_pipe(struct dt_iop_module_t *module, gboolean history)
     // something definitive has happened like button release ... so
     // redraw pipe
     smooth_paths_linsys(p);
-    dt_dev_add_history_item(darktable.develop, module, TRUE);
+    dt_dev_add_history_item(darktable.develop, module, TRUE, TRUE);
   }
   else
   {

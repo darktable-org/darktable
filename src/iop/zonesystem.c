@@ -652,7 +652,7 @@ static gboolean dt_iop_zonesystem_bar_button_press(GtkWidget *widget, GdkEventBu
     if(p->zone[k] == -1)
     {
       p->zone[k] = zonemap[k];
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
     g->is_dragging = TRUE;
     g->current_zone = k;
@@ -661,7 +661,7 @@ static gboolean dt_iop_zonesystem_bar_button_press(GtkWidget *widget, GdkEventBu
   {
     /* clear the controlpoint */
     p->zone[k] = -1;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 
   return TRUE;
@@ -690,7 +690,7 @@ static gboolean dt_iop_zonesystem_bar_scrolled(GtkWidget *widget, GdkEventScroll
   {
     p->size = CLAMP(p->size - delta_y, 4, MAX_ZONE_SYSTEM_SIZE);
     p->zone[cs] = -1;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     gtk_widget_queue_draw(widget);
   }
 
@@ -730,7 +730,7 @@ static gboolean dt_iop_zonesystem_bar_motion_notify(GtkWidget *widget, GdkEventM
        && (g->mouse_x / width) < zonemap[g->current_zone + 1])
     {
       p->zone[g->current_zone] = (g->mouse_x / width);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
   }
   else

@@ -1627,7 +1627,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
 
       if(crea_module)
       {
-        dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
+        dt_dev_add_history_item(darktable.develop, crea_module, TRUE, TRUE);
         // and we switch in edit mode to show all the forms
         // spots and retouch have their own handling of creation_continuous
         if(gui->creation_continuous && ( strcmp(crea_module->so->op, "spots") == 0 || strcmp(crea_module->so->op, "retouch") == 0))

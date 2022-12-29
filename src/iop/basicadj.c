@@ -201,7 +201,7 @@ static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
   if(self->off)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 
   _turn_selregion_picker_off(self);
@@ -227,7 +227,7 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
   if(self->off)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 
   dt_iop_color_picker_reset(self, TRUE);
@@ -262,7 +262,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 
     memcpy(p, &g->params, sizeof(dt_iop_basicadj_params_t));
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
     dt_iop_gui_enter_critical_section(self);
     g->call_auto_exposure = 0;
@@ -477,7 +477,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static inline float get_gamma(const float x, const float gamma)

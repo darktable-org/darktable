@@ -1453,7 +1453,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
       p->y[c->channel2][k] = d->y[c->channel2][k];
     }
     gtk_widget_queue_draw(self->widget);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
   else if(event->button == 1)
   {
@@ -1529,7 +1529,7 @@ static void mix_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   p->mix = dt_bauhaus_slider_get(slider);
   gtk_widget_queue_draw(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 enum

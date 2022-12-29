@@ -531,7 +531,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
 
   --darktable.gui->reset;
 
-  if(selection_changed) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(selection_changed) dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 //---------------------------------------------------------------------------------
@@ -1021,7 +1021,7 @@ static void rt_colorpick_color_set_callback(GtkColorButton *widget, dt_iop_modul
     }
   }
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 // wavelet decompose bar
@@ -1058,7 +1058,7 @@ static void rt_num_scales_update(const int _num_scales, dt_iop_module_t *self)
 
   rt_update_wd_bar_labels(p, g);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void rt_curr_scale_update(const int _curr_scale, dt_iop_module_t *self)
@@ -1090,7 +1090,7 @@ static void rt_curr_scale_update(const int _curr_scale, dt_iop_module_t *self)
 
   rt_update_wd_bar_labels(p, g);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void rt_merge_from_scale_update(const int _merge_from_scale, dt_iop_module_t *self)
@@ -1107,7 +1107,7 @@ static void rt_merge_from_scale_update(const int _merge_from_scale, dt_iop_modul
 
   rt_update_wd_bar_labels(p, g);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static gboolean rt_wdbar_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
@@ -1426,7 +1426,7 @@ static void rt_gslider_changed(GtkDarktableGradientSlider *gslider, dt_iop_modul
 
   for(int i = 0; i < 3; i++) p->preview_levels[i] = dlevels[i];
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
 }
 
@@ -1461,7 +1461,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   rt_display_selected_fill_color(g, p);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
@@ -1494,7 +1494,7 @@ static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton, GdkEv
 
   --darktable.gui->reset;
 
-  if(scale_copied) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(scale_copied) dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
   return TRUE;
 }
@@ -1560,7 +1560,7 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
 
     for(int i = 0; i < 3; i++) p->preview_levels[i] = g->preview_levels[i];
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
     dt_iop_gui_enter_critical_section(self);
 
@@ -1613,7 +1613,7 @@ static void rt_mask_opacity_callback(GtkWidget *slider, dt_iop_module_t *self)
     rt_masks_form_change_opacity(self, shape_id, opacity);
   }
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 void gui_post_expose (struct dt_iop_module_t *self,
@@ -1816,7 +1816,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
 
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
   // if we have the shift key pressed, we set it as default
   if(dt_modifier_is(e->state, GDK_SHIFT_MASK))

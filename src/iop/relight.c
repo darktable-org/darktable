@@ -200,7 +200,7 @@ static void center_callback(GtkDarktableGradientSlider *slider, gpointer user_da
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   dt_iop_color_picker_reset(self, TRUE);
   p->center = dtgtk_gradient_slider_get_value(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,

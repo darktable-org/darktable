@@ -817,7 +817,7 @@ radius_callback (GtkWidget *slider, gpointer user_data)
   if(darktable.gui->reset) return;
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
   p->random.radius = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 #endif
 
@@ -832,7 +832,7 @@ range_callback (GtkWidget *slider, gpointer user_data)
   p->random.range[1] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 1);
   p->random.range[2] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 2);
   p->random.range[3] = dtgtk_gradient_slider_multivalue_get_value(DTGTK_GRADIENT_SLIDER(slider), 3);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 #endif
 

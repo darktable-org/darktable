@@ -576,7 +576,7 @@ static int sanity_check(dt_iop_module_t *self)
     dt_control_log(_("tone equalizer needs to be after distortion modules in the pipeline – disabled"));
     fprintf(stdout, "tone equalizer needs to be after distortion modules in the pipeline – disabled\n");
     self->enabled = 0;
-    dt_dev_add_history_item(darktable.develop, self, FALSE);
+    dt_dev_add_history_item(darktable.develop, self, FALSE, TRUE);
 
     if(self->dev->gui_attached)
     {
@@ -1705,7 +1705,7 @@ static void smoothing_callback(GtkWidget *slider, gpointer user_data)
   // Redraw graph before launching computation
   update_curve_lut(self);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
@@ -1729,7 +1729,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     return;
   }
 
@@ -1771,7 +1771,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
   --darktable.gui->reset;
   invalidate_luminance_cache(self);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
@@ -1796,7 +1796,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     return;
   }
 
@@ -1849,7 +1849,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
   --darktable.gui->reset;
   invalidate_luminance_cache(self);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
   // Unlock the colour picker so we can display our own custom cursor
   dt_iop_color_picker_reset(self, TRUE);
@@ -2152,7 +2152,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
     // Update GUI with new params
     update_exposure_sliders(g, p);
 
-    dt_dev_add_history_item(darktable.develop, self, FALSE);
+    dt_dev_add_history_item(darktable.develop, self, FALSE, TRUE);
   }
 
   return 1;
@@ -2860,7 +2860,7 @@ static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gp
     // cursor left area : force commit to avoid glitches
     update_exposure_sliders(g, p);
 
-    dt_dev_add_history_item(darktable.develop, self, FALSE);
+    dt_dev_add_history_item(darktable.develop, self, FALSE, TRUE);
   }
   dt_iop_gui_enter_critical_section(self);
   g->area_x = (event->x - g->inset);
@@ -2905,7 +2905,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
 
     // Redraw graph
     gtk_widget_queue_draw(self->widget);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     return TRUE;
   }
   else if(event->button == 1)
@@ -2917,7 +2917,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
     }
     else
     {
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
     return TRUE;
   }
@@ -2997,7 +2997,7 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
       // Update GUI with new params
       update_exposure_sliders(g, p);
 
-      dt_dev_add_history_item(darktable.develop, self, FALSE);
+      dt_dev_add_history_item(darktable.develop, self, FALSE, TRUE);
 
       dt_iop_gui_enter_critical_section(self);
       g->area_dragging= 0;
@@ -3092,7 +3092,7 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_request_focus(self);
   dt_bauhaus_widget_set_quad_active(g->exposure_boost, FALSE);
   dt_bauhaus_widget_set_quad_active(g->contrast_boost, FALSE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
   // Redraw graph
   gtk_widget_queue_draw(self->widget);

@@ -879,7 +879,7 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
   }
   sqlite3_finalize(stmt);
   dt_iop_gui_update(module);
-  dt_dev_add_history_item(darktable.develop, module, FALSE);
+  dt_dev_add_history_item(darktable.develop, module, FALSE, TRUE);
   gtk_widget_queue_draw(module->widget);
 
   if(dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))

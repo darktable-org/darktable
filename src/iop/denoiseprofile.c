@@ -2790,7 +2790,7 @@ static void profile_callback(GtkWidget *w, dt_iop_module_t *self)
     p->a[k] = profile->a[k];
     p->b[k] = profile->b[k];
   }
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
@@ -2844,7 +2844,7 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   gtk_widget_set_visible(g->shadows, p->use_new_vst && !auto_mode);
   gtk_widget_set_visible(g->bias, p->use_new_vst && !auto_mode);
   gtk_widget_set_visible(g->overshooting, auto_mode);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -3306,7 +3306,7 @@ static gboolean denoiseprofile_motion_notify(GtkWidget *widget, GdkEventMotion *
     {
       dt_iop_denoiseprofile_get_params(p, c->channel, c->mouse_x, c->mouse_y + c->mouse_pick, c->mouse_radius);
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
   else
   {
@@ -3332,7 +3332,7 @@ static gboolean denoiseprofile_button_press(GtkWidget *widget, GdkEventButton *e
       p->x[ch][k] = d->x[ch][k];
       p->y[ch][k] = d->y[ch][k];
     }
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     gtk_widget_queue_draw(self->widget);
   }
   else if(event->button == 1)

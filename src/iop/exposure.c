@@ -544,7 +544,7 @@ void gui_update(struct dt_iop_module_t *self)
   {
     gtk_widget_set_sensitive(GTK_WIDGET(g->mode), FALSE);
     p->mode = EXPOSURE_MODE_MANUAL;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
   else
   {
@@ -629,7 +629,7 @@ static void _exposure_set_white(struct dt_iop_module_t *self, const float white)
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->exposure, p->exposure);
   --darktable.gui->reset;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void _exposure_proxy_set_exposure(struct dt_iop_module_t *self, const float exposure)
@@ -646,7 +646,7 @@ static void _exposure_proxy_set_exposure(struct dt_iop_module_t *self, const flo
     dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
     --darktable.gui->reset;
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
   else
   {
@@ -686,7 +686,7 @@ static void _exposure_set_black(struct dt_iop_module_t *self, const float black)
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->black, p->black);
   --darktable.gui->reset;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void _exposure_proxy_set_black(struct dt_iop_module_t *self, const float black)

@@ -211,7 +211,7 @@ static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop
   }
   const gboolean changed = fabs(p->cx - old[0]) > eps || fabs(p->cy - old[1]) > eps || fabs(p->cw - old[2]) > eps || fabs(p->ch - old[3]) > eps;
   // fprintf(stderr, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
-  if(changed) dt_dev_add_history_item(darktable.develop, self, TRUE);
+  if(changed) dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static int _set_max_clip(struct dt_iop_module_t *self)
@@ -1575,7 +1575,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
 
     // switch module on already, other code depends in this:
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
     g->button_down_x = x;
     g->button_down_y = y;

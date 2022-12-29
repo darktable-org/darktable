@@ -1114,7 +1114,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
       if(crea_module)
       {
-        dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
+        dt_dev_add_history_item(darktable.develop, crea_module, TRUE, TRUE);
         // and we switch in edit mode to show all the forms
         // spots and retouch have their own handling of creation_continuous
         if(gui->creation_continuous

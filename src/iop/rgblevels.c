@@ -159,7 +159,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
 
     memcpy(p, &g->params, sizeof(dt_iop_rgblevels_params_t));
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
     dt_iop_gui_enter_critical_section(self);
     g->call_auto_levels = 0;
@@ -537,7 +537,7 @@ static void _rgblevels_move_handle(dt_iop_module_t *self, const int handle_move,
 
   c->last_picked_color = -1;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 
   gtk_widget_queue_draw(GTK_WIDGET(c->area));
 }
@@ -611,7 +611,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
       // Needed in case the user scrolls or drags immediately after a reset,
       // as drag_start_percentage is only updated when the mouse is moved.
       c->drag_start_percentage = 0.5;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
       gtk_widget_queue_draw(self->widget);
     }
     else
@@ -688,7 +688,7 @@ static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
   if(self->off)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 
   _turn_selregion_picker_off(self);
@@ -714,7 +714,7 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
   if(self->off)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 
   dt_iop_color_picker_reset(self, TRUE);
@@ -823,7 +823,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
        || previous_color[1] != p->levels[channel][1]
        || previous_color[2] != p->levels[channel][2])
     {
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
   }
 

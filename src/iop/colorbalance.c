@@ -965,7 +965,7 @@ static void apply_autogrey(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->grey, p->grey);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void apply_lift_neutralize(dt_iop_module_t *self)
@@ -1004,7 +1004,7 @@ static void apply_lift_neutralize(dt_iop_module_t *self)
   set_HSL_sliders(g->hue_lift, g->sat_lift, p->lift);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void apply_gamma_neutralize(dt_iop_module_t *self)
@@ -1043,7 +1043,7 @@ static void apply_gamma_neutralize(dt_iop_module_t *self)
   set_HSL_sliders(g->hue_gamma, g->sat_gamma, p->gamma);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void apply_gain_neutralize(dt_iop_module_t *self)
@@ -1082,7 +1082,7 @@ static void apply_gain_neutralize(dt_iop_module_t *self)
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void apply_lift_auto(dt_iop_module_t *self)
@@ -1106,7 +1106,7 @@ static void apply_lift_auto(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->lift_factor, p->lift[CHANNEL_FACTOR]);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void apply_gamma_auto(dt_iop_module_t *self)
@@ -1131,7 +1131,7 @@ static void apply_gamma_auto(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->gamma_factor, p->gamma[CHANNEL_FACTOR]);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void apply_gain_auto(dt_iop_module_t *self)
@@ -1155,7 +1155,7 @@ static void apply_gain_auto(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->gain_factor, p->gain[CHANNEL_FACTOR]);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void apply_autocolor(dt_iop_module_t *self)
@@ -1273,7 +1273,7 @@ static void apply_autocolor(dt_iop_module_t *self)
   set_HSL_sliders(g->hue_gain, g->sat_gain, p->gain);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void apply_autoluma(dt_iop_module_t *self)
@@ -1325,7 +1325,7 @@ static void apply_autoluma(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->gain_factor, p->gain[CHANNEL_FACTOR]);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
@@ -1809,7 +1809,7 @@ static void which##_callback(GtkWidget *slider, gpointer user_data)             
   if(slider == g->hue_##which)                                                          \
     update_saturation_slider_color(g->sat_##which, hsl[0]);                             \
   set_RGB_sliders(g->which##_r, g->which##_g, g->which##_b, hsl, p->which, p->mode);    \
-  dt_dev_add_history_item(darktable.develop, self, TRUE);                               \
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);                               \
 }
 
 HSL_CALLBACK(lift)

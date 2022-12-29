@@ -269,7 +269,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
     if(crea_module)
     {
       // we save the move
-      dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
+      dt_dev_add_history_item(darktable.develop, crea_module, TRUE, TRUE);
       // and we switch in edit mode to show all the forms
       // spots and retouch have their own handling of creation_continuous
       if(gui->creation_continuous

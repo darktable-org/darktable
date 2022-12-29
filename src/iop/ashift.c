@@ -2873,7 +2873,7 @@ static void _draw_save_lines_to_params(dt_iop_module_t *self)
     {
       for(int i = 0; i < 8; i++) p->last_quad_lines[i] = pts[i];
 
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
   }
   // save drawn lines (we drop the unselected ones)
@@ -2899,7 +2899,7 @@ static void _draw_save_lines_to_params(dt_iop_module_t *self)
                                          DT_DEV_TRANSFORM_DIR_BACK_EXCL, p->last_drawn_lines,
                                          p->last_drawn_lines_count * 2))
     {
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
   }
 }
@@ -4871,7 +4871,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     g->adjust_crop = FALSE;
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     _swap_shadow_crop_box(p,g);  // temporarily update the crop box in p
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     _swap_shadow_crop_box(p,g);  // restore p
   }
 
@@ -5056,7 +5056,7 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
 
   dt_conf_set_int("plugins/darkroom/ashift/autocrop_value", dt_bauhaus_combobox_get(g->cropmode));
   _swap_shadow_crop_box(p,g);	//temporarily update real crop box
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   _swap_shadow_crop_box(p,g);
 }
 
@@ -5098,7 +5098,7 @@ static int _event_fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event,
     }
 
     _swap_shadow_crop_box(p, g);                             // temporarily update real crop box
-    dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE); //also calls dt_control_queue_redraw_center
     _swap_shadow_crop_box(p, g);
     return TRUE;
   }
@@ -5143,7 +5143,7 @@ static int _event_fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event,
     }
 
     _swap_shadow_crop_box(p, g);                             // temporarily update real crop box
-    dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE); //also calls dt_control_queue_redraw_center
     _swap_shadow_crop_box(p, g);
     return TRUE;
   }
@@ -5190,7 +5190,7 @@ static int _event_fit_both_button_clicked(GtkWidget *widget, GdkEventButton *eve
     }
 
     _swap_shadow_crop_box(p, g);                             // temporarily update real crop box
-    dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE); //also calls dt_control_queue_redraw_center
     _swap_shadow_crop_box(p, g);
     return TRUE;
   }
@@ -5254,7 +5254,7 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
       g->jobparams = enhance;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE); // also calls dt_control_queue_redraw_center
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE); // also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
@@ -5285,7 +5285,7 @@ static void _event_process_after_preview_callback(gpointer instance, gpointer us
       _commit_crop_box(p, g);
       // save all that
       _swap_shadow_crop_box(p, g); // temporarily update real crop box
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
       _swap_shadow_crop_box(p, g);
       break;
 
@@ -5303,7 +5303,7 @@ static void _event_process_after_preview_callback(gpointer instance, gpointer us
 
     case ASHIFT_JOBCODE_FIT:
       do_fit(self, p, (dt_iop_ashift_fitaxis_t)jobparams);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
       break;
 
     case ASHIFT_JOBCODE_NONE:
@@ -5601,7 +5601,7 @@ static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *even
     g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_QUAD;
   }
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE); // also calls dt_control_queue_redraw_center
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE); // also calls dt_control_queue_redraw_center
 
   return TRUE;
 }
@@ -5626,7 +5626,7 @@ static int _event_structure_lines_clicked(GtkWidget *widget, GdkEventButton *eve
     g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_LINES;
   }
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE); // also calls dt_control_queue_redraw_center
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE); // also calls dt_control_queue_redraw_center
 
   return TRUE;
 }

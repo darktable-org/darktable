@@ -406,7 +406,7 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
     p->curve_type[DT_IOP_RGBCURVE_R] = p->curve_type[DT_IOP_RGBCURVE_G] = p->curve_type[DT_IOP_RGBCURVE_B]
         = MONOTONE_HERMITE;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
@@ -523,7 +523,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
                 p->curve_nodes[ch][1].x - increment + (p->curve_nodes[ch][3].x - p->curve_nodes[ch][1].x) / 2.f,
                 p->curve_nodes[ch][1].y + increment + (p->curve_nodes[ch][3].y - p->curve_nodes[ch][1].y) / 2.f);
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 
   dt_control_queue_redraw_widget(self->widget);
@@ -1139,7 +1139,7 @@ static gboolean _area_motion_notify_callback(GtkWidget *widget, GdkEventMotion *
       dt_iop_color_picker_reset(self, TRUE);
       // no vertex was close, create a new one!
       g->selected = _add_node(curve_nodes, &p->curve_num_nodes[ch], linx, liny);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
   }
   else
@@ -1233,7 +1233,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
           }
 
           dt_iop_color_picker_reset(self, TRUE);
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
           gtk_widget_queue_draw(self->widget);
         }
 
@@ -1255,7 +1255,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
         g->selected = -2; // avoid motion notify re-inserting immediately.
         dt_bauhaus_combobox_set(g->interpolator, p->curve_type[DT_IOP_RGBCURVE_R]);
         dt_iop_color_picker_reset(self, TRUE);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
         gtk_widget_queue_draw(self->widget);
       }
       else
@@ -1266,7 +1266,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
           g->selected = -2; // avoid motion notify re-inserting immediately.
           dt_bauhaus_combobox_set(g->autoscale, 1);
           dt_iop_color_picker_reset(self, TRUE);
-          dt_dev_add_history_item(darktable.develop, self, TRUE);
+          dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
           gtk_widget_queue_draw(self->widget);
         }
       }
@@ -1280,7 +1280,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
       const float reset_value = g->selected == 0 ? 0.f : 1.f;
       curve_nodes[g->selected].y = curve_nodes[g->selected].x = reset_value;
       dt_iop_color_picker_reset(self, TRUE);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
       gtk_widget_queue_draw(self->widget);
       return TRUE;
     }
@@ -1294,7 +1294,7 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
     g->selected = -2; // avoid re-insertion of that point immediately after this
     p->curve_num_nodes[ch]--;
     dt_iop_color_picker_reset(self, TRUE);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     gtk_widget_queue_draw(self->widget);
     return TRUE;
   }

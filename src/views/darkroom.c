@@ -2873,7 +2873,7 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
     // we update the headers
     dt_dev_modules_update_multishow(module_src->dev);
 
-    dt_dev_add_history_item(module_src->dev, module_src, TRUE);
+    dt_dev_add_history_item(module_src->dev, module_src, TRUE, TRUE);
 
     dt_ioppr_check_iop_order(module_src->dev, 0, "_on_drag_data_received end");
 

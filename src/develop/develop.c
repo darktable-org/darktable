@@ -987,7 +987,7 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
   _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
 }
 
-void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean new_item)
+void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, const gboolean enable, const gboolean new_item, const gboolean invalidate)
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
@@ -1023,7 +1023,7 @@ void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean 
   dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
 
   // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(dev);
+  if (invalidate) dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
   if(dev->gui_attached)
@@ -1038,14 +1038,14 @@ void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean 
   }
 }
 
-void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, const gboolean enable, const gboolean invalidate)
 {
-  _dev_add_history_item(dev, module, enable, FALSE);
+  _dev_add_history_item(dev, module, enable, FALSE, invalidate);
 }
 
-void dt_dev_add_new_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+void dt_dev_add_new_history_item(dt_develop_t *dev, dt_iop_module_t *module, const gboolean enable)
 {
-  _dev_add_history_item(dev, module, enable, TRUE);
+  _dev_add_history_item(dev, module, enable, TRUE, TRUE);
 }
 
 void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_module, gboolean _enable, gboolean no_image)
@@ -2301,7 +2301,7 @@ void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
   dt_iop_module_t *exposure = instance->module;
   memcpy(exposure->params, exposure->default_params, exposure->params_size);
   exposure->gui_update(exposure);
-  dt_dev_add_history_item(exposure->dev, exposure, TRUE);
+  dt_dev_add_history_item(exposure->dev, exposure, TRUE, TRUE);
 }
 
 void dt_dev_exposure_set_exposure(dt_develop_t *dev, const float exposure)

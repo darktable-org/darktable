@@ -2692,7 +2692,7 @@ static void commit_profile_callback(GtkWidget *widget, GdkEventButton *event, gp
 
   gui_changed(self, NULL, NULL);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -2736,7 +2736,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 
   gui_changed(self, NULL, NULL);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void _preview_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -3375,7 +3375,7 @@ static void illum_xy_callback(GtkWidget *slider, gpointer user_data)
   paint_temperature_background(self);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -3960,7 +3960,7 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 
     --darktable.gui->reset;
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 }
 

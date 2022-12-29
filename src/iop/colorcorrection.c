@@ -384,13 +384,13 @@ static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEvent
     {
       p->loa = ma;
       p->lob = mb;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
     else if(g->selected == 2)
     {
       p->hia = ma;
       p->hib = mb;
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
   }
   else
@@ -422,17 +422,17 @@ static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventB
     {
       case 1: // only reset lo
         p->loa = p->lob = 0.0;
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
         break;
       case 2: // only reset hi
         p->hia = p->hib = 0.0;
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
         break;
       default: // reset everything
       {
         dt_iop_colorcorrection_params_t *d = (dt_iop_colorcorrection_params_t *)self->default_params;
         memcpy(p, d, sizeof(*p));
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
+        dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
       }
     }
     return TRUE;
@@ -517,7 +517,7 @@ static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey 
       break;
   }
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   gtk_widget_queue_draw(widget);
 
   return TRUE;

@@ -450,7 +450,7 @@ static void red_callback(GtkWidget *slider, gpointer user_data)
   if(output_channel_index >= 0 && value != p->red[output_channel_index])
   {
     p->red[output_channel_index] = value;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 }
 
@@ -465,7 +465,7 @@ static void green_callback(GtkWidget *slider, gpointer user_data)
   if(output_channel_index >= 0 && value != p->green[output_channel_index])
   {
     p->green[output_channel_index] = value;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 }
 
@@ -480,7 +480,7 @@ static void blue_callback(GtkWidget *slider, gpointer user_data)
   if(output_channel_index >= 0 && value != p->blue[output_channel_index])
   {
     p->blue[output_channel_index] = value;
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 }
 

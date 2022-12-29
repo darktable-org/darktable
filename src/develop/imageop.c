@@ -644,7 +644,7 @@ static void _gui_movedown_callback(GtkButton *button, dt_iop_module_t *module)
   // we update the headers
   dt_dev_modules_update_multishow(prev->dev);
 
-  dt_dev_add_history_item(prev->dev, module, TRUE);
+  dt_dev_add_history_item(prev->dev, module, TRUE, TRUE);
 
   dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_movedown_callback end");
 
@@ -680,7 +680,7 @@ static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
   // we update the headers
   dt_dev_modules_update_multishow(next->dev);
 
-  dt_dev_add_history_item(next->dev, module, TRUE);
+  dt_dev_add_history_item(next->dev, module, TRUE, TRUE);
 
   dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_moveup_callback end");
 
@@ -695,7 +695,7 @@ static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
   // make sure the duplicated module appears in the history
-  dt_dev_add_history_item(base->dev, base, FALSE);
+  dt_dev_add_history_item(base->dev, base, FALSE, TRUE);
 
   // first we create the new module
   ++darktable.gui->reset;
@@ -754,7 +754,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
     }
 
     // we save the new instance creation
-    dt_dev_add_history_item(module->dev, module, TRUE);
+    dt_dev_add_history_item(module->dev, module, TRUE, TRUE);
 
     dt_iop_gui_update_blending(module);
   }
@@ -827,14 +827,14 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
       if(g_strcmp0(module->multi_name, name) != 0)
       {
         g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
-        dt_dev_add_history_item(module->dev, module, TRUE);
+        dt_dev_add_history_item(module->dev, module, TRUE, TRUE);
       }
     }
     else
     {
       // clear out multi-name (set 1st char to 0)
       module->multi_name[0] = 0;
-      dt_dev_add_history_item(module->dev, module, TRUE);
+      dt_dev_add_history_item(module->dev, module, TRUE, TRUE);
     }
 
     ended = 1;
@@ -998,7 +998,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
       if(!basics && dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
 
-      dt_dev_add_history_item(module->dev, module, FALSE);
+      dt_dev_add_history_item(module->dev, module, FALSE, TRUE);
     }
     else
     {
@@ -1008,7 +1008,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
       if(module->dev->proxy.chroma_adaptation == module)
         module->dev->proxy.chroma_adaptation = NULL;
 
-      dt_dev_add_history_item(module->dev, module, FALSE);
+      dt_dev_add_history_item(module->dev, module, FALSE, TRUE);
 
       if(!basics && dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
@@ -1833,7 +1833,7 @@ static void _gui_reset_callback(GtkButton *button, GdkEventButton *event, dt_iop
     /* update ui to default params*/
     dt_iop_gui_update(module);
 
-    dt_dev_add_history_item(module->dev, module, TRUE);
+    dt_dev_add_history_item(module->dev, module, TRUE, TRUE);
   }
 
   // rebuild the accelerators
@@ -3051,7 +3051,7 @@ void dt_iop_refresh_all(dt_iop_module_t *module)
 static gboolean _postponed_history_update(gpointer data)
 {
   dt_iop_module_t *self = (dt_iop_module_t*)data;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   self->timeout_handle = 0;
   return FALSE; //cancel the timer
 }
@@ -3146,7 +3146,7 @@ void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
 
   dt_iop_color_picker_reset(module, TRUE);
 
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
+  dt_dev_add_history_item(darktable.develop, module, TRUE, TRUE);
 }
 
 enum

@@ -202,7 +202,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 #if 0
 /** optional, always needed if tiling is permitted by setting IOP_FLAGS_ALLOW_TILING
-    Also define this if the module uses more memory on the OpenCl device than the in& output buffers. 
+    Also define this if the module uses more memory on the OpenCl device than the in& output buffers.
 */
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
@@ -421,7 +421,7 @@ static void extra_callback(GtkWidget *w, dt_iop_module_t *self)
 
   // If any params updated directly, not via a callback, then
   // let core know of the changes
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 /** optional gui callbacks. */
@@ -459,7 +459,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     p->factor = self->picked_color[1];
   }
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   dt_control_queue_redraw_widget(self->widget);
 }
 

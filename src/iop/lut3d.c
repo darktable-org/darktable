@@ -1402,7 +1402,7 @@ static void filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
 #else
     g_strlcpy(p->filepath, filepath, sizeof(p->filepath));
 #endif // HAVE_GMIC
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
   }
 }
 
@@ -1428,7 +1428,7 @@ static void lutname_callback(GtkTreeSelection *selection, dt_iop_module_t *self)
     {
       g_strlcpy(p->lutname, lutname, sizeof(p->lutname));
       get_compressed_clut(self, TRUE);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
     }
     g_free(lutname);
   }

@@ -486,7 +486,7 @@ static void Dmin_picker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 
   Dmin_picker_update(self);
   dt_iop_color_picker_reset(self, TRUE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static void WB_low_picker_update(dt_iop_module_t *self)
@@ -533,7 +533,7 @@ static void WB_low_picker_callback(GtkColorButton *widget, dt_iop_module_t *self
 
   WB_low_picker_update(self);
   dt_iop_color_picker_reset(self, TRUE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 
@@ -580,7 +580,7 @@ static void WB_high_picker_callback(GtkColorButton *widget, dt_iop_module_t *sel
 
   WB_high_picker_update(self);
   dt_iop_color_picker_reset(self, TRUE);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 
@@ -603,7 +603,7 @@ static void apply_auto_Dmin(dt_iop_module_t *self)
 
   Dmin_picker_update(self);
   dt_control_queue_redraw_widget(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 // from Dmin, find out the range of density values of the film and compute Dmax
@@ -627,7 +627,7 @@ static void apply_auto_Dmax(dt_iop_module_t *self)
   --darktable.gui->reset;
 
   dt_control_queue_redraw_widget(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 // from Dmax, compute the offset so the range of density is rescaled between [0; 1]
@@ -649,7 +649,7 @@ static void apply_auto_offset(dt_iop_module_t *self)
   --darktable.gui->reset;
 
   dt_control_queue_redraw_widget(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 // from Dmax and offset, compute the white balance correction as multipliers of the offset
@@ -675,7 +675,7 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
 
   WB_low_picker_update(self);
   dt_control_queue_redraw_widget(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 // from Dmax, offset and white balance multipliers, compute the white balance of the illuminant as multipliers of 1/Dmax
@@ -701,7 +701,7 @@ static void apply_auto_WB_high(dt_iop_module_t *self)
 
   WB_high_picker_update(self);
   dt_control_queue_redraw_widget(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 // from Dmax, offset and both white balances, compute the print black adjustment
@@ -727,7 +727,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   --darktable.gui->reset;
 
   dt_control_queue_redraw_widget(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 // from Dmax, offset, both white balances, and printblack, compute the print exposure adjustment as a scaling factor
@@ -753,7 +753,7 @@ static void apply_auto_exposure(dt_iop_module_t *self)
   --darktable.gui->reset;
 
   dt_control_queue_redraw_widget(self->widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 
