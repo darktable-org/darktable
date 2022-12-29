@@ -81,8 +81,6 @@ static inline void dt_imageio_dng_write_tiff_header(
     const float adobe_XYZ_to_CAM[4][3])
 {
   const uint32_t channels = 1;
-  uint8_t *b /*, *offs1, *offs2*/;
-  // uint32_t exif_offs;
   uint8_t buf[1024];
   uint8_t cnt = 0;
 
@@ -97,34 +95,43 @@ static inline void dt_imageio_dng_write_tiff_header(
   buf[3] = 42;
   buf[7] = 10;
 
-  b = buf + 12;
-  b = dt_imageio_dng_make_tag(254, LONG, 1, 0, b, &cnt);           /* New subfile type.  */
-  b = dt_imageio_dng_make_tag(256, SHORT, 1, (xs << 16), b, &cnt); /* Image width.  */
-  b = dt_imageio_dng_make_tag(257, SHORT, 1, (ys << 16), b, &cnt); /* Image length.  */
-  // b = dt_imageio_dng_make_tag(  258, SHORT, channels, 506, b, &cnt ); /* Bits per sample.  */
-  b = dt_imageio_dng_make_tag(258, SHORT, 1, 32 << 16, b, &cnt); /* Bits per sample.  */
-  // bits per sample: 32-bit float
-  // buf[507] = buf[509] = buf[511] = 32;
-  b = dt_imageio_dng_make_tag(259, SHORT, 1, (1 << 16), b, &cnt); /* Compression.  */
-  b = dt_imageio_dng_make_tag(262, SHORT, 1, 32803 << 16, b, &cnt);
-      /* cfa */ // 34892, b, &cnt ); // linear raw /* Photo interp.  */
-  // b = dt_imageio_dng_make_tag(  271, ASCII, 8, 494, b, &cnt); // maker, needed for dcraw
-  // b = dt_imageio_dng_make_tag(  272, ASCII, 9, 484, b, &cnt); // model
-  //   offs2 = b + 8;
-  b = dt_imageio_dng_make_tag(273, LONG, 1, 584, b, &cnt);             /* Strip offset.  */
-  b = dt_imageio_dng_make_tag(274, SHORT, 1, 1 << 16, b, &cnt);        /* Orientation. */
-  b = dt_imageio_dng_make_tag(277, SHORT, 1, channels << 16, b, &cnt); /* Samples per pixel.  */
-  b = dt_imageio_dng_make_tag(278, SHORT, 1, (ys << 16), b, &cnt);     /* Rows per strip.  */
-  b = dt_imageio_dng_make_tag(279, LONG, 1, (ys * xs * channels * 4), b,
-                              &cnt);                              // 32 bits/channel /* Strip byte count.  */
-  b = dt_imageio_dng_make_tag(284, SHORT, 1, (1 << 16), b, &cnt); /* Planar configuration.  */
-  b = dt_imageio_dng_make_tag(339, SHORT, 1, (3 << 16), b,
-                              &cnt); /* SampleFormat = 3 => ieee floating point */
+  uint8_t *b = buf + 12;
+  int data = 512; // take care of room in data segment; the tags may use up to 500 bytes so far 
+
+  b = dt_imageio_dng_make_tag(254, LONG, 1, 0, b, &cnt);                      /* New subfile type.  */
+  b = dt_imageio_dng_make_tag(256, SHORT, 1, (xs << 16), b, &cnt);            /* Image width.  */
+  b = dt_imageio_dng_make_tag(257, SHORT, 1, (ys << 16), b, &cnt);            /* Image length.  */
+  b = dt_imageio_dng_make_tag(258, SHORT, 1, 32 << 16, b, &cnt);              /* Bits per sample: 32-bit float */
+  b = dt_imageio_dng_make_tag(259, SHORT, 1, (1 << 16), b, &cnt);             /* Compression.  */
+  b = dt_imageio_dng_make_tag(262, SHORT, 1, 32803 << 16, b, &cnt);           /* Photo interp: CFA  */
+  b = dt_imageio_dng_make_tag(274, SHORT, 1, 1 << 16, b, &cnt);               /* Orientation. */
+  b = dt_imageio_dng_make_tag(277, SHORT, 1, channels << 16, b, &cnt);        /* Samples per pixel.  */
+  b = dt_imageio_dng_make_tag(278, SHORT, 1, (ys << 16), b, &cnt);            /* Rows per strip.  */
+  b = dt_imageio_dng_make_tag(279, LONG, 1, (ys * xs * channels*4), b, &cnt); /* Strip byte count.  */
+  b = dt_imageio_dng_make_tag(284, SHORT, 1, (1 << 16), b, &cnt);             /* Planar configuration.  */
+  b = dt_imageio_dng_make_tag(339, SHORT, 1, (3 << 16), b, &cnt);             /* SampleFormat = 3 => ieee floating point */
+
+  b = dt_imageio_dng_make_tag(50829, LONG, 4, data, b, &cnt);                 /* Active Area */
+  dt_imageio_dng_write_buf(buf, data, 0);
+  dt_imageio_dng_write_buf(buf, data+4, 0);
+  dt_imageio_dng_write_buf(buf, data+8, ys);
+  dt_imageio_dng_write_buf(buf, data+12, xs);
+  data += 16;
+
+  b = dt_imageio_dng_make_tag(50719, LONG, 2, data, b, &cnt);                 /* Crop Origin */
+  dt_imageio_dng_write_buf(buf, data, 0);
+  dt_imageio_dng_write_buf(buf, data+4, 0);
+  data += 8;
+
+  b = dt_imageio_dng_make_tag(50720, LONG, 2, data, b, &cnt);                 /* Crop Size */
+  dt_imageio_dng_write_buf(buf, data, xs);
+  dt_imageio_dng_write_buf(buf, data+4, ys);
+  data += 8;
 
   if(filter == 9u) // xtrans
-    b = dt_imageio_dng_make_tag(33421, SHORT, 2, (6 << 16) | 6, b, &cnt); /* CFAREPEATEDPATTERNDIM */
+    b = dt_imageio_dng_make_tag(33421, SHORT, 2, (6 << 16) | 6, b, &cnt);     /* CFAREPEATEDPATTERNDIM */
   else
-    b = dt_imageio_dng_make_tag(33421, SHORT, 2, (2 << 16) | 2, b, &cnt); /* CFAREPEATEDPATTERNDIM */
+    b = dt_imageio_dng_make_tag(33421, SHORT, 2, (2 << 16) | 2, b, &cnt);     /* CFAREPEATEDPATTERNDIM */
 
   uint32_t cfapattern = 0;
   switch(filter)
@@ -142,34 +149,27 @@ static inline void dt_imageio_dng_write_tiff_header(
       cfapattern = (2 << 24) | (1 << 16) | (1 << 8) | 0; // bggr
       break;
   }
-  if(filter == 9u) // xtrans
-    b = dt_imageio_dng_make_tag(33422, BYTE, 36, 400, b, &cnt); /* CFAPATTERN */
-  else // bayer
-    b = dt_imageio_dng_make_tag(33422, BYTE, 4, cfapattern, b, &cnt); /* CFAPATTERN */
 
-  // b = dt_imageio_dng_make_tag(  306, ASCII, 20, 428, b, &cnt ); // DateTime
-  //   offs1 = b + 8;// + 3;
-  // b = dt_imageio_dng_make_tag(34665, LONG, 1, 264, b, &cnt); // exif ifd
-  b = dt_imageio_dng_make_tag(50706, BYTE, 4, (1 << 24) | (2 << 16), b, &cnt); // DNG Version/backward version
-  b = dt_imageio_dng_make_tag(50707, BYTE, 4, (1 << 24) | (1 << 16), b, &cnt);
+  if(filter == 9u) // xtrans
+  {
+    b = dt_imageio_dng_make_tag(33422, BYTE, 36, data, b, &cnt);              /* xtrans PATTERN */
+    // apparently this doesn't need byteswap:
+    memcpy(buf + data, xtrans, sizeof(uint8_t)*36);
+    data += 36;
+  }
+  else // bayer
+    b = dt_imageio_dng_make_tag(33422, BYTE, 4, cfapattern, b, &cnt);         /* bayer PATTERN */
+
+  b = dt_imageio_dng_make_tag(50706, BYTE, 4, (1 << 24)|(2 << 16), b, &cnt);  /* DNG Version/backward version */
+  b = dt_imageio_dng_make_tag(50707, BYTE, 4, (1 << 24)|(1 << 16), b, &cnt);
+
   union {
       float f;
       uint32_t u;
   } white;
   white.f = whitelevel;
-  b = dt_imageio_dng_make_tag(50717, LONG, 1, white.u, b, &cnt); // WhiteLevel in float, actually.
-  b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, 480, b, &cnt); // ColorMatrix1 (XYZ->native cam)
-  b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, 556, b, &cnt); // AsShotNeutral
-  // b = dt_imageio_dng_make_tag(50729, RATIONAL, 2, 512, b, &cnt); // AsShotWhiteXY
-  b = dt_imageio_dng_make_tag(50778, SHORT, 1, 21 << 16, b, &cnt); // CalibrationIlluminant1
 
-  b = dt_imageio_dng_make_tag(0, 0, 0, 0, b, &cnt); /* Next IFD.  */
-  buf[11] = cnt - 1; // write number of directory entries of this ifd
-
-  // exif is written later, by exiv2:
-  // printf("offset: %d\n", b - buf); // find out where we're writing data
-  // apparently this doesn't need byteswap:
-  memcpy(buf+400, xtrans, sizeof(uint8_t)*36);
+  b = dt_imageio_dng_make_tag(50717, LONG, 1, white.u, b, &cnt);              /* WhiteLevel in float, actually. */
 
   // ColorMatrix1 try to get camera matrix else m[k] like before
   if(!isnan(adobe_XYZ_to_CAM[0][0]))
@@ -179,25 +179,34 @@ static inline void dt_imageio_dng_write_tiff_header(
       for(int i= 0; i < 3; i++)
         m[k*3+i] = roundf(adobe_XYZ_to_CAM[k][i] * den);
   }
-
+  b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, data, b, &cnt);            /* ColorMatrix1 (XYZ->native cam) */
   for(int k = 0; k < 9; k++)
   {
-    dt_imageio_dng_write_buf(buf, 480+k*8, m[k]);
-    dt_imageio_dng_write_buf(buf, 484+k*8, den);
+    dt_imageio_dng_write_buf(buf, data + k*8, m[k]);
+    dt_imageio_dng_write_buf(buf, data+4 + k*8, den);
   }
+  data += 9 * 8;
 
-  // TAG AsShotNeutral: for rawspeed Dngdecoder camera white balance
+  b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, data, b, &cnt);             /* AsShotNeutral for rawspeed Dngdecoder camera white balance */
   den = 1000000;
   for(int k = 0; k < 3; k++)
   {
     const float coeff = roundf(((float)den * wb_coeffs[1]) / wb_coeffs[k]);
-    dt_imageio_dng_write_buf(buf, 556+k*8, (int)coeff);
-    dt_imageio_dng_write_buf(buf, 560+k*8, den);
+    dt_imageio_dng_write_buf(buf, data + k*8, (int)coeff);
+    dt_imageio_dng_write_buf(buf, data+4 + k*8, den);
   }
+  data += 3 * 8;
 
-  // dt_imageio_dng_write_buf(buf, offs2-buf, 584);
-  const int written = fwrite(buf, 1, 584, fp);
-  if(written != 584) fprintf(stderr, "[dng_write_header] failed to write image header!\n");
+  b = dt_imageio_dng_make_tag(50778, SHORT, 1, DT_LS_D65 << 16, b, &cnt);     /* CalibrationIlluminant1 */
+
+  // We have all tags using data now written so we can finally use strip offset 
+  b = dt_imageio_dng_make_tag(273, LONG, 1, data, b, &cnt);                   /* Strip offset.  */
+  b = dt_imageio_dng_make_tag(0, 0, 0, 0, b, &cnt);                           /* Next IFD.  */
+  buf[11] = cnt - 1;                                                          /* write number of directory entries of this ifd */
+
+  // exif is written later, by exiv2:
+  const int written = fwrite(buf, 1, data, fp);
+  if(written != data) fprintf(stderr, "[dng_write_header] failed to write image header!\n");
 }
 
 static inline void dt_imageio_write_dng(
