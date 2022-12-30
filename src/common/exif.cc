@@ -2986,8 +2986,7 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
 {
   sqlite3_stmt *stmt;
 
-  const gboolean basecurve_auto_apply =
-    dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
+  const gboolean basecurve_auto_apply = dt_is_display_referred();
 
   char query[1024] = { 0 };
 
