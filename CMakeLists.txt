@@ -285,7 +285,7 @@ else(${perl_BIN} STREQUAL "perl_BIN-NOTFOUND")
   message(STATUS "Found perl")
 endif(${perl_BIN} STREQUAL "perl_BIN-NOTFOUND")
 
-# we need intltool-merge for darktable.desktop
+# we need intltool-merge for org.darktable.darktable.desktop
 find_program(intltool_merge_BIN intltool-merge)
 if(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
   message(STATUS "Missing intltool-merge")
@@ -294,10 +294,10 @@ else(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
   message(STATUS "Found intltool-merge")
 endif(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
 
-# we need desktop-file-validate to check darktable.desktop
+# we need desktop-file-validate to check org.darktable.darktable.desktop
 find_program(desktop_file_validate_BIN desktop-file-validate)
 if(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
-  message(STATUS "Missing desktop-file-validate, problems in darktable.desktop might go unnoticed")
+  message(STATUS "Missing desktop-file-validate, problems in org.darktable.darktable.desktop might go unnoticed")
   set(VALIDATE_DESKTOP_FILE 0)
 else(${desktop_file_validate_BIN} STREQUAL "desktop_file_validate_BIN-NOTFOUND")
   message(STATUS "Found desktop-file-validate")
