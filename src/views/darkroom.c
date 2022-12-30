@@ -3660,7 +3660,7 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
   dt_control_navigation_redraw();
 }
 
-float calculate_new_scroll_zoom_tscale (const int up, const gboolean constrained,
+static float _calculate_new_scroll_zoom_tscale (const int up, const gboolean constrained,
                                  const float tscaleold, const float tscalefit)
 {
   enum {
@@ -3753,7 +3753,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   const gboolean low_ppd = (darktable.gui->ppd == 1);
 
   const float tscaleold = scale * ppd;
-  const float tscale = calculate_new_scroll_zoom_tscale (up, constrained, tscaleold, fitscale * ppd);
+  const float tscale = _calculate_new_scroll_zoom_tscale (up, constrained, tscaleold, fitscale * ppd);
   if(tscale == tscaleold) return;  // no op
   scale = tscale / ppd;
 
@@ -4022,7 +4022,7 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
   const gboolean low_ppd = (dev->second_window.ppd == 1);
 
   const float tscaleold = scale * ppd;
-  const float tscale = calculate_new_scroll_zoom_tscale (up, constrained, tscaleold, fitscale * ppd);
+  const float tscale = _calculate_new_scroll_zoom_tscale (up, constrained, tscaleold, fitscale * ppd);
   if(tscale == tscaleold) return;  // no op
   scale = tscale / ppd;
 
