@@ -22588,7 +22588,7 @@ msgstr "neuer Name des Modullayouts:"
 
 #: ../src/libs/modulegroups.c:3542
 msgid "a preset with this name already exists!"
-msgstr "Modullayout mit dem Namen „%s” existiert bereits!"
+msgstr "Ein Modullayout mit diesem Namen existiert bereits!"
 
 #: ../src/libs/modulegroups.c:3875
 msgid "preset: "
