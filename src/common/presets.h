@@ -26,11 +26,16 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
 /** load preset from file */
 int dt_presets_import_from_file(const char *preset_path);
 
-// does the module support autoapplying presets ?
+/** does the module support autoapplying presets ? */
 gboolean dt_presets_module_can_autoapply(const gchar *operation);
+
+/** get preset name for given module params */
+char *dt_presets_get_name(const char *module_name,
+                          const void *params,
+                          const uint32_t param_size);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
