@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -394,7 +394,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const dt_aligned_pixel_t weight = { params->luma, params->chroma, params->chroma, 1.0f };
   const dt_aligned_pixel_t invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
-  const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
+  const gboolean skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
@@ -618,7 +618,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   // if running in RGB space, 'luma' should equal 'chroma'
   const __m128 weight = { params->luma, params->chroma, params->chroma, 1.0f };
   const __m128 invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
-  const bool skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
+  const gboolean skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
 
   // define the normalization to convert central pixel differences into central pixel weights
   const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
@@ -872,11 +872,8 @@ static void get_blocksizes(int *h, int *v, const int radius, const int devid,
 static inline cl_int nlmeans_cl_init(const int devid, const int kernel, cl_mem dev_out, const int height,
                                      const int width)
 {
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&height);
-  return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(dev_out), CLARG(width), CLARG(height));
 }
 #endif /* HAVE_OPENCL */
 
@@ -888,13 +885,8 @@ static inline cl_int nlmeans_cl_horiz(const int devid, const int kernel, cl_mem 
 {
   const size_t sizesl[3] = { bwidth, ROUNDUPDHT(height, devid), 1 };
   const size_t local[3] = { hblocksize, 1, 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_U4);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_U4_t);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, 2 * sizeof(int), (void *)&q);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&P);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, (hblocksize + 2 * P) * sizeof(float), NULL);
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_U4), CLARG(dev_U4_t), CLARG(width), CLARG(height), CLARRAY(2, q),
+    CLARG(P), CLLOCAL((hblocksize + 2 * P) * sizeof(float)));
   return dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizesl, local);
 }
 #endif /* HAVE_OPENCL */
@@ -905,12 +897,8 @@ static inline cl_int nlmeans_cl_accu(const int devid, const int kernel, cl_mem d
                                      cl_mem dev_out, const int q[2], const int height, const int width,
                                      const size_t sizes[3])
 {
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_U4_tt);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, 2 * sizeof(int), (void *)&q);
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width),
+    CLARG(height), CLARRAY(2, q));
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 #endif /* HAVE_OPENCL */
@@ -950,22 +938,17 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   for(int p = 0; p < num_patches; p++)
   {
     const patch_t *patch = &patches[p];
     int q[2] = { patch->rows, patch->cols };
+    const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     // compute channel-normed squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 4, 2 * sizeof(int), (void *)&q);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 5, sizeof(float), (void *)&nL2);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 6, sizeof(float), (void *)&nC2);
+    dt_opencl_set_kernel_args(devid, params->kernel_dist, 0, CLARG(dev_in), CLARG(dev_U4), CLARG(width),
+      CLARG(height), CLARG(q), CLARG(nL2), CLARG(nC2));
     err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_dist, sizes);
     if(err != CL_SUCCESS) break;
 
@@ -979,14 +962,8 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
     const size_t local[3] = { 1, vblocksize, 1 };
     const float sharpness = params->sharpness;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 4, 2 * sizeof(int), (void *)&q);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 5, sizeof(int), (void *)&P);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 6, sizeof(float), (void *)&sharpness);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 7, (vblocksize + 2 * P) * sizeof(float), NULL);
+    dt_opencl_set_kernel_args(devid, params->kernel_vert, 0, CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width),
+      CLARG(height), CLARG(q), CLARG(P), CLARG(sharpness), CLLOCAL((vblocksize + 2 * P) * sizeof(float)));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_vert, sizesl, local);
     if(err != CL_SUCCESS) break;
 
@@ -1045,20 +1022,17 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
-  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   for(int p = 0; p < num_patches; p++)
   {
     const patch_t *patch = &patches[p];
     int q[2] = { patch->rows, patch->cols };
+    const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     // compute squared differences between input pixels and shifted (by q) pixels
     cl_mem dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 1, sizeof(cl_mem), (void *)&dev_U4);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, params->kernel_dist, 4, 2 * sizeof(int), (void *)&q);
+    dt_opencl_set_kernel_args(devid, params->kernel_dist, 0, CLARG(dev_in), CLARG(dev_U4), CLARG(width),
+      CLARG(height), CLARG(q));
     err = dt_opencl_enqueue_kernel_2d(devid, params->kernel_dist, sizes);
     if(err != CL_SUCCESS) break;
 
@@ -1072,16 +1046,9 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
     const size_t local[3] = { 1, vblocksize, 1 };
     const float central_pixel_weight = params->center_weight;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 0, sizeof(cl_mem), (void *)&dev_U4_t);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 1, sizeof(cl_mem), (void *)&dev_U4_tt);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 4, 2 * sizeof(int), (void *)&q);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 5, sizeof(int), (void *)&P);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 6, sizeof(float), (void *)&norm);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 7, (vblocksize + 2 * P) * sizeof(float), NULL);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 8, sizeof(float), (void *)&central_pixel_weight);
-    dt_opencl_set_kernel_arg(devid, params->kernel_vert, 9, sizeof(cl_mem), ((void *)&dev_U4));
+    dt_opencl_set_kernel_args(devid, params->kernel_vert, 0, CLARG(dev_U4_t), CLARG(dev_U4_tt), CLARG(width),
+      CLARG(height), CLARG(q), CLARG(P), CLARG(norm), CLLOCAL((vblocksize + 2 * P) * sizeof(float)),
+      CLARG(central_pixel_weight), CLARG(dev_U4));
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, params->kernel_vert, sizesl, local);
     if(err != CL_SUCCESS) break;
 
@@ -1110,4 +1077,3 @@ error:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

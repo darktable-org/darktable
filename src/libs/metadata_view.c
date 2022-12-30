@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -181,7 +181,7 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 299;
 }
@@ -329,9 +329,9 @@ static void _metadata_get_flags(const dt_image_t *const img, char *const text, c
   char *flags_tooltip = NULL;
   char *flag_descriptions[] = { N_("unused"),
                                 N_("unused/deprecated"),
-                                N_("ldr"),
+                                N_("LDR"),
                                 N_("raw"),
-                                N_("hdr"),
+                                N_("HDR"),
                                 N_("marked for deletion"),
                                 N_("auto-applying presets applied"),
                                 N_("legacy flag. set for all new images"),
@@ -1644,4 +1644,3 @@ void init(struct dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

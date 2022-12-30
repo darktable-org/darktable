@@ -210,7 +210,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_splittoning_data_t *d = (dt_iop_splittoning_data_t *)piece->data;
   dt_iop_splittoning_global_data_t *gd = (dt_iop_splittoning_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
   const int width = roi_out->width;
@@ -223,18 +223,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float highlight_hue = d->highlight_hue;
   const float highlight_saturation = d->highlight_saturation;
 
-  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 0, sizeof(cl_mem), &dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 2, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 3, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 4, sizeof(float), &compress);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 5, sizeof(float), &balance);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 6, sizeof(float), &shadow_hue);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 7, sizeof(float), &shadow_saturation);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 8, sizeof(float), &highlight_hue);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 9, sizeof(float), &highlight_saturation);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_splittoning, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_splittoning, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(compress), CLARG(balance), CLARG(shadow_hue),
+    CLARG(shadow_saturation), CLARG(highlight_hue), CLARG(highlight_saturation));
   if(err != CL_SUCCESS) goto error;
   return TRUE;
 
@@ -468,7 +459,6 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
-  dt_bauhaus_widget_set_label(hue, section, N_("hue"));
   dt_bauhaus_slider_set_feedback(hue, 0);
   dt_bauhaus_slider_set_stop(hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.166f, 1.0f, 1.0f, 0.0f);
@@ -480,7 +470,6 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
   gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
   dt_color_picker_new(self, DT_COLOR_PICKER_POINT, hue);
 
-  dt_bauhaus_widget_set_label(saturation, section, N_("saturation"));
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(saturation, _("select the saturation tone"));
@@ -500,19 +489,19 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_splittoning_gui_data_t *g = IOP_GUI_ALLOC(splittoning);
 
-  ++darktable.bauhaus->skip_accel;
+  dt_iop_module_t *sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("shadows"));
   GtkWidget *shadows_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(self, "shadow_hue");
+  g->shadow_hue_gslider = dt_bauhaus_slider_from_params(sect, "shadow_hue");
   dt_bauhaus_slider_set_factor(g->shadow_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->shadow_hue_gslider, "°");
-  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(self, "shadow_saturation");
+  g->shadow_sat_gslider = dt_bauhaus_slider_from_params(sect, "shadow_saturation");
 
+  sect = DT_IOP_SECTION_FOR_PARAMS(self, N_("highlights"));
   GtkWidget *highlights_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(self, "highlight_hue");
+  g->highlight_hue_gslider = dt_bauhaus_slider_from_params(sect, "highlight_hue");
   dt_bauhaus_slider_set_factor(g->highlight_hue_gslider, 360.0f);
   dt_bauhaus_slider_set_format(g->highlight_hue_gslider, "°");
-  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(self, "highlight_saturation");
-  --darktable.bauhaus->skip_accel;
+  g->highlight_sat_gslider = dt_bauhaus_slider_from_params(sect, "highlight_saturation");
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

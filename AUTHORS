@@ -1,84 +1,88 @@
 * developers:
 Pascal Obry
-Aurélien PIERRE
 Aldric Renaudin
-parafin
 Roman Lebedev
+parafin
+Edouard Gomez
 
 * translators:
 Pascal Obry
+Victor Forsiuk
 Jeronimo Pellegrini
 Martin Straeten
+Kang-Wei Hsu
 EdgarLux
+Besmir Godolja
+Ryo Shinozaki
+Serkan ÖNDER
+mmardegan
+Luca Cignoni
+Marko Vertainen
+Maurizio Paglia
 Marcus Gama
-Matt Maguire
-篠崎亮　Ryo Shinozaki
-Philippe Weyland
-Victor Forsiuk
-vertama
-Matjaž Jeran
-Aurélien PIERRE
-Matteo Mardegan
-Miloš Komarčević
-Michel Leblond
 Nicolas Auffray
-Tianhao Chai
-Bogusław Ciastek
 Báthory Péter
-PeterWem
-Tomasz Golinski
-Wiktor Nowak
-sbraitbart
+Matjaž Jeran
+Matt Maguire
+Petr Stasiak
+Stephan Hoek
+bajdero
+Matteo Mardegan
+alex
+alexbora
+Яна Тунгушпаева
 
 * contributors (at least 4 commits):
-ralfbrown
+Hanno Schwalm
+Victor Forsiuk
 Diederik ter Rahe
-Dan Torop
-Hubert Kowalski
-Philippe Weyland
 Miloš Komarčević
-Bill Ferguson
+jandren
 Jeronimo Pellegrini
-hanno@schwalm-bremen.de
-Marco Carrarini
+Nicolas Auffray
 Martin Straeten
-Daniel Vogelbacher
-Mark-64
+Kang-Wei Hsu
+Simone Gotti
+Sakari Kapanen
 EdgarLux
 rawfiner
-Nicolas Auffray
-Chris Elston
-Chris.Elston
-Marcus Gama
-Sakari Kapanen
-Victor Forsiuk
-Arnaud TANGUY
-wpferguson
-Matt Maguire
-David-Tillmann Schaefer
-Marco
-Paolo DePetrillo
+Besmir Godolja
+cyruscook
 quovadit
-篠崎亮　Ryo Shinozaki
-vertama
-Matjaž Jeran
-darkelectron
-piratenpanda
+Ryo Shinozaki
+Philippe Weyland
+Ralf Brown
+Chris Elston
+Serkan ÖNDER
+mmardegan
+Luca Cignoni
+Apfelkraut
+Marcus Gama
+Marko Vertainen
+Maurizio Paglia
+Simon Raffeiner
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
-Jordan Neumeyer
 Miloš Komarčević
-Andreas Schneider
+Daniel Vogelbacher
+maruncz
+Alex Tutubalin
+Artemis Tosini
+Georg Lukas
+Georg Niedrist
+LibRaw LLC
 Marko Toplak
-hanno@schwalm-bremen.de
-helloqiu
+Milos Komarcevic
+Pascal Obry
+PeterWem
+Simon Raffeiner
+Sprite
 luz paz
+squid-f
+ubergeek801
 
 * Sub-module integration contributors (at least 1 commit):
 Pascal Obry
-Sakari Kapanen
-ralfbrown
-Aurélien PIERRE
 
 And all those of you that made previous releases possible

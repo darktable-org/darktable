@@ -130,6 +130,7 @@ typedef struct dt_dev_pixelpipe_t
   // output buffer (for display)
   uint8_t *output_backbuf;
   int output_backbuf_width, output_backbuf_height;
+  int final_width, final_height;
 
   // the data for the luminance mask are kept in a buffer written by demosaic or rawprepare
   // as we have to scale the mask later ke keep roi at that stage
@@ -197,7 +198,7 @@ gboolean dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width
 // inits all but the pixel caches, so you can't actually process an image (just get dimensions and
 // distortions)
 gboolean dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
-// inits the pixelpipe with given cacheline size and number of entries. returns TRUE in case of sucess
+// inits the pixelpipe with given cacheline size and number of entries. returns TRUE in case of success
 gboolean dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries, size_t memlimit);
 // constructs a new input buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2710,7 +2710,7 @@ void gui_reset(dt_lib_module_t *self)
   _update_atdetach_buttons(self);
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 500;
 }
@@ -3098,7 +3098,7 @@ void gui_init(dt_lib_module_t *self)
                                                   "\npress Delete or double-click to detach"
                                                   "\nright-click for other actions on attached tag,"
                                                   "\npress Tab to give the focus to entry,"
-                                                  "\nctrl-wheel scroll to resize the window"));
+                                                  "\nctrl+scroll to resize the window"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_attached_key_pressed), (gpointer)self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
@@ -3214,7 +3214,7 @@ void gui_init(dt_lib_module_t *self)
                                                   "\nshift+click to fully expand the selected tag,"
                                                   "\nright-click for other actions on selected tag,"
                                                   "\npress shift+Tab to give the focus to entry,"
-                                                  "\nctrl-scroll to resize the window"));
+                                                  "\nctrl+scroll to resize the window"));
 
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_dictionary_key_pressed), (gpointer)self);

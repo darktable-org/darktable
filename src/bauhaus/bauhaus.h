@@ -51,6 +51,7 @@ extern GType DT_BAUHAUS_WIDGET_TYPE;
 
 typedef enum dt_bauhaus_type_t
 {
+  DT_BAUHAUS_BUTTON = 0,
   DT_BAUHAUS_SLIDER = 1,
   DT_BAUHAUS_COMBOBOX = 2,
   // TODO: all the fancy color sliders..
@@ -169,12 +170,9 @@ typedef struct dt_bauhaus_widget_t
   gboolean is_section;
 
   // margin and padding structure, defined in css, retrieve on each draw
-  GtkBorder *margin, *padding;
+  GtkBorder margin, padding;
   // gap to add to the top padding due to the vertical centering
   int top_gap;
-
-  // is the popup not attached to the main widget (shortcuts)
-  gboolean detached_popup;
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
@@ -260,7 +258,7 @@ void dt_bauhaus_widget_set_section(GtkWidget *w, const gboolean is_section);
 
 // common functions:
 // set the label text:
-void dt_bauhaus_widget_set_label(GtkWidget *w, const char *section, const char *label);
+dt_action_t *dt_bauhaus_widget_set_label(GtkWidget *w, const char *section, const char *label);
 const char* dt_bauhaus_widget_get_label(GtkWidget *w);
 // attach a custom painted quad to the space at the right side (overwriting the default icon if any):
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, int paint_flags, void *paint_data);
@@ -274,6 +272,8 @@ int dt_bauhaus_widget_get_quad_active(GtkWidget *w);
 void dt_bauhaus_widget_set_quad_visibility(GtkWidget *w, const gboolean visible);
 // set pointer to iop params field:
 void dt_bauhaus_widget_set_field(GtkWidget *w, gpointer field, dt_introspection_type_t field_type);
+// reset widget to default value
+void dt_bauhaus_widget_reset(GtkWidget *widget);
 
 // update all bauhaus widgets in an iop module from their params fields
 void dt_bauhaus_update_module(dt_iop_module_t *self);
@@ -319,7 +319,6 @@ float dt_bauhaus_slider_get_step(GtkWidget *w);
 void dt_bauhaus_slider_set_feedback(GtkWidget *w, int feedback);
 int dt_bauhaus_slider_get_feedback(GtkWidget *w);
 
-void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 void dt_bauhaus_slider_set_factor(GtkWidget *w, float factor);
 void dt_bauhaus_slider_set_offset(GtkWidget *w, float offset);

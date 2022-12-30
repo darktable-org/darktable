@@ -167,7 +167,8 @@ static void _lighttable_check_layout(dt_view_t *self)
   // layout has changed, let restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER
+     || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
     dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = FALSE;
     gtk_widget_hide(lib->preview->widget);
@@ -175,7 +176,8 @@ static void _lighttable_check_layout(dt_view_t *self)
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
 
     // if we arrive from culling, we just need to ensure the offset is right
-    if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING || layout_old == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+    if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING
+       || layout_old == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     {
       dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, FALSE);
     }
@@ -193,7 +195,8 @@ static void _lighttable_check_layout(dt_view_t *self)
     dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
     gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
-  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING
+          || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     // record thumbtable offset
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
@@ -255,7 +258,8 @@ static void _lighttable_change_offset(dt_view_t *self, gboolean reset, gint imgi
   if(lib->preview_state)
   {
     // we only do the change if the offset is different
-    if(lib->culling->offset_imgid != imgid) dt_culling_change_offset_image(lib->preview, imgid);
+    if(lib->culling->offset_imgid != imgid)
+      dt_culling_change_offset_image(lib->preview, imgid);
   }
 
   // culling change (note that full_preview can be combined with culling)
@@ -603,6 +607,29 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
     dt_thumbtable_scrollbar_changed(dt_ui_thumbtable(darktable.gui->ui), x, y);
 }
 
+static void _overlays_force(dt_view_t *self, const gboolean show)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // full_preview change
+  if(lib->preview_state
+     && (!show || lib->preview->overlays == DT_THUMBNAIL_OVERLAYS_NONE
+         || lib->preview->overlays == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK))
+  {
+    dt_culling_force_overlay(lib->preview, show);
+  }
+
+  // culling change (note that full_preview can be combined with culling)
+  if((lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
+      || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+     && (!show || lib->preview->overlays == DT_THUMBNAIL_OVERLAYS_NONE
+         || lib->preview->overlays == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK))
+  {
+    dt_culling_force_overlay(lib->culling, show);
+  }
+}
+
+
 enum
 {
   DT_ACTION_ELEMENT_FOCUS_DETECT = 1,
@@ -648,6 +675,33 @@ const dt_action_def_t dt_action_def_preview
       _action_elements_preview,
       NULL, TRUE };
 
+static float _action_process_infos(gpointer target, const dt_action_element_t element,
+                                   const dt_action_effect_t effect, const float move_size)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  if(!isnan(move_size))
+  {
+    if(effect != DT_ACTION_EFFECT_ON)
+    {
+      _overlays_force(self, FALSE);
+    }
+    else if(effect != DT_ACTION_EFFECT_OFF)
+    {
+      _overlays_force(self, TRUE);
+    }
+  }
+
+  return lib->preview_state;
+}
+
+const dt_action_element_def_t _action_elements_infos[] = { { "normal", dt_action_effect_hold }, { NULL } };
+
+const dt_action_def_t dt_action_def_infos
+    = { N_("show infos"), _action_process_infos, _action_elements_infos, NULL, TRUE };
+
+
 enum
 {
   DT_ACTION_ELEMENT_MOVE = 0,
@@ -675,10 +729,12 @@ static float _action_process_move(gpointer target, dt_action_element_t element, 
   // navigation accels for thumbtable layouts
   // this can't be "normal" key accels because it's usually arrow keys and lot of other widgets
   // will capture them before the usual accel is triggered
-  if(!lib->preview_state && (layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE))
+  if(!lib->preview_state
+     && (layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER
+         || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE))
   {
     dt_thumbtable_move_t move = DT_THUMBTABLE_MOVE_NONE;
-    gboolean select = element == DT_ACTION_ELEMENT_SELECT;
+    const gboolean select = element == DT_ACTION_ELEMENT_SELECT;
     if(action == _ACTION_TABLE_MOVE_LEFTRIGHT && effect == DT_ACTION_EFFECT_PREVIOUS)
       move = DT_THUMBTABLE_MOVE_LEFT;
     else if(action == _ACTION_TABLE_MOVE_UPDOWN && effect == DT_ACTION_EFFECT_NEXT)
@@ -709,7 +765,8 @@ static float _action_process_move(gpointer target, dt_action_element_t element, 
       gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
     }
   }
-  else if(lib->preview_state || layout == DT_LIGHTTABLE_LAYOUT_CULLING
+  else if(lib->preview_state
+          || layout == DT_LIGHTTABLE_LAYOUT_CULLING
           || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     dt_culling_move_t move = DT_CULLING_MOVE_NONE;
@@ -871,12 +928,20 @@ GSList *mouse_actions(const dt_view_t *self)
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("zoom in the image"));
     /* xgettext:no-c-format */
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_MIDDLE, 0, _("zoom to 100% and back"));
+    lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("pan a zoomed image"));
   }
   else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("scroll the collection"));
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK,
                                        _("change number of images per row"));
+
+    lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0,
+                                      _("select an image"));
+    lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK,
+                                      _("select range from last image"));
+    lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
+                                      _("add image to or remove it from a selection"));
 
     if(darktable.collection->params.sorts[DT_COLLECTION_SORT_CUSTOM_ORDER])
     {
@@ -903,6 +968,10 @@ GSList *mouse_actions(const dt_view_t *self)
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("zoom the main view"));
     lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("pan inside the main view"));
   }
+
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK, dt_conf_get_bool("lighttable/ui/single_module")
+                                     ? _("[modules] expand module without closing others")
+                                     : _("[modules] expand module and close others"));
 
   return lm;
 }
@@ -1248,6 +1317,10 @@ void gui_init(dt_view_t *self)
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
   dt_shortcut_register(ac, DT_ACTION_ELEMENT_FOCUS_DETECT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, GDK_CONTROL_MASK);
 
+  // Show infos key
+  ac = dt_action_define(sa, NULL, N_("show infos"), NULL, &dt_action_def_infos);
+  dt_shortcut_register(ac, DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_i, 0);
+
   dt_action_register(DT_ACTION(self), N_("align images to grid"), _accel_align_to_grid, 0, 0);
   dt_action_register(DT_ACTION(self), N_("reset first image offset"), _accel_reset_first_offset, 0, 0);
   dt_action_register(DT_ACTION(self), N_("select toggle image"), _accel_select_toggle, GDK_KEY_space, 0);
@@ -1273,4 +1346,3 @@ void gui_init(dt_view_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

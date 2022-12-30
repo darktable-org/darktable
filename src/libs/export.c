@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -307,21 +307,12 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
     confirm_message = mstorage->ask_user_confirmation(mstorage);
   if(confirm_message)
   {
-    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        "%s", confirm_message);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), _("export to disk"));
-    const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
+    gboolean res = dt_gui_show_yes_no_dialog(_("export to disk"),  "%s", confirm_message);
     g_free(confirm_message);
     confirm_message = NULL;
 
-    if(res != GTK_RESPONSE_YES)
+    if(!res)
     {
       return;
     }
@@ -978,7 +969,7 @@ static void _style_changed(GtkWidget *widget, dt_lib_export_t *d)
   }
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 0;
 }

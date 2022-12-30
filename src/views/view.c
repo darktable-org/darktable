@@ -241,9 +241,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   // reset the cursor to the default one
   dt_control_change_cursor(GDK_LEFT_PTR);
 
-  // also ignore what scrolling there was previously happening
-  memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
-
   // destroy old module list
 
   /*  clear the undo list, for now we do this unconditionally. At some point we will probably want to clear
@@ -335,7 +332,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
     dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
     if(dt_lib_is_visible_in_view(plugin, new_view))
     {
-
       /* try get the module expander  */
       GtkWidget *w = dt_lib_gui_get_expander(plugin);
 
@@ -354,18 +350,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
           dt_gui_add_help_link(w, dt_get_help_url("darkroom_bottom_panel"));
       }
 
-
-      /* add module to its container */
-      dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
-    }
-  }
-
-  /* hide/show modules as last config */
-  for(GList *iter = darktable.lib->plugins; iter; iter = g_list_next(iter))
-  {
-    dt_lib_module_t *plugin = (dt_lib_module_t *)(iter->data);
-    if(dt_lib_is_visible_in_view(plugin, new_view))
-    {
       /* set expanded if last mode was that */
       char var[1024];
       gboolean expanded = FALSE;
@@ -387,8 +371,13 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
           gtk_widget_hide(plugin->widget);
       }
       if(plugin->view_enter) plugin->view_enter(plugin, old_view, new_view);
+
+      /* add module to its container */
+      dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
     }
   }
+
+  darktable.lib->gui_module = NULL;
 
   /* enter view. crucially, do this before initing the plugins below,
       as e.g. modulegroups requires the dr stuff to be inited. */
@@ -773,7 +762,7 @@ dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int heig
        So we pass the raw data to be processed, this is more data but correct.
     */
     if(darktable.gui->show_focus_peaking && mip == buf.size)
-      dt_focuspeaking(cr, img_width, img_height, rgbbuf, buf_wd, buf_ht);
+      dt_focuspeaking(cr, buf_wd, buf_ht, rgbbuf);
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
@@ -938,6 +927,12 @@ void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter)
     vm->proxy.module_filtering.reset_filter(vm->proxy.module_filtering.module, smart_filter);
 }
 
+void dt_view_filtering_show_pref_menu(const dt_view_manager_t *vm, GtkWidget *bt)
+{
+  if(vm->proxy.module_filtering.module && vm->proxy.module_filtering.show_pref_menu)
+    vm->proxy.module_filtering.show_pref_menu(vm->proxy.module_filtering.module, bt);
+}
+
 GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm)
 {
   if(vm->proxy.filter.module && vm->proxy.filter.get_filter_box)
@@ -948,6 +943,13 @@ GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm)
 {
   if(vm->proxy.filter.module && vm->proxy.filter.get_sort_box)
     return vm->proxy.filter.get_sort_box(vm->proxy.filter.module);
+  return NULL;
+}
+
+GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm)
+{
+  if(vm->proxy.filter.module && vm->proxy.filter.get_count)
+    return vm->proxy.filter.get_count(vm->proxy.filter.module);
   return NULL;
 }
 
@@ -1455,9 +1457,216 @@ void dt_view_audio_stop(dt_view_manager_t *vm)
   g_spawn_close_pid(vm->audio.audio_player_pid);
   vm->audio.audio_player_id = -1;
 }
+
+void dt_view_paint_surface(
+  cairo_t *cr,
+  const size_t width,
+  const size_t height,
+  cairo_surface_t *surface,
+  const size_t processed_width,
+  const size_t processed_height,
+  const dt_window_t window)
+{
+  dt_develop_t *dev = darktable.develop;
+
+  const dt_dev_zoom_t zoom =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? dt_control_get_dev_zoom()
+    : dt_second_window_get_dev_zoom(dev);
+  const int closeup =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? dt_control_get_dev_closeup()
+    : dt_second_window_get_dev_closeup(dev);
+  const float zoom_scale =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1)
+    : dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const float ppd =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? darktable.gui->ppd
+    : dev->second_window.ppd;
+
+  const float sw = (float)processed_width / ppd;
+  const float sh = (float)processed_height / ppd;
+
+  cairo_save(cr);
+
+  cairo_translate(cr, ceilf(.5f * (width - sw)), ceilf(.5f * (height - sh)));
+  if(closeup)
+  {
+    const double scale = 1<<closeup;
+    cairo_scale(cr, scale, scale);
+    cairo_translate(cr, -(.5 - 0.5/scale) * sw, -(.5 - 0.5/scale) * sh);
+  }
+
+  if(dev->iso_12646.enabled
+     && window != DT_WINDOW_SLIDESHOW)
+  {
+    // draw the white frame around picture
+    const int bs = dev->border_size;
+    const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
+    cairo_rectangle(cr, -tbw, -tbw, sw + 2.0 * tbw, sh + 2.0 * tbw);
+    cairo_set_source_rgb(cr, 1., 1., 1.);
+    cairo_fill(cr);
+  }
+
+  cairo_surface_set_device_scale(surface, ppd, ppd);
+
+  cairo_set_source_surface (cr, surface, 0, 0);
+  cairo_pattern_set_filter
+    (cairo_get_source(cr),
+     zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
+  cairo_paint(cr);
+
+  if(darktable.gui->show_focus_peaking
+     && window != DT_WINDOW_SLIDESHOW)
+  {
+    cairo_scale(cr, 1. / ppd, 1. / ppd);
+    dt_focuspeaking(cr, processed_width, processed_height, cairo_image_surface_get_data(surface));
+  }
+
+  cairo_restore(cr);
+}
+
+cairo_surface_t *dt_view_create_surface(
+  uint8_t *buffer,
+  const size_t processed_width,
+  const size_t processed_height)
+{
+  const int32_t stride =
+    cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, processed_width);
+  return cairo_image_surface_create_for_data
+    (buffer, CAIRO_FORMAT_RGB24, processed_width, processed_height, stride);
+}
+
+void dt_view_paint_buffer(
+  cairo_t *cr,
+  const size_t width,
+  const size_t height,
+  uint8_t *buffer,
+  const size_t processed_width,
+  const size_t processed_height,
+  const dt_window_t window)
+{
+  cairo_surface_t *surface = dt_view_create_surface(buffer, processed_width, processed_height);
+  dt_view_paint_surface(cr, width, height, surface, processed_width, processed_height, window);
+  cairo_surface_destroy(surface);
+}
+
+void dt_view_paint_pixbuf(
+  cairo_t *cr,
+  const size_t width,
+  const size_t height,
+  uint8_t *buffer,
+  const size_t processed_width,
+  const size_t processed_height,
+  const dt_window_t window)
+{
+  dt_develop_t *dev = darktable.develop;
+
+  const dt_dev_zoom_t zoom =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? dt_control_get_dev_zoom()
+    : dt_second_window_get_dev_zoom(dev);
+  const int closeup =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? dt_control_get_dev_closeup()
+    : dt_second_window_get_dev_closeup(dev);
+  const float zoom_scale =
+    (window == DT_WINDOW_MAIN || window == DT_WINDOW_SLIDESHOW)
+    ? dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1)
+    : dt_second_window_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data
+    (buffer, GDK_COLORSPACE_RGB, TRUE, 8, processed_width, processed_height,
+     processed_width * 4, NULL, NULL);
+
+  int32_t w = 0, h = 0;
+  if(processed_width < processed_height)
+  {
+    // portrait
+    h = height;
+    w = processed_width * ((float)h / (float)processed_height);
+  }
+  else
+  {
+    // landscape
+    w = width;
+    h = processed_height * ((float)w / (float)processed_width);
+  }
+
+  // adjust dimention if needed
+  if(w > width)
+  {
+    const int32_t ow = w;
+    w = width;
+    h = h * ((float)w / (float)ow);
+  }
+  if(h > height)
+  {
+    const int32_t oh = h;
+    h = height;
+    w = w * ((float)h / (float)oh);
+  }
+
+  GdkPixbuf *scaled = gdk_pixbuf_scale_simple(pixbuf, w, h, GDK_INTERP_HYPER);
+
+  cairo_save(cr);
+
+  cairo_translate(cr, ceilf(.5f * (width - w)), ceilf(.5f * (height - h)));
+
+  cairo_pattern_set_filter
+    (cairo_get_source(cr),
+     zoom_scale >= 0.9999f ? CAIRO_FILTER_FAST : darktable.gui->dr_filter_image);
+  gdk_cairo_set_source_pixbuf(cr, scaled, 0, 0);
+
+  cairo_paint(cr);
+
+  if(pixbuf) g_object_unref(pixbuf);
+  if(scaled) g_object_unref(scaled);
+}
+
+#define ADD_TO_CONTEXT(v) ctx = ((ctx << 5) + ctx) ^ (dt_view_context_t)(v);
+
+dt_view_context_t dt_view_get_view_context(void)
+{
+  dt_develop_t *dev = darktable.develop;
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const float zoom_y = dt_control_get_dev_zoom_y();
+  const float zoom_x = dt_control_get_dev_zoom_x();
+  const gboolean iso_12646 = dev->iso_12646.enabled;
+  const gboolean focus_peaking = darktable.gui->show_focus_peaking;
+  const float flt_prec = 1.e6;
+
+  dt_view_context_t ctx = 0;
+  ADD_TO_CONTEXT(closeup);
+  ADD_TO_CONTEXT(zoom_scale * flt_prec);
+  ADD_TO_CONTEXT(zoom_x * flt_prec);
+  ADD_TO_CONTEXT(zoom_y * flt_prec);
+  ADD_TO_CONTEXT(iso_12646);
+  ADD_TO_CONTEXT(focus_peaking);
+
+  return ctx;
+}
+
+gboolean dt_view_check_view_context(dt_view_context_t *ctx)
+{
+  const dt_view_context_t curctx = dt_view_get_view_context();
+  if(curctx == *ctx)
+  {
+    return TRUE;
+  }
+  else
+  {
+    *ctx = curctx;
+    return FALSE;
+  }
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

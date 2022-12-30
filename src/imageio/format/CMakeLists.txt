@@ -17,6 +17,12 @@ add_library(ppm MODULE "ppm.c")
 add_library(pfm MODULE "pfm.c")
 add_library(tiff MODULE "tiff.c")
 
+if(JXL_FOUND)
+  list(APPEND MODULES "jxl_format")
+  add_library(jxl_format MODULE "jxl.c")
+  set_target_properties(jxl_format PROPERTIES OUTPUT_NAME jpegxl)
+endif(JXL_FOUND)
+
 if(WebP_FOUND)
   list(APPEND MODULES "webp")
   add_library(webp MODULE "webp.c")

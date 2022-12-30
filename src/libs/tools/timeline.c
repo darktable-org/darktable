@@ -118,7 +118,7 @@ int expandable(dt_lib_module_t *self)
   return 0;
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 1002;
 }
@@ -1424,6 +1424,7 @@ void gui_init(dt_lib_module_t *self)
   // we update the selection with actual collect rules
   _lib_timeline_collection_changed(NULL, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL, -1, self);
 
+  gtk_widget_show_all(self->widget);
   /* initialize view manager proxy */
   darktable.view_manager->proxy.timeline.module = self;
 
@@ -1452,4 +1453,3 @@ void gui_cleanup(dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

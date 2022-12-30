@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -296,6 +296,10 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(exif_datetime);
   }
 
+  else if(_has_prefix(variable, "EXIF.DATE.REGIONAL"))
+    result = g_date_time_format(datetime, "%x");
+  else if(_has_prefix(variable, "EXIF.TIME.REGIONAL"))
+    result = g_date_time_format(datetime, "%X");
   else if(_has_prefix(variable, "EXIF.YEAR.SHORT") || _has_prefix(variable, "EXIF.DATE.SHORT_YEAR"))
     result = g_date_time_format(datetime, "%y");
   else if(_has_prefix(variable, "EXIF.YEAR") || _has_prefix(variable, "EXIF_YEAR") || _has_prefix(variable, "EXIF.DATE.LONG_YEAR"))

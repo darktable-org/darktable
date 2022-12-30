@@ -506,13 +506,10 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     if(d.abort) goto end;
 
     const uint32_t imgid = GPOINTER_TO_INT(t->data);
-
-    const gboolean is_scaling =
-      dt_conf_is_equal("plugins/lighttable/export/resizing", "scaling");
-
-    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE, TRUE, is_scaling,
+    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat,
+                                 TRUE, FALSE, TRUE, TRUE, FALSE,
                                  FALSE, "pre:rawprepare", FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
-                                 NULL, num, total, NULL);
+                                 NULL, num, total, NULL, -1);
 
     t = g_list_next(t);
 
@@ -1298,10 +1295,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
       if(img)
       {
-        const uint32_t flags = img->flags;
         dt_exif_read(img, sourcefile);
-        if(dt_conf_get_bool("ui_last/ignore_exif_rating"))
-          img->flags = flags;
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
       }
       else
@@ -1523,7 +1517,7 @@ static dt_job_t *_control_gpx_apply_job_create(const gchar *filename, int32_t fi
 void dt_control_merge_hdr()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_merge_hdr_job_run, N_("merge hdr image"), 0,
+                     dt_control_generic_images_job_create(&dt_control_merge_hdr_job_run, N_("merge HDR image"), 0,
                                                           NULL, PROGRESS_CANCELLABLE, TRUE));
 }
 
@@ -1561,9 +1555,6 @@ gboolean dt_control_remove_images()
                                                        NULL, PROGRESS_SIMPLE, FALSE);
   if(dt_conf_get_bool("ask_before_remove"))
   {
-    GtkWidget *dialog;
-    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-
     const dt_control_image_enumerator_t *e = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
     const int number = g_list_length(e->index);
     if(number == 0)
@@ -1572,19 +1563,11 @@ gboolean dt_control_remove_images()
       return TRUE;
     }
 
-    dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to remove %d image from darktable\n(without deleting file on disk)?",
-                 "do you really want to remove %d images from darktable\n(without deleting files on disk)?", number),
-        number);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext(_("remove image?"), _("remove images?"), number));
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    if(res != GTK_RESPONSE_YES)
+    if(!dt_gui_show_yes_no_dialog(
+          ngettext(_("remove image?"), _("remove images?"), number),
+          ngettext("do you really want to remove %d image from darktable\n(without deleting file on disk)?",
+                   "do you really want to remove %d images from darktable\n(without deleting files on disk)?", number),
+          number))
     {
       dt_control_job_dispose(job);
       return FALSE;
@@ -1602,9 +1585,6 @@ void dt_control_delete_images()
   int send_to_trash = dt_conf_get_bool("send_to_trash");
   if(dt_conf_get_bool("ask_before_delete"))
   {
-    GtkWidget *dialog;
-    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-
     const dt_control_image_enumerator_t *e = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
     const int number = g_list_length(e->index);
 
@@ -1615,21 +1595,13 @@ void dt_control_delete_images()
       return;
     }
 
-    dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        send_to_trash ? ngettext("do you really want to physically delete %d image\n(using trash if possible)?",
-                                 "do you really want to physically delete %d images\n(using trash if possible)?", number)
-                      : ngettext("do you really want to physically delete %d image from disk?",
-                                 "do you really want to physically delete %d images from disk?", number),
-        number);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext(_("delete image?"), _("delete images?"), number));
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    if(res != GTK_RESPONSE_YES)
+    if(!dt_gui_show_yes_no_dialog(
+          ngettext(_("delete image?"), _("delete images?"), number),
+          send_to_trash ? ngettext("do you really want to physically delete %d image\n(using trash if possible)?",
+                                   "do you really want to physically delete %d images\n(using trash if possible)?", number)
+                        : ngettext("do you really want to physically delete %d image from disk?",
+                                   "do you really want to physically delete %d images from disk?", number),
+          number))
     {
       dt_control_job_dispose(job);
       return;
@@ -1646,9 +1618,6 @@ void dt_control_delete_image(int imgid)
   int send_to_trash = dt_conf_get_bool("send_to_trash");
   if(dt_conf_get_bool("ask_before_delete"))
   {
-    GtkWidget *dialog;
-    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-
     // Do not show the dialog if no valid image
     if(imgid < 1)
     {
@@ -1656,18 +1625,10 @@ void dt_control_delete_image(int imgid)
       return;
     }
 
-    dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        send_to_trash ? _("do you really want to physically delete selected image (using trash if possible)?")
-                      : _("do you really want to physically delete selected image from disk?"));
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete image?"));
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    if(res != GTK_RESPONSE_YES)
+    if(!dt_gui_show_yes_no_dialog(
+          _("delete image?"),
+          send_to_trash ? _("do you really want to physically delete selected image (using trash if possible)?")
+                        : _("do you really want to physically delete selected image from disk?")))
     {
       dt_control_job_dispose(job);
       return;
@@ -1712,23 +1673,15 @@ void dt_control_move_images()
 
   if(dt_conf_get_bool("ask_before_move"))
   {
-    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                               GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                               ngettext("do you really want to physically move %d image to %s?\n"
-                                                        "(all duplicates will be moved along)",
-                                                        "do you really want to physically move %d images to %s?\n"
-                                                        "(all duplicates will be moved along)",
-                                                        number),
-                                               number, dir);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("move image?", "move images?", number));
-
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-
-    if(res != GTK_RESPONSE_YES) goto abort;
+    if(!dt_gui_show_yes_no_dialog(
+          ngettext("move image?", "move images?", number),
+          ngettext("do you really want to physically move %d image to %s?\n"
+                   "(all duplicates will be moved along)",
+                   "do you really want to physically move %d images to %s?\n"
+                   "(all duplicates will be moved along)",
+                   number),
+          number, dir))
+      goto abort;
   }
 
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
@@ -1774,20 +1727,12 @@ void dt_control_copy_images()
 
   if(dt_conf_get_bool("ask_before_copy"))
   {
-    GtkWidget *dialog = gtk_message_dialog_new(
-        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        ngettext("do you really want to physically copy %d image to %s?",
-                 "do you really want to physically copy %d images to %s?", number),
-        number, dir);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("copy image?", "copy images?", number));
-
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-
-    if(res != GTK_RESPONSE_YES) goto abort;
+    if(!dt_gui_show_yes_no_dialog(
+          ngettext("copy image?", "copy images?", number),
+          ngettext("do you really want to physically copy %d image to %s?",
+                   "do you really want to physically copy %d images to %s?", number),
+          number, dir))
+      goto abort;
   }
 
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
@@ -2108,7 +2053,7 @@ static int _control_import_image_copy(const char *filename,
   }
 
   if(!g_file_set_contents(output, data, size, NULL))
-  { 
+  {
     dt_print(DT_DEBUG_CONTROL, "[import_from] failed to write file %s\n", output);
     res = FALSE;
   }

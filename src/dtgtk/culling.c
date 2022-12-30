@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2020 Aldric Renaudin.
+    Copyright (C) 2020-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -832,17 +832,8 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   table->mode = mode;
   table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);
+  dt_gui_add_class(table->widget, "dt_fullview");
   // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
-
-  // set css name and class
-  if(mode == DT_CULLING_MODE_PREVIEW)
-    gtk_widget_set_name(table->widget, "preview");
-  else
-    gtk_widget_set_name(table->widget, "culling");
-  if(mode == DT_CULLING_MODE_PREVIEW)
-    dt_gui_add_class(table->widget, "dt_preview");
-  else
-    dt_gui_add_class(table->widget, "dt_culling");
 
   // overlays
   gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
@@ -998,7 +989,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   {
     if(sel_count == 0)
     {
-      dt_control_log(_("no image selected !"));
+      dt_control_log(_("no image selected!"));
       first_id = -1;
     }
     table->navigate_inside_selection = TRUE;
@@ -1182,7 +1173,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   }
 
   GList *newlist = NULL;
-  int nbnew = 0;
   int pos = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW && g_list_shorter_than(newlist, table->thumbs_count+1))
@@ -1244,7 +1234,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
       }
       thumb->aspect_ratio = aspect_ratio;
       newlist = g_list_prepend(newlist, thumb);
-      nbnew++;
     }
     // if it's the offset, we record the imgid
     if(nrow == table->offset) table->offset_imgid = nid;
@@ -1322,7 +1311,6 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
           }
           thumb->aspect_ratio = aspect_ratio;
           newlist = g_list_prepend(newlist, thumb);
-          nbnew++;
         }
         // if it's the offset, we record the imgid
         if(nrow == table->offset) table->offset_imgid = nid;
@@ -1651,7 +1639,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   // we prefetch next/previous images
   _thumbs_prefetch(table);
 
-  // ensure one of the shown image as the focus (to avoid to keep focus to hidden image)
+  // ensure that no hidden image as the focus
   const int selid = dt_control_get_mouse_over_id();
   if(selid >= 0)
   {
@@ -1665,10 +1653,9 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
         break;
       }
     }
-    if(!in_list && table->list)
+    if(!in_list)
     {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)table->list->data;
-      dt_control_set_mouse_over_id(thumb->imgid);
+      dt_control_set_mouse_over_id(-1);
     }
   }
 
@@ -1779,6 +1766,56 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
   table->overlays = over;
   g_free(cl0);
   g_free(cl1);
+}
+
+// force the overlays to be shown
+void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
+{
+  if(!table) return;
+
+  int timeout = -1;
+
+  gchar *txt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
+  dt_thumbnail_overlay_t over = dt_conf_get_int(txt);
+  g_free(txt);
+  gchar *cl0 = _thumbs_get_overlays_class(DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK);
+  gchar *cl1 = _thumbs_get_overlays_class(over);
+
+  if(!force)
+  {
+    dt_gui_remove_class(table->widget, cl0);
+    dt_gui_add_class(table->widget, cl1);
+
+    txt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
+    timeout = 2;
+    if(!dt_conf_key_exists(txt))
+      timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
+    else
+      timeout = dt_conf_get_int(txt);
+    g_free(txt);
+  }
+  else
+  {
+    dt_gui_remove_class(table->widget, cl1);
+    dt_gui_add_class(table->widget, cl0);
+    over = DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK;
+  }
+
+  g_free(cl0);
+  g_free(cl1);
+
+  // we need to change the overlay content if we pass from normal to extended overlays
+  // this is not done on the fly with css to avoid computing extended msg for nothing and to reserve space if needed
+  for(GList *l = table->list; l; l = g_list_next(l))
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    dt_thumbnail_set_overlay(th, over, timeout);
+    // and we resize the bottom area
+    const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
+    dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
+  }
+
+  table->overlays = over;
 }
 
 // clang-format off

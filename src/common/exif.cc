@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2021 darktable developers.
+   Copyright (C) 2009-2022 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -692,10 +692,25 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
   }
 }
 
+static bool _exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator *pos, string key)
+{
+  try
+  {
+    return (*pos = exifData.findKey(Exiv2::ExifKey(key))) != exifData.end() && (*pos)->size();
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2 read_exif_tag] " << s << std::endl;
+    return false;
+  }
+}
+#define FIND_EXIF_TAG(key) _exif_read_exif_tag(exifData, &pos, key)
+
 // Support DefaultUserCrop, what is the safe exif tag?
 // Magic-nr taken from dng specs, the specs also say it has 4 floats (top,left,bottom,right
 // We only take them if a) we find a value != the default *and* b) data are plausible
-static bool dt_check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
+static bool _check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
 {
   Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.0xc7b5"));
   if(pos != exifData.end() && pos->count() == 4 && pos->size())
@@ -711,7 +726,7 @@ static bool dt_check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
   return FALSE;
 }
 
-static gboolean dt_check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
+static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
 {
   gboolean has_opcodes = FALSE;
   Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList2"));
@@ -733,6 +748,75 @@ static gboolean dt_check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
   return has_opcodes;
 }
 
+static gboolean _check_lens_correction_data(Exiv2::ExifData &exifData, dt_image_t *img)
+{
+  Exiv2::ExifData::const_iterator pos, posd, posc, posv;
+
+  /*
+   * Sony lens correction data
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && _exif_read_exif_tag(exifData, &posd, "Exif.SubImage1.DistortionCorrParams")
+    && _exif_read_exif_tag(exifData, &posc, "Exif.SubImage1.ChromaticAberrationCorrParams")
+    && _exif_read_exif_tag(exifData, &posv, "Exif.SubImage1.VignettingCorrParams"))
+  {
+    // Validate
+    const int nc = posd->toLong(0);
+    if(nc <= 16 && 2*nc == posc->toLong(0) && nc == posv->toLong(0))
+    {
+      img->exif_correction_type = CORRECTION_TYPE_SONY;
+      img->exif_correction_data.sony.nc = nc;
+      for(int i = 0; i < nc; i++)
+      {
+        img->exif_correction_data.sony.distortion[i] = posd->toLong(i + 1);
+        img->exif_correction_data.sony.ca_r[i] = posc->toLong(i + 1);
+        img->exif_correction_data.sony.ca_b[i] = posc->toLong(nc + i + 1);
+        img->exif_correction_data.sony.vignetting[i] = posv->toLong(i + 1);
+      }
+    }
+  }
+
+  /*
+   * Fuji lens correction data
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && _exif_read_exif_tag(exifData, &posd, "Exif.Fujifilm.GeometricDistortionParams")
+    && _exif_read_exif_tag(exifData, &posc, "Exif.Fujifilm.ChromaticAberrationParams")
+    && _exif_read_exif_tag(exifData, &posv, "Exif.Fujifilm.VignettingParams"))
+  {
+    // Validate
+    if(posd->count() == 19 && posc->count() == 29 && posv->count() == 19)
+    {
+      const int nc = 9;
+      img->exif_correction_type = CORRECTION_TYPE_FUJI;
+      img->exif_correction_data.fuji.nc = nc;
+      for(int i = 0; i < nc; i++)
+      {
+        float kd = posd->toFloat(i + 1), kc = posc->toFloat(i + 1), kv = posv->toFloat(i + 1);
+        if (kd != kc || kd != kv)
+        {
+          img->exif_correction_type = CORRECTION_TYPE_NONE;
+          break;
+        }
+
+        img->exif_correction_data.fuji.knots[i] = kd;
+        img->exif_correction_data.fuji.distortion[i] = posd->toFloat(i + 10);
+        img->exif_correction_data.fuji.ca_r[i] = posc->toFloat(i + 10);
+        img->exif_correction_data.fuji.ca_b[i] = posc->toFloat(i + 19);
+        img->exif_correction_data.fuji.vignetting[i] = posv->toFloat(i + 10);
+      }
+
+      // Account for the 1.25x crop modes in some Fuji cameras
+      if(FIND_EXIF_TAG("Exif.Fujifilm.CropMode") && (pos->toLong() == 2 || pos->toLong() == 4))
+        img->exif_correction_data.fuji.cropf = 1.25f;
+      else
+        img->exif_correction_data.fuji.cropf = 1;
+    }
+  }
+
+  return img->exif_correction_type != CORRECTION_TYPE_NONE;
+}
+
 void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename)
 {
   try
@@ -743,8 +827,9 @@ void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename)
     Exiv2::ExifData &exifData = image->exifData();
     if(!exifData.empty())
     {
-      dt_check_usercrop(exifData, img);
-      dt_check_dng_opcodes(exifData, img);
+      _check_usercrop(exifData, img);
+      _check_dng_opcodes(exifData, img);
+      _check_lens_correction_data(exifData, img);
     }
     return;
   }
@@ -755,21 +840,6 @@ void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename)
     return;
   }
 }
-
-static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator *pos, string key)
-{
-  try
-  {
-    return (*pos = exifData.findKey(Exiv2::ExifKey(key))) != exifData.end() && (*pos)->size();
-  }
-  catch(Exiv2::AnyError &e)
-  {
-    std::string s(e.what());
-    std::cerr << "[exiv2 read_exif_tag] " << s << std::endl;
-    return false;
-  }
-}
-#define FIND_EXIF_TAG(key) dt_exif_read_exif_tag(exifData, &pos, key)
 
 static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos,
                                  char *exif_datetime_taken)
@@ -940,9 +1010,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_crop = 1.0f;
     }
 
-    if(dt_check_usercrop(exifData, img))
+    if(_check_usercrop(exifData, img))
       {
-        img->flags |= DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS;
+        img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
         guint tagid = 0;
         char tagname[64];
         snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
@@ -950,9 +1020,14 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         dt_tag_attach(tagid, img->id, FALSE, FALSE);
       }
 
-    if(dt_check_dng_opcodes(exifData, img))
+    if(_check_dng_opcodes(exifData, img))
     {
-      img->flags |= DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS;
+      img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
+    }
+
+    if(_check_lens_correction_data(exifData, img))
+    {
+      img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
     }
 
     /*
@@ -1216,18 +1291,21 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_metadata_set_import(img->id, "Xmp.dc.rights", str.c_str());
     }
 
-    if(FIND_EXIF_TAG("Exif.Image.Rating"))
+    if(!dt_conf_get_bool("ui_last/ignore_exif_rating"))
     {
-      const int stars = pos->toLong();
-      dt_image_set_xmp_rating(img, stars);
+      if(FIND_EXIF_TAG("Exif.Image.Rating"))
+      {
+        const int stars = pos->toLong();
+        dt_image_set_xmp_rating(img, stars);
+      }
+      else if(FIND_EXIF_TAG("Exif.Image.RatingPercent"))
+      {
+        const int stars = pos->toLong() * 5. / 100;
+        dt_image_set_xmp_rating(img, stars);
+      }
+      else
+        dt_image_set_xmp_rating(img, -2);
     }
-    else if(FIND_EXIF_TAG("Exif.Image.RatingPercent"))
-    {
-      const int stars = pos->toLong() * 5. / 100;
-      dt_image_set_xmp_rating(img, stars);
-    }
-    else
-      dt_image_set_xmp_rating(img, -2);
 
     // read embedded color matrix as used in DNGs
     {
@@ -2878,7 +2956,7 @@ static void add_mask_entries_to_db(int imgid, GHashTable *mask_entries, int mask
     dt_masks_point_group_t *group = (dt_masks_point_group_t *)entry->mask_points;
     if((int)(entry->mask_nb * sizeof(dt_masks_point_group_t)) != entry->mask_points_len)
     {
-      fprintf(stderr, "[masks] error loading masks from xmp file, bad binary blob size.\n");
+      fprintf(stderr, "[masks] error loading masks from XMP file, bad binary blob size.\n");
       return;
     }
     for(int i = 0; i < entry->mask_nb; i++)
@@ -4188,7 +4266,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
           {
             // remove this specific exif
             Exiv2::ExifData::const_iterator pos;
-            if(dt_exif_read_exif_tag(exifOldData, &pos, tagname))
+            if(_exif_read_exif_tag(exifOldData, &pos, tagname))
             {
               exifData[tagname] = pos->value();
             }
@@ -4354,8 +4432,8 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       }
       else
       {
-        fprintf(stderr, "cannot read xmp file '%s': '%s'\n", filename, strerror(errno));
-        dt_control_log(_("cannot read xmp file '%s': '%s'"), filename, strerror(errno));
+        fprintf(stderr, "cannot read XMP file '%s': '%s'\n", filename, strerror(errno));
+        dt_control_log(_("cannot read XMP file '%s': '%s'"), filename, strerror(errno));
       }
 
       Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
@@ -4406,8 +4484,8 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       }
       else
       {
-        fprintf(stderr, "cannot write xmp file '%s': '%s'\n", filename, strerror(errno));
-        dt_control_log(_("cannot write xmp file '%s': '%s'"), filename, strerror(errno));
+        fprintf(stderr, "cannot write XMP file '%s': '%s'\n", filename, strerror(errno));
+        dt_control_log(_("cannot write XMP file '%s': '%s'"), filename, strerror(errno));
         return -1;
       }
     }

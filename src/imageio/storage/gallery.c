@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -576,13 +576,11 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
 int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
 {
   const char *mime = format->mime(NULL);
-  if(strcmp(mime, "image/jpeg") == 0)
-    return 1;
-  if(strcmp(mime, "image/png") == 0)
-    return 1;
-  if(strcmp(mime, "image/webp") == 0)
-    return 1;
+  if(strcmp(mime, "image/jpeg") == 0) return 1;
+  if(strcmp(mime, "image/png") == 0) return 1;
+  if(strcmp(mime, "image/webp") == 0) return 1;
   if(strcmp(mime, "image/avif") == 0) return 1;
+  if(strcmp(mime, "image/jxl") == 0) return 1;
 
   return 0;
 }
@@ -592,4 +590,3 @@ int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

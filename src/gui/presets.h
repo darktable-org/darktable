@@ -134,7 +134,7 @@ void dt_gui_presets_show_edit_dialog(const char *name_in, const char *module_nam
                                      GCallback final_callback, gpointer data, gboolean allow_name_change,
                                      gboolean allow_desc_change, gboolean allow_remove, GtkWindow *parent);
 
-void dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *name, const char *module_name, int rowid);
+gboolean dt_gui_presets_confirm_and_delete(const char *name, const char *module_name, int rowid);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

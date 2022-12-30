@@ -28,21 +28,23 @@ function short-log()
 {
     local RANGE="$1"
 
-    git log --oneline $RANGE | wc -l
+    git log --no-merges --oneline $RANGE | wc -l
 }
 
 function for-submodule()
 {
     local SUBPATH=$1
 
-    local SHEAD=$(git log --patch -1 $HEAD -- $SUBPATH | grep "Subproject commit" | tail -1 | cut -d' ' -f3)
+    local SHEAD=$(git log --patch -1 $HEAD -- $SUBPATH |
+                      grep "Subproject commit" | tail -1 | cut -d' ' -f3)
 
     SRANGE=""
 
     if [ -z $BASE ]; then
         SRANGE=$SHEAD
     else
-        local SBASE=$(git log --patch -1 $BASE -- $SUBPATH | grep "Subproject commit" | tail -1 | cut -d' ' -f3)
+        local SBASE=$(git log --patch -1 $BASE -- $SUBPATH |
+                          grep "Subproject commit" | head -1 | cut -d' ' -f3)
         SRANGE="$SBASE..$SHEAD"
     fi
 

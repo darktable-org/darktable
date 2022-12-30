@@ -61,8 +61,6 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr);
 static void dt_opencl_update_priorities(const char *configstr);
 /** read scheduling profile for config variables */
 static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void);
-/** read config of when/if to sync to cache */
-static dt_opencl_sync_cache_t dt_opencl_get_sync_cache(void);
 /** adjust opencl subsystem according to scheduling profile */
 static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t profile);
 /** set opencl specific synchronization timeout */
@@ -228,7 +226,7 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %f",
+  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %f %.3f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
@@ -237,7 +235,8 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].event_handles,
     cl->dev[devid].asyncmode & 1,
     cl->dev[devid].disabled & 1,
-    cl->dev[devid].benchmark);
+    cl->dev[devid].benchmark,
+    cl->dev[devid].advantage);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 
@@ -269,9 +268,10 @@ gboolean dt_opencl_read_device_config(const int devid)
     int event_handles;
     int asyncmode;
     int disabled;
-    float benchmark; 
-    sscanf(dat, "%i %i %i %i %i %i %i %i %f",
-      &avoid_atomics, &micro_nap, &pinned_memory, &wd, &ht, &event_handles, &asyncmode, &disabled, &benchmark);
+    float benchmark;
+    float advantage; 
+    sscanf(dat, "%i %i %i %i %i %i %i %i %f %f",
+      &avoid_atomics, &micro_nap, &pinned_memory, &wd, &ht, &event_handles, &asyncmode, &disabled, &benchmark, &advantage);
 
     // some rudimentary safety checking if string seems to be ok
     safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513);
@@ -287,6 +287,7 @@ gboolean dt_opencl_read_device_config(const int devid)
       cl->dev[devid].asyncmode = asyncmode;
       cl->dev[devid].disabled = disabled;
       cl->dev[devid].benchmark = benchmark;
+      cl->dev[devid].advantage = advantage;
     }
     else // if there is something wrong with the found conf key reset to defaults
     {
@@ -309,6 +310,8 @@ gboolean dt_opencl_read_device_config(const int devid)
   cl->dev[devid].use_events = (cl->dev[devid].event_handles != 0) ? 1 : 0;
   cl->dev[devid].asyncmode &= 1;
   cl->dev[devid].disabled &= 1;
+
+  cl->dev[devid].advantage = fmaxf(0.0f, cl->dev[devid].advantage);
 
   // Also take care of extended device data, these are not only device specific but also depend on the devid
   g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
@@ -371,6 +374,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].benchmark = 0.0f;
+  cl->dev[dev].advantage = 0.0f;
   cl->dev[dev].use_events = 1;
   cl->dev[dev].event_handles = 128;
   cl->dev[dev].asyncmode = 0;
@@ -626,7 +630,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   dt_print_nts(DT_DEBUG_OPENCL, "   ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL, "   CHECK EVENT HANDLES:      %i\n", cl->dev[dev].event_handles);
   if(cl->dev[dev].benchmark > 0.0f)
-    dt_print_nts(DT_DEBUG_OPENCL, "   PERFORMANCE:              %f\n", dt_opencl_device_perfgain(dev));
+    dt_print_nts(DT_DEBUG_OPENCL, "   PERFORMANCE:              %.3f\n", dt_opencl_device_perfgain(dev));
+  dt_print_nts(DT_DEBUG_OPENCL, "   TILING ADVANTAGE:         %.3f\n", cl->dev[dev].advantage);
   dt_print_nts(DT_DEBUG_OPENCL, "   DEFAULT DEVICE:           %s\n", (type & CL_DEVICE_TYPE_DEFAULT) ? "YES" : "NO");
 
   if(cl->dev[dev].disabled)
@@ -856,7 +861,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   char *locale = strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_ALL, "C");
 
-  cl->sync_cache = dt_opencl_get_sync_cache();
   cl->crc = 5781;
   cl->dlocl = NULL;
   cl->dev_priority_image = NULL;
@@ -896,8 +900,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
   dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
            dt_conf_get_int("opencl_mandatory_timeout"));
-  str = dt_conf_get_string_const("opencl_synch_cache");
-  dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %s\n", str);
 
   // dynamically load opencl runtime
   if((cl->dlocl = dt_dlopencl_init(library)) == NULL)
@@ -1114,14 +1116,14 @@ finally:
         cl->enabled = FALSE;
         dt_conf_set_bool("opencl", FALSE);
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
-        dt_control_log(_("due to a slow GPU hardware acceleration via opencl has been de-activated"));
+        dt_control_log(_("due to a slow GPU hardware acceleration using OpenCL has been deactivated"));
       }
       else if((cl->num_devs >= 2) && ((tgpumax / tgpumin) < 1.1f))
       {
         // set scheduling profile to "multiple GPUs" if more than one device has been found and they are equally fast
         dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for multiple GPUs.\n");
-        dt_control_log(_("multiple GPUs detected - opencl scheduling profile has been set accordingly"));
+        dt_control_log(_("multiple GPUs detected - OpenCL scheduling profile has been set accordingly"));
       }
       else if((tcpu >= 2.0f * tgpumin) && (cl->num_devs == 1))
       {
@@ -1129,14 +1131,14 @@ finally:
         // We might want a better benchmark but even with the current result (underestimates real world performance) this is safe.
         dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
-        dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly"));
+        dt_control_log(_("very fast GPU detected - OpenCL scheduling profile has been set accordingly"));
       }
       else
       {
         // set scheduling profile to "default"
         dt_conf_set_string("opencl_scheduling_profile", "default");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile to default.\n");
-        dt_control_log(_("opencl scheduling profile set to default"));
+        dt_control_log(_("OpenCL scheduling profile set to default"));
       }
     }
     // apply config settings for scheduling profile: sets device priorities and pixelpipe synchronization timeout
@@ -1442,7 +1444,7 @@ gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype)
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return FALSE;
 
-  const gboolean exporting = (pipetype & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT;
+  const gboolean exporting = pipetype & DT_DEV_PIXELPIPE_EXPORT;
   const gboolean asyncmode = cl->dev[devid].asyncmode;
 
   if(!asyncmode || exporting)
@@ -2287,6 +2289,41 @@ int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, con
   return (cl->dlocl->symbols->dt_clSetKernelArg)(cl->dev[dev].kernel[kernel], num, size, arg);
 }
 
+static int _opencl_set_kernel_args(const int dev, const int kernel, int num, va_list ap)
+{
+  static struct { const size_t marker; const size_t size; const void *ptr; }
+    test = { CLWRAP(0, 0) };
+
+  int err = CL_SUCCESS;
+  do
+  {
+    size_t marker = va_arg(ap, size_t);
+    if(marker != test.marker)
+    {
+      fprintf(stderr, "opencl parameters passed to dt_opencl_set_kernel_args or dt_opencl_enqueue_kernel_2d_with_args must be wrapped with CLARG or CLLOCAL\n");
+      err = CL_INVALID_KERNEL_ARGS;
+      break;
+    }
+
+    size_t size = va_arg(ap, size_t);
+    if(size == SIZE_MAX) break;
+
+    void *ptr = va_arg(ap, void *);
+
+    err = dt_opencl_set_kernel_arg(dev, kernel, num++, size, ptr);
+  } while(!err);
+
+  va_end(ap);
+  return err;
+}
+
+int dt_opencl_set_kernel_args_internal(const int dev, const int kernel, const int num, ...)
+{
+  va_list ap;
+  va_start(ap, num);
+  return _opencl_set_kernel_args(dev, kernel, num, ap);
+}
+
 int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes)
 {
   return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
@@ -2298,7 +2335,7 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || dev < 0) return -1;
-  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
+  if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return CL_INVALID_KERNEL;
 
   char buf[256];
   buf[0] = '\0';
@@ -2309,9 +2346,21 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
                                                         2, NULL, sizes, local, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_enqueue_kernel_2d_with_local] kernel %i on device %d: %s\n", kernel, dev, cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_enqueue_kernel_2d%s] kernel %i on device %d: %s\n", local ? "_with_local" : "", kernel, dev, cl_errstr(err));
   _check_clmem_err(dev, err); 
   return err;
+}
+
+int dt_opencl_enqueue_kernel_2d_args_internal(const int dev, const int kernel, const size_t w, const size_t h, ...)
+{
+  va_list ap;
+  va_start(ap, h);
+  int err = _opencl_set_kernel_args(dev, kernel, 0, ap);
+  if(err) return err;
+
+  const size_t sizes[] = { ROUNDUPDWD(w, dev), ROUNDUPDHT(h, dev), 1 };
+
+  return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
 }
 
 int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width,
@@ -2794,7 +2843,7 @@ void dt_opencl_check_tuning(const int devid)
     cl->dev[devid].tuneactive |= DT_OPENCL_TUNE_PINNED;
 
   int level = res->level;
-  const gboolean info = ((oldlevel != level) || (oldtuned != tunemode) || (darktable.unmuted & DT_DEBUG_VERBOSE));
+  const gboolean info = ((oldlevel != level) || (oldtuned != tunemode));
   oldlevel = level;
   oldtuned = tunemode;
 
@@ -2958,22 +3007,6 @@ int dt_opencl_get_tuning_mode(void)
     else if(!strcmp(pstr, "memory size and transfer")) res = DT_OPENCL_TUNE_MEMSIZE | DT_OPENCL_TUNE_PINNED;
   }
   return res;  
-}
-
-/** read config of when/if to synch to cache */
-static dt_opencl_sync_cache_t dt_opencl_get_sync_cache(void)
-{
-  const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
-  if(!pstr) return OPENCL_SYNC_ACTIVE_MODULE;
-
-  dt_opencl_sync_cache_t sync = OPENCL_SYNC_ACTIVE_MODULE;
-
-  if(!strcmp(pstr, "true"))
-    sync = OPENCL_SYNC_TRUE;
-  else if(!strcmp(pstr, "false"))
-    sync = OPENCL_SYNC_FALSE;
-
-  return sync;
 }
 
 /** set opencl specific synchronization timeout */

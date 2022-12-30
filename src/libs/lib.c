@@ -151,23 +151,9 @@ static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
 {
   char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
-  gint res = GTK_RESPONSE_YES;
-
-  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
-  {
-    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog
-      = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                               GTK_BUTTONS_YES_NO, _("do you really want to update the preset `%s'?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), _("update preset?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
+     || dt_gui_show_yes_no_dialog(_("update preset?"),
+                                  _("do you really want to update the preset `%s'?"), name))
   {
     // commit all the module fields
     sqlite3_stmt *stmt;
@@ -238,23 +224,9 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
   gchar *name = get_active_preset_name(minfo);
   if(name == NULL) return;
 
-  gint res = GTK_RESPONSE_YES;
-
-  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
-  {
-    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog
-      = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                               GTK_BUTTONS_YES_NO, _("do you really want to delete the preset `%s'?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
+     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+                                  _("do you really want to delete the preset `%s'?"), name))
   {
     dt_action_rename_preset(&minfo->module->actions, name, NULL);
 
@@ -837,24 +809,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   gint flags = (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_RIGHT);
   dtgtk_button_set_paint(DTGTK_BUTTON(module->arrow), dtgtk_cairo_paint_solid_arrow, flags, NULL);
 
-  /* show / hide plugin widget */
-  if(expanded)
-  {
-    /* register to receive draw events */
-    darktable.lib->gui_module = module;
-
-    if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-      darktable.gui->scroll_to[1] = module->expander;
-  }
-  else
-  {
-    if(darktable.lib->gui_module == module)
-    {
-      darktable.lib->gui_module = NULL;
-
-      dt_control_queue_redraw();
-    }
-  }
+  darktable.lib->gui_module = expanded ? module : NULL;
 
   /* store expanded state of module */
   char var[1024];
@@ -888,16 +843,6 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     /* bail out if module is static */
     if(!module->expandable(module)) return FALSE;
 
-    // make gtk scroll to the module once it updated its allocation size
-    uint32_t container = module->container(module);
-    if(dt_conf_get_bool("lighttable/ui/scroll_to_module"))
-    {
-      if(container == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
-        darktable.gui->scroll_to[0] = module->expander;
-      else if(container == DT_UI_CONTAINER_PANEL_RIGHT_CENTER)
-        darktable.gui->scroll_to[1] = module->expander;
-    }
-
     /* handle shiftclick on expander, hide all except this */
     if(!dt_conf_get_bool("lighttable/ui/single_module") != !dt_modifier_is(e->state, GDK_SHIFT_MASK))
     {
@@ -907,7 +852,7 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       {
         dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
-        if(m != module && container == m->container(m) && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
+        if(m != module && module->container(module) == m->container(m) && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
         {
           all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
           dt_lib_gui_set_expanded(m, FALSE);
@@ -944,16 +889,6 @@ static void show_module_callback(dt_lib_module_t *module)
   /* bail out if module is static */
   if(!module->expandable(module)) return;
 
-  // make gtk scroll to the module once it updated its allocation size
-  uint32_t container = module->container(module);
-  if(dt_conf_get_bool("lighttable/ui/scroll_to_module"))
-  {
-    if(container == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
-      darktable.gui->scroll_to[0] = module->expander;
-    else if(container == DT_UI_CONTAINER_PANEL_RIGHT_CENTER)
-      darktable.gui->scroll_to[1] = module->expander;
-  }
-
   if(dt_conf_get_bool("lighttable/ui/single_module"))
   {
     const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
@@ -962,7 +897,7 @@ static void show_module_callback(dt_lib_module_t *module)
     {
       dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
-      if(m != module && container == m->container(m) && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
+      if(m != module && module->container(module) == m->container(m) && m->expandable(m) && dt_lib_is_visible_in_view(m, v))
       {
         all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
         dt_lib_gui_set_expanded(m, FALSE);
@@ -1056,7 +991,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);
   gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 
-  gtk_widget_show_all(module->widget);
+  gtk_widget_show_all(expander);
   dt_gui_add_class(module->widget, "dt_plugin_ui_main");
   dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
   module->expander = expander;

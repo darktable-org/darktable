@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2021 darktable developers.
+    Copyright (C) 2014-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -154,8 +154,7 @@ static void _height_changed(GtkWidget *widget, gpointer user_data);
 static void _x_changed(GtkWidget *widget, gpointer user_data);
 static void _y_changed(GtkWidget *widget, gpointer user_data);
 
-int
-position()
+int position(const dt_lib_module_t *self)
 {
   return 990;
 }
@@ -343,7 +342,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
   dt_imageio_export_with_flags
     (img->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE,
      high_quality, upscale, is_scaling, FALSE, NULL, FALSE, export_masks, params->buf_icc_type,
-     params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1, NULL);
+     params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1, NULL, -1);
 
   img->exp_width = dat.head.width;
   img->exp_height = dat.head.height;
@@ -2525,7 +2524,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *bnew = dt_action_button_new(self, N_("new image area"), _page_new_area_clicked, self,
                                          _("add a new image area on the page\n"
                                            "click and drag on the page to place the area\n"
-                                           "drag&drop image from film strip on it"), 0, 0);
+                                           "drag and drop image from film strip on it"), 0, 0);
 
   d->del = dt_action_button_new(self, N_("delete image area"), _page_delete_area_clicked, self,
                                 _("delete the currently selected image area"), 0, 0);

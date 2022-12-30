@@ -232,6 +232,9 @@ void dt_iop_default_init(dt_iop_module_t *module)
   {
     switch(i->header.type)
     {
+    case DT_INTROSPECTION_TYPE_FLOATCOMPLEX:
+      *(float complex*)((uint8_t *)module->default_params + i->header.offset) = i->FloatComplex.Default;
+      break;
     case DT_INTROSPECTION_TYPE_FLOAT:
       *(float*)((uint8_t *)module->default_params + i->header.offset) = i->Float.Default;
       break;
@@ -243,6 +246,9 @@ void dt_iop_default_init(dt_iop_module_t *module)
       break;
     case DT_INTROSPECTION_TYPE_USHORT:
       *(unsigned short*)((uint8_t *)module->default_params + i->header.offset) = i->UShort.Default;
+      break;
+    case DT_INTROSPECTION_TYPE_INT8:
+      *(short*)((uint8_t *)module->default_params + i->header.offset) = i->Int8.Default;
       break;
     case DT_INTROSPECTION_TYPE_ENUM:
       *(int*)((uint8_t *)module->default_params + i->header.offset) = i->Enum.Default;
@@ -731,9 +737,6 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
                           module->expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
     dt_iop_gui_set_expanded(module, TRUE, FALSE);
 
-    if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-        darktable.gui->scroll_to[1] = module->expander;
-
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
 
     if(copy_params)
@@ -991,9 +994,6 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     if(gtk_toggle_button_get_active(togglebutton))
     {
       module->enabled = 1;
-
-      if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-        darktable.gui->scroll_to[1] = module->expander;
 
       if(!basics && dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
@@ -1731,7 +1731,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
   {
     /* construct module params data for hash calc */
     int length = module->params_size;
-    if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) length += sizeof(dt_develop_blend_params_t);
+    if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+      length += sizeof(dt_develop_blend_params_t);
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, blendop_params->mask_id);
     length += dt_masks_group_get_hash_buffer_length(grp);
 
@@ -2048,10 +2049,6 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     }
     else
     {
-      // make gtk scroll to the module once it updated its allocation size
-      if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-        darktable.gui->scroll_to[1] = module->expander;
-
       const gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != (!dt_modifier_is(e->state, GDK_SHIFT_MASK));
       dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
 
@@ -2422,6 +2419,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
 
   GtkWidget *iopw = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *expander = dtgtk_expander_new(header, iopw);
+  gtk_widget_set_name(expander, "iop-expander");
 
   GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *body_evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(expander));
@@ -2473,8 +2471,9 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   /* add multi instances menu button */
   hw[IOP_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, 0, NULL);
   module->multimenu_button = GTK_WIDGET(hw[IOP_MODULE_INSTANCE]);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]),
-                              _("multiple instance actions\nright-click creates new instance"));
+  if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]),
+                                _("multiple instance actions\nright-click creates new instance"));
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "button-press-event", G_CALLBACK(_gui_multiinstance_callback),
                    module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
@@ -2537,6 +2536,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   {
     GtkWidget *lb = gtk_label_new(module->deprecated_msg());
     gtk_label_set_line_wrap(GTK_LABEL(lb), TRUE);
+    gtk_label_set_max_width_chars(GTK_LABEL(lb), 0); // don't propagate natural width
     gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
     dt_gui_add_class(lb, "dt_warning");
     gtk_box_pack_start(GTK_BOX(iopw), lb, TRUE, TRUE, 0);
@@ -2559,6 +2559,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_widget_set_hexpand(module->widget, FALSE);
   gtk_widget_set_vexpand(module->widget, FALSE);
 
+  gtk_widget_show_all(expander);
   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
@@ -2884,7 +2885,8 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
   dt_iop_module_t *accel_mod = NULL;  // The module to which accelerators are to be attached
 
   // if any instance has focus, use that one
-  if(prefer_focused && darktable.develop->gui_module && darktable.develop->gui_module->so == module)
+  if(prefer_focused && darktable.develop->gui_module
+     && (darktable.develop->gui_module->so == module || DT_ACTION(module) == &darktable.control->actions_focus))
     accel_mod = darktable.develop->gui_module;
   else
   {

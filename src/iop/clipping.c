@@ -455,7 +455,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
+  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -525,7 +525,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   // as dt_iop_roi_t contain int values and not floats, we can have some rounding errors
   // as a workaround, we use a factor for preview pipes
   float factor = 1.0f;
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW) factor = 100.0f;
+  if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2)) factor = 100.0f;
   // we first need to be sure that all data values are computed
   // this is done in modify_roi_out fct, so we create tmp roi
   dt_iop_roi_t roi_out, roi_in;
@@ -1047,7 +1047,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
   dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
 
   const int width = roi_out->width;
@@ -1110,24 +1110,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     sizes[0] = ROUNDUPDWD(width, devid);
     sizes[1] = ROUNDUPDHT(height, devid);
     sizes[2] = 1;
-    dt_opencl_set_kernel_arg(devid, crkernel, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, crkernel, 1, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, crkernel, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, crkernel, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, crkernel, 4, sizeof(int), &roi_in->width);
-    dt_opencl_set_kernel_arg(devid, crkernel, 5, sizeof(int), &roi_in->height);
-    dt_opencl_set_kernel_arg(devid, crkernel, 6, 2 * sizeof(int), &roi);
-    dt_opencl_set_kernel_arg(devid, crkernel, 7, 2 * sizeof(float), &roo);
-    dt_opencl_set_kernel_arg(devid, crkernel, 8, sizeof(float), &roi_in->scale);
-    dt_opencl_set_kernel_arg(devid, crkernel, 9, sizeof(float), &roi_out->scale);
-    dt_opencl_set_kernel_arg(devid, crkernel, 10, sizeof(int), &d->flip);
-    dt_opencl_set_kernel_arg(devid, crkernel, 11, 2 * sizeof(float), &t);
-    dt_opencl_set_kernel_arg(devid, crkernel, 12, 2 * sizeof(float), &k);
-    dt_opencl_set_kernel_arg(devid, crkernel, 13, 4 * sizeof(float), &m);
-    dt_opencl_set_kernel_arg(devid, crkernel, 14, 4 * sizeof(float), &k_space);
-    dt_opencl_set_kernel_arg(devid, crkernel, 15, 2 * sizeof(float), &ka);
-    dt_opencl_set_kernel_arg(devid, crkernel, 16, 4 * sizeof(float), &maa);
-    dt_opencl_set_kernel_arg(devid, crkernel, 17, 2 * sizeof(float), &mbb);
+    dt_opencl_set_kernel_args(devid, crkernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+      CLARG(roi_in->width), CLARG(roi_in->height), CLARG(roi), CLARG(roo), CLARG(roi_in->scale), CLARG(roi_out->scale),
+      CLARG(d->flip), CLARG(t), CLARG(k), CLARG(m), CLARG(k_space), CLARG(ka), CLARG(maa), CLARG(mbb));
     err = dt_opencl_enqueue_kernel_2d(devid, crkernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -272,7 +272,7 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
   int graymode = -1;
   *levels = 65536;
   const int l1 = floorf(1.0f + dt_log2f(1.0f / scale));
-  const int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
+  const int bds = (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) ? 1 : l1 * l1;
 
   switch(data->dither_type)
   {
@@ -308,6 +308,9 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
         case IMAGEIO_INT8:
           *levels = 256;
           break;
+        case IMAGEIO_INT10:
+          *levels = 1024;
+          break;
         case IMAGEIO_INT12:
           *levels = 4096;
           break;
@@ -324,8 +327,7 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
           break;
       }
       // no automatic dithering for preview and thumbnail
-      if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
-         || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
+      if(piece->pipe->type & (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_THUMBNAIL))
       {
         graymode = -1;
       }
@@ -775,7 +777,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
   {
-    const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+    const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
     process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
   }
 }
@@ -790,7 +792,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
   {
-    const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+    const gboolean fastmode = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
     process_floyd_steinberg_sse2(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
   }
 }

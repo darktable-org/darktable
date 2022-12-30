@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2021 darktable developers.
+    Copyright (C) 2014-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -139,7 +139,7 @@ GList *dt_control_crawler_run()
         item->xmp_path = g_strdup(xmp_path);
 
         result = g_list_prepend(result, item);
-        dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is a newer xmp file.\n", xmp_path, id);
+        dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is a newer XMP file.\n", xmp_path, id);
       }
       // older timestamps are the case for all images after the db upgrade. better not report these
       //       else if(timestamp > statbuf.st_mtime)
@@ -605,7 +605,7 @@ void dt_control_crawler_show_image_list(GList *images)
                        DT_CONTROL_CRAWLER_COL_TS_DB, timestamp_db,
                        DT_CONTROL_CRAWLER_COL_TS_XMP_INT, item->timestamp_xmp,
                        DT_CONTROL_CRAWLER_COL_TS_DB_INT, item->timestamp_db,
-                       DT_CONTROL_CRAWLER_COL_REPORT, (item->timestamp_xmp > item->timestamp_db) ? _("xmp")
+                       DT_CONTROL_CRAWLER_COL_REPORT, (item->timestamp_xmp > item->timestamp_db) ? _("XMP")
                                                                                                  : _("database"),
                        DT_CONTROL_CRAWLER_COL_TIME_DELTA, timestamp_delta,
                        -1);
@@ -630,7 +630,7 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(200));
   g_object_set(renderer_text, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
 
-  column = gtk_tree_view_column_new_with_attributes(_("xmp timestamp"), gtk_cell_renderer_text_new(), "text",
+  column = gtk_tree_view_column_new_with_attributes(_("XMP timestamp"), gtk_cell_renderer_text_new(), "text",
                                                     DT_CONTROL_CRAWLER_COL_TS_XMP, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree), column);
 
@@ -653,7 +653,7 @@ void dt_control_crawler_show_image_list(GList *images)
 
   // build a dialog window that contains the list of images
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("updated xmp sidecar files found"), GTK_WINDOW(win),
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("updated XMP sidecar files found"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_close"),
                                                   GTK_RESPONSE_CLOSE, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
@@ -683,7 +683,7 @@ void dt_control_crawler_show_image_list(GList *images)
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 1);
   GtkWidget *label = gtk_label_new_with_mnemonic(_("on the selection:"));
-  GtkWidget *reload_button = gtk_button_new_with_label(_("keep the xmp edit"));
+  GtkWidget *reload_button = gtk_button_new_with_label(_("keep the XMP edit"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("keep the database edit"));
   GtkWidget *newest_button = gtk_button_new_with_label(_("keep the newest edit"));
   GtkWidget *oldest_button = gtk_button_new_with_label(_("keep the oldest edit"));

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -289,7 +289,7 @@ static void _image_preference_changed(gpointer instance, gpointer user_data)
                            : _("physically delete from disk immediately"));
 }
 
-int position()
+int position(const dt_lib_module_t *self)
 {
   return 700;
 }
@@ -575,7 +575,7 @@ void gui_init(dt_lib_module_t *self)
 
   flag = gtk_check_button_new_with_label(_("metadata"));
   d->metadata_flag = flag;
-  gtk_widget_set_tooltip_text(flag, _("select dt metadata (from metadata editor module)"));
+  gtk_widget_set_tooltip_text(flag, _("select darktable metadata (from metadata editor module)"));
   ellipsize_button(flag);
   gtk_grid_attach(grid, flag, 0, line++, 3, 1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata"));

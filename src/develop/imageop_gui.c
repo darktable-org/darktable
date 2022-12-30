@@ -59,8 +59,29 @@ static void _iop_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *dat
   }
 }
 
+static gchar *_section_from_package(dt_iop_module_t **self)
+{
+  if((*self)->actions != DT_ACTION_TYPE_IOP_SECTION) return NULL;
+
+  dt_iop_module_section_t *package = (dt_iop_module_section_t *)*self;
+  *self = package->self;
+  return package->section;
+}
+
+static void _store_intro_section(const dt_introspection_field_t *f, gchar *section)
+{
+  if(section)
+  {
+    GHashTable **sections = &f->header.so->get_introspection()->sections;
+    if(!*sections) *sections = g_hash_table_new(NULL, NULL);
+    g_hash_table_insert(*sections, GINT_TO_POINTER(f->header.offset), section);
+  }
+}
+
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param)
 {
+  gchar *section = _section_from_package(&self);
+
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
   dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
 
@@ -73,7 +94,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   if(sscanf(param, "%[^[][%zu]", base_name, &param_index) == 2)
   {
     sprintf(param_name, "%s[0]", base_name);
-    skip_label = TRUE;
+    skip_label = !section;
   }
   else
   {
@@ -124,6 +145,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   if(f)
   {
     dt_bauhaus_widget_set_field(slider, (uint8_t *)p + offset, f->header.type);
+    _store_intro_section(f, section);
 
     if(!skip_label)
     {
@@ -131,13 +153,13 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       {
         // we do not want to support a context as it break all translations see #5498
         // dt_bauhaus_widget_set_label(slider, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
-        dt_bauhaus_widget_set_label(slider, NULL, f->header.description);
+        dt_bauhaus_widget_set_label(slider, section, f->header.description);
       }
       else
       {
         gchar *str = dt_util_str_replace(f->header.field_name, "_", " ");
 
-        dt_bauhaus_widget_set_label(slider,  NULL, str);
+        dt_bauhaus_widget_set_label(slider,  section, str);
 
         g_free(str);
       }
@@ -163,7 +185,10 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
 GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *param)
 {
+  gchar *section = _section_from_package(&self);
+
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
+  dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
   dt_introspection_field_t *f = self->so->get_f(param);
 
   GtkWidget *combobox = dt_bauhaus_combobox_new(self);
@@ -175,26 +200,18 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
             f->header.type == DT_INTROSPECTION_TYPE_BOOL ))
   {
     dt_bauhaus_widget_set_field(combobox, (uint8_t *)p + f->header.offset, f->header.type);
+    _store_intro_section(f, section);
 
-    if(*f->header.description)
-    {
-      // we do not want to support a context as it break all translations see #5498
-      // dt_bauhaus_widget_set_label(combobox, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
-      dt_bauhaus_widget_set_label(combobox, NULL, f->header.description);
-    }
-    else
-    {
-      str = dt_util_str_replace(f->header.field_name, "_", " ");
+    str = *f->header.description ? g_strdup(f->header.description)
+                                 : dt_util_str_replace(f->header.field_name, "_", " ");
 
-      dt_bauhaus_widget_set_label(combobox,  NULL, str);
-
-      g_free(str);
-    }
+    dt_action_t *action = dt_bauhaus_widget_set_label(combobox, section, str);
 
     if(f->header.type == DT_INTROSPECTION_TYPE_BOOL)
     {
       dt_bauhaus_combobox_add(combobox, _("no"));
       dt_bauhaus_combobox_add(combobox, _("yes"));
+      dt_bauhaus_combobox_set_default(combobox, *(gboolean*)((uint8_t *)d + f->header.offset));
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_ENUM)
     {
@@ -205,8 +222,8 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
         if(*iter->description)
           dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
       }
+      dt_bauhaus_combobox_set_default(combobox, *(int*)((uint8_t *)d + f->header.offset));
 
-      dt_action_t *action = dt_action_section(&self->so->actions, *f->header.description ? f->header.description : f->header.field_name);
       if(action && f->Enum.values)
         g_hash_table_insert(darktable.control->combo_introspection, action, f->Enum.values);
     }
@@ -215,10 +232,10 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
   {
     str = g_strdup_printf("'%s' is not an enum/int/bool/combobox parameter", param);
 
-    dt_bauhaus_widget_set_label(combobox, NULL, str);
-
-    g_free(str);
+    dt_bauhaus_widget_set_label(combobox, section, str);
   }
+
+  g_free(str);
 
   if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), combobox, FALSE, FALSE, 0);
@@ -228,6 +245,8 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
 
 GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *param)
 {
+  gchar *section = _section_from_package(&self);
+
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
   dt_introspection_field_t *f = self->so->get_f(param);
 
@@ -251,7 +270,8 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     module_param->param = (uint8_t *)p + f->header.offset;
     g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
 
-    dt_action_define_iop(self, NULL, str, button, &dt_action_def_toggle);
+    _store_intro_section(f, section);
+    dt_action_define_iop(self, section, str, button, &dt_action_def_toggle);
   }
   else
   {

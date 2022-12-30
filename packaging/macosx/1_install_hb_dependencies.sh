@@ -38,6 +38,7 @@ hbDependencies="adwaita-icon-theme \
     intltool \
     iso-codes \
     jpeg \
+    jpeg-xl \
     json-glib \
     lensfun \
     libavif \
@@ -57,7 +58,8 @@ hbDependencies="adwaita-icon-theme \
     po4a \
     portmidi \
     pugixml \
-    sdl2"
+    sdl2 \
+    webp"
 
 # Install homebrew dependencies
 for hbDependency in $hbDependencies; do

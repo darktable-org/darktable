@@ -632,13 +632,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)piece->data;
   dt_iop_blurs_global_data_t *const gd = (dt_iop_blurs_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   // Init the blur kernel
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
@@ -650,14 +649,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   cl_mem kernel_cl = dt_opencl_copy_host_to_device(devid, kernel, kernel_width, kernel_width, sizeof(float));
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_blurs_convolve, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_blurs_convolve, 1, sizeof(cl_mem), (void *)&kernel_cl);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_blurs_convolve, 2, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_blurs_convolve, 3, sizeof(int), (void *)&roi_out->width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_blurs_convolve, 4, sizeof(int), (void *)&roi_out->height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_blurs_convolve, 5, sizeof(int), (void *)&radius);
-
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_blurs_convolve, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_blurs_convolve, width, height,
+    CLARG(dev_in), CLARG(kernel_cl), CLARG(dev_out), CLARG(roi_out->width), CLARG(roi_out->height),
+    CLARG(radius));
   if(err != CL_SUCCESS) goto error;
 
   // cleanup and exit on success

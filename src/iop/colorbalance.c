@@ -4,7 +4,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2021 darktable developers.
+    Copyright (C) 2013-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -753,7 +753,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -779,16 +779,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                   grey = d->grey / 100.0f,
                   saturation = d->saturation;
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 4, 4 * sizeof(float), (void *)&lift);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 5, 4 * sizeof(float), (void *)&gain);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 6, 4 * sizeof(float), (void *)&gamma_inv);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 7, sizeof(float), (void *)&saturation);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 8, sizeof(float), (void *)&contrast);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 9, sizeof(float), (void *)&grey);
+      dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width),
+        CLARG(height), CLARG(lift), CLARG(gain), CLARG(gamma_inv), CLARG(saturation), CLARG(contrast),
+        CLARG(grey));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance, sizes);
       if(err != CL_SUCCESS) goto error;
       return TRUE;
@@ -814,17 +807,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                   saturation = d->saturation,
                   saturation_out = d->saturation_out;
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 4, 4 * sizeof(float), (void *)&lift);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 5, 4 * sizeof(float), (void *)&gain);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 6, 4 * sizeof(float), (void *)&gamma_inv);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 7, sizeof(float), (void *)&saturation);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 8, sizeof(float), (void *)&contrast);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 9, sizeof(float), (void *)&grey);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_lgg, 10, sizeof(float), (void *)&saturation_out);
+      dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance_lgg, 0, CLARG(dev_in), CLARG(dev_out),
+        CLARG(width), CLARG(height), CLARG(lift), CLARG(gain), CLARG(gamma_inv), CLARG(saturation), CLARG(contrast),
+        CLARG(grey), CLARG(saturation_out));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_lgg, sizes);
       if(err != CL_SUCCESS) goto error;
       return TRUE;
@@ -850,17 +835,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                   saturation = d->saturation,
                   saturation_out = d->saturation_out;
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 1, sizeof(cl_mem), (void *)&dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 4, 4 * sizeof(float), (void *)&lift);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 5, 4 * sizeof(float), (void *)&gain);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 6, 4 * sizeof(float), (void *)&gamma);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 7, sizeof(float), (void *)&saturation);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 8, sizeof(float), (void *)&contrast);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 9, sizeof(float), (void *)&grey);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_cdl, 10, sizeof(float), (void *)&saturation_out);
+      dt_opencl_set_kernel_args(devid, gd->kernel_colorbalance_cdl, 0, CLARG(dev_in), CLARG(dev_out),
+        CLARG(width), CLARG(height), CLARG(lift), CLARG(gain), CLARG(gamma), CLARG(saturation), CLARG(contrast),
+        CLARG(grey), CLARG(saturation_out));
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_cdl, sizes);
       if(err != CL_SUCCESS) goto error;
       return TRUE;

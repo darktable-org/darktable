@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2021 darktable developers.
+    Copyright (C) 2013-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -246,7 +246,7 @@ error:
   WebPDataClear(&assembled_data);
   WebPMuxDelete(mux);
   fclose(out);
-  if(!res) dt_exif_write_blob(exif, exif_len, filename, 1);
+  if(!res && exif) dt_exif_write_blob(exif, exif_len, filename, 1);
   return res;
 }
 
@@ -346,11 +346,12 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("WebP (8-bit)");
+  return _("WebP");
 }
 
-static void compression_changed(GtkWidget *widget, dt_imageio_webp_gui_data_t *gui)
+static void compression_changed(GtkWidget *widget, dt_imageio_module_format_t *self)
 {
+  dt_imageio_webp_gui_data_t *gui = self->gui_data;
   const int comp_type = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/webp/comp_type", comp_type);
 
@@ -380,10 +381,9 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("compression type"), NULL,
-                               comp_type, compression_changed, gui,
+                               comp_type, compression_changed, self,
                                N_("lossy"), N_("lossless"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_changed), NULL);
 
   gui->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
                                                   dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_MIN),
@@ -406,9 +406,9 @@ void gui_init(dt_imageio_module_format_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->hint, self, NULL, N_("image hint"),
                                _("image characteristics hint for the underlying encoder.\n"
-                                 "picture : digital picture, like portrait, inner shot\n"
-                                 "photo   : outdoor photograph, with natural lighting\n"
-                                 "graphic : discrete tone image (graph, map-tile etc)"),
+                                 "picture: digital picture, like portrait, inner shot\n"
+                                 "photo: outdoor photograph, with natural lighting\n"
+                                 "graphic: discrete tone image (graph, map-tile etc)"),
                                hint, hint_combobox_changed, self,
                                N_("default"), N_("picture"), N_("photo"), N_("graphic"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->hint, TRUE, TRUE, 0);

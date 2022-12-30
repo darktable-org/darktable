@@ -84,20 +84,14 @@
   hanno@schwalm-bremen.de 21/04/29
 */
 
-// We don't want to use the SIMD version as we might access unaligned memory
-static inline float _sqrf(float a)
-{
-  return a * a;
-}
-
-void dt_masks_extend_border(float *const restrict mask, const int width, const int height, const int border)
+void dt_masks_extend_border(float *const mask, const int width, const int height, const int border)
 {
   if(border <= 0) return;
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(mask) \
   dt_omp_sharedconst(width, height, border) \
-  schedule(simd:static) aligned(mask : 64)
+  schedule(static)
  #endif
   for(size_t row = border; row < height - border; row++)
   {
@@ -109,10 +103,10 @@ void dt_masks_extend_border(float *const restrict mask, const int width, const i
     }
   }
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(mask) \
   dt_omp_sharedconst(width, height, border) \
-  schedule(simd:static) aligned(mask : 64)
+  schedule(static)
  #endif
   for(size_t col = 0; col < width; col++)
   {
@@ -129,16 +123,16 @@ void dt_masks_extend_border(float *const restrict mask, const int width, const i
 void _masks_blur_5x5_coeff(float *c, const float sigma)
 {
   float kernel[5][5];
-  const float temp = -2.0f * _sqrf(sigma);
-  const float range = _sqrf(3.0f * 0.84f);
+  const float temp = -2.0f * sqrf(sigma);
+  const float range = sqrf(3.0f * 0.84f);
   float sum = 0.0f;
   for(int k = -2; k <= 2; k++)
   {
     for(int j = -2; j <= 2; j++)
     {
-      if((_sqrf(k) + _sqrf(j)) <= range)
+      if((sqrf(k) + sqrf(j)) <= range)
       {
-        kernel[k + 2][j + 2] = expf((_sqrf(k) + _sqrf(j)) / temp);
+        kernel[k + 2][j + 2] = expf((sqrf(k) + sqrf(j)) / temp);
         sum += kernel[k + 2][j + 2];
       }
       else
@@ -169,16 +163,16 @@ void _masks_blur_5x5_coeff(float *c, const float sigma)
 void dt_masks_blur_9x9_coeff(float *c, const float sigma)
 {
   float kernel[9][9];
-  const float temp = -2.0f * _sqrf(sigma);
-  const float range = _sqrf(3.0f * 1.5f);
+  const float temp = -2.0f * sqrf(sigma);
+  const float range = sqrf(3.0f * 1.5f);
   float sum = 0.0f;
   for(int k = -4; k <= 4; k++)
   {
     for(int j = -4; j <= 4; j++)
     {
-      if((_sqrf(k) + _sqrf(j)) <= range)
+      if((sqrf(k) + sqrf(j)) <= range)
       {
-        kernel[k + 4][j + 4] = expf((_sqrf(k) + _sqrf(j)) / temp);
+        kernel[k + 4][j + 4] = expf((sqrf(k) + sqrf(j)) / temp);
         sum += kernel[k + 4][j + 4];
       }
       else
@@ -252,16 +246,16 @@ void dt_masks_blur_9x9(float *const restrict src, float *const restrict out, con
 void _masks_blur_13x13_coeff(float *c, const float sigma)
 {
   float kernel[13][13];
-  const float temp = -2.0f * _sqrf(sigma);
-  const float range = _sqrf(3.0f * 2.0f);
+  const float temp = -2.0f * sqrf(sigma);
+  const float range = sqrf(3.0f * 2.0f);
   float sum = 0.0f;
   for(int k = -6; k <= 6; k++)
   {
     for(int j = -6; j <= 6; j++)
     {
-      if((_sqrf(k) + _sqrf(j)) <= range)
+      if((sqrf(k) + sqrf(j)) <= range)
       {
-        kernel[k + 6][j + 6] = expf((_sqrf(k) + _sqrf(j)) / temp);
+        kernel[k + 6][j + 6] = expf((sqrf(k) + sqrf(j)) / temp);
         sum += kernel[k + 6][j + 6];
       }
       else
@@ -431,7 +425,7 @@ void dt_masks_calc_rawdetail_mask(float *const restrict src, float *const restri
       const float gy = 47.0f * (tmp[idx-width-1] - tmp[idx+width-1])
                     + 162.0f * (tmp[idx-width]   - tmp[idx+width])
                      + 47.0f * (tmp[idx-width+1] - tmp[idx+width+1]);
-      const float gradient_magnitude = sqrtf(_sqrf(gx / 256.0f) + _sqrf(gy / 256.0f));
+      const float gradient_magnitude = sqrtf(sqrf(gx / 256.0f) + sqrf(gy / 256.0f));
       mask[idx] = scale * gradient_magnitude;
     }
   }

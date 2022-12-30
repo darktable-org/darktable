@@ -381,7 +381,7 @@ static void alien_job_init()
 
 /*
    STRING JOB
-   This is a source that deals with lua jobs that are gien as lua strings
+   This is a source that deals with lua jobs that are given as lua strings
    */
 
 typedef struct {

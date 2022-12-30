@@ -86,7 +86,7 @@ typedef enum
   DT_IMAGE_MONOCHROME = 32768,
   // DNG image has exif tags which are not cached in the database but must be read and stored in dt_image_t
   // when the image is loaded.
-  DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS = 65536,
+  DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS = 65536,
   // image is an sraw
   DT_IMAGE_S_RAW = 1 << 17,
   // image has a monochrome preview tested
@@ -140,6 +140,26 @@ typedef enum dt_image_orientation_t
   ORIENTATION_TRANSVERSE        = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY // 7
 } dt_image_orientation_t;
 
+typedef enum dt_image_correction_type_t
+{
+  CORRECTION_TYPE_NONE,
+  CORRECTION_TYPE_SONY,
+  CORRECTION_TYPE_FUJI
+} dt_image_correction_type_t;
+
+typedef union dt_image_correction_data_t
+{
+  struct {
+    int nc;
+    short distortion[16], ca_r[16], ca_b[16], vignetting[16];
+  } sony;
+  struct {
+    int nc;
+    float cropf;
+    float knots[9], distortion[9], ca_r[9], ca_b[9], vignetting[9];
+  } fuji;
+} dt_image_correction_data_t;
+
 typedef enum dt_image_loader_t
 {
   LOADER_UNKNOWN  =  0,
@@ -157,7 +177,9 @@ typedef enum dt_image_loader_t
   LOADER_IM       = 12,
   LOADER_HEIF     = 13,
   LOADER_LIBRAW   = 14,
-  LOADER_COUNT    = 15, // keep last
+  LOADER_WEBP     = 15,
+  LOADER_JPEGXL   = 16,
+  LOADER_COUNT    = 17 // keep last
 } dt_image_loader_t;
 
 static const struct
@@ -180,7 +202,9 @@ static const struct
   { N_("avif"),            'a'},
   { N_("ImageMagick"),     'i'},
   { N_("heif"),            'h'},
-  { N_("libraw"),          'l'}
+  { N_("libraw"),          'l'},
+  { N_("webp"),            'w'},
+  { N_("jpeg xl"),         'L'}
 };
 
 typedef struct dt_image_geoloc_t
@@ -208,6 +232,9 @@ typedef struct dt_image_t
   char exif_model[64];
   char exif_lens[128];
   GTimeSpan exif_datetime_taken;
+
+  dt_image_correction_type_t exif_correction_type;
+  dt_image_correction_data_t exif_correction_data;
 
   char camera_maker[64];
   char camera_model[64];
@@ -270,7 +297,7 @@ typedef struct dt_image_t
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
 
-// should be in datetime.h, workaround to solve cross references 
+// should be in datetime.h, workaround to solve cross references
 #define DT_DATETIME_LENGTH 24       // includes msec
 
 typedef struct dt_image_basic_exif_t
@@ -303,6 +330,8 @@ gboolean dt_image_is_rawprepare_supported(const dt_image_t *img);
 int dt_image_monochrome_flags(const dt_image_t *img);
 /** returns true if the image has been tested to be monochrome and the image wants monochrome workflow */
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img);
+/** returns the image filename */
+char *dt_image_get_filename(const int32_t imgid);
 /** returns the full path name where the image was imported from. from_cache=TRUE check and return local
  * cached filename if any. */
 void dt_image_full_path(const int32_t imgid, char *pathname, size_t pathname_len, gboolean *from_cache);
@@ -362,7 +391,7 @@ void dt_image_set_images_locations(const GList *imgs, const GArray *gloc,
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns TRUE if current hash is not basic nor auto_apply, FALSE otherwise. */
 gboolean dt_image_altered(const int32_t imgid);
-/** returns TRUE if if current has is basic, FALSE otherwise. */
+/** returns TRUE if current hash is basic, FALSE otherwise. */
 gboolean dt_image_basic(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
 float dt_image_set_aspect_ratio(const int32_t imgid, const gboolean raise);

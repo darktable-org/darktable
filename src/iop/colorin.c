@@ -579,7 +579,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     pack_3xSSE_to_3x3(d->lmatrix, lmat);
   }
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -594,7 +594,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return TRUE;
   }
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, cmat);
   if(dev_m == NULL) goto error;
   dev_l = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 9, lmat);
@@ -608,18 +607,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_coeffs
       = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * 3, (float *)d->unbounded_coeffs);
   if(dev_coeffs == NULL) goto error;
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), (void *)&dev_l);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_r);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_g);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cl_mem), (void *)&dev_b);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_int), (void *)&blue_mapping);
-  dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), (void *)&dev_coeffs);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_m), CLARG(dev_l), CLARG(dev_r),
+    CLARG(dev_g), CLARG(dev_b), CLARG(blue_mapping), CLARG(dev_coeffs));
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_l);
@@ -1803,7 +1793,7 @@ void reload_defaults(dt_iop_module_t *module)
   dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
   // some file formats like jpeg can have an embedded color profile
-  // currently we only support jpeg, j2k, tiff and png
+  // currently we only support jpeg, j2k, tiff, png, avif, and heif
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, module->dev->image_storage.id, 'w');
 
   if(!img->profile)
@@ -1847,17 +1837,21 @@ void reload_defaults(dt_iop_module_t *module)
     }
     else if(!strcmp(ext, "png"))
     {
-      img->profile_size = dt_imageio_png_read_profile(filename, &img->profile);
-      color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
+      dt_colorspaces_cicp_t cicp;
+      img->profile_size = dt_imageio_png_read_profile(filename, &img->profile, &cicp);
+      /* PNG spec says try the cICP chunk first, but rather than ignoring, we also try any ICC profile present if
+       * CICP combo is unsupported */
+      if((color_profile = dt_colorspaces_cicp_to_type(&cicp, filename)) == DT_COLORSPACE_NONE)
+        color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
     }
 #ifdef HAVE_LIBAVIF
     else if(!strcmp(ext, "avif"))
     {
       dt_colorspaces_cicp_t cicp;
       img->profile_size = dt_imageio_avif_read_profile(filename, &img->profile, &cicp);
-      /* try the nclx box before falling back to any ICC profile */
-      if((color_profile = dt_colorspaces_cicp_to_type(&cicp, filename)) == DT_COLORSPACE_NONE)
-        color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
+      /* AVIF spec gives priority to ICC profile over CICP; only one valid kind is returned above anyway */
+      color_profile
+          = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : dt_colorspaces_cicp_to_type(&cicp, filename);
     }
 #endif
 #ifdef HAVE_LIBHEIF
@@ -1871,9 +1865,9 @@ void reload_defaults(dt_iop_module_t *module)
     {
       dt_colorspaces_cicp_t cicp;
       img->profile_size = dt_imageio_heif_read_profile(filename, &img->profile, &cicp);
-      /* try the nclx box before falling back to any ICC profile */
-      if((color_profile = dt_colorspaces_cicp_to_type(&cicp, filename)) == DT_COLORSPACE_NONE)
-        color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
+      /* HEIF spec gives priority to ICC profile over CICP; only one valid kind is returned above anyway */
+      color_profile
+          = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : dt_colorspaces_cicp_to_type(&cicp, filename);
     }
 #endif
     g_free(ext);
@@ -1897,7 +1891,7 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = DT_COLORSPACE_ADOBERGB;
   else if(dt_image_is_ldr(img))
     d->type = DT_COLORSPACE_SRGB;
-  else if(!isnan(img->d65_color_matrix[0])) // image is DNG
+  else if(!isnan(img->d65_color_matrix[0])) // image is DNG, EXR, or RGBE
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
   else if(dt_image_is_matrix_correction_supported(img)) // image is raw
     d->type = DT_COLORSPACE_STANDARD_MATRIX;
@@ -2097,4 +2091,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

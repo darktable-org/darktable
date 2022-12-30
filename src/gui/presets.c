@@ -167,23 +167,9 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *modu
     return;
   }
 
-  gint res = GTK_RESPONSE_YES;
-
-  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
-  {
-    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog
-      = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                               GTK_BUTTONS_YES_NO, _("do you really want to delete the preset `%s'?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
+     || dt_gui_show_yes_no_dialog(_("delete preset?"),
+                                  _("do you really want to delete the preset `%s'?"), name))
   {
     dt_action_rename_preset(&module->so->actions, name, NULL);
 
@@ -254,21 +240,9 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
       {
         sqlite3_finalize(stmt);
 
-        // show overwrite question dialog
-        GtkWidget *dlg_overwrite = gtk_message_dialog_new(
-            GTK_WINDOW(dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
-            GTK_BUTTONS_YES_NO, _("preset `%s' already exists.\ndo you want to overwrite?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-        dt_osx_disallow_fullscreen(dlg_overwrite);
-#endif
-
-        gtk_window_set_title(GTK_WINDOW(dlg_overwrite), _("overwrite preset?"));
-
-        const gint dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
-        gtk_widget_destroy(dlg_overwrite);
-
         // if result is BUTTON_NO or ESCAPE keypress exit without destroying dialog, to permit other name
-        if(dlg_ret == GTK_RESPONSE_YES)
+        if(dt_gui_show_yes_no_dialog(_("overwrite preset?"),
+                                     _("preset `%s' already exists.\ndo you want to overwrite?"), name))
         {
           // we remove the preset that will be overwrite
           dt_lib_presets_remove(name, g->operation, g->op_version);
@@ -402,9 +376,12 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
   }
   else if(response_id == GTK_RESPONSE_REJECT && g->old_id)
   {
-    dt_gui_presets_confirm_and_delete(GTK_WIDGET(dialog), g->original_name, g->operation, g->old_id);
-
-    if(g->callback) ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
+    if(dt_gui_presets_confirm_and_delete(g->original_name, g->operation, g->old_id)
+       && g->callback)
+    {
+      g->old_id = 0;
+      ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
+    }
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -414,20 +391,12 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
   free(g);
 }
 
-void dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *name, const char *module_name, int rowid)
+gboolean dt_gui_presets_confirm_and_delete(const char *name, const char *module_name, int rowid)
 {
-  if(!module_name) return;
+  if(!module_name) return FALSE;
 
-  // This means with want to remove the preset
-  GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(parent_dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                             GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                             _("do you really want to delete the preset `%s'?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(dialog);
-#endif
-
-  gtk_window_set_title(GTK_WINDOW(dialog), _("delete preset?"));
-  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+  if(dt_gui_show_yes_no_dialog(_("delete preset?"),
+                               _("do you really want to delete the preset `%s'?"), name))
   {
     // deregistering accel...
     for(GList *modules = darktable.iop; modules; modules = modules->next)
@@ -458,8 +427,11 @@ void dt_gui_presets_confirm_and_delete(GtkWidget *parent_dialog, const char *nam
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    return TRUE;
   }
-  gtk_widget_destroy(dialog);
+
+  return FALSE;
 }
 
 static void _check_buttons_activated(GtkCheckButton *button, dt_gui_presets_edit_dialog_t *g)
@@ -821,23 +793,8 @@ static void _menuitem_update_preset(GtkMenuItem *menuitem, dt_iop_module_t *modu
 {
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
 
-  gint res = GTK_RESPONSE_YES;
-
-  if(dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset"))
-  {
-    GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog
-      = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                               GTK_BUTTONS_YES_NO, _("do you really want to update the preset `%s'?"), name);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    gtk_window_set_title(GTK_WINDOW(dialog), _("update preset?"));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
+  if(!dt_conf_get_bool("plugins/lighttable/preset/ask_before_delete_preset")
+     || dt_gui_show_yes_no_dialog(_("update preset?"), _("do you really want to update the preset `%s'?"), name))
   {
     // commit all the module fields
     sqlite3_stmt *stmt;

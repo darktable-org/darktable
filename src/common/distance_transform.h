@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,11 +67,11 @@ static void _image_distance_transform(const float *f, float *z, float *d, int *v
   z[1] = DT_DISTANCE_TRANSFORM_MAX;
   for(int q = 1; q <= n-1; q++)
   {
-    float s = (f[q] + sqf((float)q)) - (f[v[k]] + sqf((float)v[k]));
+    float s = (f[q] + sqrf((float)q)) - (f[v[k]] + sqrf((float)v[k]));
     while(s <= z[k] * (float)(2*q - 2*v[k]))
     {
       k--;
-      s = (f[q] + sqf((float)q)) - (f[v[k]] + sqf((float)v[k]));
+      s = (f[q] + sqrf((float)q)) - (f[v[k]] + sqrf((float)v[k]));
     }
     s /= (float)(2*q - 2*v[k]);
     k++;
@@ -85,11 +85,11 @@ static void _image_distance_transform(const float *f, float *z, float *d, int *v
   {
     while(z[k+1] < (float)q)
       k++;
-    d[q] = sqf((float)(q-v[k])) + f[v[k]];
+    d[q] = sqrf((float)(q-v[k])) + f[v[k]];
   }
 }
 
-float dt_image_distance_transform(float *const restrict src, float *const restrict out, const size_t width, const size_t height, const float clip, const dt_distance_transform_t mode)
+float dt_image_distance_transform(float *const src, float *const out, const size_t width, const size_t height, const float clip, const dt_distance_transform_t mode)
 {
   switch(mode)
   {
@@ -97,10 +97,10 @@ float dt_image_distance_transform(float *const restrict src, float *const restri
       break;
     case DT_DISTANCE_TRANSFORM_MASK:
 #ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
+  #pragma omp parallel for default(none) \
   dt_omp_firstprivate(src, out) \
   dt_omp_sharedconst(clip, width, height) \
-  schedule(static) aligned(src, out : 64)
+  schedule(static)
 #endif
       for(size_t i = 0; i < width * height; i++)
         out[i] = (src[i] < clip) ? 0.0f : DT_DISTANCE_TRANSFORM_MAX;
@@ -127,7 +127,7 @@ float dt_image_distance_transform(float *const restrict src, float *const restri
 
     // transform along columns
 #ifdef _OPENMP
-  #pragma omp for schedule(simd:static)
+  #pragma omp for schedule (static)
 #endif
     for(size_t x = 0; x < width; x++)
     {
@@ -140,7 +140,7 @@ float dt_image_distance_transform(float *const restrict src, float *const restri
     // implicit barrier :-)
     // transform along rows
 #ifdef _OPENMP
-  #pragma omp for schedule(simd:static) nowait
+  #pragma omp for schedule (static) nowait
 #endif
     for(size_t y = 0; y < height; y++)
     {

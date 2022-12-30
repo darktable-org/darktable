@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
+#include "gui/styles.h"
 #include "libs/colorpicker.h"
 #include "libs/modulegroups.h"
 #include "views/view.h"
@@ -117,7 +118,7 @@ static int display_image_cb(lua_State *L)
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_develop_t));
-  dt_dev_init((dt_develop_t *)self->data, 1);
+  dt_dev_init((dt_develop_t *)self->data, TRUE);
 
   darktable.view_manager->proxy.darkroom.view = self;
 
@@ -170,15 +171,6 @@ void cleanup(dt_view_t *self)
 
   dt_dev_cleanup(dev);
   free(dev);
-}
-
-static cairo_status_t _write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
-{
-  const int fd = GPOINTER_TO_INT(closure);
-  ssize_t res = write(fd, data, length);
-  if(res != length)
-    return CAIRO_STATUS_WRITE_ERROR;
-  return CAIRO_STATUS_SUCCESS;
 }
 
 static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
@@ -436,26 +428,28 @@ void expose(
     dev->gui_synch = 0;
   }
 
-  if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY || dev->image_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->image_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp)
   {
     dt_dev_process_image(dev);
   }
 
-  if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->preview_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp)
   {
     dt_dev_process_preview(dev);
   }
 
-  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
   {
     dt_dev_process_preview2(dev);
   }
 
   dt_pthread_mutex_t *mutex = NULL;
-  int stride;
   // FIXME: these four dt_control_get_dev_*() calls each lock/unlock global_mutex -- consolidate this work
   const float zoom_y = dt_control_get_dev_zoom_y();
   const float zoom_x = dt_control_get_dev_zoom_x();
@@ -466,7 +460,9 @@ void expose(
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
 
-  if(image_surface_width != width || image_surface_height != height || image_surface == NULL)
+  if(image_surface_width != width
+     || image_surface_height != height
+     || image_surface == NULL)
   {
     // create double-buffered image to draw on, to make modules draw more fluently.
     image_surface_width = width;
@@ -501,20 +497,18 @@ void expose(
     dt_view_set_scrollbar(self, zx, -0.5 + boxw/2, 0.5, boxw/2, zy, -0.5+ boxh/2, 0.5, boxh/2);
   }
 
-  if(dev->pipe->output_backbuf && // do we have an image?
-    dev->pipe->output_imgid == dev->image_storage.id && // is the right image?
-    dev->pipe->backbuf_scale == backbuf_scale && // is this the zoom scale we want to display?
-    dev->pipe->backbuf_zoom_x == zoom_x && dev->pipe->backbuf_zoom_y == zoom_y)
+  if(dev->pipe->output_backbuf                            // do we have an image?
+     && dev->pipe->output_imgid == dev->image_storage.id  // is the right image?
+     && dev->pipe->backbuf_scale == backbuf_scale    // is this the zoom scale we want to display?
+     && dev->pipe->backbuf_zoom_x == zoom_x && dev->pipe->backbuf_zoom_y == zoom_y)
   {
     // draw image
     mutex = &dev->pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
-    float wd = dev->pipe->output_backbuf_width;
-    float ht = dev->pipe->output_backbuf_height;
-    stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = dt_cairo_image_surface_create_for_data(dev->pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
-    wd /= darktable.gui->ppd;
-    ht /= darktable.gui->ppd;
+    const float wd = dev->pipe->output_backbuf_width;
+    const float ht = dev->pipe->output_backbuf_height;
+
+    surface = dt_view_create_surface(dev->pipe->output_backbuf, wd, ht);
 
     if(dev->iso_12646.enabled)
     {
@@ -530,43 +524,14 @@ void expose(
     }
     cairo_paint(cr);
 
-    cairo_translate(cr, ceilf(.5f * (width - wd)), ceilf(.5f * (height - ht)));
-    if(closeup)
-    {
-      const double scale = 1<<closeup;
-      cairo_scale(cr, scale, scale);
-      cairo_translate(cr, -(.5 - 0.5/scale) * wd, -(.5 - 0.5/scale) * ht);
-    }
-
-    if(dev->iso_12646.enabled)
-    {
-      // draw the white frame around picture
-      const double tbw = (float)(tb >> closeup) * 2.0 / 3.0;  
-      cairo_rectangle(cr, -tbw, -tbw, wd + 2.0 * tbw, ht + 2.0 * tbw);
-      cairo_set_source_rgb(cr, 1., 1., 1.);
-      cairo_fill(cr);
-    }
-
-    cairo_rectangle(cr, 0, 0, wd, ht);
-    cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev, zoom, closeup));
-    cairo_paint(cr);
-
-    if(darktable.gui->show_focus_peaking)
-    {
-      cairo_save(cr);
-      cairo_scale(cr, 1./ darktable.gui->ppd, 1. / darktable.gui->ppd);
-      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
-                                  cairo_image_surface_get_width(surface),
-                                  cairo_image_surface_get_height(surface));
-      cairo_restore(cr);
-    }
+    dt_view_paint_surface(cr, width, height, surface, wd, ht, DT_WINDOW_MAIN);
 
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
-  else if(dev->preview_pipe->output_backbuf && dev->preview_pipe->output_imgid == dev->image_storage.id)
+  else if(dev->preview_pipe->output_backbuf
+          && dev->preview_pipe->output_imgid == dev->image_storage.id)
   {
     // draw preview
     mutex = &dev->preview_pipe->backbuf_mutex;
@@ -599,8 +564,9 @@ void expose(
 
     cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
     cairo_clip(cr);
-    stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+
+    surface = dt_view_create_surface(dev->preview_pipe->output_backbuf, wd, ht);
+
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
@@ -688,23 +654,6 @@ void expose(
 
   /* if we are in full preview mode, we don"t want anything else than the image */
   if(dev->full_preview) return;
-
-  /* check if we should create a snapshot of view */
-  if(darktable.develop->proxy.snapshot.request && !darktable.develop->image_loading)
-  {
-    /* reset the request */
-    darktable.develop->proxy.snapshot.request = FALSE;
-
-    /* validation of snapshot filename */
-    g_assert(darktable.develop->proxy.snapshot.filename != NULL);
-
-    /* Store current image surface to snapshot file.
-       FIXME: add checks so that we don't make snapshots of preview pipe image surface.
-    */
-    const int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY | O_BINARY, 0600);
-    cairo_surface_write_to_png_stream(image_surface, _write_snapshot_data, GINT_TO_POINTER(fd));
-    close(fd);
-  }
 
   // Displaying sample areas if enabled
   if(darktable.lib->proxy.colorpicker.live_samples
@@ -803,7 +752,7 @@ int try_enter(dt_view_t *self)
   if(imgid < 0)
   {
     // fail :(
-    dt_control_log(_("no image to open !"));
+    dt_control_log(_("no image to open!"));
     return 1;
   }
 
@@ -827,6 +776,20 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
+#ifdef USE_LUA
+
+static void _fire_darkroom_image_loaded_event(const bool clean, const int32_t imgid)
+{
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
+      LUA_ASYNC_TYPENAME, "bool", clean,
+      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(imgid),
+      LUA_ASYNC_DONE);
+}
+
+#endif
+
 static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
@@ -837,18 +800,6 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dev->proxy.chroma_adaptation = NULL;
   dev->proxy.wb_is_D65 = TRUE;
   dev->proxy.wb_coeffs[0] = 0.f;
-
-  memset(darktable.gui->scroll_to, 0, sizeof(darktable.gui->scroll_to));
-
-#ifdef USE_LUA
-
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(imgid),
-      LUA_ASYNC_DONE);
-
-#endif
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);
@@ -910,17 +861,41 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // which in turn try to acquire the gdk lock.
   //
   // worst case, it'll drop some change image events. sorry.
-  if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex)) return;
+  if(dt_pthread_mutex_BAD_trylock(&dev->preview_pipe_mutex))
+  {
+
+  #ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(FALSE, imgid);
+
+#endif
+
+  return;
+  }
   if(dt_pthread_mutex_BAD_trylock(&dev->pipe_mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
-    return;
+
+ #ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(FALSE, imgid);
+
+#endif
+
+   return;
   }
   if(dt_pthread_mutex_BAD_trylock(&dev->preview2_pipe_mutex))
   {
     dt_pthread_mutex_BAD_unlock(&dev->pipe_mutex);
     dt_pthread_mutex_BAD_unlock(&dev->preview_pipe_mutex);
-    return;
+
+ #ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(FALSE, imgid);
+
+#endif
+
+   return;
   }
 
   // get current plugin in focus before defocus
@@ -1080,8 +1055,6 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
 
-  dt_dev_masks_list_change(dev);
-
   /* cleanup histograms */
   g_list_foreach(dev->iop, (GFunc)dt_iop_cleanup_histogram, (gpointer)NULL);
 
@@ -1090,6 +1063,8 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
      A double history entry is not generated.
   */
   --darktable.gui->reset;
+
+  dt_dev_masks_list_change(dev);
 
   /* Now we can request focus again and write a safe plugins/darkroom/active */
   if(active_plugin)
@@ -1139,6 +1114,13 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
+
+#ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(TRUE, imgid);
+
+#endif
+
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_t imgid, gpointer user_data)
@@ -1312,26 +1294,29 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
     dt_control_log(_("no userdefined presets for favorite modules were found"));
 }
 
-static void _darkroom_ui_apply_style_activate_callback(gchar *name)
+static void _darkroom_ui_apply_style_activate_callback(const gchar *name)
 {
-  dt_control_log(_("applied style `%s' on current image"), name);
+  dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+}
 
-  /* write current history changes so nothing gets lost */
-  dt_dev_write_history(darktable.develop);
+gboolean _styles_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyboard_mode,
+                                  GtkTooltip* tooltip, gpointer user_data)
+{
+  gchar *name = (char *)user_data;
+  dt_develop_t *dev = darktable.develop;
 
-  dt_dev_undo_start_record(darktable.develop);
+  const uint32_t imgid = dev->image_storage.id;
 
-  /* apply style on image and reload*/
-  dt_styles_apply_to_image(name, FALSE, FALSE, darktable.develop->image_storage.id);
-  dt_dev_reload_image(darktable.develop, darktable.develop->image_storage.id);
+  // write history to ensure the preview will be done with latest
+  // development history.
+  dt_dev_write_history(dev);
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
+  gtk_widget_show_all(ht);
 
-  /* record current history state : after change (needed for undo) */
-  dt_dev_undo_end_record(darktable.develop);
+  gtk_tooltip_set_custom(tooltip, ht);
 
-  // rebuild the accelerators (style might have changed order)
-  dt_iop_connect_accels_all();
+  return TRUE;
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
@@ -1345,18 +1330,6 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
     for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))
     {
       dt_style_t *style = (dt_style_t *)st_iter->data;
-
-      char *items_string = dt_styles_get_item_list_as_string(style->name);
-      gchar *tooltip = NULL;
-
-      if(style->description && *style->description)
-      {
-        tooltip = g_strconcat("<b>", g_markup_escape_text(style->description, -1), "</b>\n", items_string, NULL);
-      }
-      else
-      {
-        tooltip = g_strdup(items_string);
-      }
 
       gchar **split = g_strsplit(style->name, "|", 0);
 
@@ -1382,7 +1355,11 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
         mi_name = g_strdup(split[0]);
 
       GtkWidget *mi = gtk_menu_item_new_with_label(mi_name);
-      gtk_widget_set_tooltip_markup(mi, tooltip);
+      // need a tooltip for the signal below to be raised
+      gtk_widget_set_tooltip_markup(mi, "x");
+      g_signal_connect(mi, "query-tooltip",
+                       G_CALLBACK(_styles_tooltip_callback), g_strdup(style->name));
+
       g_free(mi_name);
 
       // check if we already have a sub-menu with this name
@@ -1426,8 +1403,6 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
                                (gpointer)g_strdup(style->name));
       gtk_widget_show(mi);
 
-      g_free(items_string);
-      g_free(tooltip);
       g_strfreev(split);
     }
     g_list_free_full(styles, dt_style_free);
@@ -1504,16 +1479,18 @@ static int _iso_12646_get_border(dt_develop_t *d)
 
 static void _iso_12646_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
-  dt_develop_t *d = (dt_develop_t *)user_data;
-  if(!d->gui_attached) return;
+  dt_develop_t *dev = (dt_develop_t *)user_data;
+  if(!dev->gui_attached) return;
 
-  d->iso_12646.enabled = !d->iso_12646.enabled;
-  d->width = d->orig_width;
-  d->height = d->orig_height;
-  d->border_size = _iso_12646_get_border(d);
-  dt_dev_configure(d, d->width, d->height);
+  dev->iso_12646.enabled = !dev->iso_12646.enabled;
+  dev->width = dev->orig_width;
+  dev->height = dev->orig_height;
+  dev->border_size = _iso_12646_get_border(dev);
+  dt_dev_configure(dev, dev->width, dev->height);
 
-  dt_dev_reprocess_center(d);
+  dt_dev_second_window_configure(dev, dev->second_window.orig_width, dev->second_window.orig_width);
+  dt_dev_reprocess_center(dev);
+  dt_control_queue_redraw_center();
 }
 
 /* overlay color */
@@ -2596,8 +2573,8 @@ void gui_init(dt_view_t *self)
   ac = dt_action_define(sa, NULL, N_("full preview"), NULL, &dt_action_def_preview);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
 
-  // add an option to allow skip mouse events while editing masks
-  ac = dt_action_define(sa, NULL, N_("allow to pan & zoom while editing masks"), NULL, &dt_action_def_skip_mouse);
+  // add an option to allow skip mouse events while other overlays are consuming mouse actions
+  ac = dt_action_define(sa, NULL, N_("force pan & zoom with mouse"), NULL, &dt_action_def_skip_mouse);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_a, 0);
 
   // move left/right/up/down
@@ -3022,6 +2999,10 @@ void enter(dt_view_t *self)
   /*
    * add IOP modules to plugin list
    */
+  GtkWidget *box = GTK_WIDGET(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER));
+  GtkScrolledWindow *sw = GTK_SCROLLED_WINDOW(gtk_widget_get_ancestor(box, GTK_TYPE_SCROLLED_WINDOW));
+  if(sw) gtk_scrolled_window_set_propagate_natural_width(sw, FALSE);
+
   char option[1024];
   for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
   {
@@ -3045,16 +3026,6 @@ void enter(dt_view_t *self)
       dt_iop_reload_defaults(module);
     }
   }
-
-#ifdef USE_LUA
-
-  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
-      0, NULL, NULL,
-      LUA_ASYNC_TYPENAME, "const char*", "darkroom-image-loaded",
-      LUA_ASYNC_TYPENAME, "dt_lua_image_t", GINT_TO_POINTER(dev->image_storage.id),
-      LUA_ASYNC_DONE);
-
-#endif
 
   /* signal that darktable.develop is initialized and ready to be used */
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
@@ -3122,6 +3093,13 @@ void enter(dt_view_t *self)
   dt_iop_color_picker_init();
 
   dt_image_check_camera_missing_sample(&dev->image_storage);
+
+#ifdef USE_LUA
+
+  _fire_darkroom_image_loaded_event(TRUE, dev->image_storage.id);
+
+#endif
+
 }
 
 void leave(dt_view_t *self)
@@ -3168,6 +3146,8 @@ void leave(dt_view_t *self)
     dev->iso_12646.enabled = FALSE;
     dev->width = dev->orig_width;
     dev->height = dev->orig_height;
+    dev->second_window.width = dev->second_window.orig_width;
+    dev->second_window.height = dev->second_window.orig_height;
     dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
   }
 
@@ -3249,6 +3229,10 @@ void leave(dt_view_t *self)
     dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
 
+  GtkWidget *box = GTK_WIDGET(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER));
+  GtkScrolledWindow *sw = GTK_SCROLLED_WINDOW(gtk_widget_get_ancestor(box, GTK_TYPE_SCROLLED_WINDOW));
+  if(sw) gtk_scrolled_window_set_propagate_natural_width(sw, TRUE);
+
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
@@ -3291,6 +3275,7 @@ void mouse_leave(dt_view_t *self)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_control_set_mouse_over_id(dev->image_storage.id);
 
+  dev->darkroom_mouse_in_center_area = FALSE;
   // masks
   int handled = dt_masks_events_mouse_leave(dev->gui_module);
   if(handled) return;
@@ -3305,7 +3290,7 @@ void mouse_leave(dt_view_t *self)
 /* This helper function tests for a position to be within the displayed area
    of an image. To avoid "border cases" we accept values to be slightly out of area too.
 */
-static int mouse_in_imagearea(dt_view_t *self, double x, double y)
+static int mouse_in_imagearea(dt_view_t *self, double *x, double *y)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
@@ -3313,10 +3298,8 @@ static int mouse_in_imagearea(dt_view_t *self, double x, double y)
   const int pwidth = (dev->pipe->output_backbuf_width<<closeup) / darktable.gui->ppd;
   const int pheight = (dev->pipe->output_backbuf_height<<closeup) / darktable.gui->ppd;
 
-  x -= (self->width - pwidth) / 2;
-  y -= (self->height - pheight) / 2;
-
-  if((x < -3) || (x > (pwidth + 6)) || (y < -3) || (y > (pheight + 6))) return FALSE;
+  *x = CLAMP(*x, (self->width - pwidth) / 2, (self->width + pwidth) / 2);
+  *y = CLAMP(*y, (self->height - pheight) / 2, (self->height + pheight) / 2);
   return TRUE;
 }
 
@@ -3324,6 +3307,7 @@ void mouse_enter(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
   // masks
+  dev->darkroom_mouse_in_center_area = TRUE;
   dt_masks_events_mouse_enter(dev->gui_module);
 }
 
@@ -3353,7 +3337,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   if(dt_iop_color_picker_is_visible(dev) && ctl->button_down && ctl->button_down_which == 1)
   {
     // module requested a color box
-    if(mouse_in_imagearea(self, x, y))
+    if(mouse_in_imagearea(self, &x, &y))
     {
       dt_colorpicker_sample_t *const sample = darktable.lib->proxy.colorpicker.primary_sample;
       // Make sure a minimal width/height
@@ -3483,7 +3467,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 
     if(which == 1)
     {
-      if(mouse_in_imagearea(self, x, y))
+      if(mouse_in_imagearea(self, &x, &y))
       {
         // The default box will be a square with 1% of the image width
         const float delta_x = 0.01f;
@@ -3546,7 +3530,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       // apply a live sample's area to the active picker?
       // FIXME: this is a naive implementation, nicer would be to cycle through overlapping samples then reset
       dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
-      if(darktable.lib->proxy.colorpicker.display_samples && mouse_in_imagearea(self, x, y))
+      if(darktable.lib->proxy.colorpicker.display_samples && mouse_in_imagearea(self, &x, &y))
         for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples; samples; samples = g_slist_next(samples))
         {
           dt_colorpicker_sample_t *live_sample = samples->data;
@@ -3850,8 +3834,12 @@ GSList *mouse_actions(const dt_view_t *self)
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("zoom in the image"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("unbounded zoom in the image"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_MIDDLE, 0, _("zoom to 100% 200% and back"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
-                                     _("[modules] expand module without closing others"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("pan a zoomed image"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK, dt_conf_get_bool("darkroom/ui/single_module")
+                                     ? _("[modules] expand module without closing others")
+                                     : _("[modules] expand module and close others"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
+                                     _("[modules] rename module"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DRAG_DROP, GDK_SHIFT_MASK | GDK_CONTROL_MASK,
                                      _("[modules] change module position in pipe"));
 
@@ -3906,12 +3894,13 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   cairo_set_source_rgb(cri, .2, .2, .2);
   cairo_save(cri);
 
-  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->second_window.border_size;
   // account for border, make it transparent for other modules called below:
   pointerx -= tb;
   pointery -= tb;
 
-  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
+  if(dev->preview2_status == DT_DEV_PIXELPIPE_DIRTY
+     || dev->preview2_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp > dev->preview2_pipe->input_timestamp)
     dt_dev_process_preview2(dev);
 
@@ -3925,7 +3914,9 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
 
-  if(image_surface_width != width || image_surface_height != height || image_surface == NULL)
+  if(image_surface_width != width
+     || image_surface_height != height
+     || image_surface == NULL)
   {
     // create double-buffered image to draw on, to make modules draw more fluently.
     image_surface_width = width;
@@ -3939,46 +3930,23 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   cairo_surface_t *surface;
   cairo_t *cr = cairo_create(image_surface);
 
-  if(dev->preview2_pipe->output_backbuf && // do we have an image?
-    dev->preview2_pipe->backbuf_scale == backbuf_scale && // is this the zoom scale we want to display?
-    dev->preview2_pipe->backbuf_zoom_x == zoom_x && dev->preview2_pipe->backbuf_zoom_y == zoom_y)
+  if(dev->preview2_pipe->output_backbuf  // do we have an image?
+     && dev->preview2_pipe->backbuf_scale == backbuf_scale // is this the zoom scale we want to display?
+     && dev->preview2_pipe->backbuf_zoom_x == zoom_x
+     && dev->preview2_pipe->backbuf_zoom_y == zoom_y)
   {
     // draw image
     mutex = &dev->preview2_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
-    float wd = dev->preview2_pipe->output_backbuf_width;
-    float ht = dev->preview2_pipe->output_backbuf_height;
-    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data(dev->preview2_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
-    cairo_surface_set_device_scale(surface, dev->second_window.ppd, dev->second_window.ppd);
-    wd /= dev->second_window.ppd;
-    ht /= dev->second_window.ppd;
+    const float wd = dev->preview2_pipe->output_backbuf_width;
+    const float ht = dev->preview2_pipe->output_backbuf_height;
+
+    surface = dt_view_create_surface(dev->preview2_pipe->output_backbuf, wd, ht);
+
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cr);
-    cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
 
-    if(closeup)
-    {
-      const double scale = 1<<closeup;
-      cairo_scale(cr, scale, scale);
-      cairo_translate(cr, -(.5 - 0.5/scale) * wd, -(.5 - 0.5/scale) * ht);
-    }
-
-    cairo_rectangle(cr, 0, 0, wd, ht);
-    cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), _get_second_window_filtering_level(dev, zoom, closeup));
-    cairo_fill(cr);
-
-    if(darktable.gui->show_focus_peaking)
-    {
-      cairo_save(cr);
-      cairo_scale(cr, 1.0f / dev->second_window.ppd, 1.0f / dev->second_window.ppd);
-      dt_focuspeaking(cr, wd, ht, cairo_image_surface_get_data(surface),
-                                  cairo_image_surface_get_width(surface),
-                                  cairo_image_surface_get_height(surface));
-      cairo_restore(cr);
-    }
-
+    dt_view_paint_surface(cr, width, height, surface, wd, ht, DT_WINDOW_SECOND);
 
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -3997,8 +3965,9 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     cairo_paint(cr);
     cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
     cairo_clip(cr);
-    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data(dev->preview_pipe->output_backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+
+    surface = dt_view_create_surface(dev->preview_pipe->output_backbuf, wd, ht);
+
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
@@ -4025,7 +3994,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
 static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double x, double y, const int up,
                                    const int state)
 {
-  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->second_window.border_size;
   const int32_t capwd = dev->second_window.width - 2 * tb;
   const int32_t capht = dev->second_window.height - 2 * tb;
   const int32_t width_i = dev->second_window.width;
@@ -4165,7 +4134,7 @@ static void second_window_leave(dt_develop_t *dev)
 static int second_window_button_pressed(GtkWidget *widget, dt_develop_t *dev, double x, double y, const double pressure,
                                         const int which, const int type, const uint32_t state)
 {
-  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->second_window.border_size;
   const int32_t capwd = dev->second_window.width - 2 * tb;
   const int32_t capht = dev->second_window.height - 2 * tb;
   const int32_t width_i = dev->second_window.width;
@@ -4256,7 +4225,7 @@ static int second_window_button_released(dt_develop_t *dev, const double x, cons
 static void second_window_mouse_moved(GtkWidget *widget, dt_develop_t *dev, double x, double y,
                                       const double pressure, const int which)
 {
-  const int32_t tb = 0; // DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const int32_t tb = dev->second_window.border_size;
   const int32_t capwd = dev->second_window.width - 2 * tb;
   const int32_t capht = dev->second_window.height - 2 * tb;
 
@@ -4339,8 +4308,8 @@ static gboolean _second_window_draw_callback(GtkWidget *widget, cairo_t *crf, dt
   const int32_t width = allocation.width;
   const int32_t height = allocation.height;
 
-  dev->second_window.width = width;
-  dev->second_window.height = height;
+  dt_dev_second_window_configure(dev, width, height);
+  dt_control_queue_redraw_center();
 
   gdk_window_get_device_position(gtk_widget_get_window(widget),
                                  gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
@@ -4412,6 +4381,8 @@ static gboolean _second_window_configure_callback(GtkWidget *da, GdkEventConfigu
   {
     dev->second_window.width = event->width;
     dev->second_window.height = event->height;
+    dev->second_window.orig_width = event->width;
+    dev->second_window.orig_height = event->height;
 
     // pipe needs to be reconstructed
     dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
@@ -4437,6 +4408,9 @@ static void _darkroom_ui_second_window_init(GtkWidget *widget, dt_develop_t *dev
 
   dev->second_window.width = width;
   dev->second_window.height = height;
+  dev->second_window.orig_width = width;
+  dev->second_window.orig_height = height;
+  dev->second_window.border_size = 0;
 
   const gint x = MAX(0, dt_conf_get_int("second_window/window_x"));
   const gint y = MAX(0, dt_conf_get_int("second_window/window_y"));

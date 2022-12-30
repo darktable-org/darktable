@@ -137,23 +137,29 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
   header.insert("comment", Imf::StringAttribute(comment));
 
+  // TODO: workaround; remove when exiv2 implements EXR write support and use dt_exif_write_blob() at the end
   if(exif && exif_len > 0)
   {
     Imf::Blob exif_blob(exif_len, (uint8_t *)exif);
     header.insert("exif", Imf::BlobAttribute(exif_blob));
   }
 
-  char *xmp_string = dt_exif_xmp_read_string(imgid);
-  if(xmp_string && strlen(xmp_string) > 0)
+  // TODO: workaround; remove when exiv2 implements EXR write support and update flags()
+  // TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested
+  if(exif && exif_len > 0)
   {
-    header.insert("xmp", Imf::StringAttribute(xmp_string));
-    g_free(xmp_string);
+    char *xmp_string = dt_exif_xmp_read_string(imgid);
+    if(xmp_string && strlen(xmp_string) > 0)
+    {
+      header.insert("xmp", Imf::StringAttribute(xmp_string));
+      g_free(xmp_string);
+    }
   }
 
   // try to add the chromaticities
   cmsToneCurve *red_curve = NULL, *green_curve = NULL, *blue_curve = NULL;
   cmsCIEXYZ *red_color = NULL, *green_color = NULL, *blue_color = NULL;
-  Imf::Chromaticities chromaticities; // initialzed w/ Rec709 primaries and D65 white
+  Imf::Chromaticities chromaticities; // initialized w/ Rec709 primaries and D65 white
 
   // determine the actual (export vs colorout) color profile used
   const dt_colorspaces_color_profile_t *cp = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
@@ -442,7 +448,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("OpenEXR (16/32-bit float)");
+  return _("OpenEXR");
 }
 
 static void bpp_combobox_changed(GtkWidget *widget, gpointer user_data)
@@ -469,7 +475,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp,self, NULL, N_("bit depth"), NULL,
                                (bpp_last >> 4) - EXR_PT_HALF, bpp_combobox_changed, self,
-                               N_("16 bit"), N_("32 bit"));
+                               N_("16 bit (float)"), N_("32 bit (float)"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
 
   // Compression combo box

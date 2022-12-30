@@ -55,6 +55,8 @@ DT_MODULE_INTROSPECTION(3, dt_iop_temperature_params_t)
 #define DT_IOP_LOWEST_TINT 0.135
 #define DT_IOP_HIGHEST_TINT 2.326
 
+#define DT_COEFF_EPS 0.00001f
+
 #define DT_IOP_NUM_OF_STD_TEMP_PRESETS 4
 
 // If you reorder presets combo, change this consts
@@ -564,7 +566,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const uint32_t filters = piece->pipe->dsc.filters;
   cl_mem dev_coeffs = NULL;
   cl_mem dev_xtrans = NULL;
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   int kernel = -1;
 
   if(filters == 9u)
@@ -593,17 +595,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_coeffs);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(uint32_t), (void *)&filters);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cl_mem), (void *)&dev_xtrans);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  err = dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
+    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(dev_coeffs), CLARG(filters),
+    CLARG(roi_out->x), CLARG(roi_out->y), CLARG(dev_xtrans));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_coeffs);
@@ -652,7 +646,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // advertise on the pipe if coeffs are D65 for validity check
     gboolean is_D65 = TRUE;
     for(int c = 0; c < 3; c++)
-      if(d->coeffs[c] != (float)g->daylight_wb[c]) is_D65 = FALSE;
+      if(!feqf(d->coeffs[c], (float)g->daylight_wb[c], DT_COEFF_EPS))
+        is_D65 = FALSE;
 
     self->dev->proxy.wb_is_D65 = is_D65;
   }
@@ -728,7 +723,7 @@ int generate_preset_combo(struct dt_iop_module_t *self)
         }
       }
     }
-    
+
 
   return presets_found;
 }
@@ -1105,7 +1100,9 @@ void gui_update(struct dt_iop_module_t *self)
   gboolean found = FALSE;
 
   // is this a "as shot" white balance?
-  if(p->red == g->as_shot_wb[0] && p->green == g->as_shot_wb[1] && p->blue == g->as_shot_wb[2])
+  if(feqf(p->red, g->as_shot_wb[0], DT_COEFF_EPS)
+     && feqf(p->green, g->as_shot_wb[1], DT_COEFF_EPS)
+     && feqf(p->blue, g->as_shot_wb[2], DT_COEFF_EPS))
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     found = TRUE;
@@ -1113,9 +1110,9 @@ void gui_update(struct dt_iop_module_t *self)
   else
   {
     // is this a "D65 white balance"?
-    if((p->red == (float)g->daylight_wb[0]) &&
-       (p->green == (float)g->daylight_wb[1]) &&
-       (p->blue == (float)g->daylight_wb[2]))
+    if(feqf(p->red, (float)g->daylight_wb[0], DT_COEFF_EPS)
+      && feqf(p->green, (float)g->daylight_wb[1], DT_COEFF_EPS)
+      && feqf(p->blue, (float)g->daylight_wb[2], DT_COEFF_EPS))
     {
       dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
       found = TRUE;
@@ -1137,9 +1134,9 @@ void gui_update(struct dt_iop_module_t *self)
           i++)
       {
         const dt_wb_data *wbp = dt_wb_preset(i);
-        if(p->red == (float)wbp->channels[0] &&
-           p->green == (float)wbp->channels[1] &&
-           p->blue == (float)wbp->channels[2])
+        if(feqf(p->red, (float)wbp->channels[0], DT_COEFF_EPS)
+           && feqf(p->green, (float)wbp->channels[1], DT_COEFF_EPS)
+           && feqf(p->blue, (float)wbp->channels[2], DT_COEFF_EPS))
         {
           // got exact match!
           dt_bauhaus_combobox_set(g->presets, j);
@@ -1197,9 +1194,9 @@ void gui_update(struct dt_iop_module_t *self)
             dt_wb_preset_interpolate(dt_wb_preset(i - 1),
                                      dt_wb_preset(i), &interpolated);
 
-            if(p->red == (float)interpolated.channels[0] &&
-               p->green == (float)interpolated.channels[1] &&
-               p->blue == (float)interpolated.channels[2])
+            if(feqf(p->red, (float)interpolated.channels[0], DT_COEFF_EPS)
+               && feqf(p->green, (float)interpolated.channels[1], DT_COEFF_EPS)
+               && feqf(p->blue, (float)interpolated.channels[2], DT_COEFF_EPS))
             {
               // got exact match!
 
@@ -1328,12 +1325,13 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
   const dt_image_t *img = &module->dev->image_storage;
 
   // the raw should provide wb coeffs:
-  int ok = 1;
+  gboolean ok = TRUE;
   // Only check the first three values, the fourth is usually NAN for RGB
   const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
   for(int k = 0; ok && k < num_coeffs; k++)
   {
-    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) ok = 0;
+    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f)
+      ok = FALSE;
   }
   if(ok)
   {

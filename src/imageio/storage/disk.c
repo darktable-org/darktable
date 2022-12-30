@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -377,7 +377,7 @@ char *ask_user_confirmation(dt_imageio_module_storage_t *self)
   disk_t *g = (disk_t *)self->gui_data;
   if(dt_bauhaus_combobox_get(g->onsave_action) == DT_EXPORT_ONCONFLICT_OVERWRITE && dt_conf_get_bool("plugins/lighttable/export/ask_before_export_overwrite"))
   {
-    return g_strdup(_("you are going to export on overwrite mode, this will overwrite any existing images\n\n"
+    return g_strdup(_("you are going to export in overwrite mode, this will overwrite any existing images\n\n"
         "do you really want to continue?"));
   }
   else

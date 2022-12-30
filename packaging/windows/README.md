@@ -8,7 +8,7 @@ To build darktable for the Windows operating system you have two basic options.
 Native build using MSYS2
 ------------------------
 
-How to make a darktable Windows installer (x64 only; Windows 8.1 or earlier will need to have UCRT installed):
+How to make a darktable Windows installer (x64 only; Windows 8.1 will need to have [UCRT installed](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c)):
 
 * Install MSYS2 (instructions and prerequisites can be found on the official website: https://www.msys2.org)
 
@@ -20,12 +20,12 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 or earlier will
 * From the MSYS terminal, install x64 developer tools, x86_64 toolchain and git:
     ```bash
     pacman -S --needed base-devel intltool git
-    pacman -S --needed mingw-w64-ucrt-x86_64-{toolchain,cmake,ninja,nsis}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{cc,cmake,gcc-libs,ninja,nsis,omp}
     ```
 
 * Install required libraries and dependencies for darktable:
     ```bash
-    pacman -S --needed mingw-w64-ucrt-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libjxl,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
     ```
 
 * Install optional libraries and dependencies:
@@ -39,7 +39,7 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 or earlier will
     pacman -S --needed mingw-w64-ucrt-x86_64-{portmidi,SDL2}
     ```
 
-* Install optional libraries required for [testing](../../src/tests/unittests/README.md):
+* Install optional libraries required for [testing](../../src/tests/unittests):
     ```bash
     pacman -S --needed mingw-w64-ucrt-x86_64-cmocka
     ```
@@ -126,7 +126,7 @@ Feel free to adjust the number of parallel jobs according to your needs: Ninja w
 
 If you are in a hurry you can now run darktable by executing the `darktable.exe` found in the `build/bin` folder, install in `/opt/darktable` as described earlier, or create an install image.
 
-If you like experimenting you could also install `mingw-w64-ucrt-x86_64-{clang,openmp}` and use that compiler instead of gcc/g++ by setting the `CC=clang` and `CXX=clang++` variables. Alternatively, you can use the CLANG64 environment instead of UCRT64 and try building darktable with its defaut toolchain (note that the prefix for installation of all the packages above then becomes `mingw-w64-clang-x86_64-`).
+If you like experimenting you could also install `mingw-w64-ucrt-x86_64-{clang,openmp}` and use that compiler instead of gcc/g++ by setting the `CC=clang` and `CXX=clang++` variables. Alternatively, you can use the CLANG64 environment instead of UCRT64 and try building darktable with its default toolchain (note that the prefix for installation of all the packages above then becomes `mingw-w64-clang-x86_64-`).
 
 
 Cross-platform compile on Linux

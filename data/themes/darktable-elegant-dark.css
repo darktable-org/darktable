@@ -55,7 +55,7 @@
 @define-color field_bg @grey_30;
 @define-color field_active_bg @grey_40;
 @define-color field_active_fg @grey_90;
-@define-color field_selected_bg @grey_55;
+@define-color field_selected_bg @grey_50;
 @define-color field_selected_fg @grey_95;
 @define-color field_hover_bg @grey_65;
 @define-color field_hover_fg @grey_20;
@@ -88,6 +88,8 @@
 @define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_20;
 @define-color inset_histogram alpha(@grey_80, 0.50);
+
+@define-color colorlabel_blue rgb(0,40,255);
 
 /* Set background on thumbnails hover overlays */
 .dt_overlays_hover_extended #thumb-main:hover #thumb-bottom,

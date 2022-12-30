@@ -92,9 +92,9 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   float red[CHANNEL_SIZE];         // $MIN: COLOR_MIN $MAX: COLOR_MAX
   float green[CHANNEL_SIZE];       // $MIN: COLOR_MIN $MAX: COLOR_MAX
   float blue[CHANNEL_SIZE];        // $MIN: COLOR_MIN $MAX: COLOR_MAX
-  float saturation[CHANNEL_SIZE];  // $MIN: -1.0 $MAX: 1.0
-  float lightness[CHANNEL_SIZE];   // $MIN: -1.0 $MAX: 1.0
-  float grey[CHANNEL_SIZE];        // $MIN: 0.0 $MAX: 1.0
+  float saturation[CHANNEL_SIZE];  // $MIN: -2.0 $MAX: 2.0
+  float lightness[CHANNEL_SIZE];   // $MIN: -2.0 $MAX: 2.0
+  float grey[CHANNEL_SIZE];        // $MIN: -2.0 $MAX: 2.0
   gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "normalize channels"
   dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
   dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
@@ -1917,7 +1917,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
     if(data->illuminant_type == DT_ILLUMINANT_DETECT_EDGES || data->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES)
     {
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+      if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
       {
         // detection on full image only
         dt_iop_gui_enter_critical_section(self);
@@ -2062,7 +2062,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
   }
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   if(piece->colors != 4)
   {
@@ -2117,22 +2117,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
   }
 
-  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&input_matrix_cl);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), (void *)&output_matrix_cl);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&MIX_cl);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, 4 * sizeof(float), (void *)&d->illuminant);
-  dt_opencl_set_kernel_arg(devid, kernel, 8, 4 * sizeof(float), (void *)&d->saturation);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, 4 * sizeof(float), (void *)&d->lightness);
-  dt_opencl_set_kernel_arg(devid, kernel, 10, 4 * sizeof(float), (void *)&d->grey);
-  dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(float), (void *)&d->p);
-  dt_opencl_set_kernel_arg(devid, kernel, 12, sizeof(float), (void *)&d->gamut);
-  dt_opencl_set_kernel_arg(devid, kernel, 13, sizeof(int), (void *)&d->clip);
-  dt_opencl_set_kernel_arg(devid, kernel, 14, sizeof(int), (void *)&d->apply_grey);
-  dt_opencl_set_kernel_arg(devid, kernel, 15, sizeof(int), (void *)&d->version);
+  dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+    CLARG(input_matrix_cl), CLARG(output_matrix_cl), CLARG(MIX_cl), CLARG(d->illuminant), CLARG(d->saturation),
+    CLARG(d->lightness), CLARG(d->grey), CLARG(d->p), CLARG(d->gamut), CLARG(d->clip), CLARG(d->apply_grey),
+    CLARG(d->version));
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -2853,7 +2841,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         (g->run_validation && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || // delta E validation
         ( (d->illuminant_type == DT_ILLUMINANT_DETECT_EDGES ||
            d->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES ) && // WB extraction mode
-           piece->pipe->type == DT_DEV_PIXELPIPE_FULL ) )
+           (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) ) )
     {
       piece->process_cl_ready = 0;
     }
@@ -4090,7 +4078,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text(g->csspot.expander, _("define a target chromaticity (hue and chroma) for a particular region of the image (the control sample), which you then match against the same target chromaticity in other images. the control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, N_("mapping"), N_("spot mode"),
                                 _("\"correction\" automatically adjust the illuminant\n"
                                   "such that the input color is mapped to the target.\n"
                                   "\"measure\" simply shows how an input color is mapped by the CAT\n"
@@ -4103,7 +4091,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gchar *label = N_("take channel mixing into account");
   g->use_mixing = gtk_check_button_new_with_label(_(label));
-  dt_action_define_iop(self, NULL, label, g->use_mixing, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("mapping"), label, g->use_mixing, &dt_action_def_toggle);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->use_mixing))), PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(g->use_mixing,
                               _("compute the target by taking the channel mixing into account.\n"
@@ -4146,21 +4134,21 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., LIGHTNESS_MAX, 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->lightness_spot, NULL, N_("lightness"));
+  dt_bauhaus_widget_set_label(g->lightness_spot, N_("mapping"), N_("lightness"));
   dt_bauhaus_slider_set_format(g->lightness_spot, "%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->hue_spot = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., HUE_MAX, 0, 0, 1, 0);
-  dt_bauhaus_widget_set_label(g->hue_spot, NULL, N_("hue"));
+  dt_bauhaus_widget_set_label(g->hue_spot, N_("mapping"), N_("hue"));
   dt_bauhaus_slider_set_format(g->hue_spot, "°");
   dt_bauhaus_slider_set_default(g->hue_spot, 0.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->hue_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->hue_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->chroma_spot = dt_bauhaus_slider_new_with_range(self, 0., CHROMA_MAX, 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->chroma_spot, NULL, N_("chroma"));
+  dt_bauhaus_widget_set_label(g->chroma_spot, N_("mapping"), N_("chroma"));
   dt_bauhaus_slider_set_default(g->chroma_spot, 0.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->chroma_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->chroma_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
@@ -4170,34 +4158,38 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->csspot.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
   GtkWidget *first, *second, *third;
-#define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap)              \
-  self->widget = dt_ui_notebook_page(g->notebook, label, _(tooltip));         \
-                                                                              \
-  first = dt_bauhaus_slider_from_params(self, swap ? #var "[2]" : #var "[0]");\
-  dt_bauhaus_slider_set_digits(first, 3);                                     \
-  dt_bauhaus_widget_set_label(first, section, N_("input R"));                 \
-                                                                              \
-  second = dt_bauhaus_slider_from_params(self, #var "[1]");                   \
-  dt_bauhaus_slider_set_digits(second, 3);                                    \
-  dt_bauhaus_widget_set_label(second, section, N_("input G"));                \
-                                                                              \
-  third = dt_bauhaus_slider_from_params(self, swap ? #var "[0]" : #var "[2]");\
-  dt_bauhaus_slider_set_digits(third, 3);                                     \
-  dt_bauhaus_widget_set_label(third, section, N_("input B"));                 \
-                                                                              \
-  g->scale_##var##_R = swap ? third : first;                                  \
-  g->scale_##var##_G = second;                                                \
-  g->scale_##var##_B = swap ? first : third;                                  \
-                                                                              \
-  g->normalize_##short = dt_bauhaus_toggle_from_params(self, "normalize_" #short);
+#define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap, soft_range, sr_min, sr_max) \
+  self->widget = dt_ui_notebook_page(g->notebook, label, _(tooltip));                        \
+                                                                                             \
+  first = dt_bauhaus_slider_from_params(self, swap ? #var "[2]" : #var "[0]");               \
+  dt_bauhaus_slider_set_digits(first, 3);                                                    \
+  dt_bauhaus_widget_set_label(first, section, N_("input R"));                                \
+  if(soft_range) dt_bauhaus_slider_set_soft_range(first, sr_min, sr_max);                    \
+                                                                                             \
+  second = dt_bauhaus_slider_from_params(self, #var "[1]");                                  \
+  dt_bauhaus_slider_set_digits(second, 3);                                                   \
+  dt_bauhaus_widget_set_label(second, section, N_("input G"));                               \
+  if(soft_range) dt_bauhaus_slider_set_soft_range(second, sr_min, sr_max);                   \
+                                                                                             \
+  third = dt_bauhaus_slider_from_params(self, swap ? #var "[0]" : #var "[2]");               \
+  dt_bauhaus_slider_set_digits(third, 3);                                                    \
+  dt_bauhaus_widget_set_label(third, section, N_("input B"));                                \
+  if(soft_range) dt_bauhaus_slider_set_soft_range(third, sr_min, sr_max);                    \
+                                                                                             \
+  g->scale_##var##_R = swap ? third : first;                                                 \
+  g->scale_##var##_G = second;                                                               \
+  g->scale_##var##_B = swap ? first : third;                                                 \
+                                                                                             \
+  g->normalize_##short = dt_bauhaus_toggle_from_params                                       \
+               (DT_IOP_SECTION_FOR_PARAMS(self, section), "normalize_" #short);
 
-  NOTEBOOK_PAGE(red, R, N_("R"), N_("output R"), N_("red"), FALSE)
-  NOTEBOOK_PAGE(green, G, N_("G"), N_("output G"), N_("green"), FALSE)
-  NOTEBOOK_PAGE(blue, B, N_("B"), N_("output B"), N_("blue"), FALSE)
-  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("output colorfulness"), N_("colorfulness"), FALSE)
+  NOTEBOOK_PAGE(red, R, N_("R"), N_("output R"), N_("red"), FALSE, FALSE, 0.0, 0.0)
+  NOTEBOOK_PAGE(green, G, N_("G"), N_("output G"), N_("green"), FALSE, FALSE, 0.0, 0.0)
+  NOTEBOOK_PAGE(blue, B, N_("B"), N_("output B"), N_("blue"), FALSE, FALSE, 0.0, 0.0)
+  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("output colorfulness"), N_("colorfulness"), FALSE, TRUE, -1.0, 1.0)
   g->saturation_version = dt_bauhaus_combobox_from_params(self, "version");
-  NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("output brightness"), N_("brightness"), FALSE)
-  NOTEBOOK_PAGE(grey, grey, N_("gray"), N_("output gray"), N_("gray"), FALSE)
+  NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("output brightness"), N_("brightness"), FALSE, TRUE, -1.0, 1.0)
+  NOTEBOOK_PAGE(grey, grey, N_("gray"), N_("output gray"), N_("gray"), FALSE, TRUE, 0.0, 1.0)
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -4221,7 +4213,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *collapsible = GTK_WIDGET(g->cs.container);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->checkers_list, self, NULL, N_("chart"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->checkers_list, self, N_("calibrate"), N_("chart"),
                                 _("choose the vendor and the type of your chart"),
                                 0, checker_changed_callback, self,
                                 N_("Xrite ColorChecker 24 pre-2014"),
@@ -4232,12 +4224,12 @@ void gui_init(struct dt_iop_module_t *self)
                                 N_("Datacolor SpyderCheckr 48 post-2018"));
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->optimize, self, NULL, N_("optimize for"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->optimize, self, N_("calibrate"), N_("optimize for"),
                                 _("choose the colors that will be optimized with higher priority.\n"
                                   "neutral colors gives the lowest average delta E but a high maximum delta E\n"
                                   "saturated colors gives the lowest maximum delta E but a high average delta E\n"
                                   "none is a trade-off between both\n"
-                                  "the others are special behaviours to protect some hues"),
+                                  "the others are special behaviors to protect some hues"),
                                 0, optimize_changed_callback, self,
                                 N_("none"),
                                 N_("neutral colors"),
@@ -4250,7 +4242,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->optimize), TRUE, TRUE, 0);
 
   g->safety = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 1., 0, 0.5, 3, TRUE);
-  dt_bauhaus_widget_set_label(g->safety, NULL, N_("patch scale"));
+  dt_bauhaus_widget_set_label(g->safety, N_("calibrate"), N_("patch scale"));
   gtk_widget_set_tooltip_text(g->safety, _("reduce the radius of the patches to select the more or less central part.\n"
                                            "useful when the perspective correction is sloppy or\n"
                                            "the patches frame cast a shadows on the edges of the patch." ));
@@ -4264,16 +4256,19 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
 
   g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, 0, NULL);
+  dt_action_define_iop(self, N_("calibrate"), N_("accept"), g->button_commit, &dt_action_def_button);
+  g_signal_connect(G_OBJECT(g->button_commit), "button-press-event", G_CALLBACK(commit_profile_callback), (gpointer)self);
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_commit), FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->button_commit, _("accept the computed profile and set it in the module"));
-  g_signal_connect(G_OBJECT(g->button_commit), "button-press-event", G_CALLBACK(commit_profile_callback), (gpointer)self);
 
   g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
+  dt_action_define_iop(self, N_("calibrate"), N_("recompute"), g->button_profile, &dt_action_def_button);
   g_signal_connect(G_OBJECT(g->button_profile), "button-press-event", G_CALLBACK(run_profile_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_profile, _("recompute the profile"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_profile), FALSE, FALSE, 0);
 
   g->button_validate = dtgtk_button_new(dtgtk_cairo_paint_softproof, 0, NULL);
+  dt_action_define_iop(self, N_("calibrate"), N_("validate"), g->button_validate, &dt_action_def_button);
   g_signal_connect(G_OBJECT(g->button_validate), "button-press-event", G_CALLBACK(run_validation_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_validate, _("check the output delta E"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_validate), FALSE, FALSE, 0);
