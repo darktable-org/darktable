@@ -1717,6 +1717,29 @@ gboolean _iop_validate_params(dt_introspection_field_t *field, gpointer params, 
   return all_ok;
 }
 
+static gboolean _iop_update_label(gpointer data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+
+  char nl[256] = { 0 };
+  char *preset_name =
+    dt_presets_get_name(module->op, module->params, module->params_size);
+
+  if(preset_name)
+    snprintf(nl, sizeof(nl), "%s", preset_name);
+  else if(module->multi_priority != 0)
+    snprintf(nl, sizeof(nl), "%d", module->multi_priority);
+
+  g_free(preset_name);
+
+  g_strlcpy(module->multi_name, nl, sizeof(module->multi_name));
+
+  dt_iop_gui_update_header(module);
+
+  module->label_recompute_handle = 0;
+  return G_SOURCE_REMOVE;
+}
+
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
@@ -1749,24 +1772,14 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
   // adjust the label to match presets if possible or otherwise the default
   // multi_name for this module.
 
-  if(module_is_enabled
+  if(!dt_iop_is_hidden(module)
+     && module_is_enabled
      && module_params_changed
      && !module->multi_name_hand_edited)
   {
-    char nl[256] = { 0 };
-    char *preset_name =
-      dt_presets_get_name(module->op, module->params, module->params_size);
-
-    if(preset_name)
-      snprintf(nl, sizeof(nl), "%s", preset_name);
-    else if(module->multi_priority != 0)
-      snprintf(nl, sizeof(nl), "%d", module->multi_priority);
-
-    g_free(preset_name);
-
-    g_strlcpy(module->multi_name, nl, sizeof(module->multi_name));
-
-    dt_iop_gui_update_header(module);
+    if(module->label_recompute_handle)
+      g_source_remove(module->label_recompute_handle);
+    module->label_recompute_handle = g_timeout_add(500, _iop_update_label, module);
   }
 
   // 2. compute the hash only if piece is enabled
