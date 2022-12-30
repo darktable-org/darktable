@@ -1721,18 +1721,22 @@ static gboolean _iop_update_label(gpointer data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)data;
 
-  char nl[256] = { 0 };
   char *preset_name =
-    dt_presets_get_name(module->op, module->params, module->params_size);
+    dt_presets_get_name(module->op,
+                        module->params, module->params_size,
+                        module->blend_params, sizeof(dt_develop_blend_params_t));
+
+  // if we have a preset-name, use it. otherwise set the label to the multi-priority
+  // except for 0 where the multi-name is cleared.
 
   if(preset_name)
-    snprintf(nl, sizeof(nl), "%s", preset_name);
+    snprintf(module->multi_name, sizeof(module->multi_name), "%s", preset_name);
   else if(module->multi_priority != 0)
-    snprintf(nl, sizeof(nl), "%d", module->multi_priority);
+    snprintf(module->multi_name, sizeof(module->multi_name), "%d", module->multi_priority);
+  else
+    g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
 
   g_free(preset_name);
-
-  g_strlcpy(module->multi_name, nl, sizeof(module->multi_name));
 
   dt_iop_gui_update_header(module);
 

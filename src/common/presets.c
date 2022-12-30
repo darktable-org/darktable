@@ -320,7 +320,9 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
 
 char *dt_presets_get_name(const char *module_name,
                           const void *params,
-                          const uint32_t param_size)
+                          const uint32_t param_size,
+                          const void *blend_params,
+                          const uint32_t blend_params_size)
 {
   sqlite3_stmt *stmt;
 
@@ -328,11 +330,14 @@ char *dt_presets_get_name(const char *module_name,
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name"
                               " FROM data.presets"
-                              " WHERE operation = ?1 AND op_params = ?2",
+                              " WHERE operation = ?1"
+                              "   AND op_params = ?2"
+                              "   AND blendop_params = ?3",
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_name, strlen(module_name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, params, param_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, blend_params, blend_params_size, SQLITE_TRANSIENT);
 
   char *result = NULL;
 

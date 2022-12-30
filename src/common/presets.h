@@ -32,7 +32,9 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation);
 /** get preset name for given module params */
 char *dt_presets_get_name(const char *module_name,
                           const void *params,
-                          const uint32_t param_size);
+                          const uint32_t param_size,
+                          const void *blend_params,
+                          const uint32_t blend_params_size);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
