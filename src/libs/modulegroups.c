@@ -38,8 +38,8 @@
 DT_MODULE(1)
 
 // the T_ macros are for the translation engine to take them into account
-#define FALLBACK_PRESET_NAME     "modules: default"
-#define T_FALLBACK_PRESET_NAME _("modules: default")
+#define FALLBACK_PRESET_NAME     "workflow: scene-referred"
+#define T_FALLBACK_PRESET_NAME _("workflow: scene-referred")
 
 #define DEPRECATED_PRESET_NAME     "modules: deprecated"
 #define T_DEPRECATED_PRESET_NAME _("modules: deprecated")
@@ -1541,6 +1541,12 @@ void init_presets(dt_lib_module_t *self)
   */
 
   const gboolean is_scene_referred = dt_is_scene_referred();
+  const gboolean wf_filmic =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)");
+  const gboolean wf_sigmoid =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (sigmoid)");
+  const gboolean wf_none =
+    dt_conf_is_equal("plugins/darkroom/workflow", "none");
 
   // all modules
   gchar *tx = NULL;
@@ -1636,7 +1642,7 @@ void init_presets(dt_lib_module_t *self)
   AM("ashift");
 
   if(is_scene_referred)
-    AM("filmicrgb");
+    AM("sigmoid");
   else
     AM("basecurve");
 
@@ -1719,8 +1725,10 @@ void init_presets(dt_lib_module_t *self)
   SQA(TRUE);
 
   SMG(C_("modulegroup", "base"), "basic");
-  AM("filmicrgb");
-  AM("sigmoid");
+  if(wf_filmic || wf_none)
+    AM("filmicrgb");
+  if(wf_sigmoid || wf_none)
+    AM("sigmoid");
   AM("toneequal");
   AM("crop");
   AM("ashift");
@@ -1758,84 +1766,6 @@ void init_presets(dt_lib_module_t *self)
   AM("diffuse");
 
   dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-
-  // default / 3 tabs based on Aurélien's proposal
-
-  SQA(is_scene_referred);
-
-  SMG(C_("modulegroup", "technical"), "technical");
-  AM("basecurve");
-  AM("bilateral");
-  AM("cacorrect");
-  AM("crop");
-  AM("ashift");
-  AM("colorchecker");
-  AM("colorin");
-  AM("colorout");
-
-  AM("colorreconstruct");
-  AM("cacorrectrgb");
-  AM("demosaic");
-  AM("denoiseprofile");
-  AM("dither");
-  AM("exposure");
-  AM("filmicrgb");
-  AM("finalscale");
-  AM("flip");
-  AM("hazeremoval");
-  AM("highlights");
-  AM("hotpixels");
-  AM("lens");
-  AM("lut3d");
-  AM("negadoctor");
-  AM("nlmeans");
-  AM("overexposed");
-  AM("rawdenoise");
-  AM("rawoverexposed");
-  AM("rotatepixels");
-  AM("temperature");
-  AM("scalepixels");
-
-  SMG(C_("modulegroup", "grading"), "grading");
-  AM("channelmixerrgb");
-  AM("colisa");
-  AM("colorbalancergb");
-  AM("colorcontrast");
-  AM("colorcorrection");
-  AM("colorize");
-  AM("colorzones");
-  AM("graduatednd");
-  AM("levels");
-  AM("rgbcurve");
-  AM("rgblevels");
-  AM("shadhi");
-  AM("splittoning");
-  AM("tonecurve");
-  AM("toneequal");
-  AM("velvia");
-
-  SMG(C_("modulegroup", "effects"), "effect");
-  AM("atrous");
-  AM("bilat");
-  AM("bloom");
-  AM("borders");
-  AM("colormapping");
-  AM("grain");
-  AM("highpass");
-  AM("liquify");
-  AM("lowlight");
-  AM("lowpass");
-  AM("monochrome");
-  AM("retouch");
-  AM("sharpen");
-  AM("soften");
-  AM("vignette");
-  AM("watermark");
-  AM("censorize");
-  AM("blurs");
-  AM("diffuse");
-
-  dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   // search only (only active modules visible)
   SNQA();
