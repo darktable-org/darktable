@@ -70,6 +70,9 @@ typedef struct dt_iop_sigmoid_gui_data_t
 {
   GtkWidget *contrast_slider, *skewness_slider, *color_processing_list, *hue_preservation_slider,
       *display_black_slider, *display_white_slider;
+
+  dt_gui_collapsible_section_t cs;
+
 } dt_iop_sigmoid_gui_data_t;
 
 
@@ -539,6 +542,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->display_white_slider, p->display_white_target);
 
   dt_bauhaus_combobox_set_from_value(g->color_processing_list, p->color_processing);
+  dt_gui_update_collapsible_section(&g->cs);
 
   gui_changed(self, NULL, NULL);
 }
@@ -567,11 +571,16 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue_preservation_slider, _("optional correction of the hue twist introduced by\n"
                                                             "the per-channel processing method."));
 
-  // Target display
-  GtkWidget *label = dt_ui_section_label_new(_("display luminance"));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
-  gtk_style_context_add_class(context, "section_label_top");
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
+  // collapsible section
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/sigmoid/expand_values",
+     _("display luminance"),
+     GTK_BOX(self->widget));
+  gtk_widget_set_tooltip_text(g->cs.expander,
+                                _("set display black/white targets"));
+  GtkWidget *main_box = self->widget;
+  self->widget = GTK_WIDGET(g->cs.container);
 
   g->display_black_slider = dt_bauhaus_slider_from_params(self, "display_black_target");
   dt_bauhaus_slider_set_soft_range(g->display_black_slider, 0.0f, 1.0f);
@@ -584,6 +593,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->display_white_slider, "%");
   gtk_widget_set_tooltip_text(g->display_white_slider, _("the white luminance of the target display or print.\n"
                                                          "can be used creatively for a faded look or blowing out whites earlier."));
+  self->widget = main_box;
 }
 
 
