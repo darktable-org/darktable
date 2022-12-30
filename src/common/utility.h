@@ -113,9 +113,14 @@ char *dt_copy_filename_extension(const char *filename1, const char *filename2);
 // replaces all occurences of a substring in a string
 gchar *dt_str_replace(const char *string, const char *search, const char *replace);
 
+// returns true if current settings is scene-referred
+gboolean dt_is_scene_referred(void);
+
+// returns true if current settings is display-referred
+gboolean dt_is_display_referred(void);
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

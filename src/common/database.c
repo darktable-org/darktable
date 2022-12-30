@@ -1461,7 +1461,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // insert an history_hash entry for all images which have an history
     // note that images without history don't get hash and are considered as basic
     sqlite3_stmt *h_stmt;
-    const gboolean basecurve_auto_apply = dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
+    const gboolean basecurve_auto_apply = dt_is_display_referred();
     // clang-format off
     char *query = g_strdup_printf(
                             "SELECT id, CASE WHEN imgid IS NULL THEN 0 ELSE 1 END as altered "

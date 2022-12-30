@@ -434,8 +434,7 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
 
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
 {
-  const gboolean is_display_referred =
-    dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
+  const gboolean is_display_referred = dt_is_display_referred();
   dt_iop_order_t iop_order_version =
     is_display_referred ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
 
@@ -850,8 +849,10 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
   // and new image not yet loaded or whose history has been reset.
   if(!iop_order_list)
   {
-    const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
-    dt_iop_order_t iop_order_version = strcmp(workflow, "display-referred") == 0 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
+    dt_iop_order_t iop_order_version =
+      dt_is_display_referred()
+      ? DT_IOP_ORDER_LEGACY
+      : DT_IOP_ORDER_V30;
 
     if(iop_order_version == DT_IOP_ORDER_LEGACY)
       iop_order_list = _table_to_list(legacy_order);
