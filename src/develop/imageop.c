@@ -29,6 +29,7 @@
 #include "common/iop_group.h"
 #include "common/module.h"
 #include "common/opencl.h"
+#include "common/presets.h"
 #include "common/usermanual_url.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -1720,6 +1721,10 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
 {
+  const gboolean module_is_enabled = module->enabled;
+  const gboolean module_params_changed
+    = memcmp(module->params, params, module->params_size) == 0;
+
   // 1. commit params
 
   memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
@@ -1740,6 +1745,29 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     _iop_validate_params(module->so->get_introspection()->field, params, TRUE);
 
   module->commit_params(module, params, pipe, piece);
+
+  // adjust the label to match presets if possible or otherwise the default
+  // multi_name for this module.
+
+  if(module_is_enabled
+     && module_params_changed
+     && !module->multi_name_hand_edited)
+  {
+    char nl[256] = { 0 };
+    char *preset_name =
+      dt_presets_get_name(module->op, module->params, module->params_size);
+
+    if(preset_name)
+      snprintf(nl, sizeof(nl), "%s", preset_name);
+    else if(module->multi_priority != 0)
+      snprintf(nl, sizeof(nl), "%d", module->multi_priority);
+
+    g_free(preset_name);
+
+    g_strlcpy(module->multi_name, nl, sizeof(module->multi_name));
+
+    dt_iop_gui_update_header(module);
+  }
 
   // 2. compute the hash only if piece is enabled
 
@@ -3159,31 +3187,11 @@ void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
   if(!action || action->type != DT_ACTION_TYPE_IOP_INSTANCE) return;
   dt_iop_module_t *module = (dt_iop_module_t *)action;
 
-  const gboolean module_was_enabled = module->enabled;
-
   if(module->gui_changed) module->gui_changed(module, widget, data);
 
   dt_iop_color_picker_reset(module, TRUE);
 
   dt_dev_add_history_item(darktable.develop, module, TRUE);
-
-  // module was enabled and still is enabled, module label has not
-  // been hand edited and the name is set.  reset to multi-prioriry or
-  // empty if main instance.
-
-  if(module_was_enabled
-     && module->enabled
-     && !module->multi_name_hand_edited)
-  {
-    char nl[5] = { 0 };
-    snprintf(nl, sizeof(nl), "%d", module->multi_priority);
-
-    g_strlcpy(module->multi_name,
-              module->multi_priority == 0 ? "" : nl,
-              sizeof(module->multi_name));
-
-    dt_iop_gui_update_header(module);
-  }
 }
 
 enum
