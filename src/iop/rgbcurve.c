@@ -864,9 +864,9 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
             // this functions need a 4c image
             for(int k = 0; k < 3; k++)
             {
-              picker_mean[k] = sample->scope[DT_LIB_COLORPICKER_STATISTIC_MEAN][k];
-              picker_min[k] = sample->scope[DT_LIB_COLORPICKER_STATISTIC_MIN][k];
-              picker_max[k] = sample->scope[DT_LIB_COLORPICKER_STATISTIC_MAX][k];
+              picker_mean[k] = sample->scope[DT_PICK_MEAN][k];
+              picker_min[k] = sample->scope[DT_PICK_MIN][k];
+              picker_max[k] = sample->scope[DT_PICK_MAX][k];
             }
             picker_mean[3] = picker_min[3] = picker_max[3] = 1.f;
 

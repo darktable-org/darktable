@@ -260,7 +260,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
                                     CLAMP(sample->label_rgb[2], 0, 255), _("RGB"));
   sample_parts[7] = g_strdup_printf("\n<big><b>%14s</b></big>", _("Lab"));
 
-  for(int i = 0; i < DT_LIB_COLORPICKER_STATISTIC_N; i++)
+  for(int i = 0; i < DT_PICK_N; i++)
   {
     sample_parts[i] = g_strdup_printf("<span background='#%02X%02X%02X'>%32s</span>",
                                       (int)roundf(CLAMP(sample->display[i][0], 0.f, 1.f) * 255.f),
@@ -281,7 +281,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
   }
 
   dt_aligned_pixel_t color;
-  dt_Lab_2_LCH(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MEAN], color);
+  dt_Lab_2_LCH(sample->lab[DT_PICK_MEAN], color);
   sample_parts[11] = g_strdup_printf("\n<big><b>%14s</b></big>", _("color"));
   sample_parts[12] = g_strdup_printf("%6s", Lch_to_color_name(color));
 
@@ -690,7 +690,7 @@ void gui_reset(dt_lib_module_t *self)
   // Resetting the picked colors
   for(int i = 0; i < 3; i++)
   {
-    for(int s = 0; s < DT_LIB_COLORPICKER_STATISTIC_N; s++)
+    for(int s = 0; s < DT_PICK_N; s++)
     {
       data->primary_sample.display[s][i] = 0.f;
       data->primary_sample.scope[s][i] = 0.f;

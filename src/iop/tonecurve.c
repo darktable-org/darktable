@@ -1400,9 +1400,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       {
         dt_colorpicker_sample_t *sample = samples->data;
 
-        picker_scale(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MEAN], picker_mean);
-        picker_scale(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MIN], picker_min);
-        picker_scale(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MAX], picker_max);
+        picker_scale(sample->lab[DT_PICK_MEAN], picker_mean);
+        picker_scale(sample->lab[DT_PICK_MIN], picker_min);
+        picker_scale(sample->lab[DT_PICK_MAX], picker_max);
 
         // Convert abcissa to log coordinates if needed
         picker_min[ch] = to_log(picker_min[ch], c->loglogscale, ch, c->semilog, 0);

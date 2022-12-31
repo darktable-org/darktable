@@ -680,6 +680,7 @@ static int _pixelpipe_picker_box(dt_iop_module_t *module, const dt_iop_roi_t *ro
 }
 
 // color picking for module
+// FIXME: make called with: lib_colorpicker_sample_statistics pick
 static void _pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_iop_buffer_dsc_t *dsc,
                              const float *pixel, const dt_iop_roi_t *roi, float *picked_color,
                              float *picked_color_min, float *picked_color_max,
@@ -687,28 +688,27 @@ static void _pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
 {
   int box[4] = { 0 };
 
-  dt_aligned_pixel_t min, max, avg;
-  for_four_channels(k)
-  {
-    min[k] = INFINITY;
-    max[k] = -INFINITY;
-    avg[k] = 0.0f;
-  }
+  // FIXME: don't need to initialize this if dt_color_picker_helper() does
+  lib_colorpicker_stats pick =
+    { { 0.0f, 0.0f, 0.0f, 0.0f },
+      { INFINITY, INFINITY, INFINITY, INFINITY },
+      { -INFINITY, -INFINITY, -INFINITY, -INFINITY } };
 
   if(!_pixelpipe_picker_box(module, roi,
                             darktable.lib->proxy.colorpicker.primary_sample,
                             picker_source, box))
   {
-    const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
-    dt_color_picker_helper(dsc, pixel, roi, box, avg, min, max, image_cst,
+    const dt_iop_order_iccprofile_info_t *const profile =
+      dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
+    dt_color_picker_helper(dsc, pixel, roi, box, pick, image_cst,
                            dt_iop_color_picker_get_active_cst(module), profile);
   }
 
   for_four_channels(k)
   {
-    picked_color_min[k] = min[k];
-    picked_color_max[k] = max[k];
-    picked_color[k] = avg[k];
+    picked_color_min[k] = pick[DT_PICK_MIN][k];
+    picked_color_max[k] = pick[DT_PICK_MAX][k];
+    picked_color[k] = pick[DT_PICK_MEAN][k];
   }
 }
 
@@ -719,6 +719,7 @@ static void _pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
 // this algorithm is inefficient as hell when it comes to larger images. it's only acceptable
 // as long as we work on small image sizes like in image preview
 // an OpenCL picker implementation would help
+// FIXME: make called with: lib_colorpicker_sample_statistics pick
 static void _pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                 dt_iop_buffer_dsc_t *dsc, cl_mem img, const dt_iop_roi_t *roi,
                                 float *picked_color, float *picked_color_min, float *picked_color_max,
@@ -771,23 +772,21 @@ static void _pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixe
   box[2] = region[0];
   box[3] = region[1];
 
-  dt_aligned_pixel_t min, max, avg;
-  for_four_channels(k)
-  {
-    min[k] = INFINITY;
-    max[k] = -INFINITY;
-    avg[k] = 0.0f;
-  }
+  // FIXME: don't need to initialize this if dt_color_picker_helper() does
+  lib_colorpicker_stats pick =
+    { { 0.0f, 0.0f, 0.0f, 0.0f },
+      { INFINITY, INFINITY, INFINITY, INFINITY },
+      { -INFINITY, -INFINITY, -INFINITY, -INFINITY } };
 
   const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
-  dt_color_picker_helper(dsc, pixel, &roi_copy, box, avg, min, max, image_cst,
+  dt_color_picker_helper(dsc, pixel, &roi_copy, box, pick, image_cst,
                          dt_iop_color_picker_get_active_cst(module), profile);
 
   for_four_channels(k)
   {
-    picked_color_min[k] = min[k];
-    picked_color_max[k] = max[k];
-    picked_color[k] = avg[k];
+    picked_color_min[k] = pick[DT_PICK_MIN][k];
+    picked_color_max[k] = pick[DT_PICK_MAX][k];
+    picked_color[k] = pick[DT_PICK_MEAN][k];
   }
 
 error:
@@ -828,9 +827,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,
       // pixel input is in display profile, hence the sample output will be as well
       // FIXME: previously we used special purpose code here, but the generic color picker code blurs the image -- do we want to keep this behavior? and similarly if we *do* want to blur the image, should we do this once rather than once for each sample?
       dt_color_picker_helper(dsc, input, roi_in, box,
-                             sample->display[DT_LIB_COLORPICKER_STATISTIC_MEAN],
-                             sample->display[DT_LIB_COLORPICKER_STATISTIC_MIN],
-                             sample->display[DT_LIB_COLORPICKER_STATISTIC_MAX],
+                             sample->display,
                              IOP_CS_RGB, IOP_CS_RGB,
                              // FIXME: this is ignored, just use NULL?
                              histogram_profile);
