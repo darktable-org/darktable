@@ -316,7 +316,7 @@ This builds the software for your architecture only, with:
 If you want to have dartkable displayed along your other applications, you only need to add a symbolic link:
 
 ```bash
-ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
+ln -s /opt/darktable/share/applications/org.darktable.darktable.desktop /usr/share/applications/org.darktable.darktable.desktop
 ```
 
 Now, your custom-built darktable is ready to be used just like any pre-packaged software.
@@ -358,7 +358,7 @@ the test/unstable one will save in `~/.config/darktable-test`, and the two versi
 Simply launch it from your desktop application menu or, from a terminal, run `darktable` or `/opt/darktable/bin/darktable`. If the installation did not create a launcher in your applications menu, run:
 
 ```bash
-sudo ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
+sudo ln -s /opt/darktable/share/applications/org.darktable.darktable.desktop /usr/share/applications/org.darktable.darktable.desktop
 ```
 
 You may find darktable configuration files in `~/.config/darktable`.
