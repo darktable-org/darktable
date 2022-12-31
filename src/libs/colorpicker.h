@@ -29,13 +29,13 @@ typedef enum dt_lib_colorpicker_size_t
 
 typedef enum dt_lib_colorpicker_statistic_t
 {
-  DT_LIB_COLORPICKER_STATISTIC_MEAN = 0,
-  DT_LIB_COLORPICKER_STATISTIC_MIN,
-  DT_LIB_COLORPICKER_STATISTIC_MAX,
-  DT_LIB_COLORPICKER_STATISTIC_N // needs to be the last one
+  DT_PICK_MEAN = 0,
+  DT_PICK_MIN,
+  DT_PICK_MAX,
+  DT_PICK_N // needs to be the last one
 } dt_lib_colorpicker_statistic_t;
 
-typedef dt_aligned_pixel_t lib_colorpicker_sample_statistics[DT_LIB_COLORPICKER_STATISTIC_N];
+typedef dt_aligned_pixel_t lib_colorpicker_stats[DT_LIB_COLORPICKER_STATISTIC_N];
 
 /** The struct for primary and live color picker samples */
 typedef struct dt_colorpicker_sample_t
@@ -52,11 +52,11 @@ typedef struct dt_colorpicker_sample_t
 
   /** The actual picked colors */
   // picked color in display profile, as picked from preview pixelpipe
-  lib_colorpicker_sample_statistics display;
+  lib_colorpicker_stats display;
   // picked color converted display profile -> histogram profile
-  lib_colorpicker_sample_statistics scope;
+  lib_colorpicker_stats scope;
   // picked color converted display profile -> Lab
-  lib_colorpicker_sample_statistics lab;
+  lib_colorpicker_stats lab;
   // in scope profile with current statistic
   int label_rgb[4];
   // in display profile with current statistic
