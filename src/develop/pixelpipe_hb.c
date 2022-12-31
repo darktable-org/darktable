@@ -795,65 +795,60 @@ error:
 }
 #endif
 
-static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
-                                       const dt_iop_buffer_dsc_t *dsc,
-                                       const float *const pixel, const dt_iop_roi_t *roi_in,
-                                       const dt_iop_order_iccprofile_info_t *const display_profile,
-                                       const dt_iop_order_iccprofile_info_t *const histogram_profile,
-                                       dt_colorpicker_sample_t *const sample)
-{
-  int box[4];
-
-  if(_pixelpipe_picker_box(module, roi_in, sample, PIXELPIPE_PICKER_OUTPUT, box))
-    return;
-
-  // pixel input is in display profile, hence the sample output will be as well
-  dt_color_picker_helper(dsc, pixel, roi_in, box,
-                         sample->display[DT_LIB_COLORPICKER_STATISTIC_MEAN],
-                         sample->display[DT_LIB_COLORPICKER_STATISTIC_MIN],
-                         sample->display[DT_LIB_COLORPICKER_STATISTIC_MAX],
-                         IOP_CS_RGB, IOP_CS_RGB,
-                         // FIXME: this is ignored, just use NULL?
-                         histogram_profile);
-
-  // NOTE: conversions assume that dt_aligned_pixel_t[x] has no
-  // padding, e.g. is equivalent to float[x*4], and that on failure
-  // it's OK not to touch output
-  int converted_cst;
-  dt_ioppr_transform_image_colorspace(module, sample->display[0], sample->lab[0], 3, 1,
-                                      IOP_CS_RGB, IOP_CS_LAB,
-                                      &converted_cst, display_profile);
-  if(display_profile && histogram_profile)
-    dt_ioppr_transform_image_colorspace_rgb
-      (sample->display[0], sample->scope[0], 3, 1,
-       display_profile, histogram_profile, "primary picker");
-}
-
 static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,
                                     const dt_iop_buffer_dsc_t *dsc,
                                     const float *const input,
                                     const dt_iop_roi_t *roi_in)
 {
-  // FIXME: can just inline here the _pixelpipe_pick_from_image() code, and at the end do all the colorspace conversions as needed?
   const dt_iop_order_iccprofile_info_t *const histogram_profile = dt_ioppr_get_histogram_profile_info(dev);
   const dt_iop_order_iccprofile_info_t *const display_profile
     = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
                                         darktable.color_profiles->display_filename,
                                         INTENT_RELATIVE_COLORIMETRIC);
 
-  // FIXME: locally crete a GSList item which contains as data the primary picker if it exists, pointing to the start of the live samples, or if not the first of the live samples. Then this can be a single loop, with the colorspace changing code included.
+  // if we have a primary picker, prepend to the list of any live
+  // samples, so that we don't have to differentiate when looping
+  // through the pixels
   GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
-  while(samples)
+  GSList primary;
+  if(darktable.lib->proxy.colorpicker.picker_proxy)
   {
-    dt_colorpicker_sample_t *sample = samples->data;
-    if(!sample->locked)
-      _pixelpipe_pick_from_image(module, dsc, input, roi_in, display_profile, histogram_profile, sample);
-    samples = g_slist_next(samples);
+    primary.data = darktable.lib->proxy.colorpicker.primary_sample;
+    primary.next = samples;
+    samples = &primary;
   }
 
-  if(darktable.lib->proxy.colorpicker.picker_proxy)
-    _pixelpipe_pick_from_image(module, dsc, input, roi_in, display_profile, histogram_profile,
-                               darktable.lib->proxy.colorpicker.primary_sample);
+  while(samples)
+  {
+    int box[4];
+    dt_colorpicker_sample_t *sample = samples->data;
+    if(!sample->locked &&
+       !_pixelpipe_picker_box(module, roi_in, sample, PIXELPIPE_PICKER_OUTPUT, box))
+    {
+      // pixel input is in display profile, hence the sample output will be as well
+      // FIXME: previously we used special purpose code here, but the generic color picker code blurs the image -- do we want to keep this behavior? and similarly if we *do* want to blur the image, should we do this once rather than once for each sample?
+      dt_color_picker_helper(dsc, input, roi_in, box,
+                             sample->display[DT_LIB_COLORPICKER_STATISTIC_MEAN],
+                             sample->display[DT_LIB_COLORPICKER_STATISTIC_MIN],
+                             sample->display[DT_LIB_COLORPICKER_STATISTIC_MAX],
+                             IOP_CS_RGB, IOP_CS_RGB,
+                             // FIXME: this is ignored, just use NULL?
+                             histogram_profile);
+
+      // NOTE: conversions assume that dt_aligned_pixel_t[x] has no
+      // padding, e.g. is equivalent to float[x*4], and that on failure
+      // it's OK not to touch output
+      int converted_cst;
+      dt_ioppr_transform_image_colorspace(module, sample->display[0], sample->lab[0],
+                                          3, 1, IOP_CS_RGB, IOP_CS_LAB,
+                                          &converted_cst, display_profile);
+      if(display_profile && histogram_profile)
+        dt_ioppr_transform_image_colorspace_rgb
+          (sample->display[0], sample->scope[0], 3, 1,
+           display_profile, histogram_profile, "primary picker");
+    }
+    samples = g_slist_next(samples);
+  }
 }
 
 // returns 1 if blend process need the module default colorspace
