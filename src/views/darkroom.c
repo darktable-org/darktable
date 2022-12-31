@@ -795,6 +795,14 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
+  // deactivate module label timer if set
+  if(darktable.develop->gui_module
+     && darktable.develop->gui_module->label_recompute_handle)
+  {
+    g_source_remove(darktable.develop->gui_module->label_recompute_handle);
+    darktable.develop->gui_module->label_recompute_handle = 0;
+  }
+
   // Pipe reset needed when changing image
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
   dev->proxy.chroma_adaptation = NULL;
