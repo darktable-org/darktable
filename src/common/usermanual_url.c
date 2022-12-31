@@ -130,6 +130,7 @@ dt_help_url urls_db[] =
   {"exposure",                   "module-reference/processing-modules/exposure/"},
   {"filmic",                     "module-reference/processing-modules/filmic-rgb/"},
   {"filmicrgb",                  "module-reference/processing-modules/filmic-rgb/"},
+  {"sigmoid",                    "module-reference/processing-modules/sigmoid/"},
   {"flip",                       "module-reference/processing-modules/orientation/"},
   {"globaltonemap",              "module-reference/processing-modules/global-tonemap/"},
   {"graduatednd",                "module-reference/processing-modules/graduated-density/"},
@@ -187,4 +188,3 @@ char *dt_get_help_url(char *name)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
