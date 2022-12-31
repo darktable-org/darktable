@@ -2520,8 +2520,8 @@ gboolean dt_gui_show_yes_no_dialog(const char *title, const char *format, ...)
                                              GTK_BUTTONS_NONE,
                                              "%s", question);
   gtk_dialog_add_buttons(GTK_DIALOG(dialog),
-                         _("yes"), GTK_RESPONSE_YES,
-                         _("no"), GTK_RESPONSE_NO,
+                         _("_yes"), GTK_RESPONSE_YES,
+                         _("_no"), GTK_RESPONSE_NO,
                          NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_NO);
   gtk_window_set_title(GTK_WINDOW(dialog), title);
