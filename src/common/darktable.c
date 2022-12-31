@@ -992,13 +992,18 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // initialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)calloc(1, sizeof(dt_conf_t));
+
+  // initialize the configuration default/min/max
+  dt_confgen_init();
+
+  // read actual configuration, needs confgen above for sanitizing values
   dt_conf_init(darktable.conf, darktablerc, config_override);
+
   g_slist_free_full(config_override, g_free);
 
   // set the interface language and prepare selection for prefs
   darktable.l10n = dt_l10n_init(init_gui);
 
-  dt_confgen_init();
   const int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
 
   // we need this REALLY early so that error messages can be shown, however after gtk_disable_setlocale
