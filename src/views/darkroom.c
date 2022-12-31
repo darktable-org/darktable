@@ -812,15 +812,18 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   {
     sqlite3_stmt *stmt;
     // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
-                                "WHERE m.imgid=s.imgid",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT m.imgid"
+       " FROM memory.collected_images as m, main.selected_images as s"
+       " WHERE m.imgid=s.imgid",
+       -1, &stmt, NULL);
     // clang-format on
     gboolean follow = FALSE;
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      if(sqlite3_column_int(stmt, 0) == dev->image_storage.id && sqlite3_step(stmt) != SQLITE_ROW)
+      if(sqlite3_column_int(stmt, 0) == dev->image_storage.id
+         && sqlite3_step(stmt) != SQLITE_ROW)
       {
         follow = TRUE;
       }
@@ -837,9 +840,11 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
     dt_iop_color_picker_reset(darktable.lib->proxy.colorpicker.picker_proxy->module, FALSE);
 
   // update aspect ratio
-  if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+  if(dev->preview_pipe->backbuf
+     && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
-    const double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    const double aspect_ratio =
+      (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
     dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
   }
   else
