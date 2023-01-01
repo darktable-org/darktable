@@ -24,280 +24,338 @@ You are strongly advised to take a backup first.
 
 Since darktable 4.0:
 
-- Almost ???? commits to darktable+rawspeed
-- ??? pull requests handled
-- ??? issues closed
+- Almost 1411 commits to darktable+rawspeed
+- 409 pull requests handled
+- 60 issues closed
 
 ## The Big Ones
 
 The following is a summary of the main features added to darktable
-4.2. These features are described more fully in the user manual and
-accompanying blog post.
+4.2. Most of these features are described more fully in the user manual.
 
-- New Sigmoid display transform module.
+- New Sigmoid display transform module, which can be used in place of
+  the filmic and base curve modules.
 
-- Two new highlight recovery algorithm are proposed: in-paint opposed
-  and segmentation. The in-paint opposed has proved to be very stable
-  and good in a lot of pictures so it has been made the default now.
+- Two new algorithms are provided in the highlight reconstruction module:
+  "inpaint opposed" and "segmentation based". The "inpaint opposed"
+  algorithm has proved to be very stable and provides good results in
+  many images, so it replaces "clip highlights" as the new default algorithm.
 
-- A full rework of the image display has been done. An initial work
-  has been to create an easy to use image display on the central
-  area. This routine supports all display mode: focus-peaking and
-  color assessment. This routine is now used for the darkroom area,
-  for the second window and the duplicates.
+- The pixelpipe used for image display in the darkroom view has been reworked
+  so that it can be used elsewhere (darkroom view, second display window,
+  duplicate manager, style preview, snapshot routine). This has allowed
+  for code de-duplication as well as enhancement of many of these features
+  (see below).
 
-  So the second window gets the focus-peaking display and more
-  importantly the color assessment mode which is an important feature.
+- The second darkroom image window has now been enhanced to support both
+  the focus peaking and ISO-12646 color assessment modes.
 
-  To achieve that properly a new routine has been created which run a
-  separate pixelpipe which is fully equivalent to the darkroom
-  one. This gives a properly aligned display.
+- The snapshot module has been entirely reworked so that, instead of using a
+  fixed screen capture it now uses a dynamically generated view using the new
+  pixelpipe functionality. This means that it can now be zoomed and panned
+  with keyboard/mouse.
 
-  Using the new pixelpipe and display routines the snapshot routine
-  has been reworked. This new version has fully dynamic snapshots. The
-  snapshot can be panned and zoomed and still perfectly aligned with
-  the darkroom display which permit a proper comparison.
+- The duplicate manager previously used a different pipe routine to calculate
+  its previews (i.e. when long-pressing on a duplicate image thumbnail) which
+  often meant that the displayed duplicates differed from the main darkroom
+  view in subtle ways. Use of the new pipe routine now means that these previews
+  will be identical to those produced during darkroom editing.
 
-- Add style preview in lighttable style module and in darkroom style
-  widget. The preview is displayed in the tooltip when overing the
-  style entries. The tooltip UI has been redesigned at the same time.
+- It is now possible to preview the effect of a user-generated style on
+  an image before applying it. Simply hover over the style name in either
+  the lighttable styles module or the darkroom quick-access menu and a
+  new tooltip will appear, showing the image with the style applied along
+  with details of the modules that are included.
 
-- The lens module gains built-in support. Some cameras are recording
-  lens correction values into the EXIF. Those data are now retrieved
-  and used by the lens module to do the corresponding corrections.
+- Some cameras record lens correction information within the image
+  EXIF metadata.  The lens correction module has been enhanced so that
+  it can extract this data and use it to correct lens distortions.
 
-- JPEG XL (read / write)
+- darktable is now able to read and write JPEG XL images
 
-- Keep modules fully visible when opening or expanding and move with
-  a smooth transition effect. The effect can be sped up or switched
-  off with preferences/miscellaneous/duration of ui transitions.
+- Processing and utility modules have been altered so that if a module is
+  not entirely visible when expanded, it will be automatically scrolled
+  until the entire UI is visible on screen.
 
-- Large pixelpipe cache overhaul. Increased number of cachelines with
-  an improved hit-rate while controlling used overall memory leading to
-  a significantly faster user interface.
+  For users who currently use the "scroll to the top when expanded" preference
+  setting to achieve this effect, this change may provide a better alternative.
 
-- Rewrite a good part of the slideshow view for better user's
-  experience. A small preview is first displayed while computing the
-  full image giving feedback that something is happening.
+  As part of this change, a new animation effect has been added when
+  expanding/collapsing modules. The speed of the expand/collapse animation
+  can be controlled via a preference setting
+  (`preferences > miscellaneous > duration of ui transitions`).
+  Set this to zero to disable the animation.
+
+- The pixelpipe caching functionality has been completely overhauled. More
+  cachelines are used with an improved hit-rate while controlling
+  the total amount of memory used, leading to a significantly faster
+  interface.
+
+- The slideshow has been rewritten for a better user experience.
+  A small preview is displayed while the full image is computed
+  to provide feedback to the user that something is being done in
+  the background.
+
+- A new drop-down menu has been added to the top filter bar to allow
+  filters to be easily added and removed. Some range widgets have been
+  removed from this list as they are not easily readable on the top bar.
+
+- The UI of the range rating filter widget has been reworked for better
+  readability. This revised widget is designed to be easier to use
+  and more efficient.
 
 ## Other Changes
 
-- Add support for manipulating masks without scrolling (for tablet
-  users). The mask manager has been enhanced with a new collapsible
-  section containing controls for changing masks properties.
+- Added support for manipulating shapes without using the mouse scroll-wheel
+  (for tablet users). The mask manager has been enhanced with a new collapsible
+  section containing controls for changing shapes properties.
 
-  It is also possible to change a properly shared by a group of mask.
+  It is also possible to change a property that is shared by a group of shapes.
 
-  At the same time the circle and ellipse masks have been enhanced
-  with new on-canvas controls to change the size and feather.
+  The circle and ellipse shapes have also been enhanced with new on-canvas
+  controls to change the mask size and feathering.
 
-- Add WebP read support.
+- WebP read support has been added.
 
-- Embedded ICC profile in exported WebP file.
+- Embedded ICC profiles are now supported in exported WebP files.
 
-- A double click on a notebook tab reset all widgets it contains.
+- Double-clicking on a notebook tab now resets all widgets within that tab.
 
-- Support regional data/time format in thumbnail tooltips.
+- Regional date/time format is now supported in thumbnail tooltips.
 
-- Show lua command in action tooltip.
+- Lua commands are displayed in a widget's "action" tooltip.
 
-- Remove SSE code path from White Balance and Color Out modules. The
-  optimized code from the compiler gives comparable speed.
+- The SSE code path has been removed from the white balance and
+  output color profile modules as compiler defaults now provide a
+  similar speed.
 
-- Add support for JFIF (JPEG File Interchange Format) file extension
-  which is a standard JPEG.
+- Added support for JFIF (JPEG File Interchange Format) file extension
+  (which is an extension of the JPEG standard).
 
-- The preference to auto-apply a sharpening has been removed. One can
-  add an auto-applied presets in the sharpen module and gain the same
-  effect.
+- The preference to auto-apply a sharpening has been removed. For users
+  who still require this functionality, it can be easily achieved with a
+  user-generated auto-applied preset.
 
-- Add support for updating existing pictures in Piwigo export.
+- Added support for updating existing pictures in Piwigo export.
 
-- The White Balances presets have been migrated to an external JSON file.
+- All white balance presets have been migrated to an external JSON file.
+  This should not affect the module's operation.
 
-- Remove Color Balance layout and White Balance control background
-  color from the preference as this can be done directly on the module
-  itself.
+- The preferences to set the layout of the "color balance module" and the
+  colors of the "white balance" module have been removed from the global
+  preferences dialog, as these controls are already available directly within
+  the respective modules.
 
-- Improve profile support for AVIF & EXR format. Also relax AVIF
-  reader by not requiring full compliance.
+- Improved profile support for AVIF & EXR format. Also relax AVIF
+  reader support by not requiring full compliance.
 
-- The current collection image count is now shown in the toolbox. This
-  makes this information available even if the top hinter area is
-  hidden.
+- The current collection image count is now shown in the top bar beside
+  the image filters meaning that it is available even when the top hinter
+  area is hidden.
 
-- Try to get color-space for PNG file from the cICP chunk. This was
+- Attempt to obtain the color-space for PNG files from the cICP chunk. This was
   added in a recent revision of the PNG spec, so we take advantage of
-  it is present.
+  it, if present.
 
-- The reading of 16-bit half float for TIFF format is now done using
+- Reading of 16-bit half float for the TIFF format is now undertaken using
   the Imath library.
 
-- Enable actions on the export format and storage widgets. This means
-  that they can be mapped to shortcut.
+- The format and storage parameters in the export module can now be mapped
+  to shortcuts.
 
-- Introduce balanced OpenCL vs CPU tiling. This makes it possible to
-  use CPU tiling if there is not enough memory on the OpenCL card and
-  so would require a lot of tiles to be handled on the card. At the
-  end, the large number of tiles plus the overlapping area will make
-  the use of the OpenCL code patch slower (or much slower) than
-  handling the image without tiling on CPU.
+- Introduced balanced "OpenCL vs CPU" tiling. This makes it possible to
+  use CPU tiling if there is not enough memory on the OpenCL card
+  (which would require a lot of tiles to be handled on the card). In the
+  end, the large number of tiles plus the overlapping area would make
+  the use of the OpenCL code path slower (or much slower) than
+  handling the image without tiling on the CPU.
 
-- In preview mode the overlay display block is not shown by
-  default. Moving the cursor on the half top of the thumb will display
-  it. The block is still hidden automatically after some timeout.
+- In preview mode (when pressing <kbd>Ctrl+w</kbd>) the image
+  information overlay display block is no longer shown by
+  default. Moving the cursor within the top half of the preview image
+  will cause the overlay to appear, and it will then disappear again
+  after a brief period.
 
-- Set light patterns for Behringer b-control midi rotors
+- Light patterns are set for Behringer b-control midi rotors
   (BCR2000/BCF2000)
 
-- Fix reading of EXIF metadata when importing EXRs (if desired,
-  existing files must be re-imported, refreshing metadata is not an
-  option).
+- Fixed reading of EXIF metadata when importing EXR files (if desired,
+  existing files must be re-imported, as it is not possible to refresh
+  metadata).
 
-- Add support for scrolling through presets with shortcuts.
+- Added support for scrolling through a module's presets using shortcuts.
 
-- The panel size are now using the natual size making the initial
-  display adjusting to the screen resolution.
+- Panels now use "natural sizes" by default, meaning that their initial
+  size adjusts according to screen resolution.
 
-- Allow narrow geo-tagging module. If the panel is getting small the
-  widget will properly wrap around instead of ellipse texts.
+- The geo-tagging module now better supports narrow side-panels by
+  wrapping rather than ellipsizing text.
 
-- Add some more actions in the main help screen (displayed with
-  <kbd>h</kbd> key).
+- More actions have been added to the main help screen (displayed by
+  pressing the <kbd>h</kbd> key).
 
-- The lensfun module is now a mandatory dependency. This will ensure
-  that all darktable build will have the lens correction module. Also,
-  an edit with this module won't get lost because a build is missing
-  it. At the same time this simplify the code, which is also good.
+- The lensfun library is now a mandatory dependency. This ensures
+  that all darktable builds correctly include the lens correction module.
+  This also means that an edit made using this module won't be inadvertently
+  lost due to missing build dependencies.
 
-- A new virtual module <focused> is introduced. This module can hold
-  key shortcuts that can be applied to the current module in
-  focus. For example a key shortcut in the 1st slider will be usable
-  to change exposure in the exposure module or the rotation in the
-  rotate and perspective module. It can be configured for sliders,
-  comboboxes, buttons, tabs and the focused module itself.
+- It is now possible to assign shortcuts to the "currently focused"
+  processing module.  This allows a common set of shortcuts to be
+  created and reused in multiple modules simply by focusing that
+  module. For example a single key shortcut applied to the "first
+  slider" will affect the "exposure" slider when the exposure module
+  is focused, and the "rotation" slider when the "rotate and
+  perspective" module is focused. Similar functionality can be used to
+  affect the "nth" slider, combobox, button or tab as well as the
+  focused module itself.
 
-- Right-clicking on a module header in the quick access panel allows
-  quickly adding more widgets from the same module. The tooltip and
-  icon show if those widgets are currently hidden in the full module.
+- Right-clicking on a module header in the quick access panel now allows
+  more widgets from the same module to be quickly added. The tooltip and
+  icon show whether those widgets are currently hidden in the full module.
 
 ## Bug Fixes
 
-- Properly use the display color profile in the slideshow. This was
-  missing and so images where just ignoring the color profile and were
-  displayed (very) differently than on the lighttable or darkroom.
+- Properly use the display color profile in the slideshow view. This was
+  missing, meaning that images were ignoring the color profile and were
+  displayed (very) differently than in the lighttable or darkroom views.
 
-- Properly honor the modules' off status of in a style. Using a style
-  in the export module can now be used to disable a module otherwise
+- Properly honor a module's on/off status in a style. This means that styles
+  can now be used in the export module to disable a module otherwise
   enabled in the history stack.
 
 - Fix bauhaus popup size and position.
 
-- Fix iop-order name on reset.
+- Fix the name of the "iop order" on reset.
 
-- Do not display deprecated module actions in preferences' shortcuts section.
+- Do not display deprecated module actions in the shortcuts section of
+  the global preferences dialog.
 
-- Fix some bauhaus widgets popup positioning on Wayland.
+- Fix the positioning of some bauhaus widgets on Wayland.
 
-- Fix speed issue when importing large folders with XMP having lot of
-  metadata.
+- Fix performance issue when importing large folders where XMPs contain
+  a lot of metadata.
 
-- Fix some missing GUI update in the Liquify module. In some cases,
+- Fix some missing GUI updates in the liquify module. In some cases,
   changing the strength of a node in a curve or line was not properly
   updating the displacement values.
 
 - Fix bad interaction between the color assessment mode and the side
   panels.
 
-- Fix infinity focus display in image information.
+- Fix infinity focus display in the image information module.
 
 - Fix translation of retouch module toast messages.
 
-- When importing we keep the folder or filmroll property if active. If
-  another collection mode was selected we use the default filmroll
-  one.
+- When importing images, retain the currently selected folder/filmroll mode
+  in the collections module if one of these modes is currently active.
+  If another collection mode was active the import switches back
+  to filmroll mode (as before).
 
 - Fix Lab conversion in TIFF import.
 
-- Fix highlights visualization in all recovery mode.
+- Fix highlights visualization in all recovery modes.
 
 - Fix X-Trans highlight reconstruction visual indicator.
 
-- Fix undo/redo after a style applied via a shortcut.
+- Fix undo/redo after a style is applied via a shortcut.
 
-- Do not rebuilt the whole tree when deleting or editing a
-  preset in preferences. This gives a better stability to the UI.
+- Do not rebuild the whole tree when deleting or editing a
+  preset in preferences. This provides better UI stability.
 
-- Fix some refresh of the mask manager when changing images.
+- Fix broken refresh of the mask manager when changing images.
 
-- Fix mask selection after a continuous mask creation.
+- Fix mask selection after continuous mask creation.
 
-- Fix name and tooltip in demosaic preferences to be correct for all
-  sensor kind.
+- Fix name and tooltip in demosaic preferences so it is correct for all
+  types of sensor.
 
-- Remove the automatic check for OpenCL headroom as this was causing
-  more problems than it solve.
+- Remove the automatic check for OpenCL headroom - it was causing
+  more problems than it solved.
 
-- Fix non blinking cursor in the processing module search dialog. This
-  was making the module looks like it was not active.
+- Fix non-blinking cursor in the darkroom module search bar. This
+  was making the search bar look as if it was inactive.
 
 - Properly record the libraw black level.
 
-- Fix state of some UI buttons in the retouch module when switch images.
+- Fix the state of some UI buttons in the retouch module when switching images.
 
 - Fix selection of unaltered images.
 
-- Widgets in collapsed section are not disabled anymore making them
-  actionable via shortcut.
+- Fix keyboard shortcuts so that they can be applied to widgets in a
+  collapsed section of a module.
 
-- Fix typo preventing proper expansion of variable $(FOLDER.PICTURES).
+- Fix typo preventing proper variable expansion `$(FOLDER.PICTURES)`.
 
-- Fix PNM loader (could display broken images and always wrong colors).
+- Fix PNM loader (could display broken images and always used wrong colors).
 
-- Fix drawing color picker area when in image edges. When mouse is
-  going outside the edges we don't loose anymore the editing action.
+- Fix drawing color picker area at the edge of images so that the editing
+  action is no longer lost when the mouse goes outside the edge.
 
 - An old bug in the cache handling has been fixed. This could have
-  different effects like missing a recompute of the display after some
-  change in parameters or a simple crash when in darkroom.
+  caused a missing display refresh after parameter changes and even some
+  crashes while in the darkroom view.
 
-- Fix some toggle buttons UI state not properly updated.
+- Fix some toggle buttons whose UI state was not properly updated.
 
 - Fix check of temperature coefficients for displaying the selected
-  presets. This avoid some missed hits.
+  presets.
 
-- Fix fast pixelpipe support in some modules for the second window.
+- Fix fast-pipe support in some modules for the second display window.
 
-- In the quick access panel, widgets are hidden if they are also hidden
-  in the full module (due some combination of selected options). This
-  even works if those options are changed from another widget in the qap.
+- In the quick access panel, parameters are now hidden if they are also hidden
+  in the full module (for those parameters that conditionally display based on
+  the state of other parameters). This even works if those parameters are
+  changed from another widget in the quick access panel.
 
 - Slightly improve the blue color label for better visibility in the
   dark theme.
 
-- Fix navigation window zoom indicator label display. It was sometime
-  cut on the right or bottom as misplaced on the window.
+- Fix navigation window zoom indicator label display. It was sometimes
+  cut on the right or bottom or displaced within the window.
 
 ## Lua
 
 - API version changed to 9.0.0
 
-- darktable.gui.libs.filter.sort|sort order|rating|rating comparator
+- `darktable.gui.libs.filter.sort|sort order|rating|rating` comparator
   functions removed
 
-- filename removed from dt_lua_snapshot_t data type
+- filename removed from `dt_lua_snapshot_t data` type
 
-- darktable.gui.libs.snapshot now updates the screen after changing
+- `darktable.gui.libs.snapshot` now updates the screen after changing
   direction or rotation
 
 - lua snapshot datatype correctly retrieves snapshot name
 
 ## Notes
 
+- With the support of JXL, AVIF and EXR for export, selecting specific
+  metadata (eg. geo tag, creator) is not currently possible. For
+  formats JXL, AVIF and EXR, darktable will not include the metadata
+  fields unless the user selects all of the checkboxes in the export
+  preference options.
+
+- In order to support the correct display of numbers in darktable, the
+  minimum supported Gtk version has had to be increased to
+  3.24.15. For people who need to build darktable with an older
+  version, this can be supported by reverting the following change:
+  remove line 241 of darktable.css file on your system. See:
+  https://github.com/darktable-org/darktable/issues/13166
 
 ## Changed Dependencies
 
-N/A
+### Mandatory
+
+- Bump Gtk minimum required version from 3.22 to 3.24.15.
+
+- lensfun is now a mandatory dependency, not optional.
+  Supported versions are stable releases (e.g. 0.3.3),
+  not alpha 0.3.95 pre-release or master branch.
+
+### Optional
+
+- New optional dependency: libjxl, minimum required version 0.7.0.
+
 
 ## RawSpeed changes
 
@@ -306,14 +364,52 @@ N/A
 
 ### Base Support
 
+- Canon EOS M2
+- Fujifilm FinePix HS50EXR
+- Fujifilm FinePix S6000fd
+- Fujifilm X-H2 (compressed)
+- Fujifilm X-H2S (compressed)
+- Fujifilm X-T30 II (compressed)
+- Fujifilm X-T5 (compressed)
+- Leica D-LUX 6 (4:3, 3:2, 16:9, 1:1)
+- Leica M Monochrom (Typ 246) (dng)
+- Nikon 1 J4 (12bit-compressed)
+- Nikon 1 S1 (12bit-compressed)
+- Nikon Coolpix P7700 (12bit-compressed)
+- Nikon D1H (12bit-uncompressed)
+- Nikon D2H (12bit-compressed, 12bit-uncompressed)
+- Nikon D3S (14bit-compressed, 14bit-uncompressed, 12bit-compressed, 12bit-uncompressed)
+- Nikon Z 9 (14bit-compressed)
+- Olympus E-10
+- Olympus E-M10 Mark IIIs
+- Olympus E-P7
+- Olympus SP570UZ
+- Panasonic DMC-G2 (4:3, 3:2, 16:9, 1:1)
+- Pentax K2000
+- Pentax K200D
+- Ricoh GR II
+- Samsung NX mini
+- Samsung NX10
+- Samsung NX11
+- Samsung NX20
+- Samsung NX2000
+- Samsung NX5
+- Sony DSLR-A380
+- Sony DSLR-A560
+- Sony ILCE-7RM5
 
 ### White Balance Presets
 
+   No data for this release.
 
 ### Noise Profiles
 
-
-### Custom Color Matrices
+- Fujifilm X-E4
+- Fujifilm X-T5
+- Leica M (Typ 240)
+- Nikon Z 9
+- Olympus E-500
+- Panasonic DMC-FZ330
 
 ### Missing Compression Mode Support
 
@@ -325,10 +421,7 @@ N/A
 
 No samples on raw.pixls.us
 
-- Canon EOS M2
 - Creo/Leaf Aptus 22(LF3779)/Hasselblad H1
-- Fujifilm FinePix HS50EXR
-- Fujifilm FinePix S6000fd
 - Fujifilm FinePix S9600fd
 - Fujifilm IS-1
 - GoPro FUSION
@@ -336,36 +429,17 @@ No samples on raw.pixls.us
 - Leaf Aptus-II 5(LI300059)/Mamiya 645 AFD
 - Leaf Credo 60
 - Leaf Credo 80
-- Leica D-LUX 6
 - Minolta DiMAGE 5
-- Nikon 1 J4
-- Nikon 1 S1
-- Nikon Coolpix P7700
-- Nikon D1H
-- Nikon D2H
-- Nikon D3S
-- Olympus E-10
 - Olympus SP320
-- Olympus SP570UZ
 - Panasonic DMC-FX150
-- Panasonic DMC-G2
-- Pentax K200D
-- Pentax K2000
 - Pentax Q10
 - Phase One IQ250
 - Samsung GX10
 - Samsung GX20
-- Samsung NX5
-- Samsung NX10
-- Samsung NX11
-- Samsung NX20
-- Samsung NX2000
 - Samsung EK-GN120
 - Samsung SM-G920F
 - Samsung SM-G935F
 - Sinar Hy6/ Sinarback eXact
-- Sony DSLR-A380
-- Sony DSLR-A560
 - ST Micro STV680
 
 ## Translations

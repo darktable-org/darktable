@@ -2,7 +2,7 @@
 <!-- Copyright (C) 2009-2021 darktable developers.
 -->
 <component type="desktop">
-  <id>darktable.desktop</id>
+  <id>org.darktable.darktable</id>
   <name>darktable</name>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+</project_license>
@@ -47,6 +47,7 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release date="2022-12-21" version="4.2.0"/>
     <release date="2022-09-17" version="4.0.1"/>
     <release date="2022-07-02" version="4.0.0"/>
     <release date="2022-02-11" version="3.8.1"/>

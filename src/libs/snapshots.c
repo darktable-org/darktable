@@ -684,15 +684,6 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
         d->selected = k;
       else
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
-
-    /* setup snapshot */
-    if(d->selected >= 0)
-    {
-      dt_lib_snapshot_t *s = &d->snapshot[d->selected];
-      s->ctx = 0;
-    }
-
-    dt_dev_invalidate(darktable.develop);
   }
 
   --darktable.gui->reset;

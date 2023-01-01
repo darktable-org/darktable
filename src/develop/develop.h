@@ -427,9 +427,6 @@ gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module);
 /** add or remove module or widget in current quick access list **/
 int dt_dev_modulegroups_basics_module_toggle(dt_develop_t *dev, GtkWidget *widget, gboolean doit);
 
-/** request snapshot */
-void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
-
 /** update gliding average for pixelpipe delay */
 void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_delay);
 

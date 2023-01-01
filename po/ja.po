@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-22 19:31+0100\n"
-"PO-Revision-Date: 2022-11-23 23:03+0900\n"
+"POT-Creation-Date: 2022-11-30 11:59+0100\n"
+"PO-Revision-Date: 2022-12-24 23:04+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -902,7 +902,6 @@ msgstr "ユーティリティモジュールの内蔵プリセットを非表示
 #: ../build/bin/preferences_gen.h:8263 ../build/bin/preferences_gen.h:8323
 #: ../build/bin/preferences_gen.h:8405 ../build/bin/preferences_gen.h:8511
 #: ../build/bin/preferences_gen.h:8547 ../build/bin/preferences_gen.h:8645
-#: ../src/lua/preferences.c:682 ../src/lua/preferences.c:710
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "ダブルクリックすると、 `%s' にリセット"
@@ -1359,8 +1358,8 @@ msgstr ""
 "チョス2、ランチョス3）"
 
 #: ../build/bin/preferences_gen.h:5719
-msgid "3D lut root folder"
-msgstr "3D lutのルートフォルダ"
+msgid "LUT 3D root folder"
+msgstr "LUT 3Dのルートフォルダ"
 
 #: ../build/bin/preferences_gen.h:5724 ../src/control/jobs/control_jobs.c:1660
 #: ../src/control/jobs/control_jobs.c:1714 ../src/gui/preferences.c:1070
@@ -1375,11 +1374,11 @@ msgstr "ディレクトリを選択してください"
 
 #: ../build/bin/preferences_gen.h:5740
 msgid ""
-"this folder (and sub-folders) contains Lut files used by lut3d modules. "
+"this folder (and sub-folders) contains LUT files used by LUT 3D module. "
 "(need a restart)."
 msgstr ""
-"このフォルダ（およびサブフォルダ）に、LUT 3Dモジュールで使用されるLutファイル"
-"が含まれています（要再起動）"
+"このフォルダ（およびサブフォルダ）に、LUT 3Dモジュールが使用するLUTファイルが"
+"含まれています（要再起動）"
 
 #: ../build/bin/preferences_gen.h:5762
 msgid "auto-apply pixel workflow defaults"
@@ -1476,8 +1475,8 @@ msgid ""
 " - default: darktable takes ~50% of your systems resources and gives "
 "darktable enough to be still performant.\n"
 " - small: should be used if you are simultaneously running applications "
-"taking large parts of your systems memory or opencl/gl applications like "
-"games or hugin.\n"
+"taking large parts of your systems memory or OpenCL/GL applications like "
+"games or Hugin.\n"
 " - large: is the best option if you are mainly using darktable and want it "
 "to take most of your systems resources for performance.\n"
 " - unrestricted: should only be used for developing extremely large images "
@@ -1486,17 +1485,17 @@ msgid ""
 "recommended for general use!"
 msgstr ""
 "システムリソースのうちdarktableが使用する割合を定義します\n"
-" - デフォルト: システムリソースの50%%以下をdarktableで使用します。十分に高パ"
-"フォーマンスで動作します\n"
+" - デフォルト: システムリソースの50%以下をdarktableが使用します。十分な性能で"
+"動作します\n"
 " - 小：ゲームやHuginのような、システムのメモリの大部分を消費するアプリケー"
-"ションやopencl/glを使用するアプリケーションを同時に動作させる場合に選択してく"
+"ションやOpenCL/GLを使用するアプリケーションを同時に動作させる場合に選択してく"
 "ださい\n"
 " - 大：darktableを主に使用していて、パフォーマンス向上のためにシステムリソー"
 "スのほとんどをdarktableに使用させたい場合に最善の選択肢です\n"
 " - 無制限：極端に大きな画像を現像する場合にのみ選択してください。darktableが"
 "システムリソースの全てを使用するため、スワップや予期しないパフォーマンスの低"
-"下が起きる可能性があります。注意して使用してください。一般用途にはおすすめし"
-"ません！"
+"下を引き起こす可能性があります。注意して使用してください。一般用途にはおすす"
+"めしません！"
 
 #: ../build/bin/preferences_gen.h:6074
 msgid "prefer performance over quality"
@@ -3879,7 +3878,7 @@ msgstr "中間トーンのバイアス"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:141
 #: ../build/lib/darktable/plugins/introspection_highlights.c:242
-#: ../src/views/darkroom.c:2311
+#: ../src/views/darkroom.c:2306
 msgid "clipping threshold"
 msgstr "クリッピングのしきい値"
 
@@ -3909,32 +3908,32 @@ msgid "inpaint a flat color"
 msgstr "色の一様な部分を修復"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:284
-#: ../src/iop/highlights.c:2368 ../src/iop/highlights.c:2374
+#: ../src/iop/highlights.c:2387 ../src/iop/highlights.c:2393
 msgid "clip highlights"
 msgstr "ハイライトのクリップ"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:285
-#: ../src/iop/highlights.c:2372
+#: ../src/iop/highlights.c:2391
 msgid "reconstruct in LCh"
 msgstr "LChで再構成"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:286
-#: ../src/iop/highlights.c:2321 ../src/iop/highlights.c:2384
+#: ../src/iop/highlights.c:2340 ../src/iop/highlights.c:2403
 msgid "reconstruct color"
 msgstr "色を再構成"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:287
-#: ../src/iop/highlights.c:2379
+#: ../src/iop/highlights.c:2398
 msgid "guided laplacians"
 msgstr "ガイデットラプラシアン"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:288
-#: ../src/iop/highlights.c:2376
+#: ../src/iop/highlights.c:2395
 msgid "segmentation based"
 msgstr "セグメンテーションベース"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:289
-#: ../src/iop/highlights.c:2364
+#: ../src/iop/highlights.c:2383
 msgid "inpaint opposed"
 msgstr "反対を修復"
 
@@ -4038,7 +4037,7 @@ msgstr "補正"
 #: ../src/iop/levels.c:672 ../src/iop/profile_gamma.c:667
 #: ../src/libs/copy_history.c:358 ../src/libs/export.c:1280
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2696
-#: ../src/libs/styles.c:830 ../src/views/darkroom.c:2292
+#: ../src/libs/styles.c:830 ../src/views/darkroom.c:2287
 msgid "mode"
 msgstr "モード"
 
@@ -4088,8 +4087,8 @@ msgstr "無効化"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2191 ../src/views/darkroom.c:2586
-#: ../src/views/darkroom.c:2589 ../src/views/lighttable.c:761
+#: ../src/views/darkroom.c:2186 ../src/views/darkroom.c:2581
+#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:761
 #: ../src/views/lighttable.c:770 ../src/views/lighttable.c:1246
 #: ../src/views/lighttable.c:1250 ../src/views/lighttable.c:1254
 #: ../src/views/lighttable.c:1258 ../src/views/lighttable.c:1262
@@ -4377,7 +4376,7 @@ msgstr "ハイライトの色調整"
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:141
 #: ../src/gui/accelerators.c:78
 msgid "skew"
-msgstr "傾斜"
+msgstr "傾き"
 
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:76
 #: ../build/lib/darktable/plugins/introspection_sigmoid.c:145
@@ -5061,7 +5060,7 @@ msgid "capture date"
 msgstr "撮影日時"
 
 #: ../src/common/collection.c:680 ../src/libs/collect.c:3309
-#: ../src/libs/filtering.c:2187 ../src/libs/filtering.c:2207
+#: ../src/libs/filtering.c:2196 ../src/libs/filtering.c:2216
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "履歴"
@@ -5179,14 +5178,14 @@ msgstr "未定義"
 #: ../src/common/collection.c:2451
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
-msgstr "<b>%d</b>枚の画像のうち<b>%d</b>枚(#<b>%d</b>)が選択されています"
+msgstr "<b>%d</b>枚の画像（#<b>%d</b>）が<b>%d</b>枚のなかから選択されています"
 
 #: ../src/common/collection.c:2457
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
-msgstr[0] " <b>%d</b>枚の画像のうち<b>%d</b>枚が選択されています"
-msgstr[1] " <b>%d</b>枚の画像のうち<b>%d</b>枚が選択されています"
+msgstr[0] "<b>%d</b>枚の画像が<b>%d</b>枚のなかから選択されています"
+msgstr[1] "<b>%d</b>枚の画像が<b>%d</b>枚のなかから選択されています"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:1985
 #: ../src/develop/blend_gui.c:2012 ../src/gui/guides.c:729
@@ -5508,7 +5507,7 @@ msgid "export profile"
 msgstr "エクスポートプロファイル"
 
 #: ../src/common/colorspaces.c:1407 ../src/common/colorspaces.c:1687
-#: ../src/views/darkroom.c:2451
+#: ../src/views/darkroom.c:2446
 msgid "softproof profile"
 msgstr "ソフトプルーフのプロファイル"
 
@@ -6359,27 +6358,27 @@ msgstr "ノイズプロファイル`%s'は有効ではありません"
 
 #: ../src/common/opencl.c:1119
 msgid ""
-"due to a slow GPU hardware acceleration via opencl has been de-activated"
+"due to a slow GPU hardware acceleration using OpenCL has been deactivated"
 msgstr ""
-"GPUの速度が遅いため、OpenCLによるハードウェアアクセラレーションは無効になって"
-"います"
+"GPUの速度が遅いため、OpenCLを使用したハードウェアアクセラレーションは無効に"
+"なっています"
 
 #: ../src/common/opencl.c:1126
 msgid ""
-"multiple GPUs detected - opencl scheduling profile has been set accordingly"
+"multiple GPUs detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
 "複数のGPUが検出されました\n"
 "OpenCLスケジューリングプロファイルがそれに応じて設定されています"
 
 #: ../src/common/opencl.c:1134
 msgid ""
-"very fast GPU detected - opencl scheduling profile has been set accordingly"
+"very fast GPU detected - OpenCL scheduling profile has been set accordingly"
 msgstr ""
 "非常に高速なGPUが検出されました\n"
 "OpenCLスケジューリングプロファイルがそれに応じて設定されています"
 
 #: ../src/common/opencl.c:1141
-msgid "opencl scheduling profile set to default"
+msgid "OpenCL scheduling profile set to default"
 msgstr "OpenCLスケジューリングプロファイルはデフォルトに設定されています"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:2658
@@ -6431,8 +6430,8 @@ msgstr[1] "%d 枚の画像を除外しています"
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
-msgstr[0] "評価 %dを%d 枚の画像に適用しています"
-msgstr[1] "評価 %dを%d 枚の画像に適用しています"
+msgstr[0] "評価%dを%d 枚の画像に適用しています"
+msgstr[1] "評価%dを%d 枚の画像に適用しています"
 
 #: ../src/common/ratings.c:221
 msgid "no images selected to apply rating"
@@ -6497,8 +6496,8 @@ msgstr "除外"
 msgid "style with name '%s' already exists"
 msgstr "`%s'という名前のスタイルは既に存在しています"
 
-#: ../src/common/styles.c:496 ../src/common/styles.c:573
-#: ../src/common/styles.c:1610 ../src/libs/styles.c:52
+#: ../src/common/styles.c:262 ../src/common/styles.c:1612
+#: ../src/libs/styles.c:52
 msgid "styles"
 msgstr "スタイル"
 
@@ -6507,53 +6506,58 @@ msgstr "スタイル"
 msgid "style named '%s' successfully created"
 msgstr "スタイル'%s'が正常に作成されました"
 
-#: ../src/common/styles.c:631 ../src/common/styles.c:659
-#: ../src/common/styles.c:698 ../src/dtgtk/culling.c:992
+#: ../src/common/styles.c:628 ../src/common/styles.c:656
+#: ../src/common/styles.c:695 ../src/dtgtk/culling.c:992
 msgid "no image selected!"
 msgstr "画像が選択されていません！"
 
-#: ../src/common/styles.c:635
+#: ../src/common/styles.c:632
 #, c-format
 msgid "style %s successfully applied!"
 msgstr "スタイル%sが正常に適用されました！"
 
-#: ../src/common/styles.c:649
+#: ../src/common/styles.c:646
 msgid "no images nor styles selected!"
 msgstr "画像もスタイルも選択されていません！"
 
-#: ../src/common/styles.c:654
+#: ../src/common/styles.c:651
 msgid "no styles selected!"
 msgstr "スタイルが選択されていません！"
 
 # スタイルが正常に適用されました
-#: ../src/common/styles.c:684
+#: ../src/common/styles.c:681
 msgid "style successfully applied!"
 msgid_plural "styles successfully applied!"
 msgstr[0] "スタイルが正常に適用されました"
 msgstr[1] "スタイルが正常に適用されました"
 
-#: ../src/common/styles.c:757
+#: ../src/common/styles.c:754
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "モジュール`%s'のバージョンの不一致：%d != %d"
 
-#: ../src/common/styles.c:1246
+#: ../src/common/styles.c:1004
+#, c-format
+msgid "applied style `%s' on current image"
+msgstr "スタイル`%s'を現在の画像に適用します"
+
+#: ../src/common/styles.c:1248
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "%s にスタイルファイルを上書きすることが出来ませんでした"
 
-#: ../src/common/styles.c:1252
+#: ../src/common/styles.c:1254
 #, c-format
 msgid "style file for %s exists"
 msgstr "%s というスタイルファイルは既に存在しています"
 
-#: ../src/common/styles.c:1504
+#: ../src/common/styles.c:1506
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "スタイル%sが正常にインポートされました"
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1548
+#: ../src/common/styles.c:1550
 #, c-format
 msgid "could not read file `%s'"
 msgstr "ファイル`%s'を読み込むことが出来ませんでした"
@@ -6571,7 +6575,7 @@ msgid "m"
 msgstr "m"
 
 #: ../src/control/control.c:66 ../src/gui/accelerators.c:128
-#: ../src/views/darkroom.c:2077
+#: ../src/views/darkroom.c:2072
 msgid "hold"
 msgstr "長押し"
 
@@ -6962,8 +6966,8 @@ msgstr "GPXファイルを解析することが出来ませんでした"
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
-msgstr[0] "%d 枚の画像に一致するGPX位置情報を適用しました"
-msgstr[1] "%d 枚の画像に一致するGPX位置情報を適用しました"
+msgstr[0] "%d枚の画像に一致するGPX位置情報を適用しました"
+msgstr[1] "%d枚の画像に一致するGPX位置情報を適用しました"
 
 #: ../src/control/jobs/control_jobs.c:1215
 #, c-format
@@ -7023,13 +7027,13 @@ msgid "exporting %d / %d to %s"
 msgstr "%d／%d枚の画像を%sにエクスポートしています"
 
 #: ../src/control/jobs/control_jobs.c:1431 ../src/views/darkroom.c:768
-#: ../src/views/print.c:337
+#: ../src/views/print.c:342
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "画像`%s'は現在使用することが出来ません"
 
 #: ../src/control/jobs/control_jobs.c:1523
-msgid "merge hdr image"
+msgid "merge HDR image"
 msgstr "HDR画像を結合する"
 
 #: ../src/control/jobs/control_jobs.c:1537
@@ -7823,7 +7827,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3132 ../src/iop/toneequal.c:3135
 #: ../src/iop/toneequal.c:3138 ../src/iop/toneequal.c:3141
 #: ../src/iop/toneequal.c:3235 ../src/iop/toneequal.c:3242
-#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2358
+#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2353
 msgid " EV"
 msgstr "EV"
 
@@ -8811,11 +8815,11 @@ msgstr "日付"
 
 #: ../src/dtgtk/range.c:962 ../src/dtgtk/range.c:1028
 msgid ""
-"simple click to select date\n"
-"double click to use the date directly"
+"click to select date\n"
+"double-click to use the date directly"
 msgstr ""
 "クリックすると、日時を選択します\n"
-"ダブルクリックすると、直接日付を使用します"
+"ダブルクリックすると、日付を直接使用します"
 
 #: ../src/dtgtk/range.c:973
 msgid "years: "
@@ -9081,7 +9085,7 @@ msgstr "パン"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5825 ../src/iop/clipping.c:1905
 #: ../src/iop/clipping.c:2097 ../src/iop/clipping.c:2113
-#: ../src/views/darkroom.c:2586 ../src/views/lighttable.c:1250
+#: ../src/views/darkroom.c:2581 ../src/views/lighttable.c:1250
 msgid "horizontal"
 msgstr "水平"
 
@@ -9089,7 +9093,7 @@ msgstr "水平"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5824 ../src/iop/clipping.c:1904
 #: ../src/iop/clipping.c:2098 ../src/iop/clipping.c:2112
-#: ../src/views/darkroom.c:2589 ../src/views/lighttable.c:1254
+#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:1254
 msgid "vertical"
 msgstr "垂直"
 
@@ -9169,10 +9173,10 @@ msgid "first"
 msgstr "最初"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1913
+#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
 #: ../src/libs/filters/rating_range.c:266 ../src/libs/tagging.c:3117
-#: ../src/views/darkroom.c:2274 ../src/views/darkroom.c:2324
-#: ../src/views/darkroom.c:2558
+#: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
+#: ../src/views/darkroom.c:2553
 msgid "toggle"
 msgstr "切り替え"
 
@@ -9685,7 +9689,7 @@ msgstr "%sは割り当てられていません"
 msgid "%s assigned to %s"
 msgstr "%sは%sに割り当てられています"
 
-#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4473
+#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4468
 msgid "darktable - darkroom preview"
 msgstr "darktable - ダークルームプレビュー"
 
@@ -10186,7 +10190,7 @@ msgid "global guide overlay settings"
 msgstr "画像全体のガイド線のオーバーレイの設定"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2558
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2553
 msgid "guide lines"
 msgstr "ガイド線"
 
@@ -10478,7 +10482,7 @@ msgstr "非RAW"
 msgid "raw"
 msgstr "RAW"
 
-#: ../src/gui/presets.c:59
+#: ../src/gui/presets.c:59 ../src/libs/metadata_view.c:334
 msgid "HDR"
 msgstr "HDR"
 
@@ -10767,17 +10771,17 @@ msgstr "新しいスタイルの説明を入力してください。この説明
 msgid "can't create style out of unaltered image"
 msgstr "変更されていない画像からスタイルを作成することは出来ません"
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:80
-#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:546
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "8 bit"
 msgstr "8ビット"
 
-#: ../src/imageio/format/avif.c:93
+#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:552
 msgid "10 bit"
 msgstr "10ビット"
 
-#: ../src/imageio/format/avif.c:97
+#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:552
 msgid "12 bit"
 msgstr "12ビット"
 
@@ -10791,8 +10795,9 @@ msgstr "AVIF"
 
 #. Bit depth combo box
 #: ../src/imageio/format/avif.c:762 ../src/imageio/format/exr.cc:470
-#: ../src/imageio/format/pdf.c:661 ../src/imageio/format/png.c:544
-#: ../src/imageio/format/tiff.c:860 ../src/imageio/format/xcf.c:335
+#: ../src/imageio/format/jxl.c:551 ../src/imageio/format/pdf.c:661
+#: ../src/imageio/format/png.c:544 ../src/imageio/format/tiff.c:860
+#: ../src/imageio/format/xcf.c:335
 msgid "bit depth"
 msgstr "ビット深度"
 
@@ -10845,8 +10850,9 @@ msgstr "画像の圧縮"
 #. default
 #. digits
 #: ../src/imageio/format/avif.c:838 ../src/imageio/format/j2k.c:661
-#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/webp.c:394
-#: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:565
+#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:575
+#: ../src/imageio/format/webp.c:394 ../src/iop/cacorrect.c:1343
+#: ../src/libs/camera.c:565
 msgid "quality"
 msgstr "クオリティ"
 
@@ -10897,8 +10903,8 @@ msgstr "OpenEXR"
 msgid "16 bit (float)"
 msgstr "16ビット（浮動小数点）"
 
-#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/tiff.c:864
-#: ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "32 bit (float)"
 msgstr "32ビット（浮動小数点）"
 
@@ -10979,10 +10985,86 @@ msgstr "Cinema4K, 24FPS"
 msgid "JPEG (8-bit)"
 msgstr "JPEG（8ビット）"
 
-#: ../src/imageio/format/pdf.c:81 ../src/imageio/format/png.c:546
-#: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
+#: ../src/imageio/format/jxl.c:467
+msgid "JPEG XL"
+msgstr "JPEG XL"
+
+#: ../src/imageio/format/jxl.c:552 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
+#: ../src/imageio/format/xcf.c:338
 msgid "16 bit"
 msgstr "16ビット"
+
+#. Pixel format combo box
+#: ../src/imageio/format/jxl.c:558 ../src/imageio/format/tiff.c:869
+msgid "pixel type"
+msgstr "ピクセルタイプ"
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "unsigned integer"
+msgstr "符号なし整数"
+
+#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+msgid "floating point"
+msgstr "浮動小数点"
+
+#: ../src/imageio/format/jxl.c:576
+msgid ""
+"the quality of the output image\n"
+"0-29 = very lossy\n"
+"30-99 = JPEG quality comparable\n"
+"100 = lossless (integer bit depth only)"
+msgstr ""
+"出力画像のクオリティ\n"
+"0-29 = 劣化大\n"
+"30-99 = JPEGクオリティ相当\n"
+"100 = 可逆（整数ビット深度のみ）"
+
+#: ../src/imageio/format/jxl.c:585
+msgid "encoding color profile"
+msgstr "エンコードカラープロファイル"
+
+#: ../src/imageio/format/jxl.c:586
+msgid ""
+"the color profile used by the encoder\n"
+"permit internal XYB color space conversion for more efficient lossy "
+"compression,\n"
+"or ensure no conversion to keep original image color space (implied for "
+"lossless)"
+msgstr ""
+"エンコーダが使用するカラープロファイル\n"
+"効率の良い非可逆圧縮を行うためには内部XYB色空間変換を許可し、\n"
+"（可逆圧縮のために）元の画像の色空間を保持するためには変換を許可しないでくだ"
+"さい"
+
+#: ../src/imageio/format/jxl.c:589
+msgid "internal"
+msgstr "内部"
+
+#: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:358
+#: ../src/libs/history.c:1009 ../src/libs/snapshots.c:634
+msgid "original"
+msgstr "未編集"
+
+#: ../src/imageio/format/jxl.c:603
+msgid "encoding effort"
+msgstr "エンコードエフォート"
+
+#: ../src/imageio/format/jxl.c:604
+msgid ""
+"the effort used to encode the image, higher efforts will have better results "
+"at the expense of longer encoding times"
+msgstr ""
+"画像をエンコードする際のエフォート\n"
+"高い値にすると、良い結果を得ることが出来ますが、エンコード時間が長くなります"
+
+#: ../src/imageio/format/jxl.c:615
+msgid "decoding speed"
+msgstr "デコードの速さ"
+
+#: ../src/imageio/format/jxl.c:616
+msgid "the preferred decoding speed with some sacrifice of quality"
+msgstr "クオリティの犠牲を伴う優先するデコード速度"
 
 #: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:480
 msgid "invalid paper size"
@@ -11179,19 +11261,6 @@ msgstr "グレイスケールの画像としてエクスポート"
 msgid "TIFF"
 msgstr "TIFF"
 
-#. Pixel format combo box
-#: ../src/imageio/format/tiff.c:869
-msgid "pixel type"
-msgstr "ピクセルタイプ"
-
-#: ../src/imageio/format/tiff.c:870
-msgid "unsigned integer"
-msgstr "符号なし整数"
-
-#: ../src/imageio/format/tiff.c:870
-msgid "floating point"
-msgstr "浮動小数点"
-
 #: ../src/imageio/format/tiff.c:885
 msgid "deflate with predictor"
 msgstr "デフレート予測圧縮"
@@ -11223,7 +11292,7 @@ msgstr "非可逆"
 
 #: ../src/imageio/format/webp.c:384
 msgid "lossless"
-msgstr "ロスレス"
+msgstr "可逆"
 
 #: ../src/imageio/format/webp.c:397
 msgid ""
@@ -11242,13 +11311,13 @@ msgstr "画像の特徴"
 #: ../src/imageio/format/webp.c:408
 msgid ""
 "image characteristics hint for the underlying encoder.\n"
-"picture : digital picture, like portrait, inner shot\n"
-"photo   : outdoor photograph, with natural lighting\n"
-"graphic : discrete tone image (graph, map-tile etc)"
+"picture: digital picture, like portrait, inner shot\n"
+"photo: outdoor photograph, with natural lighting\n"
+"graphic: discrete tone image (graph, map-tile etc)"
 msgstr ""
-"エンコーダーのための画像の特徴のヒント\n"
-"画像：デジタル画像。屋内で撮影したもの。例、ポートレート\n"
-"写真：屋外の写真。自然光下で撮影\n"
+"エンコーダのための画像の特徴のヒント\n"
+"画像：デジタル画像。ポートレートのような、屋内で撮影したもの\n"
+"写真：自然光下で撮影した屋外の写真\n"
 "図表： 不連続なトーンの画像 （グラフ、マップタイルなど）"
 
 #: ../src/imageio/format/webp.c:413
@@ -14568,26 +14637,26 @@ msgstr "レンダリングインテント"
 
 #: ../src/iop/colorout.c:858 ../src/libs/export.c:1264
 #: ../src/libs/print_settings.c:2325 ../src/libs/print_settings.c:2646
-#: ../src/views/darkroom.c:2427 ../src/views/lighttable.c:1173
+#: ../src/views/darkroom.c:2422 ../src/views/lighttable.c:1173
 msgid "perceptual"
 msgstr "知覚的"
 
 #: ../src/iop/colorout.c:859 ../src/libs/export.c:1265
 #: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
-#: ../src/views/darkroom.c:2428 ../src/views/lighttable.c:1174
+#: ../src/views/darkroom.c:2423 ../src/views/lighttable.c:1174
 msgid "relative colorimetric"
 msgstr "相対的な色彩を保持"
 
 #: ../src/iop/colorout.c:860 ../src/libs/export.c:1266
 #: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
-#: ../src/views/darkroom.c:2429 ../src/views/lighttable.c:1175
+#: ../src/views/darkroom.c:2424 ../src/views/lighttable.c:1175
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "彩度"
 
 #: ../src/iop/colorout.c:861 ../src/libs/export.c:1267
 #: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
-#: ../src/views/darkroom.c:2430 ../src/views/lighttable.c:1176
+#: ../src/views/darkroom.c:2425 ../src/views/lighttable.c:1176
 msgid "absolute colorimetric"
 msgstr "絶対的な色彩を保持"
 
@@ -14643,11 +14712,11 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "優先される色相トーン"
 
 #: ../src/iop/colorreconstruction.c:1265 ../src/iop/demosaic.c:5472
-#: ../src/iop/highlights.c:2527
+#: ../src/iop/highlights.c:2546
 msgid "not applicable"
 msgstr "適用不可"
 
-#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2528
+#: ../src/iop/colorreconstruction.c:1266 ../src/iop/highlights.c:2547
 msgid "no highlights reconstruction for monochrome images"
 msgstr "モノクロ画像でハイライトの再構成を行うことは出来ません"
 
@@ -15899,7 +15968,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1689 ../src/libs/export.c:1240
 #: ../src/libs/print_settings.c:2323 ../src/libs/print_settings.c:2642
-#: ../src/views/darkroom.c:2433 ../src/views/lighttable.c:1179
+#: ../src/views/darkroom.c:2428 ../src/views/lighttable.c:1179
 msgid "intent"
 msgstr "インテント"
 
@@ -16651,7 +16720,7 @@ msgstr "マゼンタのハイライトを避け、ハイライトの色を復元
 msgid "reconstruction, raw"
 msgstr "再構成、RAW"
 
-#: ../src/iop/highlights.c:2261
+#: ../src/iop/highlights.c:2280
 msgid ""
 "highlights: mode not available for this type of image. falling back to "
 "inpaint opposed."
@@ -16659,11 +16728,11 @@ msgstr ""
 "ハイライト：このタイプの画像にこのモードは使用出来ません。'反対を修復'に戻り"
 "ます"
 
-#: ../src/iop/highlights.c:2460
+#: ../src/iop/highlights.c:2479
 msgid "highlight reconstruction method"
 msgstr "ハイライトの再構成の方式"
 
-#: ../src/iop/highlights.c:2465
+#: ../src/iop/highlights.c:2484
 msgid ""
 "manually adjust the clipping threshold mostly used against magenta "
 "highlights\n"
@@ -16679,7 +16748,7 @@ msgstr ""
 "'ラプラシアン'、'反対を修復'、'セグメンテーション'モードで使用することをおす"
 "すめします"
 
-#: ../src/iop/highlights.c:2476
+#: ../src/iop/highlights.c:2495
 msgid ""
 "combine closely related clipped segments by morphological operations.\n"
 "the mask button shows the exact positions of resulting segment borders."
@@ -16688,7 +16757,7 @@ msgstr ""
 "合します\n"
 "マスクボタンをクリックすると、結果のセグメントの境界の正確な位置を表示します"
 
-#: ../src/iop/highlights.c:2484
+#: ../src/iop/highlights.c:2503
 msgid ""
 "select inpainting after segmentation analysis.\n"
 "increase to favour candidates found in segmentation analysis, decrease for "
@@ -16701,7 +16770,7 @@ msgstr ""
 "マスクボタンをクリックすると、良好な候補を得られると考えられるセグメントを表"
 "示します"
 
-#: ../src/iop/highlights.c:2495
+#: ../src/iop/highlights.c:2514
 msgid ""
 "approximate lost data in regions with all photosites clipped, the effect "
 "depends on segment size and border gradients.\n"
@@ -16720,7 +16789,7 @@ msgstr ""
 "'フラット'モードではクリップしていない細かい領域（電線のような）を無視してハ"
 "イライトの再構成を保持し、グラデーションを避けます"
 
-#: ../src/iop/highlights.c:2501
+#: ../src/iop/highlights.c:2520
 msgid ""
 "set strength of rebuilding in regions with all photosites clipped.\n"
 "the mask buttons shows the effect that is added to already reconstructed "
@@ -16729,7 +16798,7 @@ msgstr ""
 "全てのフォトサイトがクリップした領域における再構成の強さを設定します\n"
 "マスクボタンをクリックすると、再構成済みのデータに加えられる効果を表示します"
 
-#: ../src/iop/highlights.c:2511
+#: ../src/iop/highlights.c:2530
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -16738,7 +16807,7 @@ msgstr ""
 "ます\n"
 "高ISOで有用です"
 
-#: ../src/iop/highlights.c:2515
+#: ../src/iop/highlights.c:2534
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16746,7 +16815,7 @@ msgstr ""
 "マゼンタのハイライトが十分補正されない場合、値を上げてください\n"
 "反復を増やすたびにパフォーマンスに悪影響があります"
 
-#: ../src/iop/highlights.c:2520
+#: ../src/iop/highlights.c:2539
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -16755,7 +16824,7 @@ msgstr ""
 "これにより、正常な領域とクリップした領域の境界が滑らかでなくなることがありま"
 "す"
 
-#: ../src/iop/highlights.c:2524
+#: ../src/iop/highlights.c:2543
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17811,9 +17880,9 @@ msgstr "色の平滑化の度合い"
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2324
-#: ../src/views/darkroom.c:2342 ../src/views/darkroom.c:2349
-#: ../src/views/darkroom.c:2359 ../src/views/darkroom.c:2376
+#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2319
+#: ../src/views/darkroom.c:2337 ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2354 ../src/views/darkroom.c:2371
 msgid "overexposed"
 msgstr "露出過多"
 
@@ -17920,9 +17989,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2274
-#: ../src/views/darkroom.c:2292 ../src/views/darkroom.c:2298
-#: ../src/views/darkroom.c:2311
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2269
+#: ../src/views/darkroom.c:2287 ../src/views/darkroom.c:2293
+#: ../src/views/darkroom.c:2306
 msgid "raw overexposed"
 msgstr "RAW露出過多"
 
@@ -17991,7 +18060,7 @@ msgstr ""
 "RAWのブラック／ホワイトポイントの補正\n"
 "処理が必要なセンサーに対してのみ動作"
 
-#: ../src/iop/rcd_demosaic.c:310
+#: ../src/iop/rcd_demosaic.c:304
 msgid "[rcd_demosaic] too small area"
 msgstr "【rcd_demosaic】領域が小さすぎます"
 
@@ -19772,7 +19841,7 @@ msgstr "または"
 msgid "BUT NOT"
 msgstr "のぞく"
 
-#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2188
+#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:2197
 msgid "revert to a previous set of rules"
 msgstr "以前のルールに戻します"
 
@@ -19965,11 +20034,6 @@ msgstr "XMPサイドカーファイルに履歴スタックとタグを書き込
 #: ../src/libs/duplicate.c:56
 msgid "duplicate manager"
 msgstr "複製マネージャー"
-
-#: ../src/libs/duplicate.c:358 ../src/libs/history.c:1009
-#: ../src/libs/snapshots.c:634
-msgid "original"
-msgstr "オリジナル"
 
 #: ../src/libs/duplicate.c:359
 msgid "create a 'virgin' duplicate of the image without any development"
@@ -20454,73 +20518,77 @@ msgstr "このルールと先行するルールとの関係を定義します"
 msgid " (off)"
 msgstr " (off)"
 
+#: ../src/libs/filtering.c:1641
+msgid "you can't add more rules."
+msgstr "これ以上ルールを追加することは出来ません"
+
 #. fill the popover with all pinned rules
-#: ../src/libs/filtering.c:1666
+#: ../src/libs/filtering.c:1674
 msgid "shown filters"
 msgstr "表示するフィルタ"
 
-#: ../src/libs/filtering.c:1680
+#: ../src/libs/filtering.c:1689
 msgid "new filter"
 msgstr "新しいフィルタ"
 
-#: ../src/libs/filtering.c:1855
+#: ../src/libs/filtering.c:1864
 msgid "sort order"
 msgstr "並び順"
 
-#: ../src/libs/filtering.c:1857
+#: ../src/libs/filtering.c:1866
 msgid "determine the sort order of shown images"
 msgstr "表示画像の並び順を定義します"
 
-#: ../src/libs/filtering.c:1914
+#: ../src/libs/filtering.c:1923
 msgid "sort direction"
 msgstr "並び順 向き"
 
-#: ../src/libs/filtering.c:1920
+#: ../src/libs/filtering.c:1929
 msgid "remove this sort order"
 msgstr "この並び順を削除します"
 
-#: ../src/libs/filtering.c:2004
+#: ../src/libs/filtering.c:2013
 #, c-format
 msgid "you can't have more than %d sort orders"
 msgstr "%d個以上の並び順を設定することは出来ません"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "DESC"
 msgstr "DESC"
 
-#: ../src/libs/filtering.c:2073
+#: ../src/libs/filtering.c:2082
 msgid "ASC"
 msgstr "ASC"
 
-#: ../src/libs/filtering.c:2184
+#: ../src/libs/filtering.c:2193
 msgid "new rule"
 msgstr "新しいルール"
 
-#: ../src/libs/filtering.c:2185
+#: ../src/libs/filtering.c:2194
 msgid "append new rule to collect images"
 msgstr "画像を集めるための新しいルールを追加します"
 
-#: ../src/libs/filtering.c:2196 ../src/libs/tools/filter.c:117
+#: ../src/libs/filtering.c:2205 ../src/libs/tools/filter.c:117
 msgid "sort by"
 msgstr "並び順"
 
-#: ../src/libs/filtering.c:2204
+#: ../src/libs/filtering.c:2213
 msgid "new sort"
 msgstr "新しい並び順"
 
-#: ../src/libs/filtering.c:2205
+#: ../src/libs/filtering.c:2214
 msgid "append new sort to order images"
 msgstr "画像の新しい並び順を追加します"
 
-#: ../src/libs/filtering.c:2208
+#: ../src/libs/filtering.c:2217
 msgid "revert to a previous set of sort orders"
 msgstr "以前の並び順に戻します"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2258
+#: ../src/libs/filtering.c:2267
 msgid ""
 "reset\n"
-"ctrl-click to remove pinned rules too"
+"ctrl+click to remove pinned rules too"
 msgstr ""
 "リセット\n"
 "Ctrl+クリックすると、ピン留めされたルールも削除します"
@@ -20595,16 +20663,16 @@ msgstr ""
 
 #: ../src/libs/filters/filename.c:405
 msgid ""
-"simple click to select filename\n"
-"ctrl-click to select multiple values"
+"click to select filename\n"
+"ctrl+click to select multiple values"
 msgstr ""
 "クリックすると、ファイル名を選択します\n"
 "Ctrl+クリックすると、複数の値を選択します"
 
 #: ../src/libs/filters/filename.c:432
 msgid ""
-"simple click to select extension\n"
-"ctrl-click to select multiple values"
+"click to select extension\n"
+"ctrl+click to select multiple values"
 msgstr ""
 "クリックすると、拡張子を選択します\n"
 "Ctrl+クリックすると、複数の値を選択します"
@@ -20794,7 +20862,7 @@ msgid "open GPX file"
 msgstr "GPXファイルを開いてください"
 
 #. Preview key
-#: ../src/libs/geotagging.c:928 ../src/views/darkroom.c:2144
+#: ../src/libs/geotagging.c:928 ../src/views/darkroom.c:2139
 #: ../src/views/lighttable.c:650 ../src/views/lighttable.c:1266
 msgid "preview"
 msgstr "プレビュー"
@@ -20920,7 +20988,7 @@ msgstr "Ctrl+スクロールでディスプレイの高さを変更します"
 #: ../src/libs/histogram.c:1314
 msgid ""
 "drag to change black point,\n"
-"doubleclick resets\n"
+"double-click resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 "ドラッグでブラックポイント変更します\n"
@@ -20930,7 +20998,7 @@ msgstr ""
 #: ../src/libs/histogram.c:1319
 msgid ""
 "drag to change exposure,\n"
-"doubleclick resets\n"
+"double-click resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 "ドラッグで露出を変更します\n"
@@ -21329,8 +21397,8 @@ msgstr "カメラをマウント"
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
-msgstr[0] "%d枚の画像のうち%d枚が選択されています"
-msgstr[1] "%d枚の画像のうち%d枚が選択されています"
+msgstr[0] "%d枚の画像が%d枚のなかから選択されています"
+msgstr[1] "%d枚の画像が%d枚のなかから選択されています"
 
 #: ../src/libs/import.c:1030
 msgid "you can't delete the selected place"
@@ -21665,13 +21733,13 @@ msgid ""
 " - wheel scroll inside the shape to resize it\n"
 " - <shift> or <ctrl> scroll to modify the width or the height\n"
 " - click inside the shape and drag it to change its position\n"
-" - ctrl-click to move an image from inside the location\n"
-"ctrl-click to edit a location name\n"
+" - ctrl+click to move an image from inside the location\n"
+"ctrl+click to edit a location name\n"
 " - a pipe '|' symbol breaks the name into several levels\n"
 " - to remove a group of locations clear its name\n"
 " - press enter to validate the new name, escape to cancel the edit\n"
 "right-click for other actions: delete location and go to collection,\n"
-"ctrl-wheel scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr ""
 "ユーザーのロケーションのリスト\n"
 "クリックすると、地図上のロケーションの表示／非表示を切り替えます\n"
@@ -21824,7 +21892,7 @@ msgstr ""
 
 #: ../src/libs/metadata.c:781
 msgid ""
-"metadata text. ctrl-wheel scroll to resize the text box\n"
+"metadata text. ctrl+scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
 "metadata).\n"
 "if <leave unchanged> selected images have different metadata.\n"
@@ -21966,12 +22034,8 @@ msgid "unused/deprecated"
 msgstr "未使用／非推奨"
 
 #: ../src/libs/metadata_view.c:332
-msgid "ldr"
-msgstr "ldr"
-
-#: ../src/libs/metadata_view.c:334
-msgid "hdr"
-msgstr "hdr"
+msgid "LDR"
+msgstr "LDR"
 
 #: ../src/libs/metadata_view.c:335
 msgid "marked for deletion"
@@ -22654,7 +22718,7 @@ msgstr "新しい画像エリア"
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
-"drag&drop image from film strip on it"
+"drag and drop image from film strip on it"
 msgstr ""
 "ページに新しい画像エリアを追加します\n"
 "ページ上でクリック＆ドラッグして領域を配置し、\n"
@@ -22827,7 +22891,7 @@ msgstr "darktableスタイルファイル"
 #: ../src/libs/styles.c:803
 msgid ""
 "available styles,\n"
-"doubleclick to apply"
+"double-click to apply"
 msgstr ""
 "使用可能なスタイル\n"
 "ダブルクリックすると、適用します"
@@ -23093,7 +23157,7 @@ msgid ""
 "press Delete or double-click to detach\n"
 "right-click for other actions on attached tag,\n"
 "press Tab to give the focus to entry,\n"
-"ctrl-wheel scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr ""
 "添付済みタグ\n"
 "Deleteキーを押す、またはダブルクリックすると、タグを外します\n"
@@ -23165,7 +23229,7 @@ msgid ""
 "shift+click to fully expand the selected tag,\n"
 "right-click for other actions on selected tag,\n"
 "press shift+Tab to give the focus to entry,\n"
-"ctrl-scroll to resize the window"
+"ctrl+scroll to resize the window"
 msgstr ""
 "タグのディクショナリー\n"
 "Enterキーを押す、またはダブルクリックすると、選択した画像に選択したタグを付け"
@@ -23683,7 +23747,8 @@ msgid "viewswitcher"
 msgstr "ビュー切り替え"
 
 #: ../src/lua/preferences.c:655 ../src/lua/preferences.c:670
-#: ../src/lua/preferences.c:694 ../src/lua/preferences.c:774
+#: ../src/lua/preferences.c:682 ../src/lua/preferences.c:694
+#: ../src/lua/preferences.c:710 ../src/lua/preferences.c:774
 #, c-format
 msgid "double-click to reset to `%s'"
 msgstr "ダブルクリックすると、`%s'にリセットします"
@@ -23699,8 +23764,8 @@ msgstr "ダブルクリックすると、 `%d'にリセットします"
 
 #: ../src/lua/preferences.c:760
 #, c-format
-msgid "double click to reset to `%f'"
-msgstr "ダブルクリックすると、`%f'にリセット"
+msgid "double-click to reset to `%f'"
+msgstr "ダブルクリックすると、`%f'にリセットします"
 
 #: ../src/lua/preferences.c:836
 msgid "lua options"
@@ -23735,7 +23800,7 @@ msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "`%s'を読み込んでいます..."
 
-#: ../src/views/darkroom.c:717 ../src/views/darkroom.c:2401
+#: ../src/views/darkroom.c:717 ../src/views/darkroom.c:2396
 msgid "gamut check"
 msgstr "色域の確認"
 
@@ -23744,7 +23809,7 @@ msgid "soft proof"
 msgstr "ソフトプルーフ"
 
 #. fail :(
-#: ../src/views/darkroom.c:755 ../src/views/print.c:324
+#: ../src/views/darkroom.c:755 ../src/views/print.c:329
 msgid "no image to open!"
 msgstr "開く画像がありません！"
 
@@ -23752,40 +23817,35 @@ msgstr "開く画像がありません！"
 msgid "no userdefined presets for favorite modules were found"
 msgstr "お気に入りのモジュールのユーザ定義プリセットが見つかりませんでした"
 
-#: ../src/views/darkroom.c:1299
-#, c-format
-msgid "applied style `%s' on current image"
-msgstr "スタイル`%s'を現在の画像に適用します"
-
-#: ../src/views/darkroom.c:1422
+#: ../src/views/darkroom.c:1417
 msgid "no styles have been created yet"
 msgstr "スタイルはまだ作成されていません"
 
-#: ../src/views/darkroom.c:2238
+#: ../src/views/darkroom.c:2233
 msgid "quick access to presets"
 msgstr "プリセットに素早くアクセスします"
 
-#: ../src/views/darkroom.c:2247
+#: ../src/views/darkroom.c:2242
 msgid "quick access for applying any of your styles"
 msgstr "スタイルの適用に素早くアクセスします"
 
-#: ../src/views/darkroom.c:2253
+#: ../src/views/darkroom.c:2248
 msgid "second window"
 msgstr "第2ウィンドウ"
 
-#: ../src/views/darkroom.c:2256
+#: ../src/views/darkroom.c:2251
 msgid "display a second darkroom image window"
 msgstr "2つ目のdarkroom画像ウィンドウを表示します"
 
-#: ../src/views/darkroom.c:2261
+#: ../src/views/darkroom.c:2256
 msgid "color assessment"
 msgstr "色の評価"
 
-#: ../src/views/darkroom.c:2264
+#: ../src/views/darkroom.c:2259
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "ISO 12646色評価条件の表示／非表示を切り替えます"
 
-#: ../src/views/darkroom.c:2277
+#: ../src/views/darkroom.c:2272
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -23793,27 +23853,27 @@ msgstr ""
 "RAW露出過多インジケータのオン／オフを切り替えます\n"
 "右クリックでオプション"
 
-#: ../src/views/darkroom.c:2293
+#: ../src/views/darkroom.c:2288
 msgid "select how to mark the clipped pixels"
 msgstr "クリップしたピクセルをマークする方法を選択してください"
 
-#: ../src/views/darkroom.c:2295
+#: ../src/views/darkroom.c:2290
 msgid "mark with CFA color"
 msgstr "色フィルタアレイの色でマーク"
 
-#: ../src/views/darkroom.c:2295
+#: ../src/views/darkroom.c:2290
 msgid "mark with solid color"
 msgstr "単色でマーク"
 
-#: ../src/views/darkroom.c:2295
+#: ../src/views/darkroom.c:2290
 msgid "false color"
 msgstr "偽色"
 
-#: ../src/views/darkroom.c:2298 ../src/views/darkroom.c:2349
+#: ../src/views/darkroom.c:2293 ../src/views/darkroom.c:2344
 msgid "color scheme"
 msgstr "色"
 
-#: ../src/views/darkroom.c:2299
+#: ../src/views/darkroom.c:2294
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -23821,27 +23881,27 @@ msgstr ""
 "露出過多を示す色を選択してください\n"
 "単色でマークを選択している時のみ使用されます"
 
-#: ../src/views/darkroom.c:2302
+#: ../src/views/darkroom.c:2297
 msgctxt "solidcolor"
 msgid "red"
 msgstr "赤"
 
-#: ../src/views/darkroom.c:2303
+#: ../src/views/darkroom.c:2298
 msgctxt "solidcolor"
 msgid "green"
 msgstr "緑"
 
-#: ../src/views/darkroom.c:2304
+#: ../src/views/darkroom.c:2299
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "青"
 
-#: ../src/views/darkroom.c:2305
+#: ../src/views/darkroom.c:2300
 msgctxt "solidcolor"
 msgid "black"
 msgstr "黒"
 
-#: ../src/views/darkroom.c:2313
+#: ../src/views/darkroom.c:2308
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -23851,7 +23911,7 @@ msgstr ""
 "1.0：白レベル\n"
 "0.0：黒レベル"
 
-#: ../src/views/darkroom.c:2327
+#: ../src/views/darkroom.c:2322
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -23859,11 +23919,11 @@ msgstr ""
 "クリッピングインジケータのオン／オフを切り替えます\n"
 "右クリックでオプション"
 
-#: ../src/views/darkroom.c:2342
+#: ../src/views/darkroom.c:2337
 msgid "clipping preview mode"
 msgstr "クリッピングプレビューのモード"
 
-#: ../src/views/darkroom.c:2343
+#: ../src/views/darkroom.c:2338
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -23871,43 +23931,43 @@ msgstr ""
 "プレビューの測定基準を選択してください\n"
 "'全て'は他のモード全ての組み合わせです"
 
-#: ../src/views/darkroom.c:2345
+#: ../src/views/darkroom.c:2340
 msgid "full gamut"
 msgstr "全て"
 
-#: ../src/views/darkroom.c:2345
+#: ../src/views/darkroom.c:2340
 msgid "any RGB channel"
 msgstr "RGBチャンネル"
 
-#: ../src/views/darkroom.c:2345
+#: ../src/views/darkroom.c:2340
 msgid "luminance only"
 msgstr "輝度のみ"
 
-#: ../src/views/darkroom.c:2345
+#: ../src/views/darkroom.c:2340
 msgid "saturation only"
 msgstr "彩度のみ"
 
-#: ../src/views/darkroom.c:2350
+#: ../src/views/darkroom.c:2345
 msgid "select colors to indicate clipping"
 msgstr "クリッピングを示す色を選択してください"
 
-#: ../src/views/darkroom.c:2352
+#: ../src/views/darkroom.c:2347
 msgid "black & white"
 msgstr "白黒"
 
-#: ../src/views/darkroom.c:2352
+#: ../src/views/darkroom.c:2347
 msgid "red & blue"
 msgstr "赤＆青"
 
-#: ../src/views/darkroom.c:2352
+#: ../src/views/darkroom.c:2347
 msgid "purple & green"
 msgstr "紫＆緑"
 
-#: ../src/views/darkroom.c:2359
+#: ../src/views/darkroom.c:2354
 msgid "lower threshold"
 msgstr "黒のしきい値"
 
-#: ../src/views/darkroom.c:2360
+#: ../src/views/darkroom.c:2355
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -23927,11 +23987,11 @@ msgstr ""
 "典型的なカラーの高光沢プリントの黒は-8.00EVです\n"
 "典型的な白黒の高光沢プリントの黒は-9.00EVです"
 
-#: ../src/views/darkroom.c:2376
+#: ../src/views/darkroom.c:2371
 msgid "upper threshold"
 msgstr "白のしきい値"
 
-#: ../src/views/darkroom.c:2378
+#: ../src/views/darkroom.c:2373
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -23940,11 +24000,11 @@ msgstr ""
 "ホワイトポイントのクリッピングしきい値\n"
 "100%は媒体のピーク輝度です"
 
-#: ../src/views/darkroom.c:2390
+#: ../src/views/darkroom.c:2385
 msgid "softproof"
 msgstr "ソフトプルーフ"
 
-#: ../src/views/darkroom.c:2393
+#: ../src/views/darkroom.c:2388
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -23952,7 +24012,7 @@ msgstr ""
 "ソフトプルーフのオン／オフを切り替えます\n"
 "右クリックでプロファイルオプション"
 
-#: ../src/views/darkroom.c:2404
+#: ../src/views/darkroom.c:2399
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -23960,51 +24020,51 @@ msgstr ""
 "色域のチェックのオン／オフを切り替えます\n"
 "右クリックでプロファイルオプション"
 
-#: ../src/views/darkroom.c:2433 ../src/views/darkroom.c:2435
-#: ../src/views/darkroom.c:2449 ../src/views/darkroom.c:2450
-#: ../src/views/darkroom.c:2451 ../src/views/darkroom.c:2452
+#: ../src/views/darkroom.c:2428 ../src/views/darkroom.c:2430
+#: ../src/views/darkroom.c:2444 ../src/views/darkroom.c:2445
+#: ../src/views/darkroom.c:2446 ../src/views/darkroom.c:2447
 #: ../src/views/lighttable.c:1179 ../src/views/lighttable.c:1181
 msgid "profiles"
 msgstr "プロファイル"
 
-#: ../src/views/darkroom.c:2435 ../src/views/lighttable.c:1181
+#: ../src/views/darkroom.c:2430 ../src/views/lighttable.c:1181
 msgid "preview intent"
 msgstr "プレビューのインテント"
 
-#: ../src/views/darkroom.c:2449 ../src/views/lighttable.c:1185
+#: ../src/views/darkroom.c:2444 ../src/views/lighttable.c:1185
 msgid "display profile"
 msgstr "ディスプレイプロファイル"
 
-#: ../src/views/darkroom.c:2450 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2445 ../src/views/lighttable.c:1188
 msgid "preview display profile"
 msgstr "プレビューのディスプレイプロファイル"
 
-#: ../src/views/darkroom.c:2452
+#: ../src/views/darkroom.c:2447
 msgid "histogram profile"
 msgstr "ヒストグラムのプロファイル"
 
-#: ../src/views/darkroom.c:2516 ../src/views/lighttable.c:1224
+#: ../src/views/darkroom.c:2511 ../src/views/lighttable.c:1224
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "%sまたは%s内のディスプレイICCプロファイル"
 
 # を %s または %s 内のプレビュー用ディスプレイICCプロファイル
-#: ../src/views/darkroom.c:2519 ../src/views/lighttable.c:1227
+#: ../src/views/darkroom.c:2514 ../src/views/lighttable.c:1227
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "%sまたは%s内のプレビュー用ディスプレイICCプロファイル"
 
-#: ../src/views/darkroom.c:2522
+#: ../src/views/darkroom.c:2517
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "%sまたは%s内のソフトプルーフ用ICCプロファイル"
 
-#: ../src/views/darkroom.c:2525
+#: ../src/views/darkroom.c:2520
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "%sまたは%s内のヒストグラムおよびカラーピッカー用ICCプロファイル"
 
-#: ../src/views/darkroom.c:2561
+#: ../src/views/darkroom.c:2556
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -24013,145 +24073,145 @@ msgstr ""
 "右クリックでガイド線のオプション"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2578
+#: ../src/views/darkroom.c:2573
 msgid "full preview"
 msgstr "フルプレビュー"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2582
+#: ../src/views/darkroom.c:2577
 msgid "force pan & zoom with mouse"
 msgstr "マウスによるパンとズームを強制"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2594
+#: ../src/views/darkroom.c:2589
 msgid "zoom close-up"
 msgstr "ズーム クローズアップ"
 
-#: ../src/views/darkroom.c:2595
+#: ../src/views/darkroom.c:2590
 msgid "zoom fill"
 msgstr "ズーム 画面を満たす"
 
-#: ../src/views/darkroom.c:2596
+#: ../src/views/darkroom.c:2591
 msgid "zoom fit"
 msgstr "ズーム 画面に合わせる"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2599 ../src/views/lighttable.c:1284
+#: ../src/views/darkroom.c:2594 ../src/views/lighttable.c:1284
 msgid "zoom in"
 msgstr "ズームイン"
 
-#: ../src/views/darkroom.c:2600 ../src/views/lighttable.c:1286
+#: ../src/views/darkroom.c:2595 ../src/views/lighttable.c:1286
 msgid "zoom out"
 msgstr "ズームアウト"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2603
+#: ../src/views/darkroom.c:2598
 msgid "image forward"
 msgstr "次の画像"
 
-#: ../src/views/darkroom.c:2604
+#: ../src/views/darkroom.c:2599
 msgid "image back"
 msgstr "前の画像"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2607
+#: ../src/views/darkroom.c:2602
 msgid "cycle overlay colors"
 msgstr "オーバーレイの色を変更"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2610
+#: ../src/views/darkroom.c:2605
 msgid "show drawn masks"
 msgstr "描画マスクを表示"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2613
+#: ../src/views/darkroom.c:2608
 msgid "increase brush size"
 msgstr "ブラシサイズを大きくする"
 
-#: ../src/views/darkroom.c:2614
+#: ../src/views/darkroom.c:2609
 msgid "decrease brush size"
 msgstr "ブラシサイズを小さくする"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2617
+#: ../src/views/darkroom.c:2612
 msgid "increase brush hardness"
 msgstr "ブラシの硬さを上げる"
 
-#: ../src/views/darkroom.c:2618
+#: ../src/views/darkroom.c:2613
 msgid "decrease brush hardness"
 msgstr "ブラシの硬さを下げる"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2621
+#: ../src/views/darkroom.c:2616
 msgid "increase brush opacity"
 msgstr "ブラシの不透明度を上げる"
 
-#: ../src/views/darkroom.c:2622
+#: ../src/views/darkroom.c:2617
 msgid "decrease brush opacity"
 msgstr "ブラシの不透明度を下げる"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2625 ../src/views/lighttable.c:1276
+#: ../src/views/darkroom.c:2620 ../src/views/lighttable.c:1276
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "取り消す"
 
-#: ../src/views/darkroom.c:2626 ../src/views/lighttable.c:1277
+#: ../src/views/darkroom.c:2621 ../src/views/lighttable.c:1277
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "やり直す"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2629
+#: ../src/views/darkroom.c:2624
 msgid "change keyboard shortcut slider precision"
 msgstr "キーボードショートカットのスライダーの精度を変更"
 
-#: ../src/views/darkroom.c:3810
+#: ../src/views/darkroom.c:3805
 msgid "keyboard shortcut slider precision: fine"
 msgstr "キーボードショートカットのスライダーの精度：細かい"
 
-#: ../src/views/darkroom.c:3812
+#: ../src/views/darkroom.c:3807
 msgid "keyboard shortcut slider precision: normal"
 msgstr "キーボードショートカットのスライダーの精度：通常"
 
-#: ../src/views/darkroom.c:3814
+#: ../src/views/darkroom.c:3809
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "キーボードショートカットのスライダーの精度：粗い"
 
-#: ../src/views/darkroom.c:3830
+#: ../src/views/darkroom.c:3825
 msgid "switch to lighttable"
 msgstr "ライトテーブルに切り替える"
 
-#: ../src/views/darkroom.c:3831 ../src/views/lighttable.c:878
+#: ../src/views/darkroom.c:3826 ../src/views/lighttable.c:878
 msgid "zoom in the image"
 msgstr "画像をズーム"
 
-#: ../src/views/darkroom.c:3832
+#: ../src/views/darkroom.c:3827
 msgid "unbounded zoom in the image"
 msgstr "画像を無制限にズーム"
 
-#: ../src/views/darkroom.c:3833
+#: ../src/views/darkroom.c:3828
 msgid "zoom to 100% 200% and back"
 msgstr "100%、200% にズームして戻る"
 
-#: ../src/views/darkroom.c:3834 ../src/views/lighttable.c:881
+#: ../src/views/darkroom.c:3829 ../src/views/lighttable.c:881
 msgid "pan a zoomed image"
 msgstr "ズームした画像をパンする"
 
-#: ../src/views/darkroom.c:3836 ../src/views/lighttable.c:923
+#: ../src/views/darkroom.c:3831 ../src/views/lighttable.c:923
 msgid "[modules] expand module without closing others"
 msgstr "【モジュール】他のモジュールを閉じずに、モジュールを展開する"
 
-#: ../src/views/darkroom.c:3837 ../src/views/lighttable.c:924
+#: ../src/views/darkroom.c:3832 ../src/views/lighttable.c:924
 msgid "[modules] expand module and close others"
 msgstr "【モジュール】モジュールを展開し、その他のモジュールを閉じる"
 
-#: ../src/views/darkroom.c:3839
+#: ../src/views/darkroom.c:3834
 msgid "[modules] rename module"
 msgstr "【モジュール】モジュールの名前を変更する"
 
-#: ../src/views/darkroom.c:3841
+#: ../src/views/darkroom.c:3836
 msgid "[modules] change module position in pipe"
 msgstr "【モジュール】モジュールのパイプ内の位置を変更する"
 
@@ -24193,8 +24253,8 @@ msgid "select range from last image"
 msgstr "最後の画像から範囲を選択"
 
 #: ../src/views/lighttable.c:894
-msgid "add image to selection or remove"
-msgstr "画像を選択に追加または除去"
+msgid "add image to or remove it from a selection"
+msgstr "セクションに画像を追加または除去する"
 
 #: ../src/views/lighttable.c:898
 msgid "change image order"
@@ -24402,6 +24462,19 @@ msgstr "キーを離した後も開いたままになる、クラシックウィ
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "マウスアクション"
+
+#~ msgid "ldr"
+#~ msgstr "ldr"
+
+#~ msgid "hdr"
+#~ msgstr "hdr"
+
+#, c-format
+#~ msgid "double click to reset to `%f'"
+#~ msgstr "ダブルクリックすると、`%f'にリセット"
+
+#~ msgid "add image to selection or remove"
+#~ msgstr "画像を選択に追加または除去"
 
 #~ msgid "demosaicing method"
 #~ msgstr "デモザイク方式"

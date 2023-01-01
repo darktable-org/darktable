@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-30 11:59+0100\n"
-"PO-Revision-Date: 2022-12-07 10:08+0800\n"
+"PO-Revision-Date: 2022-12-14 10:37+0800\n"
 "Last-Translator: Hsu Kang-Wei <beblue.shi@gmail.com>\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -1011,8 +1011,7 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"顯示未經解馬賽克處理的影像縮圖時，如果縮圖尺寸大於設定值，則處理 RAW 檔生成縮"
-"圖\n"
+"顯示未經處理的影像縮圖時，如果縮圖尺寸大於設定值，則處理 RAW 檔生成縮圖\n"
 "如果縮圖低於設定值，則使用嵌入在 RAW 檔裡的 JPEG 預覽圖\n"
 "經過暗房（Darkroom）編輯處理的影像，預設皆使用 RAW 檔生成的縮圖\n"
 "若希望所有縮圖和放大顯示都有最佳品質，應選擇「一律」"
@@ -19478,7 +19477,7 @@ msgid ""
 "disabled"
 msgstr ""
 "⚠️ 錯誤 ⚠️\n"
-"「階調等化器」模組必須在變形模組之後執行"
+"「階調等化器」模組必須在變形模組之後執行，已自動停用"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
 #: ../src/iop/toneequal.c:920
@@ -20005,8 +20004,8 @@ msgid ""
 msgstr ""
 "亮度分區\n"
 "使用滑鼠滾輪更改區域數量\n"
-"左鍵點擊邊框以建立標籤\n"
-"右鍵點擊標籤以將它刪除"
+"左鍵點擊邊框以建立標記\n"
+"右鍵點擊標記可將其刪除"
 
 #: ../src/libs/backgroundjobs.c:52
 msgid "background jobs"
@@ -20092,7 +20091,7 @@ msgid ""
 "(brackets*2) + 1"
 msgstr ""
 "包圍曝光每側的拍攝數量\n"
-"總影像數量為包圍曝光數量 x2+1"
+"總影像數量 = 包圍曝光數量 x2+1"
 
 #: ../src/libs/camera.c:472
 msgid ""
@@ -21868,7 +21867,7 @@ msgstr "合併"
 #: ../src/libs/image.c:607
 msgid "update image information to match changes to file"
 msgstr ""
-"讀取影像中的 EXIF 資料\n"
+"重新讀取影像中的 EXIF 資料\n"
 "⚠️ 警告：這可能會覆蓋 darktable 中更改的標籤和詮釋資料 ⚠️"
 
 #: ../src/libs/image.c:611
@@ -22391,6 +22390,7 @@ msgid ""
 "it will be also exported"
 msgstr ""
 "勾選要顯示的詮釋資料欄位\n"
+"此設定會套用至「詮釋資料編輯器」、「相冊」、「影像匯入」模組\n"
 "欄位同時也會包含在匯出的檔案中"
 
 #: ../src/libs/metadata.c:631 ../src/libs/tagging.c:1679
@@ -22616,7 +22616,7 @@ msgid ""
 msgstr ""
 "拖曳以重新排列顯示順序\n"
 "取消勾選可隱藏不希望顯示的詮釋資料\n"
-"可儲存成不同設定的預設集"
+"可將不同的設定儲存成預設集來調用"
 
 #: ../src/libs/metadata_view.c:1387
 msgid "jump to film roll"
@@ -22670,7 +22670,7 @@ msgstr "開 / 關"
 msgid ""
 "this quick access widget is disabled as there are multiple instances of this "
 "module present. Please use the full module to access this widget..."
-msgstr "此快速存取小工具被停用，因為此模組有的多個實例，請使用完整的模組"
+msgstr "此快速存取小工具被停用，因為此模組有多個實例，請使用完整的模組"
 
 #: ../src/libs/modulegroups.c:593
 msgid "(some features may only be available in the full module interface)"
@@ -23007,7 +23007,7 @@ msgstr "新增模組群組"
 #: ../src/libs/modulegroups.c:3946
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
-msgstr "唯讀的內建模組布局，想進行更改請複製另存為新布局"
+msgstr "這是唯讀的模組內建預設集，想進行更改請複製另存為新預設集"
 
 #: ../src/libs/navigation.c:62
 msgid "navigation"
