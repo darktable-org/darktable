@@ -3046,6 +3046,53 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/show_color_harmony</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/harmony_type</name>
+    <type>
+      <enum>
+		<option>monochromatic</option>
+		<option>analogous</option>
+		<option>analogous complementary</option>
+		<option>complementary</option>
+		<option>split complementary</option>
+		<option>dyad</option>
+		<option>triad</option>
+		<option>tetrad</option>
+		<option>square</option>
+      </enum>
+    </type>
+    <default>complementary</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/harmony_rotation</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/harmony_width</name>
+    <type>
+      <enum>
+		<option>normal</option>
+		<option>large</option>
+		<option>narrow</option>
+		<option>line</option>
+      </enum>
+    </type>
+    <default>normal</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/opacity</name>
     <type>float</type>
     <default>1.0</default>
