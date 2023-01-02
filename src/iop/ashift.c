@@ -2873,7 +2873,7 @@ static void _draw_save_lines_to_params(dt_iop_module_t *self)
     {
       for(int i = 0; i < 8; i++) p->last_quad_lines[i] = pts[i];
 
-      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, FALSE);
     }
   }
   // save drawn lines (we drop the unselected ones)
@@ -2899,7 +2899,7 @@ static void _draw_save_lines_to_params(dt_iop_module_t *self)
                                          DT_DEV_TRANSFORM_DIR_BACK_EXCL, p->last_drawn_lines,
                                          p->last_drawn_lines_count * 2))
     {
-      dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
+      dt_dev_add_history_item(darktable.develop, self, TRUE, FALSE);
     }
   }
 }
@@ -4871,7 +4871,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     g->adjust_crop = FALSE;
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     _swap_shadow_crop_box(p,g);  // temporarily update the crop box in p
-    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
+    dt_dev_add_history_item(darktable.develop, self, TRUE, FALSE);
     _swap_shadow_crop_box(p,g);  // restore p
   }
 
@@ -5046,6 +5046,12 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
 }
 
+static int _gui_has_focus(struct dt_iop_module_t *self)
+{
+  return (self->dev->gui_module == self
+          && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS);
+}
+
 static void cropmode_callback(GtkWidget *widget, gpointer user_data)
 {
   if(darktable.gui->reset) return;
@@ -5054,10 +5060,18 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
+  p->cropmode = dt_bauhaus_combobox_get(g->cropmode);
+  gui_changed(self, widget, NULL);
+
   dt_conf_set_int("plugins/darkroom/ashift/autocrop_value", dt_bauhaus_combobox_get(g->cropmode));
-  _swap_shadow_crop_box(p,g);	//temporarily update real crop box
-  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
-  _swap_shadow_crop_box(p,g);
+  if(_gui_has_focus(self))
+  {
+    _swap_shadow_crop_box(p, g); // temporarily update real crop box
+    dt_dev_add_history_item(darktable.develop, self, TRUE, FALSE);
+    _swap_shadow_crop_box(p, g);
+  }
+  else
+    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE);
 }
 
 static int _event_fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -5254,7 +5268,7 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
       g->jobparams = enhance;
     }
 
-    dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE); // also calls dt_control_queue_redraw_center
+    dt_dev_add_history_item(darktable.develop, self, TRUE, FALSE); // also calls dt_control_queue_redraw_center
     return TRUE;
   }
   return FALSE;
@@ -5363,6 +5377,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
   gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
+
+  dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
 
   // copy crop box into shadow variables
   _shadow_crop_box(p,g);
@@ -5601,7 +5617,7 @@ static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *even
     g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_QUAD;
   }
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE); // also calls dt_control_queue_redraw_center
+  dt_dev_add_history_item(darktable.develop, self, TRUE, FALSE); // also calls dt_control_queue_redraw_center
 
   return TRUE;
 }
@@ -5626,7 +5642,7 @@ static int _event_structure_lines_clicked(GtkWidget *widget, GdkEventButton *eve
     g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_LINES;
   }
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE, TRUE); // also calls dt_control_queue_redraw_center
+  dt_dev_add_history_item(darktable.develop, self, TRUE, FALSE); // also calls dt_control_queue_redraw_center
 
   return TRUE;
 }
@@ -5682,8 +5698,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->rotation, "°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 
-  g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
-  g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
+  // we don't use the automatic bauhaus comobox setup, as we want don't want that changes
+  // automatically trigger pipe recompute when module has focus
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->cropmode, self, N_("cropmode"), N_("automatic cropping"),
+                               _("automatically crop to avoid black edges"), 1, cropmode_callback, self, N_("off"),
+                               N_("largest area"), N_("original format"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cropmode, TRUE, TRUE, 0);
+  // g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
 
   GtkWidget *main_box = self->widget;
 
@@ -5777,7 +5798,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->lensshift_h, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->shear, _("shear the image along one diagonal"));
-  gtk_widget_set_tooltip_text(g->cropmode, _("automatically crop to avoid black edges"));
+  // gtk_widget_set_tooltip_text(g->cropmode, _("automatically crop to avoid black edges"));
   gtk_widget_set_tooltip_text(g->mode, _("lens model of the perspective correction: "
                                          "generic or according to the focal length"));
   gtk_widget_set_tooltip_text(g->f_length, _("focal length of the lens, "
