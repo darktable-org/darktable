@@ -1524,6 +1524,10 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
+  if(module->label_recompute_handle)
+    g_source_remove(module->label_recompute_handle);
+  module->label_recompute_handle = 0;
+
   module->cleanup(module);
 
   free(module->blend_params);
