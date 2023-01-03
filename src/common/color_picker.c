@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2022 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -237,6 +237,8 @@ static void _color_picker_work_4ch(const float *const pixel,
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
   // FIXME: will this run faster if we use collapse(2)? will this take rejiggering of function calls?
+  // cutoffs for using threads depends on # of samples and complexity
+  // of the colorspace conversion
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp parallel for default(none) if (size > min_for_threads)        \
   dt_omp_firstprivate(worker, pixel, stride, off_mul, off_add, box, data) \
@@ -272,6 +274,8 @@ static void _color_picker_work_1ch(const float *const pixel,
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
   const size_t size = _box_size(box);
 
+  // worker logic is slightly different from 4-channel as we need to
+  // keep track of position in the mosiac
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp parallel for default(none) if (size > min_for_threads)      \
   dt_omp_firstprivate(worker, pixel, width, roi, box, data)             \
@@ -290,55 +294,6 @@ static void _color_picker_work_1ch(const float *const pixel,
   for_each_channel(c)
     pick[DT_PICK_MEAN][c] =
     weights.v[c] ? (stats.acc[c] / (float)weights.v[c]) : 0.0f;
-}
-
-static void color_picker_helper_4ch(const float *const pixel, const dt_iop_roi_t *const roi, const int *const box,
-                                    lib_colorpicker_stats pick,
-                                    const dt_iop_colorspace_type_t cst_from,
-                                    const dt_iop_colorspace_type_t cst_to,
-                                    const dt_iop_order_iccprofile_info_t *const profile)
-{
-  // cutoffs for using threads depends on # of samples and complexity
-  // of the colorspace conversion
-  if(cst_from == IOP_CS_LAB && cst_to == IOP_CS_LCH)
-  {
-    _color_picker_work_4ch(pixel, roi, box, pick, NULL, _color_picker_lch, 500);
-  }
-  else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_HSL)
-  {
-    _color_picker_work_4ch(pixel, roi, box, pick, NULL, _color_picker_hsl, 250);
-  }
-  else if(cst_from == IOP_CS_RGB && cst_to == IOP_CS_JZCZHZ)
-  {
-    _color_picker_work_4ch(pixel, roi, box, pick, profile, _color_picker_jzczhz, 100);
-  }
-  else if(cst_from == cst_to || cst_to == IOP_CS_NONE)
-  {
-    _color_picker_work_4ch(pixel, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
-  }
-  else
-  {
-    // fallback, better than crashing as happens with monochromes
-    dt_print(DT_DEBUG_DEV, "[colorpicker] unknown colorspace conversion from %d to %d\n", cst_from, cst_to);
-    _color_picker_work_4ch(pixel, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
-  }
-}
-
-static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
-                                      const dt_iop_roi_t *const roi, const int *const box,
-                                      lib_colorpicker_stats pick)
-{
-  _color_picker_work_1ch(pixel, roi, box, pick, GUINT_TO_POINTER(dsc->filters),
-                     _color_picker_bayer, 25000);
-}
-
-static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
-                                       const dt_iop_roi_t *const roi, const int *const box,
-                                       lib_colorpicker_stats pick)
-{
-  _color_picker_work_1ch(pixel, roi, box, pick,
-                         dsc->xtrans,
-                         _color_picker_xtrans, 20000);
 }
 
 // picked_color, picked_color_min and picked_color_max should be aligned
@@ -363,20 +318,48 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
     // FIXME: this blurs whole image even when just a bit is sampled
     // FIXME: if multiple samples are made, the blur is called each time -- instead if this is to even happen outside of per-module, do this once
     // FIXME: if this is done in pixelpipe, we should have a spare buffer (output) to write this into, hence can skip the alloc above, and all do this on the input to filmic
+    // FIXME: if we only need this for filmic, only do this for RGB -> RGB conversions
     blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
 
-    color_picker_helper_4ch(denoised, roi, box, pick, image_cst, picker_cst, profile);
+    if(image_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
+    {
+      // used in blending for Lab modules (e.g. color zones and tone curve)
+      _color_picker_work_4ch(denoised, roi, box, pick, NULL, _color_picker_lch, 500);
+    }
+    else if(image_cst == IOP_CS_RGB && picker_cst == IOP_CS_HSL)
+    {
+      // used in scene-referred blending for RGB mdoules
+      _color_picker_work_4ch(denoised, roi, box, pick, NULL, _color_picker_hsl, 250);
+    }
+    else if(image_cst == IOP_CS_RGB && picker_cst == IOP_CS_JZCZHZ)
+    {
+      // used in display-referred blending for RGB mdoules
+      _color_picker_work_4ch(denoised, roi, box, pick, profile, _color_picker_jzczhz, 100);
+    }
+    else if(image_cst == picker_cst || picker_cst == IOP_CS_NONE)
+    {
+      // used in most per-module pickers and the global picker
+      _color_picker_work_4ch(denoised, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
+    }
+    else
+    {
+      // fallback, better than crashing as happens with monochromes
+      dt_print(DT_DEBUG_DEV, "[colorpicker] unknown colorspace conversion from %d to %d\n", image_cst, picker_cst);
+      _color_picker_work_4ch(denoised, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
+    }
 
     dt_free_align(denoised);
     dt_free_align(tempbuf);
   }
   else if(dsc->channels == 1u && dsc->filters != 0u && dsc->filters != 9u)
   {
-    color_picker_helper_bayer(dsc, pixel, roi, box, pick);
+    _color_picker_work_1ch(pixel, roi, box, pick, GUINT_TO_POINTER(dsc->filters),
+                           _color_picker_bayer, 25000);
   }
   else if(dsc->channels == 1u && dsc->filters == 9u)
   {
-    color_picker_helper_xtrans(dsc, pixel, roi, box, pick);
+    _color_picker_work_1ch(pixel, roi, box, pick, dsc->xtrans,
+                           _color_picker_xtrans, 20000);
   }
   else
     dt_unreachable_codepath();
