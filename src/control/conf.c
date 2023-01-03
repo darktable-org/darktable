@@ -434,9 +434,10 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
   {
     while(!feof(f))
     {
-      const int read = fscanf(f, "%" STR(LINE_SIZE) "[^\r\n]\r\n", line);
-      if(read > 0)
+      const char* ret = fgets(line, LINE_SIZE, f);
+      if(ret != NULL)
       {
+        g_strchomp(line);
         char *c = line;
         char *end = line + strlen(line);
         // check for '=' which is separator between the conf name and value
