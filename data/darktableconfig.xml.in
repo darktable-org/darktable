@@ -2998,6 +2998,7 @@
       <enum>
         <option>u*v*</option>
         <option>AzBz</option>
+        <option>RYB</option>
       </enum>
     </type>
     <default>u*v*</default>
