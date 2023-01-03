@@ -202,7 +202,9 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
 
     // we verify eventual name collisions
     const gchar *name = gtk_entry_get_text(g->name);
-    if(((g->old_id >= 0) && (strcmp(g->original_name, name) != 0)) || (g->old_id < 0))
+    if(((g->old_id >= 0)
+        && (strcmp(g->original_name, name) != 0))
+       || (g->old_id < 0))
     {
       if(name == NULL || *name == '\0' || strcmp(_("new preset"), name) == 0)
       {
@@ -221,8 +223,8 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
         return;
       }
 
-      // editing existing preset with different name or store new preset -> check for a preset with the same
-      // name:
+      // editing existing preset with different name or store new
+      // preset -> check for a preset with the same name:
       // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
