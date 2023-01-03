@@ -534,7 +534,7 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int e
       // exclude the one rule from extended where
       if(i != exclude || mode == 1)
         complete_string = dt_util_dstrcat(complete_string, "%s", collection->where_ext[i]);
-      else if(i == 0)
+      else if(i == 0 && g_strcmp0(collection->where_ext[i], ""))
         complete_string = dt_util_dstrcat(complete_string, "1=1");
     }
   }
@@ -2355,7 +2355,10 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       if(mode == 1) // for OR show all
       {
-        query_parts[i] = g_strdup(" OR 1=1");
+        if(nb == 0)
+          query_parts[i] = g_strdup(" 1=1");
+        else
+          query_parts[i] = g_strdup(" OR 1=1");
         nb++;
       }
       else
