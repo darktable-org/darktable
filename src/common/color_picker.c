@@ -273,11 +273,7 @@ static void color_picker_helper_bayer(const dt_iop_buffer_dsc_t *const dsc, cons
     for(size_t i = box[0]; i < box[2]; i++)
     {
       const int c = FC(j + roi->y, i + roi->x, filters);
-      // FIXME: fold into line below
-      const size_t k = width * j + i;
-
-      const float px = pixel[k];
-
+      const float px = pixel[width * j + i];
       stats.acc[c] += px;
       stats.min[c] = MIN(stats.min[c], px);
       stats.max[c] = MAX(stats.max[c], px);
@@ -315,11 +311,7 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *const dsc, con
     for(size_t i = box[0]; i < box[2]; i++)
     {
       const int c = FCxtrans(j, i, roi, xtrans);
-      // FIXME: fold into line below
-      const size_t k = width * j + i;
-
-      const float px = pixel[k];
-
+      const float px = pixel[width * j + i];
       stats.acc[c] += px;
       stats.min[c] = MIN(stats.min[c], px);
       stats.max[c] = MAX(stats.max[c], px);
