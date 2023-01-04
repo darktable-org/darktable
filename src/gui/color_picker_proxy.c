@@ -133,7 +133,7 @@ void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean keep)
 }
 
 static void _init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *module,
-                         dt_iop_color_picker_kind_t kind, GtkWidget *button)
+                         dt_iop_color_picker_flags_t kind, GtkWidget *button)
 {
   // module is NULL if primary colorpicker
   picker->module     = module;
@@ -172,9 +172,10 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
 
   const GdkModifierType state = e != NULL ? e->state : dt_key_modifier_state();
   const gboolean ctrl_key_pressed = dt_modifier_is(state, GDK_CONTROL_MASK) || (e != NULL && e->button == 3);
-  dt_iop_color_picker_kind_t kind = self->kind;
+  dt_iop_color_picker_flags_t kind = self->kind;
 
-  if(prior_picker != self || (kind == DT_COLOR_PICKER_POINT_AREA &&
+  if(prior_picker != self ||
+     (((kind & DT_COLOR_PICKER_POINT) && (kind & DT_COLOR_PICKER_AREA)) &&
       (ctrl_key_pressed ^ (darktable.lib->proxy.colorpicker.primary_sample->size == DT_LIB_COLORPICKER_SIZE_BOX))))
   {
     darktable.lib->proxy.colorpicker.picker_proxy = self;
@@ -182,7 +183,7 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
     if(module)
       module->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
 
-    if(kind == DT_COLOR_PICKER_POINT_AREA)
+    if((kind & DT_COLOR_PICKER_POINT) && (kind & DT_COLOR_PICKER_AREA))
     {
       kind = ctrl_key_pressed ? DT_COLOR_PICKER_AREA : DT_COLOR_PICKER_POINT;
     }
@@ -329,7 +330,7 @@ void dt_iop_color_picker_cleanup(void)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_color_picker_proxy_preview_pipe_callback), NULL);
 }
 
-static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w,
+static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_flags_t kind, GtkWidget *w,
                                     const gboolean init_cst, const dt_iop_colorspace_type_t cst)
 {
   dt_iop_color_picker_t *color_picker = (dt_iop_color_picker_t *)g_malloc(sizeof(dt_iop_color_picker_t));
@@ -361,12 +362,12 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker
   }
 }
 
-GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w)
+GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_flags_t kind, GtkWidget *w)
 {
   return _color_picker_new(module, kind, w, FALSE, IOP_CS_NONE);
 }
 
-GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w,
+GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_flags_t kind, GtkWidget *w,
                                         const dt_iop_colorspace_type_t cst)
 {
   return _color_picker_new(module, kind, w, TRUE, cst);
