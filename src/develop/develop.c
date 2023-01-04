@@ -66,6 +66,7 @@ void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
   dev->history = NULL; // empty list
+  dev->history_postpone_invalidate = FALSE;
 
   dev->gui_attached = gui_attached;
   dev->width = -1;
@@ -1023,7 +1024,7 @@ void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean 
   dt_image_cache_set_change_timestamp(darktable.image_cache, imgid);
 
   // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(dev);
+  if(!dev->history_postpone_invalidate || module != dev->gui_module) dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
   if(dev->gui_attached)
