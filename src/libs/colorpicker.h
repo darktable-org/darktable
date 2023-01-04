@@ -35,7 +35,7 @@ typedef enum dt_lib_colorpicker_statistic_t
   DT_PICK_N // needs to be the last one
 } dt_lib_colorpicker_statistic_t;
 
-typedef dt_aligned_pixel_t lib_colorpicker_stats[DT_LIB_COLORPICKER_STATISTIC_N];
+typedef dt_aligned_pixel_t lib_colorpicker_stats[DT_PICK_N];
 
 /** The struct for primary and live color picker samples */
 typedef struct dt_colorpicker_sample_t

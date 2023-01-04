@@ -30,19 +30,19 @@
 #include <gtk/gtk.h>
 #include "develop/imageop.h"
 
-typedef enum _iop_color_picker_kind_t
+typedef enum _iop_color_picker_flags_t
 {
-  DT_COLOR_PICKER_POINT = 0,
-  // FIXME: s/AREA/BOX/
-  DT_COLOR_PICKER_AREA,
-  DT_COLOR_PICKER_POINT_AREA // allow the user to select between point and area
-} dt_iop_color_picker_kind_t;
+  // at least one of point or area must be used
+  DT_COLOR_PICKER_POINT = 1 << 0,
+  DT_COLOR_PICKER_AREA = 1 << 1,
+  DT_COLOR_PICKER_POINT_AREA = DT_COLOR_PICKER_POINT | DT_COLOR_PICKER_AREA
+} dt_iop_color_picker_flags_t;
 
 typedef struct dt_iop_color_picker_t
 {
   // iop which contains this picker, or NULL if primary colorpicker
   dt_iop_module_t *module;
-  dt_iop_color_picker_kind_t kind;
+  dt_iop_color_picker_flags_t kind;
   /** requested colorspace for the color picker, valid options are:
    * IOP_CS_NONE: module colorspace
    * IOP_CS_LCH: for Lab modules
@@ -78,10 +78,10 @@ void dt_iop_color_picker_init();
 void dt_iop_color_picker_cleanup();
 
 /* link color picker to widget */
-GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w);
+GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_flags_t kind, GtkWidget *w);
 
 /* link color picker to widget and initialize color picker color space with given value */
-GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w,
+GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_flags_t kind, GtkWidget *w,
                                         const dt_iop_colorspace_type_t cst);
 
 // clang-format off
