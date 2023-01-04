@@ -3230,6 +3230,7 @@ static void do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_as
 
   // finally apply cropping
   do_crop(module, p);
+  dt_dev_invalidate_all(darktable.develop);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->rotation, p->rotation);
@@ -5024,6 +5025,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     do_crop(self, p);
     _commit_crop_box(p, g);
+    if(w != g->cropmode) dt_dev_invalidate_all(self->dev);
   }
   else
   {
@@ -5287,6 +5289,7 @@ static void _event_process_after_preview_callback(gpointer instance, gpointer us
       _swap_shadow_crop_box(p, g); // temporarily update real crop box
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       _swap_shadow_crop_box(p, g);
+      dt_dev_invalidate_all(darktable.develop);
       break;
 
     case ASHIFT_JOBCODE_GET_STRUCTURE_QUAD:
@@ -5534,6 +5537,8 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
+  darktable.develop->history_postpone_invalidate = in && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS;
+
   if(self->enabled)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
