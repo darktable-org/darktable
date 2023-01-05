@@ -1658,12 +1658,15 @@ static void image_lab_to_xyz(float *image, const int width, const int height)
   for(int y = 0; y < height; y++)
     for(int x = 0; x < width; x++)
     {
-      dt_aligned_pixel_t pixel_lab = { image[(x + y * width) * 3 + 0], image[(x + y * width) * 3 + 1], image[(x + y * width) * 3 + 2]};
-      dt_aligned_pixel_t pixel_xyz; /*  = { 0.0 }; */
+      const int i0 = (x + y * width) * 3 + 0;
+      const int i1 = (x + y * width) * 3 + 1;
+      const int i2 = (x + y * width) * 3 + 2;
+      dt_aligned_pixel_t pixel_lab = { image[i0], image[i1], image[i2] };
+      dt_aligned_pixel_t pixel_xyz = { 0.0 };
       dt_Lab_to_XYZ(pixel_lab, pixel_xyz);
-      image[(x + y * width) * 3 + 0] = pixel_xyz[0];
-      image[(x + y * width) * 3 + 1] = pixel_xyz[1];
-      image[(x + y * width) * 3 + 2] = pixel_xyz[2];
+      image[i0] = pixel_xyz[0];
+      image[i1] = pixel_xyz[1];
+      image[i2] = pixel_xyz[2];
     }
 }
 
