@@ -5526,15 +5526,6 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *sel
   return FALSE;
 }
 
-static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
-{
-  if(self->dev->gui_module != self)
-  {
-    dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
-  }
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
-}
-
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   darktable.develop->history_postpone_invalidate = in && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS;
@@ -5550,9 +5541,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      // once the pipe is recomputed, we want to update final sizes
-      DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                      G_CALLBACK(_event_preview_updated_callback), self);
       _commit_crop_box(p, g);
     }
   }

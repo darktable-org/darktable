@@ -349,6 +349,9 @@ restart:
 
   dev->preview_status = DT_DEV_PIXELPIPE_VALID;
 
+  if(!dev->history_postpone_invalidate)
+    dt_image_update_final_size(dev->preview_pipe->output_imgid);
+
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing");
   dt_dev_average_delay_update(&start, &dev->preview_average_delay);
 
