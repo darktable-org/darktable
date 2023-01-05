@@ -389,10 +389,7 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   if(!g) return; // seems that sometimes, g can be undefined for some reason...
   g->preview_ready = TRUE;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
-  if(self->dev->gui_module != self)
-  {
-    dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
-  }
+
   // force max size to be recomputed
   g->clip_max_pipe_hash = 0;
 }
