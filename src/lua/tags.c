@@ -35,6 +35,25 @@ static int tag_name(lua_State *L)
   return 1;
 }
 
+static int tag_flags(lua_State *L)
+{
+  dt_lua_tag_t tagid1;
+  luaA_to(L, dt_lua_tag_t, &tagid1, -2);
+  gint flags = dt_tag_get_flags(tagid1);
+  lua_pushinteger(L, flags);
+  return 1;
+}
+
+static int tag_synonyms(lua_State *L)
+{
+  dt_lua_tag_t tagid1;
+  luaA_to(L, dt_lua_tag_t, &tagid1, -2);
+  gchar *synonyms = dt_tag_get_synonyms(tagid1);
+  lua_pushstring(L, synonyms);
+  free(synonyms);
+  return 1;
+}
+
 static int tag_tostring(lua_State *L)
 {
   dt_lua_tag_t tagid1;
@@ -289,6 +308,10 @@ int dt_lua_init_tags(lua_State *L)
   dt_lua_type_register_number_const(L, dt_lua_tag_t);
   lua_pushcfunction(L, tag_name);
   dt_lua_type_register_const(L, dt_lua_tag_t, "name");
+  lua_pushcfunction(L, tag_flags);
+  dt_lua_type_register_const(L, dt_lua_tag_t, "flags");
+  lua_pushcfunction(L, tag_synonyms);
+  dt_lua_type_register_const(L, dt_lua_tag_t, "synonyms");
   lua_pushcfunction(L, tag_delete);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_tag_t, "delete");
