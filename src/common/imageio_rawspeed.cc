@@ -116,8 +116,8 @@ uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint3
   return ColorFilterArray::shiftDcrawFilter(filters, crop_x, crop_y);
 }
 
-// CR3 files are for now handled by LibRAW, we do not want rawspeed to try to open them
-// as this issues lot of error message on the console.
+// CR3 files are for now handled by LibRaw, we do not want rawspeed to try to open them
+// as this issues a lot of error messages on the console.
 static gboolean _ignore_image(const gchar *filename)
 {
   const char *extensions_whitelist[] = { "cr3", NULL };

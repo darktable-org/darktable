@@ -204,7 +204,7 @@ const model_map_t modelMap[] = {
 
 
 
-/* LibRAW is expected to read only new canon CR3 files */
+/* LibRaw is expected to read only new Canon CR3 files */
 
 static gboolean _supported_image(const gchar *filename)
 {
@@ -293,12 +293,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   img->height = raw->rawdata.sizes.raw_height;
 
   // Apply crop parameters
-  libraw_raw_inset_crop_t *ric;
-#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 21)
-  ric = &raw->rawdata.sizes.raw_inset_crops[0];
-#else
-  ric = &raw->rawdata.sizes.raw_inset_crop;
-#endif
+  libraw_raw_inset_crop_t *ric = &raw->rawdata.sizes.raw_inset_crops[0];
   img->crop_x = ric->cleft;
   img->crop_y = ric->ctop;
   img->crop_width = raw->rawdata.sizes.raw_width - ric->cwidth - ric->cleft;
@@ -391,4 +386,3 @@ error:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
