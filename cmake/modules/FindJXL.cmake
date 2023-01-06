@@ -11,26 +11,24 @@ include(LibFindMacros)
 pkg_check_modules(JXL_PKGCONF QUIET libjxl)
 
 find_path(JXL_INCLUDE_DIR
-  NAMES jxl/encode.h
-  HINTS ${JXL_PKGCONF_INCLUDE_DIRS}
-)
+  NAMES jxl/decode.h jxl/encode.h
+  HINTS ${JXL_PKGCONF_INCLUDE_DIRS})
+mark_as_advanced(JXL_INCLUDE_DIR)
 
 find_library(JXL_LIBRARY
   NAMES jxl
-  HINTS ${JXL_PKGCONF_LIBRARY_DIRS}
-)
+  HINTS ${JXL_PKGCONF_LIBRARY_DIRS})
+mark_as_advanced(JXL_LIBRARY)
 
 find_library(JXL_THREADS_LIBRARY
   NAMES jxl_threads
-  HINTS ${JXL_PKGCONF_LIBRARY_DIRS}
-)
+  HINTS ${JXL_PKGCONF_LIBRARY_DIRS})
+mark_as_advanced(JXL_THREADS_LIBRARY)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(JXL DEFAULT_MSG JXL_LIBRARY JXL_INCLUDE_DIR)
-
-if(JXL_PKGCONF_VERSION VERSION_LESS JXL_FIND_VERSION)
-  set(JXL_FOUND false)
-endif()
+find_package_handle_standard_args(JXL
+  REQUIRED_VARS JXL_LIBRARY JXL_THREADS_LIBRARY JXL_INCLUDE_DIR
+  VERSION_VAR JXL_PKGCONF_VERSION)
 
 if(JXL_FOUND)
   set(JXL_LIBRARIES ${JXL_LIBRARY} ${JXL_THREADS_LIBRARY})
