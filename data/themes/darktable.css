@@ -659,15 +659,9 @@ dialog .sidebar row:selected:hover label,
   min-width: 1em;
 }
 
-/* be sure all color icons have (nearly) same size ; needed has red color is in stack widget and this change how the size is rendered */
-#main-histogram #green-channel-button,
-#main-histogram #blue-channel-button
-{
-  min-width: 1.1em;
-}
-
 /* set background color and color of scope/histogram buttons */
-#main-histogram .dt_module_btn:not(.toggle)
+#main-histogram .dt_module_btn:not(.toggle),
+#main-histogram #color-harmony-button
 {
   color: alpha(@field_selected_fg, 0.56);
   background-color: alpha(darker(@button_bg),0.8);
@@ -720,6 +714,25 @@ dialog .sidebar row:selected:hover label,
 #blue-channel-button:hover
 {
   background-color: alpha(@graph_blue, 0.5);
+}
+
+/* color harmony button states */
+#main-histogram #color-harmony-button:checked
+{
+  background-color: @field_selected_bg;
+  color: @field_selected_fg;
+}
+
+#main-histogram #color-harmony-button:hover
+{
+  background-color: alpha(@button_hover_bg, 0.5);
+  border-color: transparent;
+  color: shade(@fg_color, 1.15);
+}
+
+#main-histogram #color-harmony-button:hover:checked
+{
+  background-color: alpha(@button_hover_bg, 0.8);
 }
 
 /*------------------
