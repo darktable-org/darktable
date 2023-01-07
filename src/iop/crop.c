@@ -1574,7 +1574,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
 
     // switch module on already, other code depends in this:
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    if(!self->enabled) dt_dev_add_history_item(darktable.develop, self, TRUE);
 
     g->button_down_x = x;
     g->button_down_y = y;
