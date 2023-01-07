@@ -1623,6 +1623,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     g->clip_w = 1.0f;
     g->clip_h = 1.0f;
     _aspect_apply(self, GRAB_BOTTOM_RIGHT);
+    gui_changed(self, NULL, NULL);
     return 1;
   }
   else
