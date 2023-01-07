@@ -157,7 +157,7 @@ Compatible compilers:
 * MinGW-w64: 6 and later
 
 Required dependencies (minimum version):
-* CMake 3.10
+* CMake 3.18
 * GTK 3.24.15
 * GLib 2.40
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
