@@ -2225,7 +2225,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(d->color_harmony_button, "colorspace-button");
   gtk_box_pack_start(GTK_BOX(d->button_box), d->colorspace_button, FALSE, FALSE, 0);
 
-  d->color_harmony_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_NONE, NULL);
+  d->color_harmony_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_swatch, CPF_NONE, NULL);
   gtk_widget_set_name(d->color_harmony_button, "color-harmony-button");
   gtk_widget_set_tooltip_text(d->color_harmony_button, d->show_color_harmony ?
                                   _("click to hide color harmony guide lines") :
