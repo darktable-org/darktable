@@ -833,8 +833,6 @@ static void _thumbs_show_overlays(dt_thumbnail_t *thumb)
           = g_timeout_add_seconds(thumb->overlay_timeout_duration, _thumbs_hide_overlays, thumb);
     }
   }
-  else
-    _thumb_update_icons(thumb);
 }
 
 static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -1900,7 +1898,10 @@ void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over)
 {
   if(thumb->mouse_over == over) return;
   thumb->mouse_over = over;
-  _thumbs_show_overlays(thumb);
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+    _thumbs_show_overlays(thumb);
+  else
+    _thumb_update_icons(thumb);
 
   if(!thumb->mouse_over) _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
 
