@@ -1357,8 +1357,8 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       GtkWidget *mi = gtk_menu_item_new_with_label(mi_name);
       // need a tooltip for the signal below to be raised
       gtk_widget_set_has_tooltip(mi, TRUE);
-      g_signal_connect(mi, "query-tooltip",
-                       G_CALLBACK(_styles_tooltip_callback), g_strdup(style->name));
+      g_signal_connect_data(mi, "query-tooltip",
+                            G_CALLBACK(_styles_tooltip_callback), g_strdup(style->name), (GClosureNotify)g_free, 0);
 
       g_free(mi_name);
 
@@ -1398,9 +1398,9 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
         gtk_widget_show(GTK_WIDGET(smi));
       }
 
-      g_signal_connect_swapped(G_OBJECT(mi), "activate",
-                               G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
-                               (gpointer)g_strdup(style->name));
+      g_signal_connect_data(G_OBJECT(mi), "activate",
+                            G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
+                            g_strdup(style->name), (GClosureNotify)g_free, G_CONNECT_SWAPPED);
       gtk_widget_show(mi);
 
       g_strfreev(split);
