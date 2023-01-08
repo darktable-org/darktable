@@ -326,30 +326,39 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
       source = denoised;
     }
 
-    if(image_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
+    // 4-channel raw images are monochrome, can be read as RGB
+    const dt_iop_colorspace_type_t effective_cst =
+      image_cst == IOP_CS_RAW ? IOP_CS_RGB : image_cst;
+
+    if(effective_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
     {
-      // used in blending for Lab modules (e.g. color zones and tone curve)
+      // blending for Lab modules (e.g. color zones and tone curve)
       _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_lch, 500);
     }
-    else if(image_cst == IOP_CS_RGB && picker_cst == IOP_CS_HSL)
+    else if(effective_cst == IOP_CS_RGB && picker_cst == IOP_CS_HSL)
     {
-      // used in scene-referred blending for RGB mdoules
+      // display-referred blending for RGB mdoules
       _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_hsl, 250);
     }
-    else if(image_cst == IOP_CS_RGB && picker_cst == IOP_CS_JZCZHZ)
+    else if(effective_cst == IOP_CS_RGB && picker_cst == IOP_CS_JZCZHZ)
     {
-      // used in display-referred blending for RGB mdoules
+      // scene-referred blending for RGB mdoules
       _color_picker_work_4ch(source, roi, box, pick, profile, _color_picker_jzczhz, 100);
     }
-    else if(image_cst == picker_cst || picker_cst == IOP_CS_NONE)
+    else if(effective_cst == picker_cst)
     {
-      // used in most per-module pickers and the global picker
+      // most iop pickers and the global picker
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
+    }
+    else if(picker_cst == IOP_CS_NONE)
+    {
+      // temperature IOP when correcting non-RAW
       _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
     }
     else
     {
-      // fallback, better than crashing as happens with monochromes
-      dt_print(DT_DEBUG_DEV, "[colorpicker] unknown colorspace conversion from %d to %d\n", image_cst, picker_cst);
+      // fallback, but this shouldn't happen
+      fprintf(stderr, "[colorpicker] unknown colorspace conversion from %d to %d\n", image_cst, picker_cst);
       _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
     }
 
