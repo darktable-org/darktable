@@ -47,6 +47,7 @@ typedef struct dt_colorpicker_sample_t
   float point[2];
   dt_boundingbox_t box;
   dt_lib_colorpicker_size_t size;
+  gboolean denoise;
   // NOTE: only applies to live samples
   gboolean locked;
 

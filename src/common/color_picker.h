@@ -27,6 +27,7 @@ enum dt_iop_colorspace_type_t;
 
 void dt_color_picker_helper(const struct dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                             const struct dt_iop_roi_t *roi, const int *const box,
+                            const gboolean denoise,
                             lib_colorpicker_stats pick,
                             const enum dt_iop_colorspace_type_t image_cst,
                             const enum dt_iop_colorspace_type_t picker_cst,

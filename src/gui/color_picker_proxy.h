@@ -35,7 +35,9 @@ typedef enum _iop_color_picker_flags_t
   // at least one of point or area must be used
   DT_COLOR_PICKER_POINT = 1 << 0,
   DT_COLOR_PICKER_AREA = 1 << 1,
-  DT_COLOR_PICKER_POINT_AREA = DT_COLOR_PICKER_POINT | DT_COLOR_PICKER_AREA
+  DT_COLOR_PICKER_POINT_AREA = DT_COLOR_PICKER_POINT | DT_COLOR_PICKER_AREA,
+  // only works with 4-channel images
+  DT_COLOR_PICKER_DENOISE = 1 << 2
 } dt_iop_color_picker_flags_t;
 
 typedef struct dt_iop_color_picker_t
