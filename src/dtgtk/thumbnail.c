@@ -49,7 +49,7 @@ static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean activate)
     gtk_widget_unset_state_flags(w, flag);
 }
 
-// create a new extended infos line from strach
+// create a new extended infos line from scratch
 static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
 {
   gchar *pattern = dt_conf_get_string("plugins/lighttable/extended_pattern");
@@ -75,6 +75,20 @@ static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
   g_free(pattern);
 }
 
+static void _thumb_update_altered_tooltip(dt_thumbnail_t *thumb)
+{
+  thumb->is_altered = dt_image_altered(thumb->imgid);
+  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
+  if(thumb->is_altered)
+  {
+    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
+    if(tooltip)
+    {
+      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
+      g_free(tooltip);
+    }
+  }
+}
 static void _thumb_update_tooltip_text(dt_thumbnail_t *thumb)
 {
   // and the tooltip
@@ -785,18 +799,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, thumb->selected);
 
-  // we recompte the history tooltip if needed
-  thumb->is_altered = dt_image_altered(thumb->imgid);
   gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
-  if(thumb->is_altered)
-  {
-    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
-    if(tooltip)
-    {
-      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
-      g_free(tooltip);
-    }
-  }
 }
 
 static gboolean _thumbs_hide_overlays(gpointer user_data)
@@ -1092,17 +1095,7 @@ static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer 
   if(imgid > 0 && thumb->imgid != imgid) return;
 
   // we recompte the history tooltip if needed
-  thumb->is_altered = dt_image_altered(thumb->imgid);
-  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
-  if(thumb->is_altered)
-  {
-    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
-    if(tooltip)
-    {
-      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
-      g_free(tooltip);
-    }
-  }
+  _thumb_update_altered_tooltip(thumb);
 
   // reset surface
   thumb->img_surf_dirty = TRUE;
@@ -1526,11 +1519,10 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int im
     }
   }
 
-  // grouping tooltip
+  // update tooltips
   _image_update_group_tooltip(thumb);
-
-  // main tooltip
   _thumb_update_tooltip_text(thumb);
+  _thumb_update_altered_tooltip(thumb);
 
   // get the file extension
   _thumb_write_extension(thumb);
