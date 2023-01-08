@@ -908,7 +908,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     height = pipe.processed_height;
   }
 
-  const double max_scale = (upscale && (width > 0 || height > 0)) ? 100.0 : 1.0;
+  const double max_scale = (upscale && ((width > 0 || height > 0) || is_scaling)) ? 100.0 : 1.0;
 
   const double scalex = width > 0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale;
   const double scaley = height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale;
@@ -970,9 +970,9 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
       }
     }
 
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] imgid %d, pipe %ix%i, range %ix%i --> exact %i, upscale %i, hq %i, corrected %i, scale %.7f, corr %.6f, size %ix%i\n",
+    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] imgid %d, pipe %ix%i, range %ix%i --> exact=%s, upscale=%s, hq=%s, corrected=%s, scale %.7f, corr %.6f, size %ix%i\n",
              imgid, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
-             exact_size, upscale, high_quality_processing, corrected, scale, corrscale, processed_width, processed_height);
+             exact_size ? "yes" : "no", upscale ? "yes" : "no", high_quality_processing ? "yes" : "no", corrected ? "yes" : "no", scale, corrscale, processed_width, processed_height);
   }
   else
   {
