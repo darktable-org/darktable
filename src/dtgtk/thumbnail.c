@@ -75,6 +75,42 @@ static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
   g_free(pattern);
 }
 
+static void _thumb_update_tooltip_text(dt_thumbnail_t *thumb)
+{
+  // and the tooltip
+  gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
+  if(!thumb->tooltip || strcmp(pattern, "") == 0)
+  {
+    gtk_widget_set_has_tooltip(thumb->w_main, FALSE);
+  }
+  else
+  {
+    // we compute the tooltip (we reuse the function used in export to disk)
+    char input_dir[1024] = { 0 };
+    gboolean from_cache = TRUE;
+    dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
+
+    dt_variables_params_t *vp;
+    dt_variables_params_init(&vp);
+
+    vp->filename = input_dir;
+    vp->jobcode = "infos";
+    vp->imgid = thumb->imgid;
+    vp->sequence = 0;
+    vp->escape_markup = TRUE;
+
+    gchar *msg = dt_variables_expand(vp, pattern, TRUE);
+
+    dt_variables_params_destroy(vp);
+
+    // we change the label
+    gtk_widget_set_tooltip_markup(thumb->w_main, msg);
+
+    g_free(msg);
+  }
+  g_free(pattern);
+}
+
 static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
 {
   if(!thumb->w_group) return;
@@ -748,39 +784,6 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, thumb->selected);
-
-  // and the tooltip
-  gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
-  if(!thumb->tooltip || strcmp(pattern, "") == 0)
-  {
-    gtk_widget_set_has_tooltip(thumb->w_main, FALSE);
-  }
-  else
-  {
-    // we compute the tooltip (we reuse the function used in export to disk)
-    char input_dir[1024] = { 0 };
-    gboolean from_cache = TRUE;
-    dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
-
-    dt_variables_params_t *vp;
-    dt_variables_params_init(&vp);
-
-    vp->filename = input_dir;
-    vp->jobcode = "infos";
-    vp->imgid = thumb->imgid;
-    vp->sequence = 0;
-    vp->escape_markup = TRUE;
-
-    gchar *msg = dt_variables_expand(vp, pattern, TRUE);
-
-    dt_variables_params_destroy(vp);
-
-    // we change the label
-    gtk_widget_set_tooltip_markup(thumb->w_main, msg);
-
-    g_free(msg);
-  }
-  g_free(pattern);
 
   // we recompte the history tooltip if needed
   thumb->is_altered = dt_image_altered(thumb->imgid);
@@ -1526,6 +1529,9 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int im
   // grouping tooltip
   _image_update_group_tooltip(thumb);
 
+  // main tooltip
+  _thumb_update_tooltip_text(thumb);
+
   // get the file extension
   _thumb_write_extension(thumb);
 
@@ -2073,6 +2079,8 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
   }
 
   _thumb_write_extension(thumb);
+
+  _thumb_update_tooltip_text(thumb);
 
   // extended overlay text
   gchar *lb = NULL;
