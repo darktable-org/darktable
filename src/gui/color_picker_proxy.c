@@ -188,12 +188,13 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
       kind = ctrl_key_pressed ? DT_COLOR_PICKER_AREA : DT_COLOR_PICKER_POINT;
     }
     // pull picker's last recorded positions
-    if(kind == DT_COLOR_PICKER_AREA)
+    if(kind & DT_COLOR_PICKER_AREA)
       dt_lib_colorpicker_set_box_area(darktable.lib, self->pick_box);
-    else if(kind == DT_COLOR_PICKER_POINT)
+    else if(kind & DT_COLOR_PICKER_POINT)
       dt_lib_colorpicker_set_point(darktable.lib, self->pick_pos);
     else
       dt_unreachable_codepath();
+    dt_lib_colorpicker_set_denoise(darktable.lib, kind & DT_COLOR_PICKER_DENOISE);
 
     // important to have set up state before toggling button and
     // triggering more callbacks

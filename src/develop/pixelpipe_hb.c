@@ -700,7 +700,9 @@ static void _pixelpipe_picker(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   {
     const dt_iop_order_iccprofile_info_t *const profile =
       dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
-    dt_color_picker_helper(dsc, pixel, roi, box, pick, image_cst,
+    dt_color_picker_helper(dsc, pixel, roi, box,
+                           darktable.lib->proxy.colorpicker.primary_sample->denoise,
+                           pick, image_cst,
                            dt_iop_color_picker_get_active_cst(module), profile);
   }
 
@@ -779,7 +781,9 @@ static void _pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_dev_pixe
       { -INFINITY, -INFINITY, -INFINITY, -INFINITY } };
 
   const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_current_profile_info(module, piece->pipe);
-  dt_color_picker_helper(dsc, pixel, &roi_copy, box, pick, image_cst,
+  dt_color_picker_helper(dsc, pixel, &roi_copy, box,
+                         darktable.lib->proxy.colorpicker.primary_sample->denoise,
+                         pick, image_cst,
                          dt_iop_color_picker_get_active_cst(module), profile);
 
   for_four_channels(k)
@@ -826,7 +830,7 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,
     {
       // pixel input is in display profile, hence the sample output will be as well
       // FIXME: previously we used special purpose code here, but the generic color picker code blurs the image -- do we want to keep this behavior? and similarly if we *do* want to blur the image, should we do this once rather than once for each sample?
-      dt_color_picker_helper(dsc, input, roi_in, box,
+      dt_color_picker_helper(dsc, input, roi_in, box, sample->denoise,
                              sample->display,
                              IOP_CS_RGB, IOP_CS_RGB,
                              // FIXME: this is ignored, just use NULL?

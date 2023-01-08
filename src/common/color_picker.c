@@ -299,6 +299,7 @@ static void _color_picker_work_1ch(const float *const pixel,
 // picked_color, picked_color_min and picked_color_max should be aligned
 void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                             const dt_iop_roi_t *roi, const int *const box,
+                            const gboolean denoise,
                             lib_colorpicker_stats pick,
                             const dt_iop_colorspace_type_t image_cst,
                             const dt_iop_colorspace_type_t picker_cst,
@@ -309,47 +310,51 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
 
   if(dsc->channels == 4u)
   {
-    // Denoise the image
-    size_t padded_size;
-    float *const restrict denoised = dt_alloc_align_float(4 * roi->width * roi->height);
-    float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * roi->width, &padded_size); //TODO: alloc in caller
+    float *restrict denoised = NULL;
+    const float *source = pixel;
+    if(denoise)
+    {
+      // Denoise the image
+      size_t padded_size;
+      denoised = dt_alloc_align_float(4 * roi->width * roi->height);
+      float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * roi->width, &padded_size); //TODO: alloc in caller
 
-    // blur without clipping negatives because Lab a and b channels can be legitimately negative
-    // FIXME: this blurs whole image even when just a bit is sampled
-    // FIXME: if multiple samples are made, the blur is called each time -- instead if this is to even happen outside of per-module, do this once
-    // FIXME: if this is done in pixelpipe, we should have a spare buffer (output) to write this into, hence can skip the alloc above, and all do this on the input to filmic
-    // FIXME: if we only need this for filmic, only do this for RGB -> RGB conversions
-    blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
+      // blur without clipping negatives because Lab a and b channels can be legitimately negative
+      // FIXME: this blurs whole image even when just a bit is sampled
+      // FIXME: if this is done in pixelpipe, we should have a spare buffer (output) to write this into, hence can skip the alloc above, and all do this on the input to filmic
+      blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
+      dt_free_align(tempbuf);
+      source = denoised;
+    }
 
     if(image_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
     {
       // used in blending for Lab modules (e.g. color zones and tone curve)
-      _color_picker_work_4ch(denoised, roi, box, pick, NULL, _color_picker_lch, 500);
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_lch, 500);
     }
     else if(image_cst == IOP_CS_RGB && picker_cst == IOP_CS_HSL)
     {
       // used in scene-referred blending for RGB mdoules
-      _color_picker_work_4ch(denoised, roi, box, pick, NULL, _color_picker_hsl, 250);
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_hsl, 250);
     }
     else if(image_cst == IOP_CS_RGB && picker_cst == IOP_CS_JZCZHZ)
     {
       // used in display-referred blending for RGB mdoules
-      _color_picker_work_4ch(denoised, roi, box, pick, profile, _color_picker_jzczhz, 100);
+      _color_picker_work_4ch(source, roi, box, pick, profile, _color_picker_jzczhz, 100);
     }
     else if(image_cst == picker_cst || picker_cst == IOP_CS_NONE)
     {
       // used in most per-module pickers and the global picker
-      _color_picker_work_4ch(denoised, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
     }
     else
     {
       // fallback, better than crashing as happens with monochromes
       dt_print(DT_DEBUG_DEV, "[colorpicker] unknown colorspace conversion from %d to %d\n", image_cst, picker_cst);
-      _color_picker_work_4ch(denoised, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
     }
 
-    dt_free_align(denoised);
-    dt_free_align(tempbuf);
+    if(denoised) dt_free_align(denoised);
   }
   else if(dsc->channels == 1u && dsc->filters != 0u && dsc->filters != 9u)
   {
