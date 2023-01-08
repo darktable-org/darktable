@@ -2222,7 +2222,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->button_box_rgb), d->blue_channel_button, FALSE, FALSE, 0);
 
   d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  gtk_widget_set_name(d->color_harmony_button, "colorspace-button");
   gtk_box_pack_start(GTK_BOX(d->button_box), d->colorspace_button, FALSE, FALSE, 0);
 
   d->color_harmony_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_swatch, CPF_NONE, NULL);
