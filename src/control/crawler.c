@@ -297,8 +297,11 @@ static void _db_update_timestamp(const int id, const time_t timestamp)
 {
   // Update DB writing timestamp with XMP file timestamp
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET write_timestamp = ?2 WHERE id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE main.images"
+     " SET write_timestamp = ?2"
+     " WHERE id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, timestamp);
   sqlite3_step(stmt);
@@ -309,9 +312,12 @@ static void _db_update_timestamp(const int id, const time_t timestamp)
 static void _get_crawler_entry_from_model(GtkTreeModel *model, GtkTreeIter *iter,
                                           dt_control_crawler_result_t *entry)
 {
-  gtk_tree_model_get(model, iter, DT_CONTROL_CRAWLER_COL_IMAGE_PATH, &entry->image_path, DT_CONTROL_CRAWLER_COL_ID,
-                     &entry->id, DT_CONTROL_CRAWLER_COL_XMP_PATH, &entry->xmp_path,
-                     DT_CONTROL_CRAWLER_COL_TS_DB_INT, &entry->timestamp_db, DT_CONTROL_CRAWLER_COL_TS_XMP_INT,
+  gtk_tree_model_get(model, iter,
+                     DT_CONTROL_CRAWLER_COL_IMAGE_PATH, &entry->image_path,
+                     DT_CONTROL_CRAWLER_COL_ID, &entry->id,
+                     DT_CONTROL_CRAWLER_COL_XMP_PATH, &entry->xmp_path,
+                     DT_CONTROL_CRAWLER_COL_TS_DB_INT, &entry->timestamp_db,
+                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT,
                      &entry->timestamp_xmp, -1);
 }
 
@@ -725,4 +731,3 @@ void dt_control_crawler_show_image_list(GList *images)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
