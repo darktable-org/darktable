@@ -296,7 +296,6 @@ static void _color_picker_work_1ch(const float *const pixel,
     weights.v[c] ? (stats.acc[c] / (float)weights.v[c]) : 0.0f;
 }
 
-// picked_color, picked_color_min and picked_color_max should be aligned
 void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                             const dt_iop_roi_t *roi, const int *const box,
                             const gboolean denoise,

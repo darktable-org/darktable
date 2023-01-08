@@ -867,31 +867,6 @@ static gboolean _transform_for_blend(const dt_iop_module_t *const self, const dt
   return FALSE;
 }
 
-static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self, const dt_iop_colorspace_type_t cst)
-{
-  const dt_iop_colorspace_type_t picker_cst =
-    dt_iop_color_picker_get_active_cst(self);
-
-  switch(picker_cst)
-  {
-    case IOP_CS_RAW:
-      return IOP_CS_RAW;
-    case IOP_CS_LAB:
-    case IOP_CS_LCH:
-      return IOP_CS_LAB;
-    case IOP_CS_RGB:
-    case IOP_CS_HSL:
-    case IOP_CS_JZCZHZ:
-      return IOP_CS_RGB;
-    case IOP_CS_NONE:
-      // IOP_CS_NONE is used by temperature.c as it may work in RAW or RGB
-      // return the pipe color space to avoid any additional conversions
-      return cst;
-    default:
-      return picker_cst;
-  }
-}
-
 static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, dt_iop_module_t *module)
 {
   // Does the current active module need a picker?
@@ -1015,16 +990,6 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   // color picking for module
   if(_request_color_pick(pipe, dev, module))
   {
-    // ensure that we are using the right color space
-    // FIXME: do we have to convert entire image colorspace if just picking a point? what if we sample in whatever the current colorspace is, then convert it to picker colorspace (work profile)?
-    dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
-    dt_ioppr_transform_image_colorspace(module, input, input, roi_in->width, roi_in->height,
-                                        input_format->cst, picker_cst, &input_format->cst,
-                                        work_profile);
-    dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
-                                        pipe->dsc.cst, picker_cst, &pipe->dsc.cst,
-                                        work_profile);
-
     _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input, roi_in, module->picked_color,
                      module->picked_color_min, module->picked_color_max,
                      input_format->cst, PIXELPIPE_PICKER_INPUT);
@@ -1562,15 +1527,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         // color picking for module
         if(success_opencl && _request_color_pick(pipe, dev, module))
         {
-          // ensure that we are using the right color space
-          dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
-          success_opencl = dt_ioppr_transform_image_colorspace_cl(
-              module, piece->pipe->devid, cl_mem_input, cl_mem_input, roi_in.width, roi_in.height,
-              input_cst_cl, picker_cst, &input_cst_cl, work_profile);
-          success_opencl &= dt_ioppr_transform_image_colorspace_cl(
-              module, piece->pipe->devid, *cl_mem_output, *cl_mem_output, roi_out->width, roi_out->height,
-              pipe->dsc.cst, picker_cst, &pipe->dsc.cst, work_profile);
-
           // we abuse the empty output buffer on host for intermediate storage of data in
           // pixelpipe_picker_cl()
           const size_t outbufsize = bpp * roi_out->width * roi_out->height;
@@ -1700,16 +1656,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         // color picking for module
         if(success_opencl && _request_color_pick(pipe, dev, module))
         {
-          // ensure that we are using the right color space
-          dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
-          // FIXME: don't need to transform entire image colorspace when just picking a point
-          dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
-                                              input_format->cst, picker_cst, &input_format->cst,
-                                              work_profile);
-          dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
-                                              pipe->dsc.cst, picker_cst, &pipe->dsc.cst,
-                                              work_profile);
-
           _pixelpipe_picker(module, piece, &piece->dsc_in, (float *)input, &roi_in, module->picked_color,
                            module->picked_color_min, module->picked_color_max, input_format->cst,
                            PIXELPIPE_PICKER_INPUT);
