@@ -59,11 +59,10 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 {
   *roi_in = *roi_out;
 
-  roi_in->x /= roi_out->scale;
-  roi_in->y /= roi_out->scale;
-  // out = in * scale + .5f to more precisely round to user input in export module:
-  roi_in->width  = (roi_out->width  - .5f)/roi_out->scale;
-  roi_in->height = (roi_out->height - .5f)/roi_out->scale;
+  roi_in->x = MAX(0, (int)floorf(roi_out->x / roi_out->scale));
+  roi_in->y = MAX(0, (int)floorf(roi_out->y / roi_out->scale));
+  roi_in->width  = (int)ceilf(roi_out->width  / roi_out->scale);
+  roi_in->height = (int)ceilf(roi_out->height / roi_out->scale);
   roi_in->scale = 1.0f;
 }
 
@@ -79,7 +78,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if(roi_out->scale >= 1.00001f)
+  if(roi_out->scale > 1.0f)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_finalscale] finalscale with upscaling not yet supported by opencl code\n");
@@ -88,13 +87,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const int devid = piece->pipe->devid;
   cl_int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
-  if(err != CL_SUCCESS) goto error;
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_finalscale] couldn't `dt_iop_clip_and_zoom_roi_cl`: %s\n", cl_errstr(err));
+    return FALSE;
+  }
 
   return TRUE;
-
-error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_finalscale] couldn't enqueue kernel! %s\n", cl_errstr(err));
-  return FALSE;
 }
 #endif
 
