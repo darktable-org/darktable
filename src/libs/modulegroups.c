@@ -1012,6 +1012,8 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
   if(button == d->basic_btn) gid = DT_MODULEGROUP_BASICS;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), FALSE);
 
+  if(d->current == DT_MODULEGROUP_BASICS) dt_iop_request_focus(NULL);
+
   /* only deselect button if not currently searching else re-enable module */
   if(d->current == gid && !(text_entered && text_entered[0] != '\0'))
     d->current = DT_MODULEGROUP_NONE;
