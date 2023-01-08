@@ -1524,8 +1524,8 @@ static void _color_harmony_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->show_color_harmony = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   gtk_widget_set_tooltip_text(button, d->show_color_harmony ?
-                                  _("click to hide color harmony guide lines") :
-                                  _("click to show color harmony guide lines"));
+                                  _("hide color harmony guide lines") :
+                                  _("show color harmony guide lines"));
   dt_conf_set_bool("plugins/darkroom/histogram/vectorscope/show_color_harmony", d->show_color_harmony);
   dt_control_queue_redraw_widget(d->scope_draw);
 }
@@ -1827,7 +1827,7 @@ static void _colorspace_clicked(GtkWidget *button, dt_lib_histogram_t *d)
 static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->red = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  gtk_widget_set_tooltip_text(button, d->red ? _("click to hide red channel") : _("click to show red channel"));
+  gtk_widget_set_tooltip_text(button, d->red ? _("hide red channel") : _("show red channel"));
   dt_conf_set_bool("plugins/darkroom/histogram/show_red", d->red);
   dt_control_queue_redraw_widget(d->scope_draw);
 }
@@ -1835,7 +1835,7 @@ static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->green = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  gtk_widget_set_tooltip_text(button, d->green ? _("click to hide green channel") : _("click to show green channel"));
+  gtk_widget_set_tooltip_text(button, d->green ? _("hide green channel") : _("show green channel"));
   dt_conf_set_bool("plugins/darkroom/histogram/show_green", d->green);
   dt_control_queue_redraw_widget(d->scope_draw);
 }
@@ -1843,7 +1843,7 @@ static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->blue = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  gtk_widget_set_tooltip_text(button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
+  gtk_widget_set_tooltip_text(button, d->blue ? _("hide blue channel") : _("show blue channel"));
   dt_conf_set_bool("plugins/darkroom/histogram/show_blue", d->blue);
   dt_control_queue_redraw_widget(d->scope_draw);
 }
@@ -1861,9 +1861,9 @@ static gboolean _eventbox_motion_notify_callback(GtkWidget *widget, GdkEventCros
 {
   //This is required in order to correctly display the button tooltips
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  gtk_widget_set_tooltip_text(d->green_channel_button, d->green ? _("click to hide green channel") : _("click to show green channel"));
-  gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
-  gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("click to hide red channel") : _("click to show red channel"));
+  gtk_widget_set_tooltip_text(d->green_channel_button, d->green ? _("hide green channel") : _("show green channel"));
+  gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("hide blue channel") : _("show blue channel"));
+  gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("hide red channel") : _("show red channel"));
   _scope_type_update(d);
   return TRUE;
 }
@@ -2205,19 +2205,19 @@ void gui_init(dt_lib_module_t *self)
   // these are toggle boxes with a meaningful active state, unlike the type/view buttons
   d->red_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   gtk_widget_set_name(d->red_channel_button, "red-channel-button");
-  gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("click to hide red channel") : _("click to show red channel"));
+  gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("hide red channel") : _("show red channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->red_channel_button), d->red);
   gtk_box_pack_start(GTK_BOX(d->button_box_rgb), d->red_channel_button, FALSE, FALSE, 0);
 
   d->green_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   gtk_widget_set_name(d->green_channel_button, "green-channel-button");
-  gtk_widget_set_tooltip_text(d->green_channel_button, d->green ? _("click to hide green channel") : _("click to show green channel"));
+  gtk_widget_set_tooltip_text(d->green_channel_button, d->green ? _("hide green channel") : _("show green channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->green_channel_button), d->green);
   gtk_box_pack_start(GTK_BOX(d->button_box_rgb), d->green_channel_button, FALSE, FALSE, 0);
 
   d->blue_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   gtk_widget_set_name(d->blue_channel_button, "blue-channel-button");
-  gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
+  gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("hide blue channel") : _("show blue channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->blue_channel_button), d->blue);
   gtk_box_pack_start(GTK_BOX(d->button_box_rgb), d->blue_channel_button, FALSE, FALSE, 0);
 
@@ -2228,8 +2228,8 @@ void gui_init(dt_lib_module_t *self)
   d->color_harmony_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_swatch, CPF_NONE, NULL);
   gtk_widget_set_name(d->color_harmony_button, "color-harmony-button");
   gtk_widget_set_tooltip_text(d->color_harmony_button, d->show_color_harmony ?
-                                  _("click to hide color harmony guide lines") :
-                                  _("click to show color harmony guide lines"));
+                                  _("hide color harmony guide lines") :
+                                  _("show color harmony guide lines"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button), d->show_color_harmony);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->color_harmony_button, FALSE, FALSE, 0);
 
