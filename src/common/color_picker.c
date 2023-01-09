@@ -71,6 +71,22 @@ static inline _count_pixel _add_counts(_count_pixel acc, _count_pixel newval)
 
 #endif
 
+static inline void _update_stats_1ch(_stats_pixel *const stats,
+                                     const int ch, const float pick)
+{
+  stats->acc[ch] += pick;
+  stats->min[ch] = MIN(stats->min[ch], pick);
+  stats->max[ch] = MAX(stats->max[ch], pick);
+}
+
+static inline void _update_stats_4ch(_stats_pixel *const stats,
+                                     const dt_aligned_pixel_t pick)
+{
+  // FIXME: if non Lab/RGB only use three channels, can use for_each_channel()
+  for_four_channels(k)
+    _update_stats_1ch(stats, k, pick[k]);
+}
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(rgb, JzCzhz: 16) uniform(profile)
 #endif
@@ -116,12 +132,7 @@ static inline void _color_picker_rgb_or_lab(_stats_pixel *const stats,
 {
   for(size_t i = 0; i < width; i += 4)
     for_each_channel(k, aligned(pixels:16))
-    {
-      const float v = pixels[i + k];
-      stats->acc[k] += v;
-      stats->min[k] = MIN(stats->min[k], v);
-      stats->max[k] = MAX(stats->max[k], v);
-    }
+      _update_stats_1ch(stats, k, pixels[i + k]);
 }
 
 static inline void _color_picker_lch(_stats_pixel *const stats,
@@ -132,13 +143,9 @@ static inline void _color_picker_lch(_stats_pixel *const stats,
   {
     dt_aligned_pixel_t pick;
     dt_Lab_2_LCH(pixels + i, pick);
+    // FIXME: is this used?
     pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
-    for_four_channels(k, aligned(pixels:16))
-    {
-      stats->acc[k] += pick[k];
-      stats->min[k] = MIN(stats->min[k], pick[k]);
-      stats->max[k] = MAX(stats->max[k], pick[k]);
-    }
+    _update_stats_4ch(stats, pick);
   }
 }
 
@@ -150,13 +157,9 @@ static inline void _color_picker_hsl(_stats_pixel *const stats,
   {
     dt_aligned_pixel_t pick;
     dt_RGB_2_HSL(pixels + i, pick);
+    // FIXME: is this used?
     pick[3] = pick[0] < 0.5f ? pick[0] + 0.5f : pick[0] - 0.5f;
-    for_four_channels(k, aligned(pixels:16))
-    {
-      stats->acc[k] += pick[k];
-      stats->min[k] = MIN(stats->min[k], pick[k]);
-      stats->max[k] = MAX(stats->max[k], pick[k]);
-    }
+    _update_stats_4ch(stats, pick);
   }
 }
 
@@ -169,13 +172,9 @@ static inline void _color_picker_jzczhz(_stats_pixel *const stats,
   {
     dt_aligned_pixel_t pick;
     rgb_to_JzCzhz(pixels + i, pick, profile);
+    // FIXME: is this used?
     pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
-    for_four_channels(k, aligned(pixels:16))
-    {
-      stats->acc[k] += pick[k];
-      stats->min[k] = MIN(stats->min[k], pick[k]);
-      stats->max[k] = MAX(stats->max[k], pick[k]);
-    }
+    _update_stats_4ch(stats, pick);
   }
 }
 
@@ -191,10 +190,7 @@ static inline void _color_picker_bayer(_stats_pixel *const stats,
   for(size_t i = box[0]; i < box[2]; i++)
   {
     const int c = FC(j + roi->y, i + roi->x, filters);
-    const float px = pixels[i];
-    stats->acc[c] += px;
-    stats->min[c] = MIN(stats->min[c], px);
-    stats->max[c] = MAX(stats->max[c], px);
+    _update_stats_1ch(stats, c, pixels[i]);
     weights->v[c]++;
   }
 }
@@ -211,10 +207,7 @@ static inline void _color_picker_xtrans(_stats_pixel *const stats,
   for(size_t i = box[0]; i < box[2]; i++)
   {
     const int c = FCxtrans(j, i, roi, xtrans);
-    const float px = pixels[i];
-    stats->acc[c] += px;
-    stats->min[c] = MIN(stats->min[c], px);
-    stats->max[c] = MAX(stats->max[c], px);
+    _update_stats_1ch(stats, c, pixels[i]);
     weights->v[c]++;
   }
 }
