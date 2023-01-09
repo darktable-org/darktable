@@ -264,12 +264,12 @@ static void _color_picker_work_1ch(const float *const pixel,
   _stats_pixel stats = { .acc = { 0.0f, 0.0f, 0.0f, 0.0f },
                          .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
-  const size_t size = _box_size(box);
 
   // worker logic is slightly different from 4-channel as we need to
   // keep track of position in the mosiac
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
-#pragma omp parallel for default(none) if (size > min_for_threads)      \
+#pragma omp parallel for default(none)                                  \
+  if (_box_size(box) > min_for_threads)                                 \
   dt_omp_firstprivate(worker, pixel, width, roi, box, data)             \
   reduction(vstats : stats) reduction(vsum : weights)                   \
   schedule(static)
@@ -324,33 +324,33 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
     if(effective_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
     {
       // blending for Lab modules (e.g. color zones and tone curve)
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_lch, 500);
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_lch, 10);
     }
     else if(effective_cst == IOP_CS_RGB && picker_cst == IOP_CS_HSL)
     {
-      // display-referred blending for RGB mdoules
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_hsl, 250);
+      // display-referred blending for RGB modules
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_hsl, 10);
     }
     else if(effective_cst == IOP_CS_RGB && picker_cst == IOP_CS_JZCZHZ)
     {
-      // scene-referred blending for RGB mdoules
-      _color_picker_work_4ch(source, roi, box, pick, profile, _color_picker_jzczhz, 100);
+      // scene-referred blending for RGB modules
+      _color_picker_work_4ch(source, roi, box, pick, profile, _color_picker_jzczhz, 10);
     }
     else if(effective_cst == picker_cst)
     {
       // most iop pickers and the global picker
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
     else if(picker_cst == IOP_CS_NONE)
     {
       // temperature IOP when correcting non-RAW
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
     else
     {
       // fallback, but this shouldn't happen
       fprintf(stderr, "[colorpicker] unknown colorspace conversion from %d to %d\n", image_cst, picker_cst);
-      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 1000);
+      _color_picker_work_4ch(source, roi, box, pick, NULL, _color_picker_rgb_or_lab, 100);
     }
 
     if(denoised) dt_free_align(denoised);
@@ -358,12 +358,12 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
   else if(dsc->channels == 1u && dsc->filters != 0u && dsc->filters != 9u)
   {
     _color_picker_work_1ch(pixel, roi, box, pick, GUINT_TO_POINTER(dsc->filters),
-                           _color_picker_bayer, 25000);
+                           _color_picker_bayer, 100);
   }
   else if(dsc->channels == 1u && dsc->filters == 9u)
   {
     _color_picker_work_1ch(pixel, roi, box, pick, dsc->xtrans,
-                           _color_picker_xtrans, 20000);
+                           _color_picker_xtrans, 100);
   }
   else
     dt_unreachable_codepath();
@@ -371,8 +371,9 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_get_times(&end_time);
-    fprintf(stderr, "colorpicker stats reading took %.3f secs (%.3f CPU)\n",
-        end_time.clock - start_time.clock, end_time.user - start_time.user);
+    fprintf(stderr, "colorpicker stats reading %d channels (filters %d) cst %d -> %d size %ld denoised %d took %.3f secs (%.3f CPU)\n",
+            dsc->channels, dsc->filters, image_cst, picker_cst, _box_size(box), denoise,
+            end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 }
 
