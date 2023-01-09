@@ -139,11 +139,17 @@ const dt_lib_histogram_color_harmony_t dt_color_harmonies[DT_LIB_HISTOGRAM_HARMO
 };
 
 // FIXME: are these lists available from the enum/options in darktableconfig.xml?
-const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { "histogram", "waveform", "rgb parade", "vectorscope" };
+const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { N_("histogram"), N_("waveform"), N_("rgb parade"), N_("vectorscope") };
 const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_SCALE_N] = { "logarithmic", "linear" };
 const gchar *dt_lib_histogram_orient_names[DT_LIB_HISTOGRAM_ORIENT_N] = { "horizontal", "vertical" };
 const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "u*v*", "AzBz", "RYB" };
 const gchar *dt_lib_histogram_color_harmony_width_names[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] = { "normal", "large", "narrow", "line" };
+
+const void *dt_lib_histogram_scope_type_icons[DT_LIB_HISTOGRAM_SCOPE_N] =
+             { dtgtk_cairo_paint_histogram_scope,
+               dtgtk_cairo_paint_waveform_scope,
+               dtgtk_cairo_paint_rgb_parade,
+               dtgtk_cairo_paint_vectorscope };
 
 typedef struct dt_lib_histogram_t
 {
@@ -166,9 +172,11 @@ typedef struct dt_lib_histogram_t
   double vectorscope_radius;
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
-  GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
+  GtkWidget *button_box_main;          // GtkButtonBox -- contains scope control buttons
+  GtkWidget *button_box_opt;           // GtkButtonBox -- contains options buttons
   GtkWidget *button_box_rgb;           // GtkButtonBox -- contains RGB channels buttons
-  GtkWidget *scope_type_button;        // GtkButton -- histogram/waveform/vectorscope control
+  GtkWidget *scope_type_button
+    [DT_LIB_HISTOGRAM_SCOPE_N];        // Array of GtkToggleButton -- histogram control
   GtkWidget *scope_view_button;        // GtkButton -- how to render the current scope
   GtkWidget *red_channel_button;       // GtkToggleButton -- enable/disable processing R channel
   GtkWidget *green_channel_button;     // GtkToggleButton -- enable/disable processing G channel
@@ -1182,7 +1190,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       graph_pat = cairo_pop_group(cr);
     }
 
-    if(gtk_widget_get_visible(d->button_box))
+    if(gtk_widget_get_visible(d->button_box_main))
     {
       // draw information about current selected harmony
       PangoLayout *layout;
@@ -1523,9 +1531,6 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
 static void _color_harmony_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->show_color_harmony = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  gtk_widget_set_tooltip_text(button, d->show_color_harmony ?
-                                  _("hide color harmony guide lines") :
-                                  _("show color harmony guide lines"));
   dt_conf_set_bool("plugins/darkroom/histogram/vectorscope/show_color_harmony", d->show_color_harmony);
   dt_control_queue_redraw_widget(d->scope_draw);
 }
@@ -1586,7 +1591,9 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
             d->harmony_rotation = (int)(d->harmony_rotation / 15.) * 15;
             a = d->harmony_rotation + 15 * delta_y;
           }
-        if(a >= 0 && a < 360) d->harmony_rotation = a;
+        a %= 360;
+        if(a < 0) a += 360;
+        d->harmony_rotation = a;
         dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_rotation", d->harmony_rotation);
       }
       dt_control_queue_redraw_widget(d->scope_draw);
@@ -1705,40 +1712,28 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
   }
 }
 
-static void _scope_type_update(dt_lib_histogram_t *d)
+  static void _scope_type_update(dt_lib_histogram_t *d)
 {
   gtk_widget_hide(d->color_harmony_button);
 
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      gtk_widget_set_tooltip_text(d->scope_type_button, _("set mode to waveform"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_type_button),
-                             dtgtk_cairo_paint_histogram_scope, CPF_NONE, NULL);
       gtk_widget_show(d->button_box_rgb);
       gtk_widget_hide(d->colorspace_button);
       _histogram_scale_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      gtk_widget_set_tooltip_text(d->scope_type_button, _("set mode to rgb parade"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_type_button),
-                             dtgtk_cairo_paint_waveform_scope, CPF_NONE, NULL);
       gtk_widget_show(d->button_box_rgb);
       gtk_widget_hide(d->colorspace_button);
       _scope_orient_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_PARADE:
-      gtk_widget_set_tooltip_text(d->scope_type_button, _("set mode to vectorscope"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_type_button),
-                             dtgtk_cairo_paint_rgb_parade, CPF_NONE, NULL);
-      gtk_widget_show(d->button_box_rgb);
+      gtk_widget_hide(d->button_box_rgb);
       gtk_widget_hide(d->colorspace_button);
       _scope_orient_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      gtk_widget_set_tooltip_text(d->scope_type_button, _("set mode to histogram"));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_type_button),
-                             dtgtk_cairo_paint_vectorscope, CPF_NONE, NULL);
       gtk_widget_hide(d->button_box_rgb);
       gtk_widget_show(d->colorspace_button);
       _vectorscope_view_update(d);
@@ -1748,14 +1743,12 @@ static void _scope_type_update(dt_lib_histogram_t *d)
   }
 }
 
-static void _scope_type_clicked(GtkWidget *button, dt_lib_histogram_t *d)
+static void _scope_type_changed(dt_lib_histogram_t *d)
 {
-  // NOTE: this isn't a "real" button but more of a multi-state toggle/switcher button
-  d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
   dt_conf_set_string("plugins/darkroom/histogram/mode", dt_lib_histogram_scope_type_names[d->scope_type]);
   _scope_type_update(d);
 
-  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE)
+  if(d->waveform_bins)
   {
     // waveform and RGB parade both work on the same underlying data
     dt_control_queue_redraw_widget(d->scope_draw);
@@ -1771,6 +1764,27 @@ static void _scope_type_clicked(GtkWidget *button, dt_lib_histogram_t *d)
   }
 }
 
+static gboolean _scope_histogram_mode_clicked(GtkWidget *button, GdkEventButton *event, dt_lib_histogram_t *d)
+{
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
+    return TRUE;
+  int i;
+  for(i = 0; i < DT_LIB_HISTOGRAM_SCOPE_N; i++) // find the position of the button
+    if(d->scope_type_button[i] == button) break;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->scope_type_button[d->scope_type]), FALSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
+  const dt_lib_histogram_scope_type_t scope_type_old = d->scope_type;
+  d->scope_type = i;
+  // waveform and RGB parade both work on the same underlying data
+  if((d->scope_type != DT_LIB_HISTOGRAM_SCOPE_PARADE ||
+      scope_type_old != DT_LIB_HISTOGRAM_SCOPE_WAVEFORM) &&
+      (scope_type_old != DT_LIB_HISTOGRAM_SCOPE_PARADE ||
+      d->scope_type != DT_LIB_HISTOGRAM_SCOPE_WAVEFORM))
+    d->waveform_bins = 0;
+  _scope_type_changed(d);
+  return TRUE;
+}
+
 static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
 {
   switch(d->scope_type)
@@ -1780,7 +1794,7 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
       dt_conf_set_string("plugins/darkroom/histogram/histogram",
                          dt_lib_histogram_scale_names[d->histogram_scale]);
       _histogram_scale_update(d);
-      // don't need to reprocess data
+      // no need to reprocess data
       dt_control_queue_redraw_widget(d->scope_draw);
       return;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
@@ -1827,7 +1841,6 @@ static void _colorspace_clicked(GtkWidget *button, dt_lib_histogram_t *d)
 static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->red = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  gtk_widget_set_tooltip_text(button, d->red ? _("hide red channel") : _("show red channel"));
   dt_conf_set_bool("plugins/darkroom/histogram/show_red", d->red);
   dt_control_queue_redraw_widget(d->scope_draw);
 }
@@ -1835,7 +1848,6 @@ static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->green = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  gtk_widget_set_tooltip_text(button, d->green ? _("hide green channel") : _("show green channel"));
   dt_conf_set_bool("plugins/darkroom/histogram/show_green", d->green);
   dt_control_queue_redraw_widget(d->scope_draw);
 }
@@ -1843,7 +1855,6 @@ static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->blue = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-  gtk_widget_set_tooltip_text(button, d->blue ? _("hide blue channel") : _("show blue channel"));
   dt_conf_set_bool("plugins/darkroom/histogram/show_blue", d->blue);
   dt_control_queue_redraw_widget(d->scope_draw);
 }
@@ -1852,7 +1863,9 @@ static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCross
                                                  gpointer user_data)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  gtk_widget_show(d->button_box);
+  _scope_type_update(d);
+  gtk_widget_show(d->button_box_main);
+  gtk_widget_show(d->button_box_opt);
   return TRUE;
 }
 
@@ -1861,9 +1874,6 @@ static gboolean _eventbox_motion_notify_callback(GtkWidget *widget, GdkEventCros
 {
   //This is required in order to correctly display the button tooltips
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  gtk_widget_set_tooltip_text(d->green_channel_button, d->green ? _("hide green channel") : _("show green channel"));
-  gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("hide blue channel") : _("show blue channel"));
-  gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("hide red channel") : _("show red channel"));
   _scope_type_update(d);
   return TRUE;
 }
@@ -1875,8 +1885,8 @@ static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCross
   if(!(event->mode == GDK_CROSSING_UNGRAB && event->detail == GDK_NOTIFY_INFERIOR))
   {
     dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-    gtk_widget_hide(d->button_box);
-    gtk_widget_hide(d->button_box_rgb);
+    gtk_widget_hide(d->button_box_main);
+    gtk_widget_hide(d->button_box_opt);
   }
   return TRUE;
 }
@@ -1916,7 +1926,7 @@ static void _lib_histogram_cycle_mode_callback(dt_action_t *action)
         d->scope_orient = DT_LIB_HISTOGRAM_ORIENT_HORI;
         dt_conf_set_string("plugins/darkroom/histogram/orient",
                            dt_lib_histogram_orient_names[d->scope_orient]);
-        _scope_type_clicked(d->scope_type_button, d);
+        _scope_histogram_mode_clicked(d->scope_type_button[DT_LIB_HISTOGRAM_SCOPE_WAVEFORM], NULL, d);
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
@@ -1929,7 +1939,10 @@ static void _lib_histogram_cycle_mode_callback(dt_action_t *action)
         d->scope_orient = DT_LIB_HISTOGRAM_ORIENT_HORI;
         dt_conf_set_string("plugins/darkroom/histogram/orient",
                            dt_lib_histogram_orient_names[d->scope_orient]);
-        _scope_type_clicked(d->scope_type_button, d);
+        // we can't reuse histogram data, as we are changing orientation
+        // so this will force recalculation
+        d->waveform_bins = 0;
+        _scope_histogram_mode_clicked(d->scope_type_button[DT_LIB_HISTOGRAM_SCOPE_PARADE], NULL, d);
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_PARADE:
@@ -1945,7 +1958,7 @@ static void _lib_histogram_cycle_mode_callback(dt_action_t *action)
         d->vectorscope_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
         dt_conf_set_string("plugins/darkroom/histogram/vectorscope/scale",
                            dt_lib_histogram_scale_names[d->vectorscope_scale]);
-        _scope_type_clicked(d->scope_type_button, d);
+        _scope_histogram_mode_clicked(d->scope_type_button[DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE], NULL, d);
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
@@ -1965,22 +1978,12 @@ static void _lib_histogram_cycle_mode_callback(dt_action_t *action)
         d->histogram_scale = DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC;
         dt_conf_set_string("plugins/darkroom/histogram/histogram",
                            dt_lib_histogram_scale_names[d->histogram_scale]);
-        _scope_type_clicked(d->scope_type_button, d);
+        _scope_histogram_mode_clicked(d->scope_type_button[DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM], NULL, d);
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       dt_unreachable_codepath();
   }
-}
-
-static void _lib_histogram_change_mode_callback(dt_action_t *action)
-{
-  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  d->dragging = FALSE;
-  d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
-  dt_control_change_cursor(GDK_LEFT_PTR);
-  _scope_type_clicked(d->scope_type_button, d);
 }
 
 static void _lib_histogram_change_type_callback(dt_action_t *action)
@@ -2010,8 +2013,8 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   }
   // button box should be hidden when enter view, unless mouse is over
   // histogram, in which case gtk kindly generates enter events
-  gtk_widget_hide(d->button_box);
-  gtk_widget_hide(d->button_box_rgb);
+  gtk_widget_hide(d->button_box_main);
+  gtk_widget_hide(d->button_box_opt);
 
   // FIXME: set histogram data to blank if enter tether with no active image
 }
@@ -2146,79 +2149,100 @@ void gui_init(dt_lib_module_t *self)
   dt_action_register(ac, NULL, _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_widget_set_events(d->scope_draw, GDK_ENTER_NOTIFY_MASK);
 
-  // a row of control buttons
-  d->button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
-  gtk_button_box_set_layout(GTK_BUTTON_BOX(d->button_box), GTK_BUTTONBOX_EXPAND);
-  gtk_widget_set_valign(d->button_box, GTK_ALIGN_START);
-  gtk_widget_set_halign(d->button_box, GTK_ALIGN_START);
+  // a row of control buttons, split in two button boxes, on left and right side
+  d->button_box_main = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  dt_gui_add_class(d->button_box_main, "button_box");
+  gtk_widget_set_valign(d->button_box_main, GTK_ALIGN_START);
+  gtk_widget_set_halign(d->button_box_main, GTK_ALIGN_START);
 
-  d->button_box_rgb = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
-  gtk_button_box_set_layout(GTK_BUTTON_BOX(d->button_box_rgb), GTK_BUTTONBOX_EXPAND);
-  gtk_widget_set_valign(d->button_box_rgb, GTK_ALIGN_START);
+  // this intermediate box is needed to make the actions on buttons work
+  GtkWidget *box_left = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_valign(box_left, GTK_ALIGN_START);
+  gtk_widget_set_halign(box_left, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(d->button_box_main), box_left, FALSE, FALSE, 0);
+
+  d->button_box_opt = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  dt_gui_add_class(d->button_box_opt, "button_box");
+  gtk_widget_set_valign(d->button_box_opt, GTK_ALIGN_START);
+  gtk_widget_set_halign(d->button_box_opt, GTK_ALIGN_END);
+
+  // this intermediate box is needed to make the actions on buttons work
+  GtkWidget *box_right = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_valign(box_right, GTK_ALIGN_START);
+  gtk_widget_set_halign(box_right, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(d->button_box_opt), box_right, FALSE, FALSE, 0);
+
+  d->button_box_rgb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_valign(d->button_box_rgb, GTK_ALIGN_CENTER);
   gtk_widget_set_halign(d->button_box_rgb, GTK_ALIGN_END);
-
-  // FIXME: should histogram/waveform/vectorscope each be its own widget, and a GtkStack to switch between them?
-
-  // First two buttons choose scope type and view of that scope (if
-  // applicable). On click dt_lib_histogram_t data is updated,
-  // icons/tooltips are updated, and button sensitivity is set as
-  // needed.
+  gtk_box_pack_end(GTK_BOX(box_right), d->button_box_rgb, FALSE, FALSE, 0);
 
   // FIXME: the button transitions when they appear on mouseover (mouse enters scope widget) or change (mouse click) cause redraws of the entire scope -- is there a way to avoid this?
-  // FIXME: this could be a combobox to allow for more types and not to have to swap the icon on click
-  // icons will be filled in by _scope_type_update()
-  d->scope_type_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  ac = dt_action_define(dark, NULL, N_("switch histogram mode"), d->scope_type_button, NULL);
-  dt_action_register(ac, NULL, _lib_histogram_change_mode_callback, 0, 0);
-  gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_type_button, FALSE, FALSE, 0);
-  d->scope_view_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  ac = dt_action_define(dark, NULL, N_("switch histogram type"), d->scope_view_button, NULL);
-  dt_action_register(ac, NULL, _lib_histogram_change_type_callback, 0, 0);
-  gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_view_button, FALSE, FALSE, 0);
+
+  gchar *text;
+  for(int i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
+  {
+    d->scope_type_button[i] = dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
+    text = g_strdup_printf("%s %s", _("set mode to"), _(dt_lib_histogram_scope_type_names[i]));
+    gtk_widget_set_tooltip_text(d->scope_type_button[i], text);
+    g_free(text);
+    dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i], d->scope_type_button[i], &dt_action_def_toggle);
+    gtk_box_pack_start(GTK_BOX(box_left), d->scope_type_button[i], FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(d->scope_type_button[i]), "button-press-event", G_CALLBACK(_scope_histogram_mode_clicked), d);
+  }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->scope_type_button[d->scope_type]), TRUE);
 
   dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
   if(teth)
   {
     dt_action_register(teth, N_("cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
     dt_action_register(teth, N_("hide histogram"), _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-    dt_action_register(teth, N_("switch histogram mode"), _lib_histogram_change_mode_callback, 0, 0);
-    dt_action_register(teth, N_("switch histogram type"), _lib_histogram_change_type_callback, 0, 0);
+    dt_action_register(teth, N_("switch histogram view"), _lib_histogram_change_type_callback, 0, 0);
   }
 
   // red/green/blue channel on/off
-  // these are toggle boxes with a meaningful active state, unlike the type/view buttons
-  d->red_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
-  gtk_widget_set_name(d->red_channel_button, "red-channel-button");
-  gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("hide red channel") : _("show red channel"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->red_channel_button), d->red);
-  gtk_box_pack_start(GTK_BOX(d->button_box_rgb), d->red_channel_button, FALSE, FALSE, 0);
+  d->blue_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
+  dt_gui_add_class(d->blue_channel_button, "rgb_toggle");
+  gtk_widget_set_name(d->blue_channel_button, "blue-channel-button");
+  gtk_widget_set_tooltip_text(d->blue_channel_button, _("toggle blue channel"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->blue_channel_button), d->blue);
+  dt_action_define(dark, N_("toggle colors"), N_("blue"), d->blue_channel_button, &dt_action_def_toggle);
+  gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->blue_channel_button, FALSE, FALSE, 0);
 
   d->green_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
+  dt_gui_add_class(d->green_channel_button, "rgb_toggle");
   gtk_widget_set_name(d->green_channel_button, "green-channel-button");
-  gtk_widget_set_tooltip_text(d->green_channel_button, d->green ? _("hide green channel") : _("show green channel"));
+  gtk_widget_set_tooltip_text(d->green_channel_button, _("toggle green channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->green_channel_button), d->green);
-  gtk_box_pack_start(GTK_BOX(d->button_box_rgb), d->green_channel_button, FALSE, FALSE, 0);
+  dt_action_define(dark, N_("toggle colors"), N_("green"), d->green_channel_button, &dt_action_def_toggle);
+  gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->green_channel_button, FALSE, FALSE, 0);
 
-  d->blue_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
-  gtk_widget_set_name(d->blue_channel_button, "blue-channel-button");
-  gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("hide blue channel") : _("show blue channel"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->blue_channel_button), d->blue);
-  gtk_box_pack_start(GTK_BOX(d->button_box_rgb), d->blue_channel_button, FALSE, FALSE, 0);
+  d->red_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
+  dt_gui_add_class(d->red_channel_button, "rgb_toggle");
+  gtk_widget_set_name(d->red_channel_button, "red-channel-button");
+  gtk_widget_set_tooltip_text(d->red_channel_button, _("toggle red channel"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->red_channel_button), d->red);
+  dt_action_define(dark, N_("toggle colors"), N_("red"), d->red_channel_button, &dt_action_def_toggle);
+  gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->red_channel_button, FALSE, FALSE, 0);
+
+  d->scope_view_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
+  ac = dt_action_define(dark, NULL, N_("switch histogram view"), d->scope_view_button, &dt_action_def_button);
+  gtk_box_pack_end(GTK_BOX(box_right), d->scope_view_button, FALSE, FALSE, 0);
 
   d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  gtk_box_pack_start(GTK_BOX(d->button_box), d->colorspace_button, FALSE, FALSE, 0);
+  dt_action_define(dark, NULL, N_("cycle vectorscope types"), d->colorspace_button, &dt_action_def_button);
+  gtk_box_pack_end(GTK_BOX(box_right), d->colorspace_button, FALSE, FALSE, 0);
 
   d->color_harmony_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_swatch, CPF_NONE, NULL);
-  gtk_widget_set_tooltip_text(d->color_harmony_button, d->show_color_harmony ?
-                                  _("hide color harmony guide lines") :
-                                  _("show color harmony guide lines"));
+  gtk_widget_set_tooltip_text(d->color_harmony_button, _("toggle color harmony guide lines"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button), d->show_color_harmony);
-  gtk_box_pack_start(GTK_BOX(d->button_box), d->color_harmony_button, FALSE, FALSE, 0);
+  ac = dt_action_define(dark, NULL, N_("toggle color harmony guide lines"), d->color_harmony_button, &dt_action_def_toggle);
+  gtk_box_pack_end(GTK_BOX(box_right), d->color_harmony_button, FALSE, FALSE, 0);
 
   // will change sensitivity of channel buttons, hence must run after all buttons are declared
   _scope_type_update(d);
 
-  // FIXME: add a brightness control (via GtkScaleButton?)
+  // FIXME: add a brightness control (via GtkScaleButton?). Different per each mode?
 
   // assemble the widgets
 
@@ -2227,7 +2251,7 @@ void gui_init(dt_lib_module_t *self)
   // show/hide the buttons. The drawable is below the buttons, and
   // hence won't catch motion events for the buttons, and gets a leave
   // event when the cursor moves over the buttons.
-
+  //
   // |----- EventBox -----|
   // |                    |
   // |  |-- Overlay  --|  |
@@ -2244,16 +2268,14 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *eventbox = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(overlay), d->scope_draw);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box_rgb);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box_main);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box_opt);
   gtk_container_add(GTK_CONTAINER(eventbox), overlay);
   self->widget = eventbox;
 
   gtk_widget_set_name(self->widget, "main-histogram");
 
   /* connect callbacks */
-
-  g_signal_connect(G_OBJECT(d->scope_type_button), "clicked", G_CALLBACK(_scope_type_clicked), d);
   g_signal_connect(G_OBJECT(d->scope_view_button), "clicked", G_CALLBACK(_scope_view_clicked), d);
   g_signal_connect(G_OBJECT(d->colorspace_button), "clicked", G_CALLBACK(_colorspace_clicked), d);
 
