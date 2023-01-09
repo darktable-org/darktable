@@ -250,10 +250,11 @@ static void _set_sample_point(dt_lib_module_t *self, const float pos[2])
   _update_size(self, DT_LIB_COLORPICKER_SIZE_POINT);
 }
 
-static void _set_sample_denoise(dt_lib_module_t *self, const gboolean denoise)
+static void _setup_sample(dt_lib_module_t *self, const gboolean denoise, const gboolean pick_output)
 {
   dt_lib_colorpicker_t *data = self->data;
   data->primary_sample.denoise = denoise;
+  data->primary_sample.pick_output = pick_output;
 }
 
 static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
@@ -535,7 +536,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;
   darktable.lib->proxy.colorpicker.set_sample_box_area = _set_sample_box_area;
   darktable.lib->proxy.colorpicker.set_sample_point = _set_sample_point;
-  darktable.lib->proxy.colorpicker.set_sample_denoise = _set_sample_denoise;
+  darktable.lib->proxy.colorpicker.setup_sample = _setup_sample;
 
   const char *str = dt_conf_get_string_const("ui_last/colorpicker_model"), **names;
   names = dt_lib_colorpicker_model_names;
@@ -673,6 +674,7 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.update_samples = NULL;
   darktable.lib->proxy.colorpicker.set_sample_box_area = NULL;
   darktable.lib->proxy.colorpicker.set_sample_point = NULL;
+  darktable.lib->proxy.colorpicker.setup_sample = NULL;
 
   darktable.lib->proxy.colorpicker.primary_sample = NULL;
   while(darktable.lib->proxy.colorpicker.live_samples)

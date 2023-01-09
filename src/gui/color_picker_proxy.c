@@ -199,7 +199,9 @@ static gboolean _color_picker_callback_button_press(GtkWidget *button, GdkEventB
     else
       dt_unreachable_codepath();
 
-    dt_lib_colorpicker_set_denoise(darktable.lib, flags & DT_COLOR_PICKER_DENOISE);
+    dt_lib_colorpicker_setup(darktable.lib,
+                             flags & DT_COLOR_PICKER_DENOISE,
+                             flags & DT_COLOR_PICKER_IO);
 
     // important to have set up state before toggling button and
     // triggering more callbacks

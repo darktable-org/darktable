@@ -2146,11 +2146,11 @@ void dt_iop_gui_init_blendif(GtkWidget *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(header), gtk_label_new(""),
                        FALSE, FALSE, DT_PIXEL_APPLY_DPI(10));
 
-    bd->colorpicker = dt_color_picker_new(module, DT_COLOR_PICKER_POINT_AREA, header);
+    bd->colorpicker = dt_color_picker_new(module, DT_COLOR_PICKER_POINT_AREA | DT_COLOR_PICKER_IO, header);
     gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image\nctrl+click or right-click to select an area"));
     gtk_widget_set_name(bd->colorpicker, "keep-active");
 
-    bd->colorpicker_set_values = dt_color_picker_new(module, DT_COLOR_PICKER_AREA, header);
+    bd->colorpicker_set_values = dt_color_picker_new(module, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_IO, header);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->colorpicker_set_values),
                                  dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
     dt_gui_add_class(bd->colorpicker_set_values, "dt_transparent_background");
