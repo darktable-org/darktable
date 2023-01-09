@@ -32,7 +32,6 @@ static inline size_t _box_size(const int *const box)
 
 // define custom reduction operations to handle pixel stats/weights
 // we can't return an array from a function, so wrap the array type in a struct
-// FIXME: use lib_colorpicker_sample_statistics instead? or do we need a locally allocated version of the data for the sake of speed?
 typedef struct _stats_pixel {
   dt_aligned_pixel_t acc, min, max;
 } _stats_pixel;
@@ -82,7 +81,7 @@ static inline void _update_stats_1ch(_stats_pixel *const stats,
 static inline void _update_stats_4ch(_stats_pixel *const stats,
                                      const dt_aligned_pixel_t pick)
 {
-  // FIXME: if non Lab/RGB only use three channels, can use for_each_channel()
+  // need all channels as blend pickers may use 4th to reverse hues
   for_four_channels(k)
     _update_stats_1ch(stats, k, pick[k]);
 }
@@ -115,7 +114,6 @@ static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_
 
 typedef void((*picker_worker_4ch)(_stats_pixel *const stats,
                                   const float *const pixels, const size_t width,
-                                  // FIXME: could be gconstpointer
                                   const void *const data));
 typedef void((*picker_worker_1ch)(_stats_pixel *const stats,
                                   _count_pixel *const weights,
@@ -123,7 +121,6 @@ typedef void((*picker_worker_1ch)(_stats_pixel *const stats,
                                   const size_t j,
                                   const dt_iop_roi_t *const roi,
                                   const int *const box,
-                                  // FIXME: could be gconstpointer
                                   const void *const data));
 
 static inline void _color_picker_rgb_or_lab(_stats_pixel *const stats,
@@ -143,7 +140,8 @@ static inline void _color_picker_lch(_stats_pixel *const stats,
   {
     dt_aligned_pixel_t pick;
     dt_Lab_2_LCH(pixels + i, pick);
-    // FIXME: is this used?
+    // allow for determining sensible max/min values
+    // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
     pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
     _update_stats_4ch(stats, pick);
   }
@@ -157,7 +155,8 @@ static inline void _color_picker_hsl(_stats_pixel *const stats,
   {
     dt_aligned_pixel_t pick;
     dt_RGB_2_HSL(pixels + i, pick);
-    // FIXME: is this used?
+    // allow for determining sensible max/min values
+    // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
     pick[3] = pick[0] < 0.5f ? pick[0] + 0.5f : pick[0] - 0.5f;
     _update_stats_4ch(stats, pick);
   }
@@ -172,7 +171,8 @@ static inline void _color_picker_jzczhz(_stats_pixel *const stats,
   {
     dt_aligned_pixel_t pick;
     rgb_to_JzCzhz(pixels + i, pick, profile);
-    // FIXME: is this used?
+    // allow for determining sensible max/min values
+    // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
     pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
     _update_stats_4ch(stats, pick);
   }
@@ -229,9 +229,8 @@ static void _color_picker_work_4ch(const float *const pixel,
                          .min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX },
                          .max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX } };
 
-  // FIXME: will this run faster if we use collapse(2)? will this take rejiggering of function calls?
-  // cutoffs for using threads depends on # of samples and complexity
-  // of the colorspace conversion
+  // min_for_threads depends on # of samples and complexity of the
+  // colorspace conversion
 #if defined(_OPENMP) && _CUSTOM_REDUCTIONS
 #pragma omp parallel for default(none) if (size > min_for_threads)        \
   dt_omp_firstprivate(worker, pixel, stride, off_mul, off_add, box, data) \
@@ -312,8 +311,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
       float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * roi->width, &padded_size); //TODO: alloc in caller
 
       // blur without clipping negatives because Lab a and b channels can be legitimately negative
-      // FIXME: this blurs whole image even when just a bit is sampled
-      // FIXME: if this is done in pixelpipe, we should have a spare buffer (output) to write this into, hence can skip the alloc above, and all do this on the input to filmic
+      // FIXME: this blurs whole image even when just a bit is sampled in the case of CPU path
       blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
       dt_free_align(tempbuf);
       source = denoised;

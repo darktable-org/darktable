@@ -619,6 +619,7 @@ static int _pixelpipe_picker_box(dt_iop_module_t *module, const dt_iop_roi_t *ro
 {
   if(picker_source == PIXELPIPE_PICKER_OUTPUT && !sample->pick_output)
     return 1;
+
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
   const int width = roi->width;
@@ -831,12 +832,9 @@ static void _pixelpipe_pick_samples(dt_develop_t *dev, dt_iop_module_t *module,
        !_pixelpipe_picker_box(module, roi_in, sample, PIXELPIPE_PICKER_INPUT, box))
     {
       // pixel input is in display profile, hence the sample output will be as well
-      // FIXME: previously we used special purpose code here, but the generic color picker code blurs the image -- do we want to keep this behavior? and similarly if we *do* want to blur the image, should we do this once rather than once for each sample?
       dt_color_picker_helper(dsc, input, roi_in, box, sample->denoise,
                              sample->display,
-                             IOP_CS_RGB, IOP_CS_RGB,
-                             // FIXME: this is ignored, just use NULL?
-                             histogram_profile);
+                             IOP_CS_RGB, IOP_CS_RGB, display_profile);
 
       // NOTE: conversions assume that dt_aligned_pixel_t[x] has no
       // padding, e.g. is equivalent to float[x*4], and that on failure
