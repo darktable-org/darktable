@@ -107,6 +107,7 @@ const gchar *dt_action_effect_value[]
       N_("bottom"),
       N_("set"),
       NULL };
+
 const gchar *dt_action_effect_selection[]
   = { N_("popup"),
       N_("next"),
@@ -115,6 +116,7 @@ const gchar *dt_action_effect_selection[]
       N_("last"),
       N_("first"),
       NULL };
+
 const gchar *dt_action_effect_toggle[]
   = { N_("toggle"),
       N_("on"),
@@ -124,17 +126,20 @@ const gchar *dt_action_effect_toggle[]
       N_("right-toggle"),
       N_("right-on"),
       NULL };
+
 const gchar *dt_action_effect_hold[]
   = { N_("hold"),
       N_("on"),
       N_("off"),
       N_("toggle"),
       NULL };
+
 const gchar *dt_action_effect_activate[]
   = { N_("activate"),
       N_("ctrl-activate"),
       N_("right-activate"),
       NULL };
+
 const gchar *dt_action_effect_presets[]
   = { N_("show"),
       N_("previous"),
@@ -145,10 +150,12 @@ const gchar *dt_action_effect_presets[]
       N_("update"),
       N_("preferences"),
       NULL };
+
 const gchar *dt_action_effect_preset_iop[]
   = { N_("apply"),
       N_("apply on new instance"),
       NULL };
+
 const gchar *dt_action_effect_entry[]
   = { N_("focus"),
       N_("start"),
@@ -161,10 +168,13 @@ const dt_action_element_def_t dt_action_elements_hold[]
 
 const dt_action_element_def_t _action_elements_toggle[]
   = { { NULL, dt_action_effect_toggle } };
+
 const dt_action_element_def_t _action_elements_button[]
   = { { NULL, dt_action_effect_activate } };
+
 const dt_action_element_def_t _action_elements_entry[]
   = { { NULL, dt_action_effect_entry } };
+
 const dt_action_element_def_t _action_elements_value_fallback[]
   = { { NULL, dt_action_effect_value } };
 
@@ -173,17 +183,18 @@ static float _action_process_toggle(gpointer target, dt_action_element_t element
   float value = gtk_toggle_button_get_active(target);
 
   if(!isnan(move_size) &&
-     !((effect == DT_ACTION_EFFECT_ON      ||
-        effect == DT_ACTION_EFFECT_ON_CTRL ||
-        effect == DT_ACTION_EFFECT_ON_RIGHT) && value) &&
-     (effect != DT_ACTION_EFFECT_OFF         || value))
+     !((effect == DT_ACTION_EFFECT_ON
+        || effect == DT_ACTION_EFFECT_ON_CTRL
+        || effect == DT_ACTION_EFFECT_ON_RIGHT) && value)
+     && (effect != DT_ACTION_EFFECT_OFF
+         || value))
   {
     GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
-    event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL ||
-                           effect == DT_ACTION_EFFECT_ON_CTRL)
+    event->button.state = (effect == DT_ACTION_EFFECT_TOGGLE_CTRL
+                           || effect == DT_ACTION_EFFECT_ON_CTRL)
                         ? GDK_CONTROL_MASK : 0;
-    event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT ||
-                            effect == DT_ACTION_EFFECT_ON_RIGHT)
+    event->button.button = (effect == DT_ACTION_EFFECT_TOGGLE_RIGHT
+                            || effect == DT_ACTION_EFFECT_ON_RIGHT)
                          ? GDK_BUTTON_SECONDARY : GDK_BUTTON_PRIMARY;
 
     if(!gtk_widget_get_realized(target)) gtk_widget_realize(target);
@@ -3919,8 +3930,8 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
         && strcmp(new_action->id, "preset")
         && (!strcmp((*insertion_point)->id, "preset")
             || g_utf8_collate((*insertion_point)->label, new_action->label) <
-               (*((*insertion_point)->label) == '<' ? 1000 : 0) -
-               (*(        new_action->label) == '<' ? 1000 : 0)))
+                 ((*((*insertion_point)->label) == '<' ? 1000 : 0) -
+                  (*(        new_action->label) == '<' ? 1000 : 0))))
   {
     insertion_point = &(*insertion_point)->next;
   }
@@ -3937,8 +3948,10 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
   {
     if(owner == &darktable.control->actions_lua) create = TRUE;
 
-    const gboolean needs_translation = !owner || owner->type != DT_ACTION_TYPE_SECTION ||
-                                       (strcmp(owner->id, "styles") && strcmp(owner->id, "preset"));
+    const gboolean needs_translation =
+      !owner
+      || owner->type != DT_ACTION_TYPE_SECTION
+      || (strcmp(owner->id, "styles") && strcmp(owner->id, "preset"));
 
     const gchar *id_start = needs_translation ? NQ_(*path) : *path;
 
