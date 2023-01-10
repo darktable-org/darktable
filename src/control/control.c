@@ -106,19 +106,85 @@ const dt_action_def_t dt_action_def_modifiers
 
 void dt_control_init(dt_control_t *s)
 {
-  s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL, "global", C_("accel", "global"), .next = &s->actions_views };
-  s->actions_views = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "views", C_("accel", "views"), .next = &s->actions_libs, .target = &s->actions_thumb };
-  s->actions_thumb = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "thumbtable", C_("accel", "thumbtable"), .owner = &s->actions_views };
-  s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lib", C_("accel", "utility modules"), .next = &s->actions_iops };
-  s->actions_format = (dt_action_t){ DT_ACTION_TYPE_SECTION, "format", C_("accel", "format") };   // will be placed under lib/export
-  s->actions_storage = (dt_action_t){ DT_ACTION_TYPE_SECTION, "storage", C_("accel", "storage")}; // will be placed under lib/export
-  s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "iop", C_("accel", "processing modules"), .next = &s->actions_lua, .target = &s->actions_blend };
-  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND, "blend", C_("accel", "<blending>"), .owner = &s->actions_iops };
-  s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lua", C_("accel", "lua scripts"), .next = &s->actions_fallbacks };
-  s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "fallbacks", C_("accel", "fallbacks") };
+  s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL,
+    "global",
+    C_("accel", "global"),
+    .target = NULL,
+    .owner = NULL,
+    .next = &s->actions_views };
+
+  s->actions_views = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "views",
+    C_("accel", "views"),
+    .target = &s->actions_thumb,
+    .owner = NULL,
+    .next = &s->actions_libs };
+
+  s->actions_thumb = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "thumbtable",
+    C_("accel", "thumbtable"),
+    .target = NULL,
+    .owner = &s->actions_views,
+    .next = NULL };
+
+  s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "lib",
+    C_("accel", "utility modules"),
+    NULL,
+    NULL,
+    .next = &s->actions_iops };
+
+  s->actions_format = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+    "format",
+    C_("accel", "format"),
+    NULL,
+    NULL,
+    NULL };   // will be placed under lib/export
+
+  s->actions_storage = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+    "storage",
+    C_("accel", "storage"),
+    NULL,
+    NULL,
+    NULL }; // will be placed under lib/export
+
+  s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "iop",
+    C_("accel", "processing modules"),
+    .target = &s->actions_blend,
+    .owner = NULL,
+    .next = &s->actions_lua };
+
+  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND,
+    "blend",
+    C_("accel", "<blending>"),
+    .target = NULL,
+    .owner = &s->actions_iops,
+    .next = NULL };
+
+  s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "lua",
+    C_("accel", "lua scripts"),
+    .target = NULL,
+    .owner = NULL,
+    .next = &s->actions_fallbacks };
+
+  s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY,
+    "fallbacks",
+    C_("accel", "fallbacks"),
+    NULL,
+    NULL,
+    NULL };
+
   s->actions = &s->actions_global;
 
-  s->actions_focus = (dt_action_t){ DT_ACTION_TYPE_IOP, "focus", C_("accel", "<focused>") };
+  s->actions_focus = (dt_action_t){ DT_ACTION_TYPE_IOP,
+    "focus",
+    C_("accel", "<focused>"),
+    NULL,
+    NULL,
+    NULL };
+
   dt_action_insert_sorted(&s->actions_iops, &s->actions_focus);
 
   s->widgets = g_hash_table_new(NULL, NULL);
