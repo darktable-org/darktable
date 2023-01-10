@@ -95,6 +95,29 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     goto out;
   }
 
+  // Read Exif blob if Exiv2 did not succeed
+  if(!img->exif_inited)
+  {
+    heif_item_id exif_id;
+    int count = heif_image_handle_get_list_of_metadata_block_IDs(handle, "Exif", &exif_id, 1);
+    if(count == 1)
+    {
+      const size_t exif_size = heif_image_handle_get_metadata_size(handle, exif_id);
+      if(exif_size > 4)
+      {
+        uint8_t *exif_data = g_malloc0(exif_size);
+        err = heif_image_handle_get_metadata(handle, exif_id, exif_data);
+        if(err.code == heif_error_Ok)
+        {
+          const uint32_t exif_offset = exif_data[0] << 24 | exif_data[1] << 16 | exif_data[2] << 8 | exif_data[3];
+          if(exif_size > 4 + exif_offset)
+            dt_exif_read_from_blob(img, exif_data + 4 + exif_offset, exif_size - 4 - exif_offset);
+        }
+        g_free(exif_data);
+      }
+    }
+  }
+
   struct heif_decoding_options *decode_options = heif_decoding_options_alloc();
   decode_options->ignore_transformations = TRUE;
   // Darktable only supports LITTLE_ENDIAN systems, so RRGGBB_LE should be fine
