@@ -71,6 +71,26 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
+  /* Read Exif blob if Exiv2 did not succeed */
+  if(!img->exif_inited)
+  {
+    avifRWData *exif = &avif_image.exif;
+    if(exif && exif->size > 0)
+    {
+      /* Workaround for non-zero offset not handled by libavif as of 0.11.1 */
+      size_t offset = 0;
+#if AVIF_VERSION <= 110100
+      while(offset < exif->size - 1
+            && ((exif->data[offset] != 'I' && exif->data[offset] != 'M')
+                || exif->data[offset] != exif->data[offset + 1]))
+        ++offset;
+#else
+      avifGetExifTiffHeaderOffset(exif->data, exif->size, &offset);
+#endif
+      dt_exif_read_from_blob(img, exif->data + offset, exif->size - offset);
+    }
+  }
+
   /* This will set the depth from the avif */
   avifRGBImageSetDefaults(&rgb, &avif_image);
 
