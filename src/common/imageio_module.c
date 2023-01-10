@@ -201,23 +201,6 @@ static int dt_imageio_load_module_storage(dt_imageio_module_storage_t *module, c
 #define INCLUDE_API_FROM_MODULE_LOAD "imageio_load_module_storage"
 #include "imageio/storage/imageio_storage_api.h"
 
-  if(darktable.gui)
-  {
-    if(!module->gui_init) goto api_h_error;
-
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION,
-      module->plugin_name,
-      module->name(module),
-      NULL,
-      NULL,
-      NULL };
-
-    dt_action_insert_sorted(&darktable.control->actions_storage, &module->actions);
-  }
-  else
-  {
-    module->gui_init = _default_storage_nop;
-  }
   if(!module->dimension) module->dimension = _default_storage_dimension;
   if(!module->recommended_dimension) module->recommended_dimension = _default_storage_dimension;
   if(!module->export_dispatched) module->export_dispatched = _default_storage_nop;
@@ -242,6 +225,24 @@ static int dt_imageio_load_module_storage(dt_imageio_module_storage_t *module, c
     dt_lua_type_register_struct_type(darktable.lua_state.state, my_type);
   }
 #endif
+
+  if(darktable.gui)
+  {
+    if(!module->gui_init) goto api_h_error;
+
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+      module->plugin_name,
+      module->name(module),
+      NULL,
+      NULL,
+      NULL };
+
+    dt_action_insert_sorted(&darktable.control->actions_storage, &module->actions);
+  }
+  else
+  {
+    module->gui_init = _default_storage_nop;
+  }
 
   return 0;
 }
