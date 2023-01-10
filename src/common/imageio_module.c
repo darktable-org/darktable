@@ -25,6 +25,7 @@
 #include "control/signal.h"
 #include "gui/accelerators.h"
 #include <stdlib.h>
+
 static gint dt_imageio_sort_modules_storage(gconstpointer a, gconstpointer b)
 {
   const dt_imageio_module_storage_t *am = (const dt_imageio_module_storage_t *)a;
@@ -155,6 +156,7 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
     {
+      g_free(libname);
       free(module);
       continue;
     }
@@ -265,6 +267,7 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
     {
+      g_free(libname);
       free(module);
       continue;
     }
