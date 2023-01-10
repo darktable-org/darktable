@@ -74,23 +74,6 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
 #define INCLUDE_API_FROM_MODULE_LOAD "imageio_load_module_format"
 #include "imageio/format/imageio_format_api.h"
 
-  if(darktable.gui)
-  {
-    if(!module->gui_init) goto api_h_error;
-
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION,
-      module->plugin_name,
-      module->name(),
-      NULL,
-      NULL,
-      NULL };
-
-    dt_action_insert_sorted(&darktable.control->actions_format, &module->actions);
-  }
-  else
-  {
-    module->gui_init = _default_format_gui_init;
-  }
   if(!module->dimension) module->dimension = _default_format_dimension;
   if(!module->flags) module->flags = _default_format_flags;
   if(!module->levels) module->levels = _default_format_levels;
@@ -122,6 +105,24 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
     dt_lua_type_register_struct_type(darktable.lua_state.state, my_type);
   }
 #endif
+
+  if(darktable.gui)
+  {
+    if(!module->gui_init || !module->module) goto api_h_error;
+
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+      module->plugin_name,
+      module->name(),
+      NULL,
+      NULL,
+      NULL };
+
+    dt_action_insert_sorted(&darktable.control->actions_format, &module->actions);
+  }
+  else
+  {
+    module->gui_init = _default_format_gui_init;
+  }
 
   return 0;
 }
