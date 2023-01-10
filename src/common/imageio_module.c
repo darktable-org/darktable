@@ -77,7 +77,13 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
   {
     if(!module->gui_init) goto api_h_error;
 
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION, module->plugin_name, module->name() };
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+      module->plugin_name,
+      module->name(),
+      NULL,
+      NULL,
+      NULL };
+
     dt_action_insert_sorted(&darktable.control->actions_format, &module->actions);
   }
   else
@@ -124,22 +130,28 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
 {
   iio->plugins_format = NULL;
   GList *res = NULL;
-  dt_imageio_module_format_t *module;
+
   char plugindir[PATH_MAX] = { 0 }, plugin_name[256];
   const gchar *d_name;
+
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/plugins/imageio/format", sizeof(plugindir));
+
   GDir *dir = g_dir_open(plugindir, 0, NULL);
+
   if(!dir) return 1;
-  const int name_offset = strlen(SHARED_MODULE_PREFIX),
-            name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
+
+  const int name_offset = strlen(SHARED_MODULE_PREFIX);
+  const int name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
+
   while((d_name = g_dir_read_name(dir)))
   {
     // get lib*.so
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
-    module = (dt_imageio_module_format_t *)malloc(sizeof(dt_imageio_module_format_t));
+    dt_imageio_module_format_t *module =
+      (dt_imageio_module_format_t *)calloc(1, sizeof(dt_imageio_module_format_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
     {
@@ -156,6 +168,7 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
   }
   g_dir_close(dir);
   iio->plugins_format = res;
+
   return 0;
 }
 
@@ -189,7 +202,13 @@ static int dt_imageio_load_module_storage(dt_imageio_module_storage_t *module, c
   {
     if(!module->gui_init) goto api_h_error;
 
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION, module->plugin_name, module->name(module) };
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+      module->plugin_name,
+      module->name(module),
+      NULL,
+      NULL,
+      NULL };
+
     dt_action_insert_sorted(&darktable.control->actions_storage, &module->actions);
   }
   else
@@ -242,7 +261,7 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
-    module = (dt_imageio_module_storage_t *)malloc(sizeof(dt_imageio_module_storage_t));
+    module = (dt_imageio_module_storage_t *)calloc(1, sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
     {
