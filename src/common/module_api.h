@@ -54,6 +54,7 @@
 api_h_error:
   fprintf(stderr, "[" INCLUDE_API_FROM_MODULE_LOAD "] failed to open `%s': %s\n", module_name, g_module_error());
   if(module->module) g_module_close(module->module);
+  module->module = NULL;
   return 1;
 skip_error:
   #undef INCLUDE_API_FROM_MODULE_LOAD
@@ -93,4 +94,3 @@ skip_error:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
