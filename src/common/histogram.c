@@ -367,6 +367,9 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
     const dt_iop_colorspace_type_t cst_to, const void *pixel, uint32_t **histogram,
     const int compensate_middle_grey, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
+  dt_times_t start_time = { 0 }, end_time = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+
   switch(cst)
   {
     case IOP_CS_RAW:
@@ -391,6 +394,14 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
       histogram_stats->ch = 3u;
       break;
   }
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_get_times(&end_time);
+    fprintf(stderr, "histogram calculation %d bins %d -> %d %d channels %d pixels took %.3f secs (%.3f CPU)\n",
+            histogram_params->bins_count, cst, cst_to, histogram_stats->ch, histogram_stats->pixels,
+            end_time.clock - start_time.clock, end_time.user - start_time.user);
+  }
 }
 
 void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_stats,
@@ -398,6 +409,10 @@ void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_sta
                              uint32_t **histogram, uint32_t *histogram_max)
 {
   if(*histogram == NULL) return;
+
+  dt_times_t start_time = { 0 }, end_time = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
+
   histogram_max[0] = histogram_max[1] = histogram_max[2] = histogram_max[3] = 0;
   uint32_t *hist = *histogram;
   switch(cst)
@@ -446,6 +461,13 @@ void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_sta
           histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
       }
       break;
+  }
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_get_times(&end_time);
+    fprintf(stderr, "histogram max calc took %.3f secs (%.3f CPU)\n",
+        end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 }
 
