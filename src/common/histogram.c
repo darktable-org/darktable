@@ -193,22 +193,30 @@ inline static void histogram_helper_cs_rgb_compensated(const dt_dev_histogram_co
 
 //------------------------------------------------------------------------------
 
-inline static void histogram_helper_cs_Lab(const dt_dev_histogram_collection_params_t *const histogram_params,
+static inline void histogram_helper_cs_Lab(const dt_dev_histogram_collection_params_t *const histogram_params,
                                            const void *pixel, uint32_t *histogram, int j,
                                            const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
+  const float max_bin = histogram_params->bins_count - 1;
+  const dt_aligned_pixel_t scale = { histogram_params->mul / 100.0f,
+                                     histogram_params->mul / 256.0f,
+                                     histogram_params->mul / 256.0f, 0.0f };
+  const dt_aligned_pixel_t shift = { 0.0f, 128.0f, 128.0f, 0.0f };
 
   // process aligned pixels with SSE
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++, in += 4)
+  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
-    const uint32_t L = bin(in[0] / 100.0f, histogram_params);
-    const uint32_t a = bin((in[1] + 128.0f) / 256.0f, histogram_params);
-    const uint32_t b = bin((in[2] + 128.0f) / 256.0f, histogram_params);
-    histogram[4 * L]++;
-    histogram[4 * a + 1]++;
-    histogram[4 * b + 2]++;
+    dt_aligned_pixel_t b;
+    // note that clamping happens in float -- allows for faster code
+    // generation, but is there a risk of float inaccuracy producing
+    // offset > max-bin?
+    for_each_channel(k,aligned(in,b,scale,shift:16))
+      b[k] = CLAMP(scale[k] * (in[i*4+k] + shift[k]), 0.0f, max_bin);
+    histogram[4 * (uint32_t)b[0]]++;
+    histogram[4 * (uint32_t)b[1] + 1]++;
+    histogram[4 * (uint32_t)b[2] + 2]++;
   }
 }
 
@@ -255,7 +263,10 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
 {
   const size_t bins_total = (size_t)4 * histogram_params->bins_count;
   const size_t buf_size = bins_total * sizeof(uint32_t);
-  *histogram = realloc(*histogram, buf_size);
+  // hack to make histogram buffer always aligned
+  // FIXME: should remember its size and only realloc if it has cahnged
+  dt_free_align(*histogram);
+  *histogram = dt_alloc_align(16, buf_size);
   // hack to make reduction clause work
   uint32_t *working_hist = *histogram;
   memset(working_hist, 0, buf_size);
