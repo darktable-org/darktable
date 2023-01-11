@@ -310,50 +310,27 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
                          uint32_t **histogram, const dt_worker Worker,
                          const dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  const int nthreads = omp_get_max_threads();
-
   const size_t bins_total = (size_t)4 * histogram_params->bins_count;
   const size_t buf_size = bins_total * sizeof(uint32_t);
-  void *partial_hists = calloc(nthreads, buf_size);
+  *histogram = realloc(*histogram, buf_size);
+  // hack to make reduction clause work
+  uint32_t *working_hist = *histogram;
+  memset(working_hist, 0, buf_size);
 
   if(histogram_params->mul == 0) histogram_params->mul = (double)(histogram_params->bins_count - 1);
 
   const dt_histogram_roi_t *const roi = histogram_params->roi;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(histogram_params, pixel, Worker, profile_info, bins_total, roi) \
-  shared(partial_hists) \
+#pragma omp parallel for default(none)                                  \
+  dt_omp_firstprivate(histogram_params, pixel, Worker, profile_info, roi) \
+  reduction(+:working_hist[:bins_total])                                \
   schedule(static)
 #endif
   for(int j = roi->crop_y; j < roi->height - roi->crop_height; j++)
   {
-    uint32_t *thread_hist = (uint32_t *)partial_hists + bins_total * omp_get_thread_num();
-    Worker(histogram_params, pixel, thread_hist, j, profile_info);
+    Worker(histogram_params, pixel, working_hist, j, profile_info);
   }
-
-#ifdef _OPENMP
-  *histogram = realloc(*histogram, buf_size);
-  memset(*histogram, 0, buf_size);
-  uint32_t *hist = *histogram;
-
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(nthreads, bins_total) \
-  shared(hist, partial_hists) \
-  schedule(static)
-  for(size_t k = 0; k < bins_total; k++)
-  {
-    for(size_t n = 0; n < nthreads; n++)
-    {
-      const uint32_t *thread_hist = (uint32_t *)partial_hists + bins_total * n;
-      hist[k] += thread_hist[k];
-    }
-  }
-#else
-  *histogram = realloc(*histogram, buf_size);
-  memmove(*histogram, partial_hists, buf_size);
-#endif
-  free(partial_hists);
 
   histogram_stats->bins_count = histogram_params->bins_count;
   histogram_stats->pixels = (roi->width - roi->crop_width - roi->crop_x)
