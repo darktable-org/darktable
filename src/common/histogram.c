@@ -29,20 +29,16 @@
 #include "common/histogram.h"
 #include "develop/imageop.h"
 
-#define S(V, params) ((params->mul) * ((float)V))
-#define P(V, params) (CLAMP((V), 0, (params->bins_count - 1)))
-#define PU(V, params) (MIN((V), (params->bins_count - 1)))
-#define PS(V, params) (P(S(V, params), params))
+static inline uint32_t bin(const float v,
+                           const dt_dev_histogram_collection_params_t *const params)
+{
+  const float scaled = params->mul * v;
+  return CLAMP((uint32_t)scaled, 0, params->bins_count - 1);
+}
 
 //------------------------------------------------------------------------------
 
-inline static void histogram_helper_cs_RAW_helper_process_pixel_float(
-    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram)
-{
-  const uint32_t i = PS(*pixel, histogram_params);
-  histogram[4 * i]++;
-}
-
+// FIXME: do we ever need histograms of float raw files?
 inline static void histogram_helper_cs_RAW(const dt_dev_histogram_collection_params_t *const histogram_params,
                                            const void *pixel, uint32_t *histogram, int j,
                                            const dt_iop_order_iccprofile_info_t *const profile_info)
@@ -50,20 +46,10 @@ inline static void histogram_helper_cs_RAW(const dt_dev_histogram_collection_par
   const dt_histogram_roi_t *roi = histogram_params->roi;
   const float *input = (float *)pixel + roi->width * j + roi->crop_x;
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++, input++)
-  {
-    histogram_helper_cs_RAW_helper_process_pixel_float(histogram_params, input, histogram);
-  }
+    histogram[4 * bin(*input, histogram_params)]++;
 }
 
 //------------------------------------------------------------------------------
-
-// WARNING: you must ensure that bins_count is big enough
-inline static void histogram_helper_cs_RAW_helper_process_pixel_uint16(
-    const dt_dev_histogram_collection_params_t *const histogram_params, const uint16_t *pixel, uint32_t *histogram)
-{
-  const uint16_t i = PU(*pixel, histogram_params);
-  histogram[4 * i]++;
-}
 
 inline void dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_params_t *const histogram_params,
                                               const void *pixel, uint32_t *histogram, int j,
@@ -74,7 +60,11 @@ inline void dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_
 
   // process pixels
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++, in++)
-    histogram_helper_cs_RAW_helper_process_pixel_uint16(histogram_params, in, histogram);
+  {
+    // WARNING: you must ensure that bins_count is big enough
+    const uint16_t binned = MIN(*in, histogram_params->bins_count - 1);
+    histogram[4 * binned]++;
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -82,9 +72,9 @@ inline void dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_
 inline static void __attribute__((__unused__)) histogram_helper_cs_rgb_helper_process_pixel_float(
     const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram)
 {
-  const uint32_t R = PS(pixel[0], histogram_params);
-  const uint32_t G = PS(pixel[1], histogram_params);
-  const uint32_t B = PS(pixel[2], histogram_params);
+  const uint32_t R = bin(pixel[0], histogram_params);
+  const uint32_t G = bin(pixel[1], histogram_params);
+  const uint32_t B = bin(pixel[2], histogram_params);
   histogram[4 * R]++;
   histogram[4 * G + 1]++;
   histogram[4 * B + 2]++;
@@ -97,9 +87,9 @@ inline static void __attribute__((__unused__)) histogram_helper_cs_rgb_helper_pr
   const dt_aligned_pixel_t rgb = { dt_ioppr_compensate_middle_grey(pixel[0], profile_info),
                                    dt_ioppr_compensate_middle_grey(pixel[1], profile_info),
                                    dt_ioppr_compensate_middle_grey(pixel[2], profile_info) };
-  const uint32_t R = PS(rgb[0], histogram_params);
-  const uint32_t G = PS(rgb[1], histogram_params);
-  const uint32_t B = PS(rgb[2], histogram_params);
+  const uint32_t R = bin(rgb[0], histogram_params);
+  const uint32_t G = bin(rgb[1], histogram_params);
+  const uint32_t B = bin(rgb[2], histogram_params);
   histogram[4 * R]++;
   histogram[4 * G + 1]++;
   histogram[4 * B + 2]++;
@@ -274,9 +264,9 @@ inline static void __attribute__((__unused__)) histogram_helper_cs_Lab_LCh_helpe
 {
   dt_aligned_pixel_t LCh;
   dt_Lab_2_LCH(pixel, LCh);
-  const uint32_t L = PS((LCh[0] / 100.f), histogram_params);
-  const uint32_t C = PS((LCh[1] / (128.0f * sqrtf(2.0f))), histogram_params);
-  const uint32_t h = PS(LCh[2], histogram_params);
+  const uint32_t L = bin((LCh[0] / 100.f), histogram_params);
+  const uint32_t C = bin((LCh[1] / (128.0f * sqrtf(2.0f))), histogram_params);
+  const uint32_t h = bin(LCh[2], histogram_params);
   histogram[4 * L]++;
   histogram[4 * C + 1]++;
   histogram[4 * h + 2]++;
