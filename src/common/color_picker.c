@@ -33,23 +33,23 @@ static inline size_t _box_size(const int *const box)
 }
 
 static inline void _update_stats_by_ch(dt_aligned_pixel_t acc,
-                                       dt_aligned_pixel_t min,
-                                       dt_aligned_pixel_t max,
+                                       dt_aligned_pixel_t low,
+                                       dt_aligned_pixel_t high,
                                        const int ch, const float pick)
 {
   acc[ch] += pick;
-  min[ch] = MIN(min[ch], pick);
-  max[ch] = MAX(max[ch], pick);
+  low[ch] = MIN(low[ch], pick);
+  high[ch] = MAX(high[ch], pick);
 }
 
 static inline void _update_stats_4ch(dt_aligned_pixel_t acc,
-                                     dt_aligned_pixel_t min,
-                                     dt_aligned_pixel_t max,
+                                     dt_aligned_pixel_t low,
+                                     dt_aligned_pixel_t high,
                                      const dt_aligned_pixel_t pick)
 {
   // need all channels as blend pickers may use 4th to reverse hues
-  for_four_channels(k,aligned(acc,min,max,pick:16))
-    _update_stats_by_ch(acc, min, max, k, pick[k]);
+  for_four_channels(k,aligned(acc,low,high,pick:16))
+    _update_stats_by_ch(acc, low, high, k, pick[k]);
 }
 
 #ifdef _OPENMP
@@ -79,13 +79,13 @@ static inline void rgb_to_JzCzhz(const dt_aligned_pixel_t rgb, dt_aligned_pixel_
 }
 
 typedef void((*picker_worker_4ch)(dt_aligned_pixel_t acc,
-                                  dt_aligned_pixel_t min,
-                                  dt_aligned_pixel_t max,
+                                  dt_aligned_pixel_t low,
+                                  dt_aligned_pixel_t high,
                                   const float *const pixels, const size_t width,
                                   const void *const data));
 typedef void((*picker_worker_1ch)(dt_aligned_pixel_t acc,
-                                  dt_aligned_pixel_t min,
-                                  dt_aligned_pixel_t max,
+                                  dt_aligned_pixel_t low,
+                                  dt_aligned_pixel_t high,
                                   dt_aligned_weights_t weights,
                                   const float *const pixels,
                                   const size_t j,
@@ -94,19 +94,19 @@ typedef void((*picker_worker_1ch)(dt_aligned_pixel_t acc,
                                   const void *const data));
 
 static inline void _color_picker_rgb_or_lab(dt_aligned_pixel_t acc,
-                                            dt_aligned_pixel_t min,
-                                            dt_aligned_pixel_t max,
+                                            dt_aligned_pixel_t low,
+                                            dt_aligned_pixel_t high,
                                             const float *const pixels, const size_t width,
                                             const void *const data)
 {
   for(size_t i = 0; i < width; i += 4)
-    for_each_channel(k, aligned(acc,min,max,pixels:16))
-      _update_stats_by_ch(acc, min, max, k, pixels[i + k]);
+    for_each_channel(k, aligned(acc,low,high,pixels:16))
+      _update_stats_by_ch(acc, low, high, k, pixels[i + k]);
 }
 
 static inline void _color_picker_lch(dt_aligned_pixel_t acc,
-                                     dt_aligned_pixel_t min,
-                                     dt_aligned_pixel_t max,
+                                     dt_aligned_pixel_t low,
+                                     dt_aligned_pixel_t high,
                                      const float *const pixels, const size_t width,
                                      const void *const data)
 {
@@ -117,13 +117,13 @@ static inline void _color_picker_lch(dt_aligned_pixel_t acc,
     // allow for determining sensible max/min values
     // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
     pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
-    _update_stats_4ch(acc, min, max, pick);
+    _update_stats_4ch(acc, low, high, pick);
   }
 }
 
 static inline void _color_picker_hsl(dt_aligned_pixel_t acc,
-                                     dt_aligned_pixel_t min,
-                                     dt_aligned_pixel_t max,
+                                     dt_aligned_pixel_t low,
+                                     dt_aligned_pixel_t high,
                                      const float *const pixels, const size_t width,
                                      const void *const data)
 {
@@ -134,13 +134,13 @@ static inline void _color_picker_hsl(dt_aligned_pixel_t acc,
     // allow for determining sensible max/min values
     // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
     pick[3] = pick[0] < 0.5f ? pick[0] + 0.5f : pick[0] - 0.5f;
-    _update_stats_4ch(acc, min, max, pick);
+    _update_stats_4ch(acc, low, high, pick);
   }
 }
 
 static inline void _color_picker_jzczhz(dt_aligned_pixel_t acc,
-                                        dt_aligned_pixel_t min,
-                                        dt_aligned_pixel_t max,
+                                        dt_aligned_pixel_t low,
+                                        dt_aligned_pixel_t high,
                                         const float *const pixels, const size_t width,
                                         const void *const data)
 {
@@ -152,13 +152,13 @@ static inline void _color_picker_jzczhz(dt_aligned_pixel_t acc,
     // allow for determining sensible max/min values
     // FIXME: the mean calculation of hue isn't always right, use circular mean calc instead?
     pick[3] = pick[2] < 0.5f ? pick[2] + 0.5f : pick[2] - 0.5f;
-    _update_stats_4ch(acc, min, max, pick);
+    _update_stats_4ch(acc, low, high, pick);
   }
 }
 
 static inline void _color_picker_bayer(dt_aligned_pixel_t acc,
-                                       dt_aligned_pixel_t min,
-                                       dt_aligned_pixel_t max,
+                                       dt_aligned_pixel_t low,
+                                       dt_aligned_pixel_t high,
                                        dt_aligned_weights_t weights,
                                        const float *const pixels,
                                        const size_t j,
@@ -170,14 +170,14 @@ static inline void _color_picker_bayer(dt_aligned_pixel_t acc,
   for(size_t i = box[0]; i < box[2]; i++)
   {
     const int c = FC(j + roi->y, i + roi->x, filters);
-    _update_stats_by_ch(acc, min, max, c, pixels[i]);
+    _update_stats_by_ch(acc, low, high, c, pixels[i]);
     weights[c]++;
   }
 }
 
 static inline void _color_picker_xtrans(dt_aligned_pixel_t acc,
-                                        dt_aligned_pixel_t min,
-                                        dt_aligned_pixel_t max,
+                                        dt_aligned_pixel_t low,
+                                        dt_aligned_pixel_t high,
                                         dt_aligned_weights_t weights,
                                         const float *const pixels,
                                         const size_t j,
@@ -189,7 +189,7 @@ static inline void _color_picker_xtrans(dt_aligned_pixel_t acc,
   for(size_t i = box[0]; i < box[2]; i++)
   {
     const int c = FCxtrans(j, i, roi, xtrans);
-    _update_stats_by_ch(acc, min, max, c, pixels[i]);
+    _update_stats_by_ch(acc, low, high, c, pixels[i]);
     weights[c]++;
   }
 }
@@ -208,21 +208,21 @@ static void _color_picker_work_4ch(const float *const pixel,
   const size_t off_add = 4 * box[0];
 
   dt_aligned_pixel_t acc = { 0.0f, 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
-  dt_aligned_pixel_t max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+  dt_aligned_pixel_t low = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+  dt_aligned_pixel_t high = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
   // min_for_threads depends on # of samples and complexity of the
   // colorspace conversion
 #if defined(_OPENMP)
-#pragma omp parallel for default(none) if (size > min_for_threads)         \
-  dt_omp_firstprivate(worker, pixel, stride, off_mul, off_add, box, data)  \
-  reduction(+ : acc[:4]) reduction(min : min[:4]) reduction(max : max[:4]) \
+#pragma omp parallel for default(none) if (size > min_for_threads)          \
+  dt_omp_firstprivate(worker, pixel, stride, off_mul, off_add, box, data)   \
+  reduction(+ : acc[:4]) reduction(min : low[:4]) reduction(max : high[:4]) \
   schedule(static)
 #endif
   for(size_t j = box[1]; j < box[3]; j++)
   {
     const size_t offset = j * off_mul + off_add;
-    worker(acc, min, max, pixel + offset, stride, data);
+    worker(acc, low, high, pixel + offset, stride, data);
   }
 
   // copy all four channels, as four some colorspaces there may be
@@ -230,8 +230,8 @@ static void _color_picker_work_4ch(const float *const pixel,
   for_four_channels(c)
   {
     pick[DT_PICK_MEAN][c] = acc[c] / (float)size;
-    pick[DT_PICK_MIN][c] = min[c];
-    pick[DT_PICK_MAX][c] = max[c];
+    pick[DT_PICK_MIN][c] = low[c];
+    pick[DT_PICK_MAX][c] = high[c];
   }
 }
 
@@ -244,8 +244,8 @@ static void _color_picker_work_1ch(const float *const pixel,
 {
   const int width = roi->width;
   dt_aligned_pixel_t acc = { 0.0f, 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t min = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
-  dt_aligned_pixel_t max = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+  dt_aligned_pixel_t low = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+  dt_aligned_pixel_t high = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
   dt_aligned_weights_t weights = { 0u, 0u, 0u, 0u };
 
   // worker logic is slightly different from 4-channel as we need to
@@ -255,16 +255,16 @@ static void _color_picker_work_1ch(const float *const pixel,
   if (_box_size(box) > min_for_threads)                                 \
   dt_omp_firstprivate(worker, pixel, width, roi, box, data)             \
   reduction(+ : acc[:4], weights[:4])                                   \
-  reduction(min : min[:4]) reduction(max : max[:4])                     \
+  reduction(min : low[:4]) reduction(max : high[:4])                    \
   schedule(static)
 #endif
   for(size_t j = box[1]; j < box[3]; j++)
   {
-    worker(acc, min, max, weights, pixel + width * j, j, roi, box, data);
+    worker(acc, low, high, weights, pixel + width * j, j, roi, box, data);
   }
 
-  copy_pixel(pick[DT_PICK_MIN], min);
-  copy_pixel(pick[DT_PICK_MAX], max);
+  copy_pixel(pick[DT_PICK_MIN], low);
+  copy_pixel(pick[DT_PICK_MAX], high);
   // and finally normalize data. For bayer, there is twice as much green.
   // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
   for_each_channel(c)
