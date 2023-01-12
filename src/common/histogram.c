@@ -36,7 +36,6 @@ typedef void((*_histogram_worker)(const dt_dev_histogram_collection_params_t *co
                                   const dt_iop_order_iccprofile_info_t *const profile_info));
 
 static inline void clamp_and_bin(const dt_aligned_pixel_t vals, uint32_t *histogram,
-                                 // FIXME: does it matterif this is uint32_t?
                                  const uint32_t max_bin)
 {
   dt_aligned_uint32_t bnum;
@@ -154,20 +153,26 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
 {
   const size_t bins_total = (size_t)4 * histogram_params->bins_count;
   const size_t buf_size = bins_total * sizeof(uint32_t);
-  // hack to make histogram buffer always aligned
-  // FIXME: should remember its size and only realloc if it has cahnged
-  dt_free_align(*histogram);
-  *histogram = dt_alloc_align(16, buf_size);
+  // we allocate an aligned buffer, the caller must free it, and if
+  // the caller has increased the buffer size, we hackily realloc it
+  if(!(*histogram) || histogram_stats->buf_size < buf_size)
+  {
+    if(*histogram)
+      dt_free_align(*histogram);
+    *histogram = dt_alloc_align(64, buf_size);
+    if(!*histogram) return;
+    histogram_stats->buf_size = buf_size;
+  }
   // hack to make reduction clause work
-  uint32_t *working_hist = *histogram;
+  uint32_t DT_ALIGNED_PIXEL *working_hist = *histogram;
   memset(working_hist, 0, buf_size);
 
   const dt_histogram_roi_t *const roi = histogram_params->roi;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none)                                  \
+#pragma omp parallel for default(none)                                    \
   dt_omp_firstprivate(histogram_params, pixel, Worker, profile_info, roi) \
-  reduction(+:working_hist[:bins_total])                                \
+  reduction(+:working_hist[:bins_total])                                  \
   schedule(static)
 #endif
   for(int j = roi->crop_y; j < roi->height - roi->crop_height; j++)
@@ -241,7 +246,7 @@ void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_sta
   dt_times_t start_time = { 0 }, end_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
-  histogram_max[0] = histogram_max[1] = histogram_max[2] = histogram_max[3] = 0;
+  dt_aligned_uint32_t m = { 0u, 0u, 0u, 0u };
   uint32_t *hist = *histogram;
 
   // RGB, Lab, and LCh
@@ -250,15 +255,18 @@ void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_sta
     // don't count <= 0 pixels except for ab or Ch
     if(cst == IOP_CS_LAB)
     {
-      histogram_max[1] = hist[1];
-      histogram_max[2] = hist[2];
+      m[1] = hist[1];
+      m[2] = hist[2];
     }
     for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
-      for_each_channel(ch,aligned(hist:16))
-        histogram_max[ch] = MAX(histogram_max[ch], hist[k+ch]);
+      for_each_channel(ch,aligned(hist:64) aligned(m:16))
+        m[ch] = MAX(m[ch], hist[k+ch]);
   }
   else
     dt_unreachable_codepath();
+
+  for_each_channel(ch,aligned(m:16))
+    histogram_max[ch] = m[ch];
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
