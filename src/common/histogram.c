@@ -255,47 +255,20 @@ void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_sta
   {
     case IOP_CS_RAW:
       for(int k = 0; k < 4 * histogram_stats->bins_count; k += 4)
-        histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+        histogram_max[0] = MAX(histogram_max[0], hist[k]);
       break;
 
-    case IOP_CS_RGB:
-      // don't count <= 0 pixels
-      for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
-        histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
-      for(int k = 5; k < 4 * histogram_stats->bins_count; k += 4)
-        histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
-      for(int k = 6; k < 4 * histogram_stats->bins_count; k += 4)
-        histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
-      for(int k = 7; k < 4 * histogram_stats->bins_count; k += 4)
-        histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
-      break;
-
-    case IOP_CS_LAB:
+    // RGB, Lab, and LCh
     default:
-      if(cst_to == IOP_CS_LCH)
+      // don't count <= 0 pixels except for ab or Ch
+      if(cst == IOP_CS_LAB)
       {
-        // don't count <= 0 pixels
-        for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
-          histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
-        for(int k = 5; k < 4 * histogram_stats->bins_count; k += 4)
-          histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
-        for(int k = 6; k < 4 * histogram_stats->bins_count; k += 4)
-          histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
-        for(int k = 7; k < 4 * histogram_stats->bins_count; k += 4)
-          histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
+        histogram_max[1] = hist[1];
+        histogram_max[2] = hist[2];
       }
-      else
-      {
-        // don't count <= 0 pixels in L
-        for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
-          histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
-
-        // don't count <= -128 and >= +128 pixels in a and b
-        for(int k = 5; k < 4 * (histogram_stats->bins_count - 1); k += 4)
-          histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
-        for(int k = 6; k < 4 * (histogram_stats->bins_count - 1); k += 4)
-          histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
-      }
+      for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
+        for_each_channel(ch,aligned(hist:16))
+          histogram_max[ch] = MAX(histogram_max[ch], hist[k+ch]);
       break;
   }
 
