@@ -860,47 +860,15 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     sRGB = 0;
   }
 
-  // if is_scaling is used don't override high_quality
   // get only once at the beginning, in case the user changes it on the way:
-  const gboolean high_quality_processing
-      = ((format_params->max_width == 0 || format_params->max_width >= pipe.processed_width)
-         && (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)
-         && !is_scaling)
-            ? FALSE
-            : high_quality;
-
-  /* The pipeline might have out-of-bounds problems at the right and lower borders leading to
-     artifacts or mem access errors if ignored. (#3646)
-     It's very difficult to prepare the pipeline avoiding this **and** not introducing artifacts.
-     But we can test for that situation and if there is an out-of-bounds problem we
-     have basically two options:
-     a) reduce the output image size by one for width & height.
-     b) increase the scale while keeping the output size. In theory this marginally reduces quality.
-
-     These are the rules for export:
-     1. If we have the **full image** (defined by dt_image_t width, height and crops) we look for upscale.
-        If this is off use a), if on use b)
-     2. If we have defined format_params->max_width or/and height we use b)
-     3. Thumbnails are defined as in 2 so use b)
-     4. Cropped images are detected and use b)
-     5. Upscaled images use b)
-     6. Rotating by +-90° does not change the output size.
-     7. Never generate images larger than requested.
-  */
+  const gboolean high_quality_processing = high_quality;
 
   const gboolean iscropped =
     (   (pipe.processed_width < (wd - img->crop_x - img->crop_width))
      || (pipe.processed_height < (ht - img->crop_y - img->crop_height)));
 
-  const gboolean exact_size =
-         iscropped
-      || upscale
-      || (format_params->max_width != 0)
-      || (format_params->max_height != 0)
-      || thumbnail_export;
-
-  int width = format_params->max_width > 0 ? format_params->max_width : 0;
-  int height = format_params->max_height > 0 ? format_params->max_height : 0;
+  int width = MAX(format_params->max_width, 0);
+  int height = MAX(format_params->max_height, 0);
 
   if(iscropped && !thumbnail_export && width == 0 && height == 0)
   {
@@ -908,26 +876,19 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     height = pipe.processed_height;
   }
 
-  const double max_scale = (upscale && (width > 0 || height > 0)) ? 100.0 : 1.0;
+  const double max_possible_scale = 100.0; // FIXME can we calculate a reasonable maximum scale for available memory?
+  const double max_scale = (upscale && ((width > 0 || height > 0) || is_scaling)) ? max_possible_scale : 1.00;
 
   const double scalex = width > 0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale;
   const double scaley = height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale;
   double scale = fmin(scalex, scaley);
-  double corrscale = 1.0f;
 
-  int processed_width = 0;
-  int processed_height = 0;
-
-  gboolean corrected = FALSE;
   float origin[] = { 0.0f, 0.0f };
 
   if(dt_dev_distort_backtransform_plus(&dev, &pipe, 0.f, DT_DEV_TRANSFORM_DIR_ALL, origin, 1))
   {
-    if((width == 0) && exact_size)
-      width = pipe.processed_width;
-    if((height == 0) && exact_size)
-      height = pipe.processed_height;
-
+    if(width == 0) width = pipe.processed_width;
+    if(height == 0) height = pipe.processed_height;
     scale = fmin(width >  0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale,
                  height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale);
 
@@ -936,52 +897,21 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
       // scaling
       double _num, _denum;
       dt_imageio_resizing_factor_get_and_parsing(&_num, &_denum);
-
       const double scale_factor = _num / _denum;
-
       if(!thumbnail_export)
       {
         scale = fmin(scale_factor, max_scale);
       }
     }
-
-    processed_width = scale * pipe.processed_width + 0.8f;
-    processed_height = scale * pipe.processed_height + 0.8f;
-
-    if((ceil((double)processed_width / scale) + origin[0] > pipe.iwidth) ||
-       (ceil((double)processed_height / scale) + origin[1] > pipe.iheight))
-    {
-      corrected = TRUE;
-     /* Here the scale is too **small** so while reading data from the right or low borders we are out-of-bounds.
-        We can either just decrease output width & height or
-        have to find a scale that takes data from within the origin data, so we have to increase scale to a size
-        that fits both width & height.
-     */
-      if(exact_size)
-      {
-        corrscale = fmax( ((double)(pipe.processed_width + 1) / (double)(pipe.processed_width)),
-                           ((double)(pipe.processed_height +1) / (double)(pipe.processed_height)) );
-        scale = scale * corrscale;
-      }
-      else
-      {
-        processed_width--;
-        processed_height--;
-      }
-    }
-
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] imgid %d, pipe %ix%i, range %ix%i --> exact %i, upscale %i, hq %i, corrected %i, scale %.7f, corr %.6f, size %ix%i\n",
-             imgid, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
-             exact_size, upscale, high_quality_processing, corrected, scale, corrscale, processed_width, processed_height);
   }
-  else
-  {
-    processed_width = floor(scale * pipe.processed_width);
-    processed_height = floor(scale * pipe.processed_height);
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] (direct) imgid %d, hq %i, pipe %ix%i, range %ix%i --> size %ix%i / %ix%i\n",
-             imgid, high_quality_processing, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
-             processed_width, processed_height, width, height);
-  }
+
+  const int processed_width = floor(scale * pipe.processed_width);
+  const int processed_height = floor(scale * pipe.processed_height);
+
+  dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] [%s] imgid %d, %ix%i --> %ix%i (scale %7f). upscale=%s, hq=%s\n",
+           thumbnail_export ? "thumbnail" : "export", imgid,
+           pipe.processed_width, pipe.processed_height, processed_width, processed_height, scale,
+           upscale ? "yes" : "no", high_quality_processing ? "yes" : "no");
 
   const int bpp = format->bpp(format_params);
 
