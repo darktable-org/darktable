@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-30 10:18+0100\n"
-"PO-Revision-Date: 2023-01-01 14:27+0300\n"
+"POT-Creation-Date: 2023-01-07 19:54+0100\n"
+"PO-Revision-Date: 2023-01-12 12:46+0300\n"
 "Last-Translator: Serkan Önder <serkanonder@outlook.com>\n"
 "Language-Team: \n"
 "Language: tr\n"
@@ -20,20 +20,20 @@ msgstr ""
 "X-Language: tr_TR\n"
 "X-Source-Language: C\n"
 
-#: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:7871
+#: ../build/bin/conf_gen.h:172 ../build/bin/preferences_gen.h:7871
 msgctxt "preferences"
 msgid "first instance"
 msgstr "ilk örnek"
 
-#: ../build/bin/conf_gen.h:159 ../build/bin/preferences_gen.h:7876
+#: ../build/bin/conf_gen.h:173 ../build/bin/preferences_gen.h:7876
 #: ../build/bin/preferences_gen.h:7895
 msgctxt "preferences"
 msgid "last instance"
 msgstr "son örnek"
 
-#: ../build/bin/conf_gen.h:226 ../build/bin/conf_gen.h:326
-#: ../build/bin/conf_gen.h:336 ../build/bin/conf_gen.h:1166
-#: ../build/bin/conf_gen.h:1182 ../build/bin/preferences_gen.h:4229
+#: ../build/bin/conf_gen.h:240 ../build/bin/conf_gen.h:340
+#: ../build/bin/conf_gen.h:350 ../build/bin/conf_gen.h:1180
+#: ../build/bin/conf_gen.h:1196 ../build/bin/preferences_gen.h:4229
 #: ../build/bin/preferences_gen.h:4248 ../build/bin/preferences_gen.h:4324
 #: ../build/bin/preferences_gen.h:6954 ../build/bin/preferences_gen.h:7082
 #: ../build/bin/preferences_gen.h:7147
@@ -41,36 +41,36 @@ msgctxt "preferences"
 msgid "never"
 msgstr "asla"
 
-#: ../build/bin/conf_gen.h:227 ../build/bin/preferences_gen.h:6959
+#: ../build/bin/conf_gen.h:241 ../build/bin/preferences_gen.h:6959
 msgctxt "preferences"
 msgid "once a month"
 msgstr "ayda bir"
 
-#: ../build/bin/conf_gen.h:228 ../build/bin/preferences_gen.h:6964
+#: ../build/bin/conf_gen.h:242 ../build/bin/preferences_gen.h:6964
 #: ../build/bin/preferences_gen.h:6993
 msgctxt "preferences"
 msgid "once a week"
 msgstr "haftada bir"
 
-#: ../build/bin/conf_gen.h:229 ../build/bin/preferences_gen.h:6969
+#: ../build/bin/conf_gen.h:243 ../build/bin/preferences_gen.h:6969
 msgctxt "preferences"
 msgid "once a day"
 msgstr "günde bir"
 
-#: ../build/bin/conf_gen.h:230 ../build/bin/preferences_gen.h:6974
+#: ../build/bin/conf_gen.h:244 ../build/bin/preferences_gen.h:6974
 msgctxt "preferences"
 msgid "on close"
 msgstr "kapanışta"
 
-#: ../build/bin/conf_gen.h:266 ../build/bin/conf_gen.h:1159
-#: ../build/bin/conf_gen.h:1175 ../build/bin/preferences_gen.h:4194
+#: ../build/bin/conf_gen.h:280 ../build/bin/conf_gen.h:1173
+#: ../build/bin/conf_gen.h:1189 ../build/bin/preferences_gen.h:4194
 #: ../build/bin/preferences_gen.h:4289 ../build/bin/preferences_gen.h:6014
 msgctxt "preferences"
 msgid "small"
 msgstr "küçük"
 
-#: ../build/bin/conf_gen.h:267 ../build/bin/conf_gen.h:373
-#: ../build/bin/conf_gen.h:2095 ../build/bin/preferences_gen.h:4918
+#: ../build/bin/conf_gen.h:281 ../build/bin/conf_gen.h:387
+#: ../build/bin/conf_gen.h:2109 ../build/bin/preferences_gen.h:4918
 #: ../build/bin/preferences_gen.h:4942 ../build/bin/preferences_gen.h:6019
 #: ../build/bin/preferences_gen.h:6048 ../build/bin/preferences_gen.h:6235
 #: ../build/bin/preferences_gen.h:6264
@@ -78,29 +78,29 @@ msgctxt "preferences"
 msgid "default"
 msgstr "öntanımlı"
 
-#: ../build/bin/conf_gen.h:268 ../build/bin/preferences_gen.h:6024
+#: ../build/bin/conf_gen.h:282 ../build/bin/preferences_gen.h:6024
 msgctxt "preferences"
 msgid "large"
 msgstr "büyük"
 
-#: ../build/bin/conf_gen.h:269 ../build/bin/preferences_gen.h:6029
+#: ../build/bin/conf_gen.h:283 ../build/bin/preferences_gen.h:6029
 msgctxt "preferences"
 msgid "unrestricted"
 msgstr "sınırsız"
 
-#: ../build/bin/conf_gen.h:327 ../build/bin/preferences_gen.h:7087
+#: ../build/bin/conf_gen.h:341 ../build/bin/preferences_gen.h:7087
 msgctxt "preferences"
 msgid "after edit"
 msgstr "düzenlemeden sonra"
 
-#: ../build/bin/conf_gen.h:328 ../build/bin/preferences_gen.h:7092
+#: ../build/bin/conf_gen.h:342 ../build/bin/preferences_gen.h:7092
 #: ../build/bin/preferences_gen.h:7111
 msgctxt "preferences"
 msgid "on import"
 msgstr "içe aktarımda"
 
-#: ../build/bin/conf_gen.h:337 ../build/bin/conf_gen.h:1158
-#: ../build/bin/conf_gen.h:1174 ../build/bin/conf_gen.h:3140
+#: ../build/bin/conf_gen.h:351 ../build/bin/conf_gen.h:1172
+#: ../build/bin/conf_gen.h:1188 ../build/bin/conf_gen.h:3155
 #: ../build/bin/preferences_gen.h:4189 ../build/bin/preferences_gen.h:4284
 #: ../build/bin/preferences_gen.h:5368 ../build/bin/preferences_gen.h:5422
 #: ../build/bin/preferences_gen.h:7152
@@ -108,125 +108,125 @@ msgctxt "preferences"
 msgid "always"
 msgstr "her zaman"
 
-#: ../build/bin/conf_gen.h:338 ../build/bin/preferences_gen.h:7157
+#: ../build/bin/conf_gen.h:352 ../build/bin/preferences_gen.h:7157
 #: ../build/bin/preferences_gen.h:7176
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "sadece büyük girişler"
 
-#: ../build/bin/conf_gen.h:358 ../build/bin/preferences_gen.h:8299
+#: ../build/bin/conf_gen.h:372 ../build/bin/preferences_gen.h:8299
 msgctxt "preferences"
 msgid "sensitive"
 msgstr "duyarlı"
 
-#: ../build/bin/conf_gen.h:359 ../build/bin/preferences_gen.h:8304
+#: ../build/bin/conf_gen.h:373 ../build/bin/preferences_gen.h:8304
 #: ../build/bin/preferences_gen.h:8323
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "duyarsız"
 
-#: ../build/bin/conf_gen.h:374 ../build/bin/preferences_gen.h:6240
+#: ../build/bin/conf_gen.h:388 ../build/bin/preferences_gen.h:6240
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "çoklu GPUs"
 
-#: ../build/bin/conf_gen.h:375 ../build/bin/preferences_gen.h:6245
+#: ../build/bin/conf_gen.h:389 ../build/bin/preferences_gen.h:6245
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "aşırı hızlı GPU"
 
-#: ../build/bin/conf_gen.h:383 ../build/bin/preferences_gen.h:6306
+#: ../build/bin/conf_gen.h:397 ../build/bin/preferences_gen.h:6306
 #: ../build/bin/preferences_gen.h:6340
 msgctxt "preferences"
 msgid "nothing"
 msgstr "hiçbir şey"
 
-#: ../build/bin/conf_gen.h:384 ../build/bin/preferences_gen.h:6311
+#: ../build/bin/conf_gen.h:398 ../build/bin/preferences_gen.h:6311
 msgctxt "preferences"
 msgid "memory size"
 msgstr "bellek boyutu"
 
-#: ../build/bin/conf_gen.h:385 ../build/bin/preferences_gen.h:6316
+#: ../build/bin/conf_gen.h:399 ../build/bin/preferences_gen.h:6316
 msgctxt "preferences"
 msgid "memory transfer"
 msgstr "bellek aktarımı"
 
-#: ../build/bin/conf_gen.h:386 ../build/bin/preferences_gen.h:6321
+#: ../build/bin/conf_gen.h:400 ../build/bin/preferences_gen.h:6321
 msgctxt "preferences"
 msgid "memory size and transfer"
 msgstr "bellek boyutu ve aktarım"
 
-#: ../build/bin/conf_gen.h:686 ../build/bin/preferences_gen.h:8487
+#: ../build/bin/conf_gen.h:700 ../build/bin/preferences_gen.h:8487
 #: ../build/bin/preferences_gen.h:8511
 msgctxt "preferences"
 msgid "id"
 msgstr "kimlik"
 
-#: ../build/bin/conf_gen.h:687 ../build/bin/preferences_gen.h:8492
+#: ../build/bin/conf_gen.h:701 ../build/bin/preferences_gen.h:8492
 msgctxt "preferences"
 msgid "folder"
 msgstr "klasör"
 
-#: ../build/bin/conf_gen.h:701
+#: ../build/bin/conf_gen.h:715
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:702
+#: ../build/bin/conf_gen.h:716
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Laboratuvar"
 
-#: ../build/bin/conf_gen.h:703
+#: ../build/bin/conf_gen.h:717
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:704
+#: ../build/bin/conf_gen.h:718
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:705
+#: ../build/bin/conf_gen.h:719
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:706 ../build/bin/conf_gen.h:1804
-#: ../build/bin/conf_gen.h:2457 ../build/bin/conf_gen.h:2961
+#: ../build/bin/conf_gen.h:720 ../build/bin/conf_gen.h:1818
+#: ../build/bin/conf_gen.h:2471 ../build/bin/conf_gen.h:2976
 #: ../build/bin/preferences_gen.h:5783 ../build/bin/preferences_gen.h:6818
 msgctxt "preferences"
 msgid "none"
 msgstr "yok"
 
-#: ../build/bin/conf_gen.h:714
+#: ../build/bin/conf_gen.h:728
 msgctxt "preferences"
 msgid "mean"
 msgstr "ortalama"
 
-#: ../build/bin/conf_gen.h:715
+#: ../build/bin/conf_gen.h:729
 msgctxt "preferences"
 msgid "min"
 msgstr "asg"
 
-#: ../build/bin/conf_gen.h:716
+#: ../build/bin/conf_gen.h:730
 msgctxt "preferences"
 msgid "max"
 msgstr "azm"
 
-#: ../build/bin/conf_gen.h:904
+#: ../build/bin/conf_gen.h:918
 msgid "select only new pictures"
 msgstr "sadece yeni resimleri seç"
 
-#: ../build/bin/conf_gen.h:905
+#: ../build/bin/conf_gen.h:919
 msgid "only select images that have not already been imported"
 msgstr "yalnızca henüz içe aktarılmamış görüntüleri seçin"
 
-#: ../build/bin/conf_gen.h:910
+#: ../build/bin/conf_gen.h:924
 msgid "ignore JPEG images"
 msgstr "JPEG görüntülerini yoksay"
 
-#: ../build/bin/conf_gen.h:911
+#: ../build/bin/conf_gen.h:925
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -235,57 +235,57 @@ msgstr ""
 "aktarmanın bir anlamı yoktur. bu işaretle bulunan tüm JPEG'ler göz ardı "
 "edilebilir."
 
-#: ../build/bin/conf_gen.h:916
+#: ../build/bin/conf_gen.h:930
 msgid "apply metadata"
 msgstr "meta verileri uygula"
 
-#: ../build/bin/conf_gen.h:917
+#: ../build/bin/conf_gen.h:931
 msgid "apply some metadata to all newly imported images."
 msgstr "yeni içe aktarılan tüm resimlere bazı meta veriler uygulayın."
 
-#: ../build/bin/conf_gen.h:922
+#: ../build/bin/conf_gen.h:936
 msgid "recursive directory"
 msgstr "özyinelemeli dizin"
 
-#: ../build/bin/conf_gen.h:923
+#: ../build/bin/conf_gen.h:937
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "film rulolarını içe aktarırken özyinelemeli dizin geçişi"
 
-#: ../build/bin/conf_gen.h:928
+#: ../build/bin/conf_gen.h:942
 msgid "creator to be applied when importing"
 msgstr "içe aktarırken uygulanacak içerik üreticisi"
 
-#: ../build/bin/conf_gen.h:934
+#: ../build/bin/conf_gen.h:948
 msgid "publisher to be applied when importing"
 msgstr "içe aktarırken uygulanacak yayıncı"
 
-#: ../build/bin/conf_gen.h:940
+#: ../build/bin/conf_gen.h:954
 msgid "rights to be applied when importing"
 msgstr "içe aktarırken uygulanacak haklar"
 
-#: ../build/bin/conf_gen.h:946
+#: ../build/bin/conf_gen.h:960
 msgid "comma separated tags to be applied when importing"
 msgstr "içe aktarırken uygulanacak virgülle ayrılmış etiketler"
 
-#: ../build/bin/conf_gen.h:952
+#: ../build/bin/conf_gen.h:966
 msgid "import tags from XMP"
 msgstr "etiketleri XMP'den içe aktar"
 
-#: ../build/bin/conf_gen.h:978
+#: ../build/bin/conf_gen.h:992
 msgid "initial rating"
 msgstr "ilk derecelendirme"
 
-#: ../build/bin/conf_gen.h:979
+#: ../build/bin/conf_gen.h:993
 msgid "initial star rating for all images when importing a filmroll"
 msgstr ""
 "bir film rulosunu içe aktarırken Tüm görüntüler için ilk yıldız "
 "derecelendirmesi"
 
-#: ../build/bin/conf_gen.h:984
+#: ../build/bin/conf_gen.h:998
 msgid "ignore EXIF rating"
 msgstr "EXIF derecelendirmesini yoksay"
 
-#: ../build/bin/conf_gen.h:985
+#: ../build/bin/conf_gen.h:999
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -293,19 +293,19 @@ msgstr ""
 "EXIF derecelendirmesini dikkate almayın. ayarlanmazsa ve EXIF derecesi "
 "bulunursa, 'ilk derecelendirmeyi' geçersiz kılar"
 
-#: ../build/bin/conf_gen.h:990
+#: ../build/bin/conf_gen.h:1004
 msgid "import job"
 msgstr "çalışmayı içe aktar"
 
-#: ../build/bin/conf_gen.h:991
+#: ../build/bin/conf_gen.h:1005
 msgid "name of the import job"
 msgstr "içe aktarma işinin adı"
 
-#: ../build/bin/conf_gen.h:996
+#: ../build/bin/conf_gen.h:1010
 msgid "override today's date"
 msgstr "bugünün tarihini geçersiz kıl"
 
-#: ../build/bin/conf_gen.h:997
+#: ../build/bin/conf_gen.h:1011
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -317,164 +317,164 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "aksi halde alanı boş bırakın"
 
-#: ../build/bin/conf_gen.h:1002
+#: ../build/bin/conf_gen.h:1016
 msgid "keep this window open"
 msgstr "bu pencereyi açık tut"
 
-#: ../build/bin/conf_gen.h:1003
+#: ../build/bin/conf_gen.h:1017
 msgid "keep this window open to run several imports"
 msgstr "birkaç içe aktarmayı çalıştırmak için bu pencereyi açık tutun"
 
-#: ../build/bin/conf_gen.h:1160 ../build/bin/conf_gen.h:1176
+#: ../build/bin/conf_gen.h:1174 ../build/bin/conf_gen.h:1190
 #: ../build/bin/preferences_gen.h:4199 ../build/bin/preferences_gen.h:4294
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1161 ../build/bin/conf_gen.h:1177
+#: ../build/bin/conf_gen.h:1175 ../build/bin/conf_gen.h:1191
 #: ../build/bin/preferences_gen.h:4204 ../build/bin/preferences_gen.h:4299
 #: ../build/bin/preferences_gen.h:4343
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1162 ../build/bin/conf_gen.h:1178
+#: ../build/bin/conf_gen.h:1176 ../build/bin/conf_gen.h:1192
 #: ../build/bin/preferences_gen.h:4209 ../build/bin/preferences_gen.h:4304
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/bin/conf_gen.h:1163 ../build/bin/conf_gen.h:1179
+#: ../build/bin/conf_gen.h:1177 ../build/bin/conf_gen.h:1193
 #: ../build/bin/preferences_gen.h:4214 ../build/bin/preferences_gen.h:4309
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1164 ../build/bin/conf_gen.h:1180
+#: ../build/bin/conf_gen.h:1178 ../build/bin/conf_gen.h:1194
 #: ../build/bin/preferences_gen.h:4219 ../build/bin/preferences_gen.h:4314
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1165 ../build/bin/conf_gen.h:1181
+#: ../build/bin/conf_gen.h:1179 ../build/bin/conf_gen.h:1195
 #: ../build/bin/preferences_gen.h:4224 ../build/bin/preferences_gen.h:4319
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1208 ../build/bin/preferences_gen.h:4534
+#: ../build/bin/conf_gen.h:1222 ../build/bin/preferences_gen.h:4534
 #: ../build/bin/preferences_gen.h:4578
 msgctxt "preferences"
 msgid "off"
 msgstr "kapalı"
 
-#: ../build/bin/conf_gen.h:1209 ../build/bin/preferences_gen.h:4539
+#: ../build/bin/conf_gen.h:1223 ../build/bin/preferences_gen.h:4539
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "sertlik (göreceli)"
 
-#: ../build/bin/conf_gen.h:1210 ../build/bin/preferences_gen.h:4544
+#: ../build/bin/conf_gen.h:1224 ../build/bin/preferences_gen.h:4544
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "sertlik (mutlak)"
 
-#: ../build/bin/conf_gen.h:1211 ../build/bin/preferences_gen.h:4549
+#: ../build/bin/conf_gen.h:1225 ../build/bin/preferences_gen.h:4549
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "şeffaflık (göreceli)"
 
-#: ../build/bin/conf_gen.h:1212 ../build/bin/preferences_gen.h:4554
+#: ../build/bin/conf_gen.h:1226 ../build/bin/preferences_gen.h:4554
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "şeffaflık (mutlak)"
 
-#: ../build/bin/conf_gen.h:1213 ../build/bin/preferences_gen.h:4559
+#: ../build/bin/conf_gen.h:1227 ../build/bin/preferences_gen.h:4559
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "fırça boyutu (göreceli)"
 
-#: ../build/bin/conf_gen.h:1221 ../build/bin/preferences_gen.h:4614
+#: ../build/bin/conf_gen.h:1235 ../build/bin/preferences_gen.h:4614
 msgctxt "preferences"
 msgid "low"
 msgstr "düşük"
 
-#: ../build/bin/conf_gen.h:1222 ../build/bin/preferences_gen.h:4619
+#: ../build/bin/conf_gen.h:1236 ../build/bin/preferences_gen.h:4619
 #: ../build/bin/preferences_gen.h:4643
 msgctxt "preferences"
 msgid "medium"
 msgstr "orta"
 
-#: ../build/bin/conf_gen.h:1223 ../build/bin/preferences_gen.h:4624
+#: ../build/bin/conf_gen.h:1237 ../build/bin/preferences_gen.h:4624
 msgctxt "preferences"
 msgid "high"
 msgstr "yüksek"
 
-#: ../build/bin/conf_gen.h:1237 ../build/bin/preferences_gen.h:5092
+#: ../build/bin/conf_gen.h:1251 ../build/bin/preferences_gen.h:5092
 #: ../build/bin/preferences_gen.h:5116
 msgctxt "preferences"
 msgid "false color"
 msgstr "yanlış renk"
 
-#: ../build/bin/conf_gen.h:1238 ../build/bin/preferences_gen.h:5097
+#: ../build/bin/conf_gen.h:1252 ../build/bin/preferences_gen.h:5097
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "gri tonlu"
 
-#: ../build/bin/conf_gen.h:1252 ../build/bin/preferences_gen.h:4758
+#: ../build/bin/conf_gen.h:1266 ../build/bin/preferences_gen.h:4758
 msgctxt "preferences"
 msgid "top left"
 msgstr "sol üst"
 
-#: ../build/bin/conf_gen.h:1253 ../build/bin/preferences_gen.h:4763
+#: ../build/bin/conf_gen.h:1267 ../build/bin/preferences_gen.h:4763
 msgctxt "preferences"
 msgid "top right"
 msgstr "sağ üst"
 
-#: ../build/bin/conf_gen.h:1254 ../build/bin/preferences_gen.h:4768
+#: ../build/bin/conf_gen.h:1268 ../build/bin/preferences_gen.h:4768
 msgctxt "preferences"
 msgid "top center"
 msgstr "üst merkez"
 
-#: ../build/bin/conf_gen.h:1255 ../build/bin/preferences_gen.h:4773
+#: ../build/bin/conf_gen.h:1269 ../build/bin/preferences_gen.h:4773
 #: ../build/bin/preferences_gen.h:4797
 msgctxt "preferences"
 msgid "bottom"
 msgstr "alt"
 
-#: ../build/bin/conf_gen.h:1256 ../build/bin/preferences_gen.h:4778
+#: ../build/bin/conf_gen.h:1270 ../build/bin/preferences_gen.h:4778
 msgctxt "preferences"
 msgid "hidden"
 msgstr "gizli"
 
-#: ../build/bin/conf_gen.h:1766
+#: ../build/bin/conf_gen.h:1780
 msgid "show OSD"
 msgstr "OSD'yi göster"
 
-#: ../build/bin/conf_gen.h:1767
+#: ../build/bin/conf_gen.h:1781
 msgid "toggle the visibility of the map overlays"
 msgstr "harita bindirmelerinin görünürlüğünü aç/kapat"
 
-#: ../build/bin/conf_gen.h:1772 ../src/libs/map_settings.c:147
+#: ../build/bin/conf_gen.h:1786 ../src/libs/map_settings.c:147
 msgid "filtered images"
 msgstr "filtrelenmiş görüntüler"
 
-#: ../build/bin/conf_gen.h:1773
+#: ../build/bin/conf_gen.h:1787
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr "ayarlandığında geçerli film şeridine çizilen görüntüleri sınırla"
 
-#: ../build/bin/conf_gen.h:1780
+#: ../build/bin/conf_gen.h:1794
 msgid "max images"
 msgstr "azm görüntü"
 
-#: ../build/bin/conf_gen.h:1781
+#: ../build/bin/conf_gen.h:1795
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "haritada çizilen azami küçük resim sayısı"
 
-#: ../build/bin/conf_gen.h:1788
+#: ../build/bin/conf_gen.h:1802
 msgid "group size factor"
 msgstr "grup büyüklüğü etkeni"
 
-#: ../build/bin/conf_gen.h:1789
+#: ../build/bin/conf_gen.h:1803
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -482,11 +482,11 @@ msgstr ""
 "haritadaki görüntü gruplarının uzamsal boyutunu artırın veya azaltın. "
 "hesaplama süresini etkileyebilir"
 
-#: ../build/bin/conf_gen.h:1796
+#: ../build/bin/conf_gen.h:1810
 msgid "min images per group"
 msgstr "grup başına asg görüntü"
 
-#: ../build/bin/conf_gen.h:1797
+#: ../build/bin/conf_gen.h:1811
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
@@ -494,21 +494,21 @@ msgstr ""
 "bir görüntü grubu oluşturmak için asgari görüntü sayısı. hesaplama süresini "
 "etkileyebilir."
 
-#: ../build/bin/conf_gen.h:1802
+#: ../build/bin/conf_gen.h:1816
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "küçük resim"
 
-#: ../build/bin/conf_gen.h:1803
+#: ../build/bin/conf_gen.h:1817
 msgctxt "preferences"
 msgid "count"
 msgstr "sayı"
 
-#: ../build/bin/conf_gen.h:1806 ../src/libs/map_settings.c:160
+#: ../build/bin/conf_gen.h:1820 ../src/libs/map_settings.c:160
 msgid "thumbnail display"
 msgstr "küçük resim ekranı"
 
-#: ../build/bin/conf_gen.h:1807
+#: ../build/bin/conf_gen.h:1821
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
@@ -516,218 +516,223 @@ msgstr ""
 "üç seçenek mevcuttur: resimlerin küçük resimleri, yalnızca grubun resim "
 "sayısı veya hiçbir şey"
 
-#: ../build/bin/conf_gen.h:1818
+#: ../build/bin/conf_gen.h:1832
 msgid "max polygon points"
 msgstr "azami çokgen noktaları"
 
-#: ../build/bin/conf_gen.h:1819
+#: ../build/bin/conf_gen.h:1833
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
 "konum bulma modülünde çokgen ile içe aktarılan noktaların sayısını sınırlayın"
 
-#: ../build/bin/conf_gen.h:2094 ../build/bin/preferences_gen.h:4913
+#: ../build/bin/conf_gen.h:2108 ../build/bin/preferences_gen.h:4913
 msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "her zaman ikidoğrusal (hızlı)"
 
-#: ../build/bin/conf_gen.h:2096 ../build/bin/preferences_gen.h:4923
+#: ../build/bin/conf_gen.h:2110 ../build/bin/preferences_gen.h:4923
 msgctxt "preferences"
 msgid "full (possibly slow)"
 msgstr "dolu (muhtemelen yavaş)"
 
-#: ../build/bin/conf_gen.h:2104 ../build/bin/preferences_gen.h:4978
+#: ../build/bin/conf_gen.h:2118 ../build/bin/preferences_gen.h:4978
 #: ../build/bin/preferences_gen.h:5012
 msgctxt "preferences"
 msgid "original"
 msgstr "özgün"
 
-#: ../build/bin/conf_gen.h:2105 ../build/bin/preferences_gen.h:4983
+#: ../build/bin/conf_gen.h:2119 ../build/bin/preferences_gen.h:4983
 msgctxt "preferences"
 msgid "to 1/2"
 msgstr "1/2'ye kadar"
 
-#: ../build/bin/conf_gen.h:2106 ../build/bin/preferences_gen.h:4988
+#: ../build/bin/conf_gen.h:2120 ../build/bin/preferences_gen.h:4988
 msgctxt "preferences"
 msgid "to 1/3"
 msgstr "1/3'e kadar"
 
-#: ../build/bin/conf_gen.h:2107 ../build/bin/preferences_gen.h:4993
+#: ../build/bin/conf_gen.h:2121 ../build/bin/preferences_gen.h:4993
 msgctxt "preferences"
 msgid "to 1/4"
 msgstr "1/4'e kadar"
 
-#: ../build/bin/conf_gen.h:2121 ../build/bin/conf_gen.h:2131
+#: ../build/bin/conf_gen.h:2135 ../build/bin/conf_gen.h:2145
 #: ../build/bin/preferences_gen.h:5595 ../build/bin/preferences_gen.h:5660
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "çift doğrusal"
 
-#: ../build/bin/conf_gen.h:2122 ../build/bin/conf_gen.h:2132
+#: ../build/bin/conf_gen.h:2136 ../build/bin/conf_gen.h:2146
 #: ../build/bin/preferences_gen.h:5600 ../build/bin/preferences_gen.h:5624
 #: ../build/bin/preferences_gen.h:5665
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "çift kübik"
 
-#: ../build/bin/conf_gen.h:2123 ../build/bin/conf_gen.h:2133
+#: ../build/bin/conf_gen.h:2137 ../build/bin/conf_gen.h:2147
 #: ../build/bin/preferences_gen.h:5605 ../build/bin/preferences_gen.h:5670
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/bin/conf_gen.h:2134 ../build/bin/preferences_gen.h:5675
+#: ../build/bin/conf_gen.h:2148 ../build/bin/preferences_gen.h:5675
 #: ../build/bin/preferences_gen.h:5694
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:2456 ../build/bin/conf_gen.h:3143
+#: ../build/bin/conf_gen.h:2470 ../build/bin/conf_gen.h:3158
 #: ../build/bin/preferences_gen.h:5383 ../build/bin/preferences_gen.h:6813
 #: ../build/bin/preferences_gen.h:6849
 msgctxt "preferences"
 msgid "auto"
 msgstr "otomatik"
 
-#: ../build/bin/conf_gen.h:2458 ../build/bin/preferences_gen.h:6823
+#: ../build/bin/conf_gen.h:2472 ../build/bin/preferences_gen.h:6823
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "kitaplık"
 
-#: ../build/bin/conf_gen.h:2459 ../build/bin/preferences_gen.h:6829
+#: ../build/bin/conf_gen.h:2473 ../build/bin/preferences_gen.h:6829
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/bin/conf_gen.h:2661
+#: ../build/bin/conf_gen.h:2675
 msgctxt "preferences"
 msgid "histogram"
 msgstr "histogram"
 
-#: ../build/bin/conf_gen.h:2662
+#: ../build/bin/conf_gen.h:2676
 msgctxt "preferences"
 msgid "waveform"
 msgstr "dalga şekli"
 
-#: ../build/bin/conf_gen.h:2663
+#: ../build/bin/conf_gen.h:2677
 msgctxt "preferences"
 msgid "rgb parade"
 msgstr "rgb geçişi"
 
-#: ../build/bin/conf_gen.h:2664
+#: ../build/bin/conf_gen.h:2678
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "vektör kapsamı"
 
-#: ../build/bin/conf_gen.h:2672 ../build/bin/preferences_gen.h:7503
+#: ../build/bin/conf_gen.h:2686 ../build/bin/preferences_gen.h:7503
 msgctxt "preferences"
 msgid "left"
 msgstr "sol"
 
-#: ../build/bin/conf_gen.h:2673 ../build/bin/preferences_gen.h:7508
+#: ../build/bin/conf_gen.h:2687 ../build/bin/preferences_gen.h:7508
 #: ../build/bin/preferences_gen.h:7527
 msgctxt "preferences"
 msgid "right"
 msgstr "sağ"
 
-#: ../build/bin/conf_gen.h:2681 ../build/bin/conf_gen.h:2717
+#: ../build/bin/conf_gen.h:2695 ../build/bin/conf_gen.h:2732
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "logaritmik"
 
-#: ../build/bin/conf_gen.h:2682 ../build/bin/conf_gen.h:2718
+#: ../build/bin/conf_gen.h:2696 ../build/bin/conf_gen.h:2733
 msgctxt "preferences"
 msgid "linear"
 msgstr "doğrusal"
 
-#: ../build/bin/conf_gen.h:2690
+#: ../build/bin/conf_gen.h:2704
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "yatay"
 
-#: ../build/bin/conf_gen.h:2691
+#: ../build/bin/conf_gen.h:2705
 msgctxt "preferences"
 msgid "vertical"
 msgstr "dikey"
 
-#: ../build/bin/conf_gen.h:2699
+#: ../build/bin/conf_gen.h:2713
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "üst üste bindirilmiş"
 
-#: ../build/bin/conf_gen.h:2700
+#: ../build/bin/conf_gen.h:2714
 msgctxt "preferences"
 msgid "parade"
 msgstr "geçiş"
 
-#: ../build/bin/conf_gen.h:2708
+#: ../build/bin/conf_gen.h:2722
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:2709
+#: ../build/bin/conf_gen.h:2723
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:2874
+#: ../build/bin/conf_gen.h:2724
+msgctxt "preferences"
+msgid "RYB"
+msgstr "RYB"
+
+#: ../build/bin/conf_gen.h:2889
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:2875
+#: ../build/bin/conf_gen.h:2890
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:2876
+#: ../build/bin/conf_gen.h:2891
 msgctxt "preferences"
 msgid "inch"
 msgstr "inç"
 
-#: ../build/bin/conf_gen.h:2921 ../build/bin/preferences_gen.h:7563
+#: ../build/bin/conf_gen.h:2936 ../build/bin/preferences_gen.h:7563
 #: ../build/bin/preferences_gen.h:7592
 msgctxt "preferences"
 msgid "all"
 msgstr "tümü"
 
-#: ../build/bin/conf_gen.h:2922 ../build/bin/preferences_gen.h:7568
+#: ../build/bin/conf_gen.h:2937 ../build/bin/preferences_gen.h:7568
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:2923 ../build/bin/preferences_gen.h:7573
+#: ../build/bin/conf_gen.h:2938 ../build/bin/preferences_gen.h:7573
 msgctxt "preferences"
 msgid "colord"
 msgstr "renkli"
 
-#: ../build/bin/conf_gen.h:2959 ../build/bin/preferences_gen.h:5773
+#: ../build/bin/conf_gen.h:2974 ../build/bin/preferences_gen.h:5773
 #: ../build/bin/preferences_gen.h:5802
 msgctxt "preferences"
 msgid "scene-referred"
 msgstr "sahne referanslı"
 
-#: ../build/bin/conf_gen.h:2960 ../build/bin/preferences_gen.h:5778
+#: ../build/bin/conf_gen.h:2975 ../build/bin/preferences_gen.h:5778
 msgctxt "preferences"
 msgid "display-referred"
 msgstr "ekran-başvurulan"
 
-#: ../build/bin/conf_gen.h:2969 ../build/bin/preferences_gen.h:5838
+#: ../build/bin/conf_gen.h:2984 ../build/bin/preferences_gen.h:5838
 msgctxt "preferences"
 msgid "modern"
 msgstr "modern"
 
-#: ../build/bin/conf_gen.h:2970 ../build/bin/preferences_gen.h:5843
+#: ../build/bin/conf_gen.h:2985 ../build/bin/preferences_gen.h:5843
 #: ../build/bin/preferences_gen.h:5862
 msgctxt "preferences"
 msgid "legacy"
 msgstr "eski"
 
-#: ../build/bin/conf_gen.h:3070
+#: ../build/bin/conf_gen.h:3085
 msgid "camera time zone"
 msgstr "kamera saat dilimi"
 
-#: ../build/bin/conf_gen.h:3071
+#: ../build/bin/conf_gen.h:3086
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -735,62 +740,62 @@ msgstr ""
 "çoğu kamera saat dilimini EXIF'te saklamaz. GPX verilerinin doğru şekilde "
 "eşleştirilebilmesi için doğru saat dilimini verin"
 
-#: ../build/bin/conf_gen.h:3082
+#: ../build/bin/conf_gen.h:3097
 msgctxt "preferences"
 msgid "no color"
 msgstr "renk yok"
 
-#: ../build/bin/conf_gen.h:3083
+#: ../build/bin/conf_gen.h:3098
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "aydınlatıcı renk"
 
-#: ../build/bin/conf_gen.h:3084
+#: ../build/bin/conf_gen.h:3099
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "efekt öykünmesi"
 
-#: ../build/bin/conf_gen.h:3130
+#: ../build/bin/conf_gen.h:3145
 msgctxt "preferences"
 msgid "list"
 msgstr "liste"
 
-#: ../build/bin/conf_gen.h:3131
+#: ../build/bin/conf_gen.h:3146
 msgctxt "preferences"
 msgid "tabs"
 msgstr "sekme"
 
-#: ../build/bin/conf_gen.h:3132
+#: ../build/bin/conf_gen.h:3147
 msgctxt "preferences"
 msgid "columns"
 msgstr "sütunlar"
 
-#: ../build/bin/conf_gen.h:3141 ../build/bin/preferences_gen.h:5373
+#: ../build/bin/conf_gen.h:3156 ../build/bin/preferences_gen.h:5373
 msgctxt "preferences"
 msgid "active"
 msgstr "etkin"
 
-#: ../build/bin/conf_gen.h:3142 ../build/bin/preferences_gen.h:5378
+#: ../build/bin/conf_gen.h:3157 ../build/bin/preferences_gen.h:5378
 msgctxt "preferences"
 msgid "dim"
 msgstr "loş"
 
-#: ../build/bin/conf_gen.h:3144 ../build/bin/preferences_gen.h:5388
+#: ../build/bin/conf_gen.h:3159 ../build/bin/preferences_gen.h:5388
 msgctxt "preferences"
 msgid "fade"
 msgstr "solma"
 
-#: ../build/bin/conf_gen.h:3145 ../build/bin/preferences_gen.h:5393
+#: ../build/bin/conf_gen.h:3160 ../build/bin/preferences_gen.h:5393
 msgctxt "preferences"
 msgid "fit"
 msgstr "sığdır"
 
-#: ../build/bin/conf_gen.h:3146 ../build/bin/preferences_gen.h:5398
+#: ../build/bin/conf_gen.h:3161 ../build/bin/preferences_gen.h:5398
 msgctxt "preferences"
 msgid "smooth"
 msgstr "pürüzsüz"
 
-#: ../build/bin/conf_gen.h:3147 ../build/bin/preferences_gen.h:5403
+#: ../build/bin/conf_gen.h:3162 ../build/bin/preferences_gen.h:5403
 msgctxt "preferences"
 msgid "glide"
 msgstr "kayma"
@@ -1947,18 +1952,19 @@ msgstr ""
 "kullanışlıdır"
 
 #: ../build/bin/preferences_gen.h:7617
-msgid "order or exclude midi devices"
-msgstr "midi cihazları sipariş edin veya hariç tutun"
+msgid "order or exclude MIDI devices"
+msgstr "MIDI cihazlarını sıralayın veya hariç tutun"
 
 #: ../build/bin/preferences_gen.h:7635
 msgid ""
-"comma-separated list of device name fragments that if matched load midi "
+"comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list or if preceded by - prevent matching "
 "devices from loading. add encoding and number of knobs like 'BeatStep:63:16'"
 msgstr ""
-"virgülle ayrılmış cihaz adı parçaları listesi, listedeki konuma göre verilen "
-"kimlikte eşleşirse midi cihazı yüklerse veya öncesinde - eşleşen cihazların "
-"yüklenmesini engeller. 'BeatStep:63:16' gibi kodlama ve düğme sayısı ekleyin"
+"Cihaz adı parçalarının virgülle ayrılmış listesi, eğer eşleştirilirse, "
+"listedeki konuma göre verilen kimlikte MIDI cihazını yükler veya öncesinde "
+"-  eşleşen cihazların yüklenmesini engeller. 'BeatStep:63:16' gibi kodlama "
+"ve düğme sayısı ekleyin"
 
 #. tags
 #: ../build/bin/preferences_gen.h:7651 ../src/develop/lightroom.c:1516
@@ -3762,10 +3768,10 @@ msgstr "vurgulamayı yeniden yapılandırmayı etkinleştir"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2756 ../src/common/variables.c:604
-#: ../src/develop/imageop_gui.c:212 ../src/gui/gtk.c:2524
-#: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
-#: ../src/libs/export.c:1193 ../src/libs/export.c:1200
-#: ../src/libs/export.c:1207 ../src/libs/metadata_view.c:678
+#: ../src/develop/imageop_gui.c:212 ../src/imageio/format/pdf.c:636
+#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1193
+#: ../src/libs/export.c:1200 ../src/libs/export.c:1207
+#: ../src/libs/metadata_view.c:678
 msgid "no"
 msgstr "hayır"
 
@@ -3848,7 +3854,7 @@ msgid "target"
 msgstr "hedef"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:151
-#: ../src/iop/sigmoid.c:132
+#: ../src/iop/sigmoid.c:135
 msgid "reinhard"
 msgstr "reinhard"
 
@@ -4708,52 +4714,52 @@ msgstr "açılır listeler"
 msgid "buttons"
 msgstr "düğmeler"
 
-#: ../src/bauhaus/bauhaus.c:3325
+#: ../src/bauhaus/bauhaus.c:3327
 msgid "button on"
 msgstr "düğme açık"
 
-#: ../src/bauhaus/bauhaus.c:3325
+#: ../src/bauhaus/bauhaus.c:3327
 msgid "button off"
 msgstr "düğme kapalı"
 
-#: ../src/bauhaus/bauhaus.c:3526
+#: ../src/bauhaus/bauhaus.c:3528
 msgid "not that many sliders"
 msgstr "o kadar çok kaydırıcı yok"
 
-#: ../src/bauhaus/bauhaus.c:3536
+#: ../src/bauhaus/bauhaus.c:3538
 msgid "not that many dropdowns"
 msgstr "o kadar çok açılır liste yok"
 
-#: ../src/bauhaus/bauhaus.c:3551
+#: ../src/bauhaus/bauhaus.c:3553
 msgid "not that many buttons"
 msgstr "o kadar çok düğme yok"
 
-#: ../src/bauhaus/bauhaus.c:3556 ../src/gui/accelerators.c:317
+#: ../src/bauhaus/bauhaus.c:3558 ../src/gui/accelerators.c:317
 msgid "value"
 msgstr "değer"
 
-#: ../src/bauhaus/bauhaus.c:3557 ../src/bauhaus/bauhaus.c:3563
-#: ../src/bauhaus/bauhaus.c:3602 ../src/gui/accelerators.c:295
+#: ../src/bauhaus/bauhaus.c:3559 ../src/bauhaus/bauhaus.c:3565
+#: ../src/bauhaus/bauhaus.c:3604 ../src/gui/accelerators.c:295
 msgid "button"
 msgstr "düğme"
 
-#: ../src/bauhaus/bauhaus.c:3558
+#: ../src/bauhaus/bauhaus.c:3560
 msgid "force"
 msgstr "kuvvet"
 
-#: ../src/bauhaus/bauhaus.c:3559
+#: ../src/bauhaus/bauhaus.c:3561
 msgid "zoom"
 msgstr "yakınlaştırma"
 
-#: ../src/bauhaus/bauhaus.c:3562
+#: ../src/bauhaus/bauhaus.c:3564
 msgid "selection"
 msgstr "seçim"
 
-#: ../src/bauhaus/bauhaus.c:3581 ../src/bauhaus/bauhaus.c:3592
+#: ../src/bauhaus/bauhaus.c:3583 ../src/bauhaus/bauhaus.c:3594
 msgid "slider"
 msgstr "kaydırıcı"
 
-#: ../src/bauhaus/bauhaus.c:3586 ../src/bauhaus/bauhaus.c:3597
+#: ../src/bauhaus/bauhaus.c:3588 ../src/bauhaus/bauhaus.c:3599
 msgid "dropdown"
 msgstr "aşağı sürükleme"
 
@@ -5178,12 +5184,12 @@ msgstr "grup takipçileri"
 msgid "not defined"
 msgstr "tanımlanmamış"
 
-#: ../src/common/collection.c:2496
+#: ../src/common/collection.c:2499
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
 msgstr "<b>%d</b> resim (#<b>%d</b>) <b>%d</b> arasından seçildi"
 
-#: ../src/common/collection.c:2502
+#: ../src/common/collection.c:2505
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
@@ -5668,19 +5674,19 @@ msgstr "`%s' dosyasının biçimi bilinmiyor!"
 msgid "error loading file `%s'"
 msgstr "`%s' dosyası yüklenirken hata oluştu"
 
-#: ../src/common/darktable.c:1328
+#: ../src/common/darktable.c:1333
 msgid "configuration information"
 msgstr "yapılandırma bilgileri"
 
-#: ../src/common/darktable.c:1330
+#: ../src/common/darktable.c:1335
 msgid "show this information again"
 msgstr "bu bilgiyi tekrar göster"
 
-#: ../src/common/darktable.c:1330
+#: ../src/common/darktable.c:1335
 msgid "understood"
 msgstr "anlaşıldı"
 
-#: ../src/common/darktable.c:1768
+#: ../src/common/darktable.c:1773
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -5688,13 +5694,13 @@ msgstr ""
 "RCD demosaicer, daha iyi kalite ve performans nedeniyle PPG yerine "
 "varsayılan olarak tanımlanmıştır."
 
-#: ../src/common/darktable.c:1770
+#: ../src/common/darktable.c:1775
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "uzaklaştırılmış karanlık oda modu için tercihler/karanlık oda/demozaik'e "
 "bakın"
 
-#: ../src/common/darktable.c:1776
+#: ../src/common/darktable.c:1781
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -5702,7 +5708,7 @@ msgstr ""
 "kullanıcı arabirimi ve darktable performansını ayarlamak için temel alınan "
 "dahili öğeler değişti."
 
-#: ../src/common/darktable.c:1778
+#: ../src/common/darktable.c:1783
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5710,15 +5716,15 @@ msgstr ""
 "tercihler/işleme kullanımı yerine artık boşluk ve arkadaşlar "
 "bulamayacaksınız:"
 
-#: ../src/common/darktable.c:1780
+#: ../src/common/darktable.c:1785
 msgid "1) darktable resources"
 msgstr "1) darktable kaynakları"
 
-#: ../src/common/darktable.c:1782
+#: ../src/common/darktable.c:1787
 msgid "2) tune OpenCL performance"
 msgstr "2) OpenCL performansını ayarla"
 
-#: ../src/common/darktable.c:1789
+#: ../src/common/darktable.c:1794
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
@@ -5726,7 +5732,7 @@ msgstr ""
 "OpenCL performansıyla ilgili bazı genel yapılandırma değerleri artık "
 "kullanılmamaktadır."
 
-#: ../src/common/darktable.c:1791
+#: ../src/common/darktable.c:1796
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
@@ -5734,7 +5740,7 @@ msgstr ""
 "bunun yerine, 'cihaz başına' verilerini 'cl_devıce_v4_canonıcal-name' içinde "
 "bulacaksınız. içerik şu şekildedir:"
 
-#: ../src/common/darktable.c:1793
+#: ../src/common/darktable.c:1798
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
@@ -5742,7 +5748,7 @@ msgstr ""
 " 'atomlardan_kaçının' 'micro_kestirme' 'toparlama' 'yuvarlama' 'olay "
 "tutamaçları ' 'zaman uyumsuz' 'devre dışı' 'sihir'"
 
-#: ../src/common/darktable.c:1795
+#: ../src/common/darktable.c:1800
 msgid "you may tune as before except 'magic'"
 msgstr "'sihir' dışında eskisi gibi ayarlayabilirsiniz"
 
@@ -5837,10 +5843,10 @@ msgstr ""
 "kilit dosyalarını gerçekten silmek istiyor musunuz?\n"
 
 #: ../src/common/database.c:2756 ../src/common/variables.c:602
-#: ../src/develop/imageop_gui.c:213 ../src/gui/gtk.c:2523
-#: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
-#: ../src/libs/export.c:1193 ../src/libs/export.c:1200
-#: ../src/libs/export.c:1207 ../src/libs/metadata_view.c:678
+#: ../src/develop/imageop_gui.c:213 ../src/imageio/format/pdf.c:636
+#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1193
+#: ../src/libs/export.c:1200 ../src/libs/export.c:1207
+#: ../src/libs/metadata_view.c:678
 msgid "yes"
 msgstr "evet"
 
@@ -6493,7 +6499,7 @@ msgid "style named '%s' successfully created"
 msgstr "'%s' adlı tarz başarıyla oluşturuldu"
 
 #: ../src/common/styles.c:628 ../src/common/styles.c:656
-#: ../src/common/styles.c:695 ../src/dtgtk/culling.c:992
+#: ../src/common/styles.c:695 ../src/dtgtk/culling.c:994
 msgid "no image selected!"
 msgstr "görüntü seçilmedi!"
 
@@ -6754,17 +6760,17 @@ msgstr "kapa_t"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:671 ../src/dtgtk/thumbtable.c:2342
+#: ../src/control/crawler.c:671 ../src/dtgtk/thumbtable.c:2344
 #: ../src/libs/import.c:1712 ../src/libs/select.c:133
 msgid "select all"
 msgstr "hepsini seç"
 
-#: ../src/control/crawler.c:672 ../src/dtgtk/thumbtable.c:2343
+#: ../src/control/crawler.c:672 ../src/dtgtk/thumbtable.c:2345
 #: ../src/libs/import.c:1716 ../src/libs/select.c:137
 msgid "select none"
 msgstr "hiçbirini seçme"
 
-#: ../src/control/crawler.c:673 ../src/dtgtk/thumbtable.c:2344
+#: ../src/control/crawler.c:673 ../src/dtgtk/thumbtable.c:2346
 #: ../src/libs/select.c:141
 msgid "invert selection"
 msgstr "seçimi ters çevir"
@@ -8899,13 +8905,13 @@ msgstr "üst paneldeki filtre ayarlarını gevşetmeyi deneyin"
 msgid "or add images in the collections module in the left panel"
 msgstr "veya sol paneldeki koleksiyon modülüne resim ekleyin"
 
-#: ../src/dtgtk/thumbtable.c:1250
+#: ../src/dtgtk/thumbtable.c:1252
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 "küçük resimlerin nasıl oluşturulduğuyla ilgili ayarları değiştirdiniz.\n"
 
-#: ../src/dtgtk/thumbtable.c:1252
+#: ../src/dtgtk/thumbtable.c:1254
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -8913,7 +8919,7 @@ msgstr ""
 "tüm önbelleğe alınmış küçük resimlerin geçersiz kılınması gerekir.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1254
+#: ../src/dtgtk/thumbtable.c:1256
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -8923,7 +8929,7 @@ msgstr ""
 "kılınması gerekiyor.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1257
+#: ../src/dtgtk/thumbtable.c:1259
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -8933,7 +8939,7 @@ msgstr ""
 "kılınması gerekiyor.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1259
+#: ../src/dtgtk/thumbtable.c:1261
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -8943,48 +8949,48 @@ msgstr ""
 "kılınması gerekiyor.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1262
+#: ../src/dtgtk/thumbtable.c:1264
 msgid "do you want to do that now?"
 msgstr "bunu şimdi yapmak istiyor musun?"
 
-#: ../src/dtgtk/thumbtable.c:1264
+#: ../src/dtgtk/thumbtable.c:1266
 msgid "cached thumbnails invalidation"
 msgstr "önbelleğe alınmış küçük resimlerin geçersiz kılınması"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2332
+#: ../src/dtgtk/thumbtable.c:2334
 msgid "copy history"
 msgstr "geçmişi kopyala"
 
-#: ../src/dtgtk/thumbtable.c:2333
+#: ../src/dtgtk/thumbtable.c:2335
 msgid "copy history parts"
 msgstr "geçmiş parçalarını kopyala"
 
-#: ../src/dtgtk/thumbtable.c:2334
+#: ../src/dtgtk/thumbtable.c:2336
 msgid "paste history"
 msgstr "geçmişi yapıştır"
 
-#: ../src/dtgtk/thumbtable.c:2335
+#: ../src/dtgtk/thumbtable.c:2337
 msgid "paste history parts"
 msgstr "geçmiş parçalarını yapıştır"
 
-#: ../src/dtgtk/thumbtable.c:2336 ../src/libs/copy_history.c:354
+#: ../src/dtgtk/thumbtable.c:2338 ../src/libs/copy_history.c:354
 msgid "discard history"
 msgstr "geçmişi sil"
 
-#: ../src/dtgtk/thumbtable.c:2338
+#: ../src/dtgtk/thumbtable.c:2340
 msgid "duplicate image"
 msgstr "yinelenen görüntü"
 
-#: ../src/dtgtk/thumbtable.c:2339
+#: ../src/dtgtk/thumbtable.c:2341
 msgid "duplicate image virgin"
 msgstr "yinelenen görüntü ellenmemiş"
 
-#: ../src/dtgtk/thumbtable.c:2345 ../src/libs/select.c:145
+#: ../src/dtgtk/thumbtable.c:2347 ../src/libs/select.c:145
 msgid "select film roll"
 msgstr "film rulosunu seç"
 
-#: ../src/dtgtk/thumbtable.c:2346 ../src/libs/select.c:149
+#: ../src/dtgtk/thumbtable.c:2348 ../src/libs/select.c:149
 msgid "select untouched"
 msgstr "dokunulmamış seç"
 
@@ -9783,6 +9789,14 @@ msgstr "odak zirvesi aç/kapat"
 #: ../src/gui/gtk.c:2954 ../src/gui/gtk.c:2959
 msgid "tabs"
 msgstr "sekme"
+
+#: ../src/gui/gtk.c:2523
+msgid "_yes"
+msgstr "_evet"
+
+#: ../src/gui/gtk.c:2524
+msgid "_no"
+msgstr "_hayır"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
@@ -11596,7 +11610,7 @@ msgstr "düzeltici veya yaratıcı"
 #: ../src/iop/flip.c:106 ../src/iop/flip.c:107 ../src/iop/hazeremoval.c:113
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:218 ../src/iop/lens.cc:220
 #: ../src/iop/liquify.c:296 ../src/iop/liquify.c:298 ../src/iop/retouch.c:210
-#: ../src/iop/retouch.c:212 ../src/iop/sigmoid.c:92
+#: ../src/iop/retouch.c:212 ../src/iop/sigmoid.c:95
 #: ../src/iop/splittoning.c:104 ../src/iop/splittoning.c:106
 #: ../src/iop/spots.c:68 ../src/iop/spots.c:70 ../src/iop/toneequal.c:307
 #: ../src/iop/velvia.c:106 ../src/iop/velvia.c:108
@@ -11815,7 +11829,7 @@ msgstr "yerel kontrast, keskinlik, keskinlik ekleyin veya kaldırın"
 #: ../src/iop/exposure.c:131 ../src/iop/filmicrgb.c:359
 #: ../src/iop/graduatednd.c:150 ../src/iop/negadoctor.c:156
 #: ../src/iop/rgbcurve.c:142 ../src/iop/rgblevels.c:122 ../src/iop/shadhi.c:197
-#: ../src/iop/sigmoid.c:91 ../src/iop/tonecurve.c:212
+#: ../src/iop/sigmoid.c:94 ../src/iop/tonecurve.c:212
 #: ../src/iop/toneequal.c:306
 msgid "corrective and creative"
 msgstr "düzeltici ve oluşturucu"
@@ -12099,7 +12113,7 @@ msgstr "düzeltici"
 #: ../src/iop/channelmixer.c:142 ../src/iop/lut3d.c:141
 #: ../src/iop/negadoctor.c:157 ../src/iop/profile_gamma.c:102
 #: ../src/iop/rgbcurve.c:143 ../src/iop/rgbcurve.c:145
-#: ../src/iop/rgblevels.c:123 ../src/iop/sigmoid.c:94 ../src/iop/soften.c:106
+#: ../src/iop/rgblevels.c:123 ../src/iop/sigmoid.c:97 ../src/iop/soften.c:106
 #: ../src/iop/soften.c:108
 msgid "linear, RGB, display-referred"
 msgstr "doğrusal, RGB, ekran referanslı"
@@ -12109,7 +12123,7 @@ msgstr "doğrusal, RGB, ekran referanslı"
 #: ../src/iop/dither.c:105 ../src/iop/filmicrgb.c:361
 #: ../src/iop/graduatednd.c:152 ../src/iop/negadoctor.c:158
 #: ../src/iop/profile_gamma.c:103 ../src/iop/rgbcurve.c:144
-#: ../src/iop/rgblevels.c:124 ../src/iop/sigmoid.c:93 ../src/iop/vignette.c:160
+#: ../src/iop/rgblevels.c:124 ../src/iop/sigmoid.c:96 ../src/iop/vignette.c:160
 #: ../src/iop/watermark.c:299
 msgid "non-linear, RGB"
 msgstr "doğrusal olmayan, RGB"
@@ -18484,15 +18498,15 @@ msgstr "keskinleştirme gücü"
 msgid "threshold to activate sharpen"
 msgstr "keskinleştirmeyi etkinleştirmek için eşik"
 
-#: ../src/iop/sigmoid.c:78
+#: ../src/iop/sigmoid.c:81
 msgid "sigmoid"
 msgstr "sigmoid"
 
-#: ../src/iop/sigmoid.c:83
+#: ../src/iop/sigmoid.c:86
 msgid "tone mapping|view transform|display transform"
 msgstr "ton eşleme|görünüm dönüşümü|görüntü dönüşümü"
 
-#: ../src/iop/sigmoid.c:88
+#: ../src/iop/sigmoid.c:91
 msgid ""
 "apply a view transform to make a image displayable\n"
 "on a screen or print. uses a robust and smooth\n"
@@ -18503,15 +18517,15 @@ msgstr ""
 "bir ekranda veya baskıda. sağlam ve pürüzsüz kullanır\n"
 "isteğe bağlı renk koruma yöntemleriyle ton eğrisi."
 
-#: ../src/iop/sigmoid.c:122
+#: ../src/iop/sigmoid.c:125
 msgid "neutral gray"
 msgstr "doğal gri"
 
-#: ../src/iop/sigmoid.c:127
+#: ../src/iop/sigmoid.c:130
 msgid "ACES 100-nit like"
 msgstr "ACES 100-nit gibi"
 
-#: ../src/iop/sigmoid.c:555
+#: ../src/iop/sigmoid.c:559
 msgid ""
 "compression of the applied curve\n"
 "implicitly defines the supported input dynamic range"
@@ -18519,7 +18533,7 @@ msgstr ""
 "uygulanan eğrinin sıkıştırılması\n"
 "desteklenen giriş dinamik aralığını dolaylı olarak tanımlar"
 
-#: ../src/iop/sigmoid.c:558
+#: ../src/iop/sigmoid.c:562
 msgid ""
 "shift the compression towards shadows or highlights.\n"
 "negative values increase contrast in shadows.\n"
@@ -18531,7 +18545,7 @@ msgstr ""
 "pozitif değerler parlak noktalarda kontrastı artırır.\n"
 "karşı uç kontrastta bir azalma görecektir."
 
-#: ../src/iop/sigmoid.c:567
+#: ../src/iop/sigmoid.c:571
 msgid ""
 "optional correction of the hue twist introduced by\n"
 "the per-channel processing method."
@@ -18539,12 +18553,15 @@ msgstr ""
 "tarafından sunulan ton bükülmesinin isteğe bağlı düzeltmesi\n"
 "kanal başına işleme yöntemi."
 
-#. Target display
-#: ../src/iop/sigmoid.c:571
+#: ../src/iop/sigmoid.c:578
 msgid "display luminance"
 msgstr "ekran parlaklığı"
 
-#: ../src/iop/sigmoid.c:580
+#: ../src/iop/sigmoid.c:581
+msgid "set display black/white targets"
+msgstr "siyah/beyaz görüntüleme hedeflerini ayarla"
+
+#: ../src/iop/sigmoid.c:589
 msgid ""
 "the black luminance of the target display or print.\n"
 "can be used creatively for a faded look."
@@ -18552,7 +18569,7 @@ msgstr ""
 "hedef ekranın veya baskının siyah parlaklığı.\n"
 "soluk bir görünüm için yaratıcı bir şekilde kullanılabilir."
 
-#: ../src/iop/sigmoid.c:585
+#: ../src/iop/sigmoid.c:594
 msgid ""
 "the white luminance of the target display or print.\n"
 "can be used creatively for a faded look or blowing out whites earlier."
