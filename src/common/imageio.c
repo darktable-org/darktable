@@ -863,14 +863,10 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   // get only once at the beginning, in case the user changes it on the way:
   const gboolean high_quality_processing = high_quality;
 
-  const gboolean iscropped =
-    (   (pipe.processed_width < (wd - img->crop_x - img->crop_width))
-     || (pipe.processed_height < (ht - img->crop_y - img->crop_height)));
-
   int width = MAX(format_params->max_width, 0);
   int height = MAX(format_params->max_height, 0);
 
-  if(iscropped && !thumbnail_export && width == 0 && height == 0)
+  if(!thumbnail_export && width == 0 && height == 0)
   {
     width = pipe.processed_width;
     height = pipe.processed_height;
