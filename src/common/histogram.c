@@ -69,52 +69,6 @@ inline void dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_
 
 //------------------------------------------------------------------------------
 
-inline static void __attribute__((__unused__)) histogram_helper_cs_rgb_helper_process_pixel_float_compensated(
-    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram,
-    const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  const dt_aligned_pixel_t rgb = { dt_ioppr_compensate_middle_grey(pixel[0], profile_info),
-                                   dt_ioppr_compensate_middle_grey(pixel[1], profile_info),
-                                   dt_ioppr_compensate_middle_grey(pixel[2], profile_info) };
-  const uint32_t R = bin(rgb[0], histogram_params);
-  const uint32_t G = bin(rgb[1], histogram_params);
-  const uint32_t B = bin(rgb[2], histogram_params);
-  histogram[4 * R]++;
-  histogram[4 * G + 1]++;
-  histogram[4 * B + 2]++;
-}
-
-
-#if defined(__SSE2__)
-inline static void histogram_helper_cs_rgb_helper_process_pixel_m128_compensated(
-    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram,
-    const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  const __m128 rgb = { dt_ioppr_compensate_middle_grey(pixel[0], profile_info),
-      dt_ioppr_compensate_middle_grey(pixel[1], profile_info),
-      dt_ioppr_compensate_middle_grey(pixel[2], profile_info), 1.f };
-  const __m128 scale = _mm_set1_ps(histogram_params->mul);
-  const __m128 val_min = _mm_setzero_ps();
-  const __m128 val_max = _mm_set1_ps(histogram_params->bins_count - 1);
-
-  assert(dt_is_aligned(pixel, 16));
-  const __m128 input = rgb;
-  const __m128 scaled = _mm_mul_ps(input, scale);
-  const __m128 clamped = _mm_max_ps(_mm_min_ps(scaled, val_max), val_min);
-
-  const __m128i indexes = _mm_cvtps_epi32(clamped);
-
-  __m128i values __attribute__((aligned(16)));
-  _mm_store_si128(&values, indexes);
-
-  const uint32_t *valuesi = (uint32_t *)(&values);
-
-  histogram[4 * valuesi[0]]++;
-  histogram[4 * valuesi[1] + 1]++;
-  histogram[4 * valuesi[2] + 2]++;
-}
-#endif
-
 inline static void histogram_helper_cs_rgb(const dt_dev_histogram_collection_params_t *const histogram_params,
                                            const void *pixel, uint32_t *histogram, int j,
                                            const dt_iop_order_iccprofile_info_t *const profile_info)
@@ -141,18 +95,20 @@ inline static void histogram_helper_cs_rgb_compensated(const dt_dev_histogram_co
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
+  const float max_bin = histogram_params->bins_count - 1;
+  const float scale = histogram_params->mul;
 
-  // process aligned pixels with SSE
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++, in += 4)
+  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
-    if(darktable.codepath.OPENMP_SIMD)
-      histogram_helper_cs_rgb_helper_process_pixel_float_compensated(histogram_params, in, histogram, profile_info);
-#if defined(__SSE2__)
-    else if(darktable.codepath.SSE2)
-      histogram_helper_cs_rgb_helper_process_pixel_m128_compensated(histogram_params, in, histogram, profile_info);
-#endif
-    else
-      dt_unreachable_codepath();
+    dt_aligned_pixel_t b;
+    for_each_channel(k,aligned(in,b:16))
+    {
+      const float c = dt_ioppr_compensate_middle_grey(in[i*4+k], profile_info);
+      b[k] = CLAMP(scale * c, 0.0f, max_bin);
+    }
+    histogram[4 * (uint32_t)b[0]]++;
+    histogram[4 * (uint32_t)b[1] + 1]++;
+    histogram[4 * (uint32_t)b[2] + 2]++;
   }
 }
 
