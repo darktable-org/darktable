@@ -188,9 +188,13 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
 //------------------------------------------------------------------------------
 
 void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
-    dt_dev_histogram_stats_t *histogram_stats, const dt_iop_colorspace_type_t cst,
-    const dt_iop_colorspace_type_t cst_to, const void *pixel, uint32_t **histogram,
-    const gboolean compensate_middle_grey, const dt_iop_order_iccprofile_info_t *const profile_info)
+                         dt_dev_histogram_stats_t *histogram_stats,
+                         const dt_iop_colorspace_type_t cst,
+                         const dt_iop_colorspace_type_t cst_to,
+                         const void *pixel,
+                         uint32_t **histogram, uint32_t *histogram_max,
+                         const gboolean compensate_middle_grey,
+                         const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   dt_times_t start_time = { 0 }, end_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
@@ -217,7 +221,6 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
       break;
 
     case IOP_CS_LAB:
-    default:
       if(cst_to != IOP_CS_LCH)
         // for tonecurve
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_Lab, profile_info);
@@ -226,7 +229,40 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_Lab_LCh, profile_info);
       histogram_stats->ch = 3u;
       break;
+
+    default:
+      dt_unreachable_codepath();
   }
+
+  // now, if requested, calculate maximum of each channel
+  dt_aligned_uint32_t m = { 0u, 0u, 0u, 0u };
+  if(*histogram && histogram_max)
+  {
+    // RGB, Lab, and LCh
+    if(cst == IOP_CS_RGB || IOP_CS_LAB)
+    {
+      uint32_t *hist = *histogram;
+
+      // don't count <= 0 pixels except for ab or Ch
+      if(cst == IOP_CS_LAB)
+      {
+        m[1] = hist[1];
+        m[2] = hist[2];
+      }
+
+      for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
+        for_each_channel(ch,aligned(hist:64) aligned(m:16))
+          m[ch] = MAX(m[ch], hist[k+ch]);
+    }
+    else
+      // raw max not implemented, as is only seen in exposure
+      // deflicker, and in that case we don't use maximums
+      dt_unreachable_codepath();
+  }
+
+  if(histogram_max)
+    for_each_channel(ch,aligned(m:16))
+      histogram_max[ch] = m[ch];
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
@@ -234,45 +270,6 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
     fprintf(stderr, "histogram calculation %d bins %d -> %d compensate %d %d channels %d pixels took %.3f secs (%.3f CPU)\n",
             histogram_params->bins_count, cst, cst_to, compensate_middle_grey && profile_info, histogram_stats->ch, histogram_stats->pixels,
             end_time.clock - start_time.clock, end_time.user - start_time.user);
-  }
-}
-
-void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_stats,
-                             const dt_iop_colorspace_type_t cst, const dt_iop_colorspace_type_t cst_to,
-                             uint32_t **histogram, uint32_t *histogram_max)
-{
-  if(*histogram == NULL) return;
-
-  dt_times_t start_time = { 0 }, end_time = { 0 };
-  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
-
-  dt_aligned_uint32_t m = { 0u, 0u, 0u, 0u };
-  uint32_t *hist = *histogram;
-
-  // RGB, Lab, and LCh
-  if(cst == IOP_CS_RGB || IOP_CS_LAB)
-  {
-    // don't count <= 0 pixels except for ab or Ch
-    if(cst == IOP_CS_LAB)
-    {
-      m[1] = hist[1];
-      m[2] = hist[2];
-    }
-    for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
-      for_each_channel(ch,aligned(hist:64) aligned(m:16))
-        m[ch] = MAX(m[ch], hist[k+ch]);
-  }
-  else
-    dt_unreachable_codepath();
-
-  for_each_channel(ch,aligned(m:16))
-    histogram_max[ch] = m[ch];
-
-  if(darktable.unmuted & DT_DEBUG_PERF)
-  {
-    dt_get_times(&end_time);
-    fprintf(stderr, "histogram max calc took %.3f secs (%.3f CPU)\n",
-        end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 }
 
