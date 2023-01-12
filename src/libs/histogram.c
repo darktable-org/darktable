@@ -1166,7 +1166,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       cairo_stroke(cr);
     else
     {
-      // we dim the histogram graph inside the harmony sectors
+      // we dim the histogram graph outside the harmony sectors
       cairo_stroke_preserve(cr);
       cairo_push_group(cr);
       cairo_paint_with_alpha(cr, 0.3);
