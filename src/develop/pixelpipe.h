@@ -53,8 +53,6 @@ typedef struct dt_dev_histogram_collection_params_t
   const struct dt_histogram_roi_t *roi;
   /** count of histogram bins. */
   uint32_t bins_count;
-  /** in most cases, bins_count-1. */
-  float mul;
 } dt_dev_histogram_collection_params_t;
 
 // params used to collect histogram during last histogram capture

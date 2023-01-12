@@ -186,7 +186,6 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
 
   histogram_params.roi = roi;
   histogram_params.bins_count = HISTOGRAM_BINS;
-  histogram_params.mul = histogram_params.bins_count - 1;
 
   // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of the graph
   // FIXME: set up "custom" histogram worker which can do colorspace conversion on fly -- in cases that we need to do that -- may need to add from colorspace to dt_dev_histogram_collection_params_t
