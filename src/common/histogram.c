@@ -185,7 +185,7 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
 void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
     dt_dev_histogram_stats_t *histogram_stats, const dt_iop_colorspace_type_t cst,
     const dt_iop_colorspace_type_t cst_to, const void *pixel, uint32_t **histogram,
-    const int compensate_middle_grey, const dt_iop_order_iccprofile_info_t *const profile_info)
+    const gboolean compensate_middle_grey, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   dt_times_t start_time = { 0 }, end_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
@@ -203,10 +203,10 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
 
     case IOP_CS_RGB:
       if(compensate_middle_grey && profile_info)
-        // for rgbcurve (sometimes)
+        // for rgbcurve (compensated)
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb_compensated, profile_info);
       else
-        // used by levels, rgbcurve (sometimes), rgblevels
+        // used by levels, rgbcurve (uncompensated), rgblevels
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb, profile_info);
       histogram_stats->ch = 3u;
       break;

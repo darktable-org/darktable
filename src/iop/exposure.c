@@ -322,7 +322,7 @@ static void _deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histo
   histogram_params.bins_count = DEFLICKER_BINS_COUNT;
 
   dt_histogram_helper(&histogram_params, histogram_stats, IOP_CS_RAW, IOP_CS_NONE,
-                      buf.buf, histogram, 0, NULL);
+                      buf.buf, histogram, FALSE, NULL);
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
