@@ -157,7 +157,7 @@ Compatible compilers:
 * MinGW-w64: 6 and later
 
 Required dependencies (minimum version):
-* CMake 3.10
+* CMake 3.18
 * GTK 3.24.15
 * GLib 2.40
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
@@ -174,7 +174,7 @@ Optional dependencies (minimum version):
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
 * libavif 0.8.2 *(for AVIF import & export)*
-* libheif 1.9.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
+* libheif 1.13.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
 * WebP 0.3.0 *(for WebP import & export)*
 

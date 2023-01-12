@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2010-2022 darktable developers.
+   Copyright (C) 2010-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1639,11 +1639,19 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c, const dt_camera_t *ca
   if(!cam && ((cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL))
   {
     dt_print(DT_DEBUG_CAMCTL,
-             "[camera_control] failed to check if property exists in camera configuration, camera==NULL\n");
+             "[camera_control] failed to check if property exists in camera configuration, camera == NULL\n");
     return 0;
   }
 
   dt_camera_t *camera = (dt_camera_t *)cam;
+
+  if(camera->configuration == NULL)
+  {
+    dt_print(DT_DEBUG_CAMCTL,
+             "[camera_control] failed to check if property exists in camera configuration, camera configuration == NULL\n");
+    return 0;
+  }
+
   dt_pthread_mutex_lock(&camera->config_lock);
 
   CameraWidget *widget;

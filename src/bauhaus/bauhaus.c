@@ -2439,6 +2439,7 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
   gint wx = 0, wy = 0;
   if(widget_window)
     gdk_window_get_origin(widget_window, &wx, &wy);
+  gint wox = wx, woy = wy;
 
   // we update the popup padding defined in css
   if(!darktable.bauhaus->popup_padding) darktable.bauhaus->popup_padding = gtk_border_new();
@@ -2486,6 +2487,7 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
   {
     wx = px - (tmp.width - _widget_get_quad_width(w)) / 2;
     wy = py - darktable.bauhaus->line_height / 2;
+    wox = px, woy = py;
   }
   else
   {
@@ -2539,7 +2541,7 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
   tmp.height += darktable.bauhaus->popup_padding->top + darktable.bauhaus->popup_padding->bottom;
 
   GdkRectangle workarea;
-  gdk_monitor_get_workarea(gdk_display_get_monitor_at_point(gdk_display_get_default(), wx, wy), &workarea);
+  gdk_monitor_get_workarea(gdk_display_get_monitor_at_point(gdk_display_get_default(), wox, woy), &workarea);
   wx = MAX(workarea.x, MIN(wx, workarea.x + workarea.width - tmp.width));
 
   // gtk_widget_get_window will return null if not shown yet.

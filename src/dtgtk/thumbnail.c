@@ -49,7 +49,7 @@ static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean activate)
     gtk_widget_unset_state_flags(w, flag);
 }
 
-// create a new extended infos line from strach
+// create a new extended infos line from scratch
 static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
 {
   gchar *pattern = dt_conf_get_string("plugins/lighttable/extended_pattern");
@@ -72,6 +72,56 @@ static void _thumb_update_extended_infos_line(dt_thumbnail_t *thumb)
 
   dt_variables_params_destroy(vp);
 
+  g_free(pattern);
+}
+
+static void _thumb_update_altered_tooltip(dt_thumbnail_t *thumb)
+{
+  thumb->is_altered = dt_image_altered(thumb->imgid);
+  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
+  if(thumb->is_altered)
+  {
+    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
+    if(tooltip)
+    {
+      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
+      g_free(tooltip);
+    }
+  }
+}
+static void _thumb_update_tooltip_text(dt_thumbnail_t *thumb)
+{
+  // and the tooltip
+  gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
+  if(!thumb->tooltip || strcmp(pattern, "") == 0)
+  {
+    gtk_widget_set_has_tooltip(thumb->w_main, FALSE);
+  }
+  else
+  {
+    // we compute the tooltip (we reuse the function used in export to disk)
+    char input_dir[1024] = { 0 };
+    gboolean from_cache = TRUE;
+    dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
+
+    dt_variables_params_t *vp;
+    dt_variables_params_init(&vp);
+
+    vp->filename = input_dir;
+    vp->jobcode = "infos";
+    vp->imgid = thumb->imgid;
+    vp->sequence = 0;
+    vp->escape_markup = TRUE;
+
+    gchar *msg = dt_variables_expand(vp, pattern, TRUE);
+
+    dt_variables_params_destroy(vp);
+
+    // we change the label
+    gtk_widget_set_tooltip_markup(thumb->w_main, msg);
+
+    g_free(msg);
+  }
   g_free(pattern);
 }
 
@@ -749,51 +799,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
 
   _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, thumb->selected);
 
-  // and the tooltip
-  gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
-  if(!thumb->tooltip || strcmp(pattern, "") == 0)
-  {
-    gtk_widget_set_has_tooltip(thumb->w_main, FALSE);
-  }
-  else
-  {
-    // we compute the tooltip (we reuse the function used in export to disk)
-    char input_dir[1024] = { 0 };
-    gboolean from_cache = TRUE;
-    dt_image_full_path(thumb->imgid, input_dir, sizeof(input_dir), &from_cache);
-
-    dt_variables_params_t *vp;
-    dt_variables_params_init(&vp);
-
-    vp->filename = input_dir;
-    vp->jobcode = "infos";
-    vp->imgid = thumb->imgid;
-    vp->sequence = 0;
-    vp->escape_markup = TRUE;
-
-    gchar *msg = dt_variables_expand(vp, pattern, TRUE);
-
-    dt_variables_params_destroy(vp);
-
-    // we change the label
-    gtk_widget_set_tooltip_markup(thumb->w_main, msg);
-
-    g_free(msg);
-  }
-  g_free(pattern);
-
-  // we recompte the history tooltip if needed
-  thumb->is_altered = dt_image_altered(thumb->imgid);
   gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
-  if(thumb->is_altered)
-  {
-    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
-    if(tooltip)
-    {
-      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
-      g_free(tooltip);
-    }
-  }
 }
 
 static gboolean _thumbs_hide_overlays(gpointer user_data)
@@ -833,8 +839,6 @@ static void _thumbs_show_overlays(dt_thumbnail_t *thumb)
           = g_timeout_add_seconds(thumb->overlay_timeout_duration, _thumbs_hide_overlays, thumb);
     }
   }
-  else
-    _thumb_update_icons(thumb);
 }
 
 static gboolean _event_main_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -1091,17 +1095,7 @@ static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer 
   if(imgid > 0 && thumb->imgid != imgid) return;
 
   // we recompte the history tooltip if needed
-  thumb->is_altered = dt_image_altered(thumb->imgid);
-  gtk_widget_set_visible(thumb->w_altered, thumb->is_altered);
-  if(thumb->is_altered)
-  {
-    char *tooltip = dt_history_get_items_as_string(thumb->imgid);
-    if(tooltip)
-    {
-      gtk_widget_set_tooltip_text(thumb->w_altered, tooltip);
-      g_free(tooltip);
-    }
-  }
+  _thumb_update_altered_tooltip(thumb);
 
   // reset surface
   thumb->img_surf_dirty = TRUE;
@@ -1525,8 +1519,10 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int im
     }
   }
 
-  // grouping tooltip
+  // update tooltips
   _image_update_group_tooltip(thumb);
+  _thumb_update_tooltip_text(thumb);
+  _thumb_update_altered_tooltip(thumb);
 
   // get the file extension
   _thumb_write_extension(thumb);
@@ -1900,7 +1896,10 @@ void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over)
 {
   if(thumb->mouse_over == over) return;
   thumb->mouse_over = over;
-  _thumbs_show_overlays(thumb);
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+    _thumbs_show_overlays(thumb);
+  else
+    _thumb_update_icons(thumb);
 
   if(!thumb->mouse_over) _set_flag(thumb->w_bottom_eb, GTK_STATE_FLAG_PRELIGHT, FALSE);
 
@@ -2072,6 +2071,8 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
   }
 
   _thumb_write_extension(thumb);
+
+  _thumb_update_tooltip_text(thumb);
 
   // extended overlay text
   gchar *lb = NULL;
