@@ -29,11 +29,25 @@
 #include "common/histogram.h"
 #include "develop/imageop.h"
 
+typedef DT_ALIGNED_PIXEL uint32_t dt_aligned_uint32_t[4];
+
 static inline uint32_t bin(const float v,
                            const dt_dev_histogram_collection_params_t *const params)
 {
   const float scaled = params->mul * v;
   return CLAMP((uint32_t)scaled, 0, params->bins_count - 1);
+}
+
+static inline void clamp_and_bin(const dt_aligned_pixel_t vals, uint32_t *histogram,
+                                 // FIXME: does it matterif this is uint32_t?
+                                 const uint32_t max_bin)
+{
+  dt_aligned_uint32_t bnum;
+  for_each_channel(k,aligned(vals,bnum:16))
+    bnum[k] = CLAMP((uint32_t)vals[k], 0, max_bin);
+  histogram[4 * bnum[0]]++;
+  histogram[4 * bnum[1] + 1]++;
+  histogram[4 * bnum[2] + 2]++;
 }
 
 //------------------------------------------------------------------------------
@@ -75,17 +89,13 @@ inline static void histogram_helper_cs_rgb(const dt_dev_histogram_collection_par
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const float max_bin = histogram_params->bins_count - 1;
-  const float scale = histogram_params->mul;
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
-      b[k] = CLAMP(scale * in[i*4+k], 0.0f, max_bin);
-    histogram[4 * (uint32_t)b[0]]++;
-    histogram[4 * (uint32_t)b[1] + 1]++;
-    histogram[4 * (uint32_t)b[2] + 2]++;
+      b[k] = histogram_params->mul * in[i*4+k];
+    clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
   }
 }
 
@@ -95,20 +105,14 @@ inline static void histogram_helper_cs_rgb_compensated(const dt_dev_histogram_co
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const float max_bin = histogram_params->bins_count - 1;
-  const float scale = histogram_params->mul;
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
-    {
-      const float c = dt_ioppr_compensate_middle_grey(in[i*4+k], profile_info);
-      b[k] = CLAMP(scale * c, 0.0f, max_bin);
-    }
-    histogram[4 * (uint32_t)b[0]]++;
-    histogram[4 * (uint32_t)b[1] + 1]++;
-    histogram[4 * (uint32_t)b[2] + 2]++;
+      b[k] = histogram_params->mul *
+        dt_ioppr_compensate_middle_grey(in[i*4+k], profile_info);
+    clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
   }
 }
 
@@ -120,24 +124,17 @@ static inline void histogram_helper_cs_Lab(const dt_dev_histogram_collection_par
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const float max_bin = histogram_params->bins_count - 1;
   const dt_aligned_pixel_t scale = { histogram_params->mul / 100.0f,
                                      histogram_params->mul / 256.0f,
                                      histogram_params->mul / 256.0f, 0.0f };
   const dt_aligned_pixel_t shift = { 0.0f, 128.0f, 128.0f, 0.0f };
 
-  // process aligned pixels with SSE
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
-    // note that clamping happens in float -- allows for faster code
-    // generation, but is there a risk of float inaccuracy producing
-    // offset > max-bin?
     for_each_channel(k,aligned(in,b,scale,shift:16))
-      b[k] = CLAMP(scale[k] * (in[i*4+k] + shift[k]), 0.0f, max_bin);
-    histogram[4 * (uint32_t)b[0]]++;
-    histogram[4 * (uint32_t)b[1] + 1]++;
-    histogram[4 * (uint32_t)b[2] + 2]++;
+      b[k] = scale[k] * (in[i*4+k] + shift[k]);
+    clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
   }
 }
 
@@ -147,7 +144,6 @@ static inline void histogram_helper_cs_Lab_LCh(const dt_dev_histogram_collection
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const float max_bin = histogram_params->bins_count - 1;
   const dt_aligned_pixel_t scale = { histogram_params->mul / 100.0f,
                                      histogram_params->mul / (128.0f * sqrtf(2.0f)),
                                      histogram_params->mul, 0.0f };
@@ -157,10 +153,8 @@ static inline void histogram_helper_cs_Lab_LCh(const dt_dev_histogram_collection
     dt_aligned_pixel_t LCh, b;
     dt_Lab_2_LCH(in + i*4, LCh);
     for_each_channel(k,aligned(LCh,b,scale:16))
-      b[k] = CLAMP(scale[k] * LCh[k], 0.0f, max_bin);
-    histogram[4 * (uint32_t)b[0]]++;
-    histogram[4 * (uint32_t)b[1] + 1]++;
-    histogram[4 * (uint32_t)b[2] + 2]++;
+      b[k] = scale[k] * LCh[k];
+    clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
   }
 }
 
@@ -240,8 +234,8 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_get_times(&end_time);
-    fprintf(stderr, "histogram calculation %d bins %d -> %d %d channels %d pixels took %.3f secs (%.3f CPU)\n",
-            histogram_params->bins_count, cst, cst_to, histogram_stats->ch, histogram_stats->pixels,
+    fprintf(stderr, "histogram calculation %d bins %d -> %d compensate %d %d channels %d pixels took %.3f secs (%.3f CPU)\n",
+            histogram_params->bins_count, cst, cst_to, compensate_middle_grey && profile_info, histogram_stats->ch, histogram_stats->pixels,
             end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 }
