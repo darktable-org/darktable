@@ -549,11 +549,10 @@ static void _histogram_collect(dt_dev_pixelpipe_iop_t *piece, const void *pixel,
   const dt_iop_colorspace_type_t cst = piece->module->input_colorspace(piece->module, piece->pipe, piece);
 
   dt_histogram_helper(&histogram_params, &piece->histogram_stats, cst,
-                      piece->module->histogram_cst, pixel, histogram,
+                      piece->module->histogram_cst,
+                      pixel, histogram, histogram_max,
                       piece->module->histogram_middle_grey,
                       dt_ioppr_get_pipe_work_profile_info(piece->pipe));
-  dt_histogram_max_helper(&piece->histogram_stats, cst,
-                          piece->module->histogram_cst, histogram, histogram_max);
 }
 
 #ifdef HAVE_OPENCL
@@ -601,11 +600,10 @@ static void _histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_m
   const dt_iop_colorspace_type_t cst = piece->module->input_colorspace(piece->module, piece->pipe, piece);
 
   dt_histogram_helper(&histogram_params, &piece->histogram_stats,
-                      cst, piece->module->histogram_cst, pixel, histogram,
+                      cst, piece->module->histogram_cst,
+                      pixel, histogram, histogram_max,
                       piece->module->histogram_middle_grey,
                       dt_ioppr_get_pipe_work_profile_info(piece->pipe));
-  dt_histogram_max_helper(&piece->histogram_stats, cst,
-                          piece->module->histogram_cst, histogram, histogram_max);
 
   if(tmpbuf) dt_free_align(tmpbuf);
 }
