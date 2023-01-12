@@ -60,6 +60,8 @@ typedef struct dt_dev_histogram_stats_t
 {
   /** count of histogram bins. */
   uint32_t bins_count;
+  /** size of currently allocated buffer, or 0 if none */
+  size_t buf_size;
   /** count of pixels sampled during histogram capture. */
   uint32_t pixels;
   /** count of channels: 1 for RAW, 3 for rgb/Lab. */

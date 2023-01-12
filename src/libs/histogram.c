@@ -178,7 +178,7 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
 {
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = IOP_CS_RGB;
-  dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0 };
+  dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0, .buf_size = sizeof(uint32_t) * 4 * HISTOGRAM_BINS };
   uint32_t histogram_max[4] = { 0 };
 
   d->histogram_max = 0;
@@ -1880,7 +1880,7 @@ void gui_init(dt_lib_module_t *self)
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
   d->vectorscope_angle = a * M_PI / 180.0;
 
-  d->histogram = (uint32_t *)dt_alloc_align(16, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
+  d->histogram = (uint32_t *)dt_alloc_align(64, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
   memset(d->histogram, 0, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
   d->histogram_max = 0;
 

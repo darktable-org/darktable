@@ -36,6 +36,9 @@ typedef struct dt_histogram_roi_t
   int width, height, crop_x, crop_y, crop_width, crop_height;
 } dt_histogram_roi_t;
 
+// allocates an aligned histogram buffer if needed, callers
+// (pixelpipe, exposure, global histogram) must garbage collect this
+// buffer via dt_free_align()
 void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
                          dt_dev_histogram_stats_t *histogram_stats, const dt_iop_colorspace_type_t cst,
                          const dt_iop_colorspace_type_t cst_to, const void *pixel, uint32_t **histogram,
