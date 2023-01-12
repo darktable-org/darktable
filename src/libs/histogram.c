@@ -1881,7 +1881,8 @@ void gui_init(dt_lib_module_t *self)
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
   d->vectorscope_angle = a * M_PI / 180.0;
 
-  d->histogram = (uint32_t *)calloc(4 * HISTOGRAM_BINS, sizeof(uint32_t));
+  d->histogram = (uint32_t *)dt_alloc_align(16, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
+  memset(d->histogram, 0, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
   d->histogram_max = 0;
 
   // Waveform buffer doesn't need to be coupled with the histogram
@@ -2102,7 +2103,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
-  free(d->histogram);
+  dt_free_align(d->histogram);
   for(int ch=0; ch<3; ch++)
     dt_free_align(d->waveform_img[ch]);
   dt_free_align(d->vectorscope_graph);

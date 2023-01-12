@@ -400,7 +400,7 @@ static void _process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
       dt_dev_histogram_stats_t histogram_stats;
       _deflicker_prepare_histogram(self, &histogram, &histogram_stats);
       _compute_correction(self, &d->params, piece->pipe, histogram, &histogram_stats, &exposure);
-      free(histogram);
+      dt_free_align(histogram);
     }
 
     // second, show computed correction in UI.
@@ -572,7 +572,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_gui_leave_critical_section(self);
 
-  free(g->deflicker_histogram);
+  dt_free_align(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
 
   gtk_label_set_text(g->deflicker_used_EC, "");
@@ -805,7 +805,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(w == g->mode)
   {
-    free(g->deflicker_histogram);
+    dt_free_align(g->deflicker_histogram);
     g->deflicker_histogram = NULL;
 
     switch(p->mode)
@@ -1150,7 +1150,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   if(darktable.develop->proxy.exposure.module == self)
     darktable.develop->proxy.exposure.module = NULL;
 
-  free(g->deflicker_histogram);
+  dt_free_align(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
 
   IOP_GUI_FREE;
