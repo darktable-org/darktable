@@ -279,7 +279,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     piece->module->cleanup_pipe(piece->module, pipe, piece);
     free(piece->blendop_data);
     piece->blendop_data = NULL;
-    free(piece->histogram);
+    dt_free_align(piece->histogram);
     piece->histogram = NULL;
     g_hash_table_destroy(piece->raster_masks);
     piece->raster_masks = NULL;
