@@ -73,12 +73,13 @@ inline static void histogram_helper_cs_rgb(const dt_dev_histogram_collection_par
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
+  const float mul = histogram_params->bins_count - 1;
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
-      b[k] = histogram_params->mul * in[i*4+k];
+      b[k] = mul * in[i*4+k];
     clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
   }
 }
@@ -89,13 +90,13 @@ inline static void histogram_helper_cs_rgb_compensated(const dt_dev_histogram_co
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
+  const float mul = histogram_params->bins_count - 1;
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
-      b[k] = histogram_params->mul *
-        dt_ioppr_compensate_middle_grey(in[i*4+k], profile_info);
+      b[k] = mul * dt_ioppr_compensate_middle_grey(in[i*4+k], profile_info);
     clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
   }
 }
@@ -108,9 +109,10 @@ static inline void histogram_helper_cs_Lab(const dt_dev_histogram_collection_par
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const dt_aligned_pixel_t scale = { histogram_params->mul / 100.0f,
-                                     histogram_params->mul / 256.0f,
-                                     histogram_params->mul / 256.0f, 0.0f };
+  const dt_aligned_pixel_t scale = { (histogram_params->bins_count - 1) / 100.0f,
+                                     (histogram_params->bins_count - 1) / 256.0f,
+                                     (histogram_params->bins_count - 1) / 256.0f,
+                                     0.0f };
   const dt_aligned_pixel_t shift = { 0.0f, 128.0f, 128.0f, 0.0f };
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
@@ -128,9 +130,10 @@ static inline void histogram_helper_cs_Lab_LCh(const dt_dev_histogram_collection
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const dt_aligned_pixel_t scale = { histogram_params->mul / 100.0f,
-                                     histogram_params->mul / (128.0f * sqrtf(2.0f)),
-                                     histogram_params->mul, 0.0f };
+  const dt_aligned_pixel_t scale = { (histogram_params->bins_count - 1) / 100.0f,
+                                     (histogram_params->bins_count - 1) / (128.0f * sqrtf(2.0f)),
+                                     (histogram_params->bins_count - 1),
+                                     0.0f };
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
@@ -158,9 +161,6 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
   // hack to make reduction clause work
   uint32_t *working_hist = *histogram;
   memset(working_hist, 0, buf_size);
-
-  if(histogram_params->mul == 0)
-    histogram_params->mul = (double)(histogram_params->bins_count - 1);
 
   const dt_histogram_roi_t *const roi = histogram_params->roi;
 
