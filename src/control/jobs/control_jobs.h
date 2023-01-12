@@ -42,7 +42,7 @@ void dt_control_copy_images();
 void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, gboolean upscale, gboolean export_masks,
+                       gboolean high_quality, gboolean upscale, gboolean dimensions_scale, gboolean export_masks,
                        char *style, gboolean style_append,
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                        dt_iop_color_intent_t icc_intent, const gchar *metadata_export);
