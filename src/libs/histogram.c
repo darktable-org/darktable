@@ -2095,6 +2095,7 @@ void gui_init(dt_lib_module_t *self)
   /* set size of histogram draw area */
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
   gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
+  gtk_widget_show_all(self->widget);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

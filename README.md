@@ -57,7 +57,7 @@ Requirements
 
 * Linux (64-bit)
 * FreeBSD (64-bit)
-* Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c), or later
+* Windows (64-bit), 8.1 w/ [UCRT](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c) and later
 * macOS
 
 *Big-endian platforms are not supported.*
@@ -157,7 +157,7 @@ Compatible compilers:
 * MinGW-w64: 6 and later
 
 Required dependencies (minimum version):
-* CMake 3.10
+* CMake 3.18
 * GTK 3.24.15
 * GLib 2.40
 * SQLite 3.15 *(but 3.24 or newer strongly recommended)*
@@ -174,7 +174,7 @@ Optional dependencies (minimum version):
 * libgphoto2 2.5 *(for camera tethering)*
 * Imath 3.1.0 *(for 16-bit "half" float TIFF export and faster import)*
 * libavif 0.8.2 *(for AVIF import & export)*
-* libheif 1.9.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
+* libheif 1.13.0 *(for HEIF/HEIC/HIF import; also for AVIF import if no libavif)*
 * libjxl 0.7.0 *(for JPEG XL import & export)*
 * WebP 0.3.0 *(for WebP import & export)*
 
@@ -316,7 +316,7 @@ This builds the software for your architecture only, with:
 If you want to have dartkable displayed along your other applications, you only need to add a symbolic link:
 
 ```bash
-ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
+ln -s /opt/darktable/share/applications/org.darktable.darktable.desktop /usr/share/applications/org.darktable.darktable.desktop
 ```
 
 Now, your custom-built darktable is ready to be used just like any pre-packaged software.
@@ -358,7 +358,7 @@ the test/unstable one will save in `~/.config/darktable-test`, and the two versi
 Simply launch it from your desktop application menu or, from a terminal, run `darktable` or `/opt/darktable/bin/darktable`. If the installation did not create a launcher in your applications menu, run:
 
 ```bash
-sudo ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
+sudo ln -s /opt/darktable/share/applications/org.darktable.darktable.desktop /usr/share/applications/org.darktable.darktable.desktop
 ```
 
 You may find darktable configuration files in `~/.config/darktable`.

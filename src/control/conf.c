@@ -39,18 +39,6 @@ typedef struct dt_conf_dreggn_t
   const char *match;
 } dt_conf_dreggn_t;
 
-static void _free_confgen_value(void *value)
-{
-  dt_confgen_value_t *s = (dt_confgen_value_t *)value;
-  g_free(s->def);
-  g_free(s->min);
-  g_free(s->max);
-  g_free(s->enum_values);
-  g_free(s->shortdesc);
-  g_free(s->longdesc);
-  g_free(s);
-}
-
 /** return slot for this variable or newly allocated slot. */
 static inline char *dt_conf_get_var(const char *name)
 {
@@ -410,6 +398,7 @@ static char *_sanitize_confgen(const char *name, const char *value)
         result = g_strdup(dt_confgen_get(name, DT_DEFAULT));
       else
         result = g_strdup(value);
+
       g_free(v);
     }
     break;
@@ -423,8 +412,6 @@ static char *_sanitize_confgen(const char *name, const char *value)
 
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 {
-  cf->x_confgen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _free_confgen_value);
-
   cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
@@ -447,9 +434,10 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
   {
     while(!feof(f))
     {
-      const int read = fscanf(f, "%" STR(LINE_SIZE) "[^\r\n]\r\n", line);
-      if(read > 0)
+      const char* ret = fgets(line, LINE_SIZE, f);
+      if(ret != NULL)
       {
+        g_strchomp(line);
         char *c = line;
         char *end = line + strlen(line);
         // check for '=' which is separator between the conf name and value
@@ -842,4 +830,3 @@ void dt_conf_cleanup(dt_conf_t *cf)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

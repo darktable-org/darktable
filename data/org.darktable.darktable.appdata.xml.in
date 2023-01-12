@@ -2,8 +2,9 @@
 <!-- Copyright (C) 2009-2021 darktable developers.
 -->
 <component type="desktop">
-  <id>darktable.desktop</id>
+  <id>org.darktable.darktable</id>
   <name>darktable</name>
+  <launchable type="desktop-id">org.darktable.darktable.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+</project_license>
   <_summary>Organize and develop images from digital cameras</_summary>

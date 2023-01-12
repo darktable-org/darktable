@@ -4207,7 +4207,7 @@ void gui_init(struct dt_iop_module_t *self)
      _("calibrate with a color checker"),
      GTK_BOX(self->widget));
 
-  gtk_widget_set_tooltip_text(g->cs.toggle,
+  gtk_widget_set_tooltip_text(g->cs.expander,
                               _("use a color checker target to autoset CAT and channels"));
   g_signal_connect(G_OBJECT(g->cs.toggle), "toggled", G_CALLBACK(start_profiling_callback), self);
 

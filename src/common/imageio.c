@@ -1308,7 +1308,7 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
     ret = dt_imageio_open_rawspeed(img, filename, buf);
   }
 
-  /* fallback that tries to open file via LibRAW to support Canon CR3 */
+  /* fallback that tries to open file via LibRaw to support Canon CR3 */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_libraw(img, filename, buf);
 

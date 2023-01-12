@@ -25,6 +25,7 @@
 #include "control/signal.h"
 #include "gui/accelerators.h"
 #include <stdlib.h>
+
 static gint dt_imageio_sort_modules_storage(gconstpointer a, gconstpointer b)
 {
   const dt_imageio_module_storage_t *am = (const dt_imageio_module_storage_t *)a;
@@ -73,17 +74,6 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
 #define INCLUDE_API_FROM_MODULE_LOAD "imageio_load_module_format"
 #include "imageio/format/imageio_format_api.h"
 
-  if(darktable.gui)
-  {
-    if(!module->gui_init) goto api_h_error;
-
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION, module->plugin_name, module->name() };
-    dt_action_insert_sorted(&darktable.control->actions_format, &module->actions);
-  }
-  else
-  {
-    module->gui_init = _default_format_gui_init;
-  }
   if(!module->dimension) module->dimension = _default_format_dimension;
   if(!module->flags) module->flags = _default_format_flags;
   if(!module->levels) module->levels = _default_format_levels;
@@ -116,6 +106,24 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
   }
 #endif
 
+  if(darktable.gui)
+  {
+    if(!module->gui_init || !module->module) goto api_h_error;
+
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+      module->plugin_name,
+      module->name(),
+      NULL,
+      NULL,
+      NULL };
+
+    dt_action_insert_sorted(&darktable.control->actions_format, &module->actions);
+  }
+  else
+  {
+    module->gui_init = _default_format_gui_init;
+  }
+
   return 0;
 }
 
@@ -124,25 +132,32 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
 {
   iio->plugins_format = NULL;
   GList *res = NULL;
-  dt_imageio_module_format_t *module;
+
   char plugindir[PATH_MAX] = { 0 }, plugin_name[256];
   const gchar *d_name;
+
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/plugins/imageio/format", sizeof(plugindir));
+
   GDir *dir = g_dir_open(plugindir, 0, NULL);
+
   if(!dir) return 1;
-  const int name_offset = strlen(SHARED_MODULE_PREFIX),
-            name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
+
+  const int name_offset = strlen(SHARED_MODULE_PREFIX);
+  const int name_end = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
+
   while((d_name = g_dir_read_name(dir)))
   {
     // get lib*.so
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
-    module = (dt_imageio_module_format_t *)malloc(sizeof(dt_imageio_module_format_t));
+    dt_imageio_module_format_t *module =
+      (dt_imageio_module_format_t *)calloc(1, sizeof(dt_imageio_module_format_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
     {
+      g_free(libname);
       free(module);
       continue;
     }
@@ -156,6 +171,7 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
   }
   g_dir_close(dir);
   iio->plugins_format = res;
+
   return 0;
 }
 
@@ -185,17 +201,6 @@ static int dt_imageio_load_module_storage(dt_imageio_module_storage_t *module, c
 #define INCLUDE_API_FROM_MODULE_LOAD "imageio_load_module_storage"
 #include "imageio/storage/imageio_storage_api.h"
 
-  if(darktable.gui)
-  {
-    if(!module->gui_init) goto api_h_error;
-
-    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION, module->plugin_name, module->name(module) };
-    dt_action_insert_sorted(&darktable.control->actions_storage, &module->actions);
-  }
-  else
-  {
-    module->gui_init = _default_storage_nop;
-  }
   if(!module->dimension) module->dimension = _default_storage_dimension;
   if(!module->recommended_dimension) module->recommended_dimension = _default_storage_dimension;
   if(!module->export_dispatched) module->export_dispatched = _default_storage_nop;
@@ -221,6 +226,24 @@ static int dt_imageio_load_module_storage(dt_imageio_module_storage_t *module, c
   }
 #endif
 
+  if(darktable.gui)
+  {
+    if(!module->gui_init) goto api_h_error;
+
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_SECTION,
+      module->plugin_name,
+      module->name(module),
+      NULL,
+      NULL,
+      NULL };
+
+    dt_action_insert_sorted(&darktable.control->actions_storage, &module->actions);
+  }
+  else
+  {
+    module->gui_init = _default_storage_nop;
+  }
+
   return 0;
 }
 
@@ -242,10 +265,11 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
-    module = (dt_imageio_module_storage_t *)malloc(sizeof(dt_imageio_module_storage_t));
+    module = (dt_imageio_module_storage_t *)calloc(1, sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
     {
+      g_free(libname);
       free(module);
       continue;
     }
@@ -425,4 +449,3 @@ gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
