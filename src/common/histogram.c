@@ -31,12 +31,9 @@
 
 typedef DT_ALIGNED_PIXEL uint32_t dt_aligned_uint32_t[4];
 
-static inline uint32_t bin(const float v,
-                           const dt_dev_histogram_collection_params_t *const params)
-{
-  const float scaled = params->mul * v;
-  return CLAMP((uint32_t)scaled, 0, params->bins_count - 1);
-}
+typedef void((*_histogram_worker)(const dt_dev_histogram_collection_params_t *const histogram_params,
+                                  const void *pixel, uint32_t *histogram, int j,
+                                  const dt_iop_order_iccprofile_info_t *const profile_info));
 
 static inline void clamp_and_bin(const dt_aligned_pixel_t vals, uint32_t *histogram,
                                  // FIXME: does it matterif this is uint32_t?
@@ -52,31 +49,18 @@ static inline void clamp_and_bin(const dt_aligned_pixel_t vals, uint32_t *histog
 
 //------------------------------------------------------------------------------
 
-// FIXME: do we ever need histograms of float raw files?
-inline static void histogram_helper_cs_RAW(const dt_dev_histogram_collection_params_t *const histogram_params,
+static inline void histogram_helper_cs_raw(const dt_dev_histogram_collection_params_t *const histogram_params,
                                            const void *pixel, uint32_t *histogram, int j,
                                            const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
-  const float *input = (float *)pixel + roi->width * j + roi->crop_x;
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++, input++)
-    histogram[4 * bin(*input, histogram_params)]++;
-}
-
-//------------------------------------------------------------------------------
-
-inline void dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_params_t *const histogram_params,
-                                              const void *pixel, uint32_t *histogram, int j,
-                                              const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  const dt_histogram_roi_t *roi = histogram_params->roi;
   uint16_t *in = (uint16_t *)pixel + roi->width * j + roi->crop_x;
 
-  // process pixels
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++, in++)
+  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
     // WARNING: you must ensure that bins_count is big enough
-    const uint16_t binned = MIN(*in, histogram_params->bins_count - 1);
+    // e.g. 2^16 if you expect 16 bit raw files
+    const uint16_t binned = MIN(in[i], histogram_params->bins_count - 1);
     histogram[4 * binned]++;
   }
 }
@@ -162,7 +146,7 @@ static inline void histogram_helper_cs_Lab_LCh(const dt_dev_histogram_collection
 
 void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_params,
                          dt_dev_histogram_stats_t *histogram_stats, const void *const pixel,
-                         uint32_t **histogram, const dt_worker Worker,
+                         uint32_t **histogram, const _histogram_worker Worker,
                          const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const size_t bins_total = (size_t)4 * histogram_params->bins_count;
@@ -206,17 +190,23 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
   dt_times_t start_time = { 0 }, end_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
+  // all use 256 bins excepting:
+  // levels in automatic mode which uses 16384
+  // exposure deflicker uses 65536 (assumes maximum raw bit depth is 16)
   switch(cst)
   {
     case IOP_CS_RAW:
-      dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_RAW, profile_info);
+      // for exposure auto/deflicker of 16-bit int raws
+      dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_raw, profile_info);
       histogram_stats->ch = 1u;
       break;
 
     case IOP_CS_RGB:
       if(compensate_middle_grey && profile_info)
+        // for rgbcurve (sometimes)
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb_compensated, profile_info);
       else
+        // used by levels, rgbcurve (sometimes), rgblevels
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb, profile_info);
       histogram_stats->ch = 3u;
       break;
@@ -224,8 +214,10 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
     case IOP_CS_LAB:
     default:
       if(cst_to != IOP_CS_LCH)
+        // for tonecurve
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_Lab, profile_info);
       else
+        // for colorzones
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_Lab_LCh, profile_info);
       histogram_stats->ch = 3u;
       break;
@@ -251,26 +243,22 @@ void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_sta
 
   histogram_max[0] = histogram_max[1] = histogram_max[2] = histogram_max[3] = 0;
   uint32_t *hist = *histogram;
-  switch(cst)
-  {
-    case IOP_CS_RAW:
-      for(int k = 0; k < 4 * histogram_stats->bins_count; k += 4)
-        histogram_max[0] = MAX(histogram_max[0], hist[k]);
-      break;
 
-    // RGB, Lab, and LCh
-    default:
-      // don't count <= 0 pixels except for ab or Ch
-      if(cst == IOP_CS_LAB)
-      {
-        histogram_max[1] = hist[1];
-        histogram_max[2] = hist[2];
-      }
-      for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
-        for_each_channel(ch,aligned(hist:16))
-          histogram_max[ch] = MAX(histogram_max[ch], hist[k+ch]);
-      break;
+  // RGB, Lab, and LCh
+  if(cst == IOP_CS_RGB || IOP_CS_LAB)
+  {
+    // don't count <= 0 pixels except for ab or Ch
+    if(cst == IOP_CS_LAB)
+    {
+      histogram_max[1] = hist[1];
+      histogram_max[2] = hist[2];
+    }
+    for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
+      for_each_channel(ch,aligned(hist:16))
+        histogram_max[ch] = MAX(histogram_max[ch], hist[k+ch]);
   }
+  else
+    dt_unreachable_codepath();
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
