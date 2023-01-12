@@ -220,37 +220,26 @@ static inline void histogram_helper_cs_Lab(const dt_dev_histogram_collection_par
   }
 }
 
-inline static void __attribute__((__unused__)) histogram_helper_cs_Lab_LCh_helper_process_pixel_float(
-    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel, uint32_t *histogram)
-{
-  dt_aligned_pixel_t LCh;
-  dt_Lab_2_LCH(pixel, LCh);
-  const uint32_t L = bin((LCh[0] / 100.f), histogram_params);
-  const uint32_t C = bin((LCh[1] / (128.0f * sqrtf(2.0f))), histogram_params);
-  const uint32_t h = bin(LCh[2], histogram_params);
-  histogram[4 * L]++;
-  histogram[4 * C + 1]++;
-  histogram[4 * h + 2]++;
-}
-
-inline static void histogram_helper_cs_Lab_LCh(const dt_dev_histogram_collection_params_t *const histogram_params,
+static inline void histogram_helper_cs_Lab_LCh(const dt_dev_histogram_collection_params_t *const histogram_params,
                                                const void *pixel, uint32_t *histogram, int j,
                                                const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const dt_histogram_roi_t *roi = histogram_params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
+  const float max_bin = histogram_params->bins_count - 1;
+  const dt_aligned_pixel_t scale = { histogram_params->mul / 100.0f,
+                                     histogram_params->mul / (128.0f * sqrtf(2.0f)),
+                                     histogram_params->mul, 0.0f };
 
-  // TODO: process aligned pixels with SSE
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++, in += 4)
+  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
-    //    if(darktable.codepath.OPENMP_SIMD)
-    histogram_helper_cs_Lab_LCh_helper_process_pixel_float(histogram_params, in, histogram);
-    //#if defined(__SSE2__)
-    //    else if(darktable.codepath.SSE2)
-    //      histogram_helper_cs_Lab_helper_process_pixel_m128(histogram_params, in, histogram);
-    //#endif
-    //    else
-    //      dt_unreachable_codepath();
+    dt_aligned_pixel_t LCh, b;
+    dt_Lab_2_LCH(in + i*4, LCh);
+    for_each_channel(k,aligned(LCh,b,scale:16))
+      b[k] = CLAMP(scale[k] * LCh[k], 0.0f, max_bin);
+    histogram[4 * (uint32_t)b[0]]++;
+    histogram[4 * (uint32_t)b[1] + 1]++;
+    histogram[4 * (uint32_t)b[2] + 2]++;
   }
 }
 
@@ -271,7 +260,8 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
   uint32_t *working_hist = *histogram;
   memset(working_hist, 0, buf_size);
 
-  if(histogram_params->mul == 0) histogram_params->mul = (double)(histogram_params->bins_count - 1);
+  if(histogram_params->mul == 0)
+    histogram_params->mul = (double)(histogram_params->bins_count - 1);
 
   const dt_histogram_roi_t *const roi = histogram_params->roi;
 
