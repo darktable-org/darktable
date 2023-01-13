@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -352,18 +352,16 @@ static void _compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_d
 
   if(histogram == NULL) return;
 
-  const size_t total = (size_t)histogram_stats->ch * histogram_stats->pixels;
-
   const double thr
-      = CLAMP(((double)total * (double)p->deflicker_percentile / (double)100.0), 0.0, (double)total);
+      = CLAMP(((double)histogram_stats->pixels * (double)p->deflicker_percentile
+               / (double)100.0), 0.0, (double)histogram_stats->pixels);
 
   size_t n = 0;
   uint32_t raw = 0;
 
-  for(uint32_t i = 0; i < histogram_stats->bins_count; i++)
+  for(size_t i = 0; i < histogram_stats->bins_count; i++)
   {
-    for(uint32_t k = 0; k < histogram_stats->ch; k++)
-      n += histogram[4 * i + k];
+    n += histogram[i];
 
     if((double)n >= thr)
     {

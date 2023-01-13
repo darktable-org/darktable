@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2020 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,14 +38,14 @@ static inline void _clamp_bin(const dt_aligned_pixel_t vals,
                               uint32_t *const restrict histogram,
                               const float max_bin)
 {
-  DT_ALIGNED_PIXEL size_t bnum[4];
-  for_each_channel(k,aligned(vals,bnum:16))
+  DT_ALIGNED_PIXEL size_t bin[4];
+  for_each_channel(k,aligned(vals,bin:16))
     // must be signed before clamping as value may be negative
-    bnum[k] = CLAMP(vals[k], 0.0f, max_bin);
+    bin[k] = CLAMP(vals[k], 0.0f, max_bin);
 
-  histogram[bnum[0]*4]++;
-  histogram[bnum[1]*4+1]++;
-  histogram[bnum[2]*4+2]++;
+  histogram[bin[0]*4]++;
+  histogram[bin[1]*4+1]++;
+  histogram[bin[2]*4+2]++;
 }
 
 //------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ static inline void _bin_raw(const dt_dev_histogram_collection_params_t *const pa
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
     // WARNING: you must ensure that bins_count is big enough
     // e.g. 2^16 if you expect 16 bit raw files
-    histogram[(size_t)4*MIN(in[i], max_bin)]++;
+    histogram[MIN(in[i], max_bin)]++;
 }
 
 //------------------------------------------------------------------------------
@@ -155,7 +155,8 @@ void _hist_worker(dt_dev_histogram_collection_params_t *const histogram_params,
                   uint32_t **histogram, const _histogram_worker Worker,
                   const dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  const size_t bins_total = (size_t)4 * histogram_params->bins_count;
+  const size_t bins_total = (size_t)(histogram_stats->ch == 1 ? 1 : 4)
+    * histogram_params->bins_count;
   const size_t buf_size = bins_total * sizeof(uint32_t);
   // we allocate an aligned buffer, the caller must free it, and if
   // the caller has increased the buffer size, we hackily realloc it
@@ -210,13 +211,14 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
   switch(cst)
   {
     case IOP_CS_RAW:
+      histogram_stats->ch = 1u;
       // for exposure auto/deflicker of 16-bit int raws
       _hist_worker(histogram_params, histogram_stats, pixel, histogram,
                    _bin_raw, profile_info);
-      histogram_stats->ch = 1u;
       break;
 
     case IOP_CS_RGB:
+      histogram_stats->ch = 3u;
       if(compensate_middle_grey && profile_info)
         // for rgbcurve (compensated)
         _hist_worker(histogram_params, histogram_stats, pixel, histogram,
@@ -225,10 +227,10 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
         // used by levels, rgbcurve (uncompensated), rgblevels
         _hist_worker(histogram_params, histogram_stats, pixel, histogram,
                      _bin_rgb, profile_info);
-      histogram_stats->ch = 3u;
       break;
 
     case IOP_CS_LAB:
+      histogram_stats->ch = 3u;
       if(cst_to != IOP_CS_LCH)
         // for tonecurve
         _hist_worker(histogram_params, histogram_stats, pixel, histogram,
@@ -237,7 +239,6 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
         // for colorzones
         _hist_worker(histogram_params, histogram_stats, pixel, histogram,
                      _bin_Lab_LCh, profile_info);
-      histogram_stats->ch = 3u;
       break;
 
     default:
