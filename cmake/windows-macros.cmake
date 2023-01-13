@@ -163,6 +163,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       ${MINGW_PATH}/libhwy.dll
       ${MINGW_PATH}/libjasper.dll
       ${MINGW_PATH}/libjxl*.dll
+      ${MINGW_PATH}/libsharpyuv*.dll
       ${MINGW_PATH}/libwebp-*.dll
       ${MINGW_PATH}/libwebpmux*.dll
     )
@@ -182,6 +183,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       ${MINGW_PATH}/libjxl*.dll
       ${MINGW_PATH}/liblzma*.dll
       ${MINGW_PATH}/libopenjp2*.dll
+      ${MINGW_PATH}/libsharpyuv*.dll
       ${MINGW_PATH}/libwebp-*.dll
       ${MINGW_PATH}/libwebpdemux*.dll
       ${MINGW_PATH}/libwebpmux*.dll
@@ -211,8 +213,9 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
   if(WebP_FOUND)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #LIBWEBP
-      ${MINGW_PATH}/libwebpdecoder*.dll
-      ${MINGW_PATH}/libwebpdemux*.dll
+      ${MINGW_PATH}/libsharpyuv*.dll
+      #${MINGW_PATH}/libwebpdecoder*.dll
+      #${MINGW_PATH}/libwebpdemux*.dll
       #${MINGW_PATH}/libwebpextras*.dll
       ${MINGW_PATH}/libwebpmux*.dll
     )
