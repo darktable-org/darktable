@@ -29,89 +29,92 @@
 #include "common/histogram.h"
 #include "develop/imageop.h"
 
-typedef DT_ALIGNED_PIXEL uint32_t dt_aligned_uint32_t[4];
+typedef void((*_histogram_worker)(const dt_dev_histogram_collection_params_t *const params,
+                                  const void *const restrict pixel,
+                                  uint32_t *const restrict histogram, const int j,
+                                  const dt_iop_order_iccprofile_info_t *const profile));
 
-typedef void((*_histogram_worker)(const dt_dev_histogram_collection_params_t *const histogram_params,
-                                  const void *pixel, uint32_t *histogram, int j,
-                                  const dt_iop_order_iccprofile_info_t *const profile_info));
-
-static inline void clamp_and_bin(const dt_aligned_pixel_t vals, uint32_t *histogram,
-                                 const uint32_t max_bin)
+static inline void _clamp_bin(const dt_aligned_pixel_t vals,
+                              uint32_t *const restrict histogram,
+                              const float max_bin)
 {
-  dt_aligned_uint32_t bnum;
+  DT_ALIGNED_PIXEL size_t bnum[4];
   for_each_channel(k,aligned(vals,bnum:16))
-    bnum[k] = CLAMP((uint32_t)vals[k], 0, max_bin);
-  histogram[4 * bnum[0]]++;
-  histogram[4 * bnum[1] + 1]++;
-  histogram[4 * bnum[2] + 2]++;
+    // must be signed before clamping as value may be negative
+    bnum[k] = CLAMP(vals[k], 0.0f, max_bin);
+
+  histogram[bnum[0]*4]++;
+  histogram[bnum[1]*4+1]++;
+  histogram[bnum[2]*4+2]++;
 }
 
 //------------------------------------------------------------------------------
 
-static inline void histogram_helper_cs_raw(const dt_dev_histogram_collection_params_t *const histogram_params,
-                                           const void *pixel, uint32_t *histogram, int j,
-                                           const dt_iop_order_iccprofile_info_t *const profile_info)
+static inline void _bin_raw(const dt_dev_histogram_collection_params_t *const params,
+                            const void *pixel, uint32_t *histogram, int j,
+                            const dt_iop_order_iccprofile_info_t *const profile)
 {
-  const dt_histogram_roi_t *roi = histogram_params->roi;
+  const dt_histogram_roi_t *roi = params->roi;
   uint16_t *in = (uint16_t *)pixel + roi->width * j + roi->crop_x;
+  const size_t max_bin = params->bins_count - 1;
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
-  {
     // WARNING: you must ensure that bins_count is big enough
     // e.g. 2^16 if you expect 16 bit raw files
-    const uint16_t binned = MIN(in[i], histogram_params->bins_count - 1);
-    histogram[4 * binned]++;
-  }
+    histogram[(size_t)4*MIN(in[i], max_bin)]++;
 }
 
 //------------------------------------------------------------------------------
 
-inline static void histogram_helper_cs_rgb(const dt_dev_histogram_collection_params_t *const histogram_params,
-                                           const void *pixel, uint32_t *histogram, int j,
-                                           const dt_iop_order_iccprofile_info_t *const profile_info)
+static inline void _bin_rgb(const dt_dev_histogram_collection_params_t *const params,
+                            const void *const restrict pixel,
+                            uint32_t *const restrict histogram, const int j,
+                            const dt_iop_order_iccprofile_info_t *const profile)
 {
-  const dt_histogram_roi_t *roi = histogram_params->roi;
+  const dt_histogram_roi_t *roi = params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const float mul = histogram_params->bins_count - 1;
+  const float max_bin = params->bins_count - 1;
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
-      b[k] = mul * in[i*4+k];
-    clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
+      b[k] = max_bin * in[i*4+k];
+    _clamp_bin(b, histogram, max_bin);
   }
 }
 
-inline static void histogram_helper_cs_rgb_compensated(const dt_dev_histogram_collection_params_t *const histogram_params,
-                                           const void *pixel, uint32_t *histogram, int j,
-                                           const dt_iop_order_iccprofile_info_t *const profile_info)
+static inline void _bin_rgb_compensated(const dt_dev_histogram_collection_params_t *const params,
+                                        const void *const pixel,
+                                        uint32_t *const restrict histogram, const int j,
+                                        const dt_iop_order_iccprofile_info_t *const profile)
 {
-  const dt_histogram_roi_t *roi = histogram_params->roi;
+  const dt_histogram_roi_t *roi = params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const float mul = histogram_params->bins_count - 1;
+  const float max_bin = params->bins_count - 1;
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
-      b[k] = mul * dt_ioppr_compensate_middle_grey(in[i*4+k], profile_info);
-    clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
+      b[k] = max_bin * dt_ioppr_compensate_middle_grey(in[i*4+k], profile);
+    _clamp_bin(b, histogram, max_bin);
   }
 }
 
 //------------------------------------------------------------------------------
 
-static inline void histogram_helper_cs_Lab(const dt_dev_histogram_collection_params_t *const histogram_params,
-                                           const void *pixel, uint32_t *histogram, int j,
-                                           const dt_iop_order_iccprofile_info_t *const profile_info)
+static inline void _bin_Lab(const dt_dev_histogram_collection_params_t *const params,
+                            const void *const restrict pixel,
+                            uint32_t *const restrict histogram, const int j,
+                            const dt_iop_order_iccprofile_info_t *const profile)
 {
-  const dt_histogram_roi_t *roi = histogram_params->roi;
+  const dt_histogram_roi_t *roi = params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const dt_aligned_pixel_t scale = { (histogram_params->bins_count - 1) / 100.0f,
-                                     (histogram_params->bins_count - 1) / 256.0f,
-                                     (histogram_params->bins_count - 1) / 256.0f,
-                                     0.0f };
+  const float max_bin = params->bins_count - 1;
+  const dt_aligned_pixel_t scale = { max_bin / 100.0f,
+                                     max_bin / 256.0f,
+                                     max_bin / 256.0f, 0.0f };
   const dt_aligned_pixel_t shift = { 0.0f, 128.0f, 128.0f, 0.0f };
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
@@ -119,20 +122,21 @@ static inline void histogram_helper_cs_Lab(const dt_dev_histogram_collection_par
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b,scale,shift:16))
       b[k] = scale[k] * (in[i*4+k] + shift[k]);
-    clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
+    _clamp_bin(b, histogram, max_bin);
   }
 }
 
-static inline void histogram_helper_cs_Lab_LCh(const dt_dev_histogram_collection_params_t *const histogram_params,
-                                               const void *pixel, uint32_t *histogram, int j,
-                                               const dt_iop_order_iccprofile_info_t *const profile_info)
+static inline void _bin_Lab_LCh(const dt_dev_histogram_collection_params_t *const params,
+                                const void *const restrict pixel,
+                                uint32_t *const restrict histogram, const int j,
+                                const dt_iop_order_iccprofile_info_t *const profile)
 {
-  const dt_histogram_roi_t *roi = histogram_params->roi;
+  const dt_histogram_roi_t *roi = params->roi;
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
-  const dt_aligned_pixel_t scale = { (histogram_params->bins_count - 1) / 100.0f,
-                                     (histogram_params->bins_count - 1) / (128.0f * sqrtf(2.0f)),
-                                     (histogram_params->bins_count - 1),
-                                     0.0f };
+  const float max_bin = params->bins_count - 1;
+  const dt_aligned_pixel_t scale = { max_bin / 100.0f,
+                                     max_bin / (128.0f * sqrtf(2.0f)),
+                                     max_bin, 0.0f };
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
   {
@@ -140,16 +144,16 @@ static inline void histogram_helper_cs_Lab_LCh(const dt_dev_histogram_collection
     dt_Lab_2_LCH(in + i*4, LCh);
     for_each_channel(k,aligned(LCh,b,scale:16))
       b[k] = scale[k] * LCh[k];
-    clamp_and_bin(b, histogram, histogram_params->bins_count - 1);
+    _clamp_bin(b, histogram, max_bin);
   }
 }
 
 //==============================================================================
 
-void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_params,
-                         dt_dev_histogram_stats_t *histogram_stats, const void *const pixel,
-                         uint32_t **histogram, const _histogram_worker Worker,
-                         const dt_iop_order_iccprofile_info_t *const profile_info)
+void _hist_worker(dt_dev_histogram_collection_params_t *const histogram_params,
+                  dt_dev_histogram_stats_t *histogram_stats, const void *const pixel,
+                  uint32_t **histogram, const _histogram_worker Worker,
+                  const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const size_t bins_total = (size_t)4 * histogram_params->bins_count;
   const size_t buf_size = bins_total * sizeof(uint32_t);
@@ -170,9 +174,10 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
   const dt_histogram_roi_t *const roi = histogram_params->roi;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none)                                    \
-  dt_omp_firstprivate(histogram_params, pixel, Worker, profile_info, roi) \
-  reduction(+:working_hist[:bins_total])                                  \
+#pragma omp parallel for default(none)                                  \
+  dt_omp_firstprivate(histogram_params, pixel, Worker, profile_info,    \
+                      roi, bins_total)                                  \
+  reduction(+:working_hist[:bins_total])                                \
   schedule(static)
 #endif
   for(int j = roi->crop_y; j < roi->height - roi->crop_height; j++)
@@ -206,27 +211,32 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
   {
     case IOP_CS_RAW:
       // for exposure auto/deflicker of 16-bit int raws
-      dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_raw, profile_info);
+      _hist_worker(histogram_params, histogram_stats, pixel, histogram,
+                   _bin_raw, profile_info);
       histogram_stats->ch = 1u;
       break;
 
     case IOP_CS_RGB:
       if(compensate_middle_grey && profile_info)
         // for rgbcurve (compensated)
-        dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb_compensated, profile_info);
+        _hist_worker(histogram_params, histogram_stats, pixel, histogram,
+                     _bin_rgb_compensated, profile_info);
       else
         // used by levels, rgbcurve (uncompensated), rgblevels
-        dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb, profile_info);
+        _hist_worker(histogram_params, histogram_stats, pixel, histogram,
+                     _bin_rgb, profile_info);
       histogram_stats->ch = 3u;
       break;
 
     case IOP_CS_LAB:
       if(cst_to != IOP_CS_LCH)
         // for tonecurve
-        dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_Lab, profile_info);
+        _hist_worker(histogram_params, histogram_stats, pixel, histogram,
+                     _bin_Lab, profile_info);
       else
         // for colorzones
-        dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_Lab_LCh, profile_info);
+        _hist_worker(histogram_params, histogram_stats, pixel, histogram,
+                     _bin_Lab_LCh, profile_info);
       histogram_stats->ch = 3u;
       break;
 
@@ -235,7 +245,7 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
   }
 
   // now, if requested, calculate maximum of each channel
-  dt_aligned_uint32_t m = { 0u, 0u, 0u, 0u };
+  DT_ALIGNED_PIXEL uint32_t m[4] = { 0u, 0u, 0u, 0u };
   if(*histogram && histogram_max)
   {
     // RGB, Lab, and LCh
@@ -243,10 +253,13 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
     {
       uint32_t *hist = *histogram;
 
-      // don't count <= 0 pixels except for ab or Ch
+      // don't count <= 0 pixels related to lightness (RGB, L from
+      // Lab, C from LCh) but we're fine counting zero chroma values
+      // (ab from Lab, h from LCh)
       if(cst == IOP_CS_LAB)
       {
-        m[1] = hist[1];
+        if(cst_to != IOP_CS_LCH)
+          m[1] = hist[1];
         m[2] = hist[2];
       }
 
