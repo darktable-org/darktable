@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-12 17:22+0100\n"
+"POT-Creation-Date: 2023-01-14 14:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21938,16 +21938,12 @@ msgstr ""
 msgid "no styles have been created yet"
 msgstr ""
 
-#: ../src/views/darkroom.c:2233
-msgid "quick access presets"
-msgstr ""
-
-#: ../src/views/darkroom.c:2234
+#: ../src/views/darkroom.c:2233 ../src/views/darkroom.c:2234
 msgid "quick access to presets"
 msgstr ""
 
 #: ../src/views/darkroom.c:2242
-msgid "quick access styles"
+msgid "quick access to styles"
 msgstr ""
 
 #: ../src/views/darkroom.c:2244
