@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-12 17:22+0100\n"
-"PO-Revision-Date: 2023-01-12 18:47+0200\n"
+"POT-Creation-Date: 2023-01-14 14:55+0100\n"
+"PO-Revision-Date: 2023-01-14 21:25+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -23903,16 +23903,12 @@ msgstr "не знайдено визначених користувачем пр
 msgid "no styles have been created yet"
 msgstr "ще не створено стилів"
 
-#: ../src/views/darkroom.c:2233
-msgid "quick access presets"
-msgstr "швидкий доступ до пресетів"
-
-#: ../src/views/darkroom.c:2234
+#: ../src/views/darkroom.c:2233 ../src/views/darkroom.c:2234
 msgid "quick access to presets"
 msgstr "швидкий доступ до пресетів"
 
 #: ../src/views/darkroom.c:2242
-msgid "quick access styles"
+msgid "quick access to styles"
 msgstr "швидкий доступ до стилів"
 
 #: ../src/views/darkroom.c:2244
@@ -24559,6 +24555,9 @@ msgstr ""
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "дії за допомогою миші"
+
+#~ msgid "quick access presets"
+#~ msgstr "швидкий доступ до пресетів"
 
 #~ msgid "add image to selection or remove"
 #~ msgstr "додати зображення до вибору або прибрати з нього"
