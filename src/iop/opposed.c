@@ -37,7 +37,15 @@
 
    Again the algorithm has been developed in collaboration by @garagecoder and @Iain from gmic team and @jenshannoschwalm from dt.
 */
-// #define DT_OPPCHROMA_HISTORY
+
+/* 
+  HLR v5 includes data for precalculated chroma correction to boost performance.
+  Just now a dummy.
+*/
+static gboolean _precalculated_opposed_chroma(dt_dev_pixelpipe_iop_t *piece, dt_aligned_pixel_t *chrominance)
+{
+  return FALSE;
+}
 
 static inline float _calc_linear_refavg(const float *in, const int color)
 {
@@ -64,13 +72,13 @@ static inline char _mask_dilated(const char *in, const size_t w1)
 
   const size_t w2 = 2*w1;
   const size_t w3 = 3*w1;
-  return  in[-w3-2] | in[-w3-1] | in[-w3] | in[-w3+1] | in[-w3+2] |
-          in[-w2-3] | in[-w2-2] | in[-w2-1] | in[-w2] | in[-w2+1] | in[-w2+2] | in[-w2+3] |
+  return  in[-w3-2] | in[-w3-1] | in[-w3]   | in[-w3+1] | in[-w3+2] |
+          in[-w2-3] | in[-w2-2] | in[-w2-1] | in[-w2]   | in[-w2+1] | in[-w2+2] | in[-w2+3] |
           in[-w1-3] | in[-w1-2] | in[-w1+2] | in[-w1+3] |
-          in[-3]    | in[-2]    | in[2]     | in[3] |
-          in[w1-3]  | in[w1-2]  | in[w1+2]  | in[w1+3] |
-          in[w2-3]  | in[w2-2]  | in[w2-1]  | in[w2]  | in[w2+1]  | in[w2+2]  | in[w2+3] |
-          in[w3-2]  | in[w3-1]  | in[w3]  | in[w3+1]  | in[w3+2];
+          in[-3]    | in[-2]    | in[2]     | in[3]     |
+          in[w1-3]  | in[w1-2]  | in[w1+2]  | in[w1+3]  |
+          in[w2-3]  | in[w2-2]  | in[w2-1]  | in[w2]    | in[w2+1]  | in[w2+2]  | in[w2+3] |
+          in[w3-2]  | in[w3-1]  | in[w3]    | in[w3+1]  | in[w3+2];
 }
 
 
@@ -92,9 +100,9 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
   const size_t mheight = roi_in->height / 3;
   const size_t msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 64);
 
-  dt_aligned_pixel_t chrominance = {d->chroma_correction[0], d->chroma_correction[1], d->chroma_correction[2], 0.0f};
+  dt_aligned_pixel_t chrominance = { 0.0f, 0.0f, 0.0f, 0.0f};
 
-  if(!feqf(_color_magic(piece), d->chroma_correction[3], 1e-6f))
+  if(!_precalculated_opposed_chroma(piece, &chrominance))
   {
     char *mask = (quality) ? dt_calloc_align(64, 6 * msize * sizeof(char)) : NULL;
     if(mask)
@@ -173,22 +181,6 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
         for_each_channel(c)
           chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
       }
-
-      // also checking for an altered image to avoid xmp writing if not desired
-      if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
-         && (abs((int)(roi_out->width / roi_out->scale) - piece->buf_in.width) < 10)
-         && (abs((int)(roi_out->height / roi_out->scale) - piece->buf_in.height) < 10)
-         && dt_image_altered(piece->pipe->image.id))
-      {
-        dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-        for(int c = 0; c < 3; c++)
-          d->chroma_correction[c] = p->chroma_correction[c] = chrominance[c];
-        d->chroma_correction[3] = p->chroma_correction[3] = _color_magic(piece);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
-#ifdef DT_OPPCHROMA_HISTORY
-        fprintf(stderr, "[new linear chroma history] %f %f %f\n", chrominance[0], chrominance[1], chrominance[2]);
-#endif
-      }
     }
     dt_free_align(mask);
   }
@@ -235,9 +227,9 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const size_t mheight = roi_in->height / 3;
   const size_t msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 64);
 
-  dt_aligned_pixel_t chrominance = {d->chroma_correction[0], d->chroma_correction[1], d->chroma_correction[2], 0.0f};
+  dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
-  if(!feqf(_color_magic(piece), d->chroma_correction[3], 1e-6f))
+  if(!_precalculated_opposed_chroma(piece, &chrominance))
   {
     char *mask = (quality) ? dt_calloc_align(64, 6 * msize * sizeof(char)) : NULL;
     if(mask)
@@ -314,19 +306,6 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
         }
         for_each_channel(c)
           chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
-      }
-
-      // also checking for an altered image to avoid xmp writing if not desired
-      if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL) && dt_image_altered(piece->pipe->image.id))
-      {
-        dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-        for(int c = 0; c < 3; c++)
-          d->chroma_correction[c] = p->chroma_correction[c] = chrominance[c];
-        d->chroma_correction[3] = p->chroma_correction[3] = _color_magic(piece);
-        dt_dev_add_history_item(darktable.develop, self, TRUE);
-#ifdef DT_OPPCHROMA_HISTORY
-        fprintf(stderr, "[new chroma history] %f %f %f\n", chrominance[0], chrominance[1], chrominance[2]);
-#endif
       }
     }
     dt_free_align(mask);
@@ -413,7 +392,7 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
                                        wbon ? dsc->temperature.coeffs[2] : 1.0f};
 
   dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f};
-  dt_aligned_pixel_t chrominance = { d->chroma_correction[0], d->chroma_correction[1], d->chroma_correction[2], 0.0f};
+  dt_aligned_pixel_t chrominance = { 0.0f, 0.0f, 0.0f, 0.0f};
   dt_aligned_pixel_t clipdark = { 0.03f * clips[0], 0.125f * clips[1], 0.03f * clips[2], 0.0f };
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -438,7 +417,7 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
   if(dev_clips == NULL) goto error;
 
-  if(!feqf(_color_magic(piece), d->chroma_correction[3], 1e-6f))
+  if(!_precalculated_opposed_chroma(piece, &chrominance))
   {
     // We don't have valid chrominance correction so go the hard way
     dev_dark = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clipdark);
@@ -479,19 +458,6 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
     for(int c = 0; c < 3; c++)
       chrominance[c] = accu[c] / fmaxf(1.0f, accu[c+4]);
-
-    // also checking for an altered image to avoid xmp writing if not desired
-    if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL) && dt_image_altered(piece->pipe->image.id))
-    {
-      dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-      for(int c = 0; c < 3; c++)
-        d->chroma_correction[c] = p->chroma_correction[c] = chrominance[c];
-      d->chroma_correction[3] = p->chroma_correction[3] = _color_magic(piece);
-      dt_dev_add_history_item(darktable.develop, self, TRUE);
-#ifdef DT_OPPCHROMA_HISTORY
-      fprintf(stderr, "[new OpenCL chroma history] %f %f %f\n", chrominance[0], chrominance[1], chrominance[2]);
-#endif
-    }
   }
 
   dev_chrominance = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), chrominance);

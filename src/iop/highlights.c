@@ -60,7 +60,7 @@ static void dump_PFM(const char *filename, const float* out, const uint32_t w, c
 }
 #endif
 
-DT_MODULE_INTROSPECTION(5, dt_iop_highlights_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
 
 /* As some of the internal algorithms use a smaller value for clipping than given by the UI
    the visualizing is wrong for those algos. It seems to be a a minor issue but sometimes significant.
@@ -131,7 +131,6 @@ typedef struct dt_iop_highlights_params_t
   dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "rebuild"
   // params of v4
   float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
-  float chroma_correction[4]; // $DEFAULT: 0.0
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -208,7 +207,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 5)
+  if(old_version == 1 && new_version == 4)
   {
     /*
       params of v2 :
@@ -216,7 +215,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       + params of v3
       + params of v4
     */
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 9 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 5 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->clip = 1.0f;
     n->noise_level = 0.0f;
@@ -227,10 +226,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scales = 5;
     n->solid_color = 0.f;
     n->strength = 0.0f;
-    for(int i=0; i<4; i++) n->chroma_correction[i] = 0.0f;
     return 0;
   }
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2 && new_version == 4)
   {
     /*
       params of v3 :
@@ -242,7 +240,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
         int recovery;
       + params of v4
     */
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 8 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->noise_level = 0.0f;
     n->candidating = 0.4f;
@@ -252,45 +250,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->scales = 5;
     n->solid_color = 0.f;
     n->strength = 0.0f;
-    for(int i=0; i<4; i++) n->chroma_correction[i] = 0.0f;
     return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3 && new_version == 4)
   {
     /*
       params of v4 :
         float solid_color;
     */
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 5 * sizeof(float));
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - sizeof(float));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->solid_color = 0.f;
     n->strength = 0.0f;
-    for(int i=0; i<4; i++) n->chroma_correction[i] = 0.0f;
-    return 0;
-  }
-  if(old_version == 4 && new_version == 5)
-  {
-    /* chroma_correction is new */
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float));
-    dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
-    for(int i=0; i<4; i++) n->chroma_correction[i] = 0.0f;
     return 0;
   }
 
   return 1;
-}
-
-static float _color_magic(dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
-  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
-
-  const float points = fmaxf(0.0f, (dsc->rawprepare.raw_black_level + dsc->rawprepare.raw_white_point)) / 64000.0f;
-  const gboolean wbon = dsc->temperature.enabled;
-  const dt_aligned_pixel_t wb = { wbon ? dsc->temperature.coeffs[0] : 1.0f,
-                                  wbon ? dsc->temperature.coeffs[1] : 1.0f,
-                                  wbon ? dsc->temperature.coeffs[2] : 1.0f};
-  return d->clip * (points + (wb[0] + wb[1] + wb[2]) / 3.0f);
 }
 
 #ifdef HAVE_OPENCL
@@ -2224,8 +2199,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
  
   // check for heavy computing here to possibly give an iop cache hint
   gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
-                  || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
-                  || ((d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) && fullpipe && linear));
+                  || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS));
 
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
@@ -2410,8 +2384,6 @@ void reload_defaults(dt_iop_module_t *self)
 
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
-
-  for(int i=0; i<4; i++) d->chroma_correction[i] = 0.0f;
 
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
