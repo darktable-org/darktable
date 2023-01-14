@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-12 17:22+0100\n"
-"PO-Revision-Date: 2023-01-12 17:23+0100\n"
+"POT-Creation-Date: 2023-01-14 14:55+0100\n"
+"PO-Revision-Date: 2023-01-14 14:55+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -23984,16 +23984,12 @@ msgstr "aucun préréglage trouvé pour les modules favoris"
 msgid "no styles have been created yet"
 msgstr "aucun style disponible"
 
-#: ../src/views/darkroom.c:2233
-msgid "quick access presets"
-msgstr "accès rapide aux préréglages"
-
-#: ../src/views/darkroom.c:2234
+#: ../src/views/darkroom.c:2233 ../src/views/darkroom.c:2234
 msgid "quick access to presets"
 msgstr "accès rapide aux préréglages"
 
 #: ../src/views/darkroom.c:2242
-msgid "quick access styles"
+msgid "quick access to styles"
 msgstr "accès rapide aux styles"
 
 #: ../src/views/darkroom.c:2244
@@ -24635,6 +24631,9 @@ msgstr "créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "actions souris"
+
+#~ msgid "quick access presets"
+#~ msgstr "accès rapide aux préréglages"
 
 #~ msgid "add image to selection or remove"
 #~ msgstr "ajouter des images à la sélection ou supprimer"
