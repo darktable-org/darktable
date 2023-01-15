@@ -16,8 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -724,14 +722,35 @@ dt_colorspaces_color_profile_type_t dt_imageio_jpeg_read_color_space(dt_imageio_
 
 dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  const char *ext = filename + strlen(filename);
-  while(*ext != '.' && ext > filename) ext--;
+  // Sometimes there are cases when images are in JPEG format, but their file extensions do not
+  // correspond to this format. For example, there are reports of such a situation with iPhone photos:
+  // https://discuss.pixls.us/t/darktable-not-presenting-heic-files-for-selection/33699
 
-  // JFIF ("JPEG File Interchange Format") has the same container as regular JPEG, only a different metadata
-  // format (instead of the more common Exif metadata format)
-  // See https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format
-  if(g_ascii_strcasecmp(ext, ".jpg") && g_ascii_strcasecmp(ext, ".jpeg") && g_ascii_strcasecmp(ext, ".jfif"))
+  // So we have to abandon pre-filtering by checking file extensions. Instead, to quickly check whether it
+  // makes sense to work with this file further (whether it's in JPEG format), we check for magic bytes.
+
+  const uint8_t jpeg_magicbytes[3] = { 0xFF, 0xD8, 0xFF };
+  uint8_t first3bytes[3] = { 0 };
+
+  FILE *f = g_fopen(filename, "rb");
+  if(!f)
+  {
+    fprintf(stderr, "[jpeg_open] Error: failed to open '%s' for reading\n", filename);
+    return DT_IMAGEIO_FILE_NOT_FOUND;
+  }
+
+  if(fread(first3bytes, 1, 3, f) != 3)
+  {
+    fclose(f);
+    fprintf(stderr, "[jpeg_open] Error: file is empty or read error.\n");
+    return DT_IMAGEIO_FILE_NOT_FOUND;
+  }
+  fclose(f);
+
+  if(memcmp(first3bytes, jpeg_magicbytes, 3) != 0)
+  {
     return DT_IMAGEIO_LOAD_FAILED;
+  }
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
@@ -765,11 +784,8 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   return DT_IMAGEIO_OK;
 }
 
-
-
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
