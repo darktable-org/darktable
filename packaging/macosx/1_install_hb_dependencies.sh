@@ -61,7 +61,40 @@ hbDependencies="adwaita-icon-theme \
     sdl2 \
     webp"
 
-# Install homebrew dependencies
+# Categorize dependency list
+standalone=
+deps=
+notfound=
+hbInstalled=$( brew list --formula --quiet )
+hbLeaves=$( brew leaves --installed-on-request )
 for hbDependency in $hbDependencies; do
-    brew install "$hbDependency"
+    if [[ " ${hbInstalled[*]} " == *"${hbDependency}"* ]];
+    then
+      if [[ " ${hbLeaves[*]} " == *"${hbDependency}"* ]]; then
+        standalone="${hbDependency} ${standalone}"
+      else
+        deps="${hbDependency} ${deps}"
+      fi
+    else
+      notfound="${hbDependency} ${notfound}"
+    fi
 done
+
+# Show installed dependencies
+if [ "${standalone}" -o "${deps}" ]; then
+    echo
+    echo "Installed Dependencies:"
+    (
+        brew list --formula --quiet --versions ${standalone}
+        brew list --formula --quiet --versions ${deps} | sed -e 's/$/ (autoinstalled)/'
+    ) | sort
+fi
+
+# Install missing dependencies
+if [ "${notfound}" ]; then
+    echo
+    echo "Missing Dependencies:"
+    echo "${notfound}"
+
+    brew install ${notfound}
+fi
