@@ -74,8 +74,12 @@ function reset_exec_path {
 
     # Handle libdarktable.dylib
     if [[ "$oToolLDependencies" == *"@rpath/libdarktable.dylib"* && "$1" != *"libdarktable.dylib"* ]]; then
-        echo "Resetting loader path for libdarktable.dylib of <$1>"
-        install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$1"
+        # Only need to reset binaries that live outside of lib/darktable
+        oToolLoader=$(otool -l "$1" 2>/dev/null | grep '@loader_path' | cut -d\( -f1 | sed 's/^[[:blank:]]*path[[:blank:]]*//;s/[[:blank:]]*$//' )
+        if [[ "$oToolLoader" == "@loader_path/../lib/darktable" ]]; then
+            echo "Resetting loader path for libdarktable.dylib of <$1>"
+            install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$1"
+        fi
     fi
 
     # Filter for any homebrew specific paths
