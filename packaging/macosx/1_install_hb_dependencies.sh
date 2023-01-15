@@ -98,3 +98,6 @@ if [ "${notfound}" ]; then
 
     brew install ${notfound}
 fi
+
+# fix for keg-only libomp
+brew link --force libomp
