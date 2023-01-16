@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -178,7 +178,7 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
 {
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = IOP_CS_RGB;
-  dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0 };
+  dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0, .buf_size = sizeof(uint32_t) * 4 * HISTOGRAM_BINS };
   uint32_t histogram_max[4] = { 0 };
 
   d->histogram_max = 0;
@@ -186,12 +186,11 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
 
   histogram_params.roi = roi;
   histogram_params.bins_count = HISTOGRAM_BINS;
-  histogram_params.mul = histogram_params.bins_count - 1;
 
   // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of the graph
   // FIXME: set up "custom" histogram worker which can do colorspace conversion on fly -- in cases that we need to do that -- may need to add from colorspace to dt_dev_histogram_collection_params_t
-  dt_histogram_helper(&histogram_params, &histogram_stats, cst, IOP_CS_NONE, input, &d->histogram, FALSE, NULL);
-  dt_histogram_max_helper(&histogram_stats, cst, IOP_CS_NONE, &d->histogram, histogram_max);
+  dt_histogram_helper(&histogram_params, &histogram_stats, cst, IOP_CS_NONE,
+                      input, &d->histogram, histogram_max, FALSE, NULL);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
 }
 
@@ -1881,7 +1880,8 @@ void gui_init(dt_lib_module_t *self)
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
   d->vectorscope_angle = a * M_PI / 180.0;
 
-  d->histogram = (uint32_t *)calloc(4 * HISTOGRAM_BINS, sizeof(uint32_t));
+  d->histogram = (uint32_t *)dt_alloc_align(64, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
+  memset(d->histogram, 0, 4 * HISTOGRAM_BINS * sizeof(uint32_t));
   d->histogram_max = 0;
 
   // Waveform buffer doesn't need to be coupled with the histogram
@@ -2102,7 +2102,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
-  free(d->histogram);
+  dt_free_align(d->histogram);
   for(int ch=0; ch<3; ch++)
     dt_free_align(d->waveform_img[ch]);
   dt_free_align(d->vectorscope_graph);
