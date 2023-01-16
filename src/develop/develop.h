@@ -362,7 +362,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
 void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid);
 void dt_dev_write_history(dt_develop_t *dev);
-void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image);
+void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, const gboolean no_image, const gboolean snapshot);
 void dt_dev_read_history(dt_develop_t *dev);
 void dt_dev_free_history_item(gpointer data);
 void dt_dev_invalidate_history_module(GList *list, struct dt_iop_module_t *module);
@@ -551,7 +551,8 @@ void dt_dev_image_ext(
   size_t *processed_width,
   size_t *processed_height,
   int border_size,
-  gboolean iso_12646);
+  gboolean iso_12646,
+  int32_t snapshot_id);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
