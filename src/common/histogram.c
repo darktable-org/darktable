@@ -40,8 +40,10 @@ static inline void _clamp_bin(const dt_aligned_pixel_t vals,
 {
   DT_ALIGNED_PIXEL size_t bin[4];
   for_each_channel(k,aligned(vals,bin:16))
+  {
     // must be signed before clamping as value may be negative
     bin[k] = CLAMP(vals[k], 0.0f, max_bin);
+  }
 
   histogram[bin[0]*4]++;
   histogram[bin[1]*4+1]++;
@@ -59,9 +61,11 @@ static inline void _bin_raw(const dt_dev_histogram_collection_params_t *const pa
   const size_t max_bin = params->bins_count - 1;
 
   for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  {
     // WARNING: you must ensure that bins_count is big enough
     // e.g. 2^16 if you expect 16 bit raw files
     histogram[MIN(in[i], max_bin)]++;
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -292,4 +296,3 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
