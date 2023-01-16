@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -311,37 +311,41 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     if(roi_in->width > roi_in->height || !d->max_border_size)
     {
       // this means: relative to width and constant for height as well:
-      roi_out->width = (float)roi_in->width / (1.0f - size);
+      roi_out->width = roundf((float)roi_in->width / (1.0f - size));
       roi_out->height = roi_in->height + roi_out->width - roi_in->width;
     }
     else
     {
       // this means: relative to height and constant for width as well:
-      roi_out->height = (float)roi_in->height / (1.0f - size);
+      roi_out->height = roundf((float)roi_in->height / (1.0f - size));
       roi_out->width = roi_in->width + roi_out->height - roi_in->height;
     }
   }
   else
   {
-    float image_aspect = roi_in->width / (float)(roi_in->height);
-    float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_IMAGE_VALUE) ? image_aspect : d->aspect;
+    const float image_aspect = (float)roi_in->width / (float)(roi_in->height);
+    float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_IMAGE_VALUE)
+      ? image_aspect : d->aspect;
 
     if(d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_AUTO)
-      aspect = ((image_aspect < 1 && aspect > 1) || (image_aspect > 1 && aspect < 1)) ? 1 / aspect : aspect;
+      aspect = ((image_aspect < 1.0f && aspect > 1.0f)
+                || (image_aspect > 1.0f && aspect < 1.0f))
+        ? 1.0f / aspect
+        : aspect;
     else if(d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE)
-      aspect = (aspect < 1) ? 1 / aspect : aspect;
+      aspect = (aspect < 1.0f) ? 1.0f / aspect : aspect;
     else if(d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT)
-      aspect = (aspect > 1) ? 1 / aspect : aspect;
+      aspect = (aspect > 1.0f) ? 1.0f / aspect : aspect;
 
     // min width: constant ratio based on size:
-    roi_out->width = (float)roi_in->width / (1.0f - size);
+    roi_out->width = roundf((float)roi_in->width / (1.0f - size));
     // corresponding height: determined by aspect ratio:
-    roi_out->height = (float)roi_out->width / aspect;
+    roi_out->height = roundf((float)roi_out->width / aspect);
     // insane settings used?
     if(roi_out->height < (float)roi_in->height / (1.0f - size))
     {
-      roi_out->height = (float)roi_in->height / (1.0f - size);
-      roi_out->width = (float)roi_out->height * aspect;
+      roi_out->height = roundf((float)roi_in->height / (1.0f - size));
+      roi_out->width = roundf((float)roi_out->height * aspect);
     }
   }
 
@@ -1109,4 +1113,3 @@ void init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
