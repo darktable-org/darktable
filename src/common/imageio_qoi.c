@@ -38,7 +38,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, d
   if(!f)
   {
     fprintf(stderr,"[qoi_open] cannot open file for read: %s\n", filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   fseek(f, 0, SEEK_END);
@@ -52,7 +52,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, d
     fclose(f);
     g_free(read_buffer);
     fprintf(stderr,"[qoi_open] failed to read %zu bytes from %s\n", filesize, filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
   fclose(f);
 
@@ -64,7 +64,7 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, d
   {
     g_free(read_buffer);
     fprintf(stderr,"[qoi_open] failed to decode file: %s\n", filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   img->width = desc.width;
