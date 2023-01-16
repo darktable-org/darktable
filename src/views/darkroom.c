@@ -718,10 +718,17 @@ void expose(
     if(dev->form_visible && display_masks)
       dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
     // module
-    if(dev->gui_module && dev->gui_module->gui_post_expose
+    if(dev->gui_module && dev->gui_module != dev->proxy.rotate && dev->gui_module->gui_post_expose
        && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
+    {
+      cairo_save(cri);
       dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+      cairo_restore(cri);
+    }
   }
+
+  if(dev->proxy.rotate)
+    dev->proxy.rotate->gui_post_expose(dev->proxy.rotate, cri, width, height, pointerx, pointery);
 
   // indicate if we are in gamut check or softproof mode
   if(darktable.color_profiles->mode != DT_PROFILE_NORMAL)
@@ -1503,7 +1510,7 @@ static int _iso_12646_get_border(dt_develop_t *d)
     // the border size is taken from conf as an absolute in cm
     // and uses dpi and ppd for an absolute size
     const int bsize = darktable.gui->dpi * darktable.gui->ppd * dt_conf_get_float("darkroom/ui/iso12464_border") / 2.54f;
-    // for safety, at least 2 pixels and at least 40% for content 
+    // for safety, at least 2 pixels and at least 40% for content
     return MIN(MAX(2, bsize), 0.3f * MIN(d->width, d->height));
   }
   else
@@ -2634,7 +2641,7 @@ void gui_init(dt_view_t *self)
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
 
   // add an option to allow skip mouse events while other overlays are consuming mouse actions
-  ac = dt_action_define(sa, NULL, N_("force pan & zoom with mouse"), NULL, &dt_action_def_skip_mouse);
+  ac = dt_action_define(sa, NULL, N_("force pan/zoom/rotate with mouse"), NULL, &dt_action_def_skip_mouse);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_HOLD, GDK_KEY_a, 0);
 
   // move left/right/up/down
@@ -3470,6 +3477,12 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     dt_control_queue_redraw_center();
     dt_control_navigation_redraw();
   }
+  else if(darktable.control->button_down
+          && darktable.control->button_down_which == 3
+          && dev->proxy.rotate)
+  {
+    dev->proxy.rotate->mouse_moved(dev->proxy.rotate, x, y, pressure, which);
+  }
 }
 
 
@@ -3502,6 +3515,10 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
     }
     return 1;
   }
+  // rotate
+  if(which == 3 && dev->proxy.rotate)
+    handled = dev->proxy.rotate->button_released(dev->proxy.rotate, x, y, which, state);
+  if(handled) return handled;
   // masks
   if(dev->form_visible)
     handled = dt_masks_events_button_released(dev->gui_module, x, y, which, state);
@@ -3512,6 +3529,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
     handled = dev->gui_module->button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
   if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);
+
   return 1;
 }
 
@@ -3531,21 +3549,25 @@ int button_pressed(dt_view_t *self,
   const int32_t capht = self->height - 2*tb;
   const int32_t width_i = self->width;
   const int32_t height_i = self->height;
-  float offx = 0.0f, offy = 0.0f;
-  if(width_i > capwd) offx = (capwd - width_i) * .5f;
-  if(height_i > capht) offy = (capht - height_i) * .5f;
+  if(width_i > capwd) x += (capwd - width_i) * .5f;
+  if(height_i > capht) y += (capht - height_i) * .5f;
 
-  if(darktable.develop->darkroom_skip_mouse_events && which == 1 && type == GDK_BUTTON_PRESS)
+  if(darktable.develop->darkroom_skip_mouse_events && type == GDK_BUTTON_PRESS)
   {
-    dt_control_change_cursor(GDK_HAND1);
-    return 1;
+    if(which == 1)
+    {
+      dt_control_change_cursor(GDK_HAND1);
+      return 1;
+    }
+    else if(which == 3 && dev->proxy.rotate)
+      return dev->proxy.rotate->button_pressed(dev->proxy.rotate, x, y, pressure, which, type, state);
   }
 
   int handled = 0;
   if(dt_iop_color_picker_is_visible(dev))
   {
     float zoom_x, zoom_y;
-    dt_dev_get_pointer_zoom_pos(dev, x + offx, y + offy, &zoom_x, &zoom_y);
+    dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
     zoom_x += 0.5f;
     zoom_y += 0.5f;
 
@@ -3666,8 +3688,6 @@ int button_pressed(dt_view_t *self,
     }
   }
 
-  x += offx;
-  y += offy;
   // masks
   if(dev->form_visible)
     handled = dt_masks_events_button_pressed(dev->gui_module, x, y, pressure, which, type, state);
@@ -3740,6 +3760,9 @@ int button_pressed(dt_view_t *self,
     dt_control_navigation_redraw();
     return 1;
   }
+  if(which == 3 && dev->proxy.rotate)
+    return dev->proxy.rotate->button_pressed(dev->proxy.rotate, x, y, pressure, which, type, state);
+
   return 0;
 }
 

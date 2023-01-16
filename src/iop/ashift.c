@@ -3849,7 +3849,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
-  if(g->buf && self->enabled)
+  if(g->buf && self->enabled && gui_has_focus(self))
   {
     // roi data of the preview pipe input buffer
 
@@ -5829,10 +5829,15 @@ void gui_init(struct dt_iop_module_t *self)
   /* add signal handler for preview pipe finish to redraw the overlay */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                                   G_CALLBACK(_event_process_after_preview_callback), self);
+
+  darktable.develop->proxy.rotate = self;
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  if(darktable.develop->proxy.rotate == self)
+    darktable.develop->proxy.rotate = NULL;
+
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_process_after_preview_callback), self);
 
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
