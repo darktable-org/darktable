@@ -323,6 +323,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   uint32_t max_height = dt_conf_get_int(CONFIG_PREFIX "height");
 
   const gboolean upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale");
+  const gboolean scaledimension = dt_conf_get_int(CONFIG_PREFIX "dimensions_type") == DT_DIMENSIONS_SCALE;
   const gboolean high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing");
   const gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
   const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
@@ -355,7 +356,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   const dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
 
   GList *list = dt_act_on_get_images(TRUE, TRUE, TRUE);
-  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks,
+  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, scaledimension, export_masks,
                     style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export);
 
   g_free(icc_filename);
