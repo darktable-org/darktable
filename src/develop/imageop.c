@@ -1890,9 +1890,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     // we also remove the focus css class
     GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(out_focus_module));
     dt_gui_remove_class(iop_w, "dt_module_focus");
-
-    // if the module change the image size, we update the final sizes
-    if(out_focus_module->modify_roi_out) dt_image_update_final_size(darktable.develop->preview_pipe->output_imgid);
   }
 
   /* set the focus on module */

@@ -398,12 +398,6 @@ static gboolean masks_form_is_in_roi(dt_iop_module_t *self, dt_dev_pixelpipe_iop
   return TRUE;
 }
 
-void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
-                    const dt_iop_roi_t *roi_in)
-{
-  *roi_out = *roi_in;
-}
-
 // needed if mask dest is in roi and mask src is not
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
