@@ -179,7 +179,8 @@ typedef enum dt_image_loader_t
   LOADER_LIBRAW   = 14,
   LOADER_WEBP     = 15,
   LOADER_JPEGXL   = 16,
-  LOADER_COUNT    = 17 // keep last
+  LOADER_QOI      = 17,
+  LOADER_COUNT    = 18 // keep last
 } dt_image_loader_t;
 
 static const struct
@@ -204,7 +205,8 @@ static const struct
   { N_("heif"),            'h'},
   { N_("libraw"),          'l'},
   { N_("webp"),            'w'},
-  { N_("jpeg xl"),         'L'}
+  { N_("jpeg xl"),         'L'},
+  { N_("QOI"),             'q'}
 };
 
 typedef struct dt_image_geoloc_t
