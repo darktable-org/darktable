@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -156,7 +156,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_type[DT_IOP_RGBCURVE_G] = CUBIC_SPLINE;
   p.curve_type[DT_IOP_RGBCURVE_B] = CUBIC_SPLINE;
   p.curve_autoscale = DT_S_SCALE_AUTOMATIC_RGB;
-  p.compensate_middle_grey = 1;
+  p.compensate_middle_grey = TRUE;
   p.preserve_colors = 1;
 
   float linear_ab[7] = { 0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0 };

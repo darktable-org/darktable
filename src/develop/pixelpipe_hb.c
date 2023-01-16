@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -279,7 +279,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     piece->module->cleanup_pipe(piece->module, pipe, piece);
     free(piece->blendop_data);
     piece->blendop_data = NULL;
-    free(piece->histogram);
+    dt_free_align(piece->histogram);
     piece->histogram = NULL;
     g_hash_table_destroy(piece->raster_masks);
     piece->raster_masks = NULL;
@@ -549,11 +549,10 @@ static void _histogram_collect(dt_dev_pixelpipe_iop_t *piece, const void *pixel,
   const dt_iop_colorspace_type_t cst = piece->module->input_colorspace(piece->module, piece->pipe, piece);
 
   dt_histogram_helper(&histogram_params, &piece->histogram_stats, cst,
-                      piece->module->histogram_cst, pixel, histogram,
+                      piece->module->histogram_cst,
+                      pixel, histogram, histogram_max,
                       piece->module->histogram_middle_grey,
                       dt_ioppr_get_pipe_work_profile_info(piece->pipe));
-  dt_histogram_max_helper(&piece->histogram_stats, cst,
-                          piece->module->histogram_cst, histogram, histogram_max);
 }
 
 #ifdef HAVE_OPENCL
@@ -601,11 +600,10 @@ static void _histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_m
   const dt_iop_colorspace_type_t cst = piece->module->input_colorspace(piece->module, piece->pipe, piece);
 
   dt_histogram_helper(&histogram_params, &piece->histogram_stats,
-                      cst, piece->module->histogram_cst, pixel, histogram,
+                      cst, piece->module->histogram_cst,
+                      pixel, histogram, histogram_max,
                       piece->module->histogram_middle_grey,
                       dt_ioppr_get_pipe_work_profile_info(piece->pipe));
-  dt_histogram_max_helper(&piece->histogram_stats, cst,
-                          piece->module->histogram_cst, histogram, histogram_max);
 
   if(tmpbuf) dt_free_align(tmpbuf);
 }
