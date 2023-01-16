@@ -56,6 +56,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_tiff.c"
   "common/imageio_im.c"
   "common/imageio_gm.c"
+  "common/imageio_qoi.c"
   "common/import_session.c"
   "common/interpolation.c"
   "common/locallaplacian.c"

@@ -42,6 +42,7 @@
 #include "common/imageio_pfm.h"
 #include "common/imageio_png.h"
 #include "common/imageio_pnm.h"
+#include "common/imageio_qoi.h"
 #include "common/imageio_rawspeed.h"
 #include "common/imageio_libraw.h"
 #include "common/imageio_rgbe.h"
@@ -1237,6 +1238,9 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   /* fallback that tries to open file via LibRaw to support Canon CR3 */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_libraw(img, filename, buf);
+
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_qoi(img, filename, buf);
 
   /* fallback that tries to open file via GraphicsMagick */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
