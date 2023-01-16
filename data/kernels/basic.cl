@@ -310,7 +310,7 @@ static inline float _calc_refavg(read_only image2d_t in, global const unsigned c
   {
     for(int dx = -1; dx < 2; dx++)
     {
-      const float val = max(0.0f, read_imagef(in, sampleri, (int2)(col+dx, row+dy)).x);
+      const float val = fmax(0.0f, read_imagef(in, sampleri, (int2)(col+dx, row+dy)).x);
       const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, xtrans) : FC(row + dy, col + dx, filters);
       mean[c] += val;
       cnt[c] += 1.0f;
@@ -331,14 +331,16 @@ highlights_initmask (read_only image2d_t in, global char *inmask,
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
-  if((col >= width) || (row >= height)) return;
+  if((col < 1) || (row < 1) || (col > width-2) || (row > height-2)) return;
 
   float val = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
   const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+  const int idx = color*psize + mad24(row/3, pwidth, col/3);
 
-  const int idx = mad24(row/3, pwidth, col/3);
-  const char masked = (val >= clips[color]) ? 1 : 0;
-  inmask[idx + color*psize] = masked;
+  if((val >= clips[color]) && (inmask[idx] == 0))
+  {
+    inmask[idx] = inmask[idx] | 1;
+  }
 }
 
 kernel void
@@ -347,63 +349,53 @@ highlights_dilatemask (global char *in, global char *out,
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
-  if((col >= w1) || (row >= height)) return;
+  if((col < 3) || (row < 3) || (col > w1-4) || (row > height-4)) return;
 
   const int w2 = 2 * w1;
   const int w3 = 3 * w1;
 
   int i = mad24(row, w1, col);
-  char mask = 0;
-  if((col > 2) && (row > 2) && (col < w1 - 3) && (row < height - 3))
-  {
-    mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
-           in[i-1]    | in[i]    | in[i+1] |
-           in[i+w1-1] | in[i+w1] | in[i+w1+1] |
-           in[i-w2-1] | in[i-w2] | in[i-w2+1] |
-           in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
-           in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
-           in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
-           in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
-           in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
-           in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
-           in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
-  }
+  char mask;
+
+  mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+         in[i-1]    | in[i]    | in[i+1] |
+         in[i+w1-1] | in[i+w1] | in[i+w1+1] |
+         in[i-w2-1] | in[i-w2] | in[i-w2+1] |
+         in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
+         in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
+         in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
+         in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
+         in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
+         in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
   out[i] = mask;
 
   i = psize + mad24(row, w1, col);
-  mask = 0;
-  if((col > 2) && (row > 2) && (col < w1 - 3) && (row < height - 3))
-  {
-    mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
-           in[i-1]    | in[i]    | in[i+1] |
-           in[i+w1-1] | in[i+w1] | in[i+w1+1] |
-           in[i-w2-1] | in[i-w2] | in[i-w2+1] |
-           in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
-           in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
-           in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
-           in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
-           in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
-           in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
-           in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
-  }
+  mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+         in[i-1]    | in[i]    | in[i+1] |
+         in[i+w1-1] | in[i+w1] | in[i+w1+1] |
+         in[i-w2-1] | in[i-w2] | in[i-w2+1] |
+         in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
+         in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
+         in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
+         in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
+         in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
+         in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
   out[i] = mask;
 
   i = 2*psize + mad24(row, w1, col);
-  mask = 0;
-  if((col > 2) && (row > 2) && (col < w1 - 3) && (row < height - 3))
-  {
-    mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
-           in[i-1]    | in[i]    | in[i+1] |
-           in[i+w1-1] | in[i+w1] | in[i+w1+1] |
-           in[i-w2-1] | in[i-w2] | in[i-w2+1] |
-           in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
-           in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
-           in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
-           in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
-           in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
-           in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
-           in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
-  }
+  mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+         in[i-1]    | in[i]    | in[i+1] |
+         in[i+w1-1] | in[i+w1] | in[i+w1+1] |
+         in[i-w2-1] | in[i-w2] | in[i-w2+1] |
+         in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
+         in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
+         in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
+         in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
+         in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
+         in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
   out[i] = mask;
 }
 
@@ -454,14 +446,14 @@ highlights_chroma (read_only image2d_t in, global char *mask, global float *accu
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
-  if((col < 1) || (row < 1) || (col > width - 2) || (row > height - 2))
+  if((col < 3) || (row < 3) || (col > width - 4) || (row > height - 4))
     return;
 
   const int idx = mad24(row, width, col);
   const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
   const float inval = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
-  const int px = mad24(row/3, pwidth, col/3);
-  if(mask[color * psize + px] && (inval > dark[color]) && (inval < clips[color]))
+  const int px = color * psize + mad24(row/3, pwidth, col/3);
+  if(mask[px] && (inval > dark[color]) && (inval < clips[color]))
   {
     const float ref = _calc_refavg(in, xtrans, filters, row, col, width);
     atomic_add_f(accu + color , inval - ref);

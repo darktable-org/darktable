@@ -162,9 +162,9 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
   dt_omp_sharedconst(msize, mwidth) \
   schedule(static)
 #endif
-        for(size_t row = 1; row < roi_in->height-1; row++)
+        for(size_t row = 3; row < roi_in->height - 3; row++)
         {
-          for(size_t col = 1; col < roi_in->width - 1; col++)
+          for(size_t col = 3; col < roi_in->width - 3; col++)
           {
             const size_t idx = (row * roi_in->width + col) * 4;
             for_each_channel(c)
@@ -289,9 +289,9 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   dt_omp_sharedconst(filters, msize, mwidth) \
   schedule(static) collapse(2)
 #endif
-        for(size_t row = 1; row < roi_in->height - 1; row++)
+        for(size_t row = 3; row < roi_in->height - 3; row++)
         {
-          for(size_t col = 1; col < roi_in->width - 1; col++)
+          for(size_t col = 3; col < roi_in->width - 3; col++)
           {
             const size_t idx = row * roi_in->width + col;
             const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
@@ -306,6 +306,8 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
         }
         for_each_channel(c)
           chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
+//        fprintf(stderr, " R: %f %f %f  G: %f %f %f  B: %f %f %f\n", cr_sum[0], cr_cnt[0], chrominance[0], cr_sum[1], cr_cnt[1], chrominance[1], cr_sum[2], cr_cnt[2], chrominance[2]);  
+
       }
     }
     dt_free_align(mask);
@@ -406,6 +408,8 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
   const size_t iwidth = ROUNDUPDWD(roi_in->width, devid);
   const size_t iheight = ROUNDUPDHT(roi_in->height, devid);
+  const size_t owidth = ROUNDUPDWD(roi_out->width, devid);
+  const size_t oheight = ROUNDUPDHT(roi_out->height, devid);
 
   const int mwidth  = roi_in->width / 3;
   const int mheight = roi_in->height / 3;
@@ -458,12 +462,13 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
     for(int c = 0; c < 3; c++)
       chrominance[c] = accu[c] / fmaxf(1.0f, accu[c+4]);
+//    fprintf(stderr, " R: %f %f %f  G: %f %f %f  B: %f %f %f\n", accu[0], accu[4], chrominance[0], accu[1], accu[5], chrominance[1], accu[2], accu[6], chrominance[2]);  
   }
 
   dev_chrominance = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), chrominance);
   if(dev_chrominance == NULL) goto error;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_opposed, iwidth, iheight,
+  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_opposed, owidth, oheight,
           CLARG(dev_in), CLARG(dev_out),
           CLARG(roi_out->width), CLARG(roi_out->height), CLARG(roi_in->width), CLARG(roi_in->height),
           CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters), CLARG(dev_xtrans),
