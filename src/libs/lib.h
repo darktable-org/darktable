@@ -60,6 +60,8 @@ typedef struct dt_lib_t
       void (*update_samples)(struct dt_lib_module_t *self);
       void (*set_sample_box_area)(struct dt_lib_module_t *self, const dt_boundingbox_t size);
       void (*set_sample_point)(struct dt_lib_module_t *self, const float pos[2]);
+      void (*setup_sample)(struct dt_lib_module_t *self, const gboolean denoise,
+                           const gboolean pick_output);
     } colorpicker;
 
     /** Histogram processing hooks */
@@ -165,6 +167,9 @@ void dt_lib_colorpicker_set_box_area(dt_lib_t *lib, const dt_boundingbox_t box);
 
 /** set the colorpicker point selection tool and position */
 void dt_lib_colorpicker_set_point(dt_lib_t *lib, const float pos[2]);
+
+/** setup colorpicker options */
+void dt_lib_colorpicker_setup(dt_lib_t *lib, const gboolean denoise, const gboolean pick_output);
 
 /** sorter callback to add a lib in the list of libs after init */
 gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b);

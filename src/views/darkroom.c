@@ -3536,14 +3536,16 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         for(GSList *samples = darktable.lib->proxy.colorpicker.live_samples; samples; samples = g_slist_next(samples))
         {
           dt_colorpicker_sample_t *live_sample = samples->data;
-          if(live_sample->size == DT_LIB_COLORPICKER_SIZE_BOX && picker->kind != DT_COLOR_PICKER_POINT)
+          if(live_sample->size == DT_LIB_COLORPICKER_SIZE_BOX
+             && (picker->flags & DT_COLOR_PICKER_AREA))
           {
             if(zoom_x < live_sample->box[0] || zoom_x > live_sample->box[2]
                || zoom_y < live_sample->box[1] || zoom_y > live_sample->box[3])
               continue;
             dt_lib_colorpicker_set_box_area(darktable.lib, live_sample->box);
           }
-          else if(live_sample->size == DT_LIB_COLORPICKER_SIZE_POINT && picker->kind != DT_COLOR_PICKER_AREA)
+          else if(live_sample->size == DT_LIB_COLORPICKER_SIZE_POINT
+                  && (picker->flags & DT_COLOR_PICKER_POINT))
           {
             // magic values derived from _darkroom_pickers_draw
             float slop_px = MAX(26.0f, roundf(3.0f * zoom_scale));
