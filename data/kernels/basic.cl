@@ -301,6 +301,198 @@ highlights_false_color (read_only image2d_t in, write_only image2d_t out, const 
   write_imagef (out, (int2)(x, y), oval);
 }
 
+static inline float _calc_refavg(read_only image2d_t in, global const unsigned char (*const xtrans)[6], const unsigned int filters, int row, int col, int width)
+{
+  const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+  float mean[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  float cnt[4]  = { 0.0f, 0.0f, 0.0f, 0.0f };
+  for(int dy = -1; dy < 2; dy++)
+  {
+    for(int dx = -1; dx < 2; dx++)
+    {
+      const float val = fmax(0.0f, read_imagef(in, sampleri, (int2)(col+dx, row+dy)).x);
+      const int c = (filters == 9u) ? FCxtrans(row + dy, col + dx, xtrans) : FC(row + dy, col + dx, filters);
+      mean[c] += val;
+      cnt[c] += 1.0f;
+    }
+  }
+  for(int c = 0; c < 3; c++)
+    mean[c] = pow(mean[c] / cnt[c], 1.0f / 3.0f);
+
+  float croot_refavg[4]  = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1]), 0.0f};
+  return pow(croot_refavg[color], 3.0f);
+}
+
+kernel void
+highlights_initmask (read_only image2d_t in, global char *inmask, 
+                    const int width, const int height, const int psize, const int pwidth,
+                    const unsigned int filters, global const unsigned char (*const xtrans)[6],
+                    global const float *clips)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col < 1) || (row < 1) || (col > width-2) || (row > height-2)) return;
+
+  float val = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
+  const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+  const int idx = color*psize + mad24(row/3, pwidth, col/3);
+
+  if((val >= clips[color]) && (inmask[idx] == 0))
+  {
+    inmask[idx] = inmask[idx] | 1;
+  }
+}
+
+kernel void
+highlights_dilatemask (global char *in, global char *out, 
+                    const int w1, const int height, const int psize)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col < 3) || (row < 3) || (col > w1-4) || (row > height-4)) return;
+
+  const int w2 = 2 * w1;
+  const int w3 = 3 * w1;
+
+  int i = mad24(row, w1, col);
+  char mask;
+
+  mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+         in[i-1]    | in[i]    | in[i+1] |
+         in[i+w1-1] | in[i+w1] | in[i+w1+1] |
+         in[i-w2-1] | in[i-w2] | in[i-w2+1] |
+         in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
+         in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
+         in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
+         in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
+         in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
+         in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
+  out[i] = mask;
+
+  i = psize + mad24(row, w1, col);
+  mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+         in[i-1]    | in[i]    | in[i+1] |
+         in[i+w1-1] | in[i+w1] | in[i+w1+1] |
+         in[i-w2-1] | in[i-w2] | in[i-w2+1] |
+         in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
+         in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
+         in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
+         in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
+         in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
+         in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
+  out[i] = mask;
+
+  i = 2*psize + mad24(row, w1, col);
+  mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+         in[i-1]    | in[i]    | in[i+1] |
+         in[i+w1-1] | in[i+w1] | in[i+w1+1] |
+         in[i-w2-1] | in[i-w2] | in[i-w2+1] |
+         in[i-w1-2] | in[i-w1+2] | in[i-2]    | in[i+2] | in[i+w1-2] | in[i+w1+2] |
+         in[i+w2-1] | in[i+w2]   | in[i+w2+1] |
+         in[i-w3-2] | in[i-w3-1] | in[i-w3] | in[i-w3+1] | in[i-w3+2] |
+         in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
+         in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
+         in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
+  out[i] = mask;
+}
+
+void atomic_add_f(
+    global float *val,
+    const  float delta)
+{
+#ifdef NVIDIA_SM_20
+  // buys me another 3x--10x over the `algorithmic' improvements in the splat kernel below,
+  // depending on configuration (sigma_s and sigma_r)
+  float res = 0;
+  asm volatile ("atom.global.add.f32 %0, [%1], %2;" : "=f"(res) : "l"(val), "f"(delta));
+
+#else
+  union
+  {
+    float f;
+    unsigned int i;
+  }
+  old_val;
+  union
+  {
+    float f;
+    unsigned int i;
+  }
+  new_val;
+
+  global volatile unsigned int *ival = (global volatile unsigned int *)val;
+
+  do
+  {
+    // the following is equivalent to old_val.f = *val. however, as according to the opencl standard
+    // we can not rely on global buffer val to be consistently cached (relaxed memory consistency) we 
+    // access it via a slower but consistent atomic operation.
+    old_val.i = atomic_add(ival, 0);
+    new_val.f = old_val.f + delta;
+  }
+  while (atomic_cmpxchg (ival, old_val.i, new_val.i) != old_val.i);
+#endif
+}
+
+kernel void
+highlights_chroma (read_only image2d_t in, global char *mask, global float *accu,
+                   const int width, const int height,
+                   const int pwidth, const int pheight, const int psize, 
+                   const int filters, global const unsigned char (*const xtrans)[6],
+                   global const float *clips, global const float *dark)
+{
+  const int col = get_global_id(0);
+  const int row = get_global_id(1);
+  if((col < 3) || (row < 3) || (col > width - 4) || (row > height - 4))
+    return;
+
+  const int idx = mad24(row, width, col);
+  const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+  const float inval = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
+  const int px = color * psize + mad24(row/3, pwidth, col/3);
+  if(mask[px] && (inval > dark[color]) && (inval < clips[color]))
+  {
+    const float ref = _calc_refavg(in, xtrans, filters, row, col, width);
+    atomic_add_f(accu + color , inval - ref);
+    atomic_add_f(accu + color+4, 1.0f);
+  }
+}
+
+kernel void
+highlights_opposed (read_only image2d_t in, write_only image2d_t out,
+                    const int owidth, const int oheight, const int iwidth, const int iheight,
+                    const int dx, const int dy,
+                    const int filters, global const unsigned char (*const xtrans)[6],
+                    global const float *clips, global const float *chroma)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= owidth || y >= oheight) return;
+
+  const int irow = y + dy;
+  const int icol = x + dx;
+  float val = 0.0f;
+
+  if((icol >= 0) && (icol < iwidth) && (irow >= 0) && (irow < iheight))
+  {
+    val = fmax(0.0f, read_imagef(in, sampleri, (int2)(icol, irow)).x);
+ 
+    if((icol > 0) && (icol < iwidth-1) && (irow > 0) && (irow < iheight-1))
+    {
+      const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
+      if(val >= clips[color])
+      {
+        const float ref = _calc_refavg(in, xtrans, filters, irow, icol, iwidth);
+        val = fmax(val, ref + chroma[color]);
+      }
+    }
+  }
+  write_imagef (out, (int2)(x, y), val);
+}
+
 #define SQRT3 1.7320508075688772935274463415058723669f
 #define SQRT12 3.4641016151377545870548926830117447339f // 2*SQRT3
 kernel void
