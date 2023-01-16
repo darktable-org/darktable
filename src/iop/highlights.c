@@ -146,9 +146,6 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *recovery;
   GtkWidget *strength;
   dt_highlights_mask_t hlr_mask_mode;
-  dt_highlights_mask_t hlr_cached_mask_mode;
-  dt_aligned_pixel_t chroma_correction;
-  gboolean valid_chroma_correction;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -164,6 +161,12 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_guide_laplacians;
   int kernel_highlights_diffuse_color;
   int kernel_highlights_box_blur;
+
+  int kernel_highlights_opposed;
+  int kernel_highlights_initmask;
+  int kernel_highlights_dilatemask;
+  int kernel_highlights_chroma;
+
   int kernel_highlights_false_color;
 
   int kernel_filmic_bspline_vertical;
@@ -270,6 +273,10 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pi
                                          cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in,
                                          const dt_iop_roi_t *const roi_out, const dt_aligned_pixel_t clips);
 
+static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                         cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in,
+                                         const dt_iop_roi_t *const roi_out);
+
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -283,27 +290,20 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe : FALSE;
-
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
-  cl_mem dev_xtrans = NULL;
-  cl_mem dev_clips = NULL;
-
+  gboolean visualizing = FALSE;
   if(g && fullpipe)
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
       piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
-      dt_dev_pixelpipe_flush_caches(piece->pipe);
-    }
-    if(g->hlr_cached_mask_mode != g->hlr_mask_mode)
-    {
-      dt_print(DT_DEBUG_DEV, "[highlights reconstruction cl] flush iop cache because of mask mode change\n");
-      g->hlr_cached_mask_mode = g->hlr_mask_mode;
-      dt_dev_pixelpipe_flush_caches(piece->pipe);
+      visualizing = (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED);
     }
   }
+
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_mem dev_xtrans = NULL;
+  cl_mem dev_clips = NULL;
 
   // this works for bayer and X-Trans sensors
   if(visualizing)
@@ -344,6 +344,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_4f_clip, width, height,
       CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(d->mode), CLARG(clip));
     if(err != CL_SUCCESS) goto error;
+  }
+  else if(d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)
+  {
+    err = process_opposed_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+    if(err != CL_SUCCESS) goto error;
+
+    return TRUE;
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters != 9u)
   {
@@ -402,9 +409,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   // update processed maximum
-  if(d->mode !=  DT_IOP_HIGHLIGHTS_LAPLACIAN)
+  if((d->mode != DT_IOP_HIGHLIGHTS_LAPLACIAN) && (d->mode != DT_IOP_HIGHLIGHTS_OPPOSED))
   {
-    // The guided laplacian is the only mode that keeps signal scene-referred and doesn't clip highlights to 1
+    // The guided laplacian and opposed are the modes that keeps signal scene-referred and don't clip highlights to 1
     // For the other modes, we need to notify the pipeline that white point has changed
     const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
                           piece->pipe->dsc.processed_maximum[2]);
@@ -414,10 +421,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_xtrans);
   return TRUE;
 
-error:
+  error:
   dt_opencl_release_mem_object(dev_clips);
   dt_opencl_release_mem_object(dev_xtrans);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] [%s] had error %s\n", dt_dev_pixelpipe_type_to_str(piece->pipe->type), cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1965,7 +1972,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   const gboolean use_opposing = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS);
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
   /* When do we need to expand the roi to maximum of the full input data?
-     1. Certainly not if any other than opposed or segmentation based algos is used.
+     1. Certainly not if any other than opposed or the segmentation based algo is used.
    */
   if(!use_opposing)
     return;
@@ -1973,18 +1980,16 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean clipmask = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) : FALSE;
   /*
-     2. Certainly not if we show the clipped mask as that is also safe with current roi
-     3. Certainly not as linear raws all miss the automatic downscaler provided by the demosaicer stage, so
+     2. Certainly not if we show the clipped mask in fullpipe as that is also safe with current roi
+     3. Certainly not for linear raws as they miss the automatic downscaler provided by the demosaicer stage, so
         the expanding to full image data does not work as we do a downscaling very early in
         the pixelpipe. So - no quality achieved but really bad performance.
-        FIXME For dt 4.4 we might want to implement a downscaling step for this modules in these cases.
-          For now we don't expand and keep the linear opposed simple.
-          See #12998 and #12993 for lengthy discussions
+        See #12998 and #12993 for a lengthy discussion
   */
   if((fullpipe && clipmask) || (piece->pipe->dsc.filters == 0))
     return;
 
-  /* We require the correct expansion with a defined scale for all pixelpipes for proper
+  /* We require the correct (full-image-data) expansion with a defined scale for all pixelpipes for proper
      aligning and scaling in the demosiacer
   */ 
   roi_in->x = 0;
@@ -1992,7 +1997,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->width = piece->buf_in.width;
   roi_in->height = piece->buf_in.height;
   roi_in->scale = 1.0f;
- }
+}
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -2002,20 +2007,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && fullpipe : FALSE;
-
+  gboolean visualizing = FALSE;
   if(g && fullpipe)
   {
     if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
     {
       piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
       piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
-    }
-    if(g->hlr_cached_mask_mode != g->hlr_mask_mode)
-    {
-      dt_print(DT_DEBUG_DEV, "[highlights reconstruction] flush iop cache because of mask mode change\n");
-      g->hlr_cached_mask_mode = g->hlr_mask_mode;
-      dt_dev_pixelpipe_flush_caches(piece->pipe);
+      visualizing = (g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED);
     }
   }
 
@@ -2025,10 +2024,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
-  /* Some of the HLR algorithms can be pretty slow, while rendering thumnbnails we looks for an acceptable
-     lower quality like we do in demosaic and can tune the reconstruction code. So far only used by
-     opposed and segmentations algos as they make use of the full image data instead of ROI 
-  */
+  /* While rendering thumnbnails we look for an acceptable lower quality */
   gboolean high_quality = TRUE;
   if(piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL)
   {
@@ -2054,7 +2050,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else
     {
-      _process_linear_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data);
+      _process_linear_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, high_quality);
     }
     return;
   }
@@ -2133,7 +2129,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       const dt_highlights_mask_t vmode = ((g != NULL) && fullpipe && (g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_CLIPPED)) ? g->hlr_mask_mode : DT_HIGHLIGHTS_MASK_OFF;
 
-      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, TRUE, TRUE);
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, TRUE, TRUE);
       if(tmp)
         _process_segmentation(piece, ivoid, ovoid, roi_in, roi_out, data, vmode, tmp);
       dt_free_align(tmp);
@@ -2158,7 +2154,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     default:
     case DT_IOP_HIGHLIGHTS_OPPOSED:
     {
-      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, data, FALSE, high_quality);
+      float *tmp = _process_opposed(self, piece, ivoid, ovoid, roi_in, roi_out, FALSE, high_quality);
       dt_free_align(tmp);
       break;
     }
@@ -2185,24 +2181,36 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   memcpy(d, p, sizeof(*p));
 
-  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT or DT_IOP_HIGHLIGHTS_SEGMENTS and DT_IOP_HIGHLIGHTS_OPPOSED
-  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED)) ? 0 : 1;
+  const gboolean linear = (piece->pipe->dsc.filters == 0);
+
+  /* no OpenCLfor
+     1. DT_IOP_HIGHLIGHTS_INPAINT and DT_IOP_HIGHLIGHTS_SEGMENTS
+     2. DT_IOP_HIGHLIGHTS_OPPOSED on linear raws
+     FIXME the opposed preprocessing might be added as OpenCL too
+  */
+  const gboolean opplinear = (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) && linear;
+
+  piece->process_cl_ready = ((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || opplinear) ? 0 : 1;
 
   if((d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS) || (d->mode == DT_IOP_HIGHLIGHTS_OPPOSED))
     piece->process_tiling_ready = 0;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+ 
+  // check for heavy computing here to possibly give an iop cache hint
+  gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
+                  || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS));
+
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(g)
   {
-    const gboolean linear = piece->pipe->dsc.filters == 0;
+    // the clipped visualizer for linears is not implemented in cl
     if((g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
       piece->process_cl_ready = FALSE;
+    // only give a heavy hint if we are not in masking mode
+    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF) 
+      heavy = FALSE;
   }
-  // check for heavy computing here to give an iop cache hint
-  const gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
-                        || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS)
-                        || ((d->mode == DT_IOP_HIGHLIGHTS_OPPOSED) && fullpipe && (piece->pipe->dsc.filters == 0)));
   self->cache_next_important = heavy;
 }
 
@@ -2221,6 +2229,12 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_highlights_box_blur = dt_opencl_create_kernel(program, "box_blur_5x5");
   gd->kernel_highlights_guide_laplacians = dt_opencl_create_kernel(program, "guide_laplacians");
   gd->kernel_highlights_diffuse_color = dt_opencl_create_kernel(program, "diffuse_color");
+
+  gd->kernel_highlights_opposed = dt_opencl_create_kernel(program, "highlights_opposed");
+  gd->kernel_highlights_initmask = dt_opencl_create_kernel(program, "highlights_initmask");
+  gd->kernel_highlights_dilatemask = dt_opencl_create_kernel(program, "highlights_dilatemask");
+  gd->kernel_highlights_chroma = dt_opencl_create_kernel(program, "highlights_chroma");
+
   gd->kernel_highlights_false_color = dt_opencl_create_kernel(program, "highlights_false_color");
 
   const int wavelets = 35; // bspline.cl, from programs.conf
@@ -2241,6 +2255,12 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_highlights_box_blur);
   dt_opencl_free_kernel(gd->kernel_highlights_guide_laplacians);
   dt_opencl_free_kernel(gd->kernel_highlights_diffuse_color);
+
+  dt_opencl_free_kernel(gd->kernel_highlights_opposed);
+  dt_opencl_free_kernel(gd->kernel_highlights_initmask);
+  dt_opencl_free_kernel(gd->kernel_highlights_dilatemask);
+  dt_opencl_free_kernel(gd->kernel_highlights_chroma);
+
   dt_opencl_free_kernel(gd->kernel_highlights_false_color);
 
   dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);
@@ -2302,9 +2322,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
   }
 
-  if(w == g->clip)
-    g->valid_chroma_correction = FALSE;
-
   if(w == g->mode)
   {
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
@@ -2328,8 +2345,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
-  g->hlr_cached_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
-
+ 
   const int menu_size = dt_bauhaus_combobox_length(g->mode);
   const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
   const gboolean bayer = (filters != 0) && (filters != 9u);
@@ -2339,8 +2355,6 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT && basic)
      dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
-  g->valid_chroma_correction = FALSE;
-
   gui_changed(self, NULL, NULL);
 }
 
@@ -2403,7 +2417,11 @@ void reload_defaults(dt_iop_module_t *self)
         dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
     }
-    g->valid_chroma_correction = FALSE;
+    dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->candidating, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
+    dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
+    g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
   }
 }
 
