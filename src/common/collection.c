@@ -2368,7 +2368,9 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       gchar *query = get_query_string(property, text);
 
-      if(nb == 0)
+      if(nb == 0 && mode == 2)
+        query_parts[i] = g_strdup_printf(" 1=1 AND NOT %s", query);
+      else if(nb == 0)
         query_parts[i] = g_strdup_printf(" %s", query);
       else
         query_parts[i] = g_strdup_printf(" %s %s", conj[mode], query);
