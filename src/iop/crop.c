@@ -389,16 +389,15 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   if(!g) return; // seems that sometimes, g can be undefined for some reason...
   g->preview_ready = TRUE;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
-  if(self->dev->gui_module != self)
-  {
-    dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
-  }
+
   // force max size to be recomputed
   g->clip_max_pipe_hash = 0;
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
+  darktable.develop->history_postpone_invalidate = in && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS;
+
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   if(self->enabled)
@@ -1575,7 +1574,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
 
     // switch module on already, other code depends in this:
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
+    if(!self->enabled) dt_dev_add_history_item(darktable.develop, self, TRUE);
 
     g->button_down_x = x;
     g->button_down_y = y;
@@ -1624,6 +1623,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     g->clip_w = 1.0f;
     g->clip_h = 1.0f;
     _aspect_apply(self, GRAB_BOTTOM_RIGHT);
+    gui_changed(self, NULL, NULL);
     return 1;
   }
   else

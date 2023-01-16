@@ -722,10 +722,15 @@ void dt_image_update_final_size(const int32_t imgid)
                                     darktable.develop->pipe->iheight, &ww, &hh);
   }
   dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  imgtmp->final_width = ww;
-  imgtmp->final_height = hh;
-  dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
+  if(ww == imgtmp->final_width && hh == imgtmp->final_height)
+    dt_cache_release(&darktable.image_cache->cache, imgtmp->cache_entry);
+  else
+  {
+    imgtmp->final_width = ww;
+    imgtmp->final_height = hh;
+    dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
+  }
 }
 
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
