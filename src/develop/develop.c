@@ -1418,21 +1418,23 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = TRUE;
 
   const gboolean is_raw = dt_image_is_raw(image);
-  const gboolean is_modern_chroma =
-    dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
+  const gboolean is_modern_chroma = dt_is_scene_referred();
 
   // flag was already set? only apply presets once in the lifetime of a history stack.
   // (the flag will be cleared when removing it).
   if(!run || image->id <= 0)
   {
-    // Next section is to recover old edits where all modules with default parameters were not
-    // recorded in the db nor in the .XMP.
+    // Next section is to recover old edits where all modules with
+    // default parameters were not recorded in the db nor in the .XMP.
     //
-    // One crucial point is the white-balance which has automatic default based on the camera
-    // and depends on the chroma-adaptation. In modern mode the default won't be the same used
-    // in legacy mode and if the white-balance is not found on the history one will be added by
-    // default using current defaults. But if we are in modern chromatic adaptation the default
-    // will not be equivalent to the one used to develop this old edit.
+    // One crucial point is the white-balance which has automatic
+    // default based on the camera and depends on the
+    // chroma-adaptation. In modern mode the default won't be the same
+    // used in legacy mode and if the white-balance is not found on
+    // the history one will be added by default using current
+    // defaults. But if we are in modern chromatic adaptation the
+    // default will not be equivalent to the one used to develop this
+    // old edit.
 
     // So if the current mode is the modern chromatic-adaptation, do check the history.
 
@@ -1453,9 +1455,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                   "[_dev_auto_apply_presets] missing mandatory module %s for image %d\n",
                   module->op, imgid);
 
-          // If the module is white-balance and we are dealing with a raw file we need to add
-          // one now with the default legacy parameters. And we want to do this only for
-          // old edits.
+          // If the module is white-balance and we are dealing with a
+          // raw file we need to add one now with the default legacy
+          // parameters. And we want to do this only for old edits.
           //
           // For new edits the temperature will be added back depending on the chromatic
           // adaptation the standard way.
@@ -1466,10 +1468,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
             // it is important to recover temperature in this case (modern chroma and
             // not module present as we need to have the pre 3.0 default parameters used.
 
-            dt_conf_set_string("plugins/darkroom/chromatic-adaptation", "legacy");
+            dt_conf_set_string("plugins/darkroom/workflow", "display-referred (legacy)");
             dt_iop_reload_defaults(module);
             _dev_insert_module(dev, module, imgid);
-            dt_conf_set_string("plugins/darkroom/chromatic-adaptation", "modern");
+            dt_conf_set_string("plugins/darkroom/workflow", "scene-referred (filmic)");
             dt_iop_reload_defaults(module);
           }
         }
@@ -1480,10 +1482,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     return FALSE;
   }
 
-  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
-  const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
-  const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
-  const gboolean is_workflow_none = strcmp(workflow, "none") == 0;
+  const gboolean is_scene_referred = dt_is_scene_referred();
+  const gboolean is_display_referred = dt_is_display_referred();
+  const gboolean is_workflow_none = !is_scene_referred && !is_display_referred;
 
   //  Add scene-referred workflow
   //  Note that we cannot use a preset for FilmicRGB as the default values are
@@ -1492,7 +1493,15 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
 
-  const gboolean auto_apply_filmic = is_raw && is_scene_referred;
+  const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
+
+  const gboolean auto_apply_filmic =
+    is_raw
+    && strcmp(workflow, "scene-referred (filmic)") == 0;
+  const gboolean auto_apply_sigmoid =
+    is_raw
+    && strcmp(workflow, "scene-referred (sigmoid)") == 0;
+
   const gboolean auto_apply_cat = has_matrix && is_modern_chroma;
 
   if(auto_apply_filmic || auto_apply_cat)
@@ -1501,8 +1510,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-      if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0) ||
-          (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
+      if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
+          || (auto_apply_sigmoid && strcmp(module->op, "sigmoid") == 0)
+          || (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
          && !dt_history_check_module_exists(imgid, module->op, FALSE)
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
       {
