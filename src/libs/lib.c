@@ -1143,6 +1143,13 @@ void dt_lib_colorpicker_set_point(dt_lib_t *lib, const float pos[2])
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
 
+void dt_lib_colorpicker_setup(dt_lib_t *lib, const gboolean denoise, const gboolean pick_output)
+
+{
+  if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.setup_sample) return;
+  lib->proxy.colorpicker.setup_sample(lib->proxy.colorpicker.module, denoise, pick_output);
+}
+
 dt_lib_module_t *dt_lib_get_module(const char *name)
 {
   /* hide/show modules as last config */
