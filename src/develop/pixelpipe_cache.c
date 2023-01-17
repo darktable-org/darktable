@@ -282,8 +282,9 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
            In this case we can't simply realloc or alike as there might be data in the pipeline just making use
            of that buffer so we disable it and make the cleanup will free it.
         */ 
-        dt_print(DT_DEBUG_DEV | DT_DEBUG_ROI, "[pixelpipe_cache_get] %12s %16s HIT age %4i, line%3i, SIZE ERROR at %p, cache size %ikB, requested %ikB\n",
-          dt_dev_pixelpipe_type_to_str(pipe->type), name, cache->used[k], k, cache->data[k], (int)cache->size[k] / 1024, (int)size / 1024);
+        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_get", pipe, name, NULL, NULL,
+          "HIT ERROR     line%3i, age %4i, size %ikB, requested %ikB\n",
+          k, cache->used[k], (int)cache->size[k] / 1024, (int)size / 1024);
         cache->hash[k] = cache->basichash[k] = -1;
         cache->used[k] = VERY_OLD_CACHE_WEIGHT;
       }
@@ -294,9 +295,9 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
         *dsc = &cache->dsc[k];
         ASAN_POISON_MEMORY_REGION(*data, cache->size[k]);
         ASAN_UNPOISON_MEMORY_REGION(*data, size);
-        dt_print(DT_DEBUG_DEV | DT_DEBUG_ROI, "[pixelpipe_cache_get] %12s %16s HIT age %4i, line%3i, at %p, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-          dt_dev_pixelpipe_type_to_str(pipe->type), name, cache->used[k], k, cache->data[k],
-          cache->hash[k], cache->basichash[k]); 
+        dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_get", pipe, name, NULL, NULL,
+          "HIT %s line%3i, age %4i, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
+          (cache->used[k] < 0) ? "important" : "         ", k, cache->used[k], cache->hash[k], cache->basichash[k]); 
         // in case of a hit its always good to keep the cacheline as important
         cache->used[k] = -cache->entries;
         return FALSE;
@@ -319,8 +320,8 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
     {
       dt_free_align(cache->data[cline]);
       cache->allmem -= cache->size[cline];
-      dt_print(DT_DEBUG_DEV | DT_DEBUG_ROI, "[pixelpipe_cache_get] %12s %16s CHG age %4i, line%3i, was %s, %lu->%luMB\n",
-        dt_dev_pixelpipe_type_to_str(pipe->type), name, cache->used[cline], cline, cache->modname[cline],
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get", pipe, name, NULL, NULL, "CHG %s line%3i, age %4i, was %s, %lu->%luMB\n",
+        important ? "important" : "         ", cline, cache->used[cline], cache->modname[cline],
         cache->size[cline] / 1024lu / 1024lu, size / 1024lu / 1024lu); 
     }
     cache->data[cline] = (void *)dt_alloc_align(64, size);
@@ -336,15 +337,16 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
   cache->dsc[cline] = **dsc;
   *dsc = &cache->dsc[cline];
 
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_get", pipe, name, NULL, NULL,
+    "%s %s line%3i, age %4i, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
+     new_cline ? "NEW" : "OLD", important ? "important" : "         ", cline, cache->used[cline],
+     cache->hash[cline], cache->basichash[cline]); 
   cache->basichash[cline] = basichash;
   cache->hash[cline] = hash;
   const int avoiding = pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU | DT_DEV_PIXELPIPE_DISPLAY_ANY);
   cache->used[cline] = (avoiding) ? VERY_OLD_CACHE_WEIGHT : weight;
   cache->modname[cline] = name;
   cache->misses++;
-  dt_print(DT_DEBUG_DEV | DT_DEBUG_ROI, "[pixelpipe_cache_get] %12s %16s %s age %4i, line%3i, at %p, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-    dt_dev_pixelpipe_type_to_str(pipe->type), name, new_cline ? "NEW" : "   ", cache->used[cline], cline, cache->data[cline],
-    cache->hash[cline], cache->basichash[cline]); 
   return TRUE;
 }
 
@@ -384,8 +386,8 @@ void dt_dev_pixelpipe_cache_reweight(struct dt_dev_pixelpipe_t *pipe, void *data
     if((cache->data[k] == data) && (size == cache->size[k]))
     {
       cache->used[k] = -cache->entries;
-      dt_print(DT_DEBUG_DEV | DT_DEBUG_ROI, "[pipecache_reweight] %13s %16s     age %4i, line%3i, at %p, hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-        dt_dev_pixelpipe_type_to_str(pipe->type), cache->modname[k], cache->used[k], k, cache->data[k], cache->hash[k], cache->basichash[k]);
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipecache reweight", pipe, cache->modname[k], NULL, NULL,
+        "line%3i, age %4i, hash%22" PRIu64 ", basic%22" PRIu64 "\n", k, cache->used[k], cache->hash[k], cache->basichash[k]);
     }
   }
 }
@@ -404,11 +406,11 @@ void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *da
   }
 }
 
-static size_t _free_cacheline(dt_dev_pixelpipe_cache_t *cache, const int k, const int pipetype)
+static size_t _free_cacheline(dt_dev_pixelpipe_cache_t *cache, const int k, struct dt_dev_pixelpipe_t *pipe)
 {
   const size_t removed = cache->size[k];
-  dt_print(DT_DEBUG_DEV | DT_DEBUG_VERBOSE , "  [free cacheline] %s %16s, age %4i, line%3i, size=%luMB at %p\n",
-    dt_dev_pixelpipe_type_to_str(pipetype), cache->modname[k], cache->used[k], k, removed / 1024lu / 1024lu, cache->data[k]);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "free cacheline", pipe, cache->modname[k], NULL, NULL,
+    "line%3i, age %4i, size=%luMB\n", k, cache->used[k], removed / 1024lu / 1024lu);
 
   dt_free_align(cache->data[k]);
   cache->allmem -= removed;
@@ -426,8 +428,8 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   if((cache->memlimit == 0) || !(pipe->type & DT_DEV_PIXELPIPE_FULL))
   {
-    dt_print(DT_DEBUG_DEV, "[pixelpipe_process] %s using device %d. Cache: used=%luMB\n",
-    dt_dev_pixelpipe_type_to_str(pipe->type), pipe->devid, cache->allmem / 1024lu / 1024lu);
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_checkmem", pipe, "", NULL, NULL, 
+     "using device %d. Cache: used=%luMB\n", pipe->devid, cache->allmem / 1024lu / 1024lu);
     return;
   }
   size_t freed = 0;
@@ -440,7 +442,7 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
   while((cache->memlimit < cache->allmem * 2) && (oldest >= 0))
   {
     low_grp += 1;
-    freed += _free_cacheline(cache, oldest, pipe->type);
+    freed += _free_cacheline(cache, oldest, pipe);
     oldest = _get_oldest_used_cacheline(cache, old_limit, 1);
   }
 
@@ -452,23 +454,21 @@ void dt_dev_pixelpipe_cache_checkmem(struct dt_dev_pixelpipe_t *pipe)
       if((cache->size[k] != 0) && (cache->used[k] == oldest))
       {
         high_grp += 1;
-        freed += _free_cacheline(cache, k, pipe->type);   
+        freed += _free_cacheline(cache, k, pipe);
       }
     }
     oldest -= 1;
   }
-  dt_print(DT_DEBUG_DEV, "[pixelpipe_process] %s using device %d. Cache: freed=%luMB (%i/%i), used=%luMB, limit=%luMB\n",
-    dt_dev_pixelpipe_type_to_str(pipe->type), pipe->devid, freed / 1024lu / 1024lu, low_grp, high_grp,
-    cache->allmem / 1024lu / 1024lu, cache->memlimit / 1024lu / 1024lu);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe_cache_checkmem", pipe, "", NULL, NULL,
+    "using device %d. Cache: freed=%luMB (%i/%i), used=%luMB, limit=%luMB\n",
+    pipe->devid, freed / 1024lu / 1024lu, low_grp, high_grp, cache->allmem / 1024lu / 1024lu, cache->memlimit / 1024lu / 1024lu);
 }
 
 void dt_dev_pixelpipe_cache_report(struct dt_dev_pixelpipe_t *pipe)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
-  dt_print(DT_DEBUG_DEV, "[pixelpipe_process] %s done. used=%luMB, limit=%luMB, hitrate=%.2f\n",
-    dt_dev_pixelpipe_type_to_str(pipe->type),
-    cache->allmem / 1024lu / 1024lu, cache->memlimit / 1024lu / 1024lu, 
-    (cache->queries - cache->misses) / (float)cache->queries);
+  dt_print_pipe(DT_DEBUG_PIPE, "cache report", pipe, "", NULL, NULL, "used=%luMB, limit=%luMB, hitrate=%.2f\n",
+    cache->allmem / 1024lu / 1024lu, cache->memlimit / 1024lu / 1024lu, (cache->queries - cache->misses) / (float)cache->queries);
 }
 
 #undef VERY_OLD_CACHE_WEIGHT
