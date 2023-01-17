@@ -3372,7 +3372,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
       }
 
       gchar *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
-      dt_action_widget_toast(bhw->module, widget, text);
+      dt_action_widget_toast(bhw->module, widget, "%s", text);
       g_free(text);
 
       break;
