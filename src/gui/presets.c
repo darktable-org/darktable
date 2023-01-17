@@ -202,7 +202,9 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
 
     // we verify eventual name collisions
     const gchar *name = gtk_entry_get_text(g->name);
-    if(((g->old_id >= 0) && (strcmp(g->original_name, name) != 0)) || (g->old_id < 0))
+    if(((g->old_id >= 0)
+        && (strcmp(g->original_name, name) != 0))
+       || (g->old_id < 0))
     {
       if(name == NULL || *name == '\0' || strcmp(_("new preset"), name) == 0)
       {
@@ -221,8 +223,8 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
         return;
       }
 
-      // editing existing preset with different name or store new preset -> check for a preset with the same
-      // name:
+      // editing existing preset with different name or store new
+      // preset -> check for a preset with the same name:
       // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
@@ -858,6 +860,9 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
     {
       memcpy(module->params, op_params, op_length);
       module->enabled = enabled;
+      // if module name has not been hand edited, use preset name as module label
+      if(!module->multi_name_hand_edited)
+        g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
     }
     if(blendop_params && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))

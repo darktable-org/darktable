@@ -808,12 +808,14 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   // *(float *)h->params, *(((float *)h->params)+1));
   sqlite3_finalize(stmt);
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.history"
-                              " SET operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
-                              "     blendop_params = ?7, blendop_version = ?8, multi_priority = ?9, multi_name = ?10"
-                              " WHERE imgid = ?5 AND num = ?6",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "UPDATE main.history"
+     " SET operation = ?1, op_params = ?2, module = ?3, enabled = ?4, "
+     "     blendop_params = ?7, blendop_version = ?8, multi_priority = ?9,"
+     "     multi_name = ?10, multi_name_hand_edited = ?11"
+     " WHERE imgid = ?5 AND num = ?6",
+     -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, h->module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, h->params, h->module->params_size, SQLITE_TRANSIENT);
@@ -825,6 +827,7 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, dt_develop_blend_version());
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, h->multi_priority);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, h->multi_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, h->multi_name_hand_edited);
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -929,6 +932,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     hist->params = malloc(module->params_size);
     hist->iop_order = module->iop_order;
     hist->multi_priority = module->multi_priority;
+    hist->multi_name_hand_edited = module->multi_name_hand_edited;
     g_strlcpy(hist->multi_name, module->multi_name, sizeof(hist->multi_name));
     /* allocate and set hist blend_params */
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
@@ -959,6 +963,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
 
     hist->iop_order = module->iop_order;
     hist->multi_priority = module->multi_priority;
+    hist->multi_name_hand_edited = module->multi_name_hand_edited;
     memcpy(hist->multi_name, module->multi_name, sizeof(module->multi_name));
     hist->enabled = module->enabled;
 
@@ -1220,6 +1225,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
     hist->module->enabled = hist->enabled;
     g_strlcpy(hist->module->multi_name, hist->multi_name, sizeof(hist->module->multi_name));
     if(hist->forms) forms = hist->forms;
+    hist->module->multi_name_hand_edited = hist->multi_name_hand_edited;
 
     history = g_list_next(history);
   }
@@ -1398,7 +1404,7 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
-    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '')",
+    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '', 0)",
     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
@@ -1425,8 +1431,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean is_raw = dt_image_is_raw(image);
   const gboolean is_modern_chroma = dt_is_scene_referred();
 
-  // flag was already set? only apply presets once in the lifetime of a history stack.
-  // (the flag will be cleared when removing it).
+  // flag was already set? only apply presets once in the lifetime of
+  // a history stack.  (the flag will be cleared when removing it).
   if(!run || image->id <= 0)
   {
     // Next section is to recover old edits where all modules with
@@ -1464,14 +1470,15 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
           // raw file we need to add one now with the default legacy
           // parameters. And we want to do this only for old edits.
           //
-          // For new edits the temperature will be added back depending on the chromatic
-          // adaptation the standard way.
+          // For new edits the temperature will be added back
+          // depending on the chromatic adaptation the standard way.
 
           if(!strcmp(module->op, "temperature")
              && (image->change_timestamp == -1))
           {
-            // it is important to recover temperature in this case (modern chroma and
-            // not module present as we need to have the pre 3.0 default parameters used.
+            // it is important to recover temperature in this case
+            // (modern chroma and not module present as we need to
+            // have the pre 3.0 default parameters used.
 
             dt_conf_set_string("plugins/darkroom/workflow", "display-referred (legacy)");
             dt_iop_reload_defaults(module);
@@ -1526,16 +1533,20 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     }
   }
 
-  // select all presets from one of the following table and add them into memory.history. Note that
-  // this is appended to possibly already present default modules.
+  // select all presets from one of the following table and add them
+  // into memory.history. Note that this is appended to possibly
+  // already present default modules.
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
   // clang-format off
+
   snprintf(query, sizeof(query),
-           "INSERT INTO memory.history"
+           "INSERT OR REPLACE INTO memory.history"
            " SELECT ?1, 0, op_version, operation, op_params,"
-           "       enabled, blendop_params, blendop_version, multi_priority, multi_name"
+           "       enabled, blendop_params, blendop_version,"
+           "       ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1,"
+           "       COALESCE(NULLIF(multi_name,''), NULLIF(name,'')), 0"
            " FROM %s"
            " WHERE ( (autoapply=1"
            "          AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
@@ -1619,27 +1630,35 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
+
+    GList *iop_list = NULL;
+
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const char *params = (char *)sqlite3_column_blob(stmt, 0);
       const int32_t params_len = sqlite3_column_bytes(stmt, 0);
-      GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
-      dt_ioppr_write_iop_order_list(iop_list, imgid);
-      g_list_free_full(iop_list, free);
-      dt_ioppr_set_default_iop_order(dev, imgid);
+      iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
     }
     else
     {
       // we have no auto-apply order, so apply iop order, depending of the workflow
-      GList *iop_list;
       if(is_scene_referred || is_workflow_none)
         iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
       else
         iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
-      dt_ioppr_write_iop_order_list(iop_list, imgid);
-      g_list_free_full(iop_list, free);
-      dt_ioppr_set_default_iop_order(dev, imgid);
     }
+
+    // add multi-instance entries that could have been added if more
+    // than one auto-applied preset was found for a single iop.
+
+    GList *mi_list = dt_ioppr_get_multiple_instances_iop_order_list(imgid, TRUE);
+    GList *final_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi_list);
+
+    dt_ioppr_write_iop_order_list(final_list, imgid);
+    g_list_free_full(mi_list, free);
+    g_list_free_full(final_list, free);
+    dt_ioppr_set_default_iop_order(dev, imgid);
+
     sqlite3_finalize(stmt);
   }
 
@@ -1774,7 +1793,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
             "INSERT INTO main.history"
             " SELECT imgid, num, module, operation, op_params, enabled, "
             "        blendop_params, blendop_version, multi_priority,"
-            "        multi_name"
+            "        multi_name, multi_name_hand_edited"
             " FROM memory.history",
             -1, &stmt, NULL);
           // clang-format on
@@ -1891,7 +1910,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT imgid, num, module, operation,"
                                 "       op_params, enabled, blendop_params,"
-                                "       blendop_version, multi_priority, multi_name"
+                                "       blendop_version, multi_priority, multi_name,"
+                                "       multi_name_hand_edited"
                                 " FROM main.history"
                                 " WHERE imgid = ?1"
                                 " ORDER BY num",
@@ -1904,7 +1924,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT id, num, module, operation,"
                                 "       op_params, enabled, blendop_params,"
-                                "       blendop_version, multi_priority, multi_name"
+                                "       blendop_version, multi_priority, multi_name,"
+                                "       multi_name_hand_edited"
                                 " FROM memory.history_snapshot"
                                 " WHERE id = ?1"
                                 " ORDER BY num",
@@ -1929,6 +1950,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     const int blendop_version = sqlite3_column_int(stmt, 7);
     const int multi_priority = sqlite3_column_int(stmt, 8);
     const char *multi_name = (const char *)sqlite3_column_text(stmt, 9);
+    const int multi_name_hand_edited = sqlite3_column_int(stmt, 10);
 
     const int param_length = sqlite3_column_bytes(stmt, 4);
     const int bl_length = sqlite3_column_bytes(stmt, 6);
@@ -1963,6 +1985,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
             g_strlcpy(module->multi_name, multi_name, sizeof(module->multi_name));
           else
             memset(module->multi_name, 0, sizeof(module->multi_name));
+          module->multi_name_hand_edited = multi_name_hand_edited;
           break;
         }
         else if(multi_priority > 0)
@@ -1982,6 +2005,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
         new_module->iop_order = iop_order;
 
         g_strlcpy(new_module->multi_name, multi_name, sizeof(new_module->multi_name));
+        new_module->multi_name_hand_edited = multi_name_hand_edited;
 
         dev->iop = g_list_append(dev->iop, new_module);
 
@@ -2026,6 +2050,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     hist->num = num;
     hist->iop_order = iop_order;
     hist->multi_priority = multi_priority;
+    hist->multi_name_hand_edited = multi_name_hand_edited;
     g_strlcpy(hist->op_name, hist->module->op, sizeof(hist->op_name));
     g_strlcpy(hist->multi_name, multi_name, sizeof(hist->multi_name));
     hist->params = malloc(hist->module->params_size);
@@ -2545,6 +2570,8 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
 
   // the multi instance name
   g_strlcpy(module->multi_name, mname, sizeof(module->multi_name));
+  module->multi_name_hand_edited = 0;
+
   // we insert this module into dev->iop
   base->dev->iop = g_list_insert_sorted(base->dev->iop, module, dt_sort_iop_by_order);
 

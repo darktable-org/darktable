@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2020 darktable developers.
+    Copyright (C) 2018-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -178,6 +178,8 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
 GList *dt_ioppr_get_iop_order_link(GList *iop_order_list, const char *op_name, const int multi_priority);
 /** For a non custom order, returns TRUE if iop_order_list has multiple instances grouped together */
 gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list);
+/** returns a list of dt_iop_order_entry_t and updates *_version */
+GList *dt_ioppr_get_multiple_instances_iop_order_list(int32_t imgid, gboolean memory);
 
 /** returns the iop_order from iop_order_list list with operation = op_name */
 int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority);
@@ -253,4 +255,3 @@ void dt_ioppr_print_iop_order(GList *iop_order_list, const char *msg);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2021 darktable developers.
+    Copyright (C) 2018-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -661,6 +661,49 @@ gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list)
     l = next;
   }
   return FALSE;
+}
+
+GList *dt_ioppr_get_multiple_instances_iop_order_list(int32_t imgid, gboolean memory)
+{
+  GList *res = NULL;
+  sqlite3_stmt *stmt = NULL;
+
+  GList *iop_order = dt_ioppr_get_iop_order_list(imgid, TRUE);
+  if(memory)
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(operation) c, operation"
+                                " FROM memory.history"
+                                " WHERE imgid=?1 GROUP BY operation HAVING c > 1", -1,
+                                &stmt, NULL);
+  else
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(operation) c, operation"
+                                " FROM history"
+                                " WHERE imgid=?1 GROUP BY operation HAVING c > 1", -1,
+                                &stmt, NULL);
+
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int num = sqlite3_column_int(stmt, 0);
+    const char *op = (char *)sqlite3_column_text(stmt, 1);
+
+    for(int k=0; k<num; k++)
+    {
+      dt_iop_order_entry_t *e = malloc(sizeof(dt_iop_order_entry_t));
+      g_strlcpy(e->operation, op, sizeof(e->operation));
+      e->instance = k;
+      e->o.iop_order = dt_ioppr_get_iop_order(iop_order, op, 0);
+
+      res = g_list_append(res, e);
+    }
+  }
+
+  g_list_free(iop_order);
+  sqlite3_finalize(stmt);
+
+  return res;
 }
 
 gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind, GList *iop_order_list, const int32_t imgid)

@@ -366,6 +366,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
       {
         module->instance = mod_src->instance;
         module->multi_priority = mod_src->multi_priority;
+        module->multi_name_hand_edited = mod_src->multi_name_hand_edited;
         module->iop_order = dt_ioppr_get_iop_order(dev_dest->iop_order_list, module->op, module->multi_priority);
       }
     }
@@ -649,9 +650,9 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
     gchar *query = g_strdup_printf
       ("INSERT INTO main.history "
        "            (imgid,num,module,operation,op_params,enabled,blendop_params, "
-       "             blendop_version,multi_priority,multi_name)"
+       "             blendop_version,multi_priority,multi_name,multi_name_hand_edited)"
        " SELECT ?1,num,module,operation,op_params,enabled,blendop_params, "
-       "        blendop_version,multi_priority,multi_name "
+       "        blendop_version,multi_priority,multi_name,multi_name_hand_edited "
        " FROM main.history"
        " WHERE imgid=?2"
        "       AND operation NOT IN (%s)"
@@ -986,7 +987,9 @@ void dt_history_compress_on_image(const int32_t imgid)
   // get history_end for image
   int my_history_end = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "SELECT history_end FROM main.images WHERE id=?1", -1, &stmt, NULL);
+    "SELECT history_end"
+    " FROM main.images"
+    " WHERE id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1010,7 +1013,9 @@ void dt_history_compress_on_image(const int32_t imgid)
   // because only if this is **not** true history nums and history_end must be increased
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-    "SELECT COUNT(*) FROM main.history WHERE imgid = ?1 AND operation = ?2 AND num = 0", -1, &stmt, NULL);
+    "SELECT COUNT(*)"
+    " FROM main.history"
+    " WHERE imgid = ?1 AND operation = ?2 AND num = 0", -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
