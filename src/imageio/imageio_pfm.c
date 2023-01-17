@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include "config.h"
 #endif
 #include "common/darktable.h"
-#include "common/imageio_pfm.h"
+#include "imageio/imageio_pfm.h"
 
 #include <assert.h>
 #include <errno.h>

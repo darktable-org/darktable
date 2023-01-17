@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,10 +34,10 @@ extern "C" {
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/file_location.h"
-#include "common/imageio_rawspeed.h"
-#include "imageio.h"
 #include "common/tags.h"
 #include "develop/imageop.h"
+#include "imageio/imageio.h"
+#include "imageio/imageio_rawspeed.h"
 #include <stdint.h>
 }
 

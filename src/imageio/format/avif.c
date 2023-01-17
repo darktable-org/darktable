@@ -1,6 +1,6 @@
 /*
  * This file is part of darktable,
- * Copyright (C) 2019-2021 darktable developers.
+ * Copyright (C) 2019-2023 darktable developers.
  *
  *  Copyright (c) 2019      Andreas Schneider
  *
@@ -30,9 +30,9 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
+#include "imageio/imageio.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 
 #include <avif/avif.h>

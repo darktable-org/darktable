@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2009-2022 darktable developers.
+   Copyright (C) 2009-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -61,9 +61,7 @@ extern "C" {
 #include "common/debug.h"
 #include "common/dng_opcode.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
 #include "common/exif.h"
-#include "common/imageio_jpeg.h"
 #include "common/metadata.h"
 #include "common/ratings.h"
 #include "common/tags.h"
@@ -76,6 +74,8 @@ extern "C" {
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "develop/masks.h"
+#include "imageio/imageio.h"
+#include "imageio/imageio_jpeg.h"
 }
 
 #define DT_XMP_EXIF_VERSION 5

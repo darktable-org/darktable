@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,26 +18,23 @@
 
 #include <inttypes.h>
 
-// We want to include the actual implementation from qoi.h
-#define QOI_IMPLEMENTATION
+#include <webp/decode.h>
+#include <webp/mux.h>
 
-// It makes no sense to include unused features
-#define QOI_NO_STDIO
+#include "common/image.h"
+#include "imageio/imageio.h"
 
-// This header file contains implementation of the QOI format
-#include "common/qoi.h"
-
-#include "develop/imageop.h"
-
-#include "image.h"
-#include "imageio.h"
-
-dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
+  int w, h;
+  WebPMux *mux;
+  WebPData wp_data;
+  WebPData icc_profile;
+
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    fprintf(stderr,"[qoi_open] cannot open file for read: %s\n", filename);
+    fprintf(stderr,"[webp_open] cannot open file for read: %s\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -51,24 +48,22 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, d
   {
     fclose(f);
     g_free(read_buffer);
-    fprintf(stderr,"[qoi_open] failed to read %zu bytes from %s\n", filesize, filename);
+    fprintf(stderr,"[webp_open] failed to read %zu bytes from %s\n", filesize, filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
   fclose(f);
 
-// void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
-  qoi_desc desc;
-  uint8_t *int_RGBA_buf = qoi_decode(read_buffer, (int)filesize, &desc, 4);
-
-  if(!int_RGBA_buf)
+  // WebPGetInfo should tell us the image dimensions needed for darktable image buffer allocation
+  if(!WebPGetInfo(read_buffer, filesize, &w, &h))
   {
+    // If we couldn't get the webp metadata, then the file we're trying to read is most likely in
+    // a different format (darktable just trying different loaders until it finds the right one).
+    // We just have to return without complaining.
     g_free(read_buffer);
-    fprintf(stderr,"[qoi_open] failed to decode file: %s\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
-
-  img->width = desc.width;
-  img->height = desc.height;
+  img->width = w;
+  img->height = h;
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
 
@@ -76,8 +71,16 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, d
   if(!mipbuf)
   {
     g_free(read_buffer);
-    fprintf(stderr, "[qoi_open] could not alloc full buffer for image: %s\n", img->filename);
+    fprintf(stderr, "[webp_open] could not alloc full buffer for image: %s\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
+  }
+
+  uint8_t *int_RGBA_buf = WebPDecodeRGBA(read_buffer, filesize, &w, &h);
+  if(!int_RGBA_buf)
+  {
+    g_free(read_buffer);
+    fprintf(stderr,"[webp_open] failed to decode file: %s\n", filename);
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   uint8_t intval;
@@ -86,22 +89,32 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, d
 #ifdef _OPENMP
 #pragma omp parallel for private(intval, floatval)
 #endif
-  for(int i=0; i < desc.width * desc.height * 4; i++)
+  for(int i=0; i < w*h*4; i++)
   {
     intval = *(int_RGBA_buf+i);
     floatval = intval / 255.f;
     *(mipbuf+i) = floatval;
   }
 
-  img->buf_dsc.cst = IOP_CS_RGB;
-  img->buf_dsc.filters = 0u;
-  img->flags &= ~DT_IMAGE_RAW;
-  img->flags &= ~DT_IMAGE_S_RAW;
-  img->flags &= ~DT_IMAGE_HDR;
-  img->flags |= DT_IMAGE_LDR;
-  img->loader = LOADER_QOI;
+  WebPFree(int_RGBA_buf);
 
-  QOI_FREE(int_RGBA_buf);
+  wp_data.bytes = (uint8_t *)read_buffer;
+  wp_data.size = filesize;
+  mux = WebPMuxCreate(&wp_data, 0); // 0 = data will NOT be copied to the mux object
+
+  if(mux)
+  {
+    WebPMuxGetChunk(mux, "ICCP", &icc_profile);
+    if(icc_profile.size)
+    {
+      img->profile_size = icc_profile.size;
+      img->profile = (uint8_t *)g_malloc0(icc_profile.size);
+      memcpy(img->profile, icc_profile.bytes, icc_profile.size);
+    }
+    WebPMuxDelete(mux);
+  }
+
+  g_free(read_buffer);
 
   return DT_IMAGEIO_OK;
 }

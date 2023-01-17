@@ -405,7 +405,7 @@ static void detach_lua_widgets(GtkWidget *extra_lua_widgets)
 }
 #endif
 
-// maybe this should be (partly) in common/imageio.[c|h]?
+// maybe this should be (partly) in imageio/imageio.[c|h]?
 static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
 {
   GdkPixbuf *pixbuf = NULL;
