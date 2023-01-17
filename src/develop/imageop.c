@@ -29,6 +29,7 @@
 #include "common/iop_group.h"
 #include "common/module.h"
 #include "common/opencl.h"
+#include "common/presets.h"
 #include "common/usermanual_url.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -355,6 +356,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_stats.bins_count = 0;
   module->histogram_stats.pixels = 0;
   module->multi_priority = 0;
+  module->multi_name_hand_edited = 0;
   module->iop_order = 0;
   module->cache_next_important = FALSE;
   for(int k = 0; k < 3; k++)
@@ -812,7 +814,9 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
 {
   int ended = 0;
 
-  if(event->type == GDK_FOCUS_CHANGE || event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
+  if(event->type == GDK_FOCUS_CHANGE
+     || event->keyval == GDK_KEY_Return
+     || event->keyval == GDK_KEY_KP_Enter)
   {
     if(gtk_entry_get_text_length(GTK_ENTRY(entry)) > 0)
     {
@@ -820,13 +824,18 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
 
        const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
 
-      // restore saved 1st character of instance name (without it the same name wouls still produce unnecessary copy + add history item)
+      // restore saved 1st character of instance name (without it the
+      // same name wouls still produce unnecessary copy + add history
+      // item)
       module->multi_name[0] = module->multi_name[sizeof(module->multi_name) - 1];
       module->multi_name[sizeof(module->multi_name) - 1] = 0;
 
       if(g_strcmp0(module->multi_name, name) != 0)
       {
         g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+        // this has been hand edited, the name should not be changed when
+        // applying a preset or a style.
+        module->multi_name_hand_edited = TRUE;
         dt_dev_add_history_item(module->dev, module, TRUE);
       }
     }
@@ -834,8 +843,14 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
     {
       // clear out multi-name (set 1st char to 0)
       module->multi_name[0] = 0;
+      module->multi_name_hand_edited = FALSE;
       dt_dev_add_history_item(module->dev, module, TRUE);
     }
+
+    // make sure we write history & xmp to ensure that the new module name
+    // gets recorded into the XMP and won't be lost in case of crash.
+    dt_dev_write_history(darktable.develop);
+    dt_image_synch_xmp(darktable.develop->image_storage.id);
 
     ended = 1;
   }
@@ -1196,7 +1211,9 @@ static void _init_presets(dt_iop_module_so_t *module_so)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT name, op_version, op_params, blendop_version, blendop_params FROM data.presets WHERE operation = ?1",
+      "SELECT name, op_version, op_params, blendop_version, blendop_params"
+      " FROM data.presets"
+      " WHERE operation = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_so->op, -1, SQLITE_TRANSIENT);
 
@@ -1217,9 +1234,12 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       // the module version from that.
 
       sqlite3_stmt *stmt2;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT module FROM main.history WHERE operation = ?1 AND op_params = ?2", -1,
-                                  &stmt2, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "SELECT module"
+         " FROM main.history"
+         " WHERE operation = ?1 AND op_params = ?2", -1,
+         &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, module_so->op, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, old_params, old_params_size, SQLITE_TRANSIENT);
 
@@ -1244,8 +1264,11 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       fprintf(stderr, "[imageop_init_presets] Found version %d for '%s' preset '%s'\n", old_params_version,
               module_so->op, name);
 
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE data.presets SET op_version=?1 WHERE operation=?2 AND name=?3", -1,
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "UPDATE data.presets"
+         " SET op_version=?1"
+         " WHERE operation=?2 AND name=?3", -1,
                                   &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, old_params_version);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 2, module_so->op, -1, SQLITE_TRANSIENT);
@@ -1255,7 +1278,8 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       sqlite3_finalize(stmt2);
     }
 
-    if(module_version > old_params_version && module_so->legacy_params != NULL)
+    if(module_version > old_params_version
+       && module_so->legacy_params != NULL)
     {
       // we need a dt_iop_module_t for legacy_params()
       dt_iop_module_t *module;
@@ -1265,17 +1289,6 @@ static void _init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-/*
-      module->init(module);
-      if(module->params_size == 0)
-      {
-        dt_iop_cleanup_module(module);
-        free(module);
-        continue;
-      }
-      // we call reload_defaults() in case the module defines it
-      if(module->reload_defaults) module->reload_defaults(module); // why not call dt_iop_reload_defaults? (if needed at all)
-*/
 
       const int32_t new_params_size = module->params_size;
       void *new_params = calloc(1, new_params_size);
@@ -1296,9 +1309,10 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       // and write the new params back to the database
       sqlite3_stmt *stmt2;
       // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE data.presets "
-                                                                 "SET op_version=?1, op_params=?2 "
-                                                                 "WHERE operation=?3 AND name=?4",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE data.presets"
+                                  " SET op_version=?1, op_params=?2"
+                                  " WHERE operation=?3 AND name=?4",
                                   -1, &stmt2, NULL);
       // clang-format on
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, module->version());
@@ -1360,9 +1374,10 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       // and write the new blend params back to the database
       sqlite3_stmt *stmt2;
       // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE data.presets "
-                                                                 "SET blendop_version=?1, blendop_params=?2 "
-                                                                 "WHERE operation=?3 AND name=?4",
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE data.presets"
+                                  " SET blendop_version=?1, blendop_params=?2"
+                                  " WHERE operation=?3 AND name=?4",
                                   -1, &stmt2, NULL);
       // clang-format on
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dt_develop_blend_version());
@@ -1387,7 +1402,10 @@ static void _init_presets_actions(dt_iop_module_so_t *module)
   /** load shortcuts for presets **/
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name FROM data.presets WHERE operation=?1 ORDER BY writeprotect DESC, rowid",
+                              "SELECT name"
+                              " FROM data.presets"
+                              " WHERE operation=?1"
+                              " ORDER BY writeprotect DESC, rowid",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1415,7 +1433,8 @@ static void _init_module_so(void *m)
     // create a gui and have the widgets register their accelerators
     dt_iop_module_t *module_instance = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
 
-    if(module->gui_init && !dt_iop_load_module_by_so(module_instance, module, NULL))
+    if(module->gui_init
+       && !dt_iop_load_module_by_so(module_instance, module, NULL))
     {
       darktable.control->accel_initialising = TRUE;
       dt_iop_gui_init(module_instance);
@@ -1505,6 +1524,10 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
 
 void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
+  if(module->label_recompute_handle)
+    g_source_remove(module->label_recompute_handle);
+  module->label_recompute_handle = 0;
+
   module->cleanup(module);
 
   free(module->blend_params);
@@ -1698,10 +1721,41 @@ gboolean _iop_validate_params(dt_introspection_field_t *field, gpointer params, 
   return all_ok;
 }
 
+static gboolean _iop_update_label(gpointer data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+
+  char *preset_name =
+    dt_presets_get_name(module->op,
+                        module->params, module->params_size,
+                        module->blend_params, sizeof(dt_develop_blend_params_t));
+
+  // if we have a preset-name, use it. otherwise set the label to the multi-priority
+  // except for 0 where the multi-name is cleared.
+
+  if(preset_name)
+    snprintf(module->multi_name, sizeof(module->multi_name), "%s", preset_name);
+  else if(module->multi_priority != 0)
+    snprintf(module->multi_name, sizeof(module->multi_name), "%d", module->multi_priority);
+  else
+    g_strlcpy(module->multi_name, "", sizeof(module->multi_name));
+
+  g_free(preset_name);
+
+  dt_iop_gui_update_header(module);
+
+  module->label_recompute_handle = 0;
+  return G_SOURCE_REMOVE;
+}
+
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
 {
+  const gboolean module_is_enabled = module->enabled;
+  const gboolean module_params_changed
+    = memcmp(module->params, params, module->params_size) == 0;
+
   // 1. commit params
 
   memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
@@ -1722,6 +1776,19 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     _iop_validate_params(module->so->get_introspection()->field, params, TRUE);
 
   module->commit_params(module, params, pipe, piece);
+
+  // adjust the label to match presets if possible or otherwise the default
+  // multi_name for this module.
+
+  if(!dt_iop_is_hidden(module)
+     && module_is_enabled
+     && module_params_changed
+     && !module->multi_name_hand_edited)
+  {
+    if(module->label_recompute_handle)
+      g_source_remove(module->label_recompute_handle);
+    module->label_recompute_handle = g_timeout_add(500, _iop_update_label, module);
+  }
 
   // 2. compute the hash only if piece is enabled
 
@@ -1813,9 +1880,11 @@ static void _gui_reset_callback(GtkButton *button, GdkEventButton *event, dt_iop
   const gboolean disabled = !module->default_enabled && module->hide_enable_button;
   if(disabled) return;
 
-  //Ctrl is used to apply any auto-presets to the current module
-  //If Ctrl was not pressed, or no auto-presets were applied, reset the module parameters
-  if(!(event && dt_modifier_is(event->state, GDK_CONTROL_MASK)) || !dt_gui_presets_autoapply_for_module(module))
+  // Ctrl is used to apply any auto-presets to the current module
+  // If Ctrl was not pressed, or no auto-presets were applied, reset the module parameters
+  if(!(event
+       && dt_modifier_is(event->state, GDK_CONTROL_MASK))
+     || !dt_gui_presets_autoapply_for_module(module))
   {
     // if a drawn mask is set, remove it from the list
     if(module->blend_params->mask_id > 0)

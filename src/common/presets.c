@@ -317,9 +317,40 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
   }
   return TRUE;
 }
+
+char *dt_presets_get_name(const char *module_name,
+                          const void *params,
+                          const uint32_t param_size,
+                          const void *blend_params,
+                          const uint32_t blend_params_size)
+{
+  sqlite3_stmt *stmt;
+
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name"
+                              " FROM data.presets"
+                              " WHERE operation = ?1"
+                              "   AND op_params = ?2"
+                              "   AND blendop_params = ?3",
+                              -1, &stmt, NULL);
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_name, strlen(module_name), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, params, param_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, blend_params, blend_params_size, SQLITE_TRANSIENT);
+
+  char *result = NULL;
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    result = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
+
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

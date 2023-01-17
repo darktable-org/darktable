@@ -64,7 +64,7 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
     // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO memory.undo_history"
-                                "  VALUES (?1, ?2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)"
+                                "  VALUES (?1, ?2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0)"
                                 , -1, &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
@@ -79,8 +79,9 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO memory.undo_history"
-                              "  SELECT ?1, imgid, num, module, operation, op_params, enabled, "
-                              "         blendop_params, blendop_version, multi_priority, multi_name "
+                              "  SELECT ?1, imgid, num, module, operation, op_params,"
+                              "         enabled, blendop_params, blendop_version,"
+                              "         multi_priority, multi_name, multi_name_hand_edited "
                               "  FROM main.history"
                               "  WHERE imgid=?2", -1, &stmt, NULL);
   // clang-format on
@@ -157,7 +158,8 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.history"
                               "  SELECT imgid, num, module, operation, op_params, enabled, "
-                              "         blendop_params, blendop_version, multi_priority, multi_name "
+                              "         blendop_params, blendop_version, multi_priority,"
+                              "         multi_name, multi_name_hand_edited "
                               "  FROM memory.undo_history"
                               "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
   // clang-format on
@@ -281,4 +283,3 @@ void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_un
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

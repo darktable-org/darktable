@@ -41,6 +41,7 @@ typedef struct dt_dev_history_item_t
   int iop_order;
   int multi_priority;
   char multi_name[128];
+  gboolean multi_name_hand_edited;
   GList *forms; // snapshot of dt_develop_t->forms
   int num; // num of history on database
   int32_t focus_hash;             // used to determine whether or not to start a new item or to merge down

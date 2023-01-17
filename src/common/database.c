@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 37
+#define CURRENT_DATABASE_VERSION_LIBRARY 38
 #define CURRENT_DATABASE_VERSION_DATA     9
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2158,6 +2158,14 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "[init] can't create metadata_index_value\n");
     new_version = 37;
   }
+  else if(version == 37)
+  {
+    TRY_EXEC("ALTER TABLE main.history ADD COLUMN multi_name_hand_edited INTEGER default 0",
+             "[init] can't add multi_name_hand_edited column\n");
+    TRY_EXEC("UPDATE main.history SET multi_name_hand_edited = 1 WHERE multi_name != ''",
+             "[init] can't set multi_name_hand_edited column\n");
+    new_version = 38;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2476,7 +2484,7 @@ static void _create_library_schema(dt_database_t *db)
       db->handle,
       "CREATE TABLE main.history (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), "
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), multi_name_hand_edited INTEGER, "
       "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_op_index ON history (imgid, operation)", NULL, NULL, NULL);
@@ -2597,20 +2605,20 @@ static void _create_memory_schema(dt_database_t *db)
   sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.history (imgid INTEGER, num INTEGER, module INTEGER, "
-      "operation VARCHAR(256) UNIQUE ON CONFLICT REPLACE, op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), multi_name_hand_edited INTEGER, CONSTRAINT opprio UNIQUE (operation, multi_priority))",
       NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.history_snapshot (id INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), multi_name_hand_edited INTEGER)",
       NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.undo_history (id INTEGER, imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), multi_name_hand_edited INTEGER)",
       NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
