@@ -699,26 +699,27 @@ static gboolean _preview_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
 
 GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
 {
-  char buf[1024];
   GtkWidget *ht = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *label = NULL;
 
   // name
-  snprintf(buf, sizeof(buf), "<b>%s</b>", g_markup_escape_text(name, -1));
+  gchar *esc_name = g_markup_printf_escaped("<b>%s</b>", name);
   label = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(label), buf);
+  gtk_label_set_markup(GTK_LABEL(label), esc_name);
   gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
+  g_free(esc_name);
 
   // description
   char *des = dt_styles_get_description(name);
 
   if(strlen(des)>0)
   {
-    snprintf(buf, sizeof(buf), "<b>%s</b>", g_markup_escape_text(des, -1));
+    gchar *esc_des = g_markup_printf_escaped("<b>%s</b>", des);
     label = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(label), buf);
+    gtk_label_set_markup(GTK_LABEL(label), esc_des);
     gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
+    g_free(esc_des);
   }
 
   gtk_box_pack_start(GTK_BOX(ht), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
@@ -739,6 +740,7 @@ GtkWidget *dt_gui_style_content_dialog(char *name, const int imgid)
       snprintf(mn, sizeof(mn), "(%d)", i->multi_priority);
     }
 
+    char buf[1024];
     snprintf(buf, sizeof(buf), "  %s %s %s",
              i->enabled ? "●" : "○",
              gettext(i->name),
