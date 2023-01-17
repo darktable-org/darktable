@@ -725,10 +725,11 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   dt_Lab_2_LCH(Lab, Lch);
 
   // Write report in GUI
+  gchar *str = g_strdup_printf(_("L : \t%.1f %%"), Lch[0]);
   ++darktable.gui->reset;
-  gtk_label_set_text(GTK_LABEL(g->Lch_origin),
-                     g_strdup_printf(_("L : \t%.1f %%"), Lch[0]));
+  gtk_label_set_text(GTK_LABEL(g->Lch_origin), str);
   --darktable.gui->reset;
+  g_free(str);
 
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
 

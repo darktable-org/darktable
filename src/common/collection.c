@@ -1225,18 +1225,22 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
   if(match_count == 6 || match_count == 7)
   {
     gchar *n1 = g_match_info_fetch(match_info, 2);
+    gchar *inv = g_match_info_fetch(match_info, 1);
 
-    if(strstr(g_match_info_fetch(match_info, 1), "1/") != NULL)
+    if(strstr(inv, "1/") != NULL)
       *number1 = g_strdup_printf("1.0/%s", n1);
     else
       *number1 = n1;
+    g_free(inv);
 
     gchar *n2 = g_match_info_fetch(match_info, 5);
+    inv = g_match_info_fetch(match_info, 4);
 
-    if(strstr(g_match_info_fetch(match_info, 4), "1/") != NULL)
+    if(strstr(inv, "1/") != NULL)
       *number2 = g_strdup_printf("1.0/%s", n2);
     else
       *number2 = n2;
+    g_free(inv);
 
     *operator= g_strdup("[]");
     g_match_info_free(match_info);
@@ -1256,11 +1260,13 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
     *operator= g_match_info_fetch(match_info, 1);
 
     gchar *n1 = g_match_info_fetch(match_info, 3);
+    gchar *inv = g_match_info_fetch(match_info, 2);
 
-    if(strstr(g_match_info_fetch(match_info, 2), "1/") != NULL)
+    if(strstr(inv, "1/") != NULL)
       *number1 = g_strdup_printf("1.0/%s", n1);
     else
       *number1 = n1;
+    g_free(inv);
 
     if(*operator && strcmp(*operator, "") == 0)
     {
