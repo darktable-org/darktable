@@ -1919,7 +1919,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   // we check for an important hint after processing the module as we want to track a runtime hint too.
   pipe->next_important_module = _check_module_next_important(pipe, module);
   if(pipe->next_important_module)
-    dt_vprint(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] module `%s' passing important hint to next module\n", dt_dev_pixelpipe_type_to_str(pipe->type), module ? module->so->op : NULL);
+    dt_print(DT_DEBUG_DEV | DT_DEBUG_VERBOSE, "[dev_pixelpipe] [%s] module `%s' passing important hint to next module\n", dt_dev_pixelpipe_type_to_str(pipe->type), module ? module->so->op : NULL);
 
   // warn on NaN or infinity
 #ifndef _DEBUG
@@ -2536,7 +2536,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
   }
 
   if(!valid) return NULL;
-  dt_vprint(DT_DEBUG_MASKS, "[dt_dev_distort_detail_mask] (%ix%i) for module %s\n", pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height, target_module->op);
+  dt_print(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE, "[dt_dev_distort_detail_mask] (%ix%i) for module %s\n", pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height, target_module->op);
 
   float *resmask = src;
   float *inmask  = src;
@@ -2555,7 +2555,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
                     && module->processed_roi_in.height == 0))
         {
           float *tmp = dt_alloc_align_float((size_t)module->processed_roi_out.width * module->processed_roi_out.height);
-          dt_vprint(DT_DEBUG_MASKS, "   %s %ix%i -> %ix%i\n", module->module->op, module->processed_roi_in.width, module->processed_roi_in.height, module->processed_roi_out.width, module->processed_roi_out.height);
+          dt_print(DT_DEBUG_MASKS | DT_DEBUG_VERBOSE, "   %s %ix%i -> %ix%i\n", module->module->op, module->processed_roi_in.width, module->processed_roi_in.height, module->processed_roi_out.width, module->processed_roi_out.height);
           module->module->distort_mask(module->module, module, inmask, tmp, &module->processed_roi_in, &module->processed_roi_out);
           resmask = tmp;
           if(inmask != src) dt_free_align(inmask);

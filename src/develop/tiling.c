@@ -529,7 +529,7 @@ static int _nm_fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_d
 
   int iter = _simplex(_nm_fitness, start, 4, epsilon, 1.0, maxiter, NULL, rest);
 
-  dt_vprint(DT_DEBUG_TILING, "[_nm_fit_output_to_input_roi] _simplex: %d, delta: %d, epsilon: %f\n", iter, delta, epsilon);
+  dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[_nm_fit_output_to_input_roi] _simplex: %d, delta: %d, epsilon: %f\n", iter, delta, epsilon);
 
   oroi->x = start[0] * piece->iwidth;
   oroi->y = start[1] * piece->iheight;
@@ -654,7 +654,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
       width = floorf(width * sqrtf(scale));
       height = floorf(height * sqrtf(scale));
     }
-    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_ptp] buffer exceeds singlebuffer, corrected to %dx%d\n",
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[default_process_tiling_ptp] buffer exceeds singlebuffer, corrected to %dx%d\n",
             width, height);
   }
 
@@ -662,7 +662,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   if(3 * tiling.overlap > width || 3 * tiling.overlap > height)
   {
     width = height = floorf(sqrtf((float)width * height));
-    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_roi] use squares because of overlap, corrected to %dx%d\n",
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[default_process_tiling_roi] use squares because of overlap, corrected to %dx%d\n",
             width, height);
   }
 
@@ -926,7 +926,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       width = _align_down((int)floorf(width * sqrtf(scale)), xyalign);
       height = _align_down((int)floorf(height * sqrtf(scale)), xyalign);
     }
-    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_roi] [%s] buffer exceeds singlebuffer, corrected to %dx%d\n",
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[default_process_tiling_roi] [%s] buffer exceeds singlebuffer, corrected to %dx%d\n",
             dt_dev_pixelpipe_type_to_str(piece->pipe->type), width, height);
   }
 
@@ -934,7 +934,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   if(3 * tiling.overlap > width || 3 * tiling.overlap > height)
   {
     width = height = _align_down((int)floorf(sqrtf((float)width * height)), xyalign);
-    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_roi] [%s] use squares because of overlap, corrected to %dx%d\n",
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[default_process_tiling_roi] [%s] use squares because of overlap, corrected to %dx%d\n",
             dt_dev_pixelpipe_type_to_str(piece->pipe->type), width, height);
   }
 
@@ -1362,7 +1362,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       width = floorf(width * sqrtf(scale));
       height = floorf(height * sqrtf(scale));
     }
-    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_cl_ptp] [%s] buffer exceeds singlebuffer, corrected to %dx%d\n",
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[default_process_tiling_cl_ptp] [%s] buffer exceeds singlebuffer, corrected to %dx%d\n",
             dt_dev_pixelpipe_type_to_str(piece->pipe->type), width, height);
   }
 
@@ -1370,7 +1370,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   if(3 * tiling.overlap > width || 3 * tiling.overlap > height)
   {
     width = height = floorf(sqrtf((float)width * height));
-    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_cl_ptp] [%s] use squares because of overlap, corrected to %dx%d\n",
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[default_process_tiling_cl_ptp] [%s] use squares because of overlap, corrected to %dx%d\n",
             dt_dev_pixelpipe_type_to_str(piece->pipe->type), width, height);
   }
 
@@ -1739,7 +1739,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       width = _align_down((int)floorf(width * sqrtf(scale)), xyalign);
       height = _align_down((int)floorf(height * sqrtf(scale)), xyalign);
     }
-    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_cl_roi] [%s] buffer exceeds singlebuffer, corrected to %dx%d\n",
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[default_process_tiling_cl_roi] [%s] buffer exceeds singlebuffer, corrected to %dx%d\n",
             dt_dev_pixelpipe_type_to_str(piece->pipe->type), width, height);
   }
 
@@ -1747,7 +1747,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   if(3 * tiling.overlap > width || 3 * tiling.overlap > height)
   {
     width = height = _align_down((int)floorf(sqrtf((float)width * height)), xyalign);
-    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_cl_roi] [%s] use squares because of overlap, corrected to %dx%d\n",
+    dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[default_process_tiling_cl_roi] [%s] use squares because of overlap, corrected to %dx%d\n",
             dt_dev_pixelpipe_type_to_str(piece->pipe->type), width, height);
   }
 
@@ -1964,7 +1964,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
 
       dt_print(DT_DEBUG_TILING,  "[default_process_tiling_cl_roi] [%s] process tile (%zu,%zu) size %dx%d at origin [%d,%d]\n",
                dt_dev_pixelpipe_type_to_str(piece->pipe->type), tx, ty, iroi_full.width, iroi_full.height, iroi_full.x, iroi_full.y);
-      dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_cl_roi]    dest [%lu,%lu] at [%lu,%lu], offsets [%i,%i] -> [%i,%i], delta=%i\n\n",
+      dt_print(DT_DEBUG_TILING | DT_DEBUG_VERBOSE, "[default_process_tiling_cl_roi]    dest [%lu,%lu] at [%lu,%lu], offsets [%i,%i] -> [%i,%i], delta=%i\n\n",
                oregion[0], oregion[1], oorigin[0], oorigin[1], in_dx, in_dy, out_dx, out_dy, delta);
 
       /* get opencl input and output buffers */
