@@ -305,8 +305,9 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 
   if(d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE)
   {
-    // for a constant border be sure to base the computation on the larger border, failing that the border
-    // will have a difference size depending on the orientation.
+    // for a constant border be sure to base the computation on the
+    // larger border, failing that the border will have a difference
+    // size depending on the orientation.
 
     if(roi_in->width > roi_in->height || !d->max_border_size)
     {
@@ -324,8 +325,10 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   else
   {
     const float image_aspect = (float)roi_in->width / (float)(roi_in->height);
+
     float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_IMAGE_VALUE)
-      ? image_aspect : d->aspect;
+      ? image_aspect
+      : d->aspect;
 
     if(d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_AUTO)
       aspect = ((image_aspect < 1.0f && aspect > 1.0f)
@@ -380,11 +383,14 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     roundf(roi_out->scale
            * MAX(roundf((roi_in->y + roi_in->height) / roi_out->scale) - (piece->buf_in.height), 0));
 
-  // don't request nothing or outside roi
+  // sanity check: don't request nothing or outside roi
   roi_in->width = MIN(roi_out->scale * piece->buf_in.width, MAX(1, roi_in->width));
   roi_in->height = MIN(roi_out->scale * piece->buf_in.height, MAX(1, roi_in->height));
-  // FIXME: clamping to 1 leads to a one-pixel visual glitch if the right/bottom border completely fills the
-  // FIXME: viewport, but changing it to 0 breaks all of the tiling_callback functions with a division by zero
+
+  // FIXME: clamping to 1 leads to a one-pixel visual glitch if the
+  // right/bottom border completely fills the viewport, but
+  // changing it to 0 breaks all of the tiling_callback functions with
+  // a division by zero.
 }
 
 struct border_positions_t
