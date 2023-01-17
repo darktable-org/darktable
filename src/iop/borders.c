@@ -360,21 +360,26 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
   *roi_in = *roi_out;
-  const int bw = (piece->buf_out.width - piece->buf_in.width) * roi_out->scale;
-  const int bh = (piece->buf_out.height - piece->buf_in.height) * roi_out->scale;
+
+  const int bw = roundf(piece->buf_out.width - piece->buf_in.width) * roi_out->scale;
+  const int bh = roundf(piece->buf_out.height - piece->buf_in.height) * roi_out->scale;
 
   // don't request outside image (no px for borders)
   roi_in->x = MAX(roi_out->x - bw * d->pos_h, 0);
   roi_in->y = MAX(roi_out->y - bh * d->pos_v, 0);
+
   // subtract upper left border from dimensions
   roi_in->width -= MAX(bw * d->pos_h - roi_out->x, 0);
   roi_in->height -= MAX(bh * d->pos_v - roi_out->y, 0);
 
   // subtract lower right border from dimensions
-  roi_in->width -= roi_out->scale
-                   * MAX((roi_in->x + roi_in->width) / roi_out->scale - (piece->buf_in.width), 0);
-  roi_in->height -= roi_out->scale
-                    * MAX((roi_in->y + roi_in->height) / roi_out->scale - (piece->buf_in.height), 0);
+  roi_in->width -=
+    roundf(roi_out->scale
+           * MAX(roundf((roi_in->x + roi_in->width) / roi_out->scale) - (piece->buf_in.width), 0));
+  roi_in->height -=
+    roundf(roi_out->scale
+           * MAX(roundf((roi_in->y + roi_in->height) / roi_out->scale) - (piece->buf_in.height), 0));
+
   // don't request nothing or outside roi
   roi_in->width = MIN(roi_out->scale * piece->buf_in.width, MAX(1, roi_in->width));
   roi_in->height = MIN(roi_out->scale * piece->buf_in.height, MAX(1, roi_in->height));
