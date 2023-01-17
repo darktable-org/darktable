@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include <string.h>
 
 #include "common/debug.h"
-#include "common/imageio.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -39,6 +38,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "imageio/imageio.h"
 #include "iop/iop_api.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_flip_params_t)

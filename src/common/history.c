@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include "common/exif.h"
 #include "common/history_snapshot.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/undo.h"
@@ -33,6 +32,7 @@
 #include "develop/develop.h"
 #include "develop/masks.h"
 #include "gui/hist_dialog.h"
+#include "imageio/imageio.h"
 
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 

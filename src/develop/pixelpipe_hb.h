@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,12 +20,12 @@
 
 #include "common/atomic.h"
 #include "common/image.h"
-#include "common/imageio.h"
 #include "common/iop_order.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/pixelpipe_cache.h"
+#include "imageio/imageio.h"
 
 /**
  * struct used by iop modules to connect to pixelpipe.

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 #include <jxl/decode.h>
 #include <jxl/resizable_parallel_runner.h>
 
-#include "image.h"
-#include "imageio.h"
+#include "common/image.h"
+#include "imageio/imageio.h"
 
 dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {

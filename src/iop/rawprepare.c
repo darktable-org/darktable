@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2021 darktable developers.
+    Copyright (C) 2015-2023 darktable developers.
 
     (based on code by johannes hanika)
 
@@ -21,18 +21,18 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
-#include "common/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "common/opencl.h"
 #include "common/imagebuf.h"
+#include "common/image_cache.h"
+#include "common/dng_opcode.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
-#include "common/image_cache.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "imageio/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "iop/iop_api.h"
-#include "common/dng_opcode.h"
 
 #include <gtk/gtk.h>
 #include <stdint.h>

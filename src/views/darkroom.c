@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,8 +28,6 @@
 #include "common/focus_peaking.h"
 #include "common/history.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "common/selection.h"
 #include "common/styles.h"
 #include "common/tags.h"
@@ -49,6 +47,8 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "gui/styles.h"
+#include "imageio/imageio.h"
+#include "imageio/imageio_module.h"
 #include "libs/colorpicker.h"
 #include "libs/modulegroups.h"
 #include "views/view.h"

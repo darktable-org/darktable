@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include "common/imageio_module.h"
 #include "control/control.h"
+#include "imageio/imageio_module.h"
 #include <inttypes.h>
 
 #ifdef HAVE_PRINT

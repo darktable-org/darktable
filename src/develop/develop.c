@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 #include "common/debug.h"
 #include "common/history.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
 #include "common/mipmap_cache.h"
 #include "common/opencl.h"
 #include "common/tags.h"
@@ -42,6 +41,7 @@
 #include "develop/masks.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "imageio/imageio.h"
 
 #ifdef USE_LUA
 #include "lua/call.h"

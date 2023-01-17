@@ -112,7 +112,6 @@ src/common/http_server.c
 src/common/image.c
 src/common/image.h
 src/common/imagebuf.c
-src/common/imageio.c
 src/common/import_session.c
 src/common/iop_order.c
 src/common/iop_profile.c
@@ -169,6 +168,7 @@ src/gui/import_metadata.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/styles_dialog.c
+src/imageio/imageio.c
 src/imageio/format/avif.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
