@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2021 darktable developers.
+   Copyright (C) 2013-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,10 +18,10 @@
 #include "lua/events.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
-#include "common/imageio_module.h"
 #include "control/control.h"
 #include "control/jobs/control_jobs.h"
 #include "gui/accelerators.h"
+#include "imageio/imageio_module.h"
 #include "lua/call.h"
 #include "lua/image.h"
 

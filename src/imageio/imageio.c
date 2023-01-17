@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,39 +24,7 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
-#ifdef HAVE_OPENEXR
-#include "common/imageio_exr.h"
-#endif
-#ifdef HAVE_OPENJPEG
-#include "common/imageio_j2k.h"
-#endif
-#ifdef HAVE_LIBJXL
-#include "common/imageio_jpegxl.h"
-#endif
 #include "common/image_compression.h"
-#include "common/imageio_gm.h"
-#include "common/imageio_im.h"
-#include "common/imageio_jpeg.h"
-#include "common/imageio_pfm.h"
-#include "common/imageio_png.h"
-#include "common/imageio_pnm.h"
-#include "common/imageio_qoi.h"
-#include "common/imageio_rawspeed.h"
-#include "common/imageio_libraw.h"
-#include "common/imageio_rgbe.h"
-#include "common/imageio_tiff.h"
-#ifdef HAVE_LIBAVIF
-#include "common/imageio_avif.h"
-#endif
-#ifdef HAVE_LIBHEIF
-#include "common/imageio_heif.h"
-#endif
-#ifdef HAVE_WEBP
-#include "common/imageio_webp.h"
-#endif
-#include "common/imageio_libraw.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
 #include "control/conf.h"
@@ -64,6 +32,38 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "imageio/imageio.h"
+#include "imageio/imageio_module.h"
+#ifdef HAVE_OPENEXR
+#include "imageio/imageio_exr.h"
+#endif
+#ifdef HAVE_OPENJPEG
+#include "imageio/imageio_j2k.h"
+#endif
+#ifdef HAVE_LIBJXL
+#include "imageio/imageio_jpegxl.h"
+#endif
+#include "imageio/imageio_gm.h"
+#include "imageio/imageio_im.h"
+#include "imageio/imageio_jpeg.h"
+#include "imageio/imageio_pfm.h"
+#include "imageio/imageio_png.h"
+#include "imageio/imageio_pnm.h"
+#include "imageio/imageio_qoi.h"
+#include "imageio/imageio_rawspeed.h"
+#include "imageio/imageio_libraw.h"
+#include "imageio/imageio_rgbe.h"
+#include "imageio/imageio_tiff.h"
+#ifdef HAVE_LIBAVIF
+#include "imageio/imageio_avif.h"
+#endif
+#ifdef HAVE_LIBHEIF
+#include "imageio/imageio_heif.h"
+#endif
+#ifdef HAVE_WEBP
+#include "imageio/imageio_webp.h"
+#endif
+#include "imageio/imageio_libraw.h"
 
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>

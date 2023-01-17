@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/image.h"
-#include "common/imageio_rawspeed.h"
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/map_locations.h"
 #include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "imageio/imageio_rawspeed.h"
 
 #include <assert.h>
 #include <glib.h>

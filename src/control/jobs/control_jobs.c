@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,9 +26,6 @@
 #include "common/history.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_dng.h"
-#include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/undo.h"
@@ -38,6 +35,9 @@
 #include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
+#include "imageio/imageio.h"
+#include "imageio/imageio_dng.h"
+#include "imageio/imageio_module.h"
 
 #include "gui/gtk.h"
 

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2022 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
-#include "common/imageio_png.h"
 #include "common/imagebuf.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -31,6 +30,7 @@
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
+#include "imageio/imageio_png.h"
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>

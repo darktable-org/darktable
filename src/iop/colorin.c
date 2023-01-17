@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,16 +32,16 @@
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
 #ifdef HAVE_OPENJPEG
-#include "common/imageio_j2k.h"
+#include "imageio/imageio_j2k.h"
 #endif
-#include "common/imageio_jpeg.h"
-#include "common/imageio_png.h"
-#include "common/imageio_tiff.h"
+#include "imageio/imageio_jpeg.h"
+#include "imageio/imageio_png.h"
+#include "imageio/imageio_tiff.h"
 #ifdef HAVE_LIBAVIF
-#include "common/imageio_avif.h"
+#include "imageio/imageio_avif.h"
 #endif
 #ifdef HAVE_LIBHEIF
-#include "common/imageio_heif.h"
+#include "imageio/imageio_heif.h"
 #endif
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"

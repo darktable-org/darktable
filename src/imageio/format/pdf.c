@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2015-2021 darktable developers.
+ *    Copyright (C) 2015-2023 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "common/variables.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "gui/gtkentry.h"
 #include "gui/accelerators.h"
+#include "imageio/imageio.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 
 #include <strings.h>

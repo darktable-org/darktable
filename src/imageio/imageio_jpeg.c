@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,8 +22,9 @@
 #include "config.h"
 #endif
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_jpeg.h"
+#include "imageio/imageio.h"
+#include "imageio/imageio_jpeg.h"
+
 #include <setjmp.h>
 
 // error functions

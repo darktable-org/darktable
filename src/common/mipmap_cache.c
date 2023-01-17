@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,12 +23,12 @@
 #include "common/file_location.h"
 #include "common/grealpath.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
-#include "common/imageio_jpeg.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "develop/imageop_math.h"
+#include "imageio/imageio.h"
+#include "imageio/imageio_jpeg.h"
+#include "imageio/imageio_module.h"
 
 #include <assert.h>
 #include <errno.h>

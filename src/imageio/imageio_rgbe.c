@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "common/imageio_rgbe.h"
+#include "imageio/imageio_rgbe.h"
+
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
