@@ -131,7 +131,7 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,act_on,cache,camctl,camsupport,control,demosaic,dev,imageio,\n");
   printf("      input,ioporder,lighttable,lua,masks,memory,nan,opencl,params,\n");
-  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,roi}\n");
+  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
   // clang-format on
@@ -725,8 +725,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_TILING;
         else if(!strcmp(argv[k + 1], "verbose"))
           darktable.unmuted |= DT_DEBUG_VERBOSE;
-        else if(!strcmp(argv[k + 1], "roi"))
-          darktable.unmuted |= DT_DEBUG_ROI;
+        else if(!strcmp(argv[k + 1], "pipe"))
+          darktable.unmuted |= DT_DEBUG_PIPE;
         else
           return usage(argv[0]);
         k++;
@@ -1551,7 +1551,7 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 
   char buf[128];
   char vbuf[2048];
-  snprintf(buf, sizeof(buf), "%f", dt_get_wtime() - darktable.start_wtime);
+  snprintf(buf, sizeof(buf), "%.4f", dt_get_wtime() - darktable.start_wtime);
 
   va_list ap;
   va_start(ap, msg);

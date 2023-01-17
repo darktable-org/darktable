@@ -94,9 +94,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   const int devid = piece->pipe->devid;
-  dt_print(DT_DEBUG_IMAGEIO, "[finalscale OpenCL %i] %ix%i (scale %f) -> %ix%i (scale %f)\n",
-    devid, roi_in->width, roi_in->height, roi_in->scale, roi_out->width, roi_out->height, roi_out->scale);
-
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO, "clip_and_zoom_roi CL", piece->pipe, self->so->op, roi_in, roi_out, "device=%i\n", devid);
   cl_int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
   if(err != CL_SUCCESS)
   {
@@ -111,8 +109,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_print(DT_DEBUG_IMAGEIO, "[finalscale CPU] %ix%i (scale %f) -> %ix%i (scale %f)\n",
-    roi_in->width, roi_in->height, roi_in->scale, roi_out->width, roi_out->height, roi_out->scale);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO, "clip_and_zoom_roi", piece->pipe, self->so->op, roi_in, roi_out, "\n");
   dt_iop_clip_and_zoom_roi(ovoid, ivoid, roi_out, roi_in, roi_out->width, roi_in->width);
 }
 

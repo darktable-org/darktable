@@ -104,6 +104,42 @@ const char *dt_dev_pixelpipe_type_to_str(int pipe_type)
   return r;
 }
 
+void dt_print_pipe(dt_debug_thread_t thread, const char *title, dt_dev_pixelpipe_t *pipe, const char *mod,
+      const dt_iop_roi_t *roi_in,
+      const dt_iop_roi_t *roi_out,
+      const char *msg, ...)
+{
+  if(((thread & DT_DEBUG_VERBOSE) && ((darktable.unmuted & DT_DEBUG_VERBOSE) == 0))
+    || !(darktable.unmuted & thread))
+    return;
+
+  char buf[3][128];
+  char vbuf[2048] = "";
+  char rois[1024] = "";
+  char name[128] = "";
+
+  snprintf(buf[0], sizeof(buf[0]), "%.4f", dt_get_wtime() - darktable.start_wtime);
+  snprintf(buf[1], sizeof(buf[1]), "[%s]", title);
+  snprintf(buf[2], sizeof(buf[2]), "%s", mod);
+  if(roi_in && roi_out)
+  {
+    snprintf(rois, sizeof(rois), "(%4i/%4i) %4ix%4i scale=%.4f --> (%4i/%4i) %4ix%4i scale=%.4f",
+       roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
+       roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale);
+  }
+
+  if(pipe)
+    snprintf(name, sizeof(name), "[%s]", dt_dev_pixelpipe_type_to_str(pipe->type));
+
+  va_list ap;
+  va_start(ap, msg);
+  vsnprintf(vbuf, sizeof(vbuf), msg, ap);
+  va_end(ap);
+
+  printf("%11s %-28s %-14s %-20s %s %s", buf[0], buf[1], name, buf[2], rois, vbuf);
+  fflush(stdout);
+}
+
 gboolean dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks)
 {
@@ -948,12 +984,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   /* process module on cpu. use tiling if needed and possible. */
   if(!fitting && piece->process_tiling_ready)
   {
-    dt_print(DT_DEBUG_ROI,
-             "[process TILE] %17s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i, backbuf %ix%i\n",
-             dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op,
-             roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
-             roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
-             piece->pipe->final_width, piece->pipe->final_height, piece->pipe->backbuf_width, piece->pipe->backbuf_height);
+    dt_print_pipe(DT_DEBUG_PIPE, "process TILE", piece->pipe, module->so->op, roi_in, roi_out, "\n");
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
@@ -961,17 +992,10 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   else
   {
     if(!fitting)
-      fprintf(stderr,
-              "[pixelpipe_process_on_CPU] [%s] Warning: processes `%s' without tiling even if memory requirements are not met\n",
-              dt_dev_pixelpipe_type_to_str(pipe->type), module->op);
+      dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_process_on_CPU", piece->pipe, module->so->op, NULL, NULL,
+         "Warning: processed without tiling even if memory requirements are not met\n");
 
-    dt_print(DT_DEBUG_ROI,
-             "[process CPU] %15s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i, backbuf %ix%i\n",
-             dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op,
-             roi_in->x, roi_in->y, roi_in->width, roi_in->height, roi_in->scale,
-             roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
-             piece->pipe->final_width, piece->pipe->final_height, piece->pipe->backbuf_width, piece->pipe->backbuf_height);
-
+    dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_process_on_CPU", piece->pipe, module->so->op, roi_in, roi_out, "\n");
     module->process(module, piece, input, *output, roi_in, roi_out);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
@@ -1140,12 +1164,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     dt_get_times(&start);
     // we're looking for the full buffer
     {
-      if(roi_out->scale == 1.0
+      if(roi_out->scale == 1.0f
          && roi_out->x == 0 && roi_out->y == 0
          && pipe->iwidth == roi_out->width
          && pipe->iheight == roi_out->height)
       {
         *output = pipe->input;
+        dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe full", pipe, "", &roi_in, roi_out, "\n");
       }
       else if(dt_dev_pixelpipe_cache_get(pipe, basichash, hash, bufsize, output, out_format, NULL, FALSE))
       {
@@ -1159,7 +1184,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           const int in_y = MAX(roi_in.y, 0);
           const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
-
+          dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pixelpipe 1:1 copy", pipe, "", &roi_in, roi_out,
+             "%s\n", (cp_width > 0) ? "copied" : "already available");
           if(cp_width > 0)
           {
 #ifdef _OPENMP
@@ -1176,6 +1202,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
         else
         {
+          dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe clip&zoom", pipe, "", &roi_in, roi_out, "\n");
           roi_in.x /= roi_out->scale;
           roi_in.y /= roi_out->scale;
           roi_in.width = pipe->iwidth;
@@ -1202,15 +1229,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     return 1;
   }
-  dt_print(DT_DEBUG_ROI,
-           "[modify roi IN] %13s %16s.    (%4i/%4i) %4ix%4i scale=%.2f",
-           dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op,
-           roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale);
 
   module->modify_roi_in(module, piece, roi_out, &roi_in);
-
-  dt_print_nts(DT_DEBUG_ROI, "  --> (%4i/%4i) %4ix%4i scale=%.2f\n",
-    roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale);
+  if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(roi_out, &roi_in, sizeof(dt_iop_roi_t)))
+    dt_print_pipe(DT_DEBUG_PIPE, "modify roi IN", piece->pipe, module->so->op, &roi_in, roi_out, "\n");
   // recurse to get actual data of input buffer
 
   dt_iop_buffer_dsc_t _input_format = { 0 };
@@ -1502,12 +1524,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         /* now call process_cl of module; module should emit meaningful messages in case of error */
         if(success_opencl)
         {
-          dt_print(DT_DEBUG_ROI,
-                   "[process CL] %16s %16s. IN (%4i/%4i) %4ix%4i scale=%.2f. OUT (%4i/%4i) %4ix%4i scale=%.2f, final %ix%i, backbuf %ix%i\n",
-                   dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op, roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale,
-                   roi_out->x, roi_out->y, roi_out->width, roi_out->height, roi_out->scale,
-                   piece->pipe->final_width, piece->pipe->final_height, piece->pipe->backbuf_width, piece->pipe->backbuf_height);
-
+          dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_process_CL", piece->pipe, module->so->op, &roi_in, roi_out, "\n");
           success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
@@ -1919,7 +1936,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   // we check for an important hint after processing the module as we want to track a runtime hint too.
   pipe->next_important_module = _check_module_next_important(pipe, module);
   if(pipe->next_important_module)
-    dt_print(DT_DEBUG_DEV | DT_DEBUG_VERBOSE, "[dev_pixelpipe] [%s] module `%s' passing important hint to next module\n", dt_dev_pixelpipe_type_to_str(pipe->type), module ? module->so->op : NULL);
+    dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "dev_pixelpipe", pipe, module ? module->so->op : NULL,
+    NULL, NULL, "passing important hint to next module\n");
 
   // warn on NaN or infinity
 #ifndef _DEBUG
@@ -2294,11 +2312,9 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
        && !(dev->gui_module && dev->gui_module != module
             && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
-      dt_print(DT_DEBUG_ROI, "[modify roi OUT] %12s %16s.    (%4i/%4i) %4ix%4i scale=%.2f",
-        dt_dev_pixelpipe_type_to_str(piece->pipe->type), module->so->op, roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale);
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
-      dt_print_nts(DT_DEBUG_ROI, "  --> (%4i/%4i) %4i*%4i scale=%.2f\n",
-        roi_in.x, roi_in.y, roi_in.width, roi_in.height, roi_in.scale);
+      if((darktable.unmuted & DT_DEBUG_PIPE) && memcmp(&roi_out, &roi_in, sizeof(dt_iop_roi_t)))
+        dt_print_pipe(DT_DEBUG_PIPE, "modify roi OUT", piece->pipe, module->so->op, &roi_in, &roi_out, "\n");
     }
     else
     {
