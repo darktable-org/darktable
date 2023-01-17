@@ -407,7 +407,7 @@ void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *da
 static size_t _free_cacheline(dt_dev_pixelpipe_cache_t *cache, const int k, const int pipetype)
 {
   const size_t removed = cache->size[k];
-  dt_vprint(DT_DEBUG_DEV, "  [free cacheline] %s %16s, age %4i, line%3i, size=%luMB at %p\n",
+  dt_print(DT_DEBUG_DEV | DT_DEBUG_VERBOSE , "  [free cacheline] %s %16s, age %4i, line%3i, size=%luMB at %p\n",
     dt_dev_pixelpipe_type_to_str(pipetype), cache->modname[k], cache->used[k], k, removed / 1024lu / 1024lu, cache->data[k]);
 
   dt_free_align(cache->data[k]);
