@@ -26,7 +26,7 @@
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "develop/imageop_math.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_module.h"
 

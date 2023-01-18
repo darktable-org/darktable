@@ -36,7 +36,7 @@ extern "C" {
 #include "common/file_location.h"
 #include "common/tags.h"
 #include "develop/imageop.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_rawspeed.h"
 #include <stdint.h>
 }

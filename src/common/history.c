@@ -32,7 +32,7 @@
 #include "develop/develop.h"
 #include "develop/masks.h"
 #include "gui/hist_dialog.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 
 #define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 

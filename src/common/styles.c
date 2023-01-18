@@ -30,7 +30,7 @@
 #include "develop/develop.h"
 #include "gui/accelerators.h"
 #include "gui/styles.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>

@@ -37,7 +37,7 @@
 #include "common/points.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_jpeg.h"
 #include "imageio/imageio_module.h"
 

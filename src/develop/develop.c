@@ -41,7 +41,7 @@
 #include "develop/masks.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 
 #ifdef USE_LUA
 #include "lua/call.h"

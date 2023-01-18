@@ -74,7 +74,7 @@ extern "C" {
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "develop/masks.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_jpeg.h"
 }
 

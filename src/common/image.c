@@ -36,7 +36,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "develop/lightroom.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_rawspeed.h"
 #include "imageio/imageio_libraw.h"
 #include "win/filepath.h"

@@ -28,7 +28,7 @@
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "imageio.h"
+#include "imageio_common.h"
 #include "imageio_tiff.h"
 
 int read_header(const char *filename, dt_imageio_png_t *png)

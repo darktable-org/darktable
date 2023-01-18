@@ -35,7 +35,7 @@
 #include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_dng.h"
 #include "imageio/imageio_module.h"
 
