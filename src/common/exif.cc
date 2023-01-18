@@ -748,10 +748,7 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
     g_free(data);
     has_opcodes = TRUE;
   }
-  else
-  {
-    dt_vprint(DT_DEBUG_IMAGEIO, "DNG OpcodeList2 tag not found\n");
-  }
+
   return has_opcodes;
 }
 
