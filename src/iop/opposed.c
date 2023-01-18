@@ -385,6 +385,9 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
 
   const int devid = piece->pipe->devid;
+  if(!darktable.opencl->dev[devid].nvidia_sm_20)
+    return DT_OPENCL_PROCESS_CL;
+
   const uint32_t filters = piece->pipe->dsc.filters;
   const float clipval = 0.987f * d->clip;
   const dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
