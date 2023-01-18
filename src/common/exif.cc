@@ -518,10 +518,15 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       }
     }
 
-    if(FIND_XMP_TAG("Xmp.xmp.Rating"))
+    if(!dt_conf_get_bool("ui_last/ignore_exif_rating"))
     {
-      const int stars = pos->toLong();
-      dt_image_set_xmp_rating(img, stars);
+      if(FIND_XMP_TAG("Xmp.xmp.Rating"))
+      {
+        const int stars = pos->toLong();
+        dt_image_set_xmp_rating(img, stars);
+      }
+      else
+        dt_image_set_xmp_rating(img, -2);
     }
     else
       dt_image_set_xmp_rating(img, -2);
