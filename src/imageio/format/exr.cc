@@ -35,7 +35,7 @@ extern "C" {
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "control/conf.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_exr.h"
 #include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"

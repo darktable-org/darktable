@@ -30,7 +30,7 @@
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
 #include <curl/curl.h>

@@ -25,7 +25,7 @@
 #include "dtgtk/button.h"
 #include "gui/gtkentry.h"
 #include "gui/accelerators.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 

@@ -49,7 +49,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "libs/lib.h"
 #include "views/view_api.h"
 

@@ -47,7 +47,7 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "gui/styles.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "libs/colorpicker.h"
 #include "libs/modulegroups.h"

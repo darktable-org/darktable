@@ -30,7 +30,7 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "control/conf.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 

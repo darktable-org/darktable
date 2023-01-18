@@ -29,7 +29,7 @@
 
 #include "common/image.h"
 #include "develop/imageop.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 
 dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {

@@ -33,7 +33,7 @@
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "imageio.h"
+#include "imageio_common.h"
 #include "imageio_heif.h"
 
 
