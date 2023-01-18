@@ -67,7 +67,7 @@ static void _selection_select(dt_selection_t *selection, uint32_t imgid)
       if(!darktable.gui || !darktable.gui->grouping || darktable.gui->expanded_group_id == img_group_id
          || !selection->collection)
       {
-        query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images VALUES (%d)", imgid);
+        query = g_strdup_printf("INSERT OR IGNORE INTO main.selected_images VALUES (%u)", imgid);
       }
       else
       {
@@ -199,7 +199,7 @@ void dt_selection_deselect(dt_selection_t *selection, uint32_t imgid)
       gchar *query = NULL;
       if(!darktable.gui || !darktable.gui->grouping || darktable.gui->expanded_group_id == img_group_id)
       {
-        query = g_strdup_printf("DELETE FROM main.selected_images WHERE imgid = %d", imgid);
+        query = g_strdup_printf("DELETE FROM main.selected_images WHERE imgid = %u", imgid);
       }
       else
       {

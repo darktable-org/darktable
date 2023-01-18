@@ -1097,8 +1097,8 @@ uint32_t dt_tag_get_suggestions(GList **result)
                             "    ON t02.id = tagid2"
                             // filter by confidence and reject tags attached on all selected images
                             "    WHERE (t01.count-t01.count2) != 0"
-                            "      AND (100 * c12 / (t01.count-t01.count2) >= %d)"
-                            "      AND t02.count2 != %d) "
+                            "      AND (100 * c12 / (t01.count-t01.count2) >= %u)"
+                            "      AND t02.count2 != %u) "
                             "  UNION"
                             // get recent list tags
                             "  SELECT * FROM ("
@@ -1107,7 +1107,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
                             "    ON t02.id = tn.id"
                             "    WHERE tn.name IN (\'%s\')"
                             // reject tags attached on all selected images and keep the required number
-                            "      AND t02.count2 != %d LIMIT %d)) "
+                            "      AND t02.count2 != %u LIMIT %d)) "
                             "LEFT JOIN memory.taglist AS t21 "
                             "ON t21.id = tagid2 "
                             "LEFT JOIN data.tags as td ON td.id = tagid2 ",
@@ -1123,7 +1123,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
                             "ON t02.id = tn.id "
                             "WHERE tn.name IN (\'%s\')"
                             // reject tags attached on all selected images and keep the required number
-                            "  AND t02.count2 != %d LIMIT %d",
+                            "  AND t02.count2 != %u LIMIT %d",
                             slist, nb_selected, nb_recent);
     // clang-format on
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query,
