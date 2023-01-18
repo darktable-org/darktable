@@ -25,7 +25,7 @@
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "views/view.h"
 #include "views/view_api.h"

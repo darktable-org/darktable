@@ -22,7 +22,7 @@
 #include "control/control.h"
 #include "control/signal.h"
 #include "gui/accelerators.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 
 #include <stdlib.h>

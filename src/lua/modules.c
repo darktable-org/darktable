@@ -17,7 +17,7 @@
  */
 
 #include "control/conf.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "lua/image.h"
 #include "lua/modules.h"
 #include "lua/types.h"

@@ -31,7 +31,7 @@
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "imageio.h"
+#include "imageio_common.h"
 #include "imageio_avif.h"
 
 dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,

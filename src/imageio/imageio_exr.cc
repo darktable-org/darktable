@@ -42,7 +42,7 @@ extern "C" {
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_exr.h"
 }
 #include "imageio/imageio_exr.hh"

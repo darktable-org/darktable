@@ -31,7 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "views/view.h"
 
 #include <assert.h>

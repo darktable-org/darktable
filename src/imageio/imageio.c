@@ -32,7 +32,7 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #ifdef HAVE_OPENEXR
 #include "imageio/imageio_exr.h"

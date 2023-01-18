@@ -33,7 +33,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "iop/iop_api.h"
 #include <assert.h>
 #include <stdlib.h>

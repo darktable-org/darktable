@@ -38,7 +38,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "iop/iop_api.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_flip_params_t)

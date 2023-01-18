@@ -22,7 +22,7 @@
 #include "config.h"
 #endif
 #include "common/exif.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_jpeg.h"
 
 #include <setjmp.h>

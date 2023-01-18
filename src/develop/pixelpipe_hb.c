@@ -30,7 +30,7 @@
 #include "develop/tiling.h"
 #include "develop/masks.h"
 #include "gui/gtk.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "libs/colorpicker.h"
 #include "libs/lib.h"
 #include "gui/color_picker_proxy.h"

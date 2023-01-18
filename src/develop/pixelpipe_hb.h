@@ -25,7 +25,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/pixelpipe_cache.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 
 /**
  * struct used by iop modules to connect to pixelpipe.

@@ -31,7 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/gtkentry.h"
 #include "gui/accelerators.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "imageio/storage/imageio_storage_api.h"
 #ifdef GDK_WINDOWING_QUARTZ

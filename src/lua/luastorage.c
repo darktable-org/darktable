@@ -19,7 +19,7 @@
 #include "common/file_location.h"
 #include "common/image.h"
 #include "control/jobs.h"
-#include "imageio/imageio.h"
+#include "imageio/imageio_common.h"
 #include "imageio/imageio_module.h"
 #include "lua/call.h"
 #include "lua/glist.h"
