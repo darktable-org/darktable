@@ -541,7 +541,7 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
   }
   else if(id == DT_SHORTCUT_DEVICE_TABLET)
   {
-    return g_strdup_printf("%s %d", display ? _("tablet button") : "tablet button", key_or_move);
+    return g_strdup_printf("%s %u", display ? _("tablet button") : "tablet button", key_or_move);
   }
   else
   {
@@ -2585,7 +2585,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
           {
             gtk_accelerator_parse(token, &s.key, &s.mods);
             if(s.mods) fprintf(stderr, "[dt_shortcuts_load] unexpected modifiers found in %s\n", token);
-            if(!s.key && sscanf(token, "tablet button %d", &s.key))
+            if(!s.key && sscanf(token, "tablet button %u", &s.key))
               s.key_device = DT_SHORTCUT_DEVICE_TABLET;
             if(!s.key) fprintf(stderr, "[dt_shortcuts_load] no key name found in %s\n", token);
           }

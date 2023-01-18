@@ -726,7 +726,7 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
       if(!hidden)
       {
         // caution: metadata is a simple list here
-        metadata = g_list_prepend(metadata, g_strdup_printf("%d", i));
+        metadata = g_list_prepend(metadata, g_strdup_printf("%u", i));
       }
     }
   }

@@ -354,7 +354,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_get_times(&end_time);
-    fprintf(stderr, "colorpicker stats reading %d channels (filters %d) cst %d -> %d size %ld denoised %d took %.3f secs (%.3f CPU)\n",
+    fprintf(stderr, "colorpicker stats reading %u channels (filters %u) cst %d -> %d size %zu denoised %d took %.3f secs (%.3f CPU)\n",
             dsc->channels, dsc->filters, image_cst, picker_cst, _box_size(box), denoise,
             end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
