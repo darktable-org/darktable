@@ -304,7 +304,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
   # Add ca-cert for curl
   install(FILES
-      "${MINGW_PATH}/../ssl/certs/ca-bundle.crt"
+      "${MINGW_PATH}/../etc/ssl/certs/ca-bundle.crt"
       DESTINATION share/curl/
       RENAME curl-ca-bundle.crt
       COMPONENT DTApplication)
