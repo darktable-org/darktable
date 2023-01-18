@@ -3188,7 +3188,7 @@ static float _process_shortcut(float move_size)
 {
   float return_value = NAN;
 
-  dt_vprint(DT_DEBUG_INPUT,
+  dt_print(DT_DEBUG_INPUT | DT_DEBUG_VERBOSE,
             "  [_process_shortcut] processing shortcut: %s\n",
             _shortcut_description(&_sc));
 

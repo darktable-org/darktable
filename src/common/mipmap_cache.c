@@ -1112,6 +1112,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
   else
   {
     // downsample
+    dt_print_pipe(DT_DEBUG_PIPE, "mipmap clip and zoom", NULL, "", &roi_in, &roi_out, "\n");
     dt_iop_clip_and_zoom(out, (const float *)buf.buf, &roi_out, &roi_in, roi_out.width, roi_in.width);
   }
 

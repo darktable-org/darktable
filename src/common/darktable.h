@@ -273,7 +273,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_ACT_ON         = 1 << 23,
   DT_DEBUG_TILING         = 1 << 24,
   DT_DEBUG_VERBOSE        = 1 << 25,
-  DT_DEBUG_ROI            = 1 << 26
+  DT_DEBUG_PIPE           = 1 << 26
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -366,8 +366,6 @@ void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 /* same as above but without time stamp : nts = no time stamp */
 void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
-/* same as above but requires additional DT_DEBUG_VERBOSE flag to be true */
-void dt_vprint(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();

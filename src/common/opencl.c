@@ -237,14 +237,14 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].disabled & 1,
     cl->dev[devid].benchmark,
     cl->dev[devid].advantage);
-  dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 
   // Also take care of extended device data, these are not only device specific but also depend on the devid
   // to support systems with two similar cards.
   g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
   g_snprintf(dat, 510, "%i", cl->dev[devid].forced_headroom);
-  dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 }
 
@@ -791,7 +791,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
       snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "%s", kerneldir, programname);
       snprintf(binname, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
-      dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_device_init] testing program `%s' ..\n", programname);
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_opencl_device_init] testing program `%s' ..\n", programname);
       int loaded_cached;
       char md5sum[33];
       if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, includemd5, &loaded_cached)
@@ -2047,10 +2047,10 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   else
   {
     free(file);
-    dt_vprint(DT_DEBUG_OPENCL, "[opencl_load_program] loaded cached binary program from file '%s' MD5: '%s' \n", binname, md5sum);
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_load_program] loaded cached binary program from file '%s' MD5: '%s' \n", binname, md5sum);
   }
 
-  dt_vprint(DT_DEBUG_OPENCL, "[opencl_load_program] successfully loaded program from '%s' MD5: '%s'\n", filename, md5sum);
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_load_program] successfully loaded program from '%s' MD5: '%s'\n", filename, md5sum);
 
   return 1;
 }
@@ -2066,12 +2066,12 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] could not build program: %s\n", cl_errstr(err));
   else
-    dt_vprint(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program\n");
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_build_program] successfully built program\n");
 
   cl_build_status build_status;
   (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_STATUS,
                                                  sizeof(cl_build_status), &build_status, NULL);
-  dt_vprint(DT_DEBUG_OPENCL, "[opencl_build_program] BUILD STATUS: %d\n", build_status);
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_build_program] BUILD STATUS: %d\n", build_status);
 
   char *build_log;
   size_t ret_val_size;
@@ -2087,8 +2087,8 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
 
       build_log[ret_val_size] = '\0';
 
-      dt_vprint(DT_DEBUG_OPENCL, "BUILD LOG:\n");
-      dt_vprint(DT_DEBUG_OPENCL, "%s\n", build_log);
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "BUILD LOG:\n");
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "%s\n", build_log);
 
       free(build_log);
     }
@@ -2100,7 +2100,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
   {
     if(!loaded_cached)
     {
-      dt_vprint(DT_DEBUG_OPENCL, "[opencl_build_program] saving binary\n");
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_build_program] saving binary\n");
 
       cl_uint numdev = 0;
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint),
@@ -2210,7 +2210,7 @@ int dt_opencl_create_kernel(const int prog, const char *name)
       }
     if(k < DT_OPENCL_MAX_KERNELS)
     {
-      dt_vprint(DT_DEBUG_OPENCL, "[opencl_create_kernel] successfully loaded kernel `%s' (%d) for device %d\n",
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_create_kernel] successfully loaded kernel `%s' (%d) for device %d\n",
                name, k, dev);
     }
     else
@@ -2977,7 +2977,7 @@ void dt_opencl_update_settings(void)
   dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
   dt_opencl_apply_scheduling_profile(profile);
   const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
-  dt_vprint(DT_DEBUG_OPENCL, "[opencl_update_settings] scheduling profile set to %s\n", pstr);
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_update_settings] scheduling profile set to %s\n", pstr);
 }
 
 /** read scheduling profile for config variables */
@@ -3209,7 +3209,7 @@ void dt_opencl_events_wait_for(const int devid)
   cl_int err = (cl->dlocl->symbols->dt_clWaitForEvents)(*numevents - *eventsconsolidated,
                                            (*eventlist) + *eventsconsolidated);
   if((err != CL_SUCCESS) && (err != CL_INVALID_VALUE))
-    dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_events_wait_for] reported %s for device %i\n",
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[dt_opencl_events_wait_for] reported %s for device %i\n",
        cl_errstr(err), devid);
 }
 
