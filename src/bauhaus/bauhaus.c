@@ -414,61 +414,47 @@ static gboolean dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion
 
   if(darktable.bauhaus->keys_cnt == 0) _stop_cursor();
 
-  dt_bauhaus_widget_t *w = darktable.bauhaus->current;
-  switch(w->type)
+  GdkRectangle workarea;
+  gdk_monitor_get_workarea(gdk_display_get_monitor_at_window(gdk_window_get_display(window), window), &workarea);
+  const gint workarea_bottom = workarea.y + workarea.height;
+
+  float dy = 0;
+  const float move = darktable.bauhaus->mouse_y - ey;
+  if(move > 0 && wy < workarea.y)
   {
-    case DT_BAUHAUS_COMBOBOX:
-    {
-      GdkRectangle workarea;
-      gdk_monitor_get_workarea(gdk_display_get_monitor_at_window(gdk_window_get_display(window), window), &workarea);
-      const gint workarea_bottom = workarea.y + workarea.height;
-
-      float dy = 0;
-      const float move = darktable.bauhaus->mouse_y - ey;
-      if(move > 0 && wy < workarea.y)
-      {
-        dy = (workarea.y - wy);
-        if(event->y_root >= workarea.y)
-          dy *= move / (darktable.bauhaus->mouse_y + wy + padding->top - workarea.y);
-      }
-      if(move < 0 && wy + allocation.height > workarea_bottom)
-      {
-        dy = (workarea_bottom - wy - allocation.height);
-        if(event->y_root <= workarea_bottom)
-          dy *= move / (darktable.bauhaus->mouse_y + wy + padding->top - workarea_bottom);
-      }
-
-      darktable.bauhaus->mouse_x = ex;
-      darktable.bauhaus->mouse_y = ey - dy;
-      gdk_window_move(window, wx, wy + dy);
-
-      break;
-    }
-    case DT_BAUHAUS_SLIDER:
-    {
-      const dt_bauhaus_slider_data_t *d = &w->data.slider;
-      const float mouse_off
-          = get_slider_line_offset(d->oldpos, 5.0 * powf(10.0f, -d->digits) / (d->max - d->min) / d->factor,
-                                   ex / width, ey / height, ht / (float)height, allocation.width, w);
-      if(!darktable.bauhaus->change_active)
-      {
-        if((darktable.bauhaus->mouse_line_distance < 0 && mouse_off >= 0)
-           || (darktable.bauhaus->mouse_line_distance > 0 && mouse_off <= 0))
-          darktable.bauhaus->change_active = 1;
-        darktable.bauhaus->mouse_line_distance = mouse_off;
-      }
-      if(darktable.bauhaus->change_active)
-      {
-        // remember mouse position for motion effects in draw
-        darktable.bauhaus->mouse_x = ex;
-        darktable.bauhaus->mouse_y = ey;
-        dt_bauhaus_slider_set_normalized(w, d->oldpos + mouse_off);
-      }
-      break;
-    }
-    default:
-      break;
+    dy = (workarea.y - wy);
+    if(event->y_root >= workarea.y)
+      dy *= move / (darktable.bauhaus->mouse_y + wy + padding->top - workarea.y);
   }
+  if(move < 0 && wy + allocation.height > workarea_bottom)
+  {
+    dy = (workarea_bottom - wy - allocation.height);
+    if(event->y_root <= workarea_bottom)
+      dy *= move / (darktable.bauhaus->mouse_y + wy + padding->top - workarea_bottom);
+  }
+
+  darktable.bauhaus->mouse_x = ex;
+  darktable.bauhaus->mouse_y = ey - dy;
+  gdk_window_move(window, wx, wy + dy);
+
+  dt_bauhaus_widget_t *w = darktable.bauhaus->current;
+  if(w->type == DT_BAUHAUS_SLIDER)
+  {
+    const dt_bauhaus_slider_data_t *d = &w->data.slider;
+    const float mouse_off
+        = get_slider_line_offset(d->oldpos, 5.0 * powf(10.0f, -d->digits) / (d->max - d->min) / d->factor,
+                                  ex / width, (ey - dy)/ height, ht / (float)height, allocation.width, w);
+    if(!darktable.bauhaus->change_active)
+    {
+      if((darktable.bauhaus->mouse_line_distance < 0 && mouse_off >= 0)
+          || (darktable.bauhaus->mouse_line_distance > 0 && mouse_off <= 0))
+        darktable.bauhaus->change_active = 1;
+      darktable.bauhaus->mouse_line_distance = mouse_off;
+    }
+    if(darktable.bauhaus->change_active)
+      dt_bauhaus_slider_set_normalized(w, d->oldpos + mouse_off);
+  }
+
   return TRUE;
 }
 
@@ -2506,6 +2492,7 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
       d->oldpos = d->pos;
       tmp.height = tmp.width;
       _start_cursor(6);
+      darktable.bauhaus->mouse_y = darktable.bauhaus->line_height + ht / 2;
       break;
     }
     case DT_BAUHAUS_COMBOBOX:
