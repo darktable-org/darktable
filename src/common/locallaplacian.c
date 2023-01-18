@@ -48,7 +48,7 @@ static inline int dl(int size, const int level)
 static void dump_PFM(const char *filename, const float* out, const uint32_t w, const uint32_t h)
 {
   FILE *f = g_fopen(filename, "wb");
-  fprintf(f, "PF\n%d %d\n-1.0\n", w, h);
+  fprintf(f, "PF\n%u %u\n-1.0\n", w, h);
   for(int j=0;j<h;j++)
     for(int i=0;i<w;i++)
       for(int c=0;c<3;c++)

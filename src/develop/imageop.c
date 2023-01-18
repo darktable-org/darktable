@@ -2338,7 +2338,7 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview, gint x, gint y, gbo
     else if(mm & DEVELOP_MASK_RASTER)
       type=_("raster mask");
     else
-      fprintf(stderr, "unknown mask mode '%d' in module '%s'\n", mm, module->op);
+      fprintf(stderr, "unknown mask mode '%u' in module '%s'\n", mm, module->op);
     gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
     gchar *part2 = NULL;
     if(raster && module->raster_mask.sink.source)
