@@ -1200,8 +1200,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       pango_font_description_set_absolute_size(desc, width * 0.9 / ink.width * PANGO_SCALE);
       pango_layout_set_font_description(layout, desc);
 
-      snprintf(text, sizeof(text), "analogous complementary\nrotation: 360°");
-      snprintf(text, sizeof(text), "%s\nrotation: %d°", hm.name, d->harmony_rotation);
+      snprintf(text, sizeof(text), "%s\n%s: %d°", _(hm.name), _("rotation"), d->harmony_rotation);
 
       //cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
       set_color(cr, darktable.bauhaus->graph_fg);
