@@ -207,7 +207,6 @@ int dt_collection_update(const dt_collection_t *collection)
   gchar *where_ext = dt_collection_get_extended_where(collection, -1);
   if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
-    char *rejected_check = g_strdup_printf("((flags & %d) == %d)", DT_IMAGE_REJECTED, DT_IMAGE_REJECTED);
     int and_term = and_operator_initial();
 
     /* add default filters */
@@ -223,8 +222,6 @@ int dt_collection_update(const dt_collection_t *collection)
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
       wq = dt_util_dstrcat(wq, " %s %s", and_operator(&and_term), where_ext);
-
-    g_free(rejected_check);
   }
   else
     wq = g_strdup(where_ext);
