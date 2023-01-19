@@ -4297,7 +4297,9 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
         gchar *formula = (gchar *)tags->data;
         if(formula[0])
         {
-          if(!(m->flags & DT_META_EXIF) && (formula[0] == '=') && g_str_has_prefix(tagname, "Exif."))
+          if(!(m->flags & DT_META_EXIF)
+             && (formula[0] == '=')
+             && g_str_has_prefix(tagname, "Exif."))
           {
             // remove this specific exif
             Exiv2::ExifData::const_iterator pos;
