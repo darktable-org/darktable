@@ -73,11 +73,8 @@ static void blur_horizontal_1ch(float *const restrict buf, const int height, con
     for(x = 0; (x <= radius) && ((x + radius) < width); x++)
     {
       const int np = x + radius;
-      if(np < width)
-      {
-        L += buf[index + np];
-        hits++;
-      }
+      L += buf[index + np];
+      hits++;
       scanline[x] = L / hits;
     }
     // if radius > width/2, we have pixels for which we can neither add new values (x+radius >= width) nor
@@ -137,12 +134,9 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
     for(x = 0; (x <= radius) && ((x + radius) < width); x++)
     {
       const int np = x + radius;
-      if(np < width)
-      {
-        hits++;
-        L1 += buf[index + 2*np];
-        L2 += buf[index + 2*np + 1];
-      }
+      hits++;
+      L1 += buf[index + 2*np];
+      L2 += buf[index + 2*np + 1];
       scanline[2*x] = L1 / hits;
       scanline[2*x+1] = L2 / hits;
     }
@@ -1580,4 +1574,3 @@ void dt_box_min(float *const buf, const size_t height, const size_t width, const
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

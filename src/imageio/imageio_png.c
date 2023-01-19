@@ -235,7 +235,7 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
   png_charp profile;
 #endif
 
-  if(!(filename && *filename && out)) return 0;
+  if(!(filename && *filename)) return 0;
 
   if(read_header(filename, &image) != 0) return DT_IMAGEIO_LOAD_FAILED;
 

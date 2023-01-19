@@ -1361,7 +1361,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
   switch(property)
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
-      if(!(escaped_text && *escaped_text))
+      if(!(*escaped_text))
         // clang-format off
         query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%'))",
                                 escaped_text);
