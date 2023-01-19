@@ -1830,8 +1830,6 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
-  while(g_idle_remove_by_data(module->widget))
-    ; // remove multiple delayed gtk_widget_queue_draw triggers
   g_slist_free_full(module->widget_list, g_free);
   module->widget_list = NULL;
   module->gui_cleanup(module);
