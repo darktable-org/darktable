@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-18 18:39+0100\n"
+"POT-Creation-Date: 2023-01-19 17:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2283,7 +2283,8 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:5674 ../src/libs/masks.c:106
+#: ../src/iop/ashift.c:5674 ../src/libs/histogram.c:1203
+#: ../src/libs/masks.c:106
 msgid "rotation"
 msgstr ""
 
@@ -19315,7 +19316,7 @@ msgstr ""
 msgid "scopes"
 msgstr ""
 
-#: ../src/libs/histogram.c:1455
+#: ../src/libs/histogram.c:1454
 msgid ""
 "scroll to coarse-rotate color harmony guide lines\n"
 "shift+scroll to fine rotate\n"
@@ -19325,123 +19326,123 @@ msgid ""
 "ctrl+scroll to change display height"
 msgstr ""
 
-#: ../src/libs/histogram.c:1460 ../src/libs/histogram.c:2160
+#: ../src/libs/histogram.c:1459 ../src/libs/histogram.c:2159
 msgid "ctrl+scroll to change display height"
 msgstr ""
 
-#: ../src/libs/histogram.c:1469
+#: ../src/libs/histogram.c:1468
 msgid ""
 "drag to change black point,\n"
 "double-click resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 
-#: ../src/libs/histogram.c:1474
+#: ../src/libs/histogram.c:1473
 msgid ""
 "drag to change exposure,\n"
 "double-click resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 
-#: ../src/libs/histogram.c:1526 ../src/libs/histogram.c:2229
+#: ../src/libs/histogram.c:1525 ../src/libs/histogram.c:2228
 msgid "hide color harmony guide lines"
 msgstr ""
 
-#: ../src/libs/histogram.c:1527 ../src/libs/histogram.c:2230
+#: ../src/libs/histogram.c:1526 ../src/libs/histogram.c:2229
 msgid "show color harmony guide lines"
 msgstr ""
 
-#: ../src/libs/histogram.c:1630 ../src/libs/histogram.c:1670
+#: ../src/libs/histogram.c:1629 ../src/libs/histogram.c:1669
 msgid "set scale to linear"
 msgstr ""
 
-#: ../src/libs/histogram.c:1635 ../src/libs/histogram.c:1675
+#: ../src/libs/histogram.c:1634 ../src/libs/histogram.c:1674
 msgid "set scale to logarithmic"
 msgstr ""
 
-#: ../src/libs/histogram.c:1651
+#: ../src/libs/histogram.c:1650
 msgid "set scope to vertical"
 msgstr ""
 
-#: ../src/libs/histogram.c:1656
+#: ../src/libs/histogram.c:1655
 msgid "set scope to horizontal"
 msgstr ""
 
-#: ../src/libs/histogram.c:1685
+#: ../src/libs/histogram.c:1684
 msgid "set view to AzBz"
 msgstr ""
 
-#: ../src/libs/histogram.c:1691
+#: ../src/libs/histogram.c:1690
 msgid "set view to RYB"
 msgstr ""
 
-#: ../src/libs/histogram.c:1697
+#: ../src/libs/histogram.c:1696
 msgid "set view to u*v*"
 msgstr ""
 
-#: ../src/libs/histogram.c:1714
+#: ../src/libs/histogram.c:1713
 msgid "set mode to waveform"
 msgstr ""
 
-#: ../src/libs/histogram.c:1722
+#: ../src/libs/histogram.c:1721
 msgid "set mode to rgb parade"
 msgstr ""
 
-#: ../src/libs/histogram.c:1730
+#: ../src/libs/histogram.c:1729
 msgid "set mode to vectorscope"
 msgstr ""
 
-#: ../src/libs/histogram.c:1738
+#: ../src/libs/histogram.c:1737
 msgid "set mode to histogram"
 msgstr ""
 
-#: ../src/libs/histogram.c:1829 ../src/libs/histogram.c:1865
-#: ../src/libs/histogram.c:2208
+#: ../src/libs/histogram.c:1828 ../src/libs/histogram.c:1864
+#: ../src/libs/histogram.c:2207
 msgid "hide red channel"
 msgstr ""
 
-#: ../src/libs/histogram.c:1829 ../src/libs/histogram.c:1865
-#: ../src/libs/histogram.c:2208
+#: ../src/libs/histogram.c:1828 ../src/libs/histogram.c:1864
+#: ../src/libs/histogram.c:2207
 msgid "show red channel"
 msgstr ""
 
-#: ../src/libs/histogram.c:1837 ../src/libs/histogram.c:1863
-#: ../src/libs/histogram.c:2214
+#: ../src/libs/histogram.c:1836 ../src/libs/histogram.c:1862
+#: ../src/libs/histogram.c:2213
 msgid "hide green channel"
 msgstr ""
 
-#: ../src/libs/histogram.c:1837 ../src/libs/histogram.c:1863
-#: ../src/libs/histogram.c:2214
+#: ../src/libs/histogram.c:1836 ../src/libs/histogram.c:1862
+#: ../src/libs/histogram.c:2213
 msgid "show green channel"
 msgstr ""
 
-#: ../src/libs/histogram.c:1845 ../src/libs/histogram.c:1864
-#: ../src/libs/histogram.c:2220
+#: ../src/libs/histogram.c:1844 ../src/libs/histogram.c:1863
+#: ../src/libs/histogram.c:2219
 msgid "hide blue channel"
 msgstr ""
 
-#: ../src/libs/histogram.c:1845 ../src/libs/histogram.c:1864
-#: ../src/libs/histogram.c:2220
+#: ../src/libs/histogram.c:1844 ../src/libs/histogram.c:1863
+#: ../src/libs/histogram.c:2219
 msgid "show blue channel"
 msgstr ""
 
-#: ../src/libs/histogram.c:2153
+#: ../src/libs/histogram.c:2152
 msgid "histogram"
 msgstr ""
 
-#: ../src/libs/histogram.c:2156 ../src/libs/histogram.c:2198
+#: ../src/libs/histogram.c:2155 ../src/libs/histogram.c:2197
 msgid "cycle histogram modes"
 msgstr ""
 
-#: ../src/libs/histogram.c:2161 ../src/libs/histogram.c:2199
+#: ../src/libs/histogram.c:2160 ../src/libs/histogram.c:2198
 msgid "hide histogram"
 msgstr ""
 
-#: ../src/libs/histogram.c:2187 ../src/libs/histogram.c:2200
+#: ../src/libs/histogram.c:2186 ../src/libs/histogram.c:2199
 msgid "switch histogram mode"
 msgstr ""
 
-#: ../src/libs/histogram.c:2191 ../src/libs/histogram.c:2201
+#: ../src/libs/histogram.c:2190 ../src/libs/histogram.c:2200
 msgid "switch histogram type"
 msgstr ""
 
