@@ -265,30 +265,33 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     {
       // we update presets values
       // clang-format off
-      query = g_strdup_printf("UPDATE data.presets "
-                              "SET"
-                              " name=?1, description=?2,"
-                              " model=?3, maker=?4, lens=?5, iso_min=?6, iso_max=?7, exposure_min=?8,"
-                              " exposure_max=?9, aperture_min=?10,"
-                              " aperture_max=?11, focal_length_min=?12, focal_length_max=?13, autoapply=?14,"
-                              " filter=?15, format=?16 "
-                              "WHERE rowid=%d",
-                              g->old_id);
+      query = g_strdup_printf
+        ("UPDATE data.presets "
+         "SET"
+         " name=?1, description=?2,"
+         " model=?3, maker=?4, lens=?5, iso_min=?6, iso_max=?7, exposure_min=?8,"
+         " exposure_max=?9, aperture_min=?10,"
+         " aperture_max=?11, focal_length_min=?12, focal_length_max=?13, autoapply=?14,"
+         " filter=?15, format=?16, multi_name=?23, multi_name_hand_edited=?24 "
+         "WHERE rowid=%d",
+         g->old_id);
       // clang-format on
     }
     else
     {
       // we create a new preset
       // clang-format off
-      query = g_strdup_printf("INSERT INTO data.presets"
-                              " (name, description, "
-                              "  model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min,"
-                              "  aperture_max, focal_length_min, focal_length_max, autoapply,"
-                              "  filter, format, def, writeprotect, operation, op_version, op_params, enabled,"
-                              "  blendop_params, blendop_version, multi_priority, multi_name) "
-                              "VALUES"
-                              " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, 0, 0, ?17,"
-                              "  ?18, ?19, ?20, ?21, ?22, 0, '')");
+      query = g_strdup_printf
+        ("INSERT INTO data.presets"
+         " (name, description, "
+         "  model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min,"
+         "  aperture_max, focal_length_min, focal_length_max, autoapply,"
+         "  filter, format, def, writeprotect, operation, op_version, op_params, enabled,"
+         "  blendop_params, blendop_version,"
+         "   multi_priority, multi_name, multi_name_hand_edited) "
+         "VALUES"
+         " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16,"
+         "   0, 0, ?17, ?18, ?19, ?20, ?21, ?22, 0, ?23, ?24)");
       // clang-format on
     }
 
@@ -335,6 +338,8 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
         DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, g->iop->blend_params, sizeof(dt_develop_blend_params_t),
                                    SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, dt_develop_blend_version());
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name, -1, SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
       }
       else
       {
@@ -345,6 +350,8 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, 0);
         DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, NULL, 0, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, 0);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, "", -1, SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, 0);
       }
     }
 
