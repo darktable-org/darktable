@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-18 18:39+0100\n"
-"PO-Revision-Date: 2023-01-18 22:22+0200\n"
+"POT-Creation-Date: 2023-01-19 17:46+0100\n"
+"PO-Revision-Date: 2023-01-20 19:37+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1459,7 +1459,7 @@ msgstr "автозастосування замовчувань робочого
 #: ../build/bin/preferences_gen.h:5767
 msgid ""
 "scene-referred workflow is based on linear modules and will auto-apply "
-"filmic or sigmoid, color calibrary and exposure,\n"
+"filmic or sigmoid, color calibration and exposure,\n"
 "display-referred workflow is based on Lab modules and will auto-apply base "
 "curve, white balance and the legacy module pipe order."
 msgstr ""
@@ -2541,7 +2541,8 @@ msgstr "лінійність"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:5674 ../src/libs/masks.c:106
+#: ../src/iop/ashift.c:5674 ../src/libs/histogram.c:1203
+#: ../src/libs/masks.c:106
 msgid "rotation"
 msgstr "обертання"
 
@@ -21116,7 +21117,7 @@ msgstr "тетрада"
 msgid "scopes"
 msgstr "гістограми"
 
-#: ../src/libs/histogram.c:1455
+#: ../src/libs/histogram.c:1454
 msgid ""
 "scroll to coarse-rotate color harmony guide lines\n"
 "shift+scroll to fine rotate\n"
@@ -21132,11 +21133,11 @@ msgstr ""
 "\n"
 "ctrl+прокручування - змінити висоту вікна гістограми"
 
-#: ../src/libs/histogram.c:1460 ../src/libs/histogram.c:2160
+#: ../src/libs/histogram.c:1459 ../src/libs/histogram.c:2159
 msgid "ctrl+scroll to change display height"
 msgstr "ctrl+прокрутка для зміни висоти відображення"
 
-#: ../src/libs/histogram.c:1469
+#: ../src/libs/histogram.c:1468
 msgid ""
 "drag to change black point,\n"
 "double-click resets\n"
@@ -21146,7 +21147,7 @@ msgstr ""
 "подвійний клік скидає\n"
 "ctrl+прокрутка для зміни висоти відображення"
 
-#: ../src/libs/histogram.c:1474
+#: ../src/libs/histogram.c:1473
 msgid ""
 "drag to change exposure,\n"
 "double-click resets\n"
@@ -21156,105 +21157,105 @@ msgstr ""
 "подвійний клік скидає\n"
 "ctrl+прокрутка для зміни висоти відображення"
 
-#: ../src/libs/histogram.c:1526 ../src/libs/histogram.c:2229
+#: ../src/libs/histogram.c:1525 ../src/libs/histogram.c:2228
 msgid "hide color harmony guide lines"
 msgstr "приховати напрямні лінії гармонії кольорів"
 
-#: ../src/libs/histogram.c:1527 ../src/libs/histogram.c:2230
+#: ../src/libs/histogram.c:1526 ../src/libs/histogram.c:2229
 msgid "show color harmony guide lines"
 msgstr "показати напрямні лінії гармонії кольорів"
 
-#: ../src/libs/histogram.c:1630 ../src/libs/histogram.c:1670
+#: ../src/libs/histogram.c:1629 ../src/libs/histogram.c:1669
 msgid "set scale to linear"
 msgstr "встановити лінійну шкалу"
 
-#: ../src/libs/histogram.c:1635 ../src/libs/histogram.c:1675
+#: ../src/libs/histogram.c:1634 ../src/libs/histogram.c:1674
 msgid "set scale to logarithmic"
 msgstr "встановити логарифмічну шкалу"
 
-#: ../src/libs/histogram.c:1651
+#: ../src/libs/histogram.c:1650
 msgid "set scope to vertical"
 msgstr "встановити гістограму вертикально"
 
-#: ../src/libs/histogram.c:1656
+#: ../src/libs/histogram.c:1655
 msgid "set scope to horizontal"
 msgstr "встановити гістограму горизонтально"
 
-#: ../src/libs/histogram.c:1685
+#: ../src/libs/histogram.c:1684
 msgid "set view to AzBz"
 msgstr "встановити тип перегляду на AzBz"
 
-#: ../src/libs/histogram.c:1691
+#: ../src/libs/histogram.c:1690
 msgid "set view to RYB"
 msgstr "встановити тип перегляду на RYB"
 
-#: ../src/libs/histogram.c:1697
+#: ../src/libs/histogram.c:1696
 msgid "set view to u*v*"
 msgstr "встановити тип перегляду на u*v*"
 
-#: ../src/libs/histogram.c:1714
+#: ../src/libs/histogram.c:1713
 msgid "set mode to waveform"
 msgstr "встановити режим форми сигналу"
 
-#: ../src/libs/histogram.c:1722
+#: ../src/libs/histogram.c:1721
 msgid "set mode to rgb parade"
 msgstr "встановити режим на RGB-парад"
 
-#: ../src/libs/histogram.c:1730
+#: ../src/libs/histogram.c:1729
 msgid "set mode to vectorscope"
 msgstr "встановити режим вектороскопа"
 
-#: ../src/libs/histogram.c:1738
+#: ../src/libs/histogram.c:1737
 msgid "set mode to histogram"
 msgstr "встановити режим гістограми"
 
-#: ../src/libs/histogram.c:1829 ../src/libs/histogram.c:1865
-#: ../src/libs/histogram.c:2208
+#: ../src/libs/histogram.c:1828 ../src/libs/histogram.c:1864
+#: ../src/libs/histogram.c:2207
 msgid "hide red channel"
 msgstr "приховати канал червоного"
 
-#: ../src/libs/histogram.c:1829 ../src/libs/histogram.c:1865
-#: ../src/libs/histogram.c:2208
+#: ../src/libs/histogram.c:1828 ../src/libs/histogram.c:1864
+#: ../src/libs/histogram.c:2207
 msgid "show red channel"
 msgstr "показати канал червоного"
 
-#: ../src/libs/histogram.c:1837 ../src/libs/histogram.c:1863
-#: ../src/libs/histogram.c:2214
+#: ../src/libs/histogram.c:1836 ../src/libs/histogram.c:1862
+#: ../src/libs/histogram.c:2213
 msgid "hide green channel"
 msgstr "приховати канал зеленого"
 
-#: ../src/libs/histogram.c:1837 ../src/libs/histogram.c:1863
-#: ../src/libs/histogram.c:2214
+#: ../src/libs/histogram.c:1836 ../src/libs/histogram.c:1862
+#: ../src/libs/histogram.c:2213
 msgid "show green channel"
 msgstr "показати канал зеленого"
 
-#: ../src/libs/histogram.c:1845 ../src/libs/histogram.c:1864
-#: ../src/libs/histogram.c:2220
+#: ../src/libs/histogram.c:1844 ../src/libs/histogram.c:1863
+#: ../src/libs/histogram.c:2219
 msgid "hide blue channel"
 msgstr "приховати канал синього"
 
-#: ../src/libs/histogram.c:1845 ../src/libs/histogram.c:1864
-#: ../src/libs/histogram.c:2220
+#: ../src/libs/histogram.c:1844 ../src/libs/histogram.c:1863
+#: ../src/libs/histogram.c:2219
 msgid "show blue channel"
 msgstr "показати канал синього"
 
-#: ../src/libs/histogram.c:2153
+#: ../src/libs/histogram.c:2152
 msgid "histogram"
 msgstr "гістограма"
 
-#: ../src/libs/histogram.c:2156 ../src/libs/histogram.c:2198
+#: ../src/libs/histogram.c:2155 ../src/libs/histogram.c:2197
 msgid "cycle histogram modes"
 msgstr "цикл по режимах гістограми"
 
-#: ../src/libs/histogram.c:2161 ../src/libs/histogram.c:2199
+#: ../src/libs/histogram.c:2160 ../src/libs/histogram.c:2198
 msgid "hide histogram"
 msgstr "приховати гістограму"
 
-#: ../src/libs/histogram.c:2187 ../src/libs/histogram.c:2200
+#: ../src/libs/histogram.c:2186 ../src/libs/histogram.c:2199
 msgid "switch histogram mode"
 msgstr "перемикати режим гістограми"
 
-#: ../src/libs/histogram.c:2191 ../src/libs/histogram.c:2201
+#: ../src/libs/histogram.c:2190 ../src/libs/histogram.c:2200
 msgid "switch histogram type"
 msgstr "перемикати тип гістограми"
 
