@@ -1349,8 +1349,10 @@ static void dt_styles_style_data_free(StyleData *style, gboolean free_segments)
   g_free(style);
 }
 
-static void dt_styles_start_tag_handler(GMarkupParseContext *context, const gchar *element_name,
-                                        const gchar **attribute_names, const gchar **attribute_values,
+static void dt_styles_start_tag_handler(GMarkupParseContext *context,
+                                        const gchar *element_name,
+                                        const gchar **attribute_names,
+                                        const gchar **attribute_values,
                                         gpointer user_data, GError **error)
 {
   StyleData *style = user_data;
@@ -1365,8 +1367,10 @@ static void dt_styles_start_tag_handler(GMarkupParseContext *context, const gcha
   }
 }
 
-static void dt_styles_end_tag_handler(GMarkupParseContext *context, const gchar *element_name,
-                                      gpointer user_data, GError **error)
+static void dt_styles_end_tag_handler(GMarkupParseContext *context,
+                                      const gchar *element_name,
+                                      gpointer user_data,
+                                      GError **error)
 {
   StyleData *style = user_data;
   const gchar *elt = g_markup_parse_context_get_element(context);
@@ -1577,8 +1581,10 @@ gchar *dt_styles_get_description(const char *name)
   gchar *description = NULL;
   if((id = dt_styles_get_id_by_name(name)) != 0)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT description FROM data.styles WHERE id=?1",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT description FROM data.styles WHERE id=?1",
+       -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
     description = (char *)sqlite3_column_text(stmt, 0);
@@ -1592,9 +1598,10 @@ static int32_t dt_styles_get_id_by_name(const char *name)
 {
   int id = 0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM data.styles WHERE name=?1 ORDER BY id DESC LIMIT 1", -1, &stmt,
-                              NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT id FROM data.styles WHERE name=?1 ORDER BY id DESC LIMIT 1",
+     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1622,8 +1629,10 @@ void dt_init_styles_actions()
 dt_style_t *dt_styles_get_by_name(const char *name)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, description FROM data.styles WHERE name = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT name, description FROM data.styles WHERE name = ?1",
+     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
