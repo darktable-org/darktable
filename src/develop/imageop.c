@@ -356,7 +356,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_stats.bins_count = 0;
   module->histogram_stats.pixels = 0;
   module->multi_priority = 0;
-  module->multi_name_hand_edited = 0;
+  module->multi_name_hand_edited = FALSE;
   module->iop_order = 0;
   module->cache_next_important = FALSE;
   for(int k = 0; k < 3; k++)
@@ -844,7 +844,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
       // clear out multi-name (set 1st char to 0)
       module->multi_name[0] = 0;
       module->multi_name_hand_edited = FALSE;
-      dt_dev_add_history_item(module->dev, module, TRUE);
+      dt_dev_add_history_item(module->dev, module, FALSE);
     }
 
     // make sure we write history & xmp to ensure that the new module name
@@ -1783,7 +1783,9 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
   if(!dt_iop_is_hidden(module)
      && module_is_enabled
      && module_params_changed
-     && !module->multi_name_hand_edited)
+     && !module->multi_name_hand_edited
+     // do not set module-name if currently editing it (see _rename_module_key_press).
+     && module->multi_name[sizeof(module->multi_name) - 1] == '\0')
   {
     if(module->label_recompute_handle)
       g_source_remove(module->label_recompute_handle);

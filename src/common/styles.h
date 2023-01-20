@@ -48,6 +48,7 @@ typedef struct dt_style_item_t
   int num, selimg_num, enabled, multi_priority;
   int iop_order;
   gchar *name, *operation, *multi_name;
+  int multi_name_hand_edited;
   int module_version, blendop_version;
   dt_iop_params_t *params;
   dt_develop_blend_params_t *blendop_params;
