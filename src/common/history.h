@@ -62,10 +62,19 @@ typedef struct dt_history_copy_item_t
 void dt_history_item_free(gpointer data);
 
 /** adds to dev_dest module mod_src */
-int dt_history_merge_module_into_history(struct dt_develop_t *dev_dest, struct dt_develop_t *dev_src, struct dt_iop_module_t *mod_src, GList **_modules_used, const int append);
+int dt_history_merge_module_into_history(struct dt_develop_t *dev_dest,
+                                         struct dt_develop_t *dev_src,
+                                         struct dt_iop_module_t *mod_src,
+                                         GList **_modules_used,
+                                         const int append);
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
-int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops, gboolean copy_iop_order, const gboolean copy_full);
+int dt_history_copy_and_paste_on_image(const int32_t imgid,
+                                       const int32_t dest_imgid,
+                                       const gboolean merge,
+                                       GList *ops,
+                                       const gboolean copy_iop_order,
+                                       const gboolean copy_full);
 
 /** delete all history for the given image */
 void dt_history_delete_on_image(int32_t imgid);
@@ -151,4 +160,3 @@ void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

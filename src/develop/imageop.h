@@ -299,8 +299,11 @@ typedef struct dt_iop_module_t
   guint timeout_handle;
   guint label_recompute_handle;
 
-  void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                        const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+  void (*process_plain)(struct dt_iop_module_t *self,
+                        struct dt_dev_pixelpipe_iop_t *piece,
+                        const void *const i,
+                        void *const o,
+                        const struct dt_iop_roi_t *const roi_in,
                         const struct dt_iop_roi_t *const roi_out);
   // hint for higher io cache priority
   gboolean cache_next_important;
@@ -319,15 +322,20 @@ void dt_iop_load_modules_so(void);
 /** cleans up the dlopen refs. */
 void dt_iop_unload_modules_so(void);
 /** load a module for a given .so */
-int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, struct dt_develop_t *dev);
+int dt_iop_load_module_by_so(dt_iop_module_t *module,
+                             dt_iop_module_so_t *so,
+                             struct dt_develop_t *dev);
 /** returns a list of instances referencing stuff loaded in load_modules_so. */
 GList *dt_iop_load_modules_ext(struct dt_develop_t *dev, gboolean no_image);
 GList *dt_iop_load_modules(struct dt_develop_t *dev);
-int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, struct dt_develop_t *dev);
+int dt_iop_load_module(dt_iop_module_t *module,
+                       dt_iop_module_so_t *module_so,
+                       struct dt_develop_t *dev);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_cleanup_module(dt_iop_module_t *module);
 /** initialize pipe. */
-void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe,
+void dt_iop_init_pipe(struct dt_iop_module_t *module,
+                      struct dt_dev_pixelpipe_t *pipe,
                       struct dt_dev_pixelpipe_iop_t *piece);
 /** checks if iop do have an ui */
 gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module);
@@ -348,14 +356,17 @@ static inline void dt_iop_gui_leave_critical_section(dt_iop_module_t *const modu
 }
 /** cleans up gui of module and of blendops */
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module);
-/** updates the enable button state. (take into account module->enabled and module->hide_enable_button  */
+/** updates the enable button state. (take into account
+ * module->enabled and module->hide_enable_button */
 void dt_iop_gui_set_enable_button(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
 /** reset the ui to its defaults */
 void dt_iop_gui_reset(dt_iop_module_t *module);
 /** set expanded state of iop */
-void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolean collapse_others);
+void dt_iop_gui_set_expanded(dt_iop_module_t *module,
+                             const gboolean expanded,
+                             const gboolean collapse_others);
 /** refresh iop according to set expanded state */
 void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 /** change module state */
@@ -367,10 +378,13 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
 void dt_iop_gui_update_header(dt_iop_module_t *module);
 
 /** commits params and updates piece hash. */
-void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
-                          struct dt_develop_blend_params_t *blendop_params, struct dt_dev_pixelpipe_t *pipe,
+void dt_iop_commit_params(dt_iop_module_t *module,
+                          dt_iop_params_t *params,
+                          struct dt_develop_blend_params_t *blendop_params,
+                          struct dt_dev_pixelpipe_t *pipe,
                           struct dt_dev_pixelpipe_iop_t *piece);
-void dt_iop_commit_blend_params(dt_iop_module_t *module, const struct dt_develop_blend_params_t *blendop_params);
+void dt_iop_commit_blend_params(dt_iop_module_t *module,
+                                const struct dt_develop_blend_params_t *blendop_params);
 /** make sure the raster mask is advertised if available */
 void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
@@ -412,10 +426,14 @@ dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op);
 dt_iop_module_t *dt_iop_get_module(const char *op);
 /** returns module with op + multi_priority or NULL if not found on the list,
     if multi_priority == -1 do not check for it */
-dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
+dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
+                                                  const char *operation,
+                                                  const int multi_priority);
 /** returns module with op + multi_name or NULL if not found on the list,
     if multi_name == NULL do not check for it */
-dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name);
+dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules,
+                                                    const char *operation,
+                                                    const char *multi_name);
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 /** return preferred module instance for shortcuts **/
@@ -468,7 +486,10 @@ void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior)
 void dt_iop_cancel_history_update(dt_iop_module_t *module);
 
 /** (un)hide iop module header right side buttons */
-gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
+gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
+                                         GdkEventCrossing *event,
+                                         gboolean show_buttons,
+                                         const gboolean always_hide);
 
 /** add/remove mask indicator to iop module header */
 void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
@@ -482,9 +503,12 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *module,
                                        const char *stderr_message);
 
 // format modules description going in tooltips
-const char **dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
-                                    const char *purpose, const char *input,
-                                    const char *process, const char *output);
+const char **dt_iop_set_description(dt_iop_module_t *module,
+                                    const char *main_text,
+                                    const char *purpose,
+                                    const char *input,
+                                    const char *process,
+                                    const char *output);
 
 static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
 {
@@ -504,10 +528,13 @@ char *dt_iop_warning_message(const char *message);
 
 /** check whether we have the required number of channels in the input data; if not, copy the input buffer to the
  ** output buffer, set the module's trouble message, and return FALSE */
-gboolean dt_iop_have_required_input_format(const int required_ch, struct dt_iop_module_t *const module,
+gboolean dt_iop_have_required_input_format(const int required_ch,
+                                           struct dt_iop_module_t *const module,
                                            const int actual_pipe_ch,
-                                           const void *const __restrict__ ivoid, void *const __restrict__ ovoid,
-                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
+                                           const void *const __restrict__ ivoid,
+                                           void *const __restrict__ ovoid,
+                                           const dt_iop_roi_t *const roi_in,
+                                           const dt_iop_roi_t *const roi_out);
 
 /* bring up module rename dialog */
 void dt_iop_gui_rename_module(dt_iop_module_t *module);
