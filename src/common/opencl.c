@@ -2313,7 +2313,6 @@ static int _opencl_set_kernel_args(const int dev, const int kernel, int num, va_
     err = dt_opencl_set_kernel_arg(dev, kernel, num++, size, ptr);
   } while(!err);
 
-  va_end(ap);
   return err;
 }
 
@@ -2321,7 +2320,9 @@ int dt_opencl_set_kernel_args_internal(const int dev, const int kernel, const in
 {
   va_list ap;
   va_start(ap, num);
-  return _opencl_set_kernel_args(dev, kernel, num, ap);
+  const int err = _opencl_set_kernel_args(dev, kernel, num, ap);
+  va_end(ap);
+  return err;
 }
 
 int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes)
@@ -2355,7 +2356,8 @@ int dt_opencl_enqueue_kernel_2d_args_internal(const int dev, const int kernel, c
 {
   va_list ap;
   va_start(ap, h);
-  int err = _opencl_set_kernel_args(dev, kernel, 0, ap);
+  const int err = _opencl_set_kernel_args(dev, kernel, 0, ap);
+  va_end(ap);
   if(err) return err;
 
   const size_t sizes[] = { ROUNDUPDWD(w, dev), ROUNDUPDHT(h, dev), 1 };
