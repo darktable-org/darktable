@@ -68,8 +68,11 @@ void dt_gui_presets_init()
                         NULL, NULL);
 }
 
-void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version,
-                                const void *params, const int32_t params_size,
+void dt_gui_presets_add_generic(const char *name,
+                                dt_dev_operation_t op,
+                                const int32_t version,
+                                const void *params,
+                                const int32_t params_size,
                                 const int32_t enabled,
                                 const dt_develop_blend_colorspace_t blend_cst)
 {
@@ -80,10 +83,13 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
       &default_blendop_params, enabled);
 }
 
-void dt_gui_presets_add_with_blendop(
-    const char *name, dt_dev_operation_t op, const int32_t version,
-    const void *params, const int32_t params_size,
-    const void *blend_params, const int32_t enabled)
+void dt_gui_presets_add_with_blendop(const char *name,
+                                     dt_dev_operation_t op,
+                                     const int32_t version,
+                                     const void *params,
+                                     const int32_t params_size,
+                                     const void *blend_params,
+                                     const int32_t enabled)
 {
   sqlite3_stmt *stmt;
 
@@ -182,7 +188,9 @@ static void _edit_preset_final_callback(dt_gui_presets_edit_dialog_t *g)
   dt_gui_store_last_preset(gtk_entry_get_text(g->name));
 }
 
-static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
+static void _edit_preset_response(GtkDialog *dialog,
+                                  gint response_id,
+                                  dt_gui_presets_edit_dialog_t *g)
 {
   if(response_id == GTK_RESPONSE_OK)
   {
@@ -326,7 +334,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
 
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, format);
 
-    // commit specific field in case of newly crearted preset
+    // commit specific field in case of newly created preset
     if(g->old_id < 0)
     {
       if(g->iop)
@@ -722,9 +730,14 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
   gtk_widget_show_all(dialog);
 }
 
-void dt_gui_presets_show_iop_edit_dialog(const char *name_in, dt_iop_module_t *module, GCallback final_callback,
-                                         gpointer data, gboolean allow_name_change, gboolean allow_desc_change,
-                                         gboolean allow_remove, GtkWindow *parent)
+void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
+                                         dt_iop_module_t *module,
+                                         GCallback final_callback,
+                                         gpointer data,
+                                         gboolean allow_name_change,
+                                         gboolean allow_desc_change,
+                                         gboolean allow_remove,
+                                         GtkWindow *parent)
 {
   dt_gui_presets_edit_dialog_t *g
       = (dt_gui_presets_edit_dialog_t *)g_malloc0(sizeof(dt_gui_presets_edit_dialog_t));
@@ -741,9 +754,15 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in, dt_iop_module_t *m
   _presets_show_edit_dialog(g, allow_name_change, allow_desc_change, allow_remove);
 }
 
-void dt_gui_presets_show_edit_dialog(const char *name_in, const char *module_name, int rowid,
-                                     GCallback final_callback, gpointer data, gboolean allow_name_change,
-                                     gboolean allow_desc_change, gboolean allow_remove, GtkWindow *parent)
+void dt_gui_presets_show_edit_dialog(const char *name_in,
+                                     const char *module_name,
+                                     int rowid,
+                                     GCallback final_callback,
+                                     gpointer data,
+                                     gboolean allow_name_change,
+                                     gboolean allow_desc_change,
+                                     gboolean allow_remove,
+                                     GtkWindow *parent)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -788,8 +807,9 @@ static void _edit_preset(const char *name_in, dt_iop_module_t *module)
   else
     name = g_strdup(name_in);
 
-  dt_gui_presets_show_iop_edit_dialog(name, module, (GCallback)_edit_preset_final_callback, NULL, TRUE, TRUE,
-                                      FALSE, GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  dt_gui_presets_show_iop_edit_dialog
+    (name, module, (GCallback)_edit_preset_final_callback, NULL, TRUE, TRUE,
+     FALSE, GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   g_free(name);
 }
 
@@ -1301,9 +1321,12 @@ void dt_gui_favorite_presets_menu_show()
 }
 
 
-static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version,
-                                                  dt_iop_params_t *params, int32_t params_size,
-                                                  dt_develop_blend_params_t *bl_params, dt_iop_module_t *module,
+static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op,
+                                                  int32_t version,
+                                                  dt_iop_params_t *params,
+                                                  int32_t params_size,
+                                                  dt_develop_blend_params_t *bl_params,
+                                                  dt_iop_module_t *module,
                                                   const dt_image_t *image,
                                                   void (*pick_callback)(GtkMenuItem *, void *),
                                                   void *callback_data)
@@ -1531,8 +1554,12 @@ void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
                                         module->blend_params, module, &module->dev->image_storage, NULL, NULL);
 }
 
-void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const int32_t version,
-                               const char *maker, const char *model, const char *lens)
+void dt_gui_presets_update_mml(const char *name,
+                               dt_dev_operation_t op,
+                               const int32_t version,
+                               const char *maker,
+                               const char *model,
+                               const char *lens)
 {
   sqlite3_stmt *stmt;
   // clang-format off¨
@@ -1615,7 +1642,9 @@ void dt_gui_presets_update_tv(const char *name, dt_dev_operation_t op, const int
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "UPDATE data.presets SET exposure_min=?1, exposure_max=?2 WHERE operation=?3 AND op_version=?4 AND name=?5",
+      "UPDATE data.presets"
+      " SET exposure_min=?1, exposure_max=?2"
+      " WHERE operation=?3 AND op_version=?4 AND name=?5",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, min);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, max);
@@ -1646,7 +1675,9 @@ void dt_gui_presets_update_fl(const char *name, dt_dev_operation_t op, const int
   sqlite3_finalize(stmt);
 }
 
-void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const int32_t version,
+void dt_gui_presets_update_ldr(const char *name,
+                               dt_dev_operation_t op,
+                               const int32_t version,
                                const int ldrflag)
 {
   sqlite3_stmt *stmt;
@@ -1665,7 +1696,9 @@ void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const in
   sqlite3_finalize(stmt);
 }
 
-void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, const int32_t version,
+void dt_gui_presets_update_autoapply(const char *name,
+                                     dt_dev_operation_t op,
+                                     const int32_t version,
                                      const int autoapply)
 {
   sqlite3_stmt *stmt;
@@ -1684,7 +1717,9 @@ void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, co
   sqlite3_finalize(stmt);
 }
 
-void dt_gui_presets_update_filter(const char *name, dt_dev_operation_t op, const int32_t version,
+void dt_gui_presets_update_filter(const char *name,
+                                  dt_dev_operation_t op,
+                                  const int32_t version,
                                   const int filter)
 {
   sqlite3_stmt *stmt;

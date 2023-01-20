@@ -678,7 +678,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   return DT_IMAGEIO_LOAD_FAILED;
 }
 
-void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
+void dt_imageio_to_fractional(const float in, uint32_t *num, uint32_t *den)
 {
   if(!(in >= 0))
   {
@@ -694,12 +694,22 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
   }
 }
 
-int dt_imageio_export(const int32_t imgid, const char *filename, dt_imageio_module_format_t *format,
-                      dt_imageio_module_data_t *format_params, const gboolean high_quality, const gboolean upscale,
-                      const gboolean copy_metadata, const gboolean export_masks,
-                      dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                      dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
-                      dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata)
+int dt_imageio_export(const int32_t imgid,
+                      const char *filename,
+                      dt_imageio_module_format_t *format,
+                      dt_imageio_module_data_t *format_params,
+                      const gboolean high_quality,
+                      const gboolean upscale,
+                      const gboolean copy_metadata,
+                      const gboolean export_masks,
+                      const dt_colorspaces_color_profile_type_t icc_type,
+                      const gchar *icc_filename,
+                      const dt_iop_color_intent_t icc_intent,
+                      dt_imageio_module_storage_t *storage,
+                      dt_imageio_module_data_t *storage_params,
+                      const int num,
+                      const int total,
+                      dt_export_metadata_t *metadata)
 {
   if(strcmp(format->mime(format_params), "x-copy") == 0)
     /* This is a just a copy, skip process and just export */
@@ -717,15 +727,28 @@ int dt_imageio_export(const int32_t imgid, const char *filename, dt_imageio_modu
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
-int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
-                                 dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params,
-                                 const gboolean ignore_exif, const gboolean display_byteorder,
-                                 const gboolean high_quality, const gboolean upscale, gboolean is_scaling, const gboolean thumbnail_export,
-                                 const char *filter, const gboolean copy_metadata, const gboolean export_masks,
-                                 dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                                 dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
-                                 dt_imageio_module_data_t *storage_params, int num, int total,
-                                 dt_export_metadata_t *metadata, const int history_end)
+int dt_imageio_export_with_flags(const int32_t imgid,
+                                 const char *filename,
+                                 dt_imageio_module_format_t *format,
+                                 dt_imageio_module_data_t *format_params,
+                                 const gboolean ignore_exif,
+                                 const gboolean display_byteorder,
+                                 const gboolean high_quality,
+                                 const gboolean upscale,
+                                 const gboolean is_scaling,
+                                 const gboolean thumbnail_export,
+                                 const char *filter,
+                                 const gboolean copy_metadata,
+                                 const gboolean export_masks,
+                                 const dt_colorspaces_color_profile_type_t icc_type,
+                                 const gchar *icc_filename,
+                                 const dt_iop_color_intent_t icc_intent,
+                                 dt_imageio_module_storage_t *storage,
+                                 dt_imageio_module_data_t *storage_params,
+                                 int num,
+                                 int total,
+                                 dt_export_metadata_t *metadata,
+                                 const int history_end)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, FALSE);
@@ -1130,7 +1153,8 @@ error_early:
 
 // fallback read method in case file could not be opened yet.
 // use GraphicsMagick (if supported) to read exotic LDRs
-dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,
+dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img,
+                                           const char *filename,
                                            dt_mipmap_buffer_t *buf)
 {
   // if buf is NULL, don't proceed
@@ -1164,7 +1188,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
   return DT_IMAGEIO_LOAD_FAILED;
 }
 
-void dt_imageio_update_monochrome_workflow_tag(int32_t id, int mask)
+void dt_imageio_update_monochrome_workflow_tag(const int32_t id, const int mask)
 {
   if(mask & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_BAYER))
   {
@@ -1195,8 +1219,8 @@ void dt_imageio_set_hdr_tag(dt_image_t *img)
 //   combined reading
 // =================================================
 
-dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const * means you hold a write lock!
-                                    const char *filename,          // full path
+dt_imageio_retval_t dt_imageio_open(dt_image_t *img,        // non-const * means you hold a write lock!
+                                    const char *filename,   // full path
                                     dt_mipmap_buffer_t *buf)
 {
   /* first of all, check if file exists, don't bother to test loading if not exists */
@@ -1287,10 +1311,15 @@ typedef struct _imageio_preview_t
 } _imageio_preview_t;
 
 static int _preview_write_image(dt_imageio_module_data_t *data,
-                                const char *filename, const void *in,
-                                dt_colorspaces_color_profile_type_t over_type,
+                                const char *filename,
+                                const void *in,
+                                const dt_colorspaces_color_profile_type_t over_type,
                                 const char *over_filename,
-                                void *exif, int exif_len, int imgid, int num, int total,
+                                void *exif,
+                                const int exif_len,
+                                const int imgid,
+                                const int num,
+                                const int total,
                                 dt_dev_pixelpipe_t*pipe,
                                 const gboolean export_masks)
 {
