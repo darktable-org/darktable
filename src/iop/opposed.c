@@ -448,7 +448,7 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     claccu = dt_calloc_align_float(6 * iheight);
     if(claccu == NULL) goto error;
 
-    size_t sizes[] = { iheight, 1};
+    size_t sizes[] = { iheight, 1, 1};
 
     dt_opencl_set_kernel_args(devid, gd->kernel_highlights_chroma, 0,
             CLARG(dev_in), CLARG(dev_outmask), CLARG(dev_accu),
