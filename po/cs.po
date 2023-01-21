@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-07 19:54+0100\n"
+"POT-Creation-Date: 2023-01-21 18:18+0100\n"
 "PO-Revision-Date: 2023-01-12 12:59+0100\n"
 "Last-Translator: Petr Stasiak <petr@stasiak.cz>\n"
 "Language-Team: \n"
@@ -2285,8 +2285,8 @@ msgstr "specifický"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2943 ../src/develop/develop.c:2265
-#: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:130
-#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:804
+#: ../src/gui/accelerators.c:123 ../src/gui/accelerators.c:133
+#: ../src/gui/accelerators.c:217 ../src/imageio/format/avif.c:804
 #: ../src/imageio/format/j2k.c:669 ../src/libs/live_view.c:361
 msgid "off"
 msgstr "vyp"
@@ -3858,7 +3858,7 @@ msgstr "zkreslení středních tónů"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:141
 #: ../build/lib/darktable/plugins/introspection_highlights.c:242
-#: ../src/views/darkroom.c:2306
+#: ../src/views/darkroom.c:2308
 msgid "clipping threshold"
 msgstr "práh oříznutí"
 
@@ -4017,7 +4017,7 @@ msgstr "korekce"
 #: ../src/iop/levels.c:672 ../src/iop/profile_gamma.c:667
 #: ../src/libs/copy_history.c:358 ../src/libs/export.c:1280
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2696
-#: ../src/libs/styles.c:830 ../src/views/darkroom.c:2287
+#: ../src/libs/styles.c:830 ../src/views/darkroom.c:2289
 msgid "mode"
 msgstr "režim"
 
@@ -4067,8 +4067,8 @@ msgstr "zneplatněn"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2186 ../src/views/darkroom.c:2581
-#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:811
+#: ../src/views/darkroom.c:2186 ../src/views/darkroom.c:2583
+#: ../src/views/darkroom.c:2586 ../src/views/lighttable.c:811
 #: ../src/views/lighttable.c:820 ../src/views/lighttable.c:1296
 #: ../src/views/lighttable.c:1300 ../src/views/lighttable.c:1304
 #: ../src/views/lighttable.c:1308 ../src/views/lighttable.c:1312
@@ -4610,19 +4610,19 @@ msgstr "přispěvatelé rawspeed"
 msgid "integration contributors"
 msgstr "integrační přispěvatelé"
 
-#: ../build/share/darktable/darktable.desktop.in.h:1
+#: ../build/share/darktable/org.darktable.darktable.desktop.in.h:1
 #: ../data/org.darktable.darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
 msgstr "Virtuální katalog a editor"
 
-#: ../build/share/darktable/darktable.desktop.in.h:2
+#: ../build/share/darktable/org.darktable.darktable.desktop.in.h:2
 #: ../data/org.darktable.darktable.appdata.xml.in.h:1
 #: ../data/org.darktable.darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
 msgstr "Uspořádejte a vytvářejte snímky z digitálních fotoaparátů"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../build/share/darktable/darktable.desktop.in.h:4
+#: ../build/share/darktable/org.darktable.darktable.desktop.in.h:4
 #: ../data/org.darktable.darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
 msgstr "grafika;fotografie;raw;"
@@ -4705,12 +4705,12 @@ msgstr "ne tolik rozevíracích seznamů"
 msgid "not that many buttons"
 msgstr "ne tolik tlačítek"
 
-#: ../src/bauhaus/bauhaus.c:3558 ../src/gui/accelerators.c:317
+#: ../src/bauhaus/bauhaus.c:3558 ../src/gui/accelerators.c:328
 msgid "value"
 msgstr "hodnota"
 
 #: ../src/bauhaus/bauhaus.c:3559 ../src/bauhaus/bauhaus.c:3565
-#: ../src/bauhaus/bauhaus.c:3604 ../src/gui/accelerators.c:295
+#: ../src/bauhaus/bauhaus.c:3604 ../src/gui/accelerators.c:306
 msgid "button"
 msgstr "tlačítko"
 
@@ -4735,9 +4735,9 @@ msgid "dropdown"
 msgstr "rozevírací seznam"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1658
-#: ../src/control/jobs/control_jobs.c:1712 ../src/gui/accelerators.c:1950
-#: ../src/gui/accelerators.c:2026 ../src/gui/accelerators.c:2077
-#: ../src/gui/accelerators.c:2105 ../src/gui/accelerators.c:2164
+#: ../src/control/jobs/control_jobs.c:1712 ../src/gui/accelerators.c:1961
+#: ../src/gui/accelerators.c:2037 ../src/gui/accelerators.c:2088
+#: ../src/gui/accelerators.c:2116 ../src/gui/accelerators.c:2175
 #: ../src/gui/hist_dialog.c:195 ../src/gui/preferences.c:1032
 #: ../src/gui/preferences.c:1071 ../src/gui/presets.c:361
 #: ../src/gui/presets.c:459 ../src/gui/styles_dialog.c:408
@@ -4977,7 +4977,7 @@ msgstr "id"
 
 #: ../src/common/collection.c:658 ../src/common/collection.c:711
 #: ../src/common/colorlabels.c:337 ../src/develop/lightroom.c:1550
-#: ../src/dtgtk/thumbnail.c:1394 ../src/libs/filters/colors.c:301
+#: ../src/dtgtk/thumbnail.c:1388 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:94
 msgid "color label"
 msgstr "barevný štítek"
@@ -5061,7 +5061,7 @@ msgstr "geotagging"
 msgid "grouping"
 msgstr "seskupování"
 
-#: ../src/common/collection.c:731 ../src/dtgtk/thumbnail.c:1406
+#: ../src/common/collection.c:731 ../src/dtgtk/thumbnail.c:1400
 #: ../src/libs/metadata_view.c:129 ../src/libs/metadata_view.c:338
 msgid "local copy"
 msgstr "místní kopie"
@@ -5148,12 +5148,12 @@ msgstr "následovníci skupin"
 msgid "not defined"
 msgstr "nedefinováno"
 
-#: ../src/common/collection.c:2499
+#: ../src/common/collection.c:2501
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
 msgstr "<b>%d</b> obrázek (#<b>%d</b>) vybraný z <b>%d</b>"
 
-#: ../src/common/collection.c:2505
+#: ../src/common/collection.c:2507
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
@@ -5465,7 +5465,7 @@ msgstr "barevné štítky nastaveny na %s"
 msgid "all colorlabels removed"
 msgstr "všechny barevné štítky odstraněny"
 
-#: ../src/common/colorlabels.c:328 ../src/gui/accelerators.c:156
+#: ../src/common/colorlabels.c:328 ../src/gui/accelerators.c:163
 #: ../src/libs/image.c:594
 msgid "clear"
 msgstr "vymazat"
@@ -5481,7 +5481,7 @@ msgid "export profile"
 msgstr "exportní profil"
 
 #: ../src/common/colorspaces.c:1407 ../src/common/colorspaces.c:1687
-#: ../src/views/darkroom.c:2446
+#: ../src/views/darkroom.c:2448
 msgid "softproof profile"
 msgstr "profil jemný obrys"
 
@@ -6252,7 +6252,7 @@ msgstr "export"
 msgid "cannot find the style '%s' to apply during export."
 msgstr "nemůže najít styl '%s', který se má použít při exportu."
 
-#: ../src/common/import_session.c:294
+#: ../src/common/import_session.c:308
 msgid ""
 "couldn't expand to a unique filename for session, please check your import "
 "session settings."
@@ -6260,7 +6260,7 @@ msgstr ""
 "nelze rozšířit na jedinečný název souboru pro relaci, zkontrolujte nastavení "
 "relace importu."
 
-#: ../src/common/import_session.c:373
+#: ../src/common/import_session.c:401
 msgid "requested session path not available. device not mounted?"
 msgstr "požadovaná cesta relace není k dispozici. zařízení není připojené?"
 
@@ -6535,77 +6535,75 @@ msgstr "pod hladinou moře"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:66 ../src/gui/accelerators.c:128
+#: ../src/control/control.c:66 ../src/gui/accelerators.c:131
 #: ../src/views/darkroom.c:2072
 msgid "hold"
 msgstr "držet"
 
-#: ../src/control/control.c:102 ../src/control/control.c:141
+#: ../src/control/control.c:102 ../src/control/control.c:207
 msgid "modifiers"
 msgstr "modifikátory"
 
-#: ../src/control/control.c:109
+#: ../src/control/control.c:111
 msgctxt "accel"
 msgid "global"
 msgstr "globální"
 
-#: ../src/control/control.c:110
+#: ../src/control/control.c:118
 msgctxt "accel"
 msgid "views"
 msgstr "pohledy"
 
-#: ../src/control/control.c:111
+#: ../src/control/control.c:125
 msgctxt "accel"
 msgid "thumbtable"
 msgstr "tabulka náhledů"
 
-#: ../src/control/control.c:112
+#: ../src/control/control.c:132
 msgctxt "accel"
 msgid "utility modules"
 msgstr "nástrojové moduly"
 
-#: ../src/control/control.c:113
+#: ../src/control/control.c:139
 msgctxt "accel"
 msgid "format"
 msgstr "formát"
 
-#. will be placed under lib/export
-#: ../src/control/control.c:114
+#: ../src/control/control.c:146
 msgctxt "accel"
 msgid "storage"
 msgstr "úložiště"
 
-#. will be placed under lib/export
-#: ../src/control/control.c:115
+#: ../src/control/control.c:153
 msgctxt "accel"
 msgid "processing modules"
 msgstr "zpracovací moduly"
 
-#: ../src/control/control.c:116
+#: ../src/control/control.c:160
 msgctxt "accel"
 msgid "<blending>"
 msgstr "<míchání>"
 
-#: ../src/control/control.c:117
+#: ../src/control/control.c:167
 msgctxt "accel"
 msgid "lua scripts"
 msgstr "scripty lua"
 
-#: ../src/control/control.c:118
+#: ../src/control/control.c:174
 msgctxt "accel"
 msgid "fallbacks"
 msgstr "zálohy"
 
-#: ../src/control/control.c:121
+#: ../src/control/control.c:183
 msgctxt "accel"
 msgid "<focused>"
 msgstr "<vybraný>"
 
-#: ../src/control/control.c:138
+#: ../src/control/control.c:204
 msgid "show accels window"
 msgstr "zobrazit okno akcelerátory"
 
-#: ../src/control/control.c:299
+#: ../src/control/control.c:365
 msgid "working..."
 msgstr "pracuji..."
 
@@ -7555,8 +7553,8 @@ msgid "input after blur"
 msgstr "vstup po rozostření"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2265
-#: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:129
-#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:804
+#: ../src/gui/accelerators.c:122 ../src/gui/accelerators.c:132
+#: ../src/gui/accelerators.c:217 ../src/imageio/format/avif.c:804
 #: ../src/libs/live_view.c:362
 msgid "on"
 msgstr "zap"
@@ -7814,7 +7812,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3132 ../src/iop/toneequal.c:3135
 #: ../src/iop/toneequal.c:3138 ../src/iop/toneequal.c:3141
 #: ../src/iop/toneequal.c:3235 ../src/iop/toneequal.c:3242
-#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2353
+#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2355
 msgid " EV"
 msgstr " EV"
 
@@ -8140,7 +8138,7 @@ msgstr "přesun níž"
 
 #. delete button label and tooltip will be updated based on trash pref
 #: ../src/develop/imageop.c:955 ../src/develop/imageop.c:3236
-#: ../src/gui/accelerators.c:143 ../src/gui/presets.c:460
+#: ../src/gui/accelerators.c:148 ../src/gui/presets.c:460
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568
 msgid "delete"
@@ -8236,7 +8234,7 @@ msgstr ""
 "jeho požadavku."
 
 #: ../src/develop/imageop.c:3232 ../src/develop/imageop.c:3242
-#: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1223
+#: ../src/gui/accelerators.c:144 ../src/libs/lib.c:1223
 msgid "show"
 msgstr "zobrazit"
 
@@ -8255,16 +8253,16 @@ msgstr "duplikovat"
 msgid "enable"
 msgstr "povolit"
 
-#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:153
+#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:160
 msgid "focus"
 msgstr "ostření"
 
-#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:2287
+#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:2298
 msgid "instance"
 msgstr "instance"
 
 #: ../src/develop/imageop.c:3246 ../src/gui/accelerators.c:105
-#: ../src/gui/accelerators.c:114 ../src/gui/gtk.c:2812 ../src/gui/gtk.c:2857
+#: ../src/gui/accelerators.c:115 ../src/gui/gtk.c:2812 ../src/gui/gtk.c:2857
 #: ../src/iop/atrous.c:1547 ../src/libs/lib.c:1224
 #: ../src/libs/modulegroups.c:3953
 msgid "reset"
@@ -8825,7 +8823,7 @@ msgid "set the value to always match current datetime"
 msgstr "nastavte hodnotu tak, aby vždy odpovídala aktuálnímu datu a času"
 
 #. apply button
-#: ../src/dtgtk/range.c:1058 ../src/gui/accelerators.c:149
+#: ../src/dtgtk/range.c:1058 ../src/gui/accelerators.c:155
 #: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:826
 #: ../src/libs/styles.c:865
 msgid "apply"
@@ -8837,8 +8835,8 @@ msgstr "nastavte rozsah vázaný na tuto hodnotu"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2037
-#: ../src/gui/accelerators.c:2116 ../src/gui/gtk.c:1195 ../src/gui/gtk.c:2937
+#: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2048
+#: ../src/gui/accelerators.c:2127 ../src/gui/gtk.c:1195 ../src/gui/gtk.c:2937
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3443
 #: ../src/iop/lens.cc:2994 ../src/iop/rawdenoise.c:904
 #: ../src/libs/collect.c:3153 ../src/libs/filtering.c:1437
@@ -8851,15 +8849,15 @@ msgstr "vše"
 msgid "double-click to reset"
 msgstr "dvojklik pro reset"
 
-#: ../src/dtgtk/thumbnail.c:92 ../src/dtgtk/thumbnail.c:122
+#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:172
 msgid "current"
 msgstr "aktuální"
 
-#: ../src/dtgtk/thumbnail.c:92 ../src/dtgtk/thumbnail.c:98
+#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:148
 msgid "leader"
 msgstr "vůdce"
 
-#: ../src/dtgtk/thumbnail.c:98
+#: ../src/dtgtk/thumbnail.c:148
 msgid ""
 "\n"
 "click here to set this image as group leader\n"
@@ -8868,12 +8866,12 @@ msgstr ""
 "kliknutím sem nastavíte tento obrázek jako lídra skupiny\n"
 
 #. and the number of grouped images
-#: ../src/dtgtk/thumbnail.c:133 ../src/libs/filters/grouping.c:144
+#: ../src/dtgtk/thumbnail.c:183 ../src/libs/filters/grouping.c:144
 #: ../src/libs/filters/grouping.c:169
 msgid "grouped images"
 msgstr "seskupené obrázky"
 
-#: ../src/dtgtk/thumbnail.c:712 ../src/dtgtk/thumbnail.c:1455
+#: ../src/dtgtk/thumbnail.c:762 ../src/dtgtk/thumbnail.c:1449
 #: ../src/iop/ashift.c:5757 ../src/iop/ashift.c:5824 ../src/iop/ashift.c:5825
 #: ../src/iop/ashift.c:5826
 msgid "fit"
@@ -9060,7 +9058,7 @@ msgstr "posun"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5825 ../src/iop/clipping.c:1905
 #: ../src/iop/clipping.c:2097 ../src/iop/clipping.c:2113
-#: ../src/views/darkroom.c:2581 ../src/views/lighttable.c:1300
+#: ../src/views/darkroom.c:2583 ../src/views/lighttable.c:1300
 msgid "horizontal"
 msgstr "horizontální"
 
@@ -9068,7 +9066,7 @@ msgstr "horizontální"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5824 ../src/iop/clipping.c:1904
 #: ../src/iop/clipping.c:2098 ../src/iop/clipping.c:2112
-#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:1304
+#: ../src/views/darkroom.c:2586 ../src/views/lighttable.c:1304
 msgid "vertical"
 msgstr "vertikální"
 
@@ -9108,16 +9106,16 @@ msgstr "cmd"
 msgid "altgr"
 msgstr "altgr"
 
-#: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:144
+#: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:149
 #: ../src/libs/tagging.c:1778
 msgid "edit"
 msgstr "upravit"
 
-#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:628
+#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:639
 msgid "up"
 msgstr "nahoru"
 
-#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:628
+#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:639
 msgid "down"
 msgstr "dolů"
 
@@ -9125,177 +9123,177 @@ msgstr "dolů"
 msgid "set"
 msgstr "nastav"
 
-#: ../src/gui/accelerators.c:111
+#: ../src/gui/accelerators.c:112
 msgid "popup"
 msgstr "popup"
 
-#: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
+#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:146
 #: ../src/gui/gtk.c:2855 ../src/views/lighttable.c:806
 msgid "next"
 msgstr "další"
 
-#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
+#: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:145
 #: ../src/gui/gtk.c:2856 ../src/views/lighttable.c:807
 msgid "previous"
 msgstr "předešlý"
 
-#: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:1202
+#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1213
 msgid "last"
 msgstr "poslední"
 
-#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1201
+#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:1212
 msgid "first"
 msgstr "první"
 
-#: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
+#: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:134
+#: ../src/gui/accelerators.c:294 ../src/libs/filtering.c:1922
 #: ../src/libs/filters/rating_range.c:268 ../src/libs/tagging.c:3117
-#: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
-#: ../src/views/darkroom.c:2553
+#: ../src/views/darkroom.c:2271 ../src/views/darkroom.c:2321
+#: ../src/views/darkroom.c:2555
 msgid "toggle"
 msgstr "přepnout"
 
-#: ../src/gui/accelerators.c:122
+#: ../src/gui/accelerators.c:124
 msgid "ctrl-toggle"
 msgstr "ctrl-přepnout"
 
-#: ../src/gui/accelerators.c:123
+#: ../src/gui/accelerators.c:125
 msgid "ctrl-on"
 msgstr "ctrl-zap"
 
-#: ../src/gui/accelerators.c:124
+#: ../src/gui/accelerators.c:126
 msgid "right-toggle"
 msgstr "pravé-přepnout"
 
-#: ../src/gui/accelerators.c:125
+#: ../src/gui/accelerators.c:127
 msgid "right-on"
 msgstr "pravé-zap"
 
-#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2854
+#: ../src/gui/accelerators.c:138 ../src/gui/gtk.c:2854
 msgid "activate"
 msgstr "aktivovat"
 
-#: ../src/gui/accelerators.c:135
+#: ../src/gui/accelerators.c:139
 msgid "ctrl-activate"
 msgstr "ctrl-aktivovat"
 
-#: ../src/gui/accelerators.c:136
+#: ../src/gui/accelerators.c:140
 msgid "right-activate"
 msgstr "pravé-aktivovat"
 
-#: ../src/gui/accelerators.c:142
+#: ../src/gui/accelerators.c:147
 msgid "store"
 msgstr "uložit"
 
-#: ../src/gui/accelerators.c:145 ../src/gui/styles_dialog.c:497
+#: ../src/gui/accelerators.c:150 ../src/gui/styles_dialog.c:497
 msgid "update"
 msgstr "aktualizovat"
 
-#: ../src/gui/accelerators.c:146 ../src/libs/tools/global_toolbox.c:61
+#: ../src/gui/accelerators.c:151 ../src/libs/tools/global_toolbox.c:61
 #: ../src/libs/tools/global_toolbox.c:512
 msgid "preferences"
 msgstr "nastavení"
 
-#: ../src/gui/accelerators.c:150
+#: ../src/gui/accelerators.c:156
 msgid "apply on new instance"
 msgstr "použít na novou instanci"
 
-#: ../src/gui/accelerators.c:154
+#: ../src/gui/accelerators.c:161
 msgid "start"
 msgstr "start"
 
-#: ../src/gui/accelerators.c:155
+#: ../src/gui/accelerators.c:162
 msgid "end"
 msgstr "konec"
 
-#: ../src/gui/accelerators.c:301
+#: ../src/gui/accelerators.c:312
 msgid "entry"
 msgstr "záznam"
 
-#: ../src/gui/accelerators.c:370
+#: ../src/gui/accelerators.c:381
 msgid "combo effect not found"
 msgstr "kombinovaný efekt nenalezen"
 
-#: ../src/gui/accelerators.c:524
+#: ../src/gui/accelerators.c:535
 msgid "(keypad)"
 msgstr "(klávesnice)"
 
-#: ../src/gui/accelerators.c:533
+#: ../src/gui/accelerators.c:544
 msgid "tablet button"
 msgstr "tlačítko tabletu"
 
-#: ../src/gui/accelerators.c:542
+#: ../src/gui/accelerators.c:553
 msgid "unknown driver"
 msgstr "neznámý ovladač"
 
-#: ../src/gui/accelerators.c:609
+#: ../src/gui/accelerators.c:620
 msgid "long"
 msgstr "dlouhý"
 
-#: ../src/gui/accelerators.c:610
+#: ../src/gui/accelerators.c:621
 msgid "double-press"
 msgstr "dvojstisk"
 
-#: ../src/gui/accelerators.c:611
+#: ../src/gui/accelerators.c:622
 msgid "triple-press"
 msgstr "trojstisk"
 
-#: ../src/gui/accelerators.c:612
+#: ../src/gui/accelerators.c:623
 msgid "press"
 msgstr "stisk"
 
-#: ../src/gui/accelerators.c:616
+#: ../src/gui/accelerators.c:627
 msgctxt "accel"
 msgid "left"
 msgstr "levý"
 
-#: ../src/gui/accelerators.c:617
+#: ../src/gui/accelerators.c:628
 msgctxt "accel"
 msgid "right"
 msgstr "pravý"
 
-#: ../src/gui/accelerators.c:618
+#: ../src/gui/accelerators.c:629
 msgctxt "accel"
 msgid "middle"
 msgstr "střed"
 
-#: ../src/gui/accelerators.c:619
+#: ../src/gui/accelerators.c:630
 msgctxt "accel"
 msgid "long"
 msgstr "dlouhý"
 
-#: ../src/gui/accelerators.c:620
+#: ../src/gui/accelerators.c:631
 msgctxt "accel"
 msgid "double-click"
 msgstr "dvojklik"
 
-#: ../src/gui/accelerators.c:621
+#: ../src/gui/accelerators.c:632
 msgctxt "accel"
 msgid "triple-click"
 msgstr "trojklik"
 
-#: ../src/gui/accelerators.c:622
+#: ../src/gui/accelerators.c:633
 msgid "click"
 msgstr "klik"
 
-#: ../src/gui/accelerators.c:650
+#: ../src/gui/accelerators.c:661
 msgid "first instance"
 msgstr "první instance"
 
-#: ../src/gui/accelerators.c:652
+#: ../src/gui/accelerators.c:663
 msgid "last instance"
 msgstr "poslední instance"
 
-#: ../src/gui/accelerators.c:654
+#: ../src/gui/accelerators.c:665
 msgid "relative instance"
 msgstr "relativní instance"
 
-#: ../src/gui/accelerators.c:668 ../src/gui/accelerators.c:957
-#: ../src/gui/accelerators.c:2277 ../src/gui/accelerators.c:3139
+#: ../src/gui/accelerators.c:679 ../src/gui/accelerators.c:968
+#: ../src/gui/accelerators.c:2288 ../src/gui/accelerators.c:3150
 msgid "speed"
 msgstr "rychlost"
 
-#: ../src/gui/accelerators.c:729
+#: ../src/gui/accelerators.c:740
 msgid ""
 "press Del to delete selected shortcut\n"
 "double-click to add new shortcut\n"
@@ -9305,15 +9303,15 @@ msgstr ""
 "dvojklik přidá novou zkratku\n"
 "začněte psát pro přírůstkové vyhledávání"
 
-#: ../src/gui/accelerators.c:745
+#: ../src/gui/accelerators.c:756
 msgid "click to filter shortcut list\n"
 msgstr "kliknutím vyfiltruješ seznam zkratek\n"
 
-#: ../src/gui/accelerators.c:746
+#: ../src/gui/accelerators.c:757
 msgid "right click to show action of selected shortcut\n"
 msgstr "pravý klik zobrazí akci vybrané zkratky\n"
 
-#: ../src/gui/accelerators.c:747
+#: ../src/gui/accelerators.c:758
 msgid ""
 "double-click to define new shortcut\n"
 "start typing for incremental search"
@@ -9321,7 +9319,7 @@ msgstr ""
 "dvojklik definuje novou zkratku\n"
 "začni psát pro přírůstkové vyhledávání"
 
-#: ../src/gui/accelerators.c:766
+#: ../src/gui/accelerators.c:777
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
@@ -9329,94 +9327,94 @@ msgstr ""
 "stiskněte klávesy s kliknutím myši a posouváním nebo přesouváním kombinací "
 "vytvořte zkratku"
 
-#: ../src/gui/accelerators.c:767
+#: ../src/gui/accelerators.c:778
 msgid "click to open shortcut configuration"
 msgstr "kliknutím otevřete konfiguraci zkratek"
 
-#: ../src/gui/accelerators.c:768
+#: ../src/gui/accelerators.c:779
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "ctrl+klik pro přidání na panel rychlého přístupu\n"
 
-#: ../src/gui/accelerators.c:769
+#: ../src/gui/accelerators.c:780
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "ctrl+klik pro odebrání z panelu rychlého přístupu\n"
 
-#: ../src/gui/accelerators.c:770
+#: ../src/gui/accelerators.c:781
 msgid "scroll to change default speed"
 msgstr "scroll pro změnu výchozí rychlosti"
 
-#: ../src/gui/accelerators.c:771
+#: ../src/gui/accelerators.c:782
 msgid "right click to exit mapping mode"
 msgstr "pro opuštění režimu mapování klikněte pravým tlačítkem"
 
-#: ../src/gui/accelerators.c:954
+#: ../src/gui/accelerators.c:965
 msgid "active view"
 msgstr "aktivní pohled"
 
-#: ../src/gui/accelerators.c:955
+#: ../src/gui/accelerators.c:966
 msgid "other views"
 msgstr "ostatní pohledy"
 
-#: ../src/gui/accelerators.c:956
+#: ../src/gui/accelerators.c:967
 msgid "fallbacks"
 msgstr "zálohy"
 
-#: ../src/gui/accelerators.c:1085
+#: ../src/gui/accelerators.c:1096
 msgid "shortcut for move exists with single effect"
 msgstr "zkratka pro pohyb existuje s jediným efektem"
 
-#: ../src/gui/accelerators.c:1086
+#: ../src/gui/accelerators.c:1097
 msgid "create separate shortcuts for up and down move?"
 msgstr "vytvořit samostatné zkratky pro pohyb nahoru a dolů?"
 
-#: ../src/gui/accelerators.c:1109
+#: ../src/gui/accelerators.c:1120
 #, c-format
 msgid "%s, speed reset"
 msgstr "%s, reset rychlosti"
 
-#: ../src/gui/accelerators.c:1118
+#: ../src/gui/accelerators.c:1129
 msgid "shortcut exists with different settings"
 msgstr "zkratka existuje s jinými nastaveními"
 
-#: ../src/gui/accelerators.c:1119
+#: ../src/gui/accelerators.c:1130
 msgid "reset the settings of the shortcut?"
 msgstr "resetovat nastavení zkratky?"
 
-#: ../src/gui/accelerators.c:1130
+#: ../src/gui/accelerators.c:1141
 msgid "shortcut already exists"
 msgstr "zkratka již existuje"
 
-#: ../src/gui/accelerators.c:1131
+#: ../src/gui/accelerators.c:1142
 msgid "remove the shortcut?"
 msgstr "odstranit zkratku?"
 
-#: ../src/gui/accelerators.c:1163
+#: ../src/gui/accelerators.c:1174
 msgid "clashing shortcuts exist"
 msgstr "existují konfliktní zkratky"
 
-#: ../src/gui/accelerators.c:1164
+#: ../src/gui/accelerators.c:1175
 msgid "remove these existing shortcuts?"
 msgstr "odstranit tyto stávající zkratky?"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1200
+#: ../src/gui/accelerators.c:1211
 msgid "preferred"
 msgstr "přednostně"
 
-#: ../src/gui/accelerators.c:1203
+#: ../src/gui/accelerators.c:1214
 msgid "second"
 msgstr "druhý"
 
-#: ../src/gui/accelerators.c:1204
+#: ../src/gui/accelerators.c:1215
 msgid "last but one"
 msgstr "předposlední"
 
-#: ../src/gui/accelerators.c:1332 ../src/gui/accelerators.c:1386
+#: ../src/gui/accelerators.c:1343 ../src/gui/accelerators.c:1397
 msgid "(unchanged)"
 msgstr "(nezměněný)"
 
-#: ../src/gui/accelerators.c:1481
+#: ../src/gui/accelerators.c:1492
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -9441,31 +9439,31 @@ msgstr ""
 "\n"
 "klikněte pravým tlačítkem pro zrušení"
 
-#: ../src/gui/accelerators.c:1546
+#: ../src/gui/accelerators.c:1557
 msgid "removing shortcut"
 msgstr "odstranění zkratky"
 
-#: ../src/gui/accelerators.c:1547
+#: ../src/gui/accelerators.c:1558
 msgid "remove the selected shortcut?"
 msgstr "odstranit vybranou zkratku?"
 
-#: ../src/gui/accelerators.c:1947
+#: ../src/gui/accelerators.c:1958
 msgid "restore shortcuts"
 msgstr "obnovit zkratky"
 
-#: ../src/gui/accelerators.c:1951
+#: ../src/gui/accelerators.c:1962
 msgid "_defaults"
 msgstr "_výchozí"
 
-#: ../src/gui/accelerators.c:1952
+#: ../src/gui/accelerators.c:1963
 msgid "_startup"
 msgstr "_spuštění"
 
-#: ../src/gui/accelerators.c:1953
+#: ../src/gui/accelerators.c:1964
 msgid "_edits"
 msgstr "_úpravy"
 
-#: ../src/gui/accelerators.c:1958
+#: ../src/gui/accelerators.c:1969
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -9477,7 +9475,7 @@ msgstr ""
 "   - jako při startu\n"
 "   - jako při otevření tohoto dialogu\n"
 
-#: ../src/gui/accelerators.c:1961
+#: ../src/gui/accelerators.c:1972
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -9485,22 +9483,22 @@ msgstr ""
 "vymazat všechny novější zkratky\n"
 "(místo pouhého obnovení změněných)"
 
-#: ../src/gui/accelerators.c:2015 ../src/gui/preferences.c:895
+#: ../src/gui/accelerators.c:2026 ../src/gui/preferences.c:895
 #: ../src/libs/tools/global_toolbox.c:496
 #: ../src/libs/tools/global_toolbox.c:809
 msgid "shortcuts"
 msgstr "zkratky"
 
-#: ../src/gui/accelerators.c:2024
+#: ../src/gui/accelerators.c:2035
 msgid "export shortcuts"
 msgstr "exportovat zkratky"
 
-#: ../src/gui/accelerators.c:2027 ../src/gui/accelerators.c:2106
+#: ../src/gui/accelerators.c:2038 ../src/gui/accelerators.c:2117
 #: ../src/gui/hist_dialog.c:198 ../src/gui/presets.c:460
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/gui/accelerators.c:2032
+#: ../src/gui/accelerators.c:2043
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -9508,27 +9506,27 @@ msgstr ""
 "exportovat všechny zkratky do souboru\n"
 "nebo jen pro jedno vybrané zařízení\n"
 
-#: ../src/gui/accelerators.c:2038 ../src/gui/accelerators.c:2117
+#: ../src/gui/accelerators.c:2049 ../src/gui/accelerators.c:2128
 msgid "keyboard"
 msgstr "klávesnice"
 
-#: ../src/gui/accelerators.c:2050
+#: ../src/gui/accelerators.c:2061
 msgid "device id"
 msgstr "id zařízení"
 
-#: ../src/gui/accelerators.c:2076
+#: ../src/gui/accelerators.c:2087
 msgid "select file to export"
 msgstr "vyberte soubor pro export"
 
-#: ../src/gui/accelerators.c:2077 ../src/libs/tagging.c:2521
+#: ../src/gui/accelerators.c:2088 ../src/libs/tagging.c:2521
 msgid "_export"
 msgstr "_export"
 
-#: ../src/gui/accelerators.c:2103
+#: ../src/gui/accelerators.c:2114
 msgid "import shortcuts"
 msgstr "importovat zkratky"
 
-#: ../src/gui/accelerators.c:2111
+#: ../src/gui/accelerators.c:2122
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -9536,31 +9534,31 @@ msgstr ""
 "importovat všechny zkratky ze souboru\n"
 "nebo jen pro jedno vybrané zařízení\n"
 
-#: ../src/gui/accelerators.c:2129
+#: ../src/gui/accelerators.c:2140
 msgid "id in file"
 msgstr "id v souboru"
 
-#: ../src/gui/accelerators.c:2135
+#: ../src/gui/accelerators.c:2146
 msgid "id when loaded"
 msgstr "id při načtení"
 
-#: ../src/gui/accelerators.c:2139
+#: ../src/gui/accelerators.c:2150
 msgid "clear device first"
 msgstr "nejprve vyčistěte zařízení"
 
-#: ../src/gui/accelerators.c:2163
+#: ../src/gui/accelerators.c:2174
 msgid "select file to import"
 msgstr "vyberte soubor k importu"
 
-#: ../src/gui/accelerators.c:2164 ../src/libs/tagging.c:2485
+#: ../src/gui/accelerators.c:2175 ../src/libs/tagging.c:2485
 msgid "_import"
 msgstr "_import"
 
-#: ../src/gui/accelerators.c:2237
+#: ../src/gui/accelerators.c:2248
 msgid "search shortcuts list"
 msgstr "prohledávat seznam zkratek"
 
-#: ../src/gui/accelerators.c:2238
+#: ../src/gui/accelerators.c:2249
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -9569,28 +9567,28 @@ msgstr ""
 "stisknutím kláves nahoru nebo dolů procházejte nalezené"
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2253 ../src/views/view.c:1383
+#: ../src/gui/accelerators.c:2264 ../src/views/view.c:1383
 msgid "shortcut"
 msgstr "zkratka"
 
-#: ../src/gui/accelerators.c:2255 ../src/gui/accelerators.c:2346
+#: ../src/gui/accelerators.c:2266 ../src/gui/accelerators.c:2357
 #: ../src/views/view.c:1385
 msgid "action"
 msgstr "akce"
 
-#: ../src/gui/accelerators.c:2264
+#: ../src/gui/accelerators.c:2275
 msgid "element"
 msgstr "element"
 
-#: ../src/gui/accelerators.c:2271
+#: ../src/gui/accelerators.c:2282
 msgid "effect"
 msgstr "efekt"
 
-#: ../src/gui/accelerators.c:2328
+#: ../src/gui/accelerators.c:2339
 msgid "search actions list"
 msgstr "prohledat seznam akcí"
 
-#: ../src/gui/accelerators.c:2329
+#: ../src/gui/accelerators.c:2340
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -9598,16 +9596,16 @@ msgstr ""
 "postupně prohledávejte seznam akcí\n"
 "stisknutím kláves nahoru nebo dolů procházejte nalezené"
 
-#: ../src/gui/accelerators.c:2352 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2363 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:192
 msgid "type"
 msgstr "typ"
 
-#: ../src/gui/accelerators.c:2387
+#: ../src/gui/accelerators.c:2398
 msgid "enable fallbacks"
 msgstr "povolit zálohy"
 
-#: ../src/gui/accelerators.c:2388
+#: ../src/gui/accelerators.c:2399
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -9615,53 +9613,53 @@ msgstr ""
 "povolí výchozí významy pro další tlačítka, modifikátory nebo pohyby\n"
 "při použití v kombinaci se základní zkratkou"
 
-#: ../src/gui/accelerators.c:2394
+#: ../src/gui/accelerators.c:2405
 msgid "restore..."
 msgstr "obnovit..."
 
-#: ../src/gui/accelerators.c:2395
+#: ../src/gui/accelerators.c:2406
 msgid "restore default shortcuts or previous state"
 msgstr "obnovit výchozí zkratku nebo předchozí stav"
 
 #. import button
-#: ../src/gui/accelerators.c:2399 ../src/libs/styles.c:857
+#: ../src/gui/accelerators.c:2410 ../src/libs/styles.c:857
 #: ../src/libs/tagging.c:3250
 msgid "import..."
 msgstr "import..."
 
-#: ../src/gui/accelerators.c:2400
+#: ../src/gui/accelerators.c:2411
 msgid "fully or partially import shortcuts from file"
 msgstr "zcela nebo částečně importovat zkratky ze souboru"
 
 #. export button
-#: ../src/gui/accelerators.c:2404 ../src/libs/styles.c:861
+#: ../src/gui/accelerators.c:2415 ../src/libs/styles.c:861
 #: ../src/libs/tagging.c:3253
 msgid "export..."
 msgstr "export..."
 
-#: ../src/gui/accelerators.c:2405
+#: ../src/gui/accelerators.c:2416
 msgid "fully or partially export shortcuts to file"
 msgstr "zcela nebo částečně exportovat zkratky do souboru"
 
-#: ../src/gui/accelerators.c:2803
+#: ../src/gui/accelerators.c:2814
 msgid "input devices reinitialised"
 msgstr "vstupní zařízení reinicializováno"
 
-#: ../src/gui/accelerators.c:3018
+#: ../src/gui/accelerators.c:3029
 msgid "fallback to move"
 msgstr "záloha pro přesun"
 
-#: ../src/gui/accelerators.c:3211
+#: ../src/gui/accelerators.c:3222
 #, c-format
 msgid "%s not assigned"
 msgstr "%s nepřiřazen"
 
-#: ../src/gui/accelerators.c:3366
+#: ../src/gui/accelerators.c:3377
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s přiřazeno k %s"
 
-#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4476
+#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4478
 msgid "darktable - darkroom preview"
 msgstr "darktable - náhled editoru"
 
@@ -10174,7 +10172,7 @@ msgid "global guide overlay settings"
 msgstr "globální průvodce nastavením překrytí"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2553
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2555
 msgid "guide lines"
 msgstr "vodící čary"
 
@@ -14582,26 +14580,26 @@ msgstr "vykreslovací záměr"
 
 #: ../src/iop/colorout.c:858 ../src/libs/export.c:1264
 #: ../src/libs/print_settings.c:2325 ../src/libs/print_settings.c:2646
-#: ../src/views/darkroom.c:2422 ../src/views/lighttable.c:1223
+#: ../src/views/darkroom.c:2424 ../src/views/lighttable.c:1223
 msgid "perceptual"
 msgstr "percepční"
 
 #: ../src/iop/colorout.c:859 ../src/libs/export.c:1265
 #: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
-#: ../src/views/darkroom.c:2423 ../src/views/lighttable.c:1224
+#: ../src/views/darkroom.c:2425 ../src/views/lighttable.c:1224
 msgid "relative colorimetric"
 msgstr "relativní kolorimetrické"
 
 #: ../src/iop/colorout.c:860 ../src/libs/export.c:1266
 #: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
-#: ../src/views/darkroom.c:2424 ../src/views/lighttable.c:1225
+#: ../src/views/darkroom.c:2426 ../src/views/lighttable.c:1225
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "sytost"
 
 #: ../src/iop/colorout.c:861 ../src/libs/export.c:1267
 #: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
-#: ../src/views/darkroom.c:2425 ../src/views/lighttable.c:1226
+#: ../src/views/darkroom.c:2427 ../src/views/lighttable.c:1226
 msgid "absolute colorimetric"
 msgstr "absolutní kolorimetrické"
 
@@ -15884,7 +15882,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1689 ../src/libs/export.c:1240
 #: ../src/libs/print_settings.c:2323 ../src/libs/print_settings.c:2642
-#: ../src/views/darkroom.c:2428 ../src/views/lighttable.c:1229
+#: ../src/views/darkroom.c:2430 ../src/views/lighttable.c:1229
 msgid "intent"
 msgstr "záměr"
 
@@ -17773,9 +17771,9 @@ msgstr "jak moc vyhlazovat barvy"
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2319
-#: ../src/views/darkroom.c:2337 ../src/views/darkroom.c:2344
-#: ../src/views/darkroom.c:2354 ../src/views/darkroom.c:2371
+#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2321
+#: ../src/views/darkroom.c:2339 ../src/views/darkroom.c:2346
+#: ../src/views/darkroom.c:2356 ../src/views/darkroom.c:2373
 msgid "overexposed"
 msgstr "přeexponovaný"
 
@@ -17881,9 +17879,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2269
-#: ../src/views/darkroom.c:2287 ../src/views/darkroom.c:2293
-#: ../src/views/darkroom.c:2306
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2271
+#: ../src/views/darkroom.c:2289 ../src/views/darkroom.c:2295
+#: ../src/views/darkroom.c:2308
 msgid "raw overexposed"
 msgstr "přeexponovaný raw"
 
@@ -23678,7 +23676,7 @@ msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "načítám `%s' ..."
 
-#: ../src/views/darkroom.c:717 ../src/views/darkroom.c:2396
+#: ../src/views/darkroom.c:717 ../src/views/darkroom.c:2398
 msgid "gamut check"
 msgstr "kontrola rozsahu"
 
@@ -23700,31 +23698,36 @@ msgstr ""
 msgid "no styles have been created yet"
 msgstr "zatím nebyly vytvořeny žádné styly"
 
-#: ../src/views/darkroom.c:2233
+#: ../src/views/darkroom.c:2233 ../src/views/darkroom.c:2234
 msgid "quick access to presets"
 msgstr "rychlý přístup do presetů"
 
 #: ../src/views/darkroom.c:2242
+#, fuzzy
+msgid "quick access to styles"
+msgstr "rychlý přístup do presetů"
+
+#: ../src/views/darkroom.c:2244
 msgid "quick access for applying any of your styles"
 msgstr "rychlý přístup pro použití libovolného z vašich stylů"
 
-#: ../src/views/darkroom.c:2248
+#: ../src/views/darkroom.c:2250
 msgid "second window"
 msgstr "druhé okno"
 
-#: ../src/views/darkroom.c:2251
+#: ../src/views/darkroom.c:2253
 msgid "display a second darkroom image window"
 msgstr "zobrazit druhé okno s darkroomem"
 
-#: ../src/views/darkroom.c:2256
+#: ../src/views/darkroom.c:2258
 msgid "color assessment"
 msgstr "hodnocení barev"
 
-#: ../src/views/darkroom.c:2259
+#: ../src/views/darkroom.c:2261
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "přepnout podmínky hodnocení barev ISO 12646"
 
-#: ../src/views/darkroom.c:2272
+#: ../src/views/darkroom.c:2274
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -23732,27 +23735,27 @@ msgstr ""
 "přepnout indikaci přepalů raw\n"
 "kliknutím pravým tlačítkem zobrazíte možnosti"
 
-#: ../src/views/darkroom.c:2288
+#: ../src/views/darkroom.c:2290
 msgid "select how to mark the clipped pixels"
 msgstr "vyberte, jak označit oříznuté pixely"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2292
 msgid "mark with CFA color"
 msgstr "označte barvou CFA"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2292
 msgid "mark with solid color"
 msgstr "značka plnou barvou"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2292
 msgid "false color"
 msgstr "neplatná barva"
 
-#: ../src/views/darkroom.c:2293 ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2295 ../src/views/darkroom.c:2346
 msgid "color scheme"
 msgstr "barevné schéma"
 
-#: ../src/views/darkroom.c:2294
+#: ../src/views/darkroom.c:2296
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -23760,27 +23763,27 @@ msgstr ""
 "vyberte plnou barvu pro označení nadměrné expozice.\n"
 "použije se pouze v případě, že režim = označit plnou barvou"
 
-#: ../src/views/darkroom.c:2297
+#: ../src/views/darkroom.c:2299
 msgctxt "solidcolor"
 msgid "red"
 msgstr "červená"
 
-#: ../src/views/darkroom.c:2298
+#: ../src/views/darkroom.c:2300
 msgctxt "solidcolor"
 msgid "green"
 msgstr "zelená"
 
-#: ../src/views/darkroom.c:2299
+#: ../src/views/darkroom.c:2301
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "modrá"
 
-#: ../src/views/darkroom.c:2300
+#: ../src/views/darkroom.c:2302
 msgctxt "solidcolor"
 msgid "black"
 msgstr "černá"
 
-#: ../src/views/darkroom.c:2308
+#: ../src/views/darkroom.c:2310
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -23790,7 +23793,7 @@ msgstr ""
 "1,0 - úroveň bílé\n"
 "0,0 - úroveň černé"
 
-#: ../src/views/darkroom.c:2322
+#: ../src/views/darkroom.c:2324
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -23798,11 +23801,11 @@ msgstr ""
 "přepnout indikaci oříznutí\n"
 "kliknutím pravým tlačítkem zobrazíte možnosti"
 
-#: ../src/views/darkroom.c:2337
+#: ../src/views/darkroom.c:2339
 msgid "clipping preview mode"
 msgstr "režim náhledu oříznutí"
 
-#: ../src/views/darkroom.c:2338
+#: ../src/views/darkroom.c:2340
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -23810,43 +23813,43 @@ msgstr ""
 "vyberte metriku, kterou chcete zobrazit\n"
 "plný rozsah je kombinací všech ostatních režimů"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "full gamut"
 msgstr "plný rozsah"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "any RGB channel"
 msgstr "jakýkoli RGB kanál"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "luminance only"
 msgstr "pouze jas"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "saturation only"
 msgstr "pouze sytost"
 
-#: ../src/views/darkroom.c:2345
+#: ../src/views/darkroom.c:2347
 msgid "select colors to indicate clipping"
 msgstr "vyberte barvy pro označení oříznutí"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2349
 msgid "black & white"
 msgstr "černá a bílá"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2349
 msgid "red & blue"
 msgstr "červená a modrá"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2349
 msgid "purple & green"
 msgstr "fialová a zelená"
 
-#: ../src/views/darkroom.c:2354
+#: ../src/views/darkroom.c:2356
 msgid "lower threshold"
 msgstr "dolní hranice"
 
-#: ../src/views/darkroom.c:2355
+#: ../src/views/darkroom.c:2357
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -23866,11 +23869,11 @@ msgstr ""
 "typické barevné lesklé výtisky vytvářejí černou při -8,00 EV,\n"
 "typické černobílé lesklé výtisky vytvářejí černou při -9,00 EV."
 
-#: ../src/views/darkroom.c:2371
+#: ../src/views/darkroom.c:2373
 msgid "upper threshold"
 msgstr "horní práh"
 
-#: ../src/views/darkroom.c:2373
+#: ../src/views/darkroom.c:2375
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -23879,11 +23882,11 @@ msgstr ""
 "práh ořezu pro bílý bod.\n"
 "100% je špičkový střední jas."
 
-#: ../src/views/darkroom.c:2385
+#: ../src/views/darkroom.c:2387
 msgid "softproof"
 msgstr "jemný obrys"
 
-#: ../src/views/darkroom.c:2388
+#: ../src/views/darkroom.c:2390
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -23891,7 +23894,7 @@ msgstr ""
 "přepnout jemný obrys\n"
 "kliknutím pravým tlačítkem zobrazíte možnosti profilu"
 
-#: ../src/views/darkroom.c:2399
+#: ../src/views/darkroom.c:2401
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -23899,50 +23902,50 @@ msgstr ""
 "přepnout kontrolu rozsahu\n"
 "kliknutím pravým tlačítkem zobrazíte možnosti profilu"
 
-#: ../src/views/darkroom.c:2428 ../src/views/darkroom.c:2430
-#: ../src/views/darkroom.c:2444 ../src/views/darkroom.c:2445
+#: ../src/views/darkroom.c:2430 ../src/views/darkroom.c:2432
 #: ../src/views/darkroom.c:2446 ../src/views/darkroom.c:2447
+#: ../src/views/darkroom.c:2448 ../src/views/darkroom.c:2449
 #: ../src/views/lighttable.c:1229 ../src/views/lighttable.c:1231
 msgid "profiles"
 msgstr "profily"
 
-#: ../src/views/darkroom.c:2430 ../src/views/lighttable.c:1231
+#: ../src/views/darkroom.c:2432 ../src/views/lighttable.c:1231
 msgid "preview intent"
 msgstr "náhledový záměr"
 
-#: ../src/views/darkroom.c:2444 ../src/views/lighttable.c:1235
+#: ../src/views/darkroom.c:2446 ../src/views/lighttable.c:1235
 msgid "display profile"
 msgstr "profil displeje"
 
-#: ../src/views/darkroom.c:2445 ../src/views/lighttable.c:1238
+#: ../src/views/darkroom.c:2447 ../src/views/lighttable.c:1238
 msgid "preview display profile"
 msgstr "ukázat profil displeje"
 
-#: ../src/views/darkroom.c:2447
+#: ../src/views/darkroom.c:2449
 msgid "histogram profile"
 msgstr "profil histogramu"
 
-#: ../src/views/darkroom.c:2511 ../src/views/lighttable.c:1274
+#: ../src/views/darkroom.c:2513 ../src/views/lighttable.c:1274
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profily ICC displeje v %s nebo %s"
 
-#: ../src/views/darkroom.c:2514 ../src/views/lighttable.c:1277
+#: ../src/views/darkroom.c:2516 ../src/views/lighttable.c:1277
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "zobrazit profily ICC v %s nebo %s"
 
-#: ../src/views/darkroom.c:2517
+#: ../src/views/darkroom.c:2519
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "profily ICC jemný obrys z %s nebo %s"
 
-#: ../src/views/darkroom.c:2520
+#: ../src/views/darkroom.c:2522
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "histogram a ICC profily pro výběr barvy v %s nebo %s"
 
-#: ../src/views/darkroom.c:2556
+#: ../src/views/darkroom.c:2558
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -23951,145 +23954,145 @@ msgstr ""
 "kliknutím pravým tlačítkem zobrazíte možnosti vodítek"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2573
+#: ../src/views/darkroom.c:2575
 msgid "full preview"
 msgstr "plný náhled"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2577
+#: ../src/views/darkroom.c:2579
 msgid "force pan & zoom with mouse"
 msgstr "vynucené posouvání a přibližování pomocí myši"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2589
+#: ../src/views/darkroom.c:2591
 msgid "zoom close-up"
 msgstr "přiblížit"
 
-#: ../src/views/darkroom.c:2590
+#: ../src/views/darkroom.c:2592
 msgid "zoom fill"
 msgstr "vyplnit"
 
-#: ../src/views/darkroom.c:2591
+#: ../src/views/darkroom.c:2593
 msgid "zoom fit"
 msgstr "přizpůsobit šířce"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2594 ../src/views/lighttable.c:1338
+#: ../src/views/darkroom.c:2596 ../src/views/lighttable.c:1338
 msgid "zoom in"
 msgstr "přiblížit"
 
-#: ../src/views/darkroom.c:2595 ../src/views/lighttable.c:1340
+#: ../src/views/darkroom.c:2597 ../src/views/lighttable.c:1340
 msgid "zoom out"
 msgstr "oddálit"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2598
+#: ../src/views/darkroom.c:2600
 msgid "image forward"
 msgstr "obrázek vpřed"
 
-#: ../src/views/darkroom.c:2599
+#: ../src/views/darkroom.c:2601
 msgid "image back"
 msgstr "obrázek vzad"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2602
+#: ../src/views/darkroom.c:2604
 msgid "cycle overlay colors"
 msgstr "přepínat barvu překryvu"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2605
+#: ../src/views/darkroom.c:2607
 msgid "show drawn masks"
 msgstr "ukázat nakreslené masky"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2608
+#: ../src/views/darkroom.c:2610
 msgid "increase brush size"
 msgstr "zvýšit velikost štětce"
 
-#: ../src/views/darkroom.c:2609
+#: ../src/views/darkroom.c:2611
 msgid "decrease brush size"
 msgstr "snížit velikost štětce"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2612
+#: ../src/views/darkroom.c:2614
 msgid "increase brush hardness"
 msgstr "zvýšit tvrdost štětce"
 
-#: ../src/views/darkroom.c:2613
+#: ../src/views/darkroom.c:2615
 msgid "decrease brush hardness"
 msgstr "snížit tvrdost štětce"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2616
+#: ../src/views/darkroom.c:2618
 msgid "increase brush opacity"
 msgstr "zvýšit neprůhlednost štětce"
 
-#: ../src/views/darkroom.c:2617
+#: ../src/views/darkroom.c:2619
 msgid "decrease brush opacity"
 msgstr "snížit neprůhlednost štětce"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2620 ../src/views/lighttable.c:1330
+#: ../src/views/darkroom.c:2622 ../src/views/lighttable.c:1330
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "zpět"
 
-#: ../src/views/darkroom.c:2621 ../src/views/lighttable.c:1331
+#: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:1331
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "znovu"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2624
+#: ../src/views/darkroom.c:2626
 msgid "change keyboard shortcut slider precision"
 msgstr "změnit klávesovou zkratku přesnosti posuvníku"
 
-#: ../src/views/darkroom.c:3813
+#: ../src/views/darkroom.c:3815
 msgid "keyboard shortcut slider precision: fine"
 msgstr "klávesová zkratka přesnost posuvníku: jemná"
 
-#: ../src/views/darkroom.c:3815
+#: ../src/views/darkroom.c:3817
 msgid "keyboard shortcut slider precision: normal"
 msgstr "klávesová zkratka přesnost posuvníku: normální"
 
-#: ../src/views/darkroom.c:3817
+#: ../src/views/darkroom.c:3819
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "klávesová zkratka přesnost posuvníku: hrubá"
 
-#: ../src/views/darkroom.c:3833
+#: ../src/views/darkroom.c:3835
 msgid "switch to lighttable"
 msgstr "přepnout na katalog"
 
-#: ../src/views/darkroom.c:3834 ../src/views/lighttable.c:928
+#: ../src/views/darkroom.c:3836 ../src/views/lighttable.c:928
 msgid "zoom in the image"
 msgstr "zvětšit obraz"
 
-#: ../src/views/darkroom.c:3835
+#: ../src/views/darkroom.c:3837
 msgid "unbounded zoom in the image"
 msgstr "neomezené zvětšení obrazu"
 
-#: ../src/views/darkroom.c:3836
+#: ../src/views/darkroom.c:3838
 msgid "zoom to 100% 200% and back"
 msgstr "zvětšit na 100% 200% a zpět"
 
-#: ../src/views/darkroom.c:3837 ../src/views/lighttable.c:931
+#: ../src/views/darkroom.c:3839 ../src/views/lighttable.c:931
 msgid "pan a zoomed image"
 msgstr "posuňte zvětšený obrázek"
 
-#: ../src/views/darkroom.c:3839 ../src/views/lighttable.c:973
+#: ../src/views/darkroom.c:3841 ../src/views/lighttable.c:973
 msgid "[modules] expand module without closing others"
 msgstr "[moduly] rozbalit modul bez sbalení ostatních"
 
-#: ../src/views/darkroom.c:3840 ../src/views/lighttable.c:974
+#: ../src/views/darkroom.c:3842 ../src/views/lighttable.c:974
 msgid "[modules] expand module and close others"
 msgstr "[moduly] rozbalit modul a sbalit ostatní"
 
-#: ../src/views/darkroom.c:3842
+#: ../src/views/darkroom.c:3844
 msgid "[modules] rename module"
 msgstr "[moduly] přejmenovat modul"
 
-#: ../src/views/darkroom.c:3844
+#: ../src/views/darkroom.c:3846
 msgid "[modules] change module position in pipe"
 msgstr "[moduly] změna polohy modulu ve frontě zpracování"
 

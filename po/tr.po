@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-07 19:54+0100\n"
+"POT-Creation-Date: 2023-01-21 18:18+0100\n"
 "PO-Revision-Date: 2023-01-12 12:46+0300\n"
 "Last-Translator: Serkan Önder <serkanonder@outlook.com>\n"
 "Language-Team: \n"
@@ -2314,8 +2314,8 @@ msgstr "özel"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2943 ../src/develop/develop.c:2265
-#: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:130
-#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:804
+#: ../src/gui/accelerators.c:123 ../src/gui/accelerators.c:133
+#: ../src/gui/accelerators.c:217 ../src/imageio/format/avif.c:804
 #: ../src/imageio/format/j2k.c:669 ../src/libs/live_view.c:361
 msgid "off"
 msgstr "kapalı"
@@ -3887,7 +3887,7 @@ msgstr "orta tonlar eğilim"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:141
 #: ../build/lib/darktable/plugins/introspection_highlights.c:242
-#: ../src/views/darkroom.c:2306
+#: ../src/views/darkroom.c:2308
 msgid "clipping threshold"
 msgstr "kırpma eşiği"
 
@@ -4046,7 +4046,7 @@ msgstr "düzeltmeler"
 #: ../src/iop/levels.c:672 ../src/iop/profile_gamma.c:667
 #: ../src/libs/copy_history.c:358 ../src/libs/export.c:1280
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2696
-#: ../src/libs/styles.c:830 ../src/views/darkroom.c:2287
+#: ../src/libs/styles.c:830 ../src/views/darkroom.c:2289
 msgid "mode"
 msgstr "mod"
 
@@ -4096,8 +4096,8 @@ msgstr "geçersiz"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2186 ../src/views/darkroom.c:2581
-#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:811
+#: ../src/views/darkroom.c:2186 ../src/views/darkroom.c:2583
+#: ../src/views/darkroom.c:2586 ../src/views/lighttable.c:811
 #: ../src/views/lighttable.c:820 ../src/views/lighttable.c:1296
 #: ../src/views/lighttable.c:1300 ../src/views/lighttable.c:1304
 #: ../src/views/lighttable.c:1308 ../src/views/lighttable.c:1312
@@ -4639,19 +4639,19 @@ msgstr "ham hıza katkıda bulunanlar"
 msgid "integration contributors"
 msgstr "bütünleşmeye katkıda bulunanlar"
 
-#: ../build/share/darktable/darktable.desktop.in.h:1
+#: ../build/share/darktable/org.darktable.darktable.desktop.in.h:1
 #: ../data/org.darktable.darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
 msgstr "Sanal Işık Masası ve Karanlık Oda"
 
-#: ../build/share/darktable/darktable.desktop.in.h:2
+#: ../build/share/darktable/org.darktable.darktable.desktop.in.h:2
 #: ../data/org.darktable.darktable.appdata.xml.in.h:1
 #: ../data/org.darktable.darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
 msgstr "Dijital kameralardan görüntüleri düzenleyin ve geliştirin"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../build/share/darktable/darktable.desktop.in.h:4
+#: ../build/share/darktable/org.darktable.darktable.desktop.in.h:4
 #: ../data/org.darktable.darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
 msgstr "grafik;fotoğrafçılık;raw;"
@@ -4734,12 +4734,12 @@ msgstr "o kadar çok açılır liste yok"
 msgid "not that many buttons"
 msgstr "o kadar çok düğme yok"
 
-#: ../src/bauhaus/bauhaus.c:3558 ../src/gui/accelerators.c:317
+#: ../src/bauhaus/bauhaus.c:3558 ../src/gui/accelerators.c:328
 msgid "value"
 msgstr "değer"
 
 #: ../src/bauhaus/bauhaus.c:3559 ../src/bauhaus/bauhaus.c:3565
-#: ../src/bauhaus/bauhaus.c:3604 ../src/gui/accelerators.c:295
+#: ../src/bauhaus/bauhaus.c:3604 ../src/gui/accelerators.c:306
 msgid "button"
 msgstr "düğme"
 
@@ -4764,9 +4764,9 @@ msgid "dropdown"
 msgstr "aşağı sürükleme"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1658
-#: ../src/control/jobs/control_jobs.c:1712 ../src/gui/accelerators.c:1950
-#: ../src/gui/accelerators.c:2026 ../src/gui/accelerators.c:2077
-#: ../src/gui/accelerators.c:2105 ../src/gui/accelerators.c:2164
+#: ../src/control/jobs/control_jobs.c:1712 ../src/gui/accelerators.c:1961
+#: ../src/gui/accelerators.c:2037 ../src/gui/accelerators.c:2088
+#: ../src/gui/accelerators.c:2116 ../src/gui/accelerators.c:2175
 #: ../src/gui/hist_dialog.c:195 ../src/gui/preferences.c:1032
 #: ../src/gui/preferences.c:1071 ../src/gui/presets.c:361
 #: ../src/gui/presets.c:459 ../src/gui/styles_dialog.c:408
@@ -5013,7 +5013,7 @@ msgstr "kimlik"
 
 #: ../src/common/collection.c:658 ../src/common/collection.c:711
 #: ../src/common/colorlabels.c:337 ../src/develop/lightroom.c:1550
-#: ../src/dtgtk/thumbnail.c:1394 ../src/libs/filters/colors.c:301
+#: ../src/dtgtk/thumbnail.c:1388 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:94
 msgid "color label"
 msgstr "renk etiketi"
@@ -5097,7 +5097,7 @@ msgstr "coğrafi etiketleme"
 msgid "grouping"
 msgstr "gruplama"
 
-#: ../src/common/collection.c:731 ../src/dtgtk/thumbnail.c:1406
+#: ../src/common/collection.c:731 ../src/dtgtk/thumbnail.c:1400
 #: ../src/libs/metadata_view.c:129 ../src/libs/metadata_view.c:338
 msgid "local copy"
 msgstr "yerel kopya"
@@ -5184,12 +5184,12 @@ msgstr "grup takipçileri"
 msgid "not defined"
 msgstr "tanımlanmamış"
 
-#: ../src/common/collection.c:2499
+#: ../src/common/collection.c:2501
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
 msgstr "<b>%d</b> resim (#<b>%d</b>) <b>%d</b> arasından seçildi"
 
-#: ../src/common/collection.c:2505
+#: ../src/common/collection.c:2507
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
@@ -5500,7 +5500,7 @@ msgstr "renk etiketleri %s olarak ayarlandı"
 msgid "all colorlabels removed"
 msgstr "tüm renk etiketleri kaldırıldı"
 
-#: ../src/common/colorlabels.c:328 ../src/gui/accelerators.c:156
+#: ../src/common/colorlabels.c:328 ../src/gui/accelerators.c:163
 #: ../src/libs/image.c:594
 msgid "clear"
 msgstr "temizle"
@@ -5516,7 +5516,7 @@ msgid "export profile"
 msgstr "dışa aktarma profili"
 
 #: ../src/common/colorspaces.c:1407 ../src/common/colorspaces.c:1687
-#: ../src/views/darkroom.c:2446
+#: ../src/views/darkroom.c:2448
 msgid "softproof profile"
 msgstr "yumuşak prova profili"
 
@@ -6286,7 +6286,7 @@ msgstr "dışa aktar"
 msgid "cannot find the style '%s' to apply during export."
 msgstr "dışa aktarma sırasında uygulanacak '%s' tarzı bulamıyor."
 
-#: ../src/common/import_session.c:294
+#: ../src/common/import_session.c:308
 msgid ""
 "couldn't expand to a unique filename for session, please check your import "
 "session settings."
@@ -6294,7 +6294,7 @@ msgstr ""
 "oturum için benzersiz bir dosya adına genişletilemedi, lütfen içe aktarma "
 "oturumu ayarlarınızı kontrol edin."
 
-#: ../src/common/import_session.c:373
+#: ../src/common/import_session.c:401
 msgid "requested session path not available. device not mounted?"
 msgstr "istenen oturum yolu mevcut değil. cihaz takılı değil mi?"
 
@@ -6565,77 +6565,75 @@ msgstr "deniz seviyesinin altında"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:66 ../src/gui/accelerators.c:128
+#: ../src/control/control.c:66 ../src/gui/accelerators.c:131
 #: ../src/views/darkroom.c:2072
 msgid "hold"
 msgstr "tut"
 
-#: ../src/control/control.c:102 ../src/control/control.c:141
+#: ../src/control/control.c:102 ../src/control/control.c:207
 msgid "modifiers"
 msgstr "değiştiriciler"
 
-#: ../src/control/control.c:109
+#: ../src/control/control.c:111
 msgctxt "accel"
 msgid "global"
 msgstr "genel"
 
-#: ../src/control/control.c:110
+#: ../src/control/control.c:118
 msgctxt "accel"
 msgid "views"
 msgstr "görüntüleme"
 
-#: ../src/control/control.c:111
+#: ../src/control/control.c:125
 msgctxt "accel"
 msgid "thumbtable"
 msgstr "minyatür tablo"
 
-#: ../src/control/control.c:112
+#: ../src/control/control.c:132
 msgctxt "accel"
 msgid "utility modules"
 msgstr "yardımcı modüller"
 
-#: ../src/control/control.c:113
+#: ../src/control/control.c:139
 msgctxt "accel"
 msgid "format"
 msgstr "biçim"
 
-#. will be placed under lib/export
-#: ../src/control/control.c:114
+#: ../src/control/control.c:146
 msgctxt "accel"
 msgid "storage"
 msgstr "depolama"
 
-#. will be placed under lib/export
-#: ../src/control/control.c:115
+#: ../src/control/control.c:153
 msgctxt "accel"
 msgid "processing modules"
 msgstr "işleme modülleri"
 
-#: ../src/control/control.c:116
+#: ../src/control/control.c:160
 msgctxt "accel"
 msgid "<blending>"
 msgstr "<harmanlama>"
 
-#: ../src/control/control.c:117
+#: ../src/control/control.c:167
 msgctxt "accel"
 msgid "lua scripts"
 msgstr "lua betikleri"
 
-#: ../src/control/control.c:118
+#: ../src/control/control.c:174
 msgctxt "accel"
 msgid "fallbacks"
 msgstr "geri dönüşler"
 
-#: ../src/control/control.c:121
+#: ../src/control/control.c:183
 msgctxt "accel"
 msgid "<focused>"
 msgstr "<odak>"
 
-#: ../src/control/control.c:138
+#: ../src/control/control.c:204
 msgid "show accels window"
 msgstr "hızlanma penceresini göster"
 
-#: ../src/control/control.c:299
+#: ../src/control/control.c:365
 msgid "working..."
 msgstr "çalışma..."
 
@@ -7557,8 +7555,8 @@ msgid "input after blur"
 msgstr "bulanıklıktan sonra girdi"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2265
-#: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:129
-#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:804
+#: ../src/gui/accelerators.c:122 ../src/gui/accelerators.c:132
+#: ../src/gui/accelerators.c:217 ../src/imageio/format/avif.c:804
 #: ../src/libs/live_view.c:362
 msgid "on"
 msgstr "açık"
@@ -7818,7 +7816,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3132 ../src/iop/toneequal.c:3135
 #: ../src/iop/toneequal.c:3138 ../src/iop/toneequal.c:3141
 #: ../src/iop/toneequal.c:3235 ../src/iop/toneequal.c:3242
-#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2353
+#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2355
 msgid " EV"
 msgstr " EV"
 
@@ -8146,7 +8144,7 @@ msgstr "aşağı taşı"
 
 #. delete button label and tooltip will be updated based on trash pref
 #: ../src/develop/imageop.c:955 ../src/develop/imageop.c:3236
-#: ../src/gui/accelerators.c:143 ../src/gui/presets.c:460
+#: ../src/gui/accelerators.c:148 ../src/gui/presets.c:460
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568
 msgid "delete"
@@ -8242,7 +8240,7 @@ msgstr ""
 "gereksinimler."
 
 #: ../src/develop/imageop.c:3232 ../src/develop/imageop.c:3242
-#: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1223
+#: ../src/gui/accelerators.c:144 ../src/libs/lib.c:1223
 msgid "show"
 msgstr "göster"
 
@@ -8261,16 +8259,16 @@ msgstr "çoğalt"
 msgid "enable"
 msgstr "etkin"
 
-#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:153
+#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:160
 msgid "focus"
 msgstr "odak"
 
-#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:2287
+#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:2298
 msgid "instance"
 msgstr "misal"
 
 #: ../src/develop/imageop.c:3246 ../src/gui/accelerators.c:105
-#: ../src/gui/accelerators.c:114 ../src/gui/gtk.c:2812 ../src/gui/gtk.c:2857
+#: ../src/gui/accelerators.c:115 ../src/gui/gtk.c:2812 ../src/gui/gtk.c:2857
 #: ../src/iop/atrous.c:1547 ../src/libs/lib.c:1224
 #: ../src/libs/modulegroups.c:3953
 msgid "reset"
@@ -8831,7 +8829,7 @@ msgid "set the value to always match current datetime"
 msgstr "değeri her zaman geçerli tarih saatiyle eşleşecek şekilde ayarlayın"
 
 #. apply button
-#: ../src/dtgtk/range.c:1058 ../src/gui/accelerators.c:149
+#: ../src/dtgtk/range.c:1058 ../src/gui/accelerators.c:155
 #: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:826
 #: ../src/libs/styles.c:865
 msgid "apply"
@@ -8843,8 +8841,8 @@ msgstr "bu değere bağlı aralığı ayarlama"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2037
-#: ../src/gui/accelerators.c:2116 ../src/gui/gtk.c:1195 ../src/gui/gtk.c:2937
+#: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2048
+#: ../src/gui/accelerators.c:2127 ../src/gui/gtk.c:1195 ../src/gui/gtk.c:2937
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3443
 #: ../src/iop/lens.cc:2994 ../src/iop/rawdenoise.c:904
 #: ../src/libs/collect.c:3153 ../src/libs/filtering.c:1437
@@ -8857,15 +8855,15 @@ msgstr "tümü"
 msgid "double-click to reset"
 msgstr "çift tıklamayla sıfırla"
 
-#: ../src/dtgtk/thumbnail.c:92 ../src/dtgtk/thumbnail.c:122
+#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:172
 msgid "current"
 msgstr "geçerli"
 
-#: ../src/dtgtk/thumbnail.c:92 ../src/dtgtk/thumbnail.c:98
+#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:148
 msgid "leader"
 msgstr "önder"
 
-#: ../src/dtgtk/thumbnail.c:98
+#: ../src/dtgtk/thumbnail.c:148
 msgid ""
 "\n"
 "click here to set this image as group leader\n"
@@ -8874,12 +8872,12 @@ msgstr ""
 "bu görüntüyü grup lideri olarak ayarlamak için buraya tıklayın\n"
 
 #. and the number of grouped images
-#: ../src/dtgtk/thumbnail.c:133 ../src/libs/filters/grouping.c:144
+#: ../src/dtgtk/thumbnail.c:183 ../src/libs/filters/grouping.c:144
 #: ../src/libs/filters/grouping.c:169
 msgid "grouped images"
 msgstr "gruplandırılmış görüntüler"
 
-#: ../src/dtgtk/thumbnail.c:712 ../src/dtgtk/thumbnail.c:1455
+#: ../src/dtgtk/thumbnail.c:762 ../src/dtgtk/thumbnail.c:1449
 #: ../src/iop/ashift.c:5757 ../src/iop/ashift.c:5824 ../src/iop/ashift.c:5825
 #: ../src/iop/ashift.c:5826
 msgid "fit"
@@ -9073,7 +9071,7 @@ msgstr "pan"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5825 ../src/iop/clipping.c:1905
 #: ../src/iop/clipping.c:2097 ../src/iop/clipping.c:2113
-#: ../src/views/darkroom.c:2581 ../src/views/lighttable.c:1300
+#: ../src/views/darkroom.c:2583 ../src/views/lighttable.c:1300
 msgid "horizontal"
 msgstr "yatay"
 
@@ -9081,7 +9079,7 @@ msgstr "yatay"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5824 ../src/iop/clipping.c:1904
 #: ../src/iop/clipping.c:2098 ../src/iop/clipping.c:2112
-#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:1304
+#: ../src/views/darkroom.c:2586 ../src/views/lighttable.c:1304
 msgid "vertical"
 msgstr "dikey"
 
@@ -9121,16 +9119,16 @@ msgstr "cmd"
 msgid "altgr"
 msgstr "altgr"
 
-#: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:144
+#: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:149
 #: ../src/libs/tagging.c:1778
 msgid "edit"
 msgstr "düzenle"
 
-#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:628
+#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:639
 msgid "up"
 msgstr "yukarı"
 
-#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:628
+#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:639
 msgid "down"
 msgstr "aşağı"
 
@@ -9138,177 +9136,177 @@ msgstr "aşağı"
 msgid "set"
 msgstr "ayarla"
 
-#: ../src/gui/accelerators.c:111
+#: ../src/gui/accelerators.c:112
 msgid "popup"
 msgstr "açılır menü"
 
-#: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
+#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:146
 #: ../src/gui/gtk.c:2855 ../src/views/lighttable.c:806
 msgid "next"
 msgstr "sonraki"
 
-#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
+#: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:145
 #: ../src/gui/gtk.c:2856 ../src/views/lighttable.c:807
 msgid "previous"
 msgstr "önceki"
 
-#: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:1202
+#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1213
 msgid "last"
 msgstr "son"
 
-#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1201
+#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:1212
 msgid "first"
 msgstr "ilk"
 
-#: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
+#: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:134
+#: ../src/gui/accelerators.c:294 ../src/libs/filtering.c:1922
 #: ../src/libs/filters/rating_range.c:268 ../src/libs/tagging.c:3117
-#: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
-#: ../src/views/darkroom.c:2553
+#: ../src/views/darkroom.c:2271 ../src/views/darkroom.c:2321
+#: ../src/views/darkroom.c:2555
 msgid "toggle"
 msgstr "geçiş"
 
-#: ../src/gui/accelerators.c:122
+#: ../src/gui/accelerators.c:124
 msgid "ctrl-toggle"
 msgstr "ctrl-geçiş"
 
-#: ../src/gui/accelerators.c:123
+#: ../src/gui/accelerators.c:125
 msgid "ctrl-on"
 msgstr "ctrl-açık"
 
-#: ../src/gui/accelerators.c:124
+#: ../src/gui/accelerators.c:126
 msgid "right-toggle"
 msgstr "sağ-geçiş"
 
-#: ../src/gui/accelerators.c:125
+#: ../src/gui/accelerators.c:127
 msgid "right-on"
 msgstr "sağ-açık"
 
-#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2854
+#: ../src/gui/accelerators.c:138 ../src/gui/gtk.c:2854
 msgid "activate"
 msgstr "etkinleştir"
 
-#: ../src/gui/accelerators.c:135
+#: ../src/gui/accelerators.c:139
 msgid "ctrl-activate"
 msgstr "ctrl-etkinleştirildi"
 
-#: ../src/gui/accelerators.c:136
+#: ../src/gui/accelerators.c:140
 msgid "right-activate"
 msgstr "sağ-etkinleştirildi"
 
-#: ../src/gui/accelerators.c:142
+#: ../src/gui/accelerators.c:147
 msgid "store"
 msgstr "depo"
 
-#: ../src/gui/accelerators.c:145 ../src/gui/styles_dialog.c:497
+#: ../src/gui/accelerators.c:150 ../src/gui/styles_dialog.c:497
 msgid "update"
 msgstr "güncelleme"
 
-#: ../src/gui/accelerators.c:146 ../src/libs/tools/global_toolbox.c:61
+#: ../src/gui/accelerators.c:151 ../src/libs/tools/global_toolbox.c:61
 #: ../src/libs/tools/global_toolbox.c:512
 msgid "preferences"
 msgstr "tercihler"
 
-#: ../src/gui/accelerators.c:150
+#: ../src/gui/accelerators.c:156
 msgid "apply on new instance"
 msgstr "yeni örneğe uygula"
 
-#: ../src/gui/accelerators.c:154
+#: ../src/gui/accelerators.c:161
 msgid "start"
 msgstr "başlat"
 
-#: ../src/gui/accelerators.c:155
+#: ../src/gui/accelerators.c:162
 msgid "end"
 msgstr "son"
 
-#: ../src/gui/accelerators.c:301
+#: ../src/gui/accelerators.c:312
 msgid "entry"
 msgstr "girdi"
 
-#: ../src/gui/accelerators.c:370
+#: ../src/gui/accelerators.c:381
 msgid "combo effect not found"
 msgstr "birleşik efekt bulunamadı"
 
-#: ../src/gui/accelerators.c:524
+#: ../src/gui/accelerators.c:535
 msgid "(keypad)"
 msgstr "(klavye)"
 
-#: ../src/gui/accelerators.c:533
+#: ../src/gui/accelerators.c:544
 msgid "tablet button"
 msgstr "tablet düğmesi"
 
-#: ../src/gui/accelerators.c:542
+#: ../src/gui/accelerators.c:553
 msgid "unknown driver"
 msgstr "bilinmeyen sürücü"
 
-#: ../src/gui/accelerators.c:609
+#: ../src/gui/accelerators.c:620
 msgid "long"
 msgstr "uzun"
 
-#: ../src/gui/accelerators.c:610
+#: ../src/gui/accelerators.c:621
 msgid "double-press"
 msgstr "çift bas"
 
-#: ../src/gui/accelerators.c:611
+#: ../src/gui/accelerators.c:622
 msgid "triple-press"
 msgstr "üçlü bas"
 
-#: ../src/gui/accelerators.c:612
+#: ../src/gui/accelerators.c:623
 msgid "press"
 msgstr "bas"
 
-#: ../src/gui/accelerators.c:616
+#: ../src/gui/accelerators.c:627
 msgctxt "accel"
 msgid "left"
 msgstr "sol"
 
-#: ../src/gui/accelerators.c:617
+#: ../src/gui/accelerators.c:628
 msgctxt "accel"
 msgid "right"
 msgstr "sağ"
 
-#: ../src/gui/accelerators.c:618
+#: ../src/gui/accelerators.c:629
 msgctxt "accel"
 msgid "middle"
 msgstr "orta"
 
-#: ../src/gui/accelerators.c:619
+#: ../src/gui/accelerators.c:630
 msgctxt "accel"
 msgid "long"
 msgstr "uzun"
 
-#: ../src/gui/accelerators.c:620
+#: ../src/gui/accelerators.c:631
 msgctxt "accel"
 msgid "double-click"
 msgstr "çift tıkla"
 
-#: ../src/gui/accelerators.c:621
+#: ../src/gui/accelerators.c:632
 msgctxt "accel"
 msgid "triple-click"
 msgstr "üç tıklama"
 
-#: ../src/gui/accelerators.c:622
+#: ../src/gui/accelerators.c:633
 msgid "click"
 msgstr "tıkla"
 
-#: ../src/gui/accelerators.c:650
+#: ../src/gui/accelerators.c:661
 msgid "first instance"
 msgstr "ilk örnek"
 
-#: ../src/gui/accelerators.c:652
+#: ../src/gui/accelerators.c:663
 msgid "last instance"
 msgstr "son örnek"
 
-#: ../src/gui/accelerators.c:654
+#: ../src/gui/accelerators.c:665
 msgid "relative instance"
 msgstr "göreli örnek"
 
-#: ../src/gui/accelerators.c:668 ../src/gui/accelerators.c:957
-#: ../src/gui/accelerators.c:2277 ../src/gui/accelerators.c:3139
+#: ../src/gui/accelerators.c:679 ../src/gui/accelerators.c:968
+#: ../src/gui/accelerators.c:2288 ../src/gui/accelerators.c:3150
 msgid "speed"
 msgstr "hız"
 
-#: ../src/gui/accelerators.c:729
+#: ../src/gui/accelerators.c:740
 msgid ""
 "press Del to delete selected shortcut\n"
 "double-click to add new shortcut\n"
@@ -9318,15 +9316,15 @@ msgstr ""
 "yeni kısayol eklemek için çift tıklayın\n"
 "artımlı arama için yazmaya başlayın"
 
-#: ../src/gui/accelerators.c:745
+#: ../src/gui/accelerators.c:756
 msgid "click to filter shortcut list\n"
 msgstr "kısayol listesini filtrelemek için tıklayın\n"
 
-#: ../src/gui/accelerators.c:746
+#: ../src/gui/accelerators.c:757
 msgid "right click to show action of selected shortcut\n"
 msgstr "seçilen kısayolun eylemini göstermek için sağ tıklayın\n"
 
-#: ../src/gui/accelerators.c:747
+#: ../src/gui/accelerators.c:758
 msgid ""
 "double-click to define new shortcut\n"
 "start typing for incremental search"
@@ -9334,7 +9332,7 @@ msgstr ""
 "yeni kısayol tanımlamak için çift tıklayın\n"
 "artımlı arama için yazmaya başlayın"
 
-#: ../src/gui/accelerators.c:766
+#: ../src/gui/accelerators.c:777
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
@@ -9342,94 +9340,94 @@ msgstr ""
 "fare tıklamasıyla tuşlara basın ve kısayol oluşturmak için kombinasyonları "
 "kaydırın veya taşıyın"
 
-#: ../src/gui/accelerators.c:767
+#: ../src/gui/accelerators.c:778
 msgid "click to open shortcut configuration"
 msgstr "kısayol yapılandırmasını açmak için tıklayın"
 
-#: ../src/gui/accelerators.c:768
+#: ../src/gui/accelerators.c:779
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "hızlı erişim paneline eklemek için ctrl+tıklayın\n"
 
-#: ../src/gui/accelerators.c:769
+#: ../src/gui/accelerators.c:780
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "hızlı erişim panelinden kaldırmak için ctrl+tıklayın\n"
 
-#: ../src/gui/accelerators.c:770
+#: ../src/gui/accelerators.c:781
 msgid "scroll to change default speed"
 msgstr "varsayılan hızı değiştirmek için kaydırın"
 
-#: ../src/gui/accelerators.c:771
+#: ../src/gui/accelerators.c:782
 msgid "right click to exit mapping mode"
 msgstr "eşleme modundan çıkmak için sağ tıklayın"
 
-#: ../src/gui/accelerators.c:954
+#: ../src/gui/accelerators.c:965
 msgid "active view"
 msgstr "etkin görünüm"
 
-#: ../src/gui/accelerators.c:955
+#: ../src/gui/accelerators.c:966
 msgid "other views"
 msgstr "diğer görünümler"
 
-#: ../src/gui/accelerators.c:956
+#: ../src/gui/accelerators.c:967
 msgid "fallbacks"
 msgstr "geri dönüşler"
 
-#: ../src/gui/accelerators.c:1085
+#: ../src/gui/accelerators.c:1096
 msgid "shortcut for move exists with single effect"
 msgstr "tek efektle hareket kısayolu var"
 
-#: ../src/gui/accelerators.c:1086
+#: ../src/gui/accelerators.c:1097
 msgid "create separate shortcuts for up and down move?"
 msgstr "yukarı ve aşağı hareket için ayrı kısayollar oluştur?"
 
-#: ../src/gui/accelerators.c:1109
+#: ../src/gui/accelerators.c:1120
 #, c-format
 msgid "%s, speed reset"
 msgstr "%s, hız sıfırlama"
 
-#: ../src/gui/accelerators.c:1118
+#: ../src/gui/accelerators.c:1129
 msgid "shortcut exists with different settings"
 msgstr "kısayol farklı ayarlarla var"
 
-#: ../src/gui/accelerators.c:1119
+#: ../src/gui/accelerators.c:1130
 msgid "reset the settings of the shortcut?"
 msgstr "kısayolun ayarları sıfırlansın mı?"
 
-#: ../src/gui/accelerators.c:1130
+#: ../src/gui/accelerators.c:1141
 msgid "shortcut already exists"
 msgstr "kısayol zaten var"
 
-#: ../src/gui/accelerators.c:1131
+#: ../src/gui/accelerators.c:1142
 msgid "remove the shortcut?"
 msgstr "kısayolu kaldır?"
 
-#: ../src/gui/accelerators.c:1163
+#: ../src/gui/accelerators.c:1174
 msgid "clashing shortcuts exist"
 msgstr "çakışan kısayollar var"
 
-#: ../src/gui/accelerators.c:1164
+#: ../src/gui/accelerators.c:1175
 msgid "remove these existing shortcuts?"
 msgstr "bu mevcut kısayollar kaldırılsın mı?"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1200
+#: ../src/gui/accelerators.c:1211
 msgid "preferred"
 msgstr "tercihli"
 
-#: ../src/gui/accelerators.c:1203
+#: ../src/gui/accelerators.c:1214
 msgid "second"
 msgstr "saniye"
 
-#: ../src/gui/accelerators.c:1204
+#: ../src/gui/accelerators.c:1215
 msgid "last but one"
 msgstr "son fakat tek"
 
-#: ../src/gui/accelerators.c:1332 ../src/gui/accelerators.c:1386
+#: ../src/gui/accelerators.c:1343 ../src/gui/accelerators.c:1397
 msgid "(unchanged)"
 msgstr "(değişmedi)"
 
-#: ../src/gui/accelerators.c:1481
+#: ../src/gui/accelerators.c:1492
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -9454,31 +9452,31 @@ msgstr ""
 "\n"
 "iptal etmek için sağ tıklayın"
 
-#: ../src/gui/accelerators.c:1546
+#: ../src/gui/accelerators.c:1557
 msgid "removing shortcut"
 msgstr "kısayolu kaldırma"
 
-#: ../src/gui/accelerators.c:1547
+#: ../src/gui/accelerators.c:1558
 msgid "remove the selected shortcut?"
 msgstr "seçilen kısayol kaldırılsın mı?"
 
-#: ../src/gui/accelerators.c:1947
+#: ../src/gui/accelerators.c:1958
 msgid "restore shortcuts"
 msgstr "kısayolları geri yükle"
 
-#: ../src/gui/accelerators.c:1951
+#: ../src/gui/accelerators.c:1962
 msgid "_defaults"
 msgstr "_öntanımlılar"
 
-#: ../src/gui/accelerators.c:1952
+#: ../src/gui/accelerators.c:1963
 msgid "_startup"
 msgstr "_başlangıç"
 
-#: ../src/gui/accelerators.c:1953
+#: ../src/gui/accelerators.c:1964
 msgid "_edits"
 msgstr "d_üzenlemeler"
 
-#: ../src/gui/accelerators.c:1958
+#: ../src/gui/accelerators.c:1969
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -9490,7 +9488,7 @@ msgstr ""
 "  - başlangıçta olduğu gibi\n"
 "  - bu iletişim kutusunu açarken olduğu gibi\n"
 
-#: ../src/gui/accelerators.c:1961
+#: ../src/gui/accelerators.c:1972
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -9498,22 +9496,22 @@ msgstr ""
 "tüm yeni kısayolları temizle\n"
 "(sadece değiştirilenleri geri yüklemek yerine)"
 
-#: ../src/gui/accelerators.c:2015 ../src/gui/preferences.c:895
+#: ../src/gui/accelerators.c:2026 ../src/gui/preferences.c:895
 #: ../src/libs/tools/global_toolbox.c:496
 #: ../src/libs/tools/global_toolbox.c:809
 msgid "shortcuts"
 msgstr "kısayollar"
 
-#: ../src/gui/accelerators.c:2024
+#: ../src/gui/accelerators.c:2035
 msgid "export shortcuts"
 msgstr "kısayolları dışa aktar"
 
-#: ../src/gui/accelerators.c:2027 ../src/gui/accelerators.c:2106
+#: ../src/gui/accelerators.c:2038 ../src/gui/accelerators.c:2117
 #: ../src/gui/hist_dialog.c:198 ../src/gui/presets.c:460
 msgid "_ok"
 msgstr "ta_mam"
 
-#: ../src/gui/accelerators.c:2032
+#: ../src/gui/accelerators.c:2043
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -9521,27 +9519,27 @@ msgstr ""
 "tüm kısayolları bir dosyaya aktar\n"
 "veya sadece seçilen bir cihaz için\n"
 
-#: ../src/gui/accelerators.c:2038 ../src/gui/accelerators.c:2117
+#: ../src/gui/accelerators.c:2049 ../src/gui/accelerators.c:2128
 msgid "keyboard"
 msgstr "klavye"
 
-#: ../src/gui/accelerators.c:2050
+#: ../src/gui/accelerators.c:2061
 msgid "device id"
 msgstr "cihaz kimliği"
 
-#: ../src/gui/accelerators.c:2076
+#: ../src/gui/accelerators.c:2087
 msgid "select file to export"
 msgstr "dışa aktarılacak dosyayı seçin"
 
-#: ../src/gui/accelerators.c:2077 ../src/libs/tagging.c:2521
+#: ../src/gui/accelerators.c:2088 ../src/libs/tagging.c:2521
 msgid "_export"
 msgstr "_dışa aktar"
 
-#: ../src/gui/accelerators.c:2103
+#: ../src/gui/accelerators.c:2114
 msgid "import shortcuts"
 msgstr "kısayolları içe aktar"
 
-#: ../src/gui/accelerators.c:2111
+#: ../src/gui/accelerators.c:2122
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -9549,31 +9547,31 @@ msgstr ""
 "bir dosyadan tüm kısayolları içe aktar\n"
 "veya sadece seçilen bir cihaz için\n"
 
-#: ../src/gui/accelerators.c:2129
+#: ../src/gui/accelerators.c:2140
 msgid "id in file"
 msgstr "dosyadaki kimlik"
 
-#: ../src/gui/accelerators.c:2135
+#: ../src/gui/accelerators.c:2146
 msgid "id when loaded"
 msgstr "yüklendiğinde kimlik"
 
-#: ../src/gui/accelerators.c:2139
+#: ../src/gui/accelerators.c:2150
 msgid "clear device first"
 msgstr "önce cihazı temizle"
 
-#: ../src/gui/accelerators.c:2163
+#: ../src/gui/accelerators.c:2174
 msgid "select file to import"
 msgstr "içe aktarılacak dosyayı seçin"
 
-#: ../src/gui/accelerators.c:2164 ../src/libs/tagging.c:2485
+#: ../src/gui/accelerators.c:2175 ../src/libs/tagging.c:2485
 msgid "_import"
 msgstr "_içe aktar"
 
-#: ../src/gui/accelerators.c:2237
+#: ../src/gui/accelerators.c:2248
 msgid "search shortcuts list"
 msgstr "arama kısayolları listesi"
 
-#: ../src/gui/accelerators.c:2238
+#: ../src/gui/accelerators.c:2249
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -9582,28 +9580,28 @@ msgstr ""
 "eşleşmeler arasında geçiş yapmak için yukarı veya aşağı tuşlarına basın"
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2253 ../src/views/view.c:1383
+#: ../src/gui/accelerators.c:2264 ../src/views/view.c:1383
 msgid "shortcut"
 msgstr "kısayol"
 
-#: ../src/gui/accelerators.c:2255 ../src/gui/accelerators.c:2346
+#: ../src/gui/accelerators.c:2266 ../src/gui/accelerators.c:2357
 #: ../src/views/view.c:1385
 msgid "action"
 msgstr "eylem"
 
-#: ../src/gui/accelerators.c:2264
+#: ../src/gui/accelerators.c:2275
 msgid "element"
 msgstr "öğe"
 
-#: ../src/gui/accelerators.c:2271
+#: ../src/gui/accelerators.c:2282
 msgid "effect"
 msgstr "etki"
 
-#: ../src/gui/accelerators.c:2328
+#: ../src/gui/accelerators.c:2339
 msgid "search actions list"
 msgstr "arama eylemleri listesi"
 
-#: ../src/gui/accelerators.c:2329
+#: ../src/gui/accelerators.c:2340
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -9611,16 +9609,16 @@ msgstr ""
 "eylemler listesini aşamalı olarak ara\n"
 "eşleşmeler arasında geçiş yapmak için yukarı veya aşağı tuşlarına basın"
 
-#: ../src/gui/accelerators.c:2352 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2363 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:192
 msgid "type"
 msgstr "tür"
 
-#: ../src/gui/accelerators.c:2387
+#: ../src/gui/accelerators.c:2398
 msgid "enable fallbacks"
 msgstr "yedekleri etkinleştir"
 
-#: ../src/gui/accelerators.c:2388
+#: ../src/gui/accelerators.c:2399
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -9629,53 +9627,53 @@ msgstr ""
 "etkinleştirir\n"
 "bir temel kısayol ile birlikte kullanıldığında"
 
-#: ../src/gui/accelerators.c:2394
+#: ../src/gui/accelerators.c:2405
 msgid "restore..."
 msgstr "geri yükle..."
 
-#: ../src/gui/accelerators.c:2395
+#: ../src/gui/accelerators.c:2406
 msgid "restore default shortcuts or previous state"
 msgstr "varsayılan kısayolları veya önceki durumu geri yükle"
 
 #. import button
-#: ../src/gui/accelerators.c:2399 ../src/libs/styles.c:857
+#: ../src/gui/accelerators.c:2410 ../src/libs/styles.c:857
 #: ../src/libs/tagging.c:3250
 msgid "import..."
 msgstr "içe aktar..."
 
-#: ../src/gui/accelerators.c:2400
+#: ../src/gui/accelerators.c:2411
 msgid "fully or partially import shortcuts from file"
 msgstr "dosyadan kısayolları tamamen veya kısmen içe aktar"
 
 #. export button
-#: ../src/gui/accelerators.c:2404 ../src/libs/styles.c:861
+#: ../src/gui/accelerators.c:2415 ../src/libs/styles.c:861
 #: ../src/libs/tagging.c:3253
 msgid "export..."
 msgstr "dışa aktar..."
 
-#: ../src/gui/accelerators.c:2405
+#: ../src/gui/accelerators.c:2416
 msgid "fully or partially export shortcuts to file"
 msgstr "kısayolları tamamen veya kısmen dosyaya aktar"
 
-#: ../src/gui/accelerators.c:2803
+#: ../src/gui/accelerators.c:2814
 msgid "input devices reinitialised"
 msgstr "girdi cihazları yeniden başlatıldı"
 
-#: ../src/gui/accelerators.c:3018
+#: ../src/gui/accelerators.c:3029
 msgid "fallback to move"
 msgstr "hareket etmek için geri dönüş"
 
-#: ../src/gui/accelerators.c:3211
+#: ../src/gui/accelerators.c:3222
 #, c-format
 msgid "%s not assigned"
 msgstr "%s atanmadı"
 
-#: ../src/gui/accelerators.c:3366
+#: ../src/gui/accelerators.c:3377
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s, %s'e atandı"
 
-#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4476
+#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4478
 msgid "darktable - darkroom preview"
 msgstr "darktable - karanlık oda önizlemesi"
 
@@ -10184,7 +10182,7 @@ msgid "global guide overlay settings"
 msgstr "genel kılavuz yer paylaşımı ayarları"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2553
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2555
 msgid "guide lines"
 msgstr "kılavuz çizgiler"
 
@@ -14613,26 +14611,26 @@ msgstr "amaç oluşturma"
 
 #: ../src/iop/colorout.c:858 ../src/libs/export.c:1264
 #: ../src/libs/print_settings.c:2325 ../src/libs/print_settings.c:2646
-#: ../src/views/darkroom.c:2422 ../src/views/lighttable.c:1223
+#: ../src/views/darkroom.c:2424 ../src/views/lighttable.c:1223
 msgid "perceptual"
 msgstr "algısal"
 
 #: ../src/iop/colorout.c:859 ../src/libs/export.c:1265
 #: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
-#: ../src/views/darkroom.c:2423 ../src/views/lighttable.c:1224
+#: ../src/views/darkroom.c:2425 ../src/views/lighttable.c:1224
 msgid "relative colorimetric"
 msgstr "bağıl kolorimetrik"
 
 #: ../src/iop/colorout.c:860 ../src/libs/export.c:1266
 #: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
-#: ../src/views/darkroom.c:2424 ../src/views/lighttable.c:1225
+#: ../src/views/darkroom.c:2426 ../src/views/lighttable.c:1225
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "doygunluk"
 
 #: ../src/iop/colorout.c:861 ../src/libs/export.c:1267
 #: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
-#: ../src/views/darkroom.c:2425 ../src/views/lighttable.c:1226
+#: ../src/views/darkroom.c:2427 ../src/views/lighttable.c:1226
 msgid "absolute colorimetric"
 msgstr "mutlak kolorimetrik"
 
@@ -15934,7 +15932,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1689 ../src/libs/export.c:1240
 #: ../src/libs/print_settings.c:2323 ../src/libs/print_settings.c:2642
-#: ../src/views/darkroom.c:2428 ../src/views/lighttable.c:1229
+#: ../src/views/darkroom.c:2430 ../src/views/lighttable.c:1229
 msgid "intent"
 msgstr "amaç"
 
@@ -17841,9 +17839,9 @@ msgstr "renkleri yumuşatmak ne kadar"
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2319
-#: ../src/views/darkroom.c:2337 ../src/views/darkroom.c:2344
-#: ../src/views/darkroom.c:2354 ../src/views/darkroom.c:2371
+#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2321
+#: ../src/views/darkroom.c:2339 ../src/views/darkroom.c:2346
+#: ../src/views/darkroom.c:2356 ../src/views/darkroom.c:2373
 msgid "overexposed"
 msgstr "aşırı pozlanmış"
 
@@ -17950,9 +17948,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2269
-#: ../src/views/darkroom.c:2287 ../src/views/darkroom.c:2293
-#: ../src/views/darkroom.c:2306
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2271
+#: ../src/views/darkroom.c:2289 ../src/views/darkroom.c:2295
+#: ../src/views/darkroom.c:2308
 msgid "raw overexposed"
 msgstr "ham aşırı maruz kalmış"
 
@@ -23766,7 +23764,7 @@ msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "`%s' yükleniyor..."
 
-#: ../src/views/darkroom.c:717 ../src/views/darkroom.c:2396
+#: ../src/views/darkroom.c:717 ../src/views/darkroom.c:2398
 msgid "gamut check"
 msgstr "gamut kontrolü"
 
@@ -23787,31 +23785,36 @@ msgstr "favori modüller için kullanıcı tanımlı ön ayar bulunamadı"
 msgid "no styles have been created yet"
 msgstr "henüz tarz oluşturulmadı"
 
-#: ../src/views/darkroom.c:2233
+#: ../src/views/darkroom.c:2233 ../src/views/darkroom.c:2234
 msgid "quick access to presets"
 msgstr "ön ayarlara hızlı erişim"
 
 #: ../src/views/darkroom.c:2242
+#, fuzzy
+msgid "quick access to styles"
+msgstr "ön ayarlara hızlı erişim"
+
+#: ../src/views/darkroom.c:2244
 msgid "quick access for applying any of your styles"
 msgstr "tarzlarınız`dan herhangi birini uygulamak için hızlı erişim"
 
-#: ../src/views/darkroom.c:2248
+#: ../src/views/darkroom.c:2250
 msgid "second window"
 msgstr "ikinci pencere"
 
-#: ../src/views/darkroom.c:2251
+#: ../src/views/darkroom.c:2253
 msgid "display a second darkroom image window"
 msgstr "ikinci bir karanlık oda görüntü penceresi göster"
 
-#: ../src/views/darkroom.c:2256
+#: ../src/views/darkroom.c:2258
 msgid "color assessment"
 msgstr "renk değerlendirmesi"
 
-#: ../src/views/darkroom.c:2259
+#: ../src/views/darkroom.c:2261
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "ISO 12646 renk değerlendirme koşullarını değiştir"
 
-#: ../src/views/darkroom.c:2272
+#: ../src/views/darkroom.c:2274
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -23819,27 +23822,27 @@ msgstr ""
 "açık gösterge üzerinde raw geçiş yap\n"
 "seçenekler için sağ tıklayın"
 
-#: ../src/views/darkroom.c:2288
+#: ../src/views/darkroom.c:2290
 msgid "select how to mark the clipped pixels"
 msgstr "kırpılan piksellerin nasıl işaretleneceğini seçin"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2292
 msgid "mark with CFA color"
 msgstr "CFA rengiyle işaretleyin"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2292
 msgid "mark with solid color"
 msgstr "düz renkle işaretle"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2292
 msgid "false color"
 msgstr "yanlış renk"
 
-#: ../src/views/darkroom.c:2293 ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2295 ../src/views/darkroom.c:2346
 msgid "color scheme"
 msgstr "renk şeması"
 
-#: ../src/views/darkroom.c:2294
+#: ../src/views/darkroom.c:2296
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -23847,27 +23850,27 @@ msgstr ""
 "aşırı pozlamayı belirtmek için düz rengi seçin.\n"
 "yalnızca mod = düz renkle işaretlediğinde kullanılacaktır"
 
-#: ../src/views/darkroom.c:2297
+#: ../src/views/darkroom.c:2299
 msgctxt "solidcolor"
 msgid "red"
 msgstr "kırmızı"
 
-#: ../src/views/darkroom.c:2298
+#: ../src/views/darkroom.c:2300
 msgctxt "solidcolor"
 msgid "green"
 msgstr "yeşil"
 
-#: ../src/views/darkroom.c:2299
+#: ../src/views/darkroom.c:2301
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "mavi"
 
-#: ../src/views/darkroom.c:2300
+#: ../src/views/darkroom.c:2302
 msgctxt "solidcolor"
 msgid "black"
 msgstr "siyah"
 
-#: ../src/views/darkroom.c:2308
+#: ../src/views/darkroom.c:2310
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -23877,7 +23880,7 @@ msgstr ""
 "1.0 - beyaz seviyesi\n"
 "0.0 - siyah seviye"
 
-#: ../src/views/darkroom.c:2322
+#: ../src/views/darkroom.c:2324
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -23885,11 +23888,11 @@ msgstr ""
 "kırpma göstergesi aç/kapat\n"
 "seçenekler için sağ tıklayın"
 
-#: ../src/views/darkroom.c:2337
+#: ../src/views/darkroom.c:2339
 msgid "clipping preview mode"
 msgstr "kırpma önizleme modu"
 
-#: ../src/views/darkroom.c:2338
+#: ../src/views/darkroom.c:2340
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -23897,43 +23900,43 @@ msgstr ""
 "önizlemek istediğiniz metriği seçin\n"
 "tam gamut, diğer tüm modların birleşimidir"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "full gamut"
 msgstr "tam gamut"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "any RGB channel"
 msgstr "herhangi bir RGB kanalı"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "luminance only"
 msgstr "sadece parlaklık"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "saturation only"
 msgstr "sadece doygunluk"
 
-#: ../src/views/darkroom.c:2345
+#: ../src/views/darkroom.c:2347
 msgid "select colors to indicate clipping"
 msgstr "kırpmayı belirtmek için renkleri seçin"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2349
 msgid "black & white"
 msgstr "siyah & beyaz"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2349
 msgid "red & blue"
 msgstr "kırmızı & mavi"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2349
 msgid "purple & green"
 msgstr "mor & yeşil"
 
-#: ../src/views/darkroom.c:2354
+#: ../src/views/darkroom.c:2356
 msgid "lower threshold"
 msgstr "alt eşik"
 
-#: ../src/views/darkroom.c:2355
+#: ../src/views/darkroom.c:2357
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -23953,11 +23956,11 @@ msgstr ""
 "tipik renkli parlak baskılar -8.00 EV'de siyah üretir,\n"
 "tipik siyah beyaz parlak baskılar -9.00 EV'de siyah üretir."
 
-#: ../src/views/darkroom.c:2371
+#: ../src/views/darkroom.c:2373
 msgid "upper threshold"
 msgstr "üst eşik"
 
-#: ../src/views/darkroom.c:2373
+#: ../src/views/darkroom.c:2375
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -23966,11 +23969,11 @@ msgstr ""
 "beyaz nokta için kırpma eşiği.\n"
 "%100 en yüksek orta parlaklıktır."
 
-#: ../src/views/darkroom.c:2385
+#: ../src/views/darkroom.c:2387
 msgid "softproof"
 msgstr "yumuşak prova"
 
-#: ../src/views/darkroom.c:2388
+#: ../src/views/darkroom.c:2390
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -23978,7 +23981,7 @@ msgstr ""
 "yumuşak prova aç kapat\n"
 "profil seçenekleri için sağ tıklayın"
 
-#: ../src/views/darkroom.c:2399
+#: ../src/views/darkroom.c:2401
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -23986,50 +23989,50 @@ msgstr ""
 "gamut kontrolünü aç/kapat\n"
 "profil seçenekleri için sağ tıklayın"
 
-#: ../src/views/darkroom.c:2428 ../src/views/darkroom.c:2430
-#: ../src/views/darkroom.c:2444 ../src/views/darkroom.c:2445
+#: ../src/views/darkroom.c:2430 ../src/views/darkroom.c:2432
 #: ../src/views/darkroom.c:2446 ../src/views/darkroom.c:2447
+#: ../src/views/darkroom.c:2448 ../src/views/darkroom.c:2449
 #: ../src/views/lighttable.c:1229 ../src/views/lighttable.c:1231
 msgid "profiles"
 msgstr "profiller"
 
-#: ../src/views/darkroom.c:2430 ../src/views/lighttable.c:1231
+#: ../src/views/darkroom.c:2432 ../src/views/lighttable.c:1231
 msgid "preview intent"
 msgstr "önizleme amacı"
 
-#: ../src/views/darkroom.c:2444 ../src/views/lighttable.c:1235
+#: ../src/views/darkroom.c:2446 ../src/views/lighttable.c:1235
 msgid "display profile"
 msgstr "görüntüleme profili"
 
-#: ../src/views/darkroom.c:2445 ../src/views/lighttable.c:1238
+#: ../src/views/darkroom.c:2447 ../src/views/lighttable.c:1238
 msgid "preview display profile"
 msgstr "görüntüleme profilini önizle"
 
-#: ../src/views/darkroom.c:2447
+#: ../src/views/darkroom.c:2449
 msgid "histogram profile"
 msgstr "histogram profili"
 
-#: ../src/views/darkroom.c:2511 ../src/views/lighttable.c:1274
+#: ../src/views/darkroom.c:2513 ../src/views/lighttable.c:1274
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "ICC profillerini %s veya %s olarak göster"
 
-#: ../src/views/darkroom.c:2514 ../src/views/lighttable.c:1277
+#: ../src/views/darkroom.c:2516 ../src/views/lighttable.c:1277
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "ön izleme ICC profillerini %s veya %s olarak göster"
 
-#: ../src/views/darkroom.c:2517
+#: ../src/views/darkroom.c:2519
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "%s veya %s olarak yumuşak prova ICC profilleri"
 
-#: ../src/views/darkroom.c:2520
+#: ../src/views/darkroom.c:2522
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "%s veya %s olarak histogram ve renk seçici ICC profilleri"
 
-#: ../src/views/darkroom.c:2556
+#: ../src/views/darkroom.c:2558
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -24038,145 +24041,145 @@ msgstr ""
 "kılavuz seçenekleri için sağ tıklayın"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2573
+#: ../src/views/darkroom.c:2575
 msgid "full preview"
 msgstr "tam önizleme"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2577
+#: ../src/views/darkroom.c:2579
 msgid "force pan & zoom with mouse"
 msgstr "fare ile zorla kaydırma & yakınlaştırma"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2589
+#: ../src/views/darkroom.c:2591
 msgid "zoom close-up"
 msgstr "yakınlaştırmayı kapat"
 
-#: ../src/views/darkroom.c:2590
+#: ../src/views/darkroom.c:2592
 msgid "zoom fill"
 msgstr "yakınlaştırma dolgusu"
 
-#: ../src/views/darkroom.c:2591
+#: ../src/views/darkroom.c:2593
 msgid "zoom fit"
 msgstr "yakınlaştırma sığdır"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2594 ../src/views/lighttable.c:1338
+#: ../src/views/darkroom.c:2596 ../src/views/lighttable.c:1338
 msgid "zoom in"
 msgstr "yakınlaştır"
 
-#: ../src/views/darkroom.c:2595 ../src/views/lighttable.c:1340
+#: ../src/views/darkroom.c:2597 ../src/views/lighttable.c:1340
 msgid "zoom out"
 msgstr "uzaklaştır"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2598
+#: ../src/views/darkroom.c:2600
 msgid "image forward"
 msgstr "görüntü ileri"
 
-#: ../src/views/darkroom.c:2599
+#: ../src/views/darkroom.c:2601
 msgid "image back"
 msgstr "görüntü geri"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2602
+#: ../src/views/darkroom.c:2604
 msgid "cycle overlay colors"
 msgstr "döngü bindirme renkleri"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2605
+#: ../src/views/darkroom.c:2607
 msgid "show drawn masks"
 msgstr "çizilmiş maskeleri göster"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2608
+#: ../src/views/darkroom.c:2610
 msgid "increase brush size"
 msgstr "fırça boyutunu artır"
 
-#: ../src/views/darkroom.c:2609
+#: ../src/views/darkroom.c:2611
 msgid "decrease brush size"
 msgstr "fırça boyutunu küçült"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2612
+#: ../src/views/darkroom.c:2614
 msgid "increase brush hardness"
 msgstr "fırça sertliğini arttır"
 
-#: ../src/views/darkroom.c:2613
+#: ../src/views/darkroom.c:2615
 msgid "decrease brush hardness"
 msgstr "fırça sertliğini azalt"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2616
+#: ../src/views/darkroom.c:2618
 msgid "increase brush opacity"
 msgstr "fırça opaklığını artır"
 
-#: ../src/views/darkroom.c:2617
+#: ../src/views/darkroom.c:2619
 msgid "decrease brush opacity"
 msgstr "fırça opaklığını azalt"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2620 ../src/views/lighttable.c:1330
+#: ../src/views/darkroom.c:2622 ../src/views/lighttable.c:1330
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "geri al"
 
-#: ../src/views/darkroom.c:2621 ../src/views/lighttable.c:1331
+#: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:1331
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "ileri al"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2624
+#: ../src/views/darkroom.c:2626
 msgid "change keyboard shortcut slider precision"
 msgstr "klavye kısayolu kaydırıcı hassasiyetini değiştir"
 
-#: ../src/views/darkroom.c:3813
+#: ../src/views/darkroom.c:3815
 msgid "keyboard shortcut slider precision: fine"
 msgstr "klavye kısayolu kaydırıcı hassasiyeti: iyi"
 
-#: ../src/views/darkroom.c:3815
+#: ../src/views/darkroom.c:3817
 msgid "keyboard shortcut slider precision: normal"
 msgstr "klavye kısayolu kaydırıcı hassasiyeti: normal"
 
-#: ../src/views/darkroom.c:3817
+#: ../src/views/darkroom.c:3819
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "klavye kısayolu kaydırıcı hassasiyeti: kaba"
 
-#: ../src/views/darkroom.c:3833
+#: ../src/views/darkroom.c:3835
 msgid "switch to lighttable"
 msgstr "ışıklı masaya geç"
 
-#: ../src/views/darkroom.c:3834 ../src/views/lighttable.c:928
+#: ../src/views/darkroom.c:3836 ../src/views/lighttable.c:928
 msgid "zoom in the image"
 msgstr "görüntüyü yakınlaştır"
 
-#: ../src/views/darkroom.c:3835
+#: ../src/views/darkroom.c:3837
 msgid "unbounded zoom in the image"
 msgstr "görüntüde sınırsız yakınlaştırma"
 
-#: ../src/views/darkroom.c:3836
+#: ../src/views/darkroom.c:3838
 msgid "zoom to 100% 200% and back"
 msgstr "%100'e %200'e yakınlaştırın ve geri dönün"
 
-#: ../src/views/darkroom.c:3837 ../src/views/lighttable.c:931
+#: ../src/views/darkroom.c:3839 ../src/views/lighttable.c:931
 msgid "pan a zoomed image"
 msgstr "yakınlaştırılmış bir görüntüyü kaydır"
 
-#: ../src/views/darkroom.c:3839 ../src/views/lighttable.c:973
+#: ../src/views/darkroom.c:3841 ../src/views/lighttable.c:973
 msgid "[modules] expand module without closing others"
 msgstr "[modüller] diğerlerini kapatmadan modülü genişlet"
 
-#: ../src/views/darkroom.c:3840 ../src/views/lighttable.c:974
+#: ../src/views/darkroom.c:3842 ../src/views/lighttable.c:974
 msgid "[modules] expand module and close others"
 msgstr "[modüller] modülü genişletin ve diğerlerini kapatın"
 
-#: ../src/views/darkroom.c:3842
+#: ../src/views/darkroom.c:3844
 msgid "[modules] rename module"
 msgstr "[modüller] modülü yeniden adlandır"
 
-#: ../src/views/darkroom.c:3844
+#: ../src/views/darkroom.c:3846
 msgid "[modules] change module position in pipe"
 msgstr "[modüller] borudaki modül konumunu değiştir"
 

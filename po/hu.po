@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-30 11:59+0100\n"
+"POT-Creation-Date: 2023-01-21 18:18+0100\n"
 "PO-Revision-Date: 2022-12-10 21:57+0100\n"
 "Last-Translator: Báthory Péter <bathory86p@gmail.com>\n"
 "Language-Team: \n"
@@ -17,20 +17,20 @@ msgstr ""
 "X-Poedit-SearchPath-1: po\n"
 "X-Poedit-SearchPath-2: src\n"
 
-#: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:7871
+#: ../build/bin/conf_gen.h:172 ../build/bin/preferences_gen.h:7871
 msgctxt "preferences"
 msgid "first instance"
 msgstr "első példány"
 
-#: ../build/bin/conf_gen.h:159 ../build/bin/preferences_gen.h:7876
+#: ../build/bin/conf_gen.h:173 ../build/bin/preferences_gen.h:7876
 #: ../build/bin/preferences_gen.h:7895
 msgctxt "preferences"
 msgid "last instance"
 msgstr "utolsó példány"
 
-#: ../build/bin/conf_gen.h:226 ../build/bin/conf_gen.h:326
-#: ../build/bin/conf_gen.h:336 ../build/bin/conf_gen.h:1166
-#: ../build/bin/conf_gen.h:1182 ../build/bin/preferences_gen.h:4229
+#: ../build/bin/conf_gen.h:240 ../build/bin/conf_gen.h:340
+#: ../build/bin/conf_gen.h:350 ../build/bin/conf_gen.h:1180
+#: ../build/bin/conf_gen.h:1196 ../build/bin/preferences_gen.h:4229
 #: ../build/bin/preferences_gen.h:4248 ../build/bin/preferences_gen.h:4324
 #: ../build/bin/preferences_gen.h:6954 ../build/bin/preferences_gen.h:7082
 #: ../build/bin/preferences_gen.h:7147
@@ -38,36 +38,36 @@ msgctxt "preferences"
 msgid "never"
 msgstr "soha"
 
-#: ../build/bin/conf_gen.h:227 ../build/bin/preferences_gen.h:6959
+#: ../build/bin/conf_gen.h:241 ../build/bin/preferences_gen.h:6959
 msgctxt "preferences"
 msgid "once a month"
 msgstr "havonta egyszer"
 
-#: ../build/bin/conf_gen.h:228 ../build/bin/preferences_gen.h:6964
+#: ../build/bin/conf_gen.h:242 ../build/bin/preferences_gen.h:6964
 #: ../build/bin/preferences_gen.h:6993
 msgctxt "preferences"
 msgid "once a week"
 msgstr "hetente egyszer"
 
-#: ../build/bin/conf_gen.h:229 ../build/bin/preferences_gen.h:6969
+#: ../build/bin/conf_gen.h:243 ../build/bin/preferences_gen.h:6969
 msgctxt "preferences"
 msgid "once a day"
 msgstr "naponta egyszer"
 
-#: ../build/bin/conf_gen.h:230 ../build/bin/preferences_gen.h:6974
+#: ../build/bin/conf_gen.h:244 ../build/bin/preferences_gen.h:6974
 msgctxt "preferences"
 msgid "on close"
 msgstr "bezáráskor"
 
-#: ../build/bin/conf_gen.h:266 ../build/bin/conf_gen.h:1159
-#: ../build/bin/conf_gen.h:1175 ../build/bin/preferences_gen.h:4194
+#: ../build/bin/conf_gen.h:280 ../build/bin/conf_gen.h:1173
+#: ../build/bin/conf_gen.h:1189 ../build/bin/preferences_gen.h:4194
 #: ../build/bin/preferences_gen.h:4289 ../build/bin/preferences_gen.h:6014
 msgctxt "preferences"
 msgid "small"
 msgstr "kicsi"
 
-#: ../build/bin/conf_gen.h:267 ../build/bin/conf_gen.h:373
-#: ../build/bin/conf_gen.h:2095 ../build/bin/preferences_gen.h:4918
+#: ../build/bin/conf_gen.h:281 ../build/bin/conf_gen.h:387
+#: ../build/bin/conf_gen.h:2109 ../build/bin/preferences_gen.h:4918
 #: ../build/bin/preferences_gen.h:4942 ../build/bin/preferences_gen.h:6019
 #: ../build/bin/preferences_gen.h:6048 ../build/bin/preferences_gen.h:6235
 #: ../build/bin/preferences_gen.h:6264
@@ -75,29 +75,29 @@ msgctxt "preferences"
 msgid "default"
 msgstr "alapértelmezett"
 
-#: ../build/bin/conf_gen.h:268 ../build/bin/preferences_gen.h:6024
+#: ../build/bin/conf_gen.h:282 ../build/bin/preferences_gen.h:6024
 msgctxt "preferences"
 msgid "large"
 msgstr "nagy"
 
-#: ../build/bin/conf_gen.h:269 ../build/bin/preferences_gen.h:6029
+#: ../build/bin/conf_gen.h:283 ../build/bin/preferences_gen.h:6029
 msgctxt "preferences"
 msgid "unrestricted"
 msgstr "korlátlan"
 
-#: ../build/bin/conf_gen.h:327 ../build/bin/preferences_gen.h:7087
+#: ../build/bin/conf_gen.h:341 ../build/bin/preferences_gen.h:7087
 msgctxt "preferences"
 msgid "after edit"
 msgstr "szerkesztés után"
 
-#: ../build/bin/conf_gen.h:328 ../build/bin/preferences_gen.h:7092
+#: ../build/bin/conf_gen.h:342 ../build/bin/preferences_gen.h:7092
 #: ../build/bin/preferences_gen.h:7111
 msgctxt "preferences"
 msgid "on import"
 msgstr "importálásnál"
 
-#: ../build/bin/conf_gen.h:337 ../build/bin/conf_gen.h:1158
-#: ../build/bin/conf_gen.h:1174 ../build/bin/conf_gen.h:3140
+#: ../build/bin/conf_gen.h:351 ../build/bin/conf_gen.h:1172
+#: ../build/bin/conf_gen.h:1188 ../build/bin/conf_gen.h:3155
 #: ../build/bin/preferences_gen.h:4189 ../build/bin/preferences_gen.h:4284
 #: ../build/bin/preferences_gen.h:5368 ../build/bin/preferences_gen.h:5422
 #: ../build/bin/preferences_gen.h:7152
@@ -105,125 +105,125 @@ msgctxt "preferences"
 msgid "always"
 msgstr "mindig"
 
-#: ../build/bin/conf_gen.h:338 ../build/bin/preferences_gen.h:7157
+#: ../build/bin/conf_gen.h:352 ../build/bin/preferences_gen.h:7157
 #: ../build/bin/preferences_gen.h:7176
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "csak a nagy elemeké"
 
-#: ../build/bin/conf_gen.h:358 ../build/bin/preferences_gen.h:8299
+#: ../build/bin/conf_gen.h:372 ../build/bin/preferences_gen.h:8299
 msgctxt "preferences"
 msgid "sensitive"
 msgstr "nagybetűérzékeny"
 
-#: ../build/bin/conf_gen.h:359 ../build/bin/preferences_gen.h:8304
+#: ../build/bin/conf_gen.h:373 ../build/bin/preferences_gen.h:8304
 #: ../build/bin/preferences_gen.h:8323
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "nem nagybetűérzékeny"
 
-#: ../build/bin/conf_gen.h:374 ../build/bin/preferences_gen.h:6240
+#: ../build/bin/conf_gen.h:388 ../build/bin/preferences_gen.h:6240
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "több GPU"
 
-#: ../build/bin/conf_gen.h:375 ../build/bin/preferences_gen.h:6245
+#: ../build/bin/conf_gen.h:389 ../build/bin/preferences_gen.h:6245
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "nagyon gyors GPU"
 
-#: ../build/bin/conf_gen.h:383 ../build/bin/preferences_gen.h:6306
+#: ../build/bin/conf_gen.h:397 ../build/bin/preferences_gen.h:6306
 #: ../build/bin/preferences_gen.h:6340
 msgctxt "preferences"
 msgid "nothing"
 msgstr "semmi"
 
-#: ../build/bin/conf_gen.h:384 ../build/bin/preferences_gen.h:6311
+#: ../build/bin/conf_gen.h:398 ../build/bin/preferences_gen.h:6311
 msgctxt "preferences"
 msgid "memory size"
 msgstr "memória mérete"
 
-#: ../build/bin/conf_gen.h:385 ../build/bin/preferences_gen.h:6316
+#: ../build/bin/conf_gen.h:399 ../build/bin/preferences_gen.h:6316
 msgctxt "preferences"
 msgid "memory transfer"
 msgstr "memóriaátvitel"
 
-#: ../build/bin/conf_gen.h:386 ../build/bin/preferences_gen.h:6321
+#: ../build/bin/conf_gen.h:400 ../build/bin/preferences_gen.h:6321
 msgctxt "preferences"
 msgid "memory size and transfer"
 msgstr "memóriaméret és -átvitel"
 
-#: ../build/bin/conf_gen.h:686 ../build/bin/preferences_gen.h:8487
+#: ../build/bin/conf_gen.h:700 ../build/bin/preferences_gen.h:8487
 #: ../build/bin/preferences_gen.h:8511
 msgctxt "preferences"
 msgid "id"
 msgstr "id"
 
-#: ../build/bin/conf_gen.h:687 ../build/bin/preferences_gen.h:8492
+#: ../build/bin/conf_gen.h:701 ../build/bin/preferences_gen.h:8492
 msgctxt "preferences"
 msgid "folder"
 msgstr "könyvtár"
 
-#: ../build/bin/conf_gen.h:701
+#: ../build/bin/conf_gen.h:715
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RGB"
 
-#: ../build/bin/conf_gen.h:702
+#: ../build/bin/conf_gen.h:716
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../build/bin/conf_gen.h:703
+#: ../build/bin/conf_gen.h:717
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:704
+#: ../build/bin/conf_gen.h:718
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
-#: ../build/bin/conf_gen.h:705
+#: ../build/bin/conf_gen.h:719
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:706 ../build/bin/conf_gen.h:1804
-#: ../build/bin/conf_gen.h:2457 ../build/bin/conf_gen.h:2961
+#: ../build/bin/conf_gen.h:720 ../build/bin/conf_gen.h:1818
+#: ../build/bin/conf_gen.h:2471 ../build/bin/conf_gen.h:2976
 #: ../build/bin/preferences_gen.h:5783 ../build/bin/preferences_gen.h:6818
 msgctxt "preferences"
 msgid "none"
 msgstr "nincs"
 
-#: ../build/bin/conf_gen.h:714
+#: ../build/bin/conf_gen.h:728
 msgctxt "preferences"
 msgid "mean"
 msgstr "középérték"
 
-#: ../build/bin/conf_gen.h:715
+#: ../build/bin/conf_gen.h:729
 msgctxt "preferences"
 msgid "min"
 msgstr "min"
 
-#: ../build/bin/conf_gen.h:716
+#: ../build/bin/conf_gen.h:730
 msgctxt "preferences"
 msgid "max"
 msgstr "max"
 
-#: ../build/bin/conf_gen.h:904
+#: ../build/bin/conf_gen.h:918
 msgid "select only new pictures"
 msgstr "csak az új képek kiválasztása"
 
-#: ../build/bin/conf_gen.h:905
+#: ../build/bin/conf_gen.h:919
 msgid "only select images that have not already been imported"
 msgstr "csak a még importálatlan képek kiválasztása"
 
-#: ../build/bin/conf_gen.h:910
+#: ../build/bin/conf_gen.h:924
 msgid "ignore JPEG images"
 msgstr "JPEG fájlok figyelmen kívül hagyása"
 
-#: ../build/bin/conf_gen.h:911
+#: ../build/bin/conf_gen.h:925
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -232,55 +232,55 @@ msgstr ""
 "mindkettőt importálni. ezzel a beállítással a JPEG-ek figyelmen kívül "
 "hagyhatóak."
 
-#: ../build/bin/conf_gen.h:916
+#: ../build/bin/conf_gen.h:930
 msgid "apply metadata"
 msgstr "metaadatok alkalmazása"
 
-#: ../build/bin/conf_gen.h:917
+#: ../build/bin/conf_gen.h:931
 msgid "apply some metadata to all newly imported images."
 msgstr "néhány metaadat beállítása az újonnan importált képekre."
 
-#: ../build/bin/conf_gen.h:922
+#: ../build/bin/conf_gen.h:936
 msgid "recursive directory"
 msgstr "alkönyvtárak rekurzívan"
 
-#: ../build/bin/conf_gen.h:923
+#: ../build/bin/conf_gen.h:937
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "alkönyvtárak bejárása filmszalag importálásánál"
 
-#: ../build/bin/conf_gen.h:928
+#: ../build/bin/conf_gen.h:942
 msgid "creator to be applied when importing"
 msgstr "importálásnál beállítandó alkotó"
 
-#: ../build/bin/conf_gen.h:934
+#: ../build/bin/conf_gen.h:948
 msgid "publisher to be applied when importing"
 msgstr "importálásnál beállítandó kiadó"
 
-#: ../build/bin/conf_gen.h:940
+#: ../build/bin/conf_gen.h:954
 msgid "rights to be applied when importing"
 msgstr "importálásnál beállítandó szerzői jog"
 
-#: ../build/bin/conf_gen.h:946
+#: ../build/bin/conf_gen.h:960
 msgid "comma separated tags to be applied when importing"
 msgstr "importálásnál beállítandó címkék, vesszővel elválasztva"
 
-#: ../build/bin/conf_gen.h:952
+#: ../build/bin/conf_gen.h:966
 msgid "import tags from XMP"
 msgstr "címkék importálása XMP-ből"
 
-#: ../build/bin/conf_gen.h:978
+#: ../build/bin/conf_gen.h:992
 msgid "initial rating"
 msgstr "kezdeti értékelés"
 
-#: ../build/bin/conf_gen.h:979
+#: ../build/bin/conf_gen.h:993
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "kezdeti csillagos értékelés minden importált képre"
 
-#: ../build/bin/conf_gen.h:984
+#: ../build/bin/conf_gen.h:998
 msgid "ignore EXIF rating"
 msgstr "EXIF-értékelés figyelmen kívül hagyása"
 
-#: ../build/bin/conf_gen.h:985
+#: ../build/bin/conf_gen.h:999
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -288,19 +288,19 @@ msgstr ""
 "EXIF-értékelés figyelmen kívül hagyása. ha nincs beállítva, és értékelés "
 "található az EXIF-ben, felülírja a „kezdeti értékelést”"
 
-#: ../build/bin/conf_gen.h:990
+#: ../build/bin/conf_gen.h:1004
 msgid "import job"
 msgstr "importálási feladat"
 
-#: ../build/bin/conf_gen.h:991
+#: ../build/bin/conf_gen.h:1005
 msgid "name of the import job"
 msgstr "importálási feladat neve"
 
-#: ../build/bin/conf_gen.h:996
+#: ../build/bin/conf_gen.h:1010
 msgid "override today's date"
 msgstr "mai dátum felülírása"
 
-#: ../build/bin/conf_gen.h:997
+#: ../build/bin/conf_gen.h:1011
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -313,164 +313,164 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "egyébként hagyja üresen"
 
-#: ../build/bin/conf_gen.h:1002
+#: ../build/bin/conf_gen.h:1016
 msgid "keep this window open"
 msgstr "az ablak nyitva tartása"
 
-#: ../build/bin/conf_gen.h:1003
+#: ../build/bin/conf_gen.h:1017
 msgid "keep this window open to run several imports"
 msgstr "az ablak nyitva tartása több importálás elvégzéséhez"
 
-#: ../build/bin/conf_gen.h:1160 ../build/bin/conf_gen.h:1176
+#: ../build/bin/conf_gen.h:1174 ../build/bin/conf_gen.h:1190
 #: ../build/bin/preferences_gen.h:4199 ../build/bin/preferences_gen.h:4294
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1161 ../build/bin/conf_gen.h:1177
+#: ../build/bin/conf_gen.h:1175 ../build/bin/conf_gen.h:1191
 #: ../build/bin/preferences_gen.h:4204 ../build/bin/preferences_gen.h:4299
 #: ../build/bin/preferences_gen.h:4343
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1162 ../build/bin/conf_gen.h:1178
+#: ../build/bin/conf_gen.h:1176 ../build/bin/conf_gen.h:1192
 #: ../build/bin/preferences_gen.h:4209 ../build/bin/preferences_gen.h:4304
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/bin/conf_gen.h:1163 ../build/bin/conf_gen.h:1179
+#: ../build/bin/conf_gen.h:1177 ../build/bin/conf_gen.h:1193
 #: ../build/bin/preferences_gen.h:4214 ../build/bin/preferences_gen.h:4309
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1164 ../build/bin/conf_gen.h:1180
+#: ../build/bin/conf_gen.h:1178 ../build/bin/conf_gen.h:1194
 #: ../build/bin/preferences_gen.h:4219 ../build/bin/preferences_gen.h:4314
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1165 ../build/bin/conf_gen.h:1181
+#: ../build/bin/conf_gen.h:1179 ../build/bin/conf_gen.h:1195
 #: ../build/bin/preferences_gen.h:4224 ../build/bin/preferences_gen.h:4319
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1208 ../build/bin/preferences_gen.h:4534
+#: ../build/bin/conf_gen.h:1222 ../build/bin/preferences_gen.h:4534
 #: ../build/bin/preferences_gen.h:4578
 msgctxt "preferences"
 msgid "off"
 msgstr "ki"
 
-#: ../build/bin/conf_gen.h:1209 ../build/bin/preferences_gen.h:4539
+#: ../build/bin/conf_gen.h:1223 ../build/bin/preferences_gen.h:4539
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "keménység (relatív)"
 
-#: ../build/bin/conf_gen.h:1210 ../build/bin/preferences_gen.h:4544
+#: ../build/bin/conf_gen.h:1224 ../build/bin/preferences_gen.h:4544
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "keménység (abszolút)"
 
-#: ../build/bin/conf_gen.h:1211 ../build/bin/preferences_gen.h:4549
+#: ../build/bin/conf_gen.h:1225 ../build/bin/preferences_gen.h:4549
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "átlátszóság (relatív)"
 
-#: ../build/bin/conf_gen.h:1212 ../build/bin/preferences_gen.h:4554
+#: ../build/bin/conf_gen.h:1226 ../build/bin/preferences_gen.h:4554
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "átlátszóság (abszolút)"
 
-#: ../build/bin/conf_gen.h:1213 ../build/bin/preferences_gen.h:4559
+#: ../build/bin/conf_gen.h:1227 ../build/bin/preferences_gen.h:4559
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "ecsetméret (relatív)"
 
-#: ../build/bin/conf_gen.h:1221 ../build/bin/preferences_gen.h:4614
+#: ../build/bin/conf_gen.h:1235 ../build/bin/preferences_gen.h:4614
 msgctxt "preferences"
 msgid "low"
 msgstr "alacsony"
 
-#: ../build/bin/conf_gen.h:1222 ../build/bin/preferences_gen.h:4619
+#: ../build/bin/conf_gen.h:1236 ../build/bin/preferences_gen.h:4619
 #: ../build/bin/preferences_gen.h:4643
 msgctxt "preferences"
 msgid "medium"
 msgstr "közepes"
 
-#: ../build/bin/conf_gen.h:1223 ../build/bin/preferences_gen.h:4624
+#: ../build/bin/conf_gen.h:1237 ../build/bin/preferences_gen.h:4624
 msgctxt "preferences"
 msgid "high"
 msgstr "magas"
 
-#: ../build/bin/conf_gen.h:1237 ../build/bin/preferences_gen.h:5092
+#: ../build/bin/conf_gen.h:1251 ../build/bin/preferences_gen.h:5092
 #: ../build/bin/preferences_gen.h:5116
 msgctxt "preferences"
 msgid "false color"
 msgstr "hamis színes"
 
-#: ../build/bin/conf_gen.h:1238 ../build/bin/preferences_gen.h:5097
+#: ../build/bin/conf_gen.h:1252 ../build/bin/preferences_gen.h:5097
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "szürkeárnyalatos"
 
-#: ../build/bin/conf_gen.h:1252 ../build/bin/preferences_gen.h:4758
+#: ../build/bin/conf_gen.h:1266 ../build/bin/preferences_gen.h:4758
 msgctxt "preferences"
 msgid "top left"
 msgstr "bal fent"
 
-#: ../build/bin/conf_gen.h:1253 ../build/bin/preferences_gen.h:4763
+#: ../build/bin/conf_gen.h:1267 ../build/bin/preferences_gen.h:4763
 msgctxt "preferences"
 msgid "top right"
 msgstr "jobb fent"
 
-#: ../build/bin/conf_gen.h:1254 ../build/bin/preferences_gen.h:4768
+#: ../build/bin/conf_gen.h:1268 ../build/bin/preferences_gen.h:4768
 msgctxt "preferences"
 msgid "top center"
 msgstr "középen fent"
 
-#: ../build/bin/conf_gen.h:1255 ../build/bin/preferences_gen.h:4773
+#: ../build/bin/conf_gen.h:1269 ../build/bin/preferences_gen.h:4773
 #: ../build/bin/preferences_gen.h:4797
 msgctxt "preferences"
 msgid "bottom"
 msgstr "alul"
 
-#: ../build/bin/conf_gen.h:1256 ../build/bin/preferences_gen.h:4778
+#: ../build/bin/conf_gen.h:1270 ../build/bin/preferences_gen.h:4778
 msgctxt "preferences"
 msgid "hidden"
 msgstr "rejtett"
 
-#: ../build/bin/conf_gen.h:1766
+#: ../build/bin/conf_gen.h:1780
 msgid "show OSD"
 msgstr "térkép fölötti kezelőszervek"
 
-#: ../build/bin/conf_gen.h:1767
+#: ../build/bin/conf_gen.h:1781
 msgid "toggle the visibility of the map overlays"
 msgstr "a térkép fölötti kezelőszervek láthatóságának váltása"
 
-#: ../build/bin/conf_gen.h:1772 ../src/libs/map_settings.c:147
+#: ../build/bin/conf_gen.h:1786 ../src/libs/map_settings.c:147
 msgid "filtered images"
 msgstr "szűrt képek"
 
-#: ../build/bin/conf_gen.h:1773
+#: ../build/bin/conf_gen.h:1787
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr "bepipálva az aktuális filmszalagra korlátozza a megjelenített képeket"
 
-#: ../build/bin/conf_gen.h:1780
+#: ../build/bin/conf_gen.h:1794
 msgid "max images"
 msgstr "max kép"
 
-#: ../build/bin/conf_gen.h:1781
+#: ../build/bin/conf_gen.h:1795
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "a térképre kirajzolt bélyegképek maximális száma"
 
-#: ../build/bin/conf_gen.h:1788
+#: ../build/bin/conf_gen.h:1802
 msgid "group size factor"
 msgstr "csoport méret szorzó"
 
-#: ../build/bin/conf_gen.h:1789
+#: ../build/bin/conf_gen.h:1803
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -478,32 +478,32 @@ msgstr ""
 "a térképen megjelenő képcsoportok térbeli méretének növelése vagy "
 "csökkentése. befolyásolhatja a számítási időt"
 
-#: ../build/bin/conf_gen.h:1796
+#: ../build/bin/conf_gen.h:1810
 msgid "min images per group"
 msgstr "min kép csoportonként"
 
-#: ../build/bin/conf_gen.h:1797
+#: ../build/bin/conf_gen.h:1811
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
 msgstr ""
 "a csoportosítandó képek minimális száma. befolyásolhatja a számítási időt."
 
-#: ../build/bin/conf_gen.h:1802
+#: ../build/bin/conf_gen.h:1816
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "bélyegkép"
 
-#: ../build/bin/conf_gen.h:1803
+#: ../build/bin/conf_gen.h:1817
 msgctxt "preferences"
 msgid "count"
 msgstr "darabszám"
 
-#: ../build/bin/conf_gen.h:1806 ../src/libs/map_settings.c:160
+#: ../build/bin/conf_gen.h:1820 ../src/libs/map_settings.c:160
 msgid "thumbnail display"
 msgstr "bélyegkép megjelenítés"
 
-#: ../build/bin/conf_gen.h:1807
+#: ../build/bin/conf_gen.h:1821
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
@@ -511,218 +511,224 @@ msgstr ""
 "három lehetőség választható: kép bélyegképek, csak a képek darabszáma a "
 "csoportban, vagy semmi"
 
-#: ../build/bin/conf_gen.h:1818
+#: ../build/bin/conf_gen.h:1832
 msgid "max polygon points"
 msgstr "max. sokszögpont"
 
-#: ../build/bin/conf_gen.h:1819
+#: ../build/bin/conf_gen.h:1833
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
 "a poligonnal importált pontok számának korlátozása a hely keresése modulban"
 
-#: ../build/bin/conf_gen.h:2094 ../build/bin/preferences_gen.h:4913
+#: ../build/bin/conf_gen.h:2108 ../build/bin/preferences_gen.h:4913
 msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "mindig bilineáris (gyors)"
 
-#: ../build/bin/conf_gen.h:2096 ../build/bin/preferences_gen.h:4923
+#: ../build/bin/conf_gen.h:2110 ../build/bin/preferences_gen.h:4923
 msgctxt "preferences"
 msgid "full (possibly slow)"
 msgstr "teljes (lassú lehet)"
 
-#: ../build/bin/conf_gen.h:2104 ../build/bin/preferences_gen.h:4978
+#: ../build/bin/conf_gen.h:2118 ../build/bin/preferences_gen.h:4978
 #: ../build/bin/preferences_gen.h:5012
 msgctxt "preferences"
 msgid "original"
 msgstr "eredeti"
 
-#: ../build/bin/conf_gen.h:2105 ../build/bin/preferences_gen.h:4983
+#: ../build/bin/conf_gen.h:2119 ../build/bin/preferences_gen.h:4983
 msgctxt "preferences"
 msgid "to 1/2"
 msgstr "½-re"
 
-#: ../build/bin/conf_gen.h:2106 ../build/bin/preferences_gen.h:4988
+#: ../build/bin/conf_gen.h:2120 ../build/bin/preferences_gen.h:4988
 msgctxt "preferences"
 msgid "to 1/3"
 msgstr "⅓-ra"
 
-#: ../build/bin/conf_gen.h:2107 ../build/bin/preferences_gen.h:4993
+#: ../build/bin/conf_gen.h:2121 ../build/bin/preferences_gen.h:4993
 msgctxt "preferences"
 msgid "to 1/4"
 msgstr "¼-re"
 
-#: ../build/bin/conf_gen.h:2121 ../build/bin/conf_gen.h:2131
+#: ../build/bin/conf_gen.h:2135 ../build/bin/conf_gen.h:2145
 #: ../build/bin/preferences_gen.h:5595 ../build/bin/preferences_gen.h:5660
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "bilineáris"
 
-#: ../build/bin/conf_gen.h:2122 ../build/bin/conf_gen.h:2132
+#: ../build/bin/conf_gen.h:2136 ../build/bin/conf_gen.h:2146
 #: ../build/bin/preferences_gen.h:5600 ../build/bin/preferences_gen.h:5624
 #: ../build/bin/preferences_gen.h:5665
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "kettős köbös"
 
-#: ../build/bin/conf_gen.h:2123 ../build/bin/conf_gen.h:2133
+#: ../build/bin/conf_gen.h:2137 ../build/bin/conf_gen.h:2147
 #: ../build/bin/preferences_gen.h:5605 ../build/bin/preferences_gen.h:5670
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lánczos2"
 
-#: ../build/bin/conf_gen.h:2134 ../build/bin/preferences_gen.h:5675
+#: ../build/bin/conf_gen.h:2148 ../build/bin/preferences_gen.h:5675
 #: ../build/bin/preferences_gen.h:5694
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lánczos3"
 
-#: ../build/bin/conf_gen.h:2456 ../build/bin/conf_gen.h:3143
+#: ../build/bin/conf_gen.h:2470 ../build/bin/conf_gen.h:3158
 #: ../build/bin/preferences_gen.h:5383 ../build/bin/preferences_gen.h:6813
 #: ../build/bin/preferences_gen.h:6849
 msgctxt "preferences"
 msgid "auto"
 msgstr "automatikus"
 
-#: ../build/bin/conf_gen.h:2458 ../build/bin/preferences_gen.h:6823
+#: ../build/bin/conf_gen.h:2472 ../build/bin/preferences_gen.h:6823
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/bin/conf_gen.h:2459 ../build/bin/preferences_gen.h:6829
+#: ../build/bin/conf_gen.h:2473 ../build/bin/preferences_gen.h:6829
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/bin/conf_gen.h:2661
+#: ../build/bin/conf_gen.h:2675
 msgctxt "preferences"
 msgid "histogram"
 msgstr "hisztogram"
 
-#: ../build/bin/conf_gen.h:2662
+#: ../build/bin/conf_gen.h:2676
 msgctxt "preferences"
 msgid "waveform"
 msgstr "hullámforma"
 
-#: ../build/bin/conf_gen.h:2663
+#: ../build/bin/conf_gen.h:2677
 msgctxt "preferences"
 msgid "rgb parade"
 msgstr "rgb-parádé"
 
-#: ../build/bin/conf_gen.h:2664
+#: ../build/bin/conf_gen.h:2678
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "vektorszkóp"
 
-#: ../build/bin/conf_gen.h:2672 ../build/bin/preferences_gen.h:7503
+#: ../build/bin/conf_gen.h:2686 ../build/bin/preferences_gen.h:7503
 msgctxt "preferences"
 msgid "left"
 msgstr "bal"
 
-#: ../build/bin/conf_gen.h:2673 ../build/bin/preferences_gen.h:7508
+#: ../build/bin/conf_gen.h:2687 ../build/bin/preferences_gen.h:7508
 #: ../build/bin/preferences_gen.h:7527
 msgctxt "preferences"
 msgid "right"
 msgstr "jobb"
 
-#: ../build/bin/conf_gen.h:2681 ../build/bin/conf_gen.h:2717
+#: ../build/bin/conf_gen.h:2695 ../build/bin/conf_gen.h:2732
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "logaritmikus"
 
-#: ../build/bin/conf_gen.h:2682 ../build/bin/conf_gen.h:2718
+#: ../build/bin/conf_gen.h:2696 ../build/bin/conf_gen.h:2733
 msgctxt "preferences"
 msgid "linear"
 msgstr "lineáris"
 
-#: ../build/bin/conf_gen.h:2690
+#: ../build/bin/conf_gen.h:2704
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "vízszintes"
 
-#: ../build/bin/conf_gen.h:2691
+#: ../build/bin/conf_gen.h:2705
 msgctxt "preferences"
 msgid "vertical"
 msgstr "függőleges"
 
-#: ../build/bin/conf_gen.h:2699
+#: ../build/bin/conf_gen.h:2713
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "átfedés"
 
-#: ../build/bin/conf_gen.h:2700
+#: ../build/bin/conf_gen.h:2714
 msgctxt "preferences"
 msgid "parade"
 msgstr "parádé"
 
-#: ../build/bin/conf_gen.h:2708
+#: ../build/bin/conf_gen.h:2722
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:2709
+#: ../build/bin/conf_gen.h:2723
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:2874
+#: ../build/bin/conf_gen.h:2724
+#, fuzzy
+msgctxt "preferences"
+msgid "RYB"
+msgstr "RGB"
+
+#: ../build/bin/conf_gen.h:2889
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:2875
+#: ../build/bin/conf_gen.h:2890
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:2876
+#: ../build/bin/conf_gen.h:2891
 msgctxt "preferences"
 msgid "inch"
 msgstr "hüvelyk"
 
-#: ../build/bin/conf_gen.h:2921 ../build/bin/preferences_gen.h:7563
+#: ../build/bin/conf_gen.h:2936 ../build/bin/preferences_gen.h:7563
 #: ../build/bin/preferences_gen.h:7592
 msgctxt "preferences"
 msgid "all"
 msgstr "mind"
 
-#: ../build/bin/conf_gen.h:2922 ../build/bin/preferences_gen.h:7568
+#: ../build/bin/conf_gen.h:2937 ../build/bin/preferences_gen.h:7568
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:2923 ../build/bin/preferences_gen.h:7573
+#: ../build/bin/conf_gen.h:2938 ../build/bin/preferences_gen.h:7573
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:2959 ../build/bin/preferences_gen.h:5773
+#: ../build/bin/conf_gen.h:2974 ../build/bin/preferences_gen.h:5773
 #: ../build/bin/preferences_gen.h:5802
 msgctxt "preferences"
 msgid "scene-referred"
 msgstr "látványvonatkozású"
 
-#: ../build/bin/conf_gen.h:2960 ../build/bin/preferences_gen.h:5778
+#: ../build/bin/conf_gen.h:2975 ../build/bin/preferences_gen.h:5778
 msgctxt "preferences"
 msgid "display-referred"
 msgstr "képernyővonatkozású"
 
-#: ../build/bin/conf_gen.h:2969 ../build/bin/preferences_gen.h:5838
+#: ../build/bin/conf_gen.h:2984 ../build/bin/preferences_gen.h:5838
 msgctxt "preferences"
 msgid "modern"
 msgstr "modern"
 
-#: ../build/bin/conf_gen.h:2970 ../build/bin/preferences_gen.h:5843
+#: ../build/bin/conf_gen.h:2985 ../build/bin/preferences_gen.h:5843
 #: ../build/bin/preferences_gen.h:5862
 msgctxt "preferences"
 msgid "legacy"
 msgstr "elavult"
 
-#: ../build/bin/conf_gen.h:3070
+#: ../build/bin/conf_gen.h:3085
 msgid "camera time zone"
 msgstr "fényképező időzónája"
 
-#: ../build/bin/conf_gen.h:3071
+#: ../build/bin/conf_gen.h:3086
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -730,62 +736,62 @@ msgstr ""
 "a legtöbb fényképező nem tárolja az időzónát az EXIF-ben. a GPX adatok "
 "pontos illesztéséhez kérem adja meg az időzónát"
 
-#: ../build/bin/conf_gen.h:3082
+#: ../build/bin/conf_gen.h:3097
 msgctxt "preferences"
 msgid "no color"
 msgstr "nincs szín"
 
-#: ../build/bin/conf_gen.h:3083
+#: ../build/bin/conf_gen.h:3098
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "fényforrás színe"
 
-#: ../build/bin/conf_gen.h:3084
+#: ../build/bin/conf_gen.h:3099
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "hatásemuláció"
 
-#: ../build/bin/conf_gen.h:3130
+#: ../build/bin/conf_gen.h:3145
 msgctxt "preferences"
 msgid "list"
 msgstr "lista"
 
-#: ../build/bin/conf_gen.h:3131
+#: ../build/bin/conf_gen.h:3146
 msgctxt "preferences"
 msgid "tabs"
 msgstr "fülek"
 
-#: ../build/bin/conf_gen.h:3132
+#: ../build/bin/conf_gen.h:3147
 msgctxt "preferences"
 msgid "columns"
 msgstr "oszlopok"
 
-#: ../build/bin/conf_gen.h:3141 ../build/bin/preferences_gen.h:5373
+#: ../build/bin/conf_gen.h:3156 ../build/bin/preferences_gen.h:5373
 msgctxt "preferences"
 msgid "active"
 msgstr "aktív"
 
-#: ../build/bin/conf_gen.h:3142 ../build/bin/preferences_gen.h:5378
+#: ../build/bin/conf_gen.h:3157 ../build/bin/preferences_gen.h:5378
 msgctxt "preferences"
 msgid "dim"
 msgstr "sötétít"
 
-#: ../build/bin/conf_gen.h:3144 ../build/bin/preferences_gen.h:5388
+#: ../build/bin/conf_gen.h:3159 ../build/bin/preferences_gen.h:5388
 msgctxt "preferences"
 msgid "fade"
 msgstr "halványít"
 
-#: ../build/bin/conf_gen.h:3145 ../build/bin/preferences_gen.h:5393
+#: ../build/bin/conf_gen.h:3160 ../build/bin/preferences_gen.h:5393
 msgctxt "preferences"
 msgid "fit"
 msgstr "illeszkedés"
 
-#: ../build/bin/conf_gen.h:3146 ../build/bin/preferences_gen.h:5398
+#: ../build/bin/conf_gen.h:3161 ../build/bin/preferences_gen.h:5398
 msgctxt "preferences"
 msgid "smooth"
 msgstr "átmenet"
 
-#: ../build/bin/conf_gen.h:3147 ../build/bin/preferences_gen.h:5403
+#: ../build/bin/conf_gen.h:3162 ../build/bin/preferences_gen.h:5403
 msgctxt "preferences"
 msgid "glide"
 msgstr "összecsúszás"
@@ -1360,8 +1366,8 @@ msgstr ""
 msgid "LUT 3D root folder"
 msgstr "3D LUT gyökérkönyvtár"
 
-#: ../build/bin/preferences_gen.h:5724 ../src/control/jobs/control_jobs.c:1660
-#: ../src/control/jobs/control_jobs.c:1714 ../src/gui/preferences.c:1070
+#: ../build/bin/preferences_gen.h:5724 ../src/control/jobs/control_jobs.c:1657
+#: ../src/control/jobs/control_jobs.c:1711 ../src/gui/preferences.c:1070
 #: ../src/gui/presets.c:360 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/disk.c:178 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/gallery.c:163 ../src/imageio/storage/latex.c:108
@@ -1936,12 +1942,14 @@ msgstr ""
 "kényszerítését. ez akkor hasznos, ha valamelyik módszer rossz eredményt ad"
 
 #: ../build/bin/preferences_gen.h:7617
-msgid "order or exclude midi devices"
+#, fuzzy
+msgid "order or exclude MIDI devices"
 msgstr "midi-eszközök rendezése vagy kizárása"
 
 #: ../build/bin/preferences_gen.h:7635
+#, fuzzy
 msgid ""
-"comma-separated list of device name fragments that if matched load midi "
+"comma-separated list of device name fragments that if matched load MIDI "
 "device at id given by location in list or if preceded by - prevent matching "
 "devices from loading. add encoding and number of knobs like 'BeatStep:63:16'"
 msgstr ""
@@ -2084,7 +2092,7 @@ msgstr "diavetítés nézet"
 msgid "waiting time between each picture in slideshow"
 msgstr "várakozási idő a diavetítés képei között"
 
-#: ../build/bin/preferences_gen.h:8058 ../src/control/jobs/control_jobs.c:2319
+#: ../build/bin/preferences_gen.h:8058 ../src/control/jobs/control_jobs.c:2316
 #: ../src/libs/import.c:172
 msgid "import"
 msgstr "importálás"
@@ -2254,7 +2262,7 @@ msgstr "nyírás"
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:686 ../src/gui/preferences.c:838
+#: ../src/common/collection.c:715 ../src/gui/preferences.c:838
 #: ../src/gui/presets.c:583 ../src/libs/camera.c:551
 #: ../src/libs/metadata_view.c:143
 msgid "focal length"
@@ -2304,8 +2312,8 @@ msgstr "specifikus"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2943 ../src/develop/develop.c:2265
-#: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:130
-#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:800
+#: ../src/gui/accelerators.c:123 ../src/gui/accelerators.c:133
+#: ../src/gui/accelerators.c:217 ../src/imageio/format/avif.c:804
 #: ../src/imageio/format/j2k.c:669 ../src/libs/live_view.c:361
 msgid "off"
 msgstr "ki"
@@ -2354,7 +2362,7 @@ msgstr "színek megőrzése"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:1989
-#: ../src/iop/channelmixerrgb.c:4231 ../src/iop/clipping.c:1903
+#: ../src/iop/channelmixerrgb.c:4234 ../src/iop/clipping.c:1903
 #: ../src/iop/clipping.c:2096 ../src/iop/clipping.c:2111
 #: ../src/iop/lens.cc:2988 ../src/iop/retouch.c:460 ../src/libs/collect.c:1905
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1027
@@ -2511,7 +2519,7 @@ msgid "offset"
 msgstr "eltolás"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:684 ../src/gui/preferences.c:822
+#: ../src/common/collection.c:713 ../src/gui/preferences.c:822
 #: ../src/gui/presets.c:534 ../src/libs/metadata_view.c:139
 msgid "lens"
 msgstr "objektív"
@@ -2530,7 +2538,7 @@ msgstr "gauss-szűrő"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:110
 #: ../build/lib/darktable/plugins/introspection_borders.c:251
-#: ../src/common/collection.c:641 ../src/common/collection.c:694
+#: ../src/common/collection.c:670 ../src/common/collection.c:723
 msgid "aspect ratio"
 msgstr "oldalarány"
 
@@ -2639,24 +2647,24 @@ msgid "very large chromatic aberration"
 msgstr "nagyon nagy kromatikus aberráció"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1432 ../src/common/color_vocabulary.c:232
+#: ../src/common/collection.c:1461 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:329 ../src/develop/blend_gui.c:1988
 #: ../src/develop/blend_gui.c:2015 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:2942 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
+#: ../src/gui/gtk.c:2938 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
 #: ../src/iop/channelmixer.c:619 ../src/iop/channelmixer.c:629
-#: ../src/iop/channelmixerrgb.c:4183 ../src/iop/colorzones.c:2284
+#: ../src/iop/channelmixerrgb.c:4186 ../src/iop/colorzones.c:2284
 #: ../src/iop/temperature.c:1780 ../src/iop/temperature.c:1953
 #: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:260
 msgid "red"
 msgstr "vörös"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1436 ../src/common/color_vocabulary.c:277
+#: ../src/common/collection.c:1465 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:331 ../src/develop/blend_gui.c:1991
 #: ../src/develop/blend_gui.c:2018 ../src/develop/lightroom.c:838
-#: ../src/gui/gtk.c:2943 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
+#: ../src/gui/gtk.c:2939 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
 #: ../src/iop/channelmixer.c:620 ../src/iop/channelmixer.c:635
-#: ../src/iop/channelmixerrgb.c:4184 ../src/iop/colorzones.c:2287
+#: ../src/iop/channelmixerrgb.c:4187 ../src/iop/colorzones.c:2287
 #: ../src/iop/temperature.c:1764 ../src/iop/temperature.c:1782
 #: ../src/iop/temperature.c:1954 ../src/libs/collect.c:1789
 #: ../src/libs/filters/colors.c:262
@@ -2664,12 +2672,12 @@ msgid "green"
 msgstr "zöld"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1438 ../src/common/color_vocabulary.c:324
+#: ../src/common/collection.c:1467 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:332 ../src/develop/blend_gui.c:1994
 #: ../src/develop/blend_gui.c:2021 ../src/develop/lightroom.c:840
-#: ../src/gui/gtk.c:2944 ../src/iop/bilateral.cc:315
+#: ../src/gui/gtk.c:2940 ../src/iop/bilateral.cc:315
 #: ../src/iop/channelmixer.c:621 ../src/iop/channelmixer.c:641
-#: ../src/iop/channelmixerrgb.c:4185 ../src/iop/colorzones.c:2289
+#: ../src/iop/channelmixerrgb.c:4188 ../src/iop/colorzones.c:2289
 #: ../src/iop/temperature.c:1784 ../src/iop/temperature.c:1955
 #: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:263
 msgid "blue"
@@ -3197,7 +3205,7 @@ msgid "range extent"
 msgstr "tartománykiterjedés"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:4233
+#: ../src/iop/channelmixerrgb.c:4236
 msgid "saturated colors"
 msgstr "telített színek"
 
@@ -3402,7 +3410,7 @@ msgstr "Markesteijn 3-menetes + VNG"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1451 ../src/libs/collect.c:1743
+#: ../src/common/collection.c:1480 ../src/libs/collect.c:1743
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "alaphelyzet"
@@ -3480,7 +3488,7 @@ msgstr "profilozott transzformáció frissítése"
 #.
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:782 ../src/libs/colorpicker.c:577
+#: ../src/imageio/format/avif.c:786 ../src/libs/colorpicker.c:577
 msgid "color mode"
 msgstr "színmód"
 
@@ -3758,10 +3766,10 @@ msgstr "csúcsfény-rekonstrukció engedélyezése"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:549
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2756 ../src/common/variables.c:604
-#: ../src/develop/imageop_gui.c:212 ../src/gui/gtk.c:2523
-#: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
-#: ../src/libs/export.c:1193 ../src/libs/export.c:1200
-#: ../src/libs/export.c:1207 ../src/libs/metadata_view.c:678
+#: ../src/develop/imageop_gui.c:212 ../src/imageio/format/pdf.c:636
+#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1193
+#: ../src/libs/export.c:1200 ../src/libs/export.c:1207
+#: ../src/libs/metadata_view.c:678
 msgid "no"
 msgstr "nem"
 
@@ -3844,7 +3852,7 @@ msgid "target"
 msgstr "cél"
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:151
-#: ../src/iop/sigmoid.c:132
+#: ../src/iop/sigmoid.c:135
 msgid "reinhard"
 msgstr "reinhard"
 
@@ -3877,7 +3885,7 @@ msgstr "középtónuseltolás"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:141
 #: ../build/lib/darktable/plugins/introspection_highlights.c:242
-#: ../src/views/darkroom.c:2306
+#: ../src/views/darkroom.c:2308
 msgid "clipping threshold"
 msgstr "vágási küszöb"
 
@@ -4036,7 +4044,7 @@ msgstr "korrekciók"
 #: ../src/iop/levels.c:672 ../src/iop/profile_gamma.c:667
 #: ../src/libs/copy_history.c:358 ../src/libs/export.c:1280
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2696
-#: ../src/libs/styles.c:830 ../src/views/darkroom.c:2287
+#: ../src/libs/styles.c:830 ../src/views/darkroom.c:2289
 msgid "mode"
 msgstr "mód"
 
@@ -4086,11 +4094,11 @@ msgstr "érvénytelenített"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2186 ../src/views/darkroom.c:2581
-#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:761
-#: ../src/views/lighttable.c:770 ../src/views/lighttable.c:1246
-#: ../src/views/lighttable.c:1250 ../src/views/lighttable.c:1254
-#: ../src/views/lighttable.c:1258 ../src/views/lighttable.c:1262
+#: ../src/views/darkroom.c:2186 ../src/views/darkroom.c:2583
+#: ../src/views/darkroom.c:2586 ../src/views/lighttable.c:811
+#: ../src/views/lighttable.c:820 ../src/views/lighttable.c:1296
+#: ../src/views/lighttable.c:1300 ../src/views/lighttable.c:1304
+#: ../src/views/lighttable.c:1308 ../src/views/lighttable.c:1312
 msgid "move"
 msgstr "mozgatás"
 
@@ -4277,7 +4285,7 @@ msgstr "beágyazott GainMap"
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:692 ../src/gui/preferences.c:830
+#: ../src/common/collection.c:721 ../src/gui/preferences.c:830
 #: ../src/gui/presets.c:553 ../src/iop/basicadj.c:598 ../src/iop/exposure.c:123
 #: ../src/iop/exposure.c:1024 ../src/libs/metadata_view.c:141
 msgid "exposure"
@@ -4290,7 +4298,7 @@ msgstr "kitöltési mód"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:285
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
-#: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4188
+#: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4191
 #: ../src/iop/colisa.c:299 ../src/iop/lowpass.c:564 ../src/iop/soften.c:381
 #: ../src/iop/vignette.c:969 ../src/libs/history.c:879
 msgid "brightness"
@@ -4335,7 +4343,7 @@ msgstr "törlés"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
 #: ../src/gui/presets.c:59 ../src/iop/watermark.c:1111
 #: ../src/libs/colorpicker.c:285 ../src/libs/image.c:614
-#: ../src/libs/modulegroups.c:2388
+#: ../src/libs/modulegroups.c:2389
 msgid "color"
 msgstr "szín"
 
@@ -4629,23 +4637,24 @@ msgstr "rawspeed közreműködők"
 msgid "integration contributors"
 msgstr "integráció közreműködők"
 
-#: ../build/share/darktable/darktable.desktop.in.h:1
-#: ../data/darktable.desktop.in.h:1
+#: ../build/share/darktable/org.darktable.darktable.desktop.in.h:1
+#: ../data/org.darktable.darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
 msgstr "Virtuális átvilágító és sötétkamra"
 
-#: ../build/share/darktable/darktable.desktop.in.h:2
-#: ../data/darktable.appdata.xml.in.h:1 ../data/darktable.desktop.in.h:2
+#: ../build/share/darktable/org.darktable.darktable.desktop.in.h:2
+#: ../data/org.darktable.darktable.appdata.xml.in.h:1
+#: ../data/org.darktable.darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
 msgstr "Digitális fényképező képeinek rendezése, kidolgozása"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../build/share/darktable/darktable.desktop.in.h:4
-#: ../data/darktable.desktop.in.h:4
+#: ../build/share/darktable/org.darktable.darktable.desktop.in.h:4
+#: ../data/org.darktable.darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
 msgstr "grafika;fénykép;fotó;raw;"
 
-#: ../data/darktable.appdata.xml.in.h:2
+#: ../data/org.darktable.darktable.appdata.xml.in.h:2
 msgid ""
 "darktable manages your digital negatives in a database and lets you view "
 "them through a lighttable. It also enables you to develop raw images and "
@@ -4655,7 +4664,7 @@ msgstr ""
 "nézegetésüket egy átvilágító asztalon. Lehetőséget nyújt a nyers képek "
 "kidolgozására és feljavítására a sötétkamrában."
 
-#: ../data/darktable.appdata.xml.in.h:3
+#: ../data/org.darktable.darktable.appdata.xml.in.h:3
 msgid ""
 "Other modes besides lighttable and darkroom are a map for geotagging, "
 "tethering, print and a slideshow."
@@ -4663,7 +4672,7 @@ msgstr ""
 "Az átvilágító és sötétkamra módokon túl térképes geokódolást, tetheringet, "
 "nyomtatást és diavetítést tesz lehetővé."
 
-#: ../data/darktable.appdata.xml.in.h:4
+#: ../data/org.darktable.darktable.appdata.xml.in.h:4
 msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
@@ -4671,23 +4680,23 @@ msgstr ""
 "a darktable támogatja a legtöbb modern kamera-raw formátumát, a "
 "feldolgozásukat pedig nagy pontossággal végzi."
 
-#: ../data/darktable.appdata.xml.in.h:5
+#: ../data/org.darktable.darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
 msgstr "Virtuális átvilágító, egy gyűjtemény megjelenítése"
 
-#: ../data/darktable.appdata.xml.in.h:6
+#: ../data/org.darktable.darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
 msgstr "Virtuális sötétkamra egy megnyitott képpel"
 
-#: ../data/darktable.appdata.xml.in.h:7
+#: ../data/org.darktable.darktable.appdata.xml.in.h:7
 msgid "Virtual dark room, sharpening an image"
 msgstr "Virtuális sötétkamra, egy kép élesítése"
 
-#: ../data/darktable.appdata.xml.in.h:8
+#: ../data/org.darktable.darktable.appdata.xml.in.h:8
 msgid "Show images on a map"
 msgstr "Képek megjelenítése a térképen"
 
-#: ../data/darktable.appdata.xml.in.h:9
+#: ../data/org.darktable.darktable.appdata.xml.in.h:9
 msgid "Print your images"
 msgstr "Képek nyomtatása"
 
@@ -4703,59 +4712,59 @@ msgstr "legördülők"
 msgid "buttons"
 msgstr "gombok"
 
-#: ../src/bauhaus/bauhaus.c:3325
+#: ../src/bauhaus/bauhaus.c:3327
 msgid "button on"
 msgstr "gomb be"
 
-#: ../src/bauhaus/bauhaus.c:3325
+#: ../src/bauhaus/bauhaus.c:3327
 msgid "button off"
 msgstr "gomb ki"
 
-#: ../src/bauhaus/bauhaus.c:3526
+#: ../src/bauhaus/bauhaus.c:3528
 msgid "not that many sliders"
 msgstr "kevesebb csúszka"
 
-#: ../src/bauhaus/bauhaus.c:3536
+#: ../src/bauhaus/bauhaus.c:3538
 msgid "not that many dropdowns"
 msgstr "kevesebb legördülő"
 
-#: ../src/bauhaus/bauhaus.c:3551
+#: ../src/bauhaus/bauhaus.c:3553
 msgid "not that many buttons"
 msgstr "kevesebb gomb"
 
-#: ../src/bauhaus/bauhaus.c:3556 ../src/gui/accelerators.c:317
+#: ../src/bauhaus/bauhaus.c:3558 ../src/gui/accelerators.c:328
 msgid "value"
 msgstr "érték"
 
-#: ../src/bauhaus/bauhaus.c:3557 ../src/bauhaus/bauhaus.c:3563
-#: ../src/bauhaus/bauhaus.c:3602 ../src/gui/accelerators.c:295
+#: ../src/bauhaus/bauhaus.c:3559 ../src/bauhaus/bauhaus.c:3565
+#: ../src/bauhaus/bauhaus.c:3604 ../src/gui/accelerators.c:306
 msgid "button"
 msgstr "gomb"
 
-#: ../src/bauhaus/bauhaus.c:3558
+#: ../src/bauhaus/bauhaus.c:3560
 msgid "force"
 msgstr "erő"
 
-#: ../src/bauhaus/bauhaus.c:3559
+#: ../src/bauhaus/bauhaus.c:3561
 msgid "zoom"
 msgstr "nagyítás"
 
-#: ../src/bauhaus/bauhaus.c:3562
+#: ../src/bauhaus/bauhaus.c:3564
 msgid "selection"
 msgstr "kijelölés"
 
-#: ../src/bauhaus/bauhaus.c:3581 ../src/bauhaus/bauhaus.c:3592
+#: ../src/bauhaus/bauhaus.c:3583 ../src/bauhaus/bauhaus.c:3594
 msgid "slider"
 msgstr "csúszka"
 
-#: ../src/bauhaus/bauhaus.c:3586 ../src/bauhaus/bauhaus.c:3597
+#: ../src/bauhaus/bauhaus.c:3588 ../src/bauhaus/bauhaus.c:3599
 msgid "dropdown"
 msgstr "legördülő"
 
-#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1661
-#: ../src/control/jobs/control_jobs.c:1715 ../src/gui/accelerators.c:1950
-#: ../src/gui/accelerators.c:2026 ../src/gui/accelerators.c:2077
-#: ../src/gui/accelerators.c:2105 ../src/gui/accelerators.c:2164
+#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1658
+#: ../src/control/jobs/control_jobs.c:1712 ../src/gui/accelerators.c:1961
+#: ../src/gui/accelerators.c:2037 ../src/gui/accelerators.c:2088
+#: ../src/gui/accelerators.c:2116 ../src/gui/accelerators.c:2175
 #: ../src/gui/hist_dialog.c:195 ../src/gui/preferences.c:1032
 #: ../src/gui/preferences.c:1071 ../src/gui/presets.c:361
 #: ../src/gui/presets.c:459 ../src/gui/styles_dialog.c:408
@@ -4962,224 +4971,224 @@ msgstr ""
 "győződjön meg róla, hogy a fényképező engedélyezi az elérést és nincs "
 "másként csatolva"
 
-#: ../src/common/collection.c:599
+#: ../src/common/collection.c:628
 msgid "too much time to update aspect ratio for the collection"
 msgstr "túl sok időbe telik az oldalarány frissítése a gyűjteményben"
 
-#: ../src/common/collection.c:613 ../src/common/collection.c:696
+#: ../src/common/collection.c:642 ../src/common/collection.c:725
 #: ../src/libs/filters/filename.c:364 ../src/libs/metadata_view.c:126
 msgid "filename"
 msgstr "fájlnév"
 
-#: ../src/common/collection.c:615 ../src/common/collection.c:670
+#: ../src/common/collection.c:644 ../src/common/collection.c:699
 msgid "capture time"
 msgstr "készítés ideje"
 
-#: ../src/common/collection.c:617 ../src/common/collection.c:672
+#: ../src/common/collection.c:646 ../src/common/collection.c:701
 msgid "import time"
 msgstr "importálás ideje"
 
-#: ../src/common/collection.c:619 ../src/common/collection.c:674
+#: ../src/common/collection.c:648 ../src/common/collection.c:703
 msgid "modification time"
 msgstr "módosítás ideje"
 
-#: ../src/common/collection.c:621 ../src/common/collection.c:676
+#: ../src/common/collection.c:650 ../src/common/collection.c:705
 msgid "export time"
 msgstr "exportálás ideje"
 
-#: ../src/common/collection.c:623 ../src/common/collection.c:678
+#: ../src/common/collection.c:652 ../src/common/collection.c:707
 msgid "print time"
 msgstr "nyomtatás ideje"
 
-#: ../src/common/collection.c:625 ../src/common/collection.c:710
+#: ../src/common/collection.c:654 ../src/common/collection.c:739
 #: ../src/common/ratings.c:321 ../src/develop/lightroom.c:1525
 #: ../src/libs/tools/ratings.c:111
 msgid "rating"
 msgstr "értékelés"
 
-#: ../src/common/collection.c:627 ../src/libs/live_view.c:313
+#: ../src/common/collection.c:656 ../src/libs/live_view.c:313
 msgid "id"
 msgstr "id"
 
-#: ../src/common/collection.c:629 ../src/common/collection.c:682
+#: ../src/common/collection.c:658 ../src/common/collection.c:711
 #: ../src/common/colorlabels.c:337 ../src/develop/lightroom.c:1550
-#: ../src/dtgtk/thumbnail.c:1413 ../src/libs/filters/colors.c:301
+#: ../src/dtgtk/thumbnail.c:1388 ../src/libs/filters/colors.c:301
 #: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:94
 msgid "color label"
 msgstr "színcímke"
 
-#: ../src/common/collection.c:631
+#: ../src/common/collection.c:660
 msgid "group"
 msgstr "csoportosít"
 
-#: ../src/common/collection.c:633 ../src/libs/metadata_view.c:128
+#: ../src/common/collection.c:662 ../src/libs/metadata_view.c:128
 msgid "full path"
 msgstr "elérési út"
 
-#: ../src/common/collection.c:635
+#: ../src/common/collection.c:664
 msgid "custom sort"
 msgstr "egyéni rendezés"
 
 #. title
-#: ../src/common/collection.c:637 ../src/common/metadata.c:48
+#: ../src/common/collection.c:666 ../src/common/metadata.c:48
 #: ../src/imageio/format/pdf.c:574 ../src/imageio/format/pdf.c:576
 #: ../src/imageio/storage/gallery.c:169 ../src/imageio/storage/gallery.c:170
-#: ../src/imageio/storage/latex.c:169 ../src/imageio/storage/piwigo.c:992
+#: ../src/imageio/storage/latex.c:169 ../src/imageio/storage/piwigo.c:1008
 msgid "title"
 msgstr "cím"
 
-#: ../src/common/collection.c:639 ../src/common/metadata.c:49
+#: ../src/common/collection.c:668 ../src/common/metadata.c:49
 #: ../src/gui/styles_dialog.c:439
 msgid "description"
 msgstr "leírás"
 
-#: ../src/common/collection.c:643
+#: ../src/common/collection.c:672
 msgid "shuffle"
 msgstr "összekevert"
 
-#: ../src/common/collection.c:660
+#: ../src/common/collection.c:689
 msgid "film roll"
 msgstr "filmtekercs"
 
-#: ../src/common/collection.c:662
+#: ../src/common/collection.c:691
 msgid "folder"
 msgstr "könyvtár"
 
-#: ../src/common/collection.c:664
+#: ../src/common/collection.c:693
 msgid "camera"
 msgstr "fényképező"
 
-#: ../src/common/collection.c:666 ../src/libs/export_metadata.c:189
+#: ../src/common/collection.c:695 ../src/libs/export_metadata.c:189
 #: ../src/libs/tagging.c:3281
 msgid "tag"
 msgstr "címke"
 
-#: ../src/common/collection.c:668
+#: ../src/common/collection.c:697
 msgid "capture date"
 msgstr "készítés dátuma"
 
-#: ../src/common/collection.c:680 ../src/libs/collect.c:3309
+#: ../src/common/collection.c:709 ../src/libs/collect.c:3309
 #: ../src/libs/filtering.c:2196 ../src/libs/filtering.c:2216
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "előzmények"
 
 #. iso
-#: ../src/common/collection.c:688 ../src/gui/preferences.c:826
+#: ../src/common/collection.c:717 ../src/gui/preferences.c:826
 #: ../src/gui/presets.c:540 ../src/libs/camera.c:559
 #: ../src/libs/metadata_view.c:145
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:690 ../src/gui/preferences.c:834
+#: ../src/common/collection.c:719 ../src/gui/preferences.c:834
 #: ../src/gui/presets.c:568 ../src/libs/camera.c:546 ../src/libs/camera.c:548
 #: ../src/libs/metadata_view.c:140
 msgid "aperture"
 msgstr "blende"
 
-#: ../src/common/collection.c:698 ../src/develop/lightroom.c:1541
+#: ../src/common/collection.c:727 ../src/develop/lightroom.c:1541
 #: ../src/libs/geotagging.c:141
 msgid "geotagging"
 msgstr "geotaggelés"
 
-#: ../src/common/collection.c:700 ../src/libs/tools/global_toolbox.c:396
+#: ../src/common/collection.c:729 ../src/libs/tools/global_toolbox.c:396
 msgid "grouping"
 msgstr "csoportosítás"
 
-#: ../src/common/collection.c:702 ../src/dtgtk/thumbnail.c:1425
+#: ../src/common/collection.c:731 ../src/dtgtk/thumbnail.c:1400
 #: ../src/libs/metadata_view.c:129 ../src/libs/metadata_view.c:338
 msgid "local copy"
 msgstr "helyi másolat"
 
-#: ../src/common/collection.c:704 ../src/gui/preferences.c:802
+#: ../src/common/collection.c:733 ../src/gui/preferences.c:802
 msgid "module"
 msgstr "modul"
 
-#: ../src/common/collection.c:706 ../src/gui/hist_dialog.c:280
+#: ../src/common/collection.c:735 ../src/gui/hist_dialog.c:280
 #: ../src/gui/styles_dialog.c:554 ../src/gui/styles_dialog.c:598
 #: ../src/libs/ioporder.c:40
 msgid "module order"
 msgstr "modulsorrend"
 
-#: ../src/common/collection.c:708
+#: ../src/common/collection.c:737
 msgid "range rating"
 msgstr "értékelés tartománya"
 
-#: ../src/common/collection.c:712
+#: ../src/common/collection.c:741
 msgid "search"
 msgstr "keresés"
 
-#: ../src/common/collection.c:1434 ../src/common/colorlabels.c:330
+#: ../src/common/collection.c:1463 ../src/common/colorlabels.c:330
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2286 ../src/iop/temperature.c:1770
 #: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "sárga"
 
-#: ../src/common/collection.c:1440 ../src/common/color_vocabulary.c:339
+#: ../src/common/collection.c:1469 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:333 ../src/iop/colorzones.c:2290
 #: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "lila"
 
-#: ../src/common/collection.c:1457 ../src/libs/collect.c:1743
+#: ../src/common/collection.c:1486 ../src/libs/collect.c:1743
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "automatikusan alkalmazott"
 
-#: ../src/common/collection.c:1461 ../src/libs/collect.c:1743
+#: ../src/common/collection.c:1490 ../src/libs/collect.c:1743
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "módosított"
 
-#: ../src/common/collection.c:1478 ../src/common/collection.c:1574
+#: ../src/common/collection.c:1507 ../src/common/collection.c:1603
 #: ../src/libs/collect.c:1164 ../src/libs/collect.c:1328
 #: ../src/libs/collect.c:1352 ../src/libs/collect.c:1471
 #: ../src/libs/collect.c:2501
 msgid "not tagged"
 msgstr "címkézetlen"
 
-#: ../src/common/collection.c:1479 ../src/libs/collect.c:1352
+#: ../src/common/collection.c:1508 ../src/libs/collect.c:1352
 #: ../src/libs/map_locations.c:765
 msgid "tagged"
 msgstr "címkézett"
 
-#: ../src/common/collection.c:1480
+#: ../src/common/collection.c:1509
 msgid "tagged*"
 msgstr "címkézett*"
 
 #. local copy
-#: ../src/common/collection.c:1513 ../src/libs/collect.c:1757
+#: ../src/common/collection.c:1542 ../src/libs/collect.c:1757
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "nem lett helyben másolva"
 
-#: ../src/common/collection.c:1517 ../src/libs/collect.c:1757
+#: ../src/common/collection.c:1546 ../src/libs/collect.c:1757
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "helyben másolva"
 
-#: ../src/common/collection.c:1892 ../src/libs/collect.c:1877
+#: ../src/common/collection.c:1921 ../src/libs/collect.c:1877
 #: ../src/libs/filters/grouping.c:147 ../src/libs/filters/grouping.c:170
 msgid "group leaders"
 msgstr "csoportvezetők"
 
-#: ../src/common/collection.c:1896 ../src/libs/collect.c:1877
+#: ../src/common/collection.c:1925 ../src/libs/collect.c:1877
 #: ../src/libs/filters/grouping.c:150 ../src/libs/filters/grouping.c:170
 msgid "group followers"
 msgstr "csoportkövetők"
 
-#: ../src/common/collection.c:2036 ../src/libs/collect.c:1957
+#: ../src/common/collection.c:2065 ../src/libs/collect.c:1957
 msgid "not defined"
 msgstr "nem definiált"
 
-#: ../src/common/collection.c:2451
+#: ../src/common/collection.c:2501
 #, c-format
 msgid "<b>%d</b> image (#<b>%d</b>) selected of <b>%d</b>"
 msgstr "<b>%d</b> kép (#<b>%d</b>) kijelölve ennyiből: <b>%d</b>"
 
-#: ../src/common/collection.c:2457
+#: ../src/common/collection.c:2507
 #, c-format
 msgid "<b>%d</b> image selected of <b>%d</b>"
 msgid_plural "<b>%d</b> images selected of <b>%d</b>"
@@ -5188,7 +5197,7 @@ msgstr[1] "<b>%d</b> / <b>%d</b> kép kijelölve"
 
 #: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:1985
 #: ../src/develop/blend_gui.c:2012 ../src/gui/guides.c:729
-#: ../src/iop/channelmixerrgb.c:4189 ../src/iop/levels.c:659
+#: ../src/iop/channelmixerrgb.c:4192 ../src/iop/levels.c:659
 #: ../src/iop/rgblevels.c:947
 msgid "gray"
 msgstr "szürke"
@@ -5490,7 +5499,7 @@ msgstr "színcímkék beállítva: %s"
 msgid "all colorlabels removed"
 msgstr "összes színcímke eltávolítva"
 
-#: ../src/common/colorlabels.c:328 ../src/gui/accelerators.c:156
+#: ../src/common/colorlabels.c:328 ../src/gui/accelerators.c:163
 #: ../src/libs/image.c:594
 msgid "clear"
 msgstr "törlés"
@@ -5506,7 +5515,7 @@ msgid "export profile"
 msgstr "profil exportálása"
 
 #: ../src/common/colorspaces.c:1407 ../src/common/colorspaces.c:1687
-#: ../src/views/darkroom.c:2446
+#: ../src/views/darkroom.c:2448
 msgid "softproof profile"
 msgstr "softproof profil"
 
@@ -5659,25 +5668,25 @@ msgstr "könyvtár betöltése nem sikerült: „%s”"
 msgid "file `%s' has unknown format!"
 msgstr "„%s” fájl ismeretlen formátumú!"
 
-#: ../src/common/darktable.c:295 ../src/control/jobs/control_jobs.c:2090
-#: ../src/control/jobs/control_jobs.c:2149
+#: ../src/common/darktable.c:295 ../src/control/jobs/control_jobs.c:2087
+#: ../src/control/jobs/control_jobs.c:2146
 #, c-format
 msgid "error loading file `%s'"
 msgstr "„%s” fájl betöltése nem sikerült"
 
-#: ../src/common/darktable.c:1328
+#: ../src/common/darktable.c:1333
 msgid "configuration information"
 msgstr "konfigurációs információk"
 
-#: ../src/common/darktable.c:1330
+#: ../src/common/darktable.c:1335
 msgid "show this information again"
 msgstr "mutassa ezt az információt újra"
 
-#: ../src/common/darktable.c:1330
+#: ../src/common/darktable.c:1335
 msgid "understood"
 msgstr "megértettem"
 
-#: ../src/common/darktable.c:1768
+#: ../src/common/darktable.c:1773
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -5685,13 +5694,13 @@ msgstr ""
 "az RCD demosaic mód a jobb minősége és teljesítménye miatt alapértelmezett "
 "lett a PPG helyett."
 
-#: ../src/common/darktable.c:1770
+#: ../src/common/darktable.c:1775
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "lásd beállítások/sötétkamra/kicsinyített képek demosaic módja sötétkamra "
 "nézetben"
 
-#: ../src/common/darktable.c:1776
+#: ../src/common/darktable.c:1781
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -5699,7 +5708,7 @@ msgstr ""
 "a darktable teljesítményének hangolására szolgáló felhasználói felület és a "
 "mögöttes működés megváltozott."
 
-#: ../src/common/darktable.c:1778
+#: ../src/common/darktable.c:1783
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5707,15 +5716,15 @@ msgstr ""
 "a fejlécet és társait már nem fogja megtalálni, helyette a beállítások/"
 "feldolgozás alatt használja az alábbi beállításokat:"
 
-#: ../src/common/darktable.c:1780
+#: ../src/common/darktable.c:1785
 msgid "1) darktable resources"
 msgstr "1) darktable erőforrásai"
 
-#: ../src/common/darktable.c:1782
+#: ../src/common/darktable.c:1787
 msgid "2) tune OpenCL performance"
 msgstr "2) OpenCL-teljesítmény finomhangolása"
 
-#: ../src/common/darktable.c:1789
+#: ../src/common/darktable.c:1794
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
@@ -5723,7 +5732,7 @@ msgstr ""
 "néhány, az OpenCL teljesítményéhez kapcsolódó globális konfigurációs érték "
 "már nincs használatban."
 
-#: ../src/common/darktable.c:1791
+#: ../src/common/darktable.c:1796
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
@@ -5731,7 +5740,7 @@ msgstr ""
 "helyettük a „per device” adatot keresse a „cl_device_v4_canonical-name” "
 "alatt. a tartalma:"
 
-#: ../src/common/darktable.c:1793
+#: ../src/common/darktable.c:1798
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
@@ -5739,7 +5748,7 @@ msgstr ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 
-#: ../src/common/darktable.c:1795
+#: ../src/common/darktable.c:1800
 msgid "you may tune as before except 'magic'"
 msgstr "a korábbihoz hasonlóan finomhangolhatja, kivéve „magic” esetén"
 
@@ -5809,7 +5818,7 @@ msgstr "nem sikerült a darktable-t elindítani"
 #: ../src/common/database.c:2749 ../src/libs/collect.c:3007
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:574 ../src/libs/metadata_view.c:1193
-#: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3535
+#: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3536
 #: ../src/libs/styles.c:428 ../src/libs/styles.c:611 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568 ../src/libs/tagging.c:1649
 #: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
@@ -5834,10 +5843,10 @@ msgstr ""
 "biztosan törölni szeretné a zárolási fájlokat?\n"
 
 #: ../src/common/database.c:2756 ../src/common/variables.c:602
-#: ../src/develop/imageop_gui.c:213 ../src/gui/gtk.c:2522
-#: ../src/imageio/format/pdf.c:636 ../src/imageio/format/pdf.c:655
-#: ../src/libs/export.c:1193 ../src/libs/export.c:1200
-#: ../src/libs/export.c:1207 ../src/libs/metadata_view.c:678
+#: ../src/develop/imageop_gui.c:213 ../src/imageio/format/pdf.c:636
+#: ../src/imageio/format/pdf.c:655 ../src/libs/export.c:1193
+#: ../src/libs/export.c:1200 ../src/libs/export.c:1207
+#: ../src/libs/metadata_view.c:678
 msgid "yes"
 msgstr "igen"
 
@@ -6128,7 +6137,7 @@ msgstr "nem hozható létre helyi másolat, ha az eredeti fájl nem elérhető."
 msgid "cannot create local copy."
 msgstr "nem hozható létre helyi másolat."
 
-#: ../src/common/image.c:2459 ../src/control/jobs/control_jobs.c:779
+#: ../src/common/image.c:2459 ../src/control/jobs/control_jobs.c:776
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "nem törölhető a helyi másolat, ha az eredeti fájl nem elérhető."
 
@@ -6278,7 +6287,7 @@ msgstr "exportálás"
 msgid "cannot find the style '%s' to apply during export."
 msgstr "nem található az exportálásnál alkalmazandó „%s” stílus."
 
-#: ../src/common/import_session.c:294
+#: ../src/common/import_session.c:308
 msgid ""
 "couldn't expand to a unique filename for session, please check your import "
 "session settings."
@@ -6286,7 +6295,7 @@ msgstr ""
 "nem sikerült kibontani egy egyedi fájlnevet a munkamenet számára. kérem, "
 "ellenőrizze az importálási munkamenet beállításokat."
 
-#: ../src/common/import_session.c:373
+#: ../src/common/import_session.c:401
 msgid "requested session path not available. device not mounted?"
 msgstr ""
 "a kért munkamenet útvonal nem érhető el. esetleg az eszköz nincs csatolva?"
@@ -6438,7 +6447,7 @@ msgid "image rated to %s"
 msgstr "kép értékelve: %s"
 
 #: ../src/common/ratings.c:305 ../src/libs/select.c:39
-#: ../src/views/lighttable.c:762
+#: ../src/views/lighttable.c:812
 msgid "select"
 msgstr "kijelölés"
 
@@ -6454,23 +6463,23 @@ msgstr "leminősít"
 msgid "zero"
 msgstr "null"
 
-#: ../src/common/ratings.c:312 ../src/libs/filters/rating_range.c:275
+#: ../src/common/ratings.c:312 ../src/libs/filters/rating_range.c:277
 msgid "one"
 msgstr "egy"
 
-#: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:276
+#: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:278
 msgid "two"
 msgstr "kettő"
 
-#: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:277
+#: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:279
 msgid "three"
 msgstr "három"
 
-#: ../src/common/ratings.c:315 ../src/libs/filters/rating_range.c:278
+#: ../src/common/ratings.c:315 ../src/libs/filters/rating_range.c:280
 msgid "four"
 msgstr "négy"
 
-#: ../src/common/ratings.c:316 ../src/libs/filters/rating_range.c:279
+#: ../src/common/ratings.c:316 ../src/libs/filters/rating_range.c:281
 msgid "five"
 msgstr "öt"
 
@@ -6494,7 +6503,7 @@ msgid "style named '%s' successfully created"
 msgstr "stílus sikeresen létrehozva „%s” néven"
 
 #: ../src/common/styles.c:628 ../src/common/styles.c:656
-#: ../src/common/styles.c:695 ../src/dtgtk/culling.c:992
+#: ../src/common/styles.c:695 ../src/dtgtk/culling.c:994
 msgid "no image selected!"
 msgstr "nincs kijelölt kép!"
 
@@ -6560,77 +6569,75 @@ msgstr "tengerszint alatt"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:66 ../src/gui/accelerators.c:128
+#: ../src/control/control.c:66 ../src/gui/accelerators.c:131
 #: ../src/views/darkroom.c:2072
 msgid "hold"
 msgstr "tart"
 
-#: ../src/control/control.c:102 ../src/control/control.c:141
+#: ../src/control/control.c:102 ../src/control/control.c:207
 msgid "modifiers"
 msgstr "módosítók"
 
-#: ../src/control/control.c:109
+#: ../src/control/control.c:111
 msgctxt "accel"
 msgid "global"
 msgstr "globális"
 
-#: ../src/control/control.c:110
+#: ../src/control/control.c:118
 msgctxt "accel"
 msgid "views"
 msgstr "nézetek"
 
-#: ../src/control/control.c:111
+#: ../src/control/control.c:125
 msgctxt "accel"
 msgid "thumbtable"
 msgstr "bélyegképasztal"
 
-#: ../src/control/control.c:112
+#: ../src/control/control.c:132
 msgctxt "accel"
 msgid "utility modules"
 msgstr "segédmodulok"
 
-#: ../src/control/control.c:113
+#: ../src/control/control.c:139
 msgctxt "accel"
 msgid "format"
 msgstr "formátum"
 
-#. will be placed under lib/export
-#: ../src/control/control.c:114
+#: ../src/control/control.c:146
 msgctxt "accel"
 msgid "storage"
 msgstr "tárolás"
 
-#. will be placed under lib/export
-#: ../src/control/control.c:115
+#: ../src/control/control.c:153
 msgctxt "accel"
 msgid "processing modules"
 msgstr "feldolgozó modulok"
 
-#: ../src/control/control.c:116
+#: ../src/control/control.c:160
 msgctxt "accel"
 msgid "<blending>"
 msgstr "<keverés>"
 
-#: ../src/control/control.c:117
+#: ../src/control/control.c:167
 msgctxt "accel"
 msgid "lua scripts"
 msgstr "lua scriptek"
 
-#: ../src/control/control.c:118
+#: ../src/control/control.c:174
 msgctxt "accel"
 msgid "fallbacks"
 msgstr "tartalékok"
 
-#: ../src/control/control.c:121
+#: ../src/control/control.c:183
 msgctxt "accel"
 msgid "<focused>"
 msgstr "<fókuszban>"
 
-#: ../src/control/control.c:138
+#: ../src/control/control.c:204
 msgid "show accels window"
 msgstr "gyorsbillentyű ablak megjelenítése"
 
-#: ../src/control/control.c:299
+#: ../src/control/control.c:365
 msgid "working..."
 msgstr "feldolgozás…"
 
@@ -6755,17 +6762,17 @@ msgstr "_bezárás"
 
 #. setup selection accelerators
 #. action-box
-#: ../src/control/crawler.c:671 ../src/dtgtk/thumbtable.c:2342
+#: ../src/control/crawler.c:671 ../src/dtgtk/thumbtable.c:2344
 #: ../src/libs/import.c:1712 ../src/libs/select.c:133
 msgid "select all"
 msgstr "mindent kijelöl"
 
-#: ../src/control/crawler.c:672 ../src/dtgtk/thumbtable.c:2343
+#: ../src/control/crawler.c:672 ../src/dtgtk/thumbtable.c:2345
 #: ../src/libs/import.c:1716 ../src/libs/select.c:137
 msgid "select none"
 msgstr "kijelölés megszüntetése"
 
-#: ../src/control/crawler.c:673 ../src/dtgtk/thumbtable.c:2344
+#: ../src/control/crawler.c:673 ../src/dtgtk/thumbtable.c:2346
 #: ../src/libs/select.c:141
 msgid "invert selection"
 msgstr "kijelölés megfordítása"
@@ -6852,202 +6859,202 @@ msgid_plural "merging %d images"
 msgstr[0] "%d kép egyesítése"
 msgstr[1] "%d kép egyesítése"
 
-#: ../src/control/jobs/control_jobs.c:564
+#: ../src/control/jobs/control_jobs.c:561
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "egyesített HDR kiírva „%s”"
 
-#: ../src/control/jobs/control_jobs.c:596
+#: ../src/control/jobs/control_jobs.c:593
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "%d kép duplikálása"
 msgstr[1] "%d kép duplikálása"
 
-#: ../src/control/jobs/control_jobs.c:637
+#: ../src/control/jobs/control_jobs.c:634
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "%d kép tükrözése"
 msgstr[1] "%d kép tükrözése"
 
-#: ../src/control/jobs/control_jobs.c:668
+#: ../src/control/jobs/control_jobs.c:665
 #, c-format
 msgid "set %d color image"
 msgid_plural "setting %d color images"
 msgstr[0] "%d színes kép beállítása"
 msgstr[1] "%d színes kép beállítása"
 
-#: ../src/control/jobs/control_jobs.c:670
+#: ../src/control/jobs/control_jobs.c:667
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
 msgstr[0] "%d monokróm kép beállítása"
 msgstr[1] "%d monokróm kép beállítása"
 
-#: ../src/control/jobs/control_jobs.c:755
+#: ../src/control/jobs/control_jobs.c:752
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "%d kép eltávolítása"
 msgstr[1] "%d kép eltávolítása"
 
-#: ../src/control/jobs/control_jobs.c:859
+#: ../src/control/jobs/control_jobs.c:856
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "%s nem helyezhető át a kukába%s%s"
 
-#: ../src/control/jobs/control_jobs.c:860
+#: ../src/control/jobs/control_jobs.c:857
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "nem törölhető a lemezről %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:870
+#: ../src/control/jobs/control_jobs.c:867
 msgid "physically delete"
 msgstr "törlés fizikailag"
 
-#: ../src/control/jobs/control_jobs.c:871
+#: ../src/control/jobs/control_jobs.c:868
 msgid "physically delete all files"
 msgstr "összes fájl végleges törlése"
 
-#: ../src/control/jobs/control_jobs.c:873
+#: ../src/control/jobs/control_jobs.c:870
 msgid "only remove from the image library"
 msgstr "eltávolítás csak a képadatbázisból"
 
-#: ../src/control/jobs/control_jobs.c:874
+#: ../src/control/jobs/control_jobs.c:871
 msgid "skip to next file"
 msgstr "ugrás a következő fájlra"
 
-#: ../src/control/jobs/control_jobs.c:875
+#: ../src/control/jobs/control_jobs.c:872
 msgid "stop process"
 msgstr "folyamat megszakítása"
 
-#: ../src/control/jobs/control_jobs.c:880
+#: ../src/control/jobs/control_jobs.c:877
 msgid "trashing error"
 msgstr "kukába dobási hiba"
 
-#: ../src/control/jobs/control_jobs.c:881
+#: ../src/control/jobs/control_jobs.c:878
 msgid "deletion error"
 msgstr "törlési hiba"
 
-#: ../src/control/jobs/control_jobs.c:1023
+#: ../src/control/jobs/control_jobs.c:1020
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "%d kép kukába helyezése"
 msgstr[1] "%d kép kukába helyezése"
 
-#: ../src/control/jobs/control_jobs.c:1025
+#: ../src/control/jobs/control_jobs.c:1022
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "%d kép törlése"
 msgstr[1] "%d kép törlése"
 
-#: ../src/control/jobs/control_jobs.c:1151
+#: ../src/control/jobs/control_jobs.c:1148
 msgid "failed to parse GPX file"
 msgstr "nem sikerült értelmezni a GPX fájlt"
 
-#: ../src/control/jobs/control_jobs.c:1198
+#: ../src/control/jobs/control_jobs.c:1195
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "egyező GPX helyszín alkalmazva %d képre"
 msgstr[1] "egyező GPX helyszín alkalmazva %d képre"
 
-#: ../src/control/jobs/control_jobs.c:1215
+#: ../src/control/jobs/control_jobs.c:1212
 #, c-format
 msgid "moving %d image"
 msgstr "%d kép mozgatása"
 
-#: ../src/control/jobs/control_jobs.c:1216
+#: ../src/control/jobs/control_jobs.c:1213
 #, c-format
 msgid "moving %d images"
 msgstr "%d kép mozgatása"
 
-#: ../src/control/jobs/control_jobs.c:1221
+#: ../src/control/jobs/control_jobs.c:1218
 #, c-format
 msgid "copying %d image"
 msgstr "%d kép másolása"
 
-#: ../src/control/jobs/control_jobs.c:1222
+#: ../src/control/jobs/control_jobs.c:1219
 #, c-format
 msgid "copying %d images"
 msgstr "%d kép másolása"
 
-#: ../src/control/jobs/control_jobs.c:1237
+#: ../src/control/jobs/control_jobs.c:1234
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "%d kép helyi másolatának létrehozása"
 msgstr[1] "%d kép helyi másolatának létrehozása"
 
-#: ../src/control/jobs/control_jobs.c:1240
+#: ../src/control/jobs/control_jobs.c:1237
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "%d kép helyi másolatának eltávolítása"
 msgstr[1] "%d kép helyi másolatának eltávolítása"
 
-#: ../src/control/jobs/control_jobs.c:1287
+#: ../src/control/jobs/control_jobs.c:1284
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "%d kép információinak frissítése"
 msgstr[1] "%d kép információinak frissítése"
 
-#: ../src/control/jobs/control_jobs.c:1370
+#: ../src/control/jobs/control_jobs.c:1367
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "%d kép exportálása…"
 msgstr[1] "%d kép exportálása…"
 
-#: ../src/control/jobs/control_jobs.c:1372
+#: ../src/control/jobs/control_jobs.c:1369
 msgid "no image to export"
 msgstr "nincs exportálandó kép"
 
-#: ../src/control/jobs/control_jobs.c:1410
+#: ../src/control/jobs/control_jobs.c:1407
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "%d / %d exportálása ide: %s"
 
-#: ../src/control/jobs/control_jobs.c:1431 ../src/views/darkroom.c:768
+#: ../src/control/jobs/control_jobs.c:1428 ../src/views/darkroom.c:768
 #: ../src/views/print.c:342
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "„%s” kép jelenleg nem elérhető"
 
-#: ../src/control/jobs/control_jobs.c:1523
+#: ../src/control/jobs/control_jobs.c:1520
 msgid "merge HDR image"
 msgstr "HDR kép egyesítése"
 
-#: ../src/control/jobs/control_jobs.c:1537
+#: ../src/control/jobs/control_jobs.c:1534
 msgid "duplicate images"
 msgstr "képek duplikálása"
 
-#: ../src/control/jobs/control_jobs.c:1543
+#: ../src/control/jobs/control_jobs.c:1540
 msgid "flip images"
 msgstr "kepek megfordítása"
 
-#: ../src/control/jobs/control_jobs.c:1550
+#: ../src/control/jobs/control_jobs.c:1547
 msgid "set monochrome images"
 msgstr "monokróm képek beállítása"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1557
+#: ../src/control/jobs/control_jobs.c:1554
 msgid "remove images"
 msgstr "képek eltávolítása"
 
-#: ../src/control/jobs/control_jobs.c:1570
+#: ../src/control/jobs/control_jobs.c:1567
 msgid "remove image?"
 msgstr "eltávolítja a képeket?"
 
-#: ../src/control/jobs/control_jobs.c:1570
+#: ../src/control/jobs/control_jobs.c:1567
 msgid "remove images?"
 msgstr "eltávolítja a képeket?"
 
-#: ../src/control/jobs/control_jobs.c:1571
+#: ../src/control/jobs/control_jobs.c:1568
 #, c-format
 msgid ""
 "do you really want to remove %d image from darktable\n"
@@ -7063,21 +7070,21 @@ msgstr[1] ""
 "(anélkül, hogy törölné a lemezről)?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1586
-#: ../src/control/jobs/control_jobs.c:1619
+#: ../src/control/jobs/control_jobs.c:1583
+#: ../src/control/jobs/control_jobs.c:1616
 msgid "delete images"
 msgstr "képek törlése"
 
-#: ../src/control/jobs/control_jobs.c:1602
-#: ../src/control/jobs/control_jobs.c:1632
+#: ../src/control/jobs/control_jobs.c:1599
+#: ../src/control/jobs/control_jobs.c:1629
 msgid "delete image?"
 msgstr "törli a képet?"
 
-#: ../src/control/jobs/control_jobs.c:1602
+#: ../src/control/jobs/control_jobs.c:1599
 msgid "delete images?"
 msgstr "törli a képeket?"
 
-#: ../src/control/jobs/control_jobs.c:1603
+#: ../src/control/jobs/control_jobs.c:1600
 #, c-format
 msgid ""
 "do you really want to physically delete %d image\n"
@@ -7092,14 +7099,14 @@ msgstr[1] ""
 "biztosan szeretne fizikailag törölni %d képet\n"
 "(kukába dobva, amennyiben lehetséges)?"
 
-#: ../src/control/jobs/control_jobs.c:1605
+#: ../src/control/jobs/control_jobs.c:1602
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "biztosan törölni szeretne %d képet a lemezről?"
 msgstr[1] "biztosan törölni szeretne %d képet a lemezről?"
 
-#: ../src/control/jobs/control_jobs.c:1633
+#: ../src/control/jobs/control_jobs.c:1630
 msgid ""
 "do you really want to physically delete selected image (using trash if "
 "possible)?"
@@ -7107,27 +7114,27 @@ msgstr ""
 "biztosan szeretné fizikailag törölni a kiválasztott képeket (kukába dobva, "
 "amennyiben lehetséges)?"
 
-#: ../src/control/jobs/control_jobs.c:1634
+#: ../src/control/jobs/control_jobs.c:1631
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
 "biztosan szeretné fizikailag törölni a kiválasztott képeket a lemezről?"
 
-#: ../src/control/jobs/control_jobs.c:1649
+#: ../src/control/jobs/control_jobs.c:1646
 msgid "move images"
 msgstr "képek áthelyezése"
 
-#: ../src/control/jobs/control_jobs.c:1661
-#: ../src/control/jobs/control_jobs.c:1715
+#: ../src/control/jobs/control_jobs.c:1658
+#: ../src/control/jobs/control_jobs.c:1712
 msgid "_select as destination"
 msgstr "kiválasztás _célnak"
 
-#: ../src/control/jobs/control_jobs.c:1680
+#: ../src/control/jobs/control_jobs.c:1677
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "áthelyezi a képet?"
 msgstr[1] "áthelyezi a képeket?"
 
-#: ../src/control/jobs/control_jobs.c:1681
+#: ../src/control/jobs/control_jobs.c:1678
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -7142,106 +7149,106 @@ msgstr[1] ""
 "biztosan szeretne %d képet fizikailag ide mozgatni: %s?\n"
 "(a nem kiválasztott duplikátumok is át lesznek helyezve)"
 
-#: ../src/control/jobs/control_jobs.c:1703
+#: ../src/control/jobs/control_jobs.c:1700
 msgid "copy images"
 msgstr "képek másolása"
 
-#: ../src/control/jobs/control_jobs.c:1734
+#: ../src/control/jobs/control_jobs.c:1731
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "átmásolja a képet?"
 msgstr[1] "átmásolja a képeket?"
 
-#: ../src/control/jobs/control_jobs.c:1735
+#: ../src/control/jobs/control_jobs.c:1732
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "biztosan szeretne %d képet fizikailag ide másolni: %s?"
 msgstr[1] "biztosan szeretne %d képet fizikailag ide másolni: %s?"
 
-#: ../src/control/jobs/control_jobs.c:1753
-#: ../src/control/jobs/control_jobs.c:1761
+#: ../src/control/jobs/control_jobs.c:1750
+#: ../src/control/jobs/control_jobs.c:1758
 msgid "local copy images"
 msgstr "helyi másolat készítése"
 
-#: ../src/control/jobs/control_jobs.c:1768 ../src/libs/image.c:606
+#: ../src/control/jobs/control_jobs.c:1765 ../src/libs/image.c:606
 msgid "refresh EXIF"
 msgstr "EXIF frissítése"
 
-#: ../src/control/jobs/control_jobs.c:1832
+#: ../src/control/jobs/control_jobs.c:1829
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "nem sikerült lekérni a paramétereket a(z) „%s” adattároló modultól. "
 "exportálás megszakítása…"
 
-#: ../src/control/jobs/control_jobs.c:1848
+#: ../src/control/jobs/control_jobs.c:1845
 msgid "export images"
 msgstr "képek exportálása"
 
-#: ../src/control/jobs/control_jobs.c:1898
+#: ../src/control/jobs/control_jobs.c:1895
 #, c-format
 msgid "adding time offset to %d image"
 msgstr "időeltolás hozzáadása %d képhez"
 
-#: ../src/control/jobs/control_jobs.c:1898
+#: ../src/control/jobs/control_jobs.c:1895
 #, c-format
 msgid "setting date/time of %d image"
 msgstr "%d kép dátumának/idejének beállítása"
 
-#: ../src/control/jobs/control_jobs.c:1899
+#: ../src/control/jobs/control_jobs.c:1896
 #, c-format
 msgid "adding time offset to %d images"
 msgstr "időeltolás hozzáadása %d képhez"
 
-#: ../src/control/jobs/control_jobs.c:1899
+#: ../src/control/jobs/control_jobs.c:1896
 #, c-format
 msgid "setting date/time of %d images"
 msgstr "%d kép dátumának/idejének beállítása"
 
-#: ../src/control/jobs/control_jobs.c:1944
+#: ../src/control/jobs/control_jobs.c:1941
 #, c-format
 msgid "added time offset to %d image"
 msgstr "időeltolás hozzáadva %d képhez"
 
-#: ../src/control/jobs/control_jobs.c:1944
+#: ../src/control/jobs/control_jobs.c:1941
 #, c-format
 msgid "set date/time of %d image"
 msgstr "dátum/idő beállítva %d képen"
 
-#: ../src/control/jobs/control_jobs.c:1945
+#: ../src/control/jobs/control_jobs.c:1942
 #, c-format
 msgid "added time offset to %d images"
 msgstr "időeltérés hozzáadva  %d képhez"
 
-#: ../src/control/jobs/control_jobs.c:1945
+#: ../src/control/jobs/control_jobs.c:1942
 #, c-format
 msgid "set date/time of %d images"
 msgstr "dátum/idő beállítva %d képen"
 
-#: ../src/control/jobs/control_jobs.c:1986
+#: ../src/control/jobs/control_jobs.c:1983
 msgid "time offset"
 msgstr "időeltolás"
 
-#: ../src/control/jobs/control_jobs.c:2014 ../src/libs/copy_history.c:370
+#: ../src/control/jobs/control_jobs.c:2011 ../src/libs/copy_history.c:370
 msgid "write sidecar files"
 msgstr "kísérőfájlok írása"
 
-#: ../src/control/jobs/control_jobs.c:2228 ../src/control/jobs/film_jobs.c:297
+#: ../src/control/jobs/control_jobs.c:2225 ../src/control/jobs/film_jobs.c:297
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "%d kép importálása"
 msgstr[1] "%d kép importálása"
 
-#: ../src/control/jobs/control_jobs.c:2264
+#: ../src/control/jobs/control_jobs.c:2261
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
 msgstr[0] "%d/%d kép importálása"
 msgstr[1] "%d/%d kép importálása"
 
-#: ../src/control/jobs/control_jobs.c:2272
+#: ../src/control/jobs/control_jobs.c:2269
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
@@ -7269,16 +7276,16 @@ msgstr "kép importálása"
 msgid "detail mask blending error"
 msgstr "részlet maszk keverési hiba"
 
-#: ../src/develop/blend.c:459 ../src/develop/blend.c:828
+#: ../src/develop/blend.c:459 ../src/develop/blend.c:845
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "keverés kihagyása „%s” modulban: roi-k nem egyeznek"
 
-#: ../src/develop/blend.c:490 ../src/develop/blend.c:863
+#: ../src/develop/blend.c:490 ../src/develop/blend.c:880
 msgid "could not allocate buffer for blending"
 msgstr "nem sikerült a keveréshez puffert lefoglalni"
 
-#: ../src/develop/blend.c:779
+#: ../src/develop/blend.c:796
 msgid "detail mask CL blending problem"
 msgstr "részlet maszk CL keverési hiba"
 
@@ -7552,8 +7559,8 @@ msgid "input after blur"
 msgstr "bemenet az elmosás után"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2265
-#: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:129
-#: ../src/gui/accelerators.c:206 ../src/imageio/format/avif.c:800
+#: ../src/gui/accelerators.c:122 ../src/gui/accelerators.c:132
+#: ../src/gui/accelerators.c:217 ../src/imageio/format/avif.c:804
 #: ../src/libs/live_view.c:362
 msgid "on"
 msgstr "be"
@@ -7647,7 +7654,7 @@ msgid "sliders for gray value"
 msgstr "a szürke érték csúszkái"
 
 #: ../src/develop/blend_gui.c:1986 ../src/develop/blend_gui.c:2013
-#: ../src/iop/channelmixerrgb.c:4183 ../src/iop/denoiseprofile.c:3444
+#: ../src/iop/channelmixerrgb.c:4186 ../src/iop/denoiseprofile.c:3444
 #: ../src/iop/rawdenoise.c:905 ../src/iop/rgbcurve.c:1358
 #: ../src/iop/rgblevels.c:1013 ../src/libs/filters/colors.c:137
 msgid "R"
@@ -7658,7 +7665,7 @@ msgid "sliders for red channel"
 msgstr "a vörös csatorna csúszkái"
 
 #: ../src/develop/blend_gui.c:1989 ../src/develop/blend_gui.c:2016
-#: ../src/iop/channelmixerrgb.c:4184 ../src/iop/denoiseprofile.c:3445
+#: ../src/iop/channelmixerrgb.c:4187 ../src/iop/denoiseprofile.c:3445
 #: ../src/iop/rawdenoise.c:906 ../src/iop/rgbcurve.c:1359
 #: ../src/iop/rgblevels.c:1014 ../src/libs/filters/colors.c:143
 msgid "G"
@@ -7669,7 +7676,7 @@ msgid "sliders for green channel"
 msgstr "a zöld csatorna csúszkái"
 
 #: ../src/develop/blend_gui.c:1992 ../src/develop/blend_gui.c:2019
-#: ../src/iop/channelmixerrgb.c:4185 ../src/iop/denoiseprofile.c:3446
+#: ../src/iop/channelmixerrgb.c:4188 ../src/iop/denoiseprofile.c:3446
 #: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1360
 #: ../src/iop/rgblevels.c:1015 ../src/libs/filters/colors.c:146
 msgid "B"
@@ -7813,7 +7820,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3132 ../src/iop/toneequal.c:3135
 #: ../src/iop/toneequal.c:3138 ../src/iop/toneequal.c:3141
 #: ../src/iop/toneequal.c:3235 ../src/iop/toneequal.c:3242
-#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2353
+#: ../src/iop/toneequal.c:3252 ../src/views/darkroom.c:2355
 msgid " EV"
 msgstr "FÉ"
 
@@ -7858,8 +7865,8 @@ msgstr "maszk elemek megjelenítése és szerkesztése"
 msgid "show and edit in restricted mode"
 msgstr "megjelenítés és szerkesztés korlátozott módban"
 
-#: ../src/develop/blend_gui.c:2336 ../src/libs/masks.c:993
-#: ../src/libs/masks.c:1660 ../src/libs/masks.c:1662
+#: ../src/develop/blend_gui.c:2336 ../src/libs/masks.c:990
+#: ../src/libs/masks.c:1657 ../src/libs/masks.c:1659
 msgid "add gradient"
 msgstr "átmenet létrehozása"
 
@@ -7868,7 +7875,7 @@ msgid "add multiple gradients"
 msgstr "többszörös átmenet létrehozása"
 
 #: ../src/develop/blend_gui.c:2341 ../src/iop/retouch.c:2200
-#: ../src/libs/masks.c:977 ../src/libs/masks.c:1688 ../src/libs/masks.c:1690
+#: ../src/libs/masks.c:974 ../src/libs/masks.c:1685 ../src/libs/masks.c:1687
 msgid "add brush"
 msgstr "útvonal ecsettel"
 
@@ -7877,8 +7884,8 @@ msgid "add multiple brush strokes"
 msgstr "több ecsetvonás létrehozása"
 
 #: ../src/develop/blend_gui.c:2346 ../src/iop/retouch.c:2204
-#: ../src/iop/spots.c:821 ../src/libs/masks.c:989 ../src/libs/masks.c:1667
-#: ../src/libs/masks.c:1669
+#: ../src/iop/spots.c:821 ../src/libs/masks.c:986 ../src/libs/masks.c:1664
+#: ../src/libs/masks.c:1666
 msgid "add path"
 msgstr "útvonal létrehozása"
 
@@ -7888,8 +7895,8 @@ msgid "add multiple paths"
 msgstr "több útvonal létrehozása"
 
 #: ../src/develop/blend_gui.c:2351 ../src/iop/retouch.c:2208
-#: ../src/iop/spots.c:825 ../src/libs/masks.c:985 ../src/libs/masks.c:1674
-#: ../src/libs/masks.c:1676
+#: ../src/iop/spots.c:825 ../src/libs/masks.c:982 ../src/libs/masks.c:1671
+#: ../src/libs/masks.c:1673
 msgid "add ellipse"
 msgstr "ellipszis létrehozása"
 
@@ -7899,8 +7906,8 @@ msgid "add multiple ellipses"
 msgstr "több ellipszis létrehozása"
 
 #: ../src/develop/blend_gui.c:2356 ../src/iop/retouch.c:2212
-#: ../src/iop/spots.c:829 ../src/libs/masks.c:981 ../src/libs/masks.c:1681
-#: ../src/libs/masks.c:1683
+#: ../src/iop/spots.c:829 ../src/libs/masks.c:978 ../src/libs/masks.c:1678
+#: ../src/libs/masks.c:1680
 msgid "add circle"
 msgstr "kör létrehozása"
 
@@ -8132,25 +8139,25 @@ msgid "duplicate instance"
 msgstr "példány duplikálása"
 
 #: ../src/develop/imageop.c:943 ../src/develop/imageop.c:3233
-#: ../src/libs/masks.c:1123
+#: ../src/libs/masks.c:1120
 msgid "move up"
 msgstr "mozgatás fel"
 
 #: ../src/develop/imageop.c:949 ../src/develop/imageop.c:3234
-#: ../src/libs/masks.c:1126
+#: ../src/libs/masks.c:1123
 msgid "move down"
 msgstr "mozgatás le"
 
 #. delete button label and tooltip will be updated based on trash pref
 #: ../src/develop/imageop.c:955 ../src/develop/imageop.c:3236
-#: ../src/gui/accelerators.c:143 ../src/gui/presets.c:460
+#: ../src/gui/accelerators.c:148 ../src/gui/presets.c:460
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "törlés"
 
 #: ../src/develop/imageop.c:962 ../src/develop/imageop.c:3237
-#: ../src/libs/modulegroups.c:3535 ../src/libs/modulegroups.c:3886
+#: ../src/libs/modulegroups.c:3536 ../src/libs/modulegroups.c:3887
 msgid "rename"
 msgstr "átnevezés"
 
@@ -8239,18 +8246,18 @@ msgstr ""
 "a követelményekkel."
 
 #: ../src/develop/imageop.c:3232 ../src/develop/imageop.c:3242
-#: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1223
+#: ../src/gui/accelerators.c:144 ../src/libs/lib.c:1223
 msgid "show"
 msgstr "mutat"
 
-#: ../src/develop/imageop.c:3235 ../src/libs/modulegroups.c:3381
-#: ../src/libs/modulegroups.c:3507 ../src/libs/modulegroups.c:3888
+#: ../src/develop/imageop.c:3235 ../src/libs/modulegroups.c:3382
+#: ../src/libs/modulegroups.c:3508 ../src/libs/modulegroups.c:3889
 #: ../src/libs/tagging.c:3247
 msgid "new"
 msgstr "új"
 
-#: ../src/develop/imageop.c:3238 ../src/libs/duplicate.c:361
-#: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3884
+#: ../src/develop/imageop.c:3238 ../src/libs/duplicate.c:362
+#: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3885
 msgid "duplicate"
 msgstr "duplikálás"
 
@@ -8258,18 +8265,18 @@ msgstr "duplikálás"
 msgid "enable"
 msgstr "engedélyez"
 
-#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:153
+#: ../src/develop/imageop.c:3244 ../src/gui/accelerators.c:160
 msgid "focus"
 msgstr "fókusz"
 
-#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:2287
+#: ../src/develop/imageop.c:3245 ../src/gui/accelerators.c:2298
 msgid "instance"
 msgstr "példány"
 
 #: ../src/develop/imageop.c:3246 ../src/gui/accelerators.c:105
-#: ../src/gui/accelerators.c:114 ../src/gui/gtk.c:2816 ../src/gui/gtk.c:2861
+#: ../src/gui/accelerators.c:115 ../src/gui/gtk.c:2812 ../src/gui/gtk.c:2857
 #: ../src/iop/atrous.c:1547 ../src/libs/lib.c:1224
-#: ../src/libs/modulegroups.c:3952
+#: ../src/libs/modulegroups.c:3953
 msgid "reset"
 msgstr "visszaállítás"
 
@@ -8516,7 +8523,7 @@ msgstr "%s: maszk verzió eltér: %d != %d"
 msgid "opacity: %d%%"
 msgstr "átlátszóság: %d%%"
 
-#: ../src/develop/masks/masks.c:1528 ../src/libs/masks.c:1057
+#: ../src/develop/masks/masks.c:1528 ../src/libs/masks.c:1054
 msgid "add existing shape"
 msgstr "létező alakzat hozzáadása"
 
@@ -8774,13 +8781,13 @@ msgstr "relatív"
 msgid "selected"
 msgstr "kiválasztott"
 
-#: ../src/dtgtk/range.c:624 ../src/dtgtk/range.c:1730 ../src/dtgtk/range.c:1781
+#: ../src/dtgtk/range.c:624 ../src/dtgtk/range.c:1768 ../src/dtgtk/range.c:1819
 #: ../src/libs/colorpicker.c:53
 msgid "min"
 msgstr "min"
 
-#: ../src/dtgtk/range.c:630 ../src/dtgtk/range.c:1742 ../src/dtgtk/range.c:1793
-#: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:280
+#: ../src/dtgtk/range.c:630 ../src/dtgtk/range.c:1780 ../src/dtgtk/range.c:1831
+#: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:282
 msgid "max"
 msgstr "max"
 
@@ -8822,8 +8829,8 @@ msgstr "idő"
 msgid "current date: "
 msgstr "aktuális dátum: "
 
-#: ../src/dtgtk/range.c:1053 ../src/dtgtk/range.c:1749
-#: ../src/dtgtk/range.c:1800
+#: ../src/dtgtk/range.c:1053 ../src/dtgtk/range.c:1787
+#: ../src/dtgtk/range.c:1838
 msgid "now"
 msgstr "most"
 
@@ -8833,7 +8840,7 @@ msgstr ""
 "állítsa be az értéket úgy, hogy mindig megegyezzen az aktuális dátum/idővel"
 
 #. apply button
-#: ../src/dtgtk/range.c:1058 ../src/gui/accelerators.c:149
+#: ../src/dtgtk/range.c:1058 ../src/gui/accelerators.c:155
 #: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:826
 #: ../src/libs/styles.c:865
 msgid "apply"
@@ -8845,8 +8852,8 @@ msgstr "ez az érték beállítja a tartomány határait"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1725 ../src/gui/accelerators.c:2037
-#: ../src/gui/accelerators.c:2116 ../src/gui/gtk.c:1195 ../src/gui/gtk.c:2941
+#: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2048
+#: ../src/gui/accelerators.c:2127 ../src/gui/gtk.c:1195 ../src/gui/gtk.c:2937
 #: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3443
 #: ../src/iop/lens.cc:2994 ../src/iop/rawdenoise.c:904
 #: ../src/libs/collect.c:3153 ../src/libs/filtering.c:1437
@@ -8859,15 +8866,15 @@ msgstr "mind"
 msgid "double-click to reset"
 msgstr "dupla kattintással visszaállítja"
 
-#: ../src/dtgtk/thumbnail.c:92 ../src/dtgtk/thumbnail.c:122
+#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:172
 msgid "current"
 msgstr "jelenlegi"
 
-#: ../src/dtgtk/thumbnail.c:92 ../src/dtgtk/thumbnail.c:98
+#: ../src/dtgtk/thumbnail.c:142 ../src/dtgtk/thumbnail.c:148
 msgid "leader"
 msgstr "vezető"
 
-#: ../src/dtgtk/thumbnail.c:98
+#: ../src/dtgtk/thumbnail.c:148
 msgid ""
 "\n"
 "click here to set this image as group leader\n"
@@ -8876,12 +8883,12 @@ msgstr ""
 "kattintson ide, ha ezt a képet szeretné a csoport nyitóképévé tenni\n"
 
 #. and the number of grouped images
-#: ../src/dtgtk/thumbnail.c:133 ../src/libs/filters/grouping.c:144
+#: ../src/dtgtk/thumbnail.c:183 ../src/libs/filters/grouping.c:144
 #: ../src/libs/filters/grouping.c:169
 msgid "grouped images"
 msgstr "csoportosított képek"
 
-#: ../src/dtgtk/thumbnail.c:712 ../src/dtgtk/thumbnail.c:1474
+#: ../src/dtgtk/thumbnail.c:762 ../src/dtgtk/thumbnail.c:1449
 #: ../src/iop/ashift.c:5757 ../src/iop/ashift.c:5824 ../src/iop/ashift.c:5825
 #: ../src/iop/ashift.c:5826
 msgid "fit"
@@ -8907,12 +8914,12 @@ msgstr "próbálja lazítani a szűrőfeltételeket a felső panelen"
 msgid "or add images in the collections module in the left panel"
 msgstr "vagy a bal panelen adjon hozzá képeket a gyűjtemény modulban"
 
-#: ../src/dtgtk/thumbtable.c:1250
+#: ../src/dtgtk/thumbtable.c:1252
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr "megváltoztatta a bélyegképek generálásához kapcsolódó beállításokat.\n"
 
-#: ../src/dtgtk/thumbtable.c:1252
+#: ../src/dtgtk/thumbtable.c:1254
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -8920,7 +8927,7 @@ msgstr ""
 "az összes gyorsítótárazott bélyegképet érvényteleníteni kell.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1254
+#: ../src/dtgtk/thumbtable.c:1256
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -8929,7 +8936,7 @@ msgstr ""
 "%d szinttől a gyorsítótárazott képeket érvényteleníteni kell.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1257
+#: ../src/dtgtk/thumbtable.c:1259
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -8938,7 +8945,7 @@ msgstr ""
 "%d szint alatt a gyorsítótárazott képeket érvényteleníteni kell.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1259
+#: ../src/dtgtk/thumbtable.c:1261
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -8947,48 +8954,48 @@ msgstr ""
 "%d és %d szint között a gyorsítótárazott képeket érvényteleníteni kell.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1262
+#: ../src/dtgtk/thumbtable.c:1264
 msgid "do you want to do that now?"
 msgstr "szeretné ezt most megtenni?"
 
-#: ../src/dtgtk/thumbtable.c:1264
+#: ../src/dtgtk/thumbtable.c:1266
 msgid "cached thumbnails invalidation"
 msgstr "gyorsítótárazott bélyegképek érvénytelenítése"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2332
+#: ../src/dtgtk/thumbtable.c:2334
 msgid "copy history"
 msgstr "előzmények másolása"
 
-#: ../src/dtgtk/thumbtable.c:2333
+#: ../src/dtgtk/thumbtable.c:2335
 msgid "copy history parts"
 msgstr "előzményrészek másolása"
 
-#: ../src/dtgtk/thumbtable.c:2334
+#: ../src/dtgtk/thumbtable.c:2336
 msgid "paste history"
 msgstr "előzmények beillesztése"
 
-#: ../src/dtgtk/thumbtable.c:2335
+#: ../src/dtgtk/thumbtable.c:2337
 msgid "paste history parts"
 msgstr "előzményrészek beillesztése"
 
-#: ../src/dtgtk/thumbtable.c:2336 ../src/libs/copy_history.c:354
+#: ../src/dtgtk/thumbtable.c:2338 ../src/libs/copy_history.c:354
 msgid "discard history"
 msgstr "előzmények elvetése"
 
-#: ../src/dtgtk/thumbtable.c:2338
+#: ../src/dtgtk/thumbtable.c:2340
 msgid "duplicate image"
 msgstr "kép duplikálása"
 
-#: ../src/dtgtk/thumbtable.c:2339
+#: ../src/dtgtk/thumbtable.c:2341
 msgid "duplicate image virgin"
 msgstr "szűz kép duplikálása"
 
-#: ../src/dtgtk/thumbtable.c:2345 ../src/libs/select.c:145
+#: ../src/dtgtk/thumbtable.c:2347 ../src/libs/select.c:145
 msgid "select film roll"
 msgstr "filmtekercs kijelölése"
 
-#: ../src/dtgtk/thumbtable.c:2346 ../src/libs/select.c:149
+#: ../src/dtgtk/thumbtable.c:2348 ../src/libs/select.c:149
 msgid "select untouched"
 msgstr "módosítatlanok kijelölése"
 
@@ -9069,7 +9076,7 @@ msgstr "mozgatás"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5825 ../src/iop/clipping.c:1905
 #: ../src/iop/clipping.c:2097 ../src/iop/clipping.c:2113
-#: ../src/views/darkroom.c:2581 ../src/views/lighttable.c:1250
+#: ../src/views/darkroom.c:2583 ../src/views/lighttable.c:1300
 msgid "horizontal"
 msgstr "vízszintes"
 
@@ -9077,7 +9084,7 @@ msgstr "vízszintes"
 #: ../src/iop/ashift.c:5413 ../src/iop/ashift.c:5515 ../src/iop/ashift.c:5516
 #: ../src/iop/ashift.c:5824 ../src/iop/clipping.c:1904
 #: ../src/iop/clipping.c:2098 ../src/iop/clipping.c:2112
-#: ../src/views/darkroom.c:2584 ../src/views/lighttable.c:1254
+#: ../src/views/darkroom.c:2586 ../src/views/lighttable.c:1304
 msgid "vertical"
 msgstr "függőleges"
 
@@ -9117,16 +9124,16 @@ msgstr "cmd"
 msgid "altgr"
 msgstr "altgr"
 
-#: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:144
+#: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:149
 #: ../src/libs/tagging.c:1778
 msgid "edit"
 msgstr "szerkeszt"
 
-#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:628
+#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:639
 msgid "up"
 msgstr "fel"
 
-#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:628
+#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:639
 msgid "down"
 msgstr "le"
 
@@ -9134,177 +9141,177 @@ msgstr "le"
 msgid "set"
 msgstr "beállít"
 
-#: ../src/gui/accelerators.c:111
+#: ../src/gui/accelerators.c:112
 msgid "popup"
 msgstr "popup"
 
-#: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
-#: ../src/gui/gtk.c:2859 ../src/views/lighttable.c:756
+#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:146
+#: ../src/gui/gtk.c:2855 ../src/views/lighttable.c:806
 msgid "next"
 msgstr "következő"
 
-#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
-#: ../src/gui/gtk.c:2860 ../src/views/lighttable.c:757
+#: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:145
+#: ../src/gui/gtk.c:2856 ../src/views/lighttable.c:807
 msgid "previous"
 msgstr "előző"
 
-#: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:1202
+#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1213
 msgid "last"
 msgstr "utolsó"
 
-#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1201
+#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:1212
 msgid "first"
 msgstr "első"
 
-#: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:283 ../src/libs/filtering.c:1922
-#: ../src/libs/filters/rating_range.c:266 ../src/libs/tagging.c:3117
-#: ../src/views/darkroom.c:2269 ../src/views/darkroom.c:2319
-#: ../src/views/darkroom.c:2553
+#: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:134
+#: ../src/gui/accelerators.c:294 ../src/libs/filtering.c:1922
+#: ../src/libs/filters/rating_range.c:268 ../src/libs/tagging.c:3117
+#: ../src/views/darkroom.c:2271 ../src/views/darkroom.c:2321
+#: ../src/views/darkroom.c:2555
 msgid "toggle"
 msgstr "átvált"
 
-#: ../src/gui/accelerators.c:122
+#: ../src/gui/accelerators.c:124
 msgid "ctrl-toggle"
 msgstr "ctrl-váltás"
 
-#: ../src/gui/accelerators.c:123
+#: ../src/gui/accelerators.c:125
 msgid "ctrl-on"
 msgstr "ctrl-be"
 
-#: ../src/gui/accelerators.c:124
+#: ../src/gui/accelerators.c:126
 msgid "right-toggle"
 msgstr "jobb-váltás"
 
-#: ../src/gui/accelerators.c:125
+#: ../src/gui/accelerators.c:127
 msgid "right-on"
 msgstr "jobb-be"
 
-#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2858
+#: ../src/gui/accelerators.c:138 ../src/gui/gtk.c:2854
 msgid "activate"
 msgstr "aktiválás"
 
-#: ../src/gui/accelerators.c:135
+#: ../src/gui/accelerators.c:139
 msgid "ctrl-activate"
 msgstr "ctrl-aktivál"
 
-#: ../src/gui/accelerators.c:136
+#: ../src/gui/accelerators.c:140
 msgid "right-activate"
 msgstr "jobb-aktivál"
 
-#: ../src/gui/accelerators.c:142
+#: ../src/gui/accelerators.c:147
 msgid "store"
 msgstr "eltárol"
 
-#: ../src/gui/accelerators.c:145 ../src/gui/styles_dialog.c:497
+#: ../src/gui/accelerators.c:150 ../src/gui/styles_dialog.c:497
 msgid "update"
 msgstr "frissítés"
 
-#: ../src/gui/accelerators.c:146 ../src/libs/tools/global_toolbox.c:61
+#: ../src/gui/accelerators.c:151 ../src/libs/tools/global_toolbox.c:61
 #: ../src/libs/tools/global_toolbox.c:512
 msgid "preferences"
 msgstr "beállítások"
 
-#: ../src/gui/accelerators.c:150
+#: ../src/gui/accelerators.c:156
 msgid "apply on new instance"
 msgstr "alkalmazás új példányon"
 
-#: ../src/gui/accelerators.c:154
+#: ../src/gui/accelerators.c:161
 msgid "start"
 msgstr "start"
 
-#: ../src/gui/accelerators.c:155
+#: ../src/gui/accelerators.c:162
 msgid "end"
 msgstr "end"
 
-#: ../src/gui/accelerators.c:301
+#: ../src/gui/accelerators.c:312
 msgid "entry"
 msgstr "bejegyzés"
 
-#: ../src/gui/accelerators.c:370
+#: ../src/gui/accelerators.c:381
 msgid "combo effect not found"
 msgstr "kombinált effekt nem található"
 
-#: ../src/gui/accelerators.c:524
+#: ../src/gui/accelerators.c:535
 msgid "(keypad)"
 msgstr "(billentyűzet)"
 
-#: ../src/gui/accelerators.c:533
+#: ../src/gui/accelerators.c:544
 msgid "tablet button"
 msgstr "tablet gomb"
 
-#: ../src/gui/accelerators.c:542
+#: ../src/gui/accelerators.c:553
 msgid "unknown driver"
 msgstr "ismeretlen driver"
 
-#: ../src/gui/accelerators.c:609
+#: ../src/gui/accelerators.c:620
 msgid "long"
 msgstr "hosszú"
 
-#: ../src/gui/accelerators.c:610
+#: ../src/gui/accelerators.c:621
 msgid "double-press"
 msgstr "dupla megnyomás"
 
-#: ../src/gui/accelerators.c:611
+#: ../src/gui/accelerators.c:622
 msgid "triple-press"
 msgstr "tripla megnyomás"
 
-#: ../src/gui/accelerators.c:612
+#: ../src/gui/accelerators.c:623
 msgid "press"
 msgstr "megnyomás"
 
-#: ../src/gui/accelerators.c:616
+#: ../src/gui/accelerators.c:627
 msgctxt "accel"
 msgid "left"
 msgstr "bal"
 
-#: ../src/gui/accelerators.c:617
+#: ../src/gui/accelerators.c:628
 msgctxt "accel"
 msgid "right"
 msgstr "jobb"
 
-#: ../src/gui/accelerators.c:618
+#: ../src/gui/accelerators.c:629
 msgctxt "accel"
 msgid "middle"
 msgstr "középső"
 
-#: ../src/gui/accelerators.c:619
+#: ../src/gui/accelerators.c:630
 msgctxt "accel"
 msgid "long"
 msgstr "hosszú"
 
-#: ../src/gui/accelerators.c:620
+#: ../src/gui/accelerators.c:631
 msgctxt "accel"
 msgid "double-click"
 msgstr "dupla kattintás"
 
-#: ../src/gui/accelerators.c:621
+#: ../src/gui/accelerators.c:632
 msgctxt "accel"
 msgid "triple-click"
 msgstr "tripla kattintás"
 
-#: ../src/gui/accelerators.c:622
+#: ../src/gui/accelerators.c:633
 msgid "click"
 msgstr "kattintás"
 
-#: ../src/gui/accelerators.c:650
+#: ../src/gui/accelerators.c:661
 msgid "first instance"
 msgstr "első példány"
 
-#: ../src/gui/accelerators.c:652
+#: ../src/gui/accelerators.c:663
 msgid "last instance"
 msgstr "utolsó példány"
 
-#: ../src/gui/accelerators.c:654
+#: ../src/gui/accelerators.c:665
 msgid "relative instance"
 msgstr "relatív példány"
 
-#: ../src/gui/accelerators.c:668 ../src/gui/accelerators.c:957
-#: ../src/gui/accelerators.c:2277 ../src/gui/accelerators.c:3139
+#: ../src/gui/accelerators.c:679 ../src/gui/accelerators.c:968
+#: ../src/gui/accelerators.c:2288 ../src/gui/accelerators.c:3150
 msgid "speed"
 msgstr "sebesség"
 
-#: ../src/gui/accelerators.c:729
+#: ../src/gui/accelerators.c:740
 msgid ""
 "press Del to delete selected shortcut\n"
 "double-click to add new shortcut\n"
@@ -9314,16 +9321,16 @@ msgstr ""
 "dupla klikkel új gyorsbillentyű adható hozzá\n"
 "kezdjen gépelni a növekményes kereséshez"
 
-#: ../src/gui/accelerators.c:745
+#: ../src/gui/accelerators.c:756
 msgid "click to filter shortcut list\n"
 msgstr "kattintson a gyorsbillentyű-lista szűréséhez\n"
 
-#: ../src/gui/accelerators.c:746
+#: ../src/gui/accelerators.c:757
 msgid "right click to show action of selected shortcut\n"
 msgstr ""
 "jobb kattintással megtekintheti a kiválasztott gyorsbillentyű műveletét\n"
 
-#: ../src/gui/accelerators.c:747
+#: ../src/gui/accelerators.c:758
 msgid ""
 "double-click to define new shortcut\n"
 "start typing for incremental search"
@@ -9331,7 +9338,7 @@ msgstr ""
 "dupla kattintással adhat meg új gyorsbillentyűt\n"
 "a növekményes kereséshez kezdjen gépelni"
 
-#: ../src/gui/accelerators.c:766
+#: ../src/gui/accelerators.c:777
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
@@ -9339,94 +9346,94 @@ msgstr ""
 "nyomjon meg billentyűket egérkattintással, és görgetés vagy mozgatás a "
 "kombinációkkal a gyorsbillentyű létrehozásához"
 
-#: ../src/gui/accelerators.c:767
+#: ../src/gui/accelerators.c:778
 msgid "click to open shortcut configuration"
 msgstr "kattintson a gyorsbillentyű beállítás megnyitásához"
 
-#: ../src/gui/accelerators.c:768
+#: ../src/gui/accelerators.c:779
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "ctrl+klikk a gyors elérés panelhez adáshoz\n"
 
-#: ../src/gui/accelerators.c:769
+#: ../src/gui/accelerators.c:780
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "ctrl+klikk a gyors elérés panelről eltávolításhoz\n"
 
-#: ../src/gui/accelerators.c:770
+#: ../src/gui/accelerators.c:781
 msgid "scroll to change default speed"
 msgstr "görgetéssel módosítható az alapértelmezett sebesség"
 
-#: ../src/gui/accelerators.c:771
+#: ../src/gui/accelerators.c:782
 msgid "right click to exit mapping mode"
 msgstr "jobb klikkel lehet kilépni a hozzárendelés módból"
 
-#: ../src/gui/accelerators.c:954
+#: ../src/gui/accelerators.c:965
 msgid "active view"
 msgstr "nézet aktiválása"
 
-#: ../src/gui/accelerators.c:955
+#: ../src/gui/accelerators.c:966
 msgid "other views"
 msgstr "egyéb nézetek"
 
-#: ../src/gui/accelerators.c:956
+#: ../src/gui/accelerators.c:967
 msgid "fallbacks"
 msgstr "tartalékok"
 
-#: ../src/gui/accelerators.c:1085
+#: ../src/gui/accelerators.c:1096
 msgid "shortcut for move exists with single effect"
 msgstr "a mozgatás gyorsbillentyűje létezik egyetlen hatással"
 
-#: ../src/gui/accelerators.c:1086
+#: ../src/gui/accelerators.c:1097
 msgid "create separate shortcuts for up and down move?"
 msgstr "külön gyorsbillentyűket hoz létre a fel és le mozgatáshoz?"
 
-#: ../src/gui/accelerators.c:1109
+#: ../src/gui/accelerators.c:1120
 #, c-format
 msgid "%s, speed reset"
 msgstr "%s, sebesség visszaállítása"
 
-#: ../src/gui/accelerators.c:1118
+#: ../src/gui/accelerators.c:1129
 msgid "shortcut exists with different settings"
 msgstr "a gyorsbillentyű már létezik eltérő beállításokkal"
 
-#: ../src/gui/accelerators.c:1119
+#: ../src/gui/accelerators.c:1130
 msgid "reset the settings of the shortcut?"
 msgstr "visszaállítja a gyorsbillentyű beállításait?"
 
-#: ../src/gui/accelerators.c:1130
+#: ../src/gui/accelerators.c:1141
 msgid "shortcut already exists"
 msgstr "a gyorsbillentyű már létezik"
 
-#: ../src/gui/accelerators.c:1131
+#: ../src/gui/accelerators.c:1142
 msgid "remove the shortcut?"
 msgstr "eltávolítja a gyorsbillentyűt?"
 
-#: ../src/gui/accelerators.c:1163
+#: ../src/gui/accelerators.c:1174
 msgid "clashing shortcuts exist"
 msgstr "ütköző gyorsbillentyű található"
 
-#: ../src/gui/accelerators.c:1164
+#: ../src/gui/accelerators.c:1175
 msgid "remove these existing shortcuts?"
 msgstr "eltávolítja a meglévő gyorsbillentyűket?"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1200
+#: ../src/gui/accelerators.c:1211
 msgid "preferred"
 msgstr "preferált"
 
-#: ../src/gui/accelerators.c:1203
+#: ../src/gui/accelerators.c:1214
 msgid "second"
 msgstr "második"
 
-#: ../src/gui/accelerators.c:1204
+#: ../src/gui/accelerators.c:1215
 msgid "last but one"
 msgstr "utolsóelőtti"
 
-#: ../src/gui/accelerators.c:1332 ../src/gui/accelerators.c:1386
+#: ../src/gui/accelerators.c:1343 ../src/gui/accelerators.c:1397
 msgid "(unchanged)"
 msgstr "(változatlan)"
 
-#: ../src/gui/accelerators.c:1481
+#: ../src/gui/accelerators.c:1492
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -9452,31 +9459,31 @@ msgstr ""
 "\n"
 "kattintson a jobb gombbal a kilépéshez"
 
-#: ../src/gui/accelerators.c:1546
+#: ../src/gui/accelerators.c:1557
 msgid "removing shortcut"
 msgstr "gyorsbillentyű eltávolítása"
 
-#: ../src/gui/accelerators.c:1547
+#: ../src/gui/accelerators.c:1558
 msgid "remove the selected shortcut?"
 msgstr "eltávolítja a kiválasztott gyorsbillentyűt?"
 
-#: ../src/gui/accelerators.c:1947
+#: ../src/gui/accelerators.c:1958
 msgid "restore shortcuts"
 msgstr "gyorsbillentyűk visszaállítása"
 
-#: ../src/gui/accelerators.c:1951
+#: ../src/gui/accelerators.c:1962
 msgid "_defaults"
 msgstr "_alapértelmezések"
 
-#: ../src/gui/accelerators.c:1952
+#: ../src/gui/accelerators.c:1963
 msgid "_startup"
 msgstr "_indításkor"
 
-#: ../src/gui/accelerators.c:1953
+#: ../src/gui/accelerators.c:1964
 msgid "_edits"
 msgstr "_szerkesztések"
 
-#: ../src/gui/accelerators.c:1958
+#: ../src/gui/accelerators.c:1969
 msgid ""
 "restore shortcuts from one of these states:\n"
 "  - default\n"
@@ -9488,7 +9495,7 @@ msgstr ""
 "   - mint indításkor\n"
 "   - mint a párbeszédpanel megnyitásakor\n"
 
-#: ../src/gui/accelerators.c:1961
+#: ../src/gui/accelerators.c:1972
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -9496,22 +9503,22 @@ msgstr ""
 "összes újabb gyorsbillentyű kitakarítása\n"
 "(csak a módosítottak helyreállítása helyett)"
 
-#: ../src/gui/accelerators.c:2015 ../src/gui/preferences.c:895
+#: ../src/gui/accelerators.c:2026 ../src/gui/preferences.c:895
 #: ../src/libs/tools/global_toolbox.c:496
 #: ../src/libs/tools/global_toolbox.c:809
 msgid "shortcuts"
 msgstr "gyorsbillentyűk"
 
-#: ../src/gui/accelerators.c:2024
+#: ../src/gui/accelerators.c:2035
 msgid "export shortcuts"
 msgstr "gyorsbillentyűk exportálása"
 
-#: ../src/gui/accelerators.c:2027 ../src/gui/accelerators.c:2106
+#: ../src/gui/accelerators.c:2038 ../src/gui/accelerators.c:2117
 #: ../src/gui/hist_dialog.c:198 ../src/gui/presets.c:460
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/gui/accelerators.c:2032
+#: ../src/gui/accelerators.c:2043
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -9519,27 +9526,27 @@ msgstr ""
 "összes gyorsbillentyű exportálása fájlba\n"
 "vagy csak egy kiválasztott eszközhöz tartozóké\n"
 
-#: ../src/gui/accelerators.c:2038 ../src/gui/accelerators.c:2117
+#: ../src/gui/accelerators.c:2049 ../src/gui/accelerators.c:2128
 msgid "keyboard"
 msgstr "billentyűzet"
 
-#: ../src/gui/accelerators.c:2050
+#: ../src/gui/accelerators.c:2061
 msgid "device id"
 msgstr "eszköz azonosító"
 
-#: ../src/gui/accelerators.c:2076
+#: ../src/gui/accelerators.c:2087
 msgid "select file to export"
 msgstr "exportálandó fájl kiválasztása"
 
-#: ../src/gui/accelerators.c:2077 ../src/libs/tagging.c:2521
+#: ../src/gui/accelerators.c:2088 ../src/libs/tagging.c:2521
 msgid "_export"
 msgstr "_exportálás"
 
-#: ../src/gui/accelerators.c:2103
+#: ../src/gui/accelerators.c:2114
 msgid "import shortcuts"
 msgstr "gyorsbillentyűk importálása"
 
-#: ../src/gui/accelerators.c:2111
+#: ../src/gui/accelerators.c:2122
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -9547,31 +9554,31 @@ msgstr ""
 "összes gyorsbillentyű importálása fájlból\n"
 "vagy csak egy kiválasztott eszközhöz tartozóké\n"
 
-#: ../src/gui/accelerators.c:2129
+#: ../src/gui/accelerators.c:2140
 msgid "id in file"
 msgstr "id a fájlban"
 
-#: ../src/gui/accelerators.c:2135
+#: ../src/gui/accelerators.c:2146
 msgid "id when loaded"
 msgstr "id amikor betöltődött"
 
-#: ../src/gui/accelerators.c:2139
+#: ../src/gui/accelerators.c:2150
 msgid "clear device first"
 msgstr "először az eszköz törlése"
 
-#: ../src/gui/accelerators.c:2163
+#: ../src/gui/accelerators.c:2174
 msgid "select file to import"
 msgstr "importálandó fájl kiválasztása"
 
-#: ../src/gui/accelerators.c:2164 ../src/libs/tagging.c:2485
+#: ../src/gui/accelerators.c:2175 ../src/libs/tagging.c:2485
 msgid "_import"
 msgstr "_importálás"
 
-#: ../src/gui/accelerators.c:2237
+#: ../src/gui/accelerators.c:2248
 msgid "search shortcuts list"
 msgstr "gyorsbillentyű keresés"
 
-#: ../src/gui/accelerators.c:2238
+#: ../src/gui/accelerators.c:2249
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -9580,28 +9587,28 @@ msgstr ""
 "nyomjon fel vagy le billentyűt a találatok közti váltáshoz"
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2253 ../src/views/view.c:1383
+#: ../src/gui/accelerators.c:2264 ../src/views/view.c:1383
 msgid "shortcut"
 msgstr "gyorsbillentyű"
 
-#: ../src/gui/accelerators.c:2255 ../src/gui/accelerators.c:2346
+#: ../src/gui/accelerators.c:2266 ../src/gui/accelerators.c:2357
 #: ../src/views/view.c:1385
 msgid "action"
 msgstr "művelet"
 
-#: ../src/gui/accelerators.c:2264
+#: ../src/gui/accelerators.c:2275
 msgid "element"
 msgstr "elem"
 
-#: ../src/gui/accelerators.c:2271
+#: ../src/gui/accelerators.c:2282
 msgid "effect"
 msgstr "hatás"
 
-#: ../src/gui/accelerators.c:2328
+#: ../src/gui/accelerators.c:2339
 msgid "search actions list"
 msgstr "művelet keresés"
 
-#: ../src/gui/accelerators.c:2329
+#: ../src/gui/accelerators.c:2340
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -9609,16 +9616,16 @@ msgstr ""
 "növekményes keresés a műveletek listájában\n"
 "nyomjon fel vagy le billentyűt a találatok közti váltáshoz"
 
-#: ../src/gui/accelerators.c:2352 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2363 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:192
 msgid "type"
 msgstr "típus"
 
-#: ../src/gui/accelerators.c:2387
+#: ../src/gui/accelerators.c:2398
 msgid "enable fallbacks"
 msgstr "tartalékok engedélyezése ó"
 
-#: ../src/gui/accelerators.c:2388
+#: ../src/gui/accelerators.c:2399
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -9627,53 +9634,53 @@ msgstr ""
 "jelentéseit\n"
 "az alap gyorsbillentyűvel együtt használva"
 
-#: ../src/gui/accelerators.c:2394
+#: ../src/gui/accelerators.c:2405
 msgid "restore..."
 msgstr "visszaállítás…"
 
-#: ../src/gui/accelerators.c:2395
+#: ../src/gui/accelerators.c:2406
 msgid "restore default shortcuts or previous state"
 msgstr "alapértelmezett gyorsbillentyűk vagy korábbi állapot visszaállítása"
 
 #. import button
-#: ../src/gui/accelerators.c:2399 ../src/libs/styles.c:857
+#: ../src/gui/accelerators.c:2410 ../src/libs/styles.c:857
 #: ../src/libs/tagging.c:3250
 msgid "import..."
 msgstr "importálás…"
 
-#: ../src/gui/accelerators.c:2400
+#: ../src/gui/accelerators.c:2411
 msgid "fully or partially import shortcuts from file"
 msgstr "gyorsbillentyűk teljes, vagy részleges importálása fájlból"
 
 #. export button
-#: ../src/gui/accelerators.c:2404 ../src/libs/styles.c:861
+#: ../src/gui/accelerators.c:2415 ../src/libs/styles.c:861
 #: ../src/libs/tagging.c:3253
 msgid "export..."
 msgstr "exportálás…"
 
-#: ../src/gui/accelerators.c:2405
+#: ../src/gui/accelerators.c:2416
 msgid "fully or partially export shortcuts to file"
 msgstr "gyorsbillentyűk teljes, vagy részleges exportálása fájlba"
 
-#: ../src/gui/accelerators.c:2803
+#: ../src/gui/accelerators.c:2814
 msgid "input devices reinitialised"
 msgstr "beviteli eszközök újra inicializálva"
 
-#: ../src/gui/accelerators.c:3018
+#: ../src/gui/accelerators.c:3029
 msgid "fallback to move"
 msgstr "tartalék a mozgatáshoz"
 
-#: ../src/gui/accelerators.c:3211
+#: ../src/gui/accelerators.c:3222
 #, c-format
 msgid "%s not assigned"
 msgstr "%s nincs hozzárendelve"
 
-#: ../src/gui/accelerators.c:3366
+#: ../src/gui/accelerators.c:3377
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s hozzárendelve ehhez: %s"
 
-#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4468
+#: ../src/gui/gtk.c:170 ../src/views/darkroom.c:4478
 msgid "darktable - darkroom preview"
 msgstr "darktable – sötétszoba előnézet"
 
@@ -9783,28 +9790,37 @@ msgstr "fókuszkiemelési mód váltása"
 msgid "toggle focus peaking"
 msgstr "fókuszkiemelés váltása"
 
-#: ../src/gui/gtk.c:1582 ../src/gui/gtk.c:2948 ../src/gui/gtk.c:2953
-#: ../src/gui/gtk.c:2958 ../src/gui/gtk.c:2963
+#: ../src/gui/gtk.c:1582 ../src/gui/gtk.c:2944 ../src/gui/gtk.c:2949
+#: ../src/gui/gtk.c:2954 ../src/gui/gtk.c:2959
 msgid "tabs"
 msgstr "fülek"
 
+#: ../src/gui/gtk.c:2523
+msgid "_yes"
+msgstr ""
+
+#: ../src/gui/gtk.c:2524
+#, fuzzy
+msgid "_no"
+msgstr "nem"
+
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:2562
+#: ../src/gui/gtk.c:2563
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:2564
+#: ../src/gui/gtk.c:2565
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:2853
+#: ../src/gui/gtk.c:2849
 msgid "does not contain pages"
 msgstr "nem tartalmaz oldalakat"
 
-#: ../src/gui/gtk.c:3070
+#: ../src/gui/gtk.c:3066
 #, c-format
 msgid "never show more than %d lines"
 msgstr "sose mutasson több mint %d sort"
@@ -10180,7 +10196,7 @@ msgid "global guide overlay settings"
 msgstr "globális segédvonal rávetítés"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2553
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2555
 msgid "guide lines"
 msgstr "segédvonalak"
 
@@ -10494,12 +10510,12 @@ msgid "preset `%s' is write-protected, can't delete!"
 msgstr "„%s” tárolt beállítás írásvédett, nem törölhető!"
 
 #: ../src/gui/presets.c:171 ../src/gui/presets.c:398 ../src/libs/lib.c:228
-#: ../src/libs/modulegroups.c:3772
+#: ../src/libs/modulegroups.c:3773
 msgid "delete preset?"
 msgstr "törli a tárolt beállítást?"
 
 #: ../src/gui/presets.c:172 ../src/gui/presets.c:399 ../src/libs/lib.c:229
-#: ../src/libs/modulegroups.c:3773
+#: ../src/libs/modulegroups.c:3774
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "biztosan törli a(z) „%s” tárolt beállítást?"
@@ -10674,8 +10690,8 @@ msgstr ""
 msgid "no presets"
 msgstr "nincs tárolt beállítás"
 
-#: ../src/gui/presets.c:1107 ../src/libs/modulegroups.c:3852
-#: ../src/libs/modulegroups.c:3861
+#: ../src/gui/presets.c:1107 ../src/libs/modulegroups.c:3853
+#: ../src/libs/modulegroups.c:3862
 msgid "manage module layouts"
 msgstr "modulelrendezések kezelése"
 
@@ -10767,17 +10783,17 @@ msgstr "adja meg a stílus leírását. ez a leírást kereshető"
 msgid "can't create style out of unaltered image"
 msgstr "módosítatlan képből nem hozható létre stílus"
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:556
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:546
 #: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "8 bit"
 msgstr "8 bit"
 
-#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/avif.c:93 ../src/imageio/format/jxl.c:556
 msgid "10 bit"
 msgstr "10 bit"
 
-#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/avif.c:97 ../src/imageio/format/jxl.c:556
 msgid "12 bit"
 msgstr "12 bit"
 
@@ -10785,42 +10801,42 @@ msgstr "12 bit"
 msgid "invalid AVIF bit depth!"
 msgstr "érvénytelen AVIF bitmélység!"
 
-#: ../src/imageio/format/avif.c:690
+#: ../src/imageio/format/avif.c:694
 msgid "AVIF"
 msgstr "AVIF"
 
 #. Bit depth combo box
-#: ../src/imageio/format/avif.c:762 ../src/imageio/format/exr.cc:470
-#: ../src/imageio/format/jxl.c:551 ../src/imageio/format/pdf.c:661
+#: ../src/imageio/format/avif.c:766 ../src/imageio/format/exr.cc:476
+#: ../src/imageio/format/jxl.c:555 ../src/imageio/format/pdf.c:661
 #: ../src/imageio/format/png.c:544 ../src/imageio/format/tiff.c:860
 #: ../src/imageio/format/xcf.c:335
 msgid "bit depth"
 msgstr "bitmélység"
 
-#: ../src/imageio/format/avif.c:775
+#: ../src/imageio/format/avif.c:779
 msgid "color information stored in an image, higher is better"
 msgstr "a képben tárolt színinformáció, a magasabb jobb"
 
-#: ../src/imageio/format/avif.c:783
+#: ../src/imageio/format/avif.c:787
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr "a fekete-fehér képek mentése szürkeárnyalatosként csökkenti a méretet"
 
-#: ../src/imageio/format/avif.c:785
+#: ../src/imageio/format/avif.c:789
 msgid "rgb colors"
 msgstr "rgb színek"
 
-#: ../src/imageio/format/avif.c:785
+#: ../src/imageio/format/avif.c:789
 msgid "grayscale"
 msgstr "szürkeárnyalatos"
 
 #.
 #. * Tiling combo box
 #.
-#: ../src/imageio/format/avif.c:795
+#: ../src/imageio/format/avif.c:799
 msgid "tiling"
 msgstr "csempézés"
 
-#: ../src/imageio/format/avif.c:796
+#: ../src/imageio/format/avif.c:800
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -10832,11 +10848,11 @@ msgstr ""
 "gyorsítja a kódolást. hatása a minőségromlásra elhanyagolható, viszont "
 "növeli a fájlméretet."
 
-#: ../src/imageio/format/avif.c:813 ../src/imageio/format/webp.c:382
+#: ../src/imageio/format/avif.c:817 ../src/imageio/format/webp.c:383
 msgid "compression type"
 msgstr "tömörítés típusa"
 
-#: ../src/imageio/format/avif.c:821
+#: ../src/imageio/format/avif.c:825
 msgid "the compression for the image"
 msgstr "a kép tömörítése"
 
@@ -10845,14 +10861,14 @@ msgstr "a kép tömörítése"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:838 ../src/imageio/format/j2k.c:661
-#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:575
+#: ../src/imageio/format/avif.c:842 ../src/imageio/format/j2k.c:661
+#: ../src/imageio/format/jpeg.c:587 ../src/imageio/format/jxl.c:579
 #: ../src/imageio/format/webp.c:394 ../src/iop/cacorrect.c:1343
 #: ../src/libs/camera.c:565
 msgid "quality"
 msgstr "minőség"
 
-#: ../src/imageio/format/avif.c:843
+#: ../src/imageio/format/avif.c:847
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -10887,69 +10903,69 @@ msgstr ""
 "egy az egyben lemásolja a kijelölt fájlokat.\n"
 "az alábbi globális beállítások nem lesznek rá hatással!"
 
-#: ../src/imageio/format/exr.cc:213
+#: ../src/imageio/format/exr.cc:219
 msgid "the selected output profile doesn't work well with exr"
 msgstr "a kiválasztott kimeneti profil nem működik jól az exr formátummal"
 
-#: ../src/imageio/format/exr.cc:445
+#: ../src/imageio/format/exr.cc:451
 msgid "OpenEXR"
 msgstr "OpenEXR"
 
-#: ../src/imageio/format/exr.cc:472
+#: ../src/imageio/format/exr.cc:478
 msgid "16 bit (float)"
 msgstr "16 bit (lebegőpontos)"
 
-#: ../src/imageio/format/exr.cc:472 ../src/imageio/format/jxl.c:552
+#: ../src/imageio/format/exr.cc:478 ../src/imageio/format/jxl.c:556
 #: ../src/imageio/format/tiff.c:864 ../src/imageio/format/xcf.c:338
 msgid "32 bit (float)"
 msgstr "16 bit (lebegőpontos)"
 
 #. compression
 #. Compression method combo box
-#: ../src/imageio/format/exr.cc:478 ../src/imageio/format/pdf.c:676
+#: ../src/imageio/format/exr.cc:484 ../src/imageio/format/pdf.c:676
 #: ../src/imageio/format/png.c:558 ../src/imageio/format/tiff.c:883
 #: ../src/libs/masks.c:108
 msgid "compression"
 msgstr "tömörítés"
 
-#: ../src/imageio/format/exr.cc:480 ../src/imageio/format/pdf.c:682
+#: ../src/imageio/format/exr.cc:486 ../src/imageio/format/pdf.c:682
 #: ../src/imageio/format/tiff.c:884
 msgid "uncompressed"
 msgstr "tömörítetlen"
 
-#: ../src/imageio/format/exr.cc:481
+#: ../src/imageio/format/exr.cc:487
 msgid "RLE"
 msgstr "RLE"
 
-#: ../src/imageio/format/exr.cc:482
+#: ../src/imageio/format/exr.cc:488
 msgid "ZIPS"
 msgstr "ZIPS"
 
-#: ../src/imageio/format/exr.cc:483
+#: ../src/imageio/format/exr.cc:489
 msgid "ZIP"
 msgstr "ZIP"
 
-#: ../src/imageio/format/exr.cc:484
+#: ../src/imageio/format/exr.cc:490
 msgid "PIZ"
 msgstr "PIZ"
 
-#: ../src/imageio/format/exr.cc:485
+#: ../src/imageio/format/exr.cc:491
 msgid "PXR24"
 msgstr "PXR24"
 
-#: ../src/imageio/format/exr.cc:486
+#: ../src/imageio/format/exr.cc:492
 msgid "B44"
 msgstr "B44"
 
-#: ../src/imageio/format/exr.cc:487
+#: ../src/imageio/format/exr.cc:493
 msgid "B44A"
 msgstr "B44A"
 
-#: ../src/imageio/format/exr.cc:488
+#: ../src/imageio/format/exr.cc:494
 msgid "DWAA"
 msgstr "DWAA"
 
-#: ../src/imageio/format/exr.cc:489
+#: ../src/imageio/format/exr.cc:495
 msgid "DWAB"
 msgstr "DWAB"
 
@@ -10981,30 +10997,30 @@ msgstr "Cinema4K, 24FPS"
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
 
-#: ../src/imageio/format/jxl.c:467
+#: ../src/imageio/format/jxl.c:471
 msgid "JPEG XL"
 msgstr "JPEG XL"
 
-#: ../src/imageio/format/jxl.c:552 ../src/imageio/format/pdf.c:81
+#: ../src/imageio/format/jxl.c:556 ../src/imageio/format/pdf.c:81
 #: ../src/imageio/format/png.c:546 ../src/imageio/format/tiff.c:864
 #: ../src/imageio/format/xcf.c:338
 msgid "16 bit"
 msgstr "16 bit"
 
 #. Pixel format combo box
-#: ../src/imageio/format/jxl.c:558 ../src/imageio/format/tiff.c:869
+#: ../src/imageio/format/jxl.c:562 ../src/imageio/format/tiff.c:869
 msgid "pixel type"
 msgstr "pixeltípus"
 
-#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+#: ../src/imageio/format/jxl.c:563 ../src/imageio/format/tiff.c:870
 msgid "unsigned integer"
 msgstr "előjel nélküli egész"
 
-#: ../src/imageio/format/jxl.c:559 ../src/imageio/format/tiff.c:870
+#: ../src/imageio/format/jxl.c:563 ../src/imageio/format/tiff.c:870
 msgid "floating point"
 msgstr "lebegőpontos"
 
-#: ../src/imageio/format/jxl.c:576
+#: ../src/imageio/format/jxl.c:580
 msgid ""
 "the quality of the output image\n"
 "0-29 = very lossy\n"
@@ -11016,11 +11032,11 @@ msgstr ""
 "30-99 = JPEG minőséghez hasonló\n"
 "100 = veszteségmentes (csak integer bitmélység)"
 
-#: ../src/imageio/format/jxl.c:585
+#: ../src/imageio/format/jxl.c:589
 msgid "encoding color profile"
 msgstr "színprofil kódolása"
 
-#: ../src/imageio/format/jxl.c:586
+#: ../src/imageio/format/jxl.c:590
 msgid ""
 "the color profile used by the encoder\n"
 "permit internal XYB color space conversion for more efficient lossy "
@@ -11034,20 +11050,20 @@ msgstr ""
 "vagy biztosítsa, hogy ne történjen konverzió, hogy megőrizze az eredeti kép "
 "színterét (veszteségmentesnél)"
 
-#: ../src/imageio/format/jxl.c:589
+#: ../src/imageio/format/jxl.c:593
 msgid "internal"
 msgstr "belső"
 
-#: ../src/imageio/format/jxl.c:589 ../src/libs/duplicate.c:358
+#: ../src/imageio/format/jxl.c:593 ../src/libs/duplicate.c:359
 #: ../src/libs/history.c:1009 ../src/libs/snapshots.c:634
 msgid "original"
 msgstr "eredeti"
 
-#: ../src/imageio/format/jxl.c:603
+#: ../src/imageio/format/jxl.c:607
 msgid "encoding effort"
 msgstr "kódolási erőfeszítés"
 
-#: ../src/imageio/format/jxl.c:604
+#: ../src/imageio/format/jxl.c:608
 msgid ""
 "the effort used to encode the image, higher efforts will have better results "
 "at the expense of longer encoding times"
@@ -11055,11 +11071,11 @@ msgstr ""
 "a kép kódolására fordított erőfeszítés. nagyobb erőfeszítés jobb eredményt "
 "ad, de a hosszabb kódolási idő alatt"
 
-#: ../src/imageio/format/jxl.c:615
+#: ../src/imageio/format/jxl.c:619
 msgid "decoding speed"
 msgstr "dekódolási sebesség"
 
-#: ../src/imageio/format/jxl.c:616
+#: ../src/imageio/format/jxl.c:620
 msgid "the preferred decoding speed with some sacrifice of quality"
 msgstr ""
 "az előnyben részesített dekódolási sebesség, némi minőség feláldozása árán"
@@ -11074,7 +11090,7 @@ msgstr "érvénytelen szegély méret, helyette 0 lesz használva"
 
 #: ../src/imageio/format/pdf.c:257 ../src/imageio/storage/disk.c:316
 #: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:331
-#: ../src/imageio/storage/gallery.c:370 ../src/imageio/storage/piwigo.c:1118
+#: ../src/imageio/storage/gallery.c:370 ../src/imageio/storage/piwigo.c:1137
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "nem lehet exportálni a(z) „%s” fájlba!"
@@ -11280,11 +11296,11 @@ msgstr "szürkeárnyalatos"
 msgid "WebP"
 msgstr "WebP"
 
-#: ../src/imageio/format/webp.c:384
+#: ../src/imageio/format/webp.c:385
 msgid "lossy"
 msgstr "veszteséges"
 
-#: ../src/imageio/format/webp.c:384
+#: ../src/imageio/format/webp.c:385
 msgid "lossless"
 msgstr "veszteségmentes"
 
@@ -11347,7 +11363,7 @@ msgstr ""
 "írja be a „$(” karaktereket a kiegészítés és változók listájának "
 "megjelenítéséhez"
 
-#: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/piwigo.c:1013
+#: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/piwigo.c:1029
 msgid "on conflict"
 msgstr "ütközés esetén"
 
@@ -11355,13 +11371,13 @@ msgstr "ütközés esetén"
 msgid "create unique filename"
 msgstr "egyedi fájlnév létrehozása"
 
-#: ../src/imageio/storage/disk.c:186 ../src/imageio/storage/piwigo.c:1017
+#: ../src/imageio/storage/disk.c:186 ../src/imageio/storage/piwigo.c:1033
 #: ../src/libs/copy_history.c:362 ../src/libs/image.c:603
 #: ../src/libs/styles.c:430 ../src/libs/styles.c:613 ../src/libs/styles.c:834
 msgid "overwrite"
 msgstr "felülírás"
 
-#: ../src/imageio/storage/disk.c:187 ../src/imageio/storage/piwigo.c:1015
+#: ../src/imageio/storage/disk.c:187 ../src/imageio/storage/piwigo.c:1031
 #: ../src/libs/styles.c:429 ../src/libs/styles.c:612
 msgid "skip"
 msgstr "kihagy"
@@ -11431,44 +11447,44 @@ msgstr "LaTeX könyv sablon"
 msgid "enter the title of the book"
 msgstr "könyv címének megadása"
 
-#: ../src/imageio/storage/piwigo.c:489
+#: ../src/imageio/storage/piwigo.c:500
 msgid "authenticated"
 msgstr "hitelesítve"
 
-#: ../src/imageio/storage/piwigo.c:497 ../src/imageio/storage/piwigo.c:512
-#: ../src/imageio/storage/piwigo.c:524
+#: ../src/imageio/storage/piwigo.c:508 ../src/imageio/storage/piwigo.c:523
+#: ../src/imageio/storage/piwigo.c:535
 msgid "not authenticated"
 msgstr "nincs hitelesítve"
 
-#: ../src/imageio/storage/piwigo.c:503
+#: ../src/imageio/storage/piwigo.c:514
 msgid "not authenticated, cannot reach server"
 msgstr "nincs hitelesítve, nem lehet elérni a szervert"
 
-#: ../src/imageio/storage/piwigo.c:552 ../src/imageio/storage/piwigo.c:639
+#: ../src/imageio/storage/piwigo.c:563 ../src/imageio/storage/piwigo.c:650
 msgid "create new album"
 msgstr "új album készítése"
 
-#: ../src/imageio/storage/piwigo.c:640
+#: ../src/imageio/storage/piwigo.c:651
 msgid "---"
 msgstr "---"
 
-#: ../src/imageio/storage/piwigo.c:682
+#: ../src/imageio/storage/piwigo.c:693
 msgid "cannot refresh albums"
 msgstr "album nem frissíthető"
 
-#: ../src/imageio/storage/piwigo.c:875
+#: ../src/imageio/storage/piwigo.c:891
 msgid "piwigo"
 msgstr "piwigo"
 
-#: ../src/imageio/storage/piwigo.c:900
+#: ../src/imageio/storage/piwigo.c:916
 msgid "accounts"
 msgstr "fiókok"
 
-#: ../src/imageio/storage/piwigo.c:915 ../src/imageio/storage/piwigo.c:919
+#: ../src/imageio/storage/piwigo.c:931 ../src/imageio/storage/piwigo.c:935
 msgid "server"
 msgstr "szerver"
 
-#: ../src/imageio/storage/piwigo.c:916 ../src/imageio/storage/piwigo.c:927
+#: ../src/imageio/storage/piwigo.c:932 ../src/imageio/storage/piwigo.c:943
 msgid ""
 "the server name\n"
 "default protocol is https\n"
@@ -11478,99 +11494,99 @@ msgstr ""
 "alapértelmezett protokoll a https\n"
 "ha nem biztonságos a szerver, így adja meg: http://"
 
-#: ../src/imageio/storage/piwigo.c:926 ../src/imageio/storage/piwigo.c:930
+#: ../src/imageio/storage/piwigo.c:942 ../src/imageio/storage/piwigo.c:946
 msgid "user"
 msgstr "felhasználó"
 
-#: ../src/imageio/storage/piwigo.c:936 ../src/imageio/storage/piwigo.c:940
+#: ../src/imageio/storage/piwigo.c:952 ../src/imageio/storage/piwigo.c:956
 msgid "password"
 msgstr "jelszó"
 
 #. login button
-#: ../src/imageio/storage/piwigo.c:945
+#: ../src/imageio/storage/piwigo.c:961
 msgid "login"
 msgstr "bejelentkezés"
 
-#: ../src/imageio/storage/piwigo.c:946
+#: ../src/imageio/storage/piwigo.c:962
 msgid "piwigo login"
 msgstr "piwigo bejelentkezés"
 
 #. permissions list
-#: ../src/imageio/storage/piwigo.c:960
+#: ../src/imageio/storage/piwigo.c:976
 msgid "visible to"
 msgstr "látható számukra"
 
-#: ../src/imageio/storage/piwigo.c:962
+#: ../src/imageio/storage/piwigo.c:978
 msgid "everyone"
 msgstr "bárki"
 
-#: ../src/imageio/storage/piwigo.c:963
+#: ../src/imageio/storage/piwigo.c:979
 msgid "contacts"
 msgstr "névjegyek"
 
-#: ../src/imageio/storage/piwigo.c:964
+#: ../src/imageio/storage/piwigo.c:980
 msgid "friends"
 msgstr "barátok"
 
-#: ../src/imageio/storage/piwigo.c:965
+#: ../src/imageio/storage/piwigo.c:981
 msgid "family"
 msgstr "család"
 
-#: ../src/imageio/storage/piwigo.c:966
+#: ../src/imageio/storage/piwigo.c:982
 msgid "you"
 msgstr "te"
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:973
+#: ../src/imageio/storage/piwigo.c:989
 msgid "album"
 msgstr "album"
 
-#: ../src/imageio/storage/piwigo.c:979
+#: ../src/imageio/storage/piwigo.c:995
 msgid "refresh album list"
 msgstr "album lista frissítése"
 
 #. Album title
-#: ../src/imageio/storage/piwigo.c:997
+#: ../src/imageio/storage/piwigo.c:1013
 msgid "new album"
 msgstr "új album"
 
 #. parent album list
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:1005
+#: ../src/imageio/storage/piwigo.c:1021
 msgid "parent album"
 msgstr "szülő album"
 
-#: ../src/imageio/storage/piwigo.c:1009
+#: ../src/imageio/storage/piwigo.c:1025
 msgid "click login button to start"
 msgstr "indításhoz kattintson a bejelentkezésre"
 
-#: ../src/imageio/storage/piwigo.c:1014
+#: ../src/imageio/storage/piwigo.c:1030
 msgid "don't check"
 msgstr "ne ellenőrizze"
 
-#: ../src/imageio/storage/piwigo.c:1016
+#: ../src/imageio/storage/piwigo.c:1032
 msgid "update metadata"
 msgstr "metaadatok frissítése"
 
-#: ../src/imageio/storage/piwigo.c:1137
+#: ../src/imageio/storage/piwigo.c:1156
 msgid "cannot create a new piwigo album!"
 msgstr "nem lehet új piwigo albumot készíteni!"
 
-#: ../src/imageio/storage/piwigo.c:1155
+#: ../src/imageio/storage/piwigo.c:1174
 msgid "could not update to piwigo!"
 msgstr "nem lehet piwigo-ra frissíteni!"
 
-#: ../src/imageio/storage/piwigo.c:1169
+#: ../src/imageio/storage/piwigo.c:1188
 msgid "could not upload to piwigo!"
 msgstr "nem lehet feltölteni piwigo-ra!"
 
-#: ../src/imageio/storage/piwigo.c:1198
+#: ../src/imageio/storage/piwigo.c:1217
 #, c-format
 msgid "%d/%d skipped (already exists)"
 msgstr "%d/%d kihagyva (már létezik)"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/piwigo.c:1203
+#: ../src/imageio/storage/piwigo.c:1222
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
@@ -11611,7 +11627,7 @@ msgstr "korrekciós vagy kreatív"
 #: ../src/iop/flip.c:106 ../src/iop/flip.c:107 ../src/iop/hazeremoval.c:113
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:218 ../src/iop/lens.cc:220
 #: ../src/iop/liquify.c:296 ../src/iop/liquify.c:298 ../src/iop/retouch.c:210
-#: ../src/iop/retouch.c:212 ../src/iop/sigmoid.c:92
+#: ../src/iop/retouch.c:212 ../src/iop/sigmoid.c:95
 #: ../src/iop/splittoning.c:104 ../src/iop/splittoning.c:106
 #: ../src/iop/spots.c:68 ../src/iop/spots.c:70 ../src/iop/toneequal.c:307
 #: ../src/iop/velvia.c:106 ../src/iop/velvia.c:108
@@ -11833,7 +11849,7 @@ msgstr "lokális kontrasztot, élességet ad hozzá vagy vesz el"
 #: ../src/iop/exposure.c:131 ../src/iop/filmicrgb.c:359
 #: ../src/iop/graduatednd.c:150 ../src/iop/negadoctor.c:156
 #: ../src/iop/rgbcurve.c:142 ../src/iop/rgblevels.c:122 ../src/iop/shadhi.c:197
-#: ../src/iop/sigmoid.c:91 ../src/iop/tonecurve.c:212
+#: ../src/iop/sigmoid.c:94 ../src/iop/tonecurve.c:212
 #: ../src/iop/toneequal.c:306
 msgid "corrective and creative"
 msgstr "korrekciós és kreatív"
@@ -12117,7 +12133,7 @@ msgstr "korrekciós"
 #: ../src/iop/channelmixer.c:142 ../src/iop/lut3d.c:141
 #: ../src/iop/negadoctor.c:157 ../src/iop/profile_gamma.c:102
 #: ../src/iop/rgbcurve.c:143 ../src/iop/rgbcurve.c:145
-#: ../src/iop/rgblevels.c:123 ../src/iop/sigmoid.c:94 ../src/iop/soften.c:106
+#: ../src/iop/rgblevels.c:123 ../src/iop/sigmoid.c:97 ../src/iop/soften.c:106
 #: ../src/iop/soften.c:108
 msgid "linear, RGB, display-referred"
 msgstr "lineáris, RGB, képernyő vonatkozású"
@@ -12127,7 +12143,7 @@ msgstr "lineáris, RGB, képernyő vonatkozású"
 #: ../src/iop/dither.c:105 ../src/iop/filmicrgb.c:361
 #: ../src/iop/graduatednd.c:152 ../src/iop/negadoctor.c:158
 #: ../src/iop/profile_gamma.c:103 ../src/iop/rgbcurve.c:144
-#: ../src/iop/rgblevels.c:124 ../src/iop/sigmoid.c:93 ../src/iop/vignette.c:160
+#: ../src/iop/rgblevels.c:124 ../src/iop/sigmoid.c:96 ../src/iop/vignette.c:160
 #: ../src/iop/watermark.c:299
 msgid "non-linear, RGB"
 msgstr "nemlineáris, RGB"
@@ -13182,7 +13198,7 @@ msgstr ""
 #: ../src/iop/colorbalancergb.c:1863 ../src/iop/filmicrgb.c:4203
 #: ../src/iop/negadoctor.c:789 ../src/iop/toneequal.c:3110
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2347
-#: ../src/views/lighttable.c:1258
+#: ../src/views/lighttable.c:1308
 msgid "page"
 msgstr "oldalbeállítások"
 
@@ -13329,94 +13345,94 @@ msgstr "a leképezés utáni kívánt célszín"
 msgid "input R"
 msgstr "bemenet R"
 
-#: ../src/iop/channelmixerrgb.c:4170
+#: ../src/iop/channelmixerrgb.c:4171
 msgid "input G"
 msgstr "bemenet G"
 
-#: ../src/iop/channelmixerrgb.c:4174
+#: ../src/iop/channelmixerrgb.c:4176
 msgid "input B"
 msgstr "bemenet B"
 
-#: ../src/iop/channelmixerrgb.c:4183
+#: ../src/iop/channelmixerrgb.c:4186
 msgid "output R"
 msgstr "kimenet R"
 
-#: ../src/iop/channelmixerrgb.c:4184
+#: ../src/iop/channelmixerrgb.c:4187
 msgid "output G"
 msgstr "kimenet G"
 
-#: ../src/iop/channelmixerrgb.c:4185
+#: ../src/iop/channelmixerrgb.c:4188
 msgid "output B"
 msgstr "kimenet B"
 
-#: ../src/iop/channelmixerrgb.c:4186
+#: ../src/iop/channelmixerrgb.c:4189
 msgid "colorfulness"
 msgstr "színesség"
 
-#: ../src/iop/channelmixerrgb.c:4186
+#: ../src/iop/channelmixerrgb.c:4189
 msgid "output colorfulness"
 msgstr "kimenet színesség"
 
-#: ../src/iop/channelmixerrgb.c:4188
+#: ../src/iop/channelmixerrgb.c:4191
 msgid "output brightness"
 msgstr "kimenet fényerő"
 
-#: ../src/iop/channelmixerrgb.c:4189
+#: ../src/iop/channelmixerrgb.c:4192
 msgid "output gray"
 msgstr "kimenet szürke"
 
-#: ../src/iop/channelmixerrgb.c:4204
+#: ../src/iop/channelmixerrgb.c:4207
 msgid "calibrate with a color checker"
 msgstr "kalibrálás szinellenőrzővel"
 
-#: ../src/iop/channelmixerrgb.c:4208
+#: ../src/iop/channelmixerrgb.c:4211
 msgid "use a color checker target to autoset CAT and channels"
 msgstr ""
 "színellenőrző minta használata a CAT és a csatornák automatikus beállításához"
 
-#: ../src/iop/channelmixerrgb.c:4213 ../src/iop/channelmixerrgb.c:4224
-#: ../src/iop/channelmixerrgb.c:4242 ../src/iop/channelmixerrgb.c:4256
-#: ../src/iop/channelmixerrgb.c:4262 ../src/iop/channelmixerrgb.c:4268
+#: ../src/iop/channelmixerrgb.c:4216 ../src/iop/channelmixerrgb.c:4227
+#: ../src/iop/channelmixerrgb.c:4245 ../src/iop/channelmixerrgb.c:4259
+#: ../src/iop/channelmixerrgb.c:4265 ../src/iop/channelmixerrgb.c:4271
 msgid "calibrate"
 msgstr "kalibrálás"
 
-#: ../src/iop/channelmixerrgb.c:4213
+#: ../src/iop/channelmixerrgb.c:4216
 msgid "chart"
 msgstr "minta"
 
-#: ../src/iop/channelmixerrgb.c:4214
+#: ../src/iop/channelmixerrgb.c:4217
 msgid "choose the vendor and the type of your chart"
 msgstr "válassza ki a mintájának a gyártóját és típusát"
 
-#: ../src/iop/channelmixerrgb.c:4216
+#: ../src/iop/channelmixerrgb.c:4219
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 pre-2014"
 
-#: ../src/iop/channelmixerrgb.c:4217
+#: ../src/iop/channelmixerrgb.c:4220
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 post-2014"
 
-#: ../src/iop/channelmixerrgb.c:4218
+#: ../src/iop/channelmixerrgb.c:4221
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 pre-2018"
 
-#: ../src/iop/channelmixerrgb.c:4219
+#: ../src/iop/channelmixerrgb.c:4222
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 post-2018"
 
-#: ../src/iop/channelmixerrgb.c:4220
+#: ../src/iop/channelmixerrgb.c:4223
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 pre-2018"
 
-#: ../src/iop/channelmixerrgb.c:4221
+#: ../src/iop/channelmixerrgb.c:4224
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 post-2018"
 
-#: ../src/iop/channelmixerrgb.c:4224
+#: ../src/iop/channelmixerrgb.c:4227
 msgid "optimize for"
 msgstr "optimalizálás erre"
 
-#: ../src/iop/channelmixerrgb.c:4225
+#: ../src/iop/channelmixerrgb.c:4228
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -13433,35 +13449,35 @@ msgstr ""
 "a nincs egy kompromisszum a kettő között\n"
 "a többi egy-egy speciális viselkedés az árnyalat védelme érdekében"
 
-#: ../src/iop/channelmixerrgb.c:4232
+#: ../src/iop/channelmixerrgb.c:4235
 msgid "neutral colors"
 msgstr "semleges színek"
 
-#: ../src/iop/channelmixerrgb.c:4234
+#: ../src/iop/channelmixerrgb.c:4237
 msgid "skin and soil colors"
 msgstr "bőr- és talajszínek"
 
-#: ../src/iop/channelmixerrgb.c:4235
+#: ../src/iop/channelmixerrgb.c:4238
 msgid "foliage colors"
 msgstr "lombozatszínek"
 
-#: ../src/iop/channelmixerrgb.c:4236
+#: ../src/iop/channelmixerrgb.c:4239
 msgid "sky and water colors"
 msgstr "ég- és vízszínek"
 
-#: ../src/iop/channelmixerrgb.c:4237
+#: ../src/iop/channelmixerrgb.c:4240
 msgid "average delta E"
 msgstr "delta E átlag"
 
-#: ../src/iop/channelmixerrgb.c:4238
+#: ../src/iop/channelmixerrgb.c:4241
 msgid "maximum delta E"
 msgstr "delta E maximum"
 
-#: ../src/iop/channelmixerrgb.c:4242
+#: ../src/iop/channelmixerrgb.c:4245
 msgid "patch scale"
 msgstr "foltméret"
 
-#: ../src/iop/channelmixerrgb.c:4243
+#: ../src/iop/channelmixerrgb.c:4246
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -13472,31 +13488,31 @@ msgstr ""
 "hasznos ha a perspektívakorrekció hanyag vagy\n"
 "a foltok kerete árnyékot vet a folt széleire."
 
-#: ../src/iop/channelmixerrgb.c:4251
+#: ../src/iop/channelmixerrgb.c:4254
 msgid "the delta E is using the CIE 2000 formula"
 msgstr "a delta E a CIE 2000 képletet használja"
 
-#: ../src/iop/channelmixerrgb.c:4256
+#: ../src/iop/channelmixerrgb.c:4259
 msgid "accept"
 msgstr "elfogadás"
 
-#: ../src/iop/channelmixerrgb.c:4259
+#: ../src/iop/channelmixerrgb.c:4262
 msgid "accept the computed profile and set it in the module"
 msgstr "a kiszámított profil elfogadása és beállítása a modulban"
 
-#: ../src/iop/channelmixerrgb.c:4262
+#: ../src/iop/channelmixerrgb.c:4265
 msgid "recompute"
 msgstr "újraszámítás"
 
-#: ../src/iop/channelmixerrgb.c:4264
+#: ../src/iop/channelmixerrgb.c:4267
 msgid "recompute the profile"
 msgstr "a profil újraszámítása"
 
-#: ../src/iop/channelmixerrgb.c:4268
+#: ../src/iop/channelmixerrgb.c:4271
 msgid "validate"
 msgstr "érvényesít"
 
-#: ../src/iop/channelmixerrgb.c:4270
+#: ../src/iop/channelmixerrgb.c:4273
 msgid "check the output delta E"
 msgstr "kimeneti delta E ellenőrzése"
 
@@ -14621,26 +14637,26 @@ msgstr "megjelenítési szándék"
 
 #: ../src/iop/colorout.c:858 ../src/libs/export.c:1264
 #: ../src/libs/print_settings.c:2325 ../src/libs/print_settings.c:2646
-#: ../src/views/darkroom.c:2422 ../src/views/lighttable.c:1173
+#: ../src/views/darkroom.c:2424 ../src/views/lighttable.c:1223
 msgid "perceptual"
 msgstr "perceptuális"
 
 #: ../src/iop/colorout.c:859 ../src/libs/export.c:1265
 #: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2647
-#: ../src/views/darkroom.c:2423 ../src/views/lighttable.c:1174
+#: ../src/views/darkroom.c:2425 ../src/views/lighttable.c:1224
 msgid "relative colorimetric"
 msgstr "relatív kolorimetrikus"
 
 #: ../src/iop/colorout.c:860 ../src/libs/export.c:1266
 #: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2648
-#: ../src/views/darkroom.c:2424 ../src/views/lighttable.c:1175
+#: ../src/views/darkroom.c:2426 ../src/views/lighttable.c:1225
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "telítettség"
 
 #: ../src/iop/colorout.c:861 ../src/libs/export.c:1267
 #: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2649
-#: ../src/views/darkroom.c:2425 ../src/views/lighttable.c:1176
+#: ../src/views/darkroom.c:2427 ../src/views/lighttable.c:1226
 msgid "absolute colorimetric"
 msgstr "abszolút kolorimetrikus"
 
@@ -15352,7 +15368,7 @@ msgstr ""
 #. Additional parameters
 #. Camera settings
 #: ../src/iop/diffuse.c:1475 ../src/iop/splittoning.c:514
-#: ../src/libs/camera.c:487 ../src/libs/masks.c:1734 ../src/libs/masks.c:1742
+#: ../src/libs/camera.c:487 ../src/libs/masks.c:1731 ../src/libs/masks.c:1739
 msgid "properties"
 msgstr "tulajdonságok"
 
@@ -15938,7 +15954,7 @@ msgstr ""
 #. Add export intent combo
 #: ../src/iop/filmic.c:1689 ../src/libs/export.c:1240
 #: ../src/libs/print_settings.c:2323 ../src/libs/print_settings.c:2642
-#: ../src/views/darkroom.c:2428 ../src/views/lighttable.c:1179
+#: ../src/views/darkroom.c:2430 ../src/views/lighttable.c:1229
 msgid "intent"
 msgstr "szándék"
 
@@ -17065,7 +17081,7 @@ msgstr "skála"
 msgid "auto scale"
 msgstr "automatikus méretezés"
 
-#: ../src/iop/lens.cc:3111 ../src/libs/modulegroups.c:2389
+#: ../src/iop/lens.cc:3111 ../src/libs/modulegroups.c:2390
 msgid "correct"
 msgstr "korrigál"
 
@@ -17212,9 +17228,9 @@ msgstr "csomópontok szerkesztése, hozzáadása és törlése"
 #: ../src/iop/liquify.c:3619 ../src/iop/retouch.c:2200
 #: ../src/iop/retouch.c:2204 ../src/iop/retouch.c:2208
 #: ../src/iop/retouch.c:2212 ../src/iop/retouch.c:2445 ../src/iop/spots.c:821
-#: ../src/iop/spots.c:825 ../src/iop/spots.c:829 ../src/libs/masks.c:1660
-#: ../src/libs/masks.c:1667 ../src/libs/masks.c:1674 ../src/libs/masks.c:1681
-#: ../src/libs/masks.c:1688
+#: ../src/iop/spots.c:825 ../src/iop/spots.c:829 ../src/libs/masks.c:1657
+#: ../src/libs/masks.c:1664 ../src/libs/masks.c:1671 ../src/libs/masks.c:1678
+#: ../src/libs/masks.c:1685
 msgid "shapes"
 msgstr "alakzatok"
 
@@ -17457,11 +17473,11 @@ msgstr "DOMAIN MAX <> 1.0 nem támogatott"
 msgid "[1D cube LUT is not supported"
 msgstr "[1D cube LUT nem támogatott"
 
-#: ../src/iop/lut3d.c:798 ../src/iop/lut3d.c:903
+#: ../src/iop/lut3d.c:798
 msgid "error - allocating buffer for cube LUT"
 msgstr "hiba – puffert lefoglalása cube LUT-hoz"
 
-#: ../src/iop/lut3d.c:809 ../src/iop/lut3d.c:916
+#: ../src/iop/lut3d.c:809
 msgid "error - cube LUT size is not defined"
 msgstr "hiba – a cube LUT mérete nincs definiálva"
 
@@ -17490,8 +17506,19 @@ msgstr "hiba – érvénytelen 3dl fájl: %s"
 msgid "error - the maximum shaper LUT value %d is too low"
 msgstr "hiba – a maximális formáló LUT érték %d túl alacsony"
 
+#: ../src/iop/lut3d.c:903
+#, fuzzy
+msgid "error - allocating buffer for 3dl LUT"
+msgstr "hiba – puffer lefoglalása png LUT-hoz"
+
+#: ../src/iop/lut3d.c:916
+#, fuzzy
+msgid "error - 3dl LUT size is not defined"
+msgstr "hiba – a cube LUT mérete nincs definiálva"
+
 #: ../src/iop/lut3d.c:944
-msgid "error - cube LUT lines number is not correct"
+#, fuzzy
+msgid "error - 3dl LUT lines number is not correct"
 msgstr "hiba – a cube LUT sorok száma nem stimmel"
 
 #: ../src/iop/lut3d.c:960
@@ -17842,9 +17869,9 @@ msgstr "színek simításának mértéke"
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2319
-#: ../src/views/darkroom.c:2337 ../src/views/darkroom.c:2344
-#: ../src/views/darkroom.c:2354 ../src/views/darkroom.c:2371
+#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2321
+#: ../src/views/darkroom.c:2339 ../src/views/darkroom.c:2346
+#: ../src/views/darkroom.c:2356 ../src/views/darkroom.c:2373
 msgid "overexposed"
 msgstr "túlexponált"
 
@@ -17948,9 +17975,9 @@ msgstr "a raw zajszűrés csak raw képeken működik."
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2269
-#: ../src/views/darkroom.c:2287 ../src/views/darkroom.c:2293
-#: ../src/views/darkroom.c:2306
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2271
+#: ../src/views/darkroom.c:2289 ../src/views/darkroom.c:2295
+#: ../src/views/darkroom.c:2308
 msgid "raw overexposed"
 msgstr "raw túlexponált"
 
@@ -18495,15 +18522,15 @@ msgstr "élesítés erőssége"
 msgid "threshold to activate sharpen"
 msgstr "élesítés küszöbértéke"
 
-#: ../src/iop/sigmoid.c:78
+#: ../src/iop/sigmoid.c:81
 msgid "sigmoid"
 msgstr "szigmoid"
 
-#: ../src/iop/sigmoid.c:83
+#: ../src/iop/sigmoid.c:86
 msgid "tone mapping|view transform|display transform"
 msgstr "tónusleképezés|tónustérkép|nézettranszformáció"
 
-#: ../src/iop/sigmoid.c:88
+#: ../src/iop/sigmoid.c:91
 msgid ""
 "apply a view transform to make a image displayable\n"
 "on a screen or print. uses a robust and smooth\n"
@@ -18513,15 +18540,15 @@ msgstr ""
 "legyen képernyőn vagy nyomtatásban. robusztus és sima\n"
 "tónusgörbét használ opcionális színmegőrzési módszerekkel."
 
-#: ../src/iop/sigmoid.c:122
+#: ../src/iop/sigmoid.c:125
 msgid "neutral gray"
 msgstr "természetes szürke"
 
-#: ../src/iop/sigmoid.c:127
+#: ../src/iop/sigmoid.c:130
 msgid "ACES 100-nit like"
 msgstr "ACES 100-nit jellegű"
 
-#: ../src/iop/sigmoid.c:555
+#: ../src/iop/sigmoid.c:559
 msgid ""
 "compression of the applied curve\n"
 "implicitly defines the supported input dynamic range"
@@ -18529,7 +18556,7 @@ msgstr ""
 "az alkalmazott görbe kompressziója\n"
 "implicit módon meghatározza a támogatott bemeneti dinamikatartományt"
 
-#: ../src/iop/sigmoid.c:558
+#: ../src/iop/sigmoid.c:562
 msgid ""
 "shift the compression towards shadows or highlights.\n"
 "negative values increase contrast in shadows.\n"
@@ -18541,7 +18568,7 @@ msgstr ""
 "pozitív értékek a csúcsfények kontrasztját növelik.\n"
 "a másik végén a kontraszt csökkenése tapasztalható."
 
-#: ../src/iop/sigmoid.c:567
+#: ../src/iop/sigmoid.c:571
 msgid ""
 "optional correction of the hue twist introduced by\n"
 "the per-channel processing method."
@@ -18549,12 +18576,15 @@ msgstr ""
 "opcionális korrekció a csatornánkénti feldolgozási\n"
 "módszerrel bekerült árnyalati elcsavarodásra."
 
-#. Target display
-#: ../src/iop/sigmoid.c:571
+#: ../src/iop/sigmoid.c:578
 msgid "display luminance"
 msgstr "megjelenítő fénysűrűsége"
 
-#: ../src/iop/sigmoid.c:580
+#: ../src/iop/sigmoid.c:581
+msgid "set display black/white targets"
+msgstr ""
+
+#: ../src/iop/sigmoid.c:589
 msgid ""
 "the black luminance of the target display or print.\n"
 "can be used creatively for a faded look."
@@ -18562,7 +18592,7 @@ msgstr ""
 "a fekete fénysűrűsége a cél megjelenítőn vagy nyomaton.\n"
 "használható kreatív céllal fakó kinézet elérésére."
 
-#: ../src/iop/sigmoid.c:585
+#: ../src/iop/sigmoid.c:594
 msgid ""
 "the white luminance of the target display or print.\n"
 "can be used creatively for a faded look or blowing out whites earlier."
@@ -19993,11 +20023,11 @@ msgstr "előzményverem és címkék írása XMP kísérőfájlokba"
 msgid "duplicate manager"
 msgstr "duplikáció-kezelő"
 
-#: ../src/libs/duplicate.c:359
+#: ../src/libs/duplicate.c:360
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "„szűz” másolat készítése a képről mindenfajta kidolgozás nélkül"
 
-#: ../src/libs/duplicate.c:362
+#: ../src/libs/duplicate.c:363
 msgid "create a duplicate of the image with same history stack"
 msgstr "másolat készítése a képről megegyező előzményveremmel"
 
@@ -20579,7 +20609,7 @@ msgstr ""
 "a szürke gomb az összes színcímkét befolyásolja"
 
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
-#: ../src/libs/filters/rating_range.c:320
+#: ../src/libs/filters/rating_range.c:325
 msgid "rules"
 msgstr "szabályok"
 
@@ -20718,13 +20748,13 @@ msgstr "csak értékeletlen"
 
 #: ../src/libs/filters/rating_range.c:99 ../src/libs/filters/rating_range.c:126
 #: ../src/libs/filters/rating_range.c:131
-#: ../src/libs/filters/rating_range.c:273
+#: ../src/libs/filters/rating_range.c:275
 msgid "rejected"
 msgstr "elvetettek"
 
 #: ../src/libs/filters/rating_range.c:101
 #: ../src/libs/filters/rating_range.c:126
-#: ../src/libs/filters/rating_range.c:274
+#: ../src/libs/filters/rating_range.c:276
 msgid "not rated"
 msgstr "nem értékelt"
 
@@ -20732,19 +20762,19 @@ msgstr "nem értékelt"
 msgid "only"
 msgstr "csak"
 
-#: ../src/libs/filters/rating_range.c:267
+#: ../src/libs/filters/rating_range.c:269
 msgid "better"
 msgstr "jobb"
 
-#: ../src/libs/filters/rating_range.c:268
+#: ../src/libs/filters/rating_range.c:270
 msgid "worse"
 msgstr "rosszabb"
 
-#: ../src/libs/filters/rating_range.c:269
+#: ../src/libs/filters/rating_range.c:271
 msgid "cap"
 msgstr "tető"
 
-#: ../src/libs/filters/rating_range.c:284
+#: ../src/libs/filters/rating_range.c:286
 msgid "rating filter"
 msgstr "értékelésszűrő"
 
@@ -20824,7 +20854,7 @@ msgstr "GPX fájl megnyitása"
 
 #. Preview key
 #: ../src/libs/geotagging.c:928 ../src/views/darkroom.c:2139
-#: ../src/views/lighttable.c:650 ../src/views/lighttable.c:1266
+#: ../src/views/lighttable.c:673 ../src/views/lighttable.c:1316
 msgid "preview"
 msgstr "előnézet"
 
@@ -21169,7 +21199,7 @@ msgid "physically delete from disk immediately"
 msgstr "végleges törlés a lemezről azonnal"
 
 #. delete
-#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3882
+#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3883
 #: ../src/libs/styles.c:853
 msgid "remove"
 msgstr "eltávolítás"
@@ -21760,55 +21790,55 @@ msgstr "perem"
 msgid "group #%d"
 msgstr "#%d csoport"
 
-#: ../src/libs/masks.c:1070
+#: ../src/libs/masks.c:1067
 msgid "duplicate this shape"
 msgstr "alakzat duplikálása"
 
-#: ../src/libs/masks.c:1074
+#: ../src/libs/masks.c:1071
 msgid "delete this shape"
 msgstr "alakzat törlése"
 
-#: ../src/libs/masks.c:1080
+#: ../src/libs/masks.c:1077
 msgid "delete group"
 msgstr "csoport törlése"
 
-#: ../src/libs/masks.c:1087
+#: ../src/libs/masks.c:1084
 msgid "remove from group"
 msgstr "eltávolítás a csoportból"
 
-#: ../src/libs/masks.c:1095
+#: ../src/libs/masks.c:1092
 msgid "group the forms"
 msgstr "alakzatok csoportosítása"
 
-#: ../src/libs/masks.c:1103
+#: ../src/libs/masks.c:1100
 msgid "use inverted shape"
 msgstr "invertált alakzat használata"
 
-#: ../src/libs/masks.c:1109
+#: ../src/libs/masks.c:1106
 msgid "mode: union"
 msgstr "mód: unió"
 
-#: ../src/libs/masks.c:1112
+#: ../src/libs/masks.c:1109
 msgid "mode: intersection"
 msgstr "mód: metszet"
 
-#: ../src/libs/masks.c:1115
+#: ../src/libs/masks.c:1112
 msgid "mode: difference"
 msgstr "mód: különbség"
 
-#: ../src/libs/masks.c:1118
+#: ../src/libs/masks.c:1115
 msgid "mode: exclusion"
 msgstr "mód: kivonás"
 
-#: ../src/libs/masks.c:1132
+#: ../src/libs/masks.c:1129
 msgid "cleanup unused shapes"
 msgstr "nem használt alakzatok kitakarítása"
 
-#: ../src/libs/masks.c:1655
+#: ../src/libs/masks.c:1652
 msgid "created shapes"
 msgstr "létrehozott alakzatok"
 
-#: ../src/libs/masks.c:1750
+#: ../src/libs/masks.c:1747
 msgid "no shapes selected"
 msgstr "nincsenek kiválasztott alakzatok"
 
@@ -22113,7 +22143,7 @@ msgstr "modulcsoportok"
 #. FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
 #. respond later to image changed signal
 #: ../src/libs/modulegroups.c:308 ../src/libs/modulegroups.c:320
-#: ../src/libs/modulegroups.c:2498 ../src/libs/modulegroups.c:2500
+#: ../src/libs/modulegroups.c:2499 ../src/libs/modulegroups.c:2501
 msgid "on-off"
 msgstr "be-ki"
 
@@ -22129,163 +22159,163 @@ msgstr ""
 msgid "(some features may only be available in the full module interface)"
 msgstr "(néhány funkció esetleg csak a teljes modul kezelőfelületen érhető el)"
 
-#: ../src/libs/modulegroups.c:635
+#: ../src/libs/modulegroups.c:636
 #, c-format
 msgid "go to the full version of the %s module"
 msgstr "menjen a(z) %s modul teljes verziójához"
 
-#: ../src/libs/modulegroups.c:1555 ../src/libs/modulegroups.c:1640
-#: ../src/libs/modulegroups.c:1676 ../src/libs/modulegroups.c:1726
-#: ../src/libs/modulegroups.c:1893
+#: ../src/libs/modulegroups.c:1556 ../src/libs/modulegroups.c:1641
+#: ../src/libs/modulegroups.c:1677 ../src/libs/modulegroups.c:1727
+#: ../src/libs/modulegroups.c:1894
 msgctxt "modulegroup"
 msgid "base"
 msgstr "alap"
 
-#: ../src/libs/modulegroups.c:1574
+#: ../src/libs/modulegroups.c:1575
 msgctxt "modulegroup"
 msgid "tone"
 msgstr "tónus"
 
-#: ../src/libs/modulegroups.c:1583 ../src/libs/modulegroups.c:1690
-#: ../src/libs/modulegroups.c:1737
+#: ../src/libs/modulegroups.c:1584 ../src/libs/modulegroups.c:1691
+#: ../src/libs/modulegroups.c:1738
 msgctxt "modulegroup"
 msgid "color"
 msgstr "szín"
 
-#: ../src/libs/modulegroups.c:1598 ../src/libs/modulegroups.c:1698
-#: ../src/libs/modulegroups.c:1742
+#: ../src/libs/modulegroups.c:1599 ../src/libs/modulegroups.c:1699
+#: ../src/libs/modulegroups.c:1743
 msgctxt "modulegroup"
 msgid "correct"
 msgstr "korrekció"
 
-#: ../src/libs/modulegroups.c:1616 ../src/libs/modulegroups.c:1710
-#: ../src/libs/modulegroups.c:1754 ../src/libs/modulegroups.c:2392
+#: ../src/libs/modulegroups.c:1617 ../src/libs/modulegroups.c:1711
+#: ../src/libs/modulegroups.c:1755 ../src/libs/modulegroups.c:2393
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "effekt"
 
-#: ../src/libs/modulegroups.c:1634
+#: ../src/libs/modulegroups.c:1635
 msgid "modules: all"
 msgstr "modulok: összes"
 
-#: ../src/libs/modulegroups.c:1655 ../src/libs/modulegroups.c:1804
+#: ../src/libs/modulegroups.c:1656 ../src/libs/modulegroups.c:1805
 msgctxt "modulegroup"
 msgid "grading"
 msgstr "osztályozás"
 
-#: ../src/libs/modulegroups.c:1663 ../src/libs/modulegroups.c:1822
-#: ../src/libs/modulegroups.c:2396
+#: ../src/libs/modulegroups.c:1664 ../src/libs/modulegroups.c:1823
+#: ../src/libs/modulegroups.c:2397
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "effektek"
 
-#: ../src/libs/modulegroups.c:1671
+#: ../src/libs/modulegroups.c:1672
 msgid "workflow: beginner"
 msgstr "munkafolyamat: kezdő"
 
-#: ../src/libs/modulegroups.c:1720
+#: ../src/libs/modulegroups.c:1721
 msgid "workflow: display-referred"
 msgstr "munkafolyamat: képernyő vonatkozású"
 
-#: ../src/libs/modulegroups.c:1765
+#: ../src/libs/modulegroups.c:1766
 msgid "workflow: scene-referred"
 msgstr "munkafolyamat: látvány vonatkozású"
 
-#: ../src/libs/modulegroups.c:1771
+#: ../src/libs/modulegroups.c:1772
 msgctxt "modulegroup"
 msgid "technical"
 msgstr "technikai"
 
-#: ../src/libs/modulegroups.c:1847
+#: ../src/libs/modulegroups.c:1848
 msgid "search only"
 msgstr "csak keresés"
 
-#: ../src/libs/modulegroups.c:1853 ../src/libs/modulegroups.c:2161
-#: ../src/libs/modulegroups.c:2670
+#: ../src/libs/modulegroups.c:1854 ../src/libs/modulegroups.c:2162
+#: ../src/libs/modulegroups.c:2671
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "elavult"
 
-#: ../src/libs/modulegroups.c:1868
+#: ../src/libs/modulegroups.c:1869
 msgid "previous config"
 msgstr "előző konfiguráció"
 
-#: ../src/libs/modulegroups.c:1869
+#: ../src/libs/modulegroups.c:1870
 msgid "previous layout"
 msgstr "előző elrendezés"
 
-#: ../src/libs/modulegroups.c:1873
+#: ../src/libs/modulegroups.c:1874
 msgid "previous config with new layout"
 msgstr "előző konfiguráció új elrendezéssel"
 
-#: ../src/libs/modulegroups.c:2028 ../src/libs/modulegroups.c:2543
-#: ../src/libs/modulegroups.c:2555
+#: ../src/libs/modulegroups.c:2029 ../src/libs/modulegroups.c:2544
+#: ../src/libs/modulegroups.c:2556
 msgid "remove this widget"
 msgstr "widget eltávolítása"
 
-#: ../src/libs/modulegroups.c:2178 ../src/libs/modulegroups.c:2418
+#: ../src/libs/modulegroups.c:2179 ../src/libs/modulegroups.c:2419
 msgid "remove this module"
 msgstr "modul eltávolítása"
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2387
+#: ../src/libs/modulegroups.c:2388
 msgid "base"
 msgstr "alap"
 
-#: ../src/libs/modulegroups.c:2390
+#: ../src/libs/modulegroups.c:2391
 msgid "tone"
 msgstr "tónus"
 
-#: ../src/libs/modulegroups.c:2393
+#: ../src/libs/modulegroups.c:2394
 msgid "technical"
 msgstr "technikai"
 
-#: ../src/libs/modulegroups.c:2394
+#: ../src/libs/modulegroups.c:2395
 msgid "grading"
 msgstr "osztályozás"
 
-#: ../src/libs/modulegroups.c:2400 ../src/libs/modulegroups.c:2408
+#: ../src/libs/modulegroups.c:2401 ../src/libs/modulegroups.c:2409
 msgid "add this module"
 msgstr "ezen modul hozzáadása"
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2430 ../src/libs/modulegroups.c:2630
+#: ../src/libs/modulegroups.c:2431 ../src/libs/modulegroups.c:2631
 msgid "all available modules"
 msgstr "összes elérhető modul"
 
-#: ../src/libs/modulegroups.c:2438
+#: ../src/libs/modulegroups.c:2439
 msgid "add module"
 msgstr "modul hozzádaása"
 
-#: ../src/libs/modulegroups.c:2443
+#: ../src/libs/modulegroups.c:2444
 msgid "remove module"
 msgstr "modul eltávolítása"
 
-#: ../src/libs/modulegroups.c:2549
+#: ../src/libs/modulegroups.c:2550
 msgid "header needed for other widgets"
 msgstr "más widgetekhez szükséges fejléc"
 
-#: ../src/libs/modulegroups.c:2565 ../src/libs/modulegroups.c:2572
+#: ../src/libs/modulegroups.c:2566 ../src/libs/modulegroups.c:2573
 msgid "add this widget"
 msgstr "ezen widget hozzáadása"
 
-#: ../src/libs/modulegroups.c:2585
+#: ../src/libs/modulegroups.c:2586
 msgid "currently invisible"
 msgstr "jelenleg nem látható"
 
-#: ../src/libs/modulegroups.c:2614
+#: ../src/libs/modulegroups.c:2615
 msgid "add widget"
 msgstr "widget hozzáadása"
 
-#: ../src/libs/modulegroups.c:2619
+#: ../src/libs/modulegroups.c:2620
 msgid "remove widget"
 msgstr "widget eltávolítása"
 
-#: ../src/libs/modulegroups.c:2724
+#: ../src/libs/modulegroups.c:2725
 msgid "show all history modules"
 msgstr "összes előzmény modul megjelenítése"
 
-#: ../src/libs/modulegroups.c:2727 ../src/libs/modulegroups.c:3905
+#: ../src/libs/modulegroups.c:2728 ../src/libs/modulegroups.c:3906
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
@@ -22293,7 +22323,7 @@ msgstr ""
 "az előzményveremben található összes modul megjelenítése, függetlenül attól, "
 "hogy jelenleg engedélyezve vannak-e"
 
-#: ../src/libs/modulegroups.c:2818 ../src/libs/modulegroups.c:2887
+#: ../src/libs/modulegroups.c:2819 ../src/libs/modulegroups.c:2888
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes that can't be corrected and alternative modules that correct them.\n"
@@ -22303,19 +22333,19 @@ msgstr ""
 "van, és van helyettük ezt orvosló alternatív modul.\n"
 "ezek a modulok a következő kiadásokban nem lesznek szerkeszthetőek."
 
-#: ../src/libs/modulegroups.c:2846 ../src/libs/modulegroups.c:2847
+#: ../src/libs/modulegroups.c:2847 ../src/libs/modulegroups.c:2848
 msgid "quick access panel"
 msgstr "gyors elérés panel"
 
-#: ../src/libs/modulegroups.c:2857
+#: ../src/libs/modulegroups.c:2858
 msgid "show only active modules"
 msgstr "csak az aktív modulok megjelenítése"
 
-#: ../src/libs/modulegroups.c:2858
+#: ../src/libs/modulegroups.c:2859
 msgid "active modules"
 msgstr "aktív modulok"
 
-#: ../src/libs/modulegroups.c:2863
+#: ../src/libs/modulegroups.c:2864
 msgid ""
 "presets\n"
 "ctrl+click to manage"
@@ -22323,143 +22353,143 @@ msgstr ""
 "tárolt beállítások\n"
 "ctrl+klikk a kezeléséhez"
 
-#: ../src/libs/modulegroups.c:2869
+#: ../src/libs/modulegroups.c:2870
 msgid "search modules"
 msgstr "modulok keresése"
 
-#: ../src/libs/modulegroups.c:2870
+#: ../src/libs/modulegroups.c:2871
 msgid "search modules by name or tag"
 msgstr "modulok keresése név vagy címke szerint"
 
-#: ../src/libs/modulegroups.c:2880
+#: ../src/libs/modulegroups.c:2881
 msgid "clear text"
 msgstr "szöveg törlése"
 
-#: ../src/libs/modulegroups.c:3122
+#: ../src/libs/modulegroups.c:3123
 msgid "basic icon"
 msgstr "alap ikon"
 
-#: ../src/libs/modulegroups.c:3132
+#: ../src/libs/modulegroups.c:3133
 msgid "active icon"
 msgstr "aktív ikon"
 
-#: ../src/libs/modulegroups.c:3142
+#: ../src/libs/modulegroups.c:3143
 msgid "color icon"
 msgstr "szín ikon"
 
-#: ../src/libs/modulegroups.c:3152
+#: ../src/libs/modulegroups.c:3153
 msgid "correct icon"
 msgstr "korrekció ikon"
 
-#: ../src/libs/modulegroups.c:3162
+#: ../src/libs/modulegroups.c:3163
 msgid "effect icon"
 msgstr "effekt ikon"
 
-#: ../src/libs/modulegroups.c:3172
+#: ../src/libs/modulegroups.c:3173
 msgid "favorites icon"
 msgstr "kedvencek ikon"
 
-#: ../src/libs/modulegroups.c:3182
+#: ../src/libs/modulegroups.c:3183
 msgid "tone icon"
 msgstr "tónus ikon"
 
-#: ../src/libs/modulegroups.c:3192
+#: ../src/libs/modulegroups.c:3193
 msgid "grading icon"
 msgstr "osztályozás ikon"
 
-#: ../src/libs/modulegroups.c:3202
+#: ../src/libs/modulegroups.c:3203
 msgid "technical icon"
 msgstr "technikai ikon"
 
-#: ../src/libs/modulegroups.c:3235
+#: ../src/libs/modulegroups.c:3236
 msgid "quick access panel widgets"
 msgstr "gyors elérés panel widget"
 
-#: ../src/libs/modulegroups.c:3237
+#: ../src/libs/modulegroups.c:3238
 msgid "quick access"
 msgstr "gyors elérés"
 
-#: ../src/libs/modulegroups.c:3257
+#: ../src/libs/modulegroups.c:3258
 msgid "add widget to the quick access panel"
 msgstr "widget hozzáadása a gyors elérés panelhez"
 
-#: ../src/libs/modulegroups.c:3289
+#: ../src/libs/modulegroups.c:3290
 msgid "group icon"
 msgstr "csoport ikon"
 
-#: ../src/libs/modulegroups.c:3298
+#: ../src/libs/modulegroups.c:3299
 msgid "group name"
 msgstr "csoport név"
 
-#: ../src/libs/modulegroups.c:3309
+#: ../src/libs/modulegroups.c:3310
 msgid "remove group"
 msgstr "csoport eltávolítása"
 
-#: ../src/libs/modulegroups.c:3335
+#: ../src/libs/modulegroups.c:3336
 msgid "move group to the left"
 msgstr "csoport mozgatása balra"
 
-#: ../src/libs/modulegroups.c:3343
+#: ../src/libs/modulegroups.c:3344
 msgid "add module to the group"
 msgstr "modul hozzáadása a csoporthoz"
 
-#: ../src/libs/modulegroups.c:3354
+#: ../src/libs/modulegroups.c:3355
 msgid "move group to the right"
 msgstr "csoport mozgatása jobbra"
 
-#: ../src/libs/modulegroups.c:3534
+#: ../src/libs/modulegroups.c:3535
 msgid "rename preset"
 msgstr "tárolt beállítás átnevezése"
 
-#: ../src/libs/modulegroups.c:3541
+#: ../src/libs/modulegroups.c:3542
 msgid "new preset name:"
 msgstr "új tárolt beállítás neve:"
 
-#: ../src/libs/modulegroups.c:3542
+#: ../src/libs/modulegroups.c:3543
 msgid "a preset with this name already exists!"
 msgstr "ilyen néven már van tárolt beállítás!"
 
-#: ../src/libs/modulegroups.c:3875
+#: ../src/libs/modulegroups.c:3876
 msgid "preset: "
 msgstr "tárolt beállítás:  "
 
-#: ../src/libs/modulegroups.c:3882
+#: ../src/libs/modulegroups.c:3883
 msgid "remove the preset"
 msgstr "tárolt beállítás eltávolítása"
 
-#: ../src/libs/modulegroups.c:3884
+#: ../src/libs/modulegroups.c:3885
 msgid "duplicate the preset"
 msgstr "tárolt beállítás duplikálása"
 
-#: ../src/libs/modulegroups.c:3886
+#: ../src/libs/modulegroups.c:3887
 msgid "rename the preset"
 msgstr "tárolt beállítás átnevezése"
 
-#: ../src/libs/modulegroups.c:3888
+#: ../src/libs/modulegroups.c:3889
 msgid "create a new empty preset"
 msgstr "új üres tárolt beállítás létrehozása"
 
-#: ../src/libs/modulegroups.c:3896
+#: ../src/libs/modulegroups.c:3897
 msgid "show search line"
 msgstr "keresősáv megjelenítése"
 
-#: ../src/libs/modulegroups.c:3899
+#: ../src/libs/modulegroups.c:3900
 msgid "show quick access panel"
 msgstr "gyors elérés panel megjelenítése"
 
-#: ../src/libs/modulegroups.c:3902
+#: ../src/libs/modulegroups.c:3903
 msgid "show all history modules in active group"
 msgstr "az aktív csoport összes előzmény moduljának megjelenítése"
 
-#: ../src/libs/modulegroups.c:3914
+#: ../src/libs/modulegroups.c:3915
 msgid "auto-apply this preset"
 msgstr "tárolt beállítás automatikus alkalmazása"
 
-#: ../src/libs/modulegroups.c:3929
+#: ../src/libs/modulegroups.c:3930
 msgid "module groups"
 msgstr "modulcsoportok"
 
-#: ../src/libs/modulegroups.c:3946
+#: ../src/libs/modulegroups.c:3947
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
@@ -22474,35 +22504,35 @@ msgstr "navigáció"
 msgid "hide navigation thumbnail"
 msgstr "navigációs bélyegkép elrejtése"
 
-#: ../src/libs/navigation.c:510
+#: ../src/libs/navigation.c:497
 msgid "small"
 msgstr "kicsi"
 
-#: ../src/libs/navigation.c:514
+#: ../src/libs/navigation.c:501
 msgid "fit to screen"
 msgstr "képernyő kitöltése"
 
-#: ../src/libs/navigation.c:518
+#: ../src/libs/navigation.c:505
 msgid "50%"
 msgstr "50%"
 
-#: ../src/libs/navigation.c:522
+#: ../src/libs/navigation.c:509
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:526
+#: ../src/libs/navigation.c:513
 msgid "200%"
 msgstr "200%"
 
-#: ../src/libs/navigation.c:530
+#: ../src/libs/navigation.c:517
 msgid "400%"
 msgstr "400%"
 
-#: ../src/libs/navigation.c:534
+#: ../src/libs/navigation.c:521
 msgid "800%"
 msgstr "800%"
 
-#: ../src/libs/navigation.c:538
+#: ../src/libs/navigation.c:525
 msgid "1600%"
 msgstr "1600%"
 
@@ -23700,11 +23730,11 @@ msgstr "csillagos érékelés beállítása a kiválasztott képekre"
 msgid "timeline"
 msgstr "idővonal"
 
-#: ../src/libs/tools/timeline.c:1433
+#: ../src/libs/tools/timeline.c:1434
 msgid "start selection"
 msgstr "kijelölés kezdete"
 
-#: ../src/libs/tools/timeline.c:1434
+#: ../src/libs/tools/timeline.c:1435
 msgid "stop selection"
 msgstr "kijelölés vége"
 
@@ -23770,7 +23800,7 @@ msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "„%s” betöltése…"
 
-#: ../src/views/darkroom.c:717 ../src/views/darkroom.c:2396
+#: ../src/views/darkroom.c:717 ../src/views/darkroom.c:2398
 msgid "gamut check"
 msgstr "gamut ellenőrzés"
 
@@ -23793,31 +23823,36 @@ msgstr ""
 msgid "no styles have been created yet"
 msgstr "még nincs létrehozva stílus"
 
-#: ../src/views/darkroom.c:2233
+#: ../src/views/darkroom.c:2233 ../src/views/darkroom.c:2234
 msgid "quick access to presets"
 msgstr "tárolt beállítások gyors elérése"
 
 #: ../src/views/darkroom.c:2242
+#, fuzzy
+msgid "quick access to styles"
+msgstr "tárolt beállítások gyors elérése"
+
+#: ../src/views/darkroom.c:2244
 msgid "quick access for applying any of your styles"
 msgstr "az alkalmazható stílusok gyors elérése"
 
-#: ../src/views/darkroom.c:2248
+#: ../src/views/darkroom.c:2250
 msgid "second window"
 msgstr "második ablak"
 
-#: ../src/views/darkroom.c:2251
+#: ../src/views/darkroom.c:2253
 msgid "display a second darkroom image window"
 msgstr "második sötétszoba ablak megjelenítése"
 
-#: ../src/views/darkroom.c:2256
+#: ../src/views/darkroom.c:2258
 msgid "color assessment"
 msgstr "színkiértékelés"
 
-#: ../src/views/darkroom.c:2259
+#: ../src/views/darkroom.c:2261
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "ISO 12646 színkiértékelés feltételek kapcsolása"
 
-#: ../src/views/darkroom.c:2272
+#: ../src/views/darkroom.c:2274
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -23825,27 +23860,27 @@ msgstr ""
 "raw túlexponáltság megjelenítése\n"
 "beállítások: jobb klikk"
 
-#: ../src/views/darkroom.c:2288
+#: ../src/views/darkroom.c:2290
 msgid "select how to mark the clipped pixels"
 msgstr "válassza ki a levágott pixelek jelölésének módját"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2292
 msgid "mark with CFA color"
 msgstr "jelölés mozaikszűrő mintával"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2292
 msgid "mark with solid color"
 msgstr "jelölés egy színnel"
 
-#: ../src/views/darkroom.c:2290
+#: ../src/views/darkroom.c:2292
 msgid "false color"
 msgstr "hamisszínes"
 
-#: ../src/views/darkroom.c:2293 ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2295 ../src/views/darkroom.c:2346
 msgid "color scheme"
 msgstr "színséma"
 
-#: ../src/views/darkroom.c:2294
+#: ../src/views/darkroom.c:2296
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -23853,27 +23888,27 @@ msgstr ""
 "válassza ki a túlexponáltságot jelző színt.\n"
 "csak „jelölés egy színnel” módban lesz használva"
 
-#: ../src/views/darkroom.c:2297
+#: ../src/views/darkroom.c:2299
 msgctxt "solidcolor"
 msgid "red"
 msgstr "vörös"
 
-#: ../src/views/darkroom.c:2298
+#: ../src/views/darkroom.c:2300
 msgctxt "solidcolor"
 msgid "green"
 msgstr "zöld"
 
-#: ../src/views/darkroom.c:2299
+#: ../src/views/darkroom.c:2301
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "kék"
 
-#: ../src/views/darkroom.c:2300
+#: ../src/views/darkroom.c:2302
 msgctxt "solidcolor"
 msgid "black"
 msgstr "fekete"
 
-#: ../src/views/darkroom.c:2308
+#: ../src/views/darkroom.c:2310
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -23883,7 +23918,7 @@ msgstr ""
 "1.0 – fehér szint\n"
 "0.0 – fekete szint"
 
-#: ../src/views/darkroom.c:2322
+#: ../src/views/darkroom.c:2324
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -23891,11 +23926,11 @@ msgstr ""
 "levágás jelzés kapcsolása\n"
 "jobb klikk a beálltásokhoz"
 
-#: ../src/views/darkroom.c:2337
+#: ../src/views/darkroom.c:2339
 msgid "clipping preview mode"
 msgstr "levágott előnézet mód"
 
-#: ../src/views/darkroom.c:2338
+#: ../src/views/darkroom.c:2340
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -23903,43 +23938,43 @@ msgstr ""
 "válassza ki a metrikát, aminek az előnézetét látni szeretné.\n"
 "a teljes gamut az összes többi kombinációja"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "full gamut"
 msgstr "teljes gamut"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "any RGB channel"
 msgstr "bármely RGB csatorna"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "luminance only"
 msgstr "csak fénysűrűség"
 
-#: ../src/views/darkroom.c:2340
+#: ../src/views/darkroom.c:2342
 msgid "saturation only"
 msgstr "csak telítettség"
 
-#: ../src/views/darkroom.c:2345
+#: ../src/views/darkroom.c:2347
 msgid "select colors to indicate clipping"
 msgstr "válassza ki a levágást jelző színeket"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2349
 msgid "black & white"
 msgstr "fekete-fehér"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2349
 msgid "red & blue"
 msgstr "vörös & kék"
 
-#: ../src/views/darkroom.c:2347
+#: ../src/views/darkroom.c:2349
 msgid "purple & green"
 msgstr "lila & zöld"
 
-#: ../src/views/darkroom.c:2354
+#: ../src/views/darkroom.c:2356
 msgid "lower threshold"
 msgstr "alsó küszöb"
 
-#: ../src/views/darkroom.c:2355
+#: ../src/views/darkroom.c:2357
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -23959,11 +23994,11 @@ msgstr ""
 "a tipikus színes fényes nyomatok -8.00 FÉ-nél állítanak elő feketét,\n"
 "a tipikus fekete-fehér fényes nyomatok -9.00 FÉ-nél állítanak elő feketét."
 
-#: ../src/views/darkroom.c:2371
+#: ../src/views/darkroom.c:2373
 msgid "upper threshold"
 msgstr "felső küszöb"
 
-#: ../src/views/darkroom.c:2373
+#: ../src/views/darkroom.c:2375
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -23972,11 +24007,11 @@ msgstr ""
 "a fekete pont levágásának küszöbértéke.\n"
 "a 100% a csúcs közepes fénysűrűség."
 
-#: ../src/views/darkroom.c:2385
+#: ../src/views/darkroom.c:2387
 msgid "softproof"
 msgstr "softproof"
 
-#: ../src/views/darkroom.c:2388
+#: ../src/views/darkroom.c:2390
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -23984,7 +24019,7 @@ msgstr ""
 "softproof nézet ki/be kapcsolása\n"
 "jobb klikk a profil beállításokhoz"
 
-#: ../src/views/darkroom.c:2399
+#: ../src/views/darkroom.c:2401
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -23992,50 +24027,50 @@ msgstr ""
 "gamut ellenőrzés ki/be kapcsolása\n"
 "beállítások: jobb klikk"
 
-#: ../src/views/darkroom.c:2428 ../src/views/darkroom.c:2430
-#: ../src/views/darkroom.c:2444 ../src/views/darkroom.c:2445
+#: ../src/views/darkroom.c:2430 ../src/views/darkroom.c:2432
 #: ../src/views/darkroom.c:2446 ../src/views/darkroom.c:2447
-#: ../src/views/lighttable.c:1179 ../src/views/lighttable.c:1181
+#: ../src/views/darkroom.c:2448 ../src/views/darkroom.c:2449
+#: ../src/views/lighttable.c:1229 ../src/views/lighttable.c:1231
 msgid "profiles"
 msgstr "profilok"
 
-#: ../src/views/darkroom.c:2430 ../src/views/lighttable.c:1181
+#: ../src/views/darkroom.c:2432 ../src/views/lighttable.c:1231
 msgid "preview intent"
 msgstr "előnézet szándék"
 
-#: ../src/views/darkroom.c:2444 ../src/views/lighttable.c:1185
+#: ../src/views/darkroom.c:2446 ../src/views/lighttable.c:1235
 msgid "display profile"
 msgstr "kijelzőprofil"
 
-#: ../src/views/darkroom.c:2445 ../src/views/lighttable.c:1188
+#: ../src/views/darkroom.c:2447 ../src/views/lighttable.c:1238
 msgid "preview display profile"
 msgstr "kijelzőprofil előnézete"
 
-#: ../src/views/darkroom.c:2447
+#: ../src/views/darkroom.c:2449
 msgid "histogram profile"
 msgstr "hisztogram profil"
 
-#: ../src/views/darkroom.c:2511 ../src/views/lighttable.c:1224
+#: ../src/views/darkroom.c:2513 ../src/views/lighttable.c:1274
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "kijelző ICC profilok itt: %s vagy itt: %s"
 
-#: ../src/views/darkroom.c:2514 ../src/views/lighttable.c:1227
+#: ../src/views/darkroom.c:2516 ../src/views/lighttable.c:1277
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "kijelző ICC profilok előézete itt: %s vagy itt: %s"
 
-#: ../src/views/darkroom.c:2517
+#: ../src/views/darkroom.c:2519
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "softproof ICC profilok itt: %s vagy itt: %s"
 
-#: ../src/views/darkroom.c:2520
+#: ../src/views/darkroom.c:2522
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "hisztogram és színpipetta ICC profilok itt: %s vagy itt: %s"
 
-#: ../src/views/darkroom.c:2556
+#: ../src/views/darkroom.c:2558
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -24044,145 +24079,145 @@ msgstr ""
 "jobb klikk a segédvonal beállításokhoz"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2573
+#: ../src/views/darkroom.c:2575
 msgid "full preview"
 msgstr "teljes képernyős előnézet"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
-#: ../src/views/darkroom.c:2577
+#: ../src/views/darkroom.c:2579
 msgid "force pan & zoom with mouse"
 msgstr "egérrel mozgatás&zommolás kényszerítése"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2589
+#: ../src/views/darkroom.c:2591
 msgid "zoom close-up"
 msgstr "zoom: közelkép"
 
-#: ../src/views/darkroom.c:2590
+#: ../src/views/darkroom.c:2592
 msgid "zoom fill"
 msgstr "zoom: képernyő kitöltése"
 
-#: ../src/views/darkroom.c:2591
+#: ../src/views/darkroom.c:2593
 msgid "zoom fit"
 msgstr "zoom: képernyőhöz igazítás"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2594 ../src/views/lighttable.c:1284
+#: ../src/views/darkroom.c:2596 ../src/views/lighttable.c:1338
 msgid "zoom in"
 msgstr "nagyítás"
 
-#: ../src/views/darkroom.c:2595 ../src/views/lighttable.c:1286
+#: ../src/views/darkroom.c:2597 ../src/views/lighttable.c:1340
 msgid "zoom out"
 msgstr "kicsinyítés"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2598
+#: ../src/views/darkroom.c:2600
 msgid "image forward"
 msgstr "következő kép"
 
-#: ../src/views/darkroom.c:2599
+#: ../src/views/darkroom.c:2601
 msgid "image back"
 msgstr "előző kép"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2602
+#: ../src/views/darkroom.c:2604
 msgid "cycle overlay colors"
 msgstr "rátétszínek lapozása"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2605
+#: ../src/views/darkroom.c:2607
 msgid "show drawn masks"
 msgstr "rajzolt maszkok megjelenítése"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2608
+#: ../src/views/darkroom.c:2610
 msgid "increase brush size"
 msgstr "ecsetméret növelése"
 
-#: ../src/views/darkroom.c:2609
+#: ../src/views/darkroom.c:2611
 msgid "decrease brush size"
 msgstr "ecsetméret csökkentése"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2612
+#: ../src/views/darkroom.c:2614
 msgid "increase brush hardness"
 msgstr "ecset keménységének növelése"
 
-#: ../src/views/darkroom.c:2613
+#: ../src/views/darkroom.c:2615
 msgid "decrease brush hardness"
 msgstr "ecset keménységének csökkentése"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2616
+#: ../src/views/darkroom.c:2618
 msgid "increase brush opacity"
 msgstr "ecset átlátszóságának növelése"
 
-#: ../src/views/darkroom.c:2617
+#: ../src/views/darkroom.c:2619
 msgid "decrease brush opacity"
 msgstr "ecset átlátszóságának csökkentése"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2620 ../src/views/lighttable.c:1276
+#: ../src/views/darkroom.c:2622 ../src/views/lighttable.c:1330
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "visszavonás"
 
-#: ../src/views/darkroom.c:2621 ../src/views/lighttable.c:1277
+#: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:1331
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "újra"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2624
+#: ../src/views/darkroom.c:2626
 msgid "change keyboard shortcut slider precision"
 msgstr "gyorsbillentyű csúszkák pontosságának módosításához"
 
-#: ../src/views/darkroom.c:3805
+#: ../src/views/darkroom.c:3815
 msgid "keyboard shortcut slider precision: fine"
 msgstr "gyorsbillentyű – csúszka pontosság: normál"
 
-#: ../src/views/darkroom.c:3807
+#: ../src/views/darkroom.c:3817
 msgid "keyboard shortcut slider precision: normal"
 msgstr "gyorsbillentyű – csúszka pontosság: normál"
 
-#: ../src/views/darkroom.c:3809
+#: ../src/views/darkroom.c:3819
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "gyorsbillentyű – csúszka pontosság: durva"
 
-#: ../src/views/darkroom.c:3825
+#: ../src/views/darkroom.c:3835
 msgid "switch to lighttable"
 msgstr "váltás átvilágítóra"
 
-#: ../src/views/darkroom.c:3826 ../src/views/lighttable.c:878
+#: ../src/views/darkroom.c:3836 ../src/views/lighttable.c:928
 msgid "zoom in the image"
 msgstr "belenagyítás a képbe"
 
-#: ../src/views/darkroom.c:3827
+#: ../src/views/darkroom.c:3837
 msgid "unbounded zoom in the image"
 msgstr "korlátlan belenagyítás a képbe"
 
-#: ../src/views/darkroom.c:3828
+#: ../src/views/darkroom.c:3838
 msgid "zoom to 100% 200% and back"
 msgstr "nagyítás 100%-ra 200%-ra és vissza"
 
-#: ../src/views/darkroom.c:3829 ../src/views/lighttable.c:881
+#: ../src/views/darkroom.c:3839 ../src/views/lighttable.c:931
 msgid "pan a zoomed image"
 msgstr "nagyított kép eltolása"
 
-#: ../src/views/darkroom.c:3831 ../src/views/lighttable.c:923
+#: ../src/views/darkroom.c:3841 ../src/views/lighttable.c:973
 msgid "[modules] expand module without closing others"
 msgstr "modul kibontása a többi becsukása nélkül"
 
-#: ../src/views/darkroom.c:3832 ../src/views/lighttable.c:924
+#: ../src/views/darkroom.c:3842 ../src/views/lighttable.c:974
 msgid "[modules] expand module and close others"
 msgstr "[modulok] modul kibontása és a többi becsukása"
 
-#: ../src/views/darkroom.c:3834
+#: ../src/views/darkroom.c:3844
 msgid "[modules] rename module"
 msgstr "[modulok] modul átnevezése"
 
-#: ../src/views/darkroom.c:3836
+#: ../src/views/darkroom.c:3846
 msgid "[modules] change module position in pipe"
 msgstr "[modulok] modul pozíciójának módosítása a feldolgozási soron"
 
@@ -24190,118 +24225,124 @@ msgstr "[modulok] modul pozíciójának módosítása a feldolgozási soron"
 msgid "good knight"
 msgstr "jó lovag"
 
-#: ../src/views/lighttable.c:755
+#. Show infos key
+#: ../src/views/lighttable.c:702 ../src/views/lighttable.c:1321
+#, fuzzy
+msgid "show infos"
+msgstr "segédvonalak megjelenítése"
+
+#: ../src/views/lighttable.c:805
 msgid "middle"
 msgstr "középső"
 
-#: ../src/views/lighttable.c:873
+#: ../src/views/lighttable.c:923
 msgid "open image in darkroom"
 msgstr "kép megnyitása sötétkamrában"
 
-#: ../src/views/lighttable.c:877
+#: ../src/views/lighttable.c:927
 msgid "switch to next/previous image"
 msgstr "váltás a követező/előző képre"
 
-#: ../src/views/lighttable.c:880 ../src/views/lighttable.c:911
+#: ../src/views/lighttable.c:930 ../src/views/lighttable.c:961
 #, no-c-format
 msgid "zoom to 100% and back"
 msgstr "zoomolás 100%-ra és vissza"
 
-#: ../src/views/lighttable.c:885 ../src/views/lighttable.c:904
+#: ../src/views/lighttable.c:935 ../src/views/lighttable.c:954
 msgid "scroll the collection"
 msgstr "gyűjtemény görgetése"
 
-#: ../src/views/lighttable.c:887
+#: ../src/views/lighttable.c:937
 msgid "change number of images per row"
 msgstr "soronkénti képek számának módosítása"
 
-#: ../src/views/lighttable.c:890
+#: ../src/views/lighttable.c:940
 msgid "select an image"
 msgstr "kép kiválasztása"
 
-#: ../src/views/lighttable.c:892
+#: ../src/views/lighttable.c:942
 msgid "select range from last image"
 msgstr "tartomány kiválasztása a legutóbbi képből"
 
-#: ../src/views/lighttable.c:894
+#: ../src/views/lighttable.c:944
 msgid "add image to or remove it from a selection"
 msgstr "kép hozzáadása vagy eltávolítása a kijelölésből"
 
-#: ../src/views/lighttable.c:898
+#: ../src/views/lighttable.c:948
 msgid "change image order"
 msgstr "képsorrend módosítása"
 
-#: ../src/views/lighttable.c:905
+#: ../src/views/lighttable.c:955
 msgid "zoom all the images"
 msgstr "összes kép nagyítása"
 
-#: ../src/views/lighttable.c:906
+#: ../src/views/lighttable.c:956
 msgid "pan inside all the images"
 msgstr "pásztázás az összes képen"
 
-#: ../src/views/lighttable.c:908
+#: ../src/views/lighttable.c:958
 msgid "zoom current image"
 msgstr "aktuális kép zoomolása"
 
-#: ../src/views/lighttable.c:909
+#: ../src/views/lighttable.c:959
 msgid "pan inside current image"
 msgstr "pásztázás az aktuális képen"
 
-#: ../src/views/lighttable.c:914
+#: ../src/views/lighttable.c:964
 #, no-c-format
 msgid "zoom current image to 100% and back"
 msgstr "jelenlegi kép zoomolása 100%-ra és vissza"
 
-#: ../src/views/lighttable.c:918
+#: ../src/views/lighttable.c:968
 msgid "zoom the main view"
 msgstr "fő nézet nagyítása"
 
-#: ../src/views/lighttable.c:919
+#: ../src/views/lighttable.c:969
 msgid "pan inside the main view"
 msgstr "pásztázás a fő nézetben"
 
-#: ../src/views/lighttable.c:1153
+#: ../src/views/lighttable.c:1203
 msgid "set display profile"
 msgstr "kijelzőprofil beállítása"
 
-#: ../src/views/lighttable.c:1246
+#: ../src/views/lighttable.c:1296
 msgid "whole"
 msgstr "teljes"
 
-#: ../src/views/lighttable.c:1262
+#: ../src/views/lighttable.c:1312
 msgid "leave"
 msgstr "elhagy"
 
-#: ../src/views/lighttable.c:1270
+#: ../src/views/lighttable.c:1324
 msgid "align images to grid"
 msgstr "képek igazítása a rácshoz"
 
-#: ../src/views/lighttable.c:1271
+#: ../src/views/lighttable.c:1325
 msgid "reset first image offset"
 msgstr "első kép eltolásának visszaállítása"
 
-#: ../src/views/lighttable.c:1272
+#: ../src/views/lighttable.c:1326
 msgid "select toggle image"
 msgstr "kép kijelölt állapotának változtatása"
 
-#: ../src/views/lighttable.c:1273
+#: ../src/views/lighttable.c:1327
 msgid "select single image"
 msgstr "egy kép kijelölése"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:1280
+#: ../src/views/lighttable.c:1334
 msgid "preview zoom 100%"
 msgstr "előnézet zoom 100%"
 
-#: ../src/views/lighttable.c:1281
+#: ../src/views/lighttable.c:1335
 msgid "preview zoom fit"
 msgstr "előnézet zoom képernyőhöz igazítása"
 
-#: ../src/views/lighttable.c:1285
+#: ../src/views/lighttable.c:1339
 msgid "zoom max"
 msgstr "legnagyobb nagyítás"
 
-#: ../src/views/lighttable.c:1287
+#: ../src/views/lighttable.c:1341
 msgid "zoom min"
 msgstr "legkisebb nagyítás"
 
