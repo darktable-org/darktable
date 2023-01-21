@@ -418,7 +418,7 @@ guint dt_gui_translated_key_state(GdkEventKey *event);
 // return modifier keys currently pressed, independent of any key event
 GdkModifierType dt_key_modifier_state();
 
-GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str);
+GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str);
 
 // check whether the given container has any user-added children
 gboolean dt_gui_container_has_children(GtkContainer *container);

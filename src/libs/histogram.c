@@ -30,6 +30,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "dtgtk/button.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
@@ -1451,12 +1452,12 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
               d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
               d->show_color_harmony)
-        gtk_widget_set_tooltip_text(widget, _("scroll to coarse-rotate color harmony guide lines\n"
+        gtk_widget_set_tooltip_text(widget, _("histogram\n"
+                                              "scroll to coarse-rotate color harmony guide lines\n"
                                               "shift+scroll to fine rotate\n"
                                               "alt+scroll to change harmony type\n"
-                                              "shift+alt+scroll to change harmony width\n\n"
-                                              "ctrl+scroll to change display height"));
-      else gtk_widget_set_tooltip_text(widget, _("ctrl+scroll to change display height"));
+                                              "shift+alt+scroll to change harmony width"));
+      else gtk_widget_set_tooltip_text(widget, "histogram\n");
     }
     // FIXME: could a GtkRange be used to do this work?
     else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
@@ -1465,12 +1466,12 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
               (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
-      gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndouble-click resets\nctrl+scroll to change display height"));
+      gtk_widget_set_tooltip_text(widget, _("histogram\ndrag to change black point,\ndouble-click resets"));
     }
     else
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
-      gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndouble-click resets\nctrl+scroll to change display height"));
+      gtk_widget_set_tooltip_text(widget, _("histogram\ndrag to change exposure,\ndouble-click resets"));
     }
     if(prior_highlight != d->highlight)
     {
@@ -1879,22 +1880,6 @@ static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCross
   return TRUE;
 }
 
-static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
-{
-  int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) &&
-     dt_modifier_is(event->state, GDK_CONTROL_MASK) && !darktable.gui->reset)
-  {
-    /* set size of navigation draw area */
-    const float hmin = (float)dt_confgen_get_int("plugins/darkroom/histogram/height", DT_MIN);
-    const float hmax = (float)dt_confgen_get_int("plugins/darkroom/histogram/height", DT_MAX);
-    const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, hmin, hmax);
-    dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
-    gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(histheight));
-  }
-  return TRUE;
-}
-
 static void _lib_histogram_collapse_callback(dt_action_t *action)
 {
   dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
@@ -2155,8 +2140,7 @@ void gui_init(dt_lib_module_t *self)
   dt_action_register(dark, N_("cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
 
   // shows the scope, scale, and has draggable areas
-  d->scope_draw = gtk_drawing_area_new();
-  gtk_widget_set_tooltip_text(d->scope_draw, _("ctrl+scroll to change display height"));
+  d->scope_draw = dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/histogram/aspect_percent");
   ac = dt_action_define(dark, NULL, N_("hide histogram"), d->scope_draw, NULL);
   dt_action_register(ac, NULL, _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_widget_set_events(d->scope_draw, GDK_ENTER_NOTIFY_MASK);
@@ -2300,14 +2284,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(eventbox), "motion-notify-event",
                    G_CALLBACK(_eventbox_motion_notify_callback), d);
 
-  // handles scroll-to-resize behavior
-  gtk_widget_add_events(self->widget, darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(self->widget), "scroll-event",
-                   G_CALLBACK(_lib_histogram_scroll_callback), NULL);
-
-  /* set size of histogram draw area */
-  const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
-  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
   gtk_widget_show_all(self->widget);
 }
 

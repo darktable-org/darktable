@@ -29,6 +29,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
+#include "dtgtk/drawingarea.h"
 #include "dtgtk/expander.h"
 #include "dtgtk/sidepanel.h"
 #include "dtgtk/thumbtable.h"
@@ -66,6 +67,7 @@
 
 #define DT_UI_PANEL_MODULE_SPACING 0
 #define DT_UI_PANEL_BOTTOM_DEFAULT_SIZE 120
+#define DT_RESIZE_HANDLE_SIZE DT_PIXEL_APPLY_DPI(5)
 
 typedef enum dt_gui_view_switch_t
 {
@@ -2074,7 +2076,7 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *handle = gtk_drawing_area_new();
   gtk_widget_set_halign(handle, GTK_ALIGN_END);
   gtk_widget_set_valign(handle, GTK_ALIGN_FILL);
-  gtk_widget_set_size_request(handle, DT_PIXEL_APPLY_DPI(5), -1);
+  gtk_widget_set_size_request(handle, DT_RESIZE_HANDLE_SIZE, -1);
   gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
   gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
                                     | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
@@ -2113,7 +2115,7 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *handle = gtk_drawing_area_new();
   gtk_widget_set_halign(handle, GTK_ALIGN_START);
   gtk_widget_set_valign(handle, GTK_ALIGN_FILL);
-  gtk_widget_set_size_request(handle, DT_PIXEL_APPLY_DPI(5), -1);
+  gtk_widget_set_size_request(handle, DT_RESIZE_HANDLE_SIZE, -1);
   gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
   gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
                                     | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
@@ -2180,7 +2182,7 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *handle = gtk_drawing_area_new();
   gtk_widget_set_halign(handle, GTK_ALIGN_FILL);
   gtk_widget_set_valign(handle, GTK_ALIGN_START);
-  gtk_widget_set_size_request(handle, -1, DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_size_request(handle, -1, DT_RESIZE_HANDLE_SIZE);
   gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
   gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
                                     | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
@@ -3000,7 +3002,7 @@ static gint _get_container_row_heigth(GtkWidget *w)
   return height;
 }
 
-static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_str)
+static gboolean _resize_wrap_draw(GtkWidget *w, void *cr, const char *config_str)
 {
   GtkWidget *sw = gtk_widget_get_parent(w);
   if(GTK_IS_VIEWPORT(sw)) sw = gtk_widget_get_parent(sw);
@@ -3048,7 +3050,7 @@ static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_s
   return FALSE;
 }
 
-static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event, const char *config_str)
+static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event, const char *config_str)
 {
   GtkWidget *w = gtk_bin_get_child(GTK_BIN(sw));
   if(GTK_IS_VIEWPORT(w)) w = gtk_bin_get_child(GTK_BIN(w));
@@ -3066,8 +3068,7 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
     dt_toast_log(_("never show more than %d lines"), 1 + new_size / increment);
 
     dt_conf_set_int(config_str, new_size);
-
-    _scroll_wrap_resize(w, NULL, config_str);
+    gtk_widget_queue_draw(w);
   }
   else
   {
@@ -3085,14 +3086,112 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
   return TRUE;
 }
 
-GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str)
+static gboolean _scroll_wrap_aspect(GtkWidget *w, GdkEventScroll *event, const char *config_str)
 {
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), - DT_PIXEL_APPLY_DPI(min_size));
-  g_signal_connect(G_OBJECT(sw), "scroll-event", G_CALLBACK(_scroll_wrap_scroll), config_str);
-  g_signal_connect(G_OBJECT(w), "draw", G_CALLBACK(_scroll_wrap_resize), config_str);
-  gtk_container_add(GTK_CONTAINER(sw), w);
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  {
+    int delta_y;
+    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    {
+      //adjust aspect
+      const int aspect = dt_conf_get_int(config_str);
+      dt_conf_set_int(config_str, aspect + delta_y);
+      dtgtk_drawing_area_set_aspect_ratio(w, aspect / 100.0);
+
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+static gboolean _resize_wrap_dragging = FALSE;
+
+static gboolean _resize_wrap_motion(GtkWidget *widget, GdkEventMotion *event, const char *config_str)
+{
+  if(_resize_wrap_dragging)
+  {
+    if(DTGTK_IS_DRAWING_AREA(widget))
+    {
+      // enforce configuration limits
+      dt_conf_set_int(config_str, 100.0 * event->y / gtk_widget_get_allocated_width(widget));
+      const float aspect = dt_conf_get_int(config_str);
+      dtgtk_drawing_area_set_aspect_ratio(widget, aspect / 100.0);
+    }
+    else
+    {
+      dt_conf_set_int(config_str, event->y);
+      gtk_widget_queue_draw(gtk_bin_get_child(GTK_BIN(widget)));
+    }
+    return TRUE;
+  }
+  else if(!(event->state & GDK_BUTTON1_MASK)
+          && event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE)
+  {
+    dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
+    return TRUE;
+  }
+
+  dt_control_change_cursor(GDK_LEFT_PTR);
+  return FALSE;
+}
+
+static gboolean _resize_wrap_button(GtkWidget *widget, GdkEventButton *event, const char *config_str)
+{
+  if(_resize_wrap_dragging && event->type == GDK_BUTTON_RELEASE)
+  {
+    _resize_wrap_dragging = FALSE;
+    dt_control_change_cursor(GDK_LEFT_PTR);
+    return TRUE;
+  }
+  else if(event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE
+          && event->type == GDK_BUTTON_PRESS
+          && event->button == 1 )
+  {
+    _resize_wrap_dragging = TRUE;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static gboolean _resize_wrap_leave(GtkWidget *widget, GdkEventCrossing *event, const char *config_str)
+{
+  if(event->mode == GDK_CROSSING_GTK_UNGRAB)
+    _resize_wrap_dragging = FALSE;
+  if(!_resize_wrap_dragging)
+    dt_control_change_cursor(GDK_LEFT_PTR);
+
+  return FALSE;
+}
+
+GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str)
+{
+  GtkWidget *sw = w ? w : dtgtk_drawing_area_new_with_aspect_ratio(1.0);
+  if(DTGTK_IS_DRAWING_AREA(sw))
+  {
+    const float aspect = dt_conf_get_int(config_str);
+    dtgtk_drawing_area_set_aspect_ratio(sw, aspect / 100.0);
+    g_signal_connect(G_OBJECT(sw), "scroll-event", G_CALLBACK(_scroll_wrap_aspect), config_str);
+  }
+  else
+  {
+    sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), - DT_PIXEL_APPLY_DPI(min_size));
+    g_signal_connect(G_OBJECT(sw), "scroll-event", G_CALLBACK(_resize_wrap_scroll), config_str);
+    g_signal_connect(G_OBJECT(w), "draw", G_CALLBACK(_resize_wrap_draw), config_str);
+    gtk_container_add(GTK_CONTAINER(sw), w);
+  }
+
+  gtk_widget_add_events(sw, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                          | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(sw), "motion-notify-event", G_CALLBACK(_resize_wrap_motion), config_str);
+  g_signal_connect(G_OBJECT(sw), "button-press-event", G_CALLBACK(_resize_wrap_button), config_str);
+  g_signal_connect(G_OBJECT(sw), "button-release-event", G_CALLBACK(_resize_wrap_button), config_str);
+  g_signal_connect(G_OBJECT(sw), "leave-notify-event", G_CALLBACK(_resize_wrap_leave), config_str);
+  g_object_set_data(G_OBJECT(sw), "scroll-resize-tooltip", GINT_TO_POINTER(TRUE));
 
   return sw;
 }

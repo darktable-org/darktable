@@ -365,7 +365,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* add duplicate list and buttonbox to widget */
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_scroll_wrap(d->duplicate_box, 1, "plugins/darkroom/duplicate/windowheight"), TRUE, TRUE, 0);
+                     dt_ui_resize_wrap(d->duplicate_box, 1, "plugins/darkroom/duplicate/windowheight"), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hb, TRUE, TRUE, 0);
 
   gtk_widget_show_all(self->widget);
