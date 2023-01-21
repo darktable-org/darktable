@@ -333,7 +333,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     return 0;
   }
 
-  if(d->selected >= 0)
+  if(d->selected >= 0 && which == 1)
   {
     if(d->on_going) return 1;
 
@@ -342,13 +342,12 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
     /* do the split rotating */
     const double hhs = HANDLE_SIZE * 0.5;
-    if(which == 1
-       && (((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs)
-            && yp > 0.5 - hhs && yp < 0.5 + hhs)
-           || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs)
-               && xp > 0.5 - hhs && xp < 0.5 + hhs)
-           || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs
-               && d->vp_yrotate <= yp + hhs )))
+    if(((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs)
+        && yp > 0.5 - hhs && yp < 0.5 + hhs)
+        || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs)
+            && xp > 0.5 - hhs && xp < 0.5 + hhs)
+        || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs
+            && d->vp_yrotate <= yp + hhs))
     {
       /* let's rotate */
       _lib_snapshot_rotation_cnt++;
@@ -364,7 +363,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       dt_control_queue_redraw_center();
     }
     /* do the dragging !? */
-    else if(which == 1)
+    else
     {
       d->dragging = TRUE;
       d->vp_ypointer = yp;
