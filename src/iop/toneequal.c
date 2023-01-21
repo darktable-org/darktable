@@ -2825,34 +2825,13 @@ static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget, cairo_t *crf, g
 }
 
 
-static gboolean area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+static gboolean area_enter_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return 1;
   if(!self->enabled) return 0;
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  dt_iop_gui_enter_critical_section(self);
-  g->area_x = (event->x - g->inset);
-  g->area_y = (event->y - g->inset);
-  g->area_dragging = FALSE;
-  g->area_active_node = -1;
-  g->area_cursor_valid = (g->area_x > 0.0f && g->area_x < g->graph_width && g->area_y > 0.0f && g->area_y < g->graph_height);
-  dt_iop_gui_leave_critical_section(self);
-
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  return TRUE;
-}
-
-
-static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return 1;
-  if(!self->enabled) return 0;
-
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
   if(g->area_dragging)
@@ -2871,7 +2850,7 @@ static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gp
   dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  return TRUE;
+  return FALSE;
 }
 
 
@@ -3009,6 +2988,11 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
   return FALSE;
 }
 
+static gboolean area_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  // do not propagate to tab bar unless scrolling sidebar
+  return !dt_gui_ignore_scroll(event);
+}
 
 static gboolean notebook_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
@@ -3168,9 +3152,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(area_button_press), self);
   g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(area_button_release), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_leave_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_enter_leave_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
+  g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(area_scroll), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve"));
 
   g->smoothing = dt_bauhaus_slider_new_with_range(self, -2.33f, +1.67f, 0, 0.0f, 2);

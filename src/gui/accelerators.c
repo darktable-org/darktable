@@ -781,6 +781,8 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
                                             _("scroll to change default speed"),
                                             _("right click to exit mapping mode"));
     }
+    else if(g_object_get_data(G_OBJECT(widget), "scroll-resize-tooltip"))
+      original_markup = dt_util_dstrcat(original_markup, "%s%s", original_markup ? "\n" : "", _("ctrl+scroll to change height"));
   }
 
   const dt_action_def_t *def = _action_find_definition(action);
