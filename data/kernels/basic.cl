@@ -355,9 +355,7 @@ highlights_dilatemask (global char *in, global char *out,
   const int w3 = 3 * w1;
 
   int i = mad24(row, w1, col);
-  char mask;
-
-  mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+  out[i] = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
          in[i-1]    | in[i]    | in[i+1] |
          in[i+w1-1] | in[i+w1] | in[i+w1+1] |
          in[i-w2-1] | in[i-w2] | in[i-w2+1] |
@@ -368,10 +366,9 @@ highlights_dilatemask (global char *in, global char *out,
          in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
          in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
          in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
-  out[i] = mask;
 
   i = psize + mad24(row, w1, col);
-  mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+  out[i] = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
          in[i-1]    | in[i]    | in[i+1] |
          in[i+w1-1] | in[i+w1] | in[i+w1+1] |
          in[i-w2-1] | in[i-w2] | in[i-w2+1] |
@@ -382,10 +379,9 @@ highlights_dilatemask (global char *in, global char *out,
          in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
          in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
          in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
-  out[i] = mask;
 
   i = 2*psize + mad24(row, w1, col);
-  mask = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+  out[i] = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
          in[i-1]    | in[i]    | in[i+1] |
          in[i+w1-1] | in[i+w1] | in[i+w1+1] |
          in[i-w2-1] | in[i-w2] | in[i-w2+1] |
@@ -396,68 +392,39 @@ highlights_dilatemask (global char *in, global char *out,
          in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
          in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
          in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
-  out[i] = mask;
-}
-
-void atomic_add_f(
-    global float *val,
-    const  float delta)
-{
-#ifdef NVIDIA_SM_20
-  // buys me another 3x--10x over the `algorithmic' improvements in the splat kernel below,
-  // depending on configuration (sigma_s and sigma_r)
-  float res = 0;
-  asm volatile ("atom.global.add.f32 %0, [%1], %2;" : "=f"(res) : "l"(val), "f"(delta));
-
-#else
-  union
-  {
-    float f;
-    unsigned int i;
-  }
-  old_val;
-  union
-  {
-    float f;
-    unsigned int i;
-  }
-  new_val;
-
-  global volatile unsigned int *ival = (global volatile unsigned int *)val;
-
-  do
-  {
-    // the following is equivalent to old_val.f = *val. however, as according to the opencl standard
-    // we can not rely on global buffer val to be consistently cached (relaxed memory consistency) we 
-    // access it via a slower but consistent atomic operation.
-    old_val.i = atomic_add(ival, 0);
-    new_val.f = old_val.f + delta;
-  }
-  while (atomic_cmpxchg (ival, old_val.i, new_val.i) != old_val.i);
-#endif
 }
 
 kernel void
 highlights_chroma (read_only image2d_t in, global char *mask, global float *accu,
                    const int width, const int height,
-                   const int pwidth, const int pheight, const int psize, 
+                   const int pwidth, const int psize, 
                    const int filters, global const unsigned char (*const xtrans)[6],
                    global const float *clips, global const float *dark)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col < 3) || (row < 3) || (col > width - 4) || (row > height - 4))
-    return;
+  const int row = get_global_id(0);
 
-  const int idx = mad24(row, width, col);
-  const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
-  const float inval = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
-  const int px = color * psize + mad24(row/3, pwidth, col/3);
-  if(mask[px] && (inval > dark[color]) && (inval < clips[color]))
+  if((row < 3) || (row > height - 3)) return;
+
+  float sum[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+  float cnt[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+  for(int col = 3; col < width-3; col++)
   {
-    const float ref = _calc_refavg(in, xtrans, filters, row, col, width);
-    atomic_add_f(accu + color , inval - ref);
-    atomic_add_f(accu + color+4, 1.0f);
+    const int idx = mad24(row, width, col);
+    const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
+    const float inval = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
+    const int px = color * psize + mad24(row/3, pwidth, col/3);
+    if(mask[px] && (inval > dark[color]) && (inval < clips[color]))
+    {
+      const float ref = _calc_refavg(in, xtrans, filters, row, col, width);
+      sum[color] += inval - ref;
+      cnt[color] += 1.0f;
+    }
+  }
+  for(int c = 0; c < 3; c++)
+  {
+    accu[row*6 + c] = sum[c];
+    accu[row*6 + 3 + c] = cnt[c];
   }
 }
 

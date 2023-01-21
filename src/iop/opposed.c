@@ -306,7 +306,7 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
         }
         for_each_channel(c)
           chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
-//        fprintf(stderr, " R: %f %f %f  G: %f %f %f  B: %f %f %f\n", cr_sum[0], cr_cnt[0], chrominance[0], cr_sum[1], cr_cnt[1], chrominance[1], cr_sum[2], cr_cnt[2], chrominance[2]);  
+        // fprintf(stderr, " R: %.1f %.1f %f  G: %.1f %.1f %f  B: %.1f %.1f %f\n", cr_sum[0], cr_cnt[0], chrominance[0], cr_sum[1], cr_cnt[1], chrominance[1], cr_sum[2], cr_cnt[2], chrominance[2]);  
 
       }
     }
@@ -405,7 +405,8 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   cl_mem dev_inmask = NULL;
   cl_mem dev_outmask = NULL;
   cl_mem dev_accu = NULL;
-
+  float *claccu = NULL;
+ 
   const size_t iwidth = ROUNDUPDWD(roi_in->width, devid);
   const size_t iheight = ROUNDUPDHT(roi_in->height, devid);
   const size_t owidth = ROUNDUPDWD(roi_out->width, devid);
@@ -433,9 +434,6 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     dev_outmask =  dt_opencl_alloc_device_buffer(devid, sizeof(char) * 3 * msize);
     if(dev_outmask == NULL) goto error;
 
-    dev_accu = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 8);
-    if(dev_accu == NULL) goto error;
-
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_initmask, iwidth, iheight,
             CLARG(dev_in), CLARG(dev_inmask), CLARG(roi_in->width), CLARG(roi_in->height), CLARG(msize), CLARG(mwidth),
             CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips));
@@ -445,24 +443,39 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
             CLARG(dev_inmask), CLARG(dev_outmask), CLARG(mwidth), CLARG(mheight), CLARG(msize));
     if(err != CL_SUCCESS) goto error;
 
-    float accu[8] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
-    err = dt_opencl_write_buffer_to_device(devid, accu, dev_accu, 0, 8 * sizeof(float), TRUE);
-    if(err != CL_SUCCESS) goto error;
+    dev_accu = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 6 * iheight);
+    if(dev_accu == NULL) goto error;
+    claccu = dt_calloc_align_float(6 * iheight);
+    if(claccu == NULL) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_chroma, iwidth, iheight,
+    size_t sizes[] = { iheight, 1, 1};
+
+    dt_opencl_set_kernel_args(devid, gd->kernel_highlights_chroma, 0,
             CLARG(dev_in), CLARG(dev_outmask), CLARG(dev_accu),
-            CLARG(roi_in->width), CLARG(roi_in->height),
-            CLARG(mwidth), CLARG(mheight), CLARG(msize),
-            CLARG(filters), CLARG(dev_xtrans),
-            CLARG(dev_clips), CLARG(dev_dark)); 
+            CLARG(roi_in->width), CLARG(roi_in->height), CLARG(mwidth), CLARG(msize),
+            CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips), CLARG(dev_dark)); 
+
+    err = dt_opencl_enqueue_kernel_ndim_with_local(devid, gd->kernel_highlights_chroma, sizes, NULL, 1);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_read_buffer_from_device(devid, accu, dev_accu, 0, 8 * sizeof(float), TRUE);
+    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, 6 * iheight * sizeof(float), TRUE);
     if(err != CL_SUCCESS) goto error;
+
+    // collect row data and accumulate
+    dt_aligned_pixel_t sums = { 0.0f, 0.0f, 0.0f};
+    dt_aligned_pixel_t cnts = { 0.0f, 0.0f, 0.0f};
+    for(int grp = 3; grp < roi_in->height-3; grp++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        sums[c] += claccu[grp*6 + c];
+        cnts[c] += claccu[grp*6 + 3 + c];
+      }
+    }
 
     for(int c = 0; c < 3; c++)
-      chrominance[c] = accu[c] / fmaxf(1.0f, accu[c+4]);
-//    fprintf(stderr, " R: %f %f %f  G: %f %f %f  B: %f %f %f\n", accu[0], accu[4], chrominance[0], accu[1], accu[5], chrominance[1], accu[2], accu[6], chrominance[2]);  
+      chrominance[c] = sums[c] / fmaxf(1.0f, cnts[c]);
+    // fprintf(stderr, " R: %.1f %.1f %f  G: %.1f %.1f %f  B: %.1f %.1f %f\n", sums[0], cnts[0], chrominance[0], sums[1], cnts[1], chrominance[1], sums[2], cnts[2], chrominance[2]);  
   }
 
   dev_chrominance = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), chrominance);
@@ -482,6 +495,7 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   dt_opencl_release_mem_object(dev_inmask);
   dt_opencl_release_mem_object(dev_outmask);
   dt_opencl_release_mem_object(dev_accu);
+  dt_free_align(claccu);
   return CL_SUCCESS;
 
   error:
@@ -495,6 +509,7 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   dt_opencl_release_mem_object(dev_inmask);
   dt_opencl_release_mem_object(dev_outmask);
   dt_opencl_release_mem_object(dev_accu);
+  dt_free_align(claccu);
   return err;
 }
 #endif
