@@ -2076,6 +2076,10 @@ static float _action_process_skip_mouse(gpointer target, dt_action_element_t ele
     default:
       darktable.develop->darkroom_skip_mouse_events ^= TRUE;
     }
+
+    // don't turn on if drag underway; would not receive button_released
+    if(darktable.control->button_down)
+      darktable.develop->darkroom_skip_mouse_events = FALSE;
   }
 
   return darktable.develop->darkroom_skip_mouse_events;
