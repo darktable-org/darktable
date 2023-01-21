@@ -1184,7 +1184,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     if(gtk_widget_get_visible(d->button_box))
     {
       // draw information about current selected harmony
-      char text[64];
+      gchar *text;
       PangoLayout *layout;
       PangoRectangle ink;
       PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
@@ -1194,13 +1194,14 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       pango_layout_set_font_description(layout, desc);
 
       // scale conservatively to 100% of width:
-      snprintf(text, sizeof(text), "analogous complementary\nrotation: 360°");
+      text = g_strdup_printf("analogous complementary\nrotation: 360°");
       pango_layout_set_text(layout, text, -1);
       pango_layout_get_pixel_extents(layout, &ink, NULL);
       pango_font_description_set_absolute_size(desc, width * 0.9 / ink.width * PANGO_SCALE);
       pango_layout_set_font_description(layout, desc);
+      g_free(text);
 
-      snprintf(text, sizeof(text), "%s\n%s: %d°", _(hm.name), _("rotation"), d->harmony_rotation);
+      text = g_strdup_printf("%s\n%s: %d°", _(hm.name), _("rotation"), d->harmony_rotation);
 
       //cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
       set_color(cr, darktable.bauhaus->graph_fg);
@@ -1214,6 +1215,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       cairo_stroke(cr);
       pango_font_description_free(desc);
       g_object_unref(layout);
+      g_free(text);
     }
     cairo_restore(cr);
   }
