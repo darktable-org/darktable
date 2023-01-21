@@ -182,7 +182,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = NULL;
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
-      return;
     }
 
     float pzx, pzy;
@@ -217,7 +216,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_clip(cri);
     cairo_fill(cri);
 
-    if(!d->snap_requested)
+    if(snap->surface && !d->snap_requested)
     {
       // display snapshot image surface
       dt_view_paint_surface(cri, width, height,
