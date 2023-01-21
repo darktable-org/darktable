@@ -69,12 +69,6 @@
 #iop-panel-icon-cacorrectrgb
 {
     background-image: url('../pixmaps/plugins/darkroom/cacorrect.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-    margin-top: 0.14em;
-    margin-left: 0.30em;
-    min-height: 1.1em;
-    min-width: 1.1em;
 }
 
 #iop-panel-icon-channelmixer
@@ -95,12 +89,6 @@
 #iop-panel-icon-crop
 {
     background-image: url('../pixmaps/plugins/darkroom/clipping.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
-    margin-top: 0.14em;
-    margin-left: 0.30em;
-    min-height: 1.1em;
-    min-width: 1.1em;
 }
 
 #iop-panel-icon-colisa
