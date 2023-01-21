@@ -1036,12 +1036,6 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
     gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
   }
 
-  // do not process if no forms visible
-  if(!form) return 0;
-
-  // add an option to allow skip mouse events while editing masks
-  if(darktable.develop->darkroom_skip_mouse_events) return 0;
-
   int rep = 0;
   if(form->functions)
     rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
@@ -1054,9 +1048,6 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
 int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, double y, int which,
                                     uint32_t state)
 {
-  // add an option to allow skip mouse events while editing masks
-  if(darktable.develop->darkroom_skip_mouse_events) return 0;
-
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   float pzx = 0.0f, pzy = 0.0f;
@@ -1081,9 +1072,6 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
 int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, double y, double pressure,
                                    int which, int type, uint32_t state)
 {
-  // add an option to allow skip mouse events while editing masks
-  if(darktable.develop->darkroom_skip_mouse_events) return 0;
-
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   float pzx = 0.0f, pzy = 0.0f;
@@ -1119,9 +1107,6 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
 
 int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_t state)
 {
-  // add an option to allow skip mouse events while editing masks
-  if(darktable.develop->darkroom_skip_mouse_events) return 0;
-
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
   float pzx = 0.0f, pzy = 0.0f;
