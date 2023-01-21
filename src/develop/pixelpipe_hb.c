@@ -109,14 +109,14 @@ void dt_print_pipe(dt_debug_thread_t thread, const char *title, dt_dev_pixelpipe
       const dt_iop_roi_t *roi_out,
       const char *msg, ...)
 {
-  if(((thread & DT_DEBUG_VERBOSE) && ((darktable.unmuted & DT_DEBUG_VERBOSE) == 0))
-    || !(darktable.unmuted & thread))
+  if(!((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE)
+     || ((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)))
     return;
 
   char buf[3][128];
-  char vbuf[2048] = "";
-  char rois[1024] = "";
-  char name[128] = "";
+  char vbuf[2048] = { 0 };
+  char rois[1024] = { 0 };
+  char name[128] = { 0 };
 
   snprintf(buf[0], sizeof(buf[0]), "%.4f", dt_get_wtime() - darktable.start_wtime);
   snprintf(buf[1], sizeof(buf[1]), "[%s]", title);
