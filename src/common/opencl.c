@@ -2330,26 +2330,32 @@ int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *s
   return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
 }
 
-
-int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
-                                           const size_t *local)
+/** launch kernel with specified dimension and defined local size! */
+int dt_opencl_enqueue_kernel_ndim_with_local(const int dev, const int kernel, const size_t *sizes,
+                                           const size_t *local, const int dimensions)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || dev < 0) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return CL_INVALID_KERNEL;
 
-  char buf[256];
-  buf[0] = '\0';
+  char buf[256] = { 0 };
   if(darktable.unmuted & DT_DEBUG_OPENCL)
     (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel], CL_KERNEL_FUNCTION_NAME, 256, buf, NULL);
   cl_event *eventp = dt_opencl_events_get_slot(dev, buf);
   cl_int err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel],
-                                                        2, NULL, sizes, local, 0, NULL, eventp);
+                                                        dimensions, NULL, sizes, local, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_enqueue_kernel_2d%s] kernel %i on device %d: %s\n", local ? "_with_local" : "", kernel, dev, cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_enqueue_kernel_%id%s] kernel %i on device %d: %s\n",
+      dimensions, local ? "_with_local" : "", kernel, dev, cl_errstr(err));
   _check_clmem_err(dev, err); 
   return err;
+}
+
+int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
+                                           const size_t *local)
+{
+  return dt_opencl_enqueue_kernel_ndim_with_local(dev, kernel, sizes, local, 2);
 }
 
 int dt_opencl_enqueue_kernel_2d_args_internal(const int dev, const int kernel, const size_t w, const size_t h, ...)
