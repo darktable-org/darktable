@@ -1430,6 +1430,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   const gboolean is_raw = dt_image_is_raw(image);
   const gboolean is_modern_chroma = dt_is_scene_referred();
+  const gboolean is_mono = dt_image_is_monochrome(image);
 
   // flag was already set? only apply presets once in the lifetime of
   // a history stack.  (the flag will be cleared when removing it).
@@ -1508,15 +1509,12 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
 
   const gboolean auto_apply_filmic =
-    is_raw
-    && strcmp(workflow, "scene-referred (filmic)") == 0;
+    (is_raw || is_mono) && (strcmp(workflow, "scene-referred (filmic)") == 0);
   const gboolean auto_apply_sigmoid =
-    is_raw
-    && strcmp(workflow, "scene-referred (sigmoid)") == 0;
-
+    (is_raw || is_mono) && (strcmp(workflow, "scene-referred (sigmoid)") == 0);
   const gboolean auto_apply_cat = has_matrix && is_modern_chroma;
 
-  if(auto_apply_filmic || auto_apply_cat)
+  if(auto_apply_filmic || auto_apply_sigmoid || auto_apply_cat)
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
@@ -1564,9 +1562,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // clang-format on
   // query for all modules at once:
   sqlite3_stmt *stmt;
-  const char *workflow_preset = has_matrix && is_display_referred
+  const char *workflow_preset = (has_matrix || is_mono) && is_display_referred
                                 ? _("display-referred default")
-                                : (has_matrix && is_scene_referred
+                                : ((has_matrix || is_mono) && is_scene_referred
                                    ?_("scene-referred default")
                                    :"\t\n");
   int iformat = 0;
