@@ -472,8 +472,8 @@ static void _sanitize_datetime(char *datetime)
   {
     *c = ' ';
   }
-  // replace '-' and '/' by ':'
-  while((c = strchr(datetime, '-')) != NULL || (c = strchr(datetime, '/')) != NULL)
+  // replace '-' and '/' with ':' but limit the length to avoid replacing '-' sign before the TZ specifier
+  while((c = strpbrk(datetime, "-/")) && (c - datetime < 18))
   {
     *c = ':';
   }
