@@ -1572,6 +1572,7 @@ void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...)
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
   printf("%s", vbuf);
+  fflush(stdout);
 }
 
 void *dt_alloc_align(size_t alignment, size_t size)
