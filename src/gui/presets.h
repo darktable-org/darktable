@@ -58,6 +58,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   GtkWidget *exposure_min, *exposure_max;
   GtkWidget *aperture_min, *aperture_max;
   GtkWidget *focal_length_min, *focal_length_max;
+  GtkWidget *dialog, *and_label;
   gchar *original_name;
   gint old_id;
   GtkWidget *format_btn[5];
@@ -141,4 +142,3 @@ gboolean dt_gui_presets_confirm_and_delete(const char *name, const char *module_
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
