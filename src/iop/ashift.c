@@ -5021,11 +5021,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 #ifdef ASHIFT_DEBUG
   model_probe(self, p, g->lastfit);
 #endif
+
+  if(w != g->cropmode) dt_dev_invalidate_all(self->dev);
   if(g->buf_height > 0 && g->buf_width > 0)
   {
     do_crop(self, p);
     _commit_crop_box(p, g);
-    if(w != g->cropmode) dt_dev_invalidate_all(self->dev);
   }
   else
   {
@@ -5045,6 +5046,7 @@ void gui_reset(struct dt_iop_module_t *self)
   _do_clean_structure(self, p, FALSE);
   _gui_update_structure_states(self, NULL);
   // force to reprocess the preview, otherwise the buffer is ko
+  dt_dev_invalidate_all(self->dev);
   dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
 }
 
