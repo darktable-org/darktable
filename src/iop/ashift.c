@@ -5254,6 +5254,7 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
     {
       // module is not enabled -> invoke it and queue the job to be processed once
       // the preview image is ready
+      dt_dev_invalidate_all(self->dev);
       g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE;
       g->jobparams = enhance;
     }
@@ -5593,6 +5594,7 @@ static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *even
   {
     // module is not enabled -> invoke it and queue the job to be processed once
     // the preview image is ready
+    dt_dev_invalidate_all(self->dev);
     g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_QUAD;
   }
 
@@ -5618,6 +5620,7 @@ static int _event_structure_lines_clicked(GtkWidget *widget, GdkEventButton *eve
   {
     // module is not enabled -> invoke it and queue the job to be processed once
     // the preview image is ready
+    dt_dev_invalidate_all(self->dev);
     g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_LINES;
   }
 
