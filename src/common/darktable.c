@@ -1545,9 +1545,8 @@ void dt_cleanup()
 */
 void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 {
-  if(((thread & DT_DEBUG_VERBOSE) && ((darktable.unmuted & DT_DEBUG_VERBOSE) == 0))
-    || !(darktable.unmuted & thread))
-    return;
+  if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
+  if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
 
   char buf[128];
   char vbuf[2048];
@@ -1564,9 +1563,8 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 
 void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...)
 {
-  if(((thread & DT_DEBUG_VERBOSE) && ((darktable.unmuted & DT_DEBUG_VERBOSE) == 0))
-    || !(darktable.unmuted & thread))
-    return;
+  if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
+  if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
 
   char vbuf[2048];
   va_list ap;
@@ -1574,6 +1572,7 @@ void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...)
   vsnprintf(vbuf, sizeof(vbuf), msg, ap);
   va_end(ap);
   printf("%s", vbuf);
+  fflush(stdout);
 }
 
 void *dt_alloc_align(size_t alignment, size_t size)
