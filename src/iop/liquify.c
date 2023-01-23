@@ -3019,8 +3019,6 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
 {
   const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
 
-  // add an option to allow skip mouse events while editing masks
-  if(darktable.develop->darkroom_skip_mouse_events) return 0;
   const gboolean incr = dt_mask_scroll_increases(up);
 
   if(g->temp)
