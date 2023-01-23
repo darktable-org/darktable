@@ -703,6 +703,9 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
     if(range->path1)
     {
       range->path2 = gtk_tree_path_copy(path);
+      g_free(haystack);
+      g_free(needle);
+      g_free(str);
       return TRUE;
     }
     else

@@ -196,7 +196,7 @@ static gchar *_default_print_func(const double value, const gboolean detailled)
 static gboolean _default_decode_func(const gchar *text, double *value)
 {
   // TODO : verify the value is numeric
-  gchar *locale = strdup(setlocale(LC_ALL, NULL));
+  gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_NUMERIC, "C");
   *value = atof(text);
   setlocale(LC_NUMERIC, locale);
