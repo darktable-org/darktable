@@ -258,7 +258,10 @@ int dt_imageio_jpeg_decompress(dt_imageio_jpeg_t *jpg, uint8_t *out)
   return 0;
 }
 
-int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, const int height,
+int dt_imageio_jpeg_compress(const uint8_t *in,
+                             uint8_t *out,
+                             const int width,
+                             const int height,
                              const int quality)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
@@ -314,7 +317,9 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
  * SOI and JFIF or Adobe markers, but before all else.)
  */
 
-static void write_icc_profile(j_compress_ptr cinfo, const JOCTET *icc_data_ptr, unsigned int icc_data_len)
+static void write_icc_profile(j_compress_ptr cinfo,
+                              const JOCTET *icc_data_ptr,
+                              unsigned int icc_data_len)
 {
   unsigned int num_markers; /* total number of markers we'll write */
   int cur_marker = 1;       /* per spec, counting starts at 1 */
@@ -402,7 +407,9 @@ static boolean marker_is_icc(jpeg_saved_marker_ptr marker)
  * return FALSE.  You might want to issue an error message instead.
  */
 
-static boolean read_icc_profile(j_decompress_ptr dinfo, JOCTET **icc_data_ptr, unsigned int *icc_data_len)
+static boolean read_icc_profile(const j_decompress_ptr dinfo,
+                                JOCTET **icc_data_ptr,
+                                unsigned int *icc_data_len)
 {
   jpeg_saved_marker_ptr marker;
   int num_markers = 0;
@@ -489,9 +496,14 @@ static boolean read_icc_profile(j_decompress_ptr dinfo, JOCTET **icc_data_ptr, u
 #undef MAX_SEQ_NO
 
 
-int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *in, const int width,
-                                           const int height, const int quality, const void *exif, int exif_len,
-                                           int imgid)
+int dt_imageio_jpeg_write_with_icc_profile(const char *filename,
+                                           const uint8_t *in,
+                                           const int width,
+                                           const int height,
+                                           const int quality,
+                                           const void *exif,
+                                           const int exif_len,
+                                           const int imgid)
 {
   struct dt_imageio_jpeg_error_mgr jerr;
   dt_imageio_jpeg_t jpg;
@@ -554,8 +566,13 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
   return 0;
 }
 
-int dt_imageio_jpeg_write(const char *filename, const uint8_t *in, const int width, const int height,
-                          const int quality, const void *exif, int exif_len)
+int dt_imageio_jpeg_write(const char *filename,
+                          const uint8_t *in,
+                          const int width,
+                          const int height,
+                          const int quality,
+                          const void *exif,
+                          const int exif_len)
 {
   return dt_imageio_jpeg_write_with_icc_profile(filename, in, width, height, quality, exif, exif_len, -1);
 }
@@ -720,7 +737,9 @@ dt_colorspaces_color_profile_type_t dt_imageio_jpeg_read_color_space(dt_imageio_
   return DT_COLORSPACE_DISPLAY; // nothing embedded
 }
 
-dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
+dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
+                                         const char *filename,
+                                         dt_mipmap_buffer_t *mbuf)
 {
   // Sometimes there are cases when images are in JPEG format, but their file extensions do not
   // correspond to this format. For example, there are reports of such a situation with iPhone photos:
