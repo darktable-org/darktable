@@ -773,7 +773,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
       else if(strcmp("LUT_1D_SIZE", token[0]) == 0)
       {
         fprintf(stderr, "[lut3d] 1D cube LUT is not supported\n");
-        dt_control_log(_("[1D cube LUT is not supported"));
+        dt_control_log(_("1D cube LUT is not supported"));
         free(line);
         fclose(cube_file);
         return 0;
