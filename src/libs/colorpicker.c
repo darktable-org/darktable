@@ -442,11 +442,11 @@ static gboolean _live_sample_button(GtkWidget *widget, GdkEventButton *event, dt
 
 static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
 {
-  dt_lib_colorpicker_t *data = self->data;
-  dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
-
   if(!darktable.lib->proxy.colorpicker.picker_proxy)
     return;
+
+  dt_lib_colorpicker_t *data = self->data;
+  dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)malloc(sizeof(dt_colorpicker_sample_t));
 
   memcpy(sample, &data->primary_sample, sizeof(dt_colorpicker_sample_t));
   sample->locked = FALSE;
