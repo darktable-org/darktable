@@ -1815,7 +1815,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   gchar *iccfilename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   gchar *style = dt_conf_get_string(CONFIG_PREFIX "style");
   const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
-  const char *metadata_export = d->metadata_export;
+  const char *metadata_export = d->metadata_export ? d->metadata_export : "";
 
   if(fdata)
   {
@@ -1830,7 +1830,6 @@ void *get_params(dt_lib_module_t *self, int *size)
   }
 
   if(!iccfilename) iccfilename = g_strdup("");
-  if(!metadata_export) metadata_export = g_strdup("");
 
   const char *fname = mformat->plugin_name;
   const char *sname = mstorage->plugin_name;

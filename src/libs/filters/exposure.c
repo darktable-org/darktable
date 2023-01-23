@@ -84,7 +84,7 @@ static gchar *_exposure_print_func(const double value, const gboolean detailled)
   }
   else
   {
-    gchar *locale = strdup(setlocale(LC_ALL, NULL));
+    gchar *locale = g_strdup(setlocale(LC_ALL, NULL));
     setlocale(LC_NUMERIC, "C");
     gchar *txt = g_strdup_printf("%.6lf", value);
     setlocale(LC_NUMERIC, locale);

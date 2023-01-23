@@ -598,6 +598,7 @@ void expose(
       {
         dev->image_invalid_cnt = 0;
         dt_view_manager_switch(darktable.view_manager, "lighttable");
+        g_free(load_txt);
         return;
       }
     }
