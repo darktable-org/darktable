@@ -3713,7 +3713,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   int handled = 0;
   // masks
   if(dev->form_visible
-     && !!darktable.develop->darkroom_skip_mouse_events)
+     && !darktable.develop->darkroom_skip_mouse_events)
     handled = dt_masks_events_mouse_scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;
   // module
