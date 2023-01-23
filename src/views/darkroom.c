@@ -2076,6 +2076,10 @@ static float _action_process_skip_mouse(gpointer target, dt_action_element_t ele
     default:
       darktable.develop->darkroom_skip_mouse_events ^= TRUE;
     }
+
+    // don't turn on if drag underway; would not receive button_released
+    if(darktable.control->button_down)
+      darktable.develop->darkroom_skip_mouse_events = FALSE;
   }
 
   return darktable.develop->darkroom_skip_mouse_events;
@@ -3349,7 +3353,9 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   if(height_i > capht) offy = (capht - height_i) * .5f;
   int handled = 0;
 
-  if(dt_iop_color_picker_is_visible(dev) && ctl->button_down && ctl->button_down_which == 1)
+  if(!darktable.develop->darkroom_skip_mouse_events
+     && dt_iop_color_picker_is_visible(dev)
+     && ctl->button_down && ctl->button_down_which == 1)
   {
     // module requested a color box
     if(mouse_in_imagearea(self, &x, &y))
@@ -3382,15 +3388,18 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   x += offx;
   y += offy;
   // masks
-  handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
+  if(dev->form_visible
+     && !darktable.develop->darkroom_skip_mouse_events)
+    handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
   if(handled) return;
   // module
   if(dev->gui_module && dev->gui_module->mouse_moved
+     && !darktable.develop->darkroom_skip_mouse_events
      && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, pressure, which);
   if(handled) return;
 
-  if(darktable.control->button_down && darktable.control->button_down_which == 1)
+  if(ctl->button_down && ctl->button_down_which == 1)
   {
     // depending on dev_zoom, adjust dev_zoom_x/y.
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
@@ -3426,6 +3435,12 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   if(width_i > capwd) x += (capwd - width_i) * .5f;
   if(height_i > capht) y += (capht - height_i) * .5f;
 
+  if(darktable.develop->darkroom_skip_mouse_events && which == 1)
+  {
+    dt_control_change_cursor(GDK_LEFT_PTR);
+    return 1;
+  }
+
   int handled = 0;
   if(dt_iop_color_picker_is_visible(dev) && which == 1)
   {
@@ -3439,7 +3454,8 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
     return 1;
   }
   // masks
-  if(dev->form_visible) handled = dt_masks_events_button_released(dev->gui_module, x, y, which, state);
+  if(dev->form_visible)
+    handled = dt_masks_events_button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
   // module
   if(dev->gui_module && dev->gui_module->button_released
@@ -3463,6 +3479,12 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   float offx = 0.0f, offy = 0.0f;
   if(width_i > capwd) offx = (capwd - width_i) * .5f;
   if(height_i > capht) offy = (capht - height_i) * .5f;
+
+  if(darktable.develop->darkroom_skip_mouse_events && which == 1 && type == GDK_BUTTON_PRESS)
+  {
+    dt_control_change_cursor(GDK_HAND1);
+    return 1;
+  }
 
   int handled = 0;
   if(dt_iop_color_picker_is_visible(dev))
@@ -3690,10 +3712,13 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
   int handled = 0;
   // masks
-  if(dev->form_visible) handled = dt_masks_events_mouse_scrolled(dev->gui_module, x, y, up, state);
+  if(dev->form_visible
+     && !darktable.develop->darkroom_skip_mouse_events)
+    handled = dt_masks_events_mouse_scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;
   // module
   if(dev->gui_module && dev->gui_module->scrolled
+     && !darktable.develop->darkroom_skip_mouse_events
      && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS)
     handled = dev->gui_module->scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;

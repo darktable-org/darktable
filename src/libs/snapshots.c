@@ -182,7 +182,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       if(snap->surface) cairo_surface_destroy(snap->surface);
       snap->surface = NULL;
       d->expose_again_timeout_id = g_timeout_add(150, _snap_expose_again, d);
-      return;
     }
 
     float pzx, pzy;
@@ -217,7 +216,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_clip(cri);
     cairo_fill(cri);
 
-    if(!d->snap_requested)
+    if(snap->surface && !d->snap_requested)
     {
       // display snapshot image surface
       dt_view_paint_surface(cri, width, height,
@@ -333,7 +332,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     return 0;
   }
 
-  if(d->selected >= 0)
+  if(d->selected >= 0 && which == 1)
   {
     if(d->on_going) return 1;
 
@@ -342,13 +341,12 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
 
     /* do the split rotating */
     const double hhs = HANDLE_SIZE * 0.5;
-    if(which == 1
-       && (((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs)
-            && yp > 0.5 - hhs && yp < 0.5 + hhs)
-           || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs)
-               && xp > 0.5 - hhs && xp < 0.5 + hhs)
-           || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs
-               && d->vp_yrotate <= yp + hhs )))
+    if(((d->vertical && xp > d->vp_xpointer - hhs && xp < d->vp_xpointer + hhs)
+        && yp > 0.5 - hhs && yp < 0.5 + hhs)
+        || ((!d->vertical && yp > d->vp_ypointer - hhs && yp < d->vp_ypointer + hhs)
+            && xp > 0.5 - hhs && xp < 0.5 + hhs)
+        || (d->vp_xrotate > xp - hhs && d->vp_xrotate <= xp + hhs && d->vp_yrotate > yp - hhs
+            && d->vp_yrotate <= yp + hhs))
     {
       /* let's rotate */
       _lib_snapshot_rotation_cnt++;
@@ -364,7 +362,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
       dt_control_queue_redraw_center();
     }
     /* do the dragging !? */
-    else if(which == 1)
+    else
     {
       d->dragging = TRUE;
       d->vp_ypointer = yp;
