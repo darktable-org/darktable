@@ -456,19 +456,19 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     // in + out + interpolated + ds_interpolated + ds_tmp + 2 * ds_LF + ds_HF + mask + ds_mask
     if(filters) // RAW
     {
-      tiling->factor = 2.f + 2.f * 4 + 6.f * 4 / DS_FACTOR;
-      tiling->factor_cl =  2.f + 3.f * 4 + 5.f * 4 / DS_FACTOR;
+      tiling->factor = 2.f + 2.f * 4 + 6.f * 4 / (DS_FACTOR * DS_FACTOR);
+      tiling->factor_cl =  2.f + 3.f * 4 + 5.f * 4 / (DS_FACTOR * DS_FACTOR);
 
       // The wavelets decomposition uses a temp buffer of size 4 × ds_width
-      tiling->maxbuf = 1.f / roi_in->height * 4.f / DS_FACTOR;
+      tiling->maxbuf = 1.f / roi_in->height * dt_get_num_threads() * 4.f / DS_FACTOR;
     }
     else
     {
-      tiling->factor = 2.f + 2.f + 6.f / DS_FACTOR;
-      tiling->factor_cl = 2.f + 3.f + 5.f / DS_FACTOR;
+      tiling->factor = 2.f + 2.f + 6.f / (DS_FACTOR * DS_FACTOR);
+      tiling->factor_cl = 2.f + 3.f + 5.f / (DS_FACTOR * DS_FACTOR);
 
       // The wavelets decomposition uses a temp buffer of size 4 × width
-      tiling->maxbuf = 1.f / roi_in->height / DS_FACTOR;
+      tiling->maxbuf = 1.f / roi_in->height * dt_get_num_threads() / DS_FACTOR;
     }
 
     // No temp buffer on GPU
