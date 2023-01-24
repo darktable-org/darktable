@@ -32,10 +32,6 @@
 
 DT_MODULE(1)
 
-// TODO:
-//   - exif / xmp:
-//        GIMP uses a custom way of serializing the data. see libgimpbase/gimpmetadata.c:gimp_metadata_serialize()
-
 typedef struct dt_imageio_xcf_gui_t
 {
   GtkWidget *bpp;
@@ -86,7 +82,6 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
   }
 
-
   XCF *xcf = xcf_open(filename);
 
   if(!xcf)
@@ -131,14 +126,32 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-comment", XCF_PARASITE_PERSISTENT, strlen(comment) + 1, comment);
   g_free(comment);
 
-  // TODO: this needs to be serialized, together with the exif data
-//   char *xmp_string = dt_exif_xmp_read_string(imgid);
-//   if(xmp_string)
-//   {
-//     xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-metadata", XCF_PARASITE_PERSISTENT,
-//             strlen(xmp_string) + 1, xmp_string);
-//     g_free(xmp_string);
-//   }
+  if(exif && exif_len > 0)
+  {
+    // Prepend the libexif expected "Exif\0\0" APP1 prefix (see GIMP parasites.txt)
+    uint8_t *exif_buf = g_malloc0(exif_len + 6);
+    if(!exif_buf)
+    {
+      fprintf(stderr, "[xcf] error: can't allocate %d bytes of memory\n", exif_len + 6);
+      goto exit;
+    }
+    memcpy(exif_buf, "Exif\0\0", 6);
+    memcpy(exif_buf + 6, exif, exif_len);
+    xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "exif-data", XCF_PARASITE_PERSISTENT, exif_len + 6, exif_buf);
+    g_free(exif_buf);
+  }
+
+  // TODO: workaround; uses valid exif as a way to indicate ALL metadata was requested
+  if(exif && exif_len > 0)
+  {
+    char *xmp_string = dt_exif_xmp_read_string(imgid);
+    size_t xmp_len;
+    if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+    {
+      xcf_set(xcf, XCF_PROP, XCF_PROP_PARASITES, "gimp-metadata", XCF_PARASITE_PERSISTENT, xmp_len, xmp_string);
+      g_free(xmp_string);
+    }
+  }
 
   xcf_add_layer(xcf);
   xcf_set(xcf, XCF_WIDTH, d->global.width);
@@ -215,7 +228,6 @@ exit:
   free(profile);
 
   return res;
-
 }
 
 size_t params_size(dt_imageio_module_format_t *self)
