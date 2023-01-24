@@ -294,6 +294,13 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest,
   dt_iop_module_t *module = NULL;
   dt_iop_module_t *mod_replace = NULL;
 
+  char modsrc_multi_name[128] = { 0 };
+
+  // use multi-name for match copied instance only for hand-edited names
+  // for the multi-priority = 0 (first instance).
+
+  g_strlcpy(modsrc_multi_name, dt_iop_get_instance_name(mod_src), sizeof(modsrc_multi_name));
+
   // one-instance modules always replace the existing one
   if(mod_src->flags() & IOP_FLAGS_ONE_INSTANCE)
   {
@@ -323,7 +330,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
       if(strcmp(mod_src->op, mod_dest->op) == 0
-         && strcmp(mod_src->multi_name, mod_dest->multi_name) == 0)
+         && strcmp(modsrc_multi_name, mod_dest->multi_name) == 0)
       {
         // but only if it hasn't been used already
         if(_search_list_iop_by_module(modules_used, mod_dest) == NULL)
@@ -380,7 +387,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     }
 
     module->enabled = mod_src->enabled;
-    g_strlcpy(module->multi_name, mod_src->multi_name, sizeof(module->multi_name));
+    g_strlcpy(module->multi_name, modsrc_multi_name, sizeof(module->multi_name));
 
     memcpy(module->params, mod_src->params, module->params_size);
     if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
