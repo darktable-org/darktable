@@ -357,7 +357,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   }
 
   /* Create comment for codestream */
-  parameters.cp_comment = g_strdup_printf("Created by %s", darktable_package_string);
+  parameters.cp_comment = g_strdup_printf("Created with %s", darktable_package_string);
 
   /*Converting the image to a format suitable for encoding*/
   {
