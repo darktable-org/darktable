@@ -34,6 +34,8 @@
 #include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 
+#include <exiv2/exv_conf.h>
+
 DT_MODULE(3)
 
 typedef struct dt_imageio_png_t
@@ -62,6 +64,7 @@ typedef struct dt_imageio_png_gui_t
  * for making useful code much more readable and discoverable ;)
  */
 
+#if !defined(PNG_eXIf_SUPPORTED) || (EXIV2_MAJOR_VERSION < 1 && EXIV2_MINOR_VERSION <= 27)
 static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *profile_type, guint8 *profile_data,
                                png_uint_32 length)
 {
@@ -116,6 +119,7 @@ static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *prof
   png_free(ping, text[0].key);
   png_free(ping, text);
 }
+#endif
 
 int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
@@ -193,6 +197,9 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
   // write exif data
   if(exif && exif_len > 0)
   {
+#if defined(PNG_eXIf_SUPPORTED) && (EXIV2_MAJOR_VERSION >= 1 || EXIV2_MINOR_VERSION > 27)
+    png_set_eXIf_1(png_ptr, info_ptr, (uint32_t)exif_len, (png_bytep)exif);
+#else
     /* The legacy tEXt chunk storage scheme implies the "Exif\0\0" APP1 prefix */
     uint8_t *buf = malloc(exif_len + 6);
     if(buf)
@@ -202,6 +209,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
       PNGwriteRawProfile(png_ptr, info_ptr, "exif", buf, exif_len + 6);
       free(buf);
     }
+#endif
   }
 
   png_write_info(png_ptr, info_ptr);
