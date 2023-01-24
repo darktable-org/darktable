@@ -3125,6 +3125,13 @@ gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module)
   return is_first;
 }
 
+const char *dt_iop_get_instance_name(const dt_iop_module_t *module)
+{
+  return (module->multi_priority > 0 || module->multi_name_hand_edited)
+    ? module->multi_name
+    : "";
+}
+
 void dt_iop_refresh_center(dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;

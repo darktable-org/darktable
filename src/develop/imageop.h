@@ -442,6 +442,10 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
 /** returns true if module is the first instance of this operation in the pipe */
 gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
 
+/** return the instance name for the module, this is either the multi-name
+    for instance 0 or if hand-edited. Otherwise the name is the empty string.
+ */
+const char *dt_iop_get_instance_name(const dt_iop_module_t *module);
 
 /** get module flags, works in dev and lt mode */
 int dt_iop_get_module_flags(const char *op);
