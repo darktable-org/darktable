@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -58,6 +58,22 @@ const char *dt_gui_presets_aperture_value_str[]
 static const char *_gui_presets_format_value_str[5]
     = { N_("non-raw"), N_("raw"), N_("HDR"), N_("monochrome"), N_("color") };
 static const int _gui_presets_format_flag[5] = { FOR_LDR, FOR_RAW, FOR_HDR, FOR_NOT_MONO, FOR_NOT_COLOR };
+
+void _insert_text_event(GtkEditable *editable,
+                        const gchar *text,
+                        gint length,
+                        gint *position,
+                        gpointer data)
+{
+  for(int i = 0; i < length; i++)
+  {
+    if(!g_ascii_isdigit(text[i]))
+    {
+      g_signal_stop_emission_by_name(G_OBJECT(editable), "insert-text");
+      return;
+    }
+  }
+}
 
 // this is also called for non-gui applications linking to libdarktable!
 // so beware, don't use any darktable.gui stuff here .. (or change this behaviour in darktable.c)
@@ -289,8 +305,22 @@ static void _edit_preset_response(GtkDialog *dialog,
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, gtk_entry_get_text(GTK_ENTRY(g->model)), -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, gtk_entry_get_text(GTK_ENTRY(g->maker)), -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, gtk_entry_get_text(GTK_ENTRY(g->lens)), -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->iso_min)));
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, gtk_spin_button_get_value(GTK_SPIN_BUTTON(g->iso_max)));
+
+    const gchar *iso_min_entered_text = gtk_entry_get_text(GTK_ENTRY(g->iso_min));
+    if(iso_min_entered_text[0] == '\0') iso_min_entered_text = "0";
+    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, atof(iso_min_entered_text));
+
+    const gchar *iso_max_entered_text = gtk_entry_get_text(GTK_ENTRY(g->iso_max));
+    // We want FLT_MAX value in the database when iso_max field was empty.
+    if(iso_max_entered_text[0] == '\0')
+    {
+      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, FLT_MAX);
+    }
+    else
+    {
+      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, atof(iso_max_entered_text));
+    }
+
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_min)]);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, dt_gui_presets_exposure_value[dt_bauhaus_combobox_get(g->exposure_max)]);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10,
@@ -589,12 +619,12 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   // iso
   label = gtk_label_new(_("ISO"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  g->iso_min = gtk_spin_button_new_with_range(0, FLT_MAX, 100);
+  g->iso_min = gtk_entry_new();
   gtk_widget_set_tooltip_text(g->iso_min, _("minimum ISO value"));
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->iso_min), 0);
-  g->iso_max = gtk_spin_button_new_with_range(0, FLT_MAX, 100);
-  gtk_widget_set_tooltip_text(g->iso_max, _("maximum ISO value"));
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->iso_max), 0);
+  g_signal_connect(G_OBJECT(g->iso_min), "insert-text", G_CALLBACK(_insert_text_event), NULL);
+  g->iso_max = gtk_entry_new();
+  gtk_widget_set_tooltip_text(g->iso_max, _("maximum ISO value\nif left blank, it is equivalent to no upper limit"));
+  g_signal_connect(G_OBJECT(g->iso_max), "insert-text", G_CALLBACK(_insert_text_event), NULL);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->iso_min, label, GTK_POS_RIGHT, 2, 1);
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->iso_max, g->iso_min, GTK_POS_RIGHT, 2, 1);
@@ -691,8 +721,22 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     gtk_entry_set_text(GTK_ENTRY(g->model), (const char *)sqlite3_column_text(stmt, 2));
     gtk_entry_set_text(GTK_ENTRY(g->maker), (const char *)sqlite3_column_text(stmt, 3));
     gtk_entry_set_text(GTK_ENTRY(g->lens), (const char *)sqlite3_column_text(stmt, 4));
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_min), sqlite3_column_double(stmt, 5));
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_max), sqlite3_column_double(stmt, 6));
+
+    char *iso_min_fromdb = (char *)sqlite3_column_text(stmt, 5);
+    char *iso_max_fromdb = (char *)sqlite3_column_text(stmt, 6);
+
+    gtk_entry_set_text(GTK_ENTRY(g->iso_min), strtok(iso_min_fromdb,"."));
+
+    // A simple way to check if FLT_MAX has been written to the database is to check if
+    // there is "e+38" in the text representation of the read value.
+    if(g_str_has_suffix(iso_max_fromdb,"e+38"))
+    {
+      gtk_entry_set_placeholder_text(GTK_ENTRY(g->iso_max), _("∞"));
+    }
+    else
+    {
+      gtk_entry_set_text(GTK_ENTRY(g->iso_max), strtok(iso_max_fromdb,"."));
+    }
 
     float val = sqlite3_column_double(stmt, 7);
     int k = 0;
@@ -728,8 +772,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     gtk_entry_set_text(GTK_ENTRY(g->model), "%");
     gtk_entry_set_text(GTK_ENTRY(g->maker), "%");
     gtk_entry_set_text(GTK_ENTRY(g->lens), "%");
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_min), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_max), FLT_MAX);
+    gtk_entry_set_text(GTK_ENTRY(g->iso_min), "0");
+    gtk_entry_set_placeholder_text(GTK_ENTRY(g->iso_max), _("∞"));
 
     float val = 0;
     int k = 0;
