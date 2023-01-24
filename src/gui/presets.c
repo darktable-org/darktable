@@ -183,6 +183,7 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *modu
   }
   g_free(name);
 }
+
 static void _edit_preset_final_callback(dt_gui_presets_edit_dialog_t *g)
 {
   dt_gui_store_last_preset(gtk_entry_get_text(g->name));
@@ -883,6 +884,7 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
     const int bl_length = sqlite3_column_bytes(stmt, 2);
     const int blendop_version = sqlite3_column_int(stmt, 3);
     const int writeprotect = sqlite3_column_int(stmt, 4);
+
     if(op_params && (op_length == module->params_size))
     {
       memcpy(module->params, op_params, op_length);
@@ -1322,9 +1324,9 @@ void dt_gui_favorite_presets_menu_show()
 
 
 static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op,
-                                                  int32_t version,
+                                                  const int32_t version,
                                                   dt_iop_params_t *params,
-                                                  int32_t params_size,
+                                                  const int32_t params_size,
                                                   dt_develop_blend_params_t *bl_params,
                                                   dt_iop_module_t *module,
                                                   const dt_image_t *image,
@@ -1515,7 +1517,8 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op,
 
       if(darktable.gui->last_preset && found)
       {
-        char *markup = g_markup_printf_escaped("%s <span weight='bold'>%s</span>", _("update preset"),
+        char *markup = g_markup_printf_escaped("%s <span weight='bold'>%s</span>",
+                                               _("update preset"),
                                                darktable.gui->last_preset);
         mi = gtk_menu_item_new_with_label("");
         gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
