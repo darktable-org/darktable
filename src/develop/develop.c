@@ -2074,7 +2074,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     }
 
     // Copy module params if valid, else try to convert legacy params
-    if(is_valid_module_version && is_valid_params_size && is_valid_module_name)
+    if(param_length == 0)
+    {
+      // special case of auto-init presets being loaded in history
+      memcpy(hist->params, hist->module->default_params, hist->module->params_size);
+    }
+    else if(is_valid_module_version && is_valid_params_size && is_valid_module_name)
     {
       memcpy(hist->params, module_params, hist->module->params_size);
     }
