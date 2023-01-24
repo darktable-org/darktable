@@ -88,14 +88,18 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   dt_iop_gui_blending_reload_defaults(module);
 }
 
-static void _iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                               const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+static void _iop_modify_roi_in(struct dt_iop_module_t *self,
+                               struct dt_dev_pixelpipe_iop_t *piece,
+                               const dt_iop_roi_t *roi_out,
+                               dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
 }
 
-static void _iop_modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                                dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in)
+static void _iop_modify_roi_out(struct dt_iop_module_t *self,
+                                struct dt_dev_pixelpipe_iop_t *piece,
+                                dt_iop_roi_t *roi_out, const
+                                dt_iop_roi_t *roi_in)
 {
   *roi_out = *roi_in;
 }
@@ -139,19 +143,23 @@ static const char *default_deprecated_msg(void)
   return NULL;
 }
 
-static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
-                                   dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+static void default_commit_params(struct dt_iop_module_t *self,
+                                  dt_iop_params_t *params,
+                                  dt_dev_pixelpipe_t *pipe,
+                                  dt_dev_pixelpipe_iop_t *piece)
 {
   memcpy(piece->data, params, self->params_size);
 }
 
-static void default_init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+static void default_init_pipe(struct dt_iop_module_t *self,
+                              dt_dev_pixelpipe_t *pipe,
                               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1,self->params_size);
 }
 
-static void default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+static void default_cleanup_pipe(struct dt_iop_module_t *self,
+                                 dt_dev_pixelpipe_t *pipe,
                                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
@@ -171,19 +179,26 @@ static void default_cleanup(dt_iop_module_t *module)
 }
 
 
-static int default_distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+static int default_distort_transform(dt_iop_module_t *self,
+                                     dt_dev_pixelpipe_iop_t *piece,
+                                     float *points,
                                      size_t points_count)
 {
   return 1;
 }
-static int default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+static int default_distort_backtransform(dt_iop_module_t *self,
+                                         dt_dev_pixelpipe_iop_t *piece,
+                                         float *points,
                                          size_t points_count)
 {
   return 1;
 }
 
-static void default_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                            const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
+static void default_process(struct dt_iop_module_t *self,
+                            struct dt_dev_pixelpipe_iop_t *piece,
+                            const void *const i,
+                            void *const o,
+                            const struct dt_iop_roi_t *const roi_in,
                             const struct dt_iop_roi_t *const roi_out)
 {
   if(roi_in->width <= 1 || roi_in->height <= 1 || roi_out->width <= 1 || roi_out->height <= 1) return;
@@ -342,7 +357,9 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
   return 0;
 }
 
-int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
+int dt_iop_load_module_by_so(dt_iop_module_t *module,
+                             dt_iop_module_so_t *so,
+                             dt_develop_t *dev)
 {
   module->actions = DT_ACTION_TYPE_IOP_INSTANCE;
   module->dev = dev;
@@ -356,7 +373,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_stats.bins_count = 0;
   module->histogram_stats.pixels = 0;
   module->multi_priority = 0;
-  module->multi_name_hand_edited = 0;
+  module->multi_name_hand_edited = FALSE;
   module->iop_order = 0;
   module->cache_next_important = FALSE;
   for(int k = 0; k < 3; k++)
@@ -430,31 +447,39 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   return 0;
 }
 
-void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe,
+void dt_iop_init_pipe(struct dt_iop_module_t *module,
+                      struct dt_dev_pixelpipe_t *pipe,
                       struct dt_dev_pixelpipe_iop_t *piece)
 {
   module->init_pipe(module, pipe, piece);
   piece->blendop_data = calloc(1, sizeof(dt_develop_blend_params_t));
 }
 
-static gboolean _header_enter_notify_callback(GtkWidget *eventbox, GdkEventCrossing *event, gpointer user_data)
+static gboolean _header_enter_notify_callback(GtkWidget *eventbox,
+                                              GdkEventCrossing *event,
+                                              gpointer user_data)
 {
   darktable.control->element = GPOINTER_TO_INT(user_data);
   return FALSE;
 }
 
-static gboolean _header_motion_notify_show_callback(GtkWidget *eventbox, GdkEventCrossing *event, dt_iop_module_t *module)
+static gboolean _header_motion_notify_show_callback(GtkWidget *eventbox,
+                                                    GdkEventCrossing *event,
+                                                    dt_iop_module_t *module)
 {
   darktable.control->element = DT_ACTION_ELEMENT_SHOW;
   return dt_iop_show_hide_header_buttons(module, event, TRUE, FALSE);
 }
 
-static gboolean _header_motion_notify_hide_callback(GtkWidget *eventbox, GdkEventCrossing *event, dt_iop_module_t *module)
+static gboolean _header_motion_notify_hide_callback(GtkWidget *eventbox,
+                                                    GdkEventCrossing *event,
+                                                    dt_iop_module_t *module)
 {
   return dt_iop_show_hide_header_buttons(module, event, FALSE, FALSE);
 }
 
-static gboolean _header_menu_deactivate_callback(GtkMenuShell *menushell, dt_iop_module_t *module)
+static gboolean _header_menu_deactivate_callback(GtkMenuShell *menushell,
+                                                 dt_iop_module_t *module)
 {
   return dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
@@ -810,7 +835,9 @@ static void _gui_duplicate_callback(GtkButton *button, gpointer user_data)
     dt_iop_gui_rename_module(module);
 }
 
-static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_module_t *module)
+static gboolean _rename_module_key_press(GtkWidget *entry,
+                                         GdkEventKey *event,
+                                         dt_iop_module_t *module)
 {
   int ended = 0;
 
@@ -844,7 +871,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
       // clear out multi-name (set 1st char to 0)
       module->multi_name[0] = 0;
       module->multi_name_hand_edited = FALSE;
-      dt_dev_add_history_item(module->dev, module, TRUE);
+      dt_dev_add_history_item(module->dev, module, FALSE);
     }
 
     // make sure we write history & xmp to ensure that the new module name
@@ -876,7 +903,9 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
   return FALSE; /* event not handled */
 }
 
-static gboolean _rename_module_resize(GtkWidget *entry, GdkEventKey *event, dt_iop_module_t *module)
+static gboolean _rename_module_resize(GtkWidget *entry,
+                                      GdkEventKey *event,
+                                      dt_iop_module_t *module)
 {
   int width = 0;
   GtkBorder padding;
@@ -926,7 +955,9 @@ static void _gui_rename_callback(GtkButton *button, dt_iop_module_t *module)
   dt_iop_gui_rename_module(module);
 }
 
-static gboolean _gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
+static gboolean _gui_multiinstance_callback(GtkButton *button,
+                                            GdkEventButton *event,
+                                            gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
@@ -1473,7 +1504,9 @@ void dt_iop_load_modules_so(void)
                                          _init_module_so, NULL);
 }
 
-int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, dt_develop_t *dev)
+int dt_iop_load_module(dt_iop_module_t *module,
+                       dt_iop_module_so_t *module_so,
+                       dt_develop_t *dev)
 {
   memset(module, 0, sizeof(dt_iop_module_t));
   if(dt_iop_load_module_by_so(module, module_so, dev))
@@ -1577,7 +1610,8 @@ void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
 }
 
 // make sure that blend_params are in sync with the iop struct
-void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_params_t *blendop_params)
+void dt_iop_commit_blend_params(dt_iop_module_t *module,
+                                const dt_develop_blend_params_t *blendop_params)
 {
   if(module->raster_mask.sink.source)
     g_hash_table_remove(module->raster_mask.sink.source->raster_mask.source.users, module);
@@ -1611,7 +1645,9 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_
   module->raster_mask.sink.id = 0;
 }
 
-gboolean _iop_validate_params(dt_introspection_field_t *field, gpointer params, gboolean report)
+gboolean _iop_validate_params(dt_introspection_field_t *field,
+                              gpointer params,
+                              const gboolean report)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)((uint8_t *)params + field->header.offset);
 
@@ -1748,8 +1784,10 @@ static gboolean _iop_update_label(gpointer data)
   return G_SOURCE_REMOVE;
 }
 
-void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
-                          dt_develop_blend_params_t *blendop_params, dt_dev_pixelpipe_t *pipe,
+void dt_iop_commit_params(dt_iop_module_t *module,
+                          dt_iop_params_t *params,
+                          dt_develop_blend_params_t *blendop_params,
+                          dt_dev_pixelpipe_t *pipe,
                           dt_dev_pixelpipe_iop_t *piece)
 {
   const gboolean module_is_enabled = module->enabled;
@@ -1783,7 +1821,9 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
   if(!dt_iop_is_hidden(module)
      && module_is_enabled
      && module_params_changed
-     && !module->multi_name_hand_edited)
+     && !module->multi_name_hand_edited
+     // do not set module-name if currently editing it (see _rename_module_key_press).
+     && module->multi_name[sizeof(module->multi_name) - 1] == '\0')
   {
     if(module->label_recompute_handle)
       g_source_remove(module->label_recompute_handle);
@@ -1872,7 +1912,9 @@ void dt_iop_gui_reset(dt_iop_module_t *module)
   --darktable.gui->reset;
 }
 
-static void _gui_reset_callback(GtkButton *button, GdkEventButton *event, dt_iop_module_t *module)
+static void _gui_reset_callback(GtkButton *button,
+                                GdkEventButton *event,
+                                dt_iop_module_t *module)
 {
   // never use the callback if module is always disabled
   const gboolean disabled = !module->default_enabled && module->hide_enable_button;
@@ -2032,7 +2074,9 @@ static void _gui_set_single_expanded(dt_iop_module_t *module, gboolean expanded)
   dt_conf_set_bool(var, expanded);
 }
 
-void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolean collapse_others)
+void dt_iop_gui_set_expanded(dt_iop_module_t *module,
+                             const gboolean expanded,
+                             const gboolean collapse_others)
 {
   if(!module->expander) return;
   /* handle shiftclick on expander, hide all except this */
@@ -2075,7 +2119,9 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
 }
 
-static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _iop_plugin_body_button_press(GtkWidget *w,
+                                              GdkEventButton *e,
+                                              gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(e->button == 1)
@@ -2092,7 +2138,9 @@ static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, g
   return FALSE;
 }
 
-static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _iop_plugin_header_button_press(GtkWidget *w,
+                                                GdkEventButton *e,
+                                                gpointer user_data)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return TRUE;
 
@@ -2134,7 +2182,9 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   return FALSE;
 }
 
-static void _header_size_callback(GtkWidget *widget, GdkRectangle *allocation, GtkWidget *header)
+static void _header_size_callback(GtkWidget *widget,
+                                  GdkRectangle *allocation,
+                                  GtkWidget *header)
 {
   gchar *config = dt_conf_get_string("darkroom/ui/hide_header_buttons");
 
@@ -2227,7 +2277,10 @@ static void _header_size_callback(GtkWidget *widget, GdkRectangle *allocation, G
   if(header_allocation.width > 1) gtk_widget_size_allocate(header, &header_allocation);
 }
 
-gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide)
+gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
+                                         GdkEventCrossing *event,
+                                         gboolean show_buttons,
+                                         const gboolean always_hide)
 {
   // check if Entry widget for module name edit exists
   GtkWidget *header = module->header;
@@ -2317,8 +2370,12 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt, dt_iop_module_
   dt_iop_refresh_center(module);
 }
 
-static gboolean _mask_indicator_tooltip(GtkWidget *treeview, gint x, gint y, gboolean kb_mode,
-      GtkTooltip* tooltip, dt_iop_module_t *module)
+static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
+                                        gint x,
+                                        gint y,
+                                        gboolean kb_mode,
+                                        GtkTooltip* tooltip,
+                                        dt_iop_module_t *module)
 {
   gboolean res = FALSE;
   const gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
@@ -2410,8 +2467,12 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
   }
 }
 
-gboolean _iop_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
-                               GtkTooltip *tooltip, gpointer user_data)
+gboolean _iop_tooltip_callback(GtkWidget *widget,
+                               gint x,
+                               gint y,
+                               gboolean keyboard_mode,
+                               GtkTooltip *tooltip,
+                               gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
@@ -2912,7 +2973,9 @@ gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id)
   return FALSE;
 }
 
-dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority)
+dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
+                                                  const char *operation,
+                                                  const int multi_priority)
 {
   dt_iop_module_t *mod_ret = NULL;
 
@@ -3008,7 +3071,9 @@ void dt_iop_connect_accels_all()
   }
 }
 
-dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name)
+dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules,
+                                                    const char *operation,
+                                                    const char *multi_name)
 {
   dt_iop_module_t *mod_ret = NULL;
 
@@ -3058,6 +3123,13 @@ gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module)
   }
 
   return is_first;
+}
+
+const char *dt_iop_get_instance_name(const dt_iop_module_t *module)
+{
+  return (module->multi_priority > 0 || module->multi_name_hand_edited)
+    ? module->multi_name
+    : "";
 }
 
 void dt_iop_refresh_center(dt_iop_module_t *module)
@@ -3157,8 +3229,12 @@ char *dt_iop_warning_message(const char *message)
     return g_strdup(message);
 }
 
-const char **dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
-                             const char *output)
+const char **dt_iop_set_description(dt_iop_module_t *module,
+                                    const char *main_text,
+                                    const char *purpose,
+                                    const char *input,
+                                    const char *process,
+                                    const char *output)
 {
   static const char *str_out[5] = {NULL, NULL, NULL, NULL, NULL};
 
@@ -3171,9 +3247,13 @@ const char **dt_iop_set_description(dt_iop_module_t *module, const char *main_te
   return (const char **)str_out;
 }
 
-gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_module_t *const module, const int ch,
-                                           const void *const restrict ivoid, void *const restrict ovoid,
-                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+gboolean dt_iop_have_required_input_format(const int req_ch,
+                                           struct dt_iop_module_t *const module,
+                                           const int ch,
+                                           const void *const restrict ivoid,
+                                           void *const restrict ovoid,
+                                           const dt_iop_roi_t *const roi_in,
+                                           const dt_iop_roi_t *const roi_out)
 {
   if(ch == req_ch)
   {
@@ -3225,7 +3305,10 @@ enum
   DT_ACTION_EFFECT_DUPLICATE = 6,
 };
 
-static float _action_process(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+static float _action_process(gpointer target,
+                             const dt_action_element_t element,
+                             const dt_action_effect_t effect,
+                             float move_size)
 {
   dt_iop_module_t *module = target;
 

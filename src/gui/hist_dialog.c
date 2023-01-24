@@ -83,7 +83,7 @@ static GList *_gui_hist_get_active_items(dt_history_copy_item_t *d)
   return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
-static void _gui_hist_set_items(dt_history_copy_item_t *d, gboolean active)
+static void _gui_hist_set_items(dt_history_copy_item_t *d, const gboolean active)
 {
   /* run through all items and set active status */
   GtkTreeIter iter;
@@ -97,7 +97,9 @@ static void _gui_hist_set_items(dt_history_copy_item_t *d, gboolean active)
   }
 }
 
-static void _gui_hist_copy_response(GtkDialog *dialog, gint response_id, dt_history_copy_item_t *g)
+static void _gui_hist_copy_response(GtkDialog *dialog,
+                                    const gint response_id,
+                                    dt_history_copy_item_t *g)
 {
   switch(response_id)
   {
@@ -137,7 +139,7 @@ static void _gui_hist_item_toggled(GtkCellRendererToggle *cell, gchar *path_str,
   gtk_tree_path_free(path);
 }
 
-static gboolean _gui_is_set(GList *selops, unsigned int num)
+static gboolean _gui_is_set(GList *selops, const unsigned int num)
 {
   /* nothing to filter */
   if(!selops) return TRUE;
@@ -146,7 +148,7 @@ static gboolean _gui_is_set(GList *selops, unsigned int num)
   {
     if(l->data)
     {
-      unsigned int lnum = GPOINTER_TO_UINT(l->data);
+      const unsigned int lnum = GPOINTER_TO_UINT(l->data);
       if(lnum == num) return TRUE;
     }
   }
@@ -184,7 +186,7 @@ tree_on_row_activated(GtkTreeView        *treeview,
   }
 }
 
-int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy)
+int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, const int imgid, const gboolean iscopy)
 {
   int res;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -326,4 +328,3 @@ void dt_gui_hist_dialog_init(dt_history_copy_item_t *d)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
