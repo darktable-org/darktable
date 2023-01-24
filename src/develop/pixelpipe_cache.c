@@ -264,6 +264,10 @@ static int _get_oldest_highgrp_line(dt_dev_pixelpipe_cache_t *cache)
 
 static int _get_cacheline(dt_dev_pixelpipe_cache_t *cache)
 {
+  // Simplest case is some pipes we with only two cachelines, so we
+  // can toggle between them.
+  if(cache->entries == 2) return cache->queries & 1;
+
   const int old_free = _get_oldest_free_cacheline(cache);
   if(old_free >= 0) return old_free;
 
@@ -273,14 +277,11 @@ static int _get_cacheline(dt_dev_pixelpipe_cache_t *cache)
   return _get_oldest_cacheline(cache);
 }
 
-gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint64_t basichash, const uint64_t hash,
-                                        const size_t size, void **data, dt_iop_buffer_dsc_t **dsc, char *name, const gboolean important)
+static gboolean _get_by_hash(struct dt_dev_pixelpipe_t *pipe,
+                             const uint64_t hash, const size_t size,
+                             void **data, dt_iop_buffer_dsc_t **dsc, const char *const name)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
-  const int weight = important ? -cache->entries : 0;
-  cache->queries++;
-  for(int k = 0; k < cache->entries; k++)
-    cache->used[k]++; // age all entries
 
   for(int k = 0; k < cache->entries; k++)
   {
@@ -317,38 +318,52 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
 
         // in case of a hit it's always good to further keep the cacheline as important
         cache->used[k] = -cache->entries;
-        return FALSE;
+        return TRUE;
       }
     }
   }
 
-  // For some pipes we have only two cachelines with preallocated memory so we make sure
-  // to never free or reallocate. 
-  const gboolean twolines = (cache->entries == 2);
+  return FALSE;
+}
+
+gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint64_t basichash, const uint64_t hash,
+                                    const size_t size, void **data, dt_iop_buffer_dsc_t **dsc, char *name, const gboolean important)
+{
+  dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
+  cache->queries++;
+  for(int k = 0; k < cache->entries; k++)
+    cache->used[k]++; // age all entries
+
+  // cache keeps history and we have a cache hit, so no new buffer
+  if(cache->entries > 2 && _get_by_hash(pipe, hash, size, data, dsc, name))
+    return FALSE;
 
   // We need a fresh buffer as there was no hit.
-  // Either we just toggle cachelines 0/1 in case of twolines mode or we get an old/free cacheline
-  // and allocate required size for later checking.
-  // Can the module having used this cacheline before might still use the data with other dsc?
-  const int cline = twolines ? cache->queries & 1 : _get_cacheline(&(pipe->cache));
+  //
+  // Pipes with two cache lines have pre-allocated memory, but we must
+  // grow storage if a later iop requires a larger buffer.
+  //
+  // Otherwise, get an old/free cacheline and allocate required size.
+  // Check both for free and non-matching (and grow or shrink buffer).
 
+  // Can the module having used this cacheline before might still use the data with other dsc?
+  const int cline = _get_cacheline(&(pipe->cache));
   gboolean newdata = FALSE;
-  if(!twolines)
+  if(((cache->entries == 2) && (cache->size[cline] < size))
+     || ((cache->entries > 2) && (cache->size[cline] != size)))
   {
-    // this checks both for free and non-matching 
-    if(cache->size[cline] != size)
+    newdata = TRUE;
+    dt_free_align(cache->data[cline]);
+    cache->allmem -= cache->size[cline];
+    cache->data[cline] = (void *)dt_alloc_align(64, size);
+    if(cache->data[cline])
     {
-      newdata = TRUE;
-      dt_free_align(cache->data[cline]);
-      cache->allmem -= cache->size[cline];
-      cache->data[cline] = (void *)dt_alloc_align(64, size);
-      if(cache->data[cline])
-      {
-        cache->size[cline] = size;
-        cache->allmem += size;
-      }
-      else
-        cache->size[cline] = 0; 
+      cache->size[cline] = size;
+      cache->allmem += size;
+    }
+    else
+    {
+      cache->size[cline] = 0;
     }
   }
 
@@ -366,8 +381,15 @@ gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint6
 
   cache->basichash[cline] = basichash;
   cache->hash[cline] = hash;
-  const int avoiding = pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU | DT_DEV_PIXELPIPE_DISPLAY_ANY);
-  cache->used[cline] = (avoiding) ? VERY_OLD_CACHE_WEIGHT : weight;
+  if(pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU | DT_DEV_PIXELPIPE_DISPLAY_ANY))
+  {
+    // avoid caching
+    cache->used[cline] = VERY_OLD_CACHE_WEIGHT;
+  }
+  else
+  {
+    cache->used[cline] = important ? -cache->entries : 0;
+  }
   cache->modname[cline] = name;
   cache->misses++;
   return TRUE;
