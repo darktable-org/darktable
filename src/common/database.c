@@ -50,7 +50,7 @@
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
 #define CURRENT_DATABASE_VERSION_LIBRARY 38
-#define CURRENT_DATABASE_VERSION_DATA     9
+#define CURRENT_DATABASE_VERSION_DATA    10
 
 // #define USE_NESTED_TRANSACTIONS
 #define MAX_NESTED_TRANSACTIONS 0
@@ -2375,6 +2375,20 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     // clang-format on
     new_version = 9;
   }
+  else if(version == 9)
+  {
+    TRY_EXEC("ALTER TABLE data.style_items ADD COLUMN multi_name_hand_edited INTEGER default 0",
+             "[init] can't add multi_name_hand_edited column\n");
+    TRY_EXEC("UPDATE data.style_items SET multi_name_hand_edited = 1 WHERE multi_name != ''",
+             "[init] can't set multi_name_hand_edited column\n");
+
+    TRY_EXEC("ALTER TABLE data.presets ADD COLUMN multi_name_hand_edited INTEGER default 0",
+             "[init] can't add multi_name_hand_edited column\n");
+    TRY_EXEC("UPDATE data.presets SET multi_name_hand_edited = 1 WHERE multi_name != ''",
+             "[init] can't set multi_name_hand_edited column\n");
+
+    new_version = 10;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2557,9 +2571,11 @@ static void _create_data_schema(dt_database_t *db)
   ////////////////////////////// style_items
   sqlite3_exec(
       db->handle,
-      "CREATE TABLE data.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
-      "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      "CREATE TABLE data.style_items (styleid INTEGER, num INTEGER, module INTEGER,"
+      "                               operation VARCHAR(256), op_params BLOB, enabled INTEGER,"
+      "                               blendop_params BLOB, blendop_version INTEGER,"
+      "                               multi_priority INTEGER, multi_name VARCHAR(256),"
+      "                               multi_name_hand_edited INTEGER)",
       NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
