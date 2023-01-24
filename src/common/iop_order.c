@@ -1347,7 +1347,7 @@ void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules, const gboole
     dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
     g_strlcpy(n->operation, mod->op, sizeof(n->operation));
     n->instance = mod->multi_priority;
-    g_strlcpy(n->name, mod->multi_name, sizeof(n->name));
+    g_strlcpy(n->name, dt_iop_get_instance_name(mod), sizeof(n->name));
     n->o.iop_order = 0;
     e_list = g_list_prepend(e_list, n);
   }

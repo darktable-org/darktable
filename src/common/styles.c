@@ -936,8 +936,12 @@ void _styles_apply_to_image_ext(const char *name,
       style_item->multi_priority = sqlite3_column_int(stmt, 7);
       style_item->name = NULL;
       style_item->operation = g_strdup((char *)sqlite3_column_text(stmt, 2));
-      style_item->multi_name = g_strdup((char *)sqlite3_column_text(stmt, 8));
       style_item->multi_name_hand_edited = sqlite3_column_int(stmt, 9);
+      // see dt_iop_get_instance_name() for why multi_name is handled this way
+      style_item->multi_name =
+        g_strdup((style_item->multi_priority > 0 || style_item->multi_name_hand_edited)
+                 ? (char *)sqlite3_column_text(stmt, 8)
+                 : "");
       style_item->module_version = sqlite3_column_int(stmt, 1);
       style_item->blendop_version = sqlite3_column_int(stmt, 6);
       style_item->params_size = sqlite3_column_bytes(stmt, 3);
