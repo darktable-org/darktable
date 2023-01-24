@@ -1761,10 +1761,13 @@ static gboolean _iop_update_label(gpointer data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)data;
 
-  char *preset_name =
-    dt_presets_get_name(module->op,
-                        module->params, module->params_size,
-                        module->blend_params, sizeof(dt_develop_blend_params_t));
+  const gboolean is_default_params =
+    memcmp(module->params, module->default_params, module->params_size) == 0;
+
+  char *preset_name = dt_presets_get_name
+    (module->op,
+     module->params, module->params_size, is_default_params,
+     module->blend_params, sizeof(dt_develop_blend_params_t));
 
   // if we have a preset-name, use it. otherwise set the label to the multi-priority
   // except for 0 where the multi-name is cleared.

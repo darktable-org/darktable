@@ -308,6 +308,9 @@ static void _edit_preset_response(GtkDialog *dialog,
     dt_action_rename_preset(module_actions, g->original_name, name);
 
     // commit all the user input fields
+    const gboolean is_auto_init =
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoinit));
+
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     g_free(query);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
@@ -342,7 +345,13 @@ static void _edit_preset_response(GtkDialog *dialog,
       {
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, g->operation, -1, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, g->op_version);
-        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19, g->iop->params, g->iop->params_size, SQLITE_TRANSIENT);
+        // for auto init presets we don't record the params. When applying such preset
+        // the default params will be used and this will trigger the computation of
+        // the actual parameters.
+        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19,
+                                   is_auto_init ? NULL : g->iop->params,
+                                   is_auto_init ?    0 : g->iop->params_size,
+                                   SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
         DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, g->iop->blend_params, sizeof(dt_develop_blend_params_t),
                                    SQLITE_TRANSIENT);
@@ -501,6 +510,10 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
     gtk_widget_set_sensitive(GTK_WIDGET(g->description), FALSE);
   gtk_box_pack_start(box, GTK_WIDGET(g->description), FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->description), _("description or further information"));
+
+  g->autoinit
+      = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("make this preset auto set values depending on images")));
+  gtk_box_pack_start(box, GTK_WIDGET(g->autoinit), FALSE, FALSE, 0);
 
   g->autoapply
       = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto apply this preset to matching images")));
@@ -886,14 +899,17 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
     const int writeprotect = sqlite3_column_int(stmt, 4);
 
     if(op_params && (op_length == module->params_size))
-    {
       memcpy(module->params, op_params, op_length);
-      module->enabled = enabled;
-      // if module name has not been hand edited, use preset name as module label
-      if(!module->multi_name_hand_edited)
-        g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
-    }
-    if(blendop_params && (blendop_version == dt_develop_blend_version())
+    else
+      memcpy(module->params, module->default_params, module->params_size);
+
+    module->enabled = enabled;
+    // if module name has not been hand edited, use preset name as module label
+    if(!module->multi_name_hand_edited)
+      g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+
+    if(blendop_params
+       && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))
     {
       dt_iop_commit_blend_params(module, blendop_params);
@@ -1447,8 +1463,9 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op,
       found = TRUE;
 
     if(module
-       && !memcmp(module->default_params, op_params,
-                  MIN(op_params_size, module->params_size))
+       && (op_params_size == 0
+           || !memcmp(module->default_params, op_params,
+                      MIN(op_params_size, module->params_size)))
        && !memcmp(module->default_blendop_params, blendop_params,
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
       isdefault = TRUE;
@@ -1463,7 +1480,11 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op,
     g_free(label);
 
     if(module
-       && !memcmp(params, op_params, MIN(op_params_size, params_size))
+       && ((op_params_size == 0
+            && !memcmp(params, module->default_params,
+                       MIN(params_size, module->params_size)))
+            || (op_params_size > 0
+                && !memcmp(params, op_params, MIN(op_params_size, params_size))))
        && !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
        && module->enabled == enabled)
     {
