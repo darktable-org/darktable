@@ -1035,7 +1035,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   format_params->width = processed_width;
   format_params->height = processed_height;
 
-  // Check if all the metadata export flags are set for AVIF/EXR/JPEG XL (opt-in)
+  // Check if all the metadata export flags are set for AVIF/EXR/JPEG XL/XCF (opt-in)
   // TODO: this is a workround as these formats do not support fine grained metadata control through
   // dt_exif_xmp_attach_export() below due to lack of exiv2 write support
   // Note: that this is done only when we do not ignore_exif, so we have a proper filename
@@ -1044,7 +1044,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   if(!ignore_exif
      && (!strcmp(format->mime(NULL), "image/avif")
          || !strcmp(format->mime(NULL), "image/x-exr")
-         || !strcmp(format->mime(NULL), "image/jxl")))
+         || !strcmp(format->mime(NULL), "image/jxl")
+         || !strcmp(format->mime(NULL), "image/x-xcf")))
   {
     const int32_t meta_all = DT_META_EXIF | DT_META_METADATA | DT_META_GEOTAG | DT_META_TAG
                              | DT_META_HIERARCHICAL_TAG | DT_META_DT_HISTORY | DT_META_PRIVATE_TAG
