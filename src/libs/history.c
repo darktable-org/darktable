@@ -139,7 +139,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* add history list and buttonbox to widget */
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_scroll_wrap(d->history_box, 1, "plugins/darkroom/history/windowheight"), FALSE, FALSE, 0);
+                     dt_ui_resize_wrap(d->history_box, 1, "plugins/darkroom/history/windowheight"), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hhbox, FALSE, FALSE, 0);
 
   gtk_widget_show_all(self->widget);
