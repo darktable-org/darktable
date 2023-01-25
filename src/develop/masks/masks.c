@@ -1100,8 +1100,8 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
   }
 
   if(form->functions)
-    return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
-
+    return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0)
+        || which == 3; // swallow right-clicks even when not handled so right-drag rotate is disabled when forms visible
   return 0;
 }
 
