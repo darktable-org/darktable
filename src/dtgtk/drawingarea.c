@@ -43,7 +43,6 @@ static void dtgtk_drawing_area_class_init(GtkDarktableDrawingAreaClass *class)
 
 static void dtgtk_drawing_area_init(GtkDarktableDrawingArea *da)
 {
-  gtk_widget_set_hexpand(GTK_WIDGET(da), TRUE);
 }
 
 // public functions

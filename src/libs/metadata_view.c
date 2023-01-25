@@ -1350,7 +1350,7 @@ void gui_init(dt_lib_module_t *self)
   d->grid = child_grid_window;
   gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
 
-  self->widget = dt_ui_scroll_wrap(child_grid_window, 200, "plugins/lighttable/metadata_view/windowheight");
+  self->widget = dt_ui_resize_wrap(child_grid_window, 200, "plugins/lighttable/metadata_view/windowheight");
 
   gtk_widget_show_all(d->grid);
   gtk_widget_set_no_show_all(d->grid, TRUE);

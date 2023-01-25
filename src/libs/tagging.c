@@ -3060,7 +3060,7 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   view = GTK_TREE_VIEW(gtk_tree_view_new());
-  w = dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightattachedwindow");
+  w = dt_ui_resize_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightattachedwindow");
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->attached_view = view;
   gtk_tree_view_set_enable_search(view, FALSE);
@@ -3094,11 +3094,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("attached tags,"
-                                                  "\npress Delete or double-click to detach"
+  gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("attached tags"
+                                                  "\nDelete or double-click to detach"
                                                   "\nright-click for other actions on attached tag,"
-                                                  "\npress Tab to give the focus to entry,"
-                                                  "\nctrl+scroll to resize the window"));
+                                                  "\nTab to give the focus to entry"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_attached_key_pressed), (gpointer)self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
@@ -3165,7 +3164,7 @@ void gui_init(dt_lib_module_t *self)
 
   // dictionary_view tree view
   view = GTK_TREE_VIEW(gtk_tree_view_new());
-  w = dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightdictionarywindow");
+  w = dt_ui_resize_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightdictionarywindow");
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->dictionary_view = view;
   gtk_tree_view_set_enable_search(view, FALSE);
@@ -3209,12 +3208,11 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("tag dictionary,"
-                                                  "\npress Enter or double-click to attach selected tag on selected images,"
-                                                  "\nidem for shift+Enter plus gives the focus to entry,"
-                                                  "\nshift+click to fully expand the selected tag,"
-                                                  "\nright-click for other actions on selected tag,"
-                                                  "\npress shift+Tab to give the focus to entry,"
-                                                  "\nctrl+scroll to resize the window"));
+                                                  "\nEnter or double-click to attach selected tag on selected images"
+                                                  "\nshift+Enter idem plus gives the focus to entry"
+                                                  "\nshift+click to fully expand the selected tag"
+                                                  "\nright-click for other actions on selected tag"
+                                                  "\nshift+Tab to give the focus to entry"));
 
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_dictionary_key_pressed), (gpointer)self);

@@ -1312,12 +1312,6 @@ static gboolean checker_button_press(GtkWidget *widget, GdkEventButton *event,
   return FALSE;
 }
 
-static gboolean checker_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
-                                                    gpointer user_data)
-{
-  return FALSE; // ?
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_colorchecker_gui_data_t *g = IOP_GUI_ALLOC(colorchecker);
@@ -1335,7 +1329,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(checker_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(checker_button_press), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(checker_motion_notify), self);
-  g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(checker_leave_notify), self);
 
   g->patch = 0;
   g->drawn_patch = -1;

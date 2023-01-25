@@ -777,14 +777,14 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), d->label[i]);
     gtk_grid_attach(grid, labelev, 0, i, 1, 1);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(d->label[i]),
-              _("metadata text. ctrl+scroll to resize the text box"
-              "\n ctrl-enter inserts a new line (caution, may not be compatible with standard metadata)."
-              "\nif <leave unchanged> selected images have different metadata."
-              "\nin that case, right-click gives the possibility to choose one of them."
-              "\npress escape to exit the popup window"));
 
     GtkWidget *textview = gtk_text_view_new();
+    gtk_widget_set_tooltip_text(textview,
+              _("metadata text"
+              "\nctrl+enter inserts a new line (caution, may not be compatible with standard metadata)"
+              "\nif <leave unchanged> selected images have different metadata"
+              "\nin that case, right-click gives the possibility to choose one of them"
+              "\nescape to exit the popup window"));
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
     g_object_set_data(G_OBJECT(buffer), "buffer_tv", GINT_TO_POINTER(textview));
     g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
@@ -795,7 +795,7 @@ void gui_init(dt_lib_module_t *self)
     const char *name = (char *)dt_metadata_get_name_by_display_order(i);
     d->setting_name[i] = g_strdup_printf("plugins/lighttable/metadata/%s_text_height", name);
 
-    GtkWidget *swindow = dt_ui_scroll_wrap(GTK_WIDGET(textview), 100, d->setting_name[i]);
+    GtkWidget *swindow = dt_ui_resize_wrap(GTK_WIDGET(textview), 100, d->setting_name[i]);
 
     gtk_grid_attach(grid, swindow, 1, i, 1, 1);
     gtk_widget_set_hexpand(swindow, TRUE);
@@ -805,7 +805,8 @@ void gui_init(dt_lib_module_t *self)
     //while resizing the panel or typing into the widget
     //reported upstream to https://gitlab.gnome.org/GNOME/gtk/-/issues/4042
     //see also discussions on https://github.com/darktable-org/darktable/pull/10584
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(gtk_bin_get_child(GTK_BIN(swindow))),
+                                   GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
