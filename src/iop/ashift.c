@@ -4024,51 +4024,54 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     pzx += 0.5f;
     pzy += 0.5f;
 
-    PangoRectangle ink;
-    PangoLayout *layout;
-    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-    pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
-    layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, desc);
     const float bzx = g->straighten_x + .5f, bzy = g->straighten_y + .5f;
-    cairo_arc(cr, bzx * wd, bzy * ht, DT_PIXEL_APPLY_DPI(3) * pr_d, 0, 2.0 * M_PI);
+    cairo_arc(cr, bzx * wd, bzy * ht, DT_PIXEL_APPLY_DPI(3) * pr_d / zoom_scale, 0, 2.0 * M_PI);
     cairo_stroke(cr);
-    cairo_arc(cr, pzx * wd, pzy * ht, DT_PIXEL_APPLY_DPI(3) * pr_d, 0, 2.0 * M_PI);
+    cairo_arc(cr, pzx * wd, pzy * ht, DT_PIXEL_APPLY_DPI(3) * pr_d / zoom_scale, 0, 2.0 * M_PI);
     cairo_stroke(cr);
     cairo_move_to(cr, bzx * wd, bzy * ht);
     cairo_line_to(cr, pzx * wd, pzy * ht);
     cairo_stroke(cr);
 
-    // show rotation angle
     float dx = pzx * wd - bzx * wd, dy = pzy * ht - bzy * ht;
-    if(dx < 0)
+    if(sqrt(dx * dx + dy * dy) * zoom_scale >= DT_PIXEL_APPLY_DPI(25))
     {
-      dx = -dx;
-      dy = -dy;
-    }
-    float angle = atan2f(dy, dx);
-    angle = angle * 180 / M_PI;
-    if(angle > 45.0) angle -= 90;
-    if(angle < -45.0) angle += 90;
+      // show rotation angle
+      if(dx < 0)
+      {
+        dx = -dx;
+        dy = -dy;
+      }
+      float angle = atan2f(dy, dx);
+      angle = angle * 180 / M_PI;
+      if(angle > 45.0) angle -= 90;
+      if(angle < -45.0) angle += 90;
 
-    char view_angle[16];
-    view_angle[0] = '\0';
-    snprintf(view_angle, sizeof(view_angle), "%.2f°", angle);
-    pango_layout_set_text(layout, view_angle, -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    const float text_w = ink.width;
-    const float text_h = DT_PIXEL_APPLY_DPI(16 + 2) / zoom_scale;
-    const float margin = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
-    cairo_set_source_rgba(cr, .5, .5, .5, .9);
-    const float xp = pzx * wd + DT_PIXEL_APPLY_DPI(20) / zoom_scale;
-    const float yp = pzy * ht - ink.height;
-    dt_gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin, xp - margin, yp - margin);
-    cairo_set_source_rgba(cr, .7, .7, .7, .7);
-    cairo_move_to(cr, xp, yp);
-    pango_cairo_show_layout(cr, layout);
-    pango_font_description_free(desc);
-    g_object_unref(layout);
+      PangoRectangle ink;
+      PangoLayout *layout;
+      PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+      pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+      pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
+      layout = pango_cairo_create_layout(cr);
+      pango_layout_set_font_description(layout, desc);
+      char view_angle[16];
+      view_angle[0] = '\0';
+      snprintf(view_angle, sizeof(view_angle), "%.2f°", angle);
+      pango_layout_set_text(layout, view_angle, -1);
+      pango_layout_get_pixel_extents(layout, &ink, NULL);
+      const float text_w = ink.width;
+      const float text_h = DT_PIXEL_APPLY_DPI(16 + 2) / zoom_scale;
+      const float margin = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
+      cairo_set_source_rgba(cr, .5, .5, .5, .9);
+      const float xp = pzx * wd + DT_PIXEL_APPLY_DPI(20) / zoom_scale;
+      const float yp = pzy * ht - ink.height;
+      dt_gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin, xp - margin, yp - margin);
+      cairo_set_source_rgba(cr, .7, .7, .7, .7);
+      cairo_move_to(cr, xp, yp);
+      pango_cairo_show_layout(cr, layout);
+      pango_font_description_free(desc);
+      g_object_unref(layout);
+    }
     cairo_restore(cr);
   }
 
@@ -4803,6 +4806,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
     float dx = pts[0] - pts[2];
     float dy = pts[1] - pts[3];
+    if(sqrt(dx * dx + dy * dy) /* zoom_scale */ < DT_PIXEL_APPLY_DPI(25))
+      return TRUE;
+
     if(dx < 0)
     {
       dx = -dx;
@@ -4823,8 +4829,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(a < -180.0) a += 360.0;
     if(a > 180.0) a -= 360.0;
 
-    a -= dt_bauhaus_slider_get(g->rotation);
-    dt_bauhaus_slider_set(g->rotation, -a);
+    float n = dt_bauhaus_slider_get(g->rotation) - a;
+    dt_bauhaus_slider_set(g->rotation, n);
+    dt_toast_log(_("rotation adjusted by %3.1f° to %3.1f°"), -a, n);
     return TRUE;
   }
 
