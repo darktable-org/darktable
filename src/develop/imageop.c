@@ -1179,7 +1179,7 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
   if(stderr_message)
   {
     const char *name = module ? module->name() : "?";
-    fprintf(stderr, "[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
+    dt_print(DT_DEBUG_ALWAYS, "Trouble: [%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
   }
 
   if(!dt_iop_is_hidden(module) && module->gui_data && dt_conf_get_bool("plugins/darkroom/show_warnings"))
