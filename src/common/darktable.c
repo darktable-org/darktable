@@ -674,7 +674,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
         if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted = 0xffffffff & ~DT_DEBUG_VERBOSE; // enable all debug information except verbose
+          darktable.unmuted = DT_DEBUG_ALL; // enable all debug information except verbose
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k + 1], "control"))
@@ -1540,14 +1540,18 @@ void dt_cleanup()
 }
 
 /* The dt_print variations can be used with a combination of DT_DEBUG_ flags.
-   A special case: if you combine with DT_DEBUG_VERBOSE output will only be done
-   if dt has been started with -d verbose
+   Two special cases are supported also:
+   a) if you combine with DT_DEBUG_VERBOSE, output will only be written if dt had
+      been started with -d verbose
+   b) 'thread' may be identical to DT_DEBUG_ALWAYS to write output 
 */
 void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 {
-  if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
-  if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
-
+  if(thread != DT_DEBUG_ALWAYS)
+  {
+    if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
+    if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
+  }
   char buf[128];
   char vbuf[2048];
   snprintf(buf, sizeof(buf), "%.4f", dt_get_wtime() - darktable.start_wtime);
@@ -1563,9 +1567,11 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 
 void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...)
 {
-  if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
-  if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
-
+  if(thread != DT_DEBUG_ALWAYS)
+  {
+    if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
+    if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
+  }
   char vbuf[2048];
   va_list ap;
   va_start(ap, msg);

@@ -109,9 +109,11 @@ void dt_print_pipe(dt_debug_thread_t thread, const char *title, dt_dev_pixelpipe
       const dt_iop_roi_t *roi_out,
       const char *msg, ...)
 {
-  if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
-  if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
-
+  if(thread != DT_DEBUG_ALWAYS)
+  {
+    if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
+    if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
+  }
   char buf[3][128];
   char vbuf[2048] = { 0 };
   char rois[1024] = { 0 };
