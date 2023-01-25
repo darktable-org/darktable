@@ -805,7 +805,8 @@ void gui_init(dt_lib_module_t *self)
     //while resizing the panel or typing into the widget
     //reported upstream to https://gitlab.gnome.org/GNOME/gtk/-/issues/4042
     //see also discussions on https://github.com/darktable-org/darktable/pull/10584
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(gtk_bin_get_child(GTK_BIN(swindow))),
+                                   GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
