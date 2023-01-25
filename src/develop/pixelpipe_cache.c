@@ -31,7 +31,11 @@ static inline int _to_mb(size_t m)
   return (int)((m + 0x80000lu) / 0x400lu / 0x400lu);
 }
 
-gboolean dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size, size_t limit)
+gboolean dt_dev_pixelpipe_cache_init(
+           dt_dev_pixelpipe_cache_t *cache,
+           int entries,
+           size_t size,
+           size_t limit)
 {
   cache->entries = entries;
   cache->allmem = cache->queries = cache->misses = 0;
@@ -110,7 +114,10 @@ void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
   cache->modname = NULL;
 }
 
-uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *pipe, int module)
+uint64_t dt_dev_pixelpipe_cache_basichash(
+           int imgid,
+           struct dt_dev_pixelpipe_t *pipe,
+           int module)
 {
   // bernstein hash (djb2)
   uint64_t hash = 5381;
@@ -150,8 +157,10 @@ uint64_t dt_dev_pixelpipe_cache_basichash(int imgid, struct dt_dev_pixelpipe_t *
   return hash;
 }
 
-uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpipe_t *pipe,
-                                                const dt_iop_module_t *const module)
+uint64_t dt_dev_pixelpipe_cache_basichash_prior(
+           int imgid,
+           struct dt_dev_pixelpipe_t *pipe,
+           const dt_iop_module_t *const module)
 {
   // find the last enabled module prior to the specified one, then get its hash
   GList *pieces = pipe->nodes;
@@ -173,8 +182,13 @@ uint64_t dt_dev_pixelpipe_cache_basichash_prior(int imgid, struct dt_dev_pixelpi
   return last>=0 ? dt_dev_pixelpipe_cache_basichash(imgid, pipe, last) : -1;
 }
 
-void dt_dev_pixelpipe_cache_fullhash(int imgid, const dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, int module,
-                                     uint64_t *basichash, uint64_t *fullhash)
+void dt_dev_pixelpipe_cache_fullhash(
+        int imgid,
+        const dt_iop_roi_t *roi,
+        struct dt_dev_pixelpipe_t *pipe,
+        int module,
+        uint64_t *basichash,
+        uint64_t *fullhash)
 {
   uint64_t hash = *basichash = dt_dev_pixelpipe_cache_basichash(imgid, pipe, module);
   // also add scale, x and y:
@@ -184,14 +198,21 @@ void dt_dev_pixelpipe_cache_fullhash(int imgid, const dt_iop_roi_t *roi, struct 
   *fullhash = hash;
 }
 
-uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_pixelpipe_t *pipe, int module)
+uint64_t dt_dev_pixelpipe_cache_hash(
+           int imgid,
+           const dt_iop_roi_t *roi,
+           dt_dev_pixelpipe_t *pipe,
+           int module)
 {
   uint64_t basichash, hash;
   dt_dev_pixelpipe_cache_fullhash(imgid, roi, pipe, module, &basichash, &hash);
   return hash;
 }
 
-gboolean dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size)
+gboolean dt_dev_pixelpipe_cache_available(
+           dt_dev_pixelpipe_cache_t *cache,
+           const uint64_t hash,
+           const size_t size)
 {
   // search for hash in cache and make the sizes are identical
   for(int k = 0; k < cache->entries; k++)
@@ -264,7 +285,7 @@ static int _get_oldest_highgrp_line(dt_dev_pixelpipe_cache_t *cache)
 
 static int _get_cacheline(dt_dev_pixelpipe_cache_t *cache)
 {
-  // Simplest case is some pipes we with only two cachelines, so we
+  // Simplest case is some pipes having only two cachelines, so we
   // can toggle between them.
   if(cache->entries == 2) return cache->queries & 1;
 
@@ -277,9 +298,13 @@ static int _get_cacheline(dt_dev_pixelpipe_cache_t *cache)
   return _get_oldest_cacheline(cache);
 }
 
-static gboolean _get_by_hash(struct dt_dev_pixelpipe_t *pipe,
-                             const uint64_t hash, const size_t size,
-                             void **data, dt_iop_buffer_dsc_t **dsc, const char *const name)
+static gboolean _get_by_hash(
+          struct dt_dev_pixelpipe_t *pipe,
+          const uint64_t hash,
+          const size_t size,
+          void **data,
+          dt_iop_buffer_dsc_t **dsc,
+          const char *const name)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
 
@@ -314,7 +339,8 @@ static gboolean _get_by_hash(struct dt_dev_pixelpipe_t *pipe,
 
         dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_cache_get", pipe, name, NULL, NULL,
           "HIT %s line%3i, age %4i at %p hash%22" PRIu64 ", basic%22" PRIu64 "\n",
-          (cache->used[k] < 0) ? "important" : "         ", k, cache->used[k], cache->data[k], cache->hash[k], cache->basichash[k]); 
+          (cache->used[k] < 0) ? "important" : "         ",
+          k, cache->used[k], cache->data[k], cache->hash[k], cache->basichash[k]); 
 
         // in case of a hit it's always good to further keep the cacheline as important
         cache->used[k] = -cache->entries;
@@ -326,8 +352,15 @@ static gboolean _get_by_hash(struct dt_dev_pixelpipe_t *pipe,
   return FALSE;
 }
 
-gboolean dt_dev_pixelpipe_cache_get(struct dt_dev_pixelpipe_t *pipe, const uint64_t basichash, const uint64_t hash,
-                                    const size_t size, void **data, dt_iop_buffer_dsc_t **dsc, char *name, const gboolean important)
+gboolean dt_dev_pixelpipe_cache_get(
+           struct dt_dev_pixelpipe_t *pipe,
+           const uint64_t basichash,
+           const uint64_t hash,
+           const size_t size,
+           void **data,
+           dt_iop_buffer_dsc_t **dsc,
+           char *name,
+           const gboolean important)
 {
   dt_dev_pixelpipe_cache_t *cache = &(pipe->cache);
   cache->queries++;
@@ -407,7 +440,9 @@ void dt_dev_pixelpipe_cache_flush(dt_dev_pixelpipe_cache_t *cache)
   }
 }
 
-void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint64_t basichash)
+void dt_dev_pixelpipe_cache_flush_all_but(
+        dt_dev_pixelpipe_cache_t *cache,
+        uint64_t basichash)
 {
   for(int k = 0; k < cache->entries; k++)
   {
@@ -420,7 +455,10 @@ void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint6
   }
 }
 
-void dt_dev_pixelpipe_cache_reweight(struct dt_dev_pixelpipe_t *pipe, void *data, const size_t size)
+void dt_dev_pixelpipe_cache_reweight(
+       struct dt_dev_pixelpipe_t *pipe,
+       void *data,
+       const size_t size)
 {
   const int avoiding = pipe->mask_display & (DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU | DT_DEV_PIXELPIPE_DISPLAY_ANY);
   if(avoiding)
@@ -431,7 +469,8 @@ void dt_dev_pixelpipe_cache_reweight(struct dt_dev_pixelpipe_t *pipe, void *data
     if((cache->data[k] == data) && (size == cache->size[k]))
     {
       cache->used[k] = -cache->entries;
-      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipecache reweight", pipe, cache->modname[k], NULL, NULL,
+      dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "pipecache reweight",
+        pipe, cache->modname[k], NULL, NULL,
         "line%3i, age %4i, hash%22" PRIu64 ", basic%22" PRIu64 "\n", k, cache->used[k], cache->hash[k], cache->basichash[k]);
     }
   }
@@ -451,10 +490,14 @@ void dt_dev_pixelpipe_cache_invalidate(dt_dev_pixelpipe_cache_t *cache, void *da
   }
 }
 
-static size_t _free_cacheline(dt_dev_pixelpipe_cache_t *cache, const int k, struct dt_dev_pixelpipe_t *pipe)
+static size_t _free_cacheline(
+        dt_dev_pixelpipe_cache_t *cache,
+        const int k,
+        struct dt_dev_pixelpipe_t *pipe)
 {
   const size_t removed = cache->size[k];
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "free pipe cacheline", pipe, cache->modname[k], NULL, NULL,
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "free pipe cacheline",
+    pipe, cache->modname[k], NULL, NULL,
     "line%3i, age %4i, size=%iMB\n", k, cache->used[k], _to_mb(removed));
 
   dt_free_align(cache->data[k]);
