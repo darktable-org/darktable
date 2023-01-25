@@ -1499,7 +1499,7 @@ static int _iso_12646_get_border(dt_develop_t *d)
 {
   if(d->iso_12646.enabled)
   {
-    return MIN(1.75 * darktable.gui->dpi, 0.3 * MIN(d->width, d->height));
+    return MIN(0.9 * darktable.gui->dpi, 0.14 * MIN(d->width, d->height));
   }
   else
   {
