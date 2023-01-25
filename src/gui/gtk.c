@@ -3121,7 +3121,7 @@ static gboolean _resize_wrap_motion(GtkWidget *widget, GdkEventMotion *event, co
     else
     {
       dt_conf_set_int(config_str, event->y);
-      gtk_widget_queue_draw(gtk_bin_get_child(GTK_BIN(widget)));
+      gtk_widget_queue_draw(gtk_bin_get_child(GTK_BIN(gtk_bin_get_child(GTK_BIN(widget)))));
     }
     return TRUE;
   }
@@ -3167,33 +3167,36 @@ static gboolean _resize_wrap_leave(GtkWidget *widget, GdkEventCrossing *event, c
 
 GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str)
 {
-  GtkWidget *sw = w ? w : dtgtk_drawing_area_new_with_aspect_ratio(1.0);
-  if(DTGTK_IS_DRAWING_AREA(sw))
+  if(!w) w = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
+  if(DTGTK_IS_DRAWING_AREA(w))
   {
     const float aspect = dt_conf_get_int(config_str);
-    dtgtk_drawing_area_set_aspect_ratio(sw, aspect / 100.0);
-    g_signal_connect(G_OBJECT(sw), "scroll-event", G_CALLBACK(_scroll_wrap_aspect), config_str);
+    dtgtk_drawing_area_set_aspect_ratio(w, aspect / 100.0);
+    g_signal_connect(G_OBJECT(w), "scroll-event", G_CALLBACK(_scroll_wrap_aspect), config_str);
   }
   else
   {
-    sw = gtk_scrolled_window_new(NULL, NULL);
+    GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), - DT_PIXEL_APPLY_DPI(min_size));
     g_signal_connect(G_OBJECT(sw), "scroll-event", G_CALLBACK(_resize_wrap_scroll), config_str);
     g_signal_connect(G_OBJECT(w), "draw", G_CALLBACK(_resize_wrap_draw), config_str);
     gtk_container_add(GTK_CONTAINER(sw), w);
+    gtk_widget_set_margin_bottom(sw, DT_RESIZE_HANDLE_SIZE);
+    w = gtk_event_box_new();
+    gtk_container_add(GTK_CONTAINER(w), sw);
   }
 
-  gtk_widget_add_events(sw, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                          | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
-  g_signal_connect(G_OBJECT(sw), "motion-notify-event", G_CALLBACK(_resize_wrap_motion), config_str);
-  g_signal_connect(G_OBJECT(sw), "button-press-event", G_CALLBACK(_resize_wrap_button), config_str);
-  g_signal_connect(G_OBJECT(sw), "button-release-event", G_CALLBACK(_resize_wrap_button), config_str);
-  g_signal_connect(G_OBJECT(sw), "leave-notify-event", G_CALLBACK(_resize_wrap_leave), config_str);
-  g_object_set_data(G_OBJECT(sw), "scroll-resize-tooltip", GINT_TO_POINTER(TRUE));
+  gtk_widget_add_events(w, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                         | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(_resize_wrap_motion), config_str);
+  g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(_resize_wrap_button), config_str);
+  g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(_resize_wrap_button), config_str);
+  g_signal_connect(G_OBJECT(w), "leave-notify-event", G_CALLBACK(_resize_wrap_leave), config_str);
+  g_object_set_data(G_OBJECT(w), "scroll-resize-tooltip", GINT_TO_POINTER(TRUE));
 
-  return sw;
+  return w;
 }
 
 gboolean dt_gui_container_has_children(GtkContainer *container)
