@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-01-19 17:46+0100\n"
-"PO-Revision-Date: 2023-01-20 19:37+0200\n"
+"PO-Revision-Date: 2023-01-25 17:17+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -8170,7 +8170,7 @@ msgstr "тимчасово вимкнути маску змішування. л�
 
 #: ../src/develop/develop.c:1568 ../src/gui/presets.c:974
 msgid "display-referred default"
-msgstr "display-referred default"
+msgstr "замовчування процесу \"на основі відображення\""
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
@@ -8178,7 +8178,7 @@ msgstr "display-referred default"
 #: ../src/develop/develop.c:1570 ../src/gui/presets.c:976
 #: ../src/iop/exposure.c:278 ../src/iop/exposure.c:287
 msgid "scene-referred default"
-msgstr "scene-referred default"
+msgstr "замовчування процесу \"на основі сцен\""
 
 #: ../src/develop/develop.c:2096
 #, c-format
