@@ -164,6 +164,7 @@ Required dependencies (minimum version):
 * Exiv2 0.24 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
 
 Required dependencies (no version requirement):
+* Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)
 * Little CMS 2
 
 Optional dependencies (minimum version):
@@ -179,7 +180,6 @@ Optional dependencies (minimum version):
 * WebP 0.3.0 *(for WebP import & export)*
 
 Optional dependencies (no version requirement):
-* Lensfun *(for automatic lens correction)*
 * colord, Xatom *(for fetching the system display color profile)*
 * G'MIC *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*
