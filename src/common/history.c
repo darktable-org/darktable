@@ -389,7 +389,14 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     module->enabled = mod_src->enabled;
     g_strlcpy(module->multi_name, modsrc_multi_name, sizeof(module->multi_name));
 
-    memcpy(module->params, mod_src->params, module->params_size);
+    if(mod_src->params == NULL)
+    {
+      module->params = NULL;
+      module->params_size = 0;
+    }
+    else
+      memcpy(module->params, mod_src->params, module->params_size);
+
     if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
       memcpy(module->blend_params, mod_src->blend_params, sizeof(dt_develop_blend_params_t));
@@ -542,16 +549,24 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
     // copy only selected history entries
     for(const GList *l = g_list_last(ops); l; l = g_list_previous(l))
     {
-      const unsigned int num = GPOINTER_TO_UINT(l->data);
+      const int num = GPOINTER_TO_INT(l->data);
+      const gboolean autoinit = (num < 0);
 
-      const dt_dev_history_item_t *hist = g_list_nth_data(dev_src->history, num);
+      const dt_dev_history_item_t *hist = g_list_nth_data(dev_src->history, abs(num));
+
+      if(autoinit)
+      {
+        hist->module->params = NULL;
+        hist->module->params_size = 0;
+      }
 
       if(hist)
       {
         if(!dt_iop_is_hidden(hist->module))
         {
           if(DT_IOP_ORDER_INFO)
-            fprintf(stderr,"\n  module %20s, multiprio %i",  hist->module->op, hist->module->multi_priority);
+            fprintf(stderr,"\n  module %20s, multiprio %i",
+                    hist->module->op, hist->module->multi_priority);
 
           mod_list = g_list_prepend(mod_list, hist->module);
         }
