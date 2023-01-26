@@ -133,7 +133,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
                      (Imf::Compression)exr->compression);
 
   char comment[1024];
-  snprintf(comment, sizeof(comment), "Developed using %s", darktable_package_string);
+  snprintf(comment, sizeof(comment), "Created with %s", darktable_package_string);
 
   header.insert("comment", Imf::StringAttribute(comment));
 
