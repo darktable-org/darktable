@@ -418,7 +418,9 @@ static void _edit_preset_response(GtkDialog *dialog,
   free(g);
 }
 
-gboolean dt_gui_presets_confirm_and_delete(const char *name, const char *module_name, int rowid)
+gboolean dt_gui_presets_confirm_and_delete(const char *name,
+                                           const char *module_name,
+                                           const int rowid)
 {
   if(!module_name) return FALSE;
 
@@ -461,7 +463,8 @@ gboolean dt_gui_presets_confirm_and_delete(const char *name, const char *module_
   return FALSE;
 }
 
-static void _check_buttons_activated(GtkCheckButton *button, dt_gui_presets_edit_dialog_t *g)
+static void _check_buttons_activated(GtkCheckButton *button,
+                                     dt_gui_presets_edit_dialog_t *g)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply))
      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)))
@@ -475,8 +478,10 @@ static void _check_buttons_activated(GtkCheckButton *button, dt_gui_presets_edit
     gtk_widget_set_visible(GTK_WIDGET(g->details), FALSE);
 }
 
-static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean allow_name_change,
-                                      gboolean allow_desc_change, gboolean allow_remove)
+static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
+                                      const gboolean allow_name_change,
+                                      const gboolean allow_desc_change,
+                                      const gboolean allow_remove)
 {
   /* Create the widgets */
   char title[1024];
@@ -714,9 +719,10 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
     dt_bauhaus_combobox_set(g->aperture_max, k);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_min), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), 1000);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), 0);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), 0);
-    for(k = 0; k < 5; k++) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), FALSE);
+    for(k = 0; k < 5; k++)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), TRUE);
   }
   sqlite3_finalize(stmt);
 
@@ -748,9 +754,9 @@ void dt_gui_presets_show_iop_edit_dialog(const char *name_in,
                                          dt_iop_module_t *module,
                                          GCallback final_callback,
                                          gpointer data,
-                                         gboolean allow_name_change,
-                                         gboolean allow_desc_change,
-                                         gboolean allow_remove,
+                                         const gboolean allow_name_change,
+                                         const gboolean allow_desc_change,
+                                         const gboolean allow_remove,
                                          GtkWindow *parent)
 {
   dt_gui_presets_edit_dialog_t *g
@@ -773,9 +779,9 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
                                      int rowid,
                                      GCallback final_callback,
                                      gpointer data,
-                                     gboolean allow_name_change,
-                                     gboolean allow_desc_change,
-                                     gboolean allow_remove,
+                                     const gboolean allow_name_change,
+                                     const gboolean allow_desc_change,
+                                     const gboolean allow_remove,
                                      GtkWindow *parent)
 {
   sqlite3_stmt *stmt;
