@@ -121,7 +121,9 @@ static void _gui_hist_copy_response(GtkDialog *dialog,
   }
 }
 
-static void _gui_hist_item_toggled(GtkCellRendererToggle *cell, gchar *path_str, gpointer data)
+static void _gui_hist_item_toggled(GtkCellRendererToggle *cell,
+                                   const gchar *path_str,
+                                   gpointer data)
 {
   dt_history_copy_item_t *d = (dt_history_copy_item_t *)data;
 
@@ -186,7 +188,9 @@ tree_on_row_activated(GtkTreeView        *treeview,
   }
 }
 
-int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, const int imgid, const gboolean iscopy)
+int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
+                           const int imgid,
+                           const gboolean iscopy)
 {
   int res;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -224,13 +228,15 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, const int imgid, const gbo
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_ENABLED);
   g_signal_connect(renderer, "toggled", G_CALLBACK(_gui_hist_item_toggled), d);
 
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("include"), renderer, "active",
-                                              DT_HIST_ITEMS_COL_ENABLED, NULL);
+  gtk_tree_view_insert_column_with_attributes
+    (GTK_TREE_VIEW(d->items), -1, _("include"), renderer, "active",
+     DT_HIST_ITEMS_COL_ENABLED, NULL);
 
   /* active */
   renderer = gtk_cell_renderer_pixbuf_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("", renderer, "pixbuf",
-                                                                       DT_HIST_ITEMS_COL_ISACTIVE, NULL);
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes
+    ("", renderer, "pixbuf",
+     DT_HIST_ITEMS_COL_ISACTIVE, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(d->items), column);
   gtk_tree_view_column_set_alignment(column, 0.5);
   gtk_tree_view_column_set_clickable(column, FALSE);
@@ -240,14 +246,18 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, const int imgid, const gbo
   renderer = gtk_cell_renderer_text_new();
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_NAME);
   g_object_set(renderer, "xalign", 0.0, (gchar *)0);
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("item"), renderer, "text",
-                                              DT_HIST_ITEMS_COL_NAME, NULL);
+  gtk_tree_view_insert_column_with_attributes
+    (GTK_TREE_VIEW(d->items), -1, _("item"), renderer, "text",
+     DT_HIST_ITEMS_COL_NAME, NULL);
 
-  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)), GTK_SELECTION_SINGLE);
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)),
+                              GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->items), GTK_TREE_MODEL(liststore));
 
-  GdkPixbuf *is_active_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch);
-  GdkPixbuf *is_inactive_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch_inactive);
+  GdkPixbuf *is_active_pb =
+    dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch);
+  GdkPixbuf *is_inactive_pb =
+    dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch_inactive);
 
   /* fill list with history items */
   GList *items = dt_history_get_items(imgid, FALSE);
@@ -296,7 +306,8 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, const int imgid, const gbo
     return GTK_RESPONSE_CANCEL;
   }
 
-  g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated", (GCallback)tree_on_row_activated, GTK_WIDGET(dialog));
+  g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated",
+                   (GCallback)tree_on_row_activated, GTK_WIDGET(dialog));
   g_object_unref(liststore);
 
   g_signal_connect(dialog, "response", G_CALLBACK(_gui_hist_copy_response), d);
@@ -306,7 +317,9 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, const int imgid, const gbo
   while(1)
   {
     res = gtk_dialog_run(GTK_DIALOG(dialog));
-    if(res == GTK_RESPONSE_CANCEL || res == GTK_RESPONSE_DELETE_EVENT || res == GTK_RESPONSE_OK) break;
+    if(res == GTK_RESPONSE_CANCEL
+       || res == GTK_RESPONSE_DELETE_EVENT
+       || res == GTK_RESPONSE_OK) break;
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
