@@ -35,6 +35,7 @@ typedef enum _style_items_columns_t
 {
   DT_HIST_ITEMS_COL_ENABLED = 0,
   DT_HIST_ITEMS_COL_ISACTIVE,
+  DT_HIST_ITEMS_COL_AUTOINIT,
   DT_HIST_ITEMS_COL_NAME,
   DT_HIST_ITEMS_COL_NUM,
   DT_HIST_ITEMS_NUM_COLS
@@ -73,10 +74,16 @@ static GList *_gui_hist_get_active_items(dt_history_copy_item_t *d)
     do
     {
       gboolean active = FALSE;
+      gboolean autoinit = FALSE;
       gint num = 0;
-      gtk_tree_model_get(model, &iter, DT_HIST_ITEMS_COL_ENABLED, &active, DT_HIST_ITEMS_COL_NUM, &num, -1);
+      gtk_tree_model_get(model, &iter,
+                         DT_HIST_ITEMS_COL_ENABLED, &active,
+                         DT_HIST_ITEMS_COL_AUTOINIT, &autoinit,
+                         DT_HIST_ITEMS_COL_NUM, &num,
+                         -1);
+
       if(active && num >= 0)
-        result = g_list_prepend(result, GINT_TO_POINTER(num));
+        result = g_list_prepend(result, GINT_TO_POINTER(autoinit ? -num : num));
 
     } while(gtk_tree_model_iter_next(model, &iter));
   }
@@ -127,17 +134,20 @@ static void _gui_hist_item_toggled(GtkCellRendererToggle *cell,
 {
   dt_history_copy_item_t *d = (dt_history_copy_item_t *)data;
 
+  const _styles_columns_t col =
+    GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell), "column"));
+
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->items));
   GtkTreePath *path = gtk_tree_path_new_from_string(path_str);
   GtkTreeIter iter;
   gboolean toggle_item;
 
   gtk_tree_model_get_iter(model, &iter, path);
-  gtk_tree_model_get(model, &iter, DT_HIST_ITEMS_COL_ENABLED, &toggle_item, -1);
+  gtk_tree_model_get(model, &iter, col, &toggle_item, -1);
 
   toggle_item = (toggle_item == TRUE) ? FALSE : TRUE;
 
-  gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_HIST_ITEMS_COL_ENABLED, toggle_item, -1);
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, col, toggle_item, -1);
   gtk_tree_path_free(path);
 }
 
@@ -173,7 +183,8 @@ tree_on_row_activated(GtkTreeView        *treeview,
   {
     do
     {
-      gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_HIST_ITEMS_COL_ENABLED, FALSE, -1);
+      gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+                         DT_HIST_ITEMS_COL_ENABLED, FALSE, -1);
 
     } while(gtk_tree_model_iter_next(model, &iter));
   }
@@ -220,7 +231,8 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
 
   GtkListStore *liststore
     = gtk_list_store_new(DT_HIST_ITEMS_NUM_COLS,
-                         G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_UINT);
+                         G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN,
+                         G_TYPE_STRING, G_TYPE_UINT);
 
   /* enabled */
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
@@ -231,6 +243,16 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
   gtk_tree_view_insert_column_with_attributes
     (GTK_TREE_VIEW(d->items), -1, _("include"), renderer, "active",
      DT_HIST_ITEMS_COL_ENABLED, NULL);
+
+  /* auto-init */
+  renderer = gtk_cell_renderer_toggle_new();
+  gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
+  g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_AUTOINIT);
+  g_signal_connect(renderer, "toggled", G_CALLBACK(_gui_hist_item_toggled), d);
+
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("reset"),
+                                              renderer, "active",
+                                              DT_HIST_ITEMS_COL_AUTOINIT, NULL);
 
   /* active */
   renderer = gtk_cell_renderer_pixbuf_new();
@@ -275,12 +297,14 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d,
         const gboolean is_safe = !dt_history_module_skip_copy(flags);
 
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-        gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
-                           DT_HIST_ITEMS_COL_ENABLED, iscopy ? is_safe : _gui_is_set(d->selops, item->num),
-                           DT_HIST_ITEMS_COL_ISACTIVE, (gboolean)item->enabled ? is_active_pb : is_inactive_pb,
-                           DT_HIST_ITEMS_COL_NAME, item->name,
-                           DT_HIST_ITEMS_COL_NUM, (gint)item->num,
-                           -1);
+        gtk_list_store_set
+          (GTK_LIST_STORE(liststore), &iter,
+           DT_HIST_ITEMS_COL_ENABLED, iscopy ? is_safe : _gui_is_set(d->selops, item->num),
+           DT_HIST_ITEMS_COL_AUTOINIT, FALSE,
+           DT_HIST_ITEMS_COL_ISACTIVE, (gboolean)item->enabled ? is_active_pb : is_inactive_pb,
+           DT_HIST_ITEMS_COL_NAME, item->name,
+           DT_HIST_ITEMS_COL_NUM, (gint)item->num,
+           -1);
       }
     }
     g_list_free_full(items, dt_history_item_free);
