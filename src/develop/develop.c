@@ -768,10 +768,13 @@ void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
 void dt_dev_second_window_configure(dt_develop_t *dev, int wd, int ht)
 {
   // fixed border on every side
-  const int32_t tb =
-    dev->iso_12646.enabled
-    ? MIN(1.75 * dev->second_window.dpi, 0.3 * MIN(wd, ht))
-    : 0;
+  int32_t tb = 0;
+  if(dev->iso_12646.enabled)
+  {
+    const int bsize = dev->second_window.dpi * dt_conf_get_float("darkroom/ui/iso12464_border") / 2.54f;
+    // we want to make some some stupid settings are avoided.
+    tb = MIN(MAX(2, bsize), 0.3f * MIN(wd, ht));
+  }
 
   wd -= 2*tb;
   ht -= 2*tb;
