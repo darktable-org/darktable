@@ -147,9 +147,13 @@ static gchar *_get_active_preset_name(dt_iop_module_t *module, int *writeprotect
     const int32_t bl_params_size = sqlite3_column_bytes(stmt, 2);
     const int enabled = sqlite3_column_int(stmt, 3);
 
-    if(!memcmp(module->params, op_params, MIN(op_params_size, module->params_size))
+    if(((op_params_size == 0
+         && !memcmp(module->default_params, module->params, module->params_size))
+        || ((op_params_size > 0
+             && !memcmp(module->params, op_params, MIN(op_params_size, module->params_size)))))
        && !memcmp(module->blend_params, blendop_params,
-                  MIN(bl_params_size, sizeof(dt_develop_blend_params_t))) && module->enabled == enabled)
+                  MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
+       && module->enabled == enabled)
     {
       name = g_strdup((char *)sqlite3_column_text(stmt, 0));
       *writeprotect = sqlite3_column_int(stmt, 4);
@@ -648,7 +652,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     (dt_database_get(darktable.db),
      "SELECT rowid, description, model, maker, lens, iso_min, iso_max, "
      "       exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, "
-     "       focal_length_max, autoapply, filter, format"
+     "       focal_length_max, autoapply, filter, format, op_params"
      " FROM data.presets"
      " WHERE name = ?1 AND operation = ?2 AND op_version = ?3",
      -1, &stmt, NULL);
@@ -656,6 +660,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, g->original_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->operation, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->op_version);
+
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     g->old_id = sqlite3_column_int(stmt, 0);
@@ -690,6 +695,9 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     const int format = (sqlite3_column_int(stmt, 15)) ^ DT_PRESETS_FOR_NOT;
     for(k = 0; k < 5; k++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), format & (_gui_presets_format_flag[k]));
+
+    const int op_params_length = sqlite3_column_bytes(stmt, 16);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoinit), (op_params_length == 0));
   }
   else
   {
@@ -721,6 +729,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->focal_length_max), 1000);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoinit), FALSE);
+
     for(k = 0; k < 5; k++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->format_btn[k]), TRUE);
   }
