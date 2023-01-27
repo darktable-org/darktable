@@ -145,6 +145,9 @@ const gchar *dt_lib_histogram_orient_names[DT_LIB_HISTOGRAM_ORIENT_N] = { "horiz
 const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "u*v*", "AzBz", "RYB" };
 const gchar *dt_lib_histogram_color_harmony_width_names[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] = { "normal", "large", "narrow", "line" };
 
+const float dt_lib_histogram_color_harmony_width[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] =
+    { 0.5f/12.f, 0.75f/12.f, 0.25f/12.f, 0.0f };
+
 const void *dt_lib_histogram_scope_type_icons[DT_LIB_HISTOGRAM_SCOPE_N] =
              { dtgtk_cairo_paint_histogram_scope,
                dtgtk_cairo_paint_waveform_scope,
@@ -1135,24 +1138,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   {
     cairo_save(cr);
 
-    float hw = 0.f;
-    switch(d->harmony_width)
-    {
-      case DT_LIB_HISTOGRAM_HARMONY_WIDTH_NORMAL:
-        hw = 0.5f / 12.f;
-        break;
-      case DT_LIB_HISTOGRAM_HARMONY_WIDTH_LARGE:
-        hw = 0.75f / 12.f;
-        break;
-      case DT_LIB_HISTOGRAM_HARMONY_WIDTH_NARROW:
-        hw = 0.25f / 12.f;
-        break;
-      case DT_LIB_HISTOGRAM_HARMONY_WIDTH_LINE:
-        break;
-      case DT_LIB_HISTOGRAM_HARMONY_WIDTH_N:
-        dt_unreachable_codepath();
-        break;
-    }
+    float hw = dt_lib_histogram_color_harmony_width[d->harmony_width];
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
     dt_lib_histogram_color_harmony_t hm = dt_color_harmonies[d->color_harmony];
     for(int i = 0; i < hm.sectors; i++)
