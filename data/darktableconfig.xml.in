@@ -2124,6 +2124,19 @@
     <shortdescription>border around image in darkroom mode</shortdescription>
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/iso12464_border</name>
+    <type min="1.0" max="5.0">float</type>
+    <default>4.0</default>
+    <shortdescription>total width of border in iso 12646 mode (cm)</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/iso12464_ratio</name>
+    <type min="0.1" max="0.9">float</type>
+    <default>0.40</default>
+    <shortdescription>fraction of white border part in iso 12646 mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="darkroom" section="general">
     <name>darkroom/ui/scrollbars</name>
     <type>bool</type>

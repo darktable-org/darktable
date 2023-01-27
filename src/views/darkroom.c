@@ -523,8 +523,8 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // force middle grey in background
-      cairo_set_source_rgb(cr, 0.4663, 0.4663, 0.4663);
-    }
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_BG);
+   }
     else
     {
       if(dev->full_preview)
@@ -554,7 +554,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // force middle grey in background
-      cairo_set_source_rgb(cr, 0.4663, 0.4663, 0.4663);
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_BG);
     }
     else
     {
@@ -566,9 +566,10 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // draw the white frame around picture
-      const double tbw = (float)(tb >> closeup) / 3.0;
+      const double ratio = dt_conf_get_float("darkroom/ui/iso12464_ratio");
+      const double tbw = tb * (1.0 - ratio);
       cairo_rectangle(cr, tbw, tbw, width - 2.0 * tbw, height - 2.0 * tbw);
-      cairo_set_source_rgb(cr, 1., 1., 1.);
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_FG);
       cairo_fill(cr);
     }
 
@@ -1499,7 +1500,11 @@ static int _iso_12646_get_border(dt_develop_t *d)
 {
   if(d->iso_12646.enabled)
   {
-    return MIN(1.75 * darktable.gui->dpi, 0.3 * MIN(d->width, d->height));
+    // the border size is taken from conf as an absolute in cm
+    // and uses dpi and ppd for an absolute size
+    const int bsize = darktable.gui->dpi * darktable.gui->ppd * dt_conf_get_float("darkroom/ui/iso12464_border") / 2.54f;
+    // for safety, at least 2 pixels and at least 40% for content 
+    return MIN(MAX(2, bsize), 0.3f * MIN(d->width, d->height));
   }
   else
   {

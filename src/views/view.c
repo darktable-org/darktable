@@ -1504,9 +1504,10 @@ void dt_view_paint_surface(
   {
     // draw the white frame around picture
     const int bs = dev->border_size;
-    const double tbw = (float)(bs >> closeup) * 2.0 / 3.0;
+    const double ratio = dt_conf_get_float("darkroom/ui/iso12464_ratio");
+    const double tbw = bs * ratio;
     cairo_rectangle(cr, -tbw, -tbw, sw + 2.0 * tbw, sh + 2.0 * tbw);
-    cairo_set_source_rgb(cr, 1., 1., 1.);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_ISO12646_FG);
     cairo_fill(cr);
   }
 
