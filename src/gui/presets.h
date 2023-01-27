@@ -51,7 +51,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   int op_version;
 
   GtkEntry *name, *description;
-  GtkCheckButton *autoapply, *filter;
+  GtkCheckButton *autoinit, *autoapply, *filter;
   GtkWidget *details;
   GtkWidget *model, *maker, *lens;
   GtkWidget *iso_min, *iso_max;
