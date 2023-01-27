@@ -518,13 +518,17 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       }
     }
 
-    if(FIND_XMP_TAG("Xmp.xmp.Rating"))
+    // If xmp file(s) are found, read the rating from here.
+    if(FIND_XMP_TAG("Xmp.darktable.xmp_version") || !dt_conf_get_bool("ui_last/ignore_exif_rating"))
     {
-      const int stars = pos->toLong();
-      dt_image_set_xmp_rating(img, stars);
+      if(FIND_XMP_TAG("Xmp.xmp.Rating"))
+      {
+        const int stars = pos->toLong();
+        dt_image_set_xmp_rating(img, stars);
+      }
+      else
+        dt_image_set_xmp_rating(img, -2);
     }
-    else
-      dt_image_set_xmp_rating(img, -2);
 
     if(!exif_read) dt_colorlabels_remove_labels(img->id);
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
