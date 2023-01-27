@@ -1378,6 +1378,37 @@ void dtgtk_cairo_paint_color_swatch(cairo_t *cr, gint x, gint y, gint w, gint h,
   FINISH
 }
 
+void dtgtk_cairo_paint_brightness(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  const double degrees = M_PI / 180.0;
+  const gboolean high = *((gboolean *)data);
+
+    cairo_translate(cr, .5, .5);
+    if(high)
+    {
+      cairo_arc(cr, 0.0, 0.0, 0.35, 0.0 * degrees, 360.0 * degrees);
+      cairo_fill(cr);
+    }
+    else
+    {
+      cairo_scale(cr, 0.8, 0.8);
+      cairo_arc(cr, 0.0, 0.0, 0.35, 0.0 * degrees, 360.0 * degrees);
+      cairo_stroke(cr);
+    }
+
+    for(int i = 0; i < 8; i++)
+    {
+      cairo_rotate(cr, 45.0 * degrees);
+      cairo_move_to(cr, 0.5, 0.0);
+      cairo_rel_line_to(cr, 0.2, 0.0);
+      cairo_stroke(cr);
+    }
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   gdouble sw = 0.6;

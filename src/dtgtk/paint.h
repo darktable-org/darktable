@@ -225,6 +225,8 @@ void dtgtk_cairo_paint_jzazbz(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 void dtgtk_cairo_paint_ryb(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint color swatch icon */
 void dtgtk_cairo_paint_color_swatch(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint brightness icon */
+void dtgtk_cairo_paint_brightness(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 /** paint active modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);

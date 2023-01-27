@@ -186,6 +186,7 @@ typedef struct dt_lib_histogram_t
   GtkWidget *blue_channel_button;      // GtkToggleButton -- enable/disable processing B channel
   GtkWidget *colorspace_button;        // GtkButton -- vectorscope colorspace
   GtkWidget *color_harmony_button;     // GtkButton -- RYB vectorscope color harmony
+  GtkWidget *brightness_button;        // GtkButton -- graph brightness
   // drag to change parameters
   gboolean dragging;
   int32_t button_down_x, button_down_y;
@@ -206,6 +207,7 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_color_harmony_type_t color_harmony;
   int harmony_rotation; // in degrees
   dt_lib_histogram_color_harmony_width_t harmony_width;
+  gboolean bright;
 } dt_lib_histogram_t;
 
 const char *name(dt_lib_module_t *self)
@@ -910,7 +912,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
     }
   cairo_pop_group_to_source(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  cairo_paint_with_alpha(cr, 0.5);
+  cairo_paint_with_alpha(cr, d->bright ? 0.75 : 0.5);
   cairo_restore(cr);
 }
 
@@ -920,7 +922,8 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 {
   // composite before scaling to screen dimensions, as scaling each
   // layer on draw causes a >2x slowdown
-  const double alpha_chroma = 0.75, desat_over = 0.75, alpha_over = 0.35;
+  const double alpha_chroma = 0.75, desat_over = 0.75;
+  const double alpha_over = (d->bright ? 0.70 : 0.35);
   const int img_width = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? d->waveform_bins : d->waveform_tones;
   const int img_height = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? d->waveform_tones : d->waveform_bins;
   const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, img_width);
@@ -969,7 +972,8 @@ static void _lib_histogram_draw_waveform(dt_lib_histogram_t *d, cairo_t *cr,
 static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, int width, int height)
 {
   // same composite-to-temp optimization as in waveform code above
-  const double alpha_chroma = 0.85, desat_over = 0.85, alpha_over = 0.65;
+  const double alpha_chroma = 0.85, desat_over = 0.85;
+  const double alpha_over = (d->bright ? 0.95 : 0.65);
   const int img_width = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? d->waveform_bins : d->waveform_tones;
   const int img_height = d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? d->waveform_tones : d->waveform_bins;
   const size_t img_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, img_width);
@@ -1218,8 +1222,16 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_push_group(cr);
   cairo_set_source(cr, bkgd_pat);
   cairo_mask(cr, graph_pat);
-  cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.55);
+  if(d->bright)
+  {
+    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.95);
+  }
+  else
+  {
+    cairo_set_operator(cr, CAIRO_OPERATOR_HARD_LIGHT);
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.55);
+  }
   cairo_mask(cr, graph_pat);
 
   cairo_pattern_destroy(bkgd_pat);
@@ -1823,6 +1835,15 @@ static void _colorspace_clicked(GtkWidget *button, dt_lib_histogram_t *d)
     dt_control_queue_redraw_center();
 }
 
+static void _brightness_clicked(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  d->bright = !(d->bright);
+  dt_conf_set_bool("plugins/darkroom/histogram/bright", d->bright);
+  dtgtk_button_set_paint(DTGTK_BUTTON(d->brightness_button),
+                         dtgtk_cairo_paint_brightness, CPF_NONE, &(d->bright));
+  dt_control_queue_redraw_widget(d->scope_draw);
+}
+
 // FIXME: these all could be the same function with different user_data
 static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
@@ -2049,6 +2070,8 @@ void gui_init(dt_lib_module_t *self)
     if(g_strcmp0(str, dt_lib_histogram_scale_names[i]) == 0)
       d->vectorscope_scale = i;
 
+  d->bright = dt_conf_get_bool("plugins/darkroom/histogram/bright");
+
   int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
   d->vectorscope_angle = a * M_PI / 180.0;
 
@@ -2158,11 +2181,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(box_right, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(d->button_box_opt), box_right, FALSE, FALSE, 0);
 
-  d->button_box_rgb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_valign(d->button_box_rgb, GTK_ALIGN_CENTER);
-  gtk_widget_set_halign(d->button_box_rgb, GTK_ALIGN_END);
-  gtk_box_pack_end(GTK_BOX(box_right), d->button_box_rgb, FALSE, FALSE, 0);
-
   // FIXME: the button transitions when they appear on mouseover (mouse enters scope widget) or change (mouse click) cause redraws of the entire scope -- is there a way to avoid this?
 
   gchar *text;
@@ -2186,7 +2204,17 @@ void gui_init(dt_lib_module_t *self)
     dt_action_register(teth, N_("switch histogram view"), _lib_histogram_change_type_callback, 0, 0);
   }
 
+  d->brightness_button = dtgtk_button_new(dtgtk_cairo_paint_brightness, CPF_NONE, &(d->bright));
+  gtk_widget_set_tooltip_text(d->brightness_button, _("graph brightness"));
+  dt_action_define(dark, NULL, N_("graph brightness"), d->brightness_button, &dt_action_def_button);
+  gtk_box_pack_end(GTK_BOX(box_right), d->brightness_button, FALSE, FALSE, 0);
+
   // red/green/blue channel on/off
+  d->button_box_rgb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_valign(d->button_box_rgb, GTK_ALIGN_CENTER);
+  gtk_widget_set_halign(d->button_box_rgb, GTK_ALIGN_END);
+  gtk_box_pack_end(GTK_BOX(box_right), d->button_box_rgb, FALSE, FALSE, 0);
+
   d->blue_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   dt_gui_add_class(d->blue_channel_button, "rgb_toggle");
   gtk_widget_set_name(d->blue_channel_button, "blue-channel-button");
@@ -2264,6 +2292,7 @@ void gui_init(dt_lib_module_t *self)
   /* connect callbacks */
   g_signal_connect(G_OBJECT(d->scope_view_button), "clicked", G_CALLBACK(_scope_view_clicked), d);
   g_signal_connect(G_OBJECT(d->colorspace_button), "clicked", G_CALLBACK(_colorspace_clicked), d);
+  g_signal_connect(G_OBJECT(d->brightness_button), "clicked", G_CALLBACK(_brightness_clicked), d);
 
   g_signal_connect(G_OBJECT(d->red_channel_button), "toggled", G_CALLBACK(_red_channel_toggle), d);
   g_signal_connect(G_OBJECT(d->green_channel_button), "toggled", G_CALLBACK(_green_channel_toggle), d);
