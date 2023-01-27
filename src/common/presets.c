@@ -327,19 +327,23 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
 char *dt_presets_get_name(const char *module_name,
                           const void *params,
                           const uint32_t param_size,
+                          const gboolean is_default_params,
                           const void *blend_params,
                           const uint32_t blend_params_size)
 {
   sqlite3_stmt *stmt;
 
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name"
-                              " FROM data.presets"
-                              " WHERE operation = ?1"
-                              "   AND op_params = ?2"
-                              "   AND blendop_params = ?3",
-                              -1, &stmt, NULL);
+  char *query = g_strdup_printf("SELECT name"
+                                " FROM data.presets"
+                                " WHERE operation = ?1"
+                                "   AND (op_params = ?2"
+                                "        %s)"
+                                "   AND blendop_params = ?3",
+                                is_default_params ? "OR op_params IS NULL" : "");
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_name, strlen(module_name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, params, param_size, SQLITE_TRANSIENT);
@@ -350,6 +354,7 @@ char *dt_presets_get_name(const char *module_name,
   if(sqlite3_step(stmt) == SQLITE_ROW)
     result = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
 
+  g_free(query);
   sqlite3_finalize(stmt);
 
   return result;

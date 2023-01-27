@@ -33,6 +33,7 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation);
 char *dt_presets_get_name(const char *module_name,
                           const void *params,
                           const uint32_t param_size,
+                          const gboolean is_default_params,
                           const void *blend_params,
                           const uint32_t blend_params_size);
 
