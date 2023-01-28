@@ -1340,40 +1340,28 @@ void dtgtk_cairo_paint_ryb(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
   FINISH
 }
 
-void dtgtk_cairo_paint_color_swatch(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 1, 0, 0)
+  PREAMBLE(1, 1, 0.5, 0.5)
 
   const double degrees = M_PI / 180.0;
 
-    cairo_translate(cr, .8, .8);
-    cairo_arc(cr, 0.0, 0.0, 0.2, 0.0 * degrees, 180.0 * degrees);
-    cairo_rel_line_to(cr, 0.0, -0.8);
-    cairo_rel_line_to(cr, 0.4, 0.0);
-    cairo_close_path(cr);
-    cairo_stroke(cr);
+  cairo_arc(cr, 0.0, 0.0, 0.5, 0.0 * degrees, 360.0 * degrees);
+  cairo_stroke(cr);
 
-    cairo_arc(cr, 0.0, 0.0, 0.05, 0.05 * degrees, 360.0 * degrees);
-    cairo_stroke(cr);
+#define SECTOR \
+  cairo_move_to(cr, 0.0, 0.0); \
+  cairo_line_to(cr, 0.0, -0.5); \
+  cairo_stroke(cr); \
+  cairo_arc(cr, 0.0, -0.5, 0.15, 0.0 * degrees, 360.0 * degrees); \
+  cairo_fill(cr); \
 
-    cairo_rectangle(cr, -0.1, -0.7, 0.2, 0.2);
-    cairo_fill(cr);
-    cairo_rectangle(cr, -0.1, -0.4, 0.2, 0.2);
-    cairo_fill(cr);
-
-    cairo_rotate(cr, -45.0 * degrees);
-    cairo_move_to(cr, -0.2, -0.1);
-    cairo_rel_line_to(cr, 0.0, -0.7);
-    cairo_rel_line_to(cr, 0.4, 0.0);
-    cairo_rel_line_to(cr, 0.0, 0.25);
-    cairo_stroke(cr);
-
-    cairo_rotate(cr, -45.0 * degrees);
-    cairo_move_to(cr, -0.2, -0.1);
-    cairo_rel_line_to(cr, 0.0, -0.7);
-    cairo_rel_line_to(cr, 0.4, 0.0);
-    cairo_rel_line_to(cr, 0.0, 0.25);
-    cairo_stroke(cr);
+  cairo_rotate(cr, -20.0 * degrees);
+  SECTOR;
+  cairo_rotate(cr, 130.0 * degrees);
+  SECTOR;
+  cairo_rotate(cr, 100.0 * degrees);
+  SECTOR;
 
   FINISH
 }
