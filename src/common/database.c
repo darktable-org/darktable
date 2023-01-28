@@ -2586,6 +2586,7 @@ static void _create_data_schema(dt_database_t *db)
                            "VARCHAR, op_version INTEGER, op_params BLOB, "
                            "enabled INTEGER, blendop_params BLOB, blendop_version INTEGER, "
                            "multi_priority INTEGER, multi_name VARCHAR(256), "
+                           "multi_name_hand_edited INTEGER, "
                            "model VARCHAR, maker VARCHAR, lens VARCHAR, iso_min REAL, iso_max REAL, "
                            "exposure_min REAL, exposure_max REAL, "
                            "aperture_min REAL, aperture_max REAL, focal_length_min REAL, "
