@@ -27,7 +27,7 @@
 
 #define MAX_IMAGE_PER_PAGE 20
 
-typedef struct _imgage_pos
+typedef struct _image_pos
 {
   float x, y, width, height;
 } dt_image_pos;
