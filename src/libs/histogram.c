@@ -2165,13 +2165,10 @@ void gui_init(dt_lib_module_t *self)
 
   // FIXME: the button transitions when they appear on mouseover (mouse enters scope widget) or change (mouse click) cause redraws of the entire scope -- is there a way to avoid this?
 
-  gchar *text;
   for(int i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
   {
     d->scope_type_button[i] = dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
-    text = g_strdup_printf("%s %s", _("set mode to"), _(dt_lib_histogram_scope_type_names[i]));
-    gtk_widget_set_tooltip_text(d->scope_type_button[i], text);
-    g_free(text);
+    gtk_widget_set_tooltip_text(d->scope_type_button[i], _(dt_lib_histogram_scope_type_names[i]));
     dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i], d->scope_type_button[i], &dt_action_def_toggle);
     gtk_box_pack_start(GTK_BOX(box_left), d->scope_type_button[i], FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(d->scope_type_button[i]), "button-press-event", G_CALLBACK(_scope_histogram_mode_clicked), d);
