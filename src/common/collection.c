@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 #include "common/collection.h"
 #include "common/debug.h"
 #include "common/image.h"
-#include "common/imageio_rawspeed.h"
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/map_locations.h"
 #include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "imageio/imageio_rawspeed.h"
 
 #include <assert.h>
 #include <glib.h>
@@ -207,7 +207,6 @@ int dt_collection_update(const dt_collection_t *collection)
   gchar *where_ext = dt_collection_get_extended_where(collection, -1);
   if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
-    char *rejected_check = g_strdup_printf("((flags & %d) == %d)", DT_IMAGE_REJECTED, DT_IMAGE_REJECTED);
     int and_term = and_operator_initial();
 
     /* add default filters */
@@ -223,8 +222,6 @@ int dt_collection_update(const dt_collection_t *collection)
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
       wq = dt_util_dstrcat(wq, " %s %s", and_operator(&and_term), where_ext);
-
-    g_free(rejected_check);
   }
   else
     wq = g_strdup(where_ext);
@@ -1225,18 +1222,22 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
   if(match_count == 6 || match_count == 7)
   {
     gchar *n1 = g_match_info_fetch(match_info, 2);
+    gchar *inv = g_match_info_fetch(match_info, 1);
 
-    if(strstr(g_match_info_fetch(match_info, 1), "1/") != NULL)
+    if(strstr(inv, "1/") != NULL)
       *number1 = g_strdup_printf("1.0/%s", n1);
     else
       *number1 = n1;
+    g_free(inv);
 
     gchar *n2 = g_match_info_fetch(match_info, 5);
+    inv = g_match_info_fetch(match_info, 4);
 
-    if(strstr(g_match_info_fetch(match_info, 4), "1/") != NULL)
+    if(strstr(inv, "1/") != NULL)
       *number2 = g_strdup_printf("1.0/%s", n2);
     else
       *number2 = n2;
+    g_free(inv);
 
     *operator= g_strdup("[]");
     g_match_info_free(match_info);
@@ -1256,11 +1257,13 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
     *operator= g_match_info_fetch(match_info, 1);
 
     gchar *n1 = g_match_info_fetch(match_info, 3);
+    gchar *inv = g_match_info_fetch(match_info, 2);
 
-    if(strstr(g_match_info_fetch(match_info, 2), "1/") != NULL)
+    if(strstr(inv, "1/") != NULL)
       *number1 = g_strdup_printf("1.0/%s", n1);
     else
       *number1 = n1;
+    g_free(inv);
 
     if(*operator && strcmp(*operator, "") == 0)
     {
@@ -1358,7 +1361,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
   switch(property)
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
-      if(!(escaped_text && *escaped_text))
+      if(!(*escaped_text))
         // clang-format off
         query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%'))",
                                 escaped_text);
@@ -2368,7 +2371,9 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       gchar *query = get_query_string(property, text);
 
-      if(nb == 0)
+      if(nb == 0 && mode == 2)
+        query_parts[i] = g_strdup_printf(" 1=1 AND NOT %s", query);
+      else if(nb == 0)
         query_parts[i] = g_strdup_printf(" %s", query);
       else
         query_parts[i] = g_strdup_printf(" %s %s", conj[mode], query);

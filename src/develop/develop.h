@@ -41,6 +41,7 @@ typedef struct dt_dev_history_item_t
   int iop_order;
   int multi_priority;
   char multi_name[128];
+  gboolean multi_name_hand_edited;
   GList *forms; // snapshot of dt_develop_t->forms
   int num; // num of history on database
   int32_t focus_hash;             // used to determine whether or not to start a new item or to merge down
@@ -115,7 +116,6 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz = 14 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz = 15 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3, // show module's output without processing by later iops
-  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU_MONO = 17 << 3, // same as above but specific for pre-demosaic to stay monochrome
   DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
@@ -185,6 +185,7 @@ typedef struct dt_develop_t
   dt_pthread_mutex_t history_mutex;
   int32_t history_end;
   GList *history;
+  gboolean history_postpone_invalidate;
 
   // operations pipeline
   int32_t iop_instance;
@@ -362,7 +363,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
 void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid);
 void dt_dev_write_history(dt_develop_t *dev);
-void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image);
+void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, const gboolean no_image, const gboolean snapshot);
 void dt_dev_read_history(dt_develop_t *dev);
 void dt_dev_free_history_item(gpointer data);
 void dt_dev_invalidate_history_module(GList *list, struct dt_iop_module_t *module);
@@ -551,7 +552,8 @@ void dt_dev_image_ext(
   size_t *processed_width,
   size_t *processed_height,
   int border_size,
-  gboolean iso_12646);
+  gboolean iso_12646,
+  int32_t snapshot_id);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

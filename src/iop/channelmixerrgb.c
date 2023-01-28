@@ -3495,8 +3495,7 @@ void reload_defaults(dt_iop_module_t *module)
   d->illuminant = module->get_f("illuminant")->Enum.Default;
   d->adaptation = module->get_f("adaptation")->Enum.Default;
 
-  const gboolean is_modern =
-    dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
+  const gboolean is_modern = dt_is_scene_referred();
 
   // note that if there is already an instance of this module with an
   // adaptation set we default to RGB (none) in this instance.
@@ -3744,11 +3743,11 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   dt_Lab_2_LCH(Lab, Lch);
 
   // Write report in GUI
+  gchar *str = g_strdup_printf(_("L: \t%.1f %%\nh: \t%.1f °\nc: \t%.1f"), Lch[0], Lch[2] * 360.f, Lch[1]);
   ++darktable.gui->reset;
-  gtk_label_set_text(GTK_LABEL(g->Lch_origin),
-                     g_strdup_printf(_("L: \t%.1f %%\nh: \t%.1f °\nc: \t%.1f"),
-                                     Lch[0], Lch[2] * 360.f, Lch[1] ));
+  gtk_label_set_text(GTK_LABEL(g->Lch_origin), str);
   --darktable.gui->reset;
+  g_free(str);
 
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
   const gboolean use_mixing = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->use_mixing));
@@ -4302,4 +4301,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

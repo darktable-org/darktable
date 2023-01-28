@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2013-2022 darktable developers.
+    Copyright (C) 2013-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/dtpthread.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "views/view.h"
 #include "views/view_api.h"
 
@@ -202,7 +202,7 @@ static int _process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   dt_pthread_mutex_unlock(&d->lock);
 
   dt_dev_image_ext
-    (imgid, d->width, d->height, -1, &buf, &width, &height, 0, FALSE);
+    (imgid, d->width, d->height, -1, &buf, &width, &height, 0, FALSE, -1);
 
   dt_pthread_mutex_lock(&d->lock);
 

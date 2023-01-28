@@ -18,7 +18,7 @@
 
 #ifdef HAVE_IMAGEMAGICK
 #include "common/darktable.h"
-#include "imageio.h"
+#include "imageio_common.h"
 #include "imageio_gm.h"
 #include "develop/develop.h"
 #include "common/exif.h"
@@ -55,17 +55,20 @@ static gboolean _supported_image(const gchar *filename)
       supported = TRUE;
       break;
     }
+#ifdef HAVE_IMAGEMAGICK7
+  supported |= g_ascii_strncasecmp(ext, "qoi", 3) == 0;
+#endif
   return supported;
 }
 
 
 dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  int err = DT_IMAGEIO_FILE_CORRUPTED;
+  int err = DT_IMAGEIO_LOAD_FAILED;
   MagickWand *image = NULL;
   MagickBooleanType ret;
 
-  if(!_supported_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(!_supported_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
@@ -87,7 +90,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
   {
     fprintf(stderr, "[ImageMagick_open] error: CMY(K) images are not supported.\n");
-    err =  DT_IMAGEIO_FILE_CORRUPTED;
+    err =  DT_IMAGEIO_LOAD_FAILED;
     goto error;
   }
 

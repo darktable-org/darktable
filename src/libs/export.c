@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
-#include "common/imageio_module.h"
 #include "common/styles.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -32,6 +31,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -323,6 +323,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   uint32_t max_height = dt_conf_get_int(CONFIG_PREFIX "height");
 
   const gboolean upscale = dt_conf_get_bool(CONFIG_PREFIX "upscale");
+  const gboolean scaledimension = dt_conf_get_int(CONFIG_PREFIX "dimensions_type") == DT_DIMENSIONS_SCALE;
   const gboolean high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing");
   const gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
   const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
@@ -355,7 +356,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   const dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
 
   GList *list = dt_act_on_get_images(TRUE, TRUE, TRUE);
-  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks,
+  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, scaledimension, export_masks,
                     style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export);
 
   g_free(icc_filename);
@@ -1814,7 +1815,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   gchar *iccfilename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   gchar *style = dt_conf_get_string(CONFIG_PREFIX "style");
   const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
-  const char *metadata_export = d->metadata_export;
+  const char *metadata_export = d->metadata_export ? d->metadata_export : "";
 
   if(fdata)
   {
@@ -1829,7 +1830,6 @@ void *get_params(dt_lib_module_t *self, int *size)
   }
 
   if(!iccfilename) iccfilename = g_strdup("");
-  if(!metadata_export) metadata_export = g_strdup("");
 
   const char *fname = mformat->plugin_name;
   const char *sname = mstorage->plugin_name;

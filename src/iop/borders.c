@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -305,43 +305,50 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 
   if(d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE)
   {
-    // for a constant border be sure to base the computation on the larger border, failing that the border
-    // will have a difference size depending on the orientation.
+    // for a constant border be sure to base the computation on the
+    // larger border, failing that the border will have a difference
+    // size depending on the orientation.
 
     if(roi_in->width > roi_in->height || !d->max_border_size)
     {
       // this means: relative to width and constant for height as well:
-      roi_out->width = (float)roi_in->width / (1.0f - size);
+      roi_out->width = roundf((float)roi_in->width / (1.0f - size));
       roi_out->height = roi_in->height + roi_out->width - roi_in->width;
     }
     else
     {
       // this means: relative to height and constant for width as well:
-      roi_out->height = (float)roi_in->height / (1.0f - size);
+      roi_out->height = roundf((float)roi_in->height / (1.0f - size));
       roi_out->width = roi_in->width + roi_out->height - roi_in->height;
     }
   }
   else
   {
-    float image_aspect = roi_in->width / (float)(roi_in->height);
-    float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_IMAGE_VALUE) ? image_aspect : d->aspect;
+    const float image_aspect = (float)roi_in->width / (float)(roi_in->height);
+
+    float aspect = (d->aspect == DT_IOP_BORDERS_ASPECT_IMAGE_VALUE)
+      ? image_aspect
+      : d->aspect;
 
     if(d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_AUTO)
-      aspect = ((image_aspect < 1 && aspect > 1) || (image_aspect > 1 && aspect < 1)) ? 1 / aspect : aspect;
+      aspect = ((image_aspect < 1.0f && aspect > 1.0f)
+                || (image_aspect > 1.0f && aspect < 1.0f))
+        ? 1.0f / aspect
+        : aspect;
     else if(d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE)
-      aspect = (aspect < 1) ? 1 / aspect : aspect;
+      aspect = (aspect < 1.0f) ? 1.0f / aspect : aspect;
     else if(d->aspect_orient == DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT)
-      aspect = (aspect > 1) ? 1 / aspect : aspect;
+      aspect = (aspect > 1.0f) ? 1.0f / aspect : aspect;
 
     // min width: constant ratio based on size:
-    roi_out->width = (float)roi_in->width / (1.0f - size);
+    roi_out->width = roundf((float)roi_in->width / (1.0f - size));
     // corresponding height: determined by aspect ratio:
-    roi_out->height = (float)roi_out->width / aspect;
+    roi_out->height = roundf((float)roi_out->width / aspect);
     // insane settings used?
     if(roi_out->height < (float)roi_in->height / (1.0f - size))
     {
-      roi_out->height = (float)roi_in->height / (1.0f - size);
-      roi_out->width = (float)roi_out->height * aspect;
+      roi_out->height = roundf((float)roi_in->height / (1.0f - size));
+      roi_out->width = roundf((float)roi_out->height * aspect);
     }
   }
 
@@ -356,26 +363,33 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
   *roi_in = *roi_out;
-  const int bw = (piece->buf_out.width - piece->buf_in.width) * roi_out->scale;
-  const int bh = (piece->buf_out.height - piece->buf_in.height) * roi_out->scale;
+
+  const float bw = (piece->buf_out.width - piece->buf_in.width) * roi_out->scale;
+  const float bh = (piece->buf_out.height - piece->buf_in.height) * roi_out->scale;
 
   // don't request outside image (no px for borders)
-  roi_in->x = MAX(roi_out->x - bw * d->pos_h, 0);
-  roi_in->y = MAX(roi_out->y - bh * d->pos_v, 0);
+  roi_in->x = MAX(roundf(roi_out->x - bw * d->pos_h), 0);
+  roi_in->y = MAX(roundf(roi_out->y - bh * d->pos_v), 0);
+
   // subtract upper left border from dimensions
-  roi_in->width -= MAX(bw * d->pos_h - roi_out->x, 0);
-  roi_in->height -= MAX(bh * d->pos_v - roi_out->y, 0);
+  roi_in->width -= MAX(roundf(bw * d->pos_h - roi_out->x), 0);
+  roi_in->height -= MAX(roundf(bh * d->pos_v - roi_out->y), 0);
 
   // subtract lower right border from dimensions
-  roi_in->width -= roi_out->scale
-                   * MAX((roi_in->x + roi_in->width) / roi_out->scale - (piece->buf_in.width), 0);
-  roi_in->height -= roi_out->scale
-                    * MAX((roi_in->y + roi_in->height) / roi_out->scale - (piece->buf_in.height), 0);
-  // don't request nothing or outside roi
-  roi_in->width = MIN(roi_out->scale * piece->buf_in.width, MAX(1, roi_in->width));
-  roi_in->height = MIN(roi_out->scale * piece->buf_in.height, MAX(1, roi_in->height));
-  // FIXME: clamping to 1 leads to a one-pixel visual glitch if the right/bottom border completely fills the
-  // FIXME: viewport, but changing it to 0 breaks all of the tiling_callback functions with a division by zero
+  const float p_inw = (float)piece->buf_in.width * roi_out->scale;
+  const float p_inh = (float)piece->buf_in.height * roi_out->scale;
+
+  roi_in->width  -= MAX(roundf((float)(roi_in->x + roi_in->width) - p_inw), 0);
+  roi_in->height -= MAX(roundf((float)(roi_in->y + roi_in->height) - p_inh), 0);
+
+  // sanity check: don't request nothing or outside roi
+  roi_in->width = MIN(p_inw, MAX(1, roi_in->width));
+  roi_in->height = MIN(p_inh, MAX(1, roi_in->height));
+
+  // FIXME: clamping to 1 leads to a one-pixel visual glitch if the
+  // right/bottom border completely fills the viewport, but
+  // changing it to 0 breaks all of the tiling_callback functions with
+  // a division by zero.
 }
 
 struct border_positions_t
@@ -1109,4 +1123,3 @@ void init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

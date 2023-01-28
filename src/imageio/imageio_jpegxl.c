@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 #include <jxl/decode.h>
 #include <jxl/resizable_parallel_runner.h>
 
-#include "image.h"
-#include "imageio.h"
+#include "common/image.h"
+#include "imageio/imageio_common.h"
 
 dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
@@ -37,7 +37,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
   if(!inputfile)
   {
     fprintf(stderr, "[jpegxl_open] Cannot open file for read: %s\n", filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   fseek(inputfile, 0, SEEK_END);
@@ -51,7 +51,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
     fprintf(stderr, "[jpegxl_open] Failed to read %zu bytes: %s\n", inputFileSize, filename);
     free(read_buffer);
     fclose(inputfile);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
   fclose(inputfile);
 
@@ -61,7 +61,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
   {
     // It's normal if this function is called for a non-jxl file, so we should fail silently.
     free(read_buffer);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   const JxlPixelFormat pixel_format =
@@ -78,7 +78,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
   {
     fprintf(stderr, "[jpegxl_open] ERROR: JxlDecoderCreate failed\n");
     free(read_buffer);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   JxlParallelRunner *runner = JxlResizableParallelRunnerCreate(NULL);
@@ -87,7 +87,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
     fprintf(stderr, "[jpegxl_open] ERROR: JxlResizableParallelRunnerCreate failed\n");
     JxlDecoderDestroy(decoder);
     free(read_buffer);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   if(JxlDecoderSetInput(decoder, read_buffer, inputFileSize) != JXL_DEC_SUCCESS)
@@ -96,7 +96,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
     JxlResizableParallelRunnerDestroy(runner);
     JxlDecoderDestroy(decoder);
     free(read_buffer);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   if(JxlDecoderSubscribeEvents(decoder, JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FULL_IMAGE) != JXL_DEC_SUCCESS)
@@ -105,7 +105,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
     JxlResizableParallelRunnerDestroy(runner);
     JxlDecoderDestroy(decoder);
     free(read_buffer);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   if(JxlDecoderSetParallelRunner(decoder, JxlResizableParallelRunner, runner) != JXL_DEC_SUCCESS)
@@ -114,7 +114,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
     JxlResizableParallelRunnerDestroy(runner);
     JxlDecoderDestroy(decoder);
     free(read_buffer);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
 
@@ -129,7 +129,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
       JxlResizableParallelRunnerDestroy(runner);
       JxlDecoderDestroy(decoder);
       free(read_buffer);
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
     }
 
     if(status == JXL_DEC_NEED_MORE_INPUT)
@@ -138,7 +138,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
       JxlResizableParallelRunnerDestroy(runner);
       JxlDecoderDestroy(decoder);
       free(read_buffer);
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
     }
 
     if(status == JXL_DEC_BASIC_INFO)
@@ -149,7 +149,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
-        return DT_IMAGEIO_FILE_CORRUPTED;
+        return DT_IMAGEIO_LOAD_FAILED;
       }
 
       // Unlikely to happen, but let there be a sanity check
@@ -159,7 +159,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
-        return DT_IMAGEIO_FILE_CORRUPTED;
+        return DT_IMAGEIO_LOAD_FAILED;
       }
 
 
@@ -188,7 +188,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
-        return DT_IMAGEIO_FILE_CORRUPTED;
+        return DT_IMAGEIO_LOAD_FAILED;
       }
     continue;    // go to next iteration to process rest of the input
     }

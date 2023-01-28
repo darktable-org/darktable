@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,10 +34,10 @@ extern "C" {
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/file_location.h"
-#include "common/imageio_rawspeed.h"
-#include "imageio.h"
 #include "common/tags.h"
 #include "develop/imageop.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_rawspeed.h"
 #include <stdint.h>
 }
 
@@ -135,7 +135,7 @@ static gboolean _ignore_image(const gchar *filename)
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *mbuf)
 {
-  if(_ignore_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(_ignore_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
@@ -157,7 +157,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     RawParser t(*m.get());
     d = t.getDecoder(meta);
 
-    if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
+    if(!d.get()) return DT_IMAGEIO_LOAD_FAILED;
 
     d->failOnUnknown = true;
     d->checkSupport(meta);
@@ -289,19 +289,19 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     }
 
     if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32))
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
 
     if((r->getBpp() != sizeof(uint16_t)) && (r->getBpp() != sizeof(float)))
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
 
     if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != sizeof(uint16_t)))
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
 
     if((r->getDataType() == TYPE_FLOAT32) && (r->getBpp() != sizeof(float)))
-      return DT_IMAGEIO_FILE_CORRUPTED;
+      return DT_IMAGEIO_LOAD_FAILED;
 
     const float cpp = r->getCpp();
-    if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
+    if(cpp != 1) return DT_IMAGEIO_LOAD_FAILED;
 
     img->buf_dsc.channels = 1;
 
@@ -314,7 +314,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         img->buf_dsc.datatype = TYPE_FLOAT;
         break;
       default:
-        return DT_IMAGEIO_FILE_CORRUPTED;
+        return DT_IMAGEIO_LOAD_FAILED;
     }
 
     // dimensions of uncropped image
@@ -411,12 +411,12 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     /* if an exception is raised lets not retry or handle the
      specific ones, consider the file as corrupted */
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
   catch(...)
   {
     fprintf(stderr, "[rawspeed] unhandled exception in imageio_rawspeed\n");
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   img->buf_dsc.cst = IOP_CS_RAW;
@@ -439,10 +439,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->buf_dsc.datatype = TYPE_FLOAT;
 
   if(r->getDataType() != TYPE_USHORT16 && r->getDataType() != TYPE_FLOAT32)
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
 
   const uint32_t cpp = r->getCpp();
-  if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_LOAD_FAILED;
 
   // if buf is NULL, we quit the fct here
   if(!mbuf)

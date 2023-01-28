@@ -59,8 +59,8 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
         ```
         * If you have to set them manually you can do so by setting the variables in your `~/.bash_profile`. For example (check your version numbers first):
             ```
-            export CAMLIBS="/$MINGW_PREFIX/lib/libgphoto2/2.5.30/"
-            export IOLIBS="/$MINGW_PREFIX/lib/libgphoto2_port/0.12.1/"
+            export CAMLIBS="$MINGW_PREFIX/lib/libgphoto2/2.5.30/"
+            export IOLIBS="$MINGW_PREFIX/lib/libgphoto2_port/0.12.1/"
             ```
         * If you do so, execute the following command to activate those profile changes:
             ```bash

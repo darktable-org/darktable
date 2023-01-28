@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -110,10 +111,8 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   /* create drawingarea */
-  self->widget = gtk_drawing_area_new();
-  gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK | GDK_ENTER_NOTIFY_MASK
-                                      | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
-                                      | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK);
+  self->widget = dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/navigation/aspect_percent");
+  gtk_widget_set_tooltip_text(self->widget, _("navigation\nclick or drag to position zoomed area in center view"));
 
   /* connect callbacks */
   gtk_widget_set_app_paintable(self->widget, TRUE);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,12 +40,12 @@ extern "C" {
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_exr.h"
 #include "control/conf.h"
 #include "develop/develop.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_exr.h"
 }
-#include "common/imageio_exr.hh"
+#include "imageio/imageio_exr.hh"
 
 dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
@@ -62,7 +62,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
 
 
   /* verify openexr image */
-  if(!Imf::isOpenExrFile((const char *)filename, isTiled)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(!Imf::isOpenExrFile((const char *)filename, isTiled)) return DT_IMAGEIO_LOAD_FAILED;
 
   /* open exr file */
   try
@@ -80,7 +80,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   }
   catch(const std::exception &e)
   {
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   const Imf::Header &header = isTiled ? fileTiled->header() : file->header();
@@ -97,7 +97,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   if(!(hasR && hasG && hasB))
   {
     fprintf(stderr, "[exr_read] Warning, only files with RGB(A) channels are supported.\n");
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   if(!img->exif_inited)

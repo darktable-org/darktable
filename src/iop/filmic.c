@@ -1585,7 +1585,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the subject.\n"
                                                       "except in back-lighting situations, this should be around 18%."));
   g_signal_connect(G_OBJECT(g->grey_point_source), "value-changed", G_CALLBACK(grey_point_source_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->grey_point_source);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                      g->grey_point_source);
 
   // White slider
   g->white_point_source = dt_bauhaus_slider_new_with_range(self, 0.0, 16.0, 0, p->white_point_source, 2);
@@ -1597,7 +1598,8 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "adjust so highlights clipping is avoided"));
   g_signal_connect(G_OBJECT(g->white_point_source), "value-changed", G_CALLBACK(white_point_source_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->white_point_source);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                      g->white_point_source);
 
   // Black slider
   g->black_point_source = dt_bauhaus_slider_new_with_range(self, -16.0, -0.1, 0, p->black_point_source, 2);
@@ -1609,7 +1611,8 @@ void gui_init(dt_iop_module_t *self)
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "increase to get more contrast.\ndecrease to recover more details in low-lights."));
   g_signal_connect(G_OBJECT(g->black_point_source), "value-changed", G_CALLBACK(black_point_source_callback), self);
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->black_point_source);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                      g->black_point_source);
 
   // Security factor
   g->security_factor = dt_bauhaus_slider_new_with_range(self, -50., 50., 0, p->security_factor, 2);
@@ -1623,7 +1626,8 @@ void gui_init(dt_iop_module_t *self)
   // Auto tune slider
   g->auto_button = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
-  dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->auto_button);
+  dt_color_picker_new(self, DT_COLOR_PICKER_AREA | DT_COLOR_PICKER_DENOISE,
+                      g->auto_button);
   gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some guessing.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
                                                 "works better for landscapes and evenly-lit pictures\nbut fails for high-keys and low-keys." ));

@@ -648,7 +648,7 @@ dialog .sidebar row:selected:hover label,
 /*-------------------
   - Scope/Histogram -
   -------------------*/
-#main-histogram buttonbox
+#main-histogram .button_box
 {
   margin: 0.21em;
 }
@@ -659,15 +659,8 @@ dialog .sidebar row:selected:hover label,
   min-width: 1em;
 }
 
-/* be sure all color icons have (nearly) same size ; needed has red color is in stack widget and this change how the size is rendered */
-#main-histogram #green-channel-button,
-#main-histogram #blue-channel-button
-{
-  min-width: 1.1em;
-}
-
 /* set background color and color of scope/histogram buttons */
-#main-histogram .dt_module_btn:not(.toggle)
+#main-histogram .dt_module_btn:not(.rgb_toggle)
 {
   color: alpha(@field_selected_fg, 0.56);
   background-color: alpha(darker(@button_bg),0.8);
@@ -1654,7 +1647,8 @@ menuitem:active,
 menuitem:selected,
 messagedialog .default,  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 treeview *:selected:not(check),
-treeview *:checked:not(check)
+treeview *:checked:not(check),
+#main-histogram .dt_module_btn:checked:not(.rgb_toggle)
 {
   background-color: @field_selected_bg;
   color: @field_selected_fg;
@@ -1679,7 +1673,7 @@ radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #dt-range-date-popup .text-button:hover,
 #lens-module .text-button:hover,
-#main-histogram .dt_module_btn:hover:not(.toggle),
+#main-histogram .dt_module_btn:hover:not(.rgb_toggle),
 #non-flat:hover,
 #view-label:hover,
 #view-dropdown .combo:hover

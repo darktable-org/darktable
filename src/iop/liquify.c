@@ -1231,17 +1231,6 @@ static void _build_global_distortion_map(struct dt_iop_module_t *module,
   g_list_free_full(interpolated, free);
 }
 
-// 1st pass: how large would the output be, given this input roi?
-// this is always called with the full buffer before processing.
-void modify_roi_out(struct dt_iop_module_t *module,
-                     struct dt_dev_pixelpipe_iop_t *piece,
-                     dt_iop_roi_t *roi_out,
-                     const dt_iop_roi_t *roi_in)
-{
-  // output is same size as input
-  *roi_out = *roi_in;
-}
-
 // 2nd pass: which roi would this operation need as input to fill the given output region?
 void modify_roi_in(struct dt_iop_module_t *module,
                     struct dt_dev_pixelpipe_iop_t *piece,
@@ -3030,8 +3019,6 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
 {
   const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *)module->gui_data;
 
-  // add an option to allow skip mouse events while editing masks
-  if(darktable.develop->darkroom_skip_mouse_events) return 0;
   const gboolean incr = dt_mask_scroll_increases(up);
 
   if(g->temp)

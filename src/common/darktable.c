@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2022 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@
 #include "common/grealpath.h"
 #include "common/image.h"
 #include "common/image_cache.h"
-#include "common/imageio_module.h"
 #include "common/iop_order.h"
 #include "common/l10n.h"
 #include "common/mipmap_cache.h"
@@ -68,6 +67,7 @@
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
+#include "imageio/imageio_module.h"
 #include "libs/lib.h"
 #include "lua/init.h"
 #include "views/view.h"
@@ -131,7 +131,7 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,act_on,cache,camctl,camsupport,control,demosaic,dev,imageio,\n");
   printf("      input,ioporder,lighttable,lua,masks,memory,nan,opencl,params,\n");
-  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,roi}\n");
+  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
   // clang-format on
@@ -674,7 +674,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
         if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted = 0xffffffff & ~DT_DEBUG_VERBOSE; // enable all debug information except verbose
+          darktable.unmuted = DT_DEBUG_ALL; // enable all debug information except verbose
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k + 1], "control"))
@@ -725,8 +725,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_TILING;
         else if(!strcmp(argv[k + 1], "verbose"))
           darktable.unmuted |= DT_DEBUG_VERBOSE;
-        else if(!strcmp(argv[k + 1], "roi"))
-          darktable.unmuted |= DT_DEBUG_ROI;
+        else if(!strcmp(argv[k + 1], "pipe"))
+          darktable.unmuted |= DT_DEBUG_PIPE;
         else
           return usage(argv[0]);
         k++;
@@ -1539,42 +1539,46 @@ void dt_cleanup()
   dt_exif_cleanup();
 }
 
+/* The dt_print variations can be used with a combination of DT_DEBUG_ flags.
+   Two special cases are supported also:
+   a) if you combine with DT_DEBUG_VERBOSE, output will only be written if dt had
+      been started with -d verbose
+   b) 'thread' may be identical to DT_DEBUG_ALWAYS to write output 
+*/
 void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 {
-  if(darktable.unmuted & thread)
+  if(thread != DT_DEBUG_ALWAYS)
   {
-    printf("%f ", dt_get_wtime() - darktable.start_wtime);
-    va_list ap;
-    va_start(ap, msg);
-    vprintf(msg, ap);
-    va_end(ap);
-    fflush(stdout);
+    if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
+    if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
   }
+  char buf[128];
+  char vbuf[2048];
+  snprintf(buf, sizeof(buf), "%.4f", dt_get_wtime() - darktable.start_wtime);
+
+  va_list ap;
+  va_start(ap, msg);
+  vsnprintf(vbuf, sizeof(vbuf), msg, ap);
+  va_end(ap);
+
+  printf("%11s %s", buf, vbuf);
+  fflush(stdout);
 }
 
 void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...)
 {
-  if(darktable.unmuted & thread)
+  if(thread != DT_DEBUG_ALWAYS)
   {
-    va_list ap;
-    va_start(ap, msg);
-    vprintf(msg, ap);
-    va_end(ap);
-    fflush(stdout);
+    if(((darktable.unmuted & thread) & ~DT_DEBUG_VERBOSE) == 0) return;
+    if((thread & DT_DEBUG_VERBOSE) && !(darktable.unmuted & DT_DEBUG_VERBOSE)) return;
   }
-}
-
-void dt_vprint(dt_debug_thread_t thread, const char *msg, ...)
-{
-  if((darktable.unmuted & DT_DEBUG_VERBOSE) && (darktable.unmuted & thread))
-  {
-    printf("%f ", dt_get_wtime() - darktable.start_wtime);
-    va_list ap;
-    va_start(ap, msg);
-    vprintf(msg, ap);
-    va_end(ap);
-    fflush(stdout);
-  }
+  char vbuf[2048];
+  va_list ap;
+  va_start(ap, msg);
+  vsnprintf(vbuf, sizeof(vbuf), msg, ap);
+  va_end(ap);
+  printf("%s", vbuf);
+  fflush(stdout);
 }
 
 void *dt_alloc_align(size_t alignment, size_t size)

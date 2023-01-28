@@ -38,8 +38,8 @@
 DT_MODULE(1)
 
 // the T_ macros are for the translation engine to take them into account
-#define FALLBACK_PRESET_NAME     "modules: default"
-#define T_FALLBACK_PRESET_NAME _("modules: default")
+#define FALLBACK_PRESET_NAME     "workflow: scene-referred"
+#define T_FALLBACK_PRESET_NAME _("workflow: scene-referred")
 
 #define DEPRECATED_PRESET_NAME     "modules: deprecated"
 #define T_DEPRECATED_PRESET_NAME _("modules: deprecated")
@@ -376,11 +376,11 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
     }
   }
   // cleanup item
-  if(item->box) gtk_widget_destroy(item->box);
-  if(item->temp_widget) gtk_widget_destroy(item->temp_widget);
-  item->box = NULL;
-  item->temp_widget = NULL;
   item->widget = NULL;
+  if(item->box) gtk_widget_destroy(item->box);
+  item->box = NULL;
+  if(item->temp_widget) gtk_widget_destroy(item->temp_widget);
+  item->temp_widget = NULL;
   item->old_parent = NULL;
   item->module = NULL;
   if(item->tooltip)
@@ -604,6 +604,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     g_signal_connect(item->temp_widget, "show", G_CALLBACK(_sync_visibility), item);
     g_signal_connect(item->temp_widget, "hide", G_CALLBACK(_sync_visibility), item);
     g_signal_connect(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(gtk_widget_destroyed), &item->temp_widget);
+    g_signal_connect_swapped(G_OBJECT(item->temp_widget), "destroy", G_CALLBACK(_basics_remove_widget), item);
 
     _sync_visibility(item->widget, item);
   }
@@ -1011,6 +1012,8 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
   }
   if(button == d->basic_btn) gid = DT_MODULEGROUP_BASICS;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), FALSE);
+
+  if(d->current == DT_MODULEGROUP_BASICS) dt_iop_request_focus(NULL);
 
   /* only deselect button if not currently searching else re-enable module */
   if(d->current == gid && !(text_entered && text_entered[0] != '\0'))
@@ -1493,7 +1496,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
   }
 
 // start quick access
-#define SQA(is_modern, is_scene_referred)                                                                         \
+#define SQA(is_scene_referred)                                                                         \
   {                                                                                                               \
     g_free(tx);                                                                                                   \
     tx = g_strdup_printf("1|0ꬹ1||");                                                                            \
@@ -1502,9 +1505,6 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       AM("filmicrgb/white relative exposure");                                                                    \
       AM("filmicrgb/black relative exposure");                                                                    \
       AM("filmicrgb/contrast");                                                                                   \
-    }                                                                                                             \
-    if(is_modern)                                                                                                 \
-    {                                                                                                             \
       AM("channelmixerrgb/temperature");                                                                          \
       AM("channelmixerrgb/chroma");                                                                               \
       AM("channelmixerrgb/hue");                                                                                  \
@@ -1543,15 +1543,18 @@ void init_presets(dt_lib_module_t *self)
             echo "AM(\"${BN:0:16}\");" ; done
   */
 
-  const gboolean is_modern =
-    dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
-  const gboolean is_scene_referred =
-    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
+  const gboolean is_scene_referred = dt_is_scene_referred();
+  const gboolean wf_filmic =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)");
+  const gboolean wf_sigmoid =
+    dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (sigmoid)");
+  const gboolean wf_none =
+    dt_conf_is_equal("plugins/darkroom/workflow", "none");
 
   // all modules
   gchar *tx = NULL;
 
-  SQA(is_modern, is_scene_referred);
+  SQA(is_scene_referred);
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
@@ -1636,13 +1639,13 @@ void init_presets(dt_lib_module_t *self)
 
   // minimal / 3 tabs
 
-  SQA(is_modern, is_scene_referred);
+  SQA(is_scene_referred);
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("ashift");
 
   if(is_scene_referred)
-    AM("filmicrgb");
+    AM("sigmoid");
   else
     AM("basecurve");
 
@@ -1672,7 +1675,7 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("workflow: beginner"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   // display referred
-  SQA(is_modern, FALSE);
+  SQA(FALSE);
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
@@ -1722,11 +1725,13 @@ void init_presets(dt_lib_module_t *self)
 
   // scene referred
 
-  SQA(is_modern, TRUE);
+  SQA(TRUE);
 
   SMG(C_("modulegroup", "base"), "basic");
-  AM("filmicrgb");
-  AM("sigmoid");
+  if(wf_filmic || wf_none)
+    AM("filmicrgb");
+  if(wf_sigmoid || wf_none)
+    AM("sigmoid");
   AM("toneequal");
   AM("crop");
   AM("ashift");
@@ -1764,84 +1769,6 @@ void init_presets(dt_lib_module_t *self)
   AM("diffuse");
 
   dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-
-  // default / 3 tabs based on Aurélien's proposal
-
-  SQA(is_modern, is_scene_referred);
-
-  SMG(C_("modulegroup", "technical"), "technical");
-  AM("basecurve");
-  AM("bilateral");
-  AM("cacorrect");
-  AM("crop");
-  AM("ashift");
-  AM("colorchecker");
-  AM("colorin");
-  AM("colorout");
-
-  AM("colorreconstruct");
-  AM("cacorrectrgb");
-  AM("demosaic");
-  AM("denoiseprofile");
-  AM("dither");
-  AM("exposure");
-  AM("filmicrgb");
-  AM("finalscale");
-  AM("flip");
-  AM("hazeremoval");
-  AM("highlights");
-  AM("hotpixels");
-  AM("lens");
-  AM("lut3d");
-  AM("negadoctor");
-  AM("nlmeans");
-  AM("overexposed");
-  AM("rawdenoise");
-  AM("rawoverexposed");
-  AM("rotatepixels");
-  AM("temperature");
-  AM("scalepixels");
-
-  SMG(C_("modulegroup", "grading"), "grading");
-  AM("channelmixerrgb");
-  AM("colisa");
-  AM("colorbalancergb");
-  AM("colorcontrast");
-  AM("colorcorrection");
-  AM("colorize");
-  AM("colorzones");
-  AM("graduatednd");
-  AM("levels");
-  AM("rgbcurve");
-  AM("rgblevels");
-  AM("shadhi");
-  AM("splittoning");
-  AM("tonecurve");
-  AM("toneequal");
-  AM("velvia");
-
-  SMG(C_("modulegroup", "effects"), "effect");
-  AM("atrous");
-  AM("bilat");
-  AM("bloom");
-  AM("borders");
-  AM("colormapping");
-  AM("grain");
-  AM("highpass");
-  AM("liquify");
-  AM("lowlight");
-  AM("lowpass");
-  AM("monochrome");
-  AM("retouch");
-  AM("sharpen");
-  AM("soften");
-  AM("vignette");
-  AM("watermark");
-  AM("censorize");
-  AM("blurs");
-  AM("diffuse");
-
-  dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   // search only (only active modules visible)
   SNQA();
@@ -1881,13 +1808,12 @@ void init_presets(dt_lib_module_t *self)
 
 static gchar *_presets_get_minimal(dt_lib_module_t *self)
 {
-  const gboolean is_modern = dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
-  const gboolean is_scene_referred = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
+  const gboolean is_scene_referred = dt_is_scene_referred();
 
   // all modules
   gchar *tx = NULL;
 
-  SQA(is_modern, is_scene_referred);
+  SQA(is_scene_referred);
   AM("exposure/exposure");
   AM("colorbalancergb/contrast");
 

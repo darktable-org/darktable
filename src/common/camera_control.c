@@ -21,8 +21,8 @@
 #include "common/camera_control.h"
 #include "common/exif.h"
 #include "common/image.h"
-#include "common/imageio_jpeg.h"
 #include "control/control.h"
+#include "imageio/imageio_jpeg.h"
 #include <gphoto2/gphoto2-file.h>
 
 #include <fcntl.h>

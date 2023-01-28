@@ -3230,6 +3230,7 @@ static void do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_as
 
   // finally apply cropping
   do_crop(module, p);
+  dt_dev_invalidate_all(darktable.develop);
 
   ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->rotation, p->rotation);
@@ -5020,6 +5021,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 #ifdef ASHIFT_DEBUG
   model_probe(self, p, g->lastfit);
 #endif
+
+  if(w != g->cropmode) dt_dev_invalidate_all(self->dev);
   if(g->buf_height > 0 && g->buf_width > 0)
   {
     do_crop(self, p);
@@ -5043,6 +5046,7 @@ void gui_reset(struct dt_iop_module_t *self)
   _do_clean_structure(self, p, FALSE);
   _gui_update_structure_states(self, NULL);
   // force to reprocess the preview, otherwise the buffer is ko
+  dt_dev_invalidate_all(self->dev);
   dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
 }
 
@@ -5250,6 +5254,7 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
     {
       // module is not enabled -> invoke it and queue the job to be processed once
       // the preview image is ready
+      dt_dev_invalidate_all(self->dev);
       g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE;
       g->jobparams = enhance;
     }
@@ -5287,6 +5292,7 @@ static void _event_process_after_preview_callback(gpointer instance, gpointer us
       _swap_shadow_crop_box(p, g); // temporarily update real crop box
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       _swap_shadow_crop_box(p, g);
+      dt_dev_invalidate_all(darktable.develop);
       break;
 
     case ASHIFT_JOBCODE_GET_STRUCTURE_QUAD:
@@ -5523,17 +5529,10 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *sel
   return FALSE;
 }
 
-static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *self)
-{
-  if(self->dev->gui_module != self)
-  {
-    dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
-  }
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
-}
-
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
+  darktable.develop->history_postpone_invalidate = in && dt_dev_modulegroups_get_activated(darktable.develop) != DT_MODULEGROUP_BASICS;
+
   if(self->enabled)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
@@ -5545,9 +5544,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      // once the pipe is recomputed, we want to update final sizes
-      DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                                      G_CALLBACK(_event_preview_updated_callback), self);
       _commit_crop_box(p, g);
     }
   }
@@ -5598,6 +5594,7 @@ static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *even
   {
     // module is not enabled -> invoke it and queue the job to be processed once
     // the preview image is ready
+    dt_dev_invalidate_all(self->dev);
     g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_QUAD;
   }
 
@@ -5623,6 +5620,7 @@ static int _event_structure_lines_clicked(GtkWidget *widget, GdkEventButton *eve
   {
     // module is not enabled -> invoke it and queue the job to be processed once
     // the preview image is ready
+    dt_dev_invalidate_all(self->dev);
     g->jobcode = ASHIFT_JOBCODE_GET_STRUCTURE_LINES;
   }
 

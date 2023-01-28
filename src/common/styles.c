@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,13 +25,13 @@
 #include "common/history.h"
 #include "common/history_snapshot.h"
 #include "common/image_cache.h"
-#include "common/imageio.h"
 #include "common/tags.h"
 #include "control/control.h"
 #include "develop/develop.h"
-
 #include "gui/accelerators.h"
 #include "gui/styles.h"
+#include "imageio/imageio_common.h"
+
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 
@@ -58,6 +58,7 @@ typedef struct
   int blendop_version;
   int multi_priority;
   GString *multi_name;
+  int multi_name_hand_edited;
   int enabled;
   double iop_order;
 } StylePluginData;
@@ -146,8 +147,11 @@ static void _dt_style_cleanup_multi_instance(int id)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT rowid,operation FROM data.style_items WHERE styleid=?1 ORDER BY operation, multi_priority ASC", -1,
-      &stmt, NULL);
+      "SELECT rowid,operation"
+      " FROM data.style_items"
+      " WHERE styleid=?1"
+      " ORDER BY operation, multi_priority ASC",
+      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -176,8 +180,10 @@ static void _dt_style_cleanup_multi_instance(int id)
   {
     struct _data *d = (struct _data *)list_iter->data;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE data.style_items SET multi_priority=?1 WHERE rowid=?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "UPDATE data.style_items SET multi_priority=?1 WHERE rowid=?2",
+       -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, d->mi);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, d->rowid);
     sqlite3_step(stmt);
@@ -227,7 +233,9 @@ GList *dt_styles_module_order_list(const char *name)
   return iop_list;
 }
 
-static gboolean dt_styles_create_style_header(const char *name, const char *description, GList *iop_list)
+static gboolean dt_styles_create_style_header(const char *name,
+                                              const char *description,
+                                              GList *iop_list)
 {
   sqlite3_stmt *stmt;
 
@@ -266,7 +274,10 @@ static gboolean dt_styles_create_style_header(const char *name, const char *desc
   return TRUE;
 }
 
-static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList *update)
+static void _dt_style_update_from_image(const int id,
+                                        const int imgid,
+                                        GList *filter,
+                                        GList *update)
 {
   if(update && imgid != -1)
   {
@@ -304,14 +315,15 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
         snprintf(query, sizeof(query),
                  "INSERT INTO data.style_items "
                  "  (styleid, num, module, operation, op_params, enabled, blendop_params,"
-                 "   blendop_version, multi_priority, multi_name)"
+                 "   blendop_version, multi_priority, multi_name, multi_name_hand_edited)"
                  " SELECT %d,"
                  "    (SELECT num+1 "
                  "     FROM data.style_items"
                  "     WHERE styleid=%d"
                  "     ORDER BY num DESC LIMIT 1), "
-                 "   module, operation, op_params, enabled, blendop_params, blendop_version,"
-                 "   multi_priority, multi_name"
+                 "   module, operation, op_params, enabled,"
+                 "   blendop_params, blendop_version,"
+                 "   multi_priority, multi_name, multi_name_hand_edited"
                  " FROM main.history"
                  " WHERE imgid=%d AND num=%d",
                  id, id, imgid, GPOINTER_TO_INT(upd->data));
@@ -325,8 +337,11 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
   }
 }
 
-static void  _dt_style_update_iop_order(const gchar *name, const int id, const int32_t imgid,
-                                        const gboolean copy_iop_order, const gboolean update_iop_order)
+static void  _dt_style_update_iop_order(const gchar *name,
+                                        const int id,
+                                        const int32_t imgid,
+                                        const gboolean copy_iop_order,
+                                        const gboolean update_iop_order)
 {
   sqlite3_stmt *stmt;
 
@@ -343,15 +358,17 @@ static void  _dt_style_update_iop_order(const gchar *name, const int id, const i
   if(copy_iop_order || update_iop_order)
   {
     // copy from style name to style id
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE data.styles SET iop_list=?1 WHERE id=?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "UPDATE data.styles SET iop_list=?1 WHERE id=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop_list_txt, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
   }
   else
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE data.styles SET iop_list=NULL WHERE id=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "UPDATE data.styles SET iop_list=NULL WHERE id=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   }
 
@@ -362,9 +379,14 @@ static void  _dt_style_update_iop_order(const gchar *name, const int id, const i
   sqlite3_finalize(stmt);
 }
 
-void dt_styles_update(const char *name, const char *newname, const char *newdescription, GList *filter,
-                      const int32_t imgid, GList *update,
-                      const gboolean copy_iop_order, const gboolean update_iop_order)
+void dt_styles_update(const char *name,
+                      const char *newname,
+                      const char *newdescription,
+                      GList *filter,
+                      const int32_t imgid,
+                      GList *update,
+                      const gboolean copy_iop_order,
+                      const gboolean update_iop_order)
 {
   sqlite3_stmt *stmt;
 
@@ -375,8 +397,9 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
 
   if((g_strcmp0(name, newname)) || (g_strcmp0(desc, newdescription)))
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE data.styles SET name=?1, description=?2 WHERE id=?3", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "UPDATE data.styles SET name=?1, description=?2 WHERE id=?3", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, newname, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, newdescription, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
@@ -398,7 +421,8 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
     g_strlcat(include, ")", sizeof(include));
 
     char query[4096] = { 0 };
-    snprintf(query, sizeof(query), "DELETE FROM data.style_items WHERE styleid=?1 AND %s", include);
+    snprintf(query, sizeof(query),
+             "DELETE FROM data.style_items WHERE styleid=?1 AND %s", include);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
@@ -426,9 +450,14 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
   g_free(desc);
 }
 
-void dt_styles_create_from_style(const char *name, const char *newname, const char *description,
-                                 GList *filter, const int32_t imgid, GList *update,
-                                 const gboolean copy_iop_order, const gboolean update_iop_order)
+void dt_styles_create_from_style(const char *name,
+                                 const char *newname,
+                                 const char *description,
+                                 GList *filter,
+                                 const int32_t imgid,
+                                 GList *update,
+                                 const gboolean copy_iop_order,
+                                 const gboolean update_iop_order)
 {
   sqlite3_stmt *stmt;
   int id = 0;
@@ -458,10 +487,12 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
       // clang-format off
       snprintf(query, sizeof(query),
                "INSERT INTO data.style_items "
-               "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,"
-               "   multi_priority,multi_name)"
-               " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,"
-               "   multi_priority,multi_name"
+               "  (styleid, num, module, operation, op_params, enabled,"
+               "   blendop_params, blendop_version,"
+               "   multi_priority, multi_name, multi_name_hand_edited)"
+               " SELECT ?1, num, module, operation, op_params, enabled, "
+               "        blendop_params, blendop_version,"
+               "        multi_priority, multi_name, multi_name_hand_edited"
                " FROM data.style_items"
                " WHERE styleid=?2 AND %s",
                include);
@@ -470,15 +501,18 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
     }
     else
       // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "INSERT INTO data.style_items "
-                                  "  (styleid,num,module,operation,op_params,enabled,blendop_params,"
-                                  "   blendop_version,multi_priority,multi_name)"
-                                  " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,"
-                                  "        blendop_version,multi_priority,multi_name"
-                                  " FROM data.style_items"
-                                  " WHERE styleid=?2",
-                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "INSERT INTO data.style_items "
+         "  (styleid, num, module, operation, op_params, enabled,"
+         "   blendop_params, blendop_version,"
+         "   multi_priority, multi_name, multi_name_hand_edited)"
+         " SELECT ?1, num, module, operation, op_params, enabled,"
+         "        blendop_params, blendop_version,"
+         "        multi_priority, multi_name, multi_name_hand_edited"
+         " FROM data.style_items"
+         " WHERE styleid=?2",
+         -1, &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, oldid);
@@ -501,8 +535,11 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
   }
 }
 
-gboolean dt_styles_create_from_image(const char *name, const char *description,
-                                     const int32_t imgid, GList *filter, gboolean copy_iop_order)
+gboolean dt_styles_create_from_image(const char *name,
+                                     const char *description,
+                                     const int32_t imgid,
+                                     GList *filter,
+                                     const gboolean copy_iop_order)
 {
   int id = 0;
   sqlite3_stmt *stmt;
@@ -538,10 +575,11 @@ gboolean dt_styles_create_from_image(const char *name, const char *description,
       // clang-format off
       snprintf(query, sizeof(query),
                "INSERT INTO data.style_items"
-               " (styleid,num,module,operation,op_params,enabled,blendop_params,"
-               "  blendop_version,multi_priority,multi_name)"
-               " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,"
-               "  multi_priority,multi_name"
+               " (styleid, num, module, operation, op_params, enabled, blendop_params,"
+               "  blendop_version, multi_priority, multi_name, multi_name_hand_edited)"
+               " SELECT ?1, num, module, operation, op_params, enabled,"
+               "        blendop_params, blendop_version, multi_priority,"
+               "        multi_name, multi_name_hand_edited"
                " FROM main.history"
                " WHERE imgid=?2 AND %s",
                include);
@@ -550,14 +588,16 @@ gboolean dt_styles_create_from_image(const char *name, const char *description,
     }
     else
       // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "INSERT INTO data.style_items"
-                                  "  (styleid,num,module,operation,op_params,enabled,blendop_params,"
-                                  "   blendop_version,multi_priority,multi_name)"
-                                  " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,"
-                                  "   multi_priority,multi_name"
-                                  " FROM main.history"
-                                  " WHERE imgid=?2",
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "INSERT INTO data.style_items"
+         "  (styleid, num, module, operation, op_params, enabled, blendop_params,"
+         "   blendop_version, multi_priority, multi_name, multi_name_hand_edited)"
+         " SELECT ?1, num, module, operation, op_params, enabled,"
+         "        blendop_params, blendop_version, multi_priority,"
+         "        multi_name, multi_name_hand_edited"
+         " FROM main.history"
+         " WHERE imgid=?2",
                                   -1, &stmt, NULL);
       // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
@@ -633,7 +673,9 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
   }
 }
 
-void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean duplicate)
+void dt_multiple_styles_apply_to_list(GList *styles,
+                                      const GList *list,
+                                      const gboolean duplicate)
 {
   /* write current history changes so nothing gets lost,
      do that only in the darkroom as there is nothing to be saved
@@ -695,7 +737,10 @@ void dt_styles_create_from_list(const GList *list)
   if(!selected) dt_control_log(_("no image selected!"));
 }
 
-void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, GList **modules_used, const gboolean append)
+void dt_styles_apply_style_item(dt_develop_t *dev,
+                                dt_style_item_t *style_item,
+                                GList **modules_used,
+                                const gboolean append)
 {
   // get any instance of the same operation so we can copy it
   dt_iop_module_t *mod_src = dt_iop_get_module_by_op_priority(dev->iop, style_item->operation, -1);
@@ -722,6 +767,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
 
       module->enabled = style_item->enabled;
       g_strlcpy(module->multi_name, style_item->multi_name, sizeof(module->multi_name));
+      module->multi_name_hand_edited = style_item->multi_name_hand_edited;
 
       // TODO: this is copied from dt_dev_read_history_ext(), maybe do a helper with this?
       if(style_item->blendop_params
@@ -799,7 +845,11 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
   }
 }
 
-void _styles_apply_to_image_ext(const char *name, const gboolean duplicate, const gboolean overwrite, const int32_t imgid, const gboolean undo)
+void _styles_apply_to_image_ext(const char *name,
+                                const gboolean duplicate,
+                                const gboolean overwrite,
+                                const int32_t imgid,
+                                const gboolean undo)
 {
   int id = 0;
   sqlite3_stmt *stmt;
@@ -852,7 +902,7 @@ void _styles_apply_to_image_ext(const char *name, const gboolean duplicate, cons
       g_list_free_full(mi, g_free);
     }
 
-    dt_dev_read_history_ext(dev_dest, newimgid, TRUE);
+    dt_dev_read_history_ext(dev_dest, newimgid, TRUE, -1);
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image ");
 
@@ -865,12 +915,14 @@ void _styles_apply_to_image_ext(const char *name, const gboolean duplicate, cons
 
     // go through all entries in style
     // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT num, module, operation, op_params, enabled,"
-                                "  blendop_params, blendop_version, multi_priority, multi_name"
-                                " FROM data.style_items WHERE styleid=?1 "
-                                " ORDER BY operation, multi_priority",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT num, module, operation, op_params, enabled,"
+       "       blendop_params, blendop_version, multi_priority,"
+       "       multi_name, multi_name_hand_edited"
+       " FROM data.style_items WHERE styleid=?1 "
+       " ORDER BY operation, multi_priority",
+       -1, &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     GList *si_list = NULL;
@@ -884,7 +936,12 @@ void _styles_apply_to_image_ext(const char *name, const gboolean duplicate, cons
       style_item->multi_priority = sqlite3_column_int(stmt, 7);
       style_item->name = NULL;
       style_item->operation = g_strdup((char *)sqlite3_column_text(stmt, 2));
-      style_item->multi_name = g_strdup((char *)sqlite3_column_text(stmt, 8));
+      style_item->multi_name_hand_edited = sqlite3_column_int(stmt, 9);
+      // see dt_iop_get_instance_name() for why multi_name is handled this way
+      style_item->multi_name =
+        g_strdup((style_item->multi_priority > 0 || style_item->multi_name_hand_edited)
+                 ? (char *)sqlite3_column_text(stmt, 8)
+                 : "");
       style_item->module_version = sqlite3_column_int(stmt, 1);
       style_item->blendop_version = sqlite3_column_int(stmt, 6);
       style_item->params_size = sqlite3_column_bytes(stmt, 3);
@@ -975,7 +1032,10 @@ void _styles_apply_to_image_ext(const char *name, const gboolean duplicate, cons
   }
 }
 
-void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const gboolean overwrite, const int32_t imgid)
+void dt_styles_apply_to_image(const char *name,
+                              const gboolean duplicate,
+                              const gboolean overwrite,
+                              const int32_t imgid)
 {
   _styles_apply_to_image_ext(name, duplicate, overwrite, imgid, TRUE);
 }
@@ -1018,7 +1078,8 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
     sqlite3_finalize(stmt);
 
     /* delete style_items belonging to style */
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM data.style_items WHERE styleid = ?1",
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "DELETE FROM data.style_items WHERE styleid = ?1",
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
@@ -1038,7 +1099,10 @@ void dt_styles_delete_by_name(const char *name)
   dt_styles_delete_by_name_adv(name, TRUE);
 }
 
-GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gboolean with_multi_name)
+GList *dt_styles_get_item_list(const char *name,
+                               const gboolean params,
+                               const int imgid,
+                               const gboolean with_multi_name)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
@@ -1047,12 +1111,13 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gbo
   {
     if(params)
       // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT num, multi_priority, module, operation, enabled, op_params, blendop_params, "
-                                  "       multi_name, blendop_version"
-                                  " FROM data.style_items"
-                                  " WHERE styleid=?1 ORDER BY num DESC",
-                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "SELECT num, multi_priority, module, operation, enabled, op_params,"
+         "       blendop_params, multi_name, blendop_version"
+         " FROM data.style_items"
+         " WHERE styleid=?1 ORDER BY num DESC",
+         -1, &stmt, NULL);
       // clang-format on
     else if(imgid != -1)
     {
@@ -1068,12 +1133,13 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gbo
           "        WHERE imgid=?2 "
           "          AND operation=data.style_items.operation"
           "          AND multi_priority=data.style_items.multi_priority),"
-          "       0, multi_name, blendop_version"
+          "       0, multi_name, multi_name_hand_edited, blendop_version"
           " FROM data.style_items"
           " WHERE styleid=?1"
           " UNION"
-          " SELECT -1,main.history.multi_priority,main.history.module,main.history.operation,main.history.enabled, "
-          "        main.history.num,0,multi_name, blendop_version"
+          " SELECT -1, main.history.multi_priority, main.history.module,"
+          "        main.history.operation, main.history.enabled, "
+          "        main.history.num,0, multi_name, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
           "   AND (main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
@@ -1083,10 +1149,12 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gbo
     }
     else
       // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT num, multi_priority, module, operation, enabled, 0, 0, multi_name"
-                                  " FROM data.style_items"
-                                  " WHERE styleid=?1 ORDER BY num DESC",
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "SELECT num, multi_priority, module, operation, enabled, 0, 0,"
+         "       multi_name, multi_name_hand_edited"
+         " FROM data.style_items"
+         " WHERE styleid=?1 ORDER BY num DESC",
                                   -1, &stmt, NULL);
       // clang-format on
 
@@ -1112,7 +1180,10 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gbo
       item->enabled = sqlite3_column_int(stmt, 4);
 
       const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
-      const gboolean has_multi_name = multi_name && *multi_name && (strcmp(multi_name, "0") != 0);
+      const gboolean multi_name_hand_edited = sqlite3_column_int(stmt, 8);
+      const gboolean has_multi_name =
+        multi_name_hand_edited
+        || (multi_name && *multi_name && (strcmp(multi_name, "0") != 0));
 
       if(params)
       {
@@ -1128,7 +1199,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gbo
         const int32_t op_len = sqlite3_column_bytes(stmt, 5);
         const unsigned char *bop_blob = sqlite3_column_blob(stmt, 6);
         const int32_t bop_len = sqlite3_column_bytes(stmt, 6);
-        const int32_t bop_ver = sqlite3_column_int(stmt, 8);
+        const int32_t bop_ver = sqlite3_column_int(stmt, 9);
 
         item->params = malloc(op_len);
         item->params_size = op_len;
@@ -1159,6 +1230,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid, gbo
       item->name = g_strdup(iname);
       item->operation = g_strdup((char *)sqlite3_column_text(stmt, 3));
       item->multi_name = g_strdup((char *)sqlite3_column_text(stmt, 7));
+      item->multi_name_hand_edited = multi_name_hand_edited;
       item->iop_order = sqlite3_column_double(stmt, 8);
       result = g_list_prepend(result, item);
     }
@@ -1193,9 +1265,13 @@ GList *dt_styles_get_list(const char *filter)
   snprintf(filterstring, sizeof(filterstring), "%%%s%%", filter);
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT name, description FROM data.styles WHERE name LIKE ?1 OR description LIKE ?1 ORDER BY name", -1,
-      &stmt, NULL);
+      "SELECT name, description"
+      " FROM data.styles"
+      " WHERE name LIKE ?1 OR description LIKE ?1"
+      " ORDER BY name",
+      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, filterstring, -1, SQLITE_TRANSIENT);
+
   GList *result = NULL;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1217,7 +1293,9 @@ static char *dt_style_encode(sqlite3_stmt *stmt, int row)
   return vparams;
 }
 
-void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolean overwrite)
+void dt_styles_save_to_file(const char *style_name,
+                            const char *filedir,
+                            gboolean overwrite)
 {
   char stylesdir[PATH_MAX] = { 0 };
   if(!filedir)
@@ -1288,11 +1366,12 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
 
   xmlTextWriterStartElement(writer, BAD_CAST "style");
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT num, module, operation, op_params, enabled,"
-                              "  blendop_params, blendop_version, multi_priority, multi_name"
-                              " FROM data.style_items"
-                              " WHERE styleid =?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT num, module, operation, op_params, enabled,"
+     "  blendop_params, blendop_version, multi_priority, multi_name, multi_name_hand_edited"
+     " FROM data.style_items"
+     " WHERE styleid =?1",
                               -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dt_styles_get_id_by_name(style_name));
@@ -1308,6 +1387,7 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d", sqlite3_column_int(stmt, 6));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d", sqlite3_column_int(stmt, 7));
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name", "%s", sqlite3_column_text(stmt, 8));
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name_hand_edited", "%s", sqlite3_column_text(stmt, 9));
     xmlTextWriterEndElement(writer);
   }
   sqlite3_finalize(stmt);
@@ -1349,9 +1429,12 @@ static void dt_styles_style_data_free(StyleData *style, gboolean free_segments)
   g_free(style);
 }
 
-static void dt_styles_start_tag_handler(GMarkupParseContext *context, const gchar *element_name,
-                                        const gchar **attribute_names, const gchar **attribute_values,
-                                        gpointer user_data, GError **error)
+static void dt_styles_start_tag_handler(GMarkupParseContext *context,
+                                        const gchar *element_name,
+                                        const gchar **attribute_names,
+                                        const gchar **attribute_values,
+                                        gpointer user_data,
+                                        GError **error)
 {
   StyleData *style = user_data;
   const gchar *elt = g_markup_parse_context_get_element(context);
@@ -1365,8 +1448,10 @@ static void dt_styles_start_tag_handler(GMarkupParseContext *context, const gcha
   }
 }
 
-static void dt_styles_end_tag_handler(GMarkupParseContext *context, const gchar *element_name,
-                                      gpointer user_data, GError **error)
+static void dt_styles_end_tag_handler(GMarkupParseContext *context,
+                                      const gchar *element_name,
+                                      gpointer user_data,
+                                      GError **error)
 {
   StyleData *style = user_data;
   const gchar *elt = g_markup_parse_context_get_element(context);
@@ -1379,8 +1464,11 @@ static void dt_styles_end_tag_handler(GMarkupParseContext *context, const gchar 
   }
 }
 
-static void dt_styles_style_text_handler(GMarkupParseContext *context, const gchar *text, gsize text_len,
-                                         gpointer user_data, GError **error)
+static void dt_styles_style_text_handler(GMarkupParseContext *context,
+                                         const gchar *text,
+                                         const gsize text_len,
+                                         gpointer user_data,
+                                         GError **error)
 {
   StyleData *style = user_data;
   const gchar *elt = g_markup_parse_context_get_element(context);
@@ -1424,6 +1512,10 @@ static void dt_styles_style_text_handler(GMarkupParseContext *context, const gch
     {
       g_string_append_len(plug->multi_name, text, text_len);
     }
+    else if(g_ascii_strcasecmp(elt, "multi_name_hand_edited") == 0)
+    {
+      plug->multi_name_hand_edited = atoi(text);
+    }
     else if(g_ascii_strcasecmp(elt, "num") == 0)
     {
       plug->num = atoi(text);
@@ -1456,12 +1548,13 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
   int id = GPOINTER_TO_INT(styleId);
   sqlite3_stmt *stmt;
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO data.style_items "
-                              " (styleid, num, module, operation, op_params, enabled, blendop_params,"
-                              "  blendop_version, multi_priority, multi_name)"
-                              " VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "INSERT INTO data.style_items "
+     " (styleid, num, module, operation, op_params, enabled, blendop_params,"
+     "  blendop_version, multi_priority, multi_name, multi_name_hand_edited)"
+     " VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+     -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, plugin->num);
@@ -1486,6 +1579,7 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, plugin->multi_priority);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, plugin->multi_name->str, plugin->multi_name->len, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, plugin->multi_name_hand_edited);
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -1577,8 +1671,10 @@ gchar *dt_styles_get_description(const char *name)
   gchar *description = NULL;
   if((id = dt_styles_get_id_by_name(name)) != 0)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT description FROM data.styles WHERE id=?1",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT description FROM data.styles WHERE id=?1",
+       -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
     description = (char *)sqlite3_column_text(stmt, 0);
@@ -1592,9 +1688,10 @@ static int32_t dt_styles_get_id_by_name(const char *name)
 {
   int id = 0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM data.styles WHERE name=?1 ORDER BY id DESC LIMIT 1", -1, &stmt,
-                              NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT id FROM data.styles WHERE name=?1 ORDER BY id DESC LIMIT 1",
+     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1622,8 +1719,10 @@ void dt_init_styles_actions()
 dt_style_t *dt_styles_get_by_name(const char *name)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, description FROM data.styles WHERE name = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT name, description FROM data.styles WHERE name = ?1",
+     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
