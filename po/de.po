@@ -1,6 +1,7 @@
 # Martin Straeten <martin.straeten@gmail.com>,2021, 2022"
 # Pierre Metzner <openhab.doc@web.de>, 2018, 2019, 2020.
 # Christian Kanzian <christian.kanzian@gmx.at>, 2019.
+# Mario Zimmermann <mail@zisoft.de>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
@@ -3366,7 +3367,7 @@ msgstr "Kantenerkennungsradius"
 #: ../src/iop/colorbalancergb.c:2079 ../src/iop/colorreconstruction.c:1240
 #: ../src/iop/hotpixels.c:384 ../src/iop/sharpen.c:441
 msgid "threshold"
-msgstr "Schwellwert"
+msgstr "Schwellenwert"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:59
 #: ../build/lib/darktable/plugins/introspection_defringe.c:110
@@ -3384,7 +3385,7 @@ msgstr "lokales Mittel (langsam)"
 # unschön
 #: ../build/lib/darktable/plugins/introspection_defringe.c:126
 msgid "static threshold (fast)"
-msgstr "statischer Schwellwert (schnell)"
+msgstr "statischer Schwellenwert (schnell)"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:90
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:163
@@ -3396,7 +3397,7 @@ msgstr "Grün anpassen"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:141
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:260
 msgid "edge threshold"
-msgstr "Kantenschwellwert"
+msgstr "Kantenschwellenwert"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:102
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:171
@@ -3420,7 +3421,7 @@ msgstr "LMMSE Verfeinerung"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
 msgid "dual threshold"
-msgstr "Schwellwert"
+msgstr "Schwellenwert"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:197
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:204
@@ -3631,7 +3632,7 @@ msgstr "Anisotropie 4. Ordnung"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:171
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:280
 msgid "luminance masking threshold"
-msgstr "Schwellwert Maskierung Luminanz"
+msgstr "Schwellenwert Maskierung Luminanz"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
@@ -3981,7 +3982,7 @@ msgstr "Mittenbetonung"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:242
 #: ../src/views/darkroom.c:2321
 msgid "clipping threshold"
-msgstr "Abschneide-Schwellwert"
+msgstr "Abschneide-Schwellenwert"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:159
 #: ../build/lib/darktable/plugins/introspection_highlights.c:254
@@ -4333,7 +4334,7 @@ msgstr "Gamma"
 #: ../build/lib/darktable/plugins/introspection_rawdenoise.c:43
 #: ../build/lib/darktable/plugins/introspection_rawdenoise.c:122
 msgid "noise threshold"
-msgstr "Rausch-Schwellwert"
+msgstr "Rausch-Schwellenwert"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:70
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:155
@@ -8115,7 +8116,7 @@ msgstr "Maske normal oder invertiert anwenden"
 
 #: ../src/develop/blend_gui.c:3050
 msgid "details threshold"
-msgstr "Detail Schwellwert"
+msgstr "Detail Schwellenwert"
 
 #: ../src/develop/blend_gui.c:3052
 msgid ""
@@ -12558,7 +12559,7 @@ msgstr "Größe der Überstrahlung"
 # unschön
 #: ../src/iop/bloom.c:377
 msgid "the threshold of light"
-msgstr "Schwellwert des Lichts"
+msgstr "Schwellenwert des Lichts"
 
 #: ../src/iop/bloom.c:381
 msgid "the strength of bloom"
@@ -14838,7 +14839,7 @@ msgstr "Priorität"
 
 #: ../src/iop/colorreconstruction.c:1259
 msgid "pixels with lightness values above this threshold are corrected"
-msgstr "Pixel mit einer Helligkeit über diesem Schwellwert werden korrigiert"
+msgstr "Pixel mit einer Helligkeit über diesem Schwellenwert werden korrigiert"
 
 #: ../src/iop/colorreconstruction.c:1260
 msgid "how far to look for replacement colors in spatial dimensions"
@@ -15083,7 +15084,7 @@ msgstr ""
 "– lokales Mittel: langsamer, schützt die Sättigung besser als das globale "
 "Mittel indem Pixel aus der Umgebung als Farb-Referenz benutzt werden, so "
 "dass bei Bedarf eine stärkere Entsättigung erreicht werden kann\n"
-"– statisch: schnell, benutzt nur den Schwellwert als statischen Grenzwert"
+"– statisch: schnell, benutzt nur den Schwellenwert als statischen Grenzwert"
 
 #: ../src/iop/defringe.c:424
 msgid "radius for detecting fringe"
@@ -15092,7 +15093,7 @@ msgstr "Radius der Farbsaumerkennung"
 #: ../src/iop/defringe.c:427
 msgid "threshold for defringe, higher values mean less defringing"
 msgstr ""
-"Schwellwert der Farbsaumentfernung, höhere Werte führen zu weniger Änderung"
+"Schwellenwert der Farbsaumentfernung, höhere Werte führen zu weniger Änderung"
 
 #: ../src/iop/demosaic.c:221
 msgid "demosaic"
@@ -15144,7 +15145,7 @@ msgid ""
 "set to 0.0 to switch off\n"
 "set to 1.0 to ignore edges"
 msgstr ""
-"Schwellwert für kanten-orientierten Median.\n"
+"Schwellenwert für kanten-orientierten Median.\n"
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen, um Kanten zu ignorieren."
 
@@ -17033,11 +17034,11 @@ msgstr[1] "%d Pixel korrigiert"
 
 #: ../src/iop/hotpixels.c:386
 msgid "lower threshold for hot pixel"
-msgstr "unterer Schwellwert"
+msgstr "unterer Schwellenwert"
 
 #: ../src/iop/hotpixels.c:390
 msgid "strength of hot pixel correction"
-msgstr "Schwellwert zur Korrektur toter Pixel"
+msgstr "Schwellenwert zur Korrektur toter Pixel"
 
 #: ../src/iop/hotpixels.c:406
 msgid ""
@@ -18702,7 +18703,7 @@ msgstr "Stärke des Schärfens"
 
 #: ../src/iop/sharpen.c:443
 msgid "threshold to activate sharpen"
-msgstr "Schwellwert zum Aktivieren des Schärfens"
+msgstr "Schwellenwert zum Aktivieren des Schärfens"
 
 #: ../src/iop/sigmoid.c:81
 msgid "sigmoid"
@@ -24175,7 +24176,7 @@ msgid ""
 "1.0 - white level\n"
 "0.0 - black level"
 msgstr ""
-"Schwellwert dafür, was als überbelichtet markiert wird\n"
+"Schwellenwert dafür, was als überbelichtet markiert wird\n"
 "1,0 – Weißwert\n"
 "0,0 – Schwarzwert"
 
@@ -24235,7 +24236,7 @@ msgstr "Violett & Grün"
 
 #: ../src/views/darkroom.c:2369
 msgid "lower threshold"
-msgstr "unterer Schwellwert"
+msgstr "unterer Schwellenwert"
 
 #: ../src/views/darkroom.c:2370
 msgid ""
@@ -24259,7 +24260,7 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2386
 msgid "upper threshold"
-msgstr "oberer Schwellwert"
+msgstr "oberer Schwellenwert"
 
 # wft: peak medium luminance
 #: ../src/views/darkroom.c:2388
@@ -25334,7 +25335,7 @@ msgstr "Mausaktionen"
 #~ "siehe Tag: darktable|problem|history-compress"
 
 #~ msgid "switch dual threshold"
-#~ msgstr "Schwellwert für Wechsel"
+#~ msgstr "Schwellenwert für Wechsel"
 
 #~ msgid "display blending mask"
 #~ msgstr "Überblendemaske anzeigen"
@@ -27590,7 +27591,7 @@ msgstr "Mausaktionen"
 
 #~ msgctxt "accel"
 #~ msgid "threshold"
-#~ msgstr "Schwellwert"
+#~ msgstr "Schwellenwert"
 
 #~ msgctxt "accel"
 #~ msgid "strength"
@@ -27800,7 +27801,7 @@ msgstr "Mausaktionen"
 
 #~ msgctxt "accel"
 #~ msgid "edge threshold"
-#~ msgstr "Kantenschwellwert"
+#~ msgstr "Kantenschwellenwert"
 
 #~ msgctxt "accel"
 #~ msgid "color smoothing"
@@ -27923,7 +27924,7 @@ msgstr "Mausaktionen"
 
 #~ msgctxt "accel"
 #~ msgid "clipping threshold"
-#~ msgstr "Abschneide-Schwellwert"
+#~ msgstr "Abschneide-Schwellenwert"
 
 #~ msgctxt "accel"
 #~ msgid "sharpness"
@@ -28044,7 +28045,7 @@ msgstr "Mausaktionen"
 
 #~ msgctxt "accel"
 #~ msgid "noise threshold"
-#~ msgstr "Rausch-Schwellwert"
+#~ msgstr "Rausch-Schwellenwert"
 
 #~ msgid "black level %i"
 #~ msgstr "Schwarzwert %i"
@@ -28523,10 +28524,10 @@ msgstr "Mausaktionen"
 #~ "Rechtsklick für Einstellungen"
 
 #~ msgid "threshold of what shall be considered underexposed"
-#~ msgstr "Schwellwert dafür, was als unterbelichtet markiert wird"
+#~ msgstr "Schwellenwert dafür, was als unterbelichtet markiert wird"
 
 #~ msgid "threshold of what shall be considered overexposed"
-#~ msgstr "Schwellwert dafür, was als überbelichtet markiert wird"
+#~ msgstr "Schwellenwert dafür, was als überbelichtet markiert wird"
 
 #~ msgctxt "accel"
 #~ msgid "presets"
@@ -29990,11 +29991,11 @@ msgstr "Mausaktionen"
 
 #~ msgctxt "accel"
 #~ msgid "lower threshold"
-#~ msgstr "unterer Schwellwert"
+#~ msgstr "unterer Schwellenwert"
 
 #~ msgctxt "accel"
 #~ msgid "upper threshold"
-#~ msgstr "oberer Schwellwert"
+#~ msgstr "oberer Schwellenwert"
 
 #~ msgctxt "accel"
 #~ msgid "color scheme"
@@ -30519,7 +30520,7 @@ msgstr "Mausaktionen"
 #~ msgstr "importieren"
 
 #~ msgid "strength of stuck pixel correction threshold"
-#~ msgstr "Schwellwert zur Korrektur toter Pixel"
+#~ msgstr "Schwellenwert zur Korrektur toter Pixel"
 
 #~ msgid "( --- )"
 #~ msgstr "( --- )"
