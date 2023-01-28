@@ -3066,16 +3066,10 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/histogram/vectorscope/show_color_harmony</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/darkroom/histogram/vectorscope/harmony_type</name>
     <type>
       <enum>
+		<option>none</option>
 		<option>monochromatic</option>
 		<option>analogous</option>
 		<option>analogous complementary</option>
@@ -3087,7 +3081,7 @@
 		<option>square</option>
       </enum>
     </type>
-    <default>complementary</default>
+    <default>none</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
