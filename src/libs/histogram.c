@@ -1839,8 +1839,6 @@ static void _brightness_clicked(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->bright = !(d->bright);
   dt_conf_set_bool("plugins/darkroom/histogram/bright", d->bright);
-  dtgtk_button_set_paint(DTGTK_BUTTON(d->brightness_button),
-                         dtgtk_cairo_paint_brightness, CPF_NONE, &(d->bright));
   dt_control_queue_redraw_widget(d->scope_draw);
 }
 
