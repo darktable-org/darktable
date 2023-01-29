@@ -52,7 +52,7 @@ jobs:
           - { label: ubuntu-20.04, code: focal }
         compiler:
           #- { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
-          - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
+          - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
           #- { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
           #- { compiler: LLVM9,  CC: clang-9,  CXX: clang++-9,  packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
           #- { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
