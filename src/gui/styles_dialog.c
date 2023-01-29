@@ -581,7 +581,8 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_ENABLED);
   g_signal_connect(renderer, "toggled", G_CALLBACK(_gui_styles_item_toggled), sd);
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items), -1, _("include"),
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items), -1,
+                                              edit ? _("keep") : _("include"),
                                               renderer, "active",
                                               DT_STYLE_ITEMS_COL_ENABLED, NULL);
 
