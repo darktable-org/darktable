@@ -3126,6 +3126,7 @@ static gboolean _resize_wrap_motion(GtkWidget *widget, GdkEventMotion *event, co
     return TRUE;
   }
   else if(!(event->state & GDK_BUTTON1_MASK)
+          && event->window == gtk_widget_get_window(widget)
           && event->y > gtk_widget_get_allocated_height(widget) - DT_RESIZE_HANDLE_SIZE)
   {
     dt_control_change_cursor(GDK_SB_V_DOUBLE_ARROW);
