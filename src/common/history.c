@@ -145,13 +145,15 @@ void dt_history_delete_on_image_ext(const int32_t imgid, const gboolean undo)
   }
 }
 
-void dt_history_delete_on_image(int32_t imgid)
+void dt_history_delete_on_image(const int32_t imgid)
 {
   dt_history_delete_on_image_ext(imgid, TRUE);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
-int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only)
+gboolean dt_history_load_and_apply(const int imgid,
+                                   gchar *filename,
+                                   const gboolean history_only)
 {
   dt_lock_image(imgid);
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
@@ -167,7 +169,7 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
                                    // ugly but if not history_only => called from crawler - do not write the xmp
                                    history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
       dt_unlock_image(imgid);
-      return 1;
+      return TRUE;
     }
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
@@ -187,24 +189,25 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
   dt_unlock_image(imgid);
   // signal that the mipmap need to be updated
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, imgid);
-  return 0;
+  return FALSE;
 }
 
-int dt_history_load_and_apply_on_list(gchar *filename, const GList *list)
+gboolean dt_history_load_and_apply_on_list(gchar *filename, const GList *list)
 {
-  int res = 0;
+  gboolean res = FALSE;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     const int imgid = GPOINTER_TO_INT(l->data);
-    if(dt_history_load_and_apply(imgid, filename, 1)) res = 1;
+    if(dt_history_load_and_apply(imgid, filename, 1)) res = TRUE;
   }
   dt_undo_end_group(darktable.undo);
   return res;
 }
 
 // returns the first history item with hist->module == module
-static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev, dt_iop_module_t *module)
+static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev,
+                                                        const dt_iop_module_t *module)
 {
   dt_dev_history_item_t *hist_mod = NULL;
   for(GList *history = dev->history; history; history = g_list_next(history))
@@ -221,7 +224,8 @@ static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev, dt_io
 }
 
 // returns the first history item with corresponding module->op
-static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev, dt_iop_module_t *module)
+static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev,
+                                                    const dt_iop_module_t *module)
 {
   dt_dev_history_item_t *hist_mod = NULL;
   for(GList *history = dev->history; history; history = g_list_next(history))
@@ -239,7 +243,8 @@ static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev, dt_iop_mo
 
 // returns the module on modules_list that is equal to module
 // used to check if module exists on the list
-static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list, dt_iop_module_t *module)
+static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list,
+                                                   const dt_iop_module_t *module)
 {
   dt_iop_module_t *mod_ret = NULL;
   for(GList *modules = modules_list; modules; modules = g_list_next(modules))
@@ -256,7 +261,7 @@ static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list, dt_iop_m
 }
 
 // fills used with formid, if it is a group it recurs and fill all sub-forms
-static void _fill_used_forms(GList *forms_list, int formid, int *used, int nb)
+static void _fill_used_forms(GList *forms_list, const int formid, int *used, const int nb)
 {
   // first, we search for the formid in used table
   for(int i = 0; i < nb; i++)
@@ -283,13 +288,13 @@ static void _fill_used_forms(GList *forms_list, int formid, int *used, int nb)
 }
 
 // dev_src is used only to copy masks, if no mask will be copied it can be null
-int dt_history_merge_module_into_history(dt_develop_t *dev_dest,
-                                         dt_develop_t *dev_src,
-                                         dt_iop_module_t *mod_src,
-                                         GList **_modules_used,
-                                         const int append)
+gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
+                                              dt_develop_t *dev_src,
+                                              dt_iop_module_t *mod_src,
+                                              GList **_modules_used,
+                                              const int append)
 {
-  int module_added = 1;
+  gboolean module_added = TRUE;
   GList *modules_used = *_modules_used;
   dt_iop_module_t *module = NULL;
   dt_iop_module_t *mod_replace = NULL;
@@ -309,7 +314,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     {
       fprintf(stderr, "[dt_history_merge_module_into_history] can't find single instance module %s\n",
               mod_src->op);
-      module_added = 0;
+      module_added = FALSE;
     }
   }
 
@@ -356,7 +361,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       if(mod_replace == NULL)
       {
         fprintf(stderr, "[dt_history_merge_module_into_history] can't find base instance module %s\n", mod_src->op);
-        module_added = 0;
+        module_added = FALSE;
       }
     }
   }
@@ -371,7 +376,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest,
       if(dt_iop_load_module(module, base->so, dev_dest))
       {
         fprintf(stderr, "[dt_history_merge_module_into_history] can't load module %s\n", mod_src->op);
-        module_added = 0;
+        module_added = FALSE;
       }
       else
       {
@@ -577,7 +582,9 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
   {
     if(DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
     // we will copy all modules
-    for(GList *modules_src = dev_src->iop; modules_src; modules_src = g_list_next(modules_src))
+    for(GList *modules_src = dev_src->iop;
+        modules_src;
+        modules_src = g_list_next(modules_src))
     {
       dt_iop_module_t *mod_src = (dt_iop_module_t *)(modules_src->data);
 
