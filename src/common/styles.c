@@ -1139,7 +1139,7 @@ GList *dt_styles_get_item_list(const char *name,
           " UNION"
           " SELECT -1, main.history.multi_priority, main.history.module,"
           "        main.history.operation, main.history.enabled, "
-          "        main.history.num,0, multi_name, blendop_version"
+          "        main.history.num,0, multi_name, FALSE, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
           "   AND (main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
