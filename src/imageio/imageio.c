@@ -811,7 +811,35 @@ int dt_imageio_export_with_flags(const int32_t imgid,
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
     {
       dt_style_item_t *st_item = (dt_style_item_t *)st_items->data;
-      dt_styles_apply_style_item(&dev, st_item, &modules_used, appending);
+      gboolean ok = TRUE;
+      gboolean autoinit = FALSE;
+
+      /* check for auto-init module */
+      if(st_item->params_size == 0)
+      {
+        // get iop for this operation as we need the corresponding default parameters
+        const dt_iop_module_t *module =
+          dt_iop_get_module_from_list(dev.iop, st_item->operation);
+        if(module)
+        {
+          st_item->params_size = module->params_size;
+          st_item->params = (dt_iop_params_t *)malloc(st_item->params_size);
+          memcpy(st_item->params, module->default_params, module->params_size);
+          autoinit = TRUE;
+        }
+        else
+        {
+          fprintf(stderr,
+                  "[dt_imageio_export_with_flags] cannot find module %s for style\n",
+                  st_item->operation);
+          ok = FALSE;
+        }
+      }
+
+      if(ok)
+      {
+        dt_styles_apply_style_item(&dev, st_item, &modules_used, !autoinit && appending);
+      }
     }
 
     g_list_free(modules_used);

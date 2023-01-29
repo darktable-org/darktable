@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2022 darktable developers.
+    Copyright (C) 2018-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1308,13 +1308,23 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, const g
   {
     const dt_style_item_t *const restrict si = (dt_style_item_t *)si_list->data;
 
-    dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
-    memcpy(n->operation, si->operation, sizeof(n->operation));
-    n->instance = si->multi_priority;
-    g_strlcpy(n->name, si->multi_name, sizeof(n->name));
-    n->o.iop_order = 0;
-    e_list = g_list_prepend(e_list, n);
+    /* check for an auto-init module, such module is meant to reset (so replace)
+       and existing instance. We do not want to add a new iop-order in the list
+       for such module. */
+    if(si->params_size > 0)
+    {
+      dt_iop_order_entry_t *n = (dt_iop_order_entry_t *)malloc(sizeof(dt_iop_order_entry_t));
+      memcpy(n->operation, si->operation, sizeof(n->operation));
+      n->instance = si->multi_priority;
+      g_strlcpy(n->name, si->multi_name, sizeof(n->name));
+      n->o.iop_order = 0;
+      e_list = g_list_prepend(e_list, n);
+    }
   }
+
+  // only auto-init modules, nothing else to do
+  if(!e_list) return;
+
   e_list = g_list_reverse(e_list);  // list was built in reverse order, so un-reverse it
 
   dt_ioppr_update_for_entries(dev, e_list, append);
@@ -1325,11 +1335,15 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, const g
   for(const GList *si_list = st_items; si_list; si_list = g_list_next(si_list))
   {
     dt_style_item_t *si = (dt_style_item_t *)si_list->data;
-    const dt_iop_order_entry_t *const restrict e = (dt_iop_order_entry_t *)el->data;
 
-    si->multi_priority = e->instance;
-    si->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, si->operation, si->multi_priority);
-    el = g_list_next(el);
+    if(si->params_size > 0)
+    {
+      const dt_iop_order_entry_t *const restrict e = (dt_iop_order_entry_t *)el->data;
+
+      si->multi_priority = e->instance;
+      si->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, si->operation, si->multi_priority);
+      el = g_list_next(el);
+    }
   }
 
   g_list_free(e_list);

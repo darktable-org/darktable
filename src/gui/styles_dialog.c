@@ -116,26 +116,28 @@ void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd,
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(sd->items));
   gint num = 0, update_num = 0;
-  gboolean active, uactive;
+  gboolean active, uactive, autoinit;
 
   if(gtk_tree_model_get_iter_first(model, &iter))
   {
     do
     {
-      gtk_tree_model_get(model, &iter, DT_STYLE_ITEMS_COL_ENABLED, &active,
+      gtk_tree_model_get(model, &iter,
+                         DT_STYLE_ITEMS_COL_ENABLED, &active,
                          DT_STYLE_ITEMS_COL_UPDATE, &uactive,
                          DT_STYLE_ITEMS_COL_NUM, &num,
                          DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num,
+                         DT_STYLE_ITEMS_COL_AUTOINIT, &autoinit,
                          -1);
       if((active || uactive) && num >= 0)
       {
-        *enabled = g_list_append(*enabled, GINT_TO_POINTER(num));
+        *enabled = g_list_append(*enabled, GINT_TO_POINTER(autoinit ? -num : num));
         if(update != NULL)
         {
           if(uactive)
             *update = g_list_append(*update, GINT_TO_POINTER(update_num));
           else
-            *update = g_list_append(*update, GINT_TO_POINTER(-1));
+            *update = g_list_append(*update, GINT_TO_POINTER(0));
         }
       }
     } while(gtk_tree_model_iter_next(model, &iter));
@@ -151,18 +153,19 @@ void _gui_styles_get_active_items(dt_gui_styles_dialog_t *sd,
                          DT_STYLE_ITEMS_COL_ENABLED, &active,
                          DT_STYLE_ITEMS_COL_NUM, &num,
                          DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num,
+                         DT_STYLE_ITEMS_COL_AUTOINIT, &autoinit,
                          -1);
       if(active)
       {
         if(update_num == -1) // item from style
         {
           *enabled = g_list_append(*enabled, GINT_TO_POINTER(num));
-          *update = g_list_append(*update, GINT_TO_POINTER(-1));
+          *update = g_list_append(*update, GINT_TO_POINTER(0));
         }
         else // item from image
         {
-          *update = g_list_append(*update, GINT_TO_POINTER(update_num));
-          *enabled = g_list_append(*enabled, GINT_TO_POINTER(-1));
+          *update = g_list_append(*update, GINT_TO_POINTER(autoinit ? -update_num : update_num));
+          *enabled = g_list_append(*enabled, GINT_TO_POINTER(0));
         }
       }
     } while(gtk_tree_model_iter_next(model, &iter));
