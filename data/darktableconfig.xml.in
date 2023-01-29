@@ -86,7 +86,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>scale slider step with min/max</shortdescription>
-    <longdescription>vary bauhaus slider step size with min/max range</longdescription>
+    <longdescription>vary slider step size with min/max range</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database</name>
