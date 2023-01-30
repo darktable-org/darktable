@@ -1451,11 +1451,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
               d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
               d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE)
-        gtk_widget_set_tooltip_text(widget, _("histogram\n"
-                                              "scroll to coarse-rotate color harmony guide lines\n"
-                                              "shift+scroll to fine rotate\n"
-                                              "alt+scroll to change harmony width\n"));
-      else gtk_widget_set_tooltip_text(widget, "histogram\n");
+      gtk_widget_set_tooltip_text(widget, "histogram");
     }
     // FIXME: could a GtkRange be used to do this work?
     else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
@@ -1545,33 +1541,6 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
         const float cb = dt_dev_exposure_get_black(dev);
         dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
       }
-    }
-    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
-        d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
-        d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE)
-    {
-      if(dt_modifier_is(event->state, GDK_MOD1_MASK)) // ALT+SCROLL
-      {
-        if(d->harmony_width == 0 && delta_y < 0) d->harmony_width = DT_LIB_HISTOGRAM_HARMONY_WIDTH_N - 1;
-        else d->harmony_width = (d->harmony_width +delta_y) % DT_LIB_HISTOGRAM_HARMONY_WIDTH_N;
-        dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_width", d->harmony_width);
-      }
-      else
-      {
-        int a;
-        if(dt_modifier_is(event->state, GDK_SHIFT_MASK)) // SHIFT+SCROLL
-          a = d->harmony_rotation + delta_y;
-        else // SCROLL
-          {
-            d->harmony_rotation = (int)(d->harmony_rotation / 15.) * 15;
-            a = d->harmony_rotation + 15 * delta_y;
-          }
-        a %= 360;
-        if(a < 0) a += 360;
-        d->harmony_rotation = a;
-        dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_rotation", d->harmony_rotation);
-      }
-      dt_control_queue_redraw_widget(d->scope_draw);
     }
   }
   return TRUE;
@@ -1844,6 +1813,11 @@ static void _color_harmony_changed(dt_lib_histogram_t *d)
 {
   dt_conf_set_string("plugins/darkroom/histogram/vectorscope/harmony_type",
                      dt_color_harmonies[d->color_harmony].name);
+  dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_width",
+                  d->harmony_width);
+  dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_rotation",
+                  d->harmony_rotation);
+
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button),
                                  d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE);
   dt_control_queue_redraw_widget(d->scope_draw);
@@ -1864,10 +1838,32 @@ static gboolean _color_harmony_scroll_callback(GtkWidget *widget, GdkEventScroll
   int delta_y = 0;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) && delta_y != 0)
   {
-    if(d->color_harmony == 0 && delta_y < 0) d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1;
-    else d->color_harmony = (d->color_harmony + delta_y) % DT_LIB_HISTOGRAM_HARMONY_N;
-    gtk_toggle_button_set_active(g_slist_nth_data(d->color_armony_rb_group,
-                                                  DT_LIB_HISTOGRAM_HARMONY_N - 1 - d->color_harmony), TRUE);
+    if(dt_modifier_is(event->state, GDK_CONTROL_MASK)) // CTRL+SCROLL
+    {
+      if(d->harmony_width == 0 && delta_y < 0) d->harmony_width = DT_LIB_HISTOGRAM_HARMONY_WIDTH_N - 1;
+      else d->harmony_width = (d->harmony_width +delta_y) % DT_LIB_HISTOGRAM_HARMONY_WIDTH_N;
+    }
+    else if(dt_modifier_is(event->state, GDK_MOD1_MASK)) // ALT+SCROLL
+    {
+      if(d->color_harmony == 0 && delta_y < 0) d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1;
+      else d->color_harmony = (d->color_harmony + delta_y) % DT_LIB_HISTOGRAM_HARMONY_N;
+      gtk_toggle_button_set_active(g_slist_nth_data(d->color_armony_rb_group,
+                                                    DT_LIB_HISTOGRAM_HARMONY_N - 1 - d->color_harmony), TRUE);
+    }
+    else
+    {
+      int a;
+      if(dt_modifier_is(event->state, GDK_SHIFT_MASK)) // SHIFT+SCROLL
+        a = d->harmony_rotation + delta_y;
+      else // SCROLL
+        {
+          d->harmony_rotation = (int)(d->harmony_rotation / 15.) * 15;
+          a = d->harmony_rotation + 15 * delta_y;
+        }
+      a %= 360;
+      if(a < 0) a += 360;
+      d->harmony_rotation = a;
+    }
     _color_harmony_changed(d);
   }
   return TRUE;
@@ -2259,12 +2255,15 @@ void gui_init(dt_lib_module_t *self)
   d->color_harmony_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_harmony, CPF_NONE, NULL);
   gtk_widget_set_tooltip_text(d->color_harmony_button, _("color harmony guide lines\n"
                                                          "click to select\n"
-                                                         "scroll to cycle"));
+                                                         "scroll to coarse-rotate\n"
+                                                         "shift+scroll to fine rotate\n"
+                                                         "ctrl+scroll to change width\n"
+                                                         "alt+scroll to cycle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button),
                                d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE);
   gtk_box_pack_end(GTK_BOX(box_right), d->color_harmony_button, FALSE, FALSE, 0);
 
-  // !: quale widget ?
+  // FIXME: which widget ?
   ac = dt_action_define(dark, N_("color harmonies"), N_("cycle color harmonies"), d->color_harmony_button, NULL);
   dt_action_register(ac, NULL, _lib_histogram_cycle_harmony_callback, 0, 0);
 
