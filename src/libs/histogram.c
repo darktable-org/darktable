@@ -2010,6 +2010,16 @@ static void _lib_histogram_change_type_callback(dt_action_t *action)
   _scope_view_clicked(d->scope_view_button, d);
 }
 
+static void _lib_histogram_cycle_harmony_callback(dt_action_t *action)
+{
+  dt_lib_module_t *self = darktable.lib->proxy.histogram.module;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  d->color_harmony = (d->color_harmony + 1) % DT_LIB_HISTOGRAM_HARMONY_N;
+  gtk_toggle_button_set_active(g_slist_nth_data(d->color_armony_rb_group,
+                                                DT_LIB_HISTOGRAM_HARMONY_N - 1 - d->color_harmony), TRUE);
+  _color_harmony_changed(d);
+}
+
 // this is only called in darkroom view
 static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
@@ -2254,6 +2264,10 @@ void gui_init(dt_lib_module_t *self)
                                d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE);
   gtk_box_pack_end(GTK_BOX(box_right), d->color_harmony_button, FALSE, FALSE, 0);
 
+  // !: quale widget ?
+  ac = dt_action_define(dark, N_("color harmonies"), N_("cycle color harmonies"), d->color_harmony_button, NULL);
+  dt_action_register(ac, NULL, _lib_histogram_cycle_harmony_callback, 0, 0);
+
   d->color_harmony_popup = gtk_popover_new(d->color_harmony_button);
   g_object_set(G_OBJECT(d->color_harmony_popup), "transitions-enabled", FALSE, NULL);
 
@@ -2265,7 +2279,7 @@ void gui_init(dt_lib_module_t *self)
   {
     rb = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb),
                                                      _(dt_color_harmonies[i].name));
-    dt_action_define(dark, "color harmonies", dt_color_harmonies[i].name,
+    dt_action_define(dark, N_("color harmonies"), dt_color_harmonies[i].name,
                      rb, &dt_action_def_button);
     g_signal_connect(G_OBJECT(rb), "toggled", G_CALLBACK(_color_harmony_radio_button_toggle), d);
     gtk_box_pack_start(GTK_BOX(vbox), rb, TRUE, TRUE, 0);
