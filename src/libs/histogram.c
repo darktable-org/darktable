@@ -1453,7 +1453,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
         gtk_widget_set_tooltip_text(widget, _("histogram\n"
                                               "scroll to coarse-rotate color harmony guide lines\n"
                                               "shift+scroll to fine rotate\n"
-                                              "alt+scroll to change harmony width"));
+                                              "alt+scroll to change harmony width\n"));
       else gtk_widget_set_tooltip_text(widget, "histogram\n");
     }
     // FIXME: could a GtkRange be used to do this work?
@@ -1513,13 +1513,6 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
     }
   }
 
-  return TRUE;
-}
-
-static gboolean _color_harmony_clicked(GtkWidget *button, GdkEventButton *event, dt_lib_histogram_t *d)
-{
-  gtk_widget_show(d->color_harmony_button);
-  gtk_widget_show_all(d->color_harmony_popup);
   return TRUE;
 }
 
@@ -1840,19 +1833,43 @@ static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
   dt_control_queue_redraw_widget(d->scope_draw);
 }
 
-static void _color_harmony_radio_button_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+static gboolean _color_harmony_clicked(GtkWidget *button, GdkEventButton *event, dt_lib_histogram_t *d)
 {
+  gtk_widget_show(d->color_harmony_button);
+  gtk_widget_show_all(d->color_harmony_popup);
+  return TRUE;
+}
 
-  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))) return;
-  GSList *group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(button));
-  // radio buttons are put in their list in reverse order
-  d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1 - g_slist_index(group, button);
+static void _color_harmony_changed(dt_lib_histogram_t *d)
+{
   dt_conf_set_string("plugins/darkroom/histogram/vectorscope/harmony_type",
                      dt_color_harmonies[d->color_harmony].name);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button),
                                  d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE);
   dt_control_queue_redraw_widget(d->scope_draw);
+}
+
+static void _color_harmony_radio_button_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))) return;
+  GSList *group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(button));
+  // radio buttons are put in their list in reverse order
+  d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1 - g_slist_index(group, button);
   gtk_widget_hide(d->color_harmony_popup);
+  _color_harmony_changed(d);
+}
+
+static gboolean _color_harmony_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  int delta_y = 0;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) && delta_y != 0)
+  {
+    if(d->color_harmony == 0 && delta_y < 0) d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1;
+    else d->color_harmony = (d->color_harmony + delta_y) % DT_LIB_HISTOGRAM_HARMONY_N;
+    _color_harmony_changed(d);
+  }
+  return TRUE;
 }
 
 static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
@@ -2229,7 +2246,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(GTK_BOX(box_right), d->colorspace_button, FALSE, FALSE, 0);
 
   d->color_harmony_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_harmony, CPF_NONE, NULL);
-  gtk_widget_set_tooltip_text(d->color_harmony_button, _("color harmony guide lines"));
+  gtk_widget_set_tooltip_text(d->color_harmony_button, _("color harmony guide lines\n"
+                                                         "click to select\n"
+                                                         "scroll to cycle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button),
                                d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE);
   gtk_box_pack_end(GTK_BOX(box_right), d->color_harmony_button, FALSE, FALSE, 0);
@@ -2297,6 +2316,9 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->green_channel_button), "toggled", G_CALLBACK(_green_channel_toggle), d);
   g_signal_connect(G_OBJECT(d->blue_channel_button), "toggled", G_CALLBACK(_blue_channel_toggle), d);
   g_signal_connect(G_OBJECT(d->color_harmony_button), "button-press-event", G_CALLBACK(_color_harmony_clicked), d);
+  gtk_widget_add_events(d->color_harmony_button, darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(d->color_harmony_button), "scroll-event",
+                   G_CALLBACK(_color_harmony_scroll_callback), d);
 
   gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
                                        GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask);
