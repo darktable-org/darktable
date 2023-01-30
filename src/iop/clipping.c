@@ -3067,12 +3067,12 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       }
       else if(g->k_selected_segment >= 0)
       {
-        dt_control_hinter_message(darktable.control, _("<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"));
+        dt_control_hinter_message(darktable.control, _("<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"));
         dt_control_change_cursor(GDK_CROSS);
       }
       else
       {
-        dt_control_hinter_message(darktable.control, _("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
+        dt_control_hinter_message(darktable.control, _("<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
                                                        "<b>move line/control point</b>: drag"));
         dt_control_change_cursor(GDK_FLEUR);
       }
