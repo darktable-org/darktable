@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,3 +42,4 @@ typedef struct dt_dng_gain_map_t
 } dt_dng_gain_map_t;
 
 void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t size, dt_image_t *img);
+void dt_dng_opcode_process_opcode_list_3(uint8_t *buf, uint32_t size, dt_image_t *img);
