@@ -1,7 +1,7 @@
 [submodule "src/external/rawspeed"]
 	path = src/external/rawspeed
-	url = https://github.com/sarunasb/rawspeed.git
-	branch = om
+	url = https://github.com/darktable-org/rawspeed.git
+	branch = develop
 [submodule "src/external/OpenCL"]
 	path = src/external/OpenCL
 	url = https://github.com/KhronosGroup/OpenCL-Headers.git
