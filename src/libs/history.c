@@ -1147,6 +1147,7 @@ static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget, GdkEve
 
 static gboolean _lib_history_button_clicked_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
 {
+  const int32_t imgid = darktable.develop->image_storage.id;
   static int reset = 0;
   if(reset) return FALSE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
@@ -1188,6 +1189,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget, GdkEvent
   dt_dev_pop_history_items(darktable.develop, num);
   // set the module list order
   dt_dev_reorder_gui_module_list(darktable.develop);
+  dt_image_update_final_size(imgid);
 
   /* signal history changed */
   dt_dev_undo_end_record(darktable.develop);
