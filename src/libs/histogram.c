@@ -208,6 +208,7 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_color_harmony_type_t color_harmony;
   int harmony_rotation; // in degrees
   dt_lib_histogram_color_harmony_width_t harmony_width;
+  GSList *color_armony_rb_group;
 } dt_lib_histogram_t;
 
 const char *name(dt_lib_module_t *self)
@@ -1835,7 +1836,6 @@ static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 
 static gboolean _color_harmony_clicked(GtkWidget *button, GdkEventButton *event, dt_lib_histogram_t *d)
 {
-  gtk_widget_show(d->color_harmony_button);
   gtk_widget_show_all(d->color_harmony_popup);
   return TRUE;
 }
@@ -1852,9 +1852,8 @@ static void _color_harmony_changed(dt_lib_histogram_t *d)
 static void _color_harmony_radio_button_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button))) return;
-  GSList *group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(button));
   // radio buttons are put in their list in reverse order
-  d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1 - g_slist_index(group, button);
+  d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1 - g_slist_index(d->color_armony_rb_group, button);
   gtk_widget_hide(d->color_harmony_popup);
   _color_harmony_changed(d);
 }
@@ -1867,6 +1866,8 @@ static gboolean _color_harmony_scroll_callback(GtkWidget *widget, GdkEventScroll
   {
     if(d->color_harmony == 0 && delta_y < 0) d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1;
     else d->color_harmony = (d->color_harmony + delta_y) % DT_LIB_HISTOGRAM_HARMONY_N;
+    gtk_toggle_button_set_active(g_slist_nth_data(d->color_armony_rb_group,
+                                                  DT_LIB_HISTOGRAM_HARMONY_N - 1 - d->color_harmony), TRUE);
     _color_harmony_changed(d);
   }
   return TRUE;
@@ -2269,8 +2270,8 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(rb), "toggled", G_CALLBACK(_color_harmony_radio_button_toggle), d);
     gtk_box_pack_start(GTK_BOX(vbox), rb, TRUE, TRUE, 0);
    }
-  GSList *group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(rb));
-  gtk_toggle_button_set_active(g_slist_nth_data(group, DT_LIB_HISTOGRAM_HARMONY_N - 1 - d->color_harmony), TRUE);
+  d->color_armony_rb_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(rb));
+  gtk_toggle_button_set_active(g_slist_nth_data(d->color_armony_rb_group, DT_LIB_HISTOGRAM_HARMONY_N - 1 - d->color_harmony), TRUE);
 
   // will change visibility of buttons, hence must run after all buttons are declared
   _scope_type_update(d);
