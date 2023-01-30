@@ -501,7 +501,7 @@ static void _format_toggled(GtkToggleButton *button, gpointer data)
     || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[3]))
     || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[4]));
 
-  const gboolean ok_active = raw_col && kind_col;
+  const gboolean ok_active = !g->iop || (raw_col && kind_col);
 
   // second column visible only if at least one item selected in first
   // column.
@@ -570,7 +570,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
   if(!g->iop)
   {
-    // lib usually don't support autoapply
+    // lib usually don't support auto-init / autoapply
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->autoinit), TRUE);
     gtk_widget_set_no_show_all(GTK_WIDGET(g->autoapply), !dt_presets_module_can_autoapply(g->module_name));
     // for libs, we don't want the filtering option as it's not implemented...
     gtk_widget_set_no_show_all(GTK_WIDGET(g->filter), TRUE);
