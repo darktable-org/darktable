@@ -743,6 +743,7 @@ static bool _check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
 static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
 {
   gboolean has_opcodes = FALSE;
+
   Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList2"));
   // DNGs without an embedded preview have the opcodes under Exif.Image instead of Exif.SubImage1
   if(pos == exifData.end())
@@ -756,6 +757,18 @@ static gboolean _check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
     has_opcodes = TRUE;
   }
 
+  Exiv2::ExifData::const_iterator posb = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList3"));
+  // DNGs without an embedded preview have the opcodes under Exif.Image instead of Exif.SubImage1
+  if(posb == exifData.end())
+    posb = exifData.findKey(Exiv2::ExifKey("Exif.Image.OpcodeList3"));
+  if(posb != exifData.end())
+  {
+    uint8_t *data = (uint8_t *)g_malloc(posb->size());
+    posb->copy(data, Exiv2::invalidByteOrder);
+    dt_dng_opcode_process_opcode_list_3(data, posb->size(), img);
+    g_free(data);
+    has_opcodes = TRUE;
+  }
   return has_opcodes;
 }
 
@@ -1031,12 +1044,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_tag_attach(tagid, img->id, FALSE, FALSE);
     }
 
-    if(_check_dng_opcodes(exifData, img))
-    {
-      img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
-    }
-
-    if(_check_lens_correction_data(exifData, img))
+    if(_check_dng_opcodes(exifData, img) || _check_lens_correction_data(exifData, img))
     {
       img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
     }
