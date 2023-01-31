@@ -270,11 +270,10 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_UNDO           = 1 << 19,
   DT_DEBUG_SIGNAL         = 1 << 20,
   DT_DEBUG_PARAMS         = 1 << 21,
-  DT_DEBUG_DEMOSAIC       = 1 << 22,
-  DT_DEBUG_ACT_ON         = 1 << 23,
-  DT_DEBUG_TILING         = 1 << 24,
-  DT_DEBUG_VERBOSE        = 1 << 25,
-  DT_DEBUG_PIPE           = 1 << 26,
+  DT_DEBUG_ACT_ON         = 1 << 22,
+  DT_DEBUG_TILING         = 1 << 23,
+  DT_DEBUG_VERBOSE        = 1 << 24,
+  DT_DEBUG_PIPE           = 1 << 25,
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE
 } dt_debug_thread_t;
 

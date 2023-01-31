@@ -50,7 +50,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
     dt_control_log(_("[dual demosaic] can't allocate internal buffers"));
     return;
   }
-  const gboolean info = ((darktable.unmuted & (DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF)) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_PERF) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
 
   vng_interpolate(vng_image, raw_data, roi_out, roi_in, filters, xtrans, FALSE);
   color_smoothing(vng_image, roi_out, 2);
@@ -98,7 +98,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
   if(info)
   {
     dt_get_times(&end_blend);
-    fprintf(stderr," [demosaic] CPU dual blending %.4f secs (%.4f CPU)\n", end_blend.clock - start_blend.clock, end_blend.user - start_blend.user);
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] CPU dual blending %.4f secs (%.4f CPU)\n", end_blend.clock - start_blend.clock, end_blend.user - start_blend.user);
   }
   dt_free_align(tmp);
   dt_free_align(blend);

@@ -1636,7 +1636,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
   char *const all_buffers = (char *)dt_alloc_perthread(buffer_size, sizeof(char), &padded_buffer_size);
   if(!all_buffers)
   {
-    fprintf(stderr, "[demosaic] not able to allocate FDC base buffers\n");
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate FDC base buffers\n");
     return;
   }
 
@@ -2382,7 +2382,7 @@ static void vng_interpolate(float *out, const float *const in,
       = (char *)dt_alloc_align(64, sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
   {
-    fprintf(stderr, "[demosaic] not able to allocate VNG buffer\n");
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate VNG buffer\n");
     return;
   }
   for(int row = 0; row < 3; row++) brow[row] = (float(*)[4])buffer + row * width;
@@ -2949,7 +2949,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_DEMOSAIC) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_PERF) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
@@ -3092,7 +3092,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_get_times(&end_time);
       const float tclock = end_time.clock - start_time.clock;
       const float uclock = end_time.user - start_time.user;
-      fprintf(stderr," [demosaic] process CPU `%s' did %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
+      dt_print(DT_DEBUG_ALWAYS, "[demosaic] process CPU `%s' did %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
         _method2string(demosaicing_method & ~DT_DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
     }
 
@@ -4785,7 +4785,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_times_t start_time = { 0 }, end_time = { 0 };
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_DEMOSAIC) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_PERF) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   dt_dev_clear_rawdetail_mask(piece->pipe);
@@ -4870,7 +4870,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_get_times(&end_time);
     const float tclock = end_time.clock - start_time.clock;
     const float uclock = end_time.user - start_time.user;
-    fprintf(stderr," [demosaic] process GPU `%s' did %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] process GPU `%s' did %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
       _method2string(demosaicing_method & ~DT_DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
   }
   if(!dual)
@@ -4915,7 +4915,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(info)
   {
     dt_get_times(&end_time);
-    fprintf(stderr," [demosaic] GPU dual blending %.4f secs (%.4f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] GPU dual blending %.4f secs (%.4f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 
   if(scaled)
@@ -5305,7 +5305,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                                                self->dev->image_storage.d65_color_matrix, NULL))
     {
       const char *camera = self->dev->image_storage.camera_makermodel;
-      fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
+      dt_print(DT_DEBUG_ALWAYS, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
       dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
     }
   }
