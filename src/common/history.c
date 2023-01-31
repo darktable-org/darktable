@@ -292,7 +292,8 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
                                               dt_develop_t *dev_src,
                                               dt_iop_module_t *mod_src,
                                               GList **_modules_used,
-                                              const int append)
+                                              const gboolean append,
+                                              const gboolean auto_init)
 {
   gboolean module_added = TRUE;
   GList *modules_used = *_modules_used;
@@ -394,7 +395,7 @@ gboolean dt_history_merge_module_into_history(dt_develop_t *dev_dest,
     module->enabled = mod_src->enabled;
     g_strlcpy(module->multi_name, modsrc_multi_name, sizeof(module->multi_name));
 
-    if(mod_src->params == NULL)
+    if(auto_init)
     {
       module->params = NULL;
       module->params_size = 0;
@@ -547,6 +548,7 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
   dt_ioppr_check_iop_order(dev_dest, dest_imgid, "_history_copy_and_paste_on_image_merge 1");
 
   GList *mod_list = NULL;
+  GList *autoinit_list = NULL;
 
   if(ops)
   {
@@ -559,12 +561,6 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
 
       const dt_dev_history_item_t *hist = g_list_nth_data(dev_src->history, abs(num));
 
-      if(autoinit)
-      {
-        hist->module->params = NULL;
-        hist->module->params_size = 0;
-      }
-
       if(hist)
       {
         if(!dt_iop_is_hidden(hist->module))
@@ -574,6 +570,7 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
                     hist->module->op, hist->module->multi_priority);
 
           mod_list = g_list_prepend(mod_list, hist->module);
+          autoinit_list = g_list_prepend(autoinit_list, GINT_TO_POINTER(autoinit));
         }
       }
     }
@@ -602,15 +599,21 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
   }
   if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
 
-  mod_list = g_list_reverse(mod_list);   // list was built in reverse order, so un-reverse it
+  // list were built in reverse order, so un-reverse it
+  mod_list = g_list_reverse(mod_list);
+  autoinit_list = g_list_reverse(autoinit_list);
 
   // update iop-order list to have entries for the new modules
   dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
 
+  GList *ai = autoinit_list;
+
   for(GList *l = mod_list; l; l = g_list_next(l))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)l->data;
-    dt_history_merge_module_into_history(dev_dest, dev_src, mod, &modules_used, FALSE);
+    const gboolean autoinit = GPOINTER_TO_INT(ai->data);
+    dt_history_merge_module_into_history
+      (dev_dest, dev_src, mod, &modules_used, FALSE, autoinit);
   }
 
   // update iop-order list to have entries for the new modules
@@ -624,7 +627,9 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
   dt_dev_cleanup(dev_src);
   dt_dev_cleanup(dev_dest);
 
+  g_list_free(mod_list);
   g_list_free(modules_used);
+  g_list_free(autoinit_list);
 
   return 0;
 }
