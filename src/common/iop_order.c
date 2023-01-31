@@ -490,7 +490,9 @@ GList *dt_ioppr_get_iop_order_rules()
   return g_list_reverse(rules);  // list was built in reverse order, so un-reverse it
 }
 
-GList *dt_ioppr_get_iop_order_link(GList *iop_order_list, const char *op_name, const int multi_priority)
+GList *dt_ioppr_get_iop_order_link(GList *iop_order_list,
+                                   const char *op_name,
+                                   const int multi_priority)
 {
   GList *link = NULL;
 
@@ -522,7 +524,9 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list,
 }
 
 // returns the iop_order associated with the iop order entry that matches operation == op_name
-int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority)
+int dt_ioppr_get_iop_order(GList *iop_order_list,
+                           const char *op_name,
+                           const int multi_priority)
 {
   int iop_order = INT_MAX;
   const dt_iop_order_entry_t *const restrict order_entry =
@@ -667,7 +671,8 @@ gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list)
   return FALSE;
 }
 
-GList *dt_ioppr_get_multiple_instances_iop_order_list(int32_t imgid, gboolean memory)
+GList *dt_ioppr_get_multiple_instances_iop_order_list(const int32_t imgid,
+                                                      const gboolean memory)
 {
   GList *res = NULL;
   sqlite3_stmt *stmt = NULL;
@@ -716,9 +721,10 @@ gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind,
 {
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT OR REPLACE INTO main.module_order VALUES (?1, 0, NULL)", -1,
-                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "INSERT OR REPLACE INTO main.module_order VALUES (?1, 0, NULL)", -1,
+     &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) != SQLITE_DONE) return FALSE;
   sqlite3_finalize(stmt);
@@ -726,9 +732,12 @@ gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind,
   if(kind == DT_IOP_ORDER_CUSTOM || dt_ioppr_has_multiple_instances(iop_order_list))
   {
     gchar *iop_list_txt = dt_ioppr_serialize_text_iop_order_list(iop_order_list);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.module_order SET version = ?2, iop_list = ?3 WHERE imgid = ?1", -1,
-                                &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "UPDATE main.module_order"
+       " SET version = ?2, iop_list = ?3"
+       " WHERE imgid = ?1", -1,
+       &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, kind);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, iop_list_txt, -1, SQLITE_TRANSIENT);
@@ -740,7 +749,9 @@ gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind,
   else
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.module_order SET version = ?2, iop_list = NULL WHERE imgid = ?1", -1,
+                                "UPDATE main.module_order"
+                                " SET version = ?2, iop_list = NULL"
+                                " WHERE imgid = ?1", -1,
                                 &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, kind);
@@ -995,7 +1006,9 @@ void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid)
   dt_dev_reload_history_items(dev);
 }
 
-void dt_ioppr_change_iop_order(struct dt_develop_t *dev, const int32_t imgid, GList *new_iop_list)
+void dt_ioppr_change_iop_order(struct dt_develop_t *dev,
+                               const int32_t imgid,
+                               GList *new_iop_list)
 {
   GList *iop_list = dt_ioppr_iop_order_copy_deep(new_iop_list);
   GList *mi = dt_ioppr_extract_multi_instances_list(darktable.develop->iop_order_list);
@@ -1128,8 +1141,8 @@ GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list,
   return iop_order_list;
 }
 
-static void _count_iop_module(GList *iop, const
-                              char *operation,
+static void _count_iop_module(GList *iop,
+                              const char *operation,
                               int *max_multi_priority,
                               int *count,
                               int *max_multi_priority_enabled,
@@ -1204,7 +1217,9 @@ int _get_multi_priority(dt_develop_t *dev,
   return INT_MAX;
 }
 
-void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, const gboolean append)
+void dt_ioppr_update_for_entries(dt_develop_t *dev,
+                                 GList *entry_list,
+                                 const gboolean append)
 {
   // for each priority list to be checked
   for(GList *e_list = entry_list; e_list; e_list = g_list_next(e_list))
@@ -1299,7 +1314,9 @@ void dt_ioppr_update_for_entries(dt_develop_t *dev, GList *entry_list, const gbo
 //  dt_ioppr_print_iop_order(dev->iop_order_list, "upd sitem");
 }
 
-void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, const gboolean append)
+void dt_ioppr_update_for_style_items(dt_develop_t *dev,
+                                     GList *st_items,
+                                     const gboolean append)
 {
   GList *e_list = NULL;
 
@@ -1349,7 +1366,9 @@ void dt_ioppr_update_for_style_items(dt_develop_t *dev, GList *st_items, const g
   g_list_free(e_list);
 }
 
-void dt_ioppr_update_for_modules(dt_develop_t *dev, GList *modules, const gboolean append)
+void dt_ioppr_update_for_modules(dt_develop_t *dev,
+                                 GList *modules,
+                                 const gboolean append)
 {
   GList *e_list = NULL;
 
@@ -2003,7 +2022,9 @@ void dt_ioppr_insert_module_instance(struct dt_develop_t *dev, dt_iop_module_t *
   dev->iop_order_list = g_list_insert_before(dev->iop_order_list, place, entry);
 }
 
-int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg)
+int dt_ioppr_check_iop_order(dt_develop_t *dev,
+                             const int imgid,
+                             const char *msg)
 {
   int iop_order_ok = 1;
 
