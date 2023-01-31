@@ -836,7 +836,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
       }
 
       if(do_merge)
-        dt_history_merge_module_into_history(dev, NULL, module, modules_used, append);
+        dt_history_merge_module_into_history
+          (dev, NULL, module, modules_used, append, FALSE);
     }
 
     if(module)
