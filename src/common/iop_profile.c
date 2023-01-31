@@ -89,9 +89,15 @@ static char *_colorspace_to_name(dt_iop_colorspace_type_t type)
   return "invalid IOP_CS";
 }
 
-static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float *const image_out, const int width,
-                                             const int height, const dt_colorspaces_color_profile_type_t type,
-                                             const char *filename, const int intent, const int direction)
+static void _transform_from_to_rgb_lab_lcms2(
+        const float *const image_in,
+        float *const image_out,
+        const int width,
+        const int height,
+        const dt_colorspaces_color_profile_type_t type,
+        const char *filename,
+        const int intent,
+        const int direction)
 {
   const int ch = 4;
   cmsHTRANSFORM *xform = NULL;
@@ -176,11 +182,16 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float 
   if(xform) cmsDeleteTransform(xform);
 }
 
-static void _transform_rgb_to_rgb_lcms2(const float *const image_in, float *const image_out, const int width,
-                                        const int height, const dt_colorspaces_color_profile_type_t type_from,
-                                        const char *filename_from,
-                                        const dt_colorspaces_color_profile_type_t type_to, const char *filename_to,
-                                        const int intent)
+static void _transform_rgb_to_rgb_lcms2(
+        const float *const image_in,
+        float *const image_out,
+        const int width,
+        const int height,
+        const dt_colorspaces_color_profile_type_t type_from,
+        const char *filename_from,
+        const dt_colorspaces_color_profile_type_t type_to,
+        const char *filename_to,
+        const int intent)
 {
   const int ch = 4;
   cmsHTRANSFORM *xform = NULL;
@@ -200,7 +211,7 @@ static void _transform_rgb_to_rgb_lcms2(const float *const image_in, float *cons
   else
   {
     dt_print(DT_DEBUG_ALWAYS, "[_transform_rgb_to_rgb_lcms2] invalid from profile `%s`\n",
-       _colorspace_to_name(type_from));
+       dt_colorspaces_get_name(type_from, NULL));
   }
 
   if(type_to != DT_COLORSPACE_NONE)
@@ -212,7 +223,7 @@ static void _transform_rgb_to_rgb_lcms2(const float *const image_in, float *cons
   else
   {
     dt_print(DT_DEBUG_ALWAYS, "[_transform_rgb_to_rgb_lcms2] invalid to profile `%s`\n",
-       _colorspace_to_name(type_to));
+       dt_colorspaces_get_name(type_to, NULL));
   }
 
   if(from_rgb_profile)
@@ -306,7 +317,8 @@ static void _transform_lcms2(struct dt_iop_module_t *self, const float *const im
   else
   {
     *converted_cst = cst_from;
-    dt_print(DT_DEBUG_ALWAYS, "[_transform_lcms2] invalid conversion from %s to %s\n", _colorspace_to_name(cst_from), _colorspace_to_name(cst_to));
+    dt_print(DT_DEBUG_ALWAYS, "[_transform_lcms2] invalid conversion from %s to %s\n",
+      dt_colorspaces_get_name(cst_from, NULL), dt_colorspaces_get_name(cst_to, NULL));
   }
 }
 
@@ -842,8 +854,8 @@ dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear Rec2020\n",
-        type, filename);
+    dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %s %s, it will be replaced with linear Rec2020\n",
+      dt_colorspaces_get_name(type, NULL), filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
   pipe->work_profile_info = profile_info;
@@ -863,8 +875,8 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_set_pipe_input_profile_info] unsupported input profile %i %s,"
-        " it will be replaced with linear Rec2020\n", type, filename);
+    dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_set_pipe_input_profile_info] unsupported input profile %s %s,"
+        " it will be replaced with linear Rec2020\n", dt_colorspaces_get_name(type, NULL), filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
 
@@ -900,8 +912,8 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
       // see discussion in https://github.com/darktable-org/darktable/issues/6774
       dt_print(DT_DEBUG_ALWAYS,
               "[dt_ioppr_set_pipe_output_profile_info] unsupported output"
-              " profile %i %s, it will be replaced with sRGB\n",
-              type, filename);
+              " profile %s %s, it will be replaced with sRGB\n",
+              dt_colorspaces_get_name(type, NULL), filename);
     }
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", intent);
   }
@@ -1076,10 +1088,16 @@ void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *pr
 
 
 __DT_CLONE_TARGETS__
-void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
-                                         float *const image_out, const int width, const int height,
-                                         const int cst_from, const int cst_to, int *converted_cst,
-                                         const dt_iop_order_iccprofile_info_t *const profile_info)
+void dt_ioppr_transform_image_colorspace(
+        struct dt_iop_module_t *self,
+        const float *const image_in,
+        float *const image_out,
+        const int width,
+        const int height,
+        const int cst_from,
+        const int cst_to,
+        int *converted_cst,
+        const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   if(cst_from == cst_to)
   {
