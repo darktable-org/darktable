@@ -3163,6 +3163,13 @@ int button_pressed(struct dt_iop_module_t *module,
     goto done;
   }
 
+  // right-click is handled on release
+  if(which == 3)
+  {
+    handled = 1;
+    goto done;
+  }
+
 done:
   dt_iop_gui_leave_critical_section(module);
   return handled;
