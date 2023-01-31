@@ -35,9 +35,10 @@ extern "C" {
 #include "control/control.h"
 }
 
+#include <array>
 #include <cassert>
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -230,7 +231,7 @@ void dt_exif_set_exiv2_taglist()
             tagInfo++;
           }
         }
-      groupList++;
+        groupList++;
       }
     }
 
@@ -308,10 +309,12 @@ static const char *_exif_get_exiv2_tag_type(const char *tagname)
   {
     char *t = (char *)tag->data;
     if(g_str_has_prefix(t, tagname) && t[strlen(tagname)] == ',')
-    if(t)
     {
-      t += strlen(tagname) + 1;
-      return t;
+      if(t)
+      {
+        t += strlen(tagname) + 1;
+        return t;
+      }
     }
   }
   return NULL;
@@ -1019,14 +1022,14 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     if(_check_usercrop(exifData, img))
-      {
-        img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
-        guint tagid = 0;
-        char tagname[64];
-        snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
-        dt_tag_new(tagname, &tagid);
-        dt_tag_attach(tagid, img->id, FALSE, FALSE);
-      }
+    {
+      img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
+      guint tagid = 0;
+      char tagname[64];
+      snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
+      dt_tag_new(tagname, &tagid);
+      dt_tag_attach(tagid, img->id, FALSE, FALSE);
+    }
 
     if(_check_dng_opcodes(exifData, img))
     {
@@ -4201,7 +4204,203 @@ static void dt_remove_iptc_key(Exiv2::IptcData &iptc, const char *key)
   }
 }
 
-int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata)
+enum class RegionType {MWG, MP};
+
+const std::pair<std::array<float, 4>, bool> getRegionNormalized(
+    Exiv2::XmpData &xmp,
+    const std::string &regionKey,
+    RegionType regionType,
+    int imgWidth,
+    int imgHeight)
+{
+  using Exiv2::XmpData;
+  using Exiv2::XmpKey;
+
+  XmpData::const_iterator hIt;
+  if((hIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:h"))) == xmp.end())
+  {
+    return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
+  }
+  const float h = hIt->value().toFloat() * imgHeight;
+
+  XmpData::const_iterator wIt;
+  if((wIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:w"))) == xmp.end())
+  {
+    return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
+  }
+  const float w = wIt->value().toFloat() * imgWidth;
+
+  XmpData::const_iterator xIt;
+  if((xIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:x"))) == xmp.end())
+  {
+    return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
+  }
+  float x = xIt->value().toFloat() * imgWidth;
+
+  XmpData::const_iterator yIt;
+  if((yIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:y"))) == xmp.end())
+  {
+    return std::make_pair(std::array<float, 4>({ 0.0, 0.0, 0.0, 0.0 }), false);
+  }
+  float y = yIt->value().toFloat() * imgHeight;
+
+  /* MWG regions use (x,y) as the center of the region */
+  if (regionType == RegionType::MWG)
+  {
+    x -= w/2;
+    y -= h/2;
+  }
+
+  return std::make_pair(std::array<float, 4>({ x, y, x + w, y + h }), true);
+}
+
+/* Transform face tags using the pixelpipe transform, so areas are written
+ * correctly when exporting.
+ *
+ * We will make several assumptions or else we wont't do nothing:
+ *
+ * - Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions exists, has stDim:h, stDim:w and stDim:unit defined and the
+ *   latter is set to pixels.
+ * - Xmp.mwg-rs.Regions/mwg-rs:RegionList[i]./mwg-rs:Area/stArea:unit is set to "normalized" for every region.
+ *
+ * TODO: support Xmp.MP.RegionInfo/MPRI:Regions[i]/MPReg:Rectangle tags
+ */
+void dt_transform_face_tags(Exiv2::XmpData &xmp, dt_develop_t *dev, dt_dev_pixelpipe_t *pipe)
+{
+  using Exiv2::XmpData;
+  using Exiv2::XmpKey;
+  using Exiv2::XmpTextValue;
+
+  /* Finish early if we didn't get the develop struct */
+  if(dev == NULL || pipe == NULL)
+  {
+    return;
+  }
+  /* Also finish early if we don't have face tags */
+  if(xmp.findKey(XmpKey("Xmp.mwg-rs.Regions")) == xmp.end())
+  {
+    return;
+  }
+
+  /* Global properties */
+  /* Units should be specified */
+  XmpData::const_iterator unit;
+  if((unit = xmp.findKey(XmpKey("Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:unit"))) == xmp.end())
+  {
+    return;
+  }
+  /* We only know how to handle pixel units */
+  if(unit->value().toString() != "pixel")
+  {
+    return;
+  }
+
+  XmpData::const_iterator imgHeightIt;
+  if((imgHeightIt = xmp.findKey(XmpKey("Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:h"))) == xmp.end())
+  {
+    return;
+  }
+  /* TODO: assert that we actually fit an int */
+  const int imgHeight = imgHeightIt->value().toLong();
+
+  XmpData::const_iterator imgWidthIt;
+  if((imgWidthIt = xmp.findKey(XmpKey("Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:w"))) == xmp.end())
+  {
+    return;
+  }
+  /* TODO: assert that we actually fit an int */
+  const int imgWidth = imgWidthIt->value().toLong();
+
+  /* Gather the regions for transformation */
+  std::vector<std::array<float, 4> > regions;
+  std::size_t i = 0;
+  while(true)
+  {
+    /* Go for the next region (indices start at 1) */
+    i++;
+    const std::string regionKey = "Xmp.mwg-rs.Regions/mwg-rs:RegionList[" + std::to_string(i) + "]";
+    if(xmp.findKey(XmpKey(regionKey)) == xmp.end())
+    {
+      break;
+    }
+
+    XmpData::const_iterator regionUnitIt;
+    if((regionUnitIt = xmp.findKey(XmpKey(regionKey + "/mwg-rs:Area/stArea:unit"))) == xmp.end())
+    {
+      return;
+    }
+    std::string regionUnit = regionUnitIt->value().toString();
+    if(regionUnit == "normalized")
+    {
+      const std::pair<std::array<float, 4>, bool> result
+          = getRegionNormalized(xmp, regionKey, RegionType::MWG, imgWidth, imgHeight);
+      if(result.second)
+      {
+        regions.emplace_back(result.first);
+      }
+    }
+    else
+    {
+      return;
+    }
+  }
+
+  /* Now run the regions throught the pixelpipe transformations */
+  std::vector<float> points;
+  points.reserve(8 * regions.size());
+
+  for(const auto &r : regions)
+  {
+    // bottom-left
+    points.emplace_back(r[0]);
+    points.emplace_back(r[1]);
+    // top-left
+    points.emplace_back(r[0]);
+    points.emplace_back(r[3]);
+    // top-right
+    points.emplace_back(r[2]);
+    points.emplace_back(r[3]);
+    // bottom-right
+    points.emplace_back(r[2]);
+    points.emplace_back(r[1]);
+  }
+
+  if(dt_dev_distort_transform_plus(dev, pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points.data(), 4 * regions.size())
+     != 1)
+  {
+    return;
+  }
+
+  /* Overwrite the regions with the transformed coordinates */
+  const int finalHeight = pipe->final_height;
+  const int finalWidth = pipe->final_width;
+  for(i = 0; i < regions.size(); i++)
+  {
+    const std::size_t idx = 8 * i;
+    const auto x_minmax = std::minmax({ points[idx], points[idx + 2], points[idx + 4], points[idx + 6] });
+    const auto y_minmax = std::minmax({ points[idx + 1], points[idx + 3], points[idx + 5], points[idx + 7] });
+    /* Clamp to the final image*/
+    const float x = std::max(x_minmax.first / finalWidth, 0.0f);
+    const float y = std::max(y_minmax.first / finalHeight, 0.0f);
+    const float w = std::min(x_minmax.second / finalWidth, 1.0f) - x;
+    const float h = std::min(y_minmax.second / finalHeight, 1.0f) - y;
+
+    std::string regionKey = "Xmp.mwg-rs.Regions/mwg-rs:RegionList[" + std::to_string(i + 1) + "]";
+    /* for x and y, we have to retranslate them to be the center of the region. */
+    xmp[regionKey + "/mwg-rs:Area/stArea:x"] = XmpTextValue(std::to_string(x + w/2));
+    xmp[regionKey + "/mwg-rs:Area/stArea:y"] = XmpTextValue(std::to_string(y + h/2));
+    xmp[regionKey + "/mwg-rs:Area/stArea:h"] = XmpTextValue(std::to_string(h));
+    xmp[regionKey + "/mwg-rs:Area/stArea:w"] = XmpTextValue(std::to_string(w));
+  }
+
+  /* Finally, overwrite the dimensions with the image dimensions */
+  xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:h"] = XmpTextValue(std::to_string(finalHeight));
+  xmp["Xmp.mwg-rs.Regions/mwg-rs:AppliedToDimensions/stDim:w"] = XmpTextValue(std::to_string(finalWidth));
+}
+
+
+int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata, dt_develop_t *dev,
+                              dt_dev_pixelpipe_t *pipe)
 {
   dt_export_metadata_t *m = (dt_export_metadata_t *)metadata;
   try
@@ -4271,7 +4470,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       Exiv2::ExifData &exifData = img->exifData();
       if(!(m->flags & DT_META_EXIF))
       {
-        for(Exiv2::ExifData::const_iterator i = exifData.begin(); i != exifData.end() ; ++i)
+        for(Exiv2::ExifData::const_iterator i = exifData.begin(); i != exifData.end(); ++i)
         {
           exifOldData[i->key()] = i->value();
         }
@@ -4405,13 +4604,16 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       dt_variables_params_destroy(params);
     }
 
+    // Transform face tags before writing them.
+    dt_transform_face_tags(xmpData, dev, pipe);
+
     try
     {
       img->writeMetadata();
     }
     catch(Exiv2::AnyError &e)
     {
-#if EXIV2_TEST_VERSION(0,27,0)
+#if EXIV2_TEST_VERSION(0, 27, 0)
       if(e.code() == Exiv2::kerTooLargeJpegSegment)
 #else
       if(e.code() == 37)
