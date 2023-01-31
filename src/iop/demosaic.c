@@ -2941,7 +2941,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_image_t *img = &self->dev->image_storage;
   const float threshold = 0.0001f * img->exif_iso;
-  dt_times_t start_time = { 0 }, end_time = { 0 };
 
   dt_dev_clear_rawdetail_mask(piece->pipe);
 
@@ -2949,7 +2948,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_DEMOSAIC) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
+
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
@@ -2995,7 +2994,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       roo.scale = 1.0f;
       tmp = (float *)dt_alloc_align_float((size_t)4 * roo.width * roo.height);
     }
-    if(info) dt_get_times(&start_time);
 
     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
     {
@@ -3084,16 +3082,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         amaze_demosaic_RT(piece, in, tmp, &roi, &roo, piece->pipe->dsc.filters);
 
       if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
-    }
-
-    if(info)
-    {
-      const float mpixels = (roo.width * roo.height) / 1.0e6;
-      dt_get_times(&end_time);
-      const float tclock = end_time.clock - start_time.clock;
-      const float uclock = end_time.user - start_time.user;
-      fprintf(stderr," [demosaic] process CPU `%s' did %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
-        _method2string(demosaicing_method & ~DT_DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
     }
 
     dt_dev_write_rawdetail_mask(piece, tmp, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
@@ -4784,8 +4772,6 @@ error:
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_times_t start_time = { 0 }, end_time = { 0 };
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_DEMOSAIC) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   dt_dev_clear_rawdetail_mask(piece->pipe);
@@ -4813,8 +4799,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && (data->dual_thrs > 0.0f) && !run_fast);
   const int devid = piece->pipe->devid;
   gboolean retval = FALSE;
-
-  if(info) dt_get_times(&start_time);
 
   if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
      demosaicing_method == DT_IOP_DEMOSAIC_PPG ||
@@ -4864,15 +4848,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return FALSE;
   }
 
-  if(info)
-  {
-    const float mpixels = (roi_in->width * roi_in->height) / 1.0e6;
-    dt_get_times(&end_time);
-    const float tclock = end_time.clock - start_time.clock;
-    const float uclock = end_time.user - start_time.user;
-    fprintf(stderr," [demosaic] process GPU `%s' did %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
-      _method2string(demosaicing_method & ~DT_DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
-  }
   if(!dual)
   {
     retval = TRUE;
@@ -4901,7 +4876,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if((blend == NULL) || (low_image == NULL) || (details == NULL)) goto finish;
 
-  if(info) dt_get_times(&start_time);
   if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE))
   {
     if(!color_smoothing_cl(self, piece, low_image, low_image, roi_in, 2))
@@ -4910,12 +4884,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       goto finish;
     }
     retval = dual_demosaic_cl(self, piece, details, blend, high_image, low_image, dev_aux, width, height, showmask);
-  }
-
-  if(info)
-  {
-    dt_get_times(&end_time);
-    fprintf(stderr," [demosaic] GPU dual blending %.4f secs (%.4f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 
   if(scaled)
