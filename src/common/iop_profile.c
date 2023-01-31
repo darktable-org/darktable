@@ -130,7 +130,7 @@ static void _transform_from_to_rgb_lab_lcms2(
   if(rgb_profile == NULL)
   {
     rgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_WORK)->profile;
-    dt_print(DT_DEBUG_ALWAYS, _("unsupported working profile %s has been replaced by Rec2020 RGB!\n"), filename);
+    dt_print(DT_DEBUG_ALWAYS, "[transform_from_to_rgb_lab_lcms2] unsupported working profile %s has been replaced by Rec2020 RGB!\n", filename);
   }
 
   lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
@@ -701,7 +701,7 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
     cmsColorSpaceSignature rgb_color_space = cmsGetColorSpace(rgb_profile);
     if(rgb_color_space != cmsSigRgbData)
     {
-      dt_print(DT_DEBUG_ALWAYS, "working profile color space `%c%c%c%c' not supported\n",
+      dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_generate_profile_info] working profile color space `%c%c%c%c' not supported\n",
               (char)(rgb_color_space>>24),
               (char)(rgb_color_space>>16),
               (char)(rgb_color_space>>8),
@@ -1126,7 +1126,7 @@ void dt_ioppr_transform_image_colorspace(
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS, "image colorspace transform %s-->%s took %.3f secs (%.3f CPU) [%s %s]\n",
+      dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f CPU) [%s %s]\n",
           _colorspace_to_name(cst_from), _colorspace_to_name(cst_to),
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
@@ -1138,7 +1138,7 @@ void dt_ioppr_transform_image_colorspace(
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS, "image colorspace transform %s-->%s took %.3f secs (%.3f lcms2) [%s %s]\n",
+      dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_transform_image_colorspace] %s-->%s took %.3f secs (%.3f lcms2) [%s %s]\n",
           _colorspace_to_name(cst_from), _colorspace_to_name(cst_to),
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
@@ -1182,7 +1182,7 @@ void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_i
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS, "image colorspace transform RGB-->RGB took %.3f secs (%.3f CPU) [%s]\n",
+      dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_transform_image_colorspace_rgb] RGB-->RGB took %.3f secs (%.3f CPU) [%s]\n",
               end_time.clock - start_time.clock, end_time.user - start_time.user, (message) ? message : "");
     }
   }
@@ -1193,7 +1193,7 @@ void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_i
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
-      dt_print(DT_DEBUG_ALWAYS, "image colorspace transform RGB-->RGB took %.3f secs (%.3f lcms2) [%s]\n",
+      dt_print(DT_DEBUG_ALWAYS, "[dt_ioppr_transform_image_colorspace_rgb] RGB-->RGB took %.3f secs (%.3f lcms2) [%s]\n",
               end_time.clock - start_time.clock, end_time.user - start_time.user, (message) ? message : "");
     }
   }
