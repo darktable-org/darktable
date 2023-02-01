@@ -855,7 +855,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     }
   }
 
-  // hide deprectade message. it will be shown after if needed
+  // hide deprecated message. it will be shown after if needed
   gtk_widget_set_visible(d->deprecated, FALSE);
 
   for(const GList *modules = darktable.develop->iop; modules; modules = g_list_next(modules))
@@ -959,10 +959,13 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         default:
         {
           // show deprecated module in specific group deprecated
-          gtk_widget_set_visible(d->deprecated, show_deprecated || d->force_deprecated_message);
+          gtk_widget_set_visible(d->deprecated,
+                                 show_deprecated || d->force_deprecated_message);
 
           show_module = (_lib_modulegroups_test_internal(self, d->current, module)
-                         && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled || show_deprecated));
+                         && (!(module->flags() & IOP_FLAGS_DEPRECATED)
+                             || module->enabled
+                             || show_deprecated));
         }
       }
 
