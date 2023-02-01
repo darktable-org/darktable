@@ -3171,6 +3171,8 @@ static gboolean _resize_wrap_leave(GtkWidget *widget, GdkEventCrossing *event, c
 GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str)
 {
   if(!w) w = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
+  gtk_widget_set_has_tooltip(w, TRUE);
+  g_object_set_data(G_OBJECT(w), "scroll-resize-tooltip", GINT_TO_POINTER(TRUE));
   if(DTGTK_IS_DRAWING_AREA(w))
   {
     const float aspect = dt_conf_get_int(config_str);
@@ -3197,7 +3199,6 @@ GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str)
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(_resize_wrap_button), config_str);
   g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(_resize_wrap_button), config_str);
   g_signal_connect(G_OBJECT(w), "leave-notify-event", G_CALLBACK(_resize_wrap_leave), config_str);
-  g_object_set_data(G_OBJECT(w), "scroll-resize-tooltip", GINT_TO_POINTER(TRUE));
 
   return w;
 }
