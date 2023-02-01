@@ -74,6 +74,11 @@ typedef struct dt_iop_colisa_global_data_t
 } dt_iop_colisa_global_data_t;
 
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. please use colorbalance RGB module instead.");
+}
+
 const char *name()
 {
   return _("contrast brightness saturation");
@@ -90,7 +95,8 @@ const char **description(struct dt_iop_module_t *self)
 
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING
+    | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_DEPRECATED;
 }
 
 int default_group()
@@ -309,4 +315,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

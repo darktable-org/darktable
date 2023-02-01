@@ -1782,11 +1782,9 @@ void init_presets(dt_lib_module_t *self)
   // this modules are deprecated in 3.4 and should be removed from this group in 3.8 (1 year later)
   SNQA();
   SMG(C_("modulegroup", "deprecated"), "basic");
-  // these modules are deprecated in 3.6 and should be removed in 4.0 (1 year later)
-  AM("spots");
-  AM("defringe");
-  // these modules are deprecated in 3.8 and should be removed in 4.1 (1 year later)
-  AM("clipping");
+  // these modules are deprecated in 4.4 and should be removed in 4.8 (1 year later)
+  AM("levels");
+  AM("colisa");
 
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
