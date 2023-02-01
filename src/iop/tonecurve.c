@@ -185,6 +185,11 @@ typedef struct dt_iop_tonecurve_global_data_t
 } dt_iop_tonecurve_global_data_t;
 
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. please use the RGB curve module instead.");
+}
+
 const char *name()
 {
   return _("tone curve");
@@ -197,7 +202,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_DEPRECATED;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1797,4 +1802,3 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1777,16 +1777,15 @@ void init_presets(dt_lib_module_t *self)
   SNQA();
   dt_lib_presets_add(_("search only"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
+  // DEACTIVATED : no more recently deprecated modules
+
   // this is a special preset for all newly deprecated modules
   // so users still have a chance to access them until next release (with warning messages)
   // this modules are deprecated in 3.4 and should be removed from this group in 3.8 (1 year later)
   SNQA();
   SMG(C_("modulegroup", "deprecated"), "basic");
-  // these modules are deprecated in 3.6 and should be removed in 4.0 (1 year later)
-  AM("spots");
-  AM("defringe");
-  // these modules are deprecated in 3.8 and should be removed in 4.1 (1 year later)
-  AM("clipping");
+  AM("levels");
+  AM("tonecurve");
 
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
