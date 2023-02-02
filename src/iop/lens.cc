@@ -131,7 +131,7 @@ typedef struct dt_iop_lens_params_t
   float cor_vig_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "vignetting fine-tune"
   // TODO should be possible to also add tca fine tune modifications
 
-  int modified; // $DEFAULT: 0 did user changed anything from automatically detected?
+  int modified; // NOT USED ANYMORE - CAN BE REUSED IF NEEDED */
 } dt_iop_lens_params_t;
 
 typedef struct dt_iop_lens_gui_modifier_t
@@ -358,7 +358,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tca_override = o->tca_override;
     g_strlcpy(n->camera, o->camera, sizeof(n->camera));
     g_strlcpy(n->lens, o->lens, sizeof(n->lens));
-    n->modified = 1;
 
     // old versions had R and B swapped
     n->tca_r = o->tca_b;
@@ -411,7 +410,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tca_b = o->tca_b;
 
     // one more parameter and changed parameters in case we autodetect
-    n->modified = 1;
 
     // new in v6
     n->method = DT_IOP_LENS_METHOD_LENSFUN;
@@ -457,7 +455,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tca_override = o->tca_override;
     g_strlcpy(n->camera, o->camera, sizeof(n->camera));
     g_strlcpy(n->lens, o->lens, sizeof(n->lens));
-    n->modified = o->modified;
     n->tca_r = o->tca_r;
     n->tca_b = o->tca_b;
 
@@ -506,7 +503,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tca_override = o->tca_override;
     g_strlcpy(n->camera, o->camera, sizeof(n->camera));
     g_strlcpy(n->lens, o->lens, sizeof(n->lens));
-    n->modified = o->modified;
     n->tca_r = o->tca_r;
     n->tca_b = o->tca_b;
 
@@ -1924,18 +1920,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)p1;
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
-  if(p->modified == 0)
-  {
-    /*
-     * user did not modify anything in gui after autodetection - let's
-     * use current default_params as params with the exception of the method that must be kept
-     * For presets and mass-export
-     */
-    const dt_iop_lens_method_t method = p->method;
-    p = (dt_iop_lens_params_t *)self->default_params;
-    p->method = _get_method(self, method);
-  }
-
   d->method = p->method;
   d->modify_flags = p->modify_flags;
   if(dt_image_is_monochrome(&self->dev->image_storage)) d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
@@ -2379,8 +2363,6 @@ static void camera_menu_select(GtkMenuItem *menuitem, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   camera_set(self, (lfCamera *)g_object_get_data(G_OBJECT(menuitem), "lfCamera"));
   if(darktable.gui->reset) return;
-  dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
-  p->modified = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2512,7 +2494,6 @@ static void lens_comboentry_focal_update(GtkWidget *widget, dt_iop_module_t *sel
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   const char *text = dt_bauhaus_combobox_get_text(widget);
   if(text) (void)sscanf(text, "%f", &p->focal);
-  p->modified = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2521,7 +2502,6 @@ static void lens_comboentry_aperture_update(GtkWidget *widget, dt_iop_module_t *
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   const char *text = dt_bauhaus_combobox_get_text(widget);
   if(text) (void)sscanf(text, "%f", &p->aperture);
-  p->modified = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2530,7 +2510,6 @@ static void lens_comboentry_distance_update(GtkWidget *widget, dt_iop_module_t *
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   const char *text = dt_bauhaus_combobox_get_text(widget);
   if(text) (void)sscanf(text, "%f", &p->distance);
-  p->modified = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2724,7 +2703,7 @@ static void lens_menu_select(GtkMenuItem *menuitem, gpointer user_data)
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   lens_set(self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
   if(darktable.gui->reset) return;
-  p->modified = 1;
+
   const float scale = _get_autoscale_lf(self, p, g->camera);
   dt_bauhaus_slider_set(g->scale, scale);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -2794,6 +2773,7 @@ static void lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   lenslist = dt_iop_lensfun_db->FindLenses(g->camera, NULL, NULL, LF_SEARCH_SORT_AND_UNIQUIFY);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
   if(!lenslist) return;
   lens_menu_fill(self, lenslist);
   lf_free(lenslist);
@@ -2832,8 +2812,8 @@ static void autoscale_pressed_lf(GtkWidget *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
+
   const float scale = _get_autoscale_lf(self, p, g->camera);
-  p->modified = 1;
   dt_bauhaus_slider_set(g->scale, scale);
 }
 
@@ -2844,7 +2824,6 @@ static void target_geometry_changed(GtkWidget *widget, gpointer user_data)
 
   const int pos = dt_bauhaus_combobox_get(widget);
   p->target_geom = (pos + DT_IOP_LENS_LENSTYPE_UNKNOWN + 1);
-  p->modified = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 /* -- lensfun gui end -- */
@@ -2885,7 +2864,6 @@ static void modflags_changed(GtkWidget *widget, gpointer user_data)
     if(mm->pos == pos)
     {
       p->modify_flags = mm->modflag;
-      p->modified = 1;
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       break;
     }
@@ -2925,12 +2903,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
     gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(g->message), TRUE);
-  }
-
-  // set modified if user did modify something with some widget (excluding the method selector)
-  if(w && w != g->methods_selector)
-  {
-    p->modified = 1;
   }
 
   _display_errors(self);
@@ -3197,18 +3169,6 @@ void gui_update(struct dt_iop_module_t *self)
   // let gui elements reflect params
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
-
-  if(p->modified == 0)
-  {
-    /*
-     * user did not modify anything in gui after autodetection - let's
-     * use current default_params as params with the exception of the method that must be kept
-     * For presets and mass-export
-     */
-    const dt_iop_lens_method_t method = p->method;
-    memcpy(self->params, self->default_params, sizeof(dt_iop_lens_params_t));
-    p->method = _get_method(self, method);
-  }
 
   const int modflag = p->modify_flags;
   for(GList *modifiers = g->modifiers; modifiers; modifiers = g_list_next(modifiers))
