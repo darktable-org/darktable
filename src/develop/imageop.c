@@ -1324,14 +1324,27 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       const int32_t new_params_size = module->params_size;
       void *new_params = calloc(1, new_params_size);
 
-      // convert the old params to new
-      if(module->legacy_params(module, old_params, old_params_version, new_params, module_version))
+      gboolean auto_init = FALSE;
+
+      if(old_params_size > 0)
       {
-        free(new_params);
-        dt_iop_cleanup_module(module);
-        free(module);
-        continue;
+        // convert the old params to new
+        const int legacy_ret =
+          module->legacy_params(module, old_params, old_params_version, new_params, module_version);
+
+        if(legacy_ret == 1)
+        {
+          // failed
+          free(new_params);
+          dt_iop_cleanup_module(module);
+          free(module);
+          continue;
+        }
+        else if (legacy_ret == -1)
+          auto_init = TRUE;
       }
+      else
+        auto_init = TRUE;
 
       fprintf(stderr, "[imageop_init_presets] updating '%s' preset '%s' from version %d to version %d\nto:'%s'",
               module_so->op, name, old_params_version, module_version,
@@ -1347,7 +1360,11 @@ static void _init_presets(dt_iop_module_so_t *module_so)
                                   -1, &stmt2, NULL);
       // clang-format on
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, module->version());
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_params, new_params_size, SQLITE_TRANSIENT);
+      // legacy_ret == -1 means that this is to convert to an auto-init module
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2,
+                                 auto_init ? NULL : new_params,
+                                 auto_init ?    0 : new_params_size,
+                                 SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, -1, SQLITE_TRANSIENT);
 

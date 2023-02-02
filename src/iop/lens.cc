@@ -62,7 +62,7 @@ extern "C" {
 #error lensfun 0.3.95 is not supported since its API is not backward compatible with lensfun stable release.
 #endif
 
-DT_MODULE_INTROSPECTION(6, dt_iop_lens_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_lens_params_t)
 
 typedef enum dt_iop_lens_method_t
 {
@@ -131,7 +131,7 @@ typedef struct dt_iop_lens_params_t
   float cor_vig_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "vignetting fine-tune"
   // TODO should be possible to also add tca fine tune modifications
 
-  int modified; // NOT USED ANYMORE - CAN BE REUSED IF NEEDED */
+  float cor_scale;  // $DEFAULT: 1 $MIN: 0.9 $MAX: 1.1 $DESCRIPTION: "scale fine-tune"
 } dt_iop_lens_params_t;
 
 typedef struct dt_iop_lens_gui_modifier_t
@@ -319,10 +319,12 @@ static int _lenstype_from_lensfun_lenstype(lfLensType lt)
   }
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params, const int old_version,
+                  void *new_params,
+                  const int new_version)
 {
-  if(old_version == 2 && new_version == 6)
+  if(old_version == 2 && new_version == 7)
   {
     // legacy params of version 2; version 1 comes from ancient times and seems to be forgotten by now
     typedef struct
@@ -368,10 +370,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->cor_dist_ft = 1.f;
     n->cor_vig_ft = 1.f;
 
+    // new in v7
+    n->cor_scale = 0.0f;
+
     return 0;
   }
 
-  if(old_version == 3 && new_version == 6)
+  if(old_version == 3 && new_version == 7)
   {
     typedef struct
     {
@@ -409,17 +414,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tca_r = o->tca_r;
     n->tca_b = o->tca_b;
 
-    // one more parameter and changed parameters in case we autodetect
-
     // new in v6
     n->method = DT_IOP_LENS_METHOD_LENSFUN;
     n->cor_dist_ft = 1.f;
     n->cor_vig_ft = 1.f;
 
+    // new in v7
+    n->cor_scale = 0.0f;
+
     return 0;
   }
 
-  if(old_version == 4 && new_version == 6)
+  if(old_version == 4 && new_version == 7)
   {
     typedef struct
     {
@@ -463,10 +469,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->cor_dist_ft = 1.f;
     n->cor_vig_ft = 1.f;
 
-    return 0;
+    // new in v7
+    n->cor_scale = 0.0f;
+
+    return o->modified == 0 ? -1 : 0;
   }
 
-  if(old_version == 5 && new_version == 6)
+  if(old_version == 5 && new_version == 7)
   {
     typedef struct
     {
@@ -511,9 +520,43 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->cor_dist_ft = 1.f;
     n->cor_vig_ft = 1.f;
 
-    return 0;
-  }
+    // new in v7
+    n->cor_scale = 0.0f;
 
+    return o->modified == 0 ? -1 : 0;
+  }
+  if(old_version == 6 && new_version == 7)
+  {
+    typedef struct
+    {
+      dt_iop_lens_method_t method;
+      int modify_flags;
+      int inverse;
+      float scale;
+      float crop;
+      float focal;
+      float aperture;
+      float distance;
+      int target_geom;
+      char camera[128];
+      char lens[128];
+      gboolean tca_override;
+      float tca_r;
+      float tca_b;
+      float cor_dist_ft;
+      float cor_vig_ft;
+      int modified;
+    } dt_iop_lens_params_v6_t;
+
+
+    const dt_iop_lens_params_v6_t *o = (dt_iop_lens_params_v6_t *)old_params;
+    dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
+
+    // new in v7
+    n->cor_scale = 0.0f;
+
+    return o->modified == 0 ? -1 : 0;
+  }
   return 1;
 }
 
