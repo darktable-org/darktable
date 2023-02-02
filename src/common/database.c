@@ -2668,19 +2668,16 @@ static void _sanitize_db(dt_database_t *db)
     const int id = sqlite3_column_int(stmt, 0);
     const char *tag = (const char *)sqlite3_column_text(stmt, 1);
 
-    if(!g_utf8_validate(tag, -1, NULL))
+    if(tag && !g_utf8_validate(tag, -1, NULL))
     {
       gchar *new_tag = dt_util_foo_to_utf8(tag);
       fprintf(stderr, "[init]: tag `%s' is not valid utf8, replacing it with `%s'\n", tag, new_tag);
-      if(tag)
-      {
-        sqlite3_bind_text(innerstmt, 1, new_tag, -1, SQLITE_TRANSIENT);
-        sqlite3_bind_int(innerstmt, 2, id);
-        sqlite3_step(innerstmt);
-        sqlite3_reset(innerstmt);
-        sqlite3_clear_bindings(innerstmt);
-        g_free(new_tag);
-      }
+      sqlite3_bind_text(innerstmt, 1, new_tag, -1, SQLITE_TRANSIENT);
+      sqlite3_bind_int(innerstmt, 2, id);
+      sqlite3_step(innerstmt);
+      sqlite3_reset(innerstmt);
+      sqlite3_clear_bindings(innerstmt);
+      g_free(new_tag);
     }
   }
   sqlite3_finalize(stmt);
@@ -2792,6 +2789,7 @@ void dt_database_show_error(const dt_database_t *db)
         char *lck_filename = g_strconcat(lck_dirname, "/data.db.lock", NULL);
         if(g_access(lck_filename, F_OK) != -1)
           status += remove(lck_filename);
+        g_free(lck_filename);
 
         lck_filename = g_strconcat(lck_dirname, "/library.db.lock", NULL);
         if(g_access(lck_filename, F_OK) != -1)
@@ -3684,7 +3682,6 @@ const gchar *dt_database_get_path(const struct dt_database_t *db)
 
 static void _database_migrate_to_xdg_structure()
 {
-  gchar dbfilename[PATH_MAX] = { 0 };
   gchar *conf_db = dt_conf_get_string("database");
 
   gchar datadir[PATH_MAX] = { 0 };
@@ -3693,18 +3690,19 @@ static void _database_migrate_to_xdg_structure()
   if(conf_db && conf_db[0] != '/')
   {
     const char *homedir = getenv("HOME");
-    snprintf(dbfilename, sizeof(dbfilename), "%s/%s", homedir, conf_db);
+    gchar *dbfilename = g_strdup_printf("%s/%s", homedir, conf_db);
     if(g_file_test(dbfilename, G_FILE_TEST_EXISTS))
     {
-      char destdbname[PATH_MAX] = { 0 };
-      snprintf(destdbname, sizeof(dbfilename), "%s/%s", datadir, "library.db");
+      gchar *destdbname = g_strdup_printf("%s/%s", datadir, "library.db");
       if(!g_file_test(destdbname, G_FILE_TEST_EXISTS))
       {
         fprintf(stderr, "[init] moving database into new XDG directory structure\n");
         rename(dbfilename, destdbname);
         dt_conf_set_string("database", "library.db");
       }
+      g_free(destdbname);
     }
+    g_free(dbfilename);
   }
 
   g_free(conf_db);
@@ -3883,7 +3881,6 @@ static int _backup_db(
 )
 {
   sqlite3 *dest_db;             /* Database connection opened on zFilename */
-  sqlite3_backup *sb_dest;    /* Backup handle used to copy data */
 
   /* Open the database file identified by zFilename. */
   int rc = sqlite3_open(dest_filename, &dest_db);
@@ -3891,7 +3888,7 @@ static int _backup_db(
   if(rc == SQLITE_OK)
   {
     /* Open the sqlite3_backup object used to accomplish the transfer */
-    sb_dest = sqlite3_backup_init(dest_db, "main", src_db, src_db_name);
+    sqlite3_backup *sb_dest = sqlite3_backup_init(dest_db, "main", src_db, src_db_name);
     if(sb_dest)
     {
       dt_print(DT_DEBUG_SQL, "[db backup] %s to %s\n", src_db_name, dest_filename);
