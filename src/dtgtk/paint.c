@@ -1345,23 +1345,30 @@ void dtgtk_cairo_paint_color_harmony(cairo_t *cr, gint x, gint y, gint w, gint h
   PREAMBLE(1, 1, 0.5, 0.5)
 
   const double degrees = M_PI / 180.0;
+  typedef struct
+  {
+    const char *name;
+    const int sectors;
+    const float angle[4];
+    const float length[4];
+  } ch_t;
+  ch_t *ch = (ch_t *)data;
 
   cairo_arc(cr, 0.0, 0.0, 0.5, 0.0 * degrees, 360.0 * degrees);
   cairo_stroke(cr);
 
-#define SECTOR \
-  cairo_move_to(cr, 0.0, 0.0); \
-  cairo_line_to(cr, 0.0, -0.5); \
-  cairo_stroke(cr); \
-  cairo_arc(cr, 0.0, -0.5, 0.15, 0.0 * degrees, 360.0 * degrees); \
-  cairo_fill(cr); \
-
-  cairo_rotate(cr, -20.0 * degrees);
-  SECTOR;
-  cairo_rotate(cr, 130.0 * degrees);
-  SECTOR;
-  cairo_rotate(cr, 100.0 * degrees);
-  SECTOR;
+  for(int i = 0; i < ch->sectors; i++)
+  {
+    float angle = ch->angle[i] * 360.0 * degrees;
+    cairo_save(cr);
+    cairo_rotate(cr, angle);
+    cairo_move_to(cr, 0.0, 0.0);
+    cairo_line_to(cr, 0.0, -0.5);
+    cairo_stroke(cr);
+    cairo_arc(cr, 0.0, -0.5, 0.15, 0.0 * degrees, 360.0 * degrees);
+    cairo_fill(cr);
+    cairo_restore(cr);
+  }
 
   FINISH
 }

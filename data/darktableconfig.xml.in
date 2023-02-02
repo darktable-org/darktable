@@ -2954,10 +2954,10 @@
     <name>plugins/darkroom/histogram/mode</name>
     <type>
       <enum>
-        <option>histogram</option>
-        <option>waveform</option>
-        <option>rgb parade</option>
         <option>vectorscope</option>
+        <option>rgb parade</option>
+        <option>waveform</option>
+        <option>histogram</option>
       </enum>
     </type>
     <default>histogram</default>
