@@ -202,7 +202,9 @@ static void _edit_preset_response(GtkDialog *dialog,
     // find the module action list this preset belongs to
     dt_action_t *module_actions = g->iop ? &g->iop->so->actions : NULL;
 
-    for(GList *libs = darktable.lib->plugins; !module_actions && libs; libs = g_list_next(libs))
+    for(GList *libs = darktable.lib->plugins;
+        !module_actions && libs;
+        libs = g_list_next(libs))
     {
       dt_lib_module_t *lib = libs->data;
 
@@ -222,9 +224,9 @@ static void _edit_preset_response(GtkDialog *dialog,
       if(name == NULL || *name == '\0' || strcmp(_("new preset"), name) == 0)
       {
         // show error dialog
-        GtkWidget *dlg_changename
-            = gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, _("please give preset a name"));
+        GtkWidget *dlg_changename =
+          gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+                                 GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, _("please give preset a name"));
 #ifdef GDK_WINDOWING_QUARTZ
         dt_osx_disallow_fullscreen(dlg_changename);
 #endif
@@ -255,7 +257,8 @@ static void _edit_preset_response(GtkDialog *dialog,
       {
         sqlite3_finalize(stmt);
 
-        // if result is BUTTON_NO or ESCAPE keypress exit without destroying dialog, to permit other name
+        // if result is BUTTON_NO or ESCAPE keypress exit without
+        // destroying dialog, to permit other name
         if(dt_gui_show_yes_no_dialog(_("overwrite preset?"),
                                      _("preset `%s' already exists.\ndo you want to overwrite?"), name))
         {
@@ -285,7 +288,8 @@ static void _edit_preset_response(GtkDialog *dialog,
          " model=?3, maker=?4, lens=?5, iso_min=?6, iso_max=?7, exposure_min=?8,"
          " exposure_max=?9, aperture_min=?10,"
          " aperture_max=?11, focal_length_min=?12, focal_length_max=?13, autoapply=?14,"
-         " filter=?15, format=?16, multi_name=?23, multi_name_hand_edited=?24 "
+         " filter=?15, format=?16, op_params=?19, enabled=?20,"
+         " multi_name=?23, multi_name_hand_edited=?24 "
          "WHERE rowid=%d",
          g->old_id);
       // clang-format on
@@ -301,7 +305,7 @@ static void _edit_preset_response(GtkDialog *dialog,
          "  aperture_max, focal_length_min, focal_length_max, autoapply,"
          "  filter, format, def, writeprotect, operation, op_version, op_params, enabled,"
          "  blendop_params, blendop_version,"
-         "   multi_priority, multi_name, multi_name_hand_edited) "
+         "  multi_priority, multi_name, multi_name_hand_edited) "
          "VALUES"
          " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16,"
          "   0, 0, ?17, ?18, ?19, ?20, ?21, ?22, 0, ?23, ?24)");
@@ -342,38 +346,45 @@ static void _edit_preset_response(GtkDialog *dialog,
 
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, format);
 
-    // commit specific field in case of newly created preset
+    if(g->iop)
+    {
+      // for auto init presets we don't record the params. When applying such preset
+      // the default params will be used and this will trigger the computation of
+      // the actual parameters.
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19,
+                                 is_auto_init ? NULL : g->iop->params,
+                                 is_auto_init ?    0 : g->iop->params_size,
+                                 SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
+             DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name, -1, SQLITE_TRANSIENT);
+             DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
+    }
+    else
+    {
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19, NULL, 0, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, 0);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, "", -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, 0);
+    }
+
+    // commit specific fields in case of newly created preset
     if(g->old_id < 0)
     {
       if(g->iop)
       {
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, g->operation, -1, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, g->op_version);
-        // for auto init presets we don't record the params. When applying such preset
-        // the default params will be used and this will trigger the computation of
-        // the actual parameters.
-        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19,
-                                   is_auto_init ? NULL : g->iop->params,
-                                   is_auto_init ?    0 : g->iop->params_size,
-                                   SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
         DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, g->iop->blend_params, sizeof(dt_develop_blend_params_t),
                                    SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, dt_develop_blend_version());
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name, -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
       }
       else
       {
         // we are in the lib case currently we set set all params to 0
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, g->operation, -1, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, g->op_version);
-        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19, NULL, 0, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, 0);
         DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, NULL, 0, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, 0);
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, "", -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, 0);
       }
     }
 
@@ -847,7 +858,9 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT operation, op_version FROM data.presets WHERE rowid = ?1", -1, &stmt, NULL);
+                              "SELECT operation, op_version"
+                              " FROM data.presets"
+                              " WHERE rowid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
