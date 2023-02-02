@@ -1221,7 +1221,10 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
   for(int i = 0; i < cnt && history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    memcpy(hist->module->params, hist->params, hist->module->params_size);
+    if(hist->module->params_size == 0)
+      memcpy(hist->module->params, hist->module->default_params, hist->module->params_size);
+    else
+      memcpy(hist->module->params, hist->params, hist->module->params_size);
     dt_iop_commit_blend_params(hist->module, hist->blend_params);
 
     hist->module->iop_order = hist->iop_order;
