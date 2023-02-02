@@ -2955,8 +2955,8 @@
     <type>
       <enum>
         <option>vectorscope</option>
-        <option>rgb parade</option>
         <option>waveform</option>
+        <option>rgb parade</option>
         <option>histogram</option>
       </enum>
     </type>
