@@ -88,7 +88,7 @@ static inline int _get_segment_id(dt_iop_segmentation_t *seg, const size_t loc)
 {
   if(loc >= (size_t)(seg->width * seg->height))
   {
-    fprintf(stderr, "[_get_segment_id] out of range access loc=%lu in %ix%i\n", loc, seg->width, seg->height);
+    fprintf(stderr, "[_get_segment_id] out of range access loc=%zu in %ix%i\n", loc, seg->width, seg->height);
     return 0;
   }
   return seg->data[loc] & (DT_SEG_ID_MASK-1);

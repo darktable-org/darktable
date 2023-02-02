@@ -1728,7 +1728,7 @@ static void update_warp_count(struct dt_iop_module_t *module)
         warp++;
     }
   char str[10];
-  snprintf(str, sizeof(str), "%d | %d", warp, node);
+  snprintf(str, sizeof(str), "%u | %u", warp, node);
   gtk_label_set_text(g->label, str);
 }
 
