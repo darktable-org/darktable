@@ -842,7 +842,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   }
   if(out_of_range_nb)
   {
-    fprintf(stderr, "[lut3d] warning - %d values out of range [0,1]\n", out_of_range_nb);
+    fprintf(stderr, "[lut3d] warning - %u values out of range [0,1]\n", out_of_range_nb);
     dt_control_log(_("warning - cube LUT has %d values out of range [0,1]"), out_of_range_nb);
   }
   *clut = lclut;

@@ -539,19 +539,19 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     dt_conf_set_int(confname, p->rule[i].item);
 
     /* set mode */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1u", pos);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", pos);
     dt_conf_set_int(confname, p->rule[i].mode);
 
     /* set on-off */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1u", pos);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", pos);
     dt_conf_set_int(confname, p->rule[i].off);
 
     /* set topbar */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1u", pos);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", pos);
     dt_conf_set_int(confname, p->rule[i].topbar);
 
     /* set string */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1u", pos);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", pos);
     dt_conf_set_string(confname, p->rule[i].string);
   }
 
@@ -564,7 +564,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     for(uint32_t i = 0; i < p->sorts; i++)
     {
       /* set item */
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1u", i);
       dt_conf_set_int(confname, p->sort[i].item);
 
       /* set order */
