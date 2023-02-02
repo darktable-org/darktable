@@ -233,7 +233,8 @@ int operation_tags()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_GUIDES_WIDGET;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI
+    | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_GUIDES_WIDGET;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -2841,7 +2842,7 @@ static void target_geometry_changed(GtkWidget *widget, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
-  int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   p->target_geom = (pos + DT_IOP_LENS_LENSTYPE_UNKNOWN + 1);
   p->modified = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -2873,9 +2874,11 @@ static void modflags_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
+
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
-  int pos = dt_bauhaus_combobox_get(widget);
+
+  const int pos = dt_bauhaus_combobox_get(widget);
   for(GList *modifiers = g->modifiers;  modifiers; modifiers = g_list_next(modifiers))
   {
     dt_iop_lens_gui_modifier_t *mm = (dt_iop_lens_gui_modifier_t *)modifiers->data;
@@ -2915,7 +2918,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     gtk_widget_set_visible(g->tca_r, p->tca_override && !raw_monochrome);
     gtk_widget_set_visible(g->tca_b, p->tca_override && !raw_monochrome);
 
-  } else {
+  }
+  else
+  {
     gtk_stack_set_visible_child_name(GTK_STACK(g->methods), "metadata");
 
     gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), TRUE);
@@ -3039,10 +3044,12 @@ void gui_init(struct dt_iop_module_t *self)
   // camera selector
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->camera_model = dt_iop_button_new(self, N_("camera model"),
-                                      G_CALLBACK(camera_menusearch_clicked), FALSE, 0, (GdkModifierType)0,
+                                      G_CALLBACK(camera_menusearch_clicked),
+                                      FALSE, 0, (GdkModifierType)0,
                                       NULL, 0, hbox);
   g->find_camera_button = dt_iop_button_new(self, N_("find camera"),
-                                            G_CALLBACK(camera_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
+                                            G_CALLBACK(camera_autosearch_clicked),
+                                            FALSE, 0, (GdkModifierType)0,
                                             dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
   dt_gui_add_class(g->find_camera_button, "dt_big_btn_canvas");
   gtk_box_pack_start(GTK_BOX(hbox), g->find_camera_button, FALSE, FALSE, 0);
@@ -3051,10 +3058,12 @@ void gui_init(struct dt_iop_module_t *self)
   // lens selector
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->lens_model = dt_iop_button_new(self, N_("lens model"),
-                                    G_CALLBACK(lens_menusearch_clicked), FALSE, 0, (GdkModifierType)0,
+                                    G_CALLBACK(lens_menusearch_clicked),
+                                    FALSE, 0, (GdkModifierType)0,
                                     NULL, 0, hbox);
   g->find_lens_button = dt_iop_button_new(self, N_("find lens"),
-                                          G_CALLBACK(lens_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
+                                          G_CALLBACK(lens_autosearch_clicked),
+                                          FALSE, 0, (GdkModifierType)0,
                                           dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
   dt_gui_add_class(g->find_lens_button, "dt_big_btn_canvas");
   gtk_box_pack_start(GTK_BOX(hbox), g->find_lens_button, FALSE, FALSE, 0);
@@ -3141,6 +3150,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->modflags, NULL, N_("corrections"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->modflags, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->modflags, _("which corrections to apply"));
+
   GList *l = g->modifiers;
   while(l)
   {
@@ -3149,7 +3159,8 @@ void gui_init(struct dt_iop_module_t *self)
     l = g_list_next(l);
   }
   dt_bauhaus_combobox_set(g->modflags, 0);
-  g_signal_connect(G_OBJECT(g->modflags), "value-changed", G_CALLBACK(modflags_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->modflags), "value-changed",
+                   G_CALLBACK(modflags_changed), (gpointer)self);
 
   g->methods = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->methods), FALSE);
@@ -3158,8 +3169,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->methods), box_lf, "lensfun");
   gtk_stack_add_named(GTK_STACK(g->methods), box_md, "metadata");
 
-  // message box to inform user what corrections have been done. this is useful as depending on lensfuns
-  // profile only some of the lens flaws can be corrected
+  // message box to inform user what corrections have been done. this
+  // is useful as depending on lensfuns profile only some of the lens
+  // flaws can be corrected
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *label = gtk_label_new(_("corrections done: "));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
@@ -3198,7 +3210,7 @@ void gui_update(struct dt_iop_module_t *self)
     p->method = _get_method(self, method);
   }
 
-  int modflag = p->modify_flags;
+  const int modflag = p->modify_flags;
   for(GList *modifiers = g->modifiers; modifiers; modifiers = g_list_next(modifiers))
   {
     dt_iop_lens_gui_modifier_t *mm = (dt_iop_lens_gui_modifier_t *)modifiers->data;
@@ -3211,8 +3223,9 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_lens_global_data_t *gd = (dt_iop_lens_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
-  // these are the wrong (untranslated) strings in general but that's ok, they will be overwritten further
-  // down
+
+  // these are the wrong (untranslated) strings in general but that's
+  // ok, they will be overwritten further down
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), p->camera);
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), p->lens);
   gtk_widget_set_tooltip_text(g->camera_model, "");
@@ -3221,6 +3234,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   dt_bauhaus_combobox_set(g->reverse, p->inverse);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tca_override), p->tca_override);
+
   const lfCamera **cam = NULL;
   g->camera = NULL;
   if(p->camera[0])
@@ -3233,6 +3247,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
       camera_set(self, NULL);
   }
+
   if(g->camera && p->lens[0])
   {
     char model[200];

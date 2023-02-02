@@ -1959,9 +1959,11 @@ static void _presets_popup_callback(GtkButton *button, dt_iop_module_t *module)
 
   dt_gui_presets_popup_menu_show_for_module(module);
 
-  g_signal_connect(G_OBJECT(darktable.gui->presets_popup_menu), "deactivate", G_CALLBACK(_header_menu_deactivate_callback), module);
+  g_signal_connect(G_OBJECT(darktable.gui->presets_popup_menu), "deactivate",
+                   G_CALLBACK(_header_menu_deactivate_callback), module);
 
-  dt_gui_menu_popup(darktable.gui->presets_popup_menu, GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  dt_gui_menu_popup(darktable.gui->presets_popup_menu,
+                    GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
 void dt_iop_request_focus(dt_iop_module_t *module)
@@ -2558,16 +2560,22 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->header = header;
 
   /* setup the header box */
-  g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_iop_plugin_header_button_press), module);
+  g_signal_connect(G_OBJECT(header_evb), "button-press-event",
+                   G_CALLBACK(_iop_plugin_header_button_press), module);
   gtk_widget_add_events(header_evb, GDK_POINTER_MOTION_MASK);
-  g_signal_connect(G_OBJECT(header_evb), "enter-notify-event", G_CALLBACK(_header_motion_notify_show_callback), module);
-  g_signal_connect(G_OBJECT(header_evb), "leave-notify-event", G_CALLBACK(_header_motion_notify_hide_callback), module);
+  g_signal_connect(G_OBJECT(header_evb), "enter-notify-event",
+                   G_CALLBACK(_header_motion_notify_show_callback), module);
+  g_signal_connect(G_OBJECT(header_evb), "leave-notify-event",
+                   G_CALLBACK(_header_motion_notify_hide_callback), module);
 
   /* connect mouse button callbacks for focus and presets */
-  g_signal_connect(G_OBJECT(body_evb), "button-press-event", G_CALLBACK(_iop_plugin_body_button_press), module);
+  g_signal_connect(G_OBJECT(body_evb), "button-press-event",
+                   G_CALLBACK(_iop_plugin_body_button_press), module);
   gtk_widget_add_events(body_evb, GDK_POINTER_MOTION_MASK);
-  g_signal_connect(G_OBJECT(body_evb), "enter-notify-event", G_CALLBACK(_header_motion_notify_show_callback), module);
-  g_signal_connect(G_OBJECT(body_evb), "leave-notify-event", G_CALLBACK(_header_motion_notify_hide_callback), module);
+  g_signal_connect(G_OBJECT(body_evb), "enter-notify-event",
+                   G_CALLBACK(_header_motion_notify_show_callback), module);
+  g_signal_connect(G_OBJECT(body_evb), "leave-notify-event",
+                   G_CALLBACK(_header_motion_notify_hide_callback), module);
 
   /*
    * initialize the header widgets
@@ -2593,7 +2601,8 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
     gtk_widget_set_name(lab, "iop_description");
     g_signal_connect(lab, "query-tooltip", G_CALLBACK(_iop_tooltip_callback), module);
   }
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_LABEL]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_LABEL]), "enter-notify-event",
+                   G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
 
   /* add multi instances menu button */
@@ -2602,9 +2611,11 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]),
                                 _("multiple instance actions\nright-click creates new instance"));
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "button-press-event", G_CALLBACK(_gui_multiinstance_callback),
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "button-press-event",
+                   G_CALLBACK(_gui_multiinstance_callback),
                    module);
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "enter-notify-event",
+                   G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_INSTANCE));
 
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
@@ -2613,8 +2624,10 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   hw[IOP_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   module->reset_button = GTK_WIDGET(hw[IOP_MODULE_RESET]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_RESET]), _("reset parameters\nctrl+click to reapply any automatic presets"));
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "button-press-event", G_CALLBACK(_gui_reset_callback), module);
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "button-press-event",
+                   G_CALLBACK(_gui_reset_callback), module);
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "enter-notify-event",
+                   G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
 
   /* add preset button if module has implementation */
@@ -2622,8 +2635,10 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->presets_button = GTK_WIDGET(hw[IOP_MODULE_PRESETS]);
   if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets\nright-click to apply on new instance"));
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "clicked", G_CALLBACK(_presets_popup_callback), module);
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "clicked",
+                   G_CALLBACK(_presets_popup_callback), module);
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "enter-notify-event",
+                   G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
 
   /* add enabled button */
@@ -2637,9 +2652,12 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), tooltip);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[IOP_MODULE_SWITCH]), module->enabled);
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "toggled", G_CALLBACK(_gui_off_callback), module);
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "button-press-event", G_CALLBACK(_gui_off_button_press), module);
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback), GINT_TO_POINTER(DT_ACTION_ELEMENT_ENABLE));
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "toggled",
+                   G_CALLBACK(_gui_off_callback), module);
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "button-press-event",
+                   G_CALLBACK(_gui_off_button_press), module);
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "enter-notify-event",
+                   G_CALLBACK(_header_enter_notify_callback), GINT_TO_POINTER(DT_ACTION_ELEMENT_ENABLE));
 
   module->off = DTGTK_TOGGLEBUTTON(hw[IOP_MODULE_SWITCH]);
   gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), !module->hide_enable_button);
@@ -2999,12 +3017,26 @@ dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules,
 dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module)
 {
   /*
-   decide which module instance keyboard shortcuts will be applied to based on user preferences, as follows
-    - Use the focused module, if it is an instance of this module type and the appropriate preference is checked. Otherwise
-    - prefer expanded instances (when selected and instances of the module are expanded on the RHS of the screen, collapsed instances will be ignored)
-    - prefer enabled instances (when selected, after applying the above rule, if instances of the module are active, inactive instances will be ignored)
-    - prefer unmasked instances (when selected, after applying the above rules, if instances of the module are unmasked, masked instances will be ignored)
-    - selection order (after applying the above rules, apply the shortcut to the first or last instance remaining)
+   decide which module instance keyboard shortcuts will be applied to
+   based on user preferences, as follows
+
+    - Use the focused module, if it is an instance of this module type
+      and the appropriate preference is checked. Otherwise
+
+    - prefer expanded instances (when selected and instances of the
+      module are expanded on the RHS of the screen, collapsed
+      instances will be ignored)
+
+    - prefer enabled instances (when selected, after applying the
+      above rule, if instances of the module are active, inactive
+      instances will be ignored)
+
+    - prefer unmasked instances (when selected, after applying the
+      above rules, if instances of the module are unmasked, masked
+      instances will be ignored)
+
+    - selection order (after applying the above rules, apply the
+      shortcut to the first or last instance remaining)
   */
   const gboolean prefer_focused = dt_conf_get_bool("accel/prefer_focused");
   const int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded") ? 8 : 0;
@@ -3016,7 +3048,8 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
 
   // if any instance has focus, use that one
   if(prefer_focused && darktable.develop->gui_module
-     && (darktable.develop->gui_module->so == module || DT_ACTION(module) == &darktable.control->actions_focus))
+     && (darktable.develop->gui_module->so == module
+         || DT_ACTION(module) == &darktable.control->actions_focus))
     accel_mod = darktable.develop->gui_module;
   else
   {
@@ -3067,7 +3100,9 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 
 void dt_iop_connect_accels_all()
 {
-  for(const GList *iop_mods = g_list_last(darktable.develop->iop); iop_mods; iop_mods = g_list_previous(iop_mods))
+  for(const GList *iop_mods = g_list_last(darktable.develop->iop);
+      iop_mods;
+      iop_mods = g_list_previous(iop_mods))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
     dt_iop_connect_accels_multi(mod->so);
@@ -3099,7 +3134,9 @@ int dt_iop_count_instances(dt_iop_module_so_t *module)
 {
   int inst_count = 0;
 
-  for(const GList *iop_mods = g_list_last(darktable.develop->iop); iop_mods; iop_mods = g_list_previous(iop_mods))
+  for(const GList *iop_mods = g_list_last(darktable.develop->iop);
+      iop_mods;
+      iop_mods = g_list_previous(iop_mods))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
     if(mod->so == module && mod->iop_order != INT_MAX)
@@ -3142,7 +3179,8 @@ void dt_iop_refresh_center(dt_iop_module_t *module)
   if(dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
+    const uint64_t hash =
+      dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->pipe->cache, hash);
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
     dt_dev_invalidate(dev);
@@ -3157,7 +3195,8 @@ void dt_iop_refresh_preview(dt_iop_module_t *module)
   if(dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
+    const uint64_t hash =
+      dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview_pipe->cache, hash);
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
     dt_dev_invalidate_all(dev);
@@ -3172,7 +3211,8 @@ void dt_iop_refresh_preview2(dt_iop_module_t *module)
   if(dev && dev->gui_attached)
   {
     // invalidate the pixelpipe cache except for the output of the prior module
-    const uint64_t hash = dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
+    const uint64_t hash =
+      dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview2_pipe->cache, hash);
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
     dt_dev_invalidate_all(dev);
@@ -3195,21 +3235,24 @@ static gboolean _postponed_history_update(gpointer data)
   return FALSE; //cancel the timer
 }
 
-/** queue a delayed call of the add_history function after user interaction, to capture parameter updates (but not */
-/** too often). */
+/** queue a delayed call of the add_history function after user
+    interaction, to capture parameter updates (but not too often). */
 void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior)
 {
   if(module->timeout_handle && extend_prior)
   {
-    // we already queued an update, but we don't want to have the update happen until the timeout expires
-    // without any activity, so cancel the queued callback
+    // we already queued an update, but we don't want to have the
+    // update happen until the timeout expires without any activity,
+    // so cancel the queued callback
     g_source_remove(module->timeout_handle);
   }
   if(!module->timeout_handle || extend_prior)
   {
-    // adaptively set the timeout to 150% of the average time the past several pixelpipe runs took, clamped
-    //   to keep updates from appearing to be too sluggish (though early iops such as rawdenoise may have
-    //   multiple very slow iops following them, leading to >1000ms processing times)
+    // adaptively set the timeout to 150% of the average time the past
+    // several pixelpipe runs took, clamped to keep updates from
+    // appearing to be too sluggish (though early iops such as
+    // rawdenoise may have multiple very slow iops following them,
+    // leading to >1000ms processing times)
     const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1200);
     module->timeout_handle = g_timeout_add(delay, _postponed_history_update, module);
   }
@@ -3398,11 +3441,19 @@ static const dt_action_element_def_t _action_elements[]
       { NULL } };
 
 static const dt_shortcut_fallback_t _action_fallbacks[]
-  = { { .element = DT_ACTION_ELEMENT_ENABLE, .button = DT_SHORTCUT_LEFT },
-      { .element = DT_ACTION_ELEMENT_FOCUS, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_LONG },
-      { .element = DT_ACTION_ELEMENT_INSTANCE, .button = DT_SHORTCUT_RIGHT, .click = DT_SHORTCUT_DOUBLE },
-      { .element = DT_ACTION_ELEMENT_RESET, .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
-      { .element = DT_ACTION_ELEMENT_PRESETS, .button = DT_SHORTCUT_RIGHT },
+  = { { .element = DT_ACTION_ELEMENT_ENABLE,
+        .button = DT_SHORTCUT_LEFT },
+      { .element = DT_ACTION_ELEMENT_FOCUS,
+        .button = DT_SHORTCUT_LEFT,
+        .click = DT_SHORTCUT_LONG },
+      { .element = DT_ACTION_ELEMENT_INSTANCE,
+        .button = DT_SHORTCUT_RIGHT,
+        .click = DT_SHORTCUT_DOUBLE },
+      { .element = DT_ACTION_ELEMENT_RESET,
+        .button = DT_SHORTCUT_LEFT,
+        .click = DT_SHORTCUT_DOUBLE },
+      { .element = DT_ACTION_ELEMENT_PRESETS,
+        .button = DT_SHORTCUT_RIGHT },
       { } };
 
 const dt_action_def_t dt_action_def_iop

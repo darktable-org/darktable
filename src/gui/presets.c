@@ -202,7 +202,9 @@ static void _edit_preset_response(GtkDialog *dialog,
     // find the module action list this preset belongs to
     dt_action_t *module_actions = g->iop ? &g->iop->so->actions : NULL;
 
-    for(GList *libs = darktable.lib->plugins; !module_actions && libs; libs = g_list_next(libs))
+    for(GList *libs = darktable.lib->plugins;
+        !module_actions && libs;
+        libs = g_list_next(libs))
     {
       dt_lib_module_t *lib = libs->data;
 
@@ -222,9 +224,9 @@ static void _edit_preset_response(GtkDialog *dialog,
       if(name == NULL || *name == '\0' || strcmp(_("new preset"), name) == 0)
       {
         // show error dialog
-        GtkWidget *dlg_changename
-            = gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, _("please give preset a name"));
+        GtkWidget *dlg_changename =
+          gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+                                 GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, _("please give preset a name"));
 #ifdef GDK_WINDOWING_QUARTZ
         dt_osx_disallow_fullscreen(dlg_changename);
 #endif
@@ -255,7 +257,8 @@ static void _edit_preset_response(GtkDialog *dialog,
       {
         sqlite3_finalize(stmt);
 
-        // if result is BUTTON_NO or ESCAPE keypress exit without destroying dialog, to permit other name
+        // if result is BUTTON_NO or ESCAPE keypress exit without
+        // destroying dialog, to permit other name
         if(dt_gui_show_yes_no_dialog(_("overwrite preset?"),
                                      _("preset `%s' already exists.\ndo you want to overwrite?"), name))
         {
@@ -301,7 +304,7 @@ static void _edit_preset_response(GtkDialog *dialog,
          "  aperture_max, focal_length_min, focal_length_max, autoapply,"
          "  filter, format, def, writeprotect, operation, op_version, op_params, enabled,"
          "  blendop_params, blendop_version,"
-         "   multi_priority, multi_name, multi_name_hand_edited) "
+         "  multi_priority, multi_name, multi_name_hand_edited) "
          "VALUES"
          " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16,"
          "   0, 0, ?17, ?18, ?19, ?20, ?21, ?22, 0, ?23, ?24)");
@@ -847,7 +850,9 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT operation, op_version FROM data.presets WHERE rowid = ?1", -1, &stmt, NULL);
+                              "SELECT operation, op_version"
+                              " FROM data.presets"
+                              " WHERE rowid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
