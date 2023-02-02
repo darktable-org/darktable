@@ -754,7 +754,9 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
     if(dt_iop_load_module(module, mod_src->so, dev))
     {
       module = NULL;
-      fprintf(stderr, "[dt_styles_apply_style_item] can't load module %s %s\n", style_item->operation,
+      fprintf(stderr,
+              "[dt_styles_apply_style_item] can't load module %s %s\n",
+              style_item->operation,
               style_item->multi_name);
     }
     else
@@ -834,7 +836,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
       }
 
       if(do_merge)
-        dt_history_merge_module_into_history(dev, NULL, module, modules_used, append);
+        dt_history_merge_module_into_history
+          (dev, NULL, module, modules_used, append, FALSE);
     }
 
     if(module)
