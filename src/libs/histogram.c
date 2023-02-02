@@ -66,8 +66,8 @@ typedef enum dt_lib_histogram_highlight_t
 typedef enum dt_lib_histogram_scope_type_t
 {
   DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE = 0,
-  DT_LIB_HISTOGRAM_SCOPE_PARADE,
   DT_LIB_HISTOGRAM_SCOPE_WAVEFORM,
+  DT_LIB_HISTOGRAM_SCOPE_PARADE,
   DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM,
   DT_LIB_HISTOGRAM_SCOPE_N // needs to be the last one
 } dt_lib_histogram_scope_type_t;
@@ -141,7 +141,7 @@ dt_lib_histogram_color_harmony_t dt_color_harmonies[DT_LIB_HISTOGRAM_HARMONY_N] 
 };
 
 // FIXME: are these lists available from the enum/options in darktableconfig.xml?
-const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { N_("vectorscope"), N_("rgb parade"), N_("waveform"), N_("histogram") };
+const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { N_("vectorscope"), N_("waveform"), N_("rgb parade"), N_("histogram") };
 const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_SCALE_N] = { "logarithmic", "linear" };
 const gchar *dt_lib_histogram_orient_names[DT_LIB_HISTOGRAM_ORIENT_N] = { "horizontal", "vertical" };
 const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "u*v*", "AzBz", "RYB" };
@@ -152,8 +152,8 @@ const float dt_lib_histogram_color_harmony_width[DT_LIB_HISTOGRAM_HARMONY_WIDTH_
 
 const void *dt_lib_histogram_scope_type_icons[DT_LIB_HISTOGRAM_SCOPE_N] =
               { dtgtk_cairo_paint_vectorscope,
-                dtgtk_cairo_paint_rgb_parade,
                 dtgtk_cairo_paint_waveform_scope,
+                dtgtk_cairo_paint_rgb_parade,
                 dtgtk_cairo_paint_histogram_scope };
 
 typedef struct dt_lib_histogram_t
