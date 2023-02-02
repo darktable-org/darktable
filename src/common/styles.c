@@ -813,10 +813,17 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
              || module->params_size != style_item->params_size
              || strcmp(style_item->operation, module->op)))
       {
-        if(!module->legacy_params
-           || module->legacy_params(module, style_item->params,
-                                    labs(style_item->module_version),
-                                    module->params, labs(module->version())))
+        int legacy_ret = 1;
+
+        if(module->legacy_params)
+          legacy_ret =
+            module->legacy_params(module, style_item->params,
+                                  labs(style_item->module_version),
+                                  module->params, labs(module->version()));
+        else
+          legacy_ret = 0;
+
+        if(legacy_ret == 1)
         {
           fprintf(stderr, "[dt_styles_apply_style_item] module `%s' version mismatch: history is %d, darktable is %d.\n",
                   module->op, style_item->module_version, module->version());
@@ -824,6 +831,11 @@ void dt_styles_apply_style_item(dt_develop_t *dev,
                          module->version(), style_item->module_version);
 
           do_merge = FALSE;
+        }
+        else if(legacy_ret == -1)
+        {
+          // auto-init module
+          autoinit = TRUE;
         }
         else
         {
