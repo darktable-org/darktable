@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 #include <webp/decode.h>
 #include <webp/mux.h>
 
-#include "image.h"
-#include "imageio.h"
+#include "common/image.h"
+#include "imageio/imageio_common.h"
 
 dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
@@ -35,7 +35,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   if(!f)
   {
     fprintf(stderr,"[webp_open] cannot open file for read: %s\n", filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   fseek(f, 0, SEEK_END);
@@ -49,7 +49,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     fclose(f);
     g_free(read_buffer);
     fprintf(stderr,"[webp_open] failed to read %zu bytes from %s\n", filesize, filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
   fclose(f);
 
@@ -60,7 +60,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
     // a different format (darktable just trying different loaders until it finds the right one).
     // We just have to return without complaining.
     g_free(read_buffer);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
   img->width = w;
   img->height = h;
@@ -80,7 +80,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   {
     g_free(read_buffer);
     fprintf(stderr,"[webp_open] failed to decode file: %s\n", filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   uint8_t intval;

@@ -33,7 +33,7 @@
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "imageio.h"
+#include "imageio_common.h"
 #include "imageio_heif.h"
 
 
@@ -69,7 +69,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
       /* print debug info only if genuine HEIF */
       dt_print(DT_DEBUG_IMAGEIO, "Failed to read HEIF file [%s]: %s\n", filename, err.message);
     }
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
@@ -80,7 +80,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO,
              "No images found in HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
@@ -91,8 +91,31 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to read primary image from HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
+  }
+
+  // Read Exif blob if Exiv2 did not succeed
+  if(!img->exif_inited)
+  {
+    heif_item_id exif_id;
+    int count = heif_image_handle_get_list_of_metadata_block_IDs(handle, "Exif", &exif_id, 1);
+    if(count == 1)
+    {
+      const size_t exif_size = heif_image_handle_get_metadata_size(handle, exif_id);
+      if(exif_size > 4)
+      {
+        uint8_t *exif_data = g_malloc0(exif_size);
+        err = heif_image_handle_get_metadata(handle, exif_id, exif_data);
+        if(err.code == heif_error_Ok)
+        {
+          const uint32_t exif_offset = exif_data[0] << 24 | exif_data[1] << 16 | exif_data[2] << 8 | exif_data[3];
+          if(exif_size > 4 + exif_offset)
+            dt_exif_read_from_blob(img, exif_data + 4 + exif_offset, exif_size - 4 - exif_offset);
+        }
+        g_free(exif_data);
+      }
+    }
   }
 
   struct heif_decoding_options *decode_options = heif_decoding_options_alloc();
@@ -105,7 +128,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     dt_print(DT_DEBUG_IMAGEIO,
              "Failed to decode HEIF file [%s]\n",
              filename);
-    ret = DT_IMAGEIO_FILE_CORRUPTED;
+    ret = DT_IMAGEIO_LOAD_FAILED;
     goto out;
   }
 
@@ -140,16 +163,18 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
 
-  // Get pixel value bit depth (not storage bit depth)
-  const int bit_depth = heif_image_get_bits_per_pixel_range(heif_img, heif_channel_interleaved);
+  // Get decoded pixel values bit depth (ths is used to scale values to [0..1] range)
+  const int decoded_values_bit_depth = heif_image_get_bits_per_pixel_range(heif_img, heif_channel_interleaved);
+  // Get original pixel values bit depth by querying the luma channel depth (this may differ from decoded values bit depth)
+  const int original_values_bit_depth = heif_image_handle_get_luma_bits_per_pixel(handle);
 
   dt_print(DT_DEBUG_IMAGEIO,
              "Bit depth: '%d' for HEIF image [%s]\n",
-             bit_depth,
+             original_values_bit_depth,
              filename);
 
-  /* This can be LDR or HDR, it depends on the ICC profile. But if bit_depth <= 8 it must be LDR. */
-  if(bit_depth > 8)
+  // If original_values_bit_depth <= 8 it must be LDR image
+  if(original_values_bit_depth > 8)
   {
     img->flags |= DT_IMAGE_HDR;
     img->flags &= ~DT_IMAGE_LDR;
@@ -160,7 +185,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
     img->flags &= ~DT_IMAGE_HDR;
   }
 
-  float max_channel_f = (float)((1 << bit_depth) - 1);
+  float max_channel_f = (float)((1 << decoded_values_bit_depth) - 1);
 
   const uint8_t *const restrict in = (const uint8_t *)data;
 

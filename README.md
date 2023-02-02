@@ -1,4 +1,4 @@
-[![icon](/data/pixmaps/idbutton.png?raw=true)](https://www.darktable.org/) darktable [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/darktable-org/darktable/CI/master)](https://github.com/darktable-org/darktable/actions/workflows/ci.yml?query=branch%3Amaster+is%3Acompleted+event%3Apush) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/470/badge)](https://bestpractices.coreinfrastructure.org/projects/470)
+[![icon](/data/pixmaps/idbutton.png?raw=true)](https://www.darktable.org/) darktable [![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/darktable-org/darktable/ci.yml?branch=master)](https://github.com/darktable-org/darktable/actions/workflows/ci.yml?query=branch%3Amaster+is%3Acompleted+event%3Apush) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/470/badge)](https://bestpractices.coreinfrastructure.org/projects/470)
 =========
 
 darktable is an open source photography workflow application and non-destructive raw developer - a virtual lighttable and darkroom for photographers. It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images, enhance them and export them to local or remote storage.
@@ -164,6 +164,7 @@ Required dependencies (minimum version):
 * Exiv2 0.24 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
 
 Required dependencies (no version requirement):
+* Lensfun *(for automatic lens correction)* (Note: alpha 0.3.95 and git master branch are not supported)
 * Little CMS 2
 
 Optional dependencies (minimum version):
@@ -179,7 +180,6 @@ Optional dependencies (minimum version):
 * WebP 0.3.0 *(for WebP import & export)*
 
 Optional dependencies (no version requirement):
-* Lensfun *(for automatic lens correction)*
 * colord, Xatom *(for fetching the system display color profile)*
 * G'MIC *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*

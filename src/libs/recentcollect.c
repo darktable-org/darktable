@@ -396,7 +396,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  self->widget = dt_ui_scroll_wrap(box, 50, "plugins/lighttable/recentcollect/windowheight");
+  self->widget = dt_ui_resize_wrap(box, 50, "plugins/lighttable/recentcollect/windowheight");
   d->box = box;
   d->inited = 0;
 

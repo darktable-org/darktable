@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "imageio.h"
+#include "imageio_common.h"
 #include "imageio_tiff.h"
 
 int read_header(const char *filename, dt_imageio_png_t *png)
@@ -155,7 +155,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".png", 4) && strncmp(ext, ".PNG", 4)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(strncmp(ext, ".png", 4) && strncmp(ext, ".PNG", 4)) return DT_IMAGEIO_LOAD_FAILED;
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   dt_imageio_png_t image;
@@ -164,7 +164,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   uint16_t bpp;
 
 
-  if(read_header(filename, &image) != 0) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(read_header(filename, &image) != 0) return DT_IMAGEIO_LOAD_FAILED;
 
   width = img->width = image.width;
   height = img->height = image.height;
@@ -196,7 +196,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   {
     dt_free_align(buf);
     fprintf(stderr, "[png_open] could not read image `%s'\n", img->filename);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    return DT_IMAGEIO_LOAD_FAILED;
   }
 
   for(size_t j = 0; j < height; j++)
@@ -235,9 +235,9 @@ int dt_imageio_png_read_profile(const char *filename, uint8_t **out, dt_colorspa
   png_charp profile;
 #endif
 
-  if(!(filename && *filename && out)) return 0;
+  if(!(filename && *filename)) return 0;
 
-  if(read_header(filename, &image) != 0) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(read_header(filename, &image) != 0) return DT_IMAGEIO_LOAD_FAILED;
 
   /* TODO: also add check for known cICP chunk read support once added to libpng */
 #ifdef PNG_STORE_UNKNOWN_CHUNKS_SUPPORTED

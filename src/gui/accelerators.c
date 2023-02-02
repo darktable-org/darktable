@@ -541,7 +541,7 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
   }
   else if(id == DT_SHORTCUT_DEVICE_TABLET)
   {
-    return g_strdup_printf("%s %d", display ? _("tablet button") : "tablet button", key_or_move);
+    return g_strdup_printf("%s %u", display ? _("tablet button") : "tablet button", key_or_move);
   }
   else
   {
@@ -781,6 +781,8 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
                                             _("scroll to change default speed"),
                                             _("right click to exit mapping mode"));
     }
+    else if(g_object_get_data(G_OBJECT(widget), "scroll-resize-tooltip"))
+      original_markup = dt_util_dstrcat(original_markup, "%s%s", original_markup ? "\n" : "", _("ctrl+scroll to change height"));
   }
 
   const dt_action_def_t *def = _action_find_definition(action);
@@ -2585,7 +2587,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
           {
             gtk_accelerator_parse(token, &s.key, &s.mods);
             if(s.mods) fprintf(stderr, "[dt_shortcuts_load] unexpected modifiers found in %s\n", token);
-            if(!s.key && sscanf(token, "tablet button %d", &s.key))
+            if(!s.key && sscanf(token, "tablet button %u", &s.key))
               s.key_device = DT_SHORTCUT_DEVICE_TABLET;
             if(!s.key) fprintf(stderr, "[dt_shortcuts_load] no key name found in %s\n", token);
           }
@@ -3188,7 +3190,7 @@ static float _process_shortcut(float move_size)
 {
   float return_value = NAN;
 
-  dt_vprint(DT_DEBUG_INPUT,
+  dt_print(DT_DEBUG_INPUT | DT_DEBUG_VERBOSE,
             "  [_process_shortcut] processing shortcut: %s\n",
             _shortcut_description(&_sc));
 

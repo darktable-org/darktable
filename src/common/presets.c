@@ -54,15 +54,16 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
   g_free(presetname);
 
   // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT op_params, blendop_params, name, description, operation,"
-                              "   autoapply, model, maker, lens, iso_min, iso_max, exposure_min,"
-                              "   exposure_max, aperture_min, aperture_max, focal_length_min,"
-                              "   focal_length_max, op_version, blendop_version, enabled,"
-                              "   multi_priority, multi_name, filter, def, format "
-                              " FROM data.presets"
-                              " WHERE rowid = ?1",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT op_params, blendop_params, name, description, operation,"
+     "   autoapply, model, maker, lens, iso_min, iso_max, exposure_min,"
+     "   exposure_max, aperture_min, aperture_max, focal_length_min,"
+     "   focal_length_max, op_version, blendop_version, enabled,"
+     "   multi_priority, multi_name, filter, def, format, multi_name_hand_edited"
+     " FROM data.presets"
+     " WHERE rowid = ?1",
+     -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
 
@@ -91,6 +92,7 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
     const int filter = sqlite3_column_double(stmt, 22);
     const int def = sqlite3_column_double(stmt, 23);
     const int format = sqlite3_column_double(stmt, 24);
+    const int multi_name_hand_edited = sqlite3_column_double(stmt, 25);
 
     int rc = 0;
 
@@ -137,6 +139,7 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "blendop_version", "%d", blendop_version);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_priority", "%d", multi_priority);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name", "%s", multi_name);
+    xmlTextWriterWriteFormatElement(writer, BAD_CAST "multi_name_hand_edited", "%d", multi_name_hand_edited);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "filter", "%d", filter);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "def", "%d", def);
     xmlTextWriterWriteFormatElement(writer, BAD_CAST "format", "%d", format);
@@ -232,6 +235,7 @@ int dt_presets_import_from_file(const char *preset_path)
   const int enabled = get_preset_element_int(doc, "enabled");
   const int multi_priority = get_preset_element_int(doc, "multi_priority");
   gchar *multi_name = get_preset_element(doc, "multi_name");
+  const int multi_name_hand_edited = get_preset_element_int(doc, "multi_name_hand_edited");
   const int filter = get_preset_element_int(doc, "filter");
   const int def = get_preset_element_int(doc, "def");
   const int format = get_preset_element_int(doc, "format");
@@ -256,9 +260,10 @@ int dt_presets_import_from_file(const char *preset_path)
      "     model, maker, lens, iso_min, iso_max, exposure_min, exposure_max,"
      "     aperture_min, aperture_max, focal_length_min, focal_length_max,"
      "     op_params, op_version, blendop_params, blendop_version, enabled,"
-     "     multi_priority, multi_name, filter, def, format, writeprotect)"
+     "     multi_priority, multi_name, filter, def, format, multi_name_hand_edited,"
+     "     writeprotect)"
      "  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, "
-     "          ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, 0)",
+     "          ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, 0)",
      -1, &stmt, NULL);
   // clang-format on
 
@@ -287,6 +292,7 @@ int dt_presets_import_from_file(const char *preset_path)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, filter);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, def);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, format);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 26, multi_name_hand_edited);
 
   result = (sqlite3_step(stmt) == SQLITE_DONE);
 
@@ -317,9 +323,45 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
   }
   return TRUE;
 }
+
+char *dt_presets_get_name(const char *module_name,
+                          const void *params,
+                          const uint32_t param_size,
+                          const gboolean is_default_params,
+                          const void *blend_params,
+                          const uint32_t blend_params_size)
+{
+  sqlite3_stmt *stmt;
+
+  // clang-format off
+  char *query = g_strdup_printf("SELECT name"
+                                " FROM data.presets"
+                                " WHERE operation = ?1"
+                                "   AND (op_params = ?2"
+                                "        %s)"
+                                "   AND blendop_params = ?3",
+                                is_default_params ? "OR op_params IS NULL" : "");
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+  // clang-format on
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_name, strlen(module_name), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 2, params, param_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, blend_params, blend_params_size, SQLITE_TRANSIENT);
+
+  char *result = NULL;
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    result = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
+
+  g_free(query);
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

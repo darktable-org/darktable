@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2013-2020 darktable developers.
+   Copyright (C) 2013-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,11 +15,12 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/storage.h"
-#include "common/imageio.h"
+
 #include "control/conf.h"
+#include "imageio/imageio_common.h"
 #include "lua/image.h"
 #include "lua/modules.h"
+#include "lua/storage.h"
 #include "lua/types.h"
 
 static int supports_format(lua_State *L)

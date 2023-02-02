@@ -98,6 +98,8 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH,
   DT_GUI_COLOR_MAP_LOC_SHAPE_LOW,
   DT_GUI_COLOR_MAP_LOC_SHAPE_DEF,
+  DT_GUI_COLOR_ISO12646_BG,
+  DT_GUI_COLOR_ISO12646_FG,
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
 
@@ -418,7 +420,7 @@ guint dt_gui_translated_key_state(GdkEventKey *event);
 // return modifier keys currently pressed, independent of any key event
 GdkModifierType dt_key_modifier_state();
 
-GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str);
+GtkWidget *dt_ui_resize_wrap(GtkWidget *w, gint min_size, char *config_str);
 
 // check whether the given container has any user-added children
 gboolean dt_gui_container_has_children(GtkContainer *container);

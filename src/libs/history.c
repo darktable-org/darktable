@@ -139,7 +139,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* add history list and buttonbox to widget */
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_scroll_wrap(d->history_box, 1, "plugins/darkroom/history/windowheight"), FALSE, FALSE, 0);
+                     dt_ui_resize_wrap(d->history_box, 1, "plugins/darkroom/history/windowheight"), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hhbox, FALSE, FALSE, 0);
 
   gtk_widget_show_all(self->widget);
@@ -1147,6 +1147,7 @@ static gboolean _lib_history_compress_pressed_callback(GtkWidget *widget, GdkEve
 
 static gboolean _lib_history_button_clicked_callback(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
 {
+  const int32_t imgid = darktable.develop->image_storage.id;
   static int reset = 0;
   if(reset) return FALSE;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
@@ -1188,6 +1189,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget, GdkEvent
   dt_dev_pop_history_items(darktable.develop, num);
   // set the module list order
   dt_dev_reorder_gui_module_list(darktable.develop);
+  dt_image_update_final_size(imgid);
 
   /* signal history changed */
   dt_dev_undo_end_record(darktable.develop);

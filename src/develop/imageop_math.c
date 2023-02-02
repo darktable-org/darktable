@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
 #include <glib.h> // for MIN, MAX, CLAMP, inline
 #include <math.h> // for round, floorf, fmaxf
 #include "common/darktable.h"        // for darktable, darktable_t, dt_code...
-#include "common/imageio.h"          // for FILTERS_ARE_4BAYER
 #include "common/interpolation.h"    // for dt_interpolation_new, dt_interp...
 #include "develop/imageop.h"         // for dt_iop_roi_t
+#include "imageio/imageio_common.h"          // for FILTERS_ARE_4BAYER
 
 void dt_iop_flip_and_zoom_8(const uint8_t *in, int32_t iw, int32_t ih, uint8_t *out, int32_t ow, int32_t oh,
                             const dt_image_orientation_t orientation, uint32_t *width, uint32_t *height)

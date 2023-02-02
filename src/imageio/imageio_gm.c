@@ -23,7 +23,7 @@
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "imageio.h"
+#include "imageio_common.h"
 
 #include <assert.h>
 #include <inttypes.h>
@@ -56,13 +56,13 @@ static gboolean _supported_image(const gchar *filename)
 
 dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  int err = DT_IMAGEIO_FILE_CORRUPTED;
+  int err = DT_IMAGEIO_LOAD_FAILED;
   ExceptionInfo exception;
   Image *image = NULL;
   ImageInfo *image_info = NULL;
   uint32_t width, height;
 
-  if(!_supported_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(!_supported_image(filename)) return DT_IMAGEIO_LOAD_FAILED;
 
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
@@ -85,7 +85,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   if(IsCMYKColorspace(image->colorspace))
   {
     fprintf(stderr, "[GraphicsMagick_open] error: CMYK images are not supported.\n");
-    err =  DT_IMAGEIO_FILE_CORRUPTED;
+    err =  DT_IMAGEIO_LOAD_FAILED;
     goto error;
   }
 
@@ -114,7 +114,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
     if(ret != MagickPass)
     {
       fprintf(stderr, "[GraphicsMagick_open] error reading image `%s'\n", img->filename);
-      err = DT_IMAGEIO_FILE_CORRUPTED;
+      err = DT_IMAGEIO_LOAD_FAILED;
       goto error;
     }
   }

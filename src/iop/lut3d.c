@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2022 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
-#include "common/imageio_png.h"
 #include "common/imagebuf.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
@@ -31,6 +30,7 @@
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
+#include "imageio/imageio_png.h"
 #include "iop/iop_api.h"
 
 #include <gtk/gtk.h>
@@ -773,7 +773,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
       else if(strcmp("LUT_1D_SIZE", token[0]) == 0)
       {
         fprintf(stderr, "[lut3d] 1D cube LUT is not supported\n");
-        dt_control_log(_("[1D cube LUT is not supported"));
+        dt_control_log(_("1D cube LUT is not supported"));
         free(line);
         fclose(cube_file);
         return 0;
@@ -842,8 +842,8 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
   }
   if(out_of_range_nb)
   {
-    fprintf(stderr, "[lut3d] warning - %d out of range values [0,1]\n", out_of_range_nb);
-    dt_control_log(_("warning - cube LUT %d out of range values [0,1]"), out_of_range_nb);
+    fprintf(stderr, "[lut3d] warning - %d values out of range [0,1]\n", out_of_range_nb);
+    dt_control_log(_("warning - cube LUT has %d values out of range [0,1]"), out_of_range_nb);
   }
   *clut = lclut;
   free(line);

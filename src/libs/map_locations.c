@@ -54,7 +54,6 @@ typedef struct dt_lib_map_locations_t
   GtkWidget *new_button;
   GtkWidget *show_all_button;
   GtkWidget *hide_button;
-  GtkWidget *window;
   GtkWidget *view;
   GtkCellRenderer *renderer;
   GtkTreeSelection *selection;
@@ -90,27 +89,6 @@ typedef enum dt_map_position_name_sort_id
 const DTGTKCairoPaintIconFunc location_shapes[] = { dtgtk_cairo_paint_masks_circle,   // MAP_LOCATION_SHAPE_ELLIPSE
                                                     dtgtk_cairo_paint_rect_landscape, // MAP_LOCATION_SHAPE_RECTANGLE
                                                     dtgtk_cairo_paint_polygon};       // MAP_LOCATION_SHAPE_POLYGONS
-
-static gboolean _mouse_scroll(GtkWidget *treeview, GdkEventScroll *event,
-                              dt_lib_module_t *self)
-{
-  dt_lib_map_locations_t *d = (dt_lib_map_locations_t *)self->data;
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-  {
-    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
-    const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
-    const gint max_height = DT_PIXEL_APPLY_DPI(500.0);
-    gint width, height;
-    gtk_widget_get_size_request (GTK_WIDGET(d->window), &width, &height);
-    height = height + increment * event->delta_y;
-    height = (height < min_height) ? min_height
-                                   : (height > max_height) ? max_height : height;
-    gtk_widget_set_size_request(GTK_WIDGET(d->window), -1, (gint)height);
-    dt_conf_set_int("plugins/map/heightlocationwindow", (gint)height);
-    return TRUE;
-  }
-  return FALSE;
-}
 
 // find a tag on the tree
 static gboolean _find_tag_iter_id(GtkTreeModel *model, GtkTreeIter *iter,
@@ -922,14 +900,9 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget =  gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  d->window = w;
-  int height = dt_conf_get_int("plugins/map/heightlocationwindow");
-  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(height ? height : 100));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(GTK_BOX(self->widget), w, TRUE, TRUE, 0);
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
   d->view = GTK_WIDGET(view);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_resize_wrap(d->view, 100, "plugins/map/heightlocationwindow"), TRUE, TRUE, 0);
   gtk_tree_view_set_headers_visible(view, FALSE);
   GtkTreeStore *treestore = gtk_tree_store_new(DT_MAP_LOCATION_NUM_COLS, G_TYPE_UINT,
                                                G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
@@ -955,8 +928,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(treestore));
   g_object_unref(treestore);
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view), self);
-  g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(_mouse_scroll), self);
-  gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(view));
   gtk_widget_set_tooltip_text(GTK_WIDGET(view),
                               _("list of user locations,"
                                 "\nclick to show or hide a location on the map:"
@@ -968,8 +939,7 @@ void gui_init(dt_lib_module_t *self)
                                 "\n - a pipe \'|\' symbol breaks the name into several levels"
                                 "\n - to remove a group of locations clear its name"
                                 "\n - press enter to validate the new name, escape to cancel the edit"
-                                "\nright-click for other actions: delete location and go to collection,"
-                                "\nctrl+scroll to resize the window"));
+                                "\nright-click for other actions: delete location and go to collection"));
 
   // buttons
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));

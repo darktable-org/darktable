@@ -382,7 +382,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "EXIF.LENS") || _has_prefix(variable, "LENS"))
     result = g_strdup(params->data->exif_lens);
   else if(_has_prefix(variable, "ID") || _has_prefix(variable, "IMAGE.ID"))
-    result = g_strdup_printf("%d", params->imgid);
+    result = g_strdup_printf("%u", params->imgid);
   else if(_has_prefix(variable, "IMAGE.EXIF"))
   {
     gchar buffer[1024];
@@ -476,7 +476,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
       nb_digit = (uint8_t)*variable[0] & 0b1111;
       (*variable) ++;
     }
-    result = g_strdup_printf("%.*d", nb_digit, params->sequence >= 0 ? params->sequence : params->data->sequence);
+    result = g_strdup_printf("%.*u", nb_digit, params->sequence >= 0 ? params->sequence : params->data->sequence);
   }
   else if(_has_prefix(variable, "USERNAME"))
     result = g_strdup(g_get_user_name());

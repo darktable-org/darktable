@@ -703,6 +703,9 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
     if(range->path1)
     {
       range->path2 = gtk_tree_path_copy(path);
+      g_free(haystack);
+      g_free(needle);
+      g_free(str);
       return TRUE;
     }
     else
@@ -3297,7 +3300,7 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(treemodel);
 
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
+                     dt_ui_resize_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
                      TRUE, 0);
 
   // the bottom buttons for the rules

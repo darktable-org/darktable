@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,9 +53,9 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio.h"
-#include "common/imageio_module.h"
 #include "control/conf.h"
+#include "imageio/imageio_common.h"
+#include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -357,7 +357,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   }
 
   /* Create comment for codestream */
-  parameters.cp_comment = g_strdup_printf("Created by %s", darktable_package_string);
+  parameters.cp_comment = g_strdup_printf("Created with %s", darktable_package_string);
 
   /*Converting the image to a format suitable for encoding*/
   {

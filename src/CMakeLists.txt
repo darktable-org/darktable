@@ -46,16 +46,17 @@ FILE(GLOB SOURCE_FILES
   "common/image_cache.c"
   "common/image_compression.c"
   "common/imagebuf.c"
-  "common/imageio.c"
-  "common/imageio_jpeg.c"
-  "common/imageio_png.c"
-  "common/imageio_module.c"
-  "common/imageio_pfm.c"
-  "common/imageio_pnm.c"
-  "common/imageio_rgbe.c"
-  "common/imageio_tiff.c"
-  "common/imageio_im.c"
-  "common/imageio_gm.c"
+  "imageio/imageio.c"
+  "imageio/imageio_jpeg.c"
+  "imageio/imageio_png.c"
+  "imageio/imageio_module.c"
+  "imageio/imageio_pfm.c"
+  "imageio/imageio_pnm.c"
+  "imageio/imageio_rgbe.c"
+  "imageio/imageio_tiff.c"
+  "imageio/imageio_im.c"
+  "imageio/imageio_gm.c"
+  "imageio/imageio_qoi.c"
   "common/import_session.c"
   "common/interpolation.c"
   "common/locallaplacian.c"
@@ -358,7 +359,7 @@ if(USE_OPENEXR)
     include_directories(SYSTEM ${OpenEXR_INCLUDE_DIRS})
     list(APPEND LIBS ${OpenEXR_LIBRARIES})
     add_definitions("-DHAVE_OPENEXR")
-    list(APPEND SOURCES "common/imageio_exr.cc")
+    list(APPEND SOURCES "imageio/imageio_exr.cc")
     set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} exr CACHE INTERNAL "")
   endif(OpenEXR_FOUND)
 endif(USE_OPENEXR)
@@ -369,7 +370,7 @@ if(USE_JXL)
     include_directories(SYSTEM ${JXL_INCLUDE_DIRS})
     list(APPEND LIBS ${JXL_LIBRARIES})
     add_definitions("-DHAVE_LIBJXL")
-    list(APPEND SOURCES "common/imageio_jpegxl.c")
+    list(APPEND SOURCES "imageio/imageio_jpegxl.c")
     set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} jxl CACHE INTERNAL "")
   endif(JXL_FOUND)
 endif(USE_JXL)
@@ -380,7 +381,7 @@ if(USE_WEBP)
     include_directories(SYSTEM ${WebP_INCLUDE_DIRS})
     list(APPEND LIBS ${WebP_LIBRARIES})
     add_definitions("-DHAVE_WEBP")
-    list(APPEND SOURCES "common/imageio_webp.c")
+    list(APPEND SOURCES "imageio/imageio_webp.c")
     set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} webp CACHE INTERNAL "")
   endif(WebP_FOUND)
 endif(USE_WEBP)
@@ -390,7 +391,7 @@ if (USE_AVIF)
     if (TARGET avif)
         list(APPEND LIBS avif)
         add_definitions(-DHAVE_LIBAVIF=1)
-        list(APPEND SOURCES "common/imageio_avif.c")
+        list(APPEND SOURCES "imageio/imageio_avif.c")
         set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} avif CACHE INTERNAL "")
     endif()
 endif()
@@ -403,7 +404,7 @@ if(USE_HEIF)
   if(TARGET heif AND libheif_VERSION VERSION_GREATER_EQUAL 1.13)
     list(APPEND LIBS heif)
     add_definitions(-DHAVE_LIBHEIF=1)
-    list(APPEND SOURCES "common/imageio_heif.c")
+    list(APPEND SOURCES "imageio/imageio_heif.c")
     set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} heif heic hif CACHE INTERNAL "")
     if(NOT TARGET avif)
       # libheif can handle avif, too
@@ -420,14 +421,14 @@ if(USE_LIBRAW)
       message(STATUS "Using system LibRaw")
       list(APPEND LIBS ${libraw_LIBRARY})
       add_definitions(-DHAVE_LIBRAW=1)
-      list(APPEND SOURCES "common/imageio_libraw.c")
+      list(APPEND SOURCES "imageio/imageio_libraw.c")
     else()
       message(STATUS "System LibRaw not found or not suitable, building from intree copy")
     endif()
   else()
     message(STATUS "Building LibRaw from intree copy")
     add_definitions(-DHAVE_LIBRAW=1)
-    list(APPEND SOURCES "common/imageio_libraw.c")
+    list(APPEND SOURCES "imageio/imageio_libraw.c")
   endif()
 endif()
 
@@ -489,7 +490,7 @@ if(USE_OPENJPEG)
   find_package(OpenJPEG)
   if(OpenJPEG_FOUND)
     add_definitions("-DHAVE_OPENJPEG")
-    list(APPEND SOURCES "common/imageio_j2k.c")
+    list(APPEND SOURCES "imageio/imageio_j2k.c")
 
     include_directories(SYSTEM ${OpenJPEG_INCLUDE_DIRS})
     list(APPEND LIBS ${OpenJPEG_LIBRARIES})
@@ -571,6 +572,7 @@ if(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
   if(ImageMagick_FOUND)
     if(ImageMagick_VERSION VERSION_GREATER 7)
       add_definitions(-DHAVE_IMAGEMAGICK7)
+      set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} qoi CACHE INTERNAL "")
     endif(ImageMagick_VERSION VERSION_GREATER 7)
     add_definitions(-DHAVE_IMAGEMAGICK ${ImageMagick_CFLAGS_OTHER})
     include_directories(SYSTEM ${ImageMagick_INCLUDE_DIRS})
@@ -973,7 +975,7 @@ unset(LIBS)
 unset(STATIC_LIBS)
 unset(LIB_DEPS)
 
-add_library(lib_darktable_imageio_rawspeed STATIC common/imageio_rawspeed.cc)
+add_library(lib_darktable_imageio_rawspeed STATIC imageio/imageio_rawspeed.cc)
 target_link_libraries(lib_darktable_imageio_rawspeed PRIVATE rawspeed)
 target_link_libraries(lib_darktable PRIVATE lib_darktable_imageio_rawspeed)
 

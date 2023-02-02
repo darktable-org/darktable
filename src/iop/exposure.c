@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -321,9 +321,8 @@ static void _deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histo
   histogram_params.roi = &histogram_roi;
   histogram_params.bins_count = DEFLICKER_BINS_COUNT;
 
-  dt_histogram_worker(&histogram_params, histogram_stats, buf.buf, histogram,
-                      dt_histogram_helper_cs_RAW_uint16, NULL);
-  histogram_stats->ch = 1u;
+  dt_histogram_helper(&histogram_params, histogram_stats, IOP_CS_RAW, IOP_CS_NONE,
+                      buf.buf, histogram, NULL, FALSE, NULL);
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
@@ -353,18 +352,16 @@ static void _compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_d
 
   if(histogram == NULL) return;
 
-  const size_t total = (size_t)histogram_stats->ch * histogram_stats->pixels;
-
   const double thr
-      = CLAMP(((double)total * (double)p->deflicker_percentile / (double)100.0), 0.0, (double)total);
+      = CLAMP(((double)histogram_stats->pixels * (double)p->deflicker_percentile
+               / (double)100.0), 0.0, (double)histogram_stats->pixels);
 
   size_t n = 0;
   uint32_t raw = 0;
 
-  for(uint32_t i = 0; i < histogram_stats->bins_count; i++)
+  for(size_t i = 0; i < histogram_stats->bins_count; i++)
   {
-    for(uint32_t k = 0; k < histogram_stats->ch; k++)
-      n += histogram[4 * i + k];
+    n += histogram[i];
 
     if((double)n >= thr)
     {
@@ -401,7 +398,7 @@ static void _process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
       dt_dev_histogram_stats_t histogram_stats;
       _deflicker_prepare_histogram(self, &histogram, &histogram_stats);
       _compute_correction(self, &d->params, piece->pipe, histogram, &histogram_stats, &exposure);
-      free(histogram);
+      dt_free_align(histogram);
     }
 
     // second, show computed correction in UI.
@@ -573,7 +570,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_gui_leave_critical_section(self);
 
-  free(g->deflicker_histogram);
+  dt_free_align(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
 
   gtk_label_set_text(g->deflicker_used_EC, "");
@@ -728,10 +725,11 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   dt_Lab_2_LCH(Lab, Lch);
 
   // Write report in GUI
+  gchar *str = g_strdup_printf(_("L : \t%.1f %%"), Lch[0]);
   ++darktable.gui->reset;
-  gtk_label_set_text(GTK_LABEL(g->Lch_origin),
-                     g_strdup_printf(_("L : \t%.1f %%"), Lch[0]));
+  gtk_label_set_text(GTK_LABEL(g->Lch_origin), str);
   --darktable.gui->reset;
+  g_free(str);
 
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
 
@@ -806,7 +804,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(w == g->mode)
   {
-    free(g->deflicker_histogram);
+    dt_free_align(g->deflicker_histogram);
     g->deflicker_histogram = NULL;
 
     switch(p->mode)
@@ -1151,7 +1149,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   if(darktable.develop->proxy.exposure.module == self)
     darktable.develop->proxy.exposure.module = NULL;
 
-  free(g->deflicker_histogram);
+  dt_free_align(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
 
   IOP_GUI_FREE;

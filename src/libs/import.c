@@ -405,7 +405,7 @@ static void detach_lua_widgets(GtkWidget *extra_lua_widgets)
 }
 #endif
 
-// maybe this should be (partly) in common/imageio.[c|h]?
+// maybe this should be (partly) in imageio/imageio.[c|h]?
 static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
 {
   GdkPixbuf *pixbuf = NULL;
@@ -905,7 +905,7 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
   GtkTreeIter parent2;
   if(!parent)
   {
-    char *basename = g_path_get_basename(folder);
+    gchar *basename = g_path_get_basename(folder);
     gtk_tree_store_append(store, &parent2, NULL);
     gtk_tree_store_set(store, &parent2, DT_FOLDER_NAME, basename,
                                      DT_FOLDER_PATH, folder,
@@ -913,6 +913,7 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
     // fake child
     gtk_tree_store_append(store, &iter, &parent2);
     gtk_tree_store_set(store, &iter, DT_FOLDER_EXPANDED, FALSE, -1);
+    g_free(basename);
   }
   else
   {
