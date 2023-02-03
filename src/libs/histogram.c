@@ -1201,7 +1201,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       pango_layout_set_font_description(layout, desc);
       g_free(text);
 
-      text = g_strdup_printf("%s\n%s: %d°", _(hm.name), _("rotation"), d->harmony_rotation);
+      text = g_strdup_printf("%d°\n%s", d->harmony_rotation, _(hm.name));
 
       set_color(cr, darktable.bauhaus->graph_fg);
       pango_layout_set_text(layout, text, -1);
