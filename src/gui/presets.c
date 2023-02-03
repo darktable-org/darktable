@@ -374,19 +374,18 @@ static void _edit_preset_response(GtkDialog *dialog,
     // commit specific fields in case of newly created preset
     if(g->old_id < 0)
     {
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, g->operation, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, g->op_version);
+
       if(g->iop)
       {
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, g->operation, -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, g->op_version);
-        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, g->iop->blend_params, sizeof(dt_develop_blend_params_t),
-                                   SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, g->iop->blend_params,
+                                   sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, dt_develop_blend_version());
       }
       else
       {
         // we are in the lib case currently we set set all params to 0
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, g->operation, -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, g->op_version);
         DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, NULL, 0, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, 0);
       }
