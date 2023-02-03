@@ -276,6 +276,11 @@ static void _edit_preset_response(GtkDialog *dialog,
       }
     }
 
+    //
+    // g->iop    : if set we are editing an iop preset
+    // g->old_id : if > 0 we are modifiing an existing preset
+    //
+
     gchar *query = NULL;
     if(g->old_id >= 0)
     {
@@ -284,13 +289,15 @@ static void _edit_preset_response(GtkDialog *dialog,
       query = g_strdup_printf
         ("UPDATE data.presets "
          "SET"
-         " name=?1, description=?2,"
-         " model=?3, maker=?4, lens=?5, iso_min=?6, iso_max=?7, exposure_min=?8,"
-         " exposure_max=?9, aperture_min=?10,"
-         " aperture_max=?11, focal_length_min=?12, focal_length_max=?13, autoapply=?14,"
-         " filter=?15, format=?16, op_params=?19, enabled=?20,"
-         " multi_name=?23, multi_name_hand_edited=?24 "
-         "WHERE rowid=%d",
+         "  name=?1, description=?2,"
+         "  model=?3, maker=?4, lens=?5, iso_min=?6, iso_max=?7, exposure_min=?8,"
+         "  exposure_max=?9, aperture_min=?10,"
+         "  aperture_max=?11, focal_length_min=?12, focal_length_max=?13, autoapply=?14,"
+         "  filter=?15, format=?16 %s"
+         " WHERE rowid=%d",
+         g->iop
+           ? ", op_params=?19, enabled=?20, multi_name=?23, multi_name_hand_edited=?24"
+           : "",
          g->old_id);
       // clang-format on
     }
@@ -346,25 +353,22 @@ static void _edit_preset_response(GtkDialog *dialog,
 
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, format);
 
-    if(g->iop)
+    // for a new preset or one that is for an iop module
+    if(g->old_id < 0 || g->iop)
     {
-      // for auto init presets we don't record the params. When applying such preset
-      // the default params will be used and this will trigger the computation of
-      // the actual parameters.
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19,
-                                 is_auto_init ? NULL : g->iop->params,
-                                 is_auto_init ?    0 : g->iop->params_size,
-                                 SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
-             DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name, -1, SQLITE_TRANSIENT);
-             DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
-    }
-    else
-    {
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19, NULL, 0, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, 0);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, "", -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, 0);
+      if(g->iop)
+      {
+        // for auto init presets we don't record the params. When applying such preset
+        // the default params will be used and this will trigger the computation of
+        // the actual parameters.
+        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19,
+                                   is_auto_init ? NULL : g->iop->params,
+                                   is_auto_init ?    0 : g->iop->params_size,
+                                   SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name, -1, SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
+      }
     }
 
     // commit specific fields in case of newly created preset
