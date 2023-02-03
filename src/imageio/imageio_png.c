@@ -178,7 +178,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   {
     fclose(image.f);
     png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
-    fprintf(stderr, "[png_open] could not alloc full buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not alloc full buffer for image `%s'\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
 
@@ -188,14 +188,14 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   {
     fclose(image.f);
     png_destroy_read_struct(&image.png_ptr, &image.info_ptr, NULL);
-    fprintf(stderr, "[png_open] could not alloc intermediate buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not alloc intermediate buffer for image `%s'\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
 
   if(read_image(&image, (void *)buf) != 0)
   {
     dt_free_align(buf);
-    fprintf(stderr, "[png_open] could not read image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[png_open] could not read image `%s'\n", img->filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 

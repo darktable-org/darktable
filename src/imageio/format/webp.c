@@ -152,7 +152,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
   config.partition_limit = 70;
   if(!WebPValidateConfig(&config))
   {
-    fprintf(stderr, "[webp export] error validating encoder configuration\n");
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error validating encoder configuration\n");
     goto error;
   }
 
@@ -171,13 +171,13 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
       err = WebPMuxSetChunk(mux, "ICCP", &icc_profile, 0);
       if(err != WEBP_MUX_OK)
       {
-        fprintf(stderr, "[webp export] error adding ICC profile to WebP stream\n");
+        dt_print(DT_DEBUG_ALWAYS, "[webp export] error adding ICC profile to WebP stream\n");
         goto error;
       }
     }
     else
     {
-      fprintf(stderr, "[webp export] error allocating ICC profile buffer\n");
+      dt_print(DT_DEBUG_ALWAYS, "[webp export] error allocating ICC profile buffer\n");
       goto error;
     }
   }
@@ -203,7 +203,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
 
   if(!WebPEncode(&config, &pic))
   {
-    fprintf(stderr, "[webp export] error (%d) during encoding: %s\n", pic.error_code,
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error (%d) during encoding: %s\n", pic.error_code,
             get_error_str(pic.error_code));
     goto error;
   }
@@ -213,7 +213,7 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
   err = WebPMuxSetImage(mux, &bitstream, 0);
   if(err != WEBP_MUX_OK)
   {
-    fprintf(stderr, "[webp export] error adding image to WebP stream\n");
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error adding image to WebP stream\n");
     goto error;
   }
 
@@ -221,19 +221,19 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
   err = WebPMuxAssemble(mux, &assembled_data);
   if(err != WEBP_MUX_OK)
   {
-    fprintf(stderr, "[webp export] error assembling the WebP file\n");
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error assembling the WebP file\n");
     goto error;
   }
 
   out = g_fopen(filename, "w+b");
   if(!out)
   {
-    fprintf(stderr, "[webp export] error creating file %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error creating file %s\n", filename);
     goto error;
   }
   if(fwrite(assembled_data.bytes, assembled_data.size, 1, out) != 1)
   {
-    fprintf(stderr, "[webp export] error writing %zu bytes to file %s\n", assembled_data.size, filename);
+    dt_print(DT_DEBUG_ALWAYS, "[webp export] error writing %zu bytes to file %s\n", assembled_data.size, filename);
     goto error;
   }
 

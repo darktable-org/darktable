@@ -39,7 +39,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
   if(!inputfile)
   {
-    fprintf(stderr, "[jpegxl_open] Cannot open file for read: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] Cannot open file for read: %s\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -51,7 +51,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
   if(fread(read_buffer, 1, inputFileSize, inputfile) != inputFileSize)
   {
-    fprintf(stderr, "[jpegxl_open] Failed to read %zu bytes: %s\n", inputFileSize, filename);
+    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] Failed to read %zu bytes: %s\n", inputFileSize, filename);
     free(read_buffer);
     fclose(inputfile);
     return DT_IMAGEIO_LOAD_FAILED;
@@ -79,7 +79,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
   if(!decoder)
   {
-    fprintf(stderr, "[jpegxl_open] ERROR: JxlDecoderCreate failed\n");
+    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] ERROR: JxlDecoderCreate failed\n");
     free(read_buffer);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -87,7 +87,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
   JxlParallelRunner *runner = JxlResizableParallelRunnerCreate(NULL);
   if(!runner)
   {
-    fprintf(stderr, "[jpegxl_open] ERROR: JxlResizableParallelRunnerCreate failed\n");
+    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] ERROR: JxlResizableParallelRunnerCreate failed\n");
     JxlDecoderDestroy(decoder);
     free(read_buffer);
     return DT_IMAGEIO_LOAD_FAILED;
@@ -95,7 +95,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
   if(JxlDecoderSetInput(decoder, read_buffer, inputFileSize) != JXL_DEC_SUCCESS)
   {
-    fprintf(stderr, "[jpegxl_open] ERROR: JxlDecoderSetInput failed\n");
+    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] ERROR: JxlDecoderSetInput failed\n");
     JxlResizableParallelRunnerDestroy(runner);
     JxlDecoderDestroy(decoder);
     free(read_buffer);
@@ -104,7 +104,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
   if(JxlDecoderSubscribeEvents(decoder, JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_BOX | JXL_DEC_FULL_IMAGE) != JXL_DEC_SUCCESS)
   {
-    fprintf(stderr, "[jpegxl_open] ERROR: JxlDecoderSubscribeEvents failed\n");
+    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] ERROR: JxlDecoderSubscribeEvents failed\n");
     JxlResizableParallelRunnerDestroy(runner);
     JxlDecoderDestroy(decoder);
     free(read_buffer);
@@ -113,7 +113,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
   if(JxlDecoderSetParallelRunner(decoder, JxlResizableParallelRunner, runner) != JXL_DEC_SUCCESS)
   {
-    fprintf(stderr, "[jpegxl_open] ERROR: JxlDecoderSetParallelRunner failed\n");
+    dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] ERROR: JxlDecoderSetParallelRunner failed\n");
     JxlResizableParallelRunnerDestroy(runner);
     JxlDecoderDestroy(decoder);
     free(read_buffer);
@@ -128,7 +128,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
     if(status == JXL_DEC_ERROR)
     {
-      fprintf(stderr, "[jpegxl_open] ERROR: JXL decoding failed\n");
+      dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] ERROR: JXL decoding failed\n");
       JxlResizableParallelRunnerDestroy(runner);
       JxlDecoderDestroy(decoder);
       free(read_buffer);
@@ -137,7 +137,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
 
     if(status == JXL_DEC_NEED_MORE_INPUT)
     {
-      fprintf(stderr, "[jpegxl_open] ERROR: JXL data incomplete\n");
+      dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] ERROR: JXL data incomplete\n");
       JxlResizableParallelRunnerDestroy(runner);
       JxlDecoderDestroy(decoder);
       free(read_buffer);
@@ -148,7 +148,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
     {
       if(JxlDecoderGetBasicInfo(decoder, &basicinfo) != JXL_DEC_SUCCESS)
       {
-        fprintf(stderr, "[jpegxl_open] ERROR: JXL basic info not available\n");
+        dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] ERROR: JXL basic info not available\n");
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
@@ -158,7 +158,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
       // Unlikely to happen, but let there be a sanity check
       if(basicinfo.xsize == 0 || basicinfo.ysize == 0)
       {
-        fprintf(stderr,"[jpegxl_open] ERROR: JXL image declares zero dimensions\n");
+        dt_print(DT_DEBUG_ALWAYS,"[jpegxl_open] ERROR: JXL image declares zero dimensions\n");
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
@@ -218,7 +218,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
         // According to libjxl docs, the only situation where an ICC profile is not available is when the image has an
         // unknown or xyb color space. But dt does not support such images, so in this case we should refuse to import
         // the image. If in the future dt will support the xyb color space, we can add code here to handle that case.
-        fprintf(stderr, "[jpegxl_open] WARNING: the imaga '%s' has an unknown or xyb color space. We do not import such images\n", filename);
+        dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] WARNING: the imaga '%s' has an unknown or xyb color space. We do not import such images\n", filename);
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         free(read_buffer);
@@ -239,7 +239,7 @@ dt_imageio_retval_t dt_imageio_open_jpegxl(dt_image_t *img, const char *filename
         JxlResizableParallelRunnerDestroy(runner);
         JxlDecoderDestroy(decoder);
         g_free(read_buffer);
-        fprintf(stderr, "[jpegxl_open] could not alloc full buffer for image: %s\n", img->filename);
+        dt_print(DT_DEBUG_ALWAYS, "[jpegxl_open] could not alloc full buffer for image: %s\n", img->filename);
         return DT_IMAGEIO_CACHE_FULL;
       }
       JxlDecoderSetImageOutBuffer(decoder, &pixel_format, mipbuf, basicinfo.xsize * basicinfo.ysize * 4 * 4);

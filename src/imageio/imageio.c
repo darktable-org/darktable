@@ -181,7 +181,7 @@ int dt_imageio_large_thumbnail(const char *filename,
 
     if(!image)
     {
-      fprintf(stderr, "[dt_imageio_large_thumbnail GM] thumbnail not found?\n");
+      dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_large_thumbnail GM] thumbnail not found?\n");
       goto error_gm;
     }
 
@@ -201,14 +201,14 @@ int dt_imageio_large_thumbnail(const char *filename,
 
       if(gm_ret != MagickPass)
       {
-        fprintf(stderr, "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
+        dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
         dt_free_align(*buffer);
         *buffer = NULL;
         goto error_gm;
       }
     }
 
-    // fprintf(stderr, "[dt_imageio_large_thumbnail GM] successfully decoded thumbnail\n");
+    // dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_large_thumbnail GM] successfully decoded thumbnail\n");
     res = 0;
 
   error_gm:
@@ -224,7 +224,7 @@ int dt_imageio_large_thumbnail(const char *filename,
 	mret = MagickReadImageBlob(image, buf, bufsize);
     if(mret != MagickTrue)
     {
-      fprintf(stderr, "[dt_imageio_large_thumbnail IM] thumbnail not found?\n");
+      dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_large_thumbnail IM] thumbnail not found?\n");
       goto error_im;
     }
 
@@ -235,7 +235,7 @@ int dt_imageio_large_thumbnail(const char *filename,
       *color_space = DT_COLORSPACE_SRGB;
       break;
     default:
-      fprintf(stderr,
+      dt_print(DT_DEBUG_ALWAYS,
           "[dt_imageio_large_thumbnail IM] could not map colorspace, using sRGB");
       *color_space = DT_COLORSPACE_SRGB;
       break;
@@ -248,7 +248,7 @@ int dt_imageio_large_thumbnail(const char *filename,
     if(mret != MagickTrue) {
       free(*buffer);
       *buffer = NULL;
-      fprintf(stderr,
+      dt_print(DT_DEBUG_ALWAYS,
           "[dt_imageio_large_thumbnail IM] error while reading thumbnail\n");
       goto error_im;
     }
@@ -259,7 +259,7 @@ error_im:
     DestroyMagickWand(image);
     if(res != 0) goto error;
 #else
-    fprintf(stderr,
+    dt_print(DT_DEBUG_ALWAYS,
       "[dt_imageio_large_thumbnail] error: The thumbnail image is not in "
       "JPEG format, and DT was built without neither GraphicsMagick or "
       "ImageMagick. Please rebuild DT with GraphicsMagick or ImageMagick "
@@ -576,7 +576,7 @@ gboolean dt_imageio_is_ldr(const char *filename)
       if(_imageio_ldr_magic[offset + 2] > sizeof(block)
         || offset + 3 + _imageio_ldr_magic[offset + 2] > sizeof(_imageio_ldr_magic))
       {
-        fprintf(stderr, "error: buffer in %s is too small!\n", __FUNCTION__);
+        dt_print(DT_DEBUG_ALWAYS, "error: buffer in %s is too small!\n", __FUNCTION__);
         return FALSE;
       }
       if(memcmp(_imageio_ldr_magic + offset + 3, block + _imageio_ldr_magic[offset + 1],
@@ -792,7 +792,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
 
   if(!buf.buf || !buf.width || !buf.height)
   {
-    fprintf(stderr, "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[dt_imageio_export_with_flags] mipmap allocation for `%s' failed\n", filename);
     dt_control_log(_("image `%s' is not available!"), img->filename);
     goto error_early;
   }
@@ -854,7 +854,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
         }
         else
         {
-          fprintf(stderr,
+          dt_print(DT_DEBUG_ALWAYS,
                   "[dt_imageio_export_with_flags] cannot find module %s for style\n",
                   st_item->operation);
           ok = FALSE;
@@ -881,13 +881,13 @@ int dt_imageio_export_with_flags(const int32_t imgid,
   dt_dev_pixelpipe_synch_all(&pipe, &dev);
   if(darktable.unmuted & DT_DEBUG_IMAGEIO)
   {
-    fprintf(stderr,"[dt_imageio_export_with_flags] ");
+    dt_print(DT_DEBUG_ALWAYS,"[dt_imageio_export_with_flags] ");
     if(use_style)
     {
-      if(appending) fprintf(stderr,"appending style `%s'\n", format_params->style);
-      else          fprintf(stderr,"overwrite style `%s'\n", format_params->style);
+      if(appending) dt_print(DT_DEBUG_ALWAYS,"appending style `%s'\n", format_params->style);
+      else          dt_print(DT_DEBUG_ALWAYS,"overwrite style `%s'\n", format_params->style);
     }
-    else fprintf(stderr,"\n");
+    else dt_print(DT_DEBUG_ALWAYS,"\n");
     int cnt = 0;
     for(GList *nodes = pipe.nodes; nodes; nodes = g_list_next(nodes))
     {
@@ -895,10 +895,10 @@ int dt_imageio_export_with_flags(const int32_t imgid,
       if(piece->enabled)
       {
         cnt++;
-        fprintf(stderr," %s", piece->module->op);
+        dt_print(DT_DEBUG_ALWAYS," %s", piece->module->op);
       }
     }
-    fprintf(stderr," (%i)\n", cnt);
+    dt_print(DT_DEBUG_ALWAYS," (%i)\n", cnt);
   }
 
   if(filter)

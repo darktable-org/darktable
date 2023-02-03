@@ -389,7 +389,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   if(inkset == INKSET_CMYK || inkset == INKSET_MULTIINK)
   {
-    fprintf(stderr, "[tiff_open] error: CMYK (or multiink) TIFFs are not supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: CMYK (or multiink) TIFFs are not supported.\n");
     TIFFClose(t.tiff);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -421,7 +421,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   /* don't depend on planar config if spp == 1 */
   if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
-    fprintf(stderr, "[tiff_open] error: PlanarConfiguration other than chunky is not supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: PlanarConfiguration other than chunky is not supported.\n");
     TIFFClose(t.tiff);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -437,7 +437,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   t.mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, t.image);
   if(!t.mipbuf)
   {
-    fprintf(stderr, "[tiff_open] error: could not alloc full buffer for image `%s'\n", t.image->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: could not alloc full buffer for image `%s'\n", t.image->filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_CACHE_FULL;
   }
@@ -478,7 +478,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     ok = _read_chunky_f(&t);
   else
   {
-    fprintf(stderr, "[tiff_open] error: not a supported tiff image format.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[tiff_open] error: not a supported tiff image format.\n");
     ok = 0;
   }
 

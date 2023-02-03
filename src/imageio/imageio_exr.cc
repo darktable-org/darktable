@@ -96,7 +96,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   }
   if(!(hasR && hasG && hasB))
   {
-    fprintf(stderr, "[exr_read] Warning, only files with RGB(A) channels are supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[exr_read] Warning, only files with RGB(A) channels are supported.\n");
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -132,7 +132,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    fprintf(stderr, "[exr_read] could not alloc full buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[exr_read] could not alloc full buffer for image `%s'\n", img->filename);
     /// \todo open exr cleanup...
     return DT_IMAGEIO_CACHE_FULL;
   }
