@@ -277,6 +277,14 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE
 } dt_debug_thread_t;
 
+typedef enum dt_dump_pfm_t
+{
+  DT_DUMP_PFM_MASK        = 0,
+  DT_DUMP_PFM_RGB         = 1,
+  DT_DUMP_PFM_LAST        = 1,
+} dt_dump_pfm_t;
+
+
 typedef struct dt_codepath_t
 {
   unsigned int SSE2 : 1;
@@ -371,7 +379,7 @@ void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...) __attribute__(
 int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();
-void dt_dump_pfm(const char *filename, const float* data, const int width, const int height, const int channels, const char *modname);
+void dt_dump_pfm(const char *filename, const void* data, const int width, const int height, dt_dump_pfm_t mode, const char *modname);
 
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline void* dt_calloc_align(size_t alignment, size_t size)

@@ -350,7 +350,7 @@ static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece, const char
 
   char name[256];
   snprintf(name, sizeof(name), namespec, scale);
-  dt_dump_pfm(name, buf, width, height, 3, "denoiseprofile");
+  dt_dump_pfm(name, buf, width, height, DT_DUMP_PFM_RGB, "denoiseprofile");
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,

@@ -926,10 +926,10 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     {
       char name[64];
       sprintf(name, "scale-input-%i", s);
-      dt_dump_pfm(name, buffer_in, width, height, 3, "diffuse");
+      dt_dump_pfm(name, buffer_in, width, height, DT_DUMP_PFM_RGB, "diffuse");
  
       sprintf(name, "scale-blur-%i", s);
-      dt_dump_pfm(name, buffer_out, width, height, 3, "diffuse");
+      dt_dump_pfm(name, buffer_out, width, height, DT_DUMP_PFM_RGB, "diffuse");
     }
   }
   dt_free_align(tempbuf);
@@ -984,7 +984,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     {
       char name[64];
       sprintf(name, "scale-up-unblur-%i", s);
-      dt_dump_pfm(name, buffer_out, width, height, 3, "diffuse");
+      dt_dump_pfm(name, buffer_out, width, height, DT_DUMP_PFM_RGB, "diffuse");
     }
     count++;
   }
