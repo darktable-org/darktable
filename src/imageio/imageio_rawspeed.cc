@@ -95,7 +95,7 @@ gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   }
   catch(const std::exception &exc)
   {
-    fprintf(stderr, "[rawspeed] %s\n", exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] %s\n", exc.what());
   }
 
   if(!got_it_done)
@@ -167,7 +167,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     const auto errors = r->getErrors();
     for(const auto &error : errors)
-      fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
+      dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
 
     g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
     g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
@@ -407,7 +407,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   }
   catch(const std::exception &exc)
   {
-    fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, exc.what());
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] (%s) %s\n", img->filename, exc.what());
 
     /* if an exception is raised lets not retry or handle the
      specific ones, consider the file as corrupted */
@@ -415,7 +415,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   }
   catch(...)
   {
-    fprintf(stderr, "[rawspeed] unhandled exception in imageio_rawspeed\n");
+    dt_print(DT_DEBUG_ALWAYS, "[rawspeed] unhandled exception in imageio_rawspeed\n");
     return DT_IMAGEIO_LOAD_FAILED;
   }
 

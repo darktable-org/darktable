@@ -112,13 +112,13 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   fsrc = g_fopen(filename, "rb");
   if(!fsrc)
   {
-    fprintf(stderr, "[j2k_open] Error: failed to open `%s' for reading\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to open `%s' for reading\n", filename);
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
   if(fread(src_header, 1, 12, fsrc) != 12)
   {
     fclose(fsrc);
-    fprintf(stderr, "[j2k_open] Error: fread returned a number of elements different from the expected.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: fread returned a number of elements different from the expected.\n");
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
   fclose(fsrc);
@@ -133,7 +133,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   }
   else // this will also reject jpt files.
   {
-    fprintf(stderr, "[j2k_open] Error: `%s' has unsupported file format.\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: `%s' has unsupported file format.\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -154,7 +154,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   d_codec = opj_create_decompress(codec);
   if(!d_codec)
   {
-    fprintf(stderr, "[j2k_open] Error: failed to create the decoder\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to create the decoder\n");
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -168,7 +168,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   {
     /* This may not seem like a critical error but failure to initialise the treads
      is a symptom of major resource exhaustion, bail out as quickly as possible */
-    fprintf(stderr, "[j2k_open] Error: failed to setup the threads for decoder %s\n", parameters.infile);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to setup the threads for decoder %s\n", parameters.infile);
     opj_destroy_codec(d_codec);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -176,7 +176,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* setup the decoder decoding parameters using user parameters */
   if(!opj_setup_decoder(d_codec, &parameters))
   {
-    fprintf(stderr, "[j2k_open] Error: failed to setup the decoder %s\n", parameters.infile);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to setup the decoder %s\n", parameters.infile);
     opj_destroy_codec(d_codec);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -184,7 +184,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   d_stream = opj_stream_create_default_file_stream(parameters.infile, 1);
   if(!d_stream)
   {
-    fprintf(stderr, "[j2k_open] Error: failed to create the stream from the file %s\n", parameters.infile);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to create the stream from the file %s\n", parameters.infile);
     opj_destroy_codec(d_codec);
     return DT_IMAGEIO_LOAD_FAILED;
   }
@@ -192,7 +192,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* Read the main header of the codestream and if necessary the JP2 boxes*/
   if(!opj_read_header(d_stream, d_codec, &image))
   {
-    fprintf(stderr, "[j2k_open] Error: failed to read the header\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to read the header\n");
     opj_stream_destroy(d_stream);
     opj_destroy_codec(d_codec);
     opj_image_destroy(image);
@@ -202,7 +202,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* Get the decoded image */
   if(!(opj_decode(d_codec, d_stream, image) && opj_end_decompress(d_codec, d_stream)))
   {
-    fprintf(stderr, "[j2k_open] Error: failed to decode image!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to decode image!\n");
     opj_destroy_codec(d_codec);
     opj_stream_destroy(d_stream);
     opj_image_destroy(image);
@@ -214,7 +214,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
 
   if(!image)
   {
-    fprintf(stderr, "[j2k_open] Error: failed to decode image `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: failed to decode image `%s'\n", filename);
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto end_of_the_world;
   }
@@ -243,7 +243,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   // some sanity checks
   if(image->numcomps == 0 || image->x1 == 0 || image->y1 == 0)
   {
-    fprintf(stderr, "[j2k_open] Error: invalid raw image parameters in `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: invalid raw image parameters in `%s'\n", filename);
     ret = DT_IMAGEIO_LOAD_FAILED;
     goto end_of_the_world;
   }
@@ -252,13 +252,13 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   {
     if(image->comps[i].w != image->x1 || image->comps[i].h != image->y1)
     {
-      fprintf(stderr, "[j2k_open] Error: some component has different size in `%s'\n", filename);
+      dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: some component has different size in `%s'\n", filename);
       ret = DT_IMAGEIO_LOAD_FAILED;
       goto end_of_the_world;
     }
     if(image->comps[i].prec > 16)
     {
-      fprintf(stderr, "[j2k_open] Error: precision %d is larger than 16 in `%s'\n", image->comps[1].prec,
+      dt_print(DT_DEBUG_ALWAYS, "[j2k_open] Error: precision %d is larger than 16 in `%s'\n", image->comps[1].prec,
               filename);
       ret = DT_IMAGEIO_LOAD_FAILED;
       goto end_of_the_world;
@@ -344,13 +344,13 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   fsrc = g_fopen(filename, "rb");
   if(!fsrc)
   {
-    fprintf(stderr, "[j2k_read_profile] Error: failed to open `%s' for reading\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to open `%s' for reading\n", filename);
     goto another_end_of_the_world;
   }
   if(fread(src_header, 1, 12, fsrc) != 12)
   {
     fclose(fsrc);
-    fprintf(stderr,
+    dt_print(DT_DEBUG_ALWAYS,
             "[j2k_read_profile] Error: fread returned a number of elements different from the expected.\n");
     goto another_end_of_the_world;
   }
@@ -366,7 +366,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   }
   else // this will also reject jpt files.
   {
-    fprintf(stderr, "[j2k_read_profile] Error: `%s' has unsupported file format.\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: `%s' has unsupported file format.\n", filename);
     goto another_end_of_the_world;
   }
 
@@ -377,28 +377,28 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   d_codec = opj_create_decompress(codec);
   if(!d_codec)
   {
-    fprintf(stderr, "[j2k_read_profile] Error: failed to create the decoder\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to create the decoder\n");
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
   /* setup the decoder decoding parameters using user parameters */
   if(!opj_setup_decoder(d_codec, &parameters))
   {
-    fprintf(stderr, "[j2k_read_profile] Error: failed to setup the decoder %s\n", parameters.infile);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to setup the decoder %s\n", parameters.infile);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
   d_stream = opj_stream_create_default_file_stream(parameters.infile, 1);
   if(!d_stream)
   {
-    fprintf(stderr, "[j2k_read_profile] Error: failed to create the stream from the file %s\n", parameters.infile);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to create the stream from the file %s\n", parameters.infile);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
   /* Read the main header of the codestream and if necessary the JP2 boxes*/
   if(!opj_read_header(d_stream, d_codec, &image))
   {
-    fprintf(stderr, "[j2k_read_profile] Error: failed to read the header\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to read the header\n");
     opj_stream_destroy(d_stream);
     opj_destroy_codec(d_codec);
     opj_image_destroy(image);
@@ -408,7 +408,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   /* Get the decoded image */
   if(!(opj_decode(d_codec, d_stream, image) && opj_end_decompress(d_codec, d_stream)))
   {
-    fprintf(stderr, "[j2k_read_profile] Error: failed to decode image!\n");
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to decode image!\n");
     opj_destroy_codec(d_codec);
     opj_stream_destroy(d_stream);
     opj_image_destroy(image);
@@ -425,7 +425,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
 
   if(!image)
   {
-    fprintf(stderr, "[j2k_read_profile] Error: failed to decode image `%s'\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[j2k_read_profile] Error: failed to decode image `%s'\n", filename);
     goto another_end_of_the_world;
   }
 
@@ -693,7 +693,7 @@ static void color_sycc_to_rgb(opj_image_t *img)
   }
   else
   {
-    fprintf(stderr, "%s:%d:color_sycc_to_rgb\n\tCAN NOT CONVERT\n", __FILE__, __LINE__);
+    dt_print(DT_DEBUG_ALWAYS, "%s:%d:color_sycc_to_rgb\n\tCAN NOT CONVERT\n", __FILE__, __LINE__);
     return;
   }
   img->color_space = OPJ_CLRSPC_SRGB;

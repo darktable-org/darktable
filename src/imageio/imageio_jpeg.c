@@ -48,7 +48,7 @@ static void dt_imageio_jpeg_init_destination(j_compress_ptr cinfo)
 }
 static boolean dt_imageio_jpeg_empty_output_buffer(j_compress_ptr cinfo)
 {
-  fprintf(stderr, "[imageio_jpeg] output buffer full!\n");
+  dt_print(DT_DEBUG_ALWAYS, "[imageio_jpeg] output buffer full!\n");
   return FALSE;
 }
 static void dt_imageio_jpeg_term_destination(j_compress_ptr cinfo)
@@ -754,14 +754,14 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    fprintf(stderr, "[jpeg_open] Error: failed to open '%s' for reading\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[jpeg_open] Error: failed to open '%s' for reading\n", filename);
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
 
   if(fread(first3bytes, 1, 3, f) != 3)
   {
     fclose(f);
-    fprintf(stderr, "[jpeg_open] Error: file is empty or read error.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[jpeg_open] Error: file is empty or read error.\n");
     return DT_IMAGEIO_FILE_NOT_FOUND;
   }
   fclose(f);
