@@ -143,8 +143,9 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
   if(rowid < 0) return;
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  dt_gui_presets_show_edit_dialog(name, minfo->plugin_name, rowid, NULL, NULL, TRUE, TRUE, FALSE,
-                                  GTK_WINDOW(window));
+  dt_gui_presets_show_edit_dialog
+    (name, minfo->plugin_name, rowid, NULL, NULL, TRUE, TRUE, FALSE,
+     GTK_WINDOW(window));
 }
 
 static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
