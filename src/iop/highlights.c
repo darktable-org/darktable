@@ -1587,10 +1587,10 @@ static inline gint wavelets_process(const float *const restrict in, float
     {
       char name[64];
       sprintf(name, "scale-input-%i", s);
-      dt_dump_pfm(name, buffer_in, width, height, 3, "highlights");
+      dt_dump_pfm(name, buffer_in, width, height, DT_DUMP_PFM_RGB, "highlights");
 
       sprintf(name, "scale-blur-%i", s);
-      dt_dump_pfm(name, buffer_out, width, height, 3, "highlights");
+      dt_dump_pfm(name, buffer_out, width, height, DT_DUMP_PFM_RGB, "highlights");
     }
   }
   dt_free_align(tempbuf);
@@ -1667,8 +1667,8 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   if(darktable.dump_pfm_module)
   {
-    dt_dump_pfm("interpolated", interpolated, width, height, 3, "highlights");
-    dt_dump_pfm("clipping_mask", clipping_mask, width, height, 3, "highlights");
+    dt_dump_pfm("interpolated", interpolated, width, height, DT_DUMP_PFM_RGB, "highlights");
+    dt_dump_pfm("clipping_mask", clipping_mask, width, height, DT_DUMP_PFM_RGB, "highlights");
   }
 
   dt_free_align(interpolated);

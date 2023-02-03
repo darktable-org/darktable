@@ -420,19 +420,19 @@ void check_resourcelevel(const char *key, int *fractions, const int level)
 
 void dt_dump_pfm(
         const char *filename,
-        const float* data,
+        const void* in,
         const int width,
         const int height,
-        const int channels,
+        const dt_dump_pfm_t mode,
         const char *modname)
 {
   if(!darktable.dump_pfm_module) return;
   if(!modname) return;
   if(strcmp(modname, darktable.dump_pfm_module)) return; 
 
-  if(!((channels == 1) || (channels == 3)))
+  if(mode > DT_DUMP_PFM_LAST)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] only supports 1 or 3 channels\n"); 
+    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] undefined mode %i\n", mode); 
     return;
   }
 
@@ -446,13 +446,18 @@ void dt_dump_pfm(
     return;
   }
 
-  fprintf(f, "P%s\n%d %d\n-1.0\n", (channels == 1) ? "f" : "F", width, height);
-  for(int row = height - 1; row >= 0; row--)
+  if((mode == DT_DUMP_PFM_MASK) || (mode == DT_DUMP_PFM_RGB))
   {
-    for(int col = 0; col < width; col++)
+    const size_t p = (mode == DT_DUMP_PFM_MASK) ? 1 : 4;
+    fprintf(f, "P%s\n%d %d\n-1.0\n", (p == 1) ? "f" : "F", width, height);
+    const float *data = in;
+    for(int row = height - 1; row >= 0; row--)
     {
-      const size_t blk = (row * width + col) * ((channels == 1) ? 1 : 4);
-      fwrite(data + blk, channels, sizeof(float), f);
+      for(int col = 0; col < width; col++)
+      {
+        const size_t blk = (row * width + col) * p;
+        fwrite(data + blk, p, sizeof(float), f);
+      }
     }
   }
   fclose(f);
