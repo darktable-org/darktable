@@ -144,7 +144,8 @@ typedef enum dt_image_correction_type_t
 {
   CORRECTION_TYPE_NONE,
   CORRECTION_TYPE_SONY,
-  CORRECTION_TYPE_FUJI
+  CORRECTION_TYPE_FUJI,
+  CORRECTION_TYPE_DNG
 } dt_image_correction_type_t;
 
 typedef union dt_image_correction_data_t
@@ -158,6 +159,15 @@ typedef union dt_image_correction_data_t
     float cropf;
     float knots[9], distortion[9], ca_r[9], ca_b[9], vignetting[9];
   } fuji;
+  struct {
+    int planes;
+    float cwarp[3][6]; // for up to 3 planes warp rectilinear
+    float centre_warp[2];
+    float cvig[5];     // for vignetting
+    float centre_vig[2];
+    gboolean has_warp;
+    gboolean has_vignette;
+  } dng;
 } dt_image_correction_data_t;
 
 typedef enum dt_image_loader_t
