@@ -204,7 +204,7 @@ static void _image_set_monochrome_flag(const int32_t imgid, gboolean monochrome,
     }
   }
   else
-    fprintf(stderr,"[image] could not dt_image_cache_get imgid %i\n", imgid);
+    dt_print(DT_DEBUG_ALWAYS,"[image_set_monochrome_flag] could not get imgid=%i from cache\n", imgid);
 }
 
 void dt_image_set_monochrome_flag(const int32_t imgid, gboolean monochrome)
@@ -726,10 +726,11 @@ void dt_image_update_final_size(const int32_t imgid)
     dt_cache_release(&darktable.image_cache->cache, imgtmp->cache_entry);
   else
   {
-    imgtmp->final_width = ww;
-    imgtmp->final_height = hh;
+    imgtmp->final_width = imgtmp->crop_width = ww;
+    imgtmp->final_height = imgtmp->crop_height = hh;
     dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
   }
 }
 
@@ -1566,7 +1567,8 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 4, dt_datetime_now_to_gtimespan());
 
   rc = sqlite3_step(stmt);
-  if(rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
+  if(rc != SQLITE_DONE)
+    dt_print(DT_DEBUG_ALWAYS, "[image_import_internal] sqlite3 error %d in `%s`\n", rc, filename);
   sqlite3_finalize(stmt);
 
   id = dt_image_get_id(film_id, imgfname);
@@ -2010,7 +2012,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         moveStatus = g_file_move(cold, cnew, 0, NULL, NULL, NULL, &moveError);
         if(!moveStatus)
         {
-          fprintf(stderr, "[dt_image_rename] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
+          dt_print(DT_DEBUG_ALWAYS, "[dt_image_rename] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
 
           if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
           {
@@ -2343,7 +2345,7 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
     }
     else
     {
-      fprintf(stderr, "Failed to copy image %s: %s\n", srcpath, gerror->message);
+      dt_print(DT_DEBUG_ALWAYS, "[dt_image_copy_rename] Failed to copy image %s: %s\n", srcpath, gerror->message);
     }
     g_object_unref(dest);
     g_object_unref(src);

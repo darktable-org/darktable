@@ -202,7 +202,9 @@ static void _edit_preset_response(GtkDialog *dialog,
     // find the module action list this preset belongs to
     dt_action_t *module_actions = g->iop ? &g->iop->so->actions : NULL;
 
-    for(GList *libs = darktable.lib->plugins; !module_actions && libs; libs = g_list_next(libs))
+    for(GList *libs = darktable.lib->plugins;
+        !module_actions && libs;
+        libs = g_list_next(libs))
     {
       dt_lib_module_t *lib = libs->data;
 
@@ -222,9 +224,9 @@ static void _edit_preset_response(GtkDialog *dialog,
       if(name == NULL || *name == '\0' || strcmp(_("new preset"), name) == 0)
       {
         // show error dialog
-        GtkWidget *dlg_changename
-            = gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, _("please give preset a name"));
+        GtkWidget *dlg_changename =
+          gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
+                                 GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, _("please give preset a name"));
 #ifdef GDK_WINDOWING_QUARTZ
         dt_osx_disallow_fullscreen(dlg_changename);
 #endif
@@ -255,7 +257,8 @@ static void _edit_preset_response(GtkDialog *dialog,
       {
         sqlite3_finalize(stmt);
 
-        // if result is BUTTON_NO or ESCAPE keypress exit without destroying dialog, to permit other name
+        // if result is BUTTON_NO or ESCAPE keypress exit without
+        // destroying dialog, to permit other name
         if(dt_gui_show_yes_no_dialog(_("overwrite preset?"),
                                      _("preset `%s' already exists.\ndo you want to overwrite?"), name))
         {
@@ -285,7 +288,8 @@ static void _edit_preset_response(GtkDialog *dialog,
          " model=?3, maker=?4, lens=?5, iso_min=?6, iso_max=?7, exposure_min=?8,"
          " exposure_max=?9, aperture_min=?10,"
          " aperture_max=?11, focal_length_min=?12, focal_length_max=?13, autoapply=?14,"
-         " filter=?15, format=?16, multi_name=?23, multi_name_hand_edited=?24 "
+         " filter=?15, format=?16, op_params=?19, enabled=?20,"
+         " multi_name=?23, multi_name_hand_edited=?24 "
          "WHERE rowid=%d",
          g->old_id);
       // clang-format on
@@ -301,7 +305,7 @@ static void _edit_preset_response(GtkDialog *dialog,
          "  aperture_max, focal_length_min, focal_length_max, autoapply,"
          "  filter, format, def, writeprotect, operation, op_version, op_params, enabled,"
          "  blendop_params, blendop_version,"
-         "   multi_priority, multi_name, multi_name_hand_edited) "
+         "  multi_priority, multi_name, multi_name_hand_edited) "
          "VALUES"
          " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16,"
          "   0, 0, ?17, ?18, ?19, ?20, ?21, ?22, 0, ?23, ?24)");
@@ -342,38 +346,45 @@ static void _edit_preset_response(GtkDialog *dialog,
 
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, format);
 
-    // commit specific field in case of newly created preset
+    if(g->iop)
+    {
+      // for auto init presets we don't record the params. When applying such preset
+      // the default params will be used and this will trigger the computation of
+      // the actual parameters.
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19,
+                                 is_auto_init ? NULL : g->iop->params,
+                                 is_auto_init ?    0 : g->iop->params_size,
+                                 SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
+             DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name, -1, SQLITE_TRANSIENT);
+             DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
+    }
+    else
+    {
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19, NULL, 0, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, 0);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, "", -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, 0);
+    }
+
+    // commit specific fields in case of newly created preset
     if(g->old_id < 0)
     {
       if(g->iop)
       {
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, g->operation, -1, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, g->op_version);
-        // for auto init presets we don't record the params. When applying such preset
-        // the default params will be used and this will trigger the computation of
-        // the actual parameters.
-        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19,
-                                   is_auto_init ? NULL : g->iop->params,
-                                   is_auto_init ?    0 : g->iop->params_size,
-                                   SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, g->iop->enabled);
         DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, g->iop->blend_params, sizeof(dt_develop_blend_params_t),
                                    SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, dt_develop_blend_version());
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, g->iop->multi_name, -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, g->iop->multi_name_hand_edited);
       }
       else
       {
         // we are in the lib case currently we set set all params to 0
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 17, g->operation, -1, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 18, g->op_version);
-        DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 19, NULL, 0, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, 0);
         DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, NULL, 0, SQLITE_TRANSIENT);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, 0);
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 23, "", -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, 0);
       }
     }
 
@@ -482,6 +493,40 @@ static void _check_buttons_activated(GtkCheckButton *button,
     gtk_widget_set_visible(GTK_WIDGET(g->details), FALSE);
 }
 
+static void _format_toggled(GtkToggleButton *button, gpointer data)
+{
+  dt_gui_presets_edit_dialog_t *g = (dt_gui_presets_edit_dialog_t *)data;
+
+  GtkWidget *ok_button =
+    gtk_dialog_get_widget_for_response((GtkDialog *)g->dialog, GTK_RESPONSE_OK);
+
+  // active if one of first group (raw, non-raw) selected and one on the
+  // second group (hdr, color, monochrome).
+
+  const gboolean raw_col =
+    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[0]))
+    || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[1]));
+
+  const gboolean kind_col =
+    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[2]))
+    || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[3]))
+    || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->format_btn[4]));
+
+  const gboolean ok_active = !g->iop || (raw_col && kind_col);
+
+  // second column visible only if at least one item selected in first
+  // column.
+
+  for(int k=2; k<5; k++)
+    gtk_widget_set_visible(g->format_btn[k], raw_col);
+
+  // "and" label sensitive only if at least one item selected in first
+  // column.
+  gtk_widget_set_sensitive(g->and_label, raw_col);
+
+  gtk_widget_set_sensitive(ok_button, ok_active);
+}
+
 static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
                                       const gboolean allow_name_change,
                                       const gboolean allow_desc_change,
@@ -495,6 +540,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
      _("_cancel"), GTK_RESPONSE_CANCEL, _("_export..."), GTK_RESPONSE_YES,
      _("delete"), GTK_RESPONSE_REJECT, _("_ok"), GTK_RESPONSE_OK, NULL);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+
+  g->dialog = dialog;
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -534,7 +581,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   gtk_box_pack_start(box, GTK_WIDGET(g->filter), FALSE, FALSE, 0);
   if(!g->iop)
   {
-    // lib usually don't support autoapply
+    // lib usually don't support auto-init / autoapply
+    gtk_widget_set_no_show_all(GTK_WIDGET(g->autoinit), TRUE);
     gtk_widget_set_no_show_all(GTK_WIDGET(g->autoapply), !dt_presets_module_can_autoapply(g->module_name));
     // for libs, we don't want the filtering option as it's not implemented...
     gtk_widget_set_no_show_all(GTK_WIDGET(g->filter), TRUE);
@@ -546,6 +594,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   g->details = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(GTK_GRID(g->details), DT_PIXEL_APPLY_DPI(10));
+  gtk_grid_set_row_homogeneous(GTK_GRID(g->details), TRUE);
   gtk_box_pack_start(box, GTK_WIDGET(g->details), TRUE, TRUE, 0);
 
   GtkWidget *label = NULL;
@@ -558,7 +607,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   label = gtk_label_new(_("model"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->model, label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->model, label, GTK_POS_RIGHT, 4, 1);
 
   g->maker = gtk_entry_new();
   /* xgettext:no-c-format */
@@ -566,7 +615,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   label = gtk_label_new(_("maker"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->maker, label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->maker, label, GTK_POS_RIGHT, 4, 1);
 
   g->lens = gtk_entry_new();
   /* xgettext:no-c-format */
@@ -574,7 +623,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   label = gtk_label_new(_("lens"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->lens, label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->lens, label, GTK_POS_RIGHT, 4, 1);
 
   // iso
   label = gtk_label_new(_("ISO"));
@@ -586,8 +635,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   gtk_widget_set_tooltip_text(g->iso_max, _("maximum ISO value"));
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(g->iso_max), 0);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->iso_min, label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->iso_max, g->iso_min, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->iso_min, label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->iso_max, g->iso_min, GTK_POS_RIGHT, 2, 1);
 
   // exposure
   label = gtk_label_new(_("exposure"));
@@ -601,8 +650,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
     dt_bauhaus_combobox_add(g->exposure_max, dt_gui_presets_exposure_value_str[k]);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_min, label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_max, g->exposure_min, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_min, label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->exposure_max, g->exposure_min, GTK_POS_RIGHT, 2, 1);
 
   // aperture
   label = gtk_label_new(_("aperture"));
@@ -616,8 +665,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
     dt_bauhaus_combobox_add(g->aperture_max, dt_gui_presets_aperture_value_str[k]);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_min, label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_max, g->aperture_min, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_min, label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->aperture_max, g->aperture_min, GTK_POS_RIGHT, 2, 1);
 
   // focal length
   label = gtk_label_new(_("focal length"));
@@ -629,8 +678,8 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   gtk_widget_set_tooltip_text(g->focal_length_min, _("minimum focal length"));
   gtk_widget_set_tooltip_text(g->focal_length_max, _("maximum focal length"));
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->focal_length_min, label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(g->details), g->focal_length_max, g->focal_length_min, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->focal_length_min, label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(g->details), g->focal_length_max, g->focal_length_min, GTK_POS_RIGHT, 2, 1);
 
   // raw/hdr/ldr/mono/color
   label = gtk_label_new(_("format"));
@@ -641,8 +690,21 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   for(int i = 0; i < 5; i++)
   {
     g->format_btn[i] = gtk_check_button_new_with_label(_(_gui_presets_format_value_str[i]));
-    gtk_grid_attach(GTK_GRID(g->details), g->format_btn[i], 1, line + i, 2, 1);
+    g_signal_connect(g->format_btn[i], "toggled", G_CALLBACK(_format_toggled), g);
   }
+
+  // raw / non-raw
+  gtk_grid_attach(GTK_GRID(g->details), g->format_btn[0], 1, line + 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(g->details), g->format_btn[1], 1, line + 2, 1, 1);
+
+  g->and_label = gtk_label_new(_("and"));
+  gtk_widget_set_halign(g->and_label, GTK_ALIGN_CENTER);
+  gtk_grid_attach(GTK_GRID(g->details), g->and_label, 2, line + 1, 1, 1);
+
+  // hdr/mono/color
+  gtk_grid_attach(GTK_GRID(g->details), g->format_btn[2], 4, line + 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(g->details), g->format_btn[3], 4, line + 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(g->details), g->format_btn[4], 4, line + 2, 1, 1);
 
   gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
 
@@ -796,7 +858,9 @@ void dt_gui_presets_show_edit_dialog(const char *name_in,
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT operation, op_version FROM data.presets WHERE rowid = ?1", -1, &stmt, NULL);
+                              "SELECT operation, op_version"
+                              " FROM data.presets"
+                              " WHERE rowid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {

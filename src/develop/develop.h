@@ -229,6 +229,9 @@ typedef struct dt_develop_t
     // each element is dt_dev_proxy_exposure_t
     dt_dev_proxy_exposure_t exposure;
 
+    // this module receives right-drag events if not already claimed
+    struct dt_iop_module_t *rotate;
+
     // modulegroups plugin hooks
     struct
     {

@@ -129,7 +129,10 @@ dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
 }
 
 // load a full-res thumbnail:
-int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
+int dt_imageio_large_thumbnail(const char *filename,
+                               uint8_t **buffer,
+                               int32_t *width,
+                               int32_t *height,
                                dt_colorspaces_color_profile_type_t *color_space)
 {
   int res = 1;
@@ -312,8 +315,14 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
   return mono;
 }
 
-void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht,
-                             const int fwd, const int fht, const int stride,
+void dt_imageio_flip_buffers(char *out,
+                             const char *in,
+                             const size_t bpp,
+                             const int wd,
+                             const int ht,
+                             const int fwd,
+                             const int fht,
+                             const int stride,
                              const dt_image_orientation_t orientation)
 {
   if(!orientation)
@@ -363,9 +372,16 @@ void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const 
   }
 }
 
-void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white,
-                                          const int ch, const int wd, const int ht, const int fwd,
-                                          const int fht, const int stride,
+void dt_imageio_flip_buffers_ui8_to_float(float *out,
+                                          const uint8_t *in,
+                                          const float black,
+                                          const float white,
+                                          const int ch,
+                                          const int wd,
+                                          const int ht,
+                                          const int fwd,
+                                          const int fht,
+                                          const int stride,
                                           const dt_image_orientation_t orientation)
 {
   const float scale = 1.0f / (white - black);
@@ -419,8 +435,13 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
   }
 }
 
-size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
-                            dt_image_orientation_t orientation)
+size_t dt_imageio_write_pos(const int i,
+                            const int j,
+                            const int wd,
+                            const int ht,
+                            const float fwd,
+                            const float fht,
+                            const dt_image_orientation_t orientation)
 {
   int ii = i, jj = j, w = wd, fw = fwd, fh = fht;
   if(orientation & ORIENTATION_SWAP_XY)
@@ -436,7 +457,9 @@ size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
   return (size_t)jj * w + ii;
 }
 
-dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
+dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *buf)
 {
   // if buf is NULL, don't proceed
   if(!buf) return DT_IMAGEIO_OK;
@@ -588,7 +611,9 @@ int dt_imageio_is_hdr(const char *filename)
 }
 
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
-dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
+dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img,
+                                        const char *filename,
+                                        dt_mipmap_buffer_t *buf)
 {
   // if buf is NULL, don't proceed
   if(!buf) return DT_IMAGEIO_OK;
@@ -746,7 +771,7 @@ int dt_imageio_export_with_flags(const int32_t imgid,
                                  dt_imageio_module_storage_t *storage,
                                  dt_imageio_module_data_t *storage_params,
                                  int num,
-                                 int total,
+                                 const int total,
                                  dt_export_metadata_t *metadata,
                                  const int history_end)
 {
@@ -811,7 +836,35 @@ int dt_imageio_export_with_flags(const int32_t imgid,
     for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
     {
       dt_style_item_t *st_item = (dt_style_item_t *)st_items->data;
-      dt_styles_apply_style_item(&dev, st_item, &modules_used, appending);
+      gboolean ok = TRUE;
+      gboolean autoinit = FALSE;
+
+      /* check for auto-init module */
+      if(st_item->params_size == 0)
+      {
+        // get iop for this operation as we need the corresponding default parameters
+        const dt_iop_module_t *module =
+          dt_iop_get_module_from_list(dev.iop, st_item->operation);
+        if(module)
+        {
+          st_item->params_size = module->params_size;
+          st_item->params = (dt_iop_params_t *)malloc(st_item->params_size);
+          memcpy(st_item->params, module->default_params, module->params_size);
+          autoinit = TRUE;
+        }
+        else
+        {
+          fprintf(stderr,
+                  "[dt_imageio_export_with_flags] cannot find module %s for style\n",
+                  st_item->operation);
+          ok = FALSE;
+        }
+      }
+
+      if(ok)
+      {
+        dt_styles_apply_style_item(&dev, st_item, &modules_used, !autoinit && appending);
+      }
     }
 
     g_list_free(modules_used);
@@ -1101,16 +1154,16 @@ int dt_imageio_export_with_flags(const int32_t imgid,
   if(res)
     goto error;
 
-  dt_dev_pixelpipe_cleanup(&pipe);
-  dt_dev_cleanup(&dev);
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-
   /* now write xmp into that container, if possible */
   if(copy_metadata && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
   {
-    dt_exif_xmp_attach_export(imgid, filename, metadata);
+    dt_exif_xmp_attach_export(imgid, filename, metadata, &dev, &pipe);
     // no need to cancel the export if this fail
   }
+
+  dt_dev_pixelpipe_cleanup(&pipe);
+  dt_dev_cleanup(&dev);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   if(!thumbnail_export && strcmp(format->mime(format_params), "memory")
     && !(format->flags(format_params) & FORMAT_FLAGS_NO_TMPFILE))
@@ -1283,9 +1336,14 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,        // non-const * means
   return ret;
 }
 
-gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
-                                      char *mk, int mk_len, char *md, int md_len,
-                                      char *al, int al_len)
+gboolean dt_imageio_lookup_makermodel(const char *maker,
+                                      const char *model,
+                                      char *mk,
+                                      const int mk_len,
+                                      char *md,
+                                      const int md_len,
+                                      char *al,
+                                      const int al_len)
 {
   // At this stage, we can't tell which loader is used to open the image.
   gboolean found = dt_rawspeed_lookup_makermodel(maker, model,
