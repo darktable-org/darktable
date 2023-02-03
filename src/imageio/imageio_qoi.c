@@ -46,11 +46,25 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, d
 
   void *read_buffer = g_malloc(filesize);
 
-  if(fread(read_buffer, 1, filesize, f) != filesize)
+  // Let's check whether the entire content of the file should be read into the buffer. If we see that it's a
+  // non-QOI file, we'll save time by avoiding unnecessary reading of a potentially large file into the buffer.
+  if(fread(read_buffer, 1, 4, f) != 4)
   {
     fclose(f);
     g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to read %zu bytes from %s\n", filesize, filename);
+    dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to read from %s\n", filename);
+    return DT_IMAGEIO_FILE_NOT_FOUND;  // if we can't read even first 4 bytes, it's more like file disappeared
+  }
+  if(memcmp(read_buffer, "qoif", 4) != 0)
+  {
+    return DT_IMAGEIO_LOAD_FAILED;
+  }
+
+  if(fread(read_buffer+4, 1, filesize-4, f) != filesize-4)
+  {
+    fclose(f);
+    g_free(read_buffer);
+    dt_print(DT_DEBUG_ALWAYS, "[qoi_open] failed to read %zu bytes from %s\n", filesize, filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
   fclose(f);
