@@ -1190,7 +1190,7 @@ void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeM
   }
   else
   {
-    gchar *coltext = g_strdup_printf("%s (%d)", name, count);
+    gchar *coltext = g_strdup_printf("%s (%u)", name, count);
     g_object_set(renderer, "text", coltext, NULL);
     g_free(coltext);
   }
@@ -2511,7 +2511,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
         {
           if(dt_tag_get_tag_order_by_id(tagid, &sort, &descending))
           {
-            order = g_strdup_printf("1:%d:%d$", sort, descending);
+            order = g_strdup_printf("1:%u:%d$", sort, descending);
           }
           else
           {

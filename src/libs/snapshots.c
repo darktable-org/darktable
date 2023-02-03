@@ -638,7 +638,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   sqlite3_finalize(stmt);
 
   char label[64];
-  g_snprintf(label, sizeof(label), "%s (%d)", name, s->history_end);
+  g_snprintf(label, sizeof(label), "%s (%u)", name, s->history_end);
   gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(s->button))), label);
 
   /* update slots used */

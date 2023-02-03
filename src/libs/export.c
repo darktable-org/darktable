@@ -495,8 +495,8 @@ static void _size_in_px_update(dt_lib_export_t *d)
 
 void _set_dimensions(dt_lib_export_t *d, uint32_t max_width, uint32_t max_height)
 {
-  gchar *max_width_char = g_strdup_printf("%d", max_width);
-  gchar *max_height_char = g_strdup_printf("%d", max_height);
+  gchar *max_width_char = g_strdup_printf("%u", max_width);
+  gchar *max_height_char = g_strdup_printf("%u", max_height);
 
   ++darktable.gui->reset;
   gtk_entry_set_text(GTK_ENTRY(d->width), max_width_char);
@@ -866,8 +866,8 @@ static void _resync_pixel_dimensions(dt_lib_export_t *self)
   dt_conf_set_int(CONFIG_PREFIX "height", height);
 
   ++darktable.gui->reset;
-  gchar *pwidth = g_strdup_printf("%d", width);
-  gchar *pheight = g_strdup_printf("%d", height);
+  gchar *pwidth = g_strdup_printf("%u", width);
+  gchar *pheight = g_strdup_printf("%u", height);
   gtk_entry_set_text(GTK_ENTRY(self->width), pwidth);
   gtk_entry_set_text(GTK_ENTRY(self->height), pheight);
   g_free(pwidth);
@@ -895,7 +895,7 @@ static void _print_width_changed(GtkEditable *entry, gpointer user_data)
   dt_conf_set_int(CONFIG_PREFIX "width", width);
 
   ++darktable.gui->reset;
-  gchar *pwidth = g_strdup_printf("%d", width);
+  gchar *pwidth = g_strdup_printf("%u", width);
   gtk_entry_set_text(GTK_ENTRY(d->width), pwidth);
   g_free(pwidth);
   _size_in_px_update(d);
@@ -922,7 +922,7 @@ static void _print_height_changed(GtkEditable *entry, gpointer user_data)
   dt_conf_set_int(CONFIG_PREFIX "height", height);
 
   ++darktable.gui->reset;
-  gchar *pheight = g_strdup_printf("%d", height);
+  gchar *pheight = g_strdup_printf("%u", height);
   gtk_entry_set_text(GTK_ENTRY(d->height), pheight);
   g_free(pheight);
   _size_in_px_update(d);
