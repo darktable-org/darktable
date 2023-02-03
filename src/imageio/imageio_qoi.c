@@ -73,10 +73,16 @@ dt_imageio_retval_t dt_imageio_open_qoi(dt_image_t *img, const char *filename, d
   qoi_desc desc;
   uint8_t *int_RGBA_buf = qoi_decode(read_buffer, (int)filesize, &desc, 4);
 
+  char *ext = g_strrstr(filename, ".");
+
   if(!int_RGBA_buf)
   {
     g_free(read_buffer);
-    dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s\n", filename);
+    // Complain on failure only if the file extension matches the loader expectation
+    if(ext && (g_ascii_strcasecmp(ext, ".qoi") == 0))
+    {
+      dt_print(DT_DEBUG_ALWAYS,"[qoi_open] failed to decode file: %s\n", filename);
+    }
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
