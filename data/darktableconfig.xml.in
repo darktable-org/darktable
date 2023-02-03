@@ -2875,7 +2875,7 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/aspect_percent</name>
-    <type min="50" max="100">int</type>
+    <type min="50" max="150">int</type>
     <default>56</default>
     <shortdescription>aspect ratio of the scopes module</shortdescription>
     <longdescription>aspect ratio of the scopes module in the darkroom and tethering views</longdescription>

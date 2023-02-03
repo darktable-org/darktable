@@ -1201,7 +1201,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       pango_layout_set_font_description(layout, desc);
       g_free(text);
 
-      text = g_strdup_printf("%s\n%s: %d°", _(hm.name), _("rotation"), d->harmony_rotation);
+      text = g_strdup_printf("%d°\n%s", d->harmony_rotation, _(hm.name));
 
       set_color(cr, darktable.bauhaus->graph_fg);
       pango_layout_set_text(layout, text, -1);
@@ -2252,8 +2252,24 @@ void gui_init(dt_lib_module_t *self)
   for(int i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
   {
     d->scope_type_button[i] = dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
-    gtk_widget_set_tooltip_text(d->scope_type_button[i], _(dt_lib_histogram_scope_type_names[i]));
-    dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i], d->scope_type_button[i], &dt_action_def_toggle);
+    if(i == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    {
+      gchar *text = g_strdup_printf("%s\n\n%s\n%s\n%s\n%s",
+                                    _(dt_lib_histogram_scope_type_names[i]),
+                                    _("scroll to coarse-rotate"),
+                                    _("ctrl+scroll to fine rotate"),
+                                    _("shift+scroll to change width"),
+                                    _("alt+scroll to cycle"));
+      gtk_widget_set_tooltip_text(d->scope_type_button[i], text);
+      g_free(text);
+    }
+    else
+    {
+      gtk_widget_set_tooltip_text(d->scope_type_button[i],
+                                  _(dt_lib_histogram_scope_type_names[i]));
+    }
+    dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i],
+                     d->scope_type_button[i], &dt_action_def_toggle);
     gtk_box_pack_start(GTK_BOX(box_left), d->scope_type_button[i], FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(d->scope_type_button[i]), "button-press-event", G_CALLBACK(_scope_histogram_mode_clicked), d);
   }
@@ -2305,13 +2321,6 @@ void gui_init(dt_lib_module_t *self)
   {
     GtkWidget *rb = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_harmony, CPF_NONE,
                                            &(dt_color_harmonies[i]));
-    gchar *text = g_strdup_printf("%s\n\n%s\n%s\n%s\n%s", _(dt_color_harmonies[i].name),
-                                  _("scroll to coarse-rotate"),
-                                  _("ctrl+scroll to fine rotate"),
-                                  _("shift+scroll to change width"),
-                                  _("alt+scroll to cycle"));
-    gtk_widget_set_tooltip_text(rb, text);
-    g_free(text);
     dt_action_define(dark, N_("color harmonies"), dt_color_harmonies[i].name, rb, &dt_action_def_toggle);
     g_signal_connect(G_OBJECT(rb), "button-press-event", G_CALLBACK(_color_harmony_clicked), d);
     gtk_widget_add_events(rb, darktable.gui->scroll_mask);
