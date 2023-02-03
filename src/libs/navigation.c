@@ -262,15 +262,18 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     }
     cairo_restore(cr);
 
-    char zoomline[10] = N_("fit");
-    if(fabsf(cur_scale - min_scale) > 0.001f)
-      snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale * 100 * darktable.gui->ppd);
-
+    gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
+                    : zoom == DT_ZOOM_FILL ? g_strdup(_("fill"))
+                    : 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0)
+                      == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0) ? g_strdup(_("small"))
+                    : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
     ++darktable.gui->reset;
     dt_bauhaus_combobox_set(d->zoom, -1);
     if(!dt_bauhaus_combobox_set_from_text(d->zoom, zoomline))
       dt_bauhaus_combobox_set_text(d->zoom, zoomline);
     --darktable.gui->reset;
+    g_free(zoomline);
+
     dt_pthread_mutex_unlock(mutex);
   }
 
