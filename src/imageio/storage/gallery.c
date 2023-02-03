@@ -249,7 +249,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(*c == '/') *c = '\0';
   if(g_mkdir_with_parents(dirname, 0755))
   {
-    fprintf(stderr, "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
     dt_control_log(_("could not create directory `%s'!"), dirname);
     return 1;
   }
@@ -327,7 +327,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
-    fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     free(pair);
     g_free(esc_relfilename);
@@ -366,7 +366,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(dt_imageio_export(imgid, filename, format, fdata, FALSE, TRUE, FALSE, export_masks, icc_type, icc_filename,
                        icc_intent, self, sdata, num, total, NULL) != 0)
   {
-    fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
   }

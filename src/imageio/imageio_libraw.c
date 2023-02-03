@@ -267,7 +267,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   // are not populated into libraw structure, or image is not of CFA type.
   if(raw->rawdata.color.cam_mul[0] == 0.0f || isnan(raw->rawdata.color.cam_mul[0]) || !raw->rawdata.raw_image)
   {
-    fprintf(stderr, "[libraw_open] detected unsupported image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] detected unsupported image `%s'\n", img->filename);
     goto error;
   }
 
@@ -326,7 +326,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    fprintf(stderr, "[libraw_open] could not alloc full buffer for image `%s'\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] could not alloc full buffer for image `%s'\n", img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
@@ -375,7 +375,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
 
 error:
   if(libraw_err != LIBRAW_SUCCESS)
-    fprintf(stderr, "[libraw_open] `%s': %s\n", img->filename, libraw_strerror(libraw_err));
+    dt_print(DT_DEBUG_ALWAYS, "[libraw_open] `%s': %s\n", img->filename, libraw_strerror(libraw_err));
   libraw_close(raw);
   return err;
 }

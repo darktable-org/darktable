@@ -84,11 +84,11 @@ static int rgbe_error(int rgbe_error_code, char *msg)
       perror("RGBE write error");
       break;
     case rgbe_format_error:
-      fprintf(stderr, "RGBE bad file format: %s\n", msg);
+      dt_print(DT_DEBUG_ALWAYS, "RGBE bad file format: %s\n", msg);
       break;
     default:
     case rgbe_memory_error:
-      fprintf(stderr, "RGBE error: %s\n", msg);
+      dt_print(DT_DEBUG_ALWAYS, "RGBE error: %s\n", msg);
   }
   return RGBE_RETURN_FAILURE;
 }

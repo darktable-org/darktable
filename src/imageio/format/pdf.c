@@ -196,14 +196,14 @@ static int _paper_size(dt_imageio_pdf_params_t *d, float *page_width, float *pag
 
   if(!dt_pdf_parse_paper_size(d->size, &width, &height))
   {
-    fprintf(stderr, "[imageio_format_pdf] invalid paper size: `%s'!\n", d->size);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_format_pdf] invalid paper size: `%s'!\n", d->size);
     dt_control_log(_("invalid paper size"));
     return 1;
   }
 
   if(!dt_pdf_parse_length(d->border, &border))
   {
-    fprintf(stderr, "[imageio_format_pdf] invalid border size: `%s'! using 0\n", d->border);
+    dt_print(DT_DEBUG_ALWAYS, "[imageio_format_pdf] invalid border size: `%s'! using 0\n", d->border);
     dt_control_log(_("invalid border size, using 0"));
 //     return 1;
     border = 0.0;
@@ -253,7 +253,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     dt_pdf_t *pdf = dt_pdf_start(filename, page_width, page_height, page_dpi, compression);
     if(!pdf)
     {
-      fprintf(stderr, "[imageio_format_pdf] could not export to file: `%s'!\n", filename);
+      dt_print(DT_DEBUG_ALWAYS, "[imageio_format_pdf] could not export to file: `%s'!\n", filename);
       dt_control_log(_("could not export to file `%s'!"), filename);
       return 1;
     }

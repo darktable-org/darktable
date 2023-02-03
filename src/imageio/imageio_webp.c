@@ -34,7 +34,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    fprintf(stderr,"[webp_open] cannot open file for read: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] cannot open file for read: %s\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
@@ -48,7 +48,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   {
     fclose(f);
     g_free(read_buffer);
-    fprintf(stderr,"[webp_open] failed to read %zu bytes from %s\n", filesize, filename);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to read %zu bytes from %s\n", filesize, filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
   fclose(f);
@@ -71,7 +71,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   if(!mipbuf)
   {
     g_free(read_buffer);
-    fprintf(stderr, "[webp_open] could not alloc full buffer for image: %s\n", img->filename);
+    dt_print(DT_DEBUG_ALWAYS, "[webp_open] could not alloc full buffer for image: %s\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
 
@@ -79,7 +79,7 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
   if(!int_RGBA_buf)
   {
     g_free(read_buffer);
-    fprintf(stderr,"[webp_open] failed to decode file: %s\n", filename);
+    dt_print(DT_DEBUG_ALWAYS,"[webp_open] failed to decode file: %s\n", filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
