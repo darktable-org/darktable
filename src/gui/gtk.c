@@ -831,7 +831,11 @@ void dt_gui_gtk_quit()
 
 gboolean dt_gui_quit_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
-  dt_control_quit();
+  if(dt_view_lighttable_preview_state(darktable.view_manager))
+    dt_view_lighttable_set_preview_state(darktable.view_manager, FALSE, FALSE);
+  else
+    dt_control_quit();
+
   return TRUE;
 }
 
