@@ -3063,7 +3063,7 @@ static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
   dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
 
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
     const gint new_size = dt_conf_get_int(config_str) + increment*delta_y;
 
@@ -3090,7 +3090,7 @@ static gboolean _resize_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
 static gboolean _scroll_wrap_aspect(GtkWidget *w, GdkEventScroll *event, const char *config_str)
 {
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
   {
     int delta_y;
     if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
