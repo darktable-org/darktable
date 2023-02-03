@@ -1450,6 +1450,7 @@ void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
   if(!d || !d->editable) return;
 
   g_strlcpy(d->text, text, DT_BAUHAUS_COMBO_MAX_TEXT);
+  gtk_widget_queue_draw(GTK_WIDGET(widget));
 }
 
 static void _bauhaus_combobox_set(dt_bauhaus_widget_t *w, const int pos, const gboolean mute)
@@ -3187,7 +3188,7 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
               : DT_ACTION_ELEMENT_FORCE;
   }
   else
-    darktable.control->element = DT_ACTION_ELEMENT_BUTTON;
+    darktable.control->element = w->quad_paint ? DT_ACTION_ELEMENT_BUTTON : DT_ACTION_ELEMENT_VALUE;
 
   return TRUE;
 }
@@ -3198,7 +3199,7 @@ static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMot
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
-  darktable.control->element = event->x <= allocation.width - _widget_get_quad_width(w)
+  darktable.control->element = event->x <= allocation.width - _widget_get_quad_width(w) || !w->quad_paint
                                    ? DT_ACTION_ELEMENT_SELECTION
                                    : DT_ACTION_ELEMENT_BUTTON;
 

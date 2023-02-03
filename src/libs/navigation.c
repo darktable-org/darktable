@@ -37,6 +37,7 @@ typedef struct dt_lib_navigation_t
 {
   int dragging;
   int zoom_w, zoom_h;
+  GtkWidget *zoom;
 } dt_lib_navigation_t;
 
 
@@ -46,7 +47,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
 static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
                                                        gpointer user_data);
 /* button press callback */
-static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEventButton *event,
+static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEvent *event,
                                                       gpointer user_data);
 /* button release callback */
 static gboolean _lib_navigation_button_release_callback(GtkWidget *widget, GdkEventButton *event,
@@ -103,6 +104,7 @@ static void _lib_navigation_collapse_callback(dt_action_t *action)
   dt_lib_set_visible(self, !visible);
 }
 
+static void _zoom_changed(GtkWidget *widget, gpointer user_data);
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -111,26 +113,28 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   /* create drawingarea */
-  self->widget = dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/navigation/aspect_percent");
-  gtk_widget_set_tooltip_text(self->widget, _("navigation\nclick or drag to position zoomed area in center view"));
+  GtkWidget *thumbnail = dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/navigation/aspect_percent");
+  gtk_widget_set_tooltip_text(thumbnail, _("navigation\nclick or drag to position zoomed area in center view"));
 
   /* connect callbacks */
-  gtk_widget_set_app_paintable(self->widget, TRUE);
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_navigation_draw_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-press-event",
+  gtk_widget_set_app_paintable(thumbnail, TRUE);
+  g_signal_connect(G_OBJECT(thumbnail), "draw", G_CALLBACK(_lib_navigation_draw_callback), self);
+  g_signal_connect(G_OBJECT(thumbnail), "button-press-event",
                    G_CALLBACK(_lib_navigation_button_press_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-release-event",
+  g_signal_connect(G_OBJECT(thumbnail), "scroll-event",
+                   G_CALLBACK(_lib_navigation_button_press_callback), self);
+  g_signal_connect(G_OBJECT(thumbnail), "button-release-event",
                    G_CALLBACK(_lib_navigation_button_release_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "motion-notify-event",
+  g_signal_connect(G_OBJECT(thumbnail), "motion-notify-event",
                    G_CALLBACK(_lib_navigation_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "leave-notify-event",
+  g_signal_connect(G_OBJECT(thumbnail), "leave-notify-event",
                    G_CALLBACK(_lib_navigation_leave_notify_callback), self);
 
   /* set size of navigation draw area */
-  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(175));
-  gtk_widget_set_name(GTK_WIDGET(self->widget), "navigation-module");
+  // gtk_widget_set_size_request(thumbnail, -1, DT_PIXEL_APPLY_DPI(175));
+  gtk_widget_set_name(GTK_WIDGET(thumbnail), "navigation-module");
   dt_action_t *ac = dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL,
-                                     N_("hide navigation thumbnail"), self->widget, NULL);
+                                     N_("hide navigation thumbnail"), thumbnail, NULL);
   dt_action_register(ac, NULL, _lib_navigation_collapse_callback, GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
@@ -138,6 +142,32 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_lib_navigation_control_redraw_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
                             G_CALLBACK(_lib_navigation_control_redraw_callback), self);
+
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->zoom, darktable.view_manager->proxy.darkroom.view,
+                               NULL, N_("zoom"), _("image zoom level"),
+                               -1, _zoom_changed, NULL,
+                               N_("small"),
+                               N_("fit"),
+                               N_("fill"),
+                               N_("50%"),
+                               N_("100%"),
+                               N_("200%"),
+                               N_("400%"),
+                               N_("800%"),
+                               N_("1600%"));
+  ac = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, "zoom");
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 2, GDK_KEY_3, GDK_MOD1_MASK);
+  dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 3, GDK_KEY_2, GDK_MOD1_MASK);
+
+  dt_bauhaus_combobox_set_editable(d->zoom, TRUE);
+  DT_BAUHAUS_WIDGET(d->zoom)->show_label = FALSE;
+  gtk_widget_set_halign(d->zoom, GTK_ALIGN_END);
+  gtk_widget_set_valign(d->zoom, GTK_ALIGN_END);
+
+  self->widget = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(self->widget), thumbnail);
+  gtk_overlay_add_overlay(GTK_OVERLAY(self->widget), d->zoom);
+  dt_gui_add_class(self->widget, "dt_plugin_ui_main");
 
   darktable.lib->proxy.navigation.module = self;
 }
@@ -201,8 +231,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     float zoom_y = dt_control_get_dev_zoom_y();
     const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1<<closeup, 0);
     const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
-    // avoid numerical instability for small resolutions:
-    double h, w;
     if(cur_scale > min_scale)
     {
       // Add a dark overlay on the picture to make it fade
@@ -234,93 +262,17 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     }
     cairo_restore(cr);
 
-    PangoLayout *layout;
-    PangoRectangle ink;
-    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    layout = pango_cairo_create_layout(cr);
-    const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
-    pango_layout_set_font_description(layout, desc);
-
-    if(fabsf(cur_scale - min_scale) > 0.001f)
-    {
-      /* Zoom % */
-      cairo_translate(cr, 0, height);
-      cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
-      cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
-
-      char zoomline[6];
-      snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale * 100 * darktable.gui->ppd);
-
-      pango_layout_set_text(layout, zoomline, -1);
-      pango_layout_get_pixel_extents(layout, &ink, NULL);
-      h = d->zoom_h = ink.height;
-      w = d->zoom_w = ink.width;
-
-      cairo_move_to(cr, width - w - h * 1.1 - ink.x, - h - ink.y);
-
-      cairo_save(cr);
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
-
-      GdkRGBA *color;
-      gtk_style_context_get(context, gtk_widget_get_state_flags(widget), "background-color", &color, NULL);
-
-      gdk_cairo_set_source_rgba(cr, color);
-      pango_cairo_layout_path(cr, layout);
-      cairo_stroke_preserve(cr);
-      cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
-      cairo_fill(cr);
-      cairo_restore(cr);
-
-      gdk_rgba_free(color);
-    }
-    else
-    {
-      // draw the zoom-to-fit icon
-      cairo_translate(cr, 0, height);
-      cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
-      pango_layout_set_text(layout, "100%", -1); // dummy text, just to get the height
-      pango_layout_get_pixel_extents(layout, &ink, NULL);
-
-      h = d->zoom_h = ink.height;
-      w = h * 1.5;
-      float sp = h * 0.6;
-      d->zoom_w = w + sp;
-
-      cairo_move_to(cr, width - w - h - sp, -1.0 * h);
-      cairo_rectangle(cr, width - w - h - sp, -1.0 * h, w, h);
-      cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
-      cairo_fill(cr);
-
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2));
-
-      cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-      cairo_move_to(cr, width - w * 0.8 - h - sp, -1.0 * h);
-      cairo_line_to(cr, width - w - h - sp, -1.0 * h);
-      cairo_line_to(cr, width - w - h - sp, -0.7 * h);
-      cairo_stroke(cr);
-      cairo_move_to(cr, width - w - h - sp, -0.3 * h);
-      cairo_line_to(cr, width - w - h - sp, 0);
-      cairo_line_to(cr, width - w * 0.8 - h - sp, 0);
-      cairo_stroke(cr);
-      cairo_move_to(cr, width - w * 0.2 - h - sp, 0);
-      cairo_line_to(cr, width - h - sp, 0);
-      cairo_line_to(cr, width - h - sp, -0.3 * h);
-      cairo_stroke(cr);
-      cairo_move_to(cr, width - h - sp, -0.7 * h);
-      cairo_line_to(cr, width - h - sp, -1.0 * h);
-      cairo_line_to(cr, width - w * 0.2 - h - sp, -1.0 * h);
-      cairo_stroke(cr);
-    }
-
-    pango_font_description_free(desc);
-    g_object_unref(layout);
-
-    cairo_move_to(cr, width - 0.95 * h, -0.9 * h);
-    cairo_line_to(cr, width - 0.05 * h, -0.9 * h);
-    cairo_line_to(cr, width - 0.5 * h, -0.1 * h);
-    cairo_fill(cr);
-    cairo_surface_destroy(surface);
+    gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
+                    : zoom == DT_ZOOM_FILL ? g_strdup(_("fill"))
+                    : 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0)
+                      == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0) ? g_strdup(_("small"))
+                    : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
+    ++darktable.gui->reset;
+    dt_bauhaus_combobox_set(d->zoom, -1);
+    if(!dt_bauhaus_combobox_set_from_text(d->zoom, zoomline))
+      dt_bauhaus_combobox_set_text(d->zoom, zoomline);
+    --darktable.gui->reset;
+    g_free(zoomline);
 
     dt_pthread_mutex_unlock(mutex);
   }
@@ -340,8 +292,6 @@ void _lib_navigation_set_position(dt_lib_module_t *self, double x, double y, int
 
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
-  float zoom_x = dt_control_get_dev_zoom_x();
-  float zoom_y = dt_control_get_dev_zoom_y();
 
   if(d->dragging && zoom != DT_ZOOM_FIT)
   {
@@ -350,10 +300,10 @@ void _lib_navigation_set_position(dt_lib_module_t *self, double x, double y, int
     const dt_develop_t *dev = darktable.develop;
     int iwd, iht;
     dt_dev_get_processed_size(dev, &iwd, &iht);
-    zoom_x = fmaxf(
+    float zoom_x = fmaxf(
         -.5,
         fminf(((x - inset) / width - .5f) / (iwd * fminf(wd / (float)iwd, ht / (float)iht) / (float)wd), .5));
-    zoom_y = fmaxf(
+    float zoom_y = fmaxf(
         -.5, fminf(((y - inset) / height - .5f) / (iht * fminf(wd / (float)iwd, ht / (float)iht) / (float)ht),
                    .5));
     dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
@@ -379,8 +329,12 @@ static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEve
   return TRUE;
 }
 
-static void _zoom_preset_change(uint64_t val)
+static void _zoom_changed(GtkWidget *widget, gpointer user_data)
 {
+  int val = dt_bauhaus_combobox_get(widget);
+  if(val == -1 && 1 != sscanf(dt_bauhaus_combobox_get_text(widget), "%d", &val))
+    return;
+
   // dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_develop_t *dev = darktable.develop;
   if(!dev) return;
@@ -402,13 +356,19 @@ static void _zoom_preset_change(uint64_t val)
     scale = 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
     zoom = DT_ZOOM_FREE;
   }
-  else if(val == 1u)
+  else if(val == 1u || val == -1u)
   {
     // fit to screen
     zoom = DT_ZOOM_FIT;
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
   }
   else if(val == 2u)
+  {
+    // fit to screen
+    zoom = DT_ZOOM_FILL;
+    closeup = 0;
+  }
+  else if(val == 4u)
   {
     // 100%
     if(low_ppd == 1)
@@ -422,20 +382,20 @@ static void _zoom_preset_change(uint64_t val)
       zoom = DT_ZOOM_FREE;
     }
   }
-  else if(val == 3u)
+  else if(val == 5u)
   {
     // 200%
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
     zoom = DT_ZOOM_1;
     if(low_ppd) closeup = 1;
   }
-  else if(val == 4u)
+  else if(val == 3u)
   {
     // 50%
     scale = 0.5f / ppd;
     zoom = DT_ZOOM_FREE;
   }
-  else if(val == 5u)
+  else if(val == 8u)
   {
     // 1600%
     scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_1, 1.0, 0);
@@ -456,6 +416,11 @@ static void _zoom_preset_change(uint64_t val)
     zoom = DT_ZOOM_1;
     closeup = (low_ppd) ? 3 : 2;
   }
+  else
+  {
+    scale = val / 100.0f * ppd;
+    zoom = DT_ZOOM_FREE;
+  }
 
   // zoom_x = (1.0/(scale*(1<<closeup)))*(zoom_x - .5f*dev->width )/procw;
   // zoom_y = (1.0/(scale*(1<<closeup)))*(zoom_y - .5f*dev->height)/proch;
@@ -470,68 +435,30 @@ static void _zoom_preset_change(uint64_t val)
   dt_control_queue_redraw();
 }
 
-static void _zoom_preset_callback(GtkButton *button, gpointer user_data)
-{
-  _zoom_preset_change((uint64_t)user_data);
-}
-
-static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEventButton *event,
+static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEvent *event,
                                                       gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
-
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  const int w = allocation.width;
-  const int h = allocation.height;
-
-  if(event->x >= w - DT_NAVIGATION_INSET - d->zoom_h - d->zoom_w
-     && event->y >= h - DT_NAVIGATION_INSET - d->zoom_h)
+  if(event->type == GDK_BUTTON_PRESS && event->button.button == 1)
   {
-    // we show the zoom menu
-    GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
-    GtkWidget *item;
-
-    item = gtk_menu_item_new_with_label(_("small"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)0);
-    gtk_menu_shell_append(menu, item);
-
-    item = gtk_menu_item_new_with_label(_("fit to screen"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)1);
-    gtk_menu_shell_append(menu, item);
-
-    item = gtk_menu_item_new_with_label(_("50%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)4);
-    gtk_menu_shell_append(menu, item);
-
-    item = gtk_menu_item_new_with_label(_("100%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)2);
-    gtk_menu_shell_append(menu, item);
-
-    item = gtk_menu_item_new_with_label(_("200%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)3);
-    gtk_menu_shell_append(menu, item);
-
-    item = gtk_menu_item_new_with_label(_("400%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)6);
-    gtk_menu_shell_append(menu, item);
-
-    item = gtk_menu_item_new_with_label(_("800%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)7);
-    gtk_menu_shell_append(menu, item);
-
-    item = gtk_menu_item_new_with_label(_("1600%"));
-    g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_zoom_preset_callback), (gpointer)5);
-    gtk_menu_shell_append(menu, item);
-
-    dt_gui_menu_popup(GTK_MENU(menu), NULL, 0, 0);
+    d->dragging = 1;
+    _lib_navigation_set_position(self, event->button.x, event->button.y, allocation.width, allocation.height);
 
     return TRUE;
   }
-  d->dragging = 1;
-  _lib_navigation_set_position(self, event->x, event->y, w, h);
-  return TRUE;
+  else
+  {
+    GtkWidget *center = dt_ui_center(darktable.gui->ui);
+    GtkAllocation center_alloc;
+    gtk_widget_get_allocation(center, &center_alloc);
+    event->button.x *= (gdouble)center_alloc.width / allocation.width;
+    event->button.y *= (gdouble)center_alloc.height / allocation.height;
+
+    return gtk_widget_event(center, event);
+  }
 }
 
 static gboolean _lib_navigation_button_release_callback(GtkWidget *widget, GdkEventButton *event,
