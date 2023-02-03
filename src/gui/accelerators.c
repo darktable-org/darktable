@@ -760,7 +760,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
   else
   {
     if(g_object_get_data(G_OBJECT(widget), "scroll-resize-tooltip"))
-      original_markup = dt_util_dstrcat(original_markup, "%s%s", original_markup ? "\n" : "", _("ctrl+scroll to change height"));
+      original_markup = dt_util_dstrcat(original_markup, "%s%s", original_markup ? "\n" : "", _("shift+alt+scroll to change height"));
     action = g_hash_table_lookup(darktable.control->widgets, widget);
     if(!action)
     {
