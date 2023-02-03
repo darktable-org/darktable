@@ -48,22 +48,6 @@
 // Downsampling factor for guided-laplacian
 #define DS_FACTOR 4
 
-// Set to one to output intermediate image steps as PFM in /tmp
-#define DEBUG_DUMP_PFM 0
-
-#if DEBUG_DUMP_PFM
-static void dump_PFM(const char *filename, const float* out, const uint32_t w, const uint32_t h)
-{
-  FILE *f = g_fopen(filename, "wb");
-  fprintf(f, "PF\n%d %d\n-1.0\n", w, h);
-  for(int j = h - 1 ; j >= 0 ; j--)
-    for(int i = 0 ; i < w ; i++)
-      for(int c = 0 ; c < 3 ; c++)
-        fwrite(out + (j * w + i) * 4 + c, 1, sizeof(float), f);
-  fclose(f);
-}
-#endif
-
 DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
 
 /* As some of the internal algorithms use a smaller value for clipping than given by the UI
@@ -1599,14 +1583,15 @@ static inline gint wavelets_process(const float *const restrict in, float
     else
       heat_PDE_diffusion(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, current_scale_type, first_order_factor);
 
-#if DEBUG_DUMP_PFM
-    char name[64];
-    sprintf(name, "/tmp/scale-input-%i.pfm", s);
-    dump_PFM(name, buffer_in, width, height);
+    if(darktable.dump_pfm_module)
+    {
+      char name[64];
+      sprintf(name, "scale-input-%i", s);
+      dt_dump_pfm(name, buffer_in, width, height, 3, "highlights");
 
-    sprintf(name, "/tmp/scale-blur-%i.pfm", s);
-    dump_PFM(name, buffer_out, width, height);
-#endif
+      sprintf(name, "scale-blur-%i", s);
+      dt_dump_pfm(name, buffer_out, width, height, 3, "highlights");
+    }
   }
   dt_free_align(tempbuf);
 
@@ -1680,10 +1665,11 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self, dt_dev_pixelpi
   interpolate_bilinear(ds_interpolated, ds_width, ds_height, interpolated, width, height, 4);
   _remosaic_and_replace(input, interpolated, clipping_mask, output, wb, filters, width, height);
 
-#if DEBUG_DUMP_PFM
-  dump_PFM("/tmp/interpolated.pfm", interpolated, width, height);
-  dump_PFM("/tmp/clipping_mask.pfm", clipping_mask, width, height);
-#endif
+  if(darktable.dump_pfm_module)
+  {
+    dt_dump_pfm("interpolated", interpolated, width, height, 3, "highlights");
+    dt_dump_pfm("clipping_mask", clipping_mask, width, height, 3, "highlights");
+  }
 
   dt_free_align(interpolated);
   dt_free_align(clipping_mask);

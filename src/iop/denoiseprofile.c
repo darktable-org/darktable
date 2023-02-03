@@ -47,9 +47,6 @@
 // which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
 #define USE_NEW_IMPL_CL 0
 
-// should we dump the generated wavelet scales to files in /tmp ?
-//#define DEBUG_SCALES
-
 #define REDUCESIZE 64
 // number of intermediate buffers used by OpenCL code path.  Needs to match value in src/common/nlmeans_core.c
 //   to correctly compute tiling
@@ -345,28 +342,16 @@ typedef struct dt_iop_denoiseprofile_global_data_t
 
 static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self);
 
-#ifdef DEBUG_SCALES
 static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece, const char *const namespec,
                            const float* const restrict buf, const int width, const int height, const int scale)
 {
-  if(piece->pipe->type & DT_DEV_PIXELPIPE_FULL)
-  {
-    char filename[512];
-    snprintf(filename, sizeof(filename), namespec, scale);
-    FILE *f = g_fopen(filename, "wb");
-    if(f)
-    {
-      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      const size_t n = (size_t)width * height;
-      for(size_t k=0; k<n; k++)
-        fwrite(buf+4U*k, sizeof(float), 3, f);
-      fclose(f);
-    }
-  }
+  if(!darktable.dump_pfm_module) return;
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == 0) return;
+
+  char name[256];
+  snprintf(name, sizeof(name), namespec, scale);
+  dt_dump_pfm(name, buf, width, height, 3, "denoiseprofile");
 }
-#else
-#define debug_dump_PFM(p,n,b,w,h,s)
-#endif
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -1364,7 +1349,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     precondition_Y0U0V0(in, precond, width, height, d->a[1] * compensate_p, p, d->b[1], toY0U0V0);
   }
 
-  debug_dump_PFM(piece,"/tmp/transformed.pfm",precond,width,height,0);
+  debug_dump_PFM(piece, "transformed", precond, width, height, 0);
 
   float *restrict buf1 = precond;
   float *restrict buf2 = tmp;
@@ -1379,8 +1364,8 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     const float sigma_band = powf(varf, scale) * sigma;
     dt_aligned_pixel_t sum_y2;
     decompose(buf2, buf1, buf, sum_y2, scale, 1.0f / (sigma_band * sigma_band), width, height);
-    debug_dump_PFM(piece,"/tmp/coarse_%d.pfm",buf2,width,height,scale);
-    debug_dump_PFM(piece,"/tmp/detail_%d.pfm",buf,width,height,scale);
+    debug_dump_PFM(piece, "coarse_%d", buf2, width, height, scale);
+    debug_dump_PFM(piece, "detail_%d", buf, width, height, scale);
 
     const dt_aligned_pixel_t boost = { 1.0f, 1.0f, 1.0f, 1.0f };
     dt_aligned_pixel_t thrs;

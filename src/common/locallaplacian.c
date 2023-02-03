@@ -34,8 +34,6 @@
 // the number of segments for the piecewise linear interpolation
 #define num_gamma 6
 
-//#define DEBUG_DUMP
-
 // downsample width/height to given level
 static inline int dl(int size, const int level)
 {
@@ -43,22 +41,6 @@ static inline int dl(int size, const int level)
     size = (size-1)/2+1;
   return size;
 }
-
-#ifdef DEBUG_DUMP
-static void dump_PFM(const char *filename, const float* out, const uint32_t w, const uint32_t h)
-{
-  FILE *f = g_fopen(filename, "wb");
-  fprintf(f, "PF\n%u %u\n-1.0\n", w, h);
-  for(int j=0;j<h;j++)
-    for(int i=0;i<w;i++)
-      for(int c=0;c<3;c++)
-        fwrite(out + w*j+i, 1, sizeof(float), f);
-  fclose(f);
-}
-#define debug_dump_PFM dump_PFM
-#else
-#define debug_dump_PFM(f,b,w,h)
-#endif
 
 // needs a boundary of 1 or 2px around i,j or else it will crash.
 // (translates to a 1px boundary around the corresponding pixel in the coarse buffer)
@@ -373,12 +355,10 @@ static inline float *ll_pad_input(
     }
     pad_by_replication(out, *wd2, *ht2, max_supp);
   }
-#ifdef DEBUG_DUMP
-  if(b && b->mode == 2)
+  if((b && b->mode == 2) && (darktable.dump_pfm_module))
   {
-    dump_PFM("/tmp/padded.pfm",out,*wd2,*ht2);
+    dt_dump_pfm("padded", out, *wd2, *ht2, 3, "locallaplacian");
   }
-#endif
   return out;
 }
 
@@ -660,8 +640,8 @@ void local_laplacian_internal(
     const int pw = dl(w,last_level), ph = dl(h,last_level);
     const int pw0 = dl(b->pwd, pl0), ph0 = dl(b->pht, pl0);
     const int pw1 = dl(b->pwd, pl1), ph1 = dl(b->pht, pl1);
-    debug_dump_PFM("/tmp/coarse.pfm", b->output[pl0], pw0, ph0);
-    debug_dump_PFM("/tmp/oldcoarse.pfm", output[last_level], pw, ph);
+    dt_dump_pfm("coarse", b->output[pl0], pw0, ph0, 3, "locallaplacian");
+    dt_dump_pfm("oldcoarse", output[last_level], pw, ph, 3, "locallaplacian");
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) collapse(2) default(shared)
 #endif
@@ -699,7 +679,7 @@ void local_laplacian_internal(
 #endif
       output[last_level][j*pw+i] = weight * c1 + (1.0f-weight) * c0;
     }
-    debug_dump_PFM("/tmp/newcoarse.pfm", output[last_level], pw, ph);
+    dt_dump_pfm("newcoarse", output[last_level], pw, ph, 3, "locallaplacian");
   }
 
   // assemble output pyramid coarse to fine
