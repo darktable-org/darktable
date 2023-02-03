@@ -595,7 +595,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     lib->live_view_zoom_cursor_x = x;
     lib->live_view_zoom_cursor_y = y;
     gchar str[20];
-    snprintf(str, sizeof(str), "%u,%u", cam->live_view_zoom_x, cam->live_view_zoom_y);
+    snprintf(str, sizeof(str), "%d,%d", cam->live_view_zoom_x, cam->live_view_zoom_y);
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoomposition", str);
   }
   dt_control_queue_redraw_center();
