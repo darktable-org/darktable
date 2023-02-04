@@ -1443,33 +1443,35 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     const gboolean hooks_available = (cv->view(cv) == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
 
     // FIXME: make just one tooltip for the widget depending on whether it is draggable or not, and set it when enter the view
+    gchar *tip = g_strdup_printf("%s\n", _(dt_lib_histogram_scope_type_names[d->scope_type]));
     if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
               d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
               d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE)
-        gtk_widget_set_tooltip_text(widget, _("vectorscope\nscroll to coarse-rotate\nctrl+scroll to fine rotate"
-                                              "\nshift+scroll to change width\nalt+scroll to cycle"));
+        tip = dt_util_dstrcat(tip, _("\nscroll to coarse-rotate\nctrl+scroll to fine rotate"
+                                     "\nshift+scroll to change width\nalt+scroll to cycle"));
+    }
+    else if(hooks_available)
+    {
+      if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
+          ((d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE) &&
+            ((posy > 7.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI) ||
+            (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
+      {
+        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
+        tip = dt_util_dstrcat(tip, _("\ndrag to change black point,\ndouble-click resets"));
+      }
       else
-        gtk_widget_set_tooltip_text(widget, _("vectorscope"));
+      {
+        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
+        tip = dt_util_dstrcat(tip, _("\ndrag to change exposure,\ndouble-click resets"));
+      }
     }
-    else if(!hooks_available)
-      gtk_widget_set_tooltip_text(widget, _("histogram"));
-    // FIXME: could a GtkRange be used to do this work?
-    else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
-            ((d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE) &&
-             ((posy > 7.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI) ||
-              (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
-      gtk_widget_set_tooltip_text(widget, _("histogram\ndrag to change black point,\ndouble-click resets"));
-    }
-    else
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
-      gtk_widget_set_tooltip_text(widget, _("histogram\ndrag to change exposure,\ndouble-click resets"));
-    }
+    gtk_widget_set_tooltip_text(widget, tip);
+    g_free(tip);
+
     if(prior_highlight != d->highlight)
     {
       dt_control_queue_redraw_widget(widget);
