@@ -50,7 +50,6 @@
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
-#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 void dt_dev_init(dt_develop_t *dev, gboolean gui_attached)
 {
@@ -220,7 +219,7 @@ void dt_dev_process_image(dt_develop_t *dev)
   if(!dev->gui_attached || dev->pipe->processing) return;
   const int err
       = dt_control_add_job_res(darktable.control, dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
-  if(err) fprintf(stderr, "[dev_process_image] job queue exceeded!\n");
+  if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_image] job queue exceeded!\n");
 }
 
 void dt_dev_process_preview(dt_develop_t *dev)
@@ -228,7 +227,7 @@ void dt_dev_process_preview(dt_develop_t *dev)
   if(!dev->gui_attached) return;
   const int err = dt_control_add_job_res(darktable.control, dt_dev_process_preview_job_create(dev),
                                    DT_CTL_WORKER_ZOOM_FILL);
-  if(err) fprintf(stderr, "[dev_process_preview] job queue exceeded!\n");
+  if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview] job queue exceeded!\n");
 }
 
 void dt_dev_process_preview2(dt_develop_t *dev)
@@ -237,7 +236,7 @@ void dt_dev_process_preview2(dt_develop_t *dev)
   if(!(dev->second_window.widget && GTK_IS_WIDGET(dev->second_window.widget))) return;
   const int err = dt_control_add_job_res(darktable.control, dt_dev_process_preview2_job_create(dev),
                                    DT_CTL_WORKER_ZOOM_2);
-  if(err) fprintf(stderr, "[dev_process_preview2] job queue exceeded!\n");
+  if(err) dt_print(DT_DEBUG_ALWAYS, "[dev_process_preview2] job queue exceeded!\n");
 }
 
 void dt_dev_invalidate(dt_develop_t *dev)
@@ -520,7 +519,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_get_times(&start);
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_FULL,
                            DT_MIPMAP_BLOCKING, 'r');
-  dt_show_times_f(&start, "[dev]", "to load the image.");
+  dt_show_times(&start, "[dt_dev_process_image_job] loading image.");
 
   // failed to load raw?
   if(!buf.buf)
@@ -617,7 +616,7 @@ restart:
     else
       goto restart;
   }
-  dt_show_times(&start, "[dev_process_image] pixel pipeline processing");
+  dt_show_times_f(&start, "[dev_process_image] pixel pipeline", "processing `%s'", dev->image_storage.filename);
   dt_dev_average_delay_update(&start, &dev->average_delay);
 
   // maybe we got zoomed/panned in the meantime?
@@ -668,7 +667,7 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
   dt_get_times(&start);
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  dt_show_times_f(&start, "[dev]", "to load the image.");
+  dt_show_times(&start, "[dt_dev_load_raw] loading the image.");
 
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   dev->image_storage = *image;
@@ -684,7 +683,11 @@ void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
 }
 
-float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int preview)
+float dt_dev_get_zoom_scale(
+        dt_develop_t *dev,
+        dt_dev_zoom_t zoom,
+        int closeup_factor,
+        int preview)
 {
   float zoom_scale;
 
@@ -716,7 +719,10 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
   return zoom_scale;
 }
 
-void dt_dev_load_image_ext(dt_develop_t *dev, const uint32_t imgid, const int32_t snapshot_id)
+void dt_dev_load_image_ext(
+        dt_develop_t *dev,
+        const uint32_t imgid,
+        const int32_t snapshot_id)
 {
   dt_lock_image(imgid);
 
@@ -846,8 +852,13 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   return 0;
 }
 
-static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable,
-                                      gboolean new_item, gboolean no_image, gboolean include_masks)
+static void _dev_add_history_item_ext(
+        dt_develop_t *dev,
+        dt_iop_module_t *module,
+        gboolean enable,
+        gboolean new_item,
+        gboolean no_image,
+        gboolean include_masks)
 {
   int kept_module = 0;
   GList *history = g_list_nth(dev->history, dev->history_end);
@@ -999,12 +1010,20 @@ const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const ch
   return NULL;
 }
 
-void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, const int no_image)
+void dt_dev_add_history_item_ext(
+        dt_develop_t *dev,
+        dt_iop_module_t *module,
+        gboolean enable,
+        const int no_image)
 {
   _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
 }
 
-void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean new_item)
+void _dev_add_history_item(
+        dt_develop_t *dev,
+        dt_iop_module_t *module,
+        gboolean enable,
+        gboolean new_item)
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
@@ -1055,17 +1074,27 @@ void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean 
   }
 }
 
-void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+void dt_dev_add_history_item(
+        dt_develop_t *dev,
+        dt_iop_module_t *module,
+        gboolean enable)
 {
   _dev_add_history_item(dev, module, enable, FALSE);
 }
 
-void dt_dev_add_new_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+void dt_dev_add_new_history_item(
+        dt_develop_t *dev,
+        dt_iop_module_t *module,
+        gboolean enable)
 {
   _dev_add_history_item(dev, module, enable, TRUE);
 }
 
-void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_module, gboolean _enable, gboolean no_image)
+void dt_dev_add_masks_history_item_ext(
+        dt_develop_t *dev,
+        dt_iop_module_t *_module,
+        gboolean _enable,
+        gboolean no_image)
 {
   dt_iop_module_t *module = _module;
   gboolean enable = _enable;
@@ -1089,10 +1118,13 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_modu
     _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, TRUE);
   }
   else
-    fprintf(stderr, "[dt_dev_add_masks_history_item_ext] can't find mask manager module\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_dev_add_masks_history_item_ext] can't find mask manager module\n");
 }
 
-void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+void dt_dev_add_masks_history_item(
+        dt_develop_t *dev,
+        dt_iop_module_t *module,
+        gboolean enable)
 {
   dt_dev_undo_start_record(dev);
 
@@ -1353,22 +1385,19 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   // write history entries
 
   GList *history = dev->history;
-  if(DT_IOP_ORDER_INFO)
-    fprintf(stderr,"\n^^^^ Writing history image: %i, iop version: %i",imgid,dev->iop_order_version);
+  dt_print(DT_DEBUG_IOPORDER, "[dt_dev_write_history_ext] Writing history image: `%s' %i, iop version: %i\n",
+    dev->image_storage.filename, imgid, dev->iop_order_version);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
-    if(DT_IOP_ORDER_INFO)
-    {
-      fprintf(stderr,"\n%20s, num %i, order %d, v(%i), multiprio %i",
-              hist->module->op,i,hist->iop_order,hist->module->version(),hist->multi_priority);
-      if(hist->enabled) fprintf(stderr,", enabled");
-    }
+
+    dt_print(DT_DEBUG_IOPORDER, "%20s, num %2i, order %2d, v(%i), multiprio %i%s\n",
+      hist->module->op, i, hist->iop_order, hist->module->version(), hist->multi_priority,
+      (hist->enabled) ? ", enabled" : "");
+
     history = g_list_next(history);
   }
-  if(DT_IOP_ORDER_INFO)
-    fprintf(stderr,"\nvvvv\n");
 
   // update history end
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1419,7 +1448,7 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  dt_print(DT_DEBUG_PARAMS, "[history] module %s inserted to history\n", module->op);
+  dt_print(DT_DEBUG_PARAMS, "[dev_insert_module] `%s' inserted to history\n", module->op);
 }
 
 static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
@@ -1854,7 +1883,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     // cleanup
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
 
-    dt_print(DT_DEBUG_PARAMS, "[history] temporary history deleted\n");
+    dt_print(DT_DEBUG_PARAMS, "[dt_dev_read_history_ext] temporary history deleted\n");
 
     // make sure all modules default params are loaded to init history
     _dt_dev_load_pipeline_defaults(dev);
@@ -1867,12 +1896,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     first_run = _dev_auto_apply_presets(dev);
     auto_apply_modules = _dev_get_module_nb_records() - default_modules;
 
-    dt_print(DT_DEBUG_PARAMS, "[history] temporary history initialised with default params and presets\n");
+    dt_print(DT_DEBUG_PARAMS, "[dt_dev_read_history_ext] temporary history initialised with default params and presets\n");
 
     // now merge memory.history into main.history
     _dev_merge_history(dev, imgid);
 
-    dt_print(DT_DEBUG_PARAMS, "[history] temporary history merged with image history\n");
+    dt_print(DT_DEBUG_PARAMS, "[dt_dev_read_history_ext] temporary history merged with image history\n");
 
     //  first time we are loading the image, try to import lightroom .xmp if any
     if(dev->image_loading && first_run) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
@@ -1965,7 +1994,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     if(!(has_module_name && is_valid_id))
     {
-      fprintf(stderr, "[dev_read_history_ext] database history for image `%s' seems to be corrupted!\n",
+      dt_print(DT_DEBUG_ALWAYS, "[dev_read_history_ext] database history for image `%s' seems to be corrupted!\n",
               dev->image_storage.filename);
       continue;
     }
@@ -2020,8 +2049,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     if(!hist->module)
     {
-      fprintf(
-          stderr,
+      dt_print(DT_DEBUG_ALWAYS,
           "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n",
           module_name, dev->image_storage.filename);
       free(hist);
@@ -2095,7 +2123,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
          || hist->module->legacy_params(hist->module, module_params, labs(modversion),
                                         hist->params, labs(hist->module->version())))
       {
-        fprintf(stderr, "[dev_read_history] module `%s' version mismatch: history is %d, darktable is %d.\n",
+        dt_print(DT_DEBUG_ALWAYS, "[dev_read_history] module `%s' version mismatch: history is %d, darktable is %d.\n",
                 hist->module->op, modversion, hist->module->version());
 
         const char *fname = dev->image_storage.filename + strlen(dev->image_storage.filename);
@@ -2587,7 +2615,8 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   // always place the new instance after the base one
   if(!dt_ioppr_move_iop_after(base->dev, module, base))
   {
-    fprintf(stderr, "[dt_dev_module_duplicate] can't move new instance after the base one\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_dev_module_duplicate] can't move new instance after the base one\n");
+    dt_control_log(_("module duplicate, can't move new instance after the base one\n"));
   }
 
   // that's all. rest of insertion is gui work !
