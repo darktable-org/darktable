@@ -141,20 +141,44 @@ dt_lib_histogram_color_harmony_t dt_color_harmonies[DT_LIB_HISTOGRAM_HARMONY_N] 
 };
 
 // FIXME: are these lists available from the enum/options in darktableconfig.xml?
-const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { N_("vectorscope"), N_("waveform"), N_("rgb parade"), N_("histogram") };
-const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_SCALE_N] = { "logarithmic", "linear" };
-const gchar *dt_lib_histogram_orient_names[DT_LIB_HISTOGRAM_ORIENT_N] = { "horizontal", "vertical" };
-const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "u*v*", "AzBz", "RYB" };
-const gchar *dt_lib_histogram_color_harmony_width_names[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] = { "normal", "large", "narrow", "line" };
+const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] =
+{ N_("vectorscope"),
+  N_("waveform"),
+  N_("rgb parade"),
+  N_("histogram")
+};
+
+const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_SCALE_N] =
+  { "logarithmic",
+    "linear"
+  };
+
+const gchar *dt_lib_histogram_orient_names[DT_LIB_HISTOGRAM_ORIENT_N] =
+  { "horizontal",
+    "vertical"
+  };
+
+const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] =
+  { "u*v*",
+    "AzBz",
+    "RYB"
+  };
+
+const gchar *dt_lib_histogram_color_harmony_width_names[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] =
+  { "normal",
+    "large",
+    "narrow",
+    "line"
+  };
 
 const float dt_lib_histogram_color_harmony_width[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] =
-    { 0.5f/12.f, 0.75f/12.f, 0.25f/12.f, 0.0f };
+  { 0.5f/12.f, 0.75f/12.f, 0.25f/12.f, 0.0f };
 
 const void *dt_lib_histogram_scope_type_icons[DT_LIB_HISTOGRAM_SCOPE_N] =
-              { dtgtk_cairo_paint_vectorscope,
-                dtgtk_cairo_paint_waveform_scope,
-                dtgtk_cairo_paint_rgb_parade,
-                dtgtk_cairo_paint_histogram_scope };
+  { dtgtk_cairo_paint_vectorscope,
+    dtgtk_cairo_paint_waveform_scope,
+    dtgtk_cairo_paint_rgb_parade,
+    dtgtk_cairo_paint_histogram_scope };
 
 typedef struct dt_lib_histogram_t
 {
@@ -239,7 +263,8 @@ int position(const dt_lib_module_t *self)
 }
 
 
-static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const float *const input,
+static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d,
+                                             const float *const input,
                                              const dt_histogram_roi_t *const roi)
 {
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
@@ -253,17 +278,23 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
   histogram_params.roi = roi;
   histogram_params.bins_count = HISTOGRAM_BINS;
 
-  // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of the graph
-  // FIXME: set up "custom" histogram worker which can do colorspace conversion on fly -- in cases that we need to do that -- may need to add from colorspace to dt_dev_histogram_collection_params_t
+  // FIXME: for point sample, calculate whole graph and the point
+  // sample values, draw these on top of the graph
+
+  // FIXME: set up "custom" histogram worker which can do colorspace
+  // conversion on fly -- in cases that we need to do that -- may need
+  // to add from colorspace to dt_dev_histogram_collection_params_t
   dt_histogram_helper(&histogram_params, &histogram_stats, cst, IOP_CS_NONE,
                       input, &d->histogram, histogram_max, FALSE, NULL);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
 }
 
-static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const float *const input,
+static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
+                                            const float *const input,
                                             const dt_histogram_roi_t *const roi)
 {
-  // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of a dimmer graph
+  // FIXME: for point sample, calculate whole graph and the point
+  // sample values, draw these on top of a dimmer graph
   const int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
   const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
 
@@ -285,7 +316,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // will be <= 360x160x3. Hence process works with a relatively small
   // quantity of data.
   size_t bin_pad;
-  uint32_t *const restrict partial_binned = dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
+  uint32_t *const restrict partial_binned =
+    dt_calloc_perthread(3U * num_bins * num_tones, sizeof(uint32_t), &bin_pad);
 
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
@@ -316,7 +348,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
 
   // shortcut to change from linear to display gamma -- borrow hybrid log-gamma LUT
   const dt_iop_order_iccprofile_info_t *const profile =
-    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
+    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020,
+                                      "", DT_INTENT_PERCEPTUAL);
   // lut for all three channels should be the same
   const float *const restrict lut = DT_IS_ALIGNED((const float *const restrict)profile->lut_out[0]);
   const float lutmax = profile->lutsize - 1;
@@ -326,7 +359,10 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   // Every bin_width x height portion of the image is being described
   // in a 1 pixel x waveform_tones portion of the histogram.
   // NOTE: if constant is decreased, will brighten output
-  // FIXME: instead of using an area-beased scale, figure out max bin count and scale to that?
+
+  // FIXME: instead of using an area-beased scale, figure out max bin
+  // count and scale to that?
+
   const float brightness = num_tones / 40.0f;
   const float scale = brightness / ((orient == DT_LIB_HISTOGRAM_ORIENT_HORI ? sample_height : sample_width) * samples_per_bin);
   size_t nthreads = dt_get_num_threads();
@@ -381,7 +417,9 @@ static void _ryb2rgb(const dt_aligned_pixel_t ryb, dt_aligned_pixel_t rgb, const
   dt_HSV_2_RGB(HSV, rgb);
 }
 
-static void _rgb2ryb(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t ryb, const float *rgb2ryb_ypp)
+static void _rgb2ryb(const dt_aligned_pixel_t rgb,
+                     dt_aligned_pixel_t ryb,
+                     const float *rgb2ryb_ypp)
 {
   dt_aligned_pixel_t HSV;
   dt_RGB_2_HSV(rgb, HSV);
@@ -390,13 +428,13 @@ static void _rgb2ryb(const dt_aligned_pixel_t rgb, dt_aligned_pixel_t ryb, const
   dt_HSV_2_RGB(HSV, ryb);
 }
 
-static inline float baselog(float x, float bound)
+static inline float baselog(const float x, const float bound)
 {
   // FIXME: use dt's fastlog()?
   return log1pf((VECTORSCOPE_BASE_LOG - 1.f) * x / bound) / logf(VECTORSCOPE_BASE_LOG) * bound;
 }
 
-static inline void log_scale(float *x, float *y, float r)
+static inline void log_scale(float *x, float *y, const float r)
 {
   const float h = dt_fast_hypotf(*x,*y);
   // Haven't seen a zero point in practice, but it is certainly
@@ -410,11 +448,13 @@ static inline void log_scale(float *x, float *y, float r)
   }
 }
 
-static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_order_iccprofile_info_t *const vs_prof)
+static void _lib_histogram_vectorscope_bkgd
+  (dt_lib_histogram_t *d,
+   const dt_iop_order_iccprofile_info_t *const vs_prof)
 {
-  if(vs_prof == d->hue_ring_prof &&
-     d->vectorscope_scale == d->hue_ring_scale &&
-     d->vectorscope_type == d->hue_ring_colorspace)
+  if(vs_prof == d->hue_ring_prof
+     && d->vectorscope_scale == d->hue_ring_scale
+     && d->vectorscope_type == d->hue_ring_colorspace)
     return;
 
   // Calculate "hue ring" by tracing along the edges of the "RGB cube"
@@ -445,7 +485,10 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   // maps to a very small radius in CIELuv.
   cairo_pattern_t *p = cairo_pattern_create_mesh();
   // initialize to make gcc-7 happy
-  dt_aligned_pixel_t  rgb_display = { 0.f }, prev_rgb_display = { 0.f }, first_rgb_display = { 0.f };
+  dt_aligned_pixel_t rgb_display = { 0.f };
+  dt_aligned_pixel_t prev_rgb_display = { 0.f };
+  dt_aligned_pixel_t first_rgb_display = { 0.f };
+
   double px = 0., py= 0.;
 
   for(int k=0; k<6; k++)
@@ -462,8 +505,13 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
       {
         case DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV:
         {
-          dt_ioppr_rgb_matrix_to_xyz(rgb_scope, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
-                                     vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+          dt_ioppr_rgb_matrix_to_xyz(rgb_scope,
+                                     XYZ_D50,
+                                     vs_prof->matrix_in_transposed,
+                                     vs_prof->lut_in,
+                                     vs_prof->unbounded_coeffs_in,
+                                     vs_prof->lutsize,
+                                     vs_prof->nonlinearlut);
           dt_aligned_pixel_t xyY;
           dt_XYZ_to_xyY(XYZ_D50, xyY);
           dt_xyY_to_Luv(xyY, chromaticity);
@@ -472,8 +520,13 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         }
         case DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ:
         {
-          dt_ioppr_rgb_matrix_to_xyz(rgb_scope, XYZ_D50, vs_prof->matrix_in_transposed, vs_prof->lut_in,
-                                     vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+          dt_ioppr_rgb_matrix_to_xyz(rgb_scope,
+                                     XYZ_D50,
+                                     vs_prof->matrix_in_transposed,
+                                     vs_prof->lut_in,
+                                     vs_prof->unbounded_coeffs_in,
+                                     vs_prof->lutsize,
+                                     vs_prof->nonlinearlut);
           dt_aligned_pixel_t XYZ_D65;
           dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
           dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
@@ -526,10 +579,26 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
         cairo_mesh_pattern_move_to(p, 0., 0.);
         cairo_mesh_pattern_line_to(p, px, py);
         cairo_mesh_pattern_line_to(p, chromaticity[1], chromaticity[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 0, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 1, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 2, rgb_display[0], rgb_display[1], rgb_display[2]);
-        cairo_mesh_pattern_set_corner_color_rgb(p, 3, rgb_display[0], rgb_display[1], rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p,
+                                                0,
+                                                prev_rgb_display[0],
+                                                prev_rgb_display[1],
+                                                prev_rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p,
+                                                1,
+                                                prev_rgb_display[0],
+                                                prev_rgb_display[1],
+                                                prev_rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p,
+                                                2,
+                                                rgb_display[0],
+                                                rgb_display[1],
+                                                rgb_display[2]);
+        cairo_mesh_pattern_set_corner_color_rgb(p,
+                                                3,
+                                                rgb_display[0],
+                                                rgb_display[1],
+                                                rgb_display[2]);
         cairo_mesh_pattern_end_patch(p);
       }
 
@@ -544,10 +613,26 @@ static void _lib_histogram_vectorscope_bkgd(dt_lib_histogram_t *d, const dt_iop_
   cairo_mesh_pattern_move_to(p, 0., 0.);
   cairo_mesh_pattern_line_to(p, px, py);
   cairo_mesh_pattern_line_to(p, d->hue_ring[0][0][0], d->hue_ring[0][0][1]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 0, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 1, prev_rgb_display[0], prev_rgb_display[1], prev_rgb_display[2]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 2, first_rgb_display[0], first_rgb_display[1], first_rgb_display[2]);
-  cairo_mesh_pattern_set_corner_color_rgb(p, 3, first_rgb_display[0], first_rgb_display[1], first_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p,
+                                          0,
+                                          prev_rgb_display[0],
+                                          prev_rgb_display[1],
+                                          prev_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p,
+                                          1,
+                                          prev_rgb_display[0],
+                                          prev_rgb_display[1],
+                                          prev_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p,
+                                          2,
+                                          first_rgb_display[0],
+                                          first_rgb_display[1],
+                                          first_rgb_display[2]);
+  cairo_mesh_pattern_set_corner_color_rgb(p,
+                                          3,
+                                          first_rgb_display[0],
+                                          first_rgb_display[1],
+                                          first_rgb_display[2]);
   cairo_mesh_pattern_end_patch(p);
 
   const int diam_px = d->vectorscope_diameter_px;
