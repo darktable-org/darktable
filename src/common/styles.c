@@ -39,8 +39,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
-
 typedef struct
 {
   GString *name;
@@ -954,8 +952,8 @@ void _styles_apply_to_image_ext(const char *name,
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
 
-    if(DT_IOP_ORDER_INFO)
-      fprintf(stderr,"\n^^^^^ Apply style on image %i, history size %i",imgid,dev_dest->history_end);
+    dt_print(DT_DEBUG_IOPORDER, "[styles_apply_to_image_ext] Apply style on image `%s' id %i, history size %i",
+      dev_dest->image_storage.filename, newimgid, dev_dest->history_end);
 
     // go through all entries in style
     // clang-format off
@@ -1010,8 +1008,6 @@ void _styles_apply_to_image_ext(const char *name,
     }
 
     g_list_free_full(si_list, dt_style_item_free);
-
-    if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv --> look for written history below\n");
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 
@@ -1786,7 +1782,6 @@ dt_style_t *dt_styles_get_by_name(const char *name)
   }
 }
 
-#undef DT_IOP_ORDER_INFO
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
