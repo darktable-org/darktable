@@ -1107,7 +1107,7 @@ finally:
           tgpumax = fmaxf(cl->dev[n].benchmark, tgpumax);
         }
       }
-      
+
       if(tcpu < tgpumin / 3.0f)
       {
         // de-activate opencl for darktable in case the cpu is three times faster than the fastest GPU.
@@ -2833,13 +2833,16 @@ void dt_opencl_check_tuning(const int devid)
   static int oldtuned = -999;
 
   const int tunemode = res->tunemode;
-  const int pinmode = cl->dev[devid].pinned_memory;
-  
   cl->dev[devid].tuneactive = tunemode & DT_OPENCL_TUNE_MEMSIZE;
 
-  if(((pinmode & DT_OPENCL_PINNING_DISABLED) == 0) &&
-     ((cl->dev[devid].runtime_error & DT_OPENCL_TUNE_PINNED) == 0) &&
-     ((pinmode & DT_OPENCL_PINNING_ON) || (tunemode & DT_OPENCL_TUNE_PINNED)))
+  const int pinmode = cl->dev[devid].pinned_memory;
+  const gboolean safe_clmemsize = cl->dev[devid].max_global_mem < (size_t) (darktable.dtresources.total_memory / 16lu / cl->num_devs); 
+  const gboolean want_pinned = (pinmode & DT_OPENCL_PINNING_ON) || (tunemode & DT_OPENCL_TUNE_PINNED);
+
+  if(((pinmode & DT_OPENCL_PINNING_DISABLED) == 0)
+       && ((cl->dev[devid].runtime_error & DT_OPENCL_TUNE_PINNED) == 0)
+       && want_pinned
+       && safe_clmemsize)
     cl->dev[devid].tuneactive |= DT_OPENCL_TUNE_PINNED;
 
   int level = res->level;
