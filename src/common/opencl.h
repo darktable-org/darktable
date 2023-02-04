@@ -159,7 +159,7 @@ typedef struct dt_opencl_device_t
   // this can often be avoided by using indirect transfers via pinned memory,
   // other devices have more efficient direct memory transfer implementations.
   // We can't predict on solid grounds if a device belongs to the first or second group,
-  // also pinned mem transfer requires slightly more ram. 
+  // also pinned mem transfer requires slightly more video ram plus system memory. 
   // this holds a bitmask defined by dt_opencl_pinmode_t
   // the device specific conf key might hold
   // 0 -> disabled by default; might be switched on by tune for performance
