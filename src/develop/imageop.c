@@ -304,7 +304,8 @@ void dt_iop_default_init(dt_iop_module_t *module)
       // ignore STRUCT; nothing to do
       break;
     default:
-      fprintf(stderr, "unsupported introspection type \"%s\" encountered in dt_iop_default_init (field %s)\n", i->header.type_name, i->header.field_name);
+      dt_print(DT_DEBUG_PARAMS, "in `%s' unsupported introspection type \"%s\" encountered in dt_iop_default_init (field %s)\n",
+        module->op, i->header.type_name, i->header.field_name);
       break;
     }
 
@@ -350,7 +351,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
         goto api_h_error;
     }
     else
-      fprintf(stderr, "[iop_load_module] failed to initialize introspection for operation `%s'\n", module_name);
+      dt_print(DT_DEBUG_ALWAYS, "[iop_load_module] failed to initialize introspection for operation `%s'\n", module_name);
   }
 
   if(module->init_global) module->init_global(module);
@@ -440,7 +441,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
 
   if(module->params_size == 0)
   {
-    fprintf(stderr, "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
+    dt_print(DT_DEBUG_ALWAYS, "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
     return 1; // empty params hurt us in many places, just add a dummy value
   }
   module->enabled = module->default_enabled; // apply (possibly new) default.
@@ -1207,12 +1208,10 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
     if(module->dev)
     {
       module->reload_defaults(module);
-      dt_print(DT_DEBUG_PARAMS, "[params] defaults reloaded for %s\n", module->op);
+      dt_print(DT_DEBUG_PARAMS, "[dt_iop_reload_defaults] defaults reloaded for %s\n", module->op);
     }
     else
-    {
-      fprintf(stderr, "reload_defaults should not be called without image.\n");
-    }
+      dt_print(DT_DEBUG_PARAMS, "[dt_iop_reload_defaults] should not be called without image.\n");
   }
   dt_iop_load_default_params(module);
   if(darktable.gui) --darktable.gui->reset;
@@ -1280,7 +1279,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       }
       else
       {
-        fprintf(stderr, "[imageop_init_presets] WARNING: Could not find versioning information for '%s' "
+        dt_print(DT_DEBUG_ALWAYS, "[imageop_init_presets] WARNING: Could not find versioning information for '%s' "
                         "preset '%s'\nUntil some is found, the preset will be unavailable.\n(To make it "
                         "return, please load an image that uses the preset.)\n",
                 module_so->op, name);
@@ -1292,8 +1291,8 @@ static void _init_presets(dt_iop_module_so_t *module_so)
 
       // we found an old params version.  Update the database with it.
 
-      fprintf(stderr, "[imageop_init_presets] Found version %d for '%s' preset '%s'\n", old_params_version,
-              module_so->op, name);
+      dt_print(DT_DEBUG_ALWAYS, "[imageop_init_presets] found version %d for '%s' preset '%s'\n",
+        old_params_version, module_so->op, name);
 
       DT_DEBUG_SQLITE3_PREPARE_V2
         (dt_database_get(darktable.db),
@@ -1346,7 +1345,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       else
         auto_init = TRUE;
 
-      fprintf(stderr, "[imageop_init_presets] updating '%s' preset '%s' from version %d to version %d\nto:'%s'",
+      dt_print(DT_DEBUG_ALWAYS, "[imageop_init_presets] updating '%s' preset '%s' from version %d to version %d\nto:'%s'",
               module_so->op, name, old_params_version, module_version,
               dt_exif_xmp_encode(new_params, new_params_size, NULL));
 
@@ -1377,14 +1376,14 @@ static void _init_presets(dt_iop_module_so_t *module_so)
     }
     else if(module_version > old_params_version)
     {
-      fprintf(stderr, "[imageop_init_presets] Can't upgrade '%s' preset '%s' from version %d to %d, no "
+      dt_print(DT_DEBUG_ALWAYS, "[imageop_init_presets] Can't upgrade '%s' preset '%s' from version %d to %d, no "
                       "legacy_params() implemented \n",
               module_so->op, name, old_params_version, module_version);
     }
 
     if(!old_blend_params || dt_develop_blend_version() > old_blend_params_version)
     {
-      fprintf(stderr,
+      dt_print(DT_DEBUG_ALWAYS,
               "[imageop_init_presets] updating '%s' preset '%s' from blendop version %d to version %d\n",
               module_so->op, name, old_blend_params_version, dt_develop_blend_version());
 
@@ -1699,7 +1698,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
       if(!memchr(p, '\0', field->Array.count))
       {
         if(report)
-          fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\"; string not null terminated.\n",
+          dt_print(DT_DEBUG_ALWAYS, "validation check failed in _iop_validate_params for type \"%s\"; string not null terminated.\n",
                           field->header.type_name);
         all_ok = FALSE;
       }
@@ -1711,7 +1710,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
         if(!_iop_validate_params(field->Array.field, (uint8_t *)params + item_offset, report))
         {
           if(report)
-            fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\", for array element \"%d\"\n",
+            dt_print(DT_DEBUG_ALWAYS, "validation check failed in _iop_validate_params for type \"%s\", for array element \"%d\"\n",
                             field->header.type_name, i);
           all_ok = FALSE;
           break;
@@ -1761,14 +1760,14 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     // TODO: special case float2
     break;
   default:
-    fprintf(stderr, "unsupported introspection type \"%s\" encountered in _iop_validate_params (field %s)\n",
+    dt_print(DT_DEBUG_ALWAYS, "unsupported introspection type \"%s\" encountered in _iop_validate_params (field %s)\n",
                     field->header.type_name, field->header.name);
     all_ok = FALSE;
     break;
   }
 
   if(!all_ok && report)
-    fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\"%s%s\n",
+    dt_print(DT_DEBUG_ALWAYS, "validation check failed in _iop_validate_params for type \"%s\"%s%s\n",
                     field->header.type_name, (*field->header.name ? ", field: " : ""), field->header.name);
 
   return all_ok;
@@ -1882,7 +1881,8 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 
     free(str);
 
-    dt_print(DT_DEBUG_PARAMS, "[params] commit for %s in pipe %i with hash %lu\n", module->op, pipe->type, (long unsigned int)piece->hash);
+    dt_print(DT_DEBUG_PARAMS | DT_DEBUG_PIPE, "[dt_iop_commit_params] [%s] committed for %s with hash %lu\n",
+      dt_dev_pixelpipe_type_to_str(pipe->type), module->op, (long unsigned int)piece->hash);
   }
   // printf("commit params hash += module %s: %lu, enabled = %d\n", piece->module->op, piece->hash,
   // piece->enabled);
@@ -2263,7 +2263,7 @@ static void _header_size_callback(GtkWidget *widget,
         }
         else
         {
-          fprintf(stderr, "unknown darkroom/ui/hide_header_buttons option %s\n", config);
+          dt_print(DT_DEBUG_ALWAYS, "unknown darkroom/ui/hide_header_buttons option %s\n", config);
         }
       }
     }
@@ -2415,7 +2415,7 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
     else if(mm & DEVELOP_MASK_RASTER)
       type=_("raster mask");
     else
-      fprintf(stderr, "unknown mask mode '%u' in module '%s'\n", mm, module->op);
+      dt_print(DT_DEBUG_ALWAYS, "unknown mask mode '%u' in module '%s'\n", mm, module->op);
     gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
     gchar *part2 = NULL;
     if(raster && module->raster_mask.sink.source)
@@ -3421,7 +3421,7 @@ static float _action_process(gpointer target,
         dt_gui_presets_apply_adjacent_preset(module, move_size);
         return 0; // don't overwrite toast below
       default:
-        fprintf(stderr, "[imageop::_action_process] effect %d for presets not yet implemented\n", effect);
+        dt_print(DT_DEBUG_ALWAYS, "[imageop::_action_process] effect %d for presets not yet implemented\n", effect);
         break;
       }
     }
