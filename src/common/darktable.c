@@ -143,6 +143,7 @@ static int usage(const char *argv0)
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
+  printf("  --dump-pfm <module>\n");
   printf("  -h, --help");
 #ifdef _WIN32
   printf(", /?");
@@ -334,13 +335,13 @@ static void dt_codepaths_init()
 #endif
   {
     darktable.codepath.OPENMP_SIMD = 1;
-    fprintf(stderr, "[dt_codepaths_init] will be using experimental plain OpenMP SIMD codepath.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_codepaths_init] will be using experimental plain OpenMP SIMD codepath.\n");
   }
 
 #if defined(__SSE__)
   if(darktable.codepath._no_intrinsics)
   {
-    fprintf(stderr, "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
   }
 #endif
 }
@@ -386,7 +387,7 @@ static inline size_t _get_total_memory()
   return memInfo.ullTotalPhys / (uint64_t)1024;
 #else
   // assume 2GB until we have a better solution.
-  fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
+  dt_print(DT_DEBUG_ALWAYS, "[get_total_memory] Unknown memory size. Assuming 2GB\n");
   return 2097152;
 #endif
 }
@@ -417,13 +418,58 @@ void check_resourcelevel(const char *key, int *fractions, const int level)
   }
 }
 
+void dt_dump_pfm(
+        const char *filename,
+        const void* in,
+        const int width,
+        const int height,
+        const dt_dump_pfm_t mode,
+        const char *modname)
+{
+  if(!darktable.dump_pfm_module) return;
+  if(!modname) return;
+  if(strcmp(modname, darktable.dump_pfm_module)) return; 
+
+  if(mode > DT_DUMP_PFM_LAST)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] undefined mode %i\n", mode); 
+    return;
+  }
+
+  char fname[512];
+  snprintf(fname, sizeof (fname), "/tmp/darktable/%s/%s.pfm", modname, filename);
+
+  FILE *f = g_fopen(fname, "wb");
+  if(f == NULL)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] can't write file '%s' in wb mode\n", filename); 
+    return;
+  }
+
+  if((mode == DT_DUMP_PFM_MASK) || (mode == DT_DUMP_PFM_RGB))
+  {
+    const size_t p = (mode == DT_DUMP_PFM_MASK) ? 1 : 4;
+    fprintf(f, "P%s\n%d %d\n-1.0\n", (p == 1) ? "f" : "F", width, height);
+    const float *data = in;
+    for(int row = height - 1; row >= 0; row--)
+    {
+      for(int col = 0; col < width; col++)
+      {
+        const size_t blk = (row * width + col) * p;
+        fwrite(data + blk, p, sizeof(float), f);
+      }
+    }
+  }
+  fclose(f);
+}
+
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
   double start_wtime = dt_get_wtime();
 
 #ifndef _WIN32
   if(getuid() == 0 || geteuid() == 0)
-    printf(
+    dt_print(DT_DEBUG_ALWAYS,
         "WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
 #endif
 
@@ -434,8 +480,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_set_signal_handlers();
 
-  int sse2_supported = 0;
-
+  gboolean sse2_supported = FALSE;
 #ifdef HAVE_BUILTIN_CPU_SUPPORTS
   // NOTE: _may_i_use_cpu_feature() looks better, but only available in ICC
   __builtin_cpu_init();
@@ -443,11 +488,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #else
   sse2_supported = dt_detect_cpu_features() & CPU_FLAG_SSE2;
 #endif
-  if(!sse2_supported)
-  {
-    fprintf(stderr, "[dt_init] SSE2 instruction set is unavailable.\n");
-    fprintf(stderr, "[dt_init] expect a LOT of functionality to be broken. you have been warned.\n");
-  }
 
 #ifdef M_MMAP_THRESHOLD
   mallopt(M_MMAP_THRESHOLD, 128 * 1024); /* use mmap() for large allocations */
@@ -460,6 +500,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   memset(&darktable, 0, sizeof(darktable_t));
 
   darktable.start_wtime = start_wtime;
+  if(!sse2_supported)
+    dt_print(DT_DEBUG_ALWAYS, "[dt_init] SSE2 instruction set is unavailable.\n"
+                              "[dt_init] expect a LOT of functionality to be broken. you have been warned.\n");
 
   darktable.progname = argv[0];
 
@@ -488,6 +531,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   char *configdir_from_command = NULL;
   char *cachedir_from_command = NULL;
 
+  darktable.dump_pfm_module = NULL;
 #ifdef HAVE_OPENCL
   gboolean exclude_opencl = FALSE;
   gboolean print_statistics = (strstr(argv[0], "darktable-cltest") == NULL);
@@ -629,6 +673,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                );
         return 1;
       }
+      else if(!strcmp(argv[k], "--dump-pfm") && argc > k + 1)
+      {
+        darktable.dump_pfm_module = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
       else if(!strcmp(argv[k], "--library") && argc > k + 1)
       {
         dbfilename_from_command = argv[++k];
@@ -746,7 +796,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef DT_HAVE_SIGNAL_TRACE
           darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_PRINT_TRACE; // enable printing of signal tracing
 #else
-          fprintf(stderr, "[signal] print-trace not available, skipping\n");
+          dt_print(DT_DEBUG_ALWAYS, "[signal] print-trace not available, skipping\n");
 #endif
         }
         else
@@ -805,7 +855,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         CHKSIGDBG(DT_SIGNAL_METADATA_UPDATE);
         else
         {
-          fprintf(stderr, "unknown signal name: '%s'. use 'ALL' to enable debug for all or use full signal name\n", str);
+          dt_print(DT_DEBUG_SIGNAL, "[dt_init] unknown signal name: '%s'. use 'ALL' to enable debug for all or use full signal name\n", str);
           return usage(argv[0]);
         }
         g_free(str);
@@ -817,7 +867,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(argv[k][1] == 't' && argc > k + 1)
       {
         darktable.num_openmp_threads = CLAMP(atol(argv[k + 1]), 1, 100);
-        printf("[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
+        dt_print(DT_DEBUG_ALWAYS, "[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -904,7 +954,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
   {
-    fprintf(stderr, "[memory] at startup\n");
+    dt_print(DT_DEBUG_ALWAYS, "[memory] at startup\n");
     dt_print_mem_usage();
   }
 
@@ -1025,7 +1075,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
   if(darktable.db == NULL)
   {
-    printf("ERROR : cannot open database\n");
+    dt_print(DT_DEBUG_ALWAYS, "ERROR : cannot open database\n");
     return 1;
   }
   else if(!dt_database_get_lock_acquired(darktable.db))
@@ -1035,7 +1085,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       gboolean image_loaded_elsewhere = FALSE;
 #ifndef MAC_INTEGRATION
       // send the images to the other instance via dbus
-      fprintf(stderr, "trying to open the images in the running instance\n");
+      dt_print(DT_DEBUG_ALWAYS, "[dt_init] trying to open the images in the running instance\n");
 
       GDBusConnection *connection = NULL;
       for(int i = 1; i < argc; i++)
@@ -1057,7 +1107,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
       if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
     }
-    fprintf(stderr, "ERROR: can't acquire database lock, aborting.\n");
+    dt_print(DT_DEBUG_ALWAYS, "ERROR: can't acquire database lock, aborting.\n");
     return 1;
   }
 
@@ -1199,7 +1249,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   {
     if(dt_gui_gtk_init(darktable.gui))
     {
-      fprintf(stderr, "ERROR: can't init gui, aborting.\n");
+      dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init gui, aborting.\n");
       return 1;
     }
     dt_bauhaus_init();
@@ -1213,7 +1263,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // check whether we were able to load darkroom view. if we failed, we'll crash everywhere later on.
   if(!darktable.develop)
   {
-    fprintf(stderr, "ERROR: can't init develop system, aborting.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: can't init develop system, aborting.\n");
     return 1;
   }
 
@@ -1229,7 +1279,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // check if all modules have a iop order assigned
   if(dt_ioppr_check_so_iop_order(darktable.iop, darktable.iop_order_list))
   {
-    fprintf(stderr, "ERROR: iop order looks bad, aborting.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[dt_init] ERROR: iop order looks bad, aborting.\n");
     return 1;
   }
 
@@ -1241,6 +1291,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // init metadata flags
   dt_metadata_init();
+
+  if(darktable.dump_pfm_module)
+    dt_print(DT_DEBUG_ALWAYS, "[dt_init] writing intermediate pfm files for module '%s'\n",
+      darktable.dump_pfm_module);
 
   if(init_gui)
   {
@@ -1273,7 +1327,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
   {
-    fprintf(stderr, "[memory] after successful startup\n");
+    dt_print(DT_DEBUG_ALWAYS, "[memory] after successful startup\n");
     dt_print_mem_usage();
   }
 
@@ -1344,7 +1398,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_control_crawler_show_image_list(changed_xmp_files);
   }
 
-  dt_print(DT_DEBUG_CONTROL, "[init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
+  dt_print(DT_DEBUG_CONTROL, "[dt_init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
 
   return 0;
 }
@@ -1384,14 +1438,14 @@ void dt_get_sysresource_level()
   {
     const int oldgrp = res->group;
     res->group = 4 * level;
-    fprintf(stderr,"[dt_get_sysresource_level] switched to %i as `%s'\n", level, config);
-    fprintf(stderr,"  total mem:       %luMB\n", res->total_memory / 1024lu / 1024lu);
-    fprintf(stderr,"  mipmap cache:    %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
-    fprintf(stderr,"  available mem:   %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
-    fprintf(stderr,"  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_ALWAYS, "[dt_get_sysresource_level] switched to %i as `%s'\n", level, config);
+    dt_print(DT_DEBUG_ALWAYS, "  total mem:       %luMB\n", res->total_memory / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_ALWAYS, "  mipmap cache:    %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_ALWAYS, "  available mem:   %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
+    dt_print(DT_DEBUG_ALWAYS, "  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
 #ifdef HAVE_OPENCL
-    fprintf(stderr,"  OpenCL tune mem: %s\n", ((tunecl & DT_OPENCL_TUNE_MEMSIZE) && (level >= 0)) ? "WANTED" : "OFF");
-    fprintf(stderr,"  OpenCL pinned:   %s\n", ((tunecl & DT_OPENCL_TUNE_PINNED) && (level >= 0)) ? "WANTED" : "OFF");
+    dt_print(DT_DEBUG_ALWAYS, "  OpenCL tune mem: %s\n", ((tunecl & DT_OPENCL_TUNE_MEMSIZE) && (level >= 0)) ? "WANTED" : "OFF");
+    dt_print(DT_DEBUG_ALWAYS, "  OpenCL pinned:   %s\n", ((tunecl & DT_OPENCL_TUNE_PINNED) && (level >= 0)) ? "WANTED" : "OFF");
 #endif
     res->group = oldgrp;
   }
@@ -1879,7 +1933,8 @@ void dt_print_mem_usage()
   free(line);
   fclose(f);
 
-  fprintf(stderr, "[memory] max address space (vmpeak): %15s"
+  dt_print(DT_DEBUG_ALWAYS,
+                  "[memory] max address space (vmpeak): %15s"
                   "[memory] cur address space (vmsize): %15s"
                   "[memory] max used memory   (vmhwm ): %15s"
                   "[memory] cur used memory   (vmrss ): %15s",
@@ -1891,12 +1946,13 @@ void dt_print_mem_usage()
 
   if(KERN_SUCCESS != task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count))
   {
-    fprintf(stderr, "[memory] task memory info unknown.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[memory] task memory info unknown.\n");
     return;
   }
 
   // Report in kB, to match output of /proc on Linux.
-  fprintf(stderr, "[memory] max address space (vmpeak): %15s\n"
+  dt_print(DT_DEBUG_ALWAYS,
+                  "[memory] max address space (vmpeak): %15s\n"
                   "[memory] cur address space (vmsize): %12llu kB\n"
                   "[memory] max used memory   (vmhwm ): %15s\n"
                   "[memory] cur used memory   (vmrss ): %12llu kB\n",
@@ -1921,7 +1977,8 @@ void dt_print_mem_usage()
   size_t physMemUsedByMe = pmc.WorkingSetSize;
 
 
-  fprintf(stderr, "[memory] max address space (vmpeak): %12llu kB\n"
+  dt_print(DT_DEBUG_ALWAYS,
+                  "[memory] max address space (vmpeak): %12llu kB\n"
                   "[memory] cur address space (vmsize): %12llu kB\n"
                   "[memory] max used memory   (vmhwm ): %12llu kB\n"
                   "[memory] cur used memory   (vmrss ): %12llu Kb\n",
@@ -1929,7 +1986,7 @@ void dt_print_mem_usage()
           physMemUsedByMe / 1024);
 
 #else
-  fprintf(stderr, "dt_print_mem_usage() currently unsupported on this platform\n");
+  dt_print(DT_DEBUG_ALWAYS, "dt_print_mem_usage() currently unsupported on this platform\n");
 #endif
 }
 
