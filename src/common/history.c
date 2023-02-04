@@ -34,8 +34,6 @@
 #include "gui/hist_dialog.h"
 #include "imageio/imageio_common.h"
 
-#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
-
 void dt_history_item_free(gpointer data)
 {
   dt_history_item_t *item = (dt_history_item_t *)data;
@@ -552,7 +550,7 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
 
   if(ops)
   {
-    if(DT_IOP_ORDER_INFO) fprintf(stderr," selected ops");
+    dt_print(DT_DEBUG_IOPORDER, "[history_copy_and_paste_on_image_merge] selected modules\n");
     // copy only selected history entries
     for(const GList *l = g_list_last(ops); l; l = g_list_previous(l))
     {
@@ -565,8 +563,7 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
       {
         if(!dt_iop_is_hidden(hist->module))
         {
-          if(DT_IOP_ORDER_INFO)
-            fprintf(stderr,"\n  module %20s, multiprio %i",
+          dt_print(DT_DEBUG_IOPORDER, "  module %20s, multiprio %i\n",
                     hist->module->op, hist->module->multi_priority);
 
           mod_list = g_list_prepend(mod_list, hist->module);
@@ -577,7 +574,7 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
   }
   else
   {
-    if(DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
+    dt_print(DT_DEBUG_IOPORDER, "[history_copy_and_paste_on_image_merge] all modules\n");
     // we will copy all modules
     for(GList *modules_src = dev_src->iop;
         modules_src;
@@ -597,7 +594,6 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
       }
     }
   }
-  if(DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
 
   // list were built in reverse order, so un-reverse it
   mod_list = g_list_reverse(mod_list);
@@ -1372,7 +1368,7 @@ GList *dt_history_duplicate(GList *hist)
       else
       {
         // nothing else to do
-        fprintf(stderr, "[_duplicate_history] can't find base module for %s\n", old->op_name);
+        dt_print(DT_DEBUG_ALWAYS, "[_duplicate_history] can't find base module for %s\n", old->op_name);
       }
     }
 
@@ -1882,7 +1878,6 @@ gboolean dt_history_delete_on_list(const GList *list, const gboolean undo)
   return TRUE;
 }
 
-#undef DT_IOP_ORDER_INFO
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
