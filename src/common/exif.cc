@@ -1717,8 +1717,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_get_thumbnail] " << path << ": " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO, "[exiv2 dt_exif_get_thumbnail] %s: %s\n", path, e.what());
     return 1;
   }
 }
@@ -1786,8 +1785,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
   }
   catch(Exiv2::AnyError &e)
   {
-    std::string s(e.what());
-    std::cerr << "[exiv2 dt_exif_read] " << path << ": " << s << std::endl;
+    dt_print(DT_DEBUG_IMAGEIO,"[exiv2 dt_exif_read] %s: %s\n", path, e.what());
     return 1;
   }
 }
