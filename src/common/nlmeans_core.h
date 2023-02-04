@@ -1,7 +1,7 @@
 #pragma once
 /*
     This file is part of darktable,
-    Copyright (C) 2020 darktable developers.
+    Copyright (C) 2020-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,10 +43,6 @@ typedef struct dt_nlmeans_param_t dt_nlmeans_param_t;
 void nlmeans_denoise(const float *const inbuf, float *const outbuf,
                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                      const dt_nlmeans_param_t *const params);
-
-void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
-                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                          const dt_nlmeans_param_t *const params);
 
 #ifdef HAVE_OPENCL
 int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,

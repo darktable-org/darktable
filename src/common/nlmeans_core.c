@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2022 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,10 +29,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#if defined(__SSE2__)
-#include <xmmintrin.h>
-#endif
-
 // to avoid accumulation of rounding errors, we should do a full recomputation of the patch differences
 //   every so many rows of the image.  We'll also use that interval as the target maximum chunk size for
 //   parallelization
@@ -55,7 +51,9 @@
 // recomputing for both scalar and SSE on a Threadripper due to increased memory writes; this may differ on
 // architectures with slower multiplication.
 //#define CACHE_PIXDIFFS
-//#define CACHE_PIXDIFFS_SSE
+
+// re-checked SSE2 codepath performance on 8-core Intel (tested with nthreads 4, 8, 16) there was no gain
+// of significance. So dropping code for less maintenance burden and possibly bugs. 
 
 // number of intermediate buffers used by OpenCL code path.  If you change this, you must also change
 //   the definition in src/iop/nlmeans.c and src/iop/denoiseprofile.c
@@ -87,7 +85,11 @@ static inline int sign(int a)
 }
 
 // map the basic row/column offset into a possible much larger offset based on a user parameter
-static int scatter(const float scale, const float scattering, const int index1, const int index2)
+static int scatter(
+        const float scale,
+        const float scattering,
+        const int index1,
+        const int index2)
 {
   // this formula is designed to
   //  - produce an identity mapping when scattering = 0
@@ -99,8 +101,11 @@ static int scatter(const float scale, const float scattering, const int index1, 
 }
 
 // allocate and fill an array of patch definitions
-static struct patch_t*
-define_patches(const dt_nlmeans_param_t *const params, const int stride, int *num_patches, int *max_shift)
+static struct patch_t* define_patches(
+        const dt_nlmeans_param_t *const params,
+        const int stride,
+        int *num_patches,
+        int *max_shift)
 {
   const int search_radius = params->search_radius;
   const float scale = params->scale;
@@ -146,7 +151,10 @@ static float compute_center_pixel_norm(const float center_weight, const int radi
 }
 
 // compute the channel-normed squared difference between two pixels
-static inline float pixel_difference(const float* const pix1, const float* pix2, const dt_aligned_pixel_t norm)
+static inline float pixel_difference(
+        const float* const pix1,
+        const float* pix2,
+        const dt_aligned_pixel_t norm)
 {
   dt_aligned_pixel_t sum = { 0.f, 0.f, 0.f, 0.f };
   for_each_channel(i, aligned(sum:16))
@@ -158,9 +166,12 @@ static inline float pixel_difference(const float* const pix1, const float* pix2,
 }
 
 // optimized: pixel_difference(pix1, pix2, norm) - pixel_difference(pix3, pix4, norm)
-static inline float diff_of_pixels_diff(const float* const pix1, const float* pix2,
-                                        const float* const pix3, const float* pix4,
-                                        const dt_aligned_pixel_t norm)
+static inline float diff_of_pixels_diff(
+        const float* const pix1,
+        const float* pix2,
+        const float* const pix3,
+        const float* pix4,
+        const dt_aligned_pixel_t norm)
 {
   dt_aligned_pixel_t sum = { 0.f, 0.f, 0.f, 0.f };
   for_each_channel(i, aligned(sum:16))
@@ -172,54 +183,36 @@ static inline float diff_of_pixels_diff(const float* const pix1, const float* pi
   return sum[0] + sum[1] + sum[2];
 }
 
-#if defined(__SSE2__)
-// compute the channel-normed squared difference between two pixels; don't do horizontal sum until later
-static inline __m128 channel_difference_sse2(const float* const pix1, const float* pix2, const dt_aligned_pixel_t norm)
-{
-  const __m128 px1 = _mm_load_ps(pix1);
-  const __m128 px2 = _mm_load_ps(pix2);
-  const __m128 n = _mm_load_ps(norm);
-  const __m128 dif = px1 - px2;
-  return dif * dif * n;
-}
-#endif /* __SSE2__ */
-
-#if defined(__SSE2__)
-// compute the channel-normed squared difference between two pixels
-static inline float pixel_difference_sse2(const float* const pix1, const float* pix2, const dt_aligned_pixel_t norm)
-{
-  const __m128 px1 = _mm_load_ps(pix1);
-  const __m128 px2 = _mm_load_ps(pix2);
-  const __m128 n = _mm_load_ps(norm);
-  const __m128 dif = px1 - px2;
-  const __m128 ssd = dif * dif * n;
-  return ssd[0] + ssd[1] + ssd[2];
-}
-#endif /* __SSE2__ */
-
-#if defined(CACHE_PIXDIFFS) || defined(CACHE_PIXDIFFS_SSE)
-static inline float get_pixdiff(const float *const col_sums, const int radius, const int row, const int col)
+#if defined(CACHE_PIXDIFFS)
+static inline float get_pixdiff(
+        const float *const col_sums,
+        const int radius,
+        const int row,
+        const int col)
 {
   const int stride = 2*(radius+1);
   const int modrow = 1 + (row + stride) % stride;
   const float *const pixrow = col_sums + (SLICE_WIDTH + 2*radius)*modrow;
   return pixrow[col];
 }
-#endif
 
-#if defined(CACHE_PIXDIFFS) || defined(CACHE_PIXDIFFS_SSE)
-static inline void set_pixdiff(float *const col_sums, const int radius, const int row, const int col,
-                               const float diff)
+static inline void set_pixdiff(
+        float *const col_sums,
+        const int radius,
+        const int row,
+        const int col,
+        const float diff)
 {
   const int stride = 2*(radius+1);
   const int modrow = 1 + (row + stride) % stride;
   float *const pixrow = col_sums + (SLICE_WIDTH + 2*radius)*modrow;
   pixrow[col] = diff;
 }
-#endif
 
-#if defined(CACHE_PIXDIFFS) || defined(CACHE_PIXDIFFS_SSE)
-static inline float pixdiff_column_sum(const float *const col_sums, const int radius, const int col)
+static inline float pixdiff_column_sum(
+        const float *const col_sums,
+        const int radius,
+        const int col)
 {
   const int stride = SLICE_WIDTH + 2*radius;
   float sum = col_sums[stride+col];
@@ -229,10 +222,18 @@ static inline float pixdiff_column_sum(const float *const col_sums, const int ra
 }
 #endif
 
-static void init_column_sums(float *const col_sums, const patch_t *const patch, const float *const in,
-                             const int row, const int chunk_left, const int chunk_right,
-                             const int height, const int width, const int stride,
-                             const int radius, const float *const norm)
+static void init_column_sums(
+        float *const col_sums,
+        const patch_t *const patch,
+        const float *const in,
+        const int row,
+        const int chunk_left,
+        const int chunk_right,
+        const int height,
+        const int width,
+        const int stride,
+        const int radius,
+        const float *const norm)
 {
   // Compute column sums from scratch.  Needed for the very first row, and at intervals thereafter
   //   to limit accumulation of rounding errors
@@ -281,61 +282,6 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
   return;
 }
 
-#if defined(__SSE2__)
-static void init_column_sums_sse2(float *const col_sums, const patch_t *const patch, const float *const in,
-                                  const int row, const int chunk_left, const int chunk_right,
-                                  const int height, const int width, const int stride,
-                                  const int radius, const float *const norm)
-{
-  // Compute column sums from scratch.  Needed for the very first row, and at intervals thereafter
-  //   to limit accumulation of rounding errors
-
-  // figure out which columns can possibly contribute to patches whose centers lie within the RoI
-  // we can go up to 'radius' columns beyond the current chunk provided that the patch does not
-  // lie in the same direction from the pixel being denoised and that we're still in the RoI
-  const int scol = patch->cols;
-  const int col_min = chunk_left - MIN(radius,MIN(chunk_left,chunk_left+scol));
-  const int col_max = chunk_right + MIN(radius,MIN(width-chunk_right,width-(chunk_right+scol)));
-  // adjust bounds if the patch extends past top/bottom of RoI
-  const int srow = patch->rows;
-  const int rmin = row - MIN(radius,MIN(row,row+srow));
-  const int rmax = row + MIN(radius,MIN(height-1-row,height-1-(row+srow)));
-  for(int col = chunk_left-radius-1; col < MIN(col_min,chunk_right+radius); col++)
-  {
-    col_sums[col] = 0;
-#ifdef CACHE_PIXDIFFS_SSE
-    for(int i = row-radius; i <= row+radius; i++)
-      set_pixdiff(col_sums,radius,i,col,0.0f);
-#endif
-  }
-  for(int col = col_min; col < col_max; col++)
-  {
-    float sum = 0;
-    for(int r = rmin; r <= rmax; r++)
-    {
-      const float *pixel = in + r*stride + 4*col;
-      const float diff = pixel_difference_sse2(pixel,pixel+patch->offset,norm);
-#ifdef CACHE_PIXDIFFS_SSE
-      set_pixdiff(col_sums,radius,r,col,diff);
-#endif
-      sum += diff;
-    }
-    col_sums[col] = sum;
-  }
-  // clear out any columns where the patch column would be outside the RoI, as well as our overrun area
-  // (When the chunk is sufficiently narrow, col_max can become less than col_min, which would cause a buffer
-  // under-run if we didn't check for that condition here.)
-  for(int col = MAX(col_min,col_max); col < chunk_right + radius; col++)
-  {
-    col_sums[col] = 0;
-#ifdef CACHE_PIXDIFFS_SSE
-    for(int i = row-radius; i <= row+radius; i++)
-      set_pixdiff(col_sums,radius,i,col,0.0f);
-#endif
-  }
-  return;
-}
-#endif /* __SSE2__ */
 
 // determine the height of the horizontal slice each thread will process
 static int compute_slice_height(const int height)
@@ -386,9 +332,12 @@ static int compute_slice_width(const int width)
 }
 
 __DT_CLONE_TARGETS__
-void nlmeans_denoise(const float *const inbuf, float *const outbuf,
-                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                     const dt_nlmeans_param_t *const params)
+void nlmeans_denoise(
+        const float *const inbuf,
+        float *const outbuf,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out,
+        const dt_nlmeans_param_t *const params)
 {
   // define the factors for applying blending between the original image and the denoised version
   // if running in RGB space, 'luma' should equal 'chroma'
@@ -609,228 +558,9 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   return;
 }
 
-#if defined(__SSE2__)
-void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
-                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                          const dt_nlmeans_param_t *const params)
-{
-  // define the factors for applying blending between the original image and the denoised version
-  // if running in RGB space, 'luma' should equal 'chroma'
-  const __m128 weight = { params->luma, params->chroma, params->chroma, 1.0f };
-  const __m128 invert = { 1.0f - params->luma, 1.0f - params->chroma, 1.0f - params->chroma, 0.0f };
-  const gboolean skip_blend = (params->luma == 1.0 && params->chroma == 1.0);
-
-  // define the normalization to convert central pixel differences into central pixel weights
-  const float cp_norm = compute_center_pixel_norm(params->center_weight,params->patch_radius);
-  const dt_aligned_pixel_t center_norm = { cp_norm, cp_norm, cp_norm, 1.0f };
-
-  // define the patches to be compared when denoising a pixel
-  const size_t stride = 4 * roi_in->width;
-  int num_patches;
-  int max_shift;
-  struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
-  // allocate scratch space, including an overrun area on each end so we don't need a boundary check on every access
-  const int radius = params->patch_radius;
-#if defined(CACHE_PIXDIFFS_SSE)
-  const size_t scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
-#else
-  const size_t scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
-#endif /* CACHE_PIXDIFFS_SSE */
-  size_t padded_scratch_size;
-  float *const restrict scratch_buf = dt_alloc_perthread_float(scratch_size, &padded_scratch_size);
-  const int chk_height = compute_slice_height(roi_out->height);
-  const int chk_width = compute_slice_width(roi_out->width);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
-      dt_omp_firstprivate(patches, num_patches, scratch_buf, padded_scratch_size, chk_height, chk_width, radius) \
-      dt_omp_sharedconst(params, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
-      schedule(static) \
-      collapse(2)
-#endif
-  for(int chunk_top = 0 ; chunk_top < roi_out->height; chunk_top += chk_height)
-  {
-    for(int chunk_left = 0; chunk_left < roi_out->width; chunk_left += chk_width)
-    {
-      // locate our scratch space within the big buffer allocated above
-      // we'll offset by chunk_left so that we don't have to subtract on every access
-      float *const restrict tmpbuf = dt_get_perthread(scratch_buf, padded_scratch_size);
-      float *const col_sums =  tmpbuf + (radius+1) - chunk_left;
-      // determine which horizontal slice of the image to process
-      const int chunk_bot = MIN(chunk_top + chk_height, roi_out->height);
-      // determine which vertical slice of the image to process
-      const int chunk_right = MIN(chunk_left + chk_width, roi_out->width);
-      // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
-      for(int i = chunk_top; i < chunk_bot; i++)
-      {
-        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', sizeof(float) * 4 * (chunk_right-chunk_left));
-      }
-      // cycle through all of the patches over our slice of the image
-      for(int p = 0; p < num_patches; p++)
-      {
-        // retrieve info about the current patch
-        const patch_t *patch = &patches[p];
-        // skip any rows where the patch center would be above top of RoI or below bottom of RoI
-        const int height = roi_out->height;
-        const int row_min = MAX(chunk_top,MAX(0,-patch->rows));
-        const int row_max = MIN(chunk_bot,height - MAX(0,patch->rows));
-        // figure out which rows at top and bottom result in patches extending outside the RoI, even though the
-        // center pixel is inside
-        const int row_top = MAX(row_min,MAX(radius,radius-patch->rows));
-        const int row_bot = MIN(row_max,height-1-MAX(radius,radius+patch->rows));
-        // skip any columns where the patch center would be to the left or the right of the RoI
-        const int width = roi_out->width;
-        const int scol = patch->cols;
-        const int col_min = MAX(chunk_left,-scol);
-        const int col_max = MIN(chunk_right,roi_out->width - scol);
-
-        init_column_sums_sse2(col_sums,patch,inbuf,row_min,chunk_left,chunk_right,height,width,
-                              stride,radius,params->norm);
-        for(int row = row_min; row < row_max; row++)
-        {
-          // add up the initial columns of the sliding window of total patch distortion
-          float distortion = 0.0;
-          for(int i = col_min - radius; i < MIN(col_min+radius, col_max); i++)
-          {
-            distortion += col_sums[i];
-          }
-          // now proceed down the current row of the image
-          const float *in = inbuf + stride * row;
-          __m128 *const out = (__m128*)outbuf + (size_t)width * row;
-          const int offset = patch->offset;
-          const float sharpness = params->sharpness;
-          if(params->center_weight < 0)
-          {
-            // computation as used by denoise(non-local) iop
-            for(int col = col_min; col < col_max; col++)
-            {
-              distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-              const __m128 wt = _mm_set1_ps(gh(distortion * sharpness));
-              __m128 pixel = _mm_load_ps(in+4*col+offset);
-              pixel[3] = 1.0f;
-              out[col] += (pixel * wt);
-              _mm_prefetch(in+4*col+offset+stride,_MM_HINT_T0);	// try to ensure next row is ready in time
-            }
-          }
-          else
-          {
-            // computation as used by denoiseprofiled iop with non-local means
-            for(int col = col_min; col < col_max; col++)
-            {
-              distortion += (col_sums[col+radius] - col_sums[col-radius-1]);
-              const float dissimilarity = (distortion + pixel_difference_sse2(in+4*col,in+4*col+offset,center_norm))
-                                           / (1.0f + params->center_weight);
-              const __m128 wt = _mm_set1_ps(gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f)));
-              __m128 pixel = _mm_load_ps(in+4*col+offset);
-              pixel[3] = 1.0f;
-              out[col] += (pixel * wt);
-              _mm_prefetch(in+4*col+offset+stride,_MM_HINT_T0); // try to ensure next row is ready in time
-            }
-          }
-          const int pcol_min = chunk_left - MIN(radius,MIN(chunk_left,chunk_left+scol));
-          const int pcol_max = chunk_right + MIN(radius,MIN(width-chunk_right,width-(chunk_right+scol)));
-          if(row < MIN(row_top, row_bot))
-          {
-            // top edge of patch was above top of RoI, so it had a value of zero; just add in the new row
-            const float *bot_row = inbuf + (row+1+radius)*stride;
-            for(int col = pcol_min; col < pcol_max; col++)
-            {
-              const float *const bot_px = bot_row + 4*col;
-              const float diff = pixel_difference_sse2(bot_px,bot_px+offset,params->norm);
-              _mm_prefetch(bot_px+stride, _MM_HINT_T0);
-#ifdef CACHE_PIXDIFFS_SSE
-              set_pixdiff(col_sums,radius,row+radius+1,col,diff);
-#endif
-              col_sums[col] += diff;
-              _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
-            }
-          }
-          else if(row < row_bot)
-          {
-#ifndef CACHE_PIXDIFFS_SSE
-            const float *const top_row = inbuf + (row-radius)*stride   /* +(2*radius+1)*stride*/ ;
-#endif /* !CACHE_PIXDIFFS_SSE */
-            const float *const bot_row = inbuf + (row+1+radius)*stride ;
-            // both prior and new positions are entirely within the RoI, so subtract the old row and add the new one
-            for(int col = pcol_min; col < pcol_max; col++)
-            {
-#ifdef CACHE_PIXDIFFS_SSE
-              const float *const bot_px = bot_row + 4*col;
-              const float diff = pixel_difference_sse2(bot_px,bot_px+offset,params->norm);
-              col_sums[col] += diff - get_pixdiff(col_sums,radius,row-radius,col);
-              _mm_prefetch(bot_px+stride, _MM_HINT_T0);
-              set_pixdiff(col_sums,radius,row+1+radius,col,diff);
-#else
-              const float *const top_px = top_row + 4*col;
-              const float *const bot_px = bot_row + 4*col;
-              __m128 dif = (channel_difference_sse2(bot_px,bot_px+offset,params->norm)
-                            - channel_difference_sse2(top_px,top_px+offset,params->norm));
-              _mm_prefetch(bot_px+stride, _MM_HINT_T0);
-              col_sums[col] += (dif[0] + dif[1] + dif[2]);
-#endif /* CACHE_PIXDIFFS_SSE */
-              _mm_prefetch(bot_px+offset+stride, _MM_HINT_T0);
-            }
-          }
-          else if(row >= row_top && row + 1 < row_max) // don't bother updating if last iteration
-          {
-            // new row of the patch is below the bottom of RoI, so its value is zero; just subtract the old row
-#ifndef CACHE_PIXDIFFS_SSE
-            const float *top_row = inbuf + (row-radius)*stride;
-#endif /* !CACHE_PIXDIFFS_SSE */
-            for(int col = pcol_min; col < pcol_max; col++)
-            {
-#ifdef CACHE_PIXDIFFS_SSE
-              col_sums[col] -= get_pixdiff(col_sums,radius,row-radius,col);
-#else
-              const float *const top_px = top_row + 4*col;
-              col_sums[col] -= pixel_difference_sse2(top_px,top_px+offset,params->norm);
-#endif /* CACHE_PIXDIFFS_SSE */
-            }
-          }
-        }
-      }
-      if(skip_blend)
-      {
-        // normalize the pixels
-        for(int row = chunk_top; row < chunk_bot; row++)
-        {
-          float *const out = outbuf + 4 * row * roi_out->width;
-          for(int col = chunk_left; col < chunk_right; col++)
-          {
-            const __m128 outpx = _mm_load_ps(out + 4*col);
-            const __m128 scale = _mm_set1_ps(outpx[3]);
-            _mm_stream_ps(out + 4*col, outpx / scale) ;
-          }
-        }
-      }
-      else
-      {
-        // normalize and apply chroma/luma blending
-        for(int row = chunk_top; row < chunk_bot; row++)
-        {
-          const float *const in = inbuf + row * stride;
-          float *const out = outbuf + 4 * row * roi_out->width;
-          for(int col = chunk_left; col < chunk_right; col++)
-          {
-            const __m128 inpx = _mm_load_ps(in + 4*col);
-            const __m128 outpx = _mm_load_ps(out + 4*col);
-            const __m128 scale = _mm_set1_ps(outpx[3]);
-            _mm_stream_ps(out + 4*col, (inpx * invert) + (outpx / scale * weight)) ;
-          }
-        }
-      }
-    }
-  }
-
-  // clean up: free the work space
-  dt_free_align(patches);
-  dt_free_align(scratch_buf);
-  return;
-}
-#endif /* __SSE2__ */
-
 /**************************************************************/
 /**************************************************************/
-/*      Everything from here to end of file is WIP!!          */
+/*      Everything from here to end of file is OpenCL         */
 /**************************************************************/
 /**************************************************************/
 
@@ -844,11 +574,14 @@ static int bucket_next(unsigned int *state, unsigned int max)
 
   return next;
 }
-#endif /* HAVE_OPENCL */
 
-#ifdef HAVE_OPENCL
-static void get_blocksizes(int *h, int *v, const int radius, const int devid,
-                           const int horiz_kernel, const int vert_kernel)
+static void get_blocksizes(
+        int *h,
+        int *v,
+        const int radius,
+        const int devid,
+        const int horiz_kernel,
+        const int vert_kernel)
 {
   dt_opencl_local_buffer_t hlocopt
     = (dt_opencl_local_buffer_t){ .xoffset = 2 * radius, .xfactor = 1, .yoffset = 0, .yfactor = 1,
@@ -865,23 +598,31 @@ static void get_blocksizes(int *h, int *v, const int radius, const int devid,
   *v = dt_opencl_local_buffer_opt(devid, vert_kernel, &vlocopt) ? vlocopt.sizey : 1;
   return;
 }
-#endif /* HAVE_OPENCL */
 
-#ifdef HAVE_OPENCL
 // zero output pixels, as we will be accumulating them one patch at a time
-static inline cl_int nlmeans_cl_init(const int devid, const int kernel, cl_mem dev_out, const int height,
-                                     const int width)
+static inline cl_int nlmeans_cl_init(
+        const int devid,
+        const int kernel,
+        cl_mem dev_out,
+        const int height,
+        const int width)
 {
   return dt_opencl_enqueue_kernel_2d_args(devid, kernel, width, height,
     CLARG(dev_out), CLARG(width), CLARG(height));
 }
-#endif /* HAVE_OPENCL */
 
-#ifdef HAVE_OPENCL
 // horizontal pass, add together columns of each patch
-static inline cl_int nlmeans_cl_horiz(const int devid, const int kernel, cl_mem dev_U4, cl_mem dev_U4_t,
-                                      const int P, const int q[2], const int height, const int width,
-                                      const int bwidth, const int hblocksize)
+static inline cl_int nlmeans_cl_horiz(
+        const int devid,
+        const int kernel,
+        cl_mem dev_U4,
+        cl_mem dev_U4_t,
+        const int P,
+        const int q[2],
+        const int height,
+        const int width,
+        const int bwidth,
+        const int hblocksize)
 {
   const size_t sizesl[3] = { bwidth, ROUNDUPDHT(height, devid), 1 };
   const size_t local[3] = { hblocksize, 1, 1 };
@@ -889,23 +630,30 @@ static inline cl_int nlmeans_cl_horiz(const int devid, const int kernel, cl_mem 
     CLARG(P), CLLOCAL((hblocksize + 2 * P) * sizeof(float)));
   return dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizesl, local);
 }
-#endif /* HAVE_OPENCL */
 
-#ifdef HAVE_OPENCL
 // add difference-weighted proportion of patch-center pixel to output pixel
-static inline cl_int nlmeans_cl_accu(const int devid, const int kernel, cl_mem dev_in, cl_mem dev_U4_tt,
-                                     cl_mem dev_out, const int q[2], const int height, const int width,
-                                     const size_t sizes[3])
+static inline cl_int nlmeans_cl_accu(
+        const int devid,
+        const int kernel,
+        cl_mem dev_in,
+        cl_mem dev_U4_tt,
+        cl_mem dev_out,
+        const int q[2],
+        const int height,
+        const int width,
+        const size_t sizes[3])
 {
   dt_opencl_set_kernel_args(devid, kernel, 0, CLARG(dev_in), CLARG(dev_out), CLARG(dev_U4_tt), CLARG(width),
     CLARG(height), CLARRAY(2, q));
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
-#endif /* HAVE_OPENCL */
 
-#ifdef HAVE_OPENCL
-int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
-                       cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in)
+int nlmeans_denoise_cl(
+        const dt_nlmeans_param_t *const params,
+        const int devid,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -919,7 +667,7 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
   int max_shift;
   struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem buckets[NUM_BUCKETS] = { NULL };
   unsigned int state = 0;
   for(int k = 0; k < NUM_BUCKETS; k++)
@@ -986,11 +734,13 @@ error:
   }
   return err;
 }
-#endif /* HAVE_OPENCL */
 
-#ifdef HAVE_OPENCL
-int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int devid,
-                              cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in)
+int nlmeans_denoiseprofile_cl(
+        const dt_nlmeans_param_t *const params,
+        const int devid,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -1003,7 +753,7 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
   int max_shift;
   struct patch_t* patches = define_patches(params,stride,&num_patches,&max_shift);
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
   cl_mem buckets[NUM_BUCKETS] = { NULL };
   unsigned int state = 0;
   for(int k = 0; k < NUM_BUCKETS; k++)

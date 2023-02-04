@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2022 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,9 +40,6 @@
 #include <gtk/gtk.h>
 #include <math.h>
 #include <stdlib.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 // which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
 #define USE_NEW_IMPL_CL 0
@@ -1057,8 +1054,11 @@ static inline void backtransform_Y0U0V0(float *const buf, const int wd, const in
 
 // called by: process_wavelets, nlmeans_precondition, nlmeans_precondition_cl, process_variance,
 //     process_wavelets_cl
-static void compute_wb_factors(dt_aligned_pixel_t wb,const dt_iop_denoiseprofile_data_t *const d,
-                               const dt_dev_pixelpipe_iop_t *const piece, const dt_aligned_pixel_t weights)
+static void compute_wb_factors(
+        dt_aligned_pixel_t wb,
+        const dt_iop_denoiseprofile_data_t *const d,
+        const dt_dev_pixelpipe_iop_t *const piece,
+        const dt_aligned_pixel_t weights)
 {
   const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
                          + piece->pipe->dsc.temperature.coeffs[2])
@@ -1554,12 +1554,13 @@ static void nlmeans_backtransform(const dt_iop_denoiseprofile_data_t *const d, f
   return;
 }
 
-static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
-                                const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                const dt_iop_roi_t *const roi_out,
-                                void (*denoiser)(const float *const inbuf, float *const outbuf,
-                                                 const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                                                 const dt_nlmeans_param_t *const params))
+static void process_nlmeans(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        const void *const ivoid,
+        void *const ovoid,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -1598,7 +1599,7 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
                                       .search_radius = K,
                                       .decimate = 0,
                                       .norm = norm2 };
-  denoiser(in,ovoid,roi_in,roi_out,&params);
+  nlmeans_denoise(in, ovoid, roi_in, roi_out, &params);
 
   dt_free_align(in);
   nlmeans_backtransform(d,ovoid,roi_in,scale,compensate_p,wb,aa,bb,p);
@@ -1606,24 +1607,6 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
-
-static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                            const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                            const dt_iop_roi_t *const roi_out)
-{
-  process_nlmeans_cpu(piece,ivoid,ovoid,roi_in,roi_out,nlmeans_denoise);
-  return;
-}
-
-#if defined(__SSE2__)
-static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                const dt_iop_roi_t *const roi_out)
-{
-  process_nlmeans_cpu(piece,ivoid,ovoid,roi_in,roi_out,nlmeans_denoise_sse2);
-  return;
-}
-#endif
 
 static void sum_rec(const size_t npixels, const float *in, float *out)
 {
@@ -2482,20 +2465,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
     process_variance(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
-
-#if defined(__SSE2__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
-  if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
-    process_nlmeans_sse(self, piece, ivoid, ovoid, roi_in, roi_out);
-  else if(d->mode == MODE_WAVELETS || d->mode == MODE_WAVELETS_AUTO)
-    process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out, eaw_dn_decompose_sse, eaw_synthesize_sse2);
-  else
-    process_variance(self, piece, ivoid, ovoid, roi_in, roi_out);
-}
-#endif
 
 static inline unsigned infer_radius_from_profile(const float a)
 {
