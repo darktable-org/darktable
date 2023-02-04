@@ -3099,9 +3099,8 @@ static gboolean _scroll_wrap_aspect(GtkWidget *w, GdkEventScroll *event, const c
       const int aspect = dt_conf_get_int(config_str);
       dt_conf_set_int(config_str, aspect + delta_y);
       dtgtk_drawing_area_set_aspect_ratio(w, aspect / 100.0);
-
-      return TRUE;
     }
+    return TRUE;
   }
 
   return FALSE;

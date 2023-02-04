@@ -89,7 +89,7 @@ int position(const dt_lib_module_t *self)
 static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_control_queue_redraw_widget(self->widget);
+  dt_control_queue_redraw_widget(gtk_bin_get_child(GTK_BIN(self->widget)));
 }
 
 
@@ -311,7 +311,7 @@ void _lib_navigation_set_position(dt_lib_module_t *self, double x, double y, int
     dt_control_set_dev_zoom_y(zoom_y);
 
     /* redraw myself */
-    gtk_widget_queue_draw(self->widget);
+    _lib_navigation_control_redraw_callback(NULL, self);
 
     /* redraw pipe */
     dt_dev_invalidate(darktable.develop);
