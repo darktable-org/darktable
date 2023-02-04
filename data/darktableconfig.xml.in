@@ -3107,6 +3107,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/harmony/dim</name>
+    <type min="0" max="1">float</type>
+    <default>0.7</default>
+    <shortdescription>dim pixels outside of guides</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/opacity</name>
     <type>float</type>
     <default>1.0</default>

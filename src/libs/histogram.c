@@ -1253,7 +1253,9 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       // we dim the histogram graph outside the harmony sectors
       cairo_stroke_preserve(cr);
       cairo_push_group(cr);
-      cairo_paint_with_alpha(cr, 0.3);
+      cairo_paint_with_alpha
+        (cr,
+         dt_conf_get_float("plugins/darkroom/histogram/vectorscope/harmony/dim"));
       cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
       cairo_fill(cr);
       cairo_pattern_t *harmony_pat = cairo_pop_group(cr);
