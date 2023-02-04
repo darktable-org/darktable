@@ -442,7 +442,7 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(event->type == GDK_BUTTON_PRESS && event->button.button == 1)
+  if(event->type == GDK_BUTTON_PRESS && event->button.button != 2)
   {
     d->dragging = 1;
     _lib_navigation_set_position(self, event->button.x, event->button.y, allocation.width, allocation.height);
