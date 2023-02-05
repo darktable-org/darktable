@@ -952,11 +952,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // get valid directories
   dt_loc_init(datadir_from_command, moduledir_from_command, localedir_from_command, configdir_from_command, cachedir_from_command, tmpdir_from_command);
 
-  if(darktable.unmuted & DT_DEBUG_MEMORY)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[memory] at startup\n");
-    dt_print_mem_usage();
-  }
+  dt_print(DT_DEBUG_MEMORY, "[memory] at startup\n");
+  dt_print_mem_usage();
 
   char sharedir[PATH_MAX] = { 0 };
   dt_loc_get_sharedir(sharedir, sizeof(sharedir));
@@ -1325,11 +1322,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     darktable.undo = dt_undo_init();
   }
 
-  if(darktable.unmuted & DT_DEBUG_MEMORY)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[memory] after successful startup\n");
-    dt_print_mem_usage();
-  }
+  dt_print(DT_DEBUG_MEMORY, "[memory] after successful startup\n");
+  dt_print_mem_usage();
 
   dt_image_local_copy_synch();
 
@@ -1903,6 +1897,8 @@ void dt_capabilities_cleanup()
 
 void dt_print_mem_usage()
 {
+  if(!(darktable.unmuted & DT_DEBUG_MEMORY))
+    return;
 #if defined(__linux__)
   char *line = NULL;
   size_t len = 128;

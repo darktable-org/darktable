@@ -1031,6 +1031,10 @@ static int pixelpipe_process_on_CPU(
   if(dt_atomic_get_int(&pipe->shutdown))
     return 1;
 
+  // the data buffers must always have a 64 alignment
+  if((((uintptr_t)input) & 63) || (((uintptr_t)*output) & 63))
+    dt_print(DT_DEBUG_ALWAYS, "[pixelpipe_process_on_CPU] buffer aligment problem: IN=%p OUT=%p\n", input, *output);
+
   // Fetch RGB working profile
   // if input is RAW, we can't color convert because RAW is not in a color space
   // so we send NULL to by-pass
@@ -2263,11 +2267,8 @@ int dt_dev_pixelpipe_process(
 
   dt_dev_pixelpipe_cache_checkmem(pipe);
 
-  if(darktable.unmuted & DT_DEBUG_MEMORY)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[memory] before pixelpipe process\n");
-    dt_print_mem_usage();
-  }
+  dt_print(DT_DEBUG_MEMORY, "[memory] before pixelpipe process\n");
+  dt_print_mem_usage();
 
   if(pipe->devid >= 0) dt_opencl_events_reset(pipe->devid);
 
