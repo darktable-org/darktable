@@ -1679,6 +1679,32 @@ static void _autoscale_pressed_md(GtkWidget *button, gpointer user_data)
   dt_bauhaus_slider_set(g->cor_scale, scale);
 }
 
+static int _check_corrections_md(dt_iop_lens_data_t *d)
+{
+  gboolean has_vignette = FALSE;
+  gboolean has_distort = FALSE;
+  gboolean has_tca = FALSE;
+
+  for(int i = 0; i < d->nc; i++)
+  {
+    if(!(feqf(d->vig[i], 1.0f, 1e-7)))
+       has_vignette |= TRUE;
+    for(int c = 0; c < 3; c++)
+    {
+      if(!(feqf(d->cor_rgb[c][i], 1.0f, 1e-7)))
+         has_distort |= TRUE;
+    }
+    if((d->cor_rgb[0][i] != d->cor_rgb[1][i])
+       || (d->cor_rgb[0][i] != d->cor_rgb[2][i])
+       || (d->cor_rgb[1][i] != d->cor_rgb[2][i]))
+      has_tca |= TRUE;
+  }
+
+  return (((d->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA) && has_tca) ? DT_IOP_LENS_MODIFY_FLAG_TCA : 0)
+       | (((d->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING) && has_vignette) ? DT_IOP_LENS_MODIFY_FLAG_VIGNETTING : 0)
+       | (((d->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION) && has_distort) ? DT_IOP_LENS_MODIFY_FLAG_DISTORTION : 0);
+}
+
 static void _commit_params_md(
         dt_iop_module_t *self,
         dt_iop_lens_params_t *p,
@@ -1708,7 +1734,7 @@ static void _commit_params_md(
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW))
   {
     dt_iop_gui_enter_critical_section(self);
-    g->corrections_done = d->modify_flags;
+    g->corrections_done = _check_corrections_md(d);
     dt_iop_gui_leave_critical_section(self);
   }
 }
