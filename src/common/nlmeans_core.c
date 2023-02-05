@@ -52,9 +52,6 @@
 // architectures with slower multiplication.
 //#define CACHE_PIXDIFFS
 
-// re-checked SSE2 codepath performance on 8-core Intel (tested with nthreads 4, 8, 16) there was no gain
-// of significance. So dropping code for less maintenance burden and possibly bugs. 
-
 // number of intermediate buffers used by OpenCL code path.  If you change this, you must also change
 //   the definition in src/iop/nlmeans.c and src/iop/denoiseprofile.c
 #define NUM_BUCKETS 4
