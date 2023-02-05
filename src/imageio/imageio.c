@@ -620,17 +620,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img,
   dt_imageio_retval_t ret;
 
   ret = dt_imageio_open_jpeg(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    img->buf_dsc.cst = IOP_CS_RGB; // jpeg is always RGB
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
-    img->loader = LOADER_JPEG;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 
   ret = dt_imageio_open_tiff(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
