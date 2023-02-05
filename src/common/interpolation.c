@@ -1367,8 +1367,8 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
   int r;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_plain", NULL, itor->name, roi_in, roi_out, "\n");
-  dt_times_t start;
-  dt_get_times(&start);
+  dt_times_t start = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
@@ -1514,8 +1514,8 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
   int r;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_sse", NULL, itor->name, roi_in, roi_out, "\n");
-  dt_times_t start;
-  dt_get_times(&start);
+  dt_times_t start = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
@@ -1750,8 +1750,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   cl_mem dev_vmeta = NULL;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_cl", NULL, itor->name, roi_in, roi_out, "\n");
-  dt_times_t start;
-  dt_get_times(&start);
+  dt_times_t start = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
@@ -1927,8 +1927,8 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
   int r;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_1c_plain", NULL, itor->name, roi_in, roi_out, "\n");
-  dt_times_t start;
-  dt_get_times(&start);
+  dt_times_t start = { 0 };
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
   if(roi_out->scale == 1.f)
