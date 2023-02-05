@@ -639,17 +639,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img,
 #endif
 
   ret = dt_imageio_open_pnm(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
-  {
-    img->buf_dsc.cst = IOP_CS_RGB; // pnm is always RGB
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
-    img->loader = LOADER_PNM;
-    return ret;
-  }
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
 
   return DT_IMAGEIO_LOAD_FAILED;
 }
