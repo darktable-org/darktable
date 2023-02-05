@@ -632,6 +632,7 @@ static inline const GList *g_list_prev_wraparound(const GList *list)
   return g_list_previous(list) ? g_list_previous(list) : g_list_last((GList*)list);
 }
 
+// checks internally for DT_DEBUG_MEMORY
 void dt_print_mem_usage();
 
 void dt_configure_runtime_performance(const int version, char *config_info);
