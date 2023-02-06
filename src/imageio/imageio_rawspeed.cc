@@ -116,19 +116,34 @@ uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint3
   return ColorFilterArray::shiftDcrawFilter(filters, crop_x, crop_y);
 }
 
-// CR3 files are for now handled by LibRaw, we do not want rawspeed to try to open them
+// CR3 files are for now handled by LibRaw, we do not want RawSpeed to try to open them
 // as this issues a lot of error messages on the console.
+
 static gboolean _ignore_image(const gchar *filename)
 {
-  const char *extensions_whitelist[] = { "cr3", NULL };
-  char *ext = g_strrstr(filename, ".");
+  gchar *extensions_whitelist;
+  const gchar *always_by_libraw = "cr3";
+
+  gchar *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
   ext++;
-  for(const char **i = extensions_whitelist; *i != NULL; i++)
-    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
-    {
-      return TRUE;
-    }
+
+  if(dt_conf_key_not_empty("libraw_extensions"))
+    extensions_whitelist = g_strjoin(" ", always_by_libraw, dt_conf_get_string_const("libraw_extensions"), NULL);
+  else
+    extensions_whitelist = g_strdup(always_by_libraw);
+
+  fprintf(stderr, "[rawspeed_open] extensions list to ignore: `%s'\n", extensions_whitelist);
+
+  gchar *ext_lowercased = g_ascii_strdown(ext,-1);
+  if(g_strstr_len(extensions_whitelist,-1,ext_lowercased))
+  {
+    g_free(extensions_whitelist);
+    g_free(ext_lowercased);
+    return TRUE;
+  }
+  g_free(extensions_whitelist);
+  g_free(ext_lowercased);
   return FALSE;
 }
 
