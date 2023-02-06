@@ -2421,7 +2421,7 @@ void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
 
   dt_iop_module_t *exposure = instance->module;
   memcpy(exposure->params, exposure->default_params, exposure->params_size);
-  exposure->gui_update(exposure);
+  dt_iop_gui_update(exposure);
   dt_dev_add_history_item(exposure->dev, exposure, TRUE);
 }
 

@@ -653,7 +653,7 @@ static gboolean _area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, 
 
   if(darktable.develop->gui_module != self) dt_iop_request_focus(self);
 
-  const float interval = 0.002; // Distance moved for each scroll event
+  const float interval = 0.002 * dt_accel_get_speed_multiplier(widget, event->state); // Distance moved for each scroll event
   int delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
