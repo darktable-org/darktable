@@ -433,6 +433,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   t.image->buf_dsc.channels = 4;
   t.image->buf_dsc.datatype = TYPE_FLOAT;
   t.image->buf_dsc.cst = IOP_CS_RGB;
+  t.image->buf_dsc.filters = 0u;
 
   t.mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, t.image);
   if(!t.mipbuf)
@@ -487,6 +488,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   if(ok == 1)
   {
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->loader = LOADER_TIFF;
     return DT_IMAGEIO_OK;
   }

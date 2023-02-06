@@ -22,6 +22,7 @@
 #include <webp/mux.h>
 
 #include "common/image.h"
+#include "develop/imageop.h"         // for IOP_CS_RGB
 #include "imageio/imageio_common.h"
 
 dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
@@ -116,6 +117,13 @@ dt_imageio_retval_t dt_imageio_open_webp(dt_image_t *img, const char *filename, 
 
   g_free(read_buffer);
 
+  img->buf_dsc.cst = IOP_CS_RGB;
+  img->buf_dsc.filters = 0u;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_S_RAW;
+  img->flags &= ~DT_IMAGE_HDR;
+  img->flags |= DT_IMAGE_LDR;
+  img->loader = LOADER_WEBP;
   return DT_IMAGEIO_OK;
 }
 
