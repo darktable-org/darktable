@@ -2121,7 +2121,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     {
       if(!hist->module->legacy_params
          || hist->module->legacy_params(hist->module, module_params, labs(modversion),
-                                        hist->params, labs(hist->module->version())))
+                                        hist->params, labs(hist->module->version())) == 1)
       {
         dt_print(DT_DEBUG_ALWAYS, "[dev_read_history] module `%s' version mismatch: history is %d, darktable is %d.\n",
                 hist->module->op, modversion, hist->module->version());

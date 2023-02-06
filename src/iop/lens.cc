@@ -552,6 +552,27 @@ int legacy_params(
 
     const dt_iop_lens_params_v6_t *o = (dt_iop_lens_params_v6_t *)old_params;
     dt_iop_lens_params_t *n = (dt_iop_lens_params_t *)new_params;
+    dt_iop_lens_params_t *d = (dt_iop_lens_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    // The unique method in previous versions was lensfun
+    n->method = o->method;
+    n->modify_flags = o->modify_flags;
+    n->inverse = o->inverse;
+    n->scale = o->scale;
+    n->crop = o->crop;
+    n->focal = o->focal;
+    n->aperture = o->aperture;
+    n->distance = o->distance;
+    n->target_geom = o->target_geom;
+    g_strlcpy(n->camera, o->camera, sizeof(n->camera));
+    g_strlcpy(n->lens, o->lens, sizeof(n->lens));
+    n->tca_override = o->tca_override;
+    n->tca_r = o->tca_r;
+    n->tca_b = o->tca_b;
+    n->cor_dist_ft = o->cor_dist_ft;
+    n->cor_vig_ft = o->cor_vig_ft;
 
     // new in v7
     n->cor_scale = 0.0f;
