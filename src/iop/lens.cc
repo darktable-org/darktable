@@ -1638,7 +1638,7 @@ static int _init_coeffs_md(
         // Scale dvig according to fine-tune: 0 for no correction, 1 for
         // correction specified by metadata, and 2 to double the correction.
         // Store the square root since _process_md will square the value
-        vig[i] = sqrtf(1.0f / (1.0f + p->cor_vig_ft * dvig)); 
+        vig[i] = sqrtf(1.0f / (1.0f + p->cor_vig_ft * dvig));
       }
     }
     return nc;
@@ -2261,9 +2261,9 @@ static char *_lens_sanitize(const char *orig_lens)
 
   if(found_or || found_parenthesis)
   {
-    size_t pos_or = (size_t)(found_or - orig_lens);
-    size_t pos_parenthesis = (size_t)(found_parenthesis - orig_lens);
-    size_t pos = pos_or < pos_parenthesis ? pos_or : pos_parenthesis;
+    const size_t pos_or = (size_t)(found_or - orig_lens);
+    const size_t pos_parenthesis = (size_t)(found_parenthesis - orig_lens);
+    const size_t pos = pos_or < pos_parenthesis ? pos_or : pos_parenthesis;
 
     if(pos > 0)
     {
@@ -3077,7 +3077,9 @@ static void _display_errors(struct dt_iop_module_t *self)
   dt_iop_lens_gui_data_t *g = (dt_iop_lens_gui_data_t *)self->gui_data;
   dt_iop_lens_params_t *p = (dt_iop_lens_params_t *)self->params;
 
-  if(g->lensfun_trouble && self->enabled && p->method == DT_IOP_LENS_METHOD_LENSFUN)
+  if(g->lensfun_trouble
+     && self->enabled
+     && p->method == DT_IOP_LENS_METHOD_LENSFUN)
   {
     dt_iop_set_module_trouble_message(self, _("camera/lens not found"),
                                       _("please select your lens manually\n"
