@@ -467,7 +467,7 @@ static bool dt_exif_read_xmp_tag(Exiv2::XmpData &xmpData, Exiv2::XmpData::iterat
 // e.g. "2017:10:23 12:34:56" to "2017-10-23T12:34:54" (ISO)
 // and some vendors incorrectly use "2017/10/23"
 // revert this to the format expected by exif and darktable
-static void _sanitize_datetime(char *datetime)
+void dt_exif_sanitize_datetime(char *datetime)
 {
   // replace 'T' by ' ' (space)
   char *c;
@@ -615,7 +615,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     if(FIND_XMP_TAG("Xmp.exif.DateTimeOriginal"))
     {
       char *datetime = strdup(pos->toString().c_str());
-      _sanitize_datetime(datetime);
+      dt_exif_sanitize_datetime(datetime);
       dt_datetime_exif_to_img(img, datetime);
       free(datetime);
     }
@@ -872,7 +872,7 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
      && pos->size() == DT_DATETIME_EXIF_LENGTH)
   {
     dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
-    _sanitize_datetime(exif_datetime_taken);
+    dt_exif_sanitize_datetime(exif_datetime_taken);
     if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
        && pos->size() > 1)
     {
