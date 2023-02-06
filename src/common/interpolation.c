@@ -55,8 +55,22 @@ enum border_mode
 #define DEBUG_PRINT_VERBOSE 0
 
 /* --------------------------------------------------------------------------
- * Debug helper
+ * Debug helpers
  * ------------------------------------------------------------------------*/
+
+static void _show_2_times(const dt_times_t *start, const dt_times_t *mid,
+                          const char *prefix)
+{
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_times_t end;
+    dt_get_times(&end);
+    dt_print(DT_DEBUG_PERF,
+             "[%s] plan %.3f secs (%.3f CPU) resample %.3f secs (%.3f CPU)\n",
+             prefix, mid->clock - start->clock, mid->user - start->user,
+             end.clock - mid->clock, end.user - mid->user);
+  }
+}
 
 #if DEBUG_PRINT_VERBOSE
 #define debug_extra(...)                                                                                     \
@@ -1367,7 +1381,7 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
   int r;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_plain", NULL, itor->name, roi_in, roi_out, "\n");
-  dt_times_t start = { 0 };
+  dt_times_t start = { 0 }, mid = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
@@ -1387,8 +1401,8 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
              out_stride);
     }
 
-    dt_show_times_f(&start, "[dt_interpolation_resample_plain]",
-                    "1:1 copy/crop of %dx%d pixels", roi_in->width, roi_in->height);
+    dt_show_times_f(&start, "[resample_plain]", "1:1 copy/crop of %dx%d pixels",
+                    roi_in->width, roi_in->height);
     // All done, so easy case
     return;
   }
@@ -1410,7 +1424,9 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
     goto exit;
   }
 
-// Process each output line
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
+
+  // Process each output line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, in_stride_floats, out_stride_floats, roi_out) \
@@ -1485,16 +1501,13 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
     }
   }
 
-  dt_show_times_f(&start, "[dt_interpolation_resample_plain]",
-                  "resampling %dx%d -> %dx%d via %s", roi_in->width, roi_in->height,
-                  roi_out->width, roi_out->height, itor->name);
-
 exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
   dt_free_align(hlength);
   dt_free_align(vlength);
+  _show_2_times(&start, &mid, "resample_plain");
 }
 
 #if defined(__SSE2__)
@@ -1514,7 +1527,7 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
   int r;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_sse", NULL, itor->name, roi_in, roi_out, "\n");
-  dt_times_t start = { 0 };
+  dt_times_t start = { 0 }, mid = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
@@ -1534,8 +1547,8 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
       memcpy(o, i, out_stride);
     }
 
-    dt_show_times_f(&start, "[dt_interpolation_resample_sse]",
-                    "1:1 copy/crop of %dx%d pixels", roi_in->width, roi_in->height);
+    dt_show_times_f(&start, "[resample_sse]", "1:1 copy/crop of %dx%d pixels",
+                    roi_in->width, roi_in->height);
     // All done, so easy case
     return;
   }
@@ -1557,7 +1570,9 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
     goto exit;
   }
 
-// Process each output line
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
+
+  // Process each output line
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, in_stride, out_stride, roi_out) \
@@ -1635,16 +1650,13 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
 
   _mm_sfence();
 
-  dt_show_times_f(&start, "[dt_interpolation_resample_sse]",
-                  "resampling %dx%d -> %dx%d via %s", roi_in->width, roi_in->height,
-                  roi_out->width, roi_out->height, itor->name);
-
 exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
   dt_free_align(hlength);
   dt_free_align(vlength);
+  _show_2_times(&start, &mid, "resample_sse");
 }
 #endif
 
@@ -1750,7 +1762,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   cl_mem dev_vmeta = NULL;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_cl", NULL, itor->name, roi_in, roi_out, "\n");
-  dt_times_t start = { 0 };
+  dt_times_t start = { 0 }, mid = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
@@ -1764,8 +1776,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
     if(err != CL_SUCCESS) goto error;
 
-    dt_show_times_f(&start, "[dt_interpolation_resample_cl]",
-                    "1:1 copy/crop of %dx%d pixels", roi_in->width, roi_in->height);
+    dt_show_times_f(&start, "[resample_cl]", "1:1 copy/crop of %dx%d pixels",
+                    roi_in->width, roi_in->height);
     // All done, so easy case
     return CL_SUCCESS;
   }
@@ -1786,6 +1798,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   {
     goto error;
   }
+
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
 
   int hmaxtaps = -1, vmaxtaps = -1;
   for(int k = 0; k < roi_out->width; k++) hmaxtaps = MAX(hmaxtaps, hlength[k]);
@@ -1862,10 +1876,6 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
-  dt_show_times_f(&start, "[dt_interpolation_resample_cl]",
-                  "resampling %dx%d -> %dx%d via %s", roi_in->width, roi_in->height,
-                  roi_out->width, roi_out->height, itor->name);
-
   dt_opencl_release_mem_object(dev_hindex);
   dt_opencl_release_mem_object(dev_hlength);
   dt_opencl_release_mem_object(dev_hkernel);
@@ -1876,6 +1886,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   dt_opencl_release_mem_object(dev_vmeta);
   dt_free_align(hlength);
   dt_free_align(vlength);
+
+  _show_2_times(&start, &mid, "resample_cl");
   return CL_SUCCESS;
 
 error:
@@ -1927,7 +1939,7 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
   int r;
 
   dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_VERBOSE, "resample_1c_plain", NULL, itor->name, roi_in, roi_out, "\n");
-  dt_times_t start = { 0 };
+  dt_times_t start = { 0 }, mid = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start);
 
   // Fast code path for 1:1 copy, only cropping area can change
@@ -1945,8 +1957,8 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
       float *o = (float *)((char *)out + (size_t)out_stride * y);
       memcpy(o, i, out_stride);
     }
-    dt_show_times_f(&start, "[dt_interpolation_resample_1c_plain]",
-                    "1:1 copy/crop of %dx%d pixels", roi_in->width, roi_in->height);
+    dt_show_times_f(&start, "[resample_1c_plain]", "1:1 copy/crop of %dx%d pixels",
+                    roi_in->width, roi_in->height);
     // All done, so easy case
     return;
   }
@@ -1967,6 +1979,8 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
   {
     goto exit;
   }
+
+  if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&mid);
 
   // Process each output line
 #ifdef _OPENMP
@@ -2038,16 +2052,13 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
     }
   }
 
-  dt_show_times_f(&start, "[dt_interpolation_resample_1c_plain]",
-                  "resampling %dx%d -> %dx%d via %s", roi_in->width, roi_in->height,
-                  roi_out->width, roi_out->height, itor->name);
-
   exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
   dt_free_align(hlength);
   dt_free_align(vlength);
+  _show_2_times(&start, &mid, "resample_1c_plain");
 }
 
 /** Applies resampling (re-scaling) on *full* input and output buffers.
