@@ -146,6 +146,13 @@ const model_map_t modelMap[] = {
   },
   {
     .exif_make = "Canon",
+    .exif_model = "Canon EOS Kiss X10",
+    .clean_make = "Canon",
+    .clean_model = "EOS 250D",
+    .clean_alias = "EOS Kiss X10"
+  },
+  {
+    .exif_make = "Canon",
     .exif_model = "Canon EOS Rebel SL3",
     .clean_make = "Canon",
     .clean_model = "EOS 250D",
@@ -164,6 +171,13 @@ const model_map_t modelMap[] = {
     .clean_make = "Canon",
     .clean_model = "EOS 850D",
     .clean_alias = "EOS 850D"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS Kiss X10i",
+    .clean_make = "Canon",
+    .clean_model = "EOS 850D",
+    .clean_alias = "EOS Kiss X10i"
   },
   {
     .exif_make = "Canon",

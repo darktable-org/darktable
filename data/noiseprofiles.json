@@ -851,7 +851,7 @@
           ]
         },
         {
-          "comment": "eos 250d (aka eos 200d ii, eos rebel sl3)) contributed by scybernaut",
+          "comment": "eos 250d (aka eos 200d ii, eos kiss x10, eos rebel sl3) contributed by scybernaut",
           "model": "EOS 250D",
           "profiles": [
             {"name": "EOS 250D iso 100", "iso": 100, "a": [5.22367254613872e-06, 2.38125889064614e-06, 4.62535308187296e-06], "b": [4.05699863614146e-09, 2.99296859087643e-09, 4.09607381684299e-09]},
