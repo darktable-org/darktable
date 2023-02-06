@@ -235,6 +235,13 @@
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>libraw_extensions</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>raw file extensions to be processed by libraw</shortdescription>
+    <longdescription>space-delimited list of raw file extensions (without a leading dot, in lowercase) to be processed by libraw instead of rawspeed.</longdescription>
+  </dtconfig>
   <dtconfig prefs="storage" section="XMP">
     <name>write_sidecar_files</name>
     <type>
