@@ -741,18 +741,19 @@ static int _pixelpipe_picker_box(
   box[2] = fmaxf(fbox[0], fbox[2]);
   box[3] = fmaxf(fbox[1], fbox[3]);
 
-  if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
-  {
-    // if we are sampling one point, make sure that we actually sample it.
-    for(int k = 2; k < 4; k++) box[k] += 1;
-  }
+  // make sure we sample at least one point
+  box[2] = fmaxf(box[2], box[0] + 1);
+  box[3] = fmaxf(box[3], box[1] + 1);
 
   // do not continue if box is completely outside of roi
+  // FIXME: on invalid box, caller should set sample to something like NaN to flag it as invalid
   if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return 1;
 
   // clamp bounding box to roi
-  for(int k = 0; k < 4; k += 2) box[k] = MIN(width - 1, MAX(0, box[k]));
-  for(int k = 1; k < 4; k += 2) box[k] = MIN(height - 1, MAX(0, box[k]));
+  box[0] = CLAMP(box[0], 0, width - 1);
+  box[1] = CLAMP(box[1], 0, height - 1);
+  box[2] = CLAMP(box[2], 1, width);
+  box[3] = CLAMP(box[3], 1, height);
 
   // safety check: area needs to have minimum 1 pixel width and height
   if(box[2] - box[0] < 1 || box[3] - box[1] < 1) return 1;
