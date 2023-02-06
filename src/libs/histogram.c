@@ -1281,18 +1281,16 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
 
       // scale conservatively to 100% of width:
-      gchar *text = g_strdup_printf("analogous complementary\nrotation: 360°");
-      pango_layout_set_text(layout, text, -1);
-      pango_layout_get_pixel_extents(layout, &ink, NULL);
+      pango_layout_set_text(layout, _("analogous complementary"), -1);
+      pango_layout_get_pixel_extents(layout, NULL, &ink);
       pango_font_description_set_absolute_size(desc, width * 0.9 / ink.width * PANGO_SCALE);
       pango_layout_set_font_description(layout, desc);
-      g_free(text);
 
-      text = g_strdup_printf("%d°\n%s", d->harmony_rotation, _(hm.name));
+      gchar *text = g_strdup_printf("%d°\n%s", d->harmony_rotation, _(hm.name));
 
       set_color(cr, darktable.bauhaus->graph_fg);
       pango_layout_set_text(layout, text, -1);
-      pango_layout_get_pixel_extents(layout, &ink, NULL);
+      pango_layout_get_pixel_extents(layout, NULL, &ink);
       cairo_scale(cr, 1., -1.);
       cairo_rotate(cr, -d->vectorscope_angle);
       cairo_move_to(cr, 0.48f * width - ink.width - ink.x, 0.48 * height - ink.height - ink.y);
@@ -1512,12 +1510,12 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
-      const float exposure = d->button_down_value + diff * 4.0f / (float)range;
+      const float exposure = d->button_down_value + diff * 4.0f / (float)range * dt_accel_get_speed_multiplier(widget, event->state);
       dt_dev_exposure_set_exposure(dev, exposure);
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
     {
-      const float black = d->button_down_value - diff * .1f / (float)range;
+      const float black = d->button_down_value - diff * .1f / (float)range * dt_accel_get_speed_multiplier(widget, event->state);
       dt_dev_exposure_set_black(dev, black);
     }
   }
@@ -1532,28 +1530,35 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     const gboolean hooks_available = (cv->view(cv) == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
 
     // FIXME: make just one tooltip for the widget depending on whether it is draggable or not, and set it when enter the view
-    if(!hooks_available || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    gchar *tip = g_strdup_printf("%s\n", _(dt_lib_histogram_scope_type_names[d->scope_type]));
+    if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
               d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
               d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE)
-      gtk_widget_set_tooltip_text(widget, "histogram");
+        tip = dt_util_dstrcat(tip, _("\nscroll to coarse-rotate\nctrl+scroll to fine rotate"
+                                     "\nshift+scroll to change width\nalt+scroll to cycle"));
     }
-    // FIXME: could a GtkRange be used to do this work?
-    else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
-            (d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM &&
-             ((posy > 7.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI) ||
-              (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
+    else if(hooks_available)
     {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
-      gtk_widget_set_tooltip_text(widget, _("histogram\ndrag to change black point,\ndouble-click resets"));
+      if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
+          ((d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM || d->scope_type == DT_LIB_HISTOGRAM_SCOPE_PARADE) &&
+            ((posy > 7.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_HORI) ||
+            (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
+      {
+        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
+        tip = dt_util_dstrcat(tip, _("\ndrag to change black point,\ndouble-click resets"));
+      }
+      else
+      {
+        d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
+        tip = dt_util_dstrcat(tip, _("\ndrag to change exposure,\ndouble-click resets"));
+      }
     }
-    else
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
-      gtk_widget_set_tooltip_text(widget, _("histogram\ndrag to change exposure,\ndouble-click resets"));
-    }
+    gtk_widget_set_tooltip_text(widget, tip);
+    g_free(tip);
+
     if(prior_highlight != d->highlight)
     {
       dt_control_queue_redraw_widget(widget);
@@ -1600,19 +1605,31 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
   return TRUE;
 }
 
-static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static void _color_harmony_button_on_off(dt_lib_histogram_color_harmony_type_t on,
+                                         dt_lib_histogram_color_harmony_type_t off,
+                                         dt_lib_histogram_t *d)
 {
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-  {
-    // bubble to adjusting the overall widget size
-    return FALSE;
-  }
+  if(off != DT_LIB_HISTOGRAM_HARMONY_NONE)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[off - 1]), FALSE);
+  if(on != DT_LIB_HISTOGRAM_HARMONY_NONE)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[on - 1]), TRUE);
+}
+
+static void _color_harmony_changed(dt_lib_histogram_t *d);
+
+static gboolean _eventbox_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   int delta_y = 0;
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_MOD1_MASK))
+  {
+    // bubble to adjusting the overall widget size
+    gtk_widget_event(d->scope_draw, (GdkEvent*)event);
+  }
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
   // scroll events
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) && delta_y != 0)
+  else if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) && delta_y != 0)
   {
     if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
     {
@@ -1621,13 +1638,44 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
       {
         const float ce = dt_dev_exposure_get_exposure(dev);
-        dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
+        dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y * dt_accel_get_speed_multiplier(widget, event->state));
       }
       else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
       {
         const float cb = dt_dev_exposure_get_black(dev);
-        dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
+        dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y * dt_accel_get_speed_multiplier(widget, event->state));
       }
+    }
+    else if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+    {
+      if(dt_modifier_is(event->state, GDK_SHIFT_MASK)) // SHIFT+SCROLL
+      {
+        if(d->harmony_width == 0 && delta_y < 0) d->harmony_width = DT_LIB_HISTOGRAM_HARMONY_WIDTH_N - 1;
+        else d->harmony_width = (d->harmony_width +delta_y) % DT_LIB_HISTOGRAM_HARMONY_WIDTH_N;
+      }
+      else if(dt_modifier_is(event->state, GDK_MOD1_MASK)) // ALT+SCROLL
+      {
+        if(d->color_harmony_old == DT_LIB_HISTOGRAM_HARMONY_NONE && delta_y < 0)
+          d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1;
+        else d->color_harmony = (d->color_harmony_old + delta_y) % DT_LIB_HISTOGRAM_HARMONY_N;
+        _color_harmony_button_on_off(d->color_harmony, d->color_harmony_old, d);
+        d->color_harmony_old = d->color_harmony;
+      }
+      else
+      {
+        int a;
+        if(dt_modifier_is(event->state, GDK_CONTROL_MASK)) // CTRL+SCROLL
+          a = d->harmony_rotation + delta_y;
+        else // SCROLL
+        {
+          d->harmony_rotation = (int)(d->harmony_rotation / 15.) * 15;
+          a = d->harmony_rotation + 15 * delta_y;
+        }
+        a %= 360;
+        if(a < 0) a += 360;
+        d->harmony_rotation = a;
+      }
+      _color_harmony_changed(d);
     }
   }
   return TRUE;
@@ -1901,17 +1949,6 @@ static void _color_harmony_changed(dt_lib_histogram_t *d)
   dt_control_queue_redraw_widget(d->scope_draw);
 }
 
-static void _color_harmony_button_on_off(dt_lib_histogram_color_harmony_type_t on,
-                                         dt_lib_histogram_color_harmony_type_t off,
-                                         dt_lib_histogram_t *d)
-{
-  if(off != DT_LIB_HISTOGRAM_HARMONY_NONE)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[off - 1]), FALSE);
-  if(on != DT_LIB_HISTOGRAM_HARMONY_NONE)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->color_harmony_button[on - 1]), TRUE);
-}
-
-
 static gboolean _color_harmony_clicked(GtkWidget *button, GdkEventButton *event, dt_lib_histogram_t *d)
 {
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)))
@@ -1934,44 +1971,6 @@ static gboolean _color_harmony_clicked(GtkWidget *button, GdkEventButton *event,
     d->color_harmony = d->color_harmony_old = pos + 1;
   }
   _color_harmony_changed(d);
-  return TRUE;
-}
-
-static gboolean _color_harmony_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
-{
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  int delta_y = 0;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) && delta_y != 0)
-  {
-    if(dt_modifier_is(event->state, GDK_SHIFT_MASK)) // SHIFT+SCROLL
-    {
-      if(d->harmony_width == 0 && delta_y < 0) d->harmony_width = DT_LIB_HISTOGRAM_HARMONY_WIDTH_N - 1;
-      else d->harmony_width = (d->harmony_width +delta_y) % DT_LIB_HISTOGRAM_HARMONY_WIDTH_N;
-    }
-    else if(dt_modifier_is(event->state, GDK_MOD1_MASK)) // ALT+SCROLL
-    {
-      if(d->color_harmony_old == DT_LIB_HISTOGRAM_HARMONY_NONE && delta_y < 0)
-        d->color_harmony = DT_LIB_HISTOGRAM_HARMONY_N - 1;
-      else d->color_harmony = (d->color_harmony_old + delta_y) % DT_LIB_HISTOGRAM_HARMONY_N;
-      _color_harmony_button_on_off(d->color_harmony, d->color_harmony_old, d);
-      d->color_harmony_old = d->color_harmony;
-    }
-    else
-    {
-      int a;
-      if(dt_modifier_is(event->state, GDK_CONTROL_MASK)) // CTRL+SCROLL
-        a = d->harmony_rotation + delta_y;
-      else // SCROLL
-        {
-          d->harmony_rotation = (int)(d->harmony_rotation / 15.) * 15;
-          a = d->harmony_rotation + 15 * delta_y;
-        }
-      a %= 360;
-      if(a < 0) a += 360;
-      d->harmony_rotation = a;
-    }
-    _color_harmony_changed(d);
-  }
   return TRUE;
 }
 
@@ -2339,22 +2338,7 @@ void gui_init(dt_lib_module_t *self)
   for(int i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
   {
     d->scope_type_button[i] = dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
-    if(i == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
-    {
-      gchar *text = g_strdup_printf("%s\n\n%s\n%s\n%s\n%s",
-                                    _(dt_lib_histogram_scope_type_names[i]),
-                                    _("scroll to coarse-rotate"),
-                                    _("ctrl+scroll to fine rotate"),
-                                    _("shift+scroll to change width"),
-                                    _("alt+scroll to cycle"));
-      gtk_widget_set_tooltip_text(d->scope_type_button[i], text);
-      g_free(text);
-    }
-    else
-    {
-      gtk_widget_set_tooltip_text(d->scope_type_button[i],
-                                  _(dt_lib_histogram_scope_type_names[i]));
-    }
+    gtk_widget_set_tooltip_text(d->scope_type_button[i], _(dt_lib_histogram_scope_type_names[i]));
     dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i],
                      d->scope_type_button[i], &dt_action_def_toggle);
     gtk_box_pack_start(GTK_BOX(box_left), d->scope_type_button[i], FALSE, FALSE, 0);
@@ -2410,9 +2394,6 @@ void gui_init(dt_lib_module_t *self)
                                            &(dt_color_harmonies[i]));
     dt_action_define(dark, N_("color harmonies"), dt_color_harmonies[i].name, rb, &dt_action_def_toggle);
     g_signal_connect(G_OBJECT(rb), "button-press-event", G_CALLBACK(_color_harmony_clicked), d);
-    gtk_widget_add_events(rb, darktable.gui->scroll_mask);
-    g_signal_connect(G_OBJECT(rb), "scroll-event",
-                     G_CALLBACK(_color_harmony_scroll_callback), d);
     g_signal_connect(G_OBJECT(rb), "enter-notify-event",
                      G_CALLBACK(_color_harmony_enter_notify_callback), d);
     g_signal_connect(G_OBJECT(rb), "leave-notify-event",
@@ -2469,8 +2450,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->green_channel_button), "toggled", G_CALLBACK(_green_channel_toggle), d);
   g_signal_connect(G_OBJECT(d->blue_channel_button), "toggled", G_CALLBACK(_blue_channel_toggle), d);
 
-  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
-                                       GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask);
+  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
+                                     | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
   // FIXME: why does cursor motion over buttons trigger multiple draw callbacks?
   g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_drawable_draw_callback), d);
   g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
@@ -2481,10 +2462,10 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_drawable_button_release_callback), d);
   g_signal_connect(G_OBJECT(d->scope_draw), "motion-notify-event",
                    G_CALLBACK(_drawable_motion_notify_callback), d);
-  g_signal_connect(G_OBJECT(d->scope_draw), "scroll-event",
-                   G_CALLBACK(_drawable_scroll_callback), d);
 
-  gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
+  gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(eventbox), "scroll-event",
+                   G_CALLBACK(_eventbox_scroll_callback), d);
   g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
                    G_CALLBACK(_eventbox_enter_notify_callback), d);
   g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
