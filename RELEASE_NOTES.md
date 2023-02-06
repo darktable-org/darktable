@@ -131,18 +131,18 @@ Since darktable 4.2.0:
 
 -
 
+### Missing Compression Mode Support
+
+- Fujifilm "non-lossless"/lossy
+- Nikon high efficiency
+- Sony lossless
+
 ### White Balance Presets
 
 -
 
 ### Noise Profiles
 
-
-### Missing Compression Mode Support
-
-- Fujifilm "non-lossless"/lossy
-- Nikon HE
-- Sony lossless
 
 ### Suspended Support
 
