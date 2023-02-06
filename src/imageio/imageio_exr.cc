@@ -16,8 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define __STDC_FORMAT_MACROS
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -40,6 +38,8 @@ extern "C" {
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
+#include "common/metadata.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "imageio/imageio_common.h"
@@ -96,13 +96,13 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   }
   if(!(hasR && hasG && hasB))
   {
-    dt_print(DT_DEBUG_ALWAYS, "[exr_read] Warning, only files with RGB(A) channels are supported.\n");
+    dt_print(DT_DEBUG_ALWAYS, "[exr_open] error: only images with RGB(A) channels are supported, skipping `%s'\n", img->filename);
     return DT_IMAGEIO_LOAD_FAILED;
   }
 
   if(!img->exif_inited)
   {
-    // read back exif data
+    // read back exif data, either as embedded blob or "standard" attributes
     // if another software is able to update these exif data, the former test
     // should be removed to take the potential changes in account (not done
     // by normal import image flow)
@@ -119,6 +119,30 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
       }
       if(exif_size > 0) dt_exif_read_from_blob(img, exif_blob, exif_size);
     }
+    else
+    {
+      if(Imf::hasOwner(header)) dt_metadata_set_import(img->id, "Xmp.dc.rights", Imf::owner(header).c_str());
+      if(Imf::hasComments(header))
+        dt_metadata_set_import(img->id, "Xmp.dc.description", Imf::comments(header).c_str());
+      if(Imf::hasCapDate(header))
+      {
+        // utcOffset can be ignored for now, see dt_datetime_exif_to_numbers()
+        char *datetime = strdup(Imf::capDate(header).c_str());
+        dt_exif_sanitize_datetime(datetime);
+        dt_datetime_exif_to_img(img, datetime);
+        free(datetime);
+      }
+      if(Imf::hasLongitude(header) && Imf::hasLatitude(header))
+      {
+        img->geoloc.longitude = Imf::longitude(header);
+        img->geoloc.latitude = Imf::latitude(header);
+      }
+      if(Imf::hasAltitude(header)) img->geoloc.elevation = Imf::altitude(header);
+      if(Imf::hasFocus(header)) img->exif_focus_distance = Imf::focus(header);
+      if(Imf::hasExpTime(header)) img->exif_exposure = Imf::expTime(header);
+      if(Imf::hasAperture(header)) img->exif_aperture = Imf::aperture(header);
+      if(Imf::hasIsoSpeed(header)) img->exif_iso = Imf::isoSpeed(header);
+    }
   }
 
   /* Get image width and height from displayWindow */
@@ -132,13 +156,9 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[exr_read] could not alloc full buffer for image `%s'\n", img->filename);
-    /// \todo open exr cleanup...
+    dt_print(DT_DEBUG_ALWAYS, "[exr_open] error: could not alloc full buffer for image `%s'\n", img->filename);
     return DT_IMAGEIO_CACHE_FULL;
   }
-
-  // FIXME: is this really needed?
-  memset(buf, 0, sizeof(float) * 4 * img->width * img->height);
 
   /* setup framebuffer */
   xstride = sizeof(float) * 4;
@@ -220,13 +240,6 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   if(Imf::hasWhiteLuminance(header))
     whiteLuminance = Imf::whiteLuminance(header);
 
-//   printf("hasChromaticities: %d\n", Imf::hasChromaticities(header));
-//   printf("hasWhiteLuminance: %d\n", Imf::hasWhiteLuminance(header));
-//   std::cout << chromaticities.red << std::endl;
-//   std::cout << chromaticities.green << std::endl;
-//   std::cout << chromaticities.blue << std::endl;
-//   std::cout << chromaticities.white << std::endl;
-
   Imath::M44f m = Imf::XYZtoRGB(chromaticities, whiteLuminance);
 
   for(int i = 0; i < 3; i++)
@@ -234,7 +247,6 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
     {
       img->d65_color_matrix[3 * i + j] = m[j][i];
     }
-
 
   /* cleanup and return... */
   img->buf_dsc.filters = 0u;
