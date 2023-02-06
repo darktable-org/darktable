@@ -1179,11 +1179,19 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
   //  first stderr message if any
   if(stderr_message)
   {
+    const dt_image_t *img = module ? &module->dev->image_storage : NULL;
     const char *name = module ? module->name() : "?";
-    dt_print(DT_DEBUG_ALWAYS, "Trouble: [%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
+
+    dt_print(DT_DEBUG_ALWAYS, "Trouble: [%s] %s (%s %d)\n",
+             name,
+             stderr_message,
+             img ? img->filename : "?",
+             img ? img->id : -1);
   }
 
-  if(!dt_iop_is_hidden(module) && module->gui_data && dt_conf_get_bool("plugins/darkroom/show_warnings"))
+  if(!dt_iop_is_hidden(module)
+     && module->gui_data
+     && dt_conf_get_bool("plugins/darkroom/show_warnings"))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
                                   module, trouble_msg, trouble_tooltip);
 }
