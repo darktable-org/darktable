@@ -15,10 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include "common/darktable.h"
+#include "develop/imageop.h"         // for IOP_CS_RGB
 #include "imageio/imageio_pfm.h"
 
 #include <assert.h>
@@ -247,6 +249,18 @@ dt_imageio_retval_t dt_imageio_open_pnm(dt_image_t *img, const char *filename, d
 
 end:
   fclose(f);
+
+  if(result == DT_IMAGEIO_OK)
+  {
+    img->buf_dsc.cst = IOP_CS_RGB; // pnm is always RGB
+    img->buf_dsc.filters = 0u;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    img->loader = LOADER_PNM;
+  }
+
   return result;
 }
 
@@ -255,4 +269,3 @@ end:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
