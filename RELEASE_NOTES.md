@@ -140,6 +140,9 @@ Since darktable 4.2.0:
 
 ### Missing Compression Mode Support
 
+- Fujifilm "non-lossless"/lossy
+- Nikon HE
+- Sony lossless
 
 ### Suspended Support
 
