@@ -1385,8 +1385,8 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   // write history entries
 
   GList *history = dev->history;
-  dt_print(DT_DEBUG_IOPORDER, "[dt_dev_write_history_ext] Writing history image: `%s' %i, iop version: %i\n",
-    dev->image_storage.filename, imgid, dev->iop_order_version);
+  dt_print(DT_DEBUG_IOPORDER, "[dt_dev_write_history_ext] Writing history image id=%d `%s', iop version: %i\n",
+    imgid, dev->image_storage.filename, dev->iop_order_version);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
@@ -1498,9 +1498,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK)
            && !dt_history_check_module_exists(imgid, module->op, FALSE))
         {
-          fprintf(stderr,
-                  "[_dev_auto_apply_presets] missing mandatory module %s for image %d\n",
-                  module->op, imgid);
+          dt_print(DT_DEBUG_PARAMS,
+                  "[_dev_auto_apply_presets] missing mandatory module %s for image id=%d `%s'\n",
+                  module->op, imgid, dev->image_storage.filename);
 
           // If the module is white-balance and we are dealing with a
           // raw file we need to add one now with the default legacy
@@ -1994,8 +1994,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     if(!(has_module_name && is_valid_id))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[dev_read_history_ext] database history for image `%s' seems to be corrupted!\n",
-              dev->image_storage.filename);
+      dt_print(DT_DEBUG_ALWAYS, "[dev_read_history_ext] database history for image id=%d `%s' seems to be corrupted!\n",
+              imgid, dev->image_storage.filename);
       continue;
     }
 
@@ -2050,8 +2050,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     if(!hist->module)
     {
       dt_print(DT_DEBUG_ALWAYS,
-          "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n",
-          module_name, dev->image_storage.filename);
+          "[dev_read_history] the module `%s' requested by image id=%d `%s' is not installed on this computer!\n",
+          module_name, imgid, dev->image_storage.filename);
       free(hist);
       continue;
     }
@@ -2123,8 +2123,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
          || hist->module->legacy_params(hist->module, module_params, labs(modversion),
                                         hist->params, labs(hist->module->version())) == 1)
       {
-        dt_print(DT_DEBUG_ALWAYS, "[dev_read_history] module `%s' version mismatch: history is %d, darktable is %d.\n",
-                hist->module->op, modversion, hist->module->version());
+        dt_print(DT_DEBUG_ALWAYS, "[dev_read_history] module `%s' version mismatch: history is %d, darktable is %d, image id=%d `%s'\n",
+                hist->module->op, modversion, hist->module->version(), imgid, dev->image_storage.filename);
 
         const char *fname = dev->image_storage.filename + strlen(dev->image_storage.filename);
         while(fname > dev->image_storage.filename && *fname != '/') fname--;
