@@ -24,6 +24,10 @@
 #include "config.h"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* The pixelpipe types here are all defined as a bit mask to ensure easy testing via & operator */
 typedef enum dt_dev_pixelpipe_type_t
 {
@@ -75,6 +79,10 @@ typedef void dt_iop_params_t;
 
 const char *dt_pixelpipe_name(dt_dev_pixelpipe_type_t pipe);
 
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 #include "develop/pixelpipe_hb.h"
 
 // clang-format off
@@ -82,4 +90,3 @@ const char *dt_pixelpipe_name(dt_dev_pixelpipe_type_t pipe);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
