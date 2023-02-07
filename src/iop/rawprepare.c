@@ -314,8 +314,8 @@ void output_format(
 
 static void _adjust_xtrans_filters(
         dt_dev_pixelpipe_t *pipe,
-        uint32_t crop_x,
-        uint32_t crop_y)
+        const uint32_t crop_x,
+        const uint32_t crop_y)
 {
   for(int i = 0; i < 6; ++i)
   {
@@ -570,8 +570,10 @@ int process_cl(
       if(err != CL_SUCCESS) goto error;
     }
 
-    dt_opencl_set_kernel_args(devid, kernel, 10, CLARG(dev_gainmap[0]), CLARG(dev_gainmap[1]), CLARG(dev_gainmap[2]),
-      CLARG(dev_gainmap[3]), CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
+    dt_opencl_set_kernel_args
+      (devid, kernel, 10,
+       CLARG(dev_gainmap[0]), CLARG(dev_gainmap[1]), CLARG(dev_gainmap[2]), CLARG(dev_gainmap[3]),
+       CLARG(map_size), CLARG(im_to_rel), CLARG(rel_to_map), CLARG(map_origin));
   }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -625,10 +627,10 @@ static int _image_is_normalized(const dt_image_t *const image)
 static gboolean _image_set_rawcrops(
         dt_iop_module_t *self,
         const uint32_t imgid,
-        int left,
-        int right,
-        int top,
-        int bottom)
+        const int left,
+        const int right,
+        const int top,
+        const int bottom)
 {
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
