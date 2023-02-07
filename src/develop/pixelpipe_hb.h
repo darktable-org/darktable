@@ -27,6 +27,10 @@
 #include "develop/pixelpipe_cache.h"
 #include "imageio/imageio_common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /**
  * struct used by iop modules to connect to pixelpipe.
  * data can be used to store whatever private data and
@@ -267,9 +271,12 @@ void dt_print_pipe(dt_debug_thread_t thread, const char *title, dt_dev_pixelpipe
 // helper function writing the pipe-processed ctmask data to dest
 float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const struct dt_iop_module_t *target_module);
 
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

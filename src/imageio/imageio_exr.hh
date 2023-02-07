@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -13,21 +13,14 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+    along with darktable.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
 
-#include "common/image.h"
-#include "common/mipmap_cache.h"
-
+#include <cinttypes>
 #include <ciso646>
-
-#if defined(_LIBCPP_VERSION)
 #include <memory>
-#else
-#include <tr1/memory>
-#endif
 
 #include <OpenEXR/ImfChannelList.h>
 #include <OpenEXR/ImfFrameBuffer.h>
@@ -69,11 +62,7 @@ public:
   }
 
   uint32_t size;
-#if defined(_LIBCPP_VERSION)
   std::shared_ptr<uint8_t> data;
-#else
-  std::tr1::shared_ptr<uint8_t> data;
-#endif
 };
 
 
@@ -96,6 +85,8 @@ template <> void BlobAttribute::readValueFrom(IStream &is, int size, int version
 }
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

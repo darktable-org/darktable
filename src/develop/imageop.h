@@ -29,12 +29,20 @@
 #include "common/action.h"
 #include "control/settings.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /** region of interest, needed by pixelpipe.h */
 typedef struct dt_iop_roi_t
 {
   int x, y, width, height;
   float scale;
 } dt_iop_roi_t;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
