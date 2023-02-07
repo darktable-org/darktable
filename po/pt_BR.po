@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-07 10:26-0300\n"
-"PO-Revision-Date: 2023-02-07 10:28-0300\n"
+"POT-Creation-Date: 2023-02-08 18:04-0300\n"
+"PO-Revision-Date: 2023-02-08 18:05-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2705,7 +2705,7 @@ msgstr "aberração cromática muito grande"
 #: ../src/iop/channelmixerrgb.c:4185 ../src/iop/colorzones.c:2263
 #: ../src/iop/temperature.c:1779 ../src/iop/temperature.c:1952
 #: ../src/libs/collect.c:1792 ../src/libs/filters/colors.c:260
-#: ../src/libs/histogram.c:2379
+#: ../src/libs/histogram.c:2390
 msgid "red"
 msgstr "vermelho"
 
@@ -2718,7 +2718,7 @@ msgstr "vermelho"
 #: ../src/iop/channelmixerrgb.c:4186 ../src/iop/colorzones.c:2266
 #: ../src/iop/temperature.c:1763 ../src/iop/temperature.c:1781
 #: ../src/iop/temperature.c:1953 ../src/libs/collect.c:1792
-#: ../src/libs/filters/colors.c:262 ../src/libs/histogram.c:2371
+#: ../src/libs/filters/colors.c:262 ../src/libs/histogram.c:2382
 msgid "green"
 msgstr "verde"
 
@@ -2731,7 +2731,7 @@ msgstr "verde"
 #: ../src/iop/channelmixerrgb.c:4187 ../src/iop/colorzones.c:2268
 #: ../src/iop/temperature.c:1783 ../src/iop/temperature.c:1954
 #: ../src/libs/collect.c:1792 ../src/libs/filters/colors.c:263
-#: ../src/libs/histogram.c:2363
+#: ../src/libs/histogram.c:2374
 msgid "blue"
 msgstr "azul"
 
@@ -4334,7 +4334,7 @@ msgstr "nível de preto"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:106
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:179
-#: ../src/iop/rawprepare.c:893
+#: ../src/iop/rawprepare.c:926
 msgid "white point"
 msgstr "ponto de branco"
 
@@ -6113,7 +6113,7 @@ msgstr ""
 "não é possível remover rolo de filme contendo cópias locais sem acesso aos "
 "originais"
 
-#: ../src/common/history.c:812
+#: ../src/common/history.c:816
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 
@@ -6134,87 +6134,87 @@ msgstr ""
 "<h1>Obrigado,</h1><p>tudo deve ter funcionado, você pode <b>fechar</b> seu "
 "navegador agora e <b>voltar</b> ao darktable.</p>"
 
-#: ../src/common/image.c:296
+#: ../src/common/image.c:322
 msgid "orphaned image"
 msgstr "imagem órfã"
 
-#: ../src/common/image.c:563
+#: ../src/common/image.c:613
 #, c-format
 msgid "geo-location undone for %d images"
 msgstr "geolocalização desfeita para %d imagem"
 
-#: ../src/common/image.c:564
+#: ../src/common/image.c:614
 #, c-format
 msgid "geo-location re-applied to %d images"
 msgstr "geolocalização re-aplicada a %d imagens"
 
-#: ../src/common/image.c:583
+#: ../src/common/image.c:634
 #, c-format
 msgid "date/time undone for %d images"
 msgstr "definição de data/hora desfeita em %d imagens"
 
-#: ../src/common/image.c:584
+#: ../src/common/image.c:635
 #, c-format
 msgid "date/time re-applied to %d images"
 msgstr "data/hora re-aplicada em %d imagens"
 
-#: ../src/common/image.c:2020
+#: ../src/common/image.c:2138
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "não pude acessar cópia local `%s'"
 
-#: ../src/common/image.c:2027
+#: ../src/common/image.c:2145
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "não pude escrever cópia local `%s'"
 
-#: ../src/common/image.c:2034
+#: ../src/common/image.c:2152
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erro movendo cópia local `%s' -> `%s'"
 
-#: ../src/common/image.c:2050
+#: ../src/common/image.c:2169
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erro movendo `%s': arquivo não encontrado"
 
-#: ../src/common/image.c:2060
+#: ../src/common/image.c:2179
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erro movendo `%s' -> `%s': arquivo já existe"
 
-#: ../src/common/image.c:2064
+#: ../src/common/image.c:2183
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erro movendo `%s' -> `%s'"
 
-#: ../src/common/image.c:2378
+#: ../src/common/image.c:2508
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "não é possível criar cópia local quando o arquivo original está inacessível."
 
-#: ../src/common/image.c:2392
+#: ../src/common/image.c:2522
 msgid "cannot create local copy."
 msgstr "não pude criar cópia local."
 
-#: ../src/common/image.c:2466 ../src/control/jobs/control_jobs.c:776
+#: ../src/common/image.c:2597 ../src/control/jobs/control_jobs.c:776
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "não é possível remover cópias local quando o arquivo original está "
 "inacessível."
 
-#: ../src/common/image.c:2631
+#: ../src/common/image.c:2764
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "cópia local %d foi sincronizada"
 msgstr[1] "cópias locais %d foram sincronizadas"
 
-#: ../src/common/image.c:2820
+#: ../src/common/image.c:2966
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>ALERTA</b> : amostras faltando para câmera!"
 
-#: ../src/common/image.c:2821
+#: ../src/common/image.c:2967
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6222,7 +6222,7 @@ msgstr ""
 "Você precisa prover amostras em  <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
 
-#: ../src/common/image.c:2822
+#: ../src/common/image.c:2968
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6231,7 +6231,7 @@ msgstr ""
 "para `%s' `%s'\n"
 "em tantos formatos/compressão/profundidade de bits quanto possível"
 
-#: ../src/common/image.c:2825
+#: ../src/common/image.c:2971
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "ou o <b>RAW não será legível</b> na próxima versão."
 
@@ -8552,25 +8552,25 @@ msgstr "[FORMA] remover forma"
 msgid "copy of %s"
 msgstr "copiar de %s"
 
-#: ../src/develop/masks/masks.c:914
+#: ../src/develop/masks/masks.c:917
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: versão de máscara incompatível: %d != %d"
 
-#: ../src/develop/masks/masks.c:1136 ../src/develop/masks/masks.c:1759
+#: ../src/develop/masks/masks.c:1139 ../src/develop/masks/masks.c:1762
 #, c-format
 msgid "opacity: %d%%"
 msgstr "opacidade: %d%%"
 
-#: ../src/develop/masks/masks.c:1513 ../src/libs/masks.c:1054
+#: ../src/develop/masks/masks.c:1516 ../src/libs/masks.c:1054
 msgid "add existing shape"
 msgstr "adicionar forma existente"
 
-#: ../src/develop/masks/masks.c:1538
+#: ../src/develop/masks/masks.c:1541
 msgid "use same shapes as"
 msgstr "usar as mesmas formas que"
 
-#: ../src/develop/masks/masks.c:1839
+#: ../src/develop/masks/masks.c:1842
 msgid "masks can not contain themselves"
 msgstr "máscaras não podem conter a si mesmas"
 
@@ -8687,7 +8687,7 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:2358
+#: ../src/develop/pixelpipe_hb.c:2367
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -12698,15 +12698,15 @@ msgstr "corrige aberrações cromáticas para sensores Bayer"
 #: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:179
 #: ../src/iop/highlights.c:181 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
-#: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:154
-#: ../src/iop/rawprepare.c:156 ../src/iop/temperature.c:199
+#: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:159
+#: ../src/iop/rawprepare.c:161 ../src/iop/temperature.c:199
 #: ../src/iop/temperature.c:201
 msgid "linear, raw, scene-referred"
 msgstr "linear, raw, relativo à cena"
 
 #: ../src/iop/cacorrect.c:90 ../src/iop/cacorrectrgb.c:172
 #: ../src/iop/demosaic.c:229 ../src/iop/invert.c:124
-#: ../src/iop/rawdenoise.c:132 ../src/iop/rawprepare.c:155
+#: ../src/iop/rawdenoise.c:132 ../src/iop/rawprepare.c:160
 #: ../src/iop/temperature.c:200
 msgid "linear, raw"
 msgstr "linear, raw"
@@ -14552,7 +14552,7 @@ msgstr ""
 "pipeline usando perfis de cor para remapear valores RGB"
 
 #: ../src/iop/colorin.c:136 ../src/iop/colorout.c:92 ../src/iop/demosaic.c:227
-#: ../src/iop/rawprepare.c:153
+#: ../src/iop/rawprepare.c:158
 msgid "mandatory"
 msgstr "obrigatório"
 
@@ -14945,7 +14945,7 @@ msgstr ""
 "- monotônica é melhor para acurácia de funções puramente analíticas (log, "
 "gama, exp)"
 
-#: ../src/iop/crop.c:129 ../src/iop/rawprepare.c:902
+#: ../src/iop/crop.c:129 ../src/iop/rawprepare.c:937
 msgid "crop"
 msgstr "cortar"
 
@@ -18071,7 +18071,7 @@ msgctxt "modulename"
 msgid "raw black/white point"
 msgstr "ponto preto/branco em raw"
 
-#: ../src/iop/rawprepare.c:151
+#: ../src/iop/rawprepare.c:156
 msgid ""
 "sets technical specificities of the raw sensor.\n"
 "touch with great care!"
@@ -18079,56 +18079,58 @@ msgstr ""
 "modifica especificidades técnicas do sensor raw\n"
 "ajuste com muito cuidado!"
 
-#: ../src/iop/rawprepare.c:163
+#: ../src/iop/rawprepare.c:168
 msgid "passthrough"
 msgstr "passar direto"
 
-#: ../src/iop/rawprepare.c:635
+#: ../src/iop/rawprepare.c:654
 msgid "invalid crop parameters"
 msgstr "parâmetros inválidos de corte"
 
-#: ../src/iop/rawprepare.c:636
+#: ../src/iop/rawprepare.c:655
 msgid ""
-"please reset to defaults, update your preset or set to somemething correct"
-msgstr "por favor reinicialize para o padrão, atualize suas predefinições, ou configure para algo correto"
+"please reset to defaults, update your preset or set to something correct"
+msgstr ""
+"por favor reinicialize para o padrão, atualize suas predefinições, ou "
+"configure para algo correto"
 
-#: ../src/iop/rawprepare.c:869
+#: ../src/iop/rawprepare.c:902
 msgid "black level 0"
 msgstr "nível de preto 0"
 
-#: ../src/iop/rawprepare.c:870
+#: ../src/iop/rawprepare.c:903
 msgid "black level 1"
 msgstr "nível de preto 1"
 
-#: ../src/iop/rawprepare.c:871
+#: ../src/iop/rawprepare.c:904
 msgid "black level 2"
 msgstr "nível de preto 2"
 
-#: ../src/iop/rawprepare.c:872
+#: ../src/iop/rawprepare.c:905
 msgid "black level 3"
 msgstr "nível de preto 3"
 
-#: ../src/iop/rawprepare.c:897
+#: ../src/iop/rawprepare.c:932
 msgid "raw flat field correction to compensate for lens shading"
 msgstr "correção de não-uniformidade para compensar gradientes da lente"
 
-#: ../src/iop/rawprepare.c:905
+#: ../src/iop/rawprepare.c:940
 msgid "crop left border"
 msgstr "corte a partir da borda esquerda"
 
-#: ../src/iop/rawprepare.c:909
+#: ../src/iop/rawprepare.c:944
 msgid "crop top border"
 msgstr "corte a partir da borda esquerda"
 
-#: ../src/iop/rawprepare.c:913
+#: ../src/iop/rawprepare.c:948
 msgid "crop right border"
 msgstr "corte a partir da borda direita"
 
-#: ../src/iop/rawprepare.c:917
+#: ../src/iop/rawprepare.c:952
 msgid "crop bottom border"
 msgstr "corte a partir de baixo"
 
-#: ../src/iop/rawprepare.c:925
+#: ../src/iop/rawprepare.c:961
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -19609,7 +19611,7 @@ msgstr "n/a"
 msgid "camera control"
 msgstr "controle da câmera"
 
-#: ../src/libs/camera.c:422 ../src/libs/histogram.c:2342
+#: ../src/libs/camera.c:422 ../src/libs/histogram.c:2353
 msgid "modes"
 msgstr "modos"
 
@@ -21059,7 +21061,7 @@ msgid "analogous"
 msgstr "análogo"
 
 #. scale conservatively to 100% of width:
-#: ../src/libs/histogram.c:134 ../src/libs/histogram.c:1284
+#: ../src/libs/histogram.c:134 ../src/libs/histogram.c:1288
 msgid "analogous complementary"
 msgstr "complementar análogo"
 
@@ -21095,7 +21097,7 @@ msgstr "forma de onda"
 msgid "rgb parade"
 msgstr "parada rgb (canais lado a lado)"
 
-#: ../src/libs/histogram.c:148 ../src/libs/histogram.c:2293
+#: ../src/libs/histogram.c:148 ../src/libs/histogram.c:2304
 msgid "histogram"
 msgstr "histograma"
 
@@ -21103,106 +21105,100 @@ msgstr "histograma"
 msgid "scopes"
 msgstr "histograma"
 
-#: ../src/libs/histogram.c:1540
-msgid ""
-"\n"
-"scroll to coarse-rotate\n"
-"ctrl+scroll to fine rotate\n"
-"shift+scroll to change width\n"
-"alt+scroll to cycle"
-msgstr ""
-"\n"
-"scroll para rotacionar grosseiramente\n"
-"shift-scroll para rotacionar de modo fino\n"
-"shift+scroll para mudar a largura\n"
-"alt+scroll para alternar ciclicamente"
+#: ../src/libs/histogram.c:1545
+msgid "scroll to coarse-rotate"
+msgstr "scroll para rotacionar grosseiramente"
 
-#: ../src/libs/histogram.c:1551
-msgid ""
-"\n"
-"drag to change black point,\n"
-"double-click resets"
-msgstr ""
-"\n"
-"arraste para mudar ponto preto,\n"
-"clique-duplo reinicializa"
+#: ../src/libs/histogram.c:1546
+msgid "ctrl+scroll to fine rotate"
+msgstr "ctrl+scroll para rotacionar de maneira fina"
 
-#: ../src/libs/histogram.c:1556
-msgid ""
-"\n"
-"drag to change exposure,\n"
-"double-click resets"
-msgstr ""
-"\n"
-"arraste para mudar exposição,\n"
-"clique-duplo reinicializa"
+#: ../src/libs/histogram.c:1547
+msgid "shift+scroll to change width"
+msgstr "shift+scroll muda largura"
 
-#: ../src/libs/histogram.c:1717 ../src/libs/histogram.c:1757
+#: ../src/libs/histogram.c:1548
+msgid "alt+scroll to cycle"
+msgstr "alt+scroll alterna ciclicamente"
+
+#: ../src/libs/histogram.c:1559
+msgid "drag to change black point"
+msgstr "arrastar para mudar o ponto preto"
+
+#: ../src/libs/histogram.c:1560 ../src/libs/histogram.c:1567
+msgid "double-click resets"
+msgstr "clique-duplo para redefinir"
+
+#: ../src/libs/histogram.c:1566
+msgid "drag to change exposure"
+msgstr "arraste para mudar exposição"
+
+#: ../src/libs/histogram.c:1728 ../src/libs/histogram.c:1768
 msgid "set scale to linear"
 msgstr "mudar escala para linear"
 
-#: ../src/libs/histogram.c:1722 ../src/libs/histogram.c:1762
+#: ../src/libs/histogram.c:1733 ../src/libs/histogram.c:1773
 msgid "set scale to logarithmic"
 msgstr "mudar escala para logarítmica"
 
-#: ../src/libs/histogram.c:1738
+#: ../src/libs/histogram.c:1749
 msgid "set scope to vertical"
 msgstr "mudar escopo para vertical"
 
-#: ../src/libs/histogram.c:1743
+#: ../src/libs/histogram.c:1754
 msgid "set scope to horizontal"
 msgstr "mudar escopo para horizontal"
 
-#: ../src/libs/histogram.c:1772
+#: ../src/libs/histogram.c:1783
 msgid "set view to AzBz"
 msgstr "mudar visão para AzBz"
 
-#: ../src/libs/histogram.c:1778
+#: ../src/libs/histogram.c:1789
 msgid "set view to RYB"
 msgstr "mudar visão para RYB"
 
-#: ../src/libs/histogram.c:1784
+#: ../src/libs/histogram.c:1795
 msgid "set view to u*v*"
 msgstr "mudar visão para u*v*"
 
-#: ../src/libs/histogram.c:2296 ../src/libs/histogram.c:2352
+#: ../src/libs/histogram.c:2307 ../src/libs/histogram.c:2363
 msgid "cycle histogram modes"
 msgstr "alterna ciclicamente opções de histograma"
 
-#: ../src/libs/histogram.c:2300 ../src/libs/histogram.c:2353
+#: ../src/libs/histogram.c:2311 ../src/libs/histogram.c:2364
 msgid "hide histogram"
 msgstr "esconder histograma"
 
-#: ../src/libs/histogram.c:2354 ../src/libs/histogram.c:2383
+#: ../src/libs/histogram.c:2365 ../src/libs/histogram.c:2394
 msgid "switch histogram view"
 msgstr "alterna modo de visão do histograma"
 
-#: ../src/libs/histogram.c:2361
+#: ../src/libs/histogram.c:2372
 msgid "toggle blue channel"
 msgstr "alternar mostrar/esconder o canal azul"
 
-#: ../src/libs/histogram.c:2363 ../src/libs/histogram.c:2371
-#: ../src/libs/histogram.c:2379
+#: ../src/libs/histogram.c:2374 ../src/libs/histogram.c:2382
+#: ../src/libs/histogram.c:2390
 msgid "toggle colors"
 msgstr "alternar cores"
 
-#: ../src/libs/histogram.c:2369
+#: ../src/libs/histogram.c:2380
 msgid "toggle green channel"
 msgstr "alternar mostrar/esconder o canal verde"
 
-#: ../src/libs/histogram.c:2377
+#: ../src/libs/histogram.c:2388
 msgid "toggle red channel"
 msgstr "alternar mostrar/esconder o canal vermelho"
 
-#: ../src/libs/histogram.c:2387
+#: ../src/libs/histogram.c:2398
 msgid "cycle vectorscope types"
 msgstr "alternar tipos de vetorscópio"
 
-#: ../src/libs/histogram.c:2395
+#: ../src/libs/histogram.c:2406
 msgid "color harmonies"
 msgstr "harmonias de cor"
 
-#: ../src/libs/histogram.c:2407
+#: ../src/libs/histogram.c:2418
 msgid "cycle color harmonies"
 msgstr "alternar ciclicamente harmonias de cor"
 
@@ -24570,23 +24566,33 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 msgid "mouse actions"
 msgstr "ações com mouse"
 
+#~ msgid ""
+#~ "\n"
+#~ "scroll to coarse-rotate\n"
+#~ "ctrl+scroll to fine rotate\n"
+#~ "shift+scroll to change width\n"
+#~ "alt+scroll to cycle"
+#~ msgstr ""
+#~ "\n"
+#~ "scroll para rotacionar grosseiramente\n"
+#~ "shift-scroll para rotacionar de modo fino\n"
+#~ "shift+scroll para mudar a largura\n"
+#~ "alt+scroll para alternar ciclicamente"
+
+#~ msgid ""
+#~ "\n"
+#~ "drag to change black point,\n"
+#~ "double-click resets"
+#~ msgstr ""
+#~ "\n"
+#~ "arraste para mudar ponto preto,\n"
+#~ "clique-duplo reinicializa"
+
 #~ msgid "crop from top"
 #~ msgstr "corte a partir do topo"
 
 #~ msgid "crop from bottom"
 #~ msgstr "corte a partir de baixo"
-
-#~ msgid "scroll to coarse-rotate"
-#~ msgstr "scroll para rotacionar grosseiramente"
-
-#~ msgid "ctrl+scroll to fine rotate"
-#~ msgstr "ctrl+scroll para rotacionar de maneira fina"
-
-#~ msgid "shift+scroll to change width"
-#~ msgstr "shift+scroll muda largura"
-
-#~ msgid "alt+scroll to cycle"
-#~ msgstr "alt+scroll alterna ciclicamente"
 
 #~ msgid "a4"
 #~ msgstr "a4"
