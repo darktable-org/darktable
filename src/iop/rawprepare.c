@@ -694,7 +694,7 @@ static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gain
        || g->right != image->width)
       return FALSE;
 
-    uint32_t filter = ((g->top & 1) << 1) + (g->left & 1);
+    const uint32_t filter = ((g->top & 1) << 1) + (g->left & 1);
     gainmaps[filter] = g;
   }
 
