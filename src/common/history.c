@@ -590,7 +590,10 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
          && (copy_full || !dt_history_module_skip_copy(mod_src->flags()))
         )
       {
+        const gboolean autoinit = FALSE;
+
         mod_list = g_list_prepend(mod_list, mod_src);
+        autoinit_list = g_list_prepend(autoinit_list, GINT_TO_POINTER(autoinit));
       }
     }
   }
@@ -610,6 +613,7 @@ static int _history_copy_and_paste_on_image_merge(const int32_t imgid,
     const gboolean autoinit = GPOINTER_TO_INT(ai->data);
     dt_history_merge_module_into_history
       (dev_dest, dev_src, mod, &modules_used, FALSE, autoinit);
+    ai = g_list_next(ai);
   }
 
   // update iop-order list to have entries for the new modules
