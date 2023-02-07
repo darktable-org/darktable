@@ -1017,7 +1017,8 @@ static void _collect_histogram_on_CPU(
 }
 
 static int pixelpipe_process_on_CPU(
-             dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
+             dt_dev_pixelpipe_t *pipe,
+             dt_develop_t *dev,
              float *input,
              dt_iop_buffer_dsc_t *input_format,
              const dt_iop_roi_t *roi_in,
@@ -1065,10 +1066,21 @@ static int pixelpipe_process_on_CPU(
                                           tiling->factor, tiling->overhead);
 
   /* process module on cpu. use tiling if needed and possible. */
+
+  const gboolean pfm_dump = darktable.dump_pfm_pipe && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
+
   if(!fitting && piece->process_tiling_ready)
   {
     dt_print_pipe(DT_DEBUG_PIPE, "process TILE", piece->pipe, module->so->op, roi_in, roi_out, "\n");
+
+    if(pfm_dump)
+      dt_dump_pipe_pfm(module->so->op, input, roi_in->width, roi_in->height, in_bpp / 4, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
+
+    if(pfm_dump)
+      dt_dump_pipe_pfm(module->so->op, *output, roi_out->width, roi_out->height, bpp / 4, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
   }
@@ -1079,7 +1091,15 @@ static int pixelpipe_process_on_CPU(
          "Warning: processed without tiling even if memory requirements are not met\n");
 
     dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_process_on_CPU", piece->pipe, module->so->op, roi_in, roi_out, "\n");
+
+    if(pfm_dump)
+      dt_dump_pipe_pfm(module->so->op, input, roi_in->width, roi_in->height, in_bpp / 4, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
     module->process(module, piece, input, *output, roi_in, roi_out);
+
+    if(pfm_dump)
+      dt_dump_pipe_pfm(module->so->op, *output, roi_out->width, roi_out->height, bpp / 4, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
   }
