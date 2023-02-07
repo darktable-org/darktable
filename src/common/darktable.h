@@ -274,7 +274,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_TILING         = 1 << 23,
   DT_DEBUG_VERBOSE        = 1 << 24,
   DT_DEBUG_PIPE           = 1 << 25,
-  DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE
+  DT_DEBUG_ALL            = 0xffffffff & ~DT_DEBUG_VERBOSE,
+  DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
 } dt_debug_thread_t;
 
 typedef enum dt_dump_pfm_t
@@ -351,6 +352,8 @@ typedef struct darktable_t
   char *configdir;
   char *cachedir;
   char *dump_pfm_module;
+  char *dump_pfm_pipe;
+  char *tmp_directory;
   dt_lua_state_t lua_state;
   GList *guides;
   double start_wtime;
@@ -380,6 +383,7 @@ int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();
 void dt_dump_pfm(const char *filename, const void* data, const int width, const int height, dt_dump_pfm_t mode, const char *modname);
+void dt_dump_pipe_pfm(const char *mod, const void* data, const int width, const int height, const int bpp, const gboolean input, const char *pipe);
 
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline void* dt_calloc_align(size_t alignment, size_t size)
