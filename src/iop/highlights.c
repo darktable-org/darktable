@@ -174,7 +174,7 @@ const char *name()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("avoid magenta highlights and try to recover highlights colors"),
+  return dt_iop_set_description(self, _("try to recover highlights colors"),
                                       _("corrective"),
                                       _("linear, raw, scene-referred"),
                                       _("reconstruction, raw"),

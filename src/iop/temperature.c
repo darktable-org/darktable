@@ -194,7 +194,7 @@ const char *name()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("scale raw RGB channels to balance white and help demosaicing"),
+  return dt_iop_set_description(self, _("scale raw RGB channels to balance white and help demosaicing and highlights reconstruction"),
                                       _("corrective"),
                                       _("linear, raw, scene-referred"),
                                       _("linear, raw"),
