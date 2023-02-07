@@ -115,13 +115,18 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+int default_colorspace(dt_iop_module_t *self,
+                       dt_dev_pixelpipe_t *pipe,
+                       dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RAW;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void *new_params,
+                  const int new_version)
 {
   typedef struct dt_iop_rawprepare_params_t dt_iop_rawprepare_params_v2_t;
   typedef struct dt_iop_rawprepare_params_v1_t
@@ -175,7 +180,9 @@ void init_presets(dt_iop_module_so_t *self)
   dt_database_release_transaction(darktable.db);
 }
 
-static int compute_proper_crop(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in, int value)
+static int _compute_proper_crop(dt_dev_pixelpipe_iop_t *piece,
+                                const dt_iop_roi_t *const roi_in,
+                                const int value)
 {
   const float scale = roi_in->scale / piece->iscale;
   return (int)roundf((float)value * scale);
@@ -305,7 +312,7 @@ void output_format(
   dsc->rawprepare.raw_white_point = d->rawprepare.raw_white_point;
 }
 
-static void adjust_xtrans_filters(
+static void _adjust_xtrans_filters(
         dt_dev_pixelpipe_t *pipe,
         uint32_t crop_x,
         uint32_t crop_y)
@@ -319,8 +326,10 @@ static void adjust_xtrans_filters(
   }
 }
 
-static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
-              const int col)
+static int _BL(const dt_iop_roi_t *const roi_out,
+               const dt_iop_rawprepare_data_t *const d,
+               const int row,
+               const int col)
 {
   return ((((row + roi_out->y + d->top) & 1) << 1) + ((col + roi_out->x + d->left) & 1));
 }
@@ -335,8 +344,8 @@ void process(
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
-  const int csx = compute_proper_crop(piece, roi_in, d->left);
-  const int csy = compute_proper_crop(piece, roi_in, d->top);
+  const int csx = _compute_proper_crop(piece, roi_in, d->left);
+  const int csy = _compute_proper_crop(piece, roi_in, d->top);
 
   if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1
      && piece->dsc_in.datatype == TYPE_UINT16)
@@ -358,13 +367,14 @@ void process(
         const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
         const size_t pout = (size_t)j * roi_out->width + i;
 
-        const int id = BL(roi_out, d, j, i);
+        const int id = _BL(roi_out, d, j, i);
         out[pout] = (in[pin] - d->sub[id]) / d->div[id];
       }
     }
 
-    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
-    adjust_xtrans_filters(piece->pipe, csx, csy);
+    piece->pipe->dsc.filters =
+      dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
+    _adjust_xtrans_filters(piece->pipe, csx, csy);
   }
   else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1
           && piece->dsc_in.datatype == TYPE_FLOAT)
@@ -386,13 +396,14 @@ void process(
         const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
         const size_t pout = (size_t)j * roi_out->width + i;
 
-        const int id = BL(roi_out, d, j, i);
+        const int id = _BL(roi_out, d, j, i);
         out[pout] = (in[pin] - d->sub[id]) / d->div[id];
       }
     }
 
-    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
-    adjust_xtrans_filters(piece->pipe, csx, csy);
+    piece->pipe->dsc.filters =
+      dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
+    _adjust_xtrans_filters(piece->pipe, csx, csy);
   }
   else
   { // pre-downsampled buffer that needs black/white scaling
@@ -457,7 +468,7 @@ void process(
       }
       for(int i = 0; i < roi_out->width; i++)
       {
-        const int id = BL(roi_out, d, j, i);
+        const int id = _BL(roi_out, d, j, i);
         const float x_map = CLAMP(((roi_out->x + csx + i) * im_to_rel_x - map_origin_h) * rel_to_map_x, 0, map_w);
         const uint32_t x_i0 = MIN(x_map, map_w - 1);
         const uint32_t x_i1 = MIN(x_i0 + 1, map_w - 1);
@@ -495,7 +506,9 @@ int process_cl(
   int kernel = -1;
   gboolean gainmap_args = FALSE;
 
-  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_UINT16)
+  if(piece->pipe->dsc.filters
+     && piece->dsc_in.channels == 1
+     && piece->dsc_in.datatype == TYPE_UINT16)
   {
     if(d->apply_gainmaps)
     {
@@ -507,7 +520,9 @@ int process_cl(
       kernel = gd->kernel_rawprepare_1f;
     }
   }
-  else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_FLOAT)
+  else if(piece->pipe->dsc.filters
+          && piece->dsc_in.channels == 1
+          && piece->dsc_in.datatype == TYPE_FLOAT)
   {
     if(d->apply_gainmaps)
     {
@@ -524,8 +539,8 @@ int process_cl(
     kernel = gd->kernel_rawprepare_4f;
   }
 
-  const int csx = compute_proper_crop(piece, roi_in, d->left);
-  const int csy = compute_proper_crop(piece, roi_in, d->top);
+  const int csx = _compute_proper_crop(piece, roi_in, d->left);
+  const int csy = _compute_proper_crop(piece, roi_in, d->top);
 
   dev_sub = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->sub);
   if(dev_sub == NULL) goto error;
@@ -567,8 +582,9 @@ int process_cl(
 
   if(piece->pipe->dsc.filters)
   {
-    piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
-    adjust_xtrans_filters(piece->pipe, csx, csy);
+    piece->pipe->dsc.filters =
+      dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
+    _adjust_xtrans_filters(piece->pipe, csx, csy);
   }
 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
@@ -587,7 +603,7 @@ error:
 }
 #endif
 
-static int image_is_normalized(const dt_image_t *const image)
+static int _image_is_normalized(const dt_image_t *const image)
 {
   // if raw with floating-point data, if not special magic whitelevel, then it needs normalization
   if((image->flags & DT_IMAGE_HDR) == DT_IMAGE_HDR)
@@ -614,8 +630,7 @@ static gboolean _image_set_rawcrops(
         int top,
         int bottom)
 {
-  dt_image_t *img = NULL;
-  img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
   const gboolean cropvalid = (left >= 1) && (right >= 0) && (top >= 0) && (bottom >= 0)
     && (left+right < img->width / 2) && (top + bottom < img->height /2);
@@ -629,8 +644,10 @@ static gboolean _image_set_rawcrops(
 
   if(!cropvalid)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[rawprepare] got wrong crop parameters left=%i, right=%i, top=%i, bottom=%i for size=%ix%i\n",
-      left, right, top, bottom, img->width, img->height);
+    dt_print
+      (DT_DEBUG_ALWAYS,
+       "[rawprepare] got wrong crop parameters left=%i, right=%i, top=%i, bottom=%i for size=%ix%i\n",
+       left, right, top, bottom, img->width, img->height);
     dt_iop_set_module_trouble_message(self,
      _("invalid crop parameters"),
      _("please reset to defaults, update your preset or set to somemething correct"),
@@ -649,7 +666,7 @@ static gboolean _image_set_rawcrops(
 
 // check if image contains GainMaps of the exact type that we can apply here
 // we may reject some GainMaps that are valid according to Adobe DNG spec but we do not support
-gboolean check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out)
+static gboolean _check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out)
 {
   const dt_image_t *const image = &(self->dev->image_storage);
   dt_dng_gain_map_t *gainmaps[4] = {0};
@@ -663,13 +680,20 @@ gboolean check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out
     // check that each GainMap applies to one filter of a Bayer image,
     // covers the entire image, and is not a 1x1 no-op
     dt_dng_gain_map_t *g = (dt_dng_gain_map_t *)g_list_nth_data(image->dng_gain_maps, i);
-    if(g == NULL ||
-      g->plane != 0 || g->planes != 1 || g->map_planes != 1 ||
-      g->row_pitch != 2 || g->col_pitch != 2 ||
-      g->map_points_v < 2 || g->map_points_h < 2 ||
-      g->top > 1 || g->left > 1 ||
-      g->bottom != image->height || g->right != image->width)
+    if(g == NULL
+       || g->plane != 0
+       || g->planes != 1
+       || g->map_planes != 1
+       || g->row_pitch != 2
+       || g->col_pitch != 2
+       || g->map_points_v < 2
+       || g->map_points_h < 2
+       || g->top > 1
+       || g->left > 1
+       || g->bottom != image->height
+       || g->right != image->width)
       return FALSE;
+
     uint32_t filter = ((g->top & 1) << 1) + (g->left & 1);
     gainmaps[filter] = g;
   }
@@ -681,12 +705,12 @@ gboolean check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out
   // check that each GainMap has the same shape
   for(int i = 1; i < 4; i++)
   {
-    if(gainmaps[i]->map_points_h != gainmaps[0]->map_points_h ||
-      gainmaps[i]->map_points_v != gainmaps[0]->map_points_v ||
-      gainmaps[i]->map_spacing_h != gainmaps[0]->map_spacing_h ||
-      gainmaps[i]->map_spacing_v != gainmaps[0]->map_spacing_v ||
-      gainmaps[i]->map_origin_h != gainmaps[0]->map_origin_h ||
-      gainmaps[i]->map_origin_v != gainmaps[0]->map_origin_v)
+    if(gainmaps[i]->map_points_h != gainmaps[0]->map_points_h
+       || gainmaps[i]->map_points_v != gainmaps[0]->map_points_v
+       || gainmaps[i]->map_spacing_h != gainmaps[0]->map_spacing_h
+       || gainmaps[i]->map_spacing_v != gainmaps[0]->map_spacing_v
+       || gainmaps[i]->map_origin_h != gainmaps[0]->map_origin_h
+       || gainmaps[i]->map_origin_v != gainmaps[0]->map_origin_v)
       return FALSE;
   }
 
@@ -722,8 +746,11 @@ void commit_params(
   }
   else
   {
-    const float normalizer
-        = ((piece->pipe->image.flags & DT_IMAGE_HDR) == DT_IMAGE_HDR) ? 1.0f : (float)UINT16_MAX;
+    const float normalizer =
+      ((piece->pipe->image.flags & DT_IMAGE_HDR) == DT_IMAGE_HDR)
+      ? 1.0f
+      : (float)UINT16_MAX;
+
     const float white = (float)p->raw_white_point / normalizer;
     float black = 0;
     for(int i = 0; i < 4; i++)
@@ -748,7 +775,7 @@ void commit_params(
   d->rawprepare.raw_white_point = p->raw_white_point;
 
   if(p->flat_field == FLAT_FIELD_EMBEDDED)
-    d->apply_gainmaps = check_gain_maps(self, d->gainmaps);
+    d->apply_gainmaps = _check_gain_maps(self, d->gainmaps);
   else
     d->apply_gainmaps = FALSE;
 
@@ -756,7 +783,7 @@ void commit_params(
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 
   if(!(dt_image_is_rawprepare_supported(&piece->pipe->image))
-     || image_is_normalized(&piece->pipe->image))
+     || _image_is_normalized(&piece->pipe->image))
     piece->enabled = 0;
 
   if(piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_RAWPREPARE))
@@ -780,7 +807,7 @@ void reload_defaults(dt_iop_module_t *self)
   const dt_image_t *const image = &(self->dev->image_storage);
 
   // if there are embedded GainMaps, they should be applied by default to avoid uneven color cast
-  gboolean has_gainmaps = check_gain_maps(self, NULL);
+  const gboolean has_gainmaps = _check_gain_maps(self, NULL);
 
   *d = (dt_iop_rawprepare_params_t){.left = image->crop_x,
                                     .top = image->crop_y,
@@ -794,7 +821,7 @@ void reload_defaults(dt_iop_module_t *self)
                                     .flat_field = has_gainmaps ? FLAT_FIELD_EMBEDDED : FLAT_FIELD_OFF };
 
   self->hide_enable_button = 1;
-  self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
+  self->default_enabled = dt_image_is_rawprepare_supported(image) && !_image_is_normalized(image);
 
   if(self->widget)
     gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
@@ -828,7 +855,9 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
   dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
 
-  const gboolean is_monochrome = (self->dev->image_storage.flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) != 0;
+  const gboolean is_monochrome =
+    (self->dev->image_storage.flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) != 0;
+
   if(is_monochrome)
   {
     // we might have to deal with old edits, so get average first
@@ -844,7 +873,7 @@ void gui_update(dt_iop_module_t *self)
   for(int i = 1; i < 4; i++)
     gtk_widget_set_visible(g->black_level_separate[i], !is_monochrome);
 
-  gtk_widget_set_visible(g->flat_field, check_gain_maps(self, NULL));
+  gtk_widget_set_visible(g->flat_field, _check_gain_maps(self, NULL));
   dt_bauhaus_combobox_set(g->flat_field, p->flat_field);
 }
 
@@ -853,7 +882,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
   dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
 
-  const gboolean is_monochrome = (self->dev->image_storage.flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) != 0;
+  const gboolean is_monochrome =
+    (self->dev->image_storage.flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) != 0;
+
   if(is_monochrome)
   {
     if(w == g->black_level_separate[0])
@@ -894,7 +925,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_max(g->white_point, 16384);
 
   g->flat_field = dt_bauhaus_combobox_from_params(self, "flat_field");
-  gtk_widget_set_tooltip_text(g->flat_field, _("raw flat field correction to compensate for lens shading"));
+  gtk_widget_set_tooltip_text
+    (g->flat_field,
+     _("raw flat field correction to compensate for lens shading"));
 
   if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
   {
@@ -922,7 +955,8 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
 
-  GtkWidget *label_non_raw = dt_ui_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
+  GtkWidget *label_non_raw =
+    dt_ui_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
 
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
