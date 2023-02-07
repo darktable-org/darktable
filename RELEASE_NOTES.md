@@ -10,8 +10,8 @@ $ sha256sum darktable-4.2.1.tar.xz
 ??? darktable-4.2.1.tar.xz
 $ sha256sum darktable-4.2.1.dmg
 ??? darktable-4.2.1.dmg
-$ sha256sum darktable-4.2.1.exe
-??? darktable-4.2.1.exe
+$ sha256sum darktable-4.2.1-win64.exe
+??? darktable-4.2.1-win64.exe
 ```
 
 When updating from the stable 4.0.x series, please bear in
@@ -34,12 +34,13 @@ Since darktable 4.2.0:
 ## Other Changes
 
 - JPEG files are identified using magic bytes instead of filename
-  extension.
+  extension. This helps in cases where, due to errors in programs or
+  user mistakes, JPEG images end up in files with unmatched extensions.
 
 - Allow having shortcuts for quick access styles and presets.
 
-- Add Sigmoid collapsible section to hide by default the controls that
-  are not to be changed in standard condition.
+- Add a collapsible section to Sigmoid that will by default hide
+  controls not used in standard processing scenarios.
 
 - Some minor modifications on the overlays of culling view to make
   them less intrusive.
@@ -48,8 +49,9 @@ Since darktable 4.2.0:
 
 - Fix possible bad pinned memory transfer on OpenCL.
 
-- Fix bug in date-time sanitization function breaking some import time
-  stamps.
+- Fix bug in date-time sanitization function that caused image capture
+  timestamps to be corrupted when they contained a time zone with a
+  negative offset.
 
 - Fix toast messages containing %.
 
@@ -86,7 +88,9 @@ Since darktable 4.2.0:
 
 - Fix color calibration tooltip on expander.
 
-- Fix hief bit depth computation by using libheif corresponding function.
+- Fix incorrect reporting of HEIF image bit depth which resulted in
+  wrong color profile selection for images that did not contain color
+  profile data.
 
 - Fix snapshot invalidation which was too pessimistic and made
   switching snapshots slow.
