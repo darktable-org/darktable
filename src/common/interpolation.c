@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,7 +107,7 @@ static inline int clip(int i, int min, int max, enum border_mode mode)
     case BORDER_MIRROR:
       if(i < min)
       {
-        i = min - i;
+        i = 2 * min - i;
       }
       else if(i > max)
       {
@@ -117,11 +117,11 @@ static inline int clip(int i, int min, int max, enum border_mode mode)
     case BORDER_WRAP:
       if(i < min)
       {
-        i = max - (min - i);
+        i = 1 + max - (min - i);
       }
       else if(i > max)
       {
-        i = min + (i - max);
+        i = min + (i - max) - 1;
       }
       break;
     case BORDER_CLAMP:
@@ -528,7 +528,8 @@ static inline void compute_upsampling_kernel_sse(const struct dt_interpolation *
 static inline void compute_upsampling_kernel(const struct dt_interpolation *itor, float *kernel, float *norm,
                                              int *first, float t)
 {
-  if(darktable.codepath.OPENMP_SIMD) return compute_upsampling_kernel_plain(itor, kernel, norm, first, t);
+  if(darktable.codepath.OPENMP_SIMD)
+    return compute_upsampling_kernel_plain(itor, kernel, norm, first, t);
 #if defined(__SSE2__)
   else if(darktable.codepath.SSE2)
     return compute_upsampling_kernel_sse(itor, kernel, norm, first, t);
