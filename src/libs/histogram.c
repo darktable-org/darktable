@@ -1537,8 +1537,11 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE &&
               d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
               d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE)
-        tip = dt_util_dstrcat(tip, _("\nscroll to coarse-rotate\nctrl+scroll to fine rotate"
-                                     "\nshift+scroll to change width\nalt+scroll to cycle"));
+        tip = dt_util_dstrcat(tip, "\n%s\n%s\n%s\n%s",
+                              _("scroll to coarse-rotate"),
+                              _("ctrl+scroll to fine rotate"),
+                              _("shift+scroll to change width"),
+                              _("alt+scroll to cycle"));
     }
     else if(hooks_available)
     {
@@ -1548,12 +1551,16 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
             (posx < 2.0f/9.0f && d->scope_orient == DT_LIB_HISTOGRAM_ORIENT_VERT))))
       {
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
-        tip = dt_util_dstrcat(tip, _("\ndrag to change black point,\ndouble-click resets"));
+        tip = dt_util_dstrcat(tip, "\n%s\n%s",
+                              _("drag to change black point"),
+                              _("double-click resets"));
       }
       else
       {
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
-        tip = dt_util_dstrcat(tip, _("\ndrag to change exposure,\ndouble-click resets"));
+        tip = dt_util_dstrcat(tip, "\n%s\n%s",
+                              _("drag to change exposure"),
+                              _("double-click resets"));
       }
     }
     gtk_widget_set_tooltip_text(widget, tip);
