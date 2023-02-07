@@ -606,24 +606,44 @@ static int image_is_normalized(const dt_image_t *const image)
   return image->buf_dsc.channels == 1 && image->buf_dsc.datatype == TYPE_FLOAT;
 }
 
-// FIXME ???
-static gboolean image_set_rawcrops(
+static gboolean _image_set_rawcrops(
+        dt_iop_module_t *self,
         const uint32_t imgid,
-        int dx,
-        int dy)
+        int left,
+        int right,
+        int top,
+        int bottom)
 {
   dt_image_t *img = NULL;
   img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  const gboolean test = (img->p_width == img->width - dx)
-                     && (img->p_height == img->height - dy);
+
+  const gboolean cropvalid = (left >= 1) && (right >= 0) && (top >= 0) && (bottom >= 0)
+    && (left+right < img->width / 2) && (top + bottom < img->height /2);
+
+  const gboolean testdim =
+      (img->p_width == img->width - left - right)
+   && (img->p_height == img->height - top - bottom);
 
   dt_image_cache_read_release(darktable.image_cache, img);
-  if(test) return FALSE;
+  if(testdim && cropvalid) return FALSE;
+
+  if(!cropvalid)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[rawprepare] got wrong crop parameters left=%i, right=%i, top=%i, bottom=%i for size=%ix%i\n",
+      left, right, top, bottom, img->width, img->height);
+    dt_iop_set_module_trouble_message(self,
+     _("invalid crop parameters"),
+     _("please reset to defaults, update your preset or set to somemething correct"),
+       "invalid crop parameters");
+  }
+  else
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 
   img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  img->p_width = img->width - dx;
-  img->p_height = img->height - dy;
+  img->p_width = img->width - (cropvalid ? left + right : 0);
+  img->p_height = img->height - (cropvalid ? top + bottom : 0);
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+
   return TRUE;
 }
 
@@ -732,8 +752,7 @@ void commit_params(
   else
     d->apply_gainmaps = FALSE;
 
-  // FIXME ???
-  if(image_set_rawcrops(pipe->image.id, d->left + d->right, d->top + d->bottom))
+   if(_image_set_rawcrops(self, pipe->image.id, d->left, d->right, d->top, d->bottom))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 
   if(!(dt_image_is_rawprepare_supported(&piece->pipe->image))
