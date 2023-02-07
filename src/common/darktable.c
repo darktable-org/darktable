@@ -129,9 +129,10 @@ static int usage(const char *argv0)
   printf("  --cachedir <user cache directory>\n");
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
-  printf("  -d {all,act_on,cache,camctl,camsupport,control,dev,imageio,\n");
+  printf("  -d {act_on,cache,camctl,camsupport,control,dev,imageio,\n");
   printf("      input,ioporder,lighttable,lua,masks,memory,nan,opencl,params,\n");
-  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe}\n");
+  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose,pipe,\n");
+  printf("      all,common (-d dev,imageio,masks,opencl,params,pipe)}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
   // clang-format on
@@ -144,7 +145,7 @@ static int usage(const char *argv0)
   printf("  --disable-opencl\n");
 #endif
   printf("  --dump-pfm <module>\n");
-  printf("  -h, --help");
+  printf("  --dump-pipe <module>\n");
 #ifdef _WIN32
   printf(", /?");
 #endif
@@ -156,9 +157,10 @@ static int usage(const char *argv0)
 #endif
   printf("  --moduledir <module directory>\n");
   printf("  --noiseprofiles <noiseprofiles json file>\n");
-  printf("  -t <num openmp threads>\n");
+  printf("  --threads <num> | -t <num> openmp threads>\n");
   printf("  --tmpdir <tmp directory>\n");
   printf("  --version\n");
+  printf("  --help -h");
 #ifdef _WIN32
   printf("\n");
   printf("  note: debug log and output will be written to this file:\n");
@@ -418,6 +420,77 @@ void check_resourcelevel(const char *key, int *fractions, const int level)
   }
 }
 
+void _dump_pfm_file(
+        const char *name,
+        const void* in,
+        const int width,
+        const int height,
+        const dt_dump_pfm_t mode,
+        const char *modname,
+        const gboolean input,
+        const gboolean output)
+{
+  static int written = 0;
+
+  if(mode > DT_DUMP_PFM_LAST)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] undefined mode %i\n", mode);
+    return;
+  }
+
+  if((width < 1) || (height < 1) || (height > 20000) || (width > 20000))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] bad dimensions %dx%d\n", width, height);
+    return;
+  }
+
+  const size_t colors = (mode == DT_DUMP_PFM_MASK) ? 1 : 3;
+  const size_t p = (mode == DT_DUMP_PFM_MASK) ? 1 : 4;
+
+  char counts[32]= { 0 };
+  snprintf(counts, sizeof(counts), "%04d_", written);
+
+  char path[PATH_MAX]= { 0 };
+  snprintf(path, sizeof(path), "%s/%s", darktable.tmp_directory, modname);
+  if(!dt_util_test_writable_dir(path))
+  {
+    if(g_mkdir(path, 0750))
+    {
+      dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] can't create directory '%s'\n", path);
+      return;
+    }
+  }
+
+  char fname[PATH_MAX]= { 0 };
+  snprintf(fname, sizeof (fname), "%s/%s%s%s%s%s.pfm",
+     path, counts, (input) ? "in_" : "", (output) ? "out_" : "",
+     name, (p == 1) ? "_M" : "_C");
+
+  FILE *f = g_fopen(fname, "wb");
+  if(f == NULL)
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] can't write file '%s' in wb mode\n", fname); 
+    return;
+  }
+
+  if((mode == DT_DUMP_PFM_MASK) || (mode == DT_DUMP_PFM_RGB))
+  {
+    fprintf(f, "P%s\n%d %d\n-1.0\n", (p == 1) ? "f" : "F", width, height);
+    const float *data = in;
+    for(int row = height - 1; row >= 0; row--)
+    {
+      for(int col = 0; col < width; col++)
+      {
+        const size_t blk = (row * width + col) * p;
+        fwrite(data + blk, colors, sizeof(float), f);
+      }
+    }
+  }
+  dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] '%s' size size %dx%d\n", fname, width, height);
+  fclose(f);
+  written += 1;
+}
+
 void dt_dump_pfm(
         const char *filename,
         const void* in,
@@ -430,38 +503,25 @@ void dt_dump_pfm(
   if(!modname) return;
   if(strcmp(modname, darktable.dump_pfm_module)) return; 
 
-  if(mode > DT_DUMP_PFM_LAST)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] undefined mode %i\n", mode); 
-    return;
-  }
-
-  char fname[512];
-  snprintf(fname, sizeof (fname), "/tmp/darktable/%s/%s.pfm", modname, filename);
-
-  FILE *f = g_fopen(fname, "wb");
-  if(f == NULL)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] can't write file '%s' in wb mode\n", filename); 
-    return;
-  }
-
-  if((mode == DT_DUMP_PFM_MASK) || (mode == DT_DUMP_PFM_RGB))
-  {
-    const size_t p = (mode == DT_DUMP_PFM_MASK) ? 1 : 4;
-    fprintf(f, "P%s\n%d %d\n-1.0\n", (p == 1) ? "f" : "F", width, height);
-    const float *data = in;
-    for(int row = height - 1; row >= 0; row--)
-    {
-      for(int col = 0; col < width; col++)
-      {
-        const size_t blk = (row * width + col) * p;
-        fwrite(data + blk, p, sizeof(float), f);
-      }
-    }
-  }
-  fclose(f);
+  _dump_pfm_file(filename, in, width, height, mode, modname, FALSE, FALSE);
 }
+
+void dt_dump_pipe_pfm(
+        const char* mod,
+        const void* data,
+        const int width,
+        const int height,
+        const int bpp,
+        const gboolean input,
+        const char *pipe)
+{
+  if(!darktable.dump_pfm_pipe) return;
+  if(!mod) return;
+  if(strcmp(mod, darktable.dump_pfm_pipe)) return; 
+
+  _dump_pfm_file(pipe, data, width, height, (bpp == 4) ? DT_DUMP_PFM_RGB : DT_DUMP_PFM_MASK, mod, input, !input);
+}
+
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
@@ -532,6 +592,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   char *cachedir_from_command = NULL;
 
   darktable.dump_pfm_module = NULL;
+  darktable.dump_pfm_pipe = NULL;
+  darktable.tmp_directory = NULL;
+
 #ifdef HAVE_OPENCL
   gboolean exclude_opencl = FALSE;
   gboolean print_statistics = (strstr(argv[0], "darktable-cltest") == NULL);
@@ -679,6 +742,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
+      else if(!strcmp(argv[k], "--dump-pipe") && argc > k + 1)
+      {
+        darktable.dump_pfm_pipe = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
       else if(!strcmp(argv[k], "--library") && argc > k + 1)
       {
         dbfilename_from_command = argv[++k];
@@ -723,8 +792,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
-        if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted = DT_DEBUG_ALL; // enable all debug information except verbose
+        if(!strcmp(argv[k + 1], "common"))
+          darktable.unmuted |= DT_DEBUG_COMMON; // enable common processing options
+        else if(!strcmp(argv[k + 1], "all"))
+          darktable.unmuted |= DT_DEBUG_ALL; // enable all debug information except verbose
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k + 1], "control"))
@@ -864,7 +935,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
-      else if(argv[k][1] == 't' && argc > k + 1)
+      else if((argv[k][1] == 't' && argc > k + 1) || (!strcmp(argv[k], "--threads") && argc > k + 1))
       {
         darktable.num_openmp_threads = CLAMP(atol(argv[k + 1]), 1, 100);
         dt_print(DT_DEBUG_ALWAYS, "[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
@@ -947,6 +1018,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       argc -= k;
     }
+  }
+
+  if(darktable.dump_pfm_module || darktable.dump_pfm_pipe)
+  {
+    darktable.tmp_directory = g_dir_make_tmp("darktable_XXXXXX", NULL);
+    dt_print(DT_DEBUG_ALWAYS, "[init] darktable dump directory is '%s'\n",
+    (darktable.tmp_directory) ? darktable.tmp_directory : "NOT AVAILABLE");
   }
 
   // get valid directories
@@ -1293,6 +1371,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_print(DT_DEBUG_ALWAYS, "[dt_init] writing intermediate pfm files for module '%s'\n",
       darktable.dump_pfm_module);
 
+  if(darktable.dump_pfm_pipe)
+    dt_print(DT_DEBUG_ALWAYS, "[dt_init] writing pfm files for module '%s' processing the pipeline\n",
+      darktable.dump_pfm_pipe);
+
   if(init_gui)
   {
 #ifdef HAVE_GPHOTO2
@@ -1571,6 +1653,9 @@ void dt_cleanup()
   }
 
   dt_capabilities_cleanup();
+
+  if(darktable.tmp_directory)
+    g_free(darktable.tmp_directory);
 
   for(int k=0; k<DT_IMAGE_DBLOCKS; k++)
   {
@@ -1931,9 +2016,9 @@ void dt_print_mem_usage()
 
   dt_print(DT_DEBUG_ALWAYS,
                   "[memory] max address space (vmpeak): %15s"
-                  "[memory] cur address space (vmsize): %15s"
-                  "[memory] max used memory   (vmhwm ): %15s"
-                  "[memory] cur used memory   (vmrss ): %15s",
+                  "            [memory] cur address space (vmsize): %15s"
+                  "            [memory] max used memory   (vmhwm ): %15s"
+                  "            [memory] cur used memory   (vmrss ): %15s",
           vmpeak, vmsize, vmhwm, vmrss);
 
 #elif defined(__APPLE__)
@@ -1949,9 +2034,9 @@ void dt_print_mem_usage()
   // Report in kB, to match output of /proc on Linux.
   dt_print(DT_DEBUG_ALWAYS,
                   "[memory] max address space (vmpeak): %15s\n"
-                  "[memory] cur address space (vmsize): %12llu kB\n"
-                  "[memory] max used memory   (vmhwm ): %15s\n"
-                  "[memory] cur used memory   (vmrss ): %12llu kB\n",
+                  "            [memory] cur address space (vmsize): %12llu kB\n"
+                  "            [memory] max used memory   (vmhwm ): %15s\n"
+                  "            [memory] cur used memory   (vmrss ): %12llu kB\n",
           "unknown", (uint64_t)t_info.virtual_size / 1024, "unknown", (uint64_t)t_info.resident_size / 1024);
 #elif defined (_WIN32)
   //Based on: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
@@ -1975,9 +2060,9 @@ void dt_print_mem_usage()
 
   dt_print(DT_DEBUG_ALWAYS,
                   "[memory] max address space (vmpeak): %12llu kB\n"
-                  "[memory] cur address space (vmsize): %12llu kB\n"
-                  "[memory] max used memory   (vmhwm ): %12llu kB\n"
-                  "[memory] cur used memory   (vmrss ): %12llu Kb\n",
+                  "            [memory] cur address space (vmsize): %12llu kB\n"
+                  "            [memory] max used memory   (vmhwm ): %12llu kB\n"
+                  "            [memory] cur used memory   (vmrss ): %12llu Kb\n",
           virtualMemUsedByMeMax / 1024, virtualMemUsedByMe / 1024, physMemUsedByMeMax / 1024,
           physMemUsedByMe / 1024);
 
