@@ -261,7 +261,8 @@ typedef struct dt_image_t
 
   // to understand this, look at comment for dt_histogram_roi_t
   int32_t width, height, final_width, final_height, p_width, p_height;
-  int32_t crop_x, crop_y, crop_width, crop_height;
+  int32_t crop_x, crop_y;
+  int32_t crop_right, crop_bottom;
   float aspect_ratio;
 
   // used by library

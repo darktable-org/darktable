@@ -639,8 +639,8 @@ static float _get_autoscale_lf(
       const dt_image_t *img = &(self->dev->image_storage);
 
       // FIXME: get those from rawprepare IOP somehow !!!
-      const int iwd = img->width - img->crop_x - img->crop_width,
-                iht = img->height - img->crop_y - img->crop_height;
+      const int iwd = img->width - img->crop_x - img->crop_right,
+                iht = img->height - img->crop_y - img->crop_bottom;
 
       // create dummy modifier
 #if defined(__GNUC__) && (__GNUC__ > 7)

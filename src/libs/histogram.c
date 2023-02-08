@@ -295,8 +295,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d,
 {
   // FIXME: for point sample, calculate whole graph and the point
   // sample values, draw these on top of a dimmer graph
-  const int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
-  const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
+  const int sample_width = MAX(1, roi->width - roi->crop_right - roi->crop_x);
+  const int sample_height = MAX(1, roi->height - roi->crop_bottom - roi->crop_y);
 
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on draw to smoothly do horizontal
@@ -740,8 +740,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const float max_radius = d->vectorscope_radius;
   const float max_diam = max_radius * 2.f;
 
-  int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
-  int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
+  int sample_width = MAX(1, roi->width - roi->crop_right - roi->crop_x);
+  int sample_height = MAX(1, roi->height - roi->crop_bottom - roi->crop_y);
   if(sample_width == 1 && sample_height == 1)
   {
     // point sample still calculates graph based on whole image
@@ -908,8 +908,12 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
 
   // FIXME: scope goes black when click histogram lib colorpicker on -- is this meant to happen?
   // FIXME: scope doesn't redraw when click histogram lib colorpicker off -- is this meant to happen?
-  dt_histogram_roi_t roi = { .width = width, .height = height,
-                             .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0 };
+  dt_histogram_roi_t roi = { .width = width,
+                             .height = height,
+                             .crop_x = 0,
+                             .crop_y = 0,
+                             .crop_right = 0,
+                             .crop_bottom = 0 };
 
   // Constraining the area if the colorpicker is active in area mode
   // FIXME: only need to do colorspace conversion below on roi
@@ -928,15 +932,15 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
       {
         roi.crop_x = MIN(width, MAX(0, sample->box[0] * width));
         roi.crop_y = MIN(height, MAX(0, sample->box[1] * height));
-        roi.crop_width = width - MIN(width, MAX(0, sample->box[2] * width));
-        roi.crop_height = height - MIN(height, MAX(0, sample->box[3] * height));
+        roi.crop_right = width - MIN(width, MAX(0, sample->box[2] * width));
+        roi.crop_bottom = height - MIN(height, MAX(0, sample->box[3] * height));
       }
       else if(sample->size == DT_LIB_COLORPICKER_SIZE_POINT)
       {
         roi.crop_x = MIN(width, MAX(0, sample->point[0] * width));
         roi.crop_y = MIN(height, MAX(0, sample->point[1] * height));
-        roi.crop_width = width - MIN(width, MAX(0, sample->point[0] * width));
-        roi.crop_height = height - MIN(height, MAX(0, sample->point[1] * height));
+        roi.crop_right = width - MIN(width, MAX(0, sample->point[0] * width));
+        roi.crop_bottom = height - MIN(height, MAX(0, sample->point[1] * height));
       }
     }
   }

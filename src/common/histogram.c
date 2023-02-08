@@ -60,7 +60,7 @@ static inline void _bin_raw(const dt_dev_histogram_collection_params_t *const pa
   uint16_t *in = (uint16_t *)pixel + roi->width * j + roi->crop_x;
   const size_t max_bin = params->bins_count - 1;
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
     // WARNING: you must ensure that bins_count is big enough
     // e.g. 2^16 if you expect 16 bit raw files
@@ -79,7 +79,7 @@ static inline void _bin_rgb(const dt_dev_histogram_collection_params_t *const pa
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
   const float max_bin = params->bins_count - 1;
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
@@ -97,7 +97,7 @@ static inline void _bin_rgb_compensated(const dt_dev_histogram_collection_params
   float *in = (float *)pixel + 4 * (roi->width * j + roi->crop_x);
   const float max_bin = params->bins_count - 1;
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b:16))
@@ -121,7 +121,7 @@ static inline void _bin_Lab(const dt_dev_histogram_collection_params_t *const pa
                                      max_bin / 256.0f, 0.0f };
   const dt_aligned_pixel_t shift = { 0.0f, 128.0f, 128.0f, 0.0f };
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
     dt_aligned_pixel_t b;
     for_each_channel(k,aligned(in,b,scale,shift:16))
@@ -142,7 +142,7 @@ static inline void _bin_Lab_LCh(const dt_dev_histogram_collection_params_t *cons
                                      max_bin / (128.0f * sqrtf(2.0f)),
                                      max_bin, 0.0f };
 
-  for(int i = 0; i < roi->width - roi->crop_width - roi->crop_x; i++)
+  for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
     dt_aligned_pixel_t LCh, b;
     dt_Lab_2_LCH(in + i*4, LCh);
@@ -185,14 +185,14 @@ void _hist_worker(dt_dev_histogram_collection_params_t *const histogram_params,
   reduction(+:working_hist[:bins_total])                                \
   schedule(static)
 #endif
-  for(int j = roi->crop_y; j < roi->height - roi->crop_height; j++)
+  for(int j = roi->crop_y; j < roi->height - roi->crop_bottom; j++)
   {
     Worker(histogram_params, pixel, working_hist, j, profile_info);
   }
 
   histogram_stats->bins_count = histogram_params->bins_count;
-  histogram_stats->pixels = (roi->width - roi->crop_width - roi->crop_x)
-                            * (roi->height - roi->crop_height - roi->crop_y);
+  histogram_stats->pixels = (roi->width - roi->crop_right - roi->crop_x)
+                            * (roi->height - roi->crop_bottom - roi->crop_y);
 }
 
 //------------------------------------------------------------------------------

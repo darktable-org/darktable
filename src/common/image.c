@@ -1917,7 +1917,7 @@ void dt_image_init(dt_image_t *img)
   img->width = img->height = 0;
   img->final_width = img->final_height = img->p_width = img->p_height = 0;
   img->aspect_ratio = 0.f;
-  img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
+  img->crop_x = img->crop_y = img->crop_right = img->crop_bottom = 0;
   img->orientation = ORIENTATION_NULL;
 
   img->import_timestamp = img->change_timestamp = img->export_timestamp = img->print_timestamp = 0;

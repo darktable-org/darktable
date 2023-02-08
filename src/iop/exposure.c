@@ -315,8 +315,8 @@ static void _deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histo
                                       // FIXME: get those from rawprepare IOP somehow !!!
                                       .crop_x = image.crop_x,
                                       .crop_y = image.crop_y,
-                                      .crop_width = image.crop_width,
-                                      .crop_height = image.crop_height };
+                                      .crop_right = image.crop_right,
+                                      .crop_bottom = image.crop_bottom };
 
   histogram_params.roi = &histogram_roi;
   histogram_params.bins_count = DEFLICKER_BINS_COUNT;
