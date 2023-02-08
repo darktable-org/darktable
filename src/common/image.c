@@ -716,14 +716,25 @@ void dt_image_update_final_size(const int32_t imgid)
 {
   if(imgid <= 0) return;
   int ww = 0, hh = 0;
-  if(darktable.develop && darktable.develop->pipe && darktable.develop->pipe->output_imgid == imgid)
+
+  if(darktable.develop
+     && darktable.develop->pipe
+     && darktable.develop->pipe->output_imgid == imgid)
   {
-    dt_dev_pixelpipe_get_dimensions(darktable.develop->pipe, darktable.develop, darktable.develop->pipe->iwidth,
-                                    darktable.develop->pipe->iheight, &ww, &hh);
+    dt_dev_pixelpipe_get_dimensions(darktable.develop->pipe,
+                                    darktable.develop,
+                                    darktable.develop->pipe->iwidth,
+                                    darktable.develop->pipe->iheight,
+                                    &ww, &hh);
   }
+
   dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  if(ww == imgtmp->final_width && hh == imgtmp->final_height)
+
+  if(ww == imgtmp->final_width
+     && hh == imgtmp->final_height)
+  {
     dt_cache_release(&darktable.image_cache->cache, imgtmp->cache_entry);
+  }
   else
   {
     imgtmp->final_width = imgtmp->crop_width = ww;
