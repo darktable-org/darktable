@@ -611,7 +611,12 @@ static void _histogram_collect(
   if(histogram_params.roi == NULL)
   {
     histogram_roi = (dt_histogram_roi_t){
-      .width = roi->width, .height = roi->height, .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0
+      .width = roi->width,
+      .height = roi->height,
+      .crop_x = 0,
+      .crop_y = 0,
+      .crop_right = 0,
+      .crop_bottom = 0
     };
 
     histogram_params.roi = &histogram_roi;
@@ -667,8 +672,12 @@ static void _histogram_collect_cl(
   if(histogram_params.roi == NULL)
   {
     histogram_roi = (dt_histogram_roi_t){
-      .width = roi->width, .height = roi->height,
-      .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0
+      .width = roi->width,
+      .height = roi->height,
+      .crop_x = 0,
+      .crop_y = 0,
+      .crop_right = 0,
+      .crop_bottom = 0
     };
 
     histogram_params.roi = &histogram_roi;

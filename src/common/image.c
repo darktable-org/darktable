@@ -802,8 +802,8 @@ void dt_image_update_final_size(const int32_t imgid)
   }
   else
   {
-    imgtmp->final_width = imgtmp->crop_width = ww;
-    imgtmp->final_height = imgtmp->crop_height = hh;
+    imgtmp->final_width = ww;
+    imgtmp->final_height = hh;
     dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
@@ -1917,7 +1917,7 @@ void dt_image_init(dt_image_t *img)
   img->width = img->height = 0;
   img->final_width = img->final_height = img->p_width = img->p_height = 0;
   img->aspect_ratio = 0.f;
-  img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
+  img->crop_x = img->crop_y = img->crop_right = img->crop_bottom = 0;
   img->orientation = ORIENTATION_NULL;
 
   img->import_timestamp = img->change_timestamp = img->export_timestamp = img->print_timestamp = 0;
