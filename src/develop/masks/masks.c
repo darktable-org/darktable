@@ -555,8 +555,8 @@ static void dt_masks_legacy_params_v2_to_v3_transform(const dt_image_t *img, flo
 
   const float cx = (float)img->crop_x, cy = (float)img->crop_y;
 
-  const float cw = (float)(img->width - img->crop_x - img->crop_width),
-              ch = (float)(img->height - img->crop_y - img->crop_height);
+  const float cw = (float)(img->width - img->crop_x - img->crop_right);
+  const float ch = (float)(img->height - img->crop_y - img->crop_bottom);
 
   /*
    * masks coordinates are normalized, so we need to:
@@ -573,8 +573,8 @@ static void dt_masks_legacy_params_v2_to_v3_transform_only_rescale(const dt_imag
 {
   const float w = (float)img->width, h = (float)img->height;
 
-  const float cw = (float)(img->width - img->crop_x - img->crop_width),
-              ch = (float)(img->height - img->crop_y - img->crop_height);
+  const float cw = (float)(img->width - img->crop_x - img->crop_right);
+  const float ch = (float)(img->height - img->crop_y - img->crop_bottom);
 
   /*
    * masks coordinates are normalized, so we need to:
@@ -595,7 +595,10 @@ static int dt_masks_legacy_params_v2_to_v3(dt_develop_t *dev, void *params)
 
   const dt_image_t *img = &(dev->image_storage);
 
-  if(img->crop_x == 0 && img->crop_y == 0 && img->crop_width == 0 && img->crop_height == 0)
+  if(img->crop_x == 0
+     && img->crop_y == 0
+     && img->crop_right == 0
+     && img->crop_bottom == 0)
   {
     // image has no "raw cropping", we're fine!
     m->version = 3;
