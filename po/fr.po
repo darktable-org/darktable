@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-04 18:57+0100\n"
-"PO-Revision-Date: 2023-02-04 19:09+0100\n"
+"POT-Creation-Date: 2023-02-08 08:49+0100\n"
+"PO-Revision-Date: 2023-02-08 08:58+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -25,9 +25,9 @@ msgctxt "preferences"
 msgid "last instance"
 msgstr "dernière instance"
 
-#: ../build/bin/conf_gen.h:240 ../build/bin/conf_gen.h:340
-#: ../build/bin/conf_gen.h:350 ../build/bin/conf_gen.h:1180
-#: ../build/bin/conf_gen.h:1196 ../build/bin/preferences_gen.h:4186
+#: ../build/bin/conf_gen.h:240 ../build/bin/conf_gen.h:346
+#: ../build/bin/conf_gen.h:356 ../build/bin/conf_gen.h:1186
+#: ../build/bin/conf_gen.h:1202 ../build/bin/preferences_gen.h:4186
 #: ../build/bin/preferences_gen.h:4205 ../build/bin/preferences_gen.h:4281
 #: ../build/bin/preferences_gen.h:6856 ../build/bin/preferences_gen.h:6984
 #: ../build/bin/preferences_gen.h:7049
@@ -56,15 +56,15 @@ msgctxt "preferences"
 msgid "on close"
 msgstr "à la fermeture"
 
-#: ../build/bin/conf_gen.h:280 ../build/bin/conf_gen.h:1173
-#: ../build/bin/conf_gen.h:1189 ../build/bin/preferences_gen.h:4151
+#: ../build/bin/conf_gen.h:280 ../build/bin/conf_gen.h:1179
+#: ../build/bin/conf_gen.h:1195 ../build/bin/preferences_gen.h:4151
 #: ../build/bin/preferences_gen.h:4246 ../build/bin/preferences_gen.h:5916
 msgctxt "preferences"
 msgid "small"
 msgstr "faibles"
 
-#: ../build/bin/conf_gen.h:281 ../build/bin/conf_gen.h:387
-#: ../build/bin/conf_gen.h:2124 ../build/bin/preferences_gen.h:4875
+#: ../build/bin/conf_gen.h:281 ../build/bin/conf_gen.h:393
+#: ../build/bin/conf_gen.h:2130 ../build/bin/preferences_gen.h:4875
 #: ../build/bin/preferences_gen.h:4899 ../build/bin/preferences_gen.h:5921
 #: ../build/bin/preferences_gen.h:5950 ../build/bin/preferences_gen.h:6137
 #: ../build/bin/preferences_gen.h:6166
@@ -72,7 +72,7 @@ msgctxt "preferences"
 msgid "default"
 msgstr "défaut"
 
-#: ../build/bin/conf_gen.h:282 ../build/bin/conf_gen.h:2812
+#: ../build/bin/conf_gen.h:282 ../build/bin/conf_gen.h:2818
 #: ../build/bin/preferences_gen.h:5926
 msgctxt "preferences"
 msgid "large"
@@ -83,19 +83,19 @@ msgctxt "preferences"
 msgid "unrestricted"
 msgstr "sans restriction"
 
-#: ../build/bin/conf_gen.h:341 ../build/bin/preferences_gen.h:6989
+#: ../build/bin/conf_gen.h:347 ../build/bin/preferences_gen.h:6989
 msgctxt "preferences"
 msgid "after edit"
 msgstr "après édition"
 
-#: ../build/bin/conf_gen.h:342 ../build/bin/preferences_gen.h:6994
+#: ../build/bin/conf_gen.h:348 ../build/bin/preferences_gen.h:6994
 #: ../build/bin/preferences_gen.h:7013
 msgctxt "preferences"
 msgid "on import"
 msgstr "à l'importation"
 
-#: ../build/bin/conf_gen.h:351 ../build/bin/conf_gen.h:1172
-#: ../build/bin/conf_gen.h:1188 ../build/bin/conf_gen.h:3212
+#: ../build/bin/conf_gen.h:357 ../build/bin/conf_gen.h:1178
+#: ../build/bin/conf_gen.h:1194 ../build/bin/conf_gen.h:3218
 #: ../build/bin/preferences_gen.h:4146 ../build/bin/preferences_gen.h:4241
 #: ../build/bin/preferences_gen.h:5325 ../build/bin/preferences_gen.h:5379
 #: ../build/bin/preferences_gen.h:7054
@@ -103,126 +103,126 @@ msgctxt "preferences"
 msgid "always"
 msgstr "toujours"
 
-#: ../build/bin/conf_gen.h:352 ../build/bin/preferences_gen.h:7059
+#: ../build/bin/conf_gen.h:358 ../build/bin/preferences_gen.h:7059
 #: ../build/bin/preferences_gen.h:7078
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "seulement les grands"
 
-#: ../build/bin/conf_gen.h:372 ../build/bin/preferences_gen.h:8201
+#: ../build/bin/conf_gen.h:378 ../build/bin/preferences_gen.h:8201
 msgctxt "preferences"
 msgid "sensitive"
 msgstr "sensible"
 
-#: ../build/bin/conf_gen.h:373 ../build/bin/preferences_gen.h:8206
+#: ../build/bin/conf_gen.h:379 ../build/bin/preferences_gen.h:8206
 #: ../build/bin/preferences_gen.h:8225
 msgctxt "preferences"
 msgid "insensitive"
 msgstr "insensible"
 
-#: ../build/bin/conf_gen.h:388 ../build/bin/preferences_gen.h:6142
+#: ../build/bin/conf_gen.h:394 ../build/bin/preferences_gen.h:6142
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "GPU multiples"
 
-#: ../build/bin/conf_gen.h:389 ../build/bin/preferences_gen.h:6147
+#: ../build/bin/conf_gen.h:395 ../build/bin/preferences_gen.h:6147
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "GPU très rapide"
 
-#: ../build/bin/conf_gen.h:397 ../build/bin/preferences_gen.h:6208
+#: ../build/bin/conf_gen.h:403 ../build/bin/preferences_gen.h:6208
 #: ../build/bin/preferences_gen.h:6242
 msgctxt "preferences"
 msgid "nothing"
 msgstr "rien"
 
-#: ../build/bin/conf_gen.h:398 ../build/bin/preferences_gen.h:6213
+#: ../build/bin/conf_gen.h:404 ../build/bin/preferences_gen.h:6213
 msgctxt "preferences"
 msgid "memory size"
 msgstr "taille mémoire"
 
-#: ../build/bin/conf_gen.h:399 ../build/bin/preferences_gen.h:6218
+#: ../build/bin/conf_gen.h:405 ../build/bin/preferences_gen.h:6218
 msgctxt "preferences"
 msgid "memory transfer"
 msgstr "transfert mémoire"
 
-#: ../build/bin/conf_gen.h:400 ../build/bin/preferences_gen.h:6223
+#: ../build/bin/conf_gen.h:406 ../build/bin/preferences_gen.h:6223
 msgctxt "preferences"
 msgid "memory size and transfer"
 msgstr "taille et transfert mémoire"
 
-#: ../build/bin/conf_gen.h:700 ../build/bin/preferences_gen.h:8389
+#: ../build/bin/conf_gen.h:706 ../build/bin/preferences_gen.h:8389
 #: ../build/bin/preferences_gen.h:8413
 msgctxt "preferences"
 msgid "id"
 msgstr "numéro"
 
-#: ../build/bin/conf_gen.h:701 ../build/bin/preferences_gen.h:8394
+#: ../build/bin/conf_gen.h:707 ../build/bin/preferences_gen.h:8394
 msgctxt "preferences"
 msgid "folder"
 msgstr "dossier"
 
-#: ../build/bin/conf_gen.h:715
+#: ../build/bin/conf_gen.h:721
 msgctxt "preferences"
 msgid "RGB"
 msgstr "RVB"
 
-#: ../build/bin/conf_gen.h:716
+#: ../build/bin/conf_gen.h:722
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../build/bin/conf_gen.h:717
+#: ../build/bin/conf_gen.h:723
 msgctxt "preferences"
 msgid "LCh"
 msgstr "LCh"
 
-#: ../build/bin/conf_gen.h:718
+#: ../build/bin/conf_gen.h:724
 msgctxt "preferences"
 msgid "HSL"
 msgstr "TSL"
 
-#: ../build/bin/conf_gen.h:719
+#: ../build/bin/conf_gen.h:725
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
 
-#: ../build/bin/conf_gen.h:720 ../build/bin/conf_gen.h:1818
-#: ../build/bin/conf_gen.h:2486 ../build/bin/conf_gen.h:2788
-#: ../build/bin/conf_gen.h:3042 ../build/bin/preferences_gen.h:5745
+#: ../build/bin/conf_gen.h:726 ../build/bin/conf_gen.h:1824
+#: ../build/bin/conf_gen.h:2492 ../build/bin/conf_gen.h:2794
+#: ../build/bin/conf_gen.h:3048 ../build/bin/preferences_gen.h:5745
 #: ../build/bin/preferences_gen.h:6720
 msgctxt "preferences"
 msgid "none"
 msgstr "aucun"
 
-#: ../build/bin/conf_gen.h:728
+#: ../build/bin/conf_gen.h:734
 msgctxt "preferences"
 msgid "mean"
 msgstr "moyenne"
 
-#: ../build/bin/conf_gen.h:729
+#: ../build/bin/conf_gen.h:735
 msgctxt "preferences"
 msgid "min"
 msgstr "min"
 
-#: ../build/bin/conf_gen.h:730
+#: ../build/bin/conf_gen.h:736
 msgctxt "preferences"
 msgid "max"
 msgstr "max"
 
-#: ../build/bin/conf_gen.h:918
+#: ../build/bin/conf_gen.h:924
 msgid "select only new pictures"
 msgstr "sélectionner seulement de nouvelles images"
 
-#: ../build/bin/conf_gen.h:919
+#: ../build/bin/conf_gen.h:925
 msgid "only select images that have not already been imported"
 msgstr "sélectionner seulement les images qui n'ont pas déjà été importées"
 
-#: ../build/bin/conf_gen.h:924
+#: ../build/bin/conf_gen.h:930
 msgid "ignore JPEG images"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../build/bin/conf_gen.h:925
+#: ../build/bin/conf_gen.h:931
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -231,57 +231,57 @@ msgstr ""
 "n'a pas de sens d'importer les deux. en activant cette option les fichiers "
 "JPEG sont ignorés."
 
-#: ../build/bin/conf_gen.h:930
+#: ../build/bin/conf_gen.h:936
 msgid "apply metadata"
 msgstr "appliquer les métadonnées"
 
-#: ../build/bin/conf_gen.h:931
+#: ../build/bin/conf_gen.h:937
 msgid "apply some metadata to all newly imported images."
 msgstr ""
 "appliquer des métadonnées\n"
 "à toutes les images nouvellement importées."
 
-#: ../build/bin/conf_gen.h:936
+#: ../build/bin/conf_gen.h:942
 msgid "recursive directory"
 msgstr "récursivement"
 
-#: ../build/bin/conf_gen.h:937
+#: ../build/bin/conf_gen.h:943
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "importer les dossiers de manière récursive"
 
-#: ../build/bin/conf_gen.h:942
+#: ../build/bin/conf_gen.h:948
 msgid "creator to be applied when importing"
 msgstr "auteur par défaut lors de l'importation"
 
-#: ../build/bin/conf_gen.h:948
+#: ../build/bin/conf_gen.h:954
 msgid "publisher to be applied when importing"
 msgstr "diffuseur par défaut lors de l'importation"
 
-#: ../build/bin/conf_gen.h:954
+#: ../build/bin/conf_gen.h:960
 msgid "rights to be applied when importing"
 msgstr "droits par défaut lors de l'importation"
 
-#: ../build/bin/conf_gen.h:960
+#: ../build/bin/conf_gen.h:966
 msgid "comma separated tags to be applied when importing"
 msgstr "mots-clés séparés par des virgules à appliquer à l'importation"
 
-#: ../build/bin/conf_gen.h:966
+#: ../build/bin/conf_gen.h:972
 msgid "import tags from XMP"
 msgstr "importer les mots-clés depuis XMP"
 
-#: ../build/bin/conf_gen.h:992
+#: ../build/bin/conf_gen.h:998
 msgid "initial rating"
 msgstr "notation initiale"
 
-#: ../build/bin/conf_gen.h:993
+#: ../build/bin/conf_gen.h:999
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "étoile(s) attribuée(s) lors de l'importation"
 
-#: ../build/bin/conf_gen.h:998
+#: ../build/bin/conf_gen.h:1004
 msgid "ignore EXIF rating"
 msgstr "ignorer la notation EXIF"
 
-#: ../build/bin/conf_gen.h:999
+#: ../build/bin/conf_gen.h:1005
 msgid ""
 "ignore EXIF rating. if not set and EXIF rating is found, it overrides "
 "'initial rating'"
@@ -289,19 +289,19 @@ msgstr ""
 "ignorer la notation EXIF. si pas positionné et une notation EXIF est "
 "trouvée, la notation initiale est surchargée"
 
-#: ../build/bin/conf_gen.h:1004
+#: ../build/bin/conf_gen.h:1010
 msgid "import job"
 msgstr "nom d'importation"
 
-#: ../build/bin/conf_gen.h:1005
+#: ../build/bin/conf_gen.h:1011
 msgid "name of the import job"
 msgstr "nom de l'importation"
 
-#: ../build/bin/conf_gen.h:1010
+#: ../build/bin/conf_gen.h:1016
 msgid "override today's date"
 msgstr "surcharger la date actuelle"
 
-#: ../build/bin/conf_gen.h:1011
+#: ../build/bin/conf_gen.h:1017
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
@@ -313,164 +313,164 @@ msgstr ""
 "$(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "laisser vide sinon"
 
-#: ../build/bin/conf_gen.h:1016
+#: ../build/bin/conf_gen.h:1022
 msgid "keep this window open"
 msgstr "garder cette fenêtre ouverte"
 
-#: ../build/bin/conf_gen.h:1017
+#: ../build/bin/conf_gen.h:1023
 msgid "keep this window open to run several imports"
 msgstr "garder cette fenêtre ouverte pour effectuer plusieurs importations"
 
-#: ../build/bin/conf_gen.h:1174 ../build/bin/conf_gen.h:1190
+#: ../build/bin/conf_gen.h:1180 ../build/bin/conf_gen.h:1196
 #: ../build/bin/preferences_gen.h:4156 ../build/bin/preferences_gen.h:4251
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/bin/conf_gen.h:1175 ../build/bin/conf_gen.h:1191
+#: ../build/bin/conf_gen.h:1181 ../build/bin/conf_gen.h:1197
 #: ../build/bin/preferences_gen.h:4161 ../build/bin/preferences_gen.h:4256
 #: ../build/bin/preferences_gen.h:4300
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/bin/conf_gen.h:1176 ../build/bin/conf_gen.h:1192
+#: ../build/bin/conf_gen.h:1182 ../build/bin/conf_gen.h:1198
 #: ../build/bin/preferences_gen.h:4166 ../build/bin/preferences_gen.h:4261
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/bin/conf_gen.h:1177 ../build/bin/conf_gen.h:1193
+#: ../build/bin/conf_gen.h:1183 ../build/bin/conf_gen.h:1199
 #: ../build/bin/preferences_gen.h:4171 ../build/bin/preferences_gen.h:4266
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/bin/conf_gen.h:1178 ../build/bin/conf_gen.h:1194
+#: ../build/bin/conf_gen.h:1184 ../build/bin/conf_gen.h:1200
 #: ../build/bin/preferences_gen.h:4176 ../build/bin/preferences_gen.h:4271
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/bin/conf_gen.h:1179 ../build/bin/conf_gen.h:1195
+#: ../build/bin/conf_gen.h:1185 ../build/bin/conf_gen.h:1201
 #: ../build/bin/preferences_gen.h:4181 ../build/bin/preferences_gen.h:4276
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/bin/conf_gen.h:1222 ../build/bin/preferences_gen.h:4491
+#: ../build/bin/conf_gen.h:1228 ../build/bin/preferences_gen.h:4491
 #: ../build/bin/preferences_gen.h:4535
 msgctxt "preferences"
 msgid "off"
 msgstr "désactivé(e)"
 
-#: ../build/bin/conf_gen.h:1223 ../build/bin/preferences_gen.h:4496
+#: ../build/bin/conf_gen.h:1229 ../build/bin/preferences_gen.h:4496
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "dureté (relative)"
 
-#: ../build/bin/conf_gen.h:1224 ../build/bin/preferences_gen.h:4501
+#: ../build/bin/conf_gen.h:1230 ../build/bin/preferences_gen.h:4501
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "dureté (absolue)"
 
-#: ../build/bin/conf_gen.h:1225 ../build/bin/preferences_gen.h:4506
+#: ../build/bin/conf_gen.h:1231 ../build/bin/preferences_gen.h:4506
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "opacité (relative)"
 
-#: ../build/bin/conf_gen.h:1226 ../build/bin/preferences_gen.h:4511
+#: ../build/bin/conf_gen.h:1232 ../build/bin/preferences_gen.h:4511
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "opacité (absolue)"
 
-#: ../build/bin/conf_gen.h:1227 ../build/bin/preferences_gen.h:4516
+#: ../build/bin/conf_gen.h:1233 ../build/bin/preferences_gen.h:4516
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "taille du pinceau (relative)"
 
-#: ../build/bin/conf_gen.h:1235 ../build/bin/preferences_gen.h:4571
+#: ../build/bin/conf_gen.h:1241 ../build/bin/preferences_gen.h:4571
 msgctxt "preferences"
 msgid "low"
 msgstr "bas"
 
-#: ../build/bin/conf_gen.h:1236 ../build/bin/preferences_gen.h:4576
+#: ../build/bin/conf_gen.h:1242 ../build/bin/preferences_gen.h:4576
 #: ../build/bin/preferences_gen.h:4600
 msgctxt "preferences"
 msgid "medium"
 msgstr "moyen"
 
-#: ../build/bin/conf_gen.h:1237 ../build/bin/preferences_gen.h:4581
+#: ../build/bin/conf_gen.h:1243 ../build/bin/preferences_gen.h:4581
 msgctxt "preferences"
 msgid "high"
 msgstr "haut"
 
-#: ../build/bin/conf_gen.h:1251 ../build/bin/preferences_gen.h:5049
+#: ../build/bin/conf_gen.h:1257 ../build/bin/preferences_gen.h:5049
 #: ../build/bin/preferences_gen.h:5073
 msgctxt "preferences"
 msgid "false color"
 msgstr "fausse couleur"
 
-#: ../build/bin/conf_gen.h:1252 ../build/bin/preferences_gen.h:5054
+#: ../build/bin/conf_gen.h:1258 ../build/bin/preferences_gen.h:5054
 msgctxt "preferences"
 msgid "grayscale"
 msgstr "échelle de gris"
 
-#: ../build/bin/conf_gen.h:1266 ../build/bin/preferences_gen.h:4715
+#: ../build/bin/conf_gen.h:1272 ../build/bin/preferences_gen.h:4715
 msgctxt "preferences"
 msgid "top left"
 msgstr "haut / gauche"
 
-#: ../build/bin/conf_gen.h:1267 ../build/bin/preferences_gen.h:4720
+#: ../build/bin/conf_gen.h:1273 ../build/bin/preferences_gen.h:4720
 msgctxt "preferences"
 msgid "top right"
 msgstr "haut / droite"
 
-#: ../build/bin/conf_gen.h:1268 ../build/bin/preferences_gen.h:4725
+#: ../build/bin/conf_gen.h:1274 ../build/bin/preferences_gen.h:4725
 msgctxt "preferences"
 msgid "top center"
 msgstr "haut / centre"
 
-#: ../build/bin/conf_gen.h:1269 ../build/bin/preferences_gen.h:4730
+#: ../build/bin/conf_gen.h:1275 ../build/bin/preferences_gen.h:4730
 #: ../build/bin/preferences_gen.h:4754
 msgctxt "preferences"
 msgid "bottom"
 msgstr "bas"
 
-#: ../build/bin/conf_gen.h:1270 ../build/bin/preferences_gen.h:4735
+#: ../build/bin/conf_gen.h:1276 ../build/bin/preferences_gen.h:4735
 msgctxt "preferences"
 msgid "hidden"
 msgstr "caché"
 
-#: ../build/bin/conf_gen.h:1780
+#: ../build/bin/conf_gen.h:1786
 msgid "show OSD"
 msgstr "afficher contrôles"
 
-#: ../build/bin/conf_gen.h:1781
+#: ../build/bin/conf_gen.h:1787
 msgid "toggle the visibility of the map overlays"
 msgstr "basculer les surimpressions de la carte"
 
-#: ../build/bin/conf_gen.h:1786 ../src/libs/map_settings.c:147
+#: ../build/bin/conf_gen.h:1792 ../src/libs/map_settings.c:147
 msgid "filtered images"
 msgstr "images filtrées"
 
-#: ../build/bin/conf_gen.h:1787
+#: ../build/bin/conf_gen.h:1793
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr "lorsque qu'activée limite les images affichées à celles du bandeau"
 
-#: ../build/bin/conf_gen.h:1794
+#: ../build/bin/conf_gen.h:1800
 msgid "max images"
 msgstr "max images"
 
-#: ../build/bin/conf_gen.h:1795
+#: ../build/bin/conf_gen.h:1801
 msgid "the maximum number of image thumbnails drawn on the map"
 msgstr "nombre maximum d'images affichées sur la carte"
 
-#: ../build/bin/conf_gen.h:1802
+#: ../build/bin/conf_gen.h:1808
 msgid "group size factor"
 msgstr "facteur de taille d'un groupe"
 
-#: ../build/bin/conf_gen.h:1803
+#: ../build/bin/conf_gen.h:1809
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
@@ -478,11 +478,11 @@ msgstr ""
 "augmente ou diminue la zone spatiale d'un groupe d'image sur la carte. peut "
 "influencer le temps de calcul"
 
-#: ../build/bin/conf_gen.h:1810
+#: ../build/bin/conf_gen.h:1816
 msgid "min images per group"
 msgstr "nombre minimum d'images par groupe"
 
-#: ../build/bin/conf_gen.h:1811
+#: ../build/bin/conf_gen.h:1817
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
@@ -490,21 +490,21 @@ msgstr ""
 "le nombre minimum d'images pour créer un groupe. peut influencer le temps de "
 "calcul."
 
-#: ../build/bin/conf_gen.h:1816
+#: ../build/bin/conf_gen.h:1822
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "miniature"
 
-#: ../build/bin/conf_gen.h:1817
+#: ../build/bin/conf_gen.h:1823
 msgctxt "preferences"
 msgid "count"
 msgstr "nombre"
 
-#: ../build/bin/conf_gen.h:1820 ../src/libs/map_settings.c:160
+#: ../build/bin/conf_gen.h:1826 ../src/libs/map_settings.c:160
 msgid "thumbnail display"
 msgstr "affichage miniatures"
 
-#: ../build/bin/conf_gen.h:1821
+#: ../build/bin/conf_gen.h:1827
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
@@ -512,277 +512,277 @@ msgstr ""
 "trois options disponibles : les miniatures, seulement le nombre d'images ou "
 "rien"
 
-#: ../build/bin/conf_gen.h:1832
+#: ../build/bin/conf_gen.h:1838
 msgid "max polygon points"
 msgstr "max points polygone"
 
-#: ../build/bin/conf_gen.h:1833
+#: ../build/bin/conf_gen.h:1839
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
 "la limite de points de polygone importés depuis le module trouver un lieu"
 
-#: ../build/bin/conf_gen.h:2123 ../build/bin/preferences_gen.h:4870
+#: ../build/bin/conf_gen.h:2129 ../build/bin/preferences_gen.h:4870
 msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "toujours bilinéaire (rapide)"
 
-#: ../build/bin/conf_gen.h:2125 ../build/bin/preferences_gen.h:4880
+#: ../build/bin/conf_gen.h:2131 ../build/bin/preferences_gen.h:4880
 msgctxt "preferences"
 msgid "full (possibly slow)"
 msgstr "complète (peut être lent)"
 
-#: ../build/bin/conf_gen.h:2133 ../build/bin/preferences_gen.h:4935
+#: ../build/bin/conf_gen.h:2139 ../build/bin/preferences_gen.h:4935
 #: ../build/bin/preferences_gen.h:4969
 msgctxt "preferences"
 msgid "original"
 msgstr "originale"
 
-#: ../build/bin/conf_gen.h:2134 ../build/bin/preferences_gen.h:4940
+#: ../build/bin/conf_gen.h:2140 ../build/bin/preferences_gen.h:4940
 msgctxt "preferences"
 msgid "to 1/2"
 msgstr "de 1/2"
 
-#: ../build/bin/conf_gen.h:2135 ../build/bin/preferences_gen.h:4945
+#: ../build/bin/conf_gen.h:2141 ../build/bin/preferences_gen.h:4945
 msgctxt "preferences"
 msgid "to 1/3"
 msgstr "de 1/3"
 
-#: ../build/bin/conf_gen.h:2136 ../build/bin/preferences_gen.h:4950
+#: ../build/bin/conf_gen.h:2142 ../build/bin/preferences_gen.h:4950
 msgctxt "preferences"
 msgid "to 1/4"
 msgstr "de 1/4"
 
-#: ../build/bin/conf_gen.h:2150 ../build/bin/conf_gen.h:2160
+#: ../build/bin/conf_gen.h:2156 ../build/bin/conf_gen.h:2166
 #: ../build/bin/preferences_gen.h:5552 ../build/bin/preferences_gen.h:5617
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "bilinéaire"
 
-#: ../build/bin/conf_gen.h:2151 ../build/bin/conf_gen.h:2161
+#: ../build/bin/conf_gen.h:2157 ../build/bin/conf_gen.h:2167
 #: ../build/bin/preferences_gen.h:5557 ../build/bin/preferences_gen.h:5581
 #: ../build/bin/preferences_gen.h:5622
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bicubique"
 
-#: ../build/bin/conf_gen.h:2152 ../build/bin/conf_gen.h:2162
+#: ../build/bin/conf_gen.h:2158 ../build/bin/conf_gen.h:2168
 #: ../build/bin/preferences_gen.h:5562 ../build/bin/preferences_gen.h:5627
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/bin/conf_gen.h:2163 ../build/bin/preferences_gen.h:5632
+#: ../build/bin/conf_gen.h:2169 ../build/bin/preferences_gen.h:5632
 #: ../build/bin/preferences_gen.h:5651
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:2485 ../build/bin/conf_gen.h:3215
+#: ../build/bin/conf_gen.h:2491 ../build/bin/conf_gen.h:3221
 #: ../build/bin/preferences_gen.h:5340 ../build/bin/preferences_gen.h:6715
 #: ../build/bin/preferences_gen.h:6751
 msgctxt "preferences"
 msgid "auto"
 msgstr "auto"
 
-#: ../build/bin/conf_gen.h:2487 ../build/bin/preferences_gen.h:6725
+#: ../build/bin/conf_gen.h:2493 ../build/bin/preferences_gen.h:6725
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/bin/conf_gen.h:2488 ../build/bin/preferences_gen.h:6731
+#: ../build/bin/conf_gen.h:2494 ../build/bin/preferences_gen.h:6731
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/bin/conf_gen.h:2698
+#: ../build/bin/conf_gen.h:2704
 msgctxt "preferences"
 msgid "vectorscope"
 msgstr "vectorscope"
 
-#: ../build/bin/conf_gen.h:2699
+#: ../build/bin/conf_gen.h:2705
 msgctxt "preferences"
 msgid "waveform"
 msgstr "forme d'onde"
 
-#: ../build/bin/conf_gen.h:2700
+#: ../build/bin/conf_gen.h:2706
 msgctxt "preferences"
 msgid "rgb parade"
 msgstr "parade RVB"
 
-#: ../build/bin/conf_gen.h:2701
+#: ../build/bin/conf_gen.h:2707
 msgctxt "preferences"
 msgid "histogram"
 msgstr "histogramme"
 
-#: ../build/bin/conf_gen.h:2709 ../build/bin/preferences_gen.h:7405
+#: ../build/bin/conf_gen.h:2715 ../build/bin/preferences_gen.h:7405
 msgctxt "preferences"
 msgid "left"
 msgstr "gauche"
 
-#: ../build/bin/conf_gen.h:2710 ../build/bin/preferences_gen.h:7410
+#: ../build/bin/conf_gen.h:2716 ../build/bin/preferences_gen.h:7410
 #: ../build/bin/preferences_gen.h:7429
 msgctxt "preferences"
 msgid "right"
 msgstr "droite"
 
-#: ../build/bin/conf_gen.h:2718 ../build/bin/conf_gen.h:2755
+#: ../build/bin/conf_gen.h:2724 ../build/bin/conf_gen.h:2761
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../build/bin/conf_gen.h:2719 ../build/bin/conf_gen.h:2756
+#: ../build/bin/conf_gen.h:2725 ../build/bin/conf_gen.h:2762
 msgctxt "preferences"
 msgid "linear"
 msgstr "linéaire"
 
-#: ../build/bin/conf_gen.h:2727
+#: ../build/bin/conf_gen.h:2733
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../build/bin/conf_gen.h:2728
+#: ../build/bin/conf_gen.h:2734
 msgctxt "preferences"
 msgid "vertical"
 msgstr "vertical"
 
-#: ../build/bin/conf_gen.h:2736
+#: ../build/bin/conf_gen.h:2742
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "superposer"
 
-#: ../build/bin/conf_gen.h:2737
+#: ../build/bin/conf_gen.h:2743
 msgctxt "preferences"
 msgid "parade"
 msgstr "parade"
 
-#: ../build/bin/conf_gen.h:2745
+#: ../build/bin/conf_gen.h:2751
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:2746
+#: ../build/bin/conf_gen.h:2752
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:2747
+#: ../build/bin/conf_gen.h:2753
 msgctxt "preferences"
 msgid "RYB"
 msgstr "RJB"
 
-#: ../build/bin/conf_gen.h:2789
+#: ../build/bin/conf_gen.h:2795
 msgctxt "preferences"
 msgid "monochromatic"
 msgstr "monochromatique"
 
-#: ../build/bin/conf_gen.h:2790
+#: ../build/bin/conf_gen.h:2796
 msgctxt "preferences"
 msgid "analogous"
 msgstr "analogue"
 
-#: ../build/bin/conf_gen.h:2791
+#: ../build/bin/conf_gen.h:2797
 msgctxt "preferences"
 msgid "analogous complementary"
 msgstr "complémentaire analogue"
 
-#: ../build/bin/conf_gen.h:2792
+#: ../build/bin/conf_gen.h:2798
 msgctxt "preferences"
 msgid "complementary"
 msgstr "complémentaire"
 
-#: ../build/bin/conf_gen.h:2793
+#: ../build/bin/conf_gen.h:2799
 msgctxt "preferences"
 msgid "split complementary"
 msgstr "complémentaire divisé"
 
-#: ../build/bin/conf_gen.h:2794
+#: ../build/bin/conf_gen.h:2800
 msgctxt "preferences"
 msgid "dyad"
 msgstr "dyade"
 
-#: ../build/bin/conf_gen.h:2795
+#: ../build/bin/conf_gen.h:2801
 msgctxt "preferences"
 msgid "triad"
 msgstr "triade"
 
-#: ../build/bin/conf_gen.h:2796
+#: ../build/bin/conf_gen.h:2802
 msgctxt "preferences"
 msgid "tetrad"
 msgstr "tétrade"
 
-#: ../build/bin/conf_gen.h:2797
+#: ../build/bin/conf_gen.h:2803
 msgctxt "preferences"
 msgid "square"
 msgstr "carré"
 
-#: ../build/bin/conf_gen.h:2811
+#: ../build/bin/conf_gen.h:2817
 msgctxt "preferences"
 msgid "normal"
 msgstr "normal"
 
-#: ../build/bin/conf_gen.h:2813
+#: ../build/bin/conf_gen.h:2819
 msgctxt "preferences"
 msgid "narrow"
 msgstr "étroit"
 
-#: ../build/bin/conf_gen.h:2814
+#: ../build/bin/conf_gen.h:2820
 msgctxt "preferences"
 msgid "line"
 msgstr "ligne"
 
-#: ../build/bin/conf_gen.h:2954
+#: ../build/bin/conf_gen.h:2960
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
-#: ../build/bin/conf_gen.h:2955
+#: ../build/bin/conf_gen.h:2961
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
 
-#: ../build/bin/conf_gen.h:2956
+#: ../build/bin/conf_gen.h:2962
 msgctxt "preferences"
 msgid "inch"
 msgstr "pouce"
 
-#: ../build/bin/conf_gen.h:3001 ../build/bin/preferences_gen.h:7465
+#: ../build/bin/conf_gen.h:3007 ../build/bin/preferences_gen.h:7465
 #: ../build/bin/preferences_gen.h:7494
 msgctxt "preferences"
 msgid "all"
 msgstr "tout"
 
-#: ../build/bin/conf_gen.h:3002 ../build/bin/preferences_gen.h:7470
+#: ../build/bin/conf_gen.h:3008 ../build/bin/preferences_gen.h:7470
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:3003 ../build/bin/preferences_gen.h:7475
+#: ../build/bin/conf_gen.h:3009 ../build/bin/preferences_gen.h:7475
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:3039 ../build/bin/preferences_gen.h:5730
+#: ../build/bin/conf_gen.h:3045 ../build/bin/preferences_gen.h:5730
 #: ../build/bin/preferences_gen.h:5764
 msgctxt "preferences"
 msgid "scene-referred (filmic)"
 msgstr "relatif à la scène (filmique)"
 
-#: ../build/bin/conf_gen.h:3040 ../build/bin/preferences_gen.h:5735
+#: ../build/bin/conf_gen.h:3046 ../build/bin/preferences_gen.h:5735
 msgctxt "preferences"
 msgid "scene-referred (sigmoid)"
 msgstr "relatif à la scène (sigmoid)"
 
-#: ../build/bin/conf_gen.h:3041 ../build/bin/preferences_gen.h:5740
+#: ../build/bin/conf_gen.h:3047 ../build/bin/preferences_gen.h:5740
 msgctxt "preferences"
 msgid "display-referred (legacy)"
 msgstr "relatif à l'affichage (ancien)"
 
-#: ../build/bin/conf_gen.h:3142
+#: ../build/bin/conf_gen.h:3148
 msgid "camera time zone"
 msgstr "fuseau horaire du boîtier"
 
-#: ../build/bin/conf_gen.h:3143
+#: ../build/bin/conf_gen.h:3149
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -791,62 +791,62 @@ msgstr ""
 "données EXIF. en donnant le fuseau horaire correct, les données GPX pourront "
 "être recalées"
 
-#: ../build/bin/conf_gen.h:3154
+#: ../build/bin/conf_gen.h:3160
 msgctxt "preferences"
 msgid "no color"
 msgstr "sans couleur"
 
-#: ../build/bin/conf_gen.h:3155
+#: ../build/bin/conf_gen.h:3161
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "couleur de l'illuminant"
 
-#: ../build/bin/conf_gen.h:3156
+#: ../build/bin/conf_gen.h:3162
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "effet d'émulation"
 
-#: ../build/bin/conf_gen.h:3202
+#: ../build/bin/conf_gen.h:3208
 msgctxt "preferences"
 msgid "list"
 msgstr "liste"
 
-#: ../build/bin/conf_gen.h:3203
+#: ../build/bin/conf_gen.h:3209
 msgctxt "preferences"
 msgid "tabs"
 msgstr "onglets"
 
-#: ../build/bin/conf_gen.h:3204
+#: ../build/bin/conf_gen.h:3210
 msgctxt "preferences"
 msgid "columns"
 msgstr "colonnes"
 
-#: ../build/bin/conf_gen.h:3213 ../build/bin/preferences_gen.h:5330
+#: ../build/bin/conf_gen.h:3219 ../build/bin/preferences_gen.h:5330
 msgctxt "preferences"
 msgid "active"
 msgstr "actif"
 
-#: ../build/bin/conf_gen.h:3214 ../build/bin/preferences_gen.h:5335
+#: ../build/bin/conf_gen.h:3220 ../build/bin/preferences_gen.h:5335
 msgctxt "preferences"
 msgid "dim"
 msgstr "atténué"
 
-#: ../build/bin/conf_gen.h:3216 ../build/bin/preferences_gen.h:5345
+#: ../build/bin/conf_gen.h:3222 ../build/bin/preferences_gen.h:5345
 msgctxt "preferences"
 msgid "fade"
 msgstr "estompé"
 
-#: ../build/bin/conf_gen.h:3217 ../build/bin/preferences_gen.h:5350
+#: ../build/bin/conf_gen.h:3223 ../build/bin/preferences_gen.h:5350
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajusté"
 
-#: ../build/bin/conf_gen.h:3218 ../build/bin/preferences_gen.h:5355
+#: ../build/bin/conf_gen.h:3224 ../build/bin/preferences_gen.h:5355
 msgctxt "preferences"
 msgid "smooth"
 msgstr "doux"
 
-#: ../build/bin/conf_gen.h:3219 ../build/bin/preferences_gen.h:5360
+#: ../build/bin/conf_gen.h:3225 ../build/bin/preferences_gen.h:5360
 msgctxt "preferences"
 msgid "glide"
 msgstr "glisser"
@@ -2339,7 +2339,7 @@ msgstr "ajustement aspect"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:172
 #: ../build/lib/darktable/plugins/introspection_ashift.c:307
-#: ../src/iop/lens.cc:3261
+#: ../src/iop/lens.cc:3310
 msgid "lens model"
 msgstr "modèle d'objectif"
 
@@ -2418,7 +2418,7 @@ msgstr "préserver couleurs"
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:1986
 #: ../src/iop/channelmixerrgb.c:4233 ../src/iop/clipping.c:1899
 #: ../src/iop/clipping.c:2092 ../src/iop/clipping.c:2107
-#: ../src/iop/lens.cc:3194 ../src/iop/retouch.c:460 ../src/libs/collect.c:1908
+#: ../src/iop/lens.cc:3243 ../src/iop/retouch.c:460 ../src/libs/collect.c:1908
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1028
 #: ../src/libs/filters/module_order.c:158 ../src/libs/histogram.c:131
 #: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2657
@@ -2684,9 +2684,9 @@ msgstr "rayon"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:136
 #: ../build/lib/darktable/plugins/introspection_highlights.c:137
 #: ../build/lib/darktable/plugins/introspection_highlights.c:240
-#: ../src/iop/bloom.c:379 ../src/iop/denoiseprofile.c:3514
+#: ../src/iop/bloom.c:379 ../src/iop/denoiseprofile.c:3483
 #: ../src/iop/grain.c:570 ../src/iop/hazeremoval.c:201
-#: ../src/iop/hotpixels.c:388 ../src/iop/nlmeans.c:481 ../src/iop/velvia.c:260
+#: ../src/iop/hotpixels.c:388 ../src/iop/nlmeans.c:462 ../src/iop/velvia.c:260
 msgid "strength"
 msgstr "force"
 
@@ -2709,7 +2709,7 @@ msgstr "aberrations chromatiques très larges"
 #: ../src/iop/channelmixerrgb.c:4185 ../src/iop/colorzones.c:2263
 #: ../src/iop/temperature.c:1779 ../src/iop/temperature.c:1952
 #: ../src/libs/collect.c:1792 ../src/libs/filters/colors.c:260
-#: ../src/libs/histogram.c:2395
+#: ../src/libs/histogram.c:2386
 msgid "red"
 msgstr "rouge"
 
@@ -2722,7 +2722,7 @@ msgstr "rouge"
 #: ../src/iop/channelmixerrgb.c:4186 ../src/iop/colorzones.c:2266
 #: ../src/iop/temperature.c:1763 ../src/iop/temperature.c:1781
 #: ../src/iop/temperature.c:1953 ../src/libs/collect.c:1792
-#: ../src/libs/filters/colors.c:262 ../src/libs/histogram.c:2387
+#: ../src/libs/filters/colors.c:262 ../src/libs/histogram.c:2378
 msgid "green"
 msgstr "vert"
 
@@ -2735,7 +2735,7 @@ msgstr "vert"
 #: ../src/iop/channelmixerrgb.c:4187 ../src/iop/colorzones.c:2268
 #: ../src/iop/temperature.c:1783 ../src/iop/temperature.c:1954
 #: ../src/libs/collect.c:1792 ../src/libs/filters/colors.c:263
-#: ../src/libs/histogram.c:2379
+#: ../src/libs/histogram.c:2370
 msgid "blue"
 msgstr "bleu"
 
@@ -3045,7 +3045,7 @@ msgstr "lift, gamma, gain (sRVB)"
 #: ../src/develop/blend_gui.c:2002 ../src/develop/blend_gui.c:2029
 #: ../src/iop/atrous.c:1684 ../src/iop/channelmixerrgb.c:4059
 #: ../src/iop/channelmixerrgb.c:4150 ../src/iop/colorbalancergb.c:1863
-#: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:489
+#: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:470
 msgid "chroma"
 msgstr "chroma"
 
@@ -3312,7 +3312,7 @@ msgstr "saturation"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
 #: ../src/iop/atrous.c:1325 ../src/iop/atrous.c:1329
-#: ../src/iop/denoiseprofile.c:3257 ../src/iop/rawdenoise.c:756
+#: ../src/iop/denoiseprofile.c:3226 ../src/iop/rawdenoise.c:756
 msgid "smooth"
 msgstr "doux"
 
@@ -4091,7 +4091,7 @@ msgstr "mode de correction"
 #. Page CORRECTIONS
 #: ../build/lib/darktable/plugins/introspection_lens.cc:128
 #: ../build/lib/darktable/plugins/introspection_lens.cc:277
-#: ../src/iop/lens.cc:3362 ../src/iop/negadoctor.c:859
+#: ../src/iop/lens.cc:3411 ../src/iop/negadoctor.c:859
 msgid "corrections"
 msgstr "corrections"
 
@@ -4104,7 +4104,7 @@ msgstr "corrections"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/iop/bilat.c:427 ../src/iop/colorbalance.c:1834
-#: ../src/iop/denoiseprofile.c:3499 ../src/iop/exposure.c:1057
+#: ../src/iop/denoiseprofile.c:3468 ../src/iop/exposure.c:1057
 #: ../src/iop/levels.c:674 ../src/iop/profile_gamma.c:667
 #: ../src/libs/copy_history.c:358 ../src/libs/export.c:1281
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2696
@@ -4114,7 +4114,7 @@ msgstr "mode"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:170
 #: ../build/lib/darktable/plugins/introspection_lens.cc:305
-#: ../src/iop/lens.cc:3296
+#: ../src/iop/lens.cc:3345
 msgid "geometry"
 msgstr "géométrie"
 
@@ -4149,7 +4149,7 @@ msgid "scale fine-tune"
 msgstr "ajustement fin de l'échelle"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:359
-#: ../src/iop/lens.cc:2384
+#: ../src/iop/lens.cc:2431
 msgid "embedded metadata"
 msgstr "métadonnées intégrées"
 
@@ -4313,22 +4313,22 @@ msgstr "seuil de bruit"
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:70
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:155
 msgid "crop left"
-msgstr "recadrer à gauche"
+msgstr "rogner à gauche"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:76
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:159
 msgid "crop top"
-msgstr "recadrer en haut"
+msgstr "rogner en haut"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:82
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:163
 msgid "crop right"
-msgstr "recadrer à droite"
+msgstr "rogner à droite"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:88
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:167
 msgid "crop bottom"
-msgstr "recadrer en bas"
+msgstr "rogner en bas"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:94
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:100
@@ -4339,7 +4339,7 @@ msgstr "niveau de noir"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:106
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:179
-#: ../src/iop/rawprepare.c:833
+#: ../src/iop/rawprepare.c:926
 msgid "white point"
 msgstr "point blanc"
 
@@ -5728,40 +5728,40 @@ msgstr "erreur pendant l'impression de l'image « %s » sur « %s »"
 msgid "printing `%s' on `%s'"
 msgstr "impression de l'image « %s » sur « %s »"
 
-#: ../src/common/darktable.c:245
+#: ../src/common/darktable.c:247
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange « %s »"
 
-#: ../src/common/darktable.c:260
+#: ../src/common/darktable.c:262
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier « %s »"
 
-#: ../src/common/darktable.c:283
+#: ../src/common/darktable.c:285
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:296 ../src/control/jobs/control_jobs.c:2087
+#: ../src/common/darktable.c:298 ../src/control/jobs/control_jobs.c:2087
 #: ../src/control/jobs/control_jobs.c:2146
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
-#: ../src/common/darktable.c:1385
+#: ../src/common/darktable.c:1461
 msgid "configuration information"
 msgstr "information configuration"
 
-#: ../src/common/darktable.c:1387
+#: ../src/common/darktable.c:1463
 msgid "show this information again"
 msgstr "montrer encore cette information"
 
-#: ../src/common/darktable.c:1387
+#: ../src/common/darktable.c:1463
 msgid "understood"
 msgstr "entendu"
 
-#: ../src/common/darktable.c:1829
+#: ../src/common/darktable.c:1908
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -5769,11 +5769,11 @@ msgstr ""
 "le dématriçage RCD a été défini par défaut à la place de PPG car il est plus "
 "performant et de meilleur qualité."
 
-#: ../src/common/darktable.c:1831
+#: ../src/common/darktable.c:1910
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr "voir préférences / chambre noire / dématriçage pour vue chambre noire"
 
-#: ../src/common/darktable.c:1837
+#: ../src/common/darktable.c:1916
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -5781,7 +5781,7 @@ msgstr ""
 "l'interface utilisateur et les options internes pour optimiser les "
 "performance ont changé."
 
-#: ../src/common/darktable.c:1839
+#: ../src/common/darktable.c:1918
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5789,23 +5789,23 @@ msgstr ""
 "vous ne trouverez plus « headroom » et autres maintenant, à la place dans "
 "préférences / traitement utiliser:"
 
-#: ../src/common/darktable.c:1841
+#: ../src/common/darktable.c:1920
 msgid "1) darktable resources"
 msgstr "1) ressources darktable"
 
-#: ../src/common/darktable.c:1843
+#: ../src/common/darktable.c:1922
 msgid "2) tune OpenCL performance"
 msgstr "2) optimiser les performances OpenCL"
 
-#: ../src/common/darktable.c:1850
+#: ../src/common/darktable.c:1929
 msgid ""
-"some global config values relevant for OpenCL performance are not used any "
-"longer."
+"some global config parameters relevant for OpenCL performance are not used "
+"any longer."
 msgstr ""
-"certaines valeurs de configuration globale pour la performance OpenCL ne "
-"sont plus utilisées."
+"certains paramètres de configuration globale pour la performance OpenCL ne "
+"sont plus utilisés."
 
-#: ../src/common/darktable.c:1852
+#: ../src/common/darktable.c:1931
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
@@ -5813,7 +5813,7 @@ msgstr ""
 "à la place vous trouverez les données par périphérique dans « "
 "cldevice_v4_canonical-name ». le contenu est :"
 
-#: ../src/common/darktable.c:1854
+#: ../src/common/darktable.c:1933
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
@@ -5821,7 +5821,7 @@ msgstr ""
 "  « avoid_atomics »  « micro_nap »  « pinned_memory'  « roundupwd »  « "
 "roundupht »  « eventhandles »  « async »  « disable »  « magic »"
 
-#: ../src/common/darktable.c:1856
+#: ../src/common/darktable.c:1935
 msgid "you may tune as before except 'magic'"
 msgstr "vous pouvez configurer comme avant sauf « magic »"
 
@@ -6091,12 +6091,12 @@ msgstr ""
 "le filtre guidé indépendant de l'exposition a échoué lors de l'allocation de "
 "mémoire, vérifiez les préférences RAM"
 
-#: ../src/common/exif.cc:4687
+#: ../src/common/exif.cc:4685
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
 msgstr "impossible de lire le fichier XMP « %s » : « %s »"
 
-#: ../src/common/exif.cc:4739
+#: ../src/common/exif.cc:4737
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
 msgstr "impossible d'écrire le fichier XMP « %s » : « %s »"
@@ -6132,7 +6132,7 @@ msgstr ""
 "impossible de supprimer un film comprenant des copies locales dont les "
 "originaux ne sont pas accessibles"
 
-#: ../src/common/history.c:812
+#: ../src/common/history.c:816
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "il est nécessaire de copier le développement d'une image avant de le coller "
@@ -6398,7 +6398,7 @@ msgstr "nom de version"
 msgid "image id"
 msgstr "numéro"
 
-#: ../src/common/mipmap_cache.c:1074 ../src/imageio/imageio.c:796
+#: ../src/common/mipmap_cache.c:1074 ../src/imageio/imageio.c:737
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image « %s » non disponible!"
@@ -6435,7 +6435,7 @@ msgstr ""
 msgid "OpenCL scheduling profile set to default"
 msgstr "profil de planification OpenCL par défaut positionné"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:2856
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:2903
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:83
 msgid "mm"
 msgstr "mm"
@@ -7565,17 +7565,17 @@ msgid "uniformly"
 msgstr "uniforme"
 
 #: ../src/develop/blend_gui.c:103 ../src/develop/blend_gui.c:2315
-#: ../src/develop/blend_gui.c:2956 ../src/develop/imageop.c:2412
+#: ../src/develop/blend_gui.c:2956 ../src/develop/imageop.c:2420
 msgid "drawn mask"
 msgstr "masque dessiné"
 
 #: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2126
-#: ../src/develop/blend_gui.c:2963 ../src/develop/imageop.c:2414
+#: ../src/develop/blend_gui.c:2963 ../src/develop/imageop.c:2422
 msgid "parametric mask"
 msgstr "masque paramétrique"
 
 #: ../src/develop/blend_gui.c:105 ../src/develop/blend_gui.c:2491
-#: ../src/develop/blend_gui.c:2981 ../src/develop/imageop.c:2416
+#: ../src/develop/blend_gui.c:2981 ../src/develop/imageop.c:2424
 msgid "raster mask"
 msgstr "masque raster"
 
@@ -7623,13 +7623,13 @@ msgid "on"
 msgstr "activé(e)"
 
 #: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2187
-#: ../src/develop/imageop.c:2523 ../src/iop/channelmixerrgb.c:4104
+#: ../src/develop/imageop.c:2531 ../src/iop/channelmixerrgb.c:4104
 #: ../src/iop/exposure.c:1090
 msgid "input"
 msgstr "entrée"
 
 #: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2187
-#: ../src/develop/imageop.c:2523
+#: ../src/develop/imageop.c:2531
 msgid "output"
 msgstr "sortie"
 
@@ -7711,7 +7711,7 @@ msgid "sliders for gray value"
 msgstr "conditions de fusion sur le canal gris"
 
 #: ../src/develop/blend_gui.c:1986 ../src/develop/blend_gui.c:2013
-#: ../src/iop/channelmixerrgb.c:4185 ../src/iop/denoiseprofile.c:3419
+#: ../src/iop/channelmixerrgb.c:4185 ../src/iop/denoiseprofile.c:3388
 #: ../src/iop/rawdenoise.c:895 ../src/iop/rgbcurve.c:1356
 #: ../src/iop/rgblevels.c:1000 ../src/libs/filters/colors.c:137
 msgid "R"
@@ -7722,7 +7722,7 @@ msgid "sliders for red channel"
 msgstr "conditions de fusion sur le canal rouge"
 
 #: ../src/develop/blend_gui.c:1989 ../src/develop/blend_gui.c:2016
-#: ../src/iop/channelmixerrgb.c:4186 ../src/iop/denoiseprofile.c:3420
+#: ../src/iop/channelmixerrgb.c:4186 ../src/iop/denoiseprofile.c:3389
 #: ../src/iop/rawdenoise.c:896 ../src/iop/rgbcurve.c:1357
 #: ../src/iop/rgblevels.c:1001 ../src/libs/filters/colors.c:143
 msgid "G"
@@ -7733,7 +7733,7 @@ msgid "sliders for green channel"
 msgstr "conditions de fusion sur le canal vert"
 
 #: ../src/develop/blend_gui.c:1992 ../src/develop/blend_gui.c:2019
-#: ../src/iop/channelmixerrgb.c:4187 ../src/iop/denoiseprofile.c:3421
+#: ../src/iop/channelmixerrgb.c:4187 ../src/iop/denoiseprofile.c:3390
 #: ../src/iop/rawdenoise.c:897 ../src/iop/rgbcurve.c:1358
 #: ../src/iop/rgblevels.c:1002 ../src/libs/filters/colors.c:146
 msgid "B"
@@ -7820,7 +7820,7 @@ msgid "reset blend mask settings"
 msgstr "réinitialise les paramètres de fusion conditionnelle"
 
 #: ../src/develop/blend_gui.c:2140 ../src/iop/atrous.c:1682
-#: ../src/iop/colorzones.c:2399 ../src/iop/denoiseprofile.c:3417
+#: ../src/iop/colorzones.c:2399 ../src/iop/denoiseprofile.c:3386
 #: ../src/iop/rawdenoise.c:892 ../src/iop/rgbcurve.c:1355
 #: ../src/iop/rgblevels.c:999 ../src/iop/tonecurve.c:1132
 msgid "channel"
@@ -8204,70 +8204,70 @@ msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:990 ../src/develop/imageop.c:3443
+#: ../src/develop/imageop.c:990 ../src/develop/imageop.c:3451
 #: ../src/libs/masks.c:1120
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:996 ../src/develop/imageop.c:3444
+#: ../src/develop/imageop.c:996 ../src/develop/imageop.c:3452
 #: ../src/libs/masks.c:1123
 msgid "move down"
 msgstr "descendre"
 
 #. delete button label and tooltip will be updated based on trash pref
-#: ../src/develop/imageop.c:1002 ../src/develop/imageop.c:3446
+#: ../src/develop/imageop.c:1002 ../src/develop/imageop.c:3454
 #: ../src/gui/accelerators.c:148 ../src/gui/presets.c:544
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1009 ../src/develop/imageop.c:3447
+#: ../src/develop/imageop.c:1009 ../src/develop/imageop.c:3455
 #: ../src/libs/modulegroups.c:3459 ../src/libs/modulegroups.c:3810
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1072 ../src/develop/imageop.c:2667
+#: ../src/develop/imageop.c:1072 ../src/develop/imageop.c:2675
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1072 ../src/develop/imageop.c:2667
+#: ../src/develop/imageop.c:1072 ../src/develop/imageop.c:2675
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:2406
+#: ../src/develop/imageop.c:2414
 msgid "unknown mask"
 msgstr "masque inconnu"
 
-#: ../src/develop/imageop.c:2410
+#: ../src/develop/imageop.c:2418
 msgid "drawn + parametric mask"
 msgstr "masque dessiné + paramétrique"
 
-#: ../src/develop/imageop.c:2419
+#: ../src/develop/imageop.c:2427
 #, c-format
 msgid "this module has a `%s'"
 msgstr "ce module a un « %s »"
 
-#: ../src/develop/imageop.c:2424
+#: ../src/develop/imageop.c:2432
 #, c-format
 msgid "taken from module %s"
 msgstr "récupéré du module « %s »"
 
-#: ../src/develop/imageop.c:2429
+#: ../src/develop/imageop.c:2437
 msgid "click to display (module must be activated first)"
 msgstr "cliquer pour afficher (le module doit être activé)"
 
-#: ../src/develop/imageop.c:2523
+#: ../src/develop/imageop.c:2531
 msgid "purpose"
 msgstr "objectif"
 
-#: ../src/develop/imageop.c:2523
+#: ../src/develop/imageop.c:2531
 msgid "process"
 msgstr "traitement"
 
-#: ../src/develop/imageop.c:2630
+#: ../src/develop/imageop.c:2638
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8275,7 +8275,7 @@ msgstr ""
 "actions instances multiples\n"
 "clic-droit pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2643
+#: ../src/develop/imageop.c:2651
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8283,7 +8283,7 @@ msgstr ""
 "réinitialiser les paramètres\n"
 "ctrl+clic pour réappliquer les préréglages automatique"
 
-#: ../src/develop/imageop.c:2654
+#: ../src/develop/imageop.c:2662
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8291,15 +8291,15 @@ msgstr ""
 "préréglages\n"
 "clic-droit pour appliquer sur une nouvelle instance"
 
-#: ../src/develop/imageop.c:2883 ../src/develop/imageop.c:2905
+#: ../src/develop/imageop.c:2891 ../src/develop/imageop.c:2913
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:3333
+#: ../src/develop/imageop.c:3341
 msgid "unsupported input"
 msgstr "entrée non supportée"
 
-#: ../src/develop/imageop.c:3334
+#: ../src/develop/imageop.c:3342
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8310,36 +8310,36 @@ msgstr ""
 "dans le pipeline où le format de donnée\n"
 "ne satisfait pas les prérequis."
 
-#: ../src/develop/imageop.c:3442 ../src/develop/imageop.c:3452
+#: ../src/develop/imageop.c:3450 ../src/develop/imageop.c:3460
 #: ../src/gui/accelerators.c:144 ../src/libs/lib.c:1231
 msgid "show"
 msgstr "afficher"
 
-#: ../src/develop/imageop.c:3445 ../src/libs/modulegroups.c:3305
+#: ../src/develop/imageop.c:3453 ../src/libs/modulegroups.c:3305
 #: ../src/libs/modulegroups.c:3431 ../src/libs/modulegroups.c:3812
 #: ../src/libs/tagging.c:3245
 msgid "new"
 msgstr "nouveau"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:3448 ../src/libs/duplicate.c:362
+#: ../src/develop/imageop.c:3456 ../src/libs/duplicate.c:362
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3808
 msgid "duplicate"
 msgstr "cloner"
 
-#: ../src/develop/imageop.c:3453
+#: ../src/develop/imageop.c:3461
 msgid "enable"
 msgstr "activer"
 
-#: ../src/develop/imageop.c:3454 ../src/gui/accelerators.c:160
+#: ../src/develop/imageop.c:3462 ../src/gui/accelerators.c:160
 msgid "focus"
 msgstr "focus"
 
-#: ../src/develop/imageop.c:3455 ../src/gui/accelerators.c:2300
+#: ../src/develop/imageop.c:3463 ../src/gui/accelerators.c:2300
 msgid "instance"
 msgstr "instance"
 
-#: ../src/develop/imageop.c:3456 ../src/gui/accelerators.c:105
+#: ../src/develop/imageop.c:3464 ../src/gui/accelerators.c:105
 #: ../src/gui/accelerators.c:115 ../src/gui/gtk.c:2816 ../src/gui/gtk.c:2861
 #: ../src/gui/hist_dialog.c:253 ../src/gui/styles_dialog.c:598
 #: ../src/gui/styles_dialog.c:620 ../src/iop/atrous.c:1528
@@ -8348,12 +8348,12 @@ msgid "reset"
 msgstr "réinitialiser"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3457 ../src/gui/preferences.c:792
+#: ../src/develop/imageop.c:3465 ../src/gui/preferences.c:792
 #: ../src/libs/lib.c:1233
 msgid "presets"
 msgstr "préréglages"
 
-#: ../src/develop/imageop.c:3477
+#: ../src/develop/imageop.c:3485
 msgid "processing module"
 msgstr "module de traitement"
 
@@ -8714,7 +8714,7 @@ msgstr ""
 "probablement introduit en appliquant un préréglage, un style ou un copier/"
 "coller d'historique"
 
-#: ../src/develop/pixelpipe_hb.c:2336
+#: ../src/develop/pixelpipe_hb.c:2358
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -8919,8 +8919,8 @@ msgstr "défini les bornes de l'étendu avec cette valeur"
 #. Side-border hide/show
 #: ../src/dtgtk/range.c:1763 ../src/gui/accelerators.c:2050
 #: ../src/gui/accelerators.c:2129 ../src/gui/gtk.c:1197 ../src/gui/gtk.c:2941
-#: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3418
-#: ../src/iop/lens.cc:3200 ../src/iop/rawdenoise.c:894
+#: ../src/imageio/format/pdf.c:645 ../src/iop/denoiseprofile.c:3387
+#: ../src/iop/lens.cc:3249 ../src/iop/rawdenoise.c:894
 #: ../src/libs/collect.c:3156 ../src/libs/filtering.c:1437
 #: ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
 #: ../src/libs/filters/rating.c:211
@@ -9408,8 +9408,8 @@ msgstr ""
 "commencer la saisie pour lancer la recherche incrémentale"
 
 #: ../src/gui/accelerators.c:763
-msgid "ctrl+scroll to change height"
-msgstr "ctrl+molette pour changer la hauteur"
+msgid "shift+alt+scroll to change height"
+msgstr "maj+alt+molette pour changer la hauteur"
 
 #: ../src/gui/accelerators.c:779
 msgid ""
@@ -10860,7 +10860,7 @@ msgstr "garder"
 msgid "can't create style out of unaltered image"
 msgstr "impossible de créer un style depuis une image non développée"
 
-#: ../src/imageio/imageio.c:812
+#: ../src/imageio/imageio.c:753
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -10869,17 +10869,17 @@ msgstr ""
 "échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de "
 "fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
-#: ../src/imageio/imageio.c:813
+#: ../src/imageio/imageio.c:754
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "l'aperçu"
 
-#: ../src/imageio/imageio.c:813
+#: ../src/imageio/imageio.c:754
 msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/imageio/imageio.c:826
+#: ../src/imageio/imageio.c:767
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -11700,7 +11700,7 @@ msgstr "rotation et perspective"
 
 #: ../src/iop/ashift.c:126
 msgid "rotation|keystone|distortion|crop|reframe"
-msgstr "rotation|correction trapézoïdale|distorsion|recadrer"
+msgstr "rotation|correction trapézoïdale|distorsion|recadrer|rogner"
 
 #: ../src/iop/ashift.c:131
 msgid "rotate or distort perspective"
@@ -11720,8 +11720,8 @@ msgstr "correctif ou créatif"
 #: ../src/iop/channelmixerrgb.c:236 ../src/iop/clipping.c:321
 #: ../src/iop/clipping.c:323 ../src/iop/colorbalancergb.c:185
 #: ../src/iop/colorin.c:139 ../src/iop/crop.c:140 ../src/iop/crop.c:141
-#: ../src/iop/demosaic.c:230 ../src/iop/denoiseprofile.c:706
-#: ../src/iop/denoiseprofile.c:708 ../src/iop/diffuse.c:145
+#: ../src/iop/demosaic.c:230 ../src/iop/denoiseprofile.c:703
+#: ../src/iop/denoiseprofile.c:705 ../src/iop/diffuse.c:145
 #: ../src/iop/diffuse.c:147 ../src/iop/exposure.c:132 ../src/iop/exposure.c:134
 #: ../src/iop/flip.c:106 ../src/iop/flip.c:107 ../src/iop/hazeremoval.c:113
 #: ../src/iop/hazeremoval.c:115 ../src/iop/lens.cc:216 ../src/iop/lens.cc:218
@@ -12039,12 +12039,12 @@ msgid "deblur: fine blur, strength 1"
 msgstr "défloutage : fine, force 1"
 
 #: ../src/iop/atrous.c:1305 ../src/iop/atrous.c:1541
-#: ../src/iop/denoiseprofile.c:3240 ../src/iop/rawdenoise.c:739
+#: ../src/iop/denoiseprofile.c:3209 ../src/iop/rawdenoise.c:739
 msgid "coarse"
 msgstr "global"
 
 #: ../src/iop/atrous.c:1312 ../src/iop/atrous.c:1542
-#: ../src/iop/denoiseprofile.c:3248 ../src/iop/rawdenoise.c:747
+#: ../src/iop/denoiseprofile.c:3217 ../src/iop/rawdenoise.c:747
 msgid "fine"
 msgstr "détail"
 
@@ -12052,7 +12052,7 @@ msgstr "détail"
 msgid "contrasty"
 msgstr "contrasté"
 
-#: ../src/iop/atrous.c:1330 ../src/iop/denoiseprofile.c:3262
+#: ../src/iop/atrous.c:1330 ../src/iop/denoiseprofile.c:3231
 #: ../src/iop/rawdenoise.c:761
 msgid "noisy"
 msgstr "bruité"
@@ -12102,7 +12102,7 @@ msgstr "plus fin"
 msgid "x"
 msgstr "x"
 
-#: ../src/iop/atrous.c:1683 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:486
+#: ../src/iop/atrous.c:1683 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:467
 msgid "luma"
 msgstr "luma"
 
@@ -12127,7 +12127,7 @@ msgstr ""
 "change uniquement les résultats des sections luma et chroma"
 
 #: ../src/iop/atrous.c:1696 ../src/iop/colorbalancergb.c:2026
-#: ../src/iop/colorzones.c:2472 ../src/iop/denoiseprofile.c:3445
+#: ../src/iop/colorzones.c:2472 ../src/iop/denoiseprofile.c:3414
 #: ../src/iop/filmicrgb.c:4151 ../src/iop/lowlight.c:819
 #: ../src/iop/rawdenoise.c:921 ../src/iop/toneequal.c:3145
 msgid "graph"
@@ -12229,10 +12229,10 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:338 ../src/iop/cacorrect.c:88
 #: ../src/iop/cacorrectrgb.c:170 ../src/iop/colorreconstruction.c:135
-#: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:705
+#: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:702
 #: ../src/iop/dither.c:103 ../src/iop/flip.c:105 ../src/iop/hazeremoval.c:112
 #: ../src/iop/highlights.c:178 ../src/iop/hotpixels.c:73
-#: ../src/iop/invert.c:122 ../src/iop/lens.cc:215 ../src/iop/nlmeans.c:99
+#: ../src/iop/invert.c:122 ../src/iop/lens.cc:215 ../src/iop/nlmeans.c:95
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rawdenoise.c:130
 #: ../src/iop/retouch.c:209 ../src/iop/sharpen.c:94 ../src/iop/spots.c:67
 #: ../src/iop/temperature.c:198
@@ -12420,9 +12420,8 @@ msgstr "manipuler séparément le contraste local et global"
 #: ../src/iop/colorreconstruction.c:138 ../src/iop/colorzones.c:148
 #: ../src/iop/defringe.c:84 ../src/iop/grain.c:426 ../src/iop/grain.c:428
 #: ../src/iop/levels.c:138 ../src/iop/lowlight.c:93 ../src/iop/lowlight.c:95
-#: ../src/iop/monochrome.c:101 ../src/iop/nlmeans.c:100
-#: ../src/iop/nlmeans.c:102 ../src/iop/shadhi.c:200 ../src/iop/tonecurve.c:214
-#: ../src/iop/vibrance.c:98
+#: ../src/iop/monochrome.c:101 ../src/iop/nlmeans.c:96 ../src/iop/nlmeans.c:98
+#: ../src/iop/shadhi.c:200 ../src/iop/tonecurve.c:214 ../src/iop/vibrance.c:98
 msgid "non-linear, Lab, display-referred"
 msgstr "relatif à l'affichage, non-linéaire, Lab"
 
@@ -12431,7 +12430,7 @@ msgstr "relatif à l'affichage, non-linéaire, Lab"
 #: ../src/iop/colorize.c:107 ../src/iop/colormapping.c:155
 #: ../src/iop/colorreconstruction.c:137 ../src/iop/colorzones.c:147
 #: ../src/iop/defringe.c:83 ../src/iop/grain.c:427 ../src/iop/levels.c:137
-#: ../src/iop/monochrome.c:100 ../src/iop/nlmeans.c:101 ../src/iop/shadhi.c:199
+#: ../src/iop/monochrome.c:100 ../src/iop/nlmeans.c:97 ../src/iop/shadhi.c:199
 #: ../src/iop/tonecurve.c:213 ../src/iop/vibrance.c:97
 msgid "non-linear, Lab"
 msgstr "non-linéaire, Lab"
@@ -12498,7 +12497,7 @@ msgstr ""
 "les textures"
 
 #: ../src/iop/bilateral.cc:101 ../src/iop/blurs.c:93
-#: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:707
+#: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:704
 #: ../src/iop/diffuse.c:146 ../src/iop/exposure.c:133 ../src/iop/soften.c:107
 #: ../src/iop/splittoning.c:105 ../src/iop/velvia.c:107
 msgid "linear, RGB"
@@ -12748,15 +12747,15 @@ msgstr ""
 #: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:179
 #: ../src/iop/highlights.c:181 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
-#: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:154
-#: ../src/iop/rawprepare.c:156 ../src/iop/temperature.c:199
+#: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:159
+#: ../src/iop/rawprepare.c:161 ../src/iop/temperature.c:199
 #: ../src/iop/temperature.c:201
 msgid "linear, raw, scene-referred"
 msgstr "relatif à la scène, linéaire, raw"
 
 #: ../src/iop/cacorrect.c:90 ../src/iop/cacorrectrgb.c:172
 #: ../src/iop/demosaic.c:229 ../src/iop/invert.c:124
-#: ../src/iop/rawdenoise.c:132 ../src/iop/rawprepare.c:155
+#: ../src/iop/rawdenoise.c:132 ../src/iop/rawprepare.c:160
 #: ../src/iop/temperature.c:200
 msgid "linear, raw"
 msgstr "linéaire, raw"
@@ -13664,7 +13663,7 @@ msgstr "quantité"
 msgid "size of features to preserve"
 msgstr "taille des caractéristiques à preserver"
 
-#: ../src/iop/clahe.c:347 ../src/iop/nlmeans.c:485
+#: ../src/iop/clahe.c:347 ../src/iop/nlmeans.c:466
 msgid "strength of the effect"
 msgstr "force de l'effet"
 
@@ -14615,7 +14614,7 @@ msgstr ""
 "en utilisant les profils couleur pour redéfinir les valeurs RVB"
 
 #: ../src/iop/colorin.c:136 ../src/iop/colorout.c:92 ../src/iop/demosaic.c:227
-#: ../src/iop/rawprepare.c:153
+#: ../src/iop/rawprepare.c:158
 msgid "mandatory"
 msgstr "obligatoire"
 
@@ -15021,7 +15020,7 @@ msgstr ""
 "- monotone donne une meilleure précision sur les fonctions mathématiques "
 "analytiques (log, gamma, exp). "
 
-#: ../src/iop/crop.c:129 ../src/iop/rawprepare.c:842
+#: ../src/iop/crop.c:129 ../src/iop/rawprepare.c:937
 msgid "crop"
 msgstr "recadrer"
 
@@ -15182,41 +15181,41 @@ msgstr "méthode de calcul des verts"
 msgid "demosaicing is only used for color raw images"
 msgstr "dématriçage est uniquement utilisé pour les images raw"
 
-#: ../src/iop/denoiseprofile.c:692
+#: ../src/iop/denoiseprofile.c:689
 msgid "wavelets: chroma only"
 msgstr "ondelettes: seulement chroma"
 
-#: ../src/iop/denoiseprofile.c:698
+#: ../src/iop/denoiseprofile.c:695
 msgid "denoise (profiled)"
 msgstr "réduction bruit (profil)"
 
-#: ../src/iop/denoiseprofile.c:704
+#: ../src/iop/denoiseprofile.c:701
 msgid "denoise using noise statistics profiled on sensors"
 msgstr "débruite en utilisant les statistiques de bruit profilées des capteurs"
 
-#: ../src/iop/denoiseprofile.c:2561
+#: ../src/iop/denoiseprofile.c:2530
 #, c-format
 msgid "found match for ISO %d"
 msgstr "profil pour ISO %d trouvé"
 
-#: ../src/iop/denoiseprofile.c:2570
+#: ../src/iop/denoiseprofile.c:2539
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:2939 ../src/iop/denoiseprofile.c:3505
+#: ../src/iop/denoiseprofile.c:2908 ../src/iop/denoiseprofile.c:3474
 msgid "compute variance"
 msgstr "calcul la variance"
 
-#: ../src/iop/denoiseprofile.c:3426
+#: ../src/iop/denoiseprofile.c:3395
 msgid "Y0"
 msgstr "Y0"
 
-#: ../src/iop/denoiseprofile.c:3427
+#: ../src/iop/denoiseprofile.c:3396
 msgid "U0V0"
 msgstr "U0V0"
 
-#: ../src/iop/denoiseprofile.c:3457
+#: ../src/iop/denoiseprofile.c:3426
 msgid ""
 "use only with a perfectly\n"
 "uniform image if you want to\n"
@@ -15226,55 +15225,55 @@ msgstr ""
 "complètement uniforme pour estimer\n"
 "la variance du bruit."
 
-#: ../src/iop/denoiseprofile.c:3463
+#: ../src/iop/denoiseprofile.c:3432
 msgid "variance red: "
 msgstr "variance rouge : "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3466
+#: ../src/iop/denoiseprofile.c:3435
 msgid "variance computed on the red channel"
 msgstr "la variance calculée sur le canal rouge"
 
-#: ../src/iop/denoiseprofile.c:3471
+#: ../src/iop/denoiseprofile.c:3440
 msgid "variance green: "
 msgstr "variance vert : "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3474
+#: ../src/iop/denoiseprofile.c:3443
 msgid "variance computed on the green channel"
 msgstr "la variance calculée sur le canal vert"
 
-#: ../src/iop/denoiseprofile.c:3479
+#: ../src/iop/denoiseprofile.c:3448
 msgid "variance blue: "
 msgstr "variance bleu : "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3482
+#: ../src/iop/denoiseprofile.c:3451
 msgid "variance computed on the blue channel"
 msgstr "la variance calculée sur le canal bleu"
 
-#: ../src/iop/denoiseprofile.c:3492 ../src/libs/export.c:1219
+#: ../src/iop/denoiseprofile.c:3461 ../src/libs/export.c:1219
 #: ../src/libs/print_settings.c:2272 ../src/libs/print_settings.c:2597
 msgid "profile"
 msgstr "profil"
 
-#: ../src/iop/denoiseprofile.c:3500
+#: ../src/iop/denoiseprofile.c:3469
 msgid "non-local means"
 msgstr "moyennes non-locales"
 
-#: ../src/iop/denoiseprofile.c:3501
+#: ../src/iop/denoiseprofile.c:3470
 msgid "non-local means auto"
 msgstr "moyennes non-locales auto"
 
-#: ../src/iop/denoiseprofile.c:3502
+#: ../src/iop/denoiseprofile.c:3471
 msgid "wavelets"
 msgstr "ondelettes"
 
-#: ../src/iop/denoiseprofile.c:3503
+#: ../src/iop/denoiseprofile.c:3472
 msgid "wavelets auto"
 msgstr "ondelettes auto"
 
-#: ../src/iop/denoiseprofile.c:3527
+#: ../src/iop/denoiseprofile.c:3496
 msgid ""
 "adapt denoising according to the\n"
 "white balance coefficients.\n"
@@ -15290,7 +15289,7 @@ msgstr ""
 "devrait être désactivé si une instance précédente\n"
 "a été utilisée avec le mode de fusion sur la couleur."
 
-#: ../src/iop/denoiseprofile.c:3533
+#: ../src/iop/denoiseprofile.c:3502
 msgid ""
 "fix bugs in anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -15311,11 +15310,11 @@ msgstr ""
 "en activant cette option le traitement est changé, une fois activé\n"
 "il ne sera plus possible de revenir aux anciens algorithmes."
 
-#: ../src/iop/denoiseprofile.c:3542
+#: ../src/iop/denoiseprofile.c:3511
 msgid "profile used for variance stabilization"
 msgstr "profil utilisé pour la stabilisation de variance"
 
-#: ../src/iop/denoiseprofile.c:3543
+#: ../src/iop/denoiseprofile.c:3512
 msgid ""
 "method used in the denoising core.\n"
 "non-local means works best for `lightness' blending,\n"
@@ -15326,7 +15325,7 @@ msgstr ""
 "luminosité ». \n"
 "« ondelettes » fonctionne mieux pour le mode de fusion « couleur »"
 
-#: ../src/iop/denoiseprofile.c:3546
+#: ../src/iop/denoiseprofile.c:3515
 msgid ""
 "color representation used within the algorithm.\n"
 "RGB keeps the RGB channels separated,\n"
@@ -15338,7 +15337,7 @@ msgstr ""
 "Y0U0V0 combine les canaux pour une suppression\n"
 "différentiée du bruit de chrominance et de luminance."
 
-#: ../src/iop/denoiseprofile.c:3550
+#: ../src/iop/denoiseprofile.c:3519
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -15352,7 +15351,7 @@ msgstr ""
 "si les détails sont trop lissés, réduire cette valeur ou augmenter le poids "
 "du pixel central."
 
-#: ../src/iop/denoiseprofile.c:3553
+#: ../src/iop/denoiseprofile.c:3522
 msgid ""
 "emergency use only: radius of the neighborhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -15362,7 +15361,7 @@ msgstr ""
 "meilleure suppression du bruit au détriment de la performance qui peut très "
 "vite devenir très pénalisante"
 
-#: ../src/iop/denoiseprofile.c:3556
+#: ../src/iop/denoiseprofile.c:3525
 msgid ""
 "scattering of the neighborhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
@@ -15372,7 +15371,7 @@ msgstr ""
 "augmenter pour traiter un grain grossier.\n"
 "n'affecte pas le temps d'exécution."
 
-#: ../src/iop/denoiseprofile.c:3559
+#: ../src/iop/denoiseprofile.c:3528
 msgid ""
 "increase the weight of the central pixel\n"
 "of the patch in the patch comparison.\n"
@@ -15383,11 +15382,11 @@ msgstr ""
 "du patch lors de la comparaison des patchs.\n"
 "utile pour retrouver des détails lorsque la taille des patchs est importante."
 
-#: ../src/iop/denoiseprofile.c:3563
+#: ../src/iop/denoiseprofile.c:3532
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
 
-#: ../src/iop/denoiseprofile.c:3564
+#: ../src/iop/denoiseprofile.c:3533
 msgid ""
 "controls the way parameters are autoset\n"
 "increase if shadows are not denoised enough\n"
@@ -15399,7 +15398,7 @@ msgstr ""
 "ou si le bruit de chrominance persiste.\n"
 "cela peut arriver si l'images est sous-exposée."
 
-#: ../src/iop/denoiseprofile.c:3568
+#: ../src/iop/denoiseprofile.c:3537
 msgid ""
 "finetune shadows denoising.\n"
 "decrease to denoise more aggressively\n"
@@ -15409,7 +15408,7 @@ msgstr ""
 "diminuer pour réduire le bruit plus agressivement\n"
 "les zones sombres de l'image."
 
-#: ../src/iop/denoiseprofile.c:3571
+#: ../src/iop/denoiseprofile.c:3540
 msgid ""
 "correct color cast in shadows.\n"
 "decrease if shadows are too purple.\n"
@@ -15419,7 +15418,7 @@ msgstr ""
 "diminuer si les ombres sont trop violettes.\n"
 "augmenter si les ombres sont trop vertes."
 
-#: ../src/iop/denoiseprofile.c:3574
+#: ../src/iop/denoiseprofile.c:3543
 msgid ""
 "upgrade the variance stabilizing algorithm.\n"
 "new algorithm extends the current one.\n"
@@ -17093,11 +17092,11 @@ msgstr "corriger les défauts optiques des objectifs"
 msgid "geometric and reconstruction, RGB"
 msgstr "géométrique et reconstruction, RVB"
 
-#: ../src/iop/lens.cc:2387
+#: ../src/iop/lens.cc:2434
 msgid "lensfun"
 msgstr "lensfun"
 
-#: ../src/iop/lens.cc:2570
+#: ../src/iop/lens.cc:2617
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -17110,7 +17109,7 @@ msgstr ""
 "monture :\t\t%s\n"
 "conv. focale :\t%.1f"
 
-#: ../src/iop/lens.cc:2811
+#: ../src/iop/lens.cc:2858
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -17129,31 +17128,31 @@ msgstr ""
 "type :\t\t\t%s\n"
 "montures :\t\t%s"
 
-#: ../src/iop/lens.cc:2857
+#: ../src/iop/lens.cc:2904
 msgid "focal length (mm)"
 msgstr "longeur focale (mm)"
 
-#: ../src/iop/lens.cc:2881
+#: ../src/iop/lens.cc:2928
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:2882
+#: ../src/iop/lens.cc:2929
 msgid "f-number (aperture)"
 msgstr "ouverture"
 
-#: ../src/iop/lens.cc:2896
+#: ../src/iop/lens.cc:2943
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.cc:2897
+#: ../src/iop/lens.cc:2944
 msgid "distance to subject"
 msgstr "distance au sujet"
 
-#: ../src/iop/lens.cc:3056
+#: ../src/iop/lens.cc:3105
 msgid "camera/lens not found"
 msgstr "boîtier/objectif introuvable"
 
-#: ../src/iop/lens.cc:3057
+#: ../src/iop/lens.cc:3106
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your lensfun database is up-to-date\n"
@@ -17164,129 +17163,129 @@ msgstr ""
 "à jour\n"
 "en exécutant « lensfun_update_data »"
 
-#: ../src/iop/lens.cc:3206
+#: ../src/iop/lens.cc:3255
 msgid "distortion & TCA"
 msgstr "distorsion et chromatisme"
 
-#: ../src/iop/lens.cc:3212
+#: ../src/iop/lens.cc:3261
 msgid "distortion & vignetting"
 msgstr "distorsion et vignettage"
 
-#: ../src/iop/lens.cc:3218
+#: ../src/iop/lens.cc:3267
 msgid "TCA & vignetting"
 msgstr "chromatisme et vignettage"
 
-#: ../src/iop/lens.cc:3224
+#: ../src/iop/lens.cc:3273
 msgid "only distortion"
 msgstr "distorsion seulement"
 
-#: ../src/iop/lens.cc:3230
+#: ../src/iop/lens.cc:3279
 msgid "only TCA"
 msgstr "chromatisme seulement"
 
-#: ../src/iop/lens.cc:3236
+#: ../src/iop/lens.cc:3285
 msgid "only vignetting"
 msgstr "vignettage seulement"
 
-#: ../src/iop/lens.cc:3247
+#: ../src/iop/lens.cc:3296
 msgid "camera model"
 msgstr "modèle de boîtier"
 
-#: ../src/iop/lens.cc:3251
+#: ../src/iop/lens.cc:3300
 msgid "find camera"
 msgstr "boîtier"
 
-#: ../src/iop/lens.cc:3265
+#: ../src/iop/lens.cc:3314
 msgid "find lens"
 msgstr "objectif"
 
-#: ../src/iop/lens.cc:3298
+#: ../src/iop/lens.cc:3347
 msgid "target geometry"
 msgstr "géométrie des images (distorsion)"
 
-#: ../src/iop/lens.cc:3299
+#: ../src/iop/lens.cc:3348
 msgid "rectilinear"
 msgstr "rectilinéaire"
 
-#: ../src/iop/lens.cc:3300
+#: ../src/iop/lens.cc:3349
 msgid "fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.cc:3301
+#: ../src/iop/lens.cc:3350
 msgid "panoramic"
 msgstr "panoramique"
 
-#: ../src/iop/lens.cc:3302
+#: ../src/iop/lens.cc:3351
 msgid "equirectangular"
 msgstr "equi-rectangulaire"
 
-#: ../src/iop/lens.cc:3304
+#: ../src/iop/lens.cc:3353
 msgid "orthographic"
 msgstr "orthographique"
 
-#: ../src/iop/lens.cc:3305
+#: ../src/iop/lens.cc:3354
 msgid "stereographic"
 msgstr "stéréographique"
 
-#: ../src/iop/lens.cc:3306
+#: ../src/iop/lens.cc:3355
 msgid "equisolid angle"
 msgstr "angle solide constant"
 
-#: ../src/iop/lens.cc:3307
+#: ../src/iop/lens.cc:3356
 msgid "thoby fish-eye"
 msgstr "fisheye"
 
 #. scale
-#: ../src/iop/lens.cc:3313 ../src/iop/vignette.c:967
+#: ../src/iop/lens.cc:3362 ../src/iop/vignette.c:967
 #: ../src/iop/watermark.c:1136 ../src/libs/export.c:1171
 msgid "scale"
 msgstr "échelle"
 
-#: ../src/iop/lens.cc:3317
+#: ../src/iop/lens.cc:3366
 msgid "auto scale"
 msgstr "échelle auto"
 
-#: ../src/iop/lens.cc:3321 ../src/libs/modulegroups.c:2313
+#: ../src/iop/lens.cc:3370 ../src/libs/modulegroups.c:2313
 msgid "correct"
 msgstr "retouche"
 
-#: ../src/iop/lens.cc:3322
+#: ../src/iop/lens.cc:3371
 msgid "distort"
 msgstr "déforme"
 
-#: ../src/iop/lens.cc:3323
+#: ../src/iop/lens.cc:3372
 msgid "correct distortions or apply them"
 msgstr "corrige ou applique des distorsions"
 
-#: ../src/iop/lens.cc:3330
+#: ../src/iop/lens.cc:3379
 msgid "Transversal Chromatic Aberration red"
 msgstr "Aberrations Chromatiques Transversales rouge"
 
-#: ../src/iop/lens.cc:3334
+#: ../src/iop/lens.cc:3383
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Aberrations Chromatiques Transversales bleu"
 
-#: ../src/iop/lens.cc:3341
+#: ../src/iop/lens.cc:3390
 msgid "tune the warp and chromatic aberration correction"
 msgstr "correction des déformations et de l'aberrations chromatiques"
 
-#: ../src/iop/lens.cc:3345
+#: ../src/iop/lens.cc:3394
 msgid "tune the vignette correction"
 msgstr "ajuste la correction de vignette"
 
-#: ../src/iop/lens.cc:3351
+#: ../src/iop/lens.cc:3400
 msgid "override automatic scale"
 msgstr "surcharger l'échelle automatique"
 
-#: ../src/iop/lens.cc:3364
+#: ../src/iop/lens.cc:3413
 msgid "which corrections to apply"
 msgstr "sélectionne les types de correction à effectuer"
 
-#: ../src/iop/lens.cc:3388
+#: ../src/iop/lens.cc:3437
 msgid "corrections done: "
 msgstr "corrections effectuées : "
 
-#: ../src/iop/lens.cc:3390
+#: ../src/iop/lens.cc:3439
 msgid "which corrections have actually been done"
 msgstr "corrections réellement effectuées"
 
@@ -18026,29 +18025,29 @@ msgstr ""
 msgid "toggle on or off the color controls"
 msgstr "basculer les contrôles des couleurs"
 
-#: ../src/iop/nlmeans.c:88
+#: ../src/iop/nlmeans.c:84
 msgid "astrophoto denoise"
 msgstr "réduction du bruit photo astro"
 
-#: ../src/iop/nlmeans.c:93
+#: ../src/iop/nlmeans.c:89
 msgid "denoise (non-local means)"
 msgstr "réduction bruit (moy. non-locales)"
 
-#: ../src/iop/nlmeans.c:98
+#: ../src/iop/nlmeans.c:94
 msgid "apply a poisson noise removal best suited for astrophotography"
 msgstr ""
 "appliquer la méthode d'élimination du bruit poisson, mieux adaptée à "
 "l'astrophotographie"
 
-#: ../src/iop/nlmeans.c:480
+#: ../src/iop/nlmeans.c:461
 msgid "radius of the patches to match"
 msgstr "rayon des éléments à identifier"
 
-#: ../src/iop/nlmeans.c:488
+#: ../src/iop/nlmeans.c:469
 msgid "how much to smooth brightness"
 msgstr "force du flou pour la luminosité"
 
-#: ../src/iop/nlmeans.c:491
+#: ../src/iop/nlmeans.c:472
 msgid "how much to smooth colors"
 msgstr "force du flou pour les couleurs"
 
@@ -18177,7 +18176,7 @@ msgctxt "modulename"
 msgid "raw black/white point"
 msgstr "point noir/blanc raw"
 
-#: ../src/iop/rawprepare.c:151
+#: ../src/iop/rawprepare.c:156
 msgid ""
 "sets technical specificities of the raw sensor.\n"
 "touch with great care!"
@@ -18185,47 +18184,58 @@ msgstr ""
 "défini les informations techniques du capteur.\n"
 "vous ne devriez pas changer les valeurs !"
 
-#: ../src/iop/rawprepare.c:163
+#: ../src/iop/rawprepare.c:168
 msgid "passthrough"
 msgstr "passer"
 
-#: ../src/iop/rawprepare.c:809
+#: ../src/iop/rawprepare.c:654
+msgid "invalid crop parameters"
+msgstr "paramètres de recadrage invalides"
+
+#: ../src/iop/rawprepare.c:655
+msgid ""
+"please reset to defaults, update your preset or set to somemething correct"
+msgstr ""
+"merci de réinitialiser, mettre à jour les préréglages ou de définir des "
+"valeurs correctes"
+
+#: ../src/iop/rawprepare.c:902
 msgid "black level 0"
 msgstr "niveau de noir 0"
 
-#: ../src/iop/rawprepare.c:810
+#: ../src/iop/rawprepare.c:903
 msgid "black level 1"
 msgstr "niveau de noir 1"
 
-#: ../src/iop/rawprepare.c:811
+#: ../src/iop/rawprepare.c:904
 msgid "black level 2"
 msgstr "niveau de noir 2"
 
-#: ../src/iop/rawprepare.c:812
+#: ../src/iop/rawprepare.c:905
 msgid "black level 3"
 msgstr "niveau de noir 3"
 
-#: ../src/iop/rawprepare.c:837
-msgid "flat field correction to compensate for lens shading"
-msgstr "correction de non-uniformité pour compenser les dégradés des objectifs"
+#: ../src/iop/rawprepare.c:932
+msgid "raw flat field correction to compensate for lens shading"
+msgstr "correction de non-uniformité pour compenser les ombrages des objectifs"
 
-#: ../src/iop/rawprepare.c:845
-msgid "crop from left border"
+#: ../src/iop/rawprepare.c:940
+msgid "crop left border"
 msgstr "rogner depuis le bord gauche"
 
-#: ../src/iop/rawprepare.c:849
-msgid "crop from top"
-msgstr "rogner depuis le haut"
+#: ../src/iop/rawprepare.c:944
+msgid "crop top border"
+msgstr "rogner depuis le bord haut"
 
-#: ../src/iop/rawprepare.c:853
-msgid "crop from right border"
+#: ../src/iop/rawprepare.c:948
+msgid "crop right border"
 msgstr "rogner depuis le bord droit"
 
-#: ../src/iop/rawprepare.c:857
-msgid "crop from bottom"
-msgstr "rogner depuis le bas"
+#: ../src/iop/rawprepare.c:952
+msgid "crop bottom border"
+msgstr "rogner depuis le bord bas"
 
-#: ../src/iop/rawprepare.c:865
+#: ../src/iop/rawprepare.c:961
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -19722,7 +19732,7 @@ msgstr "n/a"
 msgid "camera control"
 msgstr "pilotage du boîtier"
 
-#: ../src/libs/camera.c:422 ../src/libs/histogram.c:2358
+#: ../src/libs/camera.c:422 ../src/libs/histogram.c:2349
 msgid "modes"
 msgstr "modes"
 
@@ -21183,7 +21193,8 @@ msgstr "monochromatique"
 msgid "analogous"
 msgstr "analogue"
 
-#: ../src/libs/histogram.c:134
+#. scale conservatively to 100% of width:
+#: ../src/libs/histogram.c:134 ../src/libs/histogram.c:1284
 msgid "analogous complementary"
 msgstr "complémentaire analogue"
 
@@ -21219,7 +21230,7 @@ msgstr "forme d'onde"
 msgid "rgb parade"
 msgstr "parade RVB"
 
-#: ../src/libs/histogram.c:148 ../src/libs/histogram.c:2294
+#: ../src/libs/histogram.c:148 ../src/libs/histogram.c:2300
 msgid "histogram"
 msgstr "histogramme"
 
@@ -21227,108 +21238,100 @@ msgstr "histogramme"
 msgid "scopes"
 msgstr "scopes"
 
-#: ../src/libs/histogram.c:1550
-msgid ""
-"histogram\n"
-"drag to change black point,\n"
-"double-click resets"
-msgstr ""
-"histogramme\n"
-"glisser pour changer les noirs,\n"
-"le double-clic réinitialise"
-
-#: ../src/libs/histogram.c:1555
-msgid ""
-"histogram\n"
-"drag to change exposure,\n"
-"double-click resets"
-msgstr ""
-"histogramme\n"
-"glisser pour changer l'exposition,\n"
-"le double-clic réinitialise"
-
-#: ../src/libs/histogram.c:1669 ../src/libs/histogram.c:1709
-msgid "set scale to linear"
-msgstr "afficher en mode linéaire"
-
-#: ../src/libs/histogram.c:1674 ../src/libs/histogram.c:1714
-msgid "set scale to logarithmic"
-msgstr "afficher en mode logarithmique"
-
-#: ../src/libs/histogram.c:1690
-msgid "set scope to vertical"
-msgstr "afficher verticalement"
-
-#: ../src/libs/histogram.c:1695
-msgid "set scope to horizontal"
-msgstr "afficher horizontalement"
-
-#: ../src/libs/histogram.c:1724
-msgid "set view to AzBz"
-msgstr "afficher en mode AzBz"
-
-#: ../src/libs/histogram.c:1730
-msgid "set view to RYB"
-msgstr "afficher en mode RJB"
-
-#: ../src/libs/histogram.c:1736
-msgid "set view to u*v*"
-msgstr "afficher en mode u*v*"
-
-#: ../src/libs/histogram.c:2297 ../src/libs/histogram.c:2368
-msgid "cycle histogram modes"
-msgstr "cycler sur les modes de l'histogramme"
-
-#: ../src/libs/histogram.c:2301 ../src/libs/histogram.c:2369
-msgid "hide histogram"
-msgstr "cacher histogramme"
-
-#: ../src/libs/histogram.c:2346
+#: ../src/libs/histogram.c:1541
 msgid "scroll to coarse-rotate"
 msgstr "molette pour pivoter"
 
-#: ../src/libs/histogram.c:2347
+#: ../src/libs/histogram.c:1542
 msgid "ctrl+scroll to fine rotate"
 msgstr "ctrl+molette pour pivoter finement"
 
-#: ../src/libs/histogram.c:2348
+#: ../src/libs/histogram.c:1543
 msgid "shift+scroll to change width"
 msgstr "ctrl+molette pour changer la largeur"
 
-#: ../src/libs/histogram.c:2349
+#: ../src/libs/histogram.c:1544
 msgid "alt+scroll to cycle"
 msgstr "alt+molette pour parcourir"
 
-#: ../src/libs/histogram.c:2370 ../src/libs/histogram.c:2399
+#: ../src/libs/histogram.c:1555
+msgid "drag to change black point"
+msgstr "glisser pour changer le point noir"
+
+#: ../src/libs/histogram.c:1556 ../src/libs/histogram.c:1563
+msgid "double-click resets"
+msgstr "double-cliquer pour réinitialiser"
+
+#: ../src/libs/histogram.c:1562
+msgid "drag to change exposure"
+msgstr "glisser pour changer l'exposition"
+
+#: ../src/libs/histogram.c:1724 ../src/libs/histogram.c:1764
+msgid "set scale to linear"
+msgstr "afficher en mode linéaire"
+
+#: ../src/libs/histogram.c:1729 ../src/libs/histogram.c:1769
+msgid "set scale to logarithmic"
+msgstr "afficher en mode logarithmique"
+
+#: ../src/libs/histogram.c:1745
+msgid "set scope to vertical"
+msgstr "afficher verticalement"
+
+#: ../src/libs/histogram.c:1750
+msgid "set scope to horizontal"
+msgstr "afficher horizontalement"
+
+#: ../src/libs/histogram.c:1779
+msgid "set view to AzBz"
+msgstr "afficher en mode AzBz"
+
+#: ../src/libs/histogram.c:1785
+msgid "set view to RYB"
+msgstr "afficher en mode RJB"
+
+#: ../src/libs/histogram.c:1791
+msgid "set view to u*v*"
+msgstr "afficher en mode u*v*"
+
+#: ../src/libs/histogram.c:2303 ../src/libs/histogram.c:2359
+msgid "cycle histogram modes"
+msgstr "cycler sur les modes de l'histogramme"
+
+#: ../src/libs/histogram.c:2307 ../src/libs/histogram.c:2360
+msgid "hide histogram"
+msgstr "cacher histogramme"
+
+#: ../src/libs/histogram.c:2361 ../src/libs/histogram.c:2390
 msgid "switch histogram view"
 msgstr "changer le mode de l'histogramme"
 
-#: ../src/libs/histogram.c:2377
+#: ../src/libs/histogram.c:2368
 msgid "toggle blue channel"
 msgstr "basculer le canal bleu"
 
-#: ../src/libs/histogram.c:2379 ../src/libs/histogram.c:2387
-#: ../src/libs/histogram.c:2395
+#: ../src/libs/histogram.c:2370 ../src/libs/histogram.c:2378
+#: ../src/libs/histogram.c:2386
 msgid "toggle colors"
 msgstr "basculer les couleurs"
 
-#: ../src/libs/histogram.c:2385
+#: ../src/libs/histogram.c:2376
 msgid "toggle green channel"
 msgstr "basculer le canal vert"
 
-#: ../src/libs/histogram.c:2393
+#: ../src/libs/histogram.c:2384
 msgid "toggle red channel"
 msgstr "basculer le canal rouge"
 
-#: ../src/libs/histogram.c:2403
+#: ../src/libs/histogram.c:2394
 msgid "cycle vectorscope types"
 msgstr "parcourir les modes du vectorscope"
 
-#: ../src/libs/histogram.c:2411
+#: ../src/libs/histogram.c:2402
 msgid "color harmonies"
 msgstr "harmonies des couleurs"
 
-#: ../src/libs/histogram.c:2426
+#: ../src/libs/histogram.c:2414
 msgid "cycle color harmonies"
 msgstr "parcourir les harmonie des couleurs"
 
@@ -24744,6 +24747,30 @@ msgstr "créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1344
 msgid "mouse actions"
 msgstr "actions souris"
+
+#~ msgid "crop from top"
+#~ msgstr "rogner depuis le haut"
+
+#~ msgid "crop from bottom"
+#~ msgstr "rogner depuis le bas"
+
+#~ msgid ""
+#~ "histogram\n"
+#~ "drag to change black point,\n"
+#~ "double-click resets"
+#~ msgstr ""
+#~ "histogramme\n"
+#~ "glisser pour changer les noirs,\n"
+#~ "le double-clic réinitialise"
+
+#~ msgid ""
+#~ "histogram\n"
+#~ "drag to change exposure,\n"
+#~ "double-click resets"
+#~ msgstr ""
+#~ "histogramme\n"
+#~ "glisser pour changer l'exposition,\n"
+#~ "le double-clic réinitialise"
 
 #~ msgid "128 px"
 #~ msgstr "128 px"
