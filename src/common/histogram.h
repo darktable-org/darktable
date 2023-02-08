@@ -33,7 +33,7 @@
  */
 typedef struct dt_histogram_roi_t
 {
-  int width, height, crop_x, crop_y, crop_width, crop_height;
+  int width, height, crop_x, crop_y, crop_right, crop_bottom;
 } dt_histogram_roi_t;
 
 // allocates an aligned histogram buffer if needed, callers
@@ -53,4 +53,3 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

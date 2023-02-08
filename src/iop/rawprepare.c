@@ -813,8 +813,8 @@ void reload_defaults(dt_iop_module_t *self)
 
   *d = (dt_iop_rawprepare_params_t){.left = image->crop_x,
                                     .top = image->crop_y,
-                                    .right = image->crop_width,
-                                    .bottom = image->crop_height,
+                                    .right = image->crop_right,
+                                    .bottom = image->crop_bottom,
                                     .raw_black_level_separate[0] = image->raw_black_level_separate[0],
                                     .raw_black_level_separate[1] = image->raw_black_level_separate[1],
                                     .raw_black_level_separate[2] = image->raw_black_level_separate[2],
