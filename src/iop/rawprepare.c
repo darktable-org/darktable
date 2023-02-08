@@ -652,7 +652,7 @@ static gboolean _image_set_rawcrops(
        left, right, top, bottom, img->width, img->height);
     dt_iop_set_module_trouble_message(self,
      _("invalid crop parameters"),
-     _("please reset to defaults, update your preset or set to somemething correct"),
+     _("please reset to defaults, update your preset or set to something correct"),
        "invalid crop parameters");
   }
   else
