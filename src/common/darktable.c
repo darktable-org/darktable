@@ -146,10 +146,6 @@ static int usage(const char *argv0)
 #endif
   printf("  --dump-pfm <module>\n");
   printf("  --dump-pipe <module>\n");
-#ifdef _WIN32
-  printf(", /?");
-#endif
-  printf("\n");
   printf("  --library <library file>\n");
   printf("  --localedir <locale directory>\n");
 #ifdef USE_LUA
@@ -162,9 +158,12 @@ static int usage(const char *argv0)
   printf("  --version\n");
   printf("  --help -h");
 #ifdef _WIN32
+  printf(", /?\n");
   printf("\n");
   printf("  note: debug log and output will be written to this file:\n");
   printf("        %s\n", logfile);
+#else
+  printf("\n");
 #endif
 
 #ifdef _WIN32
