@@ -146,6 +146,11 @@ static int usage(const char *argv0)
 #endif
   printf("  --dump-pfm <module>\n");
   printf("  --dump-pipe <module>\n");
+  printf("  --bench-module <module>\n");
+#ifdef _WIN32
+  printf(", /?");
+#endif
+  printf("\n");
   printf("  --library <library file>\n");
   printf("  --localedir <locale directory>\n");
 #ifdef USE_LUA
@@ -593,6 +598,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.dump_pfm_module = NULL;
   darktable.dump_pfm_pipe = NULL;
   darktable.tmp_directory = NULL;
+  darktable.bench_module = NULL;
 
 #ifdef HAVE_OPENCL
   gboolean exclude_opencl = FALSE;
@@ -738,6 +744,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(!strcmp(argv[k], "--dump-pfm") && argc > k + 1)
       {
         darktable.dump_pfm_module = argv[++k];
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--bench-module") && argc > k + 1)
+      {
+        darktable.bench_module = argv[++k];
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
