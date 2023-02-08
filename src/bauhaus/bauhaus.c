@@ -3579,17 +3579,17 @@ static const dt_action_def_t _action_def_combo
       _action_fallbacks_combo };
 
 static const dt_action_def_t _action_def_focus_slider
-  = { N_("slider"),
+  = { N_("sliders"),
       _action_process_focus_slider,
       DT_ACTION_ELEMENTS_NUM(value),
       NULL, TRUE };
 static const dt_action_def_t _action_def_focus_combo
-  = { N_("dropdown"),
+  = { N_("dropdowns"),
       _action_process_focus_combo,
       DT_ACTION_ELEMENTS_NUM(selection),
       NULL, TRUE };
 static const dt_action_def_t _action_def_focus_button
-  = { N_("button"),
+  = { N_("buttons"),
       _action_process_focus_button,
       DT_ACTION_ELEMENTS_NUM(toggle),
       NULL, TRUE };

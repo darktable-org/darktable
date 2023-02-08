@@ -128,6 +128,34 @@ static int _action_cb(lua_State *L)
   return 1;
 }
 
+static int _mimic_cb(lua_State *L)
+{
+  const gchar *ac_type  = luaL_checkstring(L, 1);
+  const gchar *ac_name = luaL_checkstring(L, 2);
+
+  luaL_checktype(L, 3, LUA_TFUNCTION);
+
+  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_mimic_list");
+  if(lua_isnil(L, -1)) goto mimic_end;
+
+  lua_pushvalue(L, 3);
+  lua_setfield(L, -2, ac_name);
+
+  // find the action type definition to be simulated (including fallbacks)
+  dt_action_def_t *def = NULL;
+  for(int i = 0; i < darktable.control->widget_definitions->len; i++)
+  {
+    def = darktable.control->widget_definitions->pdata[i];
+    if(!strcmp(def->name, ac_type)) break;
+  }
+
+  dt_action_define(&darktable.control->actions_lua, NULL, ac_name, NULL, def);
+
+mimic_end:
+  lua_pop(L, 1);
+  return 1;
+}
+
 static int _panel_visible_cb(lua_State *L)
 {
   dt_ui_panel_t p;
@@ -384,6 +412,10 @@ int dt_lua_init_gui(lua_State *L)
     dt_lua_gtk_wrap(L);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "action");
+    lua_pushcfunction(L, _mimic_cb);
+    dt_lua_gtk_wrap(L);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "mimic");
     lua_pushcfunction(L, _panel_visible_cb);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "panel_visible");
