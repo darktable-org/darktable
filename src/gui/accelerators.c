@@ -1246,7 +1246,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
         field_text = _action_full_label(s->action);
       break;
     case SHORTCUT_VIEW_ELEMENT:
-      if(_shortcut_is_speed(s)) break;
+      if(s->action->owner == &darktable.control->actions_lua || _shortcut_is_speed(s)) break;
       elements = _action_find_elements(s->action);
       if(elements && elements->name)
       {
@@ -1257,7 +1257,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
       }
       break;
     case SHORTCUT_VIEW_EFFECT:
-      if(_shortcut_is_speed(s)) break;
+      if(s->action->owner == &darktable.control->actions_lua || _shortcut_is_speed(s)) break;
       elements = _action_find_elements(s->action);
       if(elements)
       {
@@ -3155,6 +3155,35 @@ static float _process_action(dt_action_t *action, int instance,
       }
       return_value = definition->process(action_target, element, effect, move_size);
     }
+#ifdef USE_LUA
+    else if(action->owner == &darktable.control->actions_lua && definition)
+    {
+      dt_lua_lock();
+
+      lua_State* L= darktable.lua_state.state;
+
+      lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_mimic_list");
+      int stacknum = 1;
+      if(lua_isnil(L, -1)) goto lua_end;
+
+      lua_getfield(L, -1, action->id);
+      ++stacknum;
+      if(lua_isnil(L, -1)) goto lua_end;
+
+      lua_pushstring(L, action->label);
+      lua_pushstring(L, definition->elements[element].name);
+      lua_pushstring(L, definition->elements[element].effects[effect]);
+      lua_pushnumber(L, move_size);
+
+      lua_pcall(L, 4, 1, 0);
+
+      return_value = lua_tonumber(L, -1);
+
+lua_end:
+      lua_pop(L, stacknum);
+      dt_lua_unlock();
+    }
+#endif
     else if(!isnan(move_size))
       dt_action_widget_toast(action, action_target, "not active");
   }
@@ -3246,11 +3275,18 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
     return NAN;;
   }
 
+  if(ac->owner == &darktable.control->actions_lua)
+  {
+    fprintf(stderr, "[dt_action_process] lua action '%s' triggered from lua\n", action);
+    return NAN;;
+  }
+
   const dt_view_type_flags_t vws = _find_views(ac);
-  if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view)))
+  if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view))
+     && !isnan(move_size))
   {
     fprintf(stderr, "[dt_action_process] action '%s' not valid for current view\n", action);
-    return NAN;;
+    return NAN;
   }
 
   dt_action_element_t el = DT_ACTION_ELEMENT_DEFAULT;
@@ -3270,7 +3306,7 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
         if(!elements[el].name)
         {
           fprintf(stderr, "[dt_action_process] element '%s' not valid for action '%s'\n", element, action);
-          return NAN;;
+          return NAN;
         }
       }
 

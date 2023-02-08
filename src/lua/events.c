@@ -547,6 +547,8 @@ int dt_lua_init_early_events(lua_State *L)
 {
   lua_newtable(L);
   lua_setfield(L, LUA_REGISTRYINDEX, "dt_lua_event_list");
+  lua_newtable(L);
+  lua_setfield(L, LUA_REGISTRYINDEX, "dt_lua_mimic_list");
   dt_lua_push_darktable_lib(L);
   lua_pushstring(L, "register_event");
   lua_pushcfunction(L, &lua_register_event);
