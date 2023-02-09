@@ -157,10 +157,10 @@ static inline float _rgb_to_gray(const float *const restrict val)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void nearest_color(
+static inline void _nearest_color(
         float *const restrict val,
         float *const restrict err,
-        int graymode,
+        const int graymode,
         const float f,
         const float rf)
 {
@@ -212,7 +212,7 @@ static inline void _diffuse_error(
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline float clipnan(const float x)
+static inline float _clipnan(const float x)
 {
   // convert NaN to 0.5, otherwise clamp to between 0.0 and 1.0
   return (x > 0.0f) ? ((x < 1.0f) ? x    // 0 < x < 1
@@ -230,7 +230,7 @@ static inline void _clipnan_pixel(
 #pragma omp simd aligned(in, out : 16)
 #endif
   for(int c = 0; c < 4; c++)
-    out[c] = clipnan(in[c]);
+    out[c] = _clipnan(in[c]);
 }
 
 static int _get_dither_parameters(
@@ -357,7 +357,7 @@ static void process_floyd_steinberg(
     for(int j = 0; j < height * width; j++)
     {
       _clipnan_pixel(out + 4 * j, in + 4 * j);
-      nearest_color(out + 4 * j, err, graymode, f, rf);
+      _nearest_color(out + 4 * j, err, graymode, f, rf);
     }
 
     if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
@@ -374,7 +374,7 @@ static void process_floyd_steinberg(
 #define PROCESS_PIXEL_FULL(_pixel, inpix)                               \
   {                                                                     \
     float *const pixel_ = (_pixel);                                     \
-    nearest_color(pixel_, err, graymode, f, rf);              /* quantize pixel */ \
+    _nearest_color(pixel_, err, graymode, f, rf);              /* quantize pixel */ \
     _clipnan_pixel(pixel_ + downright,(inpix) + downright);    /* prepare downright for first access */ \
     _diffuse_error(pixel_ + right, err, RIGHT_WT);            /* diffuse quantization error to neighbors */ \
     _diffuse_error(pixel_ + downleft, err, DOWNLEFT_WT);                \
@@ -385,7 +385,7 @@ static void process_floyd_steinberg(
 #define PROCESS_PIXEL_LEFT(_pixel, inpix)                               \
   {                                                                     \
     float *const pixel_ = (_pixel);                                     \
-    nearest_color(pixel_, err, graymode, f, rf);              /* quantize pixel */ \
+    _nearest_color(pixel_, err, graymode, f, rf);              /* quantize pixel */ \
     _clipnan_pixel(pixel_ + down,(inpix) + down);              /* prepare down for first access */ \
     _clipnan_pixel(pixel_ + downright,(inpix) + downright);    /* prepare downright for first access */ \
     _diffuse_error(pixel_ + right, err, RIGHT_WT);            /* diffuse quantization error to neighbors */ \
@@ -394,7 +394,7 @@ static void process_floyd_steinberg(
   }
 
 #define PROCESS_PIXEL_RIGHT(pixel)                                      \
-  nearest_color(pixel, err, graymode, f, rf);             /* quantize pixel */ \
+  _nearest_color(pixel, err, graymode, f, rf);             /* quantize pixel */ \
   _diffuse_error(pixel + downleft, err, DOWNLEFT_WT);     /* diffuse quantization error to neighbors */ \
   _diffuse_error(pixel + down, err, DOWN_WT);
 
@@ -490,12 +490,12 @@ static void process_floyd_steinberg(
     for(int i = 0; i < width - 1; i++)
     {
       float *const restrict pixel = outrow + 4 * i;
-      nearest_color(pixel, err, graymode, f, rf);              // quantize the pixel
+      _nearest_color(pixel, err, graymode, f, rf);              // quantize the pixel
       _diffuse_error(pixel + right, err, RIGHT_WT);            // spread error to only remaining neighbor
     }
 
     // lower right pixel
-    nearest_color(outrow + 4 * (width - 1), err, graymode, f, rf);  // quantize the last pixel, no neighbors left
+    _nearest_color(outrow + 4 * (width - 1), err, graymode, f, rf);  // quantize the last pixel, no neighbors left
   }
 
   // copy alpha channel if needed
