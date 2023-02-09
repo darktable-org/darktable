@@ -53,7 +53,7 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
     fprintf(stderr, "[dt_pthread_create] error: pthread_attr_getstacksize() returned %i\n", ret);
   }
 
-  if(ret != 0 || stacksize < WANTED_THREADS_STACK_SIZE /*|| 1*/)
+  if(ret != 0 || stacksize < WANTED_THREADS_STACK_SIZE)
   {
     // looks like we need to bump/set it...
     ret = pthread_attr_setstacksize(&attr, WANTED_THREADS_STACK_SIZE);
