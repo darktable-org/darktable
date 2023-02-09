@@ -194,7 +194,7 @@ static void _edit_preset_final_callback(dt_gui_presets_edit_dialog_t *g)
 }
 
 static void _edit_preset_response(GtkDialog *dialog,
-                                  gint response_id,
+                                  const gint response_id,
                                   dt_gui_presets_edit_dialog_t *g)
 {
   if(response_id == GTK_RESPONSE_OK)
