@@ -107,11 +107,16 @@ static inline int clip(int i, int min, int max, enum border_mode mode)
     case BORDER_MIRROR:
       if(i < min)
       {
-        i = 2 * min - i;
+        // i == min - 1  -->  min + 1
+        // i == min - 2  -->  min + 2, etc.
+        // but as min == 0 in all current cases, this really optimizes to i = -i
+        i = min + (min - i);
       }
       else if(i > max)
       {
-        i = 2 * max - i;
+        // i == max + 1  -->  max - 1
+        // i == max + 2  -->  max - 2, etc.
+        i = max - (i - max);
       }
       break;
     case BORDER_WRAP:
