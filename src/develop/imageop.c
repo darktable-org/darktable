@@ -812,8 +812,6 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   return module;
 }
 
-void dt_iop_gui_rename_module(dt_iop_module_t *module);
-
 static void _gui_copy_callback(GtkButton *button, gpointer user_data)
 {
   dt_iop_module_t *module = dt_iop_gui_duplicate(user_data, FALSE);
@@ -1132,7 +1130,7 @@ static void _iop_panel_label(dt_iop_module_t *module)
 
 void dt_iop_gui_update_header(dt_iop_module_t *module)
 {
-  if(!module->header)                  /* some modules such as overexposed don't actually have a header */
+  if(!module->header) /* some modules such as overexposed don't actually have a header */
     return;
 
   // set panel name to display correct multi-instance
@@ -1524,8 +1522,9 @@ static void _init_module_so(void *m)
 
 void dt_iop_load_modules_so(void)
 {
-  darktable.iop = dt_module_load_modules("/plugins", sizeof(dt_iop_module_so_t), dt_iop_load_module_so,
-                                         _init_module_so, NULL);
+  darktable.iop = dt_module_load_modules
+    ("/plugins", sizeof(dt_iop_module_so_t),
+     dt_iop_load_module_so, _init_module_so, NULL);
 }
 
 int dt_iop_load_module(dt_iop_module_t *module,
@@ -1621,7 +1620,8 @@ void dt_iop_unload_modules_so()
 void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode)
 {
   static const int key = 0;
-  // showing raster masks doesn't make sense, one can use the original source instead. or does it?
+  // showing raster masks doesn't make sense, one can use the original
+  // source instead. or does it?
   if(mask_mode & DEVELOP_MASK_ENABLED && !(mask_mode & DEVELOP_MASK_RASTER))
   {
     char *modulename = dt_history_item_get_name(module);
@@ -1917,7 +1917,8 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       {
         if(module->widget && dt_conf_get_bool("plugins/darkroom/show_warnings"))
         {
-          GtkWidget *label_widget = dt_gui_container_first_child(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
+          GtkWidget *label_widget =
+            dt_gui_container_first_child(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
           if(!g_strcmp0(gtk_widget_get_name(label_widget), "iop-plugin-warning")) gtk_widget_destroy(label_widget);
           module->has_trouble = FALSE;
         }
