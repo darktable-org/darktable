@@ -33,66 +33,68 @@ Since darktable 4.2.0:
 
 ## Other Changes
 
-- JPEG files are identified using magic bytes instead of filename
-  extension. This helps in cases where, due to errors in programs or
-  user mistakes, JPEG images end up in files with unmatched extensions.
+- JPEG files are identified using magic bytes instead of file
+  extension. This helps in cases where JPEG images end up in
+  files with unexpected extensions.
 
-- Allow having shortcuts for quick access styles and presets.
+- Allow shortcuts to be assigned to the "quick access" style and preset
+  menus at the bottom of the darkroom view
 
-- Add a collapsible section to Sigmoid that will by default hide
-  controls not used in standard processing scenarios.
+- Add a collapsible section to the sigmoid module so that
+  controls not used in standard processing scenarios are hidden
+  by default.
 
-- Some minor modifications on the overlays of culling view to make
+- Some minor modifications to image overlays in culling view to make
   them less intrusive.
 
 ## Bug Fixes
 
 - Fix possible bad pinned memory transfer on OpenCL.
 
-- Fix bug in date-time sanitization function that caused image capture
+- Fix bug in date/time sanitization function that caused image capture
   timestamps to be corrupted when they contained a time zone with a
   negative offset.
 
-- Fix toast messages containing %.
+- Fix toast messages containing "%".
 
-- Fix collect module using exclude rules when first filter is empty.
+- Fix collections module using exclude rules when the first filter is empty.
 
-- Fix RGB curve histogram display when compensate middle grey is set.
+- Fix RGB curve histogram display when "compensate middle gray" is set.
 
 - Fix possible infinite loop when a module fails to load.
 
-- Properly honor histogram hiding when restarting.
+- Properly honor "hide histogram" setting when restarting.
 
-- Fix darktable-chart crash due to a double free.
+- Fix darktable-chart crash.
 
-- Fix Y0 mask calculations for demosaic module.
+- Fix Y0 mask calculations in the demosaic module.
 
 - Avoid using fscanf() for loading configuration to avoid broken Windows
   implementation.
 
-- Add RYB vectorscope's option in darktable configuration file to
-  ensure proper histogram view setting on startup.
+- Add RYB vectorscope option to the darktable configuration file to
+  ensure proper histogram view settings on startup.
 
-- Ensure that wide popup are properly displayed on the same display as
-  the widget.
+- Ensure that wide popups are properly shown on the same display as
+  the associated widget.
 
 - Fix possible crash in camera tethering.
 
-- Make yes/no buttons in dialogues to respond to standard shortcuts alt+y
+- Make yes/no buttons in dialog boxes respond to standard shortcuts alt+y
   and alt+n.
 
-- Fix preferences sanitization which was completely un-effective due to
-  wrong loading order.
+- Fix preferences sanitization, which was completely ineffective due to
+  incorrect loading order.
 
-- Add Sigmoid documentation link to the online manual.
+- Add a link to the sigmoid module's online documentation.
 
-- Fix color calibration tooltip on expander.
+- Fix tooltip on color calibration expander.
 
-- Fix incorrect reporting of HEIF image bit depth which resulted in
-  wrong color profile selection for images that did not contain color
+- Fix incorrect reporting of HEIF image bit depth, which resulted in
+  incorrect color profile selection for images without embedded color
   profile data.
 
-- Fix snapshot invalidation which was too pessimistic and made
+- Fix snapshot invalidation, which was too pessimistic and made
   switching snapshots slow.
 
 - Fix some messages in LUT module.
@@ -115,7 +117,7 @@ Since darktable 4.2.0:
 
   For systems providing LibRaw 0.21.0 or newer, it is now possible to
   disable building the bundled copy by defining
-  -DDONT_USE_INTERNAL_LIBRAW=ON
+  -DDONT\_USE\_INTERNAL\_LIBRAW=ON
 
 ### Mandatory
 
