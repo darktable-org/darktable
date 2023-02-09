@@ -54,12 +54,13 @@ jobs:
           - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
           - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
         btype:
-          - RelWithDebInfo
+          - Debug
+          #- RelWithDebInfo
           #- Release
         target:
-          #- build
-          - nofeatures
-          - nofeatures_nosse
+          - skiptest
+          #- nofeatures
+          #- nofeatures_nosse
         generator:
           #- Unix Makefiles
           - Ninja
