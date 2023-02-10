@@ -297,66 +297,6 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
   return IOP_CS_RGB;
 }
 
-static const char* _method2string(dt_iop_demosaic_method_t method)
-{
-  const char *string;
-
-  switch(method)
-  {
-    case DT_IOP_DEMOSAIC_PPG:
-      string = "PPG";
-      break;
-    case DT_IOP_DEMOSAIC_AMAZE:
-      string = "AMaZE";
-      break;
-    case DT_IOP_DEMOSAIC_VNG4:
-      string = "VNG4";
-      break;
-    case DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME:
-      string = "passthrough monochrome";
-      break;
-    case DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR:
-      string = "photosites";
-      break;
-    case DT_IOP_DEMOSAIC_RCD:
-      string = "RCD";
-      break;
-    case DT_IOP_DEMOSAIC_LMMSE:
-      string = "LMMSE";
-      break;
-    case DT_IOP_DEMOSAIC_RCD_VNG:
-      string = "RCD + VNG4";
-      break;
-    case DT_IOP_DEMOSAIC_AMAZE_VNG:
-      string = "AMaZE + VNG4";
-      break;
-    case DT_IOP_DEMOSAIC_VNG:
-      string = "VNG (xtrans)";
-      break;
-    case DT_IOP_DEMOSAIC_MARKESTEIJN:
-      string = "Markesteijn-1 (xtrans)";
-      break;
-    case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
-      string = "Markesteijn-3 (xtrans)";
-      break;
-    case DT_IOP_DEMOSAIC_MARKEST3_VNG:
-      string = "Markesteijn 3-pass + VNG";
-      break;
-    case DT_IOP_DEMOSAIC_FDC:
-      string = "Frequency Domain Chroma (xtrans)";
-      break;
-    case DT_IOP_DEMOSAIC_PASSTHR_MONOX:
-      string = "passthrough monochrome (xtrans)";
-      break;
-    case DT_IOP_DEMOSAIC_PASSTHR_COLORX:
-      string = "photosites (xtrans)";
-      break;
-    default:
-      string = "(unknown method)";
-  }
-  return string;
-}
-
 #define SWAP(a, b)                                                                                           \
   {                                                                                                          \
     const float tmp = (b);                                                                                   \
@@ -4955,7 +4895,7 @@ int process_cl(
   }
   else
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method '%s' not yet supported by opencl code\n", _method2string(demosaicing_method));
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaicing method %d not yet supported by opencl code\n", demosaicing_method);
     return FALSE;
   }
 
