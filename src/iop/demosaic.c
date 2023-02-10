@@ -245,8 +245,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RAW;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(
+        dt_iop_module_t *self,
+        const void *const old_params,
+        const int old_version,
+        void *new_params,
+        const int new_version)
 {
   typedef struct dt_iop_demosaic_params_t dt_iop_demosaic_params_v4_t;
   typedef struct dt_iop_demosaic_params_v3_t
@@ -363,8 +367,13 @@ static const char* _method2string(dt_iop_demosaic_method_t method)
 #ifdef _OPENMP
   #pragma omp declare simd aligned(in, out)
 #endif
-static void pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi, const uint32_t filters,
-                         const int num_passes, const float threshold)
+static void pre_median_b(
+        float *out,
+        const float *const in,
+        const dt_iop_roi_t *const roi,
+        const uint32_t filters,
+        const int num_passes,
+        const float threshold)
 {
   dt_iop_image_copy_by_size(out, in, roi->width, roi->height, 1);
 
@@ -413,8 +422,13 @@ static void pre_median_b(float *out, const float *const in, const dt_iop_roi_t *
   }
 }
 
-static void pre_median(float *out, const float *const in, const dt_iop_roi_t *const roi, const uint32_t filters,
-                       const int num_passes, const float threshold)
+static void pre_median(
+        float *out,
+        const float *const in,
+        const dt_iop_roi_t *const roi,
+        const uint32_t filters,
+        const int num_passes,
+        const float threshold)
 {
   pre_median_b(out, in, roi, filters, num_passes, threshold);
 }
@@ -422,7 +436,10 @@ static void pre_median(float *out, const float *const in, const dt_iop_roi_t *co
 #define SWAPmed(I, J)                                                                                        \
   if(med[I] > med[J]) SWAP(med[I], med[J])
 
-static void color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const int num_passes)
+static void color_smoothing(
+        float *out,
+        const dt_iop_roi_t *const roi_out,
+        const int num_passes)
 {
   const int width4 = 4 * roi_out->width;
 
@@ -481,8 +498,15 @@ static void color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const
 }
 #undef SWAP
 
-static void green_equilibration_lavg(float *out, const float *const in, const int width, const int height,
-                                     const uint32_t filters, const int x, const int y, const float thr)
+static void green_equilibration_lavg(
+        float *out,
+        const float *const in,
+        const int width,
+        const int height,
+        const uint32_t filters,
+        const int x,
+        const int y,
+        const float thr)
 {
   const float maximum = 1.0f;
 
@@ -533,8 +557,14 @@ static void green_equilibration_lavg(float *out, const float *const in, const in
   }
 }
 
-static void green_equilibration_favg(float *out, const float *const in, const int width, const int height,
-                                     const uint32_t filters, const int x, const int y)
+static void green_equilibration_favg(
+        float *out,
+        const float *const in,
+        const int width,
+        const int height,
+        const uint32_t filters,
+        const int x,
+        const int y)
 {
   int oj = 0, oi = 0;
   // const float ratio_max = 1.1f;
@@ -591,7 +621,10 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 #define TS 122
 
 /** Lookup for allhex[], making sure that row/col aren't negative **/
-static inline const short * hexmap(const int row, const int col, short (*const allhex)[3][8])
+static inline const short *_hexmap(
+        const int row,
+        const int col,
+        short (*const allhex)[3][8])
 {
   // Row and column offsets may be negative, but C's modulo function
   // is not useful here with a negative dividend. To be safe, add a
@@ -605,11 +638,14 @@ static inline const short * hexmap(const int row, const int col, short (*const a
 
 /*
    Frank Markesteijn's algorithm for Fuji X-Trans sensors
- */
-static void xtrans_markesteijn_interpolate(float *out, const float *const in,
-                                           const dt_iop_roi_t *const roi_out,
-                                           const dt_iop_roi_t *const roi_in,
-                                           const uint8_t (*const xtrans)[6], const int passes)
+*/
+static void xtrans_markesteijn_interpolate(
+        float *out,
+        const float *const in,
+        const dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in,
+        const uint8_t (*const xtrans)[6],
+        const int passes)
 {
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
@@ -630,7 +666,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   char *const all_buffers = (char *)dt_alloc_perthread(buffer_size, sizeof(char), &padded_buffer_size);
   if(!all_buffers)
   {
-    printf("[demosaic] not able to allocate Markesteijn buffers\n");
+    dt_print(DT_DEBUG_ALWAYS, "[demosaic] not able to allocate Markesteijn buffers\n");
     return;
   }
 
@@ -783,7 +819,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           if(max == 0.0f)
           {
             float (*const pix)[3] = &rgb[0][row - top][col - left];
-            const short *const hex = hexmap(row,col,allhex);
+            const short *const hex = _hexmap(row,col,allhex);
             for(int c = 0; c < 6; c++)
             {
               const float val = pix[hex[c]][1];
@@ -819,7 +855,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           const int f = FCxtrans(row, col, roi_in, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
-          const short *const hex = hexmap(row,col,allhex);
+          const short *const hex = _hexmap(row,col,allhex);
           // TODO: these constants come from integer math constants in
           // dcraw -- calculate them instead from interpolation math
           color[0] = 0.6796875f * (pix[hex[1]][1] + pix[hex[0]][1])
@@ -853,7 +889,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             {
               const int f = FCxtrans(row, col, roi_in, xtrans);
               if(f == 1) continue;
-              const short *const hex = hexmap(row,col,allhex);
+              const short *const hex = _hexmap(row,col,allhex);
               for(int d = 3; d < 6; d++)
               {
                 float(*rfx)[3] = &rgb[(d - 2) ^ !((row - sgrow) % 3)][row - top][col - left];
@@ -945,7 +981,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
               if((col - sgcol) % 3)
               {
                 float(*rfx)[3] = &rgb[0][row - top][col - left];
-                const short *const hex = hexmap(row,col,allhex);
+                const short *const hex = _hexmap(row,col,allhex);
                 for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
                   if(hex[d] + hex[d + 1])
                   {
@@ -1085,11 +1121,14 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
 #undef TS
 
 #define TS 122
-static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, const float *const in,
-                                   const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
-                                   const uint8_t (*const xtrans)[6])
+static void xtrans_fdc_interpolate(
+        struct dt_iop_module_t *self,
+        float *out,
+        const float *const in,
+        const dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in,
+        const uint8_t (*const xtrans)[6])
 {
-
   static const short orth[12] = { 1, 0, 0, 1, -1, 0, 0, -1, 1, 0, 0, 1 },
                      patt[2][16] = { { 0, 1, 0, -1, 2, 0, -1, 0, 1, 1, 1, -1, 0, 0, 0, 0 },
                                      { 0, 1, 0, -2, 1, 0, -2, 0, 1, 1, -2, -2, 1, -1, -1, 1 } },
@@ -1830,7 +1869,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
           if(max == 0.0f)
           {
             float (*const pix)[3] = &rgb[0][row - top][col - left];
-            const short *const hex = hexmap(row, col, allhex);
+            const short *const hex = _hexmap(row, col, allhex);
             for(int c = 0; c < 6; c++)
             {
               const float val = pix[hex[c]][1];
@@ -1866,7 +1905,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
           int f = FCxtrans(row, col, roi_in, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
-          const short *const hex = hexmap(row, col, allhex);
+          const short *const hex = _hexmap(row, col, allhex);
           // TODO: these constants come from integer math constants in
           // dcraw -- calculate them instead from interpolation math
           color[0] = 0.6796875f * (pix[hex[1]][1] + pix[hex[0]][1])
@@ -1938,7 +1977,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
             {
               float redblue[3][3];
               float(*rfx)[3] = &rgb[0][row - top][col - left];
-              const short *const hex = hexmap(row, col, allhex);
+              const short *const hex = _hexmap(row, col, allhex);
               for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
                 if(hex[d] + hex[d + 1])
                 {
@@ -2208,9 +2247,13 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
 
 /* taken from dcraw and demosaic_ppg below */
 
-static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
-                            const dt_iop_roi_t *const roi_in, const uint32_t filters,
-                            const uint8_t (*const xtrans)[6])
+static void lin_interpolate(
+        float *out,
+        const float *const in,
+        const dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in,
+        const uint32_t filters,
+        const uint8_t (*const xtrans)[6])
 {
   const int colors = (filters == 9) ? 3 : 4;
 
@@ -2331,10 +2374,15 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
 
    I've extended the basic idea to work with non-Bayer filter arrays.
    Gradients are numbered clockwise from NW=0 to W=7.
- */
-static void vng_interpolate(float *out, const float *const in,
-                            const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
-                            const uint32_t filters, const uint8_t (*const xtrans)[6], const int only_vng_linear)
+*/
+static void vng_interpolate(
+        float *out,
+        const float *const in,
+        const dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in,
+        const uint32_t filters,
+        const uint8_t (*const xtrans)[6],
+        const gboolean only_vng_linear)
 {
   static const signed char terms[]
       = { -2, -2, +0, -1, 1, 0x01, -2, -2, +0, +0, 2, 0x01, -2, -1, -1, +0, 1, 0x01, -2, -1, +0, -1, 1, 0x02,
@@ -2509,8 +2557,11 @@ static void vng_interpolate(float *out, const float *const in,
 }
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
-static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi_t *const roi_out,
-                                   const dt_iop_roi_t *const roi_in)
+static void passthrough_monochrome(
+        float *out,
+        const float *const in,
+        dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in)
 {
   // we never want to access the input out of bounds though:
   assert(roi_in->width >= roi_out->width);
@@ -2535,12 +2586,16 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
   }
 }
 
-static void passthrough_color(float *out, const float *const in, dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
-   const uint32_t filters, const uint8_t (*const xtrans)[6])
+static void passthrough_color(
+        float *out,
+        const float *const in,
+        dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in,
+        const uint32_t filters,
+        const uint8_t (*const xtrans)[6])
 {
   assert(roi_in->width >= roi_out->width);
   assert(roi_in->height >= roi_out->height);
-
 
   if(filters != 9u)
   {
@@ -2594,8 +2649,13 @@ static void passthrough_color(float *out, const float *const in, dt_iop_roi_t *c
 #ifdef _OPENMP
   #pragma omp declare simd aligned(in, out)
 #endif
-static void demosaic_ppg(float *const out, const float *const in, const dt_iop_roi_t *const roi_out,
-                         const dt_iop_roi_t *const roi_in, const uint32_t filters, const float thrs)
+static void demosaic_ppg(
+        float *const out,
+        const float *const in,
+        const dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in,
+        const uint32_t filters,
+        const float thrs)
 {
   // these may differ a little, if you're unlucky enough to split a bayer block with cropping or similar.
   // we never want to access the input out of bounds though:
@@ -2789,16 +2849,24 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
   if(median) dt_free_align((float *)input);
 }
 
-void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void distort_mask(
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_iop_t *piece,
+        const float *const in,
+        float *const out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample_roi_1c(itor, out, roi_out, roi_out->width * sizeof(float), in, roi_in,
                                    roi_in->width * sizeof(float));
 }
 
-void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
-                    const dt_iop_roi_t *const roi_in)
+void modify_roi_out(
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_iop_t *piece,
+        dt_iop_roi_t *roi_out,
+        const dt_iop_roi_t *const roi_in)
 {
   *roi_out = *roi_in;
 
@@ -2809,8 +2877,11 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 
 // which roi input is needed to process to this output?
 // roi_out is unchanged, full buffer in is full buffer out.
-void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                   const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+void modify_roi_in(
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_iop_t *piece,
+        const dt_iop_roi_t *roi_out,
+        dt_iop_roi_t *roi_in)
 {
   // this op is disabled for preview pipe/filters == 0
 
@@ -2874,9 +2945,10 @@ static int get_thumb_quality(int width, int height)
 
 // set flags for demosaic quality based on factors besides demosaic
 // method (e.g. config, scale, pixelpipe type)
-static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
-                               const dt_image_t *const img,
-                               const dt_iop_roi_t *const roi_out)
+static int demosaic_qual_flags(
+        const dt_dev_pixelpipe_iop_t *const piece,
+        const dt_image_t *const img,
+        const dt_iop_roi_t *const roi_out)
 {
   int flags = 0;
   switch(piece->pipe->type & DT_DEV_PIXELPIPE_ANY)
@@ -2936,12 +3008,16 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
 
 #include "dual_demosaic.c"
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        const void *const i,
+        void *const o,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
 {
   const dt_image_t *img = &self->dev->image_storage;
   const float threshold = 0.0001f * img->exif_iso;
-  dt_times_t start_time = { 0 }, end_time = { 0 };
 
   dt_dev_clear_rawdetail_mask(piece->pipe);
 
@@ -2949,7 +3025,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_PERF) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
@@ -2995,7 +3070,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       roo.scale = 1.0f;
       tmp = (float *)dt_alloc_align_float((size_t)4 * roo.width * roo.height);
     }
-    if(info) dt_get_times(&start_time);
 
     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
     {
@@ -3086,16 +3160,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
     }
 
-    if(info)
-    {
-      const float mpixels = (roo.width * roo.height) / 1.0e6;
-      dt_get_times(&end_time);
-      const float tclock = end_time.clock - start_time.clock;
-      const float uclock = end_time.user - start_time.user;
-      dt_print(DT_DEBUG_ALWAYS, "[demosaic] process CPU `%s' did %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
-        _method2string(demosaicing_method & ~DT_DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
-    }
-
     dt_dev_write_rawdetail_mask(piece, tmp, roi_in, DT_DEV_DETAIL_MASK_DEMOSAIC);
 
     if((demosaicing_method & DT_DEMOSAIC_DUAL) && !run_fast)
@@ -3133,8 +3197,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef HAVE_OPENCL
 // color smoothing step by multiple passes of median filtering
-static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                              cl_mem dev_out, const dt_iop_roi_t *const roi_out, const int passes)
+static int color_smoothing_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_out,
+        const int passes)
 {
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
 
@@ -3194,8 +3263,12 @@ error:
   return FALSE;
 }
 
-static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                                  cl_mem dev_out, const dt_iop_roi_t *const roi_in)
+static int green_equilibration_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
@@ -3348,9 +3421,14 @@ error:
   return FALSE;
 }
 
-static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                              cl_mem dev_out, const dt_iop_roi_t *const roi_in,
-                              const dt_iop_roi_t *const roi_out, const gboolean smooth)
+static int process_rcd_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out,
+        const gboolean smooth)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
@@ -3603,9 +3681,14 @@ error:
   return FALSE;
 }
 
-static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                              cl_mem dev_out, const dt_iop_roi_t *const roi_in,
-                              const dt_iop_roi_t *const roi_out, const int demosaicing_method)
+static int process_default_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out,
+        const int demosaicing_method)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
@@ -3805,9 +3888,15 @@ error:
   return FALSE;
 }
 
-static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                          cl_mem dev_out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                          const gboolean smooth, const int only_vng_linear)
+static int process_vng_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out,
+        const gboolean smooth,
+        const gboolean only_vng_linear)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
@@ -4179,9 +4268,14 @@ error:
   return FALSE;
 }
 
-static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
-                                  cl_mem dev_out, const dt_iop_roi_t *const roi_in,
-                                  const dt_iop_roi_t *const roi_out, const gboolean smooth)
+static int process_markesteijn_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out,
+        const gboolean smooth)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->global_data;
@@ -4777,15 +4871,18 @@ error:
   dt_opencl_release_mem_object(dev_aux);
   dt_opencl_release_mem_object(dev_edge_in);
   dt_opencl_release_mem_object(dev_edge_out);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue process_markesteijn_cl kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
 {
-  dt_times_t start_time = { 0 }, end_time = { 0 };
-  const gboolean info = ((darktable.unmuted & DT_DEBUG_PERF) && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL));
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   dt_dev_clear_rawdetail_mask(piece->pipe);
@@ -4813,8 +4910,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const gboolean dual = ((demosaicing_method & DT_DEMOSAIC_DUAL) && (qual_flags & DT_DEMOSAIC_FULL_SCALE) && (data->dual_thrs > 0.0f) && !run_fast);
   const int devid = piece->pipe->devid;
   gboolean retval = FALSE;
-
-  if(info) dt_get_times(&start_time);
 
   if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
      demosaicing_method == DT_IOP_DEMOSAIC_PPG ||
@@ -4864,15 +4959,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return FALSE;
   }
 
-  if(info)
-  {
-    const float mpixels = (roi_in->width * roi_in->height) / 1.0e6;
-    dt_get_times(&end_time);
-    const float tclock = end_time.clock - start_time.clock;
-    const float uclock = end_time.user - start_time.user;
-    dt_print(DT_DEBUG_ALWAYS, "[demosaic] process GPU `%s' did %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
-      _method2string(demosaicing_method & ~DT_DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
-  }
   if(!dual)
   {
     retval = TRUE;
@@ -4901,7 +4987,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if((blend == NULL) || (low_image == NULL) || (details == NULL)) goto finish;
 
-  if(info) dt_get_times(&start_time);
   if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE))
   {
     if(!color_smoothing_cl(self, piece, low_image, low_image, roi_in, 2))
@@ -4910,12 +4995,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       goto finish;
     }
     retval = dual_demosaic_cl(self, piece, details, blend, high_image, low_image, dev_aux, width, height, showmask);
-  }
-
-  if(info)
-  {
-    dt_get_times(&end_time);
-    dt_print(DT_DEBUG_ALWAYS, "[demosaic] GPU dual blending %.4f secs (%.4f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 
   if(scaled)
@@ -4938,9 +5017,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
-                     struct dt_develop_tiling_t *tiling)
+void tiling_callback(
+        struct dt_iop_module_t *self,
+        struct dt_dev_pixelpipe_iop_t *piece,
+        const dt_iop_roi_t *roi_in,
+        const dt_iop_roi_t *roi_out,
+        struct dt_develop_tiling_t *tiling)
 {
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
