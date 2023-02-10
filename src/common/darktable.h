@@ -354,6 +354,7 @@ typedef struct darktable_t
   char *dump_pfm_module;
   char *dump_pfm_pipe;
   char *tmp_directory;
+  char *bench_module;
   dt_lua_state_t lua_state;
   GList *guides;
   double start_wtime;

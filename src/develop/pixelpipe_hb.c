@@ -1104,6 +1104,40 @@ static int pixelpipe_process_on_CPU(
     if(pfm_dump)
       dt_dump_pipe_pfm(module->so->op, input, roi_in->width, roi_in->height, in_bpp / 4, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
+    // this code section is for simplistic benchmarking via --bench-module
+    if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT)) && darktable.bench_module)
+    {
+      if(!strcmp(module->so->op, darktable.bench_module))
+      {
+        dt_times_t start;
+        dt_times_t end;
+        const int old_muted = darktable.unmuted;
+        darktable.unmuted = 0;;
+        const gboolean full = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+        const float mpix = (roi_out->width * roi_out->height) / 1.0e6;
+        if(module->process_sse2)
+        {
+          dt_get_times(&start);
+          for(int i = 0; i < 50; i++)
+            module->process_sse2(module, piece, input, *output, roi_in, roi_out);
+          dt_get_times(&end);
+          const float clock = (end.clock - start.clock) / 50.0f;
+          dt_print(DT_DEBUG_ALWAYS, "[bench module SSE2]  [%s] `%s' takes %.5fs, %.2fmpix, %.3fpix/us\n",
+                full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
+        }
+        if(module->process_plain)
+        {
+          dt_get_times(&start);
+          for(int i = 0; i < 50; i++)
+            module->process_plain(module, piece, input, *output, roi_in, roi_out);
+          dt_get_times(&end);
+          const float clock = (end.clock - start.clock) / 50.0f;
+          dt_print(DT_DEBUG_ALWAYS, "[bench module plain] [%s] `%s' takes %.5fs, %.2fmpix, %.3fpix/us\n",
+                full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
+        }
+        darktable.unmuted = old_muted;
+      }
+    }
     module->process(module, piece, input, *output, roi_in, roi_out);
 
     if(pfm_dump)
@@ -1648,6 +1682,37 @@ static int dt_dev_pixelpipe_process_rec(
         if(success_opencl)
         {
           dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_process_CL", piece->pipe, module->so->op, &roi_in, roi_out, "\n");
+
+          // this code section is for simplistic benchmarking via --bench-module
+          if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT)) && darktable.bench_module)
+          {
+            if(!strcmp(module->so->op, darktable.bench_module))
+            {
+              dt_times_t bench;
+              dt_times_t end;
+              const int old_muted = darktable.unmuted;
+              darktable.unmuted = 0;;
+              const gboolean full = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+              const float mpix = (roi_out->width * roi_out->height) / 1.0e6;
+              gboolean success = TRUE;
+              dt_get_times(&bench);
+              for(int i = 0; i < 100; i++)
+              {
+                if(success) success = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+              }
+              if(success)
+              {
+                dt_get_times(&end);
+                const float clock = (end.clock - bench.clock) / 100.0f;
+                dt_print(DT_DEBUG_ALWAYS, "[bench module GPU] [%s] `%s' takes %.5fs, %.2fmpix, %.3fpix/us\n",
+                    full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
+              }
+              else
+                dt_print(DT_DEBUG_ALWAYS, "[bench module GPU] [%s] `%s' finished without sucess\n",
+                    full ? "full" : "export", module->so->op);
+              darktable.unmuted = old_muted;
+            }
+          }
           success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
