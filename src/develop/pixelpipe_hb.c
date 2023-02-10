@@ -1115,6 +1115,8 @@ static int pixelpipe_process_on_CPU(
         darktable.unmuted = 0;;
         const gboolean full = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
         const float mpix = (roi_out->width * roi_out->height) / 1.0e6;
+
+#if defined(__SSE__)
         if(module->process_sse2)
         {
           dt_get_times(&start);
@@ -1125,6 +1127,7 @@ static int pixelpipe_process_on_CPU(
           dt_print(DT_DEBUG_ALWAYS, "[bench module SSE2]  [%s] `%s' takes %.5fs, %.2fmpix, %.3fpix/us\n",
                 full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
         }
+#endif
         if(module->process_plain)
         {
           dt_get_times(&start);
