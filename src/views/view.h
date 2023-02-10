@@ -311,7 +311,7 @@ typedef struct dt_view_manager_t
       void (*culling_preview_refresh)(struct dt_view_t *view);
       void (*culling_preview_reload_overlays)(struct dt_view_t *view);
       gboolean (*get_preview_state)(struct dt_view_t *view);
-      void (*set_preview_state)(struct dt_view_t *view, gboolean state, gboolean focus);
+      void (*set_preview_state)(struct dt_view_t *view, gboolean state, gboolean sticky, gboolean focus);
       void (*change_offset)(struct dt_view_t *view, gboolean reset, gint imgid);
     } lighttable;
 
@@ -442,7 +442,7 @@ dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm);
 /** get the lighttable full preview state */
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm);
 /** set the lighttable full preview state */
-void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean focus);
+void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean sticky, gboolean focus);
 /** sets the lighttable image in row zoom */
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 /** gets the lighttable image in row zoom */
