@@ -1546,7 +1546,12 @@ static void _commit_params_lf(
  * in pull request
  * https://github.com/darktable-org/darktable/pull/7092 */
 
-static float _interpolate_linear_spline(const float *xi, const float *yi, int ni, float x)
+#ifdef __GNUC__
+  #pragma GCC push_options
+  #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno")
+#endif
+
+static inline float _interpolate_linear_spline(const float *xi, const float *yi, int ni, float x)
 {
   if(x < xi[0])
     return yi[0];
@@ -1555,7 +1560,7 @@ static float _interpolate_linear_spline(const float *xi, const float *yi, int ni
   {
     if(x >= xi[i - 1] && x <= xi[i])
     {
-      float dydx = (yi[i] - yi[i - 1]) / (xi[i] - xi[i - 1]);
+      const float dydx = (yi[i] - yi[i - 1]) / (xi[i] - xi[i - 1]);
 
       return yi[i - 1] + (x - xi[i - 1]) * dydx;
     }
@@ -1740,9 +1745,7 @@ static void _commit_params_md(
   d->nc = 0;
 
   if(!_have_embedded_metadata(self))
-  {
     return;
-  }
 
   d->cor_dist_ft = p->cor_dist_ft;
   d->cor_vig_ft = p->cor_vig_ft;
@@ -1783,7 +1786,8 @@ static int _distort_transform_md(
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
-  if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE) return 0;
+  if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
+    return 0;
 
   const float w2 = 0.5f * piece->buf_in.width;
   const float h2 = 0.5f * piece->buf_in.height;
@@ -1796,10 +1800,11 @@ static int _distort_transform_md(
 
     for(int k = 0; k < 10; k++)
     {
-      float cx = p1 - w2, cy = p2 - h2;
-      float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
+      const float cx = p1 - w2;
+      const float cy = p2 - h2;
+      const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
 
-      float dist1 = points[i] - (dr*cx + w2), dist2 = points[i + 1] - (dr*cy + h2);
+      const float dist1 = points[i] - (dr*cx + w2), dist2 = points[i + 1] - (dr*cy + h2);
       if(fabs(dist1) < .5f && fabs(dist2) < .5f)
         break;
 
@@ -1822,16 +1827,18 @@ static int _distort_backtransform_md(
 {
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
-  if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE) return 0;
+  if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
+    return 0;
 
   const float w2 = 0.5f * piece->buf_in.width;
   const float h2 = 0.5f * piece->buf_in.height;
-  const float r = 1 / sqrtf(w2*w2 + h2*h2);
+  const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
 
   for(size_t i = 0; i < 2*points_count; i += 2)
   {
-    float cx = points[i] - w2, cy = points[i + 1] - h2;
-    float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
+    const float cx = points[i] - w2;
+    const float cy = points[i + 1] - h2;
+    const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
 
     points[i] = dr*cx + w2;
     points[i + 1] = dr*cy + h2;
@@ -1851,29 +1858,30 @@ static void _distort_mask_md(
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
-  {
     return dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
-  }
 
   const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
-  const float r = 1 / sqrtf(w2*w2 + h2*h2);
+  const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
 #ifdef _OPENMP
-  #pragma omp parallel for
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_in, roi_out, d, in, out, interpolation) \
+  dt_omp_sharedconst(w2, h2, r) \
+  schedule(static) collapse(2)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
-    float *_out = out + (size_t) y * roi_out->width;
-
-    for(int x = 0; x < roi_out->width; x++, _out++)
+    for(int x = 0; x < roi_out->width; x++)
     {
-      float cx = roi_out->x + x - w2, cy = roi_out->y + y - h2;
-      float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
-      float xs = dr*cx + w2 - roi_in->x, ys = dr*cy + h2 - roi_in->y;
-      *_out = dt_interpolation_compute_sample(interpolation, in, xs, ys, roi_in->width,
+      const float cx = roi_out->x + x - w2;
+      const float cy = roi_out->y + y - h2;
+      const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, r*sqrtf(cx*cx + cy*cy));
+      const float xs = dr*cx + w2 - roi_in->x;
+      const float ys = dr*cy + h2 - roi_in->y;
+      out[y * roi_out->width + x] = dt_interpolation_compute_sample(interpolation, in, xs, ys, roi_in->width,
                                               roi_in->height, 1, roi_in->width);
     }
   }
@@ -1890,12 +1898,8 @@ static void _process_md(
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
 
   if(!d->nc || d->modify_flags == DT_IOP_LENS_MODFLAG_NONE)
-  {
     return dt_iop_copy_image_roi((float *)ovoid, (float *)ivoid, 4, roi_in, roi_out, TRUE);
-  }
 
-  const int ch = piece->colors;
-  const int ch_width = ch * roi_in->width;
   const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
   const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
   const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
@@ -1903,46 +1907,57 @@ static void _process_md(
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   // Allocate temporary storage
-  const size_t bufsize = (size_t) roi_in->width * roi_in->height * ch * sizeof(float);
-  float *buf = (float *)dt_alloc_align(64, bufsize);
-  memcpy(buf, ivoid, bufsize);
+  const size_t bufsize = (size_t) roi_in->width * roi_in->height * 4;
+  float *buf = dt_alloc_align_float(bufsize);
+  dt_iop_image_copy(buf, (float*)ivoid, bufsize);
 
   // Correct vignetting
   if(d->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING)
   {
 #ifdef _OPENMP
-    #pragma omp parallel for
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_in, buf, d) \
+  dt_omp_sharedconst(w2, h2, r) \
+  schedule(static) collapse(2)
 #endif
     for(int y = 0; y < roi_in->height; y++)
     {
       for(int x = 0; x < roi_in->width; x++)
       {
-        float cx = roi_in->x + x - w2, cy = roi_in->y + y - h2;
-        float sf = _interpolate_linear_spline(d->knots, d->vig, d->nc, r*sqrtf(cx*cx + cy*cy));
+        const size_t idx = 4 * (y * roi_in->width + x);
+        const float cx = roi_in->x + x - w2;
+        const float cy = roi_in->y + y - h2;
+        const float sf = _interpolate_linear_spline(d->knots, d->vig, d->nc, r*sqrtf(cx*cx + cy*cy));
 
-        for(int c = 0; c < ch; c++)
-          buf[y*ch_width + x*ch + c] /= sf*sf;
+        for_each_channel(c)
+          buf[idx + c] /= sf*sf;
       }
     }
   }
 
+  float *out = ((float *) ovoid);
   // Correct distortion and/or chromatic aberration
 #ifdef _OPENMP
-  #pragma omp parallel for
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_in, roi_out, buf, d, out, interpolation) \
+  dt_omp_sharedconst(w2, h2, r) \
+  schedule(static) collapse(2)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
-    float *out = ((float *) ovoid) + (size_t) y * roi_out->width * ch;
-    for(int x = 0; x < roi_out->width; x++, out += ch)
+    for(int x = 0; x < roi_out->width; x++)
     {
-      float cx = roi_out->x + x - w2, cy = roi_out->y + y - h2;
+      const size_t idx = 4 * (y * roi_out->width + x);
+      const float cx = roi_out->x + x - w2;
+      const float cy = roi_out->y + y - h2;
 
-      for(int c = 0; c < ch; c++)
+      for_each_channel(c)
       {
-        float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy));
-        float xs = dr*cx + w2 - roi_in->x, ys = dr*cy + h2 - roi_in->y;
-        out[c] = dt_interpolation_compute_sample(interpolation, buf + c, xs, ys, roi_in->width,
-                                                 roi_in->height, ch, ch_width);
+        const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy));
+        const float xs = dr*cx + w2 - roi_in->x;
+        const float ys = dr*cy + h2 - roi_in->y;
+        out[idx+c] = dt_interpolation_compute_sample(interpolation, buf + c, xs, ys, roi_in->width,
+                                                 roi_in->height, 4, 4*roi_in->width);
       }
     }
   }
@@ -1960,9 +1975,8 @@ static void _modify_roi_in_md(
 
   *roi_in = *roi_out;
 
-  if (!d->nc || d->modify_flags==DT_IOP_LENS_MODFLAG_NONE) {
+  if(!d->nc || d->modify_flags==DT_IOP_LENS_MODFLAG_NONE)
     return;
-  }
 
   const float orig_w = roi_in->scale * piece->buf_in.width;
   const float orig_h = roi_in->scale * piece->buf_in.height;
@@ -1970,47 +1984,66 @@ static void _modify_roi_in_md(
   const float h2 = 0.5f * orig_h;
   const float r = 1.0f / sqrtf(w2*w2 + h2*h2);
 
-  const int xoff = roi_in->x, yoff = roi_in->y;
+  const int xoff = roi_in->x;
+  const int yoff = roi_in->y;
   const int width = roi_in->width, height = roi_in->height;
   const float cxs[] = { xoff - w2, xoff + (width - 1) - w2 };
   const float cys[] = { yoff - h2, yoff + (height - 1) - h2 };
 
-  float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
+  float xm = FLT_MAX;
+  float xM = -FLT_MAX;
+  float ym = FLT_MAX;
+  float yM = -FLT_MAX;
 
   // Sweep along the top and bottom rows of the ROI
   for(int i = 0; i < width; i++)
   {
-    float cx = xoff + i - w2;
+    const float cx = xoff + i - w2;
     for(int j = 0; j < 2; j++)
     {
-      float cy = cys[j], dr = 0;
-      for(int c = 0; c < 3; c++)
-        dr = MAX(dr, _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy)));
-      float xs = dr*cx + w2, ys = dr*cy + h2;
-      xm = MIN(xm, xs); xM = MAX(xM, xs); ym = MIN(ym, ys); yM = MAX(yM, ys);
+      const float cy = cys[j];
+      float dr = 0.0f;
+      for_each_channel(c)
+        dr = fmaxf(dr, _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy)));
+      const float xs = dr*cx + w2;
+      const float ys = dr*cy + h2;
+      xm = fminf(xm, xs);
+      xM = fmaxf(xM, xs);
+      ym = fminf(ym, ys);
+      yM = fmaxf(yM, ys);
     }
   }
 
   // Sweep along the left and right columns of the ROI
   for(int j = 0; j < height; j++)
   {
-    float cy = yoff + j - h2;
+    const float cy = yoff + j - h2;
     for(int i = 0; i < 2; i++)
     {
-      float cx = cxs[i], dr = 0;
-      for(int c = 0; c < 3; c++)
-        dr = MAX(dr, _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy)));
-      float xs = dr*cx + w2, ys = dr*cy + h2;
-      xm = MIN(xm, xs); xM = MAX(xM, xs); ym = MIN(ym, ys); yM = MAX(yM, ys);
+      const float cx = cxs[i];
+      float dr = 0.0f;
+      for_each_channel(c)
+        dr = fmaxf(dr, _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy)));
+      const float xs = dr*cx + w2;
+      const float ys = dr*cy + h2;
+      xm = fminf(xm, xs);
+      xM = fmaxf(xM, xs);
+      ym = fminf(ym, ys);
+      yM = fmaxf(yM, ys);
     }
   }
 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
-  roi_in->x = fmaxf(0, xm - interpolation->width);
-  roi_in->y = fmaxf(0, ym - interpolation->width);
-  roi_in->width = fminf(orig_w - roi_in->x, xM - roi_in->x + interpolation->width);
-  roi_in->height = fminf(orig_h - roi_in->y, yM - roi_in->y + interpolation->width);
+  roi_in->x = (int)fmaxf(0.0f, xm - interpolation->width);
+  roi_in->y = (int)fmaxf(0.0f, ym - interpolation->width);
+  roi_in->width = (int)fminf(orig_w - roi_in->x, xM - roi_in->x + interpolation->width);
+  roi_in->height = (int)fminf(orig_h - roi_in->y, yM - roi_in->y + interpolation->width);
 }
+
+#ifdef __GNUC__
+  #pragma GCC pop_options
+#endif
+
 /* embedded metadata processing end */
 
 void process(
