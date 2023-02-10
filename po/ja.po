@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-02-08 08:49+0100\n"
-"PO-Revision-Date: 2023-02-10 22:15+0900\n"
+"PO-Revision-Date: 2023-02-10 22:41+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1905,12 +1905,9 @@ msgid "scale slider step with min/max"
 msgstr "スライダーのステップ幅を最大値／最小値に合わせて調整する"
 
 #: ../build/bin/preferences_gen.h:7218
-#, fuzzy
-#| msgid "vary bauhaus slider step size with min/max range"
 msgid "vary slider step size with min/max range"
 msgstr ""
-"バウハウススライダーのステップの大きさを最大値から最小値の範囲に合わせて変更"
-"します"
+"スライダーのステップの大きさを最大値から最小値の範囲に合わせて変更します"
 
 #: ../build/bin/preferences_gen.h:7240
 msgid "sort built-in presets first"
@@ -10624,10 +10621,8 @@ msgstr "説明または詳細情報"
 
 # 適合する画像にこのプリセットを自動的に適用します
 #: ../src/gui/presets.c:574
-#, fuzzy
-#| msgid "auto apply this preset to matching images"
 msgid "make this preset auto set values depending on images"
-msgstr "条件に合う画像にこのプリセットを自動適用"
+msgstr "画像にしたがってこのプリセットの値を自動適用する"
 
 # 適合する画像にこのプリセットを自動的に適用します
 #: ../src/gui/presets.c:578
@@ -13823,25 +13818,17 @@ msgid "<b>move control point</b>: drag"
 msgstr "<b>コントロール点を移動する</b>：ドラッグ"
 
 #: ../src/iop/clipping.c:3070
-#, fuzzy
-#| msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"
 msgstr ""
-"<b>線を移動する</b>：ドラッグ　　<b>シンメトリーを切り替える</b>：クリック "
-"<tt>ꝏ</tt>"
+"<b>線を移動する</b>：ドラッグ　　<b>シンメトリーを切り替える</b>：クリック ꝏ"
 
 #: ../src/iop/clipping.c:3075
-#, fuzzy
-#| msgid ""
-#| "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</"
-#| "tt>\n"
-#| "<b>move line/control point</b>: drag"
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
-"<b>適用する</b>：クリック <tt>ok</tt>　　<b>シンメトリーを切り替える</b>：ク"
-"リック <tt>ꝏ</tt>\n"
+"<b>適用する</b>：クリック <tt>ok</tt>　 <b>シンメトリーを切り替える</b>：ク"
+"リック ꝏ\n"
 "<b>線／コントロールポイントを移動する</b>：ドラッグ"
 
 #: ../src/iop/clipping.c:3082
@@ -17230,20 +17217,16 @@ msgid "Transversal Chromatic Aberration blue"
 msgstr "倍率色収差 青"
 
 #: ../src/iop/lens.cc:3390
-#, fuzzy
-#| msgid "vignette|chromatic aberrations|distortion"
 msgid "tune the warp and chromatic aberration correction"
-msgstr "周辺減光|色収差|歪曲"
+msgstr "変形および色収差の補正を調整します"
 
 #: ../src/iop/lens.cc:3394
 msgid "tune the vignette correction"
 msgstr "露出補正を調整します"
 
 #: ../src/iop/lens.cc:3400
-#, fuzzy
-#| msgid "override today's date"
 msgid "override automatic scale"
-msgstr "今日の日付を上書き"
+msgstr "自動スケールを上書き"
 
 #: ../src/iop/lens.cc:3413
 msgid "which corrections to apply"
@@ -21901,20 +21884,6 @@ msgstr ""
 "す）"
 
 #: ../src/libs/map_locations.c:932
-#, fuzzy
-#| msgid ""
-#| "list of user locations,\n"
-#| "click to show or hide a location on the map:\n"
-#| " - wheel scroll inside the shape to resize it\n"
-#| " - <shift> or <ctrl> scroll to modify the width or the height\n"
-#| " - click inside the shape and drag it to change its position\n"
-#| " - ctrl+click to move an image from inside the location\n"
-#| "ctrl+click to edit a location name\n"
-#| " - a pipe '|' symbol breaks the name into several levels\n"
-#| " - to remove a group of locations clear its name\n"
-#| " - press enter to validate the new name, escape to cancel the edit\n"
-#| "right-click for other actions: delete location and go to collection,\n"
-#| "ctrl+scroll to resize the window"
 msgid ""
 "list of user locations,\n"
 "click to show or hide a location on the map:\n"
@@ -21939,8 +21908,7 @@ msgstr ""
 " ・ロケーションのグループを削除するには、その名前を削除してください\n"
 " ・Enterキーを押すと新しい名前を有効にし、Escキーを押すと編集をキャンセルしま"
 "す\n"
-"右クリックすると、他のアクション：ロケーションの削除とコレクションへ移動\n"
-"Ctrl+ホイールスクロールでウィンドウのサイズを変更します"
+"右クリックすると、他のアクション：ロケーションの削除とコレクションへ移動"
 
 #: ../src/libs/map_locations.c:958
 msgid ""
@@ -22078,14 +22046,6 @@ msgstr ""
 "されません）"
 
 #: ../src/libs/metadata.c:783
-#, fuzzy
-#| msgid ""
-#| "metadata text. ctrl+scroll to resize the text box\n"
-#| " ctrl-enter inserts a new line (caution, may not be compatible with "
-#| "standard metadata).\n"
-#| "if <leave unchanged> selected images have different metadata.\n"
-#| "in that case, right-click gives the possibility to choose one of them.\n"
-#| "press escape to exit the popup window"
 msgid ""
 "metadata text\n"
 "ctrl+enter inserts a new line (caution, may not be compatible with standard "
@@ -22094,8 +22054,7 @@ msgid ""
 "in that case, right-click gives the possibility to choose one of them\n"
 "escape to exit the popup window"
 msgstr ""
-"メタデータテキスト。Ctrl+ホイールスクロールでテキストボックスのサイズを変更し"
-"ます\n"
+"メタデータテキスト\n"
 "Ctrl+Enterキーを押すと、新しい行を挿入します（標準的なメタデータと互換性がな"
 "い場合があります）\n"
 "<変更しない>場合、選択した画像は様々なメタデータを持ちます\n"
@@ -22698,6 +22657,8 @@ msgid ""
 "navigation\n"
 "click or drag to position zoomed area in center view"
 msgstr ""
+"ナビゲーション\n"
+"クリックまたはドラッグすると、センタービュー内でズームする領域を位置づけます"
 
 #: ../src/libs/navigation.c:137
 msgid "hide navigation thumbnail"
@@ -23341,13 +23302,6 @@ msgid "drop to root"
 msgstr "ルートにドロップ"
 
 #: ../src/libs/tagging.c:3097
-#, fuzzy
-#| msgid ""
-#| "attached tags,\n"
-#| "press Delete or double-click to detach\n"
-#| "right-click for other actions on attached tag,\n"
-#| "press Tab to give the focus to entry,\n"
-#| "ctrl+scroll to resize the window"
 msgid ""
 "attached tags\n"
 "Delete or double-click to detach\n"
@@ -23357,8 +23311,7 @@ msgstr ""
 "添付済みタグ\n"
 "Deleteキーを押す、またはダブルクリックすると、タグを外します\n"
 "右クリックすると、添付済みタグに対して他のアクションをします\n"
-"Tabキーを押すと、入力にフォーカスします\n"
-"Ctrl+ホイールスクロールでウィンドウのサイズを変更します"
+"Tabキーを押すと、入力にフォーカスします"
 
 #: ../src/libs/tagging.c:3108
 msgid "attach"
@@ -23417,15 +23370,6 @@ msgid "clear entry"
 msgstr "入力を削除します"
 
 #: ../src/libs/tagging.c:3210
-#, fuzzy
-#| msgid ""
-#| "tag dictionary,\n"
-#| "press Enter or double-click to attach selected tag on selected images,\n"
-#| "idem for shift+Enter plus gives the focus to entry,\n"
-#| "shift+click to fully expand the selected tag,\n"
-#| "right-click for other actions on selected tag,\n"
-#| "press shift+Tab to give the focus to entry,\n"
-#| "ctrl+scroll to resize the window"
 msgid ""
 "tag dictionary,\n"
 "Enter or double-click to attach selected tag on selected images\n"
@@ -23440,8 +23384,7 @@ msgstr ""
 "Shift+Enterキーを押すと、上と同じ操作を行い、さらに入力にフォーカスします\n"
 "Shift+クリックすると、選択したタグを完全に展開します\n"
 "右クリックすると、選択したタグに対して他のアクションをします\n"
-"Shift+Tabキーを押すと、入力にフォーカスします\n"
-"Ctrl+ホイールスクロールでウィンドウのサイズを変更します"
+"Shift+Tabキーを押すと、入力にフォーカスします"
 
 #: ../src/libs/tagging.c:3245
 msgid ""
@@ -24286,10 +24229,8 @@ msgstr "フルプレビュー"
 
 #. add an option to allow skip mouse events while other overlays are consuming mouse actions
 #: ../src/views/darkroom.c:2625
-#, fuzzy
-#| msgid "force pan & zoom with mouse"
 msgid "force pan/zoom/rotate with mouse"
-msgstr "マウスによるパンとズームを強制"
+msgstr "マウスによるパン／ズーム／回転を強制"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:2637
