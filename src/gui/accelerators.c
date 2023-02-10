@@ -3011,7 +3011,7 @@ static void _lookup_mapping_widget()
 
   _sc.element = 0;
   const dt_action_def_t *def = _action_find_definition(_sc.action);
-  if(def && def->elements && def->elements[0].name)
+  if(def && def->elements && def->elements[0].name && darktable.control->element > 0)
     _sc.element = darktable.control->element;
 }
 
