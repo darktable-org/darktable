@@ -3,3 +3,6 @@ bin/
 lib/
 share/
 package/
+libexec/
+.config/
+.cache/
