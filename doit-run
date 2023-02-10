@@ -1,0 +1,85 @@
+#!/bin/bash
+
+gnatmake -f -g -O0 doit
+
+function do-file()
+{
+    local K="$1"
+    local F="$2"
+
+    local N=$F.new
+    rm -f $N
+
+    echo $F
+
+    ./doit $K $F > $N
+    mv $N $F
+}
+
+#do-file X data/darktableconfig.xml.in
+#do-file C darkroom.c
+#cat darkroom.c.new
+#do-file P fr.po
+#exit 0
+
+find src -name "*.c" |
+    while read file; do
+        do-file C $file
+    done
+
+find src -name "*.h" |
+    while read file; do
+        do-file C $file
+    done
+
+find data -name "*.h" |
+    while read file; do
+        do-file C $file
+    done
+
+find src -name "*.cc" |
+    while read file; do
+        do-file C $file
+    done
+
+find tools -name "*.xsl" |
+    while read file; do
+        do-file C $file
+    done
+
+find po -name "*.po" |
+    while read file; do
+        do-file P $file
+
+        msguniq $file > $file.u
+        mv $file.u $file
+    done
+
+do-file X data/darktableconfig.xml.in
+do-file C build/lib/darktable/plugins/lighttable/tools/darktable_authors.h
+
+# Unbreak some strings
+
+sed -i 's/$(Home)/$(home)/g' data/darktableconfig.xml.in
+
+FILES=""
+
+for fct in dt_conf_set_string gtk_widget_get_name gtk_widget_set_name; do
+    FILES+=$(git grep $fct -- src | grep '");' |
+                 grep -v '"");' | cut -d':' -f1 | sort | uniq)
+    FILES+=" "
+done
+
+grep '<option' data/darktableconfig.xml.in  | tr '<>' '@@' | cut -d'@' -f3 |
+    while read word; do
+        c=${word::1}
+        case $c in
+            [[:upper:]] )
+                echo $word
+                lword=$(echo "$word" | tr "[:upper:]" "[:lower:]" | sed 's/\*/\\/g')
+                sed -i "s,\"$lword\",\"$word\",g" $FILES
+                ;;
+            *)
+                ;;
+        esac
+    done
