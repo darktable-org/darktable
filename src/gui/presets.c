@@ -119,55 +119,10 @@ void dt_gui_presets_add_with_blendop(const char *name,
   sqlite3_finalize(stmt);
 }
 
-static gchar *_get_active_preset_name(dt_iop_module_t *module, int *writeprotect)
-{
-  sqlite3_stmt *stmt;
-  // if we sort by writeprotect DESC then in case user copied the writeprotected preset
-  // then the preset name returned will be writeprotected and thus not deletable
-  // sorting ASC prefers user created presets.
-  // clang-format off
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-    dt_database_get(darktable.db),
-     "SELECT name, op_params, blendop_params, enabled, writeprotect"
-     " FROM data.presets"
-     " WHERE operation=?1 AND op_version=?2"
-     " ORDER BY writeprotect ASC, LOWER(name), rowid",
-     -1, &stmt, NULL);
-  // clang-format on
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  gchar *name = NULL;
-
-  // collect all presets for op from db
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const void *op_params = (void *)sqlite3_column_blob(stmt, 1);
-    const int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
-    const void *blendop_params = (void *)sqlite3_column_blob(stmt, 2);
-    const int32_t bl_params_size = sqlite3_column_bytes(stmt, 2);
-    const int enabled = sqlite3_column_int(stmt, 3);
-
-    if(((op_params_size == 0
-         && !memcmp(module->default_params, module->params, module->params_size))
-        || ((op_params_size > 0
-             && !memcmp(module->params, op_params, MIN(op_params_size, module->params_size)))))
-       && !memcmp(module->blend_params, blendop_params,
-                  MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
-       && module->enabled == enabled)
-    {
-      name = g_strdup((char *)sqlite3_column_text(stmt, 0));
-      *writeprotect = sqlite3_column_int(stmt, 4);
-      break;
-    }
-  }
-  sqlite3_finalize(stmt);
-  return name;
-}
-
 static void _menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
-  int writeprotect = -1;
-  gchar *name = _get_active_preset_name(module, &writeprotect);
+  gboolean writeprotect = FALSE;
+  gchar *name = dt_get_active_preset_name(module, &writeprotect);
   if(name == NULL) return;
 
   if(writeprotect)
@@ -891,8 +846,8 @@ static void _edit_preset(const char *name_in, dt_iop_module_t *module)
   gchar *name = NULL;
   if(name_in == NULL)
   {
-    int writeprotect = -1;
-    name = _get_active_preset_name(module, &writeprotect);
+    gboolean writeprotect = FALSE;
+    name = dt_get_active_preset_name(module, &writeprotect);
     if(name == NULL) return;
     if(writeprotect)
     {
@@ -1024,8 +979,8 @@ void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
 
 void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, int direction)
 {
-  int writeprotect;
-  gchar *name = _get_active_preset_name(module, &writeprotect);
+  gboolean writeprotect = FALSE;
+  gchar *name = dt_get_active_preset_name(module, &writeprotect);
   gchar *extreme = direction < 0 ? _("(first)") : _("(last)");
 
   sqlite3_stmt *stmt;
@@ -1513,7 +1468,7 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op,
   }
   g_free(query);
   // collect all presets for op from db
-  gboolean found = 0;
+  gboolean found = FALSE;
   int last_wp = -1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
