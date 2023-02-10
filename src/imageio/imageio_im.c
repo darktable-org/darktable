@@ -133,6 +133,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   // See https://github.com/darktable-org/darktable/issues/13090 regarding the consequences.
   DestroyMagickWand(image);
 
+  img->buf_dsc.cst = IOP_CS_RGB;
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
