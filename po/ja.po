@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-02-08 08:49+0100\n"
-"PO-Revision-Date: 2023-02-10 21:06+0900\n"
+"PO-Revision-Date: 2023-02-10 22:15+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -8177,6 +8177,8 @@ msgstr "%s：モジュール`%s'のバージョンの不一致：%d != %d"
 #: ../src/develop/develop.c:2619
 msgid "module duplicate, can't move new instance after the base one\n"
 msgstr ""
+"モジュール複製\n"
+"新しいインスタンスをベースインスタンスの後ろに移動することが出来ません\n"
 
 #: ../src/develop/imageop.c:978
 msgid "new instance"
@@ -11754,7 +11756,7 @@ msgstr "パラメータに保存することが出来る線は%d本のみです"
 #: ../src/iop/ashift.c:4834
 #, c-format
 msgid "rotation adjusted by %3.1f° to %3.1f°"
-msgstr ""
+msgstr "rotation adjusted by %3.1f° to %3.1f°"
 
 #: ../src/iop/ashift.c:5425 ../src/iop/ashift.c:5426 ../src/iop/ashift.c:5528
 #: ../src/iop/ashift.c:5529
@@ -13863,14 +13865,10 @@ msgid "[%s on borders] crop keeping ratio"
 msgstr "【縁の上で%s】アスペクト比を維持してトリミングする"
 
 #: ../src/iop/colisa.c:79
-#, fuzzy
-#| msgid ""
-#| "this module is deprecated. please use the color calibration module "
-#| "instead."
 msgid "this module is deprecated. please use colorbalance RGB module instead."
 msgstr ""
 "このモジュールは非推奨です\n"
-"代わりにカラーカリブレーションモジュールを使用してください"
+"代わりにカラーバランスRGBモジュールを使用してください"
 
 #: ../src/iop/colisa.c:84
 msgid "contrast brightness saturation"
@@ -17238,8 +17236,6 @@ msgid "tune the warp and chromatic aberration correction"
 msgstr "周辺減光|色収差|歪曲"
 
 #: ../src/iop/lens.cc:3394
-#, fuzzy
-#| msgid "adjust the exposure correction"
 msgid "tune the vignette correction"
 msgstr "露出補正を調整します"
 
@@ -17262,12 +17258,10 @@ msgid "which corrections have actually been done"
 msgstr "どの補正が実際に行われたか"
 
 #: ../src/iop/levels.c:109
-#, fuzzy
-#| msgid "this module is deprecated. please use the retouch module instead."
 msgid "this module is deprecated. please use the RGB levels module instead."
 msgstr ""
 "このモジュールは非推奨です\n"
-"代わりにレタッチモジュールを使用してください"
+"代わりにRGBレベルモジュールを使用してください"
 
 #: ../src/iop/levels.c:114 ../src/iop/levels.c:620 ../src/iop/rgblevels.c:981
 #: ../src/iop/rgblevels.c:1011
@@ -17630,8 +17624,6 @@ msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMAIN MAX <> 1.0 はサポートされていません"
 
 #: ../src/iop/lut3d.c:776
-#, fuzzy
-#| msgid "[1D cube LUT is not supported"
 msgid "1D cube LUT is not supported"
 msgstr "1D cube LUTはサポートされていません"
 
@@ -17654,10 +17646,9 @@ msgid "error - cube LUT lines number %d is not correct, should be %d"
 msgstr "エラー：cube LUTの行数%d は正しくありません。%dであるはずです"
 
 #: ../src/iop/lut3d.c:846
-#, fuzzy, c-format
-#| msgid "warning - cube LUT %d out of range values [0,1]"
+#, c-format
 msgid "warning - cube LUT has %d values out of range [0,1]"
-msgstr "警告：cube LUT%d は[0,1]の範囲を出ています"
+msgstr "警告：cube LUTは範囲[0,1]を%d出ています"
 
 #: ../src/iop/lut3d.c:871
 #, c-format
@@ -18160,15 +18151,15 @@ msgid "passthrough"
 msgstr "パススルー"
 
 #: ../src/iop/rawprepare.c:654
-#, fuzzy
-#| msgid "advanced parameters"
 msgid "invalid crop parameters"
-msgstr "拡張パラメータ"
+msgstr "無効なトリミングのパラメータ"
 
 #: ../src/iop/rawprepare.c:655
 msgid ""
 "please reset to defaults, update your preset or set to somemething correct"
 msgstr ""
+"リセットしてデフォルト設定に戻すか、プリセットを更新するか、正しい設定にして"
+"ください"
 
 #: ../src/iop/rawprepare.c:902
 msgid "black level 0"
@@ -18187,12 +18178,10 @@ msgid "black level 3"
 msgstr "黒レベル 3"
 
 #: ../src/iop/rawprepare.c:932
-#, fuzzy
-#| msgid "flat field correction to compensate for lens shading"
 msgid "raw flat field correction to compensate for lens shading"
 msgstr ""
-"フラットフィールド補正によって、レンズによって引き起こされた周辺減光を補正し"
-"ます"
+"rawフラットフィールド補正によって、レンズによって引き起こされた周辺減光を補正"
+"します"
 
 #: ../src/iop/rawprepare.c:940
 msgid "crop left border"
@@ -21190,45 +21179,32 @@ msgid "scopes"
 msgstr "スコープ"
 
 #: ../src/libs/histogram.c:1541
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "scroll center"
 msgid "scroll to coarse-rotate"
-msgstr "スクロール 中央"
+msgstr "スクロールで大きく回転します"
 
 #: ../src/libs/histogram.c:1542
-#, fuzzy
-#| msgid "ctrl+scroll to change display height"
 msgid "ctrl+scroll to fine rotate"
-msgstr "Ctrl+スクロールでディスプレイの高さを変更します"
+msgstr "Ctrl+スクロールで回転を微調整します"
 
 #: ../src/libs/histogram.c:1543
 msgid "shift+scroll to change width"
 msgstr "Shift+スクロールで幅を変更します"
 
 #: ../src/libs/histogram.c:1544
-#, fuzzy
-#| msgid "scroll the collection"
 msgid "alt+scroll to cycle"
-msgstr "コレクションをスクロールする"
+msgstr "Alt+スクロールで切り替えます"
 
 #: ../src/libs/histogram.c:1555
-#, fuzzy
-#| msgid "drag to change shape of path"
 msgid "drag to change black point"
-msgstr "ドラッグでパスのシェイプを変更します"
+msgstr "ドラッグでブラックポイントを変更します"
 
 #: ../src/libs/histogram.c:1556 ../src/libs/histogram.c:1563
-#, fuzzy
-#| msgid "double-click to reset"
 msgid "double-click resets"
-msgstr "ダブルクリックすると、リセットします"
+msgstr "ダブルクリックでリセットします"
 
 #: ../src/libs/histogram.c:1562
-#, fuzzy
-#| msgid "drag to change shape of path"
 msgid "drag to change exposure"
-msgstr "ドラッグでパスのシェイプを変更します"
+msgstr "ドラッグで露出を変更します"
 
 #: ../src/libs/histogram.c:1724 ../src/libs/histogram.c:1764
 msgid "set scale to linear"
@@ -21267,55 +21243,37 @@ msgid "hide histogram"
 msgstr "ヒストグラムを非表示"
 
 #: ../src/libs/histogram.c:2361 ../src/libs/histogram.c:2390
-#, fuzzy
-#| msgid "switch histogram mode"
 msgid "switch histogram view"
-msgstr "ヒストグラムのモード切り替え"
+msgstr "ヒストグラムビューを切り替えます"
 
 #: ../src/libs/histogram.c:2368
-#, fuzzy
-#| msgid "hide blue channel"
 msgid "toggle blue channel"
-msgstr "青チャンネルを非表示にします"
+msgstr "青チャンネルの表示／非表示を切り替えます"
 
 #: ../src/libs/histogram.c:2370 ../src/libs/histogram.c:2378
 #: ../src/libs/histogram.c:2386
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle sort"
 msgid "toggle colors"
-msgstr "並び順の切り替え"
+msgstr "色の表示／非表示を切り替えます"
 
 #: ../src/libs/histogram.c:2376
-#, fuzzy
-#| msgid "hide green channel"
 msgid "toggle green channel"
-msgstr "緑チャンネルを非表示にします"
+msgstr "緑チャンネルの表示／非表示を切り替えます"
 
 #: ../src/libs/histogram.c:2384
-#, fuzzy
-#| msgid "hide red channel"
 msgid "toggle red channel"
-msgstr "赤チャンネルを非表示にします"
+msgstr "赤チャンネルの表示／非表示を切り替えます"
 
 #: ../src/libs/histogram.c:2394
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "vectorscope"
 msgid "cycle vectorscope types"
-msgstr "ベクトルスコープ"
+msgstr "ベクトルスコープの種類を切り替えます"
 
 #: ../src/libs/histogram.c:2402
-#, fuzzy
-#| msgid "color zones"
 msgid "color harmonies"
-msgstr "カラーゾーン"
+msgstr "色彩調和"
 
 #: ../src/libs/histogram.c:2414
-#, fuzzy
-#| msgid "hide color harmony guide lines"
 msgid "cycle color harmonies"
-msgstr "色彩調和のガイド線を非表示にします"
+msgstr "色彩調和を切り替えます"
 
 #: ../src/libs/history.c:123
 msgid "compress history stack"
@@ -22746,10 +22704,8 @@ msgid "hide navigation thumbnail"
 msgstr "ナビゲーションのサムネイルを非表示"
 
 #: ../src/libs/navigation.c:147
-#, fuzzy
-#| msgid "target level"
 msgid "image zoom level"
-msgstr "ターゲットレベル"
+msgstr "画像のズームレベル"
 
 #: ../src/libs/navigation.c:149 ../src/libs/navigation.c:268
 msgid "small"
