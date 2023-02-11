@@ -995,6 +995,29 @@ gchar *dt_str_replace(const char *string, const char *search, const char *replac
   return res;
 }
 
+gboolean dt_str_commasubstring(const char *list, const char *search)
+{
+  if(search == NULL)
+    return FALSE;
+
+  gchar *nlist = g_strdup(list);
+  char delimiter[] = ",";
+
+  char *ptr =strtok(nlist, delimiter);
+  while(ptr != NULL)
+  {
+    if(g_strcmp0(search, ptr) == 0)
+    {
+      g_free(nlist);
+      return TRUE;
+    }
+	  ptr = strtok(NULL, delimiter);
+  }
+
+  g_free(nlist);
+  return FALSE;
+}
+
 gboolean dt_is_scene_referred(void)
 {
   return dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)")
