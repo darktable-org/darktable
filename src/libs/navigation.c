@@ -155,7 +155,7 @@ void gui_init(dt_lib_module_t *self)
                                N_("400%"),
                                N_("800%"),
                                N_("1600%"));
-  ac = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, "zoom");
+  ac = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, N_("zoom"));
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 2, GDK_KEY_3, GDK_MOD1_MASK);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 3, GDK_KEY_2, GDK_MOD1_MASK);
 
