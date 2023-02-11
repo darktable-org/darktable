@@ -43,6 +43,10 @@
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
+// for current x86 compilers, we can't reliably get a nontemporal
+// write other than by explicitly calling mm_stream_ps, so override
+// copy_pixel_nontemporal to do precisely that.
+#define copy_pixel_nontemporal(dest, src) _mm_stream_ps((dest), *((__m128*)(src)))
 #endif
 
 DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
@@ -731,7 +735,6 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
 #endif
 static inline float density_times_length(const float dens, const float length)
 {
-//  return (dens * CLIP(0.5f + length) / 8.0f);
   return (dens * CLAMP(0.5f + length, 0.0f, 1.0f) / 8.0f);
 }
 
@@ -750,12 +753,13 @@ static inline float compute_density(const float dens, const float length)
   const float d2 = d1 * t * 0.333333333f;
   const float d3 = d2 * t * 0.25f;
   const float d = 1 + t + d1 + d2 + d3; /* taylor series for e^x till x^4 */
-  // printf("%d %d  %f\n",y,x,d);
   float density = d * d;
   density = density * density;
   density = density * density;
 #else
   // use fair exp2f
+  // for GCC10 on recent hardware, exp2f is actually faster than the above approximation,
+  // but it does not vectorize so it is slower overall
   const float density = exp2f(dens * CLIP(0.5f + length));
 #endif
   return density;
@@ -764,9 +768,11 @@ static inline float compute_density(const float dens, const float length)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_graduatednd_data_t *const data = (const dt_iop_graduatednd_data_t *const)piece->data;
-  const int ch = piece->colors;
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;	// input buffer has been copied to output unchanged and the trouble flag set
 
+  const dt_iop_graduatednd_data_t *const data = (const dt_iop_graduatednd_data_t *const)piece->data;
   const int ix = (roi_in->x);
   const int iy = (roi_in->y);
   const float iw = piece->buf_in.width * roi_out->scale;
@@ -778,42 +784,76 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float v = (-data->rotation / 180) * M_PI;
   const float sinv = sinf(v);
   const float cosv = cosf(v);
+  const float cosv_hh_inv = cosv * hh_inv;
   const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
   const float offset = data->offset / 100.0f * 2;
 
-  const float filter_hardness = 1.0 / filter_radie / (1.0 - (0.5 + (data->hardness / 100.0) * 0.9 / 2.0)) * 0.5;
+  const float filter_hardness = (1.0f / filter_radie)
+                                / (1.0f - (0.5f + (data->hardness / 100.0f) * 0.9f / 2.0f)) * 0.5f;
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  if(data->density > 0)
+  const float length_base = sinv * (-1.0f + ix * hw_inv) + cosv - 1.0f + offset;
+  const float length_inc = sinv * hw_inv * filter_hardness;
+  const float density = data->density;
+  // preload data into aligned storage; the compiler will optimize
+  // these into registers when it vectorizes
+  const dt_aligned_pixel_t color = { data->color[0], data->color[1], data->color[2], data->color[3] };
+  const dt_aligned_pixel_t color1 = { data->color1[0], data->color1[1], data->color1[2], data->color1[3] };
+  const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+  if(density > 0)
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
-                        ivoid, ix, iy, offset, ovoid, height, width, sinv) \
+    dt_omp_firstprivate(density, color, color1, zero, filter_hardness, cosv_hh_inv, \
+                        ivoid, ix, iy, offset, ovoid, height, width, sinv, length_inc, \
+                        length_base)  \
     schedule(static)
 #endif
     for(int y = 0; y < height; y++)
     {
-      const size_t k = (size_t)width * y * ch;
+      const size_t k = (size_t)4 * width * y;
       const float *const restrict in = (float *)ivoid + k;
       float *const restrict out = (float *)ovoid + k;
 
-      float length = (sinv * (-1.0 + ix * hw_inv) - cosv * (-1.0 + (iy + y) * hh_inv) - 1.0 + offset)
-                     * filter_hardness;
-      const float length_inc = sinv * hw_inv * filter_hardness;
+      float length = (length_base - (iy + y) * cosv_hh_inv) * filter_hardness;
+      const dt_aligned_pixel_t counts = { 0.0f, 1.0f, 2.0f, 3.0f };
 
-      for(int x = 0; x < width; x++)
+      // process pixels four at a time so that the compiler can
+      // vectorize the density computation
+      for(int x = 0; x+3 < width; x += 4)
       {
-        const float density = compute_density(data->density, length);
-
-        #ifdef _OPENMP
-        #pragma omp simd aligned(in, out : 16)
-        #endif
-        for(int l = 0; l < 4; l++)
+        dt_aligned_pixel_t curr_density;
+        dt_aligned_pixel_t lengths;
+        for_four_channels(i)
         {
-          out[ch*x+l] = MAX(0.0f, (in[ch*x+l] / (data->color[l] + data->color1[l] * density)));
+          lengths[i] = length + counts[i] * length_inc;
+          curr_density[i] = compute_density(density, lengths[i]);
         }
+        for(int i = 0; i < 4; i++)
+        {
+          dt_aligned_pixel_t res;	// the compiler will optimize this into a register
+          for_each_channel(l, aligned(in : 16))
+          {
+            res[l] = MAX(zero[l], (in[4*(x+i)+l] / (color[l] + color1[l] * curr_density[i])));
+          }
+          // use streaming writes to eliminate the memory reads from loading cache lines
+          copy_pixel_nontemporal(out + 4*(x+i), res);
+        }
+        length += 4 * length_inc;
+      }
+      // handle the left-over pixels
+      for(int x = width & ~3; x < width; x++)
+      {
+        const float curr_density = compute_density(density, length);
+        dt_aligned_pixel_t res;	// the compiler will optimize this into a register
+        for_each_channel(l, aligned(in : 16))
+        {
+          res[l] = MAX(zero[l], (in[4*x+l] / (color[l] + color1[l] * curr_density)));
+        }
+        // use streaming writes to eliminate the memory reads from loading cache lines
+        copy_pixel_nontemporal(out + 4*x, res);
         length += length_inc;
       }
     }
@@ -822,31 +862,52 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, cosv, data, filter_hardness, hh_inv, hw_inv, \
-                        ivoid, ix, iy, offset, ovoid, height, width, sinv)    \
+    dt_omp_firstprivate(density, color, color1, zero, filter_hardness, cosv_hh_inv,    \
+                        ivoid, ix, iy, offset, ovoid, height, width, sinv, length_inc, length_base) \
     schedule(static)
 #endif
     for(int y = 0; y < height; y++)
     {
-      const size_t k = (size_t)width * y * ch;
+      const size_t k = (size_t)4 * width * y;
       const float *const restrict in = (float *)ivoid + k;
       float *const restrict out = (float *)ovoid + k;
+      float length = (length_base - (iy + y) * cosv_hh_inv) * filter_hardness;
+      const dt_aligned_pixel_t counts = { 0.0f, 1.0f, 2.0f, 3.0f };
 
-      float length = (sinv * (-1.0f + ix * hw_inv) - cosv * (-1.0f + (iy + y) * hh_inv) - 1.0f + offset)
-                     * filter_hardness;
-      const float length_inc = sinv * hw_inv * filter_hardness;
-
-      for(int x = 0; x < width; x++)
+      // process pixels four at a time so that the compiler can
+      // vectorize the density computation
+      for(int x = 0; x+3 < width; x += 4)
       {
-        const float density = compute_density(-data->density, -length);
-
-        #ifdef _OPENMP
-        #pragma omp simd aligned(in, out : 16)
-        #endif
-        for(int l = 0; l < 4; l++)
+        dt_aligned_pixel_t curr_density;
+        dt_aligned_pixel_t lengths;
+        for_four_channels(i)
         {
-          out[ch*x+l] = MAX(0.0f, (in[ch*x+l] * (data->color[l] + data->color1[l] * density)));
+          lengths[i] = -length + counts[i] * length_inc;
+          curr_density[i] = compute_density(-density, lengths[i]);
         }
+        for(int i = 0; i < 4; i++)
+        {
+          dt_aligned_pixel_t res;	// the compiler will optimize this into a register
+          for_each_channel(l, aligned(in : 16))
+          {
+            res[l] = MAX(zero[l], (in[4*(x+i)+l] * (color[l] + color1[l] * curr_density[i])));
+          }
+          // use streaming writes to eliminate the memory reads from loading cache lines
+          copy_pixel_nontemporal(out + 4*(x+i), res);
+          length += 4*length_inc;
+        }
+      }
+      // handle the left-over pixels
+      for(int x = width & ~3; x < width; x++)
+      {
+        const float curr_density = compute_density(density, length);
+        dt_aligned_pixel_t res;	// the compiler will optimize this into a register
+        for_each_channel(l, aligned(in : 16))
+        {
+          res[l] = MAX(zero[l], (in[4*x+l] * (color[l] + color1[l] * curr_density)));
+        }
+        // use streaming writes to eliminate the memory reads from loading cache lines
+        copy_pixel_nontemporal(out + 4*x, res);
         length += length_inc;
       }
     }
