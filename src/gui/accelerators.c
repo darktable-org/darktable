@@ -941,7 +941,7 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
     else if(owner == &darktable.control->actions_thumb)
     {
       vws = DT_VIEW_DARKROOM | DT_VIEW_MAP | DT_VIEW_TETHERING | DT_VIEW_PRINT;
-      if(!strcmp(action->id,"rating") || !strcmp(action->id,"color label"))
+      if(!g_ascii_strcasecmp(action->id,"rating") || !g_ascii_strcasecmp(action->id,"color label"))
         vws |= DT_VIEW_LIGHTTABLE; // lighttable has copy/paste history shortcuts in separate lib
     }
     else
@@ -2524,7 +2524,7 @@ static gboolean _find_combo_effect(const gchar **effects, const gchar *token, dt
     if(values)
     {
       while((entry = values[++effect].description))
-        if(!strcmp(token + 5, NQ_(entry))) break;
+        if(!g_ascii_strcasecmp(token + 5, NQ_(entry))) break;
     }
     else
     {
@@ -2533,7 +2533,7 @@ static gboolean _find_combo_effect(const gchar **effects, const gchar *token, dt
       if(strings)
       {
         while((entry = strings[++effect]))
-          if(!strcmp(token + 5, NQ_(entry))) break;
+          if(!g_ascii_strcasecmp(token + 5, NQ_(entry))) break;
       }
     }
     if(entry)
@@ -2580,7 +2580,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
         dt_shortcut_t s = { .speed = 1 };
 
         char *token = strtok(line, "=;");
-        if(strcmp(token, "None"))
+        if(g_ascii_strcasecmp(token, "None"))
         {
           char *colon = strchr(token, ':');
           if(!colon)
@@ -2611,7 +2611,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             {
               id += 10;
               dt_input_driver_definition_t *callbacks = driver->data;
-              if(!strcmp(token, callbacks->name))
+              if(!g_ascii_strcasecmp(token, callbacks->name))
               {
                 if(!callbacks->string_to_key(key_start, &s.key))
                   fprintf(stderr, "[dt_shortcuts_load] key not recognised in %s\n", key_start);
@@ -2636,41 +2636,41 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
           {
             int mod = -1;
             while(modifier_string[++mod].modifier)
-              if(!strcmp(token, modifier_string[mod].name)) break;
+              if(!g_ascii_strcasecmp(token, modifier_string[mod].name)) break;
             if(modifier_string[mod].modifier)
             {
               s.mods |= modifier_string[mod].modifier;
               continue;
             }
 
-            if(!strcmp(token, "left"  )) { s.button |= DT_SHORTCUT_LEFT  ; continue; }
-            if(!strcmp(token, "middle")) { s.button |= DT_SHORTCUT_MIDDLE; continue; }
-            if(!strcmp(token, "right" )) { s.button |= DT_SHORTCUT_RIGHT ; continue; }
+            if(!g_ascii_strcasecmp(token, "left"  )) { s.button |= DT_SHORTCUT_LEFT  ; continue; }
+            if(!g_ascii_strcasecmp(token, "middle")) { s.button |= DT_SHORTCUT_MIDDLE; continue; }
+            if(!g_ascii_strcasecmp(token, "right" )) { s.button |= DT_SHORTCUT_RIGHT ; continue; }
 
             if(s.button)
             {
-              if(!strcmp(token, "double")) { s.click |= DT_SHORTCUT_DOUBLE; continue; }
-              if(!strcmp(token, "triple")) { s.click |= DT_SHORTCUT_TRIPLE; continue; }
-              if(!strcmp(token, "long"  )) { s.click |= DT_SHORTCUT_LONG  ; continue; }
+              if(!g_ascii_strcasecmp(token, "double")) { s.click |= DT_SHORTCUT_DOUBLE; continue; }
+              if(!g_ascii_strcasecmp(token, "triple")) { s.click |= DT_SHORTCUT_TRIPLE; continue; }
+              if(!g_ascii_strcasecmp(token, "long"  )) { s.click |= DT_SHORTCUT_LONG  ; continue; }
             }
             else
             {
-              if(!strcmp(token, "double")) { s.press |= DT_SHORTCUT_DOUBLE; continue; }
-              if(!strcmp(token, "triple")) { s.press |= DT_SHORTCUT_TRIPLE; continue; }
-              if(!strcmp(token, "long"  )) { s.press |= DT_SHORTCUT_LONG  ; continue; }
+              if(!g_ascii_strcasecmp(token, "double")) { s.press |= DT_SHORTCUT_DOUBLE; continue; }
+              if(!g_ascii_strcasecmp(token, "triple")) { s.press |= DT_SHORTCUT_TRIPLE; continue; }
+              if(!g_ascii_strcasecmp(token, "long"  )) { s.press |= DT_SHORTCUT_LONG  ; continue; }
             }
 
             int move = 0;
             while(move_string[++move])
-              if(!strcmp(token, move_string[move])) break;
+              if(!g_ascii_strcasecmp(token, move_string[move])) break;
             if(move_string[move])
             {
               s.move = move;
               continue;
             }
 
-            if(!strcmp(token, "up"  )) { s.direction = DT_SHORTCUT_UP  ; continue; }
-            if(!strcmp(token, "down")) { s.direction= DT_SHORTCUT_DOWN; continue; }
+            if(!g_ascii_strcasecmp(token, "up"  )) { s.direction = DT_SHORTCUT_UP  ; continue; }
+            if(!g_ascii_strcasecmp(token, "down")) { s.direction= DT_SHORTCUT_DOWN; continue; }
 
             fprintf(stderr, "[dt_shortcuts_load] token '%s' not recognised\n", token);
           }
@@ -2694,7 +2694,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             {
               id += 10;
               const dt_input_driver_definition_t *callbacks = driver->data;
-              if(!strcmp(token, callbacks->name))
+              if(!g_ascii_strcasecmp(token, callbacks->name))
               {
                 if(!callbacks->string_to_move(move_start, &s.move))
                   fprintf(stderr, "[dt_shortcuts_load] move not recognised in %s\n", move_start);
@@ -2735,7 +2735,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
           {
             int element = -1;
             while(elements[++element].name)
-              if(!strcmp(token, NQ_(elements[element].name))) break;
+              if(!g_ascii_strcasecmp(token, NQ_(elements[element].name))) break;
             if(elements[element].name)
             {
               s.element = element;
@@ -2749,7 +2749,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
 
             int effect = -1;
             while(effects[++effect])
-              if(!strcmp(token, NQ_(effects[effect]))) break;
+              if(!g_ascii_strcasecmp(token, NQ_(effects[effect]))) break;
             if(effects[effect])
             {
               s.effect = effect;
@@ -2757,8 +2757,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             }
           }
 
-          if(!strcmp(token, "first")) s.instance =  1; else
-          if(!strcmp(token, "last" )) s.instance = -1; else
+          if(!g_ascii_strcasecmp(token, "first")) s.instance =  1; else
+          if(!g_ascii_strcasecmp(token, "last" )) s.instance = -1; else
           if(*token == '+' || *token == '-') sscanf(token, "%d", &s.instance); else
           if(*token == '*') sscanf(token, "*%g", &s.speed); else
           fprintf(stderr, "[dt_shortcuts_load] token '%s' not recognised\n", token);
@@ -3259,12 +3259,12 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
     const dt_action_element_def_t *elements = _action_find_elements(ac);
     if(elements)
     {
-      if(elements == _action_elements_entry && (_entry_set_element = element) && !strcmp("set", effect))
+      if(elements == _action_elements_entry && (_entry_set_element = element) && !g_ascii_strcasecmp("set", effect))
         return _process_action(ac, instance, 0, DT_ACTION_EFFECT_SET, move_size, NULL);
 
       if(element && *element)
       {
-        while(elements[el].name && strcmp(elements[el].name, element)) el++;
+        while(elements[el].name && g_ascii_strcasecmp(elements[el].name, element)) el++;
 
         if(!elements[el].name)
         {
@@ -3276,7 +3276,7 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
       const gchar **effects = elements[el].effects;
       if(effect && *effect && !_find_combo_effect(effects, effect, ac, &ef))
       {
-        while(effects[ef] && strcmp(effects[ef], effect)) ef++;
+        while(effects[ef] && g_ascii_strcasecmp(effects[ef], effect)) ef++;
 
         if(!effects[ef])
         {
@@ -3929,8 +3929,8 @@ void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
   dt_action_t **insertion_point = (dt_action_t **)&owner->target;
 
   while(*insertion_point
-        && strcmp(new_action->id, "preset")
-        && (!strcmp((*insertion_point)->id, "preset")
+        && g_ascii_strcasecmp(new_action->id, "preset")
+        && (!g_ascii_strcasecmp((*insertion_point)->id, "preset")
             || g_utf8_collate((*insertion_point)->label, new_action->label) <
                  ((*((*insertion_point)->label) == '<' ? 1000 : 0) -
                   (*(        new_action->label) == '<' ? 1000 : 0))))
@@ -3953,7 +3953,7 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
     const gboolean needs_translation =
       !owner
       || owner->type != DT_ACTION_TYPE_SECTION
-      || (strcmp(owner->id, "styles") && strcmp(owner->id, "preset"));
+      || (g_ascii_strcasecmp(owner->id, "styles") && g_ascii_strcasecmp(owner->id, "preset"));
 
     const gchar *id_start = needs_translation ? NQ_(*path) : *path;
 
@@ -3979,7 +3979,7 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
       owner = new_action;
       action = NULL;
     }
-    else if(!strcmp(action->id, clean_path))
+    else if(!g_ascii_strcasecmp(action->id, clean_path))
     {
       g_free(clean_path);
       owner = action;
