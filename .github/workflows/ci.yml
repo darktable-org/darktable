@@ -170,10 +170,9 @@ jobs:
         os:
           - { label: ubuntu-latest, code: latest }
         compiler:
-          - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
-          - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
           - { compiler: GNU11,  CC: gcc-11,   CXX: g++-11,     packages: gcc-11 g++-11 }
-          - { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
+          - { compiler: GNU12,  CC: gcc-12,   CXX: g++-12,     packages: gcc-12 g++-12 }
+          - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
         btype:
           - Release
         target:
