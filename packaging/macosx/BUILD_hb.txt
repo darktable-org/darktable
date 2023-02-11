@@ -20,8 +20,7 @@ How to make disk image with darktable application bundle from source (using Home
 
 The final result is a DMG file: darktable-<current version>+<latest commit>-{arm64|i386}.dmg
 
-Y). Forcefully remove any remainder of previous attempts
-     $ Y_cleanup_hb_darktable.sh
+All binaries, the MacOS app bundle and the DMG file are created in build/macosx.
 
 LIMITATIONS:
 - Created DMG will only be compatible to the macOS version it was created upon.
@@ -37,7 +36,7 @@ NOTES:
 - It will be automatically build for the architecture you are currently on, either Apple Silicon (arm64) or Intel (i386).
 - If you want to build for i386 on arm64 see https://stackoverflow.com/questions/64951024/how-can-i-run-two-isolated-installations-of-homebrew/68443301#68443301 about how to handle both environments in parallel.
 - After creating the darktable application bundle (step 3) you can directly run the result by executing:
-     $ package/darktable.app/Contents/MacOS/darktable --configdir .config/darktable/ --cachedir .cache/darktable/
+     $ build/macosx/package/darktable.app/Contents/MacOS/darktable --configdir .config/darktable/ --cachedir .cache/darktable/
 
 REFERENCES:
 This approach is heavily based on and inspired by:
