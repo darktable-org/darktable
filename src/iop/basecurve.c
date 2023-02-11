@@ -64,12 +64,12 @@ typedef struct dt_iop_basecurve_params_t
   int basecurve_nodes[3]; // $MIN: 0 $MAX: MAXNODES $DEFAULT: 0
   int basecurve_type[3];  // $MIN: 0 $MAX: MONOTONE_HERMITE $DEFAULT: MONOTONE_HERMITE
   int exposure_fusion;    /* number of exposure fusion steps
-                             $DEFAULT: 0 $DESCRIPTION: "fusion" */
+                             $DEFAULT: 0 $DESCRIPTION: "Fusion" */
   float exposure_stops;   /* number of stops between fusion images
-                             $MIN: 0.01 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure shift" */
+                             $MIN: 0.01 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "Exposure shift" */
   float exposure_bias;    /* whether to do exposure-fusion with over or under-exposure
-                             $MIN: -1.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "exposure bias" */
-  dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE $DESCRIPTION: "preserve colors" */
+                             $MIN: -1.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "Exposure bias" */
+  dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE $DESCRIPTION: "Preserve colors" */
 } dt_iop_basecurve_params_t;
 
 typedef struct dt_iop_basecurve_params5_t
@@ -197,23 +197,23 @@ typedef struct dt_iop_basecurve_gui_data_t
   GtkWidget *logbase;
 } dt_iop_basecurve_gui_data_t;
 
-static const char neutral[] = N_("neutral");
-static const char canon_eos[] = N_("canon eos like");
-static const char canon_eos_alt[] = N_("canon eos like alternate");
-static const char nikon[] = N_("nikon like");
-static const char nikon_alt[] = N_("nikon like alternate");
-static const char sony_alpha[] = N_("sony alpha like");
-static const char pentax[] = N_("pentax like");
-static const char ricoh[] = N_("ricoh like");
-static const char olympus[] = N_("olympus like");
-static const char olympus_alt[] = N_("olympus like alternate");
-static const char panasonic[] = N_("panasonic like");
-static const char leica[] = N_("leica like");
-static const char kodak_easyshare[] = N_("kodak easyshare like");
-static const char konica_minolta[] = N_("konica minolta like");
-static const char samsung[] = N_("samsung like");
-static const char fujifilm[] = N_("fujifilm like");
-static const char nokia[] = N_("nokia like");
+static const char neutral[] = N_("Neutral");
+static const char canon_eos[] = N_("Canon eos like");
+static const char canon_eos_alt[] = N_("Canon eos like alternate");
+static const char nikon[] = N_("Nikon like");
+static const char nikon_alt[] = N_("Nikon like alternate");
+static const char sony_alpha[] = N_("Sony alpha like");
+static const char pentax[] = N_("Pentax like");
+static const char ricoh[] = N_("Ricoh like");
+static const char olympus[] = N_("Olympus like");
+static const char olympus_alt[] = N_("Olympus like alternate");
+static const char panasonic[] = N_("Panasonic like");
+static const char leica[] = N_("Leica like");
+static const char kodak_easyshare[] = N_("Kodak easyshare like");
+static const char konica_minolta[] = N_("Konica minolta like");
+static const char samsung[] = N_("Samsung like");
+static const char fujifilm[] = N_("Fujifilm like");
+static const char nokia[] = N_("Nokia like");
 
 typedef struct basecurve_preset_t
 {
@@ -269,7 +269,7 @@ static const int basecurve_camera_presets_cnt = sizeof(basecurve_camera_presets)
 static const basecurve_preset_t basecurve_presets[] = {
   // clang-format off
   // smoother cubic spline curve
-  { N_("cubic spline"), "", "", 0, FLT_MAX, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
+  { N_("Cubic spline"), "", "", 0, FLT_MAX, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { neutral,         "", "",                      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.005000, 0.002500 }, { 0.150000, 0.300000 }, { 0.400000, 0.700000 }, { 0.750000, 0.950000 }, { 1.000000, 1.000000 } } }, { 6 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
   { canon_eos,       "Canon", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.120968, 0.232258 }, { 0.459677, 0.747581 }, { 0.858871, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { canon_eos_alt,   "Canon", "EOS 5D Mark%",      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
@@ -328,17 +328,17 @@ typedef struct dt_iop_basecurve_global_data_t
 
 const char *name()
 {
-  return _("base curve");
+  return _("Base curve");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply a view transform based on personal or camera manufacturer look,\n"
+  return dt_iop_set_description(self, _("Apply a view transform based on personal or camera manufacturer look,\n"
                                         "for corrective purposes, to prepare images for display"),
-                                      _("corrective"),
-                                      _("linear, RGB, display-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, display-referred"));
+                                      _("Corrective"),
+                                      _("Linear, RGB, display-referred"),
+                                      _("Non-linear, RGB"),
+                                      _("Non-linear, RGB, display-referred"));
 }
 
 int default_group()
@@ -1974,24 +1974,24 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("abscissa: input, ordinate: output. works on RGB channels"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("Abscissa: input, ordinate: output. Works on RGB channels"));
   g_object_set_data(G_OBJECT(c->area), "iop-instance", self);
-  dt_action_define_iop(self, NULL, N_("curve"), GTK_WIDGET(c->area), NULL);
+  dt_action_define_iop(self, NULL, N_("Curve"), GTK_WIDGET(c->area), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   c->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
-  gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
+  gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("Method to preserve colors when applying contrast"));
 
   c->fusion = dt_bauhaus_combobox_from_params(self, "exposure_fusion");
-  dt_bauhaus_combobox_add(c->fusion, _("none"));
-  dt_bauhaus_combobox_add(c->fusion, _("two exposures"));
-  dt_bauhaus_combobox_add(c->fusion, _("three exposures"));
-  gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
-                                           "compress high dynamic range. expose for the highlights before use."));
+  dt_bauhaus_combobox_add(c->fusion, _("None"));
+  dt_bauhaus_combobox_add(c->fusion, _("Two exposures"));
+  dt_bauhaus_combobox_add(c->fusion, _("Three exposures"));
+  gtk_widget_set_tooltip_text(c->fusion, _("Fuse this image stopped up/down a couple of times with itself, to "
+                                           "compress high dynamic range. Expose for the highlights before use."));
 
   c->exposure_step = dt_bauhaus_slider_from_params(self, "exposure_stops");
   dt_bauhaus_slider_set_digits(c->exposure_step, 3);
-  gtk_widget_set_tooltip_text(c->exposure_step, _("how many stops to shift the individual exposures apart"));
+  gtk_widget_set_tooltip_text(c->exposure_step, _("How many stops to shift the individual exposures apart"));
   gtk_widget_set_no_show_all(c->exposure_step, TRUE);
   gtk_widget_set_visible(c->exposure_step, p->exposure_fusion != 0 ? TRUE : FALSE);
 
@@ -2000,12 +2000,12 @@ void gui_init(struct dt_iop_module_t *self)
   c->exposure_bias = dt_bauhaus_slider_from_params(self, "exposure_bias");
   dt_bauhaus_slider_set_default(c->exposure_bias, 0.0f);
   dt_bauhaus_slider_set_digits(c->exposure_bias, 3);
-  gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
+  gtk_widget_set_tooltip_text(c->exposure_bias, _("Whether to shift exposure up or down "
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
   gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
   gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
   c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
-  dt_bauhaus_widget_set_label(c->logbase, NULL, N_("scale for graph"));
+  dt_bauhaus_widget_set_label(c->logbase, NULL, N_("Scale for graph"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | darktable.gui->scroll_mask
@@ -2034,4 +2034,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

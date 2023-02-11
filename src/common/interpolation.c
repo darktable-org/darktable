@@ -2101,4 +2101,3 @@ void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor, float
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

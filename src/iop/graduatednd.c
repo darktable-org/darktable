@@ -49,12 +49,12 @@ DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 
 typedef struct dt_iop_graduatednd_params_t
 {
-  float density;     // $MIN: -8.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "density" The density of filter 0-8 EV
-  float hardness;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "hardness" 0% = soft and 100% = hard
-  float rotation;    // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0 $DESCRIPTION: "rotation" 2*PI -180 - +180
-  float offset;      // $DEFAULT: 50.0 $DESCRIPTION: "offset" centered, can be offsetted...
-  float hue;         // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-  float saturation;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation"
+  float density;     // $MIN: -8.0 $MAX: 8.0 $DEFAULT: 1.0 $DESCRIPTION: "Density" The density of filter 0-8 EV
+  float hardness;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "Hardness" 0% = soft and 100% = hard
+  float rotation;    // $MIN: -180.0 $MAX: 180.0 $DEFAULT: 0.0 $DESCRIPTION: "Rotation" 2*PI -180 - +180
+  float offset;      // $DEFAULT: 50.0 $DESCRIPTION: "Offset" centered, can be offsetted...
+  float hue;         // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Hue"
+  float saturation;  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Saturation"
 } dt_iop_graduatednd_params_t;
 
 typedef struct dt_iop_graduatednd_global_data_t
@@ -68,49 +68,49 @@ void init_presets(dt_iop_module_so_t *self)
 {
   dt_database_start_transaction(darktable.db);
 
-  dt_gui_presets_add_generic(_("neutral gray ND2 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Neutral gray ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0, 0 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("neutral gray ND4 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Neutral gray ND4 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 0, 0, 50, 0, 0 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("neutral gray ND8 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Neutral gray ND8 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 3, 0, 0, 50, 0, 0 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("neutral gray ND2 (hard)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Neutral gray ND2 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 75, 0, 50, 0, 0 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  dt_gui_presets_add_generic(_("neutral gray ND4 (hard)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Neutral gray ND4 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 75, 0, 50, 0, 0 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("neutral gray ND8 (hard)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Neutral gray ND8 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 3, 75, 0, 50, 0, 0 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  dt_gui_presets_add_generic(_("orange ND2 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Orange ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.102439, 0.8 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("yellow ND2 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Yellow ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.151220, 0.5 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  dt_gui_presets_add_generic(_("purple ND2 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Purple ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.824390, 0.5 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  dt_gui_presets_add_generic(_("green ND2 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Green ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.302439, 0.5 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  dt_gui_presets_add_generic(_("red ND2 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Red ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0, 0.5 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("blue ND2 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Blue ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.663415, 0.5 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  dt_gui_presets_add_generic(_("brown ND4 (soft)"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Brown ND4 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 0, 0, 50, 0.082927, 0.25 },
                              sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
@@ -141,16 +141,16 @@ typedef struct dt_iop_graduatednd_data_t
 
 const char *name()
 {
-  return _("graduated density");
+  return _("Graduated density");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("simulate an optical graduated neutral density filter"),
-                                      _("corrective and creative"),
-                                      _("linear or non-linear, RGB, scene-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, display-referred"));
+  return dt_iop_set_description(self, _("Simulate an optical graduated neutral density filter"),
+                                      _("Corrective and creative"),
+                                      _("Linear or non-linear, RGB, scene-referred"),
+                                      _("Non-linear, RGB"),
+                                      _("Non-linear, RGB, display-referred"));
 }
 
 int flags()
@@ -1088,16 +1088,16 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->density = dt_bauhaus_slider_from_params(self, "density");
   dt_bauhaus_slider_set_format(g->density, _(" EV"));
-  gtk_widget_set_tooltip_text(g->density, _("the density in EV for the filter"));
+  gtk_widget_set_tooltip_text(g->density, _("The density in EV for the filter"));
 
   g->hardness = dt_bauhaus_slider_from_params(self, "hardness");
   dt_bauhaus_slider_set_format(g->hardness, "%");
   /* xgettext:no-c-format */
-  gtk_widget_set_tooltip_text(g->hardness, _("hardness of graduation:\n0% = soft, 100% = hard"));
+  gtk_widget_set_tooltip_text(g->hardness, _("Hardness of graduation:\n0% = soft, 100% = hard"));
 
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
   dt_bauhaus_slider_set_format(g->rotation, "°");
-  gtk_widget_set_tooltip_text(g->rotation, _("rotation of filter -180 to 180 degrees"));
+  gtk_widget_set_tooltip_text(g->rotation, _("Rotation of filter -180 to 180 degrees"));
 
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, "hue"));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
@@ -1110,13 +1110,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->hue, 0.664f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.830f, 1.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->hue, 1.0f, 1.0f, 0.0f, 0.0f);
-  gtk_widget_set_tooltip_text(g->hue, _("select the hue tone of filter"));
+  gtk_widget_set_tooltip_text(g->hue, _("Select the hue tone of filter"));
 
   g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
   dt_bauhaus_slider_set_format(g->saturation, "%");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
-  gtk_widget_set_tooltip_text(g->saturation, _("select the saturation of filter"));
+  gtk_widget_set_tooltip_text(g->saturation, _("Select the saturation of filter"));
 
   g->selected = 0;
   g->dragging = 0;
@@ -1127,12 +1127,12 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0,
-                                     _("[%s on nodes] change line rotation"), self->name());
-  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[%s on line] move line"), self->name());
+                                     _("[%s On nodes] Change line rotation"), self->name());
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[%s On line] Move line"), self->name());
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK,
-                                     _("[%s on line] change density"), self->name());
+                                     _("[%s On line] Change density"), self->name());
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
-                                     _("[%s on line] change hardness"), self->name());
+                                     _("[%s On line] Change hardness"), self->name());
   return lm;
 }
 // clang-format off
@@ -1140,4 +1140,3 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -990,7 +990,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
         float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, path, border));
         masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
         dt_conf_set_float(DT_MASKS_CONF(form->type, path, border), masks_border);
-        dt_toast_log(_("feather size: %3.2f%%"), feather_size * 50.0f / g_list_length(form->points));
+        dt_toast_log(_("Feather size: %3.2f%%"), feather_size * 50.0f / g_list_length(form->points));
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -1043,7 +1043,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
         // now the redraw/save stuff
         _path_init_ctrl_points(form);
 
-        dt_toast_log(_("size: %3.2f%%"), surf * amount * 50.0f);
+        dt_toast_log(_("Size: %3.2f%%"), surf * amount * 50.0f);
       }
       else
       {
@@ -3002,19 +3002,19 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
 static GSList *_path_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0, _("[PATH creation] add a smooth node"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, 0, _("[PATH creation] Add a smooth node"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
-                                     _("[PATH creation] add a sharp node"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("[PATH creation] terminate path creation"));
+                                     _("[PATH creation] Add a sharp node"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("[PATH creation] Terminate path creation"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
-                                     _("[PATH on node] switch between smooth/sharp node"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("[PATH on node] remove the node"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("[PATH on feather] reset curvature"));
+                                     _("[PATH on node] Switch between smooth/sharp node"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("[PATH on node] Remove the node"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0, _("[PATH on feather] Reset curvature"));
   lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_CONTROL_MASK,
-                                     _("[PATH on segment] add node"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[PATH] change size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[PATH] change feather size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[PATH] change opacity"));
+                                     _("[PATH on segment] Add node"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[PATH] Change size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[PATH] Change feather size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[PATH] Change opacity"));
   return lm;
 }
 
@@ -3025,7 +3025,7 @@ static void _path_sanitize_config(dt_masks_type_t type)
 
 static void _path_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
 {
-  snprintf(form->name, sizeof(form->name), _("path #%d"), (int)nb);
+  snprintf(form->name, sizeof(form->name), _("Path #%d"), (int)nb);
 }
 
 static void _path_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
@@ -3174,4 +3174,3 @@ const dt_masks_functions_t dt_masks_functions_path = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

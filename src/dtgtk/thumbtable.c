@@ -981,18 +981,18 @@ static int _lighttable_expose_empty(cairo_t *cr, int32_t width, int32_t height, 
   pango_layout_set_font_description(layout, desc);
   cairo_set_font_size(cr, fs);
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-  pango_layout_set_text(layout, _("there are no images in this collection"), -1);
+  pango_layout_set_text(layout, _("There are no images in this collection"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, offx, offy - ink.height - ink.x);
   pango_cairo_show_layout(cr, layout);
 
   if(lighttable)
   {
-    pango_layout_set_text(layout, _("if you have not imported any images yet"), -1);
+    pango_layout_set_text(layout, _("If you have not imported any images yet"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, offx, offy + 2 * ls - ink.height - ink.x);
     pango_cairo_show_layout(cr, layout);
-    pango_layout_set_text(layout, _("you can do so in the import module"), -1);
+    pango_layout_set_text(layout, _("You can do so in the import module"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, offx, offy + 3 * ls - ink.height - ink.x);
     pango_cairo_show_layout(cr, layout);
@@ -1000,7 +1000,7 @@ static int _lighttable_expose_empty(cairo_t *cr, int32_t width, int32_t height, 
     cairo_line_to(cr, 0.0f, 10.0f);
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
     cairo_stroke(cr);
-    pango_layout_set_text(layout, _("try to relax the filter settings in the top panel"), -1);
+    pango_layout_set_text(layout, _("Try to relax the filter settings in the top panel"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, offx, offy + 5 * ls - ink.height - ink.x);
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
@@ -1009,7 +1009,7 @@ static int _lighttable_expose_empty(cairo_t *cr, int32_t width, int32_t height, 
     cairo_line_to(cr, width * 0.5f, 0.0f);
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
     cairo_stroke(cr);
-    pango_layout_set_text(layout, _("or add images in the collections module in the left panel"), -1);
+    pango_layout_set_text(layout, _("Or add images in the collections module in the left panel"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, offx, offy + 6 * ls - ink.height - ink.x);
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
@@ -1249,21 +1249,21 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
 
   if(min_level < max_level)
   {
-    gchar *txt = g_strdup(_("you have changed the settings related to how thumbnails are generated.\n"));
+    gchar *txt = g_strdup(_("You have changed the settings related to how thumbnails are generated.\n"));
     if(max_level >= DT_MIPMAP_8 && min_level == DT_MIPMAP_0)
-      txt = dt_util_dstrcat(txt, _("all cached thumbnails need to be invalidated.\n\n"));
+      txt = dt_util_dstrcat(txt, _("All cached thumbnails need to be invalidated.\n\n"));
     else if(max_level >= DT_MIPMAP_8)
-      txt = dt_util_dstrcat(txt, _("cached thumbnails starting from level %d need to be invalidated.\n\n"),
+      txt = dt_util_dstrcat(txt, _("Cached thumbnails starting from level %d need to be invalidated.\n\n"),
                             min_level);
     else if(min_level == DT_MIPMAP_0)
-      txt = dt_util_dstrcat(txt, _("cached thumbnails below level %d need to be invalidated.\n\n"), max_level);
+      txt = dt_util_dstrcat(txt, _("Cached thumbnails below level %d need to be invalidated.\n\n"), max_level);
     else
-      txt = dt_util_dstrcat(txt, _("cached thumbnails between level %d and %d need to be invalidated.\n\n"),
+      txt = dt_util_dstrcat(txt, _("Cached thumbnails between level %d and %d need to be invalidated.\n\n"),
                             min_level, max_level);
 
-    txt = dt_util_dstrcat(txt, _("do you want to do that now?"));
+    txt = dt_util_dstrcat(txt, _("Do you want to do that now?"));
 
-    if(dt_gui_show_yes_no_dialog(_("cached thumbnails invalidation"),
+    if(dt_gui_show_yes_no_dialog(_("Cached thumbnails invalidation"),
                                  "%s", txt))
     {
       sqlite3_stmt *stmt = NULL;
@@ -2331,21 +2331,21 @@ static void _thumbtable_init_accels()
   dt_action_t *thumb_actions = &darktable.control->actions_thumb;
 
   /* setup history key accelerators */
-  dt_action_register(thumb_actions, N_("copy history"), _accel_copy, GDK_KEY_c, GDK_CONTROL_MASK);
-  dt_action_register(thumb_actions, N_("copy history parts"), _accel_copy_parts, GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_action_register(thumb_actions, N_("paste history"), _accel_paste, GDK_KEY_v, GDK_CONTROL_MASK);
-  dt_action_register(thumb_actions, N_("paste history parts"), _accel_paste_parts, GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_action_register(thumb_actions, N_("discard history"), _accel_hist_discard, 0, 0);
+  dt_action_register(thumb_actions, N_("Copy history"), _accel_copy, GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("Copy history parts"), _accel_copy_parts, GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_action_register(thumb_actions, N_("Paste history"), _accel_paste, GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("Paste history parts"), _accel_paste_parts, GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_action_register(thumb_actions, N_("Discard history"), _accel_hist_discard, 0, 0);
 
-  dt_action_register(thumb_actions, N_("duplicate image"), _accel_duplicate, GDK_KEY_d, GDK_CONTROL_MASK);
-  dt_action_register(thumb_actions, N_("duplicate image virgin"), _accel_duplicate, GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_action_register(thumb_actions, N_("Duplicate image"), _accel_duplicate, GDK_KEY_d, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("Duplicate image virgin"), _accel_duplicate, GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* setup selection accelerators */
-  dt_action_register(thumb_actions, N_("select all"), _accel_select_all, GDK_KEY_a, GDK_CONTROL_MASK);
-  dt_action_register(thumb_actions, N_("select none"), _accel_select_none, GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_action_register(thumb_actions, N_("invert selection"), _accel_select_invert, GDK_KEY_i, GDK_CONTROL_MASK);
-  dt_action_register(thumb_actions, N_("select film roll"), _accel_select_film, 0, 0);
-  dt_action_register(thumb_actions, N_("select untouched"), _accel_select_untouched, 0, 0);
+  dt_action_register(thumb_actions, N_("Select all"), _accel_select_all, GDK_KEY_a, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("Select none"), _accel_select_none, GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_action_register(thumb_actions, N_("Invert selection"), _accel_select_invert, GDK_KEY_i, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("Select film roll"), _accel_select_film, 0, 0);
+  dt_action_register(thumb_actions, N_("Select untouched"), _accel_select_untouched, 0, 0);
 }
 
 static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)

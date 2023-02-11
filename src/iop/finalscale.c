@@ -36,7 +36,7 @@ typedef dt_iop_finalscale_params_t dt_iop_finalscale_data_t;
 
 const char *name()
 {
-  return C_("modulename", "scale into final size");
+  return C_("modulename", "Scale into final size");
 }
 
 int flags()
@@ -153,4 +153,3 @@ void cleanup(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

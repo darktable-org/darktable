@@ -55,4 +55,3 @@ static const guint n_targets_tags_dest = G_N_ELEMENTS(target_list_tags_dest);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -331,7 +331,7 @@ typedef struct dt_knight_t
 
 const char *name(const dt_view_t *self)
 {
-  return _("good knight");
+  return _("Good knight");
 }
 
 uint32_t view(const dt_view_t *self)
@@ -1451,4 +1451,3 @@ static gboolean _key_press(GtkWidget *w, GdkEventKey *event, dt_knight_t *d)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

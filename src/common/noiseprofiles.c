@@ -23,7 +23,7 @@
 // bump this when the noiseprofiles are getting a different layout or meaning (raw-raw data, ...)
 #define DT_NOISE_PROFILE_VERSION 0
 
-const dt_noiseprofile_t dt_noiseprofile_generic = {N_("generic poissonian"), "", "", 0, {0.0001f, 0.0001f, 0.0001}, {0.0f, 0.0f, 0.0f}};
+const dt_noiseprofile_t dt_noiseprofile_generic = {N_("Generic poissonian"), "", "", 0, {0.0001f, 0.0001f, 0.0001}, {0.0f, 0.0f, 0.0f}};
 
 static gboolean dt_noiseprofile_verify(JsonParser *parser);
 
@@ -58,7 +58,7 @@ JsonParser *dt_noiseprofile_init(const char *alternative)
   // run over the file once to verify that it is sane
   if(!dt_noiseprofile_verify(parser))
   {
-    dt_control_log(_("noiseprofile file `%s' is not valid"), filename);
+    dt_control_log(_("Noiseprofile file `%s' is not valid"), filename);
     fprintf(stderr, "[noiseprofile] error: `%s' is not a valid noiseprofile file. run with -d control for details\n", filename);
     g_object_unref(parser);
     return NULL;
@@ -394,4 +394,3 @@ void dt_noiseprofile_interpolate(
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

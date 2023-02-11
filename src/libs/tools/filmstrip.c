@@ -42,7 +42,7 @@ DT_MODULE(1)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("filmstrip");
+  return _("Filmstrip");
 }
 
 const char **views(dt_lib_module_t *self)

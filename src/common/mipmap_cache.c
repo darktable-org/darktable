@@ -1071,7 +1071,7 @@ static void _init_f(dt_mipmap_buffer_t *mipmap_buf, float *out, uint32_t *width,
 
   if(!buf.buf)
   {
-    dt_control_log(_("image `%s' is not available!"), image->filename);
+    dt_control_log(_("Image `%s' is not available!"), image->filename);
     dt_image_cache_read_release(darktable.image_cache, image);
     *width = *height = 0;
     *iscale = 0.0f;

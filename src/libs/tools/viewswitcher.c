@@ -57,7 +57,7 @@ static void _switch_view(const dt_view_t *view);
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("viewswitcher");
+  return _("Viewswitcher");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -143,10 +143,10 @@ void gui_init(dt_lib_module_t *self)
         GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
         gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->dropdown), renderer, FALSE);
         gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->dropdown), renderer, "markup", TEXT_COLUMN,
-                                        "sensitive", SENSITIVE_COLUMN, NULL);
+                                        "Sensitive", SENSITIVE_COLUMN, NULL);
 
         gtk_list_store_append(model, &tree_iter);
-        gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, /*italic*/ _("other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
+        gtk_list_store_set(model, &tree_iter, TEXT_COLUMN, /*italic*/ _("Other"), VIEW_COLUMN, NULL, SENSITIVE_COLUMN, 0, -1);
 
         gtk_box_pack_start(GTK_BOX(self->widget), d->dropdown, FALSE, FALSE, 0);
         g_signal_connect(G_OBJECT(d->dropdown), "changed", G_CALLBACK(_dropdown_changed), d);

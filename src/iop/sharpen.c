@@ -70,7 +70,7 @@ typedef struct dt_iop_sharpen_global_data_t
 
 const char *name()
 {
-  return C_("modulename", "sharpen");
+  return C_("modulename", "Sharpen");
 }
 
 int default_group()
@@ -90,22 +90,22 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("sharpen the details in the image using a standard UnSharp Mask (USM)"),
-                                      _("corrective"),
-                                      _("linear or non-linear, Lab, display or scene-referred"),
-                                      _("frequential, Lab"),
-                                      _("quasi-linear, Lab, display or scene-referred"));
+  return dt_iop_set_description(self, _("Sharpen the details in the image using a standard UnSharp Mask (USM)"),
+                                      _("Corrective"),
+                                      _("Linear or non-linear, Lab, display or scene-referred"),
+                                      _("Frequential, Lab"),
+                                      _("Quasi-linear, Lab, display or scene-referred"));
 }
 
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t){ 2.0, 0.5, 0.5 };
   // add the preset.
-  dt_gui_presets_add_generic(_("sharpen"), self->op,
+  dt_gui_presets_add_generic(_("Sharpen"), self->op,
                              self->version(), &tmp, sizeof(dt_iop_sharpen_params_t),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   // restrict to raw images
-  dt_gui_presets_update_ldr(_("sharpen"), self->op,
+  dt_gui_presets_update_ldr(_("Sharpen"), self->op,
                             self->version(), FOR_RAW);
 }
 
@@ -429,18 +429,18 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_sharpen_gui_data_t *g = IOP_GUI_ALLOC(sharpen);
 
-  g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
+  g->radius = dt_bauhaus_slider_from_params(self, N_("Radius"));
   dt_bauhaus_slider_set_soft_max(g->radius, 8.0);
   dt_bauhaus_slider_set_digits(g->radius, 3);
-  gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the unblurring"));
+  gtk_widget_set_tooltip_text(g->radius, _("Spatial extent of the unblurring"));
 
-  g->amount = dt_bauhaus_slider_from_params(self, N_("amount"));
+  g->amount = dt_bauhaus_slider_from_params(self, N_("Amount"));
   dt_bauhaus_slider_set_digits(g->amount, 3);
-  gtk_widget_set_tooltip_text(g->amount, _("strength of the sharpen"));
+  gtk_widget_set_tooltip_text(g->amount, _("Strength of the sharpen"));
 
-  g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
+  g->threshold = dt_bauhaus_slider_from_params(self, N_("Threshold"));
   dt_bauhaus_slider_set_digits(g->threshold, 3);
-  gtk_widget_set_tooltip_text(g->threshold, _("threshold to activate sharpen"));
+  gtk_widget_set_tooltip_text(g->threshold, _("Threshold to activate sharpen"));
 }
 
 #undef MAXR
@@ -450,4 +450,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

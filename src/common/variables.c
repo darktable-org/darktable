@@ -599,9 +599,9 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "OPENCL.ACTIVATED") || _has_prefix(variable, "OPENCL_ACTIVATED"))
   {
     if(dt_opencl_is_enabled())
-      result = g_strdup(_("yes"));
+      result = g_strdup(_("Yes"));
     else
-      result = g_strdup(_("no"));
+      result = g_strdup(_("No"));
   }
   else if(_has_prefix(variable, "WIDTH.MAX") || _has_prefix(variable, "MAX_WIDTH"))
     result = g_strdup_printf("%d", params->data->max_width);

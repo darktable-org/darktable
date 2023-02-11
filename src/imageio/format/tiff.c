@@ -122,7 +122,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   if(n_pages > 1)
   {
     TIFFSetField(tif, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
-    TIFFSetField(tif, TIFFTAG_PAGENAME, _("image"));
+    TIFFSetField(tif, TIFFTAG_PAGENAME, _("Image"));
     TIFFSetField(tif, TIFFTAG_PAGENUMBER, 0, n_pages);
   }
   else
@@ -225,7 +225,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   checkdone:
   if(layers == 1)
-    dt_control_log(_("will export as a grayscale image"));
+    dt_control_log(_("Will export as a grayscale image"));
 
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, layers);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
@@ -859,7 +859,7 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // Bit depth combo box
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("bit depth"), NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("Bit depth"), NULL,
                                bpp == 16   ? 1
                                : bpp == 32 ? 2
                                            : 0,
@@ -868,8 +868,8 @@ void gui_init(dt_imageio_module_format_t *self)
 
 
   // Pixel format combo box
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->pixelformat, self, NULL, N_("pixel type"), NULL, pixelformat,
-                               pixelformat_combobox_changed, NULL, N_("unsigned integer"), N_("floating point"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->pixelformat, self, NULL, N_("Pixel type"), NULL, pixelformat,
+                               pixelformat_combobox_changed, NULL, N_("Unsigned integer"), N_("Floating point"));
 #ifdef HAVE_IMATH
   dt_bauhaus_combobox_set_default(gui->pixelformat,
                                   dt_confgen_get_bool("plugins/imageio/format/tiff/pixelformat", DT_DEFAULT) & 1);
@@ -882,9 +882,9 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_no_show_all(gui->pixelformat, TRUE);
 
   // Compression method combo box
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compress, self, NULL, N_("compression"), NULL, compress,
-                               compress_combobox_changed, gui, N_("uncompressed"), N_("deflate"),
-                               N_("deflate with predictor"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compress, self, NULL, N_("Compression"), NULL, compress,
+                               compress_combobox_changed, gui, N_("Uncompressed"), N_("Deflate"),
+                               N_("Deflate with predictor"));
   dt_bauhaus_combobox_set_default(gui->compress,
                                   dt_confgen_get_int("plugins/imageio/format/tiff/compress", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
@@ -894,7 +894,7 @@ void gui_init(dt_imageio_module_format_t *self)
       (dt_iop_module_t *)self, dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_MIN),
       dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_MAX), 1,
       dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_DEFAULT), 0);
-  dt_bauhaus_widget_set_label(gui->compresslevel, NULL, N_("compression level"));
+  dt_bauhaus_widget_set_label(gui->compresslevel, NULL, N_("Compression level"));
   dt_bauhaus_slider_set(gui->compresslevel, compresslevel);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compresslevel), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->compresslevel), "value-changed", G_CALLBACK(compress_level_changed), NULL);
@@ -903,8 +903,8 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_no_show_all(gui->compresslevel, TRUE);
 
   // shortfile option combo box
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->shortfiles, self, NULL, N_("b&w image"), NULL, shortmode,
-                               shortfile_combobox_changed, self, N_("write rgb colors"), N_("write grayscale"));
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->shortfiles, self, NULL, N_("B&w image"), NULL, shortmode,
+                               shortfile_combobox_changed, self, N_("Write rgb colors"), N_("Write grayscale"));
   dt_bauhaus_combobox_set_default(gui->shortfiles,
                                   dt_confgen_get_int("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->shortfiles, TRUE, TRUE, 0);

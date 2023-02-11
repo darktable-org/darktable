@@ -818,7 +818,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   return;
 
 error:
-  dt_control_log(_("tiling failed for module '%s'. output might be garbled."), self->op);
+  dt_control_log(_("Tiling failed for module '%s'. Output might be garbled."), self->op);
 // fall through
 
 fallback:
@@ -1151,7 +1151,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   return;
 
 error:
-  dt_control_log(_("tiling failed for module '%s'. output might be garbled."), self->op);
+  dt_control_log(_("Tiling failed for module '%s'. Output might be garbled."), self->op);
 // fall through
 
 fallback:
@@ -2178,4 +2178,3 @@ gboolean dt_tiling_piece_fits_host_memory(const size_t width, const size_t heigh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

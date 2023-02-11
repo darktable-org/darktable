@@ -727,7 +727,7 @@ void dt_bauhaus_init()
   gtk_container_add(GTK_CONTAINER(darktable.bauhaus->popup_window), darktable.bauhaus->popup_area);
   gtk_widget_set_hexpand(darktable.bauhaus->popup_area, TRUE);
   gtk_widget_set_vexpand(darktable.bauhaus->popup_area, TRUE);
-  // gtk_window_set_title(GTK_WINDOW(c->popup_window), _("dtgtk control popup"));
+  // gtk_window_set_title(GTK_WINDOW(c->popup_window), _("Dtgtk control popup"));
   gtk_window_set_keep_above(GTK_WINDOW(darktable.bauhaus->popup_window), TRUE);
   gtk_window_set_gravity(GTK_WINDOW(darktable.bauhaus->popup_window), GDK_GRAVITY_STATIC);
 
@@ -747,9 +747,9 @@ void dt_bauhaus_init()
   g_signal_connect(area, "key-press-event", G_CALLBACK(dt_bauhaus_popup_key_press), NULL);
   g_signal_connect(area, "scroll-event", G_CALLBACK(dt_bauhaus_popup_scroll), NULL);
 
-  dt_action_define(&darktable.control->actions_focus, NULL, N_("sliders"), NULL, &_action_def_focus_slider);
-  dt_action_define(&darktable.control->actions_focus, NULL, N_("dropdowns"), NULL, &_action_def_focus_combo);
-  dt_action_define(&darktable.control->actions_focus, NULL, N_("buttons"), NULL, &_action_def_focus_button);
+  dt_action_define(&darktable.control->actions_focus, NULL, N_("Sliders"), NULL, &_action_def_focus_slider);
+  dt_action_define(&darktable.control->actions_focus, NULL, N_("Dropdowns"), NULL, &_action_def_focus_combo);
+  dt_action_define(&darktable.control->actions_focus, NULL, N_("Buttons"), NULL, &_action_def_focus_button);
 }
 
 void dt_bauhaus_cleanup()
@@ -3312,7 +3312,7 @@ static void _action_process_button(GtkWidget *widget, dt_action_effect_t effect)
   if(effect != (w->quad_paint_flags & CPF_ACTIVE ? DT_ACTION_EFFECT_ON : DT_ACTION_EFFECT_OFF))
     dt_bauhaus_widget_press_quad(widget);
 
-  gchar *text = w->quad_paint_flags & CPF_ACTIVE ? _("button on") : _("button off");
+  gchar *text = w->quad_paint_flags & CPF_ACTIVE ? _("Button on") : _("Button off");
   dt_action_widget_toast(w->module, widget, text);
 
   gtk_widget_queue_draw(widget);
@@ -3513,7 +3513,7 @@ static float _action_process_focus_slider(gpointer target, dt_action_element_t e
   if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_SLIDER))
     return _action_process_slider(widget, DT_ACTION_ELEMENT_VALUE, effect, move_size);
 
-  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("not that many sliders"));
+  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("Not that many sliders"));
   return NAN;
 }
 
@@ -3523,7 +3523,7 @@ static float _action_process_focus_combo(gpointer target, dt_action_element_t el
   if(_find_nth_bauhaus(&widget, &element, DT_BAUHAUS_COMBOBOX))
     return _action_process_combo(widget, DT_ACTION_ELEMENT_SELECTION, effect, move_size);
 
-  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("not that many dropdowns"));
+  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("Not that many dropdowns"));
   return NAN;
 }
 
@@ -3538,19 +3538,19 @@ static float _action_process_focus_button(gpointer target, dt_action_element_t e
     return dt_bauhaus_widget_get_quad_active(widget);
   }
 
-  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("not that many buttons"));
+  if(!isnan(move_size)) dt_action_widget_toast(target, NULL, _("Not that many buttons"));
   return NAN;
 }
 
 static const dt_action_element_def_t _action_elements_slider[]
-  = { { N_("value"), dt_action_effect_value },
-      { N_("button"), dt_action_effect_toggle },
-      { N_("force"), dt_action_effect_value },
-      { N_("zoom"), dt_action_effect_value },
+  = { { N_("Value"), dt_action_effect_value },
+      { N_("Button"), dt_action_effect_toggle },
+      { N_("Force"), dt_action_effect_value },
+      { N_("Zoom"), dt_action_effect_value },
       { NULL } };
 static const dt_action_element_def_t _action_elements_combo[]
-  = { { N_("selection"), dt_action_effect_selection },
-      { N_("button"), dt_action_effect_toggle },
+  = { { N_("Selection"), dt_action_effect_selection },
+      { N_("Button"), dt_action_effect_toggle },
       { NULL } };
 
 static const dt_shortcut_fallback_t _action_fallbacks_slider[]
@@ -3568,28 +3568,28 @@ static const dt_shortcut_fallback_t _action_fallbacks_combo[]
       { } };
 
 static const dt_action_def_t _action_def_slider
-  = { N_("slider"),
+  = { N_("Slider"),
       _action_process_slider,
       _action_elements_slider,
       _action_fallbacks_slider };
 static const dt_action_def_t _action_def_combo
-  = { N_("dropdown"),
+  = { N_("Dropdown"),
       _action_process_combo,
       _action_elements_combo,
       _action_fallbacks_combo };
 
 static const dt_action_def_t _action_def_focus_slider
-  = { N_("slider"),
+  = { N_("Slider"),
       _action_process_focus_slider,
       DT_ACTION_ELEMENTS_NUM(value),
       NULL, TRUE };
 static const dt_action_def_t _action_def_focus_combo
-  = { N_("dropdown"),
+  = { N_("Dropdown"),
       _action_process_focus_combo,
       DT_ACTION_ELEMENTS_NUM(selection),
       NULL, TRUE };
 static const dt_action_def_t _action_def_focus_button
-  = { N_("button"),
+  = { N_("Button"),
       _action_process_focus_button,
       DT_ACTION_ELEMENTS_NUM(toggle),
       NULL, TRUE };

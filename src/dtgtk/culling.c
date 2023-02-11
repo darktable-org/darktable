@@ -229,7 +229,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
       sqlite3_finalize(stmt);
       if(new_offset == table->offset)
       {
-        dt_control_log(_("you have reached the start of your selection"));
+        dt_control_log(_("You have reached the start of your selection"));
         return;
       }
     }
@@ -238,7 +238,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
       new_offset = MAX(1, table->offset + move);
       if(new_offset == table->offset)
       {
-        dt_control_log(_("you have reached the start of your collection"));
+        dt_control_log(_("You have reached the start of your collection"));
         return;
       }
     }
@@ -283,7 +283,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
 
       if(new_offset == table->offset)
       {
-        dt_control_log(_("you have reached the end of your selection"));
+        dt_control_log(_("You have reached the end of your selection"));
         return;
       }
     }
@@ -308,7 +308,7 @@ static void _thumbs_move(dt_culling_t *table, int move)
       sqlite3_finalize(stmt);
       if(new_offset == table->offset)
       {
-        dt_control_log(_("you have reached the end of your collection"));
+        dt_control_log(_("You have reached the end of your collection"));
         return;
       }
     }
@@ -402,7 +402,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, co
   const int max_in_memory_images = _get_max_in_memory_images();
   if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images)
   {
-    dt_control_log(_("zooming is limited to %d images"), max_in_memory_images);
+    dt_control_log(_("Zooming is limited to %d images"), max_in_memory_images);
     return TRUE;
   }
 
@@ -991,7 +991,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   {
     if(sel_count == 0)
     {
-      dt_control_log(_("no image selected!"));
+      dt_control_log(_("No image selected!"));
       first_id = -1;
     }
     table->navigate_inside_selection = TRUE;
@@ -1825,4 +1825,3 @@ void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

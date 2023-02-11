@@ -716,4 +716,3 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
     dt_segmentation_free_struct(&isegments[i]);
   dt_free_align(fbuffer);
 }
-

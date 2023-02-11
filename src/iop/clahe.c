@@ -61,7 +61,7 @@ typedef struct dt_iop_rlce_data_t
 
 const char *name()
 {
-  return _("local contrast");
+  return _("Local contrast");
 }
 
 int default_group()
@@ -71,7 +71,7 @@ int default_group()
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. better use new local contrast module instead.");
+  return _("This module is deprecated. Better use new local contrast module instead.");
 }
 
 int flags()
@@ -332,9 +332,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 0);
 
-  g->label1 = dtgtk_reset_label_new(_("radius"), self, &p->radius, sizeof(float));
+  g->label1 = dtgtk_reset_label_new(_("Radius"), self, &p->radius, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), g->label1, TRUE, TRUE, 0);
-  g->label2 = dtgtk_reset_label_new(_("amount"), self, &p->slope, sizeof(float));
+  g->label2 = dtgtk_reset_label_new(_("Amount"), self, &p->slope, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), g->label2, TRUE, TRUE, 0);
 
   g->scale1 = dt_bauhaus_slider_new_with_range(NULL, 0.0, 256.0, 0, p->radius, 0);
@@ -343,8 +343,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale1), _("size of features to preserve"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale2), _("strength of the effect"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale1), _("Size of features to preserve"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->scale2), _("Strength of the effect"));
 
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(radius_callback), self);
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(slope_callback), self);
@@ -355,4 +355,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

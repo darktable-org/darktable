@@ -105,8 +105,8 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   latex_t *d = (latex_t *)self->gui_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-        _("_select as output destination"), _("_cancel"));
+        _("Select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        _("_Select as output destination"), _("_Cancel"));
 
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
   char *c = g_strstr_len(old, -1, "$");
@@ -150,8 +150,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   GtkWidget *widget;
 
-  d->entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(entry_changed_callback), self,
-                                           _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+  d->entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("Path"), G_CALLBACK(entry_changed_callback), self,
+                                           _("Enter the path where to put exported images\nvariables support bash like string manipulation\n"
                                              "type '$(' to activate the completion and see the list of variables"),
                                            dt_conf_get_string_const("plugins/imageio/storage/latex/file_directory")));
   dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
@@ -159,17 +159,17 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
-  gtk_widget_set_tooltip_text(widget, _("select directory"));
+  gtk_widget_set_tooltip_text(widget, _("Select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("title")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("Title")), FALSE, FALSE, 0);
 
-  d->title_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(title_changed_callback), self,
-                                           _("enter the title of the book"),
+  d->title_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("Path"), G_CALLBACK(title_changed_callback), self,
+                                           _("Enter the title of the book"),
                                            dt_conf_get_string_const("plugins/imageio/storage/latex/title")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
 
@@ -249,7 +249,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     if(g_mkdir_with_parents(dirname, 0755))
     {
       dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_latex] could not create directory: `%s'!\n", dirname);
-      dt_control_log(_("could not create directory `%s'!"), dirname);
+      dt_control_log(_("Could not create directory `%s'!"), dirname);
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
       return 1;
     }
@@ -337,7 +337,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
                     icc_intent, self, sdata, num, total, metadata);
 
   printf("[export_job] exported to `%s'\n", filename);
-  dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
+  dt_control_log(ngettext("%d/%d Exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;
 }
@@ -438,4 +438,3 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

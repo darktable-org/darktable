@@ -270,4 +270,3 @@ Udata *luaS_newudata (lua_State *L, size_t s, int nuvalue) {
     setnilvalue(&u->uv[i].uv);
   return u;
 }
-

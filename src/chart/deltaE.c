@@ -95,4 +95,3 @@ float dt_colorspaces_deltaE_2000(dt_aligned_pixel_t Lab0, dt_aligned_pixel_t Lab
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

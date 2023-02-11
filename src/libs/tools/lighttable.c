@@ -65,7 +65,7 @@ static void _set_zoom(dt_lib_module_t *self, int zoom);
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("lighttable");
+  return _("Lighttable");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -114,19 +114,19 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
 
   // and now we set the tooltips
   if(d->fullpreview)
-    gtk_widget_set_tooltip_text(d->layout_preview, _("click to exit from full preview layout."));
+    gtk_widget_set_tooltip_text(d->layout_preview, _("Click to exit from full preview layout."));
   else
-    gtk_widget_set_tooltip_text(d->layout_preview, _("click to enter full preview layout."));
+    gtk_widget_set_tooltip_text(d->layout_preview, _("Click to enter full preview layout."));
 
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || d->fullpreview)
-    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to enter culling layout in fixed mode."));
+    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("Click to enter culling layout in fixed mode."));
   else
-    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to exit culling layout."));
+    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("Click to exit culling layout."));
 
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC || d->fullpreview)
-    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to enter culling layout in dynamic mode."));
+    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("Click to enter culling layout in dynamic mode."));
   else
-    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to exit culling layout."));
+    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("Click to exit culling layout."));
 }
 
 static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layout_t layout)
@@ -349,25 +349,25 @@ void gui_init(dt_lib_module_t *self)
   dt_action_t *ac = NULL;
 
   d->layout_filemanager = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_grid, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle filemanager layout"), d->layout_filemanager, NULL);
+  ac = dt_action_define(ltv, NULL, N_("Toggle filemanager layout"), d->layout_filemanager, NULL);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_filemanager, 0, 0);
   dt_gui_add_help_link(d->layout_filemanager, dt_get_help_url("layout_filemanager"));
-  gtk_widget_set_tooltip_text(d->layout_filemanager, _("click to enter filemanager layout."));
+  gtk_widget_set_tooltip_text(d->layout_filemanager, _("Click to enter filemanager layout."));
   g_signal_connect(G_OBJECT(d->layout_filemanager), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_filemanager, TRUE, TRUE, 0);
 
   d->layout_zoomable = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_zoom, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle zoomable lighttable layout"), d->layout_zoomable, NULL);
+  ac = dt_action_define(ltv, NULL, N_("Toggle zoomable lighttable layout"), d->layout_zoomable, NULL);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_zoomable, 0, 0);
   dt_gui_add_help_link(d->layout_zoomable, dt_get_help_url("layout_zoomable"));
-  gtk_widget_set_tooltip_text(d->layout_zoomable, _("click to enter zoomable lighttable layout."));
+  gtk_widget_set_tooltip_text(d->layout_zoomable, _("Click to enter zoomable lighttable layout."));
   g_signal_connect(G_OBJECT(d->layout_zoomable), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_zoomable, TRUE, TRUE, 0);
 
   d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling mode"), d->layout_culling_fix, NULL);
+  ac = dt_action_define(ltv, NULL, N_("Toggle culling mode"), d->layout_culling_fix, NULL);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_mode, GDK_KEY_x, 0);
   dt_gui_add_help_link(d->layout_culling_fix, dt_get_help_url("layout_culling"));
   g_signal_connect(G_OBJECT(d->layout_culling_fix), "button-release-event",
@@ -375,7 +375,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_culling_fix, TRUE, TRUE, 0);
 
   d->layout_culling_dynamic = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle culling dynamic mode"), d->layout_culling_dynamic, NULL);
+  ac = dt_action_define(ltv, NULL, N_("Toggle culling dynamic mode"), d->layout_culling_dynamic, NULL);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_dynamic_mode, GDK_KEY_x, GDK_CONTROL_MASK);
   dt_gui_add_help_link(d->layout_culling_dynamic, dt_get_help_url("layout_culling"));
   g_signal_connect(G_OBJECT(d->layout_culling_dynamic), "button-release-event",
@@ -383,7 +383,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_culling_dynamic, TRUE, TRUE, 0);
 
   d->layout_preview = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
-  ac = dt_action_define(ltv, NULL, N_("toggle sticky preview mode"), d->layout_preview, NULL);
+  ac = dt_action_define(ltv, NULL, N_("Toggle sticky preview mode"), d->layout_preview, NULL);
   dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_preview, GDK_KEY_f, 0);
   dt_gui_add_help_link(d->layout_preview, dt_get_help_url("layout_preview"));
   g_signal_connect(G_OBJECT(d->layout_preview), "button-release-event",
@@ -424,11 +424,11 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.lighttable.get_layout = _lib_lighttable_get_layout;
   darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
 
-  dt_action_register(ltv, N_("toggle culling zoom mode"), _lib_lighttable_key_accel_toggle_culling_zoom_mode,
+  dt_action_register(ltv, N_("Toggle culling zoom mode"), _lib_lighttable_key_accel_toggle_culling_zoom_mode,
                      GDK_KEY_less, 0);
-  dt_action_register(ltv, N_("toggle sticky preview mode with focus detection"), _lib_lighttable_key_accel_toggle_preview_focus,
+  dt_action_register(ltv, N_("Toggle sticky preview mode with focus detection"), _lib_lighttable_key_accel_toggle_preview_focus,
                      0, 0);
-  dt_action_register(ltv, N_("exit current layout"), _lib_lighttable_key_accel_exit_layout,
+  dt_action_register(ltv, N_("Exit current layout"), _lib_lighttable_key_accel_exit_layout,
                      GDK_KEY_Escape, 0);
 }
 

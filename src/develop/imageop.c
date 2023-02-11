@@ -973,38 +973,38 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
   GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
   GtkWidget *item;
 
-  item = gtk_menu_item_new_with_label(_("new instance"));
-  // gtk_widget_set_tooltip_text(item, _("add a new instance of this module to the pipe"));
+  item = gtk_menu_item_new_with_label(_("New instance"));
+  // gtk_widget_set_tooltip_text(item, _("Add a new instance of this module to the pipe"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_copy_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_new);
   gtk_menu_shell_append(menu, item);
 
-  item = gtk_menu_item_new_with_label(_("duplicate instance"));
-  // gtk_widget_set_tooltip_text(item, _("add a copy of this instance to the pipe"));
+  item = gtk_menu_item_new_with_label(_("Duplicate instance"));
+  // gtk_widget_set_tooltip_text(item, _("Add a copy of this instance to the pipe"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_duplicate_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_new);
   gtk_menu_shell_append(menu, item);
 
-  item = gtk_menu_item_new_with_label(_("move up"));
-  // gtk_widget_set_tooltip_text(item, _("move this instance up"));
+  item = gtk_menu_item_new_with_label(_("Move up"));
+  // gtk_widget_set_tooltip_text(item, _("Move this instance up"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_moveup_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_up);
   gtk_menu_shell_append(menu, item);
 
-  item = gtk_menu_item_new_with_label(_("move down"));
-  // gtk_widget_set_tooltip_text(item, _("move this instance down"));
+  item = gtk_menu_item_new_with_label(_("Move down"));
+  // gtk_widget_set_tooltip_text(item, _("Move this instance down"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_movedown_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_down);
   gtk_menu_shell_append(menu, item);
 
-  item = gtk_menu_item_new_with_label(_("delete"));
-  // gtk_widget_set_tooltip_text(item, _("delete this instance"));
+  item = gtk_menu_item_new_with_label(_("Delete"));
+  // gtk_widget_set_tooltip_text(item, _("Delete this instance"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_close);
   gtk_menu_shell_append(menu, item);
 
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-  item = gtk_menu_item_new_with_label(_("rename"));
+  item = gtk_menu_item_new_with_label(_("Rename"));
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_rename_callback), module);
   gtk_menu_shell_append(menu, item);
 
@@ -1067,7 +1067,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
 
   char tooltip[512];
   gchar *module_label = dt_history_item_get_name(module);
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s Is switched on") : _("%s Is switched off"),
            module_label);
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(togglebutton), tooltip);
@@ -2241,18 +2241,18 @@ static void _header_size_callback(GtkWidget *widget,
 
   double opacity_others = 1.0;
 
-  if(g_strcmp0(config, "glide")) // glide uses all defaults above
+  if(g_strcmp0(config, "Glide")) // glide uses all defaults above
   {
     // these all (un)hide all buttons at the same time
     if(num_to_unhide < num_buttons) num_to_unhide = 0;
 
-    if(!g_strcmp0(config, "smooth"))
+    if(!g_strcmp0(config, "Smooth"))
     {
       opacity_others = opacity_leftmost;
     }
     else
     {
-      if(!g_strcmp0(config, "fit"))
+      if(!g_strcmp0(config, "Fit"))
       {
         opacity_leftmost = 1.0;
       }
@@ -2261,12 +2261,12 @@ static void _header_size_callback(GtkWidget *widget,
         GdkRectangle total_alloc;
         gtk_widget_get_allocation(header, &total_alloc);
 
-        if(!g_strcmp0(config, "auto"))
+        if(!g_strcmp0(config, "Auto"))
         {
           opacity_leftmost = 1.0;
           if(total_alloc.width < panel_trigger_width) hide_all = TRUE;
         }
-        else if(!g_strcmp0(config, "fade"))
+        else if(!g_strcmp0(config, "Fade"))
         {
           opacity_leftmost = opacity_others = (total_alloc.width - panel_trigger_width) / 100.;
         }
@@ -2326,16 +2326,16 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
 
   gboolean dynamic = FALSE;
   double opacity = 1.0;
-  if(!g_strcmp0(config, "always"))
+  if(!g_strcmp0(config, "Always"))
   {
     show_buttons = TRUE;
   }
-  else if(!g_strcmp0(config, "dim"))
+  else if(!g_strcmp0(config, "Dim"))
   {
     if(!show_buttons) opacity = 0.3;
     show_buttons = TRUE;
   }
-  else if(!g_strcmp0(config, "active"))
+  else if(!g_strcmp0(config, "Active"))
     ;
   else
     dynamic = TRUE;
@@ -2412,30 +2412,30 @@ static gboolean _mask_indicator_tooltip(GtkWidget *treeview,
   const gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
   if(module->mask_indicator)
   {
-    gchar *type = _("unknown mask");
+    gchar *type = _("Unknown mask");
     gchar *text;
     const uint32_t mm = module->blend_params->mask_mode;
     if((mm & DEVELOP_MASK_MASK) && (mm & DEVELOP_MASK_CONDITIONAL))
-      type=_("drawn + parametric mask");
+      type=_("Drawn + parametric mask");
     else if(mm & DEVELOP_MASK_MASK)
-      type=_("drawn mask");
+      type=_("Drawn mask");
     else if(mm & DEVELOP_MASK_CONDITIONAL)
-      type=_("parametric mask");
+      type=_("Parametric mask");
     else if(mm & DEVELOP_MASK_RASTER)
-      type=_("raster mask");
+      type=_("Raster mask");
     else
       dt_print(DT_DEBUG_ALWAYS, "unknown mask mode '%u' in module '%s'\n", mm, module->op);
-    gchar *part1 = g_strdup_printf(_("this module has a `%s'"), type);
+    gchar *part1 = g_strdup_printf(_("This module has a `%s'"), type);
     gchar *part2 = NULL;
     if(raster && module->raster_mask.sink.source)
     {
       gchar *source = dt_history_item_get_name(module->raster_mask.sink.source);
-      part2 = g_strdup_printf(_("taken from module %s"), source);
+      part2 = g_strdup_printf(_("Taken from module %s"), source);
       g_free(source);
     }
 
     if(!raster && !part2)
-      part2 = g_strdup(_("click to display (module must be activated first)"));
+      part2 = g_strdup(_("Click to display (module must be activated first)"));
 
     if(part2)
       text = g_strconcat(part1, "\n", part2, NULL);
@@ -2529,7 +2529,7 @@ gboolean _iop_tooltip_callback(GtkWidget *widget,
   const char *icon_output  = "↦";
 
   const char *icons[4] = {icon_purpose, icon_input, icon_process, icon_output};
-  const char *ilabs[4] = {_("purpose"), _("input"), _("process"), _("output")};
+  const char *ilabs[4] = {_("Purpose"), _("Input"), _("Process"), _("Output")};
 
   for(int k=1; k<5; k++)
   {
@@ -2636,7 +2636,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->multimenu_button = GTK_WIDGET(hw[IOP_MODULE_INSTANCE]);
   if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]),
-                                _("multiple instance actions\nright-click creates new instance"));
+                                _("Multiple instance actions\nright-click creates new instance"));
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "button-press-event",
                    G_CALLBACK(_gui_multiinstance_callback),
                    module);
@@ -2649,7 +2649,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   /* add reset button */
   hw[IOP_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   module->reset_button = GTK_WIDGET(hw[IOP_MODULE_RESET]);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_RESET]), _("reset parameters\nctrl+click to reapply any automatic presets"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_RESET]), _("Reset parameters\nctrl+click to reapply any automatic presets"));
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "button-press-event",
                    G_CALLBACK(_gui_reset_callback), module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "enter-notify-event",
@@ -2660,7 +2660,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   hw[IOP_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   module->presets_button = GTK_WIDGET(hw[IOP_MODULE_PRESETS]);
   if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
-    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets\nright-click to apply on new instance"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("Presets\nright-click to apply on new instance"));
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "clicked",
                    G_CALLBACK(_presets_popup_callback), module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "enter-notify-event",
@@ -2673,7 +2673,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_iop_gui_set_enable_button_icon(hw[IOP_MODULE_SWITCH], module);
 
   gchar *module_label = dt_history_item_get_name(module);
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s Is switched on") : _("%s Is switched off"),
            module_label);
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), tooltip);
@@ -3068,7 +3068,7 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
   const int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded") ? 8 : 0;
   const int prefer_enabled = dt_conf_get_bool("accel/prefer_enabled") ? 4 : 0;
   const int prefer_unmasked = dt_conf_get_bool("accel/prefer_unmasked") ? 2 : 0;
-  const int prefer_first = dt_conf_is_equal("accel/select_order", "first instance") ? 1 : 0;
+  const int prefer_first = dt_conf_is_equal("accel/select_order", "First instance") ? 1 : 0;
 
   dt_iop_module_t *accel_mod = NULL;  // The module to which accelerators are to be attached
 
@@ -3339,8 +3339,8 @@ gboolean dt_iop_have_required_input_format(const int req_ch,
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     // and set the module's trouble message
     if(module)
-      dt_iop_set_module_trouble_message(module, _("unsupported input"),
-                                        _("you have placed this module at\n"
+      dt_iop_set_module_trouble_message(module, _("Unsupported input"),
+                                        _("You have placed this module at\n"
                                           "a position in the pipeline where\n"
                                           "the data format does not match\n"
                                           "its requirements."),
@@ -3448,22 +3448,22 @@ static float _action_process(gpointer target,
 }
 
 const gchar *dt_action_effect_instance[]
-  = { N_("show"),
-      N_("move up"),
-      N_("move down"),
-      N_("new"),
-      N_("delete"),
-      N_("rename"),
-      N_("duplicate"),
+  = { N_("Show"),
+      N_("Move up"),
+      N_("Move down"),
+      N_("New"),
+      N_("Delete"),
+      N_("Rename"),
+      N_("Duplicate"),
       NULL };
 
 static const dt_action_element_def_t _action_elements[]
-  = { { N_("show"), dt_action_effect_toggle },
-      { N_("enable"), dt_action_effect_toggle },
-      { N_("focus"), dt_action_effect_toggle },
-      { N_("instance"), dt_action_effect_instance },
-      { N_("reset"), dt_action_effect_activate },
-      { N_("presets"), dt_action_effect_presets },
+  = { { N_("Show"), dt_action_effect_toggle },
+      { N_("Enable"), dt_action_effect_toggle },
+      { N_("Focus"), dt_action_effect_toggle },
+      { N_("Instance"), dt_action_effect_instance },
+      { N_("Reset"), dt_action_effect_activate },
+      { N_("Presets"), dt_action_effect_presets },
       { NULL } };
 
 static const dt_shortcut_fallback_t _action_fallbacks[]
@@ -3483,7 +3483,7 @@ static const dt_shortcut_fallback_t _action_fallbacks[]
       { } };
 
 const dt_action_def_t dt_action_def_iop
-  = { N_("processing module"),
+  = { N_("Processing module"),
       _action_process,
       _action_elements,
       _action_fallbacks };

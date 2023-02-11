@@ -46,7 +46,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
 typedef enum dt_iop_dither_type_t
 {
-  DITHER_RANDOM,      // $DESCRIPTION: "random"
+  DITHER_RANDOM,      // $DESCRIPTION: "Random"
   DITHER_FS1BIT,      // $DESCRIPTION: "Floyd-Steinberg 1-bit B&W"
   DITHER_FS4BIT_GRAY, // $DESCRIPTION: "Floyd-Steinberg 4-bit gray"
   DITHER_FS8BIT,      // $DESCRIPTION: "Floyd-Steinberg 8-bit RGB"
@@ -57,13 +57,13 @@ typedef enum dt_iop_dither_type_t
 
 typedef struct dt_iop_dither_params_t
 {
-  dt_iop_dither_type_t dither_type; // $DEFAULT: DITHER_FSAUTO $DESCRIPTION: "method"
+  dt_iop_dither_type_t dither_type; // $DEFAULT: DITHER_FSAUTO $DESCRIPTION: "Method"
   int palette; // reserved for future extensions
   struct
   {
     float radius;   // reserved for future extensions
     float range[4]; // reserved for future extensions {0,0,1,1}
-    float damping;  // $MIN: -200.0 $MAX: 0.0 $DEFAULT: -200.0 $DESCRIPTION: "damping"
+    float damping;  // $MIN: -200.0 $MAX: 0.0 $DEFAULT: -200.0 $DESCRIPTION: "Damping"
   } random;
 } dt_iop_dither_params_t;
 
@@ -91,16 +91,16 @@ typedef struct dt_iop_dither_data_t
 
 const char *name()
 {
-  return _("dithering");
+  return _("Dithering");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("reduce banding and posterization effects in output JPEGs by adding random noise"),
-                                      _("corrective"),
-                                      _("non-linear, RGB, display-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, display-referred"));
+  return dt_iop_set_description(self, _("Reduce banding and posterization effects in output JPEGs by adding random noise"),
+                                      _("Corrective"),
+                                      _("Non-linear, RGB, display-referred"),
+                                      _("Non-linear, RGB"),
+                                      _("Non-linear, RGB, display-referred"));
 }
 
 int default_group()
@@ -125,11 +125,11 @@ void init_presets(dt_iop_module_so_t *self)
   dt_iop_dither_params_t tmp
       = (dt_iop_dither_params_t){ DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
   // add the preset.
-  dt_gui_presets_add_generic(_("dither"), self->op,
+  dt_gui_presets_add_generic(_("Dither"), self->op,
                              self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1,
                              DEVELOP_BLEND_CS_NONE);
   // make it auto-apply for all images:
-  // dt_gui_presets_update_autoapply(_("dither"), self->op, self->version(), 1);
+  // dt_gui_presets_update_autoapply(_("Dither"), self->op, self->version(), 1);
 
   dt_database_release_transaction(darktable.db);
 }
@@ -667,8 +667,8 @@ void gui_init(struct dt_iop_module_t *self)
 
 #if 0
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 0.1, p->random.radius, 2);
-  gtk_widget_set_tooltip_text(g->radius, _("radius for blurring step"));
-  dt_bauhaus_widget_set_label(g->radius, NULL, N_("radius"));
+  gtk_widget_set_tooltip_text(g->radius, _("Radius for blurring step"));
+  dt_bauhaus_widget_set_label(g->radius, NULL, N_("Radius"));
 
   g->range = dtgtk_gradient_slider_multivalue_new(4);
   dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->range), GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);
@@ -679,8 +679,8 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[1], 1);
   dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[2], 2);
   dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[3], 3);
-  gtk_widget_set_tooltip_text(g->range, _("the gradient range where to apply random dither"));
-  g->range_label = gtk_label_new(_("gradient range"));
+  gtk_widget_set_tooltip_text(g->range, _("The gradient range where to apply random dither"));
+  g->range_label = gtk_label_new(_("Gradient range"));
 
   GtkWidget *rlabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   gtk_box_pack_start(GTK_BOX(rlabel), GTK_WIDGET(g->range_label), FALSE, FALSE, 0);
@@ -688,7 +688,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->damping = dt_bauhaus_slider_from_params(self, "random.damping");
 
-  gtk_widget_set_tooltip_text(g->damping, _("damping level of random dither"));
+  gtk_widget_set_tooltip_text(g->damping, _("Damping level of random dither"));
   dt_bauhaus_slider_set_digits(g->damping, 3);
   dt_bauhaus_slider_set_format(g->damping, " dB");
 
@@ -717,4 +717,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

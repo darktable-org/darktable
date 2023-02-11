@@ -1009,4 +1009,3 @@ void dt_iop_estimate_cubic(const float x[4], const float y[4], float a[4])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

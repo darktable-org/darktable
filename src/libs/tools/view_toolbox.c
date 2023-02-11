@@ -43,7 +43,7 @@ typedef struct dt_lib_view_toolbox_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("view toolbox");
+  return _("View toolbox");
 }
 
 const char **views(dt_lib_module_t *self)

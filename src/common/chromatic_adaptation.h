@@ -23,11 +23,11 @@
 
 typedef enum dt_adaptation_t
 {
-  DT_ADAPTATION_LINEAR_BRADFORD = 0, // $DESCRIPTION: "linear Bradford (ICC v4)"
+  DT_ADAPTATION_LINEAR_BRADFORD = 0, // $DESCRIPTION: "Linear Bradford (ICC v4)"
   DT_ADAPTATION_CAT16           = 1, // $DESCRIPTION: "CAT16 (CIECAM16)"
-  DT_ADAPTATION_FULL_BRADFORD   = 2, // $DESCRIPTION: "non-linear Bradford"
+  DT_ADAPTATION_FULL_BRADFORD   = 2, // $DESCRIPTION: "Non-linear Bradford"
   DT_ADAPTATION_XYZ             = 3, // $DESCRIPTION: "XYZ"
-  DT_ADAPTATION_RGB             = 4, // $DESCRIPTION: "none (bypass)"
+  DT_ADAPTATION_RGB             = 4, // $DESCRIPTION: "None (bypass)"
   DT_ADAPTATION_LAST
 } dt_adaptation_t;
 
@@ -498,4 +498,3 @@ static inline void convert_D50_to_LMS(const dt_adaptation_t adaptation, dt_align
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -464,4 +464,3 @@ void dt_masks_calc_detail_mask(float *const restrict src, float *const restrict 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

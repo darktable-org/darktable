@@ -82,7 +82,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("snapshots");
+  return _("Snapshots");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -501,7 +501,7 @@ static void _signal_image_changed(gpointer instance, gpointer user_data)
       // tooltip
       char *name = dt_image_get_filename(s->imgid);
       snprintf(newlab, sizeof(newlab),
-               _("** %s '%s'"), _("this snapshot was taken from"), name);
+               _("** %s '%s'"), _("This snapshot was taken from"), name);
       g_free(name);
       gtk_widget_set_tooltip_text(b, newlab);
     }
@@ -536,8 +536,8 @@ void gui_init(dt_lib_module_t *self)
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* create take snapshot button */
-  d->take_button = dt_action_button_new(self, N_("take snapshot"), _lib_snapshots_add_button_clicked_callback, self,
-                                        _("take snapshot to compare with another image "
+  d->take_button = dt_action_button_new(self, N_("Take snapshot"), _lib_snapshots_add_button_clicked_callback, self,
+                                        _("Take snapshot to compare with another image "
                                           "or the same image at another stage of development"), 0, 0);
 
   /*
@@ -573,7 +573,7 @@ void gui_init(dt_lib_module_t *self)
                      dt_ui_resize_wrap(d->snapshots_box, 1, "plugins/darkroom/snapshots/windowheight"), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
 
-  dt_action_register(DT_ACTION(self), N_("toggle last snapshot"), _lib_snapshots_toggle_last, 0, 0);
+  dt_action_register(DT_ACTION(self), N_("Toggle last snapshot"), _lib_snapshots_toggle_last, 0, 0);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                                   G_CALLBACK(_signal_profile_changed), self);
@@ -597,7 +597,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   // first make sure the current history is properly written
   dt_dev_write_history(darktable.develop);
 
-  const gchar *name = _("original");
+  const gchar *name = _("Original");
 
   if(darktable.develop->history_end > 0)
   {
@@ -607,7 +607,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
     if(history_item && history_item->module)
       name = history_item->module->name();
     else
-      name = _("unknown");
+      name = _("Unknown");
   }
 
   dt_lib_snapshot_t *s = &d->snapshot[d->num_snapshots];

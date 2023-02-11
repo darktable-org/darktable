@@ -306,7 +306,7 @@ static void rcd_demosaic(
 
   if((width < 16) || (height < 16))
   {
-    dt_control_log(_("[rcd_demosaic] too small area"));
+    dt_control_log(_("[Rcd_demosaic] Too small area"));
     return;
   }
 
@@ -606,4 +606,3 @@ static void rcd_demosaic(
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -42,4 +42,3 @@ void dt_history_snapshot_undo_lt_history_data_free(gpointer data);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

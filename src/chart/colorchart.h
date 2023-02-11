@@ -72,4 +72,3 @@ void checker_set_color(box_t *box, dt_colorspaces_color_profile_type_t color_spa
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

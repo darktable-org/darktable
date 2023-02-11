@@ -286,4 +286,3 @@ LUAMOD_API int luaopen_utf8 (lua_State *L) {
   lua_setfield(L, -2, "charpattern");
   return 1;
 }
-

@@ -65,9 +65,9 @@ typedef struct dt_iop_grain_params_t
   float scale;                     /* $MIN: 20.0/GRAIN_SCALE_FACTOR
                                       $MAX: 6400.0/GRAIN_SCALE_FACTOR
                                       $DEFAULT: 1600.0/GRAIN_SCALE_FACTOR
-                                      $DESCRIPTION: "coarseness" */
+                                      $DESCRIPTION: "Coarseness" */
   float strength;      // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
-  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "mid-tones bias"
+  float midtones_bias; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "Mid-tones bias"
 } dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
@@ -416,16 +416,16 @@ static float dt_lut_lookup_2d_1c(const float *grain_lut, const float x, const fl
 
 const char *name()
 {
-  return _("grain");
+  return _("Grain");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("simulate silver grains from film"),
-                                      _("creative"),
-                                      _("non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Simulate silver grains from film"),
+                                      _("Creative"),
+                                      _("Non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int flags()
@@ -565,15 +565,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->scale, GRAIN_SCALE_FACTOR);
   dt_bauhaus_slider_set_digits(g->scale, 0);
   dt_bauhaus_slider_set_format(g->scale, " ISO");
-  gtk_widget_set_tooltip_text(g->scale, _("the grain size (~ISO of the film)"));
+  gtk_widget_set_tooltip_text(g->scale, _("The grain size (~ISO of the film)"));
 
-  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
   dt_bauhaus_slider_set_format(g->strength, "%");
-  gtk_widget_set_tooltip_text(g->strength, _("the strength of applied grain"));
+  gtk_widget_set_tooltip_text(g->strength, _("The strength of applied grain"));
 
   g->midtones_bias = dt_bauhaus_slider_from_params(self, "midtones_bias");
   dt_bauhaus_slider_set_format(g->midtones_bias, "%");
-  gtk_widget_set_tooltip_text(g->midtones_bias, _("amount of mid-tones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
+  gtk_widget_set_tooltip_text(g->midtones_bias, _("Amount of mid-tones bias from the photographic paper response modeling. The greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
 }
 
 // clang-format off
@@ -581,4 +581,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

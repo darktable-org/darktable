@@ -288,7 +288,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   return;
 
   error:
-  dt_control_log(_("detail mask blending error"));
+  dt_control_log(_("Detail mask blending error"));
   dt_free_align(warp_mask);
   dt_free_align(lum);
   dt_free_align(tmp);
@@ -456,7 +456,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   if(oscale != iscale || xoffs < 0 || yoffs < 0
      || ((xoffs > 0 || yoffs > 0) && (owidth + xoffs > iwidth || oheight + yoffs > iheight)))
   {
-    dt_control_log(_("skipped blending in module '%s': roi's do not match"), self->op);
+    dt_control_log(_("Skipped blending in module '%s': roi's do not match"), self->op);
     return;
   }
 
@@ -487,7 +487,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   float *const restrict _mask = dt_alloc_align_float(buffsize);
   if(!_mask)
   {
-    dt_control_log(_("could not allocate buffer for blending"));
+    dt_control_log(_("Could not allocate buffer for blending"));
     return;
   }
   float *const restrict mask = _mask;
@@ -793,7 +793,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   return;
 
   error:
-  dt_control_log(_("detail mask CL blending problem"));
+  dt_control_log(_("Detail mask CL blending problem"));
   dt_free_align(lum);
   dt_opencl_release_mem_object(tmp);
   dt_opencl_release_mem_object(blur);
@@ -842,7 +842,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   if(oscale != iscale || xoffs < 0 || yoffs < 0
      || ((xoffs > 0 || yoffs > 0) && (owidth + xoffs > iwidth || oheight + yoffs > iheight)))
   {
-    dt_control_log(_("skipped blending in module '%s': roi's do not match"), self->op);
+    dt_control_log(_("Skipped blending in module '%s': roi's do not match"), self->op);
     return TRUE;
   }
 
@@ -877,7 +877,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   float *_mask = dt_alloc_align_float(buffsize);
   if(!_mask)
   {
-    dt_control_log(_("could not allocate buffer for blending"));
+    dt_control_log(_("Could not allocate buffer for blending"));
     return FALSE;
   }
   float *const mask = _mask;

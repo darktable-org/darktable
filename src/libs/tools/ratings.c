@@ -53,7 +53,7 @@ static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEvent
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("ratings");
+  return _("Ratings");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -95,7 +95,7 @@ void gui_init(dt_lib_module_t *self)
                                | GDK_STRUCTURE_MASK);
 
   /* connect callbacks */
-  gtk_widget_set_tooltip_text(drawing, _("set star rating for selected images"));
+  gtk_widget_set_tooltip_text(drawing, _("Set star rating for selected images"));
   gtk_widget_set_app_paintable(drawing, TRUE);
   g_signal_connect(G_OBJECT(drawing), "draw", G_CALLBACK(_lib_ratings_draw_callback), self);
   g_signal_connect(G_OBJECT(drawing), "button-press-event", G_CALLBACK(_lib_ratings_button_press_callback), self);
@@ -108,7 +108,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* set size of navigation draw area */
   gtk_widget_set_name(self->widget, "lib-rating-stars");
-  dt_action_t *ac = dt_action_define(&darktable.control->actions_thumb, NULL, N_("rating"), drawing, &dt_action_def_rating);
+  dt_action_t *ac = dt_action_define(&darktable.control->actions_thumb, NULL, N_("Rating"), drawing, &dt_action_def_rating);
   dt_shortcut_register(ac, 0, 0, GDK_KEY_0, 0);
   dt_shortcut_register(ac, 1, 0, GDK_KEY_1, 0);
   dt_shortcut_register(ac, 2, 0, GDK_KEY_2, 0);

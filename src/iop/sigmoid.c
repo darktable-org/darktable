@@ -39,19 +39,19 @@ DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
 
 typedef enum dt_iop_sigmoid_methods_type_t
 {
-  DT_SIGMOID_METHOD_PER_CHANNEL = 0,     // $DESCRIPTION: "per channel"
-  DT_SIGMOID_METHOD_RGB_RATIO = 1,     // $DESCRIPTION: "rgb ratio"
+  DT_SIGMOID_METHOD_PER_CHANNEL = 0,     // $DESCRIPTION: "Per channel"
+  DT_SIGMOID_METHOD_RGB_RATIO = 1,     // $DESCRIPTION: "Rgb ratio"
 } dt_iop_sigmoid_methods_type_t;
 
 
 typedef struct dt_iop_sigmoid_params_t
 {
-  float middle_grey_contrast;  // $MIN: 0.1  $MAX: 10.0 $DEFAULT: 1.5 $DESCRIPTION: "contrast"
-  float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "skew"
-  float display_white_target;  // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
-  float display_black_target;  // $MIN: 0.0  $MAX: 15.0 $DEFAULT: 0.0152 $DESCRIPTION: "target black"
-  dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_PER_CHANNEL $DESCRIPTION: "color processing"
-  float hue_preservation;                          // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "preserve hue"
+  float middle_grey_contrast;  // $MIN: 0.1  $MAX: 10.0 $DEFAULT: 1.5 $DESCRIPTION: "Contrast"
+  float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Skew"
+  float display_white_target;  // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "Target white"
+  float display_black_target;  // $MIN: 0.0  $MAX: 15.0 $DEFAULT: 0.0152 $DESCRIPTION: "Target black"
+  dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_PER_CHANNEL $DESCRIPTION: "Color processing"
+  float hue_preservation;                          // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "Preserve hue"
 } dt_iop_sigmoid_params_t;
 
 typedef struct dt_iop_sigmoid_data_t
@@ -78,23 +78,23 @@ typedef struct dt_iop_sigmoid_gui_data_t
 
 const char *name()
 {
-  return _("sigmoid");
+  return _("Sigmoid");
 }
 
 const char *aliases()
 {
-  return _("tone mapping|view transform|display transform");
+  return _("Tone mapping|view transform|display transform");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply a view transform to make a image displayable\n"
-                                        "on a screen or print. uses a robust and smooth\n"
+  return dt_iop_set_description(self, _("Apply a view transform to make a image displayable\n"
+                                        "on a screen or print. Uses a robust and smooth\n"
                                         "tone curve with optional color preservation methods."),
-                                      _("corrective and creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("non-linear, RGB"),
-                                      _("linear, RGB, display-referred"));
+                                      _("Corrective and creative"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Non-linear, RGB"),
+                                      _("Linear, RGB, display-referred"));
 }
 
 int flags()
@@ -122,7 +122,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.middle_grey_contrast = 1.22f;
   p.contrast_skewness = 0.65f;
   p.hue_preservation = 100.0f;
-  dt_gui_presets_add_generic(_("neutral gray"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("Neutral gray"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.middle_grey_contrast = 1.6f;
   p.contrast_skewness = -0.2f;
@@ -132,7 +132,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.middle_grey_contrast = 1.0f;
   p.contrast_skewness = 0.0f;
   p.color_processing = DT_SIGMOID_METHOD_RGB_RATIO;
-  dt_gui_presets_add_generic(_("reinhard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("Reinhard"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 // Declared here as it is used in the commit params function
@@ -556,29 +556,29 @@ void gui_init(dt_iop_module_t *self)
   g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
   dt_bauhaus_slider_set_soft_range(g->contrast_slider, 0.7f, 3.0f);
   dt_bauhaus_slider_set_digits(g->contrast_slider, 3);
-  gtk_widget_set_tooltip_text(g->contrast_slider, _("compression of the applied curve\n"
+  gtk_widget_set_tooltip_text(g->contrast_slider, _("Compression of the applied curve\n"
                                                     "implicitly defines the supported input dynamic range"));
   g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
-  gtk_widget_set_tooltip_text(g->skewness_slider, _("shift the compression towards shadows or highlights.\n"
-                                                    "negative values increase contrast in shadows.\n"
-                                                    "positive values increase contrast in highlights.\n"
-                                                    "the opposite end will see a reduction in contrast."));
+  gtk_widget_set_tooltip_text(g->skewness_slider, _("Shift the compression towards shadows or highlights.\n"
+                                                    "Negative values increase contrast in shadows.\n"
+                                                    "Positive values increase contrast in highlights.\n"
+                                                    "The opposite end will see a reduction in contrast."));
 
   // Color handling
   g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
   g->hue_preservation_slider = dt_bauhaus_slider_from_params(self, "hue_preservation");
   dt_bauhaus_slider_set_format(g->hue_preservation_slider, "%");
-  gtk_widget_set_tooltip_text(g->hue_preservation_slider, _("optional correction of the hue twist introduced by\n"
+  gtk_widget_set_tooltip_text(g->hue_preservation_slider, _("Optional correction of the hue twist introduced by\n"
                                                             "the per-channel processing method."));
 
   // collapsible section
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/sigmoid/expand_values",
-     _("display luminance"),
+     _("Display luminance"),
      GTK_BOX(self->widget));
   gtk_widget_set_tooltip_text(g->cs.expander,
-                                _("set display black/white targets"));
+                                _("Set display black/white targets"));
   GtkWidget *main_box = self->widget;
   self->widget = GTK_WIDGET(g->cs.container);
 
@@ -586,13 +586,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->display_black_slider, 0.0f, 1.0f);
   dt_bauhaus_slider_set_digits(g->display_black_slider, 4);
   dt_bauhaus_slider_set_format(g->display_black_slider, "%");
-  gtk_widget_set_tooltip_text(g->display_black_slider, _("the black luminance of the target display or print.\n"
-                                                         "can be used creatively for a faded look."));
+  gtk_widget_set_tooltip_text(g->display_black_slider, _("The black luminance of the target display or print.\n"
+                                                         "Can be used creatively for a faded look."));
   g->display_white_slider = dt_bauhaus_slider_from_params(self, "display_white_target");
   dt_bauhaus_slider_set_soft_range(g->display_white_slider, 50.0f, 100.0f);
   dt_bauhaus_slider_set_format(g->display_white_slider, "%");
-  gtk_widget_set_tooltip_text(g->display_white_slider, _("the white luminance of the target display or print.\n"
-                                                         "can be used creatively for a faded look or blowing out whites earlier."));
+  gtk_widget_set_tooltip_text(g->display_white_slider, _("The white luminance of the target display or print.\n"
+                                                         "Can be used creatively for a faded look or blowing out whites earlier."));
   self->widget = main_box;
 }
 

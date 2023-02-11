@@ -74,7 +74,7 @@ typedef struct dt_iop_monochrome_global_data_t
 
 const char *name()
 {
-  return _("monochrome");
+  return _("Monochrome");
 }
 
 int default_group()
@@ -94,11 +94,11 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("quickly convert an image to black & white using a variable color filter"),
-                                      _("creative"),
-                                      _("linear or non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Quickly convert an image to black & white using a variable color filter"),
+                                      _("Creative"),
+                                      _("Linear or non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -124,20 +124,20 @@ void init_presets(dt_iop_module_so_t *self)
   p.a = 32.0f;
   p.b = 64.0f;
   p.highlights = 0.0f;
-  dt_gui_presets_add_generic(_("red filter"), self->op,
+  dt_gui_presets_add_generic(_("Red filter"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // p.a = 64.0f;
   // p.b = -32.0f;
-  // dt_gui_presets_add_generic(_("purple filter"), self->op, self->version(), &p, sizeof(p), 1);
+  // dt_gui_presets_add_generic(_("Purple filter"), self->op, self->version(), &p, sizeof(p), 1);
 
   // p.a = -32.0f;
   // p.b = -64.0f;
-  // dt_gui_presets_add_generic(_("blue filter"), self->op, self->version(), &p, sizeof(p), 1);
+  // dt_gui_presets_add_generic(_("Blue filter"), self->op, self->version(), &p, sizeof(p), 1);
 
   // p.a = -64.0f;
   // p.b = 32.0f;
-  // dt_gui_presets_add_generic(_("green filter"), self->op, self->version(), &p, sizeof(p), 1);
+  // dt_gui_presets_add_generic(_("Green filter"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 static float color_filter(const float ai, const float bi, const float a, const float b, const float size)
@@ -544,7 +544,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("drag and scroll mouse wheel to adjust the virtual color filter"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("Drag and scroll mouse wheel to adjust the virtual color filter"));
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -559,8 +559,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
 
   g->highlights
-      = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, N_("highlights")));
-  gtk_widget_set_tooltip_text(g->highlights, _("how much to keep highlights"));
+      = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, N_("Highlights")));
+  gtk_widget_set_tooltip_text(g->highlights, _("How much to keep highlights"));
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
@@ -581,4 +581,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

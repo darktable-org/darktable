@@ -99,7 +99,7 @@ typedef struct dt_lib_timeline_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("timeline");
+  return _("Timeline");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -1431,8 +1431,8 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_lib_timeline_collection_changed), (gpointer)self);
 
-  dt_action_register(DT_ACTION(self), N_("start selection"), _selection_start, GDK_KEY_bracketleft, 0);
-  dt_action_register(DT_ACTION(self), N_("stop selection"), _selection_stop, GDK_KEY_bracketright, 0);
+  dt_action_register(DT_ACTION(self), N_("Start selection"), _selection_start, GDK_KEY_bracketleft, 0);
+  dt_action_register(DT_ACTION(self), N_("Stop selection"), _selection_stop, GDK_KEY_bracketright, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

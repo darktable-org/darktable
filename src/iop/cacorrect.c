@@ -49,17 +49,17 @@ typedef enum dt_iop_cacorrect_errror_t
 
 typedef enum dt_iop_cacorrect_multi_t
 {
-  CACORRETC_MULTI_1 = 1,     // $DESCRIPTION: "once"
-  CACORRETC_MULTI_2 = 2,     // $DESCRIPTION: "twice"
-  CACORRETC_MULTI_3 = 3,     // $DESCRIPTION: "three times"
-  CACORRETC_MULTI_4 = 4,     // $DESCRIPTION: "four times"
-  CACORRETC_MULTI_5 = 5,     // $DESCRIPTION: "five times"
+  CACORRETC_MULTI_1 = 1,     // $DESCRIPTION: "Once"
+  CACORRETC_MULTI_2 = 2,     // $DESCRIPTION: "Twice"
+  CACORRETC_MULTI_3 = 3,     // $DESCRIPTION: "Three times"
+  CACORRETC_MULTI_4 = 4,     // $DESCRIPTION: "Four times"
+  CACORRETC_MULTI_5 = 5,     // $DESCRIPTION: "Five times"
 } dt_iop_cacorrect_multi_t;
 
 typedef struct dt_iop_cacorrect_params_t
 {
-  gboolean avoidshift;      // $DEFAULT: 0 $DESCRIPTION: "avoid colorshift"
-  dt_iop_cacorrect_multi_t iterations; // $DEFAULT: CACORRETC_MULTI_2 $DESCRIPTION: "iterations"
+  gboolean avoidshift;      // $DEFAULT: 0 $DESCRIPTION: "Avoid colorshift"
+  dt_iop_cacorrect_multi_t iterations; // $DEFAULT: CACORRETC_MULTI_2 $DESCRIPTION: "Iterations"
 } dt_iop_cacorrect_params_t;
 
 typedef struct dt_iop_cacorrect_gui_data_t
@@ -79,16 +79,16 @@ typedef struct dt_iop_cacorrect_data_t
 const char *name()
 {
   // make sure you put all your translatable strings into _() !
-  return _("raw chromatic aberrations");
+  return _("Raw chromatic aberrations");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("correct chromatic aberrations for Bayer sensors"),
-                                      _("corrective"),
-                                      _("linear, raw, scene-referred"),
-                                      _("linear, raw"),
-                                      _("linear, raw, scene-referred"));
+  return dt_iop_set_description(self, _("Correct chromatic aberrations for Bayer sensors"),
+                                      _("Corrective"),
+                                      _("Linear, raw, scene-referred"),
+                                      _("Linear, raw"),
+                                      _("Linear, raw, scene-referred"));
 }
 
 
@@ -1333,20 +1333,20 @@ static void _display_ca_error(struct dt_iop_module_t *self)
    ++darktable.gui->reset;
 
   if(g->error == CACORRECT_ERROR_CFA)
-    dt_iop_set_module_trouble_message(self, _("error"),
-                                      _("raw CA correction supports only standard RGB Bayer filter arrays"), NULL);
+    dt_iop_set_module_trouble_message(self, _("Error"),
+                                      _("Raw CA correction supports only standard RGB Bayer filter arrays"), NULL);
   else if(g->error == CACORRECT_ERROR_MATH)
-     dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
-                                      _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"
-                                        "you can get more info by running darktable via the console."), NULL);
+     dt_iop_set_module_trouble_message(self, _("Bypassed while zooming in"),
+                                      _("While calculating the correction parameters the internal maths failed so module is bypassed.\n"
+                                        "You can get more info by running darktable via the console."), NULL);
   else if(g->error == CACORRECT_ERROR_LIN)
-     dt_iop_set_module_trouble_message(self, _("quality"),
-                                      _("internals maths found too few data points so restricted the order of the fit to linear.\n"
-                                        "you might view bad correction results."), NULL);
+     dt_iop_set_module_trouble_message(self, _("Quality"),
+                                      _("Internals maths found too few data points so restricted the order of the fit to linear.\n"
+                                        "You might view bad correction results."), NULL);
   else if(g->error == CACORRECT_ERROR_SIZE)
-    dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
-                                      _("to calculate good parameters for raw CA correction we want full sensor data or at least a sensible part of that.\n"
-                                        "the image shown in darkroom would look vastly different from developed files so effect is bypassed now."), NULL);
+    dt_iop_set_module_trouble_message(self, _("Bypassed while zooming in"),
+                                      _("To calculate good parameters for raw CA correction we want full sensor data or at least a sensible part of that.\n"
+                                        "The image shown in darkroom would look vastly different from developed files so effect is bypassed now."), NULL);
   else
     dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
 
@@ -1452,17 +1452,17 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->iterations = dt_bauhaus_combobox_from_params(self, "iterations");
-  gtk_widget_set_tooltip_text(g->iterations, _("iteration runs, default is twice"));
+  gtk_widget_set_tooltip_text(g->iterations, _("Iteration runs, default is twice"));
 
   g->avoidshift = dt_bauhaus_toggle_from_params(self, "avoidshift");
-  gtk_widget_set_tooltip_text(g->avoidshift, _("activate colorshift correction for blue & red channels"));
+  gtk_widget_set_tooltip_text(g->avoidshift, _("Activate colorshift correction for blue & red channels"));
 
   // start building top level widget
   self->widget = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
 
-  GtkWidget *label_non_raw = dt_ui_label_new(_("automatic chromatic aberration correction\nonly for Bayer raw files"));
+  GtkWidget *label_non_raw = dt_ui_label_new(_("Automatic chromatic aberration correction\nonly for Bayer raw files"));
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
 }
 
@@ -1472,4 +1472,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

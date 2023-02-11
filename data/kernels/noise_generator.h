@@ -21,9 +21,9 @@
 
 typedef enum dt_noise_distribution_t
 {
-  DT_NOISE_UNIFORM = 0,   // $DESCRIPTION: "uniform"
-  DT_NOISE_GAUSSIAN = 1,  // $DESCRIPTION: "gaussian"
-  DT_NOISE_POISSONIAN = 2 // $DESCRIPTION: "poissonian"
+  DT_NOISE_UNIFORM = 0,   // $DESCRIPTION: "Uniform"
+  DT_NOISE_GAUSSIAN = 1,  // $DESCRIPTION: "Gaussian"
+  DT_NOISE_POISSONIAN = 2 // $DESCRIPTION: "Poissonian"
 } dt_noise_distribution_t;
 
 

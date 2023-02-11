@@ -49,7 +49,7 @@ typedef struct dt_imageio_email_t
 
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
-  return _("send as email");
+  return _("Send as email");
 }
 
 void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_params,
@@ -134,14 +134,14 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
-    dt_control_log(_("could not export to file `%s'!"), attachment->file);
+    dt_control_log(_("Could not export to file `%s'!"), attachment->file);
     g_free(attachment->file);
     g_free(attachment);
     g_free(filename);
     return 1;
   }
 
-  dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
+  dt_control_log(ngettext("%d/%d Exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, attachment->file);
 
 #ifdef _OPENMP // store can be called in parallel, so synch access to shared memory
@@ -195,7 +195,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 
   argv[0] = "xdg-email";
   argv[1] = "--subject";
-  argv[2] = _("images exported from darktable");
+  argv[2] = _("Images exported from darktable");
   argv[3] = "--body";
   int n = 5;
 
@@ -248,7 +248,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 
   if(exit_status)
   {
-    dt_control_log(_("could not launch email client!"));
+    dt_control_log(_("Could not launch email client!"));
   }
 }
 
@@ -266,4 +266,3 @@ int supported(struct dt_imageio_module_storage_t *storage, struct dt_imageio_mod
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

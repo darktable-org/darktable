@@ -98,7 +98,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
       else
         compression = fmaxf(compression, 0.001f) * 0.8f;
       dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, compression), compression);
-      dt_toast_log(_("compression: %3.2f%%"), compression*100.0f);
+      dt_toast_log(_("Compression: %3.2f%%"), compression*100.0f);
     }
     else if(dt_modifier_is(state, 0)) // simple scroll to adjust curvature, calling func adjusts opacity with Ctrl
     {
@@ -108,7 +108,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
       else
         curvature = fmaxf(curvature - 0.01f, -2.0f);
       dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, curvature), curvature);
-      dt_toast_log(_("curvature: %3.2f%%"), curvature * 50.0f);
+      dt_toast_log(_("Curvature: %3.2f%%"), curvature * 50.0f);
     }
     dt_dev_masks_list_change(darktable.develop);
     return 1;
@@ -137,7 +137,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_gui_form_create(form, gui, index, module);
       dt_conf_set_float(DT_MASKS_CONF(form->type, gradient, compression), gradient->compression);
-      dt_toast_log(_("compression: %3.2f%%"), gradient->compression*100.0f);
+      dt_toast_log(_("Compression: %3.2f%%"), gradient->compression*100.0f);
       dt_masks_update_image(darktable.develop);
     }
     else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -147,7 +147,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
         gradient->curvature = fminf(gradient->curvature + 0.01f, 2.0f);
       else
         gradient->curvature = fmaxf(gradient->curvature - 0.01f, -2.0f);
-      dt_toast_log(_("curvature: %3.2f%%"), gradient->curvature*50.0f);
+      dt_toast_log(_("Curvature: %3.2f%%"), gradient->curvature*50.0f);
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_gui_form_create(form, gui, index, module);
       dt_masks_update_image(darktable.develop);
@@ -1414,11 +1414,11 @@ static int _gradient_get_mask_roi(const dt_iop_module_t *const module, const dt_
 static GSList *_gradient_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[GRADIENT on pivot] rotate shape"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[GRADIENT creation] set rotation"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[GRADIENT] change curvature"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[GRADIENT] change compression"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[GRADIENT] change opacity"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[GRADIENT on pivot] Rotate shape"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0, _("[GRADIENT creation] Set rotation"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[GRADIENT] Change curvature"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[GRADIENT] Change compression"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[GRADIENT] Change opacity"));
   return lm;
 }
 
@@ -1430,7 +1430,7 @@ static void _gradient_sanitize_config(dt_masks_type_t type)
 
 static void _gradient_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
 {
-  snprintf(form->name, sizeof(form->name), _("gradient #%d"), (int)nb);
+  snprintf(form->name, sizeof(form->name), _("Gradient #%d"), (int)nb);
 }
 
 static void _gradient_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
@@ -1531,4 +1531,3 @@ const dt_masks_functions_t dt_masks_functions_gradient = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

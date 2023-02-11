@@ -53,21 +53,21 @@ typedef struct dt_iop_spots_params_t dt_iop_spots_data_t;
 // this returns a translatable name
 const char *name()
 {
-  return _("spot removal");
+  return _("Spot removal");
 }
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the retouch module instead.");
+  return _("This module is deprecated. Please use the retouch module instead.");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("remove sensor dust spots"),
-                                      _("corrective"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("geometric, raw"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self, _("Remove sensor dust spots"),
+                                      _("Corrective"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Geometric, raw"),
+                                      _("Linear, RGB, scene-referred"));
 }
 
 int default_group()
@@ -217,7 +217,7 @@ static gboolean _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
 
   if(nb >= 64)
   {
-    dt_control_log(_("spot module is limited to 64 shapes. please add a new instance!"));
+    dt_control_log(_("Spot module is limited to 64 shapes. Please add a new instance!"));
   }
 
   if(nb < 64
@@ -803,24 +803,24 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("number of strokes:")), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("Number of strokes:")), FALSE, TRUE, 0);
   g->label = GTK_LABEL(dt_ui_label_new("-1"));
-  gtk_widget_set_tooltip_text(hbox, _("click on a shape and drag on canvas.\nuse the mouse wheel "
-                                      "to adjust size.\nright click to remove a shape."));
+  gtk_widget_set_tooltip_text(hbox, _("Click on a shape and drag on canvas.\nUse the mouse wheel "
+                                      "to adjust size.\nRight click to remove a shape."));
 
-  g->bt_edit_masks = dt_iop_togglebutton_new(self, NULL, N_("show and edit shapes"), NULL,
+  g->bt_edit_masks = dt_iop_togglebutton_new(self, NULL, N_("Show and edit shapes"), NULL,
                                              G_CALLBACK(_edit_masks), TRUE, 0, 0,
                                              dtgtk_cairo_paint_masks_eye, hbox);
 
-  g->bt_path = dt_iop_togglebutton_new(self, N_("shapes"), N_("add path"), N_("add multiple paths"),
+  g->bt_path = dt_iop_togglebutton_new(self, N_("Shapes"), N_("Add path"), N_("Add multiple paths"),
                                        G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
                                        dtgtk_cairo_paint_masks_path, hbox);
 
-  g->bt_ellipse = dt_iop_togglebutton_new(self, N_("shapes"), N_("add ellipse"), N_("add multiple ellipses"),
+  g->bt_ellipse = dt_iop_togglebutton_new(self, N_("Shapes"), N_("Add ellipse"), N_("Add multiple ellipses"),
                                           G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
                                           dtgtk_cairo_paint_masks_ellipse, hbox);
 
-  g->bt_circle = dt_iop_togglebutton_new(self, N_("shapes"), N_("add circle"), N_("add multiple circles"),
+  g->bt_circle = dt_iop_togglebutton_new(self, N_("Shapes"), N_("Add circle"), N_("Add multiple circles"),
                                          G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
                                          dtgtk_cairo_paint_masks_circle, hbox);
 
@@ -839,4 +839,3 @@ void gui_reset(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

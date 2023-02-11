@@ -313,7 +313,7 @@ static inline void fast_surface_blur(float *const restrict image,
 
   if(!ds_image || !ds_mask || !ds_ab || !ab)
   {
-    dt_control_log(_("fast guided filter failed to allocate memory, check your RAM settings"));
+    dt_control_log(_("Fast guided filter failed to allocate memory, check your RAM settings"));
     goto clean;
   }
 
@@ -361,4 +361,3 @@ clean:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -513,4 +513,3 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   return err;
 }
 #endif
-

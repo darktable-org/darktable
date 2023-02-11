@@ -71,4 +71,3 @@ GHashTable *dt_pwstorage_libsecret_get(const backend_libsecret_context_t *contex
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

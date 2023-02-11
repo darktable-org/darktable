@@ -35,7 +35,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
   // First check if we have a gray (chromacity < epsilon)
 
   if(color[1] < 2.0f)
-    return _("gray");
+    return _("Gray");
 
   // Start with special cases : skin tones
 
@@ -97,82 +97,82 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
       { .name = _("Mexican"),          .ethnicity = ETHNIE_MEXICAN } };
 
   const skin_color_t skin[SKINS] = {
-    { .name = _("forearm"),
+    { .name = _("Forearm"),
       .ethnicity = ETHNIE_CHINESE,
       .L = { .avg = 60.9f, .std = 3.4f },
       .a = { .avg = 7.0f, .std = 1.7f },
       .b = { .avg = 15.0f, .std = 1.8f } },
-    { .name = _("forearm"),
+    { .name = _("Forearm"),
       .ethnicity = ETHNIE_THAI,
       .L = { .avg = 61.9f, .std = 3.7f },
       .a = { .avg = 7.1f, .std = 1.7f },
       .b = { .avg = 17.4f, .std = 2.0f } },
-    { .name = _("forearm"),
+    { .name = _("Forearm"),
       .ethnicity = ETHNIE_KURDISH,
       .L = { .avg = 60.6f, .std = 4.8f },
       .a = { .avg = 6.5f, .std = 1.6f },
       .b = { .avg = 16.4f, .std = 2.3f } },
-    { .name = _("forearm"),
+    { .name = _("Forearm"),
       .ethnicity = ETHNIE_CAUCASIAN,
       .L = { .avg = 63.0f, .std = 5.5f },
       .a = { .avg = 5.6f, .std = 1.9f },
       .b = { .avg = 14.0f, .std = 2.9f } },
-    { .name = _("forehead"),
+    { .name = _("Forehead"),
       .ethnicity = ETHNIE_CHINESE,
       .L = { .avg = 56.4f, .std = 3.2f },
       .a = { .avg = 11.7f, .std = 2.1f },
       .b = { .avg = 16.3f, .std = 1.4f } },
-    { .name = _("forehead"),
+    { .name = _("Forehead"),
       .ethnicity = ETHNIE_THAI,
       .L = { .avg = 56.8f, .std = 4.1f },
       .a = { .avg = 11.6f, .std = 2.2f },
       .b = { .avg = 17.7f, .std = 1.8f } },
-    { .name = _("forehead"),
+    { .name = _("Forehead"),
       .ethnicity = ETHNIE_KURDISH,
       .L = { .avg = 56.1f, .std = 4.5f },
       .a = { .avg = 11.3f, .std = 2.1f },
       .b = { .avg = 16.4f, .std = 2.2f } },
-    { .name = _("forehead"),
+    { .name = _("Forehead"),
       .ethnicity = ETHNIE_CAUCASIAN,
       .L = { .avg = 59.2f, .std = 5.1f },
       .a = { .avg = 11.6f, .std = 2.8f },
       .b = { .avg = 15.1f, .std = 2.3f } },
-    { .name = _("forehead"),
+    { .name = _("Forehead"),
       .ethnicity = ETHNIE_AFRICAN_AM,
       .L = { .avg = 44.0f, .std = 2.0f },
       .a = { .avg = 14.0f, .std = 1.0f },
       .b = { .avg = 19.0f, .std = 1.0f } },
-    { .name = _("forehead"),
+    { .name = _("Forehead"),
       .ethnicity = ETHNIE_MEXICAN,
       .L = { .avg = 58.0f, .std = 1.0f },
       .a = { .avg = 15.0f, .std = 1.0f },
       .b = { .avg = 21.0f, .std = 1.0f } },
-    { .name = _("cheek"),
+    { .name = _("Cheek"),
       .ethnicity = ETHNIE_CHINESE,
       .L = { .avg = 58.9f, .std = 3.1f },
       .a = { .avg = 11.4f, .std = 2.1f },
       .b = { .avg = 14.2f, .std = 1.5f } },
-    { .name = _("cheek"),
+    { .name = _("Cheek"),
       .ethnicity = ETHNIE_THAI,
       .L = { .avg = 60.7f, .std = 4.0f },
       .a = { .avg = 10.5f, .std = 2.3f },
       .b = { .avg = 17.2f, .std = 2.1f } },
-    { .name = _("cheek"),
+    { .name = _("Cheek"),
       .ethnicity = ETHNIE_KURDISH,
       .L = { .avg = 58.f,  .std = 4.4f },
       .a = { .avg = 11.7f, .std = 2.3f },
       .b = { .avg = 15.8f, .std = 2.1f } },
-    { .name = _("cheek"),
+    { .name = _("Cheek"),
       .ethnicity = ETHNIE_CAUCASIAN,
       .L = { .avg = 59.6f, .std = 5.5f },
       .a = { .avg = 11.8f, .std = 3.1f },
       .b = { .avg = 14.6f, .std = 2.6f } },
-    { .name = _("cheek"),
+    { .name = _("Cheek"),
       .ethnicity = ETHNIE_AFRICAN_AM,
       .L = { .avg = 48.0f, .std = 1.0f },
       .a = { .avg = 15.0f, .std = 1.0f },
       .b = { .avg = 20.0f, .std = 1.0f } },
-    { .name = _("cheek"),
+    { .name = _("Cheek"),
       .ethnicity = ETHNIE_MEXICAN,
       .L = { .avg = 63.0f, .std = 1.0f },
       .a = { .avg = 16.0f, .std = 1.0f },
@@ -199,7 +199,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
   // Write all matching ethnicities
   for(int elem = 0; elem < ETHNIE_END; ++elem)
     if(matches[elem])
-      out = dt_util_dstrcat(out, _("average %s skin tone\n"), ethnies[elem].name);
+      out = dt_util_dstrcat(out, _("Average %s skin tone\n"), ethnies[elem].name);
 
   if(is_skin) return out;
 
@@ -219,131 +219,131 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
   if(step_h == 0)
   {
     // 0° - pinkish red
-    if(step_L == 0) return _("deep purple");    // L = 10 %
-    if(step_L == 1) return _("fuchsia");        // L = 30 %
-    if(step_L == 2) return _("medium magenta"); // L = 50 %
-    if(step_L == 3) return _("violet pink");    // L = 70 %
-    if(step_L == 4) return _("plum violet");    // L = 90 %
+    if(step_L == 0) return _("Deep purple");    // L = 10 %
+    if(step_L == 1) return _("Fuchsia");        // L = 30 %
+    if(step_L == 2) return _("Medium magenta"); // L = 50 %
+    if(step_L == 3) return _("Violet pink");    // L = 70 %
+    if(step_L == 4) return _("Plum violet");    // L = 90 %
   }
   else if(step_h == 1)
   {
     // 24° - red
-    if(step_L == 0) return _("dark red");
-    if(step_L == 1) return _("red");
-    if(step_L == 2) return _("crimson");
-    if(step_L == 3) return _("salmon");
-    if(step_L == 4) return _("pink");
+    if(step_L == 0) return _("Dark red");
+    if(step_L == 1) return _("Red");
+    if(step_L == 2) return _("Crimson");
+    if(step_L == 3) return _("Salmon");
+    if(step_L == 4) return _("Pink");
   }
   else if(step_h == 2)
   {
     // 48° - orangy red
-    if(step_L == 0) return _("maroon");
-    if(step_L == 1) return _("dark orange red");
-    if(step_L == 2) return _("orange red");
-    if(step_L == 3) return _("coral");
-    if(step_L == 4) return _("khaki");
+    if(step_L == 0) return _("Maroon");
+    if(step_L == 1) return _("Dark orange red");
+    if(step_L == 2) return _("Orange red");
+    if(step_L == 3) return _("Coral");
+    if(step_L == 4) return _("Khaki");
   }
   else if(step_h == 3)
   {
     // 72° - orange
-    if(step_L == 0) return _("brown");
-    if(step_L == 1) return _("chocolate");
-    if(step_L == 2) return _("dark gold");
-    if(step_L == 3) return _("gold");
-    if(step_L == 4) return _("sandy brown");
+    if(step_L == 0) return _("Brown");
+    if(step_L == 1) return _("Chocolate");
+    if(step_L == 2) return _("Dark gold");
+    if(step_L == 3) return _("Gold");
+    if(step_L == 4) return _("Sandy brown");
   }
   else if(step_h == 4)
   {
     // 96° - yellow olive
-    if(step_L == 0) return _("dark green");
-    if(step_L == 1) return _("dark olive green");
-    if(step_L == 2) return _("olive");
-    if(step_L == 3) return _("khaki");
-    if(step_L == 4) return _("beige");
+    if(step_L == 0) return _("Dark green");
+    if(step_L == 1) return _("Dark olive green");
+    if(step_L == 2) return _("Olive");
+    if(step_L == 3) return _("Khaki");
+    if(step_L == 4) return _("Beige");
   }
   else if(step_h == 5)
   {
     // 120° - green
-    if(step_L == 0) return _("dark green");
-    if(step_L == 1) return _("forest green");
-    if(step_L == 2) return _("olive drab");
-    if(step_L == 3) return _("yellow green");
-    if(step_L == 4) return _("pale green");
+    if(step_L == 0) return _("Dark green");
+    if(step_L == 1) return _("Forest green");
+    if(step_L == 2) return _("Olive drab");
+    if(step_L == 3) return _("Yellow green");
+    if(step_L == 4) return _("Pale green");
   }
   else if(step_h == 6)
   {
     // 144° - blueish green
-    if(step_L == 0) return _("dark green");
-    if(step_L == 1) return _("green");
-    if(step_L == 2) return _("forest green");
-    if(step_L == 3) return _("lime green");
-    if(step_L == 4) return _("pale green");
+    if(step_L == 0) return _("Dark green");
+    if(step_L == 1) return _("Green");
+    if(step_L == 2) return _("Forest green");
+    if(step_L == 3) return _("Lime green");
+    if(step_L == 4) return _("Pale green");
   }
   else if(step_h == 7)
   {
     // 168° - greenish cyian
-    if(step_L == 0) return _("dark sea green");
-    if(step_L == 1) return _("sea green");
-    if(step_L == 2) return _("teal");
-    if(step_L == 3) return _("light sea green");
-    if(step_L == 4) return _("turquoise");
+    if(step_L == 0) return _("Dark sea green");
+    if(step_L == 1) return _("Sea green");
+    if(step_L == 2) return _("Teal");
+    if(step_L == 3) return _("Light sea green");
+    if(step_L == 4) return _("Turquoise");
   }
   else if(step_h == 8)
   {
     // 192° - cyan
-    if(step_L == 0) return _("dark slate gray");
-    if(step_L == 1) return _("light slate gray");
-    if(step_L == 2) return _("dark cyan");
-    if(step_L == 3) return _("aqua");
-    if(step_L == 4) return _("cyan");
+    if(step_L == 0) return _("Dark slate gray");
+    if(step_L == 1) return _("Light slate gray");
+    if(step_L == 2) return _("Dark cyan");
+    if(step_L == 3) return _("Aqua");
+    if(step_L == 4) return _("Cyan");
   }
   else if(step_h == 9)
   {
     // 216° - medium blue
-    if(step_L == 0) return _("navy blue");
-    if(step_L == 1) return _("teal");
-    if(step_L == 2) return _("dark cyan");
-    if(step_L == 3) return _("deep sky blue");
-    if(step_L == 4) return _("aquamarine blue");
+    if(step_L == 0) return _("Navy blue");
+    if(step_L == 1) return _("Teal");
+    if(step_L == 2) return _("Dark cyan");
+    if(step_L == 3) return _("Deep sky blue");
+    if(step_L == 4) return _("Aquamarine blue");
   }
   else if(step_h == 10 || step_h == 11)
   {
     // 240° - blue and 264° - bluer than blue
     // these are collapsed because CIE Lab 1976 sucks for blues
-    if(step_L == 0) return _("dark blue");
-    if(step_L == 1) return _("medium blue");
-    if(step_L == 2) return _("azure blue");
-    if(step_L == 3) return _("deep sky blue");
-    if(step_L == 4) return _("aqua");
+    if(step_L == 0) return _("Dark blue");
+    if(step_L == 1) return _("Medium blue");
+    if(step_L == 2) return _("Azure blue");
+    if(step_L == 3) return _("Deep sky blue");
+    if(step_L == 4) return _("Aqua");
   }
   else if(step_h == 12)
   {
     // 288° - more blue
-    if(step_L == 0) return _("dark blue");
-    if(step_L == 1) return _("medium blue");
-    if(step_L == 2) return _("blue");
-    if(step_L == 3) return _("light sky blue");
-    if(step_L == 4) return _("light blue");
+    if(step_L == 0) return _("Dark blue");
+    if(step_L == 1) return _("Medium blue");
+    if(step_L == 2) return _("Blue");
+    if(step_L == 3) return _("Light sky blue");
+    if(step_L == 4) return _("Light blue");
   }
   else if(step_h == 13)
   {
     // 312° - violet
-    if(step_L == 0) return _("indigo");
-    if(step_L == 1) return _("dark violet");
-    if(step_L == 2) return _("blue violet");
-    if(step_L == 3) return _("violet");
-    if(step_L == 4) return _("plum");
+    if(step_L == 0) return _("Indigo");
+    if(step_L == 1) return _("Dark violet");
+    if(step_L == 2) return _("Blue violet");
+    if(step_L == 3) return _("Violet");
+    if(step_L == 4) return _("Plum");
   }
   else if(step_h == 14)
   {
-    if(step_L == 0) return _("purple");
-    if(step_L == 1) return _("dark magenta");
-    if(step_L == 2) return _("magenta");
-    if(step_L == 3) return _("violet");
-    if(step_L == 4) return _("lavender");
+    if(step_L == 0) return _("Purple");
+    if(step_L == 1) return _("Dark magenta");
+    if(step_L == 2) return _("Magenta");
+    if(step_L == 3) return _("Violet");
+    if(step_L == 4) return _("Lavender");
   }
 
-  return _("color not found");
+  return _("Color not found");
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

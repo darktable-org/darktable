@@ -87,7 +87,7 @@ static const struct
 {
   {N_("mm"),   dt_pdf_mm_to_point(1.0)},
   {N_("cm"),   dt_pdf_mm_to_point(10.0)},
-  {N_("inch"), dt_pdf_inch_to_point(1.0)},
+  {N_("Inch"), dt_pdf_inch_to_point(1.0)},
   {N_("\""),   dt_pdf_inch_to_point(1.0)},
   {NULL,       0.0}
 };
@@ -129,4 +129,3 @@ int dt_pdf_parse_paper_size(const char *str, float *width, float *height);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

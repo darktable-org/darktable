@@ -103,4 +103,3 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -36,16 +36,16 @@ DT_MODULE_INTROSPECTION(1, dt_iop_defringe_params_t)
 
 typedef enum dt_iop_defringe_mode_t
 {
-  MODE_GLOBAL_AVERAGE = 0, // $DESCRIPTION: "global average (fast)"
-  MODE_LOCAL_AVERAGE = 1,  // $DESCRIPTION: "local average (slow)"
-  MODE_STATIC = 2          // $DESCRIPTION: "static threshold (fast)"
+  MODE_GLOBAL_AVERAGE = 0, // $DESCRIPTION: "Global average (fast)"
+  MODE_LOCAL_AVERAGE = 1,  // $DESCRIPTION: "Local average (slow)"
+  MODE_STATIC = 2          // $DESCRIPTION: "Static threshold (fast)"
 } dt_iop_defringe_mode_t;
 
 typedef struct dt_iop_defringe_params_t
 {
-  float radius; // $MIN: 0.5 $MAX: 20.0 $DEFAULT: 4.0 $DESCRIPTION: "edge detection radius"
-  float thresh; // $MIN: 0.5 $MAX: 128.0 $DEFAULT: 20.0 $DESCRIPTION: "threshold"
-  dt_iop_defringe_mode_t op_mode; // $DEFAULT: MODE_GLOBAL_AVERAGE $DESCRIPTION: "operation mode"
+  float radius; // $MIN: 0.5 $MAX: 20.0 $DEFAULT: 4.0 $DESCRIPTION: "Edge detection radius"
+  float thresh; // $MIN: 0.5 $MAX: 128.0 $DEFAULT: 20.0 $DESCRIPTION: "Threshold"
+  dt_iop_defringe_mode_t op_mode; // $DEFAULT: MODE_GLOBAL_AVERAGE $DESCRIPTION: "Operation mode"
 } dt_iop_defringe_params_t;
 
 typedef dt_iop_defringe_params_t dt_iop_defringe_data_t;
@@ -67,21 +67,21 @@ typedef struct dt_iop_defringe_gui_data_t
 
 const char *name()
 {
-  return _("defringe");
+  return _("Defringe");
 }
 
 const char *aliases()
 {
-  return _("chromatic aberrations");
+  return _("Chromatic aberrations");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("attenuate chromatic aberration by desaturating edges"),
-                                      _("corrective"),
-                                      _("linear or non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Attenuate chromatic aberration by desaturating edges"),
+                                      _("Corrective"),
+                                      _("Linear or non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int default_group()
@@ -97,7 +97,7 @@ int flags()
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the chromatic aberration module instead.");
+  return _("This module is deprecated. Please use the chromatic aberration module instead.");
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -414,17 +414,17 @@ void gui_init(dt_iop_module_t *self)
 
   g->mode_select = dt_bauhaus_combobox_from_params(self, "op_mode");
   gtk_widget_set_tooltip_text(g->mode_select,
-      _("method for color protection:\n - global average: fast, might show slightly wrong previews in high "
+      _("Method for color protection:\n - global average: fast, might show slightly wrong previews in high "
         "magnification; might sometimes protect saturation too much or too low in comparison to local "
         "average\n - local average: slower, might protect saturation better than global average by using "
         "near pixels as color reference, so it can still allow for more desaturation where required\n - "
         "static: fast, only uses the threshold as a static limit"));
 
   g->radius_scale = dt_bauhaus_slider_from_params(self, "radius");
-  gtk_widget_set_tooltip_text(g->radius_scale, _("radius for detecting fringe"));
+  gtk_widget_set_tooltip_text(g->radius_scale, _("Radius for detecting fringe"));
 
   g->thresh_scale = dt_bauhaus_slider_from_params(self, "thresh");
-  gtk_widget_set_tooltip_text(g->thresh_scale, _("threshold for defringe, higher values mean less defringing"));
+  gtk_widget_set_tooltip_text(g->thresh_scale, _("Threshold for defringe, higher values mean less defringing"));
 }
 
 void gui_update(dt_iop_module_t *module)
@@ -441,4 +441,3 @@ void gui_update(dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

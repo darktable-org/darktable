@@ -244,7 +244,7 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
 
   if(filename == NULL)
   {
-    dt_control_log(_("found strange path `%s'"), input);
+    dt_control_log(_("Found strange path `%s'"), input);
     return 0;
   }
 
@@ -259,7 +259,7 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
     }
     else
     {
-      dt_control_log(_("error loading directory `%s'"), filename);
+      dt_control_log(_("Error loading directory `%s'"), filename);
     }
     if(single_image) *single_image = FALSE;
   }
@@ -282,7 +282,7 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
       if(!loaded)
       {
         id = 0;
-        dt_control_log(_("file `%s' has unknown format!"), filename);
+        dt_control_log(_("File `%s' has unknown format!"), filename);
       }
       else
       {
@@ -295,7 +295,7 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
     }
     else
     {
-      dt_control_log(_("error loading file `%s'"), filename);
+      dt_control_log(_("Error loading file `%s'"), filename);
     }
     if(single_image) *single_image = TRUE;
   }
@@ -801,7 +801,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       {
         if(!strcmp(argv[k + 1], "common"))
           darktable.unmuted |= DT_DEBUG_COMMON; // enable common processing options
-        else if(!strcmp(argv[k + 1], "all"))
+        else if(!strcmp(argv[k + 1], "All"))
           darktable.unmuted |= DT_DEBUG_ALL; // enable all debug information except verbose
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
@@ -861,7 +861,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       else if(!strcmp(argv[k], "--d-signal-act") && argc > k + 1)
       {
-        if(!strcmp(argv[k + 1], "all"))
+        if(!strcmp(argv[k + 1], "All"))
           darktable.unmuted_signal_dbg_acts = 0xffffffff; // enable all signal debug information
         else if(!strcmp(argv[k + 1], "raise"))
           darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_RAISE; // enable debugging for signal raising
@@ -1465,9 +1465,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     gboolean not_again = TRUE;
     if(last_configure_version && config_info[0])
       not_again = dt_gui_show_standalone_yes_no_dialog
-        (_("configuration information"),
+        (_("Configuration information"),
          config_info,
-         _("show this information again"), _("understood"));
+         _("Show this information again"), _("Understood"));
 
     if(not_again || (last_configure_version == 0))
       dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
@@ -1505,10 +1505,10 @@ void dt_get_sysresource_level()
   */
   if(config)
   {
-         if(!strcmp(config, "default"))      level = 1;
-    else if(!strcmp(config, "small"))        level = 0;
-    else if(!strcmp(config, "large"))        level = 2;
-    else if(!strcmp(config, "unrestricted")) level = 3;
+         if(!strcmp(config, "Default"))      level = 1;
+    else if(!strcmp(config, "Small"))        level = 0;
+    else if(!strcmp(config, "Large"))        level = 2;
+    else if(!strcmp(config, "Unrestricted")) level = 3;
     else if(!strcmp(config, "reference"))    level = -1;
     else if(!strcmp(config, "mini"))         level = -2;
     else if(!strcmp(config, "notebook"))     level = -3;
@@ -1858,22 +1858,22 @@ void dt_configure_runtime_performance(const int old, char *info)
 
   if(!dt_conf_key_not_empty("resourcelevel"))
   {
-    dt_conf_set_string("resourcelevel", (sufficient) ? "default" : "small");
-    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] resourcelevel=%s\n", (sufficient) ? "default" : "small");
+    dt_conf_set_string("resourcelevel", (sufficient) ? "Default" : "Small");
+    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] resourcelevel=%s\n", (sufficient) ? "Default" : "Small");
   }
 
   if(!dt_conf_key_not_empty("plugins/darkroom/demosaic/quality"))
   {
-    dt_conf_set_string("plugins/darkroom/demosaic/quality", (sufficient) ? "default" : "always bilinear (fast)");
+    dt_conf_set_string("plugins/darkroom/demosaic/quality", (sufficient) ? "Default" : "Always bilinear (fast)");
     dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] plugins/darkroom/demosaic/quality=%s",
-      (sufficient) ? "default" : "always bilinear (fast)");
+      (sufficient) ? "Default" : "Always bilinear (fast)");
   }
   else if(old == 2)
   {
     const gchar *demosaic_quality = dt_conf_get_string_const("plugins/darkroom/demosaic/quality");
-    if(!strcmp(demosaic_quality, "always bilinear (fast)"))
+    if(!strcmp(demosaic_quality, "Always bilinear (fast)"))
     {
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "default");
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "Default");
       dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] override: plugins/darkroom/demosaic/quality=default\n");
     }
   }
@@ -1882,7 +1882,7 @@ void dt_configure_runtime_performance(const int old, char *info)
     const gchar *demosaic_quality = dt_conf_get_string_const("plugins/darkroom/demosaic/quality");
     if(!strcmp(demosaic_quality, "at most RCD (reasonable)"))
     {
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "default");
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "Default");
       dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] override: plugins/darkroom/demosaic/quality=default\n");
     }
   }
@@ -1912,17 +1912,17 @@ void dt_configure_runtime_performance(const int old, char *info)
   if(old < 2) // we introduced RCD as the default demosaicer in 2
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
-    g_strlcat(info, _("the RCD demosaicer has been defined as default instead of PPG because of better quality and performance."), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("The RCD demosaicer has been defined as default instead of PPG because of better quality and performance."), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
-    g_strlcat(info, _("see preferences/darkroom/demosaicing for zoomed out darkroom mode"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("See preferences/darkroom/demosaicing for zoomed out darkroom mode"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
   if(old < 5)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
-    g_strlcat(info, _("the user interface and the underlying internals for tuning darktable performance have changed."), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("The user interface and the underlying internals for tuning darktable performance have changed."), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
-    g_strlcat(info, _("you won't find headroom and friends any longer, instead in preferences/processing use:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("You won't find headroom and friends any longer, instead in preferences/processing use:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
     g_strlcat(info, _("1) darktable resources"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
@@ -1933,13 +1933,13 @@ void dt_configure_runtime_performance(const int old, char *info)
   if(old < 11)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
-    g_strlcat(info, _("some global config parameters relevant for OpenCL performance are not used any longer."), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("Some global config parameters relevant for OpenCL performance are not used any longer."), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
-    g_strlcat(info, _("instead you will find 'per device' data in 'cl_device_v4_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("Instead you will find 'per device' data in 'cl_device_v4_canonical-name'. Content is:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
-    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'Avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
-    g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("You may tune as before except 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 

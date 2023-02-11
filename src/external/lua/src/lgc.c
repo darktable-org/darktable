@@ -1725,4 +1725,3 @@ void luaC_fullgc (lua_State *L, int isemergency) {
 
 /* }====================================================== */
 
-

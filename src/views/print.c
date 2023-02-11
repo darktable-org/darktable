@@ -52,7 +52,7 @@ dt_print_t;
 
 const char *name(const dt_view_t *self)
 {
-  return C_("view", "print");
+  return C_("view", "Print");
 }
 
 uint32_t view(const dt_view_t *self)
@@ -326,7 +326,7 @@ int try_enter(dt_view_t *self)
   if(imgid < 0)
   {
     // fail :(
-    dt_control_log(_("no image to open!"));
+    dt_control_log(_("No image to open!"));
     return 1;
   }
 
@@ -339,7 +339,7 @@ int try_enter(dt_view_t *self)
   dt_image_full_path(img->id, imgfilename, sizeof(imgfilename), &from_cache);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_control_log(_("image `%s' is currently unavailable"), img->filename);
+    dt_control_log(_("Image `%s' is currently unavailable"), img->filename);
     dt_image_cache_read_release(darktable.image_cache, img);
     return 1;
   }

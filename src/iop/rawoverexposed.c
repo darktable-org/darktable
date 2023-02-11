@@ -66,7 +66,7 @@ typedef struct dt_iop_rawoverexposed_global_data_t
 
 const char *name()
 {
-  return _("raw overexposed");
+  return _("Raw overexposed");
 }
 
 int default_group()
@@ -132,7 +132,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
   if(!buf.buf)
   {
-    dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
+    dt_control_log(_("Failed to get raw buffer from image `%s'"), image->filename);
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     return;
   }
@@ -251,7 +251,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
   if(!buf.buf)
   {
-    dt_control_log(_("failed to get raw buffer from image `%s'"), image->filename);
+    dt_control_log(_("Failed to get raw buffer from image `%s'"), image->filename);
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     goto error;
   }
@@ -478,4 +478,3 @@ void init(dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

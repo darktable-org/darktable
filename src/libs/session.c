@@ -44,7 +44,7 @@ typedef struct dt_lib_session_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("session");
+  return _("Session");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -96,7 +96,7 @@ void gui_init(dt_lib_module_t *self)
   vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
-  lib->gui.label1 = GTK_LABEL(gtk_label_new(_("jobcode")));
+  lib->gui.label1 = GTK_LABEL(gtk_label_new(_("Jobcode")));
   gtk_widget_set_halign(GTK_WIDGET(lib->gui.label1), GTK_ALIGN_START);
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), TRUE, TRUE, 0);
 
@@ -104,7 +104,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.entry1), 0);
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
 
-  lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label(_("create")));
+  lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label(_("Create")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);

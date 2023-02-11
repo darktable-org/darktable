@@ -344,4 +344,3 @@ void dtgtk_cairo_paint_filtering_menu(cairo_t *cr, gint x, gint y, gint w, gint 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -35,27 +35,27 @@ DT_MODULE_INTROSPECTION(1, dt_iop_blurs_params_t)
 
 typedef enum dt_iop_blur_type_t
 {
-  DT_BLUR_LENS = 0,     // $DESCRIPTION: "lens"
-  DT_BLUR_MOTION = 1,   // $DESCRIPTION: "motion"
-  DT_BLUR_GAUSSIAN = 2, // $DESCRIPTION: "gaussian"
+  DT_BLUR_LENS = 0,     // $DESCRIPTION: "Lens"
+  DT_BLUR_MOTION = 1,   // $DESCRIPTION: "Motion"
+  DT_BLUR_GAUSSIAN = 2, // $DESCRIPTION: "Gaussian"
 } dt_iop_blur_type_t;
 
 
 typedef struct dt_iop_blurs_params_t
 {
-  dt_iop_blur_type_t type; // $DEFAULT: DT_BLUR_LENS $DESCRIPTION: "blur type"
-  int radius;              // $MIN: 4 $MAX: 128 $DEFAULT: 8 $DESCRIPTION: "blur radius"
+  dt_iop_blur_type_t type; // $DEFAULT: DT_BLUR_LENS $DESCRIPTION: "Blur type"
+  int radius;              // $MIN: 4 $MAX: 128 $DEFAULT: 8 $DESCRIPTION: "Blur radius"
 
   // lens blur params
-  int blades;              // $MIN: 3 $MAX: 11 $DEFAULT: 5 $DESCRIPTION: "diaphragm blades"
-  float concavity;         // $MIN: 1. $MAX: 9.  $DEFAULT: 1. $DESCRIPTION: "concavity"
-  float linearity;         // $MIN: 0. $MAX: 1.  $DEFAULT: 1. $DESCRIPTION: "linearity"
-  float rotation;          // $MIN: -1.57 $MAX: 1.57 $DEFAULT: 0. $DESCRIPTION: "rotation"
+  int blades;              // $MIN: 3 $MAX: 11 $DEFAULT: 5 $DESCRIPTION: "Diaphragm blades"
+  float concavity;         // $MIN: 1. $MAX: 9.  $DEFAULT: 1. $DESCRIPTION: "Concavity"
+  float linearity;         // $MIN: 0. $MAX: 1.  $DEFAULT: 1. $DESCRIPTION: "Linearity"
+  float rotation;          // $MIN: -1.57 $MAX: 1.57 $DEFAULT: 0. $DESCRIPTION: "Rotation"
 
   // motion blur params
-  float angle;             // $MIN: -3.14 $MAX: 3.14 $DEFAULT: 0. $DESCRIPTION: "direction"
-  float curvature;         // $MIN: -2.   $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "curvature"
-  float offset;            // $MIN: -1.   $MAX: 1.   $DEFAULT: 0  $DESCRIPTION: "offset"
+  float angle;             // $MIN: -3.14 $MAX: 3.14 $DEFAULT: 0. $DESCRIPTION: "Direction"
+  float curvature;         // $MIN: -2.   $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "Curvature"
+  float offset;            // $MIN: -1.   $MAX: 1.   $DEFAULT: 0  $DESCRIPTION: "Offset"
 
 } dt_iop_blurs_params_t;
 
@@ -78,20 +78,20 @@ typedef struct dt_iop_blurs_global_data_t
 
 const char *name()
 {
-  return _("blurs");
+  return _("Blurs");
 }
 
 const char *aliases()
 {
-  return _("blur|lens|motion");
+  return _("Blur|lens|motion");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("simulate physically-accurate lens and motion blurs"),
-                                _("creative"), _("linear, RGB, scene-referred"), _("linear, RGB"),
-                                _("linear, RGB, scene-referred"));
+                                _("Simulate physically-accurate lens and motion blurs"),
+                                _("Creative"), _("Linear, RGB, scene-referred"), _("Linear, RGB"),
+                                _("Linear, RGB, scene-referred"));
 }
 
 int flags()
@@ -836,4 +836,3 @@ void gui_cleanup(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

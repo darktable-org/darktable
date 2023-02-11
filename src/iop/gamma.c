@@ -40,7 +40,7 @@ typedef struct dt_iop_gamma_params_t
 
 const char *name()
 {
-  return C_("modulename", "display encoding");
+  return C_("modulename", "Display encoding");
 }
 
 int default_group()
@@ -363,4 +363,3 @@ void init(dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -58,12 +58,12 @@ static float highlights_clip_magics[6] = { 1.0f, 1.0f, 0.987f, 0.995f, 0.987f, 0
 
 typedef enum dt_iop_highlights_mode_t
 {
-  DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "clip highlights"
-  DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
-  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
-  DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
-  DT_IOP_HIGHLIGHTS_SEGMENTS = 4, // $DESCRIPTION: "segmentation based"
-  DT_IOP_HIGHLIGHTS_OPPOSED = 5,  // $DESCRIPTION: "inpaint opposed"
+  DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "Clip highlights"
+  DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "Reconstruct in LCh"
+  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "Reconstruct color"
+  DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "Guided laplacians"
+  DT_IOP_HIGHLIGHTS_SEGMENTS = 4, // $DESCRIPTION: "Segmentation based"
+  DT_IOP_HIGHLIGHTS_OPPOSED = 5,  // $DESCRIPTION: "Inpaint opposed"
 } dt_iop_highlights_mode_t;
 
 typedef enum dt_atrous_wavelets_scales_t
@@ -84,13 +84,13 @@ typedef enum dt_atrous_wavelets_scales_t
 
 typedef enum dt_recovery_mode_t
 {
-  DT_RECOVERY_MODE_OFF = 0,    // $DESCRIPTION: "off"
-  DT_RECOVERY_MODE_ADAPT = 5,  // $DESCRIPTION: "generic"
-  DT_RECOVERY_MODE_ADAPTF = 6, // $DESCRIPTION: "flat generic"
-  DT_RECOVERY_MODE_SMALL = 1,  // $DESCRIPTION: "small segments"
-  DT_RECOVERY_MODE_LARGE = 2,  // $DESCRIPTION: "large segments"
-  DT_RECOVERY_MODE_SMALLF = 3, // $DESCRIPTION: "flat small segments"
-  DT_RECOVERY_MODE_LARGEF = 4, // $DESCRIPTION: "flat large segments"
+  DT_RECOVERY_MODE_OFF = 0,    // $DESCRIPTION: "Off"
+  DT_RECOVERY_MODE_ADAPT = 5,  // $DESCRIPTION: "Generic"
+  DT_RECOVERY_MODE_ADAPTF = 6, // $DESCRIPTION: "Flat generic"
+  DT_RECOVERY_MODE_SMALL = 1,  // $DESCRIPTION: "Small segments"
+  DT_RECOVERY_MODE_LARGE = 2,  // $DESCRIPTION: "Large segments"
+  DT_RECOVERY_MODE_SMALLF = 3, // $DESCRIPTION: "Flat small segments"
+  DT_RECOVERY_MODE_LARGEF = 4, // $DESCRIPTION: "Flat large segments"
 } dt_recovery_mode_t;
 #define NUM_RECOVERY_MODES 7
 
@@ -106,21 +106,21 @@ typedef enum dt_highlights_mask_t
 typedef struct dt_iop_highlights_params_t
 {
   // params of v1
-  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
+  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "Method"
   float blendL; // unused $DEFAULT: 1.0
   float blendC; // unused $DEFAULT: 0.0
-  float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "strength"
+  float strength; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Strength"
   // params of v2
-  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
+  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "Clipping threshold"
   // params of v3
-  float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
-  int iterations; // $MIN: 1 $MAX: 256 $DEFAULT: 30 $DESCRIPTION: "iterations"
-  dt_atrous_wavelets_scales_t scales; // $DEFAULT: WAVELETS_7_SCALE $DESCRIPTION: "diameter of reconstruction"
-  float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "candidating"
-  float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "combine"
-  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "rebuild"
+  float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "Noise level"
+  int iterations; // $MIN: 1 $MAX: 256 $DEFAULT: 30 $DESCRIPTION: "Iterations"
+  dt_atrous_wavelets_scales_t scales; // $DEFAULT: WAVELETS_7_SCALE $DESCRIPTION: "Diameter of reconstruction"
+  float candidating; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "Candidating"
+  float combine;     // $MIN: 0.0 $MAX: 8.0 $DEFAULT: 2.0 $DESCRIPTION: "Combine"
+  dt_recovery_mode_t recovery; // $DEFAULT: DT_RECOVERY_MODE_OFF $DESCRIPTION: "Rebuild"
   // params of v4
-  float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
+  float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Inpaint a flat color"
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -169,16 +169,16 @@ typedef struct dt_iop_highlights_global_data_t
 
 const char *name()
 {
-  return _("highlight reconstruction");
+  return _("Highlight reconstruction");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("avoid magenta highlights and try to recover highlights colors"),
-                                      _("corrective"),
-                                      _("linear, raw, scene-referred"),
-                                      _("reconstruction, raw"),
-                                      _("linear, raw, scene-referred"));
+  return dt_iop_set_description(self, _("Avoid magenta highlights and try to recover highlights colors"),
+                                      _("Corrective"),
+                                      _("Linear, raw, scene-referred"),
+                                      _("Reconstruction, raw"),
+                                      _("Linear, raw, scene-referred"));
 }
 
 int default_group()
@@ -2340,7 +2340,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     p->mode = DT_IOP_HIGHLIGHTS_OPPOSED;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
-    dt_control_log(_("highlights: mode not available for this type of image. falling back to inpaint opposed."));
+    dt_control_log(_("Highlights: mode not available for this type of image. Falling back to inpaint opposed."));
   }
 
   const gboolean use_laplacian = bayer && p->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN;
@@ -2396,7 +2396,7 @@ void gui_update(struct dt_iop_module_t *self)
   const gboolean basic = ((filters == 9u && menu_size == 4) || (bayer && menu_size == 5));
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
   if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT && basic)
-     dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+     dt_bauhaus_combobox_add_full(g->mode, _("Reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
   gui_changed(self, NULL, NULL);
 }
@@ -2437,27 +2437,27 @@ void reload_defaults(dt_iop_module_t *self)
     for(int i = 0; i < menu_size; i++)
       dt_bauhaus_combobox_remove_at(g->mode, 0);
 
-    dt_bauhaus_combobox_add_full(g->mode, _("inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+    dt_bauhaus_combobox_add_full(g->mode, _("Inpaint opposed"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_OPPOSED), NULL, TRUE);
 
     if(filters == 0)
-      dt_bauhaus_combobox_add_full(g->mode, _("clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+      dt_bauhaus_combobox_add_full(g->mode, _("Clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_CLIP), NULL, TRUE);
     else
     {
-      dt_bauhaus_combobox_add_full(g->mode, _("reconstruct in LCh"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+      dt_bauhaus_combobox_add_full(g->mode, _("Reconstruct in LCh"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LCH), NULL, TRUE);
-      dt_bauhaus_combobox_add_full(g->mode, _("clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+      dt_bauhaus_combobox_add_full(g->mode, _("Clip highlights"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_CLIP), NULL, TRUE);
-      dt_bauhaus_combobox_add_full(g->mode, _("segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+      dt_bauhaus_combobox_add_full(g->mode, _("Segmentation based"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_SEGMENTS), NULL, TRUE);
       if((filters != 0) && (filters != 9u))
-        dt_bauhaus_combobox_add_full(g->mode, _("guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+        dt_bauhaus_combobox_add_full(g->mode, _("Guided laplacians"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_LAPLACIAN), NULL, TRUE);
 
       dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
       if(p->mode == DT_IOP_HIGHLIGHTS_INPAINT)
-        dt_bauhaus_combobox_add_full(g->mode, _("reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+        dt_bauhaus_combobox_add_full(g->mode, _("Reconstruct color"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                       GINT_TO_POINTER(DT_IOP_HIGHLIGHTS_INPAINT), NULL, TRUE);
     }
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
@@ -2537,14 +2537,14 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
-  gtk_widget_set_tooltip_text(g->mode, _("highlight reconstruction method"));
+  gtk_widget_set_tooltip_text(g->mode, _("Highlight reconstruction method"));
 
   g->clip = dt_bauhaus_slider_from_params(self, "clip");
   dt_bauhaus_slider_set_digits(g->clip, 3);
   gtk_widget_set_tooltip_text(g->clip,
-                              _("manually adjust the clipping threshold mostly used against "
+                              _("Manually adjust the clipping threshold mostly used against "
                                 "magenta highlights\nthe mask icon shows the clipped areas.\n"
-                                "you might use this for tuning 'laplacian', 'inpaint opposed' or 'segmentation' modes,\n"
+                                "You might use this for tuning 'laplacian', 'inpaint opposed' or 'segmentation' modes,\n"
                                 "especially if camera white point is incorrect."));
   dt_bauhaus_widget_set_quad_paint(g->clip, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->clip, TRUE);
@@ -2553,17 +2553,17 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
-  gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped segments by morphological operations.\n"
-                                            "the mask button shows the exact positions of resulting segment borders."));
+  gtk_widget_set_tooltip_text(g->combine, _("Combine closely related clipped segments by morphological operations.\n"
+                                            "The mask button shows the exact positions of resulting segment borders."));
   dt_bauhaus_widget_set_quad_paint(g->combine, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->combine, TRUE);
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   g_signal_connect(G_OBJECT(g->combine), "quad-pressed", G_CALLBACK(_combine_callback), self);
 
   g->candidating = dt_bauhaus_slider_from_params(self, "candidating");
-  gtk_widget_set_tooltip_text(g->candidating, _("select inpainting after segmentation analysis.\n"
-                                                "increase to favour candidates found in segmentation analysis, decrease for opposed means inpainting.\n"
-                                                "the mask button shows segments that are considered to have a good candidate."));
+  gtk_widget_set_tooltip_text(g->candidating, _("Select inpainting after segmentation analysis.\n"
+                                                "Increase to favour candidates found in segmentation analysis, decrease for opposed means inpainting.\n"
+                                                "The mask button shows segments that are considered to have a good candidate."));
   dt_bauhaus_slider_set_format(g->candidating, "%");
   dt_bauhaus_slider_set_digits(g->candidating, 0);
   dt_bauhaus_widget_set_quad_paint(g->candidating, dtgtk_cairo_paint_showmask, 0, NULL);
@@ -2572,14 +2572,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->candidating), "quad-pressed", G_CALLBACK(_candidating_callback), self);
 
   g->recovery = dt_bauhaus_combobox_from_params(self, "recovery");
-  gtk_widget_set_tooltip_text(g->recovery, _("approximate lost data in regions with all photosites clipped, the effect depends on segment size and border gradients.\n"
-                                             "choose a mode tuned for segment size or the generic mode that tries to find best settings for every segment.\n"
-                                             "small means areas with a diameter less than 25 pixels, large is best for greater than 100.\n"
-                                             "the flat modes ignore narrow unclipped structures (like powerlines) to keep highlights rebuilt and avoid gradients."));
+  gtk_widget_set_tooltip_text(g->recovery, _("Approximate lost data in regions with all photosites clipped, the effect depends on segment size and border gradients.\n"
+                                             "Choose a mode tuned for segment size or the generic mode that tries to find best settings for every segment.\n"
+                                             "Small means areas with a diameter less than 25 pixels, large is best for greater than 100.\n"
+                                             "The flat modes ignore narrow unclipped structures (like powerlines) to keep highlights rebuilt and avoid gradients."));
 
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
-  gtk_widget_set_tooltip_text(g->strength, _("set strength of rebuilding in regions with all photosites clipped.\n"
-                                             "the mask buttons shows the effect that is added to already reconstructed data."));
+  gtk_widget_set_tooltip_text(g->strength, _("Set strength of rebuilding in regions with all photosites clipped.\n"
+                                             "The mask buttons shows the effect that is added to already reconstructed data."));
   dt_bauhaus_slider_set_format(g->strength, "%");
   dt_bauhaus_slider_set_digits(g->strength, 0);
   dt_bauhaus_widget_set_quad_paint(g->strength, dtgtk_cairo_paint_showmask, 0, NULL);
@@ -2588,24 +2588,24 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->strength), "quad-pressed", G_CALLBACK(_strength_callback), self);
 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
-  gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
-                                                "into the rest of the noisy image. useful at high ISO."));
+  gtk_widget_set_tooltip_text(g->noise_level, _("Add noise to visually blend the reconstructed areas\n"
+                                                "into the rest of the noisy image. Useful at high ISO."));
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
-  gtk_widget_set_tooltip_text(g->iterations, _("increase if magenta highlights don't get fully corrected\n"
+  gtk_widget_set_tooltip_text(g->iterations, _("Increase if magenta highlights don't get fully corrected\n"
                                                "each new iteration brings a performance penalty."));
 
   g->solid_color = dt_bauhaus_slider_from_params(self, "solid_color");
   dt_bauhaus_slider_set_format(g->solid_color, "%");
-  gtk_widget_set_tooltip_text(g->solid_color, _("increase if magenta highlights don't get fully corrected.\n"
-                                                "this may produce non-smooth boundaries between valid and clipped regions."));
+  gtk_widget_set_tooltip_text(g->solid_color, _("Increase if magenta highlights don't get fully corrected.\n"
+                                                "This may produce non-smooth boundaries between valid and clipped regions."));
 
   g->scales = dt_bauhaus_combobox_from_params(self, "scales");
-  gtk_widget_set_tooltip_text(g->scales, _("increase to correct larger clipped areas.\n"
-                                           "large values bring huge performance penalties"));
+  gtk_widget_set_tooltip_text(g->scales, _("Increase to correct larger clipped areas.\n"
+                                           "Large values bring huge performance penalties"));
 
-  GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
-  gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
+  GtkWidget *monochromes = dt_ui_label_new(_("Not applicable"));
+  gtk_widget_set_tooltip_text(monochromes, _("No highlights reconstruction for monochrome images"));
 
   // start building top level widget
   self->widget = gtk_stack_new();

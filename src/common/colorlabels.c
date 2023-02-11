@@ -302,9 +302,9 @@ static float _action_process_color_label(gpointer target, dt_action_element_t el
         }
         g_list_free(res);
         if(result)
-          dt_toast_markup_log(_("colorlabels set to %s"), result);
+          dt_toast_markup_log(_("Colorlabels set to %s"), result);
         else
-          dt_toast_log(_("all colorlabels removed"));
+          dt_toast_log(_("All colorlabels removed"));
         g_free(result);
       }
     }
@@ -325,16 +325,16 @@ static float _action_process_color_label(gpointer target, dt_action_element_t el
 }
 
 const dt_action_element_def_t _action_elements_color_label[]
-  = { { N_("clear" ), dt_action_effect_activate },
-      { N_("red"   ), dt_action_effect_toggle },
-      { N_("yellow"), dt_action_effect_toggle },
-      { N_("green" ), dt_action_effect_toggle },
-      { N_("blue"  ), dt_action_effect_toggle },
-      { N_("purple"), dt_action_effect_toggle },
+  = { { N_("Clear" ), dt_action_effect_activate },
+      { N_("Red"   ), dt_action_effect_toggle },
+      { N_("Yellow"), dt_action_effect_toggle },
+      { N_("Green" ), dt_action_effect_toggle },
+      { N_("Blue"  ), dt_action_effect_toggle },
+      { N_("Purple"), dt_action_effect_toggle },
       { NULL } };
 
 const dt_action_def_t dt_action_def_color_label
-  = { N_("color label"),
+  = { N_("Color label"),
       _action_process_color_label,
       _action_elements_color_label };
 
@@ -343,4 +343,3 @@ const dt_action_def_t dt_action_def_color_label
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -48,4 +48,3 @@ void dt_gui_preferences_string_reset(GtkWidget *widget);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

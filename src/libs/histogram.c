@@ -128,34 +128,34 @@ typedef struct dt_lib_histogram_color_harmony_t
 
 dt_lib_histogram_color_harmony_t dt_color_harmonies[DT_LIB_HISTOGRAM_HARMONY_N] =
 {
-  {N_("none"),                    0                                                              },
-  {N_("monochromatic"),           1, { 0./12.                         }, {0.80                  }},
-  {N_("analogous"),               3, {-1./12., 0./12.,  1./12.        }, {0.50, 0.80, 0.50      }},
-  {N_("analogous complementary"), 4, {-1./12., 0./12.,  1./12., 6./12.}, {0.50, 0.80, 0.50, 0.50}},
-  {N_("complementary"),           2, { 0./12., 6./12                  }, {0.80, 0.50            }},
-  {N_("split complementary"),     3, { 0./12., 5./12.,  7./12.        }, {0.80, 0.50, 0.50      }},
-  {N_("dyad"),                    2, {-1./12., 1./12                  }, {0.80, 0.80            }},
-  {N_("triad"),                   3, { 0./12., 4./12.,  8./12.        }, {0.80, 0.50, 0.50      }},
-  {N_("tetrad"),                  4, {-1./12., 1./12.,  5./12., 7./12.}, {0.80, 0.80, 0.50, 0.50}},
-  {N_("square"),                  4, { 0./12., 3./12.,  6./12., 9./12.}, {0.80, 0.50, 0.50, 0.50}},
+  {N_("None"),                    0                                                              },
+  {N_("Monochromatic"),           1, { 0./12.                         }, {0.80                  }},
+  {N_("Analogous"),               3, {-1./12., 0./12.,  1./12.        }, {0.50, 0.80, 0.50      }},
+  {N_("Analogous complementary"), 4, {-1./12., 0./12.,  1./12., 6./12.}, {0.50, 0.80, 0.50, 0.50}},
+  {N_("Complementary"),           2, { 0./12., 6./12                  }, {0.80, 0.50            }},
+  {N_("Split complementary"),     3, { 0./12., 5./12.,  7./12.        }, {0.80, 0.50, 0.50      }},
+  {N_("Dyad"),                    2, {-1./12., 1./12                  }, {0.80, 0.80            }},
+  {N_("Triad"),                   3, { 0./12., 4./12.,  8./12.        }, {0.80, 0.50, 0.50      }},
+  {N_("Tetrad"),                  4, {-1./12., 1./12.,  5./12., 7./12.}, {0.80, 0.80, 0.50, 0.50}},
+  {N_("Square"),                  4, { 0./12., 3./12.,  6./12., 9./12.}, {0.80, 0.50, 0.50, 0.50}},
 };
 
 // FIXME: are these lists available from the enum/options in darktableconfig.xml?
 const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] =
-{ N_("vectorscope"),
-  N_("waveform"),
-  N_("rgb parade"),
-  N_("histogram")
+{ N_("Vectorscope"),
+  N_("Waveform"),
+  N_("Rgb parade"),
+  N_("Histogram")
 };
 
 const gchar *dt_lib_histogram_scale_names[DT_LIB_HISTOGRAM_SCALE_N] =
-  { "logarithmic",
-    "linear"
+  { "Logarithmic",
+    "Linear"
   };
 
 const gchar *dt_lib_histogram_orient_names[DT_LIB_HISTOGRAM_ORIENT_N] =
-  { "horizontal",
-    "vertical"
+  { "Horizontal",
+    "Vertical"
   };
 
 const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] =
@@ -165,10 +165,10 @@ const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOP
   };
 
 const gchar *dt_lib_histogram_color_harmony_width_names[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] =
-  { "normal",
-    "large",
-    "narrow",
-    "line"
+  { "Normal",
+    "Large",
+    "Narrow",
+    "Line"
   };
 
 const float dt_lib_histogram_color_harmony_width[DT_LIB_HISTOGRAM_HARMONY_WIDTH_N] =
@@ -238,7 +238,7 @@ typedef struct dt_lib_histogram_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("scopes");
+  return _("Scopes");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -249,7 +249,7 @@ const char **views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/panel_position"), "right") ? DT_UI_CONTAINER_PANEL_LEFT_TOP : DT_UI_CONTAINER_PANEL_RIGHT_TOP;
+  return g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/panel_position"), "Right") ? DT_UI_CONTAINER_PANEL_LEFT_TOP : DT_UI_CONTAINER_PANEL_RIGHT_TOP;
 }
 
 int expandable(dt_lib_module_t *self)
@@ -1285,7 +1285,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
 
       // scale conservatively to 100% of width:
-      pango_layout_set_text(layout, _("analogous complementary"), -1);
+      pango_layout_set_text(layout, _("Analogous complementary"), -1);
       pango_layout_get_pixel_extents(layout, NULL, &ink);
       pango_font_description_set_absolute_size(desc, width * 0.9 / ink.width * PANGO_SCALE);
       pango_layout_set_font_description(layout, desc);
@@ -1542,10 +1542,10 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
               d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_RYB &&
               d->color_harmony != DT_LIB_HISTOGRAM_HARMONY_NONE)
         tip = dt_util_dstrcat(tip, "\n%s\n%s\n%s\n%s",
-                              _("scroll to coarse-rotate"),
-                              _("ctrl+scroll to fine rotate"),
-                              _("shift+scroll to change width"),
-                              _("alt+scroll to cycle"));
+                              _("Scroll to coarse-rotate"),
+                              _("Ctrl+scroll to fine rotate"),
+                              _("Shift+scroll to change width"),
+                              _("Alt+scroll to cycle"));
     }
     else if(hooks_available)
     {
@@ -1556,15 +1556,15 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       {
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
         tip = dt_util_dstrcat(tip, "\n%s\n%s",
-                              _("drag to change black point"),
-                              _("double-click resets"));
+                              _("Drag to change black point"),
+                              _("Double-click resets"));
       }
       else
       {
         d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
         tip = dt_util_dstrcat(tip, "\n%s\n%s",
-                              _("drag to change exposure"),
-                              _("double-click resets"));
+                              _("Drag to change exposure"),
+                              _("Double-click resets"));
       }
     }
     gtk_widget_set_tooltip_text(widget, tip);
@@ -1725,12 +1725,12 @@ static void _histogram_scale_update(const dt_lib_histogram_t *d)
   switch(d->histogram_scale)
   {
     case DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to linear"));
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("Set scale to linear"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
                              dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_SCALE_LINEAR:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to logarithmic"));
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("Set scale to logarithmic"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
                              dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
       break;
@@ -1746,12 +1746,12 @@ static void _scope_orient_update(const dt_lib_histogram_t *d)
   switch(d->scope_orient)
   {
     case DT_LIB_HISTOGRAM_ORIENT_HORI:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scope to vertical"));
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("Set scope to vertical"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
                              dtgtk_cairo_paint_arrow, CPF_DIRECTION_DOWN, NULL);
       break;
     case DT_LIB_HISTOGRAM_ORIENT_VERT:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scope to horizontal"));
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("Set scope to horizontal"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
                              dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT, NULL);
       break;
@@ -1765,12 +1765,12 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
   switch(d->vectorscope_scale)
   {
     case DT_LIB_HISTOGRAM_SCALE_LOGARITHMIC:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to linear"));
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("Set scale to linear"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
                              dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_SCALE_LINEAR:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set scale to logarithmic"));
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("Set scale to logarithmic"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
                              dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
       break;
@@ -1780,19 +1780,19 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
   switch(d->vectorscope_type)
   {
     case DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV:
-      gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to AzBz"));
+      gtk_widget_set_tooltip_text(d->colorspace_button, _("Set view to AzBz"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_luv, CPF_NONE, NULL);
       gtk_widget_hide(d->color_harmony_box);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ:
-      gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to RYB"));
+      gtk_widget_set_tooltip_text(d->colorspace_button, _("Set view to RYB"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_jzazbz, CPF_NONE, NULL);
       gtk_widget_hide(d->color_harmony_box);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_RYB:
-      gtk_widget_set_tooltip_text(d->colorspace_button, _("set view to u*v*"));
+      gtk_widget_set_tooltip_text(d->colorspace_button, _("Set view to u*v*"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->colorspace_button),
                              dtgtk_cairo_paint_ryb, CPF_NONE, NULL);
       gtk_widget_show(d->color_harmony_box);
@@ -2301,14 +2301,14 @@ void gui_init(dt_lib_module_t *self)
 
   // create widgets
   GtkWidget *overlay = gtk_overlay_new();
-  dt_action_t *dark = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, N_("histogram"));
+  dt_action_t *dark = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, N_("Histogram"));
   dt_action_t *ac = NULL;
 
-  dt_action_register(dark, N_("cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
+  dt_action_register(dark, N_("Cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
 
   // shows the scope, scale, and has draggable areas
   d->scope_draw = dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/histogram/aspect_percent");
-  ac = dt_action_define(dark, NULL, N_("hide histogram"), d->scope_draw, NULL);
+  ac = dt_action_define(dark, NULL, N_("Hide histogram"), d->scope_draw, NULL);
   dt_action_register(ac, NULL, _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_widget_set_events(d->scope_draw, GDK_ENTER_NOTIFY_MASK);
 
@@ -2350,7 +2350,7 @@ void gui_init(dt_lib_module_t *self)
   {
     d->scope_type_button[i] = dtgtk_togglebutton_new(dt_lib_histogram_scope_type_icons[i], CPF_NONE, NULL);
     gtk_widget_set_tooltip_text(d->scope_type_button[i], _(dt_lib_histogram_scope_type_names[i]));
-    dt_action_define(dark, N_("modes"), dt_lib_histogram_scope_type_names[i],
+    dt_action_define(dark, N_("Modes"), dt_lib_histogram_scope_type_names[i],
                      d->scope_type_button[i], &dt_action_def_toggle);
     gtk_box_pack_start(GTK_BOX(box_left), d->scope_type_button[i], FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(d->scope_type_button[i]), "button-press-event", G_CALLBACK(_scope_histogram_mode_clicked), d);
@@ -2360,42 +2360,42 @@ void gui_init(dt_lib_module_t *self)
   dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
   if(teth)
   {
-    dt_action_register(teth, N_("cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
-    dt_action_register(teth, N_("hide histogram"), _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-    dt_action_register(teth, N_("switch histogram view"), _lib_histogram_change_type_callback, 0, 0);
+    dt_action_register(teth, N_("Cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
+    dt_action_register(teth, N_("Hide histogram"), _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+    dt_action_register(teth, N_("Switch histogram view"), _lib_histogram_change_type_callback, 0, 0);
   }
 
   // red/green/blue channel on/off
   d->blue_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   dt_gui_add_class(d->blue_channel_button, "rgb_toggle");
   gtk_widget_set_name(d->blue_channel_button, "blue-channel-button");
-  gtk_widget_set_tooltip_text(d->blue_channel_button, _("toggle blue channel"));
+  gtk_widget_set_tooltip_text(d->blue_channel_button, _("Toggle blue channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->blue_channel_button), d->blue);
-  dt_action_define(dark, N_("toggle colors"), N_("blue"), d->blue_channel_button, &dt_action_def_toggle);
+  dt_action_define(dark, N_("Toggle colors"), N_("Blue"), d->blue_channel_button, &dt_action_def_toggle);
   gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->blue_channel_button, FALSE, FALSE, 0);
 
   d->green_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   dt_gui_add_class(d->green_channel_button, "rgb_toggle");
   gtk_widget_set_name(d->green_channel_button, "green-channel-button");
-  gtk_widget_set_tooltip_text(d->green_channel_button, _("toggle green channel"));
+  gtk_widget_set_tooltip_text(d->green_channel_button, _("Toggle green channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->green_channel_button), d->green);
-  dt_action_define(dark, N_("toggle colors"), N_("green"), d->green_channel_button, &dt_action_def_toggle);
+  dt_action_define(dark, N_("Toggle colors"), N_("Green"), d->green_channel_button, &dt_action_def_toggle);
   gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->green_channel_button, FALSE, FALSE, 0);
 
   d->red_channel_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   dt_gui_add_class(d->red_channel_button, "rgb_toggle");
   gtk_widget_set_name(d->red_channel_button, "red-channel-button");
-  gtk_widget_set_tooltip_text(d->red_channel_button, _("toggle red channel"));
+  gtk_widget_set_tooltip_text(d->red_channel_button, _("Toggle red channel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->red_channel_button), d->red);
-  dt_action_define(dark, N_("toggle colors"), N_("red"), d->red_channel_button, &dt_action_def_toggle);
+  dt_action_define(dark, N_("Toggle colors"), N_("Red"), d->red_channel_button, &dt_action_def_toggle);
   gtk_box_pack_end(GTK_BOX(d->button_box_rgb), d->red_channel_button, FALSE, FALSE, 0);
 
   d->scope_view_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  ac = dt_action_define(dark, NULL, N_("switch histogram view"), d->scope_view_button, &dt_action_def_button);
+  ac = dt_action_define(dark, NULL, N_("Switch histogram view"), d->scope_view_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(box_right), d->scope_view_button, FALSE, FALSE, 0);
 
   d->colorspace_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-  dt_action_define(dark, NULL, N_("cycle vectorscope types"), d->colorspace_button, &dt_action_def_button);
+  dt_action_define(dark, NULL, N_("Cycle vectorscope types"), d->colorspace_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(box_right), d->colorspace_button, FALSE, FALSE, 0);
 
   // a series of buttons for color harmony guide lines
@@ -2403,7 +2403,7 @@ void gui_init(dt_lib_module_t *self)
   {
     GtkWidget *rb = dtgtk_togglebutton_new(dtgtk_cairo_paint_color_harmony, CPF_NONE,
                                            &(dt_color_harmonies[i]));
-    dt_action_define(dark, N_("color harmonies"), dt_color_harmonies[i].name, rb, &dt_action_def_toggle);
+    dt_action_define(dark, N_("Color harmonies"), dt_color_harmonies[i].name, rb, &dt_action_def_toggle);
     g_signal_connect(G_OBJECT(rb), "button-press-event", G_CALLBACK(_color_harmony_clicked), d);
     g_signal_connect(G_OBJECT(rb), "enter-notify-event",
                      G_CALLBACK(_color_harmony_enter_notify_callback), d);
@@ -2415,7 +2415,7 @@ void gui_init(dt_lib_module_t *self)
   }
   _color_harmony_button_on_off(d->color_harmony, DT_LIB_HISTOGRAM_HARMONY_NONE, d);
 
-  dt_action_register(dark, N_("cycle color harmonies"), _lib_histogram_cycle_harmony_callback, 0, 0);
+  dt_action_register(dark, N_("Cycle color harmonies"), _lib_histogram_cycle_harmony_callback, 0, 0);
 
   // will change visibility of buttons, hence must run after all buttons are declared
   _scope_type_update(d);

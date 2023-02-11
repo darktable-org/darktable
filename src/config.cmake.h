@@ -88,4 +88,3 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

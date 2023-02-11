@@ -39,7 +39,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_vibrance_params_t)
 
 typedef struct dt_iop_vibrance_params_t
 {
-  float amount; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0 $DESCRIPTION: "vibrance"
+  float amount; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0 $DESCRIPTION: "Vibrance"
 } dt_iop_vibrance_params_t;
 
 typedef struct dt_iop_vibrance_gui_data_t
@@ -59,17 +59,17 @@ typedef struct dt_iop_vibrance_global_data_t
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the vibrance slider in the color balance rgb module instead.");
+  return _("This module is deprecated. Please use the vibrance slider in the color balance rgb module instead.");
 }
 
 const char *name()
 {
-  return _("vibrance");
+  return _("Vibrance");
 }
 
 const char *aliases()
 {
-  return _("saturation");
+  return _("Saturation");
 }
 
 int flags()
@@ -90,12 +90,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("saturate and reduce the lightness of the most saturated pixels\n"
+  return dt_iop_set_description(self, _("Saturate and reduce the lightness of the most saturated pixels\n"
                                         "to make the colors more vivid."),
-                                      _("creative"),
-                                      _("linear or non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+                                      _("Creative"),
+                                      _("Linear or non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -214,11 +214,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->amount_scale = dt_bauhaus_slider_from_params(self, "amount");
   dt_bauhaus_slider_set_format(g->amount_scale, "%");
-  gtk_widget_set_tooltip_text(g->amount_scale, _("the amount of vibrance"));
+  gtk_widget_set_tooltip_text(g->amount_scale, _("The amount of vibrance"));
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -70,7 +70,7 @@ typedef struct pair_t
 
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
-  return _("website gallery");
+  return _("Website gallery");
 }
 
 void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_params,
@@ -106,8 +106,8 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   gallery_t *d = (gallery_t *)self->gui_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-         _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-         _("_select as output destination"), _("_cancel"));
+         _("Select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+         _("_Select as output destination"), _("_Cancel"));
 
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
   char *c = g_strstr_len(old, -1, "$");
@@ -151,8 +151,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   GtkWidget *widget;
 
-  d->entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(entry_changed_callback), self,
-                                           _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+  d->entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("Path"), G_CALLBACK(entry_changed_callback), self,
+                                           _("Enter the path where to put exported images\nvariables support bash like string manipulation\n"
                                              "type '$(' to activate the completion and see the list of variables"),
                                            dt_conf_get_string_const("plugins/imageio/storage/gallery/file_directory")));
   dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
@@ -160,15 +160,15 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
-  gtk_widget_set_tooltip_text(widget, _("select directory"));
+  gtk_widget_set_tooltip_text(widget, _("Select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("title")), FALSE, FALSE, 0);
-  d->title_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("title"), G_CALLBACK(title_changed_callback), self,
-                                                 _("enter the title of the website"),
+  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("Title")), FALSE, FALSE, 0);
+  d->title_entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("Title"), G_CALLBACK(title_changed_callback), self,
+                                                 _("Enter the title of the website"),
                                                  dt_conf_get_string_const("plugins/imageio/storage/gallery/title")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
 }
@@ -250,7 +250,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   if(g_mkdir_with_parents(dirname, 0755))
   {
     dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_gallery] could not create directory: `%s'!\n", dirname);
-    dt_control_log(_("could not create directory `%s'!"), dirname);
+    dt_control_log(_("Could not create directory `%s'!"), dirname);
     return 1;
   }
 
@@ -328,7 +328,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
-    dt_control_log(_("could not export to file `%s'!"), filename);
+    dt_control_log(_("Could not export to file `%s'!"), filename);
     free(pair);
     g_free(esc_relfilename);
     g_free(esc_relthumbfilename);
@@ -367,7 +367,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
                        icc_intent, self, sdata, num, total, NULL) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
-    dt_control_log(_("could not export to file `%s'!"), filename);
+    dt_control_log(_("Could not export to file `%s'!"), filename);
     return 1;
   }
   // restore for next image:
@@ -375,7 +375,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   fdata->max_height = save_max_height;
 
   printf("[export_job] exported to `%s'\n", filename);
-  dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
+  dt_control_log(ngettext("%d/%d Exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;
 }

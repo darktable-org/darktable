@@ -207,9 +207,9 @@ void dt_dev_cleanup(dt_develop_t *dev)
 float dt_dev_get_preview_downsampling()
 {
   const char *preview_downsample = dt_conf_get_string_const("preview_downsampling");
-  const float downsample = (g_strcmp0(preview_downsample, "original") == 0) ? 1.0f
-        : (g_strcmp0(preview_downsample, "to 1/2")==0) ? 0.5f
-        : (g_strcmp0(preview_downsample, "to 1/3")==0) ? 1/3.0f
+  const float downsample = (g_strcmp0(preview_downsample, "Original") == 0) ? 1.0f
+        : (g_strcmp0(preview_downsample, "To 1/2")==0) ? 0.5f
+        : (g_strcmp0(preview_downsample, "To 1/3")==0) ? 1/3.0f
         : 0.25f;
   return downsample;
 }
@@ -1516,10 +1516,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
             // (modern chroma and not module present as we need to
             // have the pre 3.0 default parameters used.
 
-            dt_conf_set_string("plugins/darkroom/workflow", "display-referred (legacy)");
+            dt_conf_set_string("plugins/darkroom/workflow", "Display-referred (legacy)");
             dt_iop_reload_defaults(module);
             _dev_insert_module(dev, module, imgid);
-            dt_conf_set_string("plugins/darkroom/workflow", "scene-referred (filmic)");
+            dt_conf_set_string("plugins/darkroom/workflow", "Scene-referred (filmic)");
             dt_iop_reload_defaults(module);
           }
         }
@@ -1544,9 +1544,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const char *workflow = dt_conf_get_string_const("plugins/darkroom/workflow");
 
   const gboolean auto_apply_filmic =
-    (is_raw || is_mono) && (strcmp(workflow, "scene-referred (filmic)") == 0);
+    (is_raw || is_mono) && (strcmp(workflow, "Scene-referred (filmic)") == 0);
   const gboolean auto_apply_sigmoid =
-    (is_raw || is_mono) && (strcmp(workflow, "scene-referred (sigmoid)") == 0);
+    (is_raw || is_mono) && (strcmp(workflow, "Scene-referred (sigmoid)") == 0);
   const gboolean auto_apply_cat = has_matrix && is_modern_chroma;
 
   if(auto_apply_filmic || auto_apply_sigmoid || auto_apply_cat)
@@ -1598,9 +1598,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // query for all modules at once:
   sqlite3_stmt *stmt;
   const char *workflow_preset = (has_matrix || is_mono) && is_display_referred
-                                ? _("display-referred default")
+                                ? _("Display-referred default")
                                 : ((has_matrix || is_mono) && is_scene_referred
-                                   ?_("scene-referred default")
+                                   ?_("Scene-referred default")
                                    :"\t\n");
   int iformat = 0;
   if(dt_image_is_rawprepare_supported(image)) iformat |= FOR_RAW;
@@ -2130,7 +2130,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
         while(fname > dev->image_storage.filename && *fname != '/') fname--;
 
         if(fname > dev->image_storage.filename) fname++;
-        dt_control_log(_("%s: module `%s' version mismatch: %d != %d"), fname, hist->module->op,
+        dt_control_log(_("%s: Module `%s' version mismatch: %d != %d"), fname, hist->module->op,
                        hist->module->version(), modversion);
         dt_dev_free_history_item(hist);
         continue;
@@ -2383,7 +2383,7 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt)
 {
   gchar *module_label = dt_history_item_get_name(hist->module);
-  g_snprintf(label, cnt, "%s (%s)", module_label, hist->enabled ? _("on") : _("off"));
+  g_snprintf(label, cnt, "%s (%s)", module_label, hist->enabled ? _("On") : _("Off"));
   g_free(module_label);
 }
 
@@ -2616,7 +2616,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   if(!dt_ioppr_move_iop_after(base->dev, module, base))
   {
     dt_print(DT_DEBUG_ALWAYS, "[dt_dev_module_duplicate] can't move new instance after the base one\n");
-    dt_control_log(_("module duplicate, can't move new instance after the base one\n"));
+    dt_control_log(_("Module duplicate, can't move new instance after the base one\n"));
   }
 
   // that's all. rest of insertion is gui work !

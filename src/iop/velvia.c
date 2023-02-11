@@ -43,7 +43,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_velvia_params_t)
 typedef struct dt_iop_velvia_params_t
 {
   float strength; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
-  float bias;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "mid-tones bias"
+  float bias;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0 $DESCRIPTION: "Mid-tones bias"
 } dt_iop_velvia_params_t;
 
 /* legacy version 1 params */
@@ -76,12 +76,12 @@ typedef struct dt_iop_velvia_global_data_t
 
 const char *name()
 {
-  return _("velvia");
+  return _("Velvia");
 }
 
 const char *aliases()
 {
-  return _("saturation");
+  return _("Saturation");
 }
 
 int flags()
@@ -101,11 +101,11 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("resaturate giving more weight to blacks, whites and low-saturation pixels"),
-                                      _("creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("linear, RGB"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self, _("Resaturate giving more weight to blacks, whites and low-saturation pixels"),
+                                      _("Creative"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Linear, RGB"),
+                                      _("Linear, RGB, scene-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -257,12 +257,12 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_velvia_gui_data_t *g = IOP_GUI_ALLOC(velvia);
 
-  g->strength_scale = dt_bauhaus_slider_from_params(self, N_("strength"));
+  g->strength_scale = dt_bauhaus_slider_from_params(self, N_("Strength"));
   dt_bauhaus_slider_set_format(g->strength_scale, "%");
-  gtk_widget_set_tooltip_text(g->strength_scale, _("the strength of saturation boost"));
+  gtk_widget_set_tooltip_text(g->strength_scale, _("The strength of saturation boost"));
 
   g->bias_scale = dt_bauhaus_slider_from_params(self, "bias");
-  gtk_widget_set_tooltip_text(g->bias_scale, _("how much to spare highlights and shadows"));
+  gtk_widget_set_tooltip_text(g->bias_scale, _("How much to spare highlights and shadows"));
 }
 
 // clang-format off
@@ -270,4 +270,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

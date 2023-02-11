@@ -33,7 +33,7 @@ DT_MODULE(1)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("locations");
+  return _("Locations");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -232,11 +232,11 @@ static void _display_buttons(dt_lib_module_t *self)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
-    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->new_button))), _("new sub-location"));
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->new_button))), _("New sub-location"));
   }
   else
   {
-    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->new_button))), _("new location"));
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->new_button))), _("New location"));
   }
 }
 
@@ -284,7 +284,7 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   name = path ? g_strconcat(path, "|", NULL) : g_strdup("");
   const int base_len = strlen(name);
   int i = 1;
-  name = dt_util_dstrcat(name, "%s", _("new location"));
+  name = dt_util_dstrcat(name, "%s", _("New location"));
   char *new_name = g_strdup(name);
   while(dt_map_location_name_exists(new_name))
   {
@@ -585,7 +585,7 @@ static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
       }
       else
       {
-        dt_control_log(_("location name \'%s\' already exists"), new_path);
+        dt_control_log(_("Location name \'%s\' already exists"), new_path);
         canceled = TRUE;
       }
       g_free(new_path);
@@ -740,7 +740,7 @@ static gboolean _set_location_collection(dt_lib_module_t *self)
     gtk_tree_model_get(model, &iter, DT_MAP_LOCATION_COL_PATH, &name, -1);
     char *collection = g_strdup_printf("1:0:%d:%s|%s$",
                                        DT_COLLECTION_PROP_GEOTAGGING,
-                                       _("tagged"), name);
+                                       _("Tagged"), name);
     dt_collection_deserialize(collection, FALSE);
     g_free(collection);
     g_free(name);
@@ -776,10 +776,10 @@ static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module
     GtkTreeIter child, parent = iter;
     const gboolean children = gtk_tree_model_iter_children(model, &child, &parent);
 
-    menuitem = gtk_menu_item_new_with_label(_("edit location"));
+    menuitem = gtk_menu_item_new_with_label(_("Edit location"));
     g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_edit_location, self);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    menuitem = gtk_menu_item_new_with_label(_("delete location"));
+    menuitem = gtk_menu_item_new_with_label(_("Delete location"));
     g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_delete_location, self);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     if(children)
@@ -789,14 +789,14 @@ static void _pop_menu_view(GtkWidget *view, GdkEventButton *event, dt_lib_module
 
     menuitem = gtk_separator_menu_item_new();
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    menuitem = gtk_menu_item_new_with_label(_("update filmstrip"));
+    menuitem = gtk_menu_item_new_with_label(_("Update filmstrip"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     if(!locid)
     {
       gtk_widget_set_sensitive(menuitem, FALSE);
     }
     g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_update_filmstrip, self);
-    menuitem = gtk_menu_item_new_with_label(_("go to collection (lighttable)"));
+    menuitem = gtk_menu_item_new_with_label(_("Go to collection (lighttable)"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_goto_collection, self);
     if(!locid)
@@ -842,7 +842,7 @@ static gboolean _click_on_view(GtkWidget *view, GdkEventButton *event, dt_lib_mo
   g_object_get(G_OBJECT(d->renderer), "editing", &editing, NULL);
   if(editing)
   {
-    dt_control_log(_("terminate edit (press enter or escape) before selecting another location"));
+    dt_control_log(_("Terminate edit (press enter or escape) before selecting another location"));
     return TRUE;
   }
 
@@ -929,7 +929,7 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(treestore);
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view),
-                              _("list of user locations,"
+                              _("List of user locations,"
                                 "\nclick to show or hide a location on the map:"
                                 "\n - wheel scroll inside the shape to resize it"
                                 "\n - <shift> or <ctrl> scroll to modify the width or the height"
@@ -955,18 +955,18 @@ void gui_init(dt_lib_module_t *self)
   d->shape_button_handler = g_signal_connect(G_OBJECT(d->shape_button), "clicked",
                                              G_CALLBACK(_shape_button_clicked), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->shape_button ),
-                              _("select the shape of the location\'s limits on the map, circle or rectangle"
+                              _("Select the shape of the location\'s limits on the map, circle or rectangle"
                                 "\nor even polygon if available (select first a polygon place in 'find location' module)"));
 
-  d->new_button = dt_action_button_new(self, N_("new location"), _new_button_clicked, self,
-                                       _("add a new location on the center of the visible map"), 0, 0);
+  d->new_button = dt_action_button_new(self, N_("New location"), _new_button_clicked, self,
+                                       _("Add a new location on the center of the visible map"), 0, 0);
   gtk_box_pack_start(hbox, d->new_button, TRUE, TRUE, 0);
 
   dt_conf_set_bool("plugins/map/showalllocations", FALSE);
-  d->show_all_button = gtk_check_button_new_with_label(_("show all"));
+  d->show_all_button = gtk_check_button_new_with_label(_("Show all"));
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->show_all_button))), PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(d->show_all_button,
-                              _("show all locations which are on the visible map"));
+                              _("Show all locations which are on the visible map"));
   gtk_box_pack_end(hbox, d->show_all_button, FALSE, FALSE, 8);
   g_signal_connect(G_OBJECT(d->show_all_button), "clicked", G_CALLBACK(_show_all_button_clicked), self);
 

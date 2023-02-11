@@ -380,9 +380,9 @@ void gui_init(dt_imageio_module_format_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("compression type"), NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("Compression type"), NULL,
                                comp_type, compression_changed, self,
-                               N_("lossy"), N_("lossless"));
+                               N_("Lossy"), N_("Lossless"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
 
   gui->quality = dt_bauhaus_slider_new_with_range((dt_iop_module_t*)self,
@@ -391,11 +391,11 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   1,
                                                   dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT),
                                                   0);
-  dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
+  dt_bauhaus_widget_set_label(gui->quality, NULL, N_("Quality"));
   dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/webp/quality", DT_DEFAULT));
   dt_bauhaus_slider_set_format(gui->quality, "%");
-  gtk_widget_set_tooltip_text(gui->quality, _("for lossy, 0 gives the smallest size and 100 the best quality.\n"
-                                              "for lossless, 0 is the fastest but gives larger files compared\n"
+  gtk_widget_set_tooltip_text(gui->quality, _("For lossy, 0 gives the smallest size and 100 the best quality.\n"
+                                              "For lossless, 0 is the fastest but gives larger files compared\n"
                                               "to the slowest 100."));
   if(quality >= 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
@@ -404,13 +404,13 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_widget_set_visible(gui->quality, comp_type != webp_lossless);
   gtk_widget_set_no_show_all(gui->quality, TRUE);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->hint, self, NULL, N_("image hint"),
-                               _("image characteristics hint for the underlying encoder.\n"
-                                 "picture: digital picture, like portrait, inner shot\n"
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->hint, self, NULL, N_("Image hint"),
+                               _("Image characteristics hint for the underlying encoder.\n"
+                                 "Picture: digital picture, like portrait, inner shot\n"
                                  "photo: outdoor photograph, with natural lighting\n"
                                  "graphic: discrete tone image (graph, map-tile etc)"),
                                hint, hint_combobox_changed, self,
-                               N_("default"), N_("picture"), N_("photo"), N_("graphic"));
+                               N_("Default"), N_("Picture"), N_("Photo"), N_("Graphic"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->hint, TRUE, TRUE, 0);
 }
 

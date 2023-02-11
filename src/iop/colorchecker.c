@@ -112,21 +112,21 @@ typedef struct dt_iop_colorchecker_global_data_t
 
 const char *name()
 {
-  return _("color look up table");
+  return _("Color look up table");
 }
 
 const char *aliases()
 {
-  return _("profile|lut|color grading");
+  return _("Profile|lut|color grading");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("perform color space corrections and apply looks"),
-                                      _("corrective or creative"),
-                                      _("linear or non-linear, Lab, display-referred"),
-                                      _("defined by profile, Lab"),
-                                      _("linear or non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Perform color space corrections and apply looks"),
+                                      _("Corrective or creative"),
+                                      _("Linear or non-linear, Lab, display-referred"),
+                                      _("Defined by profile, Lab"),
+                                      _("Linear or non-linear, Lab, display-referred"));
 }
 
 
@@ -283,7 +283,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_b[21] = p.source_b[21] = 33.434604644775391;
   p.target_b[22] = p.source_b[22] = 9.5750093460083008;
   p.target_b[23] = p.source_b[23] = 41.285167694091797;
-  dt_gui_presets_add_generic(_("it8 skin tones"), self->op,
+  dt_gui_presets_add_generic(_("It8 skin tones"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // helmholtz/kohlrausch effect applied to black and white conversion.
@@ -297,7 +297,7 @@ void init_presets(dt_iop_module_so_t *self)
       hk_params_input, strlen(hk_params_input), &params_len);
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(hk_params);
-  dt_gui_presets_add_generic(_("helmholtz/kohlrausch monochrome"), self->op,
+  dt_gui_presets_add_generic(_("Helmholtz/kohlrausch monochrome"), self->op,
                              self->version(), hk_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(hk_params);
 
@@ -835,7 +835,7 @@ void _colorchecker_rebuild_patch_list(struct dt_iop_module_t *self)
     char cboxentry[1024];
     for(int k=0;k<p->num_patches;k++)
     {
-      snprintf(cboxentry, sizeof(cboxentry), _("patch #%d"), k);
+      snprintf(cboxentry, sizeof(cboxentry), _("Patch #%d"), k);
       dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
     }
     if(p->num_patches <= 24)
@@ -1204,7 +1204,7 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   char tooltip[1024];
   snprintf(tooltip, sizeof(tooltip),
       _("(%2.2f %2.2f %2.2f)\n"
-        "altered patches are marked with an outline\n"
+        "Altered patches are marked with an outline\n"
         "click to select\n"
         "double-click to reset\n"
         "right click to delete patch\n"
@@ -1333,45 +1333,45 @@ void gui_init(struct dt_iop_module_t *self)
   g->patch = 0;
   g->drawn_patch = -1;
   g->combobox_patch = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->combobox_patch, NULL, N_("patch"));
-  gtk_widget_set_tooltip_text(g->combobox_patch, _("color checker patch"));
+  dt_bauhaus_widget_set_label(g->combobox_patch, NULL, N_("Patch"));
+  gtk_widget_set_tooltip_text(g->combobox_patch, _("Color checker patch"));
   char cboxentry[1024];
   for(int k=0;k<p->num_patches;k++)
   {
-    snprintf(cboxentry, sizeof(cboxentry), _("patch #%d"), k);
+    snprintf(cboxentry, sizeof(cboxentry), _("Patch #%d"), k);
     dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
   }
 
   dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, g->combobox_patch);
 
   g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 200.0, 0, 0.0f, 2);
-  gtk_widget_set_tooltip_text(g->scale_L, _("adjust target color Lab 'L' channel\nlower values darken target color while higher brighten it"));
-  dt_bauhaus_widget_set_label(g->scale_L, NULL, N_("lightness"));
+  gtk_widget_set_tooltip_text(g->scale_L, _("Adjust target color Lab 'L' channel\nlower values darken target color while higher brighten it"));
+  dt_bauhaus_widget_set_label(g->scale_L, NULL, N_("Lightness"));
 
   g->scale_a = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 0, 0.0f, 2);
-  gtk_widget_set_tooltip_text(g->scale_a, _("adjust target color Lab 'a' channel\nlower values shift target color towards greens while higher shift towards magentas"));
-  dt_bauhaus_widget_set_label(g->scale_a, NULL, N_("green-magenta offset"));
+  gtk_widget_set_tooltip_text(g->scale_a, _("Adjust target color Lab 'a' channel\nlower values shift target color towards greens while higher shift towards magentas"));
+  dt_bauhaus_widget_set_label(g->scale_a, NULL, N_("Green-magenta offset"));
   dt_bauhaus_slider_set_stop(g->scale_a, 0.0, 0.0, 1.0, 0.2);
   dt_bauhaus_slider_set_stop(g->scale_a, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_a, 1.0, 1.0, 0.0, 0.2);
 
   g->scale_b = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 0, 0.0f, 2);
-  gtk_widget_set_tooltip_text(g->scale_b, _("adjust target color Lab 'b' channel\nlower values shift target color towards blues while higher shift towards yellows"));
-  dt_bauhaus_widget_set_label(g->scale_b, NULL, N_("blue-yellow offset"));
+  gtk_widget_set_tooltip_text(g->scale_b, _("Adjust target color Lab 'b' channel\nlower values shift target color towards blues while higher shift towards yellows"));
+  dt_bauhaus_widget_set_label(g->scale_b, NULL, N_("Blue-yellow offset"));
   dt_bauhaus_slider_set_stop(g->scale_b, 0.0, 0.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 1.0, 1.0, 0.0);
 
   g->scale_C = dt_bauhaus_slider_new_with_range(self, -128.0, 128.0, 0, 0.0f, 2);
-  gtk_widget_set_tooltip_text(g->scale_C, _("adjust target color saturation\nadjusts 'a' and 'b' channels of target color in Lab space simultaneously\nlower values scale towards lower saturation while higher scale towards higher saturation"));
-  dt_bauhaus_widget_set_label(g->scale_C, NULL, N_("saturation"));
+  gtk_widget_set_tooltip_text(g->scale_C, _("Adjust target color saturation\nadjusts 'a' and 'b' channels of target color in Lab space simultaneously\nlower values scale towards lower saturation while higher scale towards higher saturation"));
+  dt_bauhaus_widget_set_label(g->scale_C, NULL, N_("Saturation"));
 
   g->absolute_target = 0;
   g->combobox_target = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->combobox_target, 0, N_("target color"));
-  gtk_widget_set_tooltip_text(g->combobox_target, _("control target color of the patches\nrelative - target color is relative from the patch original color\nabsolute - target color is absolute Lab value"));
-  dt_bauhaus_combobox_add(g->combobox_target, _("relative"));
-  dt_bauhaus_combobox_add(g->combobox_target, _("absolute"));
+  dt_bauhaus_widget_set_label(g->combobox_target, 0, N_("Target color"));
+  gtk_widget_set_tooltip_text(g->combobox_target, _("Control target color of the patches\nrelative - target color is relative from the patch original color\nabsolute - target color is absolute Lab value"));
+  dt_bauhaus_combobox_add(g->combobox_target, _("Relative"));
+  dt_bauhaus_combobox_add(g->combobox_target, _("Absolute"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->combobox_patch, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_L, TRUE, TRUE, 0);

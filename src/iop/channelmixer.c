@@ -123,23 +123,23 @@ typedef struct dt_iop_channelmixer_global_data_t
 
 const char *name()
 {
-  return _("channel mixer");
+  return _("Channel mixer");
 }
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the color calibration module instead.");
+  return _("This module is deprecated. Please use the color calibration module instead.");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("perform color space corrections\n"
+  return dt_iop_set_description(self, _("Perform color space corrections\n"
                                         "such as white balance, channels mixing\n"
                                         "and conversions to monochrome emulating film"),
-                                      _("corrective or creative"),
-                                      _("linear, RGB, display-referred"),
-                                      _("linear, RGB"),
-                                      _("linear, RGB, display-referred"));
+                                      _("Corrective or creative"),
+                                      _("Linear, RGB, display-referred"),
+                                      _("Linear, RGB"),
+                                      _("Linear, RGB, display-referred"));
 }
 
 
@@ -612,33 +612,33 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* output */
   g->output_channel = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->output_channel, NULL, N_("destination"));
-  dt_bauhaus_combobox_add(g->output_channel, _("hue"));
-  dt_bauhaus_combobox_add(g->output_channel, _("saturation"));
-  dt_bauhaus_combobox_add(g->output_channel, _("lightness"));
-  dt_bauhaus_combobox_add(g->output_channel, _("red"));
-  dt_bauhaus_combobox_add(g->output_channel, _("green"));
-  dt_bauhaus_combobox_add(g->output_channel, _("blue"));
-  dt_bauhaus_combobox_add(g->output_channel, C_("channelmixer", "gray"));
+  dt_bauhaus_widget_set_label(g->output_channel, NULL, N_("Destination"));
+  dt_bauhaus_combobox_add(g->output_channel, _("Hue"));
+  dt_bauhaus_combobox_add(g->output_channel, _("Saturation"));
+  dt_bauhaus_combobox_add(g->output_channel, _("Lightness"));
+  dt_bauhaus_combobox_add(g->output_channel, _("Red"));
+  dt_bauhaus_combobox_add(g->output_channel, _("Green"));
+  dt_bauhaus_combobox_add(g->output_channel, _("Blue"));
+  dt_bauhaus_combobox_add(g->output_channel, C_("channelmixer", "Gray"));
   dt_bauhaus_combobox_set(g->output_channel, CHANNEL_RED);
   g_signal_connect(G_OBJECT(g->output_channel), "value-changed", G_CALLBACK(output_callback), self);
 
   /* red */
   g->scale_red = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0, p->red[CHANNEL_RED], 3);
-  gtk_widget_set_tooltip_text(g->scale_red, _("amount of red channel in the output channel"));
-  dt_bauhaus_widget_set_label(g->scale_red, NULL, N_("red"));
+  gtk_widget_set_tooltip_text(g->scale_red, _("Amount of red channel in the output channel"));
+  dt_bauhaus_widget_set_label(g->scale_red, NULL, N_("Red"));
   g_signal_connect(G_OBJECT(g->scale_red), "value-changed", G_CALLBACK(red_callback), self);
 
   /* green */
   g->scale_green = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0, p->green[CHANNEL_RED], 3);
-  gtk_widget_set_tooltip_text(g->scale_green, _("amount of green channel in the output channel"));
-  dt_bauhaus_widget_set_label(g->scale_green, NULL, N_("green"));
+  gtk_widget_set_tooltip_text(g->scale_green, _("Amount of green channel in the output channel"));
+  dt_bauhaus_widget_set_label(g->scale_green, NULL, N_("Green"));
   g_signal_connect(G_OBJECT(g->scale_green), "value-changed", G_CALLBACK(green_callback), self);
 
   /* blue */
   g->scale_blue = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0, p->blue[CHANNEL_RED], 3);
-  gtk_widget_set_tooltip_text(g->scale_blue, _("amount of blue channel in the output channel"));
-  dt_bauhaus_widget_set_label(g->scale_blue, NULL, N_("blue"));
+  gtk_widget_set_tooltip_text(g->scale_blue, _("Amount of blue channel in the output channel"));
+  dt_bauhaus_widget_set_label(g->scale_blue, NULL, N_("Blue"));
   g_signal_connect(G_OBJECT(g->scale_blue), "value-changed", G_CALLBACK(blue_callback), self);
 
 
@@ -653,31 +653,31 @@ void init_presets(dt_iop_module_so_t *self)
 {
   dt_database_start_transaction(darktable.db);
 
-  dt_gui_presets_add_generic(_("swap R and B"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Swap R and B"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 0, 0, 1, 0 },
                                                               { 0, 0, 0, 0, 1, 0, 0 },
                                                               { 0, 0, 0, 1, 0, 0, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
                              sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("swap G and B"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Swap G and B"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0, 1, 0, 0, 0 },
                                                               { 0, 0, 0, 0, 0, 1, 0 },
                                                               { 0, 0, 0, 0, 1, 0, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
                              sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("color contrast boost"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Color contrast boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0.8, 1, 0, 0, 0 },
                                                               { 0, 0, 0.1, 0, 1, 0, 0 },
                                                               { 0, 0, 0.1, 0, 0, 1, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
                              sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("color details boost"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Color details boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0.1, 1, 0, 0, 0 },
                                                               { 0, 0, 0.8, 0, 1, 0, 0 },
                                                               { 0, 0, 0.1, 0, 0, 1, 0 },
                                                               CHANNEL_MIXER_VERSION_2 },
                              sizeof(dt_iop_channelmixer_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  dt_gui_presets_add_generic(_("color artifacts boost"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Color artifacts boost"), self->op, self->version(),
                              &(dt_iop_channelmixer_params_t){ { 0, 0, 0.1, 1, 0, 0, 0 },
                                                               { 0, 0, 0.1, 0, 1, 0, 0 },
                                                               { 0, 0, 0.8, 0, 0, 1, 0 },
@@ -773,4 +773,3 @@ void init_presets(dt_iop_module_so_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -68,7 +68,7 @@ typedef struct dt_imageio_disk_t
 
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
-  return _("file on disk");
+  return _("File on disk");
 }
 
 void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_params,
@@ -119,8 +119,8 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   disk_t *d = (disk_t *)self->gui_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-        _("_select as output destination"), _("_cancel"));
+        _("Select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        _("_Select as output destination"), _("_Cancel"));
 
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
   char *c = g_strstr_len(old, -1, "$");
@@ -165,8 +165,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, FALSE, 0);
 
-  d->entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("path"), G_CALLBACK(entry_changed_callback), self,
-                                           _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+  d->entry = GTK_ENTRY(dt_action_entry_new(DT_ACTION(self), N_("Path"), G_CALLBACK(entry_changed_callback), self,
+                                           _("Enter the path where to put exported images\nvariables support bash like string manipulation\n"
                                              "type '$(' to activate the completion and see the list of variables"),
                                            dt_conf_get_string_const("plugins/imageio/storage/disk/file_directory")));
   dt_gtkentry_setup_completion(d->entry, dt_gtkentry_get_default_path_compl_list());
@@ -175,16 +175,16 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   GtkWidget *widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");
-  gtk_widget_set_tooltip_text(widget, _("select directory"));
+  gtk_widget_set_tooltip_text(widget, _("Select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->onsave_action, self, NULL, N_("on conflict"), NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->onsave_action, self, NULL, N_("On conflict"), NULL,
                                dt_conf_get_int("plugins/imageio/storage/disk/overwrite"),
                                onsave_action_toggle_callback, self,
-                               N_("create unique filename"),
-                               N_("overwrite"),
-                               N_("skip"));
+                               N_("Create unique filename"),
+                               N_("Overwrite"),
+                               N_("Skip"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->onsave_action, TRUE, TRUE, 0);
 }
 
@@ -262,14 +262,14 @@ try_again:
     if(g_mkdir_with_parents(output_dir, 0755))
     {
       dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_disk] could not create directory: `%s'!\n", output_dir);
-      dt_control_log(_("could not create directory `%s'!"), output_dir);
+      dt_control_log(_("Could not create directory `%s'!"), output_dir);
       fail = TRUE;
       goto failed;
     }
     if(g_access(output_dir, W_OK | X_OK) != 0)
     {
       dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_disk] could not write to directory: `%s'!\n", output_dir);
-      dt_control_log(_("could not write to directory `%s'!"), output_dir);
+      dt_control_log(_("Could not write to directory `%s'!"), output_dir);
       fail = TRUE;
       goto failed;
     }
@@ -299,7 +299,7 @@ try_again:
       {
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
         dt_print(DT_DEBUG_ALWAYS, "[export_job] skipping `%s'\n", filename);
-        dt_control_log(ngettext("%d/%d skipping `%s'", "%d/%d skipping `%s'", num),
+        dt_control_log(ngettext("%d/%d Skipping `%s'", "%d/%d skipping `%s'", num),
                        num, total, filename);
         return 0;
       }
@@ -313,12 +313,12 @@ try_again:
                        icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     dt_print(DT_DEBUG_ALWAYS, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
-    dt_control_log(_("could not export to file `%s'!"), filename);
+    dt_control_log(_("Could not export to file `%s'!"), filename);
     return 1;
   }
 
   dt_print(DT_DEBUG_ALWAYS, "[export_job] exported to `%s'\n", filename);
-  dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
+  dt_control_log(ngettext("%d/%d Exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;
 }
@@ -377,7 +377,7 @@ char *ask_user_confirmation(dt_imageio_module_storage_t *self)
   disk_t *g = (disk_t *)self->gui_data;
   if(dt_bauhaus_combobox_get(g->onsave_action) == DT_EXPORT_ONCONFLICT_OVERWRITE && dt_conf_get_bool("plugins/lighttable/export/ask_before_export_overwrite"))
   {
-    return g_strdup(_("you are going to export in overwrite mode, this will overwrite any existing images\n\n"
+    return g_strdup(_("You are going to export in overwrite mode, this will overwrite any existing images\n\n"
         "do you really want to continue?"));
   }
   else
@@ -391,4 +391,3 @@ char *ask_user_confirmation(dt_imageio_module_storage_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

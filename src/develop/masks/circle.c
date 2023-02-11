@@ -107,7 +107,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         masks_border *= 0.97f;
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), masks_border);
-      dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
+      dt_toast_log(_("Feather size: %3.2f%%"), masks_border*100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
@@ -117,7 +117,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         masks_size *= 0.97f;
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), masks_size);
-      dt_toast_log(_("size: %3.2f%%"), masks_size*100.0f);
+      dt_toast_log(_("Size: %3.2f%%"), masks_size*100.0f);
     }
     dt_dev_masks_list_change(darktable.develop);
     return 1;
@@ -151,7 +151,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, border), circle->border);
-        dt_toast_log(_("feather size: %3.2f%%"), circle->border*100.0f);
+        dt_toast_log(_("Feather size: %3.2f%%"), circle->border*100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -164,7 +164,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, circle, size), circle->radius);
-        dt_toast_log(_("size: %3.2f%%"), circle->radius*100.0f);
+        dt_toast_log(_("Size: %3.2f%%"), circle->radius*100.0f);
       }
       else
       {
@@ -1343,9 +1343,9 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
 static GSList *_circle_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[CIRCLE] change size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[CIRCLE] change feather size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[CIRCLE] change opacity"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[CIRCLE] Change size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[CIRCLE] Change feather size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[CIRCLE] Change opacity"));
   return lm;
 }
 
@@ -1357,7 +1357,7 @@ static void _circle_sanitize_config(dt_masks_type_t type)
 
 static void _circle_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
 {
-  snprintf(form->name, sizeof(form->name), _("circle #%d"), (int)nb);
+  snprintf(form->name, sizeof(form->name), _("Circle #%d"), (int)nb);
 }
 
 static void _circle_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
@@ -1459,4 +1459,3 @@ const dt_masks_functions_t dt_masks_functions_circle = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

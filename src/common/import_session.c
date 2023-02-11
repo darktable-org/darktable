@@ -305,7 +305,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
         g_free(previous_fname);
         g_free(fname);
         dt_control_log(_(
-            "couldn't expand to a unique filename for session, please check your import session settings."));
+            "Couldn't expand to a unique filename for session, please check your import session settings."));
         return NULL;
       }
 
@@ -398,8 +398,8 @@ const char *dt_import_session_path(struct dt_import_session_t *self, gboolean us
   if(path == NULL)
   {
     fprintf(stderr, "[import_session] Failed to get session path.\n");
-    dt_control_log(_("requested session path not available. "
-                     "device not mounted?"));
+    dt_control_log(_("Requested session path not available. "
+                     "Device not mounted?"));
   }
   return path;
 }

@@ -57,8 +57,8 @@ static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *
 
 typedef enum dt_iop_levels_mode_t
 {
-  LEVELS_MODE_MANUAL,   // $DESCRIPTION: "manual"
-  LEVELS_MODE_AUTOMATIC // $DESCRIPTION: "automatic"
+  LEVELS_MODE_MANUAL,   // $DESCRIPTION: "Manual"
+  LEVELS_MODE_AUTOMATIC // $DESCRIPTION: "Automatic"
 } dt_iop_levels_mode_t;
 
 typedef struct dt_iop_levels_params_t
@@ -106,12 +106,12 @@ typedef struct dt_iop_levels_global_data_t
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the RGB levels module instead.");
+  return _("This module is deprecated. Please use the RGB levels module instead.");
 }
 
 const char *name()
 {
-  return _("levels");
+  return _("Levels");
 }
 
 int default_group()
@@ -131,11 +131,11 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("adjust black, white and mid-gray points"),
-                                      _("creative"),
-                                      _("linear or non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Adjust black, white and mid-gray points"),
+                                      _("Creative"),
+                                      _("Linear or non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -329,7 +329,7 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       // other cases we make sure that the preview pipe has left us with proper readings for
       // g->auto_levels[]. if data are not yet there we need to wait (with timeout).
       if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
-        dt_control_log(_("inconsistent output"));
+        dt_control_log(_("Inconsistent output"));
 
       dt_iop_gui_enter_critical_section(self);
       d->levels[0] = g->auto_levels[0];
@@ -455,7 +455,7 @@ error:
 //  p.levels[0] = 0;
 //  p.levels[1] = 0.5;
 //  p.levels[2] = 1;
-//  dt_gui_presets_add_generic(_("unmodified"), self->op, self->version(), &p, sizeof(p), 1);
+//  dt_gui_presets_add_generic(_("Unmodified"), self->op, self->version(), &p, sizeof(p), 1);
 //}
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -615,9 +615,9 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
-  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("drag handles to set black, gray, and white points. "
-                                                    "operates on L channel."));
-  dt_action_define_iop(self, NULL, N_("levels"), GTK_WIDGET(c->area), NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("Drag handles to set black, gray, and white points. "
+                                                    "Operates on L channel."));
+  dt_action_define_iop(self, NULL, N_("Levels"), GTK_WIDGET(c->area), NULL);
 
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_levels_area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_levels_button_press), self);
@@ -628,20 +628,20 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
-  gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
+  GtkWidget *autobutton = gtk_button_new_with_label(_("Auto"));
+  gtk_widget_set_tooltip_text(autobutton, _("Apply auto levels"));
   g_signal_connect(G_OBJECT(autobutton), "clicked", G_CALLBACK(dt_iop_levels_autoadjust_callback), self);
 
   c->blackpick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
+  gtk_widget_set_tooltip_text(c->blackpick, _("Pick black point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->blackpick), "picker-black");
 
   c->greypick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  gtk_widget_set_tooltip_text(c->greypick, _("pick medium gray point from image"));
+  gtk_widget_set_tooltip_text(c->greypick, _("Pick medium gray point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->greypick), "picker-grey");
 
   c->whitepick = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
+  gtk_widget_set_tooltip_text(c->whitepick, _("Pick white point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
 
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton  ), TRUE, TRUE, 0);
@@ -654,16 +654,16 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *vbox_automatic = self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
-  c->percentile_black = dt_bauhaus_slider_from_params(self, N_("black"));
-  gtk_widget_set_tooltip_text(c->percentile_black, _("black percentile"));
+  c->percentile_black = dt_bauhaus_slider_from_params(self, N_("Black"));
+  gtk_widget_set_tooltip_text(c->percentile_black, _("Black percentile"));
   dt_bauhaus_slider_set_format(c->percentile_black, "%");
 
-  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray"));
-  gtk_widget_set_tooltip_text(c->percentile_grey, _("gray percentile"));
+  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("Gray"));
+  gtk_widget_set_tooltip_text(c->percentile_grey, _("Gray percentile"));
   dt_bauhaus_slider_set_format(c->percentile_grey, "%");
 
-  c->percentile_white = dt_bauhaus_slider_from_params(self, N_("white"));
-  gtk_widget_set_tooltip_text(c->percentile_white, _("white percentile"));
+  c->percentile_white = dt_bauhaus_slider_from_params(self, N_("White"));
+  gtk_widget_set_tooltip_text(c->percentile_white, _("White percentile"));
   dt_bauhaus_slider_set_format(c->percentile_white, "%");
 
   gtk_stack_add_named(GTK_STACK(c->mode_stack), vbox_automatic, "automatic");
@@ -671,7 +671,7 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
-  c->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
+  c->mode = dt_bauhaus_combobox_from_params(self, N_("Mode"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 }

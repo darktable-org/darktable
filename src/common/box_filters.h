@@ -45,4 +45,3 @@ void dt_box_max(float *const buf, const size_t height, const size_t width, const
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

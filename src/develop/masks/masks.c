@@ -129,7 +129,7 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
   // add the common action(s) shared by all shapes
   if(formtype != 0)
   {
-    lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0,  _("[SHAPE] remove shape"));
+    lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0,  _("[SHAPE] Remove shape"));
   }
 
   return lm;
@@ -384,7 +384,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, const int formid)
   fdest->source[0] = fbase->source[0];
   fdest->source[1] = fbase->source[1];
   fdest->version = fbase->version;
-  snprintf(fdest->name, sizeof(fdest->name), _("copy of %s"), fbase->name);
+  snprintf(fdest->name, sizeof(fdest->name), _("Copy of %s"), fbase->name);
 
   darktable.develop->forms = g_list_append(dev->forms, fdest);
 
@@ -914,7 +914,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
         fprintf(stderr,
                 "[_dev_read_masks_history] %s (imgid `%i'): mask version mismatch: history is %d, darktable is %d.\n",
                 fname, imgid, form->version, dt_masks_version());
-        dt_control_log(_("%s: mask version mismatch: %d != %d"), fname, dt_masks_version(), form->version);
+        dt_control_log(_("%s: Mask version mismatch: %d != %d"), fname, dt_masks_version(), form->version);
 
         continue;
       }
@@ -1136,7 +1136,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
       opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
       const int opacitypercent = opacity * 100;
-      dt_toast_log(_("opacity: %d%%"), opacitypercent);
+      dt_toast_log(_("Opacity: %d%%"), opacitypercent);
       ret = 1;
     }
 
@@ -1513,7 +1513,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
     {
       if(nb == 0)
       {
-        dt_bauhaus_combobox_add_section(combo, _("add existing shape"));
+        dt_bauhaus_combobox_add_section(combo, _("Add existing shape"));
         cids[pos++] = 0; // nothing to do
       }
       dt_bauhaus_combobox_add(combo, form->name);
@@ -1538,7 +1538,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
       {
         if(nb == 0)
         {
-          dt_bauhaus_combobox_add_section(combo, _("use same shapes as"));
+          dt_bauhaus_combobox_add_section(combo, _("Use same shapes as"));
           cids[pos++] = 0; // nothing to do
         }
         gchar *module_label = dt_history_item_get_name(other_mod);
@@ -1759,7 +1759,7 @@ float dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, float am
       {
         fpt->opacity = opacity;
         const int opacitypercent = opacity * 100;
-        dt_toast_log(_("opacity: %d%%"), opacitypercent);
+        dt_toast_log(_("Opacity: %d%%"), opacitypercent);
         dt_dev_add_masks_history_item(darktable.develop, NULL, TRUE);
         dt_masks_update_image(darktable.develop);
       }
@@ -1839,7 +1839,7 @@ dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_f
     return grpt;
   }
 
-  dt_control_log(_("masks can not contain themselves"));
+  dt_control_log(_("Masks can not contain themselves"));
   return NULL;
 }
 

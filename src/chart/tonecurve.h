@@ -41,4 +41,3 @@ double tonecurve_unapply(const tonecurve_t *c, const double L);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

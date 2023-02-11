@@ -54,7 +54,7 @@ static void dual_demosaic(
     if(tmp) dt_free_align(tmp);
     if(blend) dt_free_align(blend);
     if(vng_image) dt_free_align(vng_image);
-    dt_control_log(_("[dual demosaic] can't allocate internal buffers"));
+    dt_control_log(_("[Dual demosaic] Can't allocate internal buffers"));
     return;
   }
 
@@ -186,4 +186,3 @@ gboolean dual_demosaic_cl(
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

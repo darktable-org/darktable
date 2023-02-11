@@ -36,4 +36,3 @@ inline dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filen
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -21,9 +21,9 @@
 
 typedef enum dt_noise_distribution_t
 {
-  DT_NOISE_UNIFORM = 0,   // $DESCRIPTION: "uniform"
-  DT_NOISE_GAUSSIAN = 1,  // $DESCRIPTION: "gaussian"
-  DT_NOISE_POISSONIAN = 2 // $DESCRIPTION: "poissonian"
+  DT_NOISE_UNIFORM = 0,   // $DESCRIPTION: "Uniform"
+  DT_NOISE_GAUSSIAN = 1,  // $DESCRIPTION: "Gaussian"
+  DT_NOISE_POISSONIAN = 2 // $DESCRIPTION: "Poissonian"
 } dt_noise_distribution_t;
 
 
@@ -256,4 +256,3 @@ static inline void dt_noise_generator_simd(const dt_noise_distribution_t distrib
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

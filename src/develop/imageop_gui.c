@@ -209,8 +209,8 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
 
     if(f->header.type == DT_INTROSPECTION_TYPE_BOOL)
     {
-      dt_bauhaus_combobox_add(combobox, _("no"));
-      dt_bauhaus_combobox_add(combobox, _("yes"));
+      dt_bauhaus_combobox_add(combobox, _("No"));
+      dt_bauhaus_combobox_add(combobox, _("Yes"));
       dt_bauhaus_combobox_set_default(combobox, *(gboolean*)((uint8_t *)d + f->header.offset));
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_ENUM)
@@ -350,4 +350,3 @@ gboolean dt_mask_scroll_increases(int up)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

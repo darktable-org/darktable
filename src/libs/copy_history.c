@@ -50,7 +50,7 @@ typedef struct dt_lib_copy_history_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("history stack");
+  return _("History stack");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -103,8 +103,8 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   const int act_on_one = g_list_is_singleton(imgs); // list length == 1?
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkFileChooserNative *filechooser = gtk_file_chooser_native_new(
-          _("open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
-          _("_open"), _("_cancel"));
+          _("Open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+          _("_Open"), _("_Cancel"));
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   if(act_on_one)
@@ -141,7 +141,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*");
-  gtk_file_filter_set_name(filter, _("all files"));
+  gtk_file_filter_set_name(filter, _("All files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -151,7 +151,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     {
       GtkWidget *dialog
           = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
-                                   GTK_BUTTONS_CLOSE, _("error loading file '%s'"), dtfilename);
+                                   GTK_BUTTONS_CLOSE, _("Error loading file '%s'"), dtfilename);
 #ifdef GDK_WINDOWING_QUARTZ
       dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -188,7 +188,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
   dt_control_queue_redraw_center();
   if(missing)
-    dt_control_log(ngettext("no history compression of %d image",
+    dt_control_log(ngettext("No history compression of %d image",
                             "no history compression of %d images", missing), missing);
 }
 
@@ -225,8 +225,8 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   const int number = g_list_length((GList *)imgs);
 
   if(!dt_conf_get_bool("ask_before_discard")
-     || dt_gui_show_yes_no_dialog(_("delete images' history?"),
-          ngettext("do you really want to clear history of %d selected image?",
+     || dt_gui_show_yes_no_dialog(_("Delete images' history?"),
+          ngettext("Do you really want to clear history of %d selected image?",
                    "do you really want to clear history of %d selected images?", number), number))
   {
     dt_history_delete_on_list(imgs, TRUE);
@@ -325,50 +325,50 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 
-  d->copy_parts_button = dt_action_button_new(self, N_("selective copy..."), copy_parts_button_clicked, self,
-                                              _("choose which modules to copy from the source image"),
+  d->copy_parts_button = dt_action_button_new(self, N_("Selective copy..."), copy_parts_button_clicked, self,
+                                              _("Choose which modules to copy from the source image"),
                                               GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_grid_attach(grid, d->copy_parts_button, 0, line, 3, 1);
 
-  d->copy_button = dt_action_button_new(self, N_("copy"), copy_button_clicked, self,
-                                        _("copy history stack of\nfirst selected image"),
+  d->copy_button = dt_action_button_new(self, N_("Copy"), copy_button_clicked, self,
+                                        _("Copy history stack of\nfirst selected image"),
                                         GDK_KEY_c, GDK_CONTROL_MASK);
   gtk_grid_attach(grid, d->copy_button, 3, line++, 3, 1);
 
-  d->paste_parts = dt_action_button_new(self, N_("selective paste..."), paste_parts_button_clicked, self,
-                                        _("choose which modules to paste to the target image(s)"),
+  d->paste_parts = dt_action_button_new(self, N_("Selective paste..."), paste_parts_button_clicked, self,
+                                        _("Choose which modules to paste to the target image(s)"),
                                         GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_widget_set_sensitive(d->paste_parts, FALSE);
   gtk_grid_attach(grid, d->paste_parts, 0, line, 3, 1);
 
-  d->paste = dt_action_button_new(self, N_("paste"), paste_button_clicked, self,
-                                  _("paste history stack to\nall selected images"),
+  d->paste = dt_action_button_new(self, N_("Paste"), paste_button_clicked, self,
+                                  _("Paste history stack to\nall selected images"),
                                   GDK_KEY_v, GDK_CONTROL_MASK);
   gtk_widget_set_sensitive(d->paste, FALSE);
   gtk_grid_attach(grid, d->paste, 3, line++, 3, 1);
 
-  d->compress_button = dt_action_button_new(self, N_("compress history"), compress_button_clicked, self,
-                                            _("compress history stack of\nall selected images"), 0, 0);
+  d->compress_button = dt_action_button_new(self, N_("Compress history"), compress_button_clicked, self,
+                                            _("Compress history stack of\nall selected images"), 0, 0);
   gtk_grid_attach(grid, d->compress_button, 0, line, 3, 1);
 
-  d->discard_button = dt_action_button_new(self, N_("discard history"), discard_button_clicked, self,
-                                           _("discard history stack of\nall selected images"), 0, 0);
+  d->discard_button = dt_action_button_new(self, N_("Discard history"), discard_button_clicked, self,
+                                           _("Discard history stack of\nall selected images"), 0, 0);
   gtk_grid_attach(grid, d->discard_button, 3, line++, 3, 1);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->pastemode, self, NULL, N_("mode"),
-                               _("how to handle existing history"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->pastemode, self, NULL, N_("Mode"),
+                               _("How to handle existing history"),
                                dt_conf_get_int("plugins/lighttable/copy_history/pastemode"),
                                pastemode_combobox_changed, self,
-                               N_("append"), N_("overwrite"));
+                               N_("Append"), N_("Overwrite"));
   dt_gui_add_help_link(d->pastemode, dt_get_help_url("history"));
   gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
 
-  d->load_button = dt_action_button_new(self, N_("load sidecar file..."), load_button_clicked, self,
-                                        _("open an XMP sidecar file\nand apply it to selected images"), 0, 0);
+  d->load_button = dt_action_button_new(self, N_("Load sidecar file..."), load_button_clicked, self,
+                                        _("Open an XMP sidecar file\nand apply it to selected images"), 0, 0);
   gtk_grid_attach(grid, d->load_button, 0, line, 3, 1);
 
-  d->write_button = dt_action_button_new(self, N_("write sidecar files"), write_button_clicked, self,
-                                         _("write history stack and tags to XMP sidecar files"), 0, 0);
+  d->write_button = dt_action_button_new(self, N_("Write sidecar files"), write_button_clicked, self,
+                                         _("Write history stack and tags to XMP sidecar files"), 0, 0);
   gtk_grid_attach(grid, d->write_button, 3, line, 3, 1);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,

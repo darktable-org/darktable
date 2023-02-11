@@ -139,13 +139,13 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
 
   // the group leader
   if(thumb->imgid == thumb->groupid)
-    tt = g_strdup_printf("\n\u2022 <b>%s (%s)</b>", _("current"), _("leader"));
+    tt = g_strdup_printf("\n\u2022 <b>%s (%s)</b>", _("Current"), _("Leader"));
   else
   {
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->groupid, 'r');
     if(img)
     {
-      tt = g_strdup_printf("%s\n\u2022 <b>%s (%s)</b>", _("\nclick here to set this image as group leader\n"), img->filename, _("leader"));
+      tt = g_strdup_printf("%s\n\u2022 <b>%s (%s)</b>", _("\nClick here to set this image as group leader\n"), img->filename, _("Leader"));
       dt_image_cache_read_release(darktable.image_cache, img);
     }
   }
@@ -169,7 +169,7 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
     if(id != thumb->groupid)
     {
       if(id == thumb->imgid)
-        tt = dt_util_dstrcat(tt, "\n\u2022 %s", _("current"));
+        tt = dt_util_dstrcat(tt, "\n\u2022 %s", _("Current"));
       else
       {
         tt = dt_util_dstrcat(tt, "\n\u2022 %s", sqlite3_column_text(stmt, 2));
@@ -180,7 +180,7 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
   sqlite3_finalize(stmt);
 
   // and the number of grouped images
-  gchar *ttf = g_strdup_printf("%d %s\n%s", nb, _("grouped images"), tt);
+  gchar *ttf = g_strdup_printf("%d %s\n%s", nb, _("Grouped images"), tt);
   g_free(tt);
 
   // let's apply the tooltip
@@ -759,7 +759,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     {
       if(thumb->zoom_100 < 1.0 || thumb->zoom <= 1.0f)
       {
-        gtk_label_set_text(GTK_LABEL(thumb->w_zoom), _("fit"));
+        gtk_label_set_text(GTK_LABEL(thumb->w_zoom), _("Fit"));
       }
       else
       {
@@ -1385,7 +1385,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the color labels
     thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower, thumb->colorlabels, NULL);
-    dt_action_define(&darktable.control->actions_thumb, NULL, N_("color label"), thumb->w_color, &dt_action_def_color_label);
+    dt_action_define(&darktable.control->actions_thumb, NULL, N_("Color label"), thumb->w_color, &dt_action_def_color_label);
     gtk_widget_set_name(thumb->w_color, "thumb-colorlabels");
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
@@ -1397,7 +1397,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     // the local copy indicator
     thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, 0, NULL);
     gtk_widget_set_name(thumb->w_local_copy, "thumb-localcopy");
-    gtk_widget_set_tooltip_text(thumb->w_local_copy, _("local copy"));
+    gtk_widget_set_tooltip_text(thumb->w_local_copy, _("Local copy"));
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_local_copy, TRUE);
@@ -1446,7 +1446,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_widget_set_valign(thumb->w_zoom_eb, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_zoom_eb, GTK_ALIGN_START);
     if(zoom_ratio == IMG_TO_FIT)
-      thumb->w_zoom = gtk_label_new(_("fit"));
+      thumb->w_zoom = gtk_label_new(_("Fit"));
     else
       thumb->w_zoom = gtk_label_new("mini");
     gtk_widget_set_name(thumb->w_zoom, "thumb-zoom-label");

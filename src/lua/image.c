@@ -119,7 +119,7 @@ static int generate_cache(lua_State *L)
       {
         if(g_mkdir_with_parents(dirname, 0750))
         {
-          fprintf(stderr, _("could not create directory '%s'!\n"), dirname);
+          fprintf(stderr, _("Could not create directory '%s'!\n"), dirname);
           return 1;
         }
       }
@@ -635,4 +635,3 @@ int dt_lua_init_image(lua_State *L)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

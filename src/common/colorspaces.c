@@ -1397,33 +1397,33 @@ dt_colorspaces_t *dt_colorspaces_init()
       work_pos = -1;
 
   // init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
-  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_WORK, NULL, _("work profile"), -1, -1,
+  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_WORK, NULL, _("Work profile"), -1, -1,
                                                                -1, ++category_pos, -1, -1));
 
-  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_EXPORT, NULL, _("export profile"), -1,
+  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_EXPORT, NULL, _("Export profile"), -1,
                                                                -1, -1, ++category_pos, -1, -1));
 
   res->profiles
-      = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_SOFTPROOF, NULL, _("softproof profile"), -1, -1,
+      = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_SOFTPROOF, NULL, _("Softproof profile"), -1, -1,
                                                      -1, ++category_pos, -1, -1));
 
   // init the display profile with srgb so some stupid code that runs before the real profile could be fetched has something to work with
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_DISPLAY, dt_colorspaces_create_srgb_profile(),
-                                     _("system display profile"), -1, -1, ++display_pos, ++category_pos, -1, -1));
+                                     _("System display profile"), -1, -1, ++display_pos, ++category_pos, -1, -1));
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_DISPLAY2, dt_colorspaces_create_srgb_profile(),
-                                     _("system display profile (second window)"), -1, -1, -1, ++category_pos, -1, ++display2_pos));
+                                     _("System display profile (second window)"), -1, -1, -1, ++category_pos, -1, ++display2_pos));
   // we want a v4 with parametric curve for input and a v2 with point trc for output
   // see http://ninedegreesbelow.com/photography/lcms-make-icc-profiles.html#profile-variants-and-versions
   // TODO: what about display?
   res->profiles
       = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_SRGB, dt_colorspaces_create_srgb_profile_v4(),
-                                                     _("sRGB (e.g. JPG)"), ++in_pos, -1, -1, -1, -1, -1));
+                                                     _("SRGB (e.G. JPG)"), ++in_pos, -1, -1, -1, -1, -1));
 
   res->profiles
       = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_SRGB, dt_colorspaces_create_srgb_profile(),
-                                                     _("sRGB (web-safe)"), -1, ++out_pos, ++display_pos,
+                                                     _("SRGB (web-safe)"), -1, ++out_pos, ++display_pos,
                                                      ++category_pos, ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(res->profiles,
@@ -1433,7 +1433,7 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_LIN_REC709, dt_colorspaces_create_linear_rec709_rgb_profile(),
-                                     _("linear Rec709 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     _("Linear Rec709 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_REC709, dt_colorspaces_create_gamma_rec709_rgb_profile(),
@@ -1442,7 +1442,7 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_LIN_REC2020, dt_colorspaces_create_linear_rec2020_rgb_profile(),
-                                     _("linear Rec2020 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     _("Linear Rec2020 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(
@@ -1467,12 +1467,12 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   res->profiles = g_list_append(
      res->profiles, _create_profile(DT_COLORSPACE_PROPHOTO_RGB, dt_colorspaces_create_linear_prophoto_rgb_profile(),
-                                    _("linear ProPhoto RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                    _("Linear ProPhoto RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                                     ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(
       res->profiles,
-      _create_profile(DT_COLORSPACE_XYZ, dt_colorspaces_create_xyz_profile(), _("linear XYZ"), ++in_pos,
+      _create_profile(DT_COLORSPACE_XYZ, dt_colorspaces_create_xyz_profile(), _("Linear XYZ"), ++in_pos,
                       dt_conf_get_bool("allow_lab_output") ? ++out_pos : -1, -1, -1, -1, -1));
 
   res->profiles = g_list_append(
@@ -1481,7 +1481,7 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_INFRARED, dt_colorspaces_create_linear_infrared_profile(),
-                                     _("linear infrared BGR"), ++in_pos, -1, -1, -1, -1, -1));
+                                     _("Linear infrared BGR"), ++in_pos, -1, -1, -1, -1, -1));
 
   res->profiles
       = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_BRG, dt_colorspaces_create_brg_profile(),
@@ -1577,7 +1577,7 @@ dt_colorspaces_t *dt_colorspaces_init()
       {
         // bad histogram profile selected, we must reset it to sRGB
         const char *name = dt_colorspaces_get_name(prof->type, prof->filename);
-        dt_control_log(_("profile `%s' not usable as histogram profile. it has been replaced by sRGB!"), name);
+        dt_control_log(_("Profile `%s' not usable as histogram profile. It has been replaced by sRGB!"), name);
         dt_print(DT_DEBUG_ALWAYS,
                 "[colorspaces] profile `%s' not usable as histogram profile. it has been replaced by sRGB!\n",
                 name);
@@ -1652,47 +1652,47 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
      case DT_COLORSPACE_FILE:
        return filename;
      case DT_COLORSPACE_SRGB:
-       return _("sRGB");
+       return _("SRGB");
      case DT_COLORSPACE_ADOBERGB:
        return _("Adobe RGB (compatible)");
      case DT_COLORSPACE_LIN_REC709:
-       return _("linear Rec709 RGB");
+       return _("Linear Rec709 RGB");
      case DT_COLORSPACE_LIN_REC2020:
-       return _("linear Rec2020 RGB");
+       return _("Linear Rec2020 RGB");
      case DT_COLORSPACE_XYZ:
-       return _("linear XYZ");
+       return _("Linear XYZ");
      case DT_COLORSPACE_LAB:
        return _("Lab");
      case DT_COLORSPACE_INFRARED:
-       return _("linear infrared BGR");
+       return _("Linear infrared BGR");
      case DT_COLORSPACE_DISPLAY:
-       return _("system display profile");
+       return _("System display profile");
      case DT_COLORSPACE_EMBEDDED_ICC:
-       return _("embedded ICC profile");
+       return _("Embedded ICC profile");
      case DT_COLORSPACE_EMBEDDED_MATRIX:
-       return _("embedded matrix");
+       return _("Embedded matrix");
      case DT_COLORSPACE_STANDARD_MATRIX:
-       return _("standard color matrix");
+       return _("Standard color matrix");
      case DT_COLORSPACE_ENHANCED_MATRIX:
-       return _("enhanced color matrix");
+       return _("Enhanced color matrix");
      case DT_COLORSPACE_VENDOR_MATRIX:
-       return _("vendor color matrix");
+       return _("Vendor color matrix");
      case DT_COLORSPACE_ALTERNATE_MATRIX:
-       return _("alternate color matrix");
+       return _("Alternate color matrix");
      case DT_COLORSPACE_BRG:
        return _("BRG (experimental)");
      case DT_COLORSPACE_EXPORT:
-       return _("export profile");
+       return _("Export profile");
      case DT_COLORSPACE_SOFTPROOF:
-       return _("softproof profile");
+       return _("Softproof profile");
      case DT_COLORSPACE_WORK:
-       return _("work profile");
+       return _("Work profile");
      case DT_COLORSPACE_DISPLAY2:
-       return _("system display profile (second window)");
+       return _("System display profile (second window)");
      case DT_COLORSPACE_REC709:
        return _("Rec709 RGB");
      case DT_COLORSPACE_PROPHOTO_RGB:
-       return _("linear ProPhoto RGB");
+       return _("Linear ProPhoto RGB");
      case DT_COLORSPACE_PQ_REC2020:
        return _("PQ Rec2020");
      case DT_COLORSPACE_HLG_REC2020:
@@ -2445,4 +2445,3 @@ void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3])
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

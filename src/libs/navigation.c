@@ -61,7 +61,7 @@ static void _lib_navigation_set_position(struct dt_lib_module_t *self, double x,
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("navigation");
+  return _("Navigation");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -114,7 +114,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create drawingarea */
   GtkWidget *thumbnail = dt_ui_resize_wrap(NULL, 0, "plugins/darkroom/navigation/aspect_percent");
-  gtk_widget_set_tooltip_text(thumbnail, _("navigation\nclick or drag to position zoomed area in center view"));
+  gtk_widget_set_tooltip_text(thumbnail, _("Navigation\nclick or drag to position zoomed area in center view"));
 
   /* connect callbacks */
   gtk_widget_set_app_paintable(thumbnail, TRUE);
@@ -134,7 +134,7 @@ void gui_init(dt_lib_module_t *self)
   // gtk_widget_set_size_request(thumbnail, -1, DT_PIXEL_APPLY_DPI(175));
   gtk_widget_set_name(GTK_WIDGET(thumbnail), "navigation-module");
   dt_action_t *ac = dt_action_define(&darktable.view_manager->proxy.darkroom.view->actions, NULL,
-                                     N_("hide navigation thumbnail"), thumbnail, NULL);
+                                     N_("Hide navigation thumbnail"), thumbnail, NULL);
   dt_action_register(ac, NULL, _lib_navigation_collapse_callback, GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* connect a redraw callback to control draw all and preview pipe finish signals */
@@ -144,18 +144,18 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_lib_navigation_control_redraw_callback), self);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->zoom, darktable.view_manager->proxy.darkroom.view,
-                               NULL, N_("zoom"), _("image zoom level"),
+                               NULL, N_("Zoom"), _("Image zoom level"),
                                -1, _zoom_changed, NULL,
-                               N_("small"),
-                               N_("fit"),
-                               N_("fill"),
+                               N_("Small"),
+                               N_("Fit"),
+                               N_("Fill"),
                                N_("50%"),
                                N_("100%"),
                                N_("200%"),
                                N_("400%"),
                                N_("800%"),
                                N_("1600%"));
-  ac = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, N_("zoom"));
+  ac = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, N_("Zoom"));
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 2, GDK_KEY_3, GDK_MOD1_MASK);
   dt_shortcut_register(ac, 0, DT_ACTION_EFFECT_COMBO_SEPARATOR + 3, GDK_KEY_2, GDK_MOD1_MASK);
 
@@ -262,10 +262,10 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     }
     cairo_restore(cr);
 
-    gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
-                    : zoom == DT_ZOOM_FILL ? g_strdup(_("fill"))
+    gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("Fit"))
+                    : zoom == DT_ZOOM_FILL ? g_strdup(_("Fill"))
                     : 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0)
-                      == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0) ? g_strdup(_("small"))
+                      == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0) ? g_strdup(_("Small"))
                     : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
     ++darktable.gui->reset;
     dt_bauhaus_combobox_set(d->zoom, -1);

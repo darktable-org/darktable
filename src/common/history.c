@@ -813,7 +813,7 @@ gboolean dt_history_copy_and_paste_on_image(const int32_t imgid,
 
   if(imgid == -1)
   {
-    dt_control_log(_("you need to copy history from an image before you paste it onto another"));
+    dt_control_log(_("You need to copy history from an image before you paste it onto another"));
     return 1;
   }
 

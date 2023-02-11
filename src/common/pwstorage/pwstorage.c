@@ -53,7 +53,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
   const char *_backend_str = dt_conf_get_string_const("plugins/pwstorage/pwstorage_backend");
   gint _backend = PW_STORAGE_BACKEND_NONE;
 
-  if(strcmp(_backend_str, "auto") == 0)
+  if(strcmp(_backend_str, "Auto") == 0)
   {
     const gchar *desktop = getenv("XDG_CURRENT_DESKTOP");
     if(g_strcmp0(desktop, "KDE") == 0)
@@ -67,7 +67,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
 
     dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] autodetected storage backend.\n");
   }
-  else if(strcmp(_backend_str, "none") == 0)
+  else if(strcmp(_backend_str, "None") == 0)
     _backend = PW_STORAGE_BACKEND_NONE;
 #ifdef HAVE_LIBSECRET
   else if(strcmp(_backend_str, "libsecret") == 0)
@@ -80,7 +80,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
   else if(strcmp(_backend_str, "gnome keyring") == 0)
   {
     fprintf(stderr, "[pwstorage_new] GNOME Keyring backend is no longer supported.\n");
-    dt_control_log(_("GNOME Keyring backend is no longer supported. configure a different one"));
+    dt_control_log(_("GNOME Keyring backend is no longer supported. Configure a different one"));
     _backend = PW_STORAGE_BACKEND_NONE;
   }
 
@@ -142,7 +142,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
   switch(pwstorage->pw_storage_backend)
   {
     case PW_STORAGE_BACKEND_NONE:
-      dt_conf_set_string("plugins/pwstorage/pwstorage_backend", "none");
+      dt_conf_set_string("plugins/pwstorage/pwstorage_backend", "None");
       break;
     case PW_STORAGE_BACKEND_LIBSECRET:
       dt_conf_set_string("plugins/pwstorage/pwstorage_backend", "libsecret");
@@ -230,4 +230,3 @@ GHashTable *dt_pwstorage_get(const gchar *slot)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

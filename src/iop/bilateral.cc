@@ -70,12 +70,12 @@ typedef struct dt_iop_bilateral_data_t
 
 const char *name()
 {
-  return _("surface blur");
+  return _("Surface blur");
 }
 
 const char *aliases()
 {
-  return _("denoise (bilateral filter)");
+  return _("Denoise (bilateral filter)");
 }
 
 int default_group()
@@ -95,11 +95,11 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply edge-aware surface blur to denoise or smoothen textures"),
-                                      _("corrective and creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("linear, RGB"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self, _("Apply edge-aware surface blur to denoise or smoothen textures"),
+                                      _("Corrective and creative"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Linear, RGB"),
+                                      _("Linear, RGB, scene-referred"));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -298,22 +298,22 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_bilateral_gui_data_t *g = IOP_GUI_ALLOC(bilateral);
 
-  g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
-  gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the gaussian"));
+  g->radius = dt_bauhaus_slider_from_params(self, N_("Radius"));
+  gtk_widget_set_tooltip_text(g->radius, _("Spatial extent of the gaussian"));
   dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 30.0);
 
-  g->red = dt_bauhaus_slider_from_params(self, N_("red"));
-  gtk_widget_set_tooltip_text(g->red, _("how much to blur red"));
+  g->red = dt_bauhaus_slider_from_params(self, N_("Red"));
+  gtk_widget_set_tooltip_text(g->red, _("How much to blur red"));
   dt_bauhaus_slider_set_soft_max(g->red, 0.1);
   dt_bauhaus_slider_set_digits(g->red, 4);
 
-  g->green = dt_bauhaus_slider_from_params(self, N_("green"));
-  gtk_widget_set_tooltip_text(g->green, _("how much to blur green"));
+  g->green = dt_bauhaus_slider_from_params(self, N_("Green"));
+  gtk_widget_set_tooltip_text(g->green, _("How much to blur green"));
   dt_bauhaus_slider_set_soft_max(g->green, 0.1);
   dt_bauhaus_slider_set_digits(g->green, 4);
 
-  g->blue = dt_bauhaus_slider_from_params(self, N_("blue"));
-  gtk_widget_set_tooltip_text(g->blue, _("how much to blur blue"));
+  g->blue = dt_bauhaus_slider_from_params(self, N_("Blue"));
+  gtk_widget_set_tooltip_text(g->blue, _("How much to blur blue"));
   dt_bauhaus_slider_set_soft_max(g->blue, 0.1);
   dt_bauhaus_slider_set_digits(g->blue, 4);
 }
@@ -324,4 +324,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

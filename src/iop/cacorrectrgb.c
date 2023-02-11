@@ -133,25 +133,25 @@ DT_MODULE_INTROSPECTION(1, dt_iop_cacorrectrgb_params_t)
 
 typedef enum dt_iop_cacorrectrgb_guide_channel_t
 {
-  DT_CACORRECT_RGB_R = 0,    // $DESCRIPTION: "red"
-  DT_CACORRECT_RGB_G = 1,    // $DESCRIPTION: "green"
-  DT_CACORRECT_RGB_B = 2     // $DESCRIPTION: "blue"
+  DT_CACORRECT_RGB_R = 0,    // $DESCRIPTION: "Red"
+  DT_CACORRECT_RGB_G = 1,    // $DESCRIPTION: "Green"
+  DT_CACORRECT_RGB_B = 2     // $DESCRIPTION: "Blue"
 } dt_iop_cacorrectrgb_guide_channel_t;
 
 typedef enum dt_iop_cacorrectrgb_mode_t
 {
-  DT_CACORRECT_MODE_STANDARD = 0,  // $DESCRIPTION: "standard"
-  DT_CACORRECT_MODE_DARKEN = 1,    // $DESCRIPTION: "darken only"
-  DT_CACORRECT_MODE_BRIGHTEN = 2   // $DESCRIPTION: "brighten only"
+  DT_CACORRECT_MODE_STANDARD = 0,  // $DESCRIPTION: "Standard"
+  DT_CACORRECT_MODE_DARKEN = 1,    // $DESCRIPTION: "Darken only"
+  DT_CACORRECT_MODE_BRIGHTEN = 2   // $DESCRIPTION: "Brighten only"
 } dt_iop_cacorrectrgb_mode_t;
 
 typedef struct dt_iop_cacorrectrgb_params_t
 {
-  dt_iop_cacorrectrgb_guide_channel_t guide_channel; // $DEFAULT: DT_CACORRECT_RGB_G $DESCRIPTION: "guide"
-  float radius; // $MIN: 1 $MAX: 500 $DEFAULT: 5 $DESCRIPTION: "radius"
-  float strength; // $MIN: 0 $MAX: 4 $DEFAULT: 0.5 $DESCRIPTION: "strength"
-  dt_iop_cacorrectrgb_mode_t mode; // $DEFAULT: DT_CACORRECT_MODE_STANDARD $DESCRIPTION: "correction mode"
-  gboolean refine_manifolds; // $MIN: FALSE $MAX: TRUE $DEFAULT: FALSE $DESCRIPTION: "very large chromatic aberration"
+  dt_iop_cacorrectrgb_guide_channel_t guide_channel; // $DEFAULT: DT_CACORRECT_RGB_G $DESCRIPTION: "Guide"
+  float radius; // $MIN: 1 $MAX: 500 $DEFAULT: 5 $DESCRIPTION: "Radius"
+  float strength; // $MIN: 0 $MAX: 4 $DEFAULT: 0.5 $DESCRIPTION: "Strength"
+  dt_iop_cacorrectrgb_mode_t mode; // $DEFAULT: DT_CACORRECT_MODE_STANDARD $DESCRIPTION: "Correction mode"
+  gboolean refine_manifolds; // $MIN: FALSE $MAX: TRUE $DEFAULT: FALSE $DESCRIPTION: "Very large chromatic aberration"
 } dt_iop_cacorrectrgb_params_t;
 
 typedef struct dt_iop_cacorrectrgb_gui_data_t
@@ -161,16 +161,16 @@ typedef struct dt_iop_cacorrectrgb_gui_data_t
 
 const char *name()
 {
-  return _("chromatic aberrations");
+  return _("Chromatic aberrations");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("correct chromatic aberrations"),
-                                      _("corrective"),
-                                      _("linear, raw, scene-referred"),
-                                      _("linear, raw"),
-                                      _("linear, raw, scene-referred"));
+  return dt_iop_set_description(self, _("Correct chromatic aberrations"),
+                                      _("Corrective"),
+                                      _("Linear, raw, scene-referred"),
+                                      _("Linear, raw"),
+                                      _("Linear, raw, scene-referred"));
 }
 
 int flags()
@@ -740,33 +740,33 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_cacorrectrgb_gui_data_t *g = IOP_GUI_ALLOC(cacorrectrgb);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->guide_channel = dt_bauhaus_combobox_from_params(self, "guide_channel");
-  gtk_widget_set_tooltip_text(g->guide_channel, _("channel used as a reference to\n"
+  gtk_widget_set_tooltip_text(g->guide_channel, _("Channel used as a reference to\n"
                                            "correct the other channels.\n"
-                                           "use sharpest channel if some\n"
+                                           "Use sharpest channel if some\n"
                                            "channels are blurry.\n"
-                                           "try changing guide channel if you\n"
+                                           "Try changing guide channel if you\n"
                                            "have artifacts."));
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
-  gtk_widget_set_tooltip_text(g->radius, _("increase for stronger correction"));
+  gtk_widget_set_tooltip_text(g->radius, _("Increase for stronger correction"));
   g->strength = dt_bauhaus_slider_from_params(self, "strength");
-  gtk_widget_set_tooltip_text(g->strength, _("balance between smoothing colors\n"
+  gtk_widget_set_tooltip_text(g->strength, _("Balance between smoothing colors\n"
                                              "and preserving them.\n"
-                                             "high values can lead to overshooting\n"
+                                             "High values can lead to overshooting\n"
                                              "and edge bleeding."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("advanced parameters")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("Advanced parameters")), TRUE, TRUE, 0);
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
-  gtk_widget_set_tooltip_text(g->mode, _("correction mode to use.\n"
-                                         "can help with multiple\n"
+  gtk_widget_set_tooltip_text(g->mode, _("Correction mode to use.\n"
+                                         "Can help with multiple\n"
                                          "instances for very damaged\n"
                                          "images.\n"
-                                         "darken only is particularly\n"
+                                         "Darken only is particularly\n"
                                          "efficient to correct blue\n"
                                          "chromatic aberration."));
   g->refine_manifolds = dt_bauhaus_toggle_from_params(self, "refine_manifolds");
-  gtk_widget_set_tooltip_text(g->refine_manifolds, _("runs an iterative approach\n"
+  gtk_widget_set_tooltip_text(g->refine_manifolds, _("Runs an iterative approach\n"
                                                     "with several radii.\n"
-                                                    "improves result on images\n"
+                                                    "Improves result on images\n"
                                                     "with very large chromatic\n"
                                                     "aberrations, but can smooth\n"
                                                     "colors too much on other\n"
@@ -777,4 +777,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

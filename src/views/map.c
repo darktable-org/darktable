@@ -194,7 +194,7 @@ static void _view_map_remove_location(dt_map_t *lib, dt_location_draw_t *ld);
 
 const char *name(const dt_view_t *self)
 {
-  return _("map");
+  return _("Map");
 }
 
 uint32_t view(const dt_view_t *self)
@@ -2112,8 +2112,8 @@ static void _view_map_redo_callback(dt_action_t *action)
 
 void gui_init(dt_view_t *self)
 {
-  dt_action_register(DT_ACTION(self), N_("undo"), _view_map_undo_callback, GDK_KEY_z, GDK_CONTROL_MASK);
-  dt_action_register(DT_ACTION(self), N_("redo"), _view_map_redo_callback, GDK_KEY_y, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("Undo"), _view_map_undo_callback, GDK_KEY_z, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("Redo"), _view_map_redo_callback, GDK_KEY_y, GDK_CONTROL_MASK);
 }
 
 static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom)
@@ -2772,8 +2772,8 @@ static gboolean _view_map_prefs_changed(dt_map_t *lib)
   if(lib->filter_images_drawn != filter_images_drawn) prefs_changed = TRUE;
 
   const char *thumbnail = dt_conf_get_string_const("plugins/map/images_thumbnail");
-  lib->thumbnail = !g_strcmp0(thumbnail, "thumbnail") ? DT_MAP_THUMB_THUMB :
-                   !g_strcmp0(thumbnail, "count") ? DT_MAP_THUMB_COUNT : DT_MAP_THUMB_NONE;
+  lib->thumbnail = !g_strcmp0(thumbnail, "Thumbnail") ? DT_MAP_THUMB_THUMB :
+                   !g_strcmp0(thumbnail, "Count") ? DT_MAP_THUMB_COUNT : DT_MAP_THUMB_NONE;
 
   return prefs_changed;
 }
@@ -2806,9 +2806,9 @@ static void _view_map_build_main_query(dt_map_t *lib)
 GSList *mouse_actions(const dt_view_t *self)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DOUBLE_LEFT, 0, _("[on image] open in darkroom"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DOUBLE_LEFT, 0, _("[on map] zoom map"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DRAG_DROP, 0, _("move image location"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DOUBLE_LEFT, 0, _("[On image] Open in darkroom"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DOUBLE_LEFT, 0, _("[On map] Zoom map"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DRAG_DROP, 0, _("Move image location"));
   return lm;
 }
 
@@ -2949,4 +2949,3 @@ static void _dbscan(dt_geo_position_t *points, unsigned int num_points,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

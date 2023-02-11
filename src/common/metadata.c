@@ -43,14 +43,14 @@ static const struct
   uint32_t display_order;
 } dt_metadata_def[] = {
   // clang-format off
-  {"Xmp.dc.creator", N_("creator"), DT_METADATA_TYPE_USER, 2},
-  {"Xmp.dc.publisher", N_("publisher"), DT_METADATA_TYPE_USER, 3},
-  {"Xmp.dc.title", N_("title"), DT_METADATA_TYPE_USER, 0},
-  {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
-  {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
-  {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5},
-  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6},
-  {"Xmp.darktable.image_id", N_("image id"), DT_METADATA_TYPE_INTERNAL, 7}
+  {"Xmp.dc.creator", N_("Creator"), DT_METADATA_TYPE_USER, 2},
+  {"Xmp.dc.publisher", N_("Publisher"), DT_METADATA_TYPE_USER, 3},
+  {"Xmp.dc.title", N_("Title"), DT_METADATA_TYPE_USER, 0},
+  {"Xmp.dc.description", N_("Description"), DT_METADATA_TYPE_USER, 1},
+  {"Xmp.dc.rights", N_("Rights"), DT_METADATA_TYPE_USER, 4},
+  {"Xmp.acdsee.notes", N_("Notes"), DT_METADATA_TYPE_USER, 5},
+  {"Xmp.darktable.version_name", N_("Version name"), DT_METADATA_TYPE_OPTIONAL, 6},
+  {"Xmp.darktable.image_id", N_("Image id"), DT_METADATA_TYPE_INTERNAL, 7}
   // clang-format on
 };
 
@@ -790,4 +790,3 @@ gboolean dt_metadata_already_imported(const char *filename, const char *datetime
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

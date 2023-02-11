@@ -501,8 +501,8 @@ cairo_surface_t *dt_util_get_logo_text(const float size)
 #define OSD_COORDINATES_CHR_E  "E"
 #define OSD_COORDINATES_CHR_W  "W"
 
-static const char *OSD_ELEVATION_ASL = N_("above sea level");
-static const char *OSD_ELEVATION_BSL = N_("below sea level");
+static const char *OSD_ELEVATION_ASL = N_("Above sea level");
+static const char *OSD_ELEVATION_BSL = N_("Below sea level");
 
 /* this is the classic geocaching notation */
 gchar *dt_util_latitude_str(float latitude)
@@ -553,7 +553,7 @@ gchar *dt_util_elevation_str(float elevation)
     c = OSD_ELEVATION_BSL;
   }
 
-  return g_strdup_printf("%.2f %s %s", elevation, _("m"), _(c));
+  return g_strdup_printf("%.2f %s %s", elevation, _("M"), _(c));
 }
 
 /* a few helper functions inspired by

@@ -37,14 +37,14 @@ typedef struct dt_lib_imageinfo_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("image infos");
+  return _("Image infos");
 }
 
 const char **views(dt_lib_module_t *self)
 {
   /* we handle the hidden case here */
   const gboolean is_hidden =
-    dt_conf_is_equal("plugins/darkroom/image_infos_position", "hidden");
+    dt_conf_is_equal("plugins/darkroom/image_infos_position", "Hidden");
   if(is_hidden)
   {
     static const char *vv[] = { NULL };
@@ -60,11 +60,11 @@ uint32_t container(dt_lib_module_t *self)
   const char *pos = dt_conf_get_string_const("plugins/darkroom/image_infos_position");
   dt_ui_container_t cont = DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER; // default value
 
-  if(g_strcmp0(pos, "top left") == 0)
+  if(g_strcmp0(pos, "Top left") == 0)
     cont = DT_UI_CONTAINER_PANEL_LEFT_TOP;
-  else if(g_strcmp0(pos, "top right") == 0)
+  else if(g_strcmp0(pos, "Top right") == 0)
     cont = DT_UI_CONTAINER_PANEL_RIGHT_TOP;
-  else if(g_strcmp0(pos, "top center") == 0)
+  else if(g_strcmp0(pos, "Top center") == 0)
     cont = DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER;
 
   return cont;

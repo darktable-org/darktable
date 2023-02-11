@@ -54,8 +54,8 @@ DT_MODULE_INTROSPECTION(6, dt_iop_exposure_params_t)
 
 typedef enum dt_iop_exposure_mode_t
 {
-  EXPOSURE_MODE_MANUAL,   // $DESCRIPTION: "manual"
-  EXPOSURE_MODE_DEFLICKER // $DESCRIPTION: "automatic"
+  EXPOSURE_MODE_MANUAL,   // $DESCRIPTION: "Manual"
+  EXPOSURE_MODE_DEFLICKER // $DESCRIPTION: "Automatic"
 } dt_iop_exposure_mode_t;
 
 typedef enum dt_spot_mode_t
@@ -72,11 +72,11 @@ typedef enum dt_spot_mode_t
 typedef struct dt_iop_exposure_params_t
 {
   dt_iop_exposure_mode_t mode; // $DEFAULT: EXPOSURE_MODE_MANUAL
-  float black;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "black level correction"
+  float black;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Black level correction"
   float exposure; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
-  float deflicker_percentile;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "percentile"
-  float deflicker_target_level; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: -4.0 $DESCRIPTION: "target level"
-  gboolean compensate_exposure_bias; // $DEFAULT: FALSE $DESCRIPTION: "compensate exposure bias"
+  float deflicker_percentile;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "Percentile"
+  float deflicker_target_level; // $MIN: -18.0 $MAX: 18.0 $DEFAULT: -4.0 $DESCRIPTION: "Target level"
+  gboolean compensate_exposure_bias; // $DEFAULT: FALSE $DESCRIPTION: "Compensate exposure bias"
 } dt_iop_exposure_params_t;
 
 typedef struct dt_iop_exposure_gui_data_t
@@ -120,18 +120,18 @@ typedef struct dt_iop_exposure_global_data_t
 
 const char *name()
 {
-  return _("exposure");
+  return _("Exposure");
 }
 
 const char** description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("redo the exposure of the shot as if you were still in-camera\n"
+                                _("Redo the exposure of the shot as if you were still in-camera\n"
                                   "using a color-safe brightening similar to increasing ISO setting"),
-                                _("corrective and creative"),
-                                _("linear, RGB, scene-referred"),
-                                _("linear, RGB"),
-                                _("linear, RGB, scene-referred"));
+                                _("Corrective and creative"),
+                                _("Linear, RGB, scene-referred"),
+                                _("Linear, RGB"),
+                                _("Linear, RGB, scene-referred"));
 }
 
 int default_group()
@@ -261,7 +261,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  dt_gui_presets_add_generic(_("magic lantern defaults"), self->op,
+  dt_gui_presets_add_generic(_("Magic lantern defaults"), self->op,
                              self->version(),
                              &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_DEFLICKER,
                                                          .black = 0.0f,
@@ -275,7 +275,7 @@ void init_presets (dt_iop_module_so_t *self)
   // For scene-referred workflow, since filmic doesn't brighten as base curve does,
   // we need an initial exposure boost. This might be too much in some cases but…
   // (the preset name is used in develop.c)
-  dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Scene-referred default"), self->op, self->version(),
                              &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
                                                          .black = -0.000244140625f,
                                                          .exposure = 0.7f,
@@ -284,7 +284,7 @@ void init_presets (dt_iop_module_so_t *self)
                                                          .compensate_exposure_bias = TRUE},
                              sizeof(dt_iop_exposure_params_t), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
-  dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
+  dt_gui_presets_update_ldr(_("Scene-referred default"), self->op,
                             self->version(), FOR_RAW);
 }
 
@@ -302,7 +302,7 @@ static void _deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histo
                       DT_MIPMAP_BLOCKING, 'r');
   if(!buf.buf)
   {
-    dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);
+    dt_control_log(_("Failed to get raw buffer from image `%s'"), image.filename);
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     return;
   }
@@ -552,7 +552,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);
   /* xgettext:no-c-format */
-  gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"), _get_exposure_bias(self));
+  gchar *label = g_strdup_printf(_("Compensate camera exposure (%+.1f EV)"), _get_exposure_bias(self));
   gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), label);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_exposure_bias))), PANGO_ELLIPSIZE_MIDDLE);
   g_free(label);
@@ -1015,12 +1015,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_manual, "manual");
 
   g->compensate_exposure_bias = dt_bauhaus_toggle_from_params(self, "compensate_exposure_bias");
-  gtk_widget_set_tooltip_text(g->compensate_exposure_bias, _("automatically remove the camera exposure bias\n"
+  gtk_widget_set_tooltip_text(g->compensate_exposure_bias, _("Automatically remove the camera exposure bias\n"
                                                              "this is useful if you exposed the image to the right."));
 
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-                                    dt_bauhaus_slider_from_params(self, N_("exposure")));
-  gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
+                                    dt_bauhaus_slider_from_params(self, N_("Exposure")));
+  gtk_widget_set_tooltip_text(g->exposure, _("Adjust the exposure correction"));
   dt_bauhaus_slider_set_digits(g->exposure, 3);
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
@@ -1032,17 +1032,17 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->deflicker_percentile, "%");
   gtk_widget_set_tooltip_text(g->deflicker_percentile,
                               // xgettext:no-c-format
-                              _("where in the histogram to meter for deflicking. E.g. 50% is median"));
+                              _("Where in the histogram to meter for deflicking. E.G. 50% is median"));
 
   g->deflicker_target_level = dt_bauhaus_slider_from_params(self, "deflicker_target_level");
   dt_bauhaus_slider_set_format(g->deflicker_target_level, _(" EV"));
   gtk_widget_set_tooltip_text(g->deflicker_target_level,
-                              _("where to place the exposure level for processed pics, EV below overexposure."));
+                              _("Where to place the exposure level for processed pics, EV below overexposure."));
 
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(dt_ui_label_new(_("computed EC: "))), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(dt_ui_label_new(_("Computed EC: "))), FALSE, FALSE, 0);
   g->deflicker_used_EC = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->deflicker_used_EC), _("what exposure correction has actually been used"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->deflicker_used_EC), _("What exposure correction has actually been used"));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
 
   dt_iop_gui_enter_critical_section(self);
@@ -1054,13 +1054,13 @@ void gui_init(struct dt_iop_module_t *self)
   // Start building top level widget
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("Mode"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode_stack), TRUE, TRUE, 0);
 
   g->black = dt_bauhaus_slider_from_params(self, "black");
-  gtk_widget_set_tooltip_text(g->black, _("adjust the black level to unclip negative RGB values.\n"
-                                          "you should never use it to add more density in blacks!\n"
+  gtk_widget_set_tooltip_text(g->black, _("Adjust the black level to unclip negative RGB values.\n"
+                                          "You should never use it to add more density in blacks!\n"
                                           "if poorly set, it will clip near-black colors out of gamut\n"
                                           "by pushing RGB values into negatives."));
   dt_bauhaus_slider_set_digits(g->black, 4);
@@ -1069,57 +1069,57 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/exposure/mapping",
-     _("spot exposure mapping"),
+     _("Spot exposure mapping"),
      GTK_BOX(self->widget));
 
-  gtk_widget_set_tooltip_text(g->cs.expander, _("define a target brightness, in terms of exposure, for a selected region of the image (the control sample), which you then match against the same target brightness in other images. the control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
+  gtk_widget_set_tooltip_text(g->cs.expander, _("Define a target brightness, in terms of exposure, for a selected region of the image (the control sample), which you then match against the same target brightness in other images. The control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
-                                _("\"correction\" automatically adjust exposure\n"
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("Spot mode"),
+                                _("\"correction\" Automatically adjust exposure\n"
                                   "such that the input lightness is mapped to the target.\n"
-                                  "\"measure\" simply shows how an input color is mapped by the exposure compensation\n"
+                                  "\"measure\" Simply shows how an input color is mapped by the exposure compensation\n"
                                   "and can be used to define a target."),
                                 0, _spot_settings_changed_callback, self,
-                                N_("correction"),
-                                N_("measure"));
+                                N_("Correction"),
+                                N_("Measure"));
   gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("input")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("Input")), FALSE, FALSE, 0);
 
   g->origin_spot = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request(g->origin_spot, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
                                               DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->origin_spot),
-                              _("the input color that should be mapped to the target"));
+                              _("The input color that should be mapped to the target"));
 
   g_signal_connect(G_OBJECT(g->origin_spot), "draw", G_CALLBACK(_origin_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->origin_spot, TRUE, TRUE, 0);
 
   g->Lch_origin = gtk_label_new(_("L : \tN/A"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->Lch_origin),
-                              _("these LCh coordinates are computed from CIE Lab 1976 coordinates"));
+                              _("These LCh coordinates are computed from CIE Lab 1976 coordinates"));
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->Lch_origin), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), FALSE, FALSE, DT_BAUHAUS_SPACE);
 
   vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("target")), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("Target")), FALSE, TRUE, 0);
 
   g->target_spot = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request(g->target_spot, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
                                               DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->target_spot),
-                              _("the desired target exposure after mapping"));
+                              _("The desired target exposure after mapping"));
 
   g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(_target_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., 100., 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->lightness_spot, NULL, N_("lightness"));
+  dt_bauhaus_widget_set_label(g->lightness_spot, NULL, N_("Lightness"));
   dt_bauhaus_slider_set_format(g->lightness_spot, "%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);

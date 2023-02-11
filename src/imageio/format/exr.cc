@@ -216,7 +216,7 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
   goto icc_end;
 
 icc_error:
-  dt_control_log("%s", _("the selected output profile doesn't work well with exr"));
+  dt_control_log("%s", _("The selected output profile doesn't work well with exr"));
   dt_print(DT_DEBUG_ALWAYS, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong "
                   "results when opening the image\n");
 icc_end:
@@ -473,7 +473,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // Bit depth combo box
   const int bpp_last = dt_conf_get_int("plugins/imageio/format/exr/bpp");
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp,self, NULL, N_("bit depth"), NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp,self, NULL, N_("Bit depth"), NULL,
                                (bpp_last >> 4) - EXR_PT_HALF, bpp_combobox_changed, self,
                                N_("16 bit (float)"), N_("32 bit (float)"));
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
@@ -481,9 +481,9 @@ void gui_init(dt_imageio_module_format_t *self)
   // Compression combo box
   const int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("compression"), NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->compression, self, NULL, N_("Compression"), NULL,
                                compression_last, compression_combobox_changed, self,
-                               N_("uncompressed"),
+                               N_("Uncompressed"),
                                N_("RLE"),
                                N_("ZIPS"),
                                N_("ZIP"),

@@ -55,10 +55,10 @@ static void _ioppr_reset_iop_order(GList *iop_order_list);
 
 const char *iop_order_string[] =
 {
-  N_("custom"),
-  N_("legacy"),
-  N_("v3.0 RAW"),
-  N_("v3.0 JPEG")
+  N_("Custom"),
+  N_("Legacy"),
+  N_("V3.0 RAW"),
+  N_("V3.0 JPEG")
 };
 
 const char *dt_iop_order_string(const dt_iop_order_t order)

@@ -685,16 +685,16 @@ static inline void dt_unreachable_codepath_with_caller(const char *description, 
  * Many calls expect untranslated strings because they need to store them as ids in a language independent way.
  * They then internally before displaying call Q_ to translate, which allows an embedded translation context to be specified.
  * The qnome format "context|string" is used.
- * Intltool does not support this format when it scans N_, so NC_("context","string") has to be used.
+ * Intltool does not support this format when it scans N_, so NC_("context","String") has to be used.
  * But the standard NC_ does not propagate the context with the string. So here it is overridden to combine both parts.
  *
  * A better solution would be to switch to a modern xgettext https://wiki.gnome.org/MigratingFromIntltoolToGettext
  *
- *    xgettext --keyword=Q_:1g --keyword=N_:1g would allow using standard N_("context|string") to mark and pass on unchanged.
+ *    xgettext --keyword=Q_:1g --keyword=N_:1g would allow using standard N_("Context|string") to mark and pass on unchanged.
  *
  * This would also enable contextualised strings in introspection markups, like
  *
- *    DT_INTENT_SATURATION = INTENT_SATURATION, // $DESCRIPTION: "rendering intent|saturation"
+ *    DT_INTENT_SATURATION = INTENT_SATURATION, // $DESCRIPTION: "Rendering intent|saturation"
  *
  * Before storing in a language-indpendent format, like shortcutsrc, NQ_ should be used to strip any context from the string.
  */

@@ -172,4 +172,3 @@ dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

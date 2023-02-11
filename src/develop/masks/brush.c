@@ -1103,7 +1103,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       {
         dt_masks_dynbuf_set(gui->guipoints_payload, -3, masks_hardness);
       }
-      dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
+      dt_toast_log(_("Hardness: %3.2f%%"), masks_hardness*100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
@@ -1117,7 +1117,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       {
         dt_masks_dynbuf_set(gui->guipoints_payload, -4, masks_border);
       }
-      dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
+      dt_toast_log(_("Size: %3.2f%%"), masks_border*2.f*100.f);
     }
     dt_dev_masks_list_change(darktable.develop);
     dt_control_queue_redraw_center();
@@ -1151,7 +1151,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
             dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
             const float masks_hardness = point->hardness;
             point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-            dt_toast_log(_("hardness: %3.2f%%"), point->hardness*100.0f);
+            dt_toast_log(_("Hardness: %3.2f%%"), point->hardness*100.0f);
           }
           pts_number++;
         }
@@ -1191,7 +1191,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
         float masks_border = dt_conf_get_float(DT_MASKS_CONF(form->type, brush, border));
         masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
         dt_conf_set_float(DT_MASKS_CONF(form->type, brush, border), masks_border);
-        dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
+        dt_toast_log(_("Size: %3.2f%%"), masks_border*2.f*100.f);
       }
 
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -2837,9 +2837,9 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module, const dt_dev
 static GSList *_brush_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[BRUSH] change size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[BRUSH] change hardness"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[BRUSH] change opacity"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[BRUSH] Change size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[BRUSH] Change hardness"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[BRUSH] Change opacity"));
   return lm;
 }
 
@@ -2850,7 +2850,7 @@ static void _brush_sanitize_config(dt_masks_type_t type)
 
 static void _brush_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
 {
-  snprintf(form->name, sizeof(form->name), _("brush #%d"), (int)nb);
+  snprintf(form->name, sizeof(form->name), _("Brush #%d"), (int)nb);
 }
 
 static void _brush_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,

@@ -268,4 +268,3 @@ void luaT_getvarargs (lua_State *L, CallInfo *ci, StkId where, int wanted) {
   for (; i < wanted; i++)   /* complete required results with nil */
     setnilvalue(s2v(where + i));
 }
-

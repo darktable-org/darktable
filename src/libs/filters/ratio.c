@@ -65,11 +65,11 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
   sqlite3_finalize(stmt);
 
   // predefined selections
-  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("All images"),
                                      nb_portrait + nb_square + nb_landscape);
-  dtgtk_range_select_add_range_block(range, 0.5, 0.99, DT_RANGE_BOUND_MIN, _("portrait images"), nb_portrait);
-  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_FIXED, _("square images"), nb_square);
-  dtgtk_range_select_add_range_block(range, 1.01, 2.0, DT_RANGE_BOUND_MAX, _("landscape images"), nb_landscape);
+  dtgtk_range_select_add_range_block(range, 0.5, 0.99, DT_RANGE_BOUND_MIN, _("Portrait images"), nb_portrait);
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_FIXED, _("Square images"), nb_square);
+  dtgtk_range_select_add_range_block(range, 1.01, 2.0, DT_RANGE_BOUND_MAX, _("Landscape images"), nb_landscape);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
@@ -78,10 +78,10 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
   {
     // predefined selections
     dtgtk_range_select_add_range_block(rangetop, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX,
-                                       _("all images"), nb_portrait + nb_square + nb_landscape);
-    dtgtk_range_select_add_range_block(rangetop, 0.5, 0.99, DT_RANGE_BOUND_MIN, _("portrait images"), nb_portrait);
-    dtgtk_range_select_add_range_block(rangetop, 1.0, 1.0, DT_RANGE_BOUND_FIXED, _("square images"), nb_square);
-    dtgtk_range_select_add_range_block(rangetop, 1.01, 2.0, DT_RANGE_BOUND_MAX, _("landscape images"),
+                                       _("All images"), nb_portrait + nb_square + nb_landscape);
+    dtgtk_range_select_add_range_block(rangetop, 0.5, 0.99, DT_RANGE_BOUND_MIN, _("Portrait images"), nb_portrait);
+    dtgtk_range_select_add_range_block(rangetop, 1.0, 1.0, DT_RANGE_BOUND_FIXED, _("Square images"), nb_square);
+    dtgtk_range_select_add_range_block(rangetop, 1.01, 2.0, DT_RANGE_BOUND_MAX, _("Landscape images"),
                                        nb_landscape);
 
     // and setup the selection
@@ -119,11 +119,11 @@ static gchar *_ratio_print_func(const double value, const gboolean detailled)
   if(detailled)
   {
     if(value < 1.0)
-      return dt_util_dstrcat(txt, " %s", _("portrait"));
+      return dt_util_dstrcat(txt, " %s", _("Portrait"));
     else if(value > 1.0)
-      return dt_util_dstrcat(txt, " %s", _("landscape"));
+      return dt_util_dstrcat(txt, " %s", _("Landscape"));
     else if(value == 1.0)
-      return dt_util_dstrcat(txt, " %s", _("square"));
+      return dt_util_dstrcat(txt, " %s", _("Square"));
   }
   return txt;
 }

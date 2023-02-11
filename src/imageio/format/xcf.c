@@ -156,7 +156,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   xcf_add_layer(xcf);
   xcf_set(xcf, XCF_WIDTH, d->global.width);
   xcf_set(xcf, XCF_HEIGHT, d->global.height);
-  xcf_set(xcf, XCF_NAME, _("image"));
+  xcf_set(xcf, XCF_NAME, _("Image"));
   // we only add one layer and omit its alpha channel. thus we can just pass ivoid and ignore its 4th channel!
   xcf_add_data(xcf, ivoid, 4);
 
@@ -345,7 +345,7 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // Bit depth combo box
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("bit depth"), NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(gui->bpp, self, NULL, N_("Bit depth"), NULL,
                                bpp == 16 ? 1 : bpp == 32 ? 2 : 0,
                                bpp_combobox_changed, NULL,
                                N_("8 bit"), N_("16 bit"), N_("32 bit (float)"));

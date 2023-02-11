@@ -606,4 +606,3 @@ static const u_char *find_string(const u_char *bp, int *tgt, const char *const *
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

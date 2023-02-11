@@ -42,19 +42,19 @@ DT_MODULE_INTROSPECTION(2, dt_iop_rawprepare_params_t)
 
 typedef enum dt_iop_rawprepare_flat_field_t
 {
-  FLAT_FIELD_OFF = 0,     // $DESCRIPTION: "disabled"
-  FLAT_FIELD_EMBEDDED = 1 // $DESCRIPTION: "embedded GainMap"
+  FLAT_FIELD_OFF = 0,     // $DESCRIPTION: "Disabled"
+  FLAT_FIELD_EMBEDDED = 1 // $DESCRIPTION: "Embedded GainMap"
 } dt_iop_rawprepare_flat_field_t;
 
 typedef struct dt_iop_rawprepare_params_t
 {
-  int32_t left; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop left"
-  int32_t top; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop top"
-  int32_t right; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop right"
-  int32_t bottom; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop bottom"
-  uint16_t raw_black_level_separate[4]; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "black level"
-  uint16_t raw_white_point; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "white point"
-  dt_iop_rawprepare_flat_field_t flat_field; // $DEFAULT: FLAT_FIELD_OFF $DESCRIPTION: "flat field correction"
+  int32_t left; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "Crop left"
+  int32_t top; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "Crop top"
+  int32_t right; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "Crop right"
+  int32_t bottom; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "Crop bottom"
+  uint16_t raw_black_level_separate[4]; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "Black level"
+  uint16_t raw_white_point; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "White point"
+  dt_iop_rawprepare_flat_field_t flat_field; // $DEFAULT: FLAT_FIELD_OFF $DESCRIPTION: "Flat field correction"
 } dt_iop_rawprepare_params_t;
 
 typedef struct dt_iop_rawprepare_gui_data_t
@@ -96,7 +96,7 @@ typedef struct dt_iop_rawprepare_global_data_t
 
 const char *name()
 {
-  return C_("modulename", "raw black/white point");
+  return C_("modulename", "Raw black/white point");
 }
 
 int operation_tags()
@@ -153,19 +153,19 @@ int legacy_params(dt_iop_module_t *self,
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor.\n"
-                                        "touch with great care!"),
-                                      _("mandatory"),
-                                      _("linear, raw, scene-referred"),
-                                      _("linear, raw"),
-                                      _("linear, raw, scene-referred"));
+  return dt_iop_set_description(self, _("Sets technical specificities of the raw sensor.\n"
+                                        "Touch with great care!"),
+                                      _("Mandatory"),
+                                      _("Linear, raw, scene-referred"),
+                                      _("Linear, raw"),
+                                      _("Linear, raw, scene-referred"));
 }
 
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_database_start_transaction(darktable.db);
 
-  dt_gui_presets_add_generic(_("passthrough"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("Passthrough"), self->op, self->version(),
                              &(dt_iop_rawprepare_params_t){.left = 0,
                                                            .top = 0,
                                                            .right = 0,
@@ -651,8 +651,8 @@ static gboolean _image_set_rawcrops(
        "[rawprepare] got wrong crop parameters left=%i, right=%i, top=%i, bottom=%i for size=%ix%i\n",
        left, right, top, bottom, img->width, img->height);
     dt_iop_set_module_trouble_message(self,
-     _("invalid crop parameters"),
-     _("please reset to defaults, update your preset or set to something correct"),
+     _("Invalid crop parameters"),
+     _("Please reset to defaults, update your preset or set to something correct"),
        "invalid crop parameters");
   }
   else
@@ -899,10 +899,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 }
 
 const gchar *black_label[]
-  =  { N_("black level 0"),
-       N_("black level 1"),
-       N_("black level 2"),
-       N_("black level 3") };
+  =  { N_("Black level 0"),
+       N_("Black level 1"),
+       N_("Black level 2"),
+       N_("Black level 3") };
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -923,33 +923,33 @@ void gui_init(dt_iop_module_t *self)
   }
 
   g->white_point = dt_bauhaus_slider_from_params(self, "raw_white_point");
-  gtk_widget_set_tooltip_text(g->white_point, _("white point"));
+  gtk_widget_set_tooltip_text(g->white_point, _("White point"));
   dt_bauhaus_slider_set_soft_max(g->white_point, 16384);
 
   g->flat_field = dt_bauhaus_combobox_from_params(self, "flat_field");
   gtk_widget_set_tooltip_text
     (g->flat_field,
-     _("raw flat field correction to compensate for lens shading"));
+     _("Raw flat field correction to compensate for lens shading"));
 
   if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
   {
     gtk_box_pack_start(GTK_BOX(self->widget),
-                       dt_ui_section_label_new(_("crop")), FALSE, FALSE, 0);
+                       dt_ui_section_label_new(_("Crop")), FALSE, FALSE, 0);
 
     g->left = dt_bauhaus_slider_from_params(self, "left");
-    gtk_widget_set_tooltip_text(g->left, _("crop left border"));
+    gtk_widget_set_tooltip_text(g->left, _("Crop left border"));
     dt_bauhaus_slider_set_soft_max(g->left, 256);
 
     g->top = dt_bauhaus_slider_from_params(self, "top");
-    gtk_widget_set_tooltip_text(g->top, _("crop top border"));
+    gtk_widget_set_tooltip_text(g->top, _("Crop top border"));
     dt_bauhaus_slider_set_soft_max(g->top, 256);
 
     g->right = dt_bauhaus_slider_from_params(self, "right");
-    gtk_widget_set_tooltip_text(g->right, _("crop right border"));
+    gtk_widget_set_tooltip_text(g->right, _("Crop right border"));
     dt_bauhaus_slider_set_soft_max(g->right, 256);
 
     g->bottom = dt_bauhaus_slider_from_params(self, "bottom");
-    gtk_widget_set_tooltip_text(g->bottom, _("crop bottom border"));
+    gtk_widget_set_tooltip_text(g->bottom, _("Crop bottom border"));
     dt_bauhaus_slider_set_soft_max(g->bottom, 256);
   }
 
@@ -958,7 +958,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
 
   GtkWidget *label_non_raw =
-    dt_ui_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
+    dt_ui_label_new(_("Raw black/white point correction\nonly works for the sensors that need it."));
 
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");

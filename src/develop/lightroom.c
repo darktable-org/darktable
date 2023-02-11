@@ -831,13 +831,13 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
     else if(!xmlStrcmp(name, (const xmlChar *)"Label"))
     {
       char *v = g_utf8_casefold((char *)value, -1);
-      if(!g_strcmp0(v, _("red")))
+      if(!g_strcmp0(v, _("Red")))
         data->color = 0;
-      else if(!g_strcmp0(v, _("yellow")))
+      else if(!g_strcmp0(v, _("Yellow")))
         data->color = 1;
-      else if(!g_strcmp0(v, _("green")))
+      else if(!g_strcmp0(v, _("Green")))
         data->color = 2;
-      else if(!g_strcmp0(v, _("blue")))
+      else if(!g_strcmp0(v, _("Blue")))
         data->color = 3;
       else
         // just an else here to catch all other cases as on lightroom one can
@@ -1080,7 +1080,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(!pathname)
   {
-    if(!iauto) dt_control_log(_("cannot find lightroom XMP!"));
+    if(!iauto) dt_control_log(_("Cannot find lightroom XMP!"));
     return FALSE;
   }
 
@@ -1112,7 +1112,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
-    if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' Is not a Lightroom XMP!"), pathname);
     g_free(pathname);
     return FALSE;
   }
@@ -1134,7 +1134,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(xpathObj == NULL)
   {
-    if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' Is not a Lightroom XMP!"), pathname);
     xmlXPathFreeContext(xpathCtx);
     g_free(pathname);
     xmlFreeDoc(doc);
@@ -1154,7 +1154,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       xmlXPathFreeObject(xpathObj);
       xmlFreeDoc(doc);
       xmlFree(value);
-      if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
+      if(!iauto) dt_control_log(_("`%s' Is not a Lightroom XMP!"), pathname);
       g_free(pathname);
       return FALSE;
     }
@@ -1166,7 +1166,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 //   {
 //     xmlXPathFreeObject(xpathObj);
 //     xmlXPathFreeContext(xpathCtx);
-//     if(!iauto) dt_control_log(_("`%s' is not a Lightroom XMP!"), pathname);
+//     if(!iauto) dt_control_log(_("`%s' Is not a Lightroom XMP!"), pathname);
 //     g_free(pathname);
 //     return;
 //   }
@@ -1513,7 +1513,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   if(data.has_tags)
   {
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
-    g_strlcat(imported, _("tags"), sizeof(imported));
+    g_strlcat(imported, _("Tags"), sizeof(imported));
     n_import++;
   }
 
@@ -1522,7 +1522,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     dt_ratings_apply_on_image(imgid, data.rating, FALSE, FALSE, FALSE);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
-    g_strlcat(imported, _("rating"), sizeof(imported));
+    g_strlcat(imported, _("Rating"), sizeof(imported));
     n_import++;
   }
 
@@ -1538,7 +1538,7 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
-    g_strlcat(imported, _("geotagging"), sizeof(imported));
+    g_strlcat(imported, _("Geotagging"), sizeof(imported));
     n_import++;
   }
 
@@ -1547,13 +1547,13 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     dt_colorlabels_set_label(imgid, data.color);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
-    g_strlcat(imported, _("color label"), sizeof(imported));
+    g_strlcat(imported, _("Color label"), sizeof(imported));
     n_import++;
   }
 
   if(dev != NULL && refresh_needed && dev->gui_attached)
   {
-    dt_control_log(ngettext("%s has been imported", "%s have been imported", n_import), imported);
+    dt_control_log(ngettext("%s Has been imported", "%s have been imported", n_import), imported);
 
     if(!iauto)
     {
@@ -1572,4 +1572,3 @@ gboolean dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

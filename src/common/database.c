@@ -2766,22 +2766,22 @@ void dt_database_show_error(const dt_database_t *db)
           "\n"
           "  3 - If you have done this or are certain that no other instances of darktable are running, \n"
           "      this probably means that the last instance was ended abnormally. \n"
-          "      Click on the \"delete database lock files\" button to remove the files <i>data.db.lock</i> and <i>library.db.lock</i>.  \n"
+          "      Click on the \"delete database lock files\" button to remove the files <i>data.Db.Lock</i> and <i>library.Db.Lock</i>.  \n"
           "\n\n"
           "      <i><u>Caution!</u> Do not delete these files without first undertaking the above checks, \n"
           "      otherwise you risk generating serious inconsistencies in your database.</i>\n"),
       db->error_other_pid);
     // clang-format on
 
-    gboolean delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
-                                        label_text, _("cancel"), _("delete database lock files"));
+    gboolean delete_lockfiles = dt_gui_show_standalone_yes_no_dialog(_("Error starting darktable"),
+                                        label_text, _("Cancel"), _("Delete database lock files"));
 
     if(delete_lockfiles)
     {
       gboolean really_delete_lockfiles =
         dt_gui_show_standalone_yes_no_dialog
-        (_("are you sure?"),
-         _("\ndo you really want to delete the lock files?\n"), _("no"), _("yes"));
+        (_("Are you sure?"),
+         _("\nDo you really want to delete the lock files?\n"), _("No"), _("Yes"));
       if(really_delete_lockfiles)
       {
         int status = 0;
@@ -2797,16 +2797,16 @@ void dt_database_show_error(const dt_database_t *db)
         g_free(lck_filename);
 
         if(status==0)
-          dt_gui_show_standalone_yes_no_dialog(_("done"),
-                                        _("\nsuccessfully deleted the lock files.\nyou can now restart darktable\n"),
-                                        _("ok"), NULL);
+          dt_gui_show_standalone_yes_no_dialog(_("Done"),
+                                        _("\nSuccessfully deleted the lock files.\nYou can now restart darktable\n"),
+                                        _("Ok"), NULL);
         else
           dt_gui_show_standalone_yes_no_dialog
-            (_("error"), g_markup_printf_escaped(
-              _("\nat least one file could not be removed.\n"
-                "you may try to manually delete the files <i>data.db.lock</i> and <i>library.db.lock</i>\n"
+            (_("Error"), g_markup_printf_escaped(
+              _("\nAt least one file could not be removed.\n"
+                "You may try to manually delete the files <i>data.Db.Lock</i> and <i>library.Db.Lock</i>\n"
                 "in folder <a href=\"file:///%s\">%s</a>.\n"), lck_dirname, lck_dirname),
-             _("ok"), NULL);
+             _("Ok"), NULL);
       }
     }
 
@@ -2920,13 +2920,13 @@ lock_again:
               stderr,
               "[init] the database lock file contains a pid that seems to be alive in your system: %d\n",
               db->error_other_pid);
-            db->error_message = g_strdup_printf(_("the database lock file contains a pid that seems to be alive in your system: %d"), db->error_other_pid);
+            db->error_message = g_strdup_printf(_("The database lock file contains a pid that seems to be alive in your system: %d"), db->error_other_pid);
           }
         }
         else
         {
           fprintf(stderr, "[init] the database lock file seems to be empty\n");
-          db->error_message = g_strdup_printf(_("the database lock file seems to be empty"));
+          db->error_message = g_strdup_printf(_("The database lock file seems to be empty"));
         }
         close(fd);
       }
@@ -2934,7 +2934,7 @@ lock_again:
       {
         int err = errno;
         fprintf(stderr, "[init] error opening the database lock file for reading: %s\n", strerror(err));
-        db->error_message = g_strdup_printf(_("error opening the database lock file for reading: %s"), strerror(err));
+        db->error_message = g_strdup_printf(_("Error opening the database lock file for reading: %s"), strerror(err));
       }
     }
   }
@@ -2971,7 +2971,7 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 
   // the database has to be upgraded, let's ask user
 
-  char *label_text = g_markup_printf_escaped(_("the database schema has to be upgraded for\n"
+  char *label_text = g_markup_printf_escaped(_("The database schema has to be upgraded for\n"
                                                "\n"
                                                "<span style='italic'>%s</span>\n"
                                                "\nthis might take a long time in case of a large database\n\n"
@@ -2979,8 +2979,8 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
                                                dbname);
 
   gboolean shall_we_update_the_db =
-    dt_gui_show_standalone_yes_no_dialog(_("darktable - schema migration"), label_text,
-                                         _("close darktable"), _("upgrade database"));
+    dt_gui_show_standalone_yes_no_dialog(_("Darktable - schema migration"), label_text,
+                                         _("Close darktable"), _("Upgrade database"));
 
   g_free(label_text);
 
@@ -3273,7 +3273,7 @@ start:
       gchar* quick_check_text = NULL;
       if(g_strcmp0(data_status, "ok")) // data_status is not ok
       {
-        quick_check_text = g_strdup_printf(_("quick_check said:\n"
+        quick_check_text = g_strdup_printf(_("Quick_check said:\n"
                                             "%s \n"), data_status);
       }
       else
@@ -3290,41 +3290,41 @@ start:
 
       if(data_snap)
       {
-        dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+        dialog = gtk_dialog_new_with_buttons(_("Darktable - error opening database"),
                                             NULL,
                                             dflags,
-                                            _("close darktable"),
+                                            _("Close darktable"),
                                             GTK_RESPONSE_CLOSE,
-                                            _("attempt restore"),
+                                            _("Attempt restore"),
                                             GTK_RESPONSE_ACCEPT,
-                                            _("delete database"),
+                                            _("Delete database"),
                                             GTK_RESPONSE_REJECT,
                                             NULL);
         gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
-        label_options = _("do you want to close darktable now to manually restore\n"
+        label_options = _("Do you want to close darktable now to manually restore\n"
                           "the database from a backup, attempt an automatic restore\n"
                           "from the most recent snapshot or delete the corrupted database\n"
                           "and start with a new one?");
       }
       else
       {
-        dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+        dialog = gtk_dialog_new_with_buttons(_("Darktable - error opening database"),
                                             NULL,
                                             dflags,
-                                            _("close darktable"),
+                                            _("Close darktable"),
                                             GTK_RESPONSE_CLOSE,
-                                            _("delete database"),
+                                            _("Delete database"),
                                             GTK_RESPONSE_REJECT,
                                             NULL);
         gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
-        label_options = _("do you want to close darktable now to manually restore\n"
+        label_options = _("Do you want to close darktable now to manually restore\n"
                           "the database from a backup or delete the corrupted database\n"
                           "and start with a new one?");
       }
 
 
 
-      char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
+      char *label_text = g_markup_printf_escaped(_("An error has occurred while trying to open the database from\n"
                                                    "\n"
                                                    "<span style='italic'>%s</span>\n"
                                                    "\n"
@@ -3453,7 +3453,7 @@ start:
     gchar* quick_check_text = NULL;
     if(g_strcmp0(libdb_status, "ok")) // data_status is not ok
     {
-      quick_check_text = g_strdup_printf(_("quick_check said:\n"
+      quick_check_text = g_strdup_printf(_("Quick_check said:\n"
                                           "%s \n"), libdb_status);
     }
     else
@@ -3470,39 +3470,39 @@ start:
 
     if(data_snap)
     {
-      dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+      dialog = gtk_dialog_new_with_buttons(_("Darktable - error opening database"),
                                           NULL,
                                           dflags,
-                                          _("close darktable"),
+                                          _("Close darktable"),
                                           GTK_RESPONSE_CLOSE,
-                                          _("attempt restore"),
+                                          _("Attempt restore"),
                                           GTK_RESPONSE_ACCEPT,
-                                          _("delete database"),
+                                          _("Delete database"),
                                           GTK_RESPONSE_REJECT,
                                           NULL);
       gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
-      label_options = _("do you want to close darktable now to manually restore\n"
+      label_options = _("Do you want to close darktable now to manually restore\n"
                         "the database from a backup, attempt an automatic restore\n"
                         "from the most recent snapshot or delete the corrupted database\n"
                         "and start with a new one?");
     }
     else
     {
-      dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+      dialog = gtk_dialog_new_with_buttons(_("Darktable - error opening database"),
                                           NULL,
                                           dflags,
-                                          _("close darktable"),
+                                          _("Close darktable"),
                                           GTK_RESPONSE_CLOSE,
-                                          _("delete database"),
+                                          _("Delete database"),
                                           GTK_RESPONSE_REJECT,
                                           NULL);
       gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
-      label_options = _("do you want to close darktable now to manually restore\n"
+      label_options = _("Do you want to close darktable now to manually restore\n"
                         "the database from a backup or delete the corrupted database\n"
                         "and start with a new one?");
     }
 
-    char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
+    char *label_text = g_markup_printf_escaped(_("An error has occurred while trying to open the database from\n"
                                                  "\n"
                                                  "<span style='italic'>%s</span>\n"
                                                  "\n"
@@ -3978,30 +3978,30 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
     return FALSE;
 
   const char *config = dt_conf_get_string_const("database/create_snapshot");
-  if(!g_strcmp0(config, "never"))
+  if(!g_strcmp0(config, "Never"))
   {
-    // early bail out on "never"
+    // early bail out on "Never"
     dt_print(DT_DEBUG_SQL, "[db backup] please consider enabling database snapshots.\n");
     return FALSE;
   }
-  if(!g_strcmp0(config, "on close"))
+  if(!g_strcmp0(config, "On close"))
   {
-    // early bail out on "on close"
+    // early bail out on "On close"
     dt_print(DT_DEBUG_SQL, "[db backup] performing unconditional snapshot.\n");
     return TRUE;
   }
 
   GTimeSpan span_from_last_snap_required;
 
-  if(!g_strcmp0(config, "once a day"))
+  if(!g_strcmp0(config, "Once a day"))
   {
     span_from_last_snap_required = G_TIME_SPAN_DAY;
   }
-  else if(!g_strcmp0(config, "once a week"))
+  else if(!g_strcmp0(config, "Once a week"))
   {
     span_from_last_snap_required = G_TIME_SPAN_DAY * 7;
   }
-  else if(!g_strcmp0(config, "once a month"))
+  else if(!g_strcmp0(config, "Once a month"))
   {
     //average month ;)
     span_from_last_snap_required = G_TIME_SPAN_DAY * 30;

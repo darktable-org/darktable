@@ -52,7 +52,7 @@ typedef struct dt_iop_nlmeans_params_v1_t
 typedef struct dt_iop_nlmeans_params_t
 {
   // these are stored in db.
-  float radius;   // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "patch size"
+  float radius;   // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "Patch size"
   float strength; // $MIN: 0.0 $MAX: 100000.0 $DEFAULT: 50.0
   float luma;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.5
   float chroma;   // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 1.0
@@ -81,21 +81,21 @@ typedef struct dt_iop_nlmeans_global_data_t
 
 const char *name()
 {
-  return _("astrophoto denoise");
+  return _("Astrophoto denoise");
 }
 
 const char *aliases()
 {
-  return _("denoise (non-local means)");
+  return _("Denoise (non-local means)");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply a poisson noise removal best suited for astrophotography"),
-                                      _("corrective"),
-                                      _("non-linear, Lab, display-referred"),
-                                      _("non-linear, Lab"),
-                                      _("non-linear, Lab, display-referred"));
+  return dt_iop_set_description(self, _("Apply a poisson noise removal best suited for astrophotography"),
+                                      _("Corrective"),
+                                      _("Non-linear, Lab, display-referred"),
+                                      _("Non-linear, Lab"),
+                                      _("Non-linear, Lab, display-referred"));
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -458,18 +458,18 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_max(g->radius, 4.0f);
   dt_bauhaus_slider_set_digits(g->radius, 0);
-  gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match"));
-  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
+  gtk_widget_set_tooltip_text(g->radius, _("Radius of the patches to match"));
+  g->strength = dt_bauhaus_slider_from_params(self, N_("Strength"));
   dt_bauhaus_slider_set_soft_max(g->strength, 100.0f);
   dt_bauhaus_slider_set_digits(g->strength, 0);
   dt_bauhaus_slider_set_format(g->strength, "%");
-  gtk_widget_set_tooltip_text(g->strength, _("strength of the effect"));
-  g->luma = dt_bauhaus_slider_from_params(self, N_("luma"));
+  gtk_widget_set_tooltip_text(g->strength, _("Strength of the effect"));
+  g->luma = dt_bauhaus_slider_from_params(self, N_("Luma"));
   dt_bauhaus_slider_set_format(g->luma, "%");
-  gtk_widget_set_tooltip_text(g->luma, _("how much to smooth brightness"));
-  g->chroma = dt_bauhaus_slider_from_params(self, N_("chroma"));
+  gtk_widget_set_tooltip_text(g->luma, _("How much to smooth brightness"));
+  g->chroma = dt_bauhaus_slider_from_params(self, N_("Chroma"));
   dt_bauhaus_slider_set_format(g->chroma, "%");
-  gtk_widget_set_tooltip_text(g->chroma, _("how much to smooth colors"));
+  gtk_widget_set_tooltip_text(g->chroma, _("How much to smooth colors"));
 }
 
 // clang-format off
@@ -477,4 +477,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

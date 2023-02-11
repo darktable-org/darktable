@@ -144,4 +144,3 @@ inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

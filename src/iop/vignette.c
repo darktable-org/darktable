@@ -43,7 +43,7 @@ DT_MODULE_INTROSPECTION(4, dt_iop_vignette_params_t)
 
 typedef enum dt_iop_dither_t
 {
-  DITHER_OFF = 0,  // $DESCRIPTION: "off"
+  DITHER_OFF = 0,  // $DESCRIPTION: "Off"
   DITHER_8BIT = 1, // $DESCRIPTION: "8-bit output"
   DITHER_16BIT = 2 // $DESCRIPTION: "16-bit output"
 } dt_iop_dither_t;
@@ -56,8 +56,8 @@ typedef struct dt_iop_dvector_2d_t
 
 typedef struct dt_iop_fvector_2d_t
 {
-  float x; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "horizontal center"
-  float y; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "vertical center"
+  float x; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "Horizontal center"
+  float y; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "Vertical center"
 } dt_iop_vector_2d_t;
 
 typedef struct dt_iop_vignette_params1_t
@@ -101,13 +101,13 @@ typedef struct dt_iop_vignette_params3_t
 typedef struct dt_iop_vignette_params_t
 {
   float scale;               // $MIN: 0.0 $MAX: 200.0 $DEFAULT: 80.0 Inner radius, percent of largest image dimension
-  float falloff_scale;       // $MIN: 0.0 $MAX: 200.0 $DEFAULT: 50.0 $DESCRIPTION: "fall-off strength" 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
+  float falloff_scale;       // $MIN: 0.0 $MAX: 200.0 $DEFAULT: 50.0 $DESCRIPTION: "Fall-off strength" 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
   float brightness;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: -0.5 -1 - 1 Strength of brightness reduction
   float saturation;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: -0.5 -1 - 1 Strength of saturation reduction
   dt_iop_vector_2d_t center; // Center of vignette
-  gboolean autoratio;        // $DEFAULT: FALSE $DESCRIPTION: "automatic ratio"
-  float whratio;             // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "width/height ratio" 0-1 = width/height ratio, 1-2 = height/width ratio + 1
-  float shape;               // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "shape"
+  gboolean autoratio;        // $DEFAULT: FALSE $DESCRIPTION: "Automatic ratio"
+  float whratio;             // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "Width/height ratio" 0-1 = width/height ratio, 1-2 = height/width ratio + 1
+  float shape;               // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "Shape"
   dt_iop_dither_t dithering; // $DEFAULT: DITHER_OFF if and how to perform dithering
   gboolean unbound;          // $DEFAULT: TRUE whether the values should be clipped
 } dt_iop_vignette_params_t;
@@ -149,16 +149,16 @@ typedef struct dt_iop_vignette_global_data_t
 
 const char *name()
 {
-  return _("vignetting");
+  return _("Vignetting");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("simulate a lens fall-off close to edges"),
-                                      _("creative"),
-                                      _("non-linear, RGB, display-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, display-referred"));
+  return dt_iop_set_description(self, _("Simulate a lens fall-off close to edges"),
+                                      _("Creative"),
+                                      _("Non-linear, RGB, display-referred"),
+                                      _("Non-linear, RGB"),
+                                      _("Non-linear, RGB, display-referred"));
 }
 
 int flags()
@@ -936,7 +936,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.shape = 1.0f;
   p.dithering = 0;
   p.unbound = TRUE;
-  dt_gui_presets_add_generic(_("lomo"), self->op,
+  dt_gui_presets_add_generic(_("Lomo"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_database_release_transaction(darktable.db);
 }
@@ -964,20 +964,20 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_vignette_gui_data_t *g = IOP_GUI_ALLOC(vignette);
 
-  g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
+  g->scale = dt_bauhaus_slider_from_params(self, N_("Scale"));
   g->falloff_scale = dt_bauhaus_slider_from_params(self, "falloff_scale");
-  g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
-  g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
+  g->brightness = dt_bauhaus_slider_from_params(self, N_("Brightness"));
+  g->saturation = dt_bauhaus_slider_from_params(self, N_("Saturation"));
 
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_section_label_new(_("position / form")), FALSE, FALSE, 0);
+                     dt_ui_section_label_new(_("Position / form")), FALSE, FALSE, 0);
 
   g->center_x = dt_bauhaus_slider_from_params(self, "center.x");
   g->center_y = dt_bauhaus_slider_from_params(self, "center.y");
-  g->shape = dt_bauhaus_slider_from_params(self, N_("shape"));
+  g->shape = dt_bauhaus_slider_from_params(self, N_("Shape"));
   g->autoratio = dt_bauhaus_toggle_from_params(self, "autoratio");
   g->whratio = dt_bauhaus_slider_from_params(self, "whratio");
-  g->dithering = dt_bauhaus_combobox_from_params(self, N_("dithering"));
+  g->dithering = dt_bauhaus_combobox_from_params(self, N_("Dithering"));
 
   dt_bauhaus_slider_set_digits(g->brightness, 3);
   dt_bauhaus_slider_set_digits(g->saturation, 3);
@@ -988,28 +988,28 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->scale, "%");
   dt_bauhaus_slider_set_format(g->falloff_scale, "%");
 
-  gtk_widget_set_tooltip_text(g->scale, _("the radii scale of vignette for start of fall-off"));
-  gtk_widget_set_tooltip_text(g->falloff_scale, _("the radii scale of vignette for end of fall-off"));
-  gtk_widget_set_tooltip_text(g->brightness, _("strength of effect on brightness"));
-  gtk_widget_set_tooltip_text(g->saturation, _("strength of effect on saturation"));
-  gtk_widget_set_tooltip_text(g->center_x, _("horizontal offset of center of the effect"));
-  gtk_widget_set_tooltip_text(g->center_y, _("vertical offset of center of the effect"));
-  gtk_widget_set_tooltip_text(g->shape, _("shape factor\n0 produces a rectangle\n1 produces a circle or ellipse\n"
+  gtk_widget_set_tooltip_text(g->scale, _("The radii scale of vignette for start of fall-off"));
+  gtk_widget_set_tooltip_text(g->falloff_scale, _("The radii scale of vignette for end of fall-off"));
+  gtk_widget_set_tooltip_text(g->brightness, _("Strength of effect on brightness"));
+  gtk_widget_set_tooltip_text(g->saturation, _("Strength of effect on saturation"));
+  gtk_widget_set_tooltip_text(g->center_x, _("Horizontal offset of center of the effect"));
+  gtk_widget_set_tooltip_text(g->center_y, _("Vertical offset of center of the effect"));
+  gtk_widget_set_tooltip_text(g->shape, _("Shape factor\n0 produces a rectangle\n1 produces a circle or ellipse\n"
                                           "2 produces a diamond"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->autoratio), _("enable to have the ratio automatically follow the image size"));
-  gtk_widget_set_tooltip_text(g->whratio, _("width-to-height ratio"));
-  gtk_widget_set_tooltip_text(g->dithering, _("add some level of random noise to prevent banding"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->autoratio), _("Enable to have the ratio automatically follow the image size"));
+  gtk_widget_set_tooltip_text(g->whratio, _("Width-to-height ratio"));
+  gtk_widget_set_tooltip_text(g->dithering, _("Add some level of random noise to prevent banding"));
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, 0,
-                                     _("[%s on node] change vignette/feather size"), self->name());
+                                     _("[%s On node] Change vignette/feather size"), self->name());
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK,
-                                     _("[%s on node] change vignette/feather size keeping ratio"), self->name());
+                                     _("[%s On node] Change vignette/feather size keeping ratio"), self->name());
   lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK,
-                                     _("[%s on center] move vignette"), self->name());
+                                     _("[%s On center] Move vignette"), self->name());
   return lm;
 }
 
@@ -1018,4 +1018,3 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

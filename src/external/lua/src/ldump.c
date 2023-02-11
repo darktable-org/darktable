@@ -223,4 +223,3 @@ int luaU_dump(lua_State *L, const Proto *f, lua_Writer w, void *data,
   dumpFunction(&D, f, NULL);
   return D.status;
 }
-

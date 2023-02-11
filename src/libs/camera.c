@@ -75,7 +75,7 @@ typedef struct dt_lib_camera_t
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("camera settings");
+  return _("Camera settings");
 }
 
 const char **views(dt_lib_module_t *self)
@@ -129,7 +129,7 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL));
       dt_gui_add_class(GTK_WIDGET(prop->osd), "dt_transparent_background");
       g_object_ref_sink(prop->osd);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("Toggle view property in center view"));
       do
       {
         dt_bauhaus_combobox_add(prop->values, g_dgettext("libgphoto2-6", value));
@@ -199,7 +199,7 @@ static gboolean _bailout_of_tethering(gpointer user_data)
 /** Invoked when camera error appear */
 static void _camera_error_callback(const dt_camera_t *camera, dt_camera_error_t error, void *user_data)
 {
-  dt_control_log(_("connection with camera lost, exiting tethering mode"));
+  dt_control_log(_("Connection with camera lost, exiting tethering mode"));
   g_idle_add(_bailout_of_tethering, user_data);
 }
 
@@ -340,7 +340,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   // Draw right aligned battery value
   const char *battery_value = dt_camctl_camera_get_property(darktable.camctl, NULL, "batterylevel");
   char battery[4096] = { 0 };
-  snprintf(battery, sizeof(battery), "%s: %s", _("battery"), battery_value ? battery_value : _("n/a"));
+  snprintf(battery, sizeof(battery), "%s: %s", _("Battery"), battery_value ? battery_value : _("N/a"));
   pango_layout_set_text(layout, battery, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, width - ink.width - DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);
@@ -415,15 +415,15 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *hbox;
 
   // Camera control
-  GtkWidget *label = dt_ui_section_label_new(_("camera control"));
+  GtkWidget *label = dt_ui_section_label_new(_("Camera control"));
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(GTK_GRID(self->widget), label, lib->gui.rows++, 0, 2, 1);
 
-  GtkWidget *modes_label = gtk_label_new(_("modes"));
-  GtkWidget *timer_label = gtk_label_new(_("timer (s)"));
-  GtkWidget *count_label = gtk_label_new(_("count"));
-  GtkWidget *brackets_label = gtk_label_new(_("brackets"));
-  GtkWidget *steps_label = gtk_label_new(_("bkt. steps"));
+  GtkWidget *modes_label = gtk_label_new(_("Modes"));
+  GtkWidget *timer_label = gtk_label_new(_("Timer (s)"));
+  GtkWidget *count_label = gtk_label_new(_("Count"));
+  GtkWidget *brackets_label = gtk_label_new(_("Brackets"));
+  GtkWidget *steps_label = gtk_label_new(_("Bkt. Steps"));
   gtk_widget_set_halign(GTK_WIDGET(modes_label), GTK_ALIGN_START);
   gtk_widget_set_halign(GTK_WIDGET(timer_label), GTK_ALIGN_START);
   gtk_widget_set_halign(GTK_WIDGET(count_label), GTK_ALIGN_START);
@@ -456,20 +456,20 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.brackets), GTK_WIDGET(brackets_label), GTK_POS_RIGHT, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.steps), GTK_WIDGET(steps_label), GTK_POS_RIGHT, 1, 1);
 
-  lib->gui.button1 = dt_action_button_new(self, N_("capture image(s)"), _capture_button_clicked, lib, NULL, 0, 0);
+  lib->gui.button1 = dt_action_button_new(self, N_("Capture image(s)"), _capture_button_clicked, lib, NULL, 0, 0);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.button1), 0, lib->gui.rows++, 2, 1);
 
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_timer), _("toggle delayed capture mode"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_sequence), _("toggle sequenced capture mode"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_bracket), _("toggle bracketed capture mode"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.timer), _("the count of seconds before actually doing a capture"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_timer), _("Toggle delayed capture mode"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_sequence), _("Toggle sequenced capture mode"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_bracket), _("Toggle bracketed capture mode"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.timer), _("The count of seconds before actually doing a capture"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.count),
-               _("the amount of images to capture in a sequence,\nyou can use this in conjunction with "
+               _("The amount of images to capture in a sequence,\nyou can use this in conjunction with "
                  "delayed mode to create stop-motion sequences"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.brackets),
-               _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2) + 1"));
+               _("The amount of brackets on each side of centered shoot, amount of images = (brackets*2) + 1"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.steps),
-               _("the amount of steps per bracket, steps is camera configurable and usually 3 steps per "
+               _("The amount of steps per bracket, steps is camera configurable and usually 3 steps per "
                  "stop\nwith other words, 3 steps is 1EV exposure step between brackets"));
 
   g_signal_connect(G_OBJECT(lib->gui.toggle_timer), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
@@ -484,7 +484,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   // Camera settings
-  label = dt_ui_section_label_new(_("properties"));
+  label = dt_ui_section_label_new(_("Properties"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
 
   lib->gui.prop_start = lib->gui.rows -1;
@@ -492,10 +492,10 @@ void gui_init(dt_lib_module_t *self)
 
 
   // user specified properties
-  label = dt_ui_section_label_new(_("additional properties"));
+  label = dt_ui_section_label_new(_("Additional properties"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
 
-  label = gtk_label_new(_("label"));
+  label = gtk_label_new(_("Label"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   lib->gui.plabel = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.plabel), 0);
@@ -503,7 +503,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.plabel), GTK_WIDGET(label), GTK_POS_RIGHT, 1, 1);
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  label = gtk_label_new(_("property"));
+  label = gtk_label_new(_("Property"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   GtkWidget *widget = gtk_button_new_with_label("O");
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_show_property_popupmenu_clicked), lib);
@@ -515,7 +515,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), GTK_WIDGET(label), GTK_POS_RIGHT, 1, 1);
 
 
-  widget = gtk_button_new_with_label(_("add user property"));
+  widget = gtk_button_new_with_label(_("Add user property"));
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_add_property_button_clicked), lib);
   gtk_widget_show(widget);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(widget), 0, lib->gui.rows++, 2, 1);
@@ -535,25 +535,25 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   dt_lib_camera_t *lib = self->data;
   /* add all camera properties to the widget */
   dt_lib_camera_property_t *prop;
-  if((prop = _lib_property_add_new(lib, _("program"), "expprogram")) != NULL)
+  if((prop = _lib_property_add_new(lib, _("Program"), "expprogram")) != NULL)
     _lib_property_add_to_gui(prop, lib);
 
-  if((prop = _lib_property_add_new(lib, _("focus mode"), "focusmode")) != NULL)
+  if((prop = _lib_property_add_new(lib, _("Focus mode"), "focusmode")) != NULL)
     _lib_property_add_to_gui(prop, lib);
-  else if((prop = _lib_property_add_new(lib, _("focus mode"), "drivemode")) != NULL)
-    _lib_property_add_to_gui(prop, lib);
-
-  if((prop = _lib_property_add_new(lib, _("aperture"), "f-number")) != NULL)
-    _lib_property_add_to_gui(prop, lib);
-  else if((prop = _lib_property_add_new(lib, _("aperture"), "aperture")) != NULL) // for Canon cameras
+  else if((prop = _lib_property_add_new(lib, _("Focus mode"), "drivemode")) != NULL)
     _lib_property_add_to_gui(prop, lib);
 
-  if((prop = _lib_property_add_new(lib, _("focal length"), "focallength")) != NULL)
+  if((prop = _lib_property_add_new(lib, _("Aperture"), "f-number")) != NULL)
+    _lib_property_add_to_gui(prop, lib);
+  else if((prop = _lib_property_add_new(lib, _("Aperture"), "aperture")) != NULL) // for Canon cameras
     _lib_property_add_to_gui(prop, lib);
 
-  if((prop = _lib_property_add_new(lib, _("shutterspeed2"), "shutterspeed2")) != NULL)
+  if((prop = _lib_property_add_new(lib, _("Focal length"), "focallength")) != NULL)
     _lib_property_add_to_gui(prop, lib);
-  else if((prop = _lib_property_add_new(lib, _("shutterspeed"), "shutterspeed")) != NULL) // Canon, again
+
+  if((prop = _lib_property_add_new(lib, _("Shutterspeed2"), "shutterspeed2")) != NULL)
+    _lib_property_add_to_gui(prop, lib);
+  else if((prop = _lib_property_add_new(lib, _("Shutterspeed"), "shutterspeed")) != NULL) // Canon, again
     _lib_property_add_to_gui(prop, lib);
 
   if((prop = _lib_property_add_new(lib, _("ISO"), "iso")) != NULL)
@@ -562,10 +562,10 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   if((prop = _lib_property_add_new(lib, _("WB"), "whitebalance")) != NULL)
     _lib_property_add_to_gui(prop, lib);
 
-  if((prop = _lib_property_add_new(lib, _("quality"), "imagequality")) != NULL)
+  if((prop = _lib_property_add_new(lib, _("Quality"), "imagequality")) != NULL)
     _lib_property_add_to_gui(prop, lib);
 
-  if((prop = _lib_property_add_new(lib, _("size"), "imagesize")) != NULL)
+  if((prop = _lib_property_add_new(lib, _("Size"), "imagesize")) != NULL)
     _lib_property_add_to_gui(prop, lib);
 
   /* add user widgets */

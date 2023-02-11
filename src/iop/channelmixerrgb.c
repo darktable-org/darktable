@@ -81,9 +81,9 @@ DT_MODULE_INTROSPECTION(3, dt_iop_channelmixer_rgb_params_t)
 
 typedef enum dt_iop_channelmixer_rgb_version_t
 {
-  CHANNELMIXERRGB_V_1 = 0, // $DESCRIPTION: "version 1 (2020)"
-  CHANNELMIXERRGB_V_2 = 1, // $DESCRIPTION: "version 2 (2021)"
-  CHANNELMIXERRGB_V_3 = 2, // $DESCRIPTION: "version 3 (Apr 2021)"
+  CHANNELMIXERRGB_V_1 = 0, // $DESCRIPTION: "Version 1 (2020)"
+  CHANNELMIXERRGB_V_2 = 1, // $DESCRIPTION: "Version 2 (2021)"
+  CHANNELMIXERRGB_V_3 = 2, // $DESCRIPTION: "Version 3 (Apr 2021)"
 } dt_iop_channelmixer_rgb_version_t;
 
 typedef struct dt_iop_channelmixer_rgb_params_t
@@ -95,18 +95,18 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   float saturation[CHANNEL_SIZE];  // $MIN: -2.0 $MAX: 2.0
   float lightness[CHANNEL_SIZE];   // $MIN: -2.0 $MAX: 2.0
   float grey[CHANNEL_SIZE];        // $MIN: -2.0 $MAX: 2.0
-  gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "normalize channels"
+  gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "Normalize channels"
   dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
   dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
   dt_illuminant_led_t illum_led;   // $DEFAULT: DT_ILLUMINANT_LED_B5 $DESCRIPTION: "LED source"
   dt_adaptation_t adaptation;      // $DEFAULT: DT_ADAPTATION_CAT16
   float x, y;                      // $DEFAULT: 0.333
   float temperature;               // $MIN: TEMP_MIN $MAX: TEMP_MAX $DEFAULT: 5003.
-  float gamut;                     // $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "gamut compression"
-  gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
+  float gamut;                     // $MIN: 0.0 $MAX: 12.0 $DEFAULT: 1.0 $DESCRIPTION: "Gamut compression"
+  gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "Clip negative RGB from gamut"
 
   /* params of v3 */
-  dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_3 $DESCRIPTION: "saturation algorithm"
+  dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_3 $DESCRIPTION: "Saturation algorithm"
 
   /* always add new params after this so we can import legacy params with memcpy on the common part of the struct */
 
@@ -217,23 +217,23 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe);
 
 const char *name()
 {
-  return _("color calibration");
+  return _("Color calibration");
 }
 
 const char *aliases()
 {
-  return _("channel mixer|white balance|monochrome");
+  return _("Channel mixer|white balance|monochrome");
 }
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("perform color space corrections\n"
+  return dt_iop_set_description(self, _("Perform color space corrections\n"
                                         "such as white balance, channels mixing\n"
                                         "and conversions to monochrome emulating film"),
-                                      _("corrective or creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("linear, RGB or XYZ"),
-                                      _("linear, RGB, scene-referred"));
+                                      _("Corrective or creative"),
+                                      _("Linear, RGB, scene-referred"),
+                                      _("Linear, RGB or XYZ"),
+                                      _("Linear, RGB, scene-referred"));
 }
 
 int flags()
@@ -285,15 +285,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float saturation[CHANNEL_SIZE];  // $MIN: -1.0 $MAX: 1.0
       float lightness[CHANNEL_SIZE];   // $MIN: -1.0 $MAX: 1.0
       float grey[CHANNEL_SIZE];        // $MIN: 0.0 $MAX: 1.0
-      gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "normalize channels"
+      gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "Normalize channels"
       dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
       dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
       dt_illuminant_led_t illum_led;   // $DEFAULT: DT_ILLUMINANT_LED_B5 $DESCRIPTION: "LED source"
       dt_adaptation_t adaptation;      // $DEFAULT: DT_ADAPTATION_LINEAR_BRADFORD
       float x, y;                      // $DEFAULT: 0.333
       float temperature;               // $MIN: 1667. $MAX: 25000. $DEFAULT: 5003.
-      float gamut;                     // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "gamut compression"
-      gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
+      float gamut;                     // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "Gamut compression"
+      gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "Clip negative RGB from gamut"
     } dt_iop_channelmixer_rgb_params_v2_t;
 
     memcpy(new_params, old_params, sizeof(dt_iop_channelmixer_rgb_params_v2_t));
@@ -448,7 +448,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.normalize_B = TRUE;
   p.normalize_grey = FALSE;
   p.clip = FALSE;
-  dt_gui_presets_add_generic(_("basic channel mixer"), self->op,
+  dt_gui_presets_add_generic(_("Basic channel mixer"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // swap G-B
@@ -461,7 +461,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue[0] = 0.f;
   p.blue[1] = 1.f;
   p.blue[2] = 0.f;
-  dt_gui_presets_add_generic(_("swap G and B"), self->op,
+  dt_gui_presets_add_generic(_("Swap G and B"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // swap G-R
@@ -474,7 +474,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue[0] = 0.f;
   p.blue[1] = 0.f;
   p.blue[2] = 1.f;
-  dt_gui_presets_add_generic(_("swap G and R"), self->op,
+  dt_gui_presets_add_generic(_("Swap G and R"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // swap R-B
@@ -487,7 +487,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blue[0] = 1.f;
   p.blue[1] = 0.f;
   p.blue[2] = 0.f;
-  dt_gui_presets_add_generic(_("swap R and B"), self->op,
+  dt_gui_presets_add_generic(_("Swap R and B"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
@@ -1750,21 +1750,21 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   check_if_close_to_daylight(x, y, &temperature, &test_illuminant, NULL);
   gchar *string;
   if(test_illuminant == DT_ILLUMINANT_D)
-    string = _("(daylight)");
+    string = _("(Daylight)");
   else if(test_illuminant == DT_ILLUMINANT_BB)
-    string = _("(black body)");
+    string = _("(Black body)");
   else
-    string = _("(invalid)");
+    string = _("(Invalid)");
 
   gchar *diagnostic;
   if(post_mix_delta_E <= 1.2f)
-    diagnostic = _("very good");
+    diagnostic = _("Very good");
   else if(post_mix_delta_E <= 2.3f)
-    diagnostic = _("good");
+    diagnostic = _("Good");
   else if(post_mix_delta_E <= 3.4f)
-    diagnostic = _("passable");
+    diagnostic = _("Passable");
   else
-    diagnostic = _("bad");
+    diagnostic = _("Bad");
 
   g->profile_ready = TRUE;
 
@@ -1772,9 +1772,9 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   g_free(g->delta_E_label_text);
   g->delta_E_label_text
       = g_strdup_printf(_("\n<b>Profile quality report: %s</b>\n"
-                          "input ΔE: \tavg. %.2f ; \tmax. %.2f\n"
-                          "WB ΔE: \tavg. %.2f; \tmax. %.2f\n"
-                          "output ΔE: \tavg. %.2f; \tmax. %.2f\n\n"
+                          "input ΔE: \tavg. %.2f ; \tMax. %.2f\n"
+                          "WB ΔE: \tavg. %.2f; \tMax. %.2f\n"
+                          "Output ΔE: \tavg. %.2f; \tMax. %.2f\n\n"
                           "<b>Profile data</b>\n"
                           "illuminant:  \t%.0f K \t%s\n"
                           "matrix in adaptation space:\n"
@@ -1807,18 +1807,18 @@ void validate_color_checker(const float *const restrict in,
 
   gchar *diagnostic;
   if(pre_wb_delta_E <= 1.2f)
-    diagnostic = _("very good");
+    diagnostic = _("Very good");
   else if(pre_wb_delta_E <= 2.3f)
-    diagnostic = _("good");
+    diagnostic = _("Good");
   else if(pre_wb_delta_E <= 3.4f)
-    diagnostic = _("passable");
+    diagnostic = _("Passable");
   else
-    diagnostic = _("bad");
+    diagnostic = _("Bad");
 
   // Update GUI label
   g_free(g->delta_E_label_text);
   g->delta_E_label_text = g_strdup_printf(_("\n<b>Profile quality report: %s</b>\n"
-                                            "output ΔE: \tavg. %.2f; \tmax. %.2f\n\n"
+                                            "output ΔE: \tavg. %.2f; \tMax. %.2f\n\n"
                                             "<b>Normalization values</b>\n"
                                             "exposure compensation: \t%+.2f EV\n"
                                             "black offset: \t%+.4f"),
@@ -1840,10 +1840,10 @@ static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *
     {
       // our second biggest problem : another channelmixerrgb instance is doing CAT
       // earlier in the pipe.
-      dt_iop_set_module_trouble_message(self, _("double CAT applied"),
-                                        _("you have 2 instances or more of color calibration,\n"
+      dt_iop_set_module_trouble_message(self, _("Double CAT applied"),
+                                        _("You have 2 instances or more of color calibration,\n"
                                           "all performing chromatic adaptation.\n"
-                                          "this can lead to inconsistencies, unless you\n"
+                                          "This can lead to inconsistencies, unless you\n"
                                           "use them with masks or know what you are doing."),
                                         "double CAT applied");
       return;
@@ -1851,10 +1851,10 @@ static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *
     else if(!self->dev->proxy.wb_is_D65)
     {
       // our first and biggest problem : white balance module is being clever with WB coeffs
-      dt_iop_set_module_trouble_message(self, _("white balance module error"),
-                                        _("the white balance module is not using the camera\n"
+      dt_iop_set_module_trouble_message(self, _("White balance module error"),
+                                        _("The white balance module is not using the camera\n"
                                           "reference illuminant, which will cause issues here\n"
-                                          "with chromatic adaptation. either set it to reference\n"
+                                          "with chromatic adaptation. Either set it to reference\n"
                                           "or disable chromatic adaptation here."),
                                         "white balance error");
       return;
@@ -1928,7 +1928,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       // passthrough pixels
       dt_iop_image_copy_by_size(out, in, roi_in->width, roi_in->height, ch);
 
-      dt_control_log(_("auto-detection of white balance completed"));
+      dt_control_log(_("Auto-detection of white balance completed"));
 
       exit = TRUE;
     }
@@ -2066,7 +2066,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(piece->colors != 4)
   {
-    dt_control_log(_("channelmixerrgb works only on RGB input"));
+    dt_control_log(_("Channelmixerrgb works only on RGB input"));
     return err;
   }
 
@@ -3313,24 +3313,24 @@ static void update_approx_cct(dt_iop_module_t *self)
     {
       str = g_strdup_printf(_("CCT: %.0f K (daylight)"), t);
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct),
-                                  _("approximated correlated color temperature.\n"
-                                    "this illuminant can be accurately modeled by a daylight spectrum,\n"
+                                  _("Approximated correlated color temperature.\n"
+                                    "This illuminant can be accurately modeled by a daylight spectrum,\n"
                                     "so its temperature is relevant and meaningful with a D illuminant."));
     }
     else if(test_illuminant == DT_ILLUMINANT_BB)
     {
       str = g_strdup_printf(_("CCT: %.0f K (black body)"), t);
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct),
-                                  _("approximated correlated color temperature.\n"
-                                    "this illuminant can be accurately modeled by a black body spectrum,\n"
+                                  _("Approximated correlated color temperature.\n"
+                                    "This illuminant can be accurately modeled by a black body spectrum,\n"
                                     "so its temperature is relevant and meaningful with a Planckian illuminant."));
     }
     else
     {
       str = g_strdup_printf(_("CCT: %.0f K (invalid)"), t);
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct),
-                                  _("approximated correlated color temperature.\n"
-                                    "this illuminant cannot be accurately modeled by a daylight or black body spectrum,\n"
+                                  _("Approximated correlated color temperature.\n"
+                                    "This illuminant cannot be accurately modeled by a daylight or black body spectrum,\n"
                                     "so its temperature is not relevant and meaningful and you need to use a custom illuminant."));
     }
   }
@@ -3338,7 +3338,7 @@ static void update_approx_cct(dt_iop_module_t *self)
   {
     str = g_strdup_printf(_("CCT: undefined"));
     gtk_widget_set_tooltip_text(GTK_WIDGET(g->approx_cct),
-                                _("the approximated correlated color temperature\n"
+                                _("The approximated correlated color temperature\n"
                                   "cannot be computed at all so you need to use a custom illuminant."));
   }
   gtk_label_set_text(GTK_LABEL(g->approx_cct), str);
@@ -3551,7 +3551,7 @@ void reload_defaults(dt_iop_module_t *module)
     if(dt_image_is_matrix_correction_supported(img) && !dt_image_is_monochrome(img))
     {
       if(dt_bauhaus_combobox_length(g->illuminant) < DT_ILLUMINANT_CAMERA + 1)
-        dt_bauhaus_combobox_add_full(g->illuminant, _("as shot in camera"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+        dt_bauhaus_combobox_add_full(g->illuminant, _("As shot in camera"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                      GINT_TO_POINTER(DT_ILLUMINANT_CAMERA), NULL, TRUE);
     }
     else
@@ -3627,13 +3627,13 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
       if(found)
-        dt_control_log(_("white balance successfully extracted from raw image"));
+        dt_control_log(_("White balance successfully extracted from raw image"));
     }
     else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES
             || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
     {
       // We need to recompute only the full preview
-      dt_control_log(_("auto-detection of white balance started…"));
+      dt_control_log(_("Auto-detection of white balance started…"));
     }
   }
 
@@ -3699,7 +3699,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   // in commit_param, we avoid dividing by zero automatically, but user needs a notification
   if((p->grey[0] != 0.f) || (p->grey[1] != 0.f) || (p->grey[2] != 0.f))
     if((p->grey[0] + p->grey[1] + p->grey[2] == 0.f) && p->normalize_grey)
-      dt_control_log(_("color calibration: the sum of the gray channel parameters is zero, normalization will be disabled."));
+      dt_control_log(_("Color calibration: the sum of the gray channel parameters is zero, normalization will be disabled."));
 
   // If "as shot in camera" illuminant is used, CAT space is forced automatically
   // therefore, make the control insensitive
@@ -3743,7 +3743,7 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   dt_Lab_2_LCH(Lab, Lch);
 
   // Write report in GUI
-  gchar *str = g_strdup_printf(_("L: \t%.1f %%\nh: \t%.1f °\nc: \t%.1f"), Lch[0], Lch[2] * 360.f, Lch[1]);
+  gchar *str = g_strdup_printf(_("L: \t%.1f %%\nh: \t%.1f °\nC: \t%.1f"), Lch[0], Lch[2] * 360.f, Lch[1]);
   ++darktable.gui->reset;
   gtk_label_set_text(GTK_LABEL(g->Lch_origin), str);
   --darktable.gui->reset;
@@ -4001,21 +4001,21 @@ void gui_init(struct dt_iop_module_t *self)
   // Init GTK notebook
   static dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
-  dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
+  dt_action_define_iop(self, NULL, N_("Page"), GTK_WIDGET(g->notebook), &notebook_def);
 
   // Page CAT
-  self->widget = dt_ui_notebook_page(g->notebook, N_("CAT"), _("chromatic adaptation transform"));
+  self->widget = dt_ui_notebook_page(g->notebook, N_("CAT"), _("Chromatic adaptation transform"));
 
-  g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
+  g->adaptation = dt_bauhaus_combobox_from_params(self, N_("Adaptation"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),
-                              _("choose the method to adapt the illuminant\n"
+                              _("Choose the method to adapt the illuminant\n"
                                 "and the colorspace in which the module works: \n"
                                 "• Linear Bradford (1985) is consistent with ICC v4 toolchain.\n"
                                 "• CAT16 (2016) is more robust and accurate.\n"
                                 "• Non-linear Bradford (1985) is the original Bradford,\n"
                                 "it can produce better results than the linear version, but is unreliable.\n"
                                 "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
-                                "• none disables any adaptation and uses pipeline working RGB."));
+                                "• None disables any adaptation and uses pipeline working RGB."));
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
@@ -4026,37 +4026,37 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_size_request(g->illum_color, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
                                               DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->illum_color),
-                              _("this is the color of the scene illuminant before chromatic adaptation\n"
+                              _("This is the color of the scene illuminant before chromatic adaptation\n"
                                 "this color will be turned into pure white by the adaptation."));
 
   g_signal_connect(G_OBJECT(g->illum_color), "draw", G_CALLBACK(illuminant_color_draw), self);
   gtk_box_pack_start(GTK_BOX(hbox), g->illum_color, TRUE, TRUE, 0);
 
   g->color_picker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, hbox);
-  dt_action_define_iop(self, NULL, N_("picker"), g->color_picker, &dt_action_def_toggle);
-  gtk_widget_set_tooltip_text(g->color_picker, _("set white balance to detected from area"));
+  dt_action_define_iop(self, NULL, N_("Picker"), g->color_picker, &dt_action_def_toggle);
+  gtk_widget_set_tooltip_text(g->color_picker, _("Set white balance to detected from area"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
 
-  g->illuminant = dt_bauhaus_combobox_from_params(self, N_("illuminant"));
+  g->illuminant = dt_bauhaus_combobox_from_params(self, N_("Illuminant"));
 
   g->illum_fluo = dt_bauhaus_combobox_from_params(self, "illum_fluo");
 
   g->illum_led = dt_bauhaus_combobox_from_params(self, "illum_led");
 
-  g->temperature = dt_bauhaus_slider_from_params(self, N_("temperature"));
+  g->temperature = dt_bauhaus_slider_from_params(self, N_("Temperature"));
   dt_bauhaus_slider_set_soft_range(g->temperature, 3000., 7000.);
   dt_bauhaus_slider_set_digits(g->temperature, 0);
   dt_bauhaus_slider_set_format(g->temperature, " K");
 
   g->illum_x = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., ILLUM_X_MAX, 0, 0, 1, 0);
-  dt_bauhaus_widget_set_label(g->illum_x, NULL, N_("hue"));
+  dt_bauhaus_widget_set_label(g->illum_x, NULL, N_("Hue"));
   dt_bauhaus_slider_set_format(g->illum_x, "°");
   g_signal_connect(G_OBJECT(g->illum_x), "value-changed", G_CALLBACK(illum_xy_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_x), FALSE, FALSE, 0);
 
   g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 100., 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->illum_y, NULL, N_("chroma"));
+  dt_bauhaus_widget_set_label(g->illum_y, NULL, N_("Chroma"));
   dt_bauhaus_slider_set_format(g->illum_y, "%");
   dt_bauhaus_slider_set_hard_max(g->illum_y, ILLUM_Y_MAX);
   g_signal_connect(G_OBJECT(g->illum_y), "value-changed", G_CALLBACK(illum_xy_callback), self);
@@ -4072,82 +4072,82 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_new_collapsible_section
     (&g->csspot,
      "plugins/darkroom/channelmixerrgb/expand_picker_mapping",
-     _("spot color mapping"),
+     _("Spot color mapping"),
      GTK_BOX(self->widget));
 
-  gtk_widget_set_tooltip_text(g->csspot.expander, _("define a target chromaticity (hue and chroma) for a particular region of the image (the control sample), which you then match against the same target chromaticity in other images. the control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
+  gtk_widget_set_tooltip_text(g->csspot.expander, _("Define a target chromaticity (hue and chroma) for a particular region of the image (the control sample), which you then match against the same target chromaticity in other images. The control sample can either be a critical part of your subject or a non-moving and consistently-lit surface over your series of images."));
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, N_("mapping"), N_("spot mode"),
-                                _("\"correction\" automatically adjust the illuminant\n"
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, N_("Mapping"), N_("Spot mode"),
+                                _("\"correction\" Automatically adjust the illuminant\n"
                                   "such that the input color is mapped to the target.\n"
-                                  "\"measure\" simply shows how an input color is mapped by the CAT\n"
+                                  "\"measure\" Simply shows how an input color is mapped by the CAT\n"
                                   "and can be used to sample a target."),
                                 0, NULL, self,
-                                N_("correction"),
-                                N_("measure"));
+                                N_("Correction"),
+                                N_("Measure"));
   gtk_box_pack_start(GTK_BOX(g->csspot.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
-  gchar *label = N_("take channel mixing into account");
+  gchar *label = N_("Take channel mixing into account");
   g->use_mixing = gtk_check_button_new_with_label(_(label));
-  dt_action_define_iop(self, N_("mapping"), label, g->use_mixing, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("Mapping"), label, g->use_mixing, &dt_action_def_toggle);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->use_mixing))), PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(g->use_mixing,
-                              _("compute the target by taking the channel mixing into account.\n"
-                                "if disabled, only the CAT is considered."));
+                              _("Compute the target by taking the channel mixing into account.\n"
+                                "If disabled, only the CAT is considered."));
   gtk_box_pack_start(GTK_BOX(g->csspot.container), GTK_WIDGET(g->use_mixing), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->use_mixing), "toggled", G_CALLBACK(_spot_settings_changed_callback), self);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("input")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("Input")), FALSE, FALSE, 0);
 
   g->origin_spot = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request(g->origin_spot, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
                                               DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->origin_spot),
-                              _("the input color that should be mapped to the target"));
+                              _("The input color that should be mapped to the target"));
 
   g_signal_connect(G_OBJECT(g->origin_spot), "draw", G_CALLBACK(origin_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->origin_spot, TRUE, TRUE, 0);
 
   g->Lch_origin = gtk_label_new(_("L: \tN/A\nh: \tN/A\nc: \tN/A"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->Lch_origin),
-                              _("these LCh coordinates are computed from CIE Lab 1976 coordinates"));
+                              _("These LCh coordinates are computed from CIE Lab 1976 coordinates"));
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->Lch_origin), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), FALSE, FALSE, DT_BAUHAUS_SPACE);
 
   vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("target")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("Target")), TRUE, TRUE, 0);
 
   g->target_spot = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request(g->target_spot, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
                                               DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->target_spot),
-                              _("the desired target color after mapping"));
+                              _("The desired target color after mapping"));
 
   g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(target_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., LIGHTNESS_MAX, 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->lightness_spot, N_("mapping"), N_("lightness"));
+  dt_bauhaus_widget_set_label(g->lightness_spot, N_("Mapping"), N_("Lightness"));
   dt_bauhaus_slider_set_format(g->lightness_spot, "%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->hue_spot = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., HUE_MAX, 0, 0, 1, 0);
-  dt_bauhaus_widget_set_label(g->hue_spot, N_("mapping"), N_("hue"));
+  dt_bauhaus_widget_set_label(g->hue_spot, N_("Mapping"), N_("Hue"));
   dt_bauhaus_slider_set_format(g->hue_spot, "°");
   dt_bauhaus_slider_set_default(g->hue_spot, 0.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->hue_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->hue_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->chroma_spot = dt_bauhaus_slider_new_with_range(self, 0., CHROMA_MAX, 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->chroma_spot, N_("mapping"), N_("chroma"));
+  dt_bauhaus_widget_set_label(g->chroma_spot, N_("Mapping"), N_("Chroma"));
   dt_bauhaus_slider_set_default(g->chroma_spot, 0.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->chroma_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->chroma_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
@@ -4162,17 +4162,17 @@ void gui_init(struct dt_iop_module_t *self)
                                                                                              \
   first = dt_bauhaus_slider_from_params(self, swap ? #var "[2]" : #var "[0]");               \
   dt_bauhaus_slider_set_digits(first, 3);                                                    \
-  dt_bauhaus_widget_set_label(first, section, N_("input R"));                                \
+  dt_bauhaus_widget_set_label(first, section, N_("Input R"));                                \
   if(soft_range) dt_bauhaus_slider_set_soft_range(first, sr_min, sr_max);                    \
                                                                                              \
   second = dt_bauhaus_slider_from_params(self, #var "[1]");                                  \
   dt_bauhaus_slider_set_digits(second, 3);                                                   \
-  dt_bauhaus_widget_set_label(second, section, N_("input G"));                               \
+  dt_bauhaus_widget_set_label(second, section, N_("Input G"));                               \
   if(soft_range) dt_bauhaus_slider_set_soft_range(second, sr_min, sr_max);                   \
                                                                                              \
   third = dt_bauhaus_slider_from_params(self, swap ? #var "[0]" : #var "[2]");               \
   dt_bauhaus_slider_set_digits(third, 3);                                                    \
-  dt_bauhaus_widget_set_label(third, section, N_("input B"));                                \
+  dt_bauhaus_widget_set_label(third, section, N_("Input B"));                                \
   if(soft_range) dt_bauhaus_slider_set_soft_range(third, sr_min, sr_max);                    \
                                                                                              \
   g->scale_##var##_R = swap ? third : first;                                                 \
@@ -4182,13 +4182,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->normalize_##short = dt_bauhaus_toggle_from_params                                       \
                (DT_IOP_SECTION_FOR_PARAMS(self, section), "normalize_" #short);
 
-  NOTEBOOK_PAGE(red, R, N_("R"), N_("output R"), N_("red"), FALSE, FALSE, 0.0, 0.0)
-  NOTEBOOK_PAGE(green, G, N_("G"), N_("output G"), N_("green"), FALSE, FALSE, 0.0, 0.0)
-  NOTEBOOK_PAGE(blue, B, N_("B"), N_("output B"), N_("blue"), FALSE, FALSE, 0.0, 0.0)
-  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("output colorfulness"), N_("colorfulness"), FALSE, TRUE, -1.0, 1.0)
+  NOTEBOOK_PAGE(red, R, N_("R"), N_("Output R"), N_("Red"), FALSE, FALSE, 0.0, 0.0)
+  NOTEBOOK_PAGE(green, G, N_("G"), N_("Output G"), N_("Green"), FALSE, FALSE, 0.0, 0.0)
+  NOTEBOOK_PAGE(blue, B, N_("B"), N_("Output B"), N_("Blue"), FALSE, FALSE, 0.0, 0.0)
+  NOTEBOOK_PAGE(saturation, sat, N_("Colorfulness"), N_("Output colorfulness"), N_("Colorfulness"), FALSE, TRUE, -1.0, 1.0)
   g->saturation_version = dt_bauhaus_combobox_from_params(self, "version");
-  NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("output brightness"), N_("brightness"), FALSE, TRUE, -1.0, 1.0)
-  NOTEBOOK_PAGE(grey, grey, N_("gray"), N_("output gray"), N_("gray"), FALSE, TRUE, 0.0, 1.0)
+  NOTEBOOK_PAGE(lightness, light, N_("Brightness"), N_("Output brightness"), N_("Brightness"), FALSE, TRUE, -1.0, 1.0)
+  NOTEBOOK_PAGE(grey, grey, N_("Gray"), N_("Output gray"), N_("Gray"), FALSE, TRUE, 0.0, 1.0)
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -4203,17 +4203,17 @@ void gui_init(struct dt_iop_module_t *self)
   dt_gui_new_collapsible_section
     (&g->cs,
      "plugins/darkroom/channelmixerrgb/expand_values",
-     _("calibrate with a color checker"),
+     _("Calibrate with a color checker"),
      GTK_BOX(self->widget));
 
   gtk_widget_set_tooltip_text(g->cs.expander,
-                              _("use a color checker target to autoset CAT and channels"));
+                              _("Use a color checker target to autoset CAT and channels"));
   g_signal_connect(G_OBJECT(g->cs.toggle), "toggled", G_CALLBACK(start_profiling_callback), self);
 
   GtkWidget *collapsible = GTK_WIDGET(g->cs.container);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->checkers_list, self, N_("calibrate"), N_("chart"),
-                                _("choose the vendor and the type of your chart"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->checkers_list, self, N_("Calibrate"), N_("Chart"),
+                                _("Choose the vendor and the type of your chart"),
                                 0, checker_changed_callback, self,
                                 N_("Xrite ColorChecker 24 pre-2014"),
                                 N_("Xrite ColorChecker 24 post-2014"),
@@ -4223,53 +4223,53 @@ void gui_init(struct dt_iop_module_t *self)
                                 N_("Datacolor SpyderCheckr 48 post-2018"));
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->optimize, self, N_("calibrate"), N_("optimize for"),
-                                _("choose the colors that will be optimized with higher priority.\n"
-                                  "neutral colors gives the lowest average delta E but a high maximum delta E\n"
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->optimize, self, N_("Calibrate"), N_("Optimize for"),
+                                _("Choose the colors that will be optimized with higher priority.\n"
+                                  "Neutral colors gives the lowest average delta E but a high maximum delta E\n"
                                   "saturated colors gives the lowest maximum delta E but a high average delta E\n"
                                   "none is a trade-off between both\n"
                                   "the others are special behaviors to protect some hues"),
                                 0, optimize_changed_callback, self,
-                                N_("none"),
-                                N_("neutral colors"),
-                                N_("saturated colors"),
-                                N_("skin and soil colors"),
-                                N_("foliage colors"),
-                                N_("sky and water colors"),
-                                N_("average delta E"),
-                                N_("maximum delta E"));
+                                N_("None"),
+                                N_("Neutral colors"),
+                                N_("Saturated colors"),
+                                N_("Skin and soil colors"),
+                                N_("Foliage colors"),
+                                N_("Sky and water colors"),
+                                N_("Average delta E"),
+                                N_("Maximum delta E"));
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->optimize), TRUE, TRUE, 0);
 
   g->safety = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 1., 0, 0.5, 3, TRUE);
-  dt_bauhaus_widget_set_label(g->safety, N_("calibrate"), N_("patch scale"));
-  gtk_widget_set_tooltip_text(g->safety, _("reduce the radius of the patches to select the more or less central part.\n"
-                                           "useful when the perspective correction is sloppy or\n"
+  dt_bauhaus_widget_set_label(g->safety, N_("Calibrate"), N_("Patch scale"));
+  gtk_widget_set_tooltip_text(g->safety, _("Reduce the radius of the patches to select the more or less central part.\n"
+                                           "Useful when the perspective correction is sloppy or\n"
                                            "the patches frame cast a shadows on the edges of the patch." ));
   g_signal_connect(G_OBJECT(g->safety), "value-changed", G_CALLBACK(safety_changed_callback), self);
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->safety), TRUE, TRUE, 0);
 
   g->label_delta_E = dt_ui_label_new("");
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->label_delta_E), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->label_delta_E, _("the delta E is using the CIE 2000 formula"));
+  gtk_widget_set_tooltip_text(g->label_delta_E, _("The delta E is using the CIE 2000 formula"));
 
   GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
 
   g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, 0, NULL);
-  dt_action_define_iop(self, N_("calibrate"), N_("accept"), g->button_commit, &dt_action_def_button);
+  dt_action_define_iop(self, N_("Calibrate"), N_("Accept"), g->button_commit, &dt_action_def_button);
   g_signal_connect(G_OBJECT(g->button_commit), "button-press-event", G_CALLBACK(commit_profile_callback), (gpointer)self);
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_commit), FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(g->button_commit, _("accept the computed profile and set it in the module"));
+  gtk_widget_set_tooltip_text(g->button_commit, _("Accept the computed profile and set it in the module"));
 
   g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
-  dt_action_define_iop(self, N_("calibrate"), N_("recompute"), g->button_profile, &dt_action_def_button);
+  dt_action_define_iop(self, N_("Calibrate"), N_("Recompute"), g->button_profile, &dt_action_def_button);
   g_signal_connect(G_OBJECT(g->button_profile), "button-press-event", G_CALLBACK(run_profile_callback), (gpointer)self);
-  gtk_widget_set_tooltip_text(g->button_profile, _("recompute the profile"));
+  gtk_widget_set_tooltip_text(g->button_profile, _("Recompute the profile"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_profile), FALSE, FALSE, 0);
 
   g->button_validate = dtgtk_button_new(dtgtk_cairo_paint_softproof, 0, NULL);
-  dt_action_define_iop(self, N_("calibrate"), N_("validate"), g->button_validate, &dt_action_def_button);
+  dt_action_define_iop(self, N_("Calibrate"), N_("Validate"), g->button_validate, &dt_action_def_button);
   g_signal_connect(G_OBJECT(g->button_validate), "button-press-event", G_CALLBACK(run_validation_callback), (gpointer)self);
-  gtk_widget_set_tooltip_text(g->button_validate, _("check the output delta E"));
+  gtk_widget_set_tooltip_text(g->button_validate, _("Check the output delta E"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_validate), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(toolbar), FALSE, FALSE, 0);

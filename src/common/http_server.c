@@ -92,7 +92,7 @@ static void _new_connection(SoupServer *server, SoupMessage *msg, const char *pa
     goto end;
   }
 
-  char *page_title = g_strdup_printf(_("darktable » %s"), params->id);
+  char *page_title = g_strdup_printf(_("Darktable » %s"), params->id);
   const char *title = _(params->id);
   const char *body = _("<h1>Sorry,</h1><p>something went wrong. Please try again.</p>");
 
@@ -229,4 +229,3 @@ void dt_http_server_kill(dt_http_server_t *server)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

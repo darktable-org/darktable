@@ -51,7 +51,7 @@ typedef struct dt_iop_scalepixels_data_t {
 
 const char *name()
 {
-  return C_("modulename", "scale pixels");
+  return C_("modulename", "Scale pixels");
 }
 
 int flags()
@@ -78,8 +78,8 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("internal module to setup technical specificities of raw sensor.\n\n"
-                                  "you should not touch values here!"),
+                                _("Internal module to setup technical specificities of raw sensor.\n\n"
+                                  "You should not touch values here!"),
                                 NULL, NULL, NULL, NULL);
 }
 
@@ -267,8 +267,8 @@ void reload_defaults(dt_iop_module_t *self)
 
   if(self->widget)
     gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
-                       ? _("automatic pixel scaling")
-                       :_("automatic pixel scaling\nonly works for the sensors that need it."));
+                       ? _("Automatic pixel scaling")
+                       :_("Automatic pixel scaling\nonly works for the sensors that need it."));
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -289,4 +289,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

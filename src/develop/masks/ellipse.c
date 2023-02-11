@@ -431,7 +431,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), rotation);
 
-      dt_toast_log(_("rotation: %3.f°"), rotation);
+      dt_toast_log(_("Rotation: %3.f°"), rotation);
     }
     else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
@@ -449,7 +449,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, border), masks_border);
 
-      dt_toast_log(_("feather size: %3.2f%%"), (masks_border/fmaxf(radius_a, radius_b))*100.0f);
+      dt_toast_log(_("Feather size: %3.2f%%"), (masks_border/fmaxf(radius_a, radius_b))*100.0f);
     }
     else if(dt_modifier_is(state, 0))
     {
@@ -469,7 +469,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_a), radius_a);
       dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_b), radius_b);
-      dt_toast_log(_("size: %3.2f%%"), fmaxf(radius_a, radius_b)*100);
+      dt_toast_log(_("Size: %3.2f%%"), fmaxf(radius_a, radius_b)*100);
     }
     dt_dev_masks_list_change(darktable.develop);
     return 1;
@@ -504,7 +504,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, rotation), ellipse->rotation);
-        dt_toast_log(_("rotation: %3.f°"), ellipse->rotation);
+        dt_toast_log(_("Rotation: %3.f°"), ellipse->rotation);
       }
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
@@ -519,7 +519,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, border), ellipse->border);
-        dt_toast_log(_("feather size: %3.2f%%"), ellipse->border*100.0f);
+        dt_toast_log(_("Feather size: %3.2f%%"), ellipse->border*100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL && dt_modifier_is(state, 0))
       {
@@ -540,7 +540,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         dt_masks_gui_form_create(form, gui, index, module);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_a), ellipse->radius[0]);
         dt_conf_set_float(DT_MASKS_CONF(form->type, ellipse, radius_b), ellipse->radius[1]);
-        dt_toast_log(_("size: %3.2f%%"), fmaxf(ellipse->radius[0], ellipse->radius[1])*100);
+        dt_toast_log(_("Size: %3.2f%%"), fmaxf(ellipse->radius[0], ellipse->radius[1])*100);
       }
       else if(!dt_modifier_is(state, 0))
       {
@@ -1926,18 +1926,18 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_d
 static GSList *_ellipse_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[ELLIPSE] change size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[ELLIPSE] change feather size"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK|GDK_CONTROL_MASK, _("[ELLIPSE] rotate shape"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[ELLIPSE] change opacity"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK, _("[ELLIPSE] switch feathering mode"));
-  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK, _("[ELLIPSE] rotate shape"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[ELLIPSE] Change size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[ELLIPSE] Change feather size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK|GDK_CONTROL_MASK, _("[ELLIPSE] Rotate shape"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[ELLIPSE] Change opacity"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK, _("[ELLIPSE] Switch feathering mode"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK, _("[ELLIPSE] Rotate shape"));
   return lm;
 }
 
 static void _ellipse_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
 {
-  snprintf(form->name, sizeof(form->name), _("ellipse #%d"), (int)nb);
+  snprintf(form->name, sizeof(form->name), _("Ellipse #%d"), (int)nb);
 }
 
 static void _ellipse_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
@@ -2091,4 +2091,3 @@ const dt_masks_functions_t dt_masks_functions_ellipse = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -1116,14 +1116,14 @@ finally:
         cl->enabled = FALSE;
         dt_conf_set_bool("opencl", FALSE);
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
-        dt_control_log(_("due to a slow GPU hardware acceleration using OpenCL has been deactivated"));
+        dt_control_log(_("Due to a slow GPU hardware acceleration using OpenCL has been deactivated"));
       }
       else if((cl->num_devs >= 2) && ((tgpumax / tgpumin) < 1.1f))
       {
         // set scheduling profile to "multiple GPUs" if more than one device has been found and they are equally fast
         dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for multiple GPUs.\n");
-        dt_control_log(_("multiple GPUs detected - OpenCL scheduling profile has been set accordingly"));
+        dt_control_log(_("Multiple GPUs detected - OpenCL scheduling profile has been set accordingly"));
       }
       else if((tcpu >= 2.0f * tgpumin) && (cl->num_devs == 1))
       {
@@ -1131,12 +1131,12 @@ finally:
         // We might want a better benchmark but even with the current result (underestimates real world performance) this is safe.
         dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
-        dt_control_log(_("very fast GPU detected - OpenCL scheduling profile has been set accordingly"));
+        dt_control_log(_("Very fast GPU detected - OpenCL scheduling profile has been set accordingly"));
       }
       else
       {
-        // set scheduling profile to "default"
-        dt_conf_set_string("opencl_scheduling_profile", "default");
+        // set scheduling profile to "Default"
+        dt_conf_set_string("opencl_scheduling_profile", "Default");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile to default.\n");
         dt_control_log(_("OpenCL scheduling profile set to default"));
       }
@@ -3013,9 +3013,9 @@ int dt_opencl_get_tuning_mode(void)
   const char *pstr = dt_conf_get_string_const("opencl_tuning_mode");
   if(pstr)
   {
-    if(!strcmp(pstr, "memory size"))                   res = DT_OPENCL_TUNE_MEMSIZE;
-    else if(!strcmp(pstr, "memory transfer"))          res = DT_OPENCL_TUNE_PINNED;
-    else if(!strcmp(pstr, "memory size and transfer")) res = DT_OPENCL_TUNE_MEMSIZE | DT_OPENCL_TUNE_PINNED;
+    if(!strcmp(pstr, "Memory size"))                   res = DT_OPENCL_TUNE_MEMSIZE;
+    else if(!strcmp(pstr, "Memory transfer"))          res = DT_OPENCL_TUNE_PINNED;
+    else if(!strcmp(pstr, "Memory size and transfer")) res = DT_OPENCL_TUNE_MEMSIZE | DT_OPENCL_TUNE_PINNED;
   }
   return res;  
 }
@@ -3470,4 +3470,3 @@ int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_loca
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

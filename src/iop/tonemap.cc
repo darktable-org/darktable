@@ -55,8 +55,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_tonemapping_params_t)
 
 typedef struct dt_iop_tonemapping_params_t
 {
-  float contrast; // $MIN: 1.0 $MAX: 5.0 $DEFAULT: 2.5 $DESCRIPTION: "contrast compression"
-  float Fsize;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 30 $DESCRIPTION: "spatial extent"
+  float contrast; // $MIN: 1.0 $MAX: 5.0 $DEFAULT: 2.5 $DESCRIPTION: "Contrast compression"
+  float Fsize;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 30 $DESCRIPTION: "Spatial extent"
 } dt_iop_tonemapping_params_t;
 
 typedef struct dt_iop_tonemapping_gui_data_t
@@ -71,7 +71,7 @@ typedef struct dt_iop_tonemapping_data_t
 
 const char *name()
 {
-  return _("tone mapping");
+  return _("Tone mapping");
 }
 
 
@@ -87,7 +87,7 @@ int flags()
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. please use the local contrast or tone equalizer module instead.");
+  return _("This module is deprecated. Please use the local contrast or tone equalizer module instead.");
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -238,4 +238,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

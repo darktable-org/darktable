@@ -24,9 +24,9 @@
 
 typedef enum dt_gaussian_order_t
 {
-  DT_IOP_GAUSSIAN_ZERO = 0, // $DESCRIPTION: "order 0"
-  DT_IOP_GAUSSIAN_ONE = 1,  // $DESCRIPTION: "order 1"
-  DT_IOP_GAUSSIAN_TWO = 2   // $DESCRIPTION: "order 2"
+  DT_IOP_GAUSSIAN_ZERO = 0, // $DESCRIPTION: "Order 0"
+  DT_IOP_GAUSSIAN_ONE = 1,  // $DESCRIPTION: "Order 1"
+  DT_IOP_GAUSSIAN_TWO = 2   // $DESCRIPTION: "Order 2"
 } dt_gaussian_order_t;
 
 
@@ -97,4 +97,3 @@ void dt_gaussian_free_cl(dt_gaussian_cl_t *g);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

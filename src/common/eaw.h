@@ -56,4 +56,3 @@ void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -523,4 +523,3 @@ void dt_gpx_geodesic_intermediate_point(const double lat1, const double lon1,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
