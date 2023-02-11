@@ -154,7 +154,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       }
       else
       {
-        gchar *str = dt_util_str_replace(f->header.field_name, "_", " ");
+        gchar *str = dt_util_str_replace(param, "_", " ");
 
         dt_bauhaus_widget_set_label(slider,  section, str);
 
@@ -200,7 +200,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     _store_intro_section(f, section);
 
     str = *f->header.description ? g_strdup(f->header.description)
-                                 : dt_util_str_replace(f->header.field_name, "_", " ");
+                                 : dt_util_str_replace(param, "_", " ");
 
     dt_action_t *action = dt_bauhaus_widget_set_label(combobox, section, str);
 
@@ -256,7 +256,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
     str = *f->header.description
         ? g_strdup(f->header.description)
-        : dt_util_str_replace(f->header.field_name, "_", " ");
+        : dt_util_str_replace(param, "_", " ");
 
     GtkWidget *label = gtk_label_new(_(str));
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);

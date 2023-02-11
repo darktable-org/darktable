@@ -353,11 +353,11 @@ static void _toggle_side_borders_accel_callback(dt_action_t *action)
 
 static void _toggle_panel_accel_callback(dt_action_t *action)
 {
-  if(!strcmp(action->id, "left"))
+  if(!g_ascii_strcasecmp(action->id, "left"))
     _panel_toggle(DT_UI_BORDER_LEFT, darktable.gui->ui);
-  else if(!strcmp(action->id, "right"))
+  else if(!g_ascii_strcasecmp(action->id, "right"))
     _panel_toggle(DT_UI_BORDER_RIGHT, darktable.gui->ui);
-  else if(!strcmp(action->id, "top"))
+  else if(!g_ascii_strcasecmp(action->id, "top"))
     _panel_toggle(DT_UI_BORDER_TOP, darktable.gui->ui);
   else
     _panel_toggle(DT_UI_BORDER_BOTTOM, darktable.gui->ui);
