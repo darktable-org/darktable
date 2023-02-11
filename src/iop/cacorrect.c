@@ -38,15 +38,6 @@ DT_MODULE_INTROSPECTION(2, dt_iop_cacorrect_params_t)
 
 #pragma GCC diagnostic ignored "-Wshadow"
 
-typedef enum dt_iop_cacorrect_errror_t
-{
-  CACORRECT_ERROR_NO = 0,
-  CACORRECT_ERROR_CFA = 1,
-  CACORRECT_ERROR_MATH = 2,
-  CACORRECT_ERROR_LIN = 3,
-  CACORRECT_ERROR_SIZE = 4,
-} dt_iop_cacorrect_error_t;
-
 typedef enum dt_iop_cacorrect_multi_t
 {
   CACORRETC_MULTI_1 = 1,     // $DESCRIPTION: "once"
@@ -66,7 +57,6 @@ typedef struct dt_iop_cacorrect_gui_data_t
 {
   GtkWidget *avoidshift;
   GtkWidget *iterations;
-  gint error;
 } dt_iop_cacorrect_gui_data_t;
 
 typedef struct dt_iop_cacorrect_data_t
@@ -289,12 +279,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const uint32_t filters = piece->pipe->dsc.filters;
 
-  const gboolean full_pipe  = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
-  const gboolean valid = MAX(width, height) >= CA_SIZE_MINIMUM;
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
   dt_iop_cacorrect_data_t     *d = (dt_iop_cacorrect_data_t *)piece->data;
-  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
 
   const gboolean avoidshift = d->avoidshift;
   const int iterations = d->iterations;
@@ -308,13 +295,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_iop_image_copy_by_size(out, in2, width, height, 1);
 
-  if(full_pipe && g)
-  {
-    if(valid) g->error = CACORRECT_ERROR_NO;
-    else      g->error = CACORRECT_ERROR_SIZE;
-  }
-
-  if(!valid || run_fast) return;
+  if(run_fast) return;
 
   const float *const in = out;
 
@@ -330,10 +311,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int i = 0; i < 2; i++)
     for(int j = 0; j < 2; j++)
       if(FC(i, j, filters) == 3)
-      {
-        if(g) g->error = CACORRECT_ERROR_CFA;
         return;
-      }
 
   if(avoidshift)
   {
@@ -756,8 +734,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             else
             {
               processpasstwo = FALSE;
-              if(g) g->error = CACORRECT_ERROR_MATH;
-              fprintf(stderr, "blockdenom vanishes");
+              dt_print(DT_DEBUG_PIPE, "[cacorrect] blockdenom vanishes\n");
               break;
             }
           }
@@ -900,12 +877,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
             polyord = 2;
             numpar = 4;
 
-            if(g) g->error = CACORRECT_ERROR_LIN;
-
             if(numblox[1] < 10)
             {
-              if(g) g->error = CACORRECT_ERROR_MATH;
-              fprintf(stderr, ", numblox = %d \n", numblox[1]);
+              dt_print(DT_DEBUG_PIPE, "[cacorrect] restrict fit to linear, numblox = %d \n", numblox[1]);
               processpasstwo = FALSE;
             }
           }
@@ -918,8 +892,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
               {
                 if(!LinEqSolve(numpar, polymat[c][dir], shiftmat[c][dir], fitparams[c][dir]))
                 {
-                  if(g) g->error = CACORRECT_ERROR_MATH;
-                  fprintf(stderr, ", correction pass failed -- can't solve linear equations for colour %d direction %d", c, dir);
+                  dt_print(DT_DEBUG_PIPE, "[cacorrect] can't solve linear equations for colour %d direction %d", c, dir);
                   processpasstwo = FALSE;
                 }
               }
@@ -1325,41 +1298,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 /*==================================================================================
  * end raw therapee code
  *==================================================================================*/
-static void _display_ca_error(struct dt_iop_module_t *self)
-{
-  dt_iop_cacorrect_gui_data_t *g = (dt_iop_cacorrect_gui_data_t *)self->gui_data;
-
-  if(g == NULL) return;
-   ++darktable.gui->reset;
-
-  if(g->error == CACORRECT_ERROR_CFA)
-    dt_iop_set_module_trouble_message(self, _("error"),
-                                      _("raw CA correction supports only standard RGB Bayer filter arrays"), NULL);
-  else if(g->error == CACORRECT_ERROR_MATH)
-     dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
-                                      _("while calculating the correction parameters the internal maths failed so module is bypassed.\n"
-                                        "you can get more info by running darktable via the console."), NULL);
-  else if(g->error == CACORRECT_ERROR_LIN)
-     dt_iop_set_module_trouble_message(self, _("quality"),
-                                      _("internals maths found too few data points so restricted the order of the fit to linear.\n"
-                                        "you might view bad correction results."), NULL);
-  else if(g->error == CACORRECT_ERROR_SIZE)
-    dt_iop_set_module_trouble_message(self, _("bypassed while zooming in"),
-                                      _("to calculate good parameters for raw CA correction we want full sensor data or at least a sensible part of that.\n"
-                                        "the image shown in darkroom would look vastly different from developed files so effect is bypassed now."), NULL);
-  else
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
-
-  --darktable.gui->reset;
-}
-
-static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self == NULL) return;
-  _display_ca_error(self);
-}
-
 
 void reload_defaults(dt_iop_module_t *module)
 {
@@ -1412,8 +1350,6 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_visible(g->iterations, active);
   dt_bauhaus_combobox_set_from_value(g->iterations, p->iterations);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->avoidshift), p->avoidshift);
-
-  _display_ca_error(self);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -1430,24 +1366,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->avoidshift, active);
   dt_bauhaus_combobox_set_from_value(g->iterations, p->iterations);
   gtk_widget_set_visible(g->iterations, active);
-
-  g->error = CACORRECT_ERROR_NO;
-  _display_ca_error(self);
-}
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
-  IOP_GUI_FREE;
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_cacorrect_gui_data_t *g = IOP_GUI_ALLOC(cacorrect);
-  g->error = CACORRECT_ERROR_NO;
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
-                            G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
