@@ -62,17 +62,17 @@
 #define w3 (LMMSE_GRP * 3)
 #define w4 (LMMSE_GRP * 4)
 
-static INLINE float limf(float x, float min, float max)
+static inline float _limf(float x, float min, float max)
 {
   return fmaxf(min, fminf(x, max));
 }
 
-static INLINE float median3f(float x0, float x1, float x2)
+static inline float _median3f(float x0, float x1, float x2)
 {
   return fmaxf(fminf(x0,x1), fminf(x2, fmaxf(x0,x1)));
 }
 
-static INLINE float median9f(float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8)
+static inline float _median9f(float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8)
 {
   float tmp;
   tmp = fminf(a1, a2);
@@ -115,7 +115,7 @@ static INLINE float median9f(float a0, float a1, float a2, float a3, float a4, f
   return fminf(a4, a2);
 }
 
-static INLINE float calc_gamma(float val, float *table)
+static inline float _calc_gamma(float val, float *table)
 {
   const float index = val * 65535.0f;
   if(index < 0.0f)      return 0.0f;
@@ -131,8 +131,16 @@ static INLINE float calc_gamma(float val, float *table)
 #ifdef _OPENMP
   #pragma omp declare simd aligned(in, out, gamma_in, gamma_out)
 #endif
-static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict out, const float *const restrict in, dt_iop_roi_t *const roi_out,
-                                   const dt_iop_roi_t *const roi_in, const uint32_t filters, const uint32_t mode, float *const restrict gamma_in, float *const restrict gamma_out)
+static void lmmse_demosaic(
+        dt_dev_pixelpipe_iop_t *piece,
+        float *const restrict out,
+        const float *const restrict in,
+        dt_iop_roi_t *const roi_out,
+        const dt_iop_roi_t *const roi_in,
+        const uint32_t filters,
+        const uint32_t mode,
+        float *const restrict gamma_in,
+        float *const restrict gamma_out)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -206,7 +214,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
           int idx = row * width + colStart;
           for(int ccc = BORDER_AROUND, col = colStart; ccc < tileCols + BORDER_AROUND; ccc++, col++, cfa++, idx++)
           {
-            cfa[0] = calc_gamma(revscaler * in[idx], gamma_in);
+            cfa[0] = _calc_gamma(revscaler * in[idx], gamma_in);
           }
         }
 
@@ -222,14 +230,14 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
             float *hdiff = qix[0] + rr * LMMSE_GRP + cc;
             hdiff[0] = -0.25f * (cfa[ -2] + cfa[ 2]) + 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
             const float Y0 = v0 + 0.5f * hdiff[0];
-            hdiff[0] = (cfa[0] > 1.75f * Y0) ? median3f(hdiff[0], cfa[ -1], cfa[ 1]) : limf(hdiff[0], 0.0f, 1.0f);
+            hdiff[0] = (cfa[0] > 1.75f * Y0) ? _median3f(hdiff[0], cfa[ -1], cfa[ 1]) : _limf(hdiff[0], 0.0f, 1.0f);
             hdiff[0] -= cfa[0];
 
             // vertical
             float *vdiff = qix[1] + rr * LMMSE_GRP + cc;
             vdiff[0] = -0.25f * (cfa[-w2] + cfa[w2]) + 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
             const float Y1 = v0 + 0.5f * vdiff[0];
-            vdiff[0] = (cfa[0] > 1.75f * Y1) ? median3f(vdiff[0], cfa[-w1], cfa[w1]) : limf(vdiff[0], 0.0f, 1.0f);
+            vdiff[0] = (cfa[0] > 1.75f * Y1) ? _median3f(vdiff[0], cfa[-w1], cfa[w1]) : _limf(vdiff[0], 0.0f, 1.0f);
             vdiff[0] -= cfa[0];
           }
 
@@ -241,8 +249,8 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
             float *vdiff = qix[1] + rr * LMMSE_GRP + ccc;
             hdiff[0] = 0.25f * (cfa[ -2] + cfa[ 2]) - 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
             vdiff[0] = 0.25f * (cfa[-w2] + cfa[w2]) - 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
-            hdiff[0] = limf(hdiff[0], -1.0f, 0.0f) + cfa[0];
-            vdiff[0] = limf(vdiff[0], -1.0f, 0.0f) + cfa[0];
+            hdiff[0] = _limf(hdiff[0], -1.0f, 0.0f) + cfa[0];
+            vdiff[0] = _limf(vdiff[0], -1.0f, 0.0f) + cfa[0];
           }
         }
 
@@ -391,7 +399,7 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
                 float *colc = qix[c] + rr * LMMSE_GRP + cc;
                 float *col1 = qix[1] + rr * LMMSE_GRP + cc;
                 // Assign 3x3 differential color values
-                corr[0] = median9f(colc[-w1-1] - col1[-w1-1],
+                corr[0] = _median9f(colc[-w1-1] - col1[-w1-1],
                                    colc[-w1  ] - col1[-w1  ],
                                    colc[-w1+1] - col1[-w1+1],
                                    colc[   -1] - col1[   -1],
@@ -569,9 +577,9 @@ static void lmmse_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict 
           float *col2 = qix[2] + idx;
           for(int col = first_horizontal; col < last_horizontal; col++, dest +=4, col0++, col1++, col2++)
           {
-            dest[0] = scaler * calc_gamma(col0[0], gamma_out);
-            dest[1] = scaler * calc_gamma(col1[0], gamma_out);
-            dest[2] = scaler * calc_gamma(col2[0], gamma_out);
+            dest[0] = scaler * _calc_gamma(col0[0], gamma_out);
+            dest[1] = scaler * _calc_gamma(col1[0], gamma_out);
+            dest[2] = scaler * _calc_gamma(col2[0], gamma_out);
             dest[3] = 0.0f;
           }
         }
