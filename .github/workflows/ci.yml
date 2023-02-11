@@ -49,17 +49,18 @@ jobs:
       fail-fast: true
       matrix:
         os:
-          - { label: ubuntu-20.04, code: focal }
+          - { label: ubuntu-latest, code: latest }
         compiler:
           - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
-          - { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
+          - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
         btype:
-          - RelWithDebInfo
+          - Debug
+          #- RelWithDebInfo
           #- Release
         target:
-          #- build
-          - nofeatures
-          - nofeatures_nosse
+          - skiptest
+          #- nofeatures
+          #- nofeatures_nosse
         generator:
           #- Unix Makefiles
           - Ninja
