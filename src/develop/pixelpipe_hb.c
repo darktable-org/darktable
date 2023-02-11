@@ -1107,35 +1107,36 @@ static int pixelpipe_process_on_CPU(
     // this code section is for simplistic benchmarking via --bench-module
     if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT)) && darktable.bench_module)
     {
-      if(!strcmp(module->so->op, darktable.bench_module))
+      if(dt_str_commasubstring(darktable.bench_module, module->so->op))
       {
         dt_times_t start;
         dt_times_t end;
         const int old_muted = darktable.unmuted;
-        darktable.unmuted = 0;;
+        darktable.unmuted = 0;
         const gboolean full = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
+        const int counter = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) ? 100 : 50;
         const float mpix = (roi_out->width * roi_out->height) / 1.0e6;
 
 #if defined(__SSE__)
         if(module->process_sse2)
         {
           dt_get_times(&start);
-          for(int i = 0; i < 50; i++)
+          for(int i = 0; i < counter; i++)
             module->process_sse2(module, piece, input, *output, roi_in, roi_out);
           dt_get_times(&end);
-          const float clock = (end.clock - start.clock) / 50.0f;
-          dt_print(DT_DEBUG_ALWAYS, "[bench module SSE2]  [%s] `%s' takes %.5fs, %.2fmpix, %.3fpix/us\n",
+          const float clock = (end.clock - start.clock) / (float) counter;
+          dt_print(DT_DEBUG_ALWAYS, "[bench module SSE2]  [%s] `%15s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
                 full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
         }
 #endif
         if(module->process_plain)
         {
           dt_get_times(&start);
-          for(int i = 0; i < 50; i++)
+          for(int i = 0; i < counter; i++)
             module->process_plain(module, piece, input, *output, roi_in, roi_out);
           dt_get_times(&end);
-          const float clock = (end.clock - start.clock) / 50.0f;
-          dt_print(DT_DEBUG_ALWAYS, "[bench module plain] [%s] `%s' takes %.5fs, %.2fmpix, %.3fpix/us\n",
+          const float clock = (end.clock - start.clock) / (float) counter;
+          dt_print(DT_DEBUG_ALWAYS, "[bench module plain] [%s] `%15s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
                 full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
         }
         darktable.unmuted = old_muted;
@@ -1689,7 +1690,7 @@ static int dt_dev_pixelpipe_process_rec(
           // this code section is for simplistic benchmarking via --bench-module
           if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT)) && darktable.bench_module)
           {
-            if(!strcmp(module->so->op, darktable.bench_module))
+            if(dt_str_commasubstring(darktable.bench_module, module->so->op))
             {
               dt_times_t bench;
               dt_times_t end;
@@ -1707,7 +1708,7 @@ static int dt_dev_pixelpipe_process_rec(
               {
                 dt_get_times(&end);
                 const float clock = (end.clock - bench.clock) / 100.0f;
-                dt_print(DT_DEBUG_ALWAYS, "[bench module GPU] [%s] `%s' takes %.5fs, %.2fmpix, %.3fpix/us\n",
+                dt_print(DT_DEBUG_ALWAYS, "[bench module GPU]   [%s] `%15s' takes %8.5fs,%7.2fmpix,%9.3fpix/us\n",
                     full ? "full" : "export", module->so->op, clock, mpix, mpix/clock);
               }
               else
