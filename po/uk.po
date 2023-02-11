@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-02-08 08:49+0100\n"
-"PO-Revision-Date: 2023-02-08 12:12+0200\n"
+"PO-Revision-Date: 2023-02-10 21:34+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -11734,7 +11734,7 @@ msgstr "коригуюче чи креативне"
 #: ../src/iop/spots.c:68 ../src/iop/spots.c:70 ../src/iop/toneequal.c:307
 #: ../src/iop/velvia.c:106 ../src/iop/velvia.c:108
 msgid "linear, RGB, scene-referred"
-msgstr "лінійний, RGB, на основі сцен"
+msgstr "лінійний простір, RGB, на основі сцен"
 
 #: ../src/iop/ashift.c:134 ../src/iop/borders.c:189 ../src/iop/clipping.c:322
 #: ../src/iop/crop.c:140 ../src/iop/flip.c:106 ../src/iop/liquify.c:297
@@ -11966,12 +11966,12 @@ msgstr "коригуюче і креативне"
 #: ../src/iop/atrous.c:138 ../src/iop/atrous.c:140
 #: ../src/iop/colorbalance.c:160
 msgid "linear, Lab, scene-referred"
-msgstr "лінійний, Lab, на основі сцен"
+msgstr "лінійний простір, Lab, на основі сцен"
 
 #: ../src/iop/atrous.c:139 ../src/iop/censorize.c:85
 #: ../src/iop/hazeremoval.c:114
 msgid "frequential, RGB"
-msgstr "частотний, RGB"
+msgstr "частотна, RGB"
 
 #: ../src/iop/atrous.c:742
 msgctxt "eq_preset"
@@ -12245,7 +12245,7 @@ msgstr "коригуюче"
 #: ../src/iop/rgblevels.c:123 ../src/iop/sigmoid.c:97 ../src/iop/soften.c:106
 #: ../src/iop/soften.c:108
 msgid "linear, RGB, display-referred"
-msgstr "лінійний, RGB, на основі відображення"
+msgstr "лінійний простір, RGB, на основі відображення"
 
 #: ../src/iop/basecurve.c:340 ../src/iop/basicadj.c:149
 #: ../src/iop/colorbalance.c:161 ../src/iop/colorbalancergb.c:186
@@ -12255,7 +12255,7 @@ msgstr "лінійний, RGB, на основі відображення"
 #: ../src/iop/rgblevels.c:124 ../src/iop/sigmoid.c:96 ../src/iop/vignette.c:160
 #: ../src/iop/watermark.c:299
 msgid "non-linear, RGB"
-msgstr "нелінійний, RGB"
+msgstr "нелінійна, RGB"
 
 #: ../src/iop/basecurve.c:341 ../src/iop/dither.c:104 ../src/iop/dither.c:106
 #: ../src/iop/filmicrgb.c:362 ../src/iop/graduatednd.c:153
@@ -12264,7 +12264,7 @@ msgstr "нелінійний, RGB"
 #: ../src/iop/vignette.c:161 ../src/iop/watermark.c:298
 #: ../src/iop/watermark.c:300
 msgid "non-linear, RGB, display-referred"
-msgstr "нелінійний, RGB, на основі відображення"
+msgstr "нелінійний простір, RGB, на основі відображення"
 
 #: ../src/iop/basecurve.c:1977
 msgid "abscissa: input, ordinate: output. works on RGB channels"
@@ -12338,7 +12338,7 @@ msgstr "креативне"
 
 #: ../src/iop/basicadj.c:150 ../src/iop/colorbalancergb.c:187
 msgid "non-linear, RGB, scene-referred"
-msgstr "нелінійний, RGB, на основі сцен"
+msgstr "нелінійний простір, RGB, на основі сцен"
 
 #: ../src/iop/basicadj.c:593
 msgid ""
@@ -12424,7 +12424,7 @@ msgstr "маніпулювати локальним та глобальним к
 #: ../src/iop/monochrome.c:101 ../src/iop/nlmeans.c:96 ../src/iop/nlmeans.c:98
 #: ../src/iop/shadhi.c:200 ../src/iop/tonecurve.c:214 ../src/iop/vibrance.c:98
 msgid "non-linear, Lab, display-referred"
-msgstr "нелінійний, Lab, на основі відображення"
+msgstr "нелінійний простір, Lab, на основі відображення"
 
 #: ../src/iop/bilat.c:102 ../src/iop/bloom.c:83 ../src/iop/colisa.c:92
 #: ../src/iop/colorcontrast.c:103 ../src/iop/colorcorrection.c:79
@@ -12434,7 +12434,7 @@ msgstr "нелінійний, Lab, на основі відображення"
 #: ../src/iop/monochrome.c:100 ../src/iop/nlmeans.c:97 ../src/iop/shadhi.c:199
 #: ../src/iop/tonecurve.c:213 ../src/iop/vibrance.c:97
 msgid "non-linear, Lab"
-msgstr "нелінійний, Lab"
+msgstr "нелінійна, Lab"
 
 #: ../src/iop/bilat.c:172
 msgid "HDR local tone-mapping"
@@ -12502,7 +12502,7 @@ msgstr ""
 #: ../src/iop/diffuse.c:146 ../src/iop/exposure.c:133 ../src/iop/soften.c:107
 #: ../src/iop/splittoning.c:105 ../src/iop/velvia.c:107
 msgid "linear, RGB"
-msgstr "лінійний, RGB"
+msgstr "лінійна, RGB"
 
 #: ../src/iop/bilateral.cc:302
 msgid "spatial extent of the gaussian"
@@ -12563,7 +12563,7 @@ msgstr "додати суцільну облямівку або поля нав�
 
 #: ../src/iop/borders.c:188 ../src/iop/borders.c:190 ../src/iop/lut3d.c:143
 msgid "linear or non-linear, RGB, display-referred"
-msgstr "лінійний або нелінійний, RGB, на основі відображення"
+msgstr "лінійний або нелінійний простір, RGB, на основі відображення"
 
 #: ../src/iop/borders.c:726
 msgid "15:10 postcard white"
@@ -12743,14 +12743,14 @@ msgstr "коригувати хроматичні аберації для сен
 #: ../src/iop/rawprepare.c:161 ../src/iop/temperature.c:199
 #: ../src/iop/temperature.c:201
 msgid "linear, raw, scene-referred"
-msgstr "лінійний, raw, на основі сцен"
+msgstr "лінійний простір, raw, на основі сцен"
 
 #: ../src/iop/cacorrect.c:90 ../src/iop/cacorrectrgb.c:172
 #: ../src/iop/demosaic.c:229 ../src/iop/invert.c:124
 #: ../src/iop/rawdenoise.c:132 ../src/iop/rawprepare.c:160
 #: ../src/iop/temperature.c:200
 msgid "linear, raw"
-msgstr "лінійний, raw"
+msgstr "лінійна, raw"
 
 #: ../src/iop/cacorrect.c:1337
 msgid "raw CA correction supports only standard RGB Bayer filter arrays"
@@ -12900,7 +12900,7 @@ msgstr "цензурувати номерні знаки та частини т�
 #: ../src/iop/censorize.c:84 ../src/iop/colorin.c:137
 #: ../src/iop/filmicrgb.c:360 ../src/iop/graduatednd.c:151
 msgid "linear or non-linear, RGB, scene-referred"
-msgstr "лінійний або нелінійний, RGB, на основі сцен"
+msgstr "лінійний або нелінійний простір, RGB, на основі сцен"
 
 #: ../src/iop/censorize.c:86
 msgid "special, RGB, scene-referred"
@@ -13058,7 +13058,7 @@ msgstr "channel mixer|white balance|monochrome"
 
 #: ../src/iop/channelmixerrgb.c:235
 msgid "linear, RGB or XYZ"
-msgstr "лінійний, RGB або XYZ"
+msgstr "лінійна, RGB або XYZ"
 
 #: ../src/iop/channelmixerrgb.c:368
 msgid "B&W: luminance-based"
@@ -13924,7 +13924,7 @@ msgstr "впливає на колір, яскравість і контраст
 
 #: ../src/iop/colorbalance.c:162
 msgid "non-linear, Lab, scene-referred"
-msgstr "нелінійний, Lab, на основі сцен"
+msgstr "нелінійний простір, Lab, на основі сцен"
 
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:273
@@ -14396,7 +14396,7 @@ msgstr "виконувати корекцію кольорового прост�
 #: ../src/iop/monochrome.c:99 ../src/iop/shadhi.c:198
 #: ../src/iop/tonecurve.c:212 ../src/iop/vibrance.c:96
 msgid "linear or non-linear, Lab, display-referred"
-msgstr "лінійний або нелінійний, Lab, на основі відображення"
+msgstr "лінійний або нелінійний простір, Lab, на основі відображення"
 
 #: ../src/iop/colorchecker.c:128
 msgid "defined by profile, Lab"
@@ -14605,7 +14605,7 @@ msgstr ""
 #: ../src/iop/colorin.c:136 ../src/iop/colorout.c:92 ../src/iop/demosaic.c:227
 #: ../src/iop/rawprepare.c:158
 msgid "mandatory"
-msgstr "обов'язковий"
+msgstr "обов'язковий модуль"
 
 #: ../src/iop/colorin.c:138 ../src/iop/colorout.c:94
 msgid "defined by profile"
@@ -14741,7 +14741,7 @@ msgstr ""
 
 #: ../src/iop/colorout.c:95
 msgid "non-linear, RGB or Lab, display-referred"
-msgstr "нелінійний, RGB або Lab, на основі відображення"
+msgstr "нелінійний простір, RGB або Lab, на основі відображення"
 
 #: ../src/iop/colorout.c:664
 msgid "missing output profile has been replaced by sRGB!"
@@ -16961,11 +16961,11 @@ msgstr "ізолювати високі частоти на зображенні
 
 #: ../src/iop/highpass.c:82 ../src/iop/lowpass.c:134
 msgid "linear or non-linear, Lab, scene-referred"
-msgstr "лінійний або нелінійний, Lab, на основі сцен"
+msgstr "лінійний або нелінійний простір, Lab, на основі сцен"
 
 #: ../src/iop/highpass.c:83 ../src/iop/lowpass.c:135 ../src/iop/sharpen.c:96
 msgid "frequential, Lab"
-msgstr "частотний, Lab"
+msgstr "частотна, Lab"
 
 #: ../src/iop/highpass.c:84 ../src/iop/lowpass.c:136
 msgid "special, Lab, scene-referred"
@@ -17032,7 +17032,7 @@ msgstr "інвертувати негативну фотоплівку"
 
 #: ../src/iop/invert.c:123 ../src/iop/invert.c:125
 msgid "linear, raw, display-referred"
-msgstr "лінійний, raw, на основі відображення"
+msgstr "лінійний простір, raw, на основі відображення"
 
 #. Here we could provide more for monochrome special cases. As no monochrome camera
 #. has a bayer sensor we don't need g->RGB_to_CAM and g->CAM_to_RGB corrections
@@ -17471,7 +17471,7 @@ msgstr "імітувати нічне бачення людини"
 
 #: ../src/iop/lowlight.c:94
 msgid "linear, XYZ"
-msgstr "лінійний, XYZ"
+msgstr "лінійна, XYZ"
 
 #: ../src/iop/lowlight.c:318
 msgid "daylight"
@@ -18672,11 +18672,11 @@ msgstr ""
 
 #: ../src/iop/sharpen.c:95
 msgid "linear or non-linear, Lab, display or scene-referred"
-msgstr "лінійний або нелінійний, Lab, на основі відображення або сцен"
+msgstr "лінійний або нелінійний простір, Lab, на основі відображення або сцен"
 
 #: ../src/iop/sharpen.c:97
 msgid "quasi-linear, Lab, display or scene-referred"
-msgstr "квазілінійний, Lab, на основі відображення або сцен"
+msgstr "квазілінійний простір, Lab, на основі відображення або сцен"
 
 #. add the preset.
 #. restrict to raw images
@@ -19100,11 +19100,11 @@ msgstr "змінити освітлення сцени так, ніби це р�
 
 #: ../src/iop/toneequal.c:308
 msgid "quasi-linear, RGB"
-msgstr "квазілінійний, RGB"
+msgstr "квазілінійна, RGB"
 
 #: ../src/iop/toneequal.c:309
 msgid "quasi-linear, RGB, scene-referred"
-msgstr "квазілінійний, RGB, на основі сцен"
+msgstr "квазілінійний простір, RGB, на основі сцен"
 
 #. No blending
 #: ../src/iop/toneequal.c:425
