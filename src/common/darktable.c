@@ -144,9 +144,9 @@ static int usage(const char *argv0)
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
-  printf("  --dump-pfm <module,moduleb>\n");
-  printf("  --dump-pipe <module,moduleb>\n");
-  printf("  --bench-module <module,moduleb>\n");
+  printf("  --dump-pfm <modulea,moduleb>\n");
+  printf("  --dump-pipe <modulea,moduleb>\n");
+  printf("  --bench-module <modulea,moduleb>\n");
   printf("  --library <library file>\n");
   printf("  --localedir <locale directory>\n");
 #ifdef USE_LUA
