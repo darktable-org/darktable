@@ -50,6 +50,8 @@ gchar *dt_util_foo_to_utf8(const char *string);
 guint dt_util_string_count_char(const char *text, const char needle);
 /* helper function to convert en float numbers to local based numbers for scanf */
 void dt_util_str_to_loc_numbers_format(char *data);
+/* helper function to search for a string in a comma seperated string */
+gboolean dt_str_commasubstring(const char *list, const char *search);
 
 typedef enum dt_logo_season_t
 {
