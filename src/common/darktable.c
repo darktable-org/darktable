@@ -144,9 +144,9 @@ static int usage(const char *argv0)
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
-  printf("  --dump-pfm <module>\n");
-  printf("  --dump-pipe <module>\n");
-  printf("  --bench-module <module>\n");
+  printf("  --dump-pfm <modulea,moduleb>\n");
+  printf("  --dump-pipe <modulea,moduleb>\n");
+  printf("  --bench-module <modulea,moduleb>\n");
   printf("  --library <library file>\n");
   printf("  --localedir <locale directory>\n");
 #ifdef USE_LUA
@@ -501,7 +501,7 @@ void dt_dump_pfm(
 {
   if(!darktable.dump_pfm_module) return;
   if(!modname) return;
-  if(strcmp(modname, darktable.dump_pfm_module)) return; 
+  if(!dt_str_commasubstring(darktable.dump_pfm_module, modname)) return; 
 
   _dump_pfm_file(filename, in, width, height, mode, modname, FALSE, FALSE);
 }
@@ -517,7 +517,7 @@ void dt_dump_pipe_pfm(
 {
   if(!darktable.dump_pfm_pipe) return;
   if(!mod) return;
-  if(strcmp(mod, darktable.dump_pfm_pipe)) return; 
+  if(!dt_str_commasubstring(darktable.dump_pfm_pipe, mod)) return; 
 
   _dump_pfm_file(pipe, data, width, height, (bpp == 4) ? DT_DUMP_PFM_RGB : DT_DUMP_PFM_MASK, mod, input, !input);
 }
