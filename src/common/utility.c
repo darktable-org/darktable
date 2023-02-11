@@ -1011,7 +1011,7 @@ gboolean dt_str_commasubstring(const char *list, const char *search)
       g_free(nlist);
       return TRUE;
     }
-	  ptr = strtok(NULL, delimiter);
+    ptr = strtok(NULL, delimiter);
   }
 
   g_free(nlist);
