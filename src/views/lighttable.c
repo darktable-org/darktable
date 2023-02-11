@@ -665,8 +665,8 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
 }
 
 const dt_action_element_def_t _action_elements_preview[]
-  = { { "normal", dt_action_effect_hold },
-      { "focus detection", dt_action_effect_hold },
+  = { { N_("normal"), dt_action_effect_hold },
+      { N_("focus detection"), dt_action_effect_hold },
       { NULL } };
 
 const dt_action_def_t dt_action_def_preview
@@ -696,7 +696,7 @@ static float _action_process_infos(gpointer target, const dt_action_element_t el
   return lib->preview_state;
 }
 
-const dt_action_element_def_t _action_elements_infos[] = { { "normal", dt_action_effect_hold }, { NULL } };
+const dt_action_element_def_t _action_elements_infos[] = { { NULL, dt_action_effect_hold } };
 
 const dt_action_def_t dt_action_def_infos
     = { N_("show infos"), _action_process_infos, _action_elements_infos, NULL, TRUE };

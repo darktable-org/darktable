@@ -501,10 +501,10 @@ static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
 void dt_ctl_switch_mode_to(const char *mode)
 {
   const dt_view_t *current_view = dt_view_manager_get_current_view(darktable.view_manager);
-  if(current_view && !strcmp(mode, current_view->module_name))
+  if(current_view && !g_ascii_strcasecmp(mode, current_view->module_name))
   {
     // if we are not in lighttable, we switch back to that view
-    if(strcmp(current_view->module_name, "lighttable")) dt_ctl_switch_mode_to("lighttable");
+    if(g_ascii_strcasecmp(current_view->module_name, "lighttable")) dt_ctl_switch_mode_to("lighttable");
     return;
   }
 
