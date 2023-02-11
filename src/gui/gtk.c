@@ -1025,6 +1025,15 @@ static const char* _get_axis_name(int pos)
   return AXIS_NAMES[pos];
 }
 
+static void _label_map_callback(GtkWidget *widget)
+{
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoAttribute *attr = pango_attr_text_transform_new(PANGO_TEXT_TRANSFORM_CAPITALIZE);
+  pango_attr_list_insert(attrlist, attr);
+  gtk_label_set_attributes(GTK_LABEL(widget), attrlist);
+  g_signal_chain_from_overridden_handler(widget);
+}
+
 int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 {
   /* lets zero mem */
@@ -1176,6 +1185,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_signal_connect(G_OBJECT(widget), "configure-event", G_CALLBACK(_window_configure), NULL);
   g_signal_connect(G_OBJECT(widget), "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
   g_signal_override_class_handler("query-tooltip", gtk_widget_get_type(), G_CALLBACK(dt_shortcut_tooltip_callback));
+  g_signal_override_class_handler("map", gtk_label_get_type(), G_CALLBACK(_label_map_callback));
 
   //an action that does nothing - used for overriding/removing default shortcuts
   dt_action_register(&darktable.control->actions_global, N_("no-op"), _gui_noop_action_callback, 0, 0);

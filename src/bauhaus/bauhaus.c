@@ -180,6 +180,8 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoAttribute *attr = pango_attr_font_features_new("tnum");
   pango_attr_list_insert(attrlist, attr);
+  attr = pango_attr_text_transform_new(PANGO_TEXT_TRANSFORM_CAPITALIZE);
+  pango_attr_list_insert(attrlist, attr);
   pango_layout_set_attributes(layout, attrlist);
   pango_attr_list_unref(attrlist);
 
@@ -2316,6 +2318,8 @@ static gint _bauhaus_natural_width(GtkWidget *widget, gboolean popup)
   pango_layout_set_font_description(layout, font_desc);
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoAttribute *attr = pango_attr_font_features_new("tnum");
+  pango_attr_list_insert(attrlist, attr);
+  attr = pango_attr_text_transform_new(PANGO_TEXT_TRANSFORM_CAPITALIZE);
   pango_attr_list_insert(attrlist, attr);
   pango_layout_set_attributes(layout, attrlist);
   pango_attr_list_unref(attrlist);
