@@ -178,7 +178,6 @@ jobs:
           - Release
         target:
           - build
-          - nofeatures
           - nofeatures_nosse
         generator:
           #- Unix Makefiles
