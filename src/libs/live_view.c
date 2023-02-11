@@ -287,9 +287,9 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(DT_ACTION(self), NULL, action, button, *(#type)?&dt_action_def_toggle:&dt_action_def_button);
 
   lib->live_view = NEW_BUTTON(toggle, dtgtk_cairo_paint_eye, 0, _toggle_live_view_clicked, lib, N_("toggle live view"));
-  dt_shortcut_register(dt_action_section(DT_ACTION(self), "toggle live view"), 0, 0, GDK_KEY_v, 0);
+  dt_shortcut_register(dt_action_section(DT_ACTION(self), N_("toggle live view")), 0, 0, GDK_KEY_v, 0);
   lib->live_view_zoom = NEW_BUTTON(, dtgtk_cairo_paint_zoom, 0, _zoom_live_view_clicked, lib, N_("zoom live view")); // TODO: see _zoom_live_view_clicked
-  dt_shortcut_register(dt_action_section(DT_ACTION(self), "zoom live view"), 0, 0, GDK_KEY_w, 0);
+  dt_shortcut_register(dt_action_section(DT_ACTION(self), N_("zoom live view")), 0, 0, GDK_KEY_w, 0);
   lib->rotate_ccw = NEW_BUTTON(, dtgtk_cairo_paint_refresh, 0, _rotate_ccw, lib, N_("rotate 90 degrees ccw"));
   lib->rotate_cw = NEW_BUTTON(,dtgtk_cairo_paint_refresh, CPF_DIRECTION_UP, _rotate_cw, lib, N_("rotate 90 degrees cw"));
   lib->flip = NEW_BUTTON(toggle, dtgtk_cairo_paint_flip, CPF_DIRECTION_UP, _toggle_flip_clicked, lib, N_("flip live view horizontally"));
