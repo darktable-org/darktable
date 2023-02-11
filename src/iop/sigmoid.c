@@ -75,6 +75,13 @@ typedef struct dt_iop_sigmoid_gui_data_t
 
 } dt_iop_sigmoid_gui_data_t;
 
+typedef struct dt_iop_sigmoid_global_data_t
+{
+  int kernel_sigmoid_loglogistic_per_channel;
+  int kernel_sigmoid_loglogistic_per_channel_interpolated;
+  int kernel_sigmoid_loglogistic_rgb_ratio;
+} dt_iop_sigmoid_global_data_t;
+
 
 const char *name()
 {
@@ -515,6 +522,100 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     process_loglogistic_rgb_ratio(piece, ivoid, ovoid, roi_in, roi_out);
   }
+}
+
+#ifdef HAVE_OPENCL
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_sigmoid_data_t *const d = (dt_iop_sigmoid_data_t *)piece->data;
+  dt_iop_sigmoid_global_data_t *const gd = (dt_iop_sigmoid_global_data_t *)self->global_data;
+
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const float white_target = d->white_target;
+  const float paper_exp = d->paper_exposure;
+  const float film_fog = d->film_fog;
+  const float contrast_power = d->film_power;
+  const float skew_power = d->paper_power;
+
+  if (d->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
+  {
+    const float hue_preservation = d->hue_preservation;
+
+    if (hue_preservation >= 0.001f)
+    {
+
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel_interpolated,
+                                             width, height,
+                                             CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+                                             CLARG(white_target), CLARG(paper_exp),
+                                             CLARG(film_fog), CLARG(contrast_power),
+                                             CLARG(skew_power), CLARG(hue_preservation));
+      if(err != CL_SUCCESS) goto error;
+      return TRUE;
+    }
+    else
+    {
+      err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_per_channel,
+                                             width, height,
+                                             CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+                                             CLARG(white_target), CLARG(paper_exp),
+                                             CLARG(film_fog), CLARG(contrast_power),
+                                             CLARG(skew_power));
+      if(err != CL_SUCCESS) goto error;
+      return TRUE;
+
+    }
+  }
+  else
+  {
+    const float black_target = d->black_target;
+
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_sigmoid_loglogistic_rgb_ratio,
+                                           width, height,
+                                           CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height),
+                                           CLARG(white_target), CLARG(black_target), CLARG(paper_exp),
+                                           CLARG(film_fog), CLARG(contrast_power),
+                                           CLARG(skew_power));
+    if(err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
+
+  error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_sigmoid] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  return FALSE;
+}
+#endif //HAVE_OPENCL
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 36; // sigmoid.cl, from programs.conf
+  dt_iop_sigmoid_global_data_t *gd  =
+    (dt_iop_sigmoid_global_data_t *)malloc(sizeof(dt_iop_sigmoid_global_data_t));
+
+  module->data = gd;
+  gd->kernel_sigmoid_loglogistic_per_channel = dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel");
+  gd->kernel_sigmoid_loglogistic_per_channel_interpolated =
+    dt_opencl_create_kernel(program, "sigmoid_loglogistic_per_channel_interpolated");
+  gd->kernel_sigmoid_loglogistic_rgb_ratio = dt_opencl_create_kernel(program, "sigmoid_loglogistic_rgb_ratio");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_sigmoid_global_data_t *gd = (dt_iop_sigmoid_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel);
+  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_per_channel_interpolated);
+  dt_opencl_free_kernel(gd->kernel_sigmoid_loglogistic_rgb_ratio);
+  free(module->data);
+  module->data = NULL;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
