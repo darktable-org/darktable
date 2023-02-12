@@ -211,8 +211,8 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
       {
         for_each_channel(c) img_oppchroma[c] = chrominance[c];
         img_opphash = opphash;
-        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash %lu\n", chrominance[0], chrominance[1], chrominance[2], opphash);
-      }
+        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
+       }
     }
     dt_free_align(mask);
   }
@@ -347,7 +347,7 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       {
         for_each_channel(c) img_oppchroma[c] = chrominance[c];
         img_opphash = opphash;
-        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash %lu\n", chrominance[0], chrominance[1], chrominance[2], opphash);
+        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
       }
     }
     dt_free_align(mask);
@@ -524,7 +524,7 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     {
       for_each_channel(c) img_oppchroma[c] = chrominance[c];
       img_opphash = opphash;
-      dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash %lu\n", chrominance[0], chrominance[1], chrominance[2], opphash);
+      dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
     }
   }
 
