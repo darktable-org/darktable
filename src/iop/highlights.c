@@ -260,6 +260,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+static dt_aligned_pixel_t img_oppchroma;
+static uint64_t img_opphash = 0;
+
 #ifdef HAVE_OPENCL
 static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                          cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *const roi_in,
