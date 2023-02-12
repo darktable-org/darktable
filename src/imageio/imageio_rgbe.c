@@ -18,6 +18,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "develop/imageop.h"         // for IOP_CS_RGB
 #include "imageio/imageio_rgbe.h"
 
 #include <ctype.h>
@@ -595,19 +596,21 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   while(*ext != '.' && ext > filename) ext--;
   if(strncmp(ext, ".hdr", 4) && strncmp(ext, ".HDR", 4) && strncmp(ext, ".Hdr", 4))
     return DT_IMAGEIO_LOAD_FAILED;
+
   FILE *f = g_fopen(filename, "rb");
   if(!f) return DT_IMAGEIO_LOAD_FAILED;
 
   rgbe_header_info info;
   if(RGBE_ReadHeader(f, &img->width, &img->height, &info)) goto error_corrupt;
 
+  img->buf_dsc.channels = 4;
+  img->buf_dsc.datatype = TYPE_FLOAT;
   float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) goto error_cache_full;
-  if(RGBE_ReadPixels_RLE(f, buf, img->width, img->height))
-  {
-    goto error_corrupt;
-  }
+
+  if(RGBE_ReadPixels_RLE(f, buf, img->width, img->height)) goto error_corrupt;
   fclose(f);
+
   // repair nan/inf etc
   for(size_t i = (size_t)img->width * img->height; i > 0; i--)
     for(int c = 0; c < 3; c++) buf[4 * (i - 1) + c] = fmaxf(0.0f, fminf(10000.0, buf[3 * (i - 1) + c]));
@@ -626,6 +629,12 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
 
   mat3inv((float *)img->d65_color_matrix, (float *)mat);
 
+  img->buf_dsc.cst = IOP_CS_RGB;
+  img->buf_dsc.filters = 0u;
+  img->flags &= ~DT_IMAGE_LDR;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_S_RAW;
+  img->flags |= DT_IMAGE_HDR;
   img->loader = LOADER_RGBE;
   return DT_IMAGEIO_OK;
 
