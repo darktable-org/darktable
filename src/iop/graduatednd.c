@@ -41,14 +41,6 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-// for current x86 compilers, we can't reliably get a nontemporal
-// write other than by explicitly calling mm_stream_ps, so override
-// copy_pixel_nontemporal to do precisely that.
-#define copy_pixel_nontemporal(dest, src) _mm_stream_ps((dest), *((__m128*)(src)))
-#endif
-
 DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 
 typedef struct dt_iop_graduatednd_params_t
