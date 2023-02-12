@@ -18,9 +18,6 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 #include <assert.h>
 #include <stdlib.h>
 

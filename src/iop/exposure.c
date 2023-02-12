@@ -24,9 +24,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 #include "bauhaus/bauhaus.h"
 #include "common/histogram.h"

@@ -43,9 +43,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 DT_MODULE_INTROSPECTION(3, dt_iop_borders_params_t)
 
