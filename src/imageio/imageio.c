@@ -463,35 +463,19 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img,
 {
   // if buf is NULL, don't proceed
   if(!buf) return DT_IMAGEIO_OK;
-  // needed to alloc correct buffer size:
-  img->buf_dsc.channels = 4;
-  img->buf_dsc.datatype = TYPE_FLOAT;
-  img->buf_dsc.cst = IOP_CS_RGB;
-  dt_imageio_retval_t ret;
-  dt_image_loader_t loader;
-#ifdef HAVE_OPENEXR
-  loader = LOADER_EXR;
-  ret = dt_imageio_open_exr(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-#endif
-  loader = LOADER_RGBE;
-  ret = dt_imageio_open_rgbe(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-  loader = LOADER_PFM;
-  ret = dt_imageio_open_pfm(img, filename, buf);
-  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 
-return_label:
-  if(ret == DT_IMAGEIO_OK)
-  {
-    img->buf_dsc.filters = 0u;
-    img->flags &= ~DT_IMAGE_LDR;
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags |= DT_IMAGE_HDR;
-    img->loader = loader;
-  }
-  return ret;
+  dt_imageio_retval_t ret;
+#ifdef HAVE_OPENEXR
+  ret = dt_imageio_open_exr(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+#endif
+  ret = dt_imageio_open_rgbe(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+  ret = dt_imageio_open_pfm(img, filename, buf);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) return ret;
+
+  return DT_IMAGEIO_LOAD_FAILED;
 }
 
 /* magic data: exclusion,offset,length, xx, yy, ...
