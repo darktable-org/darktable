@@ -255,24 +255,19 @@ static inline void _pixsort(float *a, float *b)
 void process(
         struct dt_iop_module_t *self,
         dt_dev_pixelpipe_iop_t *piece,
-        const void *const i,
+        const void *const ivoid,
         void *const ovoid,
         const dt_iop_roi_t *const roi_in,
         const dt_iop_roi_t *const roi_out)
 {
-  const float *const in2 = (float *)i;
-  float *out = (float *) ovoid;
-
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-  const int h_width = (width + 1) / 2;
-  const int h_height = (height + 1) / 2;
+  const float *const input = (float *)ivoid;
+  float *output = (float *) ovoid;
 
   const uint32_t filters = piece->pipe->dsc.filters;
 
   const gboolean run_fast = piece->pipe->type & DT_DEV_PIXELPIPE_FAST;
 
-  dt_iop_cacorrect_data_t     *d = (dt_iop_cacorrect_data_t *)piece->data;
+  dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *)piece->data;
 
   const gboolean avoidshift = d->avoidshift;
   const int iterations = d->iterations;
@@ -283,10 +278,19 @@ void process(
   float *redfactor = NULL;
   float *bluefactor = NULL;
   float *oldraw = NULL;
+  char *buffer1 = NULL;
+  float *RawDataTmp = NULL;
+  float *Gtmp = NULL;
 
-  dt_iop_image_copy_by_size(out, in2, width, height, 1);
+  float *out = dt_alloc_align_float(roi_in->width * roi_in->height);
+  dt_iop_image_copy(out, input, roi_in->width * roi_in->height);
 
-  if(run_fast) return;
+  if(run_fast) goto writeout;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int h_width = (width + 1) / 2;
+  const int h_height = (height + 1) / 2;
 
   const float *const in = out;
 
@@ -327,10 +331,10 @@ void process(
   double fitparams[2][2][16];
 
   // temporary array to store simple interpolation of G
-  float *Gtmp = dt_calloc_align_float((size_t)height * width);
+  Gtmp = dt_calloc_align_float((size_t)height * width);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-  float *RawDataTmp = dt_alloc_align_float(height * width / 2 + 4);
+  RawDataTmp = dt_alloc_align_float(height * width / 2 + 4);
 
   const int border = 8;
   const int border2 = 16;
@@ -340,7 +344,7 @@ void process(
   const int vblsz = ceil((float)(height + border2) / (ts - border2) + 2 + vz1);
   const int hblsz = ceil((float)(width + border2) / (ts - border2) + 2 + hz1);
 
-  char *buffer1 = (char *)calloc((size_t)vblsz * hblsz * (2 * 2 + 1), sizeof(float));
+  buffer1 = (char *)calloc((size_t)vblsz * hblsz * (2 * 2 + 1), sizeof(float));
 
   // block CA shift values and weight assigned to block
   float *blockwt = (float *)buffer1;
@@ -1273,7 +1277,29 @@ void process(
     if(blue) dt_gaussian_free(blue);
   }
 
-  free(buffer1);
+  writeout:
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(output, out, roi_in, roi_out) \
+  schedule(static) collapse(2)
+#endif
+  for(size_t row = 0; row < roi_out->height; row++)
+  {
+    for(size_t col = 0; col < roi_out->width; col++) 
+    {
+      const size_t ox = row * roi_out->width + col;
+      const size_t irow = row + roi_out->y;
+      const size_t icol = col + roi_out->x;
+      const size_t ix = irow * roi_in->width + icol;
+      if((irow < roi_in->height) && (icol < roi_in->width))
+      {
+        output[ox] = out[ix];
+      }
+    }
+  }
+
+  if(buffer1) free(buffer1);
+  dt_free_align(out);
   dt_free_align(RawDataTmp);
   dt_free_align(Gtmp);
   dt_free_align(redfactor);
@@ -1284,6 +1310,23 @@ void process(
 /*==================================================================================
  * end raw therapee code
  *==================================================================================*/
+void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
+{
+  *roi_out = *roi_in;
+  roi_out->x = MAX(0, roi_in->x);
+  roi_out->y = MAX(0, roi_in->y);
+}
+void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
+                   dt_iop_roi_t *roi_in)
+{
+  *roi_in = *roi_out;
+  roi_in->x = 0;
+  roi_in->y = 0;
+  roi_in->width = piece->buf_in.width;
+  roi_in->height = piece->buf_in.height;
+  roi_in->scale = 1.0f;
+}
 
 void reload_defaults(dt_iop_module_t *module)
 {
