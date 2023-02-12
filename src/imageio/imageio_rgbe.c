@@ -608,9 +608,18 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
     goto error_corrupt;
   }
   fclose(f);
+
   // repair nan/inf etc
-  for(size_t i = (size_t)img->width * img->height; i > 0; i--)
-    for(int c = 0; c < 3; c++) buf[4 * (i - 1) + c] = fmaxf(0.0f, fminf(10000.0, buf[3 * (i - 1) + c]));
+  const size_t width = img->width;
+  const size_t height = img->height;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(width, height, buf) \
+  collapse(2)
+#endif
+  for(size_t i = width * height; i > 0; i--)
+    for(int c = 0; c < 3; c++)
+      buf[4 * (i - 1) + c] = fmaxf(0.0f, fminf(10000.0, buf[3 * (i - 1) + c]));
 
   // set the color matrix
   float m[4][4];
