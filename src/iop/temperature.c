@@ -1919,7 +1919,7 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   GtkWidget *temp_label_box = gtk_event_box_new();
-  g->temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
+  g->temp_label = dt_ui_section_label_new(C_("section", "scene illuminant temp"));
   gtk_widget_set_tooltip_text(g->temp_label, _("click to cycle color mode on sliders"));
   gtk_container_add(GTK_CONTAINER(temp_label_box), g->temp_label);
 

@@ -2325,7 +2325,7 @@ void gui_init(dt_iop_module_t *self)
   // preview single scale
   g->vbox_preview_scale = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *lbl_psc = dt_ui_section_label_new(_("preview single scale"));
+  GtkWidget *lbl_psc = dt_ui_section_label_new(C_("section", "preview single scale"));
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), lbl_psc, FALSE, TRUE, 0);
 
   GtkWidget *prev_lvl = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2419,7 +2419,7 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
+  GtkWidget *lbl_rt_tools = dt_ui_section_label_new(C_("section", "retouch tools"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
 
   // shapes toolbar
@@ -2428,7 +2428,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox_algo, TRUE, TRUE, 0);
 
   // wavelet decompose
-  GtkWidget *lbl_wd = dt_ui_section_label_new(_("wavelet decompose"));
+  GtkWidget *lbl_wd = dt_ui_section_label_new(C_("section", "wavelet decompose"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_wd, FALSE, TRUE, 0);
 
   // wavelet decompose bar & labels
@@ -2442,7 +2442,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->vbox_preview_scale, TRUE, TRUE, 0);
 
   // shapes
-  GtkWidget *lbl_shapes = dt_ui_section_label_new(_("shapes"));
+  GtkWidget *lbl_shapes = dt_ui_section_label_new(C_("section", "shapes"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_shapes, FALSE, TRUE, 0);
 
   // shape selected

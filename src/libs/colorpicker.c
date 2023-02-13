@@ -638,7 +638,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(GTK_BOX(sample_row), data->add_sample_button, FALSE, FALSE, 0);
 
   // Adding the live samples section
-  label = dt_ui_section_label_new(_("live samples"));
+  label = dt_ui_section_label_new(C_("section", "live samples"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
 

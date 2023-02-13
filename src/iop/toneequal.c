@@ -3204,7 +3204,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                "lower values give smoother gradients and better smoothing\n"
                                                "but may lead to inaccurate edges taping and halos"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask post-processing")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "mask post-processing")), FALSE, FALSE, 0);
 
   g->bar = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_widget_set_size_request(GTK_WIDGET(g->bar), -1, 4);

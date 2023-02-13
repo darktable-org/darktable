@@ -5738,7 +5738,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = main_box;
 
-  GtkWidget *helpers = dt_ui_section_label_new(_("perspective"));
+  GtkWidget *helpers = dt_ui_section_label_new(C_("section", "perspective"));
   gtk_box_pack_start(GTK_BOX(self->widget), helpers, TRUE, TRUE, 0);
 
   GtkGrid *auto_grid = GTK_GRID(gtk_grid_new());
