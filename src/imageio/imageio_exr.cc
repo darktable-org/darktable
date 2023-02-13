@@ -248,7 +248,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
       img->d65_color_matrix[3 * i + j] = m[j][i];
     }
 
-  /* cleanup and return... */
+  img->buf_dsc.cst = IOP_CS_RGB;
   img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_S_RAW;
