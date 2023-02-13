@@ -118,14 +118,6 @@ static inline float _inlimits(const float a, const float b, const float c)
 {
   return MAX(b, MIN(a, c));
 }
-static inline float _intp(const float a, const float b, const float c)
-{
-  // calculate a * b + (1 - a) * c
-  // following is valid:
-  // _intp(a, b+x, c+x) = _intp(a, b, c) + x
-  // _intp(a, b*x, c*x) = _intp(a, b, c) * x
-  return a * (b - c) + c;
-}
 
 ////////////////////////////////////////////////////////////////
 //
@@ -1086,12 +1078,12 @@ void process(
             for(int cc = 4 + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters); cc < cc1 - 4; cc += 2)
             {
               // perform CA correction using colour ratios or colour differences
-              const float Ginthfloor = _intp(shifthfrac[c], rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
+              const float Ginthfloor = interpolatef(shifthfrac[c], rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
                                       rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthfloor[c]]);
-              const float Ginthceil = _intp(shifthfrac[c], rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]],
+              const float Ginthceil = interpolatef(shifthfrac[c], rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]],
                                      rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthfloor[c]]);
               // Gint is bilinear interpolation of G at CA shift point
-              const float Gint = _intp(shiftvfrac[c], Ginthceil, Ginthfloor);
+              const float Gint = interpolatef(shiftvfrac[c], Ginthceil, Ginthfloor);
 
               // determine R/B at grid points using colour differences at shift point plus interpolated G
               // value at grid point
@@ -1116,14 +1108,14 @@ void process(
               const float grbdiffold = rgb[1][indx] - rgb[c][indx];
 
               // interpolate colour difference from optical R/B locations to grid locations
-              const float grbdiffinthfloor = _intp(shifthfrac[c],
+              const float grbdiffinthfloor = interpolatef(shifthfrac[c],
                            grbdiff[(indx - GRBdir[1][c]) >> 1],
                            grbdiff[indx >> 1]);
-              const float grbdiffinthceil  = _intp(shifthfrac[c],
+              const float grbdiffinthceil  = interpolatef(shifthfrac[c],
                            grbdiff[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1],
                            grbdiff[((rr - GRBdir[0][c]) * ts + cc) >> 1]);
               // grbdiffint is bilinear interpolation of G-R/G-B at grid point
-              float grbdiffint = _intp(shiftvfrac[c], grbdiffinthceil, grbdiffinthfloor);
+              float grbdiffint = interpolatef(shiftvfrac[c], grbdiffinthceil, grbdiffinthfloor);
 
               // now determine R/B at grid points using interpolated colour differences and interpolated G
               // value at grid point
