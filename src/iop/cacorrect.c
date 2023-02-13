@@ -114,10 +114,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
  * begin raw therapee code, hg checkout of march 09, 2016 branch master.
  *==================================================================================*/
 
-static inline float _sqrf(float x)
-{
-  return (x * x);
-}
 static inline float _inlimits(const float a, const float b, const float c)
 {
   return MAX(b, MIN(a, c));
@@ -540,16 +536,16 @@ void process(
             for(int cc = 3 + (FC(rr, 3, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 3; cc += 2, indx += 2)
             {
               // compute directional weights using image gradients
-              const float wtu = 1.f / _sqrf(eps + fabsf(rgb[1][indx + v1] - rgb[1][indx - v1])
+              const float wtu = 1.f / sqrf(eps + fabsf(rgb[1][indx + v1] - rgb[1][indx - v1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx - v2])
                                     + fabsf(rgb[1][indx - v1] - rgb[1][indx - v3]));
-              const float wtd = 1.f / _sqrf(eps + fabsf(rgb[1][indx - v1] - rgb[1][indx + v1])
+              const float wtd = 1.f / sqrf(eps + fabsf(rgb[1][indx - v1] - rgb[1][indx + v1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx + v2])
                                     + fabsf(rgb[1][indx + v1] - rgb[1][indx + v3]));
-              const float wtl = 1.f / _sqrf(eps + fabsf(rgb[1][indx + 1] - rgb[1][indx - 1])
+              const float wtl = 1.f / sqrf(eps + fabsf(rgb[1][indx + 1] - rgb[1][indx - 1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx - 2])
                                     + fabsf(rgb[1][indx - 1] - rgb[1][indx - 3]));
-              const float wtr = 1.f / _sqrf(eps + fabsf(rgb[1][indx - 1] - rgb[1][indx + 1])
+              const float wtr = 1.f / sqrf(eps + fabsf(rgb[1][indx - 1] - rgb[1][indx + 1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx + 2])
                                     + fabsf(rgb[1][indx + 1] - rgb[1][indx + 3]));
 
@@ -680,7 +676,7 @@ void process(
               if(fabsf(CAshift[dir][c]) < 2.0f)
               {
                 blockavethr[dir][c] += CAshift[dir][c];
-                blocksqavethr[dir][c] += _sqrf(CAshift[dir][c]);
+                blocksqavethr[dir][c] += sqrf(CAshift[dir][c]);
                 blockdenomthr[dir][c] += 1;
               }
               // evaluate the shifts to the location that minimizes CA within the tile
@@ -718,7 +714,7 @@ void process(
             if(blockdenom[dir][c])
             {
               blockvar[dir][c]
-                  = blocksqave[dir][c] / blockdenom[dir][c] - _sqrf(blockave[dir][c] / blockdenom[dir][c]);
+                  = blocksqave[dir][c] / blockdenom[dir][c] - sqrf(blockave[dir][c] / blockdenom[dir][c]);
             }
             else
             {
@@ -820,8 +816,8 @@ void process(
 
                 // now prepare coefficient matrix; use only data points within caautostrength/2 std devs of
                 // zero
-                if(_sqrf(bstemp[0]) > caautostrength * blockvar[0][c]
-                   || _sqrf(bstemp[1]) > caautostrength * blockvar[1][c])
+                if(sqrf(bstemp[0]) > caautostrength * blockvar[0][c]
+                   || sqrf(bstemp[1]) > caautostrength * blockvar[1][c])
                 {
                   continue;
                 }

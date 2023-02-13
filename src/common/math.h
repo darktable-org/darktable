@@ -78,7 +78,7 @@ static inline gboolean feqf(const float v1, const float v2, const float eps)
 }
 
 // We don't want to use the SIMD version sqf() in cases we might access unaligned memory
-static inline float sqrf(float a)
+static inline float sqrf(const float a)
 {
   return a * a;
 }
