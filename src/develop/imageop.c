@@ -2049,6 +2049,12 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     // we also add the focus css class
     GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
     dt_gui_add_class(iop_w, "dt_module_focus");
+
+    // update last preset name to get the update preset entry
+    gboolean writeprotect = FALSE;
+    gchar *name = dt_get_active_preset_name(module, &writeprotect);
+    if(!writeprotect && name) dt_gui_store_last_preset(name);
+    g_free(name);
   }
 
   /* update sticky accels window */
