@@ -22,11 +22,11 @@
    As this works for bayer and xtrans sensors we don't have a fixed ratio but calculate the average
    for every color channel first.
    refavg for one of red, green or blue is defined as means of both other color channels (opposing).
-   
+
    The basic idea / observation for the _process_opposed algorithm is, the refavg is a good estimate
    for any clipped color channel in the vast majority of images, working mostly fine both for small specular
    highlighted spots and large areas.
-   
+
    The correction via some sort of global chrominance further helps to correct color casts.
    The chrominace data are taken from the areas morphologically very close to clipped data.
    Failures of the algorithm (color casts) are in most cases related to
@@ -38,13 +38,31 @@
    Again the algorithm has been developed in collaboration by @garagecoder and @Iain from gmic team and @jenshannoschwalm from dt.
 */
 
-/* 
-  HLR v5 includes data for precalculated chroma correction to boost performance.
-  Just now a dummy.
-*/
-static gboolean _precalculated_opposed_chroma(dt_dev_pixelpipe_iop_t *piece, dt_aligned_pixel_t *chrominance)
+static uint64_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
 {
-  return FALSE;
+  dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
+  dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+
+  // bernstein hash (djb2)
+  uint64_t hash = 5381;
+
+  char *pstr = (char *) &dsc->rawprepare;
+  for(size_t ip = 0; ip < sizeof(dsc->rawprepare); ip++)
+    hash = ((hash << 5) + hash) ^ pstr[ip];
+
+  pstr = (char *) &dsc->temperature;
+  for(size_t ip = 0; ip < sizeof(dsc->temperature); ip++)
+    hash = ((hash << 5) + hash) ^ pstr[ip];
+
+  pstr = (char *) &d->clip;
+  for(size_t ip = 0; ip < sizeof(d->clip); ip++)
+    hash = ((hash << 5) + hash) ^ pstr[ip];
+
+  pstr = (char *) &piece->pipe->image.id;
+  for(size_t ip = 0; ip < sizeof(piece->pipe->image.id); ip++)
+    hash = ((hash << 5) + hash) ^ pstr[ip];
+
+  return hash;
 }
 
 static inline float _calc_linear_refavg(const float *in, const int color)
@@ -100,9 +118,14 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
   const size_t mheight = roi_in->height / 3;
   const size_t msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 64);
 
-  dt_aligned_pixel_t chrominance = { 0.0f, 0.0f, 0.0f, 0.0f};
+  const uint64_t opphash = _opposed_hash(piece);
+  dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
-  if(!_precalculated_opposed_chroma(piece, &chrominance))
+  if(opphash == img_opphash)
+  {
+    for_each_channel(c) chrominance[c] = img_oppchroma[c];
+  }
+  else
   {
     char *mask = (quality) ? dt_calloc_align(64, 6 * msize * sizeof(char)) : NULL;
     if(mask)
@@ -178,9 +201,18 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
             }
           }
         }
-        for_each_channel(c)
-          chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
+        for_each_channel(c) chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
       }
+
+      // we only have valid precalculated data if in fullpipe and complete (allow some rounding) image
+      if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+         && (abs((int)(roi_out->width / roi_out->scale) - piece->buf_in.width) < 8)
+         && (abs((int)(roi_out->height / roi_out->scale) - piece->buf_in.height) < 8))
+      {
+        for_each_channel(c) img_oppchroma[c] = chrominance[c];
+        img_opphash = opphash;
+        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
+       }
     }
     dt_free_align(mask);
   }
@@ -227,9 +259,14 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const size_t mheight = roi_in->height / 3;
   const size_t msize = dt_round_size((size_t) (mwidth+1) * (mheight+1), 64);
 
+  const uint64_t opphash = _opposed_hash(piece);
   dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
 
-  if(!_precalculated_opposed_chroma(piece, &chrominance))
+  if(opphash == img_opphash)
+  {
+    for_each_channel(c) chrominance[c] = img_oppchroma[c];
+  }
+  else
   {
     char *mask = (quality) ? dt_calloc_align(64, 6 * msize * sizeof(char)) : NULL;
     if(mask)
@@ -304,15 +341,18 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
             }
           }
         }
-        for_each_channel(c)
-          chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
-        // fprintf(stderr, " R: %.1f %.1f %f  G: %.1f %.1f %f  B: %.1f %.1f %f\n", cr_sum[0], cr_cnt[0], chrominance[0], cr_sum[1], cr_cnt[1], chrominance[1], cr_sum[2], cr_cnt[2], chrominance[2]);  
-
+        for_each_channel(c) chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
+      }
+      if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+      {
+        for_each_channel(c) img_oppchroma[c] = chrominance[c];
+        img_opphash = opphash;
+        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
       }
     }
     dt_free_align(mask);
   }
- 
+
   float *tmpout = (keep) ? dt_alloc_align_float(roi_in->width * roi_in->height) : NULL;
   if(tmpout)
   {
@@ -394,7 +434,6 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
                                        wbon ? dsc->temperature.coeffs[2] : 1.0f};
 
   dt_aligned_pixel_t clips = { clipval * icoeffs[0], clipval * icoeffs[1], clipval * icoeffs[2], 1.0f};
-  dt_aligned_pixel_t chrominance = { 0.0f, 0.0f, 0.0f, 0.0f};
   dt_aligned_pixel_t clipdark = { 0.03f * clips[0], 0.125f * clips[1], 0.03f * clips[2], 0.0f };
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -422,7 +461,14 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
   if(dev_clips == NULL) goto error;
 
-  if(!_precalculated_opposed_chroma(piece, &chrominance))
+  const uint64_t opphash = _opposed_hash(piece);
+  dt_aligned_pixel_t chrominance = {0.0f, 0.0f, 0.0f, 0.0f};
+
+  if(opphash == img_opphash)
+  {
+    for_each_channel(c) chrominance[c] = img_oppchroma[c];
+  }
+  else
   {
     // We don't have valid chrominance correction so go the hard way
     dev_dark = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clipdark);
@@ -472,10 +518,14 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
         cnts[c] += claccu[grp*6 + 3 + c];
       }
     }
+    for_each_channel(c) chrominance[c] = sums[c] / fmaxf(1.0f, cnts[c]);
 
-    for(int c = 0; c < 3; c++)
-      chrominance[c] = sums[c] / fmaxf(1.0f, cnts[c]);
-    // fprintf(stderr, " R: %.1f %.1f %f  G: %.1f %.1f %f  B: %.1f %.1f %f\n", sums[0], cnts[0], chrominance[0], sums[1], cnts[1], chrominance[1], sums[2], cnts[2], chrominance[2]);  
+    if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+    {
+      for_each_channel(c) img_oppchroma[c] = chrominance[c];
+      img_opphash = opphash;
+      dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
+    }
   }
 
   dev_chrominance = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), chrominance);
