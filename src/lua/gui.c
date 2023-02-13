@@ -108,18 +108,29 @@ static int _current_view_cb(lua_State *L)
 
 static int _action_cb(lua_State *L)
 {
-  const gchar *action = luaL_checkstring(L, 1);
-  int instance = luaL_checkinteger(L, 2);
-  const gchar *element = lua_type(L, 3) == LUA_TSTRING ? luaL_checkstring(L, 3) : NULL;
-  const gchar *effect = lua_type(L, 4) == LUA_TSTRING ? luaL_checkstring(L, 4) : NULL;
+  int arg = 1;
+
+  const gchar *action = luaL_checkstring(L, arg++);
+
+  int instance = 0;
+
+  // support legacy order: action, instance, element, effect, size
+  if(lua_type(L, arg) == LUA_TNUMBER && lua_type(L, arg+1) == LUA_TSTRING)
+    instance = luaL_checkinteger(L, arg++);
+
+  // new order: instance optionally at end; element, effect and size also optional
+  const gchar *element = lua_type(L, arg) == LUA_TSTRING ? luaL_checkstring(L, arg++) : NULL;
+  const gchar *effect = lua_type(L, arg) == LUA_TSTRING ? luaL_checkstring(L, arg++) : NULL;
 
   float move_size = NAN;
 
-  if(lua_type(L, 5) == LUA_TNUMBER ||
-     (lua_type(L, 5) == LUA_TSTRING && strlen(luaL_checkstring(L, 5)) > 0))
-  {
-    move_size = luaL_checknumber(L, 5);
-  }
+  if(lua_type(L, arg) == LUA_TSTRING && strlen(luaL_checkstring(L, arg)) == 0)
+    arg++; // "" -> NAN
+  else if(lua_type(L, arg) != LUA_TNONE)
+    move_size = luaL_checknumber(L, arg++);
+
+  if(lua_type(L, arg) == LUA_TNUMBER)
+    instance = luaL_checkinteger(L, arg++);
 
   float ret_val = dt_action_process(action, instance, element, effect, move_size);
 
