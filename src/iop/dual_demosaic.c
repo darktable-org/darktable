@@ -95,7 +95,7 @@ static void dual_demosaic(
     {
       const int oidx = 4 * idx;
       for(int c = 0; c < 4; c++)
-        rgb_data[oidx + c] = _intp(blend[idx], rgb_data[oidx + c], vng_image[oidx + c]);
+        rgb_data[oidx + c] = interpolatef(blend[idx], rgb_data[oidx + c], vng_image[oidx + c]);
     }
   }
 

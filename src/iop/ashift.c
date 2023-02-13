@@ -94,8 +94,6 @@
 // define to get debugging output
 #undef ASHIFT_DEBUG
 
-#define SQR(a) ((a) * (a))
-
 // maximum number of drawn lines that can be saved in parameters
 // any change in this value needs to upgrade parameters version !
 #define MAX_SAVED_LINES 50
@@ -2495,7 +2493,7 @@ static double crop_fitness(double *params, void *data)
       I[1] /= I[2];
 
       // calculate distance from I to P
-      const float d2 = SQR(P[0] - I[0]) + SQR(P[1] - I[1]);
+      const float d2 = sqrf(P[0] - I[0]) + sqrf(P[1] - I[1]);
 
       // the minimum distance over all intersection points
       d2min = MIN(d2min, d2);
@@ -2768,7 +2766,7 @@ static void crop_adjust(dt_iop_module_t *module, const dt_iop_ashift_params_t *c
       I[1] /= I[2];
 
       // calculate distance from I to P
-      const float d2 = SQR(P[0] - I[0]) + SQR(P[1] - I[1]);
+      const float d2 = sqrf(P[0] - I[0]) + sqrf(P[1] - I[1]);
 
       // the minimum distance over all intersection points
       d2min = MIN(d2min, d2);

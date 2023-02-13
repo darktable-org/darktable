@@ -83,6 +83,12 @@ static inline float sqrf(const float a)
   return a * a;
 }
 
+// taken from rt code: calculate a * b + (1 - a) * c
+static inline float interpolatef(float a, float b, float c)
+{
+  return a * (b - c) + c;
+}
+
 // Kahan summation algorithm
 #ifdef _OPENMP
 #pragma omp declare simd aligned(c)
