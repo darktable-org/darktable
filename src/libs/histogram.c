@@ -475,7 +475,7 @@ static void _lib_histogram_vectorscope_bkgd
 
   const float vertex_rgb[6][4] DT_ALIGNED_PIXEL = {{1.f, 0.f, 0.f}, {1.f, 1.f, 0.f},
                                                    {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
-                                                   {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
+                                                   {0.05f, 0.05f, 0.95f}, {1.f, 0.f, 1.f} };
 
   float max_radius = 0.f;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
@@ -483,6 +483,7 @@ static void _lib_histogram_vectorscope_bkgd
   // chromaticities for drawing both hue ring and graph
   // NOTE: As ProPhoto's blue primary is very dark (and imaginary), it
   // maps to a very small radius in CIELuv.
+  // Changing RGB cube point to {0.05f, 0.05f, 0.95f}, will fix this.
   cairo_pattern_t *p = cairo_pattern_create_mesh();
   // initialize to make gcc-7 happy
   dt_aligned_pixel_t rgb_display = { 0.f };
