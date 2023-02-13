@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,11 +113,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 /*==================================================================================
  * begin raw therapee code, hg checkout of march 09, 2016 branch master.
  *==================================================================================*/
-
-static inline float _inlimits(const float a, const float b, const float c)
-{
-  return MAX(b, MIN(a, c));
-}
 
 ////////////////////////////////////////////////////////////////
 //
@@ -1036,10 +1031,10 @@ void process(
               powVblock *= vblock;
             }
             const float bslim = 3.99; // max allowed CA shift
-            lblockshifts[0][0] = _inlimits(lblockshifts[0][0], -bslim, bslim);
-            lblockshifts[0][1] = _inlimits(lblockshifts[0][1], -bslim, bslim);
-            lblockshifts[1][0] = _inlimits(lblockshifts[1][0], -bslim, bslim);
-            lblockshifts[1][1] = _inlimits(lblockshifts[1][1], -bslim, bslim);
+            lblockshifts[0][0] = CLAMPF(lblockshifts[0][0], -bslim, bslim);
+            lblockshifts[0][1] = CLAMPF(lblockshifts[0][1], -bslim, bslim);
+            lblockshifts[1][0] = CLAMPF(lblockshifts[1][0], -bslim, bslim);
+            lblockshifts[1][1] = CLAMPF(lblockshifts[1][1], -bslim, bslim);
           } // end of setting CA shift parameters
 
 
@@ -1209,7 +1204,7 @@ void process(
       for(int col = firstCol; col < width; col += 2)
       {
         nongreen[(row / 2) * h_width + col / 2] = (in[row * width + col] <= 1.0f || oldraw[row * h_width + col / 2] <= 1.0f)
-          ? 1.0f : _inlimits(oldraw[row * h_width + col / 2] / in[row * width + col], 0.5f, 2.0f);
+          ? 1.0f : CLAMPF(oldraw[row * h_width + col / 2] / in[row * width + col], 0.5f, 2.0f);
       }
     }
 
