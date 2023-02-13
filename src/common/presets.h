@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2020 darktable developers.
+    Copyright (C) 2019-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/darktable.h"
+#include "develop/imageop.h"
 
 /** save preset to file */
 void dt_presets_save_to_file(const int rowid, const char *preset_name, const char *filedir);
@@ -36,6 +37,9 @@ char *dt_presets_get_name(const char *module_name,
                           const gboolean is_default_params,
                           const void *blend_params,
                           const uint32_t blend_params_size);
+
+/** get currently active preset name for the module */
+gchar *dt_get_active_preset_name(dt_iop_module_t *module, gboolean *writeprotect);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
