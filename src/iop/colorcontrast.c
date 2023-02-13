@@ -144,8 +144,10 @@ static inline void clamped_scaling(float *const restrict out, const float *const
                                    const dt_aligned_pixel_t slope, const dt_aligned_pixel_t offset,
                                    const dt_aligned_pixel_t low, const dt_aligned_pixel_t high)
 {
-  for_each_channel(c,dt_omp_nontemporal(out))
-    out[c] = CLAMPS(in[c] * slope[c] + offset[c], low[c], high[c]);
+  dt_aligned_pixel_t res;
+  for_each_channel(c)
+    res[c] = CLAMPS(in[c] * slope[c] + offset[c], low[c], high[c]);
+  copy_pixel_nontemporal(out, res);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -179,10 +181,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
-      for_each_channel(c,dt_omp_nontemporal(out))
+      dt_aligned_pixel_t res;
+      for_each_channel(c)
       {
-        out[k + c] = (in[k + c] * slope[c]) + offset[c];
+        res[c] = (in[k + c] * slope[c]) + offset[c];
       }
+      copy_pixel_nontemporal(out + k, res);
     }
   }
   else
