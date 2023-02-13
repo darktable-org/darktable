@@ -1013,7 +1013,7 @@ msgstr "Déplier un seul module utilitaire de la table lumineuse à la fois"
 #: ../build/bin/preferences_gen.h:3961
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
-"Cette option change le comportement de maj-clic dans la table lumineuse"
+"Cette option change le comportement de Maj-Clic dans la table lumineuse"
 
 #: ../build/bin/preferences_gen.h:3983
 msgid "scroll utility modules to the top when expanded"
@@ -1304,7 +1304,7 @@ msgstr "Déplier un seul module de développement à la fois"
 
 #: ../build/bin/preferences_gen.h:5184
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
-msgstr "Cette option change le comportement du maj-clic de la chambre noire"
+msgstr "Cette option change le comportement du Maj-Clic de la chambre noire"
 
 #: ../build/bin/preferences_gen.h:5206
 msgid "only collapse modules in current group"
@@ -3192,7 +3192,7 @@ msgstr "JzAzBz (2021)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:604
 msgid "darktable UCS (2022)"
-msgstr "Darktable UCS (2022)"
+msgstr "darktable UCS (2022)"
 
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:54
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:121
@@ -4526,7 +4526,7 @@ msgstr "Ombres profondes"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:162
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:301
 msgid "light shadows"
-msgstr "Ombres claires"
+msgstr "Ombres légères"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:174
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:309
@@ -4588,11 +4588,11 @@ msgstr "Filtre guidé"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:374
 msgid "averaged eigf"
-msgstr "Eigf moyen"
+msgstr "EIGF moyen"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:375
 msgid "eigf"
-msgstr "Eigf"
+msgstr "EIGF"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:379
 msgid "RGB average"
@@ -4604,7 +4604,7 @@ msgstr "Luminosité TSL"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
-msgstr "Valeur TSV / max RVB"
+msgstr "Valeur TSV / Max RVB"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:382
 msgid "RGB sum"
@@ -4737,7 +4737,7 @@ msgid ""
 "them through a lighttable. It also enables you to develop raw images and "
 "enhance them in a darkroom."
 msgstr ""
-"Darktable gère vos négatifs numériques dans une base de données et vous "
+"darktable gère vos négatifs numériques dans une base de données et vous "
 "permet de les voir depuis la table lumineuse. Il permet aussi de développer "
 "et d'améliorer les images numériques dans la chambre noire."
 
@@ -4754,7 +4754,7 @@ msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
-"Darktable supporte la plupart des formats raw récents, et fait tous ces "
+"darktable supporte la plupart des formats raw récents, et fait tous ces "
 "calculs avec une très haute précision."
 
 #: ../data/org.darktable.darktable.appdata.xml.in.h:5
@@ -4936,7 +4936,7 @@ msgid ""
 "pattern"
 msgstr ""
 "Information: la destination de sortie est un répertoire, le patron de sortie "
-"« %s/$(FILE_NAME).%s » Est utilisé"
+"« %s/$(FILE_NAME).%s » est utilisé"
 
 #. output file exists or there's output ext specified and it's same as file...
 #: ../src/cli/main.c:502
@@ -4973,7 +4973,7 @@ msgstr "Réinitialiser le développement"
 #: ../src/cli/main.c:616
 #, c-format
 msgid "too long output file extension: %s\n"
-msgstr "Extension de fichier de sortie trop longue :  « %s »\n"
+msgstr "Extension de fichier de sortie trop longue : « %s »\n"
 
 #. no ext or empty ext, no point in wasting time
 #: ../src/cli/main.c:624
@@ -5013,7 +5013,7 @@ msgid ""
 "\n"
 "make sure your camera allows access and is not mounted otherwise"
 msgstr ""
-"Appareil photo « %s » sur le port « %s » erreur %s\n"
+"Appareil photo « %s » sur le port « %s » erreur « %s »\n"
 "\n"
 "assurez-vous que la l'appareil autorise l'accès et qu'il n'est pas monté "
 "sinon"
@@ -5913,7 +5913,7 @@ msgstr "Supprimer les verrous des bases de données"
 
 #: ../src/common/database.c:2783
 msgid "are you sure?"
-msgstr "êTes vous certain ?"
+msgstr "Êtes-vous certain ?"
 
 #: ../src/common/database.c:2784
 msgid ""
@@ -5944,7 +5944,7 @@ msgid ""
 msgstr ""
 "\n"
 "Suppression des fichiers verrous réussie.\n"
-"Darktable doit être redémarré\n"
+"darktable doit être redémarré\n"
 
 #. the button to close the popup
 #: ../src/common/database.c:2802 ../src/common/database.c:2809
@@ -5990,7 +5990,7 @@ msgstr "Le fichier de verrouillage de la base de données semble être vide"
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
 "Erreur lors de l'ouverture en lecture du fichier de verrouillage de la base "
-"de données : %s"
+"de données : « %s »"
 
 #. the database has to be upgraded, let's ask user
 #: ../src/common/database.c:2974
@@ -6014,7 +6014,7 @@ msgstr ""
 
 #: ../src/common/database.c:2982
 msgid "darktable - schema migration"
-msgstr "Darktable - migration de la base"
+msgstr "darktable - Migration de la base"
 
 #: ../src/common/database.c:2983 ../src/common/database.c:3296
 #: ../src/common/database.c:3314 ../src/common/database.c:3476
@@ -6039,7 +6039,7 @@ msgstr ""
 #: ../src/common/database.c:3293 ../src/common/database.c:3311
 #: ../src/common/database.c:3473 ../src/common/database.c:3491
 msgid "darktable - error opening database"
-msgstr "Darktable - erreur lors de l'ouverture de la base de données"
+msgstr "darktable - Erreur lors de l'ouverture de la base de données"
 
 #: ../src/common/database.c:3298 ../src/common/database.c:3478
 msgid "attempt restore"
@@ -6148,7 +6148,7 @@ msgstr ""
 #: ../src/common/http_server.c:95
 #, c-format
 msgid "darktable » %s"
-msgstr "Darktable » %s"
+msgstr "darktable » %s"
 
 #: ../src/common/http_server.c:97
 msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
@@ -6365,7 +6365,7 @@ msgstr ""
 msgid "requested session path not available. device not mounted?"
 msgstr ""
 "Le chemin demandé pour la session n'est pas accessible. L'appareil n'est pas "
-"monté?"
+"monté ?"
 
 #: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:198
 msgid "legacy"
@@ -6604,7 +6604,7 @@ msgstr "Applique le style « %s » à l'image actuelle"
 #: ../src/common/styles.c:1366
 #, c-format
 msgid "failed to overwrite style file for %s"
-msgstr "Impossible de remplacer le style %s"
+msgstr "Impossible de remplacer le style « %s »"
 
 #: ../src/common/styles.c:1372
 #, c-format
@@ -6709,7 +6709,7 @@ msgstr "En cours..."
 #: ../src/control/crawler.c:401
 #, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
-msgstr "ERREUR : %s NON synchronisé XMP → DB"
+msgstr "ERREUR : « %s » NON synchronisé XMP → DB"
 
 #: ../src/control/crawler.c:402 ../src/control/crawler.c:456
 #: ../src/control/crawler.c:510
@@ -6723,12 +6723,12 @@ msgstr ""
 #: ../src/control/crawler.c:407
 #, c-format
 msgid "SUCCESS: %s synced XMP → DB"
-msgstr "SUCCES : %s synchronisé XMP → DB"
+msgstr "SUCCES : « %s » synchronisé XMP → DB"
 
 #: ../src/control/crawler.c:427
 #, c-format
 msgid "ERROR: %s NOT synced DB → XMP"
-msgstr "ERREUR : %s NON synchronisé DB → XMP"
+msgstr "ERREUR : « %s » NON synchronisé DB → XMP"
 
 #: ../src/control/crawler.c:428 ../src/control/crawler.c:473
 #: ../src/control/crawler.c:524
@@ -6737,58 +6737,58 @@ msgid ""
 "ERROR: cannot write %s \n"
 "the destination may be full, offline or read-only."
 msgstr ""
-"ERREUR : impossible d'écrire %s \n"
-"la destination est peut être pleine, hors ligne ou en lecture seule."
+"ERREUR : impossible d'écrire « %s »\n"
+"La destination est peut être pleine, hors ligne ou en lecture seule."
 
 #: ../src/control/crawler.c:433
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
-msgstr "SUCCES : %s synchronisé DB → XMP"
+msgstr "SUCCES : « %s » synchronisé DB → XMP"
 
 #: ../src/control/crawler.c:455
 #, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
-msgstr "ERREUR : %s NON synchronisé nouveau (XMP) → ancien (DB)"
+msgstr "ERREUR : « %s » NON synchronisé nouveau (XMP) → ancien (DB)"
 
 #: ../src/control/crawler.c:460
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
-msgstr "SUCCES : %s synchronisé nouveau (XMP) → ancien (DB)"
+msgstr "SUCCES : « %s » synchronisé nouveau (XMP) → ancien (DB)"
 
 #: ../src/control/crawler.c:472
 #, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
-msgstr "ERREUR : %s NON synchronisé nouveau (DB) → ancien (XMP)"
+msgstr "ERREUR : « %s » NON synchronisé nouveau (DB) → ancien (XMP)"
 
 #: ../src/control/crawler.c:477
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
-msgstr "SUCCES : %s synchronisé nouveau (DB) → ancien (XMP)"
+msgstr "SUCCES : « %s » synchronisé nouveau (DB) → ancien (XMP)"
 
 #: ../src/control/crawler.c:485 ../src/control/crawler.c:536
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
-msgstr "EXCEPTION : %s a un horodatage incohérent"
+msgstr "EXCEPTION : « %s » a un horodatage incohérent"
 
 #: ../src/control/crawler.c:509
 #, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
-msgstr "ERREUR : %s NON synchronisé ancien (XMP) → nouveau (DB)"
+msgstr "ERREUR : « %s » NON synchronisé ancien (XMP) → nouveau (DB)"
 
 #: ../src/control/crawler.c:514
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
-msgstr "SUCCES : %s synchronisé ancien (XMP) → nouveau (DB)"
+msgstr "SUCCES : « %s » synchronisé ancien (XMP) → nouveau (DB)"
 
 #: ../src/control/crawler.c:523
 #, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
-msgstr "ERREUR : %s NON synchronisé ancien (DB) → nouveau (XMP)"
+msgstr "ERREUR : « %s » NON synchronisé ancien (DB) → nouveau (XMP)"
 
 #: ../src/control/crawler.c:528
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
-msgstr "SUCCES : %s synchronisé ancien (DB) → nouveau (XMP)"
+msgstr "SUCCES : « %s » synchronisé ancien (DB) → nouveau (XMP)"
 
 #: ../src/control/crawler.c:607
 #, c-format
@@ -6885,8 +6885,8 @@ msgstr "Capturer des images"
 #, c-format
 msgid "%d/%d imported to %s"
 msgid_plural "%d/%d imported to %s"
-msgstr[0] "%d/%d importé vers %s"
-msgstr[1] "%d/%d importés vers %s"
+msgstr[0] "%d/%d importé vers « %s »"
+msgstr[1] "%d/%d importés vers « %s »"
 
 #: ../src/control/jobs/camera_jobs.c:298
 msgid "starting to import images from camera"
@@ -6971,7 +6971,7 @@ msgstr "Impossible de placer « %s » dans la poubelle%s%s"
 #: ../src/control/jobs/control_jobs.c:857
 #, c-format
 msgid "could not physically delete %s%s%s"
-msgstr "Impossible de supprimer du disque %s%s%s"
+msgstr "Impossible de supprimer du disque « %s%s%s »"
 
 #: ../src/control/jobs/control_jobs.c:867
 msgid "physically delete"
@@ -7081,7 +7081,7 @@ msgstr "Aucune image à exporter"
 #: ../src/control/jobs/control_jobs.c:1407
 #, c-format
 msgid "exporting %d / %d to %s"
-msgstr "Exportation %d / %d vers %s"
+msgstr "Exportation %d / %d vers « %s »"
 
 #: ../src/control/jobs/control_jobs.c:1428 ../src/views/darkroom.c:787
 #: ../src/views/print.c:342
@@ -7128,10 +7128,10 @@ msgid_plural ""
 "(without deleting files on disk)?"
 msgstr[0] ""
 "Êtes-vous sûr de vouloir enlever %d image de darktable\n"
-"(sans supprimer le fichier du disque)?"
+"(sans supprimer le fichier du disque) ?"
 msgstr[1] ""
 "Êtes-vous sûr de vouloir enlever %d images de darktable\n"
-"(sans supprimer les fichiers du disque)?"
+"(sans supprimer les fichiers du disque) ?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1583
@@ -7158,10 +7158,10 @@ msgid_plural ""
 "(using trash if possible)?"
 msgstr[0] ""
 "Êtes-vous sûr de vouloir supprimer définitivement %d image\n"
-"(en utilisant la poubelle si possible)?"
+"(en utilisant la poubelle si possible) ?"
 msgstr[1] ""
 "Êtes-vous sûr de vouloir supprimer définitivement %d images\n"
-"(en utilisant la poubelle si possible)?"
+"(en utilisant la poubelle si possible) ?"
 
 #: ../src/control/jobs/control_jobs.c:1602
 #, c-format
@@ -7181,7 +7181,7 @@ msgstr ""
 #: ../src/control/jobs/control_jobs.c:1631
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
-"êTes-vous sûr de vouloir supprimer définitivement les images sélectionnées ?"
+"Êtes-vous sûr de vouloir supprimer définitivement les images sélectionnées ?"
 
 #: ../src/control/jobs/control_jobs.c:1646
 msgid "move images"
@@ -7207,10 +7207,10 @@ msgid_plural ""
 "do you really want to physically move %d images to %s?\n"
 "(all duplicates will be moved along)"
 msgstr[0] ""
-"Êtes-vous sûr de vouloir déplacer %d image vers %s ?\n"
+"Êtes-vous sûr de vouloir déplacer %d image vers « %s » ?\n"
 "(les clones seront également déplacés)"
 msgstr[1] ""
-"Êtes-vous sûr de vouloir déplacer %d images vers %s ?\n"
+"Êtes-vous sûr de vouloir déplacer %d images vers « %s » ?\n"
 "(les clones seront également déplacés)"
 
 #: ../src/control/jobs/control_jobs.c:1700
@@ -7227,8 +7227,8 @@ msgstr[1] "Copier les images ?"
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
-msgstr[0] "Êtes-vous sûr de vouloir copier %d image vers %s ?"
-msgstr[1] "Êtes-vous sûr de vouloir copier %d images vers %s ?"
+msgstr[0] "Êtes-vous sûr de vouloir copier %d image vers « %s » ?"
+msgstr[1] "Êtes-vous sûr de vouloir copier %d images vers « %s » ?"
 
 #: ../src/control/jobs/control_jobs.c:1750
 #: ../src/control/jobs/control_jobs.c:1758
@@ -7330,7 +7330,7 @@ msgstr "Aucun format d'image supporté n'a été trouvé"
 #: ../src/control/jobs/image_jobs.c:76
 #, c-format
 msgid "importing image %s"
-msgstr "Importation de l'image %s"
+msgstr "Importation de l'image « %s »"
 
 #: ../src/control/jobs/image_jobs.c:110
 msgid "import image"
@@ -8373,7 +8373,7 @@ msgid ""
 "ctrl+click to %s"
 msgstr ""
 "%s\n"
-"Ctrl-clic pour %s"
+"Ctrl+clic pour %s"
 
 #: ../src/develop/lightroom.c:1083
 msgid "cannot find lightroom XMP!"
@@ -8586,7 +8586,7 @@ msgstr "[FORME] Supprimer la forme"
 #: ../src/develop/masks/masks.c:387
 #, c-format
 msgid "copy of %s"
-msgstr "Copie de %s"
+msgstr "Copie de « %s »"
 
 #: ../src/develop/masks/masks.c:917
 #, c-format
@@ -8728,7 +8728,7 @@ msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
 msgstr ""
-"Darktable a rencontré des problèmes avec la configuration OpenCL qui sera "
+"darktable a rencontré des problèmes avec la configuration OpenCL qui sera "
 "désactivé pour cette session!"
 
 #: ../src/develop/tiling.c:821 ../src/develop/tiling.c:1154
@@ -9098,7 +9098,7 @@ msgstr "Attention : aucune image sélectionnée pour l'étendue spécifiée\n"
 #: ../src/generate-cache/main.c:86
 #, c-format
 msgid "warning: did you want to swap these boundaries?\n"
-msgstr "Attention : vouliez-vous vraiment inverser ces valeurs?\n"
+msgstr "Attention : vouliez-vous vraiment inverser ces valeurs ?\n"
 
 #: ../src/generate-cache/main.c:227
 #, c-format
@@ -9765,7 +9765,7 @@ msgstr "« %s » Est assigné à « %s »"
 
 #: ../src/gui/gtk.c:172 ../src/views/darkroom.c:4594
 msgid "darktable - darkroom preview"
-msgstr "Darktable - Pré-Visualisation Chambre Noire"
+msgstr "darktable - Pré-Visualisation Chambre Noire"
 
 #: ../src/gui/gtk.c:183
 msgid "tooltips off"
@@ -10495,7 +10495,7 @@ msgstr "Préférences"
 
 #: ../src/gui/preferences.c:555
 msgid "darktable needs to be restarted for settings to take effect"
-msgstr "Darktable doit être redémarré pour prendre en compte les changements"
+msgstr "darktable doit être redémarré pour prendre en compte les changements"
 
 #. exif
 #: ../src/gui/preferences.c:814 ../src/gui/presets.c:610
@@ -10765,7 +10765,7 @@ msgid ""
 "preset %s\n"
 "%s"
 msgstr ""
-"Préréglage %s\n"
+"Préréglage « %s »\n"
 "%s"
 
 #: ../src/gui/presets.c:1062
@@ -10875,7 +10875,7 @@ msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
 msgstr ""
-"Échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de "
+"Échec de l'allocation de mémoire pour « %s », merci de diminuer le nombre de "
 "fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
 #: ../src/imageio/imageio.c:738
@@ -11086,7 +11086,7 @@ msgstr "JPEG 2000 (12-bits)"
 
 #: ../src/imageio/format/j2k.c:652
 msgid "jp2"
-msgstr "Jp2"
+msgstr "JP2"
 
 #: ../src/imageio/format/j2k.c:667
 msgid "DCP mode"
@@ -11139,9 +11139,9 @@ msgid ""
 "100 = lossless (integer bit depth only)"
 msgstr ""
 "La qualité de l'image exportée\n"
-"0-29 = avec beaucoup de pertes\n"
-"30-99 = comparable à la qualité JPEG\n"
-"100 = sans perte (profondeur de bit entier uniquement)"
+" • « 0-29 » - Avec beaucoup de pertes\n"
+" • « 30-99 » - Comparable à la qualité JPEG\n"
+" • « 100 » - Sans perte (profondeur de bit entier uniquement)"
 
 #: ../src/imageio/format/jxl.c:589
 msgid "encoding color profile"
@@ -11181,7 +11181,7 @@ msgid ""
 msgstr ""
 "L'effort effectué pour l'encodage de l'image, un effort plus important "
 "donnera de meilleurs résultats mais demandera un temps d'encodage plus "
-"important"
+"important."
 
 #: ../src/imageio/format/jxl.c:619
 msgid "decoding speed"
@@ -11212,7 +11212,7 @@ msgstr "PDF"
 
 #: ../src/imageio/format/pdf.c:577
 msgid "enter the title of the pdf"
-msgstr "Entrer le titre du pdf"
+msgstr "Entrer le titre du PDF"
 
 #. paper size
 #. // papers
@@ -11226,8 +11226,8 @@ msgid ""
 "either one from the list or \"<width> [unit] x <height> <unit>\n"
 "example: 210 mm x 2.97 cm"
 msgstr ""
-"Taille du papier du pdf\n"
-"soit une valeur depuis la liste ou  \"<largeur> [unité] X <hauteur> <unité>\n"
+"Taille du papier du PDF\n"
+"Soit une valeur depuis la liste ou « <largeur> [unité] X <hauteur> <unité> »\n"
 "exemple : 210 mm x 2.97 cm"
 
 #. orientation
@@ -11237,7 +11237,7 @@ msgstr "Orientation de la page"
 
 #: ../src/imageio/format/pdf.c:601
 msgid "paper orientation of the pdf"
-msgstr "Orientation du papier du pdf"
+msgstr "Orientation du papier du PDF"
 
 #: ../src/imageio/format/pdf.c:604 ../src/iop/borders.c:1041
 #: ../src/libs/filtering.c:286 ../src/libs/filters/ratio.c:122
@@ -11270,11 +11270,11 @@ msgstr ""
 #: ../src/imageio/format/pdf.c:621 ../src/libs/export.c:1133
 #: ../src/libs/export.c:1156
 msgid "dpi"
-msgstr "Dpi"
+msgstr "DPI"
 
 #: ../src/imageio/format/pdf.c:625
 msgid "dpi of the images inside the pdf"
-msgstr "Dpi des images embarquées dans le pdf"
+msgstr "DPI des images embarquées dans le PDF"
 
 #. rotate images yes|no
 #: ../src/imageio/format/pdf.c:631
@@ -11286,8 +11286,8 @@ msgid ""
 "images can be rotated to match the pdf orientation to waste less space when "
 "printing"
 msgstr ""
-"Les images peuvent être tournées pour correspondre à l'orientation du pdf et "
-"gâcher moins d'espace lors de l'impression"
+"Les images peuvent être tournées pour correspondre à l'orientation du PDF et "
+"gâcher moins d'espace lors de l'impression."
 
 #. pages all|single images|contact sheet
 #: ../src/imageio/format/pdf.c:641
@@ -11296,7 +11296,7 @@ msgstr "TODO: pages"
 
 #: ../src/imageio/format/pdf.c:642
 msgid "what pages should be added to the pdf"
-msgstr "Quelles pages sont à ajouter au pdf"
+msgstr "Quelles pages sont à ajouter au PDF"
 
 #: ../src/imageio/format/pdf.c:645
 msgid "single images"
@@ -11327,8 +11327,8 @@ msgid ""
 "deflate -- smaller files but slower"
 msgstr ""
 "Méthode utilisé pour la compression des images\n"
-"non-compressée -- rapide mais taille importante\n"
-"compressée-- taille réduite mais plus lent"
+" • « Non-compressée » - Rapide mais taille importante\n"
+" • « Compressée » - Taille réduite mais plus lent"
 
 #: ../src/imageio/format/pdf.c:682 ../src/imageio/format/tiff.c:886
 msgid "deflate"
@@ -11345,9 +11345,9 @@ msgid ""
 "draft -- images are replaced with boxes\n"
 "debug -- only show the outlines and bounding boxes"
 msgstr ""
-"Normal : Affiche les images dans le pdf\n"
-"Épreuve : Les images sont remplacées par des boîtes\n"
-"Débogage : Montre uniquement le contours des emplacements"
+" • « Normal » - Affiche les images dans le PDF\n"
+" • « Épreuve » - Les images sont remplacées par des boîtes\n"
+" • « Débogage » - Montre uniquement le contours des emplacements."
 
 #: ../src/imageio/format/pdf.c:693 ../src/views/lighttable.c:668
 msgid "normal"
@@ -11420,8 +11420,8 @@ msgid ""
 "for lossless, 0 is the fastest but gives larger files compared\n"
 "to the slowest 100."
 msgstr ""
-"Pour avec perte, 0 donne la plus petite taille et 100 la meilleurs qualité.\n"
-"Pour sans perte, 0 est le plus rapide mais donne des fichiers plus gros\n"
+"Pour « Avec perte », 0 donne la plus petite taille et 100 la meilleurs qualité.\n"
+"Pour « Sans perte », 0 est le plus rapide mais donne des fichiers plus gros\n"
 "en comparaison au mode lent 100."
 
 #: ../src/imageio/format/webp.c:407
@@ -11435,10 +11435,10 @@ msgid ""
 "photo: outdoor photograph, with natural lighting\n"
 "graphic: discrete tone image (graph, map-tile etc)"
 msgstr ""
-"Description de l'image pour l'encodeur.\n"
-"Image : Photographie d'intérieur, portrait\n"
-"Photo : Photographie d'extérieur, avec lumière naturelle\n"
-"Graphique : Image avec des couleurs uniformes (schéma, etc)"
+"Description de l'image pour l'encodeur :\n"
+" • « Image » - Photographie d'intérieur, portrait\n"
+" • « Photo » - Photographie d'extérieur, avec lumière naturelle\n"
+" • « Graphique » - Image avec des couleurs uniformes (schéma, etc)"
 
 #: ../src/imageio/format/webp.c:413
 msgid "picture"
@@ -11458,7 +11458,7 @@ msgstr "XCF"
 
 #: ../src/imageio/storage/disk.c:71 ../src/libs/export.c:1045
 msgid "file on disk"
-msgstr "Fichier sur le disque"
+msgstr "Fichier sur disque"
 
 #: ../src/imageio/storage/disk.c:169 ../src/imageio/storage/gallery.c:155
 #: ../src/imageio/storage/latex.c:154
@@ -11526,7 +11526,7 @@ msgstr ""
 "L'exportation est en mode « écraser », ce mode écrasera toutes\n"
 "les images existantes du même nom.\n"
 "\n"
-"Voulez-vous vraiment continuer?"
+"Voulez-vous vraiment continuer ?"
 
 #: ../src/imageio/storage/email.c:52
 msgid "send as email"
@@ -11538,7 +11538,7 @@ msgstr "Images exportées depuis darktable"
 
 #: ../src/imageio/storage/email.c:251
 msgid "could not launch email client!"
-msgstr "Impossible de lancer le client de messagerie!"
+msgstr "Impossible de lancer le client de messagerie !"
 
 #: ../src/imageio/storage/gallery.c:73
 msgid "website gallery"
@@ -11809,7 +11809,7 @@ msgid ""
 "the image"
 msgstr ""
 "Rotation des image\n"
-"clic-droit et déplacer pour définir une ligne verticale ou horizontale de "
+"Clic-Droit et déplacer pour définir une ligne verticale ou horizontale de "
 "l'image"
 
 #: ../src/iop/ashift.c:5782 ../src/iop/ashift.c:5783
@@ -11866,9 +11866,9 @@ msgid ""
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
-"Correction automatique des distorsions verticales de perspective\n"
-"Ctrl+Clic Pour la correction de rotation seulement\n"
-"Maj+Clic Pour la correction de distorsion uniquement"
+"Correction automatique des distorsions verticales de perspective :\n"
+" • « Ctrl+Clic » - Pour la correction de rotation seulement\n"
+" • « Maj+Clic » - Pour la correction de distorsion uniquement"
 
 #: ../src/iop/ashift.c:5799
 msgid ""
@@ -11876,9 +11876,9 @@ msgid ""
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
-"Correction automatique des distorsions horizontales de perspective\n"
-"Ctrl+Clic Pour la correction de rotation seulement\n"
-"Maj+Clic Pour la correction de distorsion uniquement"
+"Correction automatique des distorsions horizontales de perspective :\n"
+" • « Ctrl+Clic » -  Pour la correction de rotation seulement\n"
+" • « Maj+Clic » - Pour la correction de distorsion uniquement"
 
 #: ../src/iop/ashift.c:5802
 msgid ""
@@ -11890,10 +11890,10 @@ msgid ""
 msgstr ""
 "Correction automatique des distorsions verticales et horizontales de "
 "perspective ; ajuste la rotation, l'alignement de l'objectif dans les deux "
-"directions et l'inclinaison\n"
-"Ctrl+Clic Pour la correction de rotation seulement\n"
-"Maj+Clic Pour la correction de distorsion uniquement\n"
-"Ctrl+Maj-Clic Pour uniquement la correction de rotation et d'alignement "
+"directions et l'inclinaison :\n"
+" • « Ctrl+Clic » - Pour la correction de rotation seulement\n"
+" • « Maj+Clic » - Pour la correction de distorsion uniquement\n"
+" • « Ctrl+Maj-Clic » - Pour uniquement la correction de rotation et d'alignement "
 "d'objectif"
 
 #: ../src/iop/ashift.c:5808
@@ -11903,10 +11903,10 @@ msgid ""
 "shift+click for an additional detail enhancement\n"
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
-"Analyse automatiquement les lignes de structure dans l'image\n"
-"Ctrl+Clic Pour une amélioration des bords accrue\n"
-"Maj+Clic Pour une amélioration des détails accrue\n"
-"Ctrl+Maj+Clic Pour une combinaison des deux méthodes"
+"Analyse automatiquement les lignes de structure dans l'image :\n"
+" • « Ctrl+Clic » - Pour une amélioration des bords accrue\n"
+" • « Maj+Clic » - Pour une amélioration des détails accrue\n"
+" • « Ctrl+Maj+Clic » - Pour une combinaison des deux méthodes"
 
 #: ../src/iop/ashift.c:5812
 msgid "manually define perspective rectangle"
@@ -12108,7 +12108,7 @@ msgstr "Plus fin"
 
 #: ../src/iop/atrous.c:1602 ../src/libs/export.c:1149 ../src/libs/export.c:1164
 msgid "x"
-msgstr "X"
+msgstr "x"
 
 #: ../src/iop/atrous.c:1683 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:467
 msgid "luma"
@@ -16790,7 +16790,7 @@ msgstr ""
 
 #: ../src/iop/hazeremoval.c:100
 msgid "haze removal"
-msgstr "Suppression de la brume"
+msgstr "Suppression de la Brume"
 
 #: ../src/iop/hazeremoval.c:106
 msgid "dehaze|defog|smoke|smog"
@@ -17568,17 +17568,17 @@ msgstr "Erreur - impossible d'allouer la mémoire pour le gmz LUT"
 #: ../src/iop/lut3d.c:493
 #, c-format
 msgid "invalid png file %s"
-msgstr "Fichier png non valide  « %s »"
+msgstr "Fichier PNG non valide  « %s »"
 
 #: ../src/iop/lut3d.c:501
 #, c-format
 msgid "png bit-depth %d not supported"
-msgstr "Png %d bits non supportés"
+msgstr "PNG %d bits non supportés"
 
 #: ../src/iop/lut3d.c:515 ../src/iop/lut3d.c:525
 #, c-format
 msgid "invalid level in png file %d %d"
-msgstr "Niveaux invalides dans le fichier png %d %d"
+msgstr "Niveaux invalides dans le fichier PNG %d %d"
 
 #: ../src/iop/lut3d.c:520
 msgid "this darktable build is not compatible with compressed CLUT"
@@ -17587,25 +17587,25 @@ msgstr "Cette version de darktable n'a pas le support des LUT compressées"
 #: ../src/iop/lut3d.c:537 ../src/iop/lut3d.c:787
 #, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
-msgstr "Erreur - la taille 3D LUT de %d dépasse le maximum supporté"
+msgstr "Erreur - La taille 3D LUT de %d dépasse le maximum supporté"
 
 #: ../src/iop/lut3d.c:549
 msgid "error allocating buffer for png LUT"
-msgstr "Erreur - impossible d'allouer la mémoire pour le png LUT"
+msgstr "Erreur - Impossible d'allouer la mémoire pour le PNG LUT"
 
 #: ../src/iop/lut3d.c:557
 #, c-format
 msgid "error - could not read png image %s"
-msgstr "Erreur - impossible de lire l'image png « %s »"
+msgstr "Erreur - Impossible de lire l'image PNG « %s »"
 
 #: ../src/iop/lut3d.c:567
 msgid "error - allocating buffer for png LUT"
-msgstr "Erreur - impossible d'allouer la mémoire pour le png LUT"
+msgstr "Erreur - Impossible d'allouer la mémoire pour le PNG LUT"
 
 #: ../src/iop/lut3d.c:742
 #, c-format
 msgid "error - invalid cube file: %s"
-msgstr "Erreur : fichier cube invalide « %s »"
+msgstr "Erreur : Fichier cube invalide « %s »"
 
 #: ../src/iop/lut3d.c:756
 msgid "DOMAIN MIN <> 0.0 is not supported"
@@ -17621,21 +17621,21 @@ msgstr "1D LUT cube non supporté"
 
 #: ../src/iop/lut3d.c:798
 msgid "error - allocating buffer for cube LUT"
-msgstr "Erreur - impossible d'allouer la mémoire pour le cube LUT"
+msgstr "Erreur - Impossible d'allouer la mémoire pour le cube LUT"
 
 #: ../src/iop/lut3d.c:809
 msgid "error - cube LUT size is not defined"
-msgstr "Erreur - taille LUT cube non définie"
+msgstr "Erreur - Taille LUT cube non définie"
 
 #: ../src/iop/lut3d.c:820
 #, c-format
 msgid "error - cube LUT invalid number line %d"
-msgstr "Erreur - nombre de lignes du LUT cube non valide %d"
+msgstr "Erreur - Nombre de lignes du LUT cube non valide %d"
 
 #: ../src/iop/lut3d.c:836
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
-msgstr "Erreur - nombre (%d) de lignes du LUT cube non valide, devrait être %d"
+msgstr "Erreur - Nombre (%d) de lignes du LUT cube non valide, devrait être %d"
 
 #: ../src/iop/lut3d.c:846
 #, c-format
@@ -17645,31 +17645,31 @@ msgstr "Attention - LUT cube a %d valeurs hors de la plage [0,1]"
 #: ../src/iop/lut3d.c:871
 #, c-format
 msgid "error - invalid 3dl file: %s"
-msgstr "Erreur : fichier 3dl invalide « %s »"
+msgstr "Erreur : Fichier 3DL invalide « %s »"
 
 #: ../src/iop/lut3d.c:892
 #, c-format
 msgid "error - the maximum shaper LUT value %d is too low"
 msgstr ""
-"Erreur - la valeur maximum pour la table de transformation LUT %d est trop "
-"petite"
+"Erreur - La valeur maximum pour la table de transformation LUT %d est trop "
+"petite."
 
 #: ../src/iop/lut3d.c:903
 msgid "error - allocating buffer for 3dl LUT"
-msgstr "Erreur - impossible d'allouer la mémoire pour le LUT 3dl"
+msgstr "Erreur - Impossible d'allouer la mémoire pour le LUT 3dl"
 
 #: ../src/iop/lut3d.c:916
 msgid "error - 3dl LUT size is not defined"
-msgstr "Erreur - taille LUT 3dl non définie"
+msgstr "Erreur - Taille LUT 3DL non définie"
 
 #: ../src/iop/lut3d.c:944
 msgid "error - 3dl LUT lines number is not correct"
-msgstr "Erreur - nombre de lignes du LUT 3dl non valide"
+msgstr "Erreur - Nombre de lignes du LUT 3DL non valide"
 
 #: ../src/iop/lut3d.c:960
 msgid "error - the maximum LUT value does not match any valid bit depth"
 msgstr ""
-"Erreur - la valeur LUT maximum ne correspond à aucune taille de bit valide"
+"Erreur - La valeur LUT maximum ne correspond à aucune taille de bit valide"
 
 #: ../src/iop/lut3d.c:1538
 msgid "LUT root folder not defined"
@@ -17685,11 +17685,11 @@ msgstr "Sélection"
 
 #: ../src/iop/lut3d.c:1565
 msgid "hald CLUT (png), 3D LUT (cube or 3dl) or gmic compressed LUT (gmz)"
-msgstr "Hald CLUT (png), 3D LUT (cube ou 3dl) ou gmic LUT compressée (gmz)"
+msgstr "Hald CLUT (PNG), 3D LUT (Cube ou 3DL) ou GMIC LUT compressée (gmz)"
 
 #: ../src/iop/lut3d.c:1567
 msgid "hald CLUT (png) or 3D LUT (cube or 3dl)"
-msgstr "Hald CLUT (png) ou 3D LUT (cube ou 3dl)"
+msgstr "Hald CLUT (PNG) ou 3D LUT (Cube ou 3DL)"
 
 #: ../src/iop/lut3d.c:1591
 msgid "select file outside LUT root folder is not allowed"
@@ -17701,7 +17701,7 @@ msgid ""
 "CAUTION: 3D LUT folder must be set in preferences/processing before choosing "
 "the LUT file"
 msgstr ""
-"Sélectionner un fichier png (haldclut), cube, 3dl ou gmz (LUT compressée)\n"
+"Sélectionner un fichier PNG (haldclut), Cube, 3DL ou gmz (LUT compressée)\n"
 "ATTENTION : le répertoire lut doit être positionné depuis les préférences "
 "(section traitement) avant de choisir un fichier lut"
 
@@ -17710,16 +17710,16 @@ msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D LUT folder must be "
 "set in preferences/processing before choosing the LUT file"
 msgstr ""
-"Sélectionner fichier png (haldclut), cube, ou 3dl\n"
+"Sélectionner fichier PNG (haldclut), Cube, ou 3DL\n"
 "ATTENTION : le répertoire lut doit être positionné depuis les préférences "
-"avant de choisir un fichier LUT"
+"avant de choisir un fichier LUT."
 
 #: ../src/iop/lut3d.c:1678
 msgid ""
 "the file path (relative to LUT folder) is saved with image along with the "
 "LUT data if it's a compressed LUT (gmz)"
 msgstr ""
-"Le chemin (relatif au répertoire lut) est sauvé avec l'image ainsi que les "
+"Le chemin (relatif au répertoire LUT) est sauvé avec l'image ainsi que les "
 "données lut pour les LUT compressées (gmz)"
 
 #: ../src/iop/lut3d.c:1681
@@ -19965,7 +19965,7 @@ msgstr "Détails de prise de vue"
 #: ../src/libs/filtering.c:945 ../src/libs/filtering.c:1580
 #: ../src/libs/tools/darktable.c:65
 msgid "darktable"
-msgstr "Darktable"
+msgstr "darktable"
 
 #: ../src/libs/collect.c:3008
 msgid "collections settings"
@@ -20376,19 +20376,19 @@ msgid ""
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
-"• Perceptif : permet de faire passer progressivement les couleurs hors gamut "
+" • « Perceptif » - Permet de faire passer progressivement les couleurs hors gamut "
 "dans le gamut, en préservant les dégradés, mais en affectant les couleurs "
 "dans le gamut au cours du processus. Notez que le rendu perceptif est "
 "souvent une LUT propriétaire qui dépend de l'espace de destination.\n"
 "\n"
-"• Colorimétrie relative : conserve la luminance tout en réduisant le moins "
+" • « Colorimétrie relative » - Conserve la luminance tout en réduisant le moins "
 "possible la saturation jusqu'à ce que les couleurs s'intègrent dans le "
 "gamut.\n"
 "\n"
-"• Saturation : conçu pour présenter des logos commerciaux accrocheurs en "
+" • « Saturation » - Conçu pour présenter des logos commerciaux accrocheurs en "
 "préservant la saturation. (Non adapté à la photographie).\n"
 "\n"
-"• Colorimétrie absolue : adapter le point blanc de l'image au point blanc du "
+"• « Colorimétrie absolue » - Adapter le point blanc de l'image au point blanc du "
 "support de destination et ne rien faire d'autre. Principalement utilisé lors "
 "de l'épreuvage des couleurs. (Non adapté à la photographie)."
 
@@ -22384,7 +22384,7 @@ msgstr "Groupes de modules"
 #: ../src/libs/modulegroups.c:307 ../src/libs/modulegroups.c:319
 #: ../src/libs/modulegroups.c:2422 ../src/libs/modulegroups.c:2424
 msgid "on-off"
-msgstr "On/off"
+msgstr "On/Off"
 
 #: ../src/libs/modulegroups.c:499 ../src/libs/modulegroups.c:502
 msgid ""
@@ -22402,7 +22402,7 @@ msgstr ""
 #: ../src/libs/modulegroups.c:636
 #, c-format
 msgid "go to the full version of the %s module"
-msgstr "Aller au module complet %s"
+msgstr "Aller au module complet « %s »"
 
 #: ../src/libs/modulegroups.c:1558 ../src/libs/modulegroups.c:1643
 #: ../src/libs/modulegroups.c:1679 ../src/libs/modulegroups.c:1729
@@ -22831,7 +22831,7 @@ msgstr "Impossible de récupérer l'image %d pour l'impression"
 #: ../src/libs/print_settings.c:874
 #, c-format
 msgid "%3.2f (dpi:%d)"
-msgstr "%3.2f (Dpi:%d)"
+msgstr "%3.2f (DPI:%d)"
 
 #: ../src/libs/print_settings.c:2252 ../src/libs/print_settings.c:2264
 #: ../src/libs/print_settings.c:2272 ../src/libs/print_settings.c:2323
@@ -22849,7 +22849,7 @@ msgstr "Gestion couleur par l'imprimante"
 #: ../src/libs/print_settings.c:2314
 #, c-format
 msgid "printer ICC profiles in %s or %s"
-msgstr "Profils ICC d'imprimante dans %s ou %s"
+msgstr "Profils ICC d'imprimante dans « %s » ou « %s »"
 
 #: ../src/libs/print_settings.c:2333
 msgid "black point compensation"
@@ -23860,7 +23860,7 @@ msgstr "Montrer les préférences globales"
 #. ask the user if darktable.org may be accessed
 #: ../src/libs/tools/global_toolbox.c:643
 msgid "access the online usermanual?"
-msgstr "Accéder au manuel utilisateur en ligne?"
+msgstr "Accéder au manuel utilisateur en ligne ?"
 
 #: ../src/libs/tools/global_toolbox.c:644
 #, c-format
@@ -24038,7 +24038,7 @@ msgid ""
 "an issue\n"
 "at https://github.com/darktable-org/darktable"
 msgstr ""
-"Darktable n'a pas réussi à charger « %s », retour vers la table lumineuse.\n"
+"darktable n'a pas réussi à charger « %s », retour vers la table lumineuse.\n"
 "\n"
 "Vérifiez que l'appareil photo est supporté par darktable\n"
 "(la liste des appareils supportés est ici https://www.darktable.org/"
@@ -24302,7 +24302,7 @@ msgstr "Profil de l'histogramme"
 #: ../src/views/darkroom.c:2559 ../src/views/lighttable.c:1274
 #, c-format
 msgid "display ICC profiles in %s or %s"
-msgstr "Profils ICC d'affichage dans %s ou %s"
+msgstr "Profils ICC d'affichage dans « %s » ou « %s »"
 
 #: ../src/views/darkroom.c:2562 ../src/views/lighttable.c:1277
 #, c-format
@@ -24312,12 +24312,12 @@ msgstr "Profils ICC d'affichage secondaire dans « %s » ou « %s »"
 #: ../src/views/darkroom.c:2565
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
-msgstr "Profils ICC d'épreuvage dans %s ou %s"
+msgstr "Profils ICC d'épreuvage dans « %s » ou « %s »"
 
 #: ../src/views/darkroom.c:2568
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
-msgstr "Profils ICC pour l'histogramme et la pipette dans %s ou %s"
+msgstr "Profils ICC pour l'histogramme et la pipette dans « %s » ou « %s »"
 
 #: ../src/views/darkroom.c:2604
 msgid ""
@@ -24707,7 +24707,7 @@ msgstr "Clic-droit + déplacer"
 
 #: ../src/views/view.c:1237
 msgid "darktable - accels window"
-msgstr "Darktable - fenêtre des raccourcis"
+msgstr "darktable - Fenêtre des raccourcis"
 
 #: ../src/views/view.c:1285
 msgid "switch to a classic window which will stay open after key release"
@@ -25001,7 +25001,7 @@ msgstr "Actions souris"
 #~ "préférences de fonctionnement"
 
 #~ msgid "darktable - schema maintenance"
-#~ msgstr "Darktable - maintenance"
+#~ msgstr "darktable - maintenance"
 
 #~ msgid "later"
 #~ msgstr "Plus tard"
@@ -25936,7 +25936,7 @@ msgstr "Actions souris"
 #~ "\n"
 
 #~ msgid "darktable - run performance configuration?"
-#~ msgstr "Darktable - exécute la configuration des performances?"
+#~ msgstr "darktable - exécute la configuration des performances?"
 
 #~ msgid ""
 #~ "we have an updated performance configuration logic - executing that might "
@@ -26833,7 +26833,7 @@ msgstr "Actions souris"
 #~ msgstr "_Enregistrer..."
 
 #~ msgid "do you want to access https://darktable.org/usermanual/?"
-#~ msgstr "Voulez-vous accéder à https://darktable.Org/usermanual/?"
+#~ msgstr "Voulez-vous accéder à https://darktable.org/usermanual/?"
 
 #, no-c-format
 #~ msgid "type your query, use `%' as wildcard"
@@ -26929,7 +26929,7 @@ msgstr "Actions souris"
 #~ "darktable s'exécutera a nouveau sans problème.\n"
 
 #~ msgid "darktable cannot be started because the database is locked"
-#~ msgstr "Darktable ne peut démarrer car la base de données est verrouillée"
+#~ msgstr "darktable ne peut démarrer car la base de données est verrouillée"
 
 #, c-format
 #~ msgid ""
@@ -28717,7 +28717,7 @@ msgstr "Actions souris"
 #~ msgstr "Seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
 #~ msgid "darktable could not load"
-#~ msgstr "Darktable ne peut pas ouvrir l'image"
+#~ msgstr "darktable ne peut pas ouvrir l'image"
 
 #~ msgid "switching to lighttable now."
 #~ msgstr "Retour vers la table lumineuse"
@@ -29119,7 +29119,7 @@ msgstr "Actions souris"
 #~ msgstr[1] "fin de la sélection atteinte (%d images)"
 
 #~ msgid "darktable - error locking database"
-#~ msgstr "Darktable - erreur du verrouillage de la base de données"
+#~ msgstr "darktable - erreur du verrouillage de la base de données"
 
 #~ msgid "save changes"
 #~ msgstr "Savegarder"
@@ -29624,7 +29624,7 @@ msgstr "Actions souris"
 #~ "darktable doesn't export private tags per default. this option allows to "
 #~ "export them to XMP-dc Subject and XMP-lr Hierarchical Subject."
 #~ msgstr ""
-#~ "Darktable n'exporte pas les mots-clés privés par défaut. Cette option "
+#~ "darktable n'exporte pas les mots-clés privés par défaut. Cette option "
 #~ "permet de les exporter vers  XMP-dc Subject et XMP-lr Hierarchical "
 #~ "Subject."
 
@@ -29635,7 +29635,7 @@ msgstr "Actions souris"
 #~ "darktable doesn't export the synonyms per default. this option allows to "
 #~ "export them along with tags to XMP-dc Subject."
 #~ msgstr ""
-#~ "Darktable n'exporte pas les synonymes par défaut. Cette option permet de "
+#~ "darktable n'exporte pas les synonymes par défaut. Cette option permet de "
 #~ "les exporter avec les tags vers XMP-dc Subject."
 
 #~ msgid ""
@@ -30723,7 +30723,7 @@ msgstr "Actions souris"
 #~ "backtrace log to mailing list with information about your CPU and where "
 #~ "you got the package from."
 #~ msgstr ""
-#~ "Darktable a détecté une instruction illégale qui signifie probablement "
+#~ "darktable a détecté une instruction illégale qui signifie probablement "
 #~ "qu'un code d'optimisation de CPU est utilisé à tort pour votre système. "
 #~ "Merci de reproduire le plantage en utilisant \"gdb darktable\" à partir "
 #~ "du terminal, puis de poster le résultat sur la liste de publication en "
@@ -30743,11 +30743,11 @@ msgstr "Actions souris"
 #~ "\n"
 #~ "%s"
 #~ msgstr ""
-#~ "Darktable est très gourmand en CPU et utilise des instructions SIMD SSE2 "
+#~ "darktable est très gourmand en CPU et utilise des instructions SIMD SSE2 "
 #~ "pour les calculs importants. Cela permet une meilleure expérience "
 #~ "utilisateur mais nécessite un procésseur compatible.\n"
 #~ "\n"
-#~ "Votre processeur ne supporte malheureusement pas SSE2. Darktable va "
+#~ "Votre processeur ne supporte malheureusement pas SSE2. darktable va "
 #~ "maintenant s'interrompre.\n"
 #~ "\n"
 #~ "%s"
