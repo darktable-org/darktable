@@ -13,7 +13,9 @@ cd "$scriptDir"/
 scriptDir=$(pwd)
 
 # Set variables
-buildDir="../../build"
+buildDir="${scriptDir}/../../build"
+installDir="${buildDir}/macosx"
+
 homebrewHome=$(brew --prefix)
 
 # Build and install darktable here
@@ -44,7 +46,7 @@ cmake .. \
     -DUSE_COLORD=OFF \
     -DUSE_KWALLET=OFF \
     -DBUILD_CMSTEST=OFF \
-    -DCMAKE_INSTALL_PREFIX="$scriptDir"
+    -DCMAKE_INSTALL_PREFIX="$installDir"
 
 # Build using all available cores
 make -j"$(sysctl -n hw.ncpu)"

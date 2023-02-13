@@ -12,7 +12,9 @@ PROGN=darktable
 
 # Go to directory of script
 scriptDir=$(dirname "$0")
-cd "$scriptDir"/
+buildDir="${scriptDir}/../../build/macosx"
+
+cd "$buildDir"/
 
 # Generate symlink to applications folder for easier drag & drop within dmg
 ln -s /Applications package/ || true
