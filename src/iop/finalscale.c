@@ -18,12 +18,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "iop/iop_api.h"
+#include "gui/gtk.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_finalscale_params_t)
 
@@ -36,12 +38,12 @@ typedef dt_iop_finalscale_params_t dt_iop_finalscale_data_t;
 
 const char *name()
 {
-  return C_("modulename", "scale into final size");
+  return C_("modulename", "Final resampling");
 }
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
 int default_group()
@@ -148,6 +150,22 @@ void cleanup(dt_iop_module_t *self)
   self->default_params = NULL;
 }
 
+typedef struct dt_iop_finalscale_gui_data_t
+{ } dt_iop_finalscale_gui_data_t;
+
+dt_iop_finalscale_gui_data_t dummy;
+
+void gui_init(dt_iop_module_t *self)
+{
+  IOP_GUI_ALLOC(finalscale);
+  self->widget = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(self->widget),_("This module is used to downscale images at export time. "
+                                                 "Moving it along the pipeline will have diffent effects on exported images. "
+                                                 "<a href='https://ansel.photos/en/doc/modules/processing-modules/finalscale/'>Learn more</a>"));
+  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  gtk_label_set_xalign (GTK_LABEL(self->widget), 0.0f);
+  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
+}
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
