@@ -788,7 +788,7 @@ static void _set_mapping_mode_cursor(GtkWidget *widget)
 
   if(widget && !strcmp(gtk_widget_get_name(widget), "module-header"))
     cursor = GDK_BASED_ARROW_DOWN;
-  else if(g_hash_table_lookup(darktable.control->widgets, darktable.control->mapping_widget)
+  else if(dt_action_widget(darktable.control->mapping_widget)
           && darktable.develop)
   {
     switch(dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE))

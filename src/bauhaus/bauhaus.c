@@ -1278,8 +1278,9 @@ void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const 
   if(action)
     g_hash_table_insert(darktable.control->combo_list, action, texts);
 
+  int item = 0;
   while(texts && *texts)
-    dt_bauhaus_combobox_add_full(widget, Q_(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);
+    dt_bauhaus_combobox_add_full(widget, Q_(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(item++), NULL, TRUE);
 }
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
@@ -3460,7 +3461,12 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
       break;
     default:
       value = effect - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1;
-      dt_bauhaus_combobox_set(widget, value);
+      dt_introspection_type_enum_tuple_t *values
+        = g_hash_table_lookup(darktable.control->combo_introspection, dt_action_widget(target));
+      if(values)
+        value = values[value].value;
+
+      dt_bauhaus_combobox_set_from_value(widget, value);
       break;
     }
 

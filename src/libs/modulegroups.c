@@ -2220,7 +2220,7 @@ static int _lib_modulegroups_basics_module_toggle(dt_lib_module_t *self, GtkWidg
 {
   if(GTK_IS_BUTTON(widget)) return 0;
 
-  dt_action_t *action = g_hash_table_lookup(darktable.control->widgets, widget);
+  dt_action_t *action = dt_action_widget(widget);
 
   dt_action_t *owner = action;
   while(owner && owner->type >= DT_ACTION_TYPE_SECTION) owner = owner->owner;
