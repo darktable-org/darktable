@@ -406,7 +406,7 @@ jobs:
           - { os: macos-12,    xcode: 13.4,   deployment: 12.3 }
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
-        btype: [ RelWithDebInfo ]
+        btype: [ Debug ]
         target:
           - skiptest
         generator:
