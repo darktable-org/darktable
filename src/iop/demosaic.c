@@ -556,7 +556,6 @@ static void green_equilibration_favg(
 
 // xtrans_interpolate adapted from dcraw 9.20
 
-#define SQR(x) ((x) * (x))
 // tile size, optimized to keep data in L2 cache
 #define TS 122
 
@@ -879,8 +878,8 @@ static void xtrans_markesteijn_interpolate(
                 // For 2nd and 3rd hori+vert passes, create a sum of
                 // steepness for both cardinal directions.
                 if(d > 1)
-                  diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
-                             + SQR(g);
+                  diff[d] += sqrf(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h])
+                             + sqrf(g);
               }
               if((d < 2) || (d & 1))
               { // output for passes 0, 1, 3, 5
@@ -981,9 +980,9 @@ static void xtrans_markesteijn_interpolate(
           for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
             const float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
-            drv[d][row][col] = SQR(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
-                               + SQR(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
-                               + SQR(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
+            drv[d][row][col] = sqrf(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
+                               + sqrf(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
+                               + sqrf(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
           }
       }
 
@@ -1876,7 +1875,7 @@ static void xtrans_fdc_interpolate(
               float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-(i << c)][1];
               color[h][d] = g + rfx[i << c][h] + rfx[-(i << c)][h];
               if(d > 1)
-                diff[d] += SQR(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h]) + SQR(g);
+                diff[d] += sqrf(rfx[i << c][1] - rfx[-(i << c)][1] - rfx[i << c][h] + rfx[-(i << c)][h]) + sqrf(g);
             }
             if(d > 1 && (d & 1))
               if(diff[d - 1] < diff[d])
@@ -1984,9 +1983,9 @@ static void xtrans_fdc_interpolate(
           for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
             float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
-            drv[d][row][col] = SQR(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
-                               + SQR(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
-                               + SQR(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
+            drv[d][row][col] = sqrf(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
+                               + sqrf(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
+                               + sqrf(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
           }
       }
 

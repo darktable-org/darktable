@@ -80,15 +80,6 @@
 #define eps 1e-5f              // Tolerance to avoid dividing by zero
 #define epssq 1e-10f
 
-static inline float _intp(float a, float b, float c)
-{   // taken from rt code
-    // calculate a * b + (1 - a) * c
-    // following is valid:
-    // intp(a, b+x, c+x) = intp(a, b, c) + x
-    // intp(a, b*x, c*x) = intp(a, b, c) * x
-    return a * (b - c) + c;
-}
-
 // We might have negative data in input and also want to normalise
 static inline float _safe_in(float a, float scale)
 {
@@ -455,7 +446,7 @@ static void rcd_demosaic(
             const float VH_Neighbourhood_Value = 0.25f * (VH_Dir[indx - w1 - 1] + VH_Dir[indx - w1 + 1] + VH_Dir[indx + w1 - 1] + VH_Dir[indx + w1 + 1]);
             const float VH_Disc = (fabs(0.5f - VH_Central_Value) < fabs(0.5f - VH_Neighbourhood_Value)) ? VH_Neighbourhood_Value : VH_Central_Value;
 
-            rgb[1][indx] = _intp(VH_Disc, H_Est, V_Est);
+            rgb[1][indx] = interpolatef(VH_Disc, H_Est, V_Est);
           }
         }
 
@@ -509,7 +500,7 @@ static void rcd_demosaic(
             const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
             // R@B and B@R interpolation
-            rgb[c][indx] = rgb[1][indx] + _intp(PQ_Disc, Q_Est, P_Est);
+            rgb[c][indx] = rgb[1][indx] + interpolatef(PQ_Disc, Q_Est, P_Est);
           }
         }
 
@@ -555,7 +546,7 @@ static void rcd_demosaic(
               const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
 
               // R@G and B@G interpolation
-              rgb[c][indx] = rgb1 + _intp(VH_Disc, H_Est, V_Est);
+              rgb[c][indx] = rgb1 + interpolatef(VH_Disc, H_Est, V_Est);
             }
           }
         }
