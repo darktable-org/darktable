@@ -270,8 +270,8 @@ void init_presets (dt_iop_module_so_t *self)
 
 
   // For scene-referred workflow, since filmic doesn't brighten as base curve does,
-  // we need an initial exposure boost. This might be too much in some cases but…
-  // (the preset name is used in develop.c)
+  // we need an initial exposure boost. This preset has the same value as what is
+  // auto-applied (see reload_default below) for scene-referred workflow.
   dt_gui_presets_add_generic(_("scene-referred default"), self->op, self->version(),
                              &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_MANUAL,
                                                          .black = -0.000244140625f,
@@ -283,6 +283,28 @@ void init_presets (dt_iop_module_so_t *self)
 
   dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
                             self->version(), FOR_RAW);
+}
+
+void reload_defaults(dt_iop_module_t *module)
+{
+  dt_iop_exposure_params_t *d = module->default_params;
+
+  const gboolean is_scene_referred = dt_is_scene_referred();
+
+  d->mode = EXPOSURE_MODE_MANUAL;
+
+  if(is_scene_referred && module->multi_priority == 0)
+  {
+    d->exposure = 0.7f;
+    d->black = -0.000244140625f;
+    d->compensate_exposure_bias = TRUE;
+  }
+  else
+  {
+    d->exposure = 0.0f;
+    d->black = 0.0f;
+    d->compensate_exposure_bias = FALSE;
+  }
 }
 
 static void _deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,

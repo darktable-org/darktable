@@ -39,6 +39,7 @@
 #include "gui/accelerators.h"
 #include "iop/iop_api.h"
 
+#include <regex.h>
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -376,11 +377,7 @@ static void set_presets(dt_iop_module_so_t *self,
                         const int count,
                         const gboolean camera)
 {
-  const gboolean autoapply_percamera = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
-
-  const gboolean force_autoapply = (autoapply_percamera || !camera);
-
-  // transform presets above to db entries.
+  // transform presets above to db entries
   for(int k = 0; k < count; k++)
   {
     // disable exposure fusion if not explicitly inited in params struct definition above:
@@ -402,11 +399,110 @@ static void set_presets(dt_iop_module_so_t *self,
                               presets[k].iso_min, presets[k].iso_max);
     dt_gui_presets_update_ldr(_(presets[k].name), self->op, self->version(), FOR_RAW);
     // make it auto-apply for matching images:
-    dt_gui_presets_update_autoapply(_(presets[k].name), self->op, self->version(),
-                                    force_autoapply ? 1 : presets[k].autoapply);
+    dt_gui_presets_update_autoapply(_(presets[k].name), self->op, self->version(), FALSE);
     // hide all non-matching presets in case the model string is set.
     // When force_autoapply was given always filter (as these are per-camera presets)
-    dt_gui_presets_update_filter(_(presets[k].name), self->op, self->version(), camera || presets[k].filter);
+    dt_gui_presets_update_filter(_(presets[k].name),
+                                 self->op, self->version(), camera || presets[k].filter);
+  }
+}
+
+static gboolean _match(const char *value, const char *pattern)
+{
+  char *pat = g_strdup(pattern);
+
+  // the pattern is for SQL, replace '%' by '*' and '_' by '.'
+
+  int k=0;
+  while(pat[k])
+  {
+    if(pat[k] == '%')
+      pat[k] = '*';
+    else if (pat[k] == '_')
+      pat[k] = '.';
+    k++;
+  }
+
+  gboolean res = g_regex_match_simple(pat, value, 0, 0);
+
+  g_free(pat);
+
+  return res;
+}
+
+static gboolean _check_camera(dt_iop_basecurve_params_t *d,
+                              const char *e_maker,
+                              const char *e_model,
+                              const char *c_maker,
+                              const char *c_model,
+                              const basecurve_preset_t *presets,
+                              const int count)
+{
+  // in reverse order as the more specific maker/models is after
+  // the more generic and we want to match the more specific.
+  for(int k = count - 1; k > 0; k--)
+  {
+    if((_match(e_maker, presets[k].maker)
+        && _match(e_model, presets[k].model))
+       || (_match(c_maker, presets[k].maker)
+           && _match(c_model, presets[k].model)))
+    {
+      *d = presets[k].params;
+      if(d->exposure_fusion == 0 && d->exposure_stops == 0.0f)
+      {
+        d->exposure_fusion = 0;
+        d->exposure_stops = 1.0f;
+        d->exposure_bias = 1.0f;
+      }
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+void reload_defaults(dt_iop_module_t *module)
+{
+  dt_iop_basecurve_params_t *d = module->default_params;
+
+  if(module->multi_priority == 0)
+  {
+    const dt_image_t *const image = &(module->dev->image_storage);
+
+    module->default_enabled = FALSE;
+
+    gboolean FOUND = FALSE;
+
+    // first check for camera specific basecure if needed
+
+    const gboolean autoapply_percamera =
+      dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
+
+    if(autoapply_percamera)
+    {
+      FOUND = _check_camera(d,
+                            image->exif_maker, image->exif_model,
+                            image->camera_maker, image->camera_alias,
+                            basecurve_camera_presets, basecurve_camera_presets_cnt);
+    }
+
+    if(!FOUND)
+    {
+      // then check for default base curve for the camera
+
+      FOUND = _check_camera(d,
+                            image->exif_maker, image->exif_model,
+                            image->camera_maker, image->camera_alias,
+                            basecurve_presets, basecurve_presets_cnt);
+    }
+  }
+  else
+  {
+    // set to neutral (cubic-spline) for all other instances
+    *d = basecurve_presets[0].params;
+    d->exposure_fusion = 0;
+    d->exposure_stops = 1.0f;
+    d->exposure_bias = 1.0f;
   }
 }
 
