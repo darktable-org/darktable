@@ -15,9 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
@@ -72,52 +74,17 @@ typedef struct dt_iop_basecurve_params_t
   dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE $DESCRIPTION: "preserve colors" */
 } dt_iop_basecurve_params_t;
 
-typedef struct dt_iop_basecurve_params5_t
-{
-  // three curves (c, ., .) with max number of nodes
-  // the other two are reserved, maybe we'll have cam rgb at some point.
-  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
-  int basecurve_nodes[3];
-  int basecurve_type[3];
-  int exposure_fusion;    // number of exposure fusion steps
-  float exposure_stops;   // number of stops between fusion images
-  float exposure_bias;    // whether to do exposure-fusion with over or under-exposure
-} dt_iop_basecurve_params5_t;
-
-typedef struct dt_iop_basecurve_params3_t
-{
-  // three curves (c, ., .) with max number of nodes
-  // the other two are reserved, maybe we'll have cam rgb at some point.
-  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
-  int basecurve_nodes[3];
-  int basecurve_type[3];
-  int exposure_fusion;  // number of exposure fusion steps
-  float exposure_stops; // number of stops between fusion images
-} dt_iop_basecurve_params3_t;
-
-// same but semantics/defaults changed
-typedef dt_iop_basecurve_params3_t dt_iop_basecurve_params4_t;
-
-typedef struct dt_iop_basecurve_params2_t
-{
-  // three curves (c, ., .) with max number of nodes
-  // the other two are reserved, maybe we'll have cam rgb at some point.
-  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
-  int basecurve_nodes[3];
-  int basecurve_type[3];
-} dt_iop_basecurve_params2_t;
-
-typedef struct dt_iop_basecurve_params1_t
-{
-  float tonecurve_x[6], tonecurve_y[6];
-  int tonecurve_preset;
-} dt_iop_basecurve_params1_t;
-
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
   if(old_version == 1 && new_version == 6)
   {
+    typedef struct dt_iop_basecurve_params1_t
+    {
+      float tonecurve_x[6], tonecurve_y[6];
+      int tonecurve_preset;
+    } dt_iop_basecurve_params1_t;
+
     dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
 
@@ -140,6 +107,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   }
   if(old_version == 2 && new_version == 6)
   {
+    typedef struct dt_iop_basecurve_params2_t
+    {
+      // three curves (c, ., .) with max number of nodes
+      // the other two are reserved, maybe we'll have cam rgb at some point.
+      dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+      int basecurve_nodes[3];
+      int basecurve_type[3];
+    } dt_iop_basecurve_params2_t;
+
     dt_iop_basecurve_params2_t *o = (dt_iop_basecurve_params2_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params2_t));
@@ -151,6 +127,17 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   }
   if(old_version == 3 && new_version == 6)
   {
+    typedef struct dt_iop_basecurve_params3_t
+    {
+      // three curves (c, ., .) with max number of nodes
+      // the other two are reserved, maybe we'll have cam rgb at some point.
+      dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+      int basecurve_nodes[3];
+      int basecurve_type[3];
+      int exposure_fusion;  // number of exposure fusion steps
+      float exposure_stops; // number of stops between fusion images
+    } dt_iop_basecurve_params3_t;
+
     dt_iop_basecurve_params3_t *o = (dt_iop_basecurve_params3_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params3_t));
@@ -161,6 +148,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   }
   if(old_version == 4 && new_version == 6)
   {
+    // same as v3 but semantics/defaults changed
+    typedef struct dt_iop_basecurve_params4_t
+    {
+      // three curves (c, ., .) with max number of nodes
+      // the other two are reserved, maybe we'll have cam rgb at some point.
+      dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+      int basecurve_nodes[3];
+      int basecurve_type[3];
+      int exposure_fusion;  // number of exposure fusion steps
+      float exposure_stops; // number of stops between fusion images
+    } dt_iop_basecurve_params4_t;
+
     dt_iop_basecurve_params4_t *o = (dt_iop_basecurve_params4_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params4_t));
@@ -170,6 +169,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   }
   if(old_version == 5 && new_version == 6)
   {
+    typedef struct dt_iop_basecurve_params5_t
+    {
+      // three curves (c, ., .) with max number of nodes
+      // the other two are reserved, maybe we'll have cam rgb at some point.
+      dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+      int basecurve_nodes[3];
+      int basecurve_type[3];
+      int exposure_fusion;    // number of exposure fusion steps
+      float exposure_stops;   // number of stops between fusion images
+      float exposure_bias;    // whether to do exposure-fusion with over or under-exposure
+    } dt_iop_basecurve_params5_t;
+
     dt_iop_basecurve_params5_t *o = (dt_iop_basecurve_params5_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params5_t));
@@ -333,12 +344,14 @@ const char *name()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("apply a view transform based on personal or camera manufacturer look,\n"
-                                        "for corrective purposes, to prepare images for display"),
-                                      _("corrective"),
-                                      _("linear, RGB, display-referred"),
-                                      _("non-linear, RGB"),
-                                      _("non-linear, RGB, display-referred"));
+  return dt_iop_set_description
+    (self,
+     _("apply a view transform based on personal or camera manufacturer look,\n"
+       "for corrective purposes, to prepare images for display"),
+     _("corrective"),
+     _("linear, RGB, display-referred"),
+     _("non-linear, RGB"),
+     _("non-linear, RGB, display-referred"));
 }
 
 int default_group()
@@ -351,12 +364,17 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+int default_colorspace(dt_iop_module_t *self,
+                       dt_dev_pixelpipe_t *pipe,
+                       dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, gboolean camera)
+static void set_presets(dt_iop_module_so_t *self,
+                        const basecurve_preset_t *presets,
+                        const int count,
+                        const gboolean camera)
 {
   const gboolean autoapply_percamera = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
 
@@ -412,9 +430,13 @@ static float exposure_increment(float stops, int e, float fusion, float bias)
 
 #ifdef HAVE_OPENCL
 static
-int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                  cl_mem dev_in, cl_mem dev_out, cl_mem dev_tmp,
-                  const int width, const int height)
+int gauss_blur_cl(struct dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  cl_mem dev_in,
+                  cl_mem dev_out,
+                  cl_mem dev_tmp,
+                  const int width,
+                  const int height)
 {
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
 
@@ -435,9 +457,13 @@ int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 }
 
 static
-int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                    cl_mem dev_in, cl_mem dev_out, cl_mem dev_tmp,
-                    const int width, const int height)
+int gauss_expand_cl(struct dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
+                    cl_mem dev_in,
+                    cl_mem dev_out,
+                    cl_mem dev_tmp,
+                    const int width,
+                    const int height)
 {
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
 
@@ -453,10 +479,15 @@ int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
 
 static
-int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                    cl_mem dev_in, cl_mem dev_coarse, cl_mem dev_detail,
-                    cl_mem dev_tmp1, cl_mem dev_tmp2,
-                    const int width, const int height)
+int gauss_reduce_cl(struct dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
+                    cl_mem dev_in,
+                    cl_mem dev_coarse,
+                    cl_mem dev_detail,
+                    cl_mem dev_tmp1,
+                    cl_mem dev_tmp2,
+                    const int width,
+                    const int height)
 {
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
 
@@ -489,12 +520,17 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 }
 
 static
-int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl_fusion(struct dt_iop_module_t *self,
+                      dt_dev_pixelpipe_iop_t *piece,
+                      cl_mem dev_in,
+                      cl_mem dev_out,
+                      const dt_iop_roi_t *const roi_in,
+                      const dt_iop_roi_t *const roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
+  const dt_iop_order_iccprofile_info_t *const work_profile =
+    dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -747,12 +783,17 @@ error:
 }
 
 static
-int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-                   const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl_lut(struct dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   cl_mem dev_in,
+                   cl_mem dev_out,
+                   const dt_iop_roi_t *const roi_in,
+                   const dt_iop_roi_t *const roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
+  const dt_iop_order_iccprofile_info_t *const work_profile =
+    dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   cl_mem dev_m = NULL;
   cl_mem dev_coeffs = NULL;
@@ -815,8 +856,11 @@ error:
   return FALSE;
 }
 
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
 
@@ -828,8 +872,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 #endif
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+void tiling_callback(struct dt_iop_module_t *self,
+                     struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)piece->data;
@@ -1102,7 +1148,8 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     // for every exposure fusion image:
     // push by some ev, apply base curve:
     if(d->preserve_colors == DT_RGB_NORM_NONE)
-      apply_legacy_curve(in, col[0], wd, ht, exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias),
+      apply_legacy_curve(in, col[0], wd, ht,
+                         exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias),
                          d->table, d->unbounded_coeffs);
     else
       apply_curve(in, col[0], wd, ht, d->preserve_colors, exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias),
@@ -1245,8 +1292,12 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   free(comb);
 }
 
-void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                 void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_lut(struct dt_iop_module_t *self,
+                 dt_dev_pixelpipe_iop_t *piece,
+                 const void *const ivoid,
+                 void *const ovoid,
+                 const dt_iop_roi_t *const roi_in,
+                 const dt_iop_roi_t *const roi_out)
 {
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
@@ -1267,8 +1318,12 @@ void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, co
 }
 
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
 
@@ -1279,7 +1334,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     process_lut(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(struct dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
@@ -1323,14 +1380,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the pixelpipe
   piece->data = calloc(1, sizeof(dt_iop_basecurve_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
@@ -1412,7 +1473,9 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *self)
+static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget,
+                                              GdkEventCrossing *event,
+                                              dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   if(!(event->state & GDK_BUTTON1_MASK))
@@ -1662,9 +1725,15 @@ static void dt_iop_basecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
   }
 }
 
-static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state);
+static gboolean _move_point_internal(dt_iop_module_t *self,
+                                     GtkWidget *widget,
+                                     float dx,
+                                     float dy,
+                                     const guint state);
 
-static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget,
+                                               GdkEventMotion *event,
+                                               gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
@@ -1733,7 +1802,9 @@ static gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   return TRUE;
 }
 
-static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean dt_iop_basecurve_button_press(GtkWidget *widget,
+                                              GdkEventButton *event,
+                                              gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
@@ -1847,15 +1918,19 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
   return FALSE;
 }
 
-static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
+static gboolean _move_point_internal(dt_iop_module_t *self,
+                                     GtkWidget *widget,
+                                     float dx,
+                                     float dy,
+                                     const guint state)
 {
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
-  int ch = 0;
+  const int ch = 0;
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
-  float multiplier = dt_accel_get_speed_multiplier(widget, state);
+  const float multiplier = dt_accel_get_speed_multiplier(widget, state);
   dx *= multiplier;
   dy *= multiplier;
 
@@ -1890,7 +1965,9 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   return TRUE;
 }
 
-static gboolean dt_iop_basecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+static gboolean dt_iop_basecurve_key_press(GtkWidget *widget,
+                                           GdkEventKey *event,
+                                           gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
@@ -2034,4 +2111,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

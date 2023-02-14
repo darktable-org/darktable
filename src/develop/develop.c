@@ -1603,9 +1603,11 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                                    ?_("scene-referred default")
                                    :"\t\n");
   int iformat = 0;
-  if(dt_image_is_rawprepare_supported(image)) iformat |= FOR_RAW;
+  if(dt_image_is_rawprepare_supported(image))
+    iformat |= FOR_RAW;
   else iformat |= FOR_LDR;
-  if(dt_image_is_hdr(image)) iformat |= FOR_HDR;
+  if(dt_image_is_hdr(image))
+    iformat |= FOR_HDR;
 
   int excluded = 0;
   if(dt_image_monochrome_flags(image)) excluded |= FOR_NOT_MONO;
@@ -1636,19 +1638,20 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   if(!dt_ioppr_has_iop_order_list(imgid))
   {
     // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT op_params"
-                                " FROM data.presets"
-                                " WHERE autoapply=1"
-                                "       AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
-                                "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
-                                "       AND ?8 BETWEEN exposure_min AND exposure_max"
-                                "       AND ?9 BETWEEN aperture_min AND aperture_max"
-                                "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
-                                "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
-                                "       AND operation = 'ioporder'"
-                                " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT op_params"
+       " FROM data.presets"
+       " WHERE autoapply=1"
+       "       AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+       "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+       "       AND ?8 BETWEEN exposure_min AND exposure_max"
+       "       AND ?9 BETWEEN aperture_min AND aperture_max"
+       "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
+       "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
+       "       AND operation = 'ioporder'"
+       " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
+       -1, &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
