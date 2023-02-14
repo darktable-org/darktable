@@ -409,7 +409,6 @@ jobs:
         btype: [ RelWithDebInfo ]
         target:
           - skiptest
-          - nofeatures
         generator:
           - Ninja
     env:
