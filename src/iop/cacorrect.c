@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2022 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,23 +113,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 /*==================================================================================
  * begin raw therapee code, hg checkout of march 09, 2016 branch master.
  *==================================================================================*/
-
-static inline float _sqrf(float x)
-{
-  return (x * x);
-}
-static inline float _inlimits(const float a, const float b, const float c)
-{
-  return MAX(b, MIN(a, c));
-}
-static inline float _intp(const float a, const float b, const float c)
-{
-  // calculate a * b + (1 - a) * c
-  // following is valid:
-  // _intp(a, b+x, c+x) = _intp(a, b, c) + x
-  // _intp(a, b*x, c*x) = _intp(a, b, c) * x
-  return a * (b - c) + c;
-}
 
 ////////////////////////////////////////////////////////////////
 //
@@ -540,16 +523,16 @@ void process(
             for(int cc = 3 + (FC(rr, 3, filters) & 1), indx = rr * ts + cc, c = FC(rr, cc, filters); cc < cc1 - 3; cc += 2, indx += 2)
             {
               // compute directional weights using image gradients
-              const float wtu = 1.f / _sqrf(eps + fabsf(rgb[1][indx + v1] - rgb[1][indx - v1])
+              const float wtu = 1.f / sqrf(eps + fabsf(rgb[1][indx + v1] - rgb[1][indx - v1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx - v2])
                                     + fabsf(rgb[1][indx - v1] - rgb[1][indx - v3]));
-              const float wtd = 1.f / _sqrf(eps + fabsf(rgb[1][indx - v1] - rgb[1][indx + v1])
+              const float wtd = 1.f / sqrf(eps + fabsf(rgb[1][indx - v1] - rgb[1][indx + v1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx + v2])
                                     + fabsf(rgb[1][indx + v1] - rgb[1][indx + v3]));
-              const float wtl = 1.f / _sqrf(eps + fabsf(rgb[1][indx + 1] - rgb[1][indx - 1])
+              const float wtl = 1.f / sqrf(eps + fabsf(rgb[1][indx + 1] - rgb[1][indx - 1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx - 2])
                                     + fabsf(rgb[1][indx - 1] - rgb[1][indx - 3]));
-              const float wtr = 1.f / _sqrf(eps + fabsf(rgb[1][indx - 1] - rgb[1][indx + 1])
+              const float wtr = 1.f / sqrf(eps + fabsf(rgb[1][indx - 1] - rgb[1][indx + 1])
                                     + fabsf(rgb[c][indx] - rgb[c][indx + 2])
                                     + fabsf(rgb[1][indx + 1] - rgb[1][indx + 3]));
 
@@ -680,7 +663,7 @@ void process(
               if(fabsf(CAshift[dir][c]) < 2.0f)
               {
                 blockavethr[dir][c] += CAshift[dir][c];
-                blocksqavethr[dir][c] += _sqrf(CAshift[dir][c]);
+                blocksqavethr[dir][c] += sqrf(CAshift[dir][c]);
                 blockdenomthr[dir][c] += 1;
               }
               // evaluate the shifts to the location that minimizes CA within the tile
@@ -718,7 +701,7 @@ void process(
             if(blockdenom[dir][c])
             {
               blockvar[dir][c]
-                  = blocksqave[dir][c] / blockdenom[dir][c] - _sqrf(blockave[dir][c] / blockdenom[dir][c]);
+                  = blocksqave[dir][c] / blockdenom[dir][c] - sqrf(blockave[dir][c] / blockdenom[dir][c]);
             }
             else
             {
@@ -820,8 +803,8 @@ void process(
 
                 // now prepare coefficient matrix; use only data points within caautostrength/2 std devs of
                 // zero
-                if(_sqrf(bstemp[0]) > caautostrength * blockvar[0][c]
-                   || _sqrf(bstemp[1]) > caautostrength * blockvar[1][c])
+                if(sqrf(bstemp[0]) > caautostrength * blockvar[0][c]
+                   || sqrf(bstemp[1]) > caautostrength * blockvar[1][c])
                 {
                   continue;
                 }
@@ -1048,10 +1031,10 @@ void process(
               powVblock *= vblock;
             }
             const float bslim = 3.99; // max allowed CA shift
-            lblockshifts[0][0] = _inlimits(lblockshifts[0][0], -bslim, bslim);
-            lblockshifts[0][1] = _inlimits(lblockshifts[0][1], -bslim, bslim);
-            lblockshifts[1][0] = _inlimits(lblockshifts[1][0], -bslim, bslim);
-            lblockshifts[1][1] = _inlimits(lblockshifts[1][1], -bslim, bslim);
+            lblockshifts[0][0] = CLAMPF(lblockshifts[0][0], -bslim, bslim);
+            lblockshifts[0][1] = CLAMPF(lblockshifts[0][1], -bslim, bslim);
+            lblockshifts[1][0] = CLAMPF(lblockshifts[1][0], -bslim, bslim);
+            lblockshifts[1][1] = CLAMPF(lblockshifts[1][1], -bslim, bslim);
           } // end of setting CA shift parameters
 
 
@@ -1090,12 +1073,12 @@ void process(
             for(int cc = 4 + (FC(rr, 2, filters) & 1), c = FC(rr, cc, filters); cc < cc1 - 4; cc += 2)
             {
               // perform CA correction using colour ratios or colour differences
-              const float Ginthfloor = _intp(shifthfrac[c], rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
+              const float Ginthfloor = interpolatef(shifthfrac[c], rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthceil[c]],
                                       rgb[1][(rr + shiftvfloor[c]) * ts + cc + shifthfloor[c]]);
-              const float Ginthceil = _intp(shifthfrac[c], rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]],
+              const float Ginthceil = interpolatef(shifthfrac[c], rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthceil[c]],
                                      rgb[1][(rr + shiftvceil[c]) * ts + cc + shifthfloor[c]]);
               // Gint is bilinear interpolation of G at CA shift point
-              const float Gint = _intp(shiftvfrac[c], Ginthceil, Ginthfloor);
+              const float Gint = interpolatef(shiftvfrac[c], Ginthceil, Ginthfloor);
 
               // determine R/B at grid points using colour differences at shift point plus interpolated G
               // value at grid point
@@ -1120,14 +1103,14 @@ void process(
               const float grbdiffold = rgb[1][indx] - rgb[c][indx];
 
               // interpolate colour difference from optical R/B locations to grid locations
-              const float grbdiffinthfloor = _intp(shifthfrac[c],
+              const float grbdiffinthfloor = interpolatef(shifthfrac[c],
                            grbdiff[(indx - GRBdir[1][c]) >> 1],
                            grbdiff[indx >> 1]);
-              const float grbdiffinthceil  = _intp(shifthfrac[c],
+              const float grbdiffinthceil  = interpolatef(shifthfrac[c],
                            grbdiff[((rr - GRBdir[0][c]) * ts + cc - GRBdir[1][c]) >> 1],
                            grbdiff[((rr - GRBdir[0][c]) * ts + cc) >> 1]);
               // grbdiffint is bilinear interpolation of G-R/G-B at grid point
-              float grbdiffint = _intp(shiftvfrac[c], grbdiffinthceil, grbdiffinthfloor);
+              float grbdiffint = interpolatef(shiftvfrac[c], grbdiffinthceil, grbdiffinthfloor);
 
               // now determine R/B at grid points using interpolated colour differences and interpolated G
               // value at grid point
@@ -1221,7 +1204,7 @@ void process(
       for(int col = firstCol; col < width; col += 2)
       {
         nongreen[(row / 2) * h_width + col / 2] = (in[row * width + col] <= 1.0f || oldraw[row * h_width + col / 2] <= 1.0f)
-          ? 1.0f : _inlimits(oldraw[row * h_width + col / 2] / in[row * width + col], 0.5f, 2.0f);
+          ? 1.0f : CLAMPF(oldraw[row * h_width + col / 2] / in[row * width + col], 0.5f, 2.0f);
       }
     }
 

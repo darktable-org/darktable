@@ -78,9 +78,15 @@ static inline gboolean feqf(const float v1, const float v2, const float eps)
 }
 
 // We don't want to use the SIMD version sqf() in cases we might access unaligned memory
-static inline float sqrf(float a)
+static inline float sqrf(const float a)
 {
   return a * a;
+}
+
+// taken from rt code: calculate a * b + (1 - a) * c
+static inline float interpolatef(float a, float b, float c)
+{
+  return a * (b - c) + c;
 }
 
 // Kahan summation algorithm

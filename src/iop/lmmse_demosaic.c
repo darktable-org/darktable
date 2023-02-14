@@ -62,11 +62,6 @@
 #define w3 (LMMSE_GRP * 3)
 #define w4 (LMMSE_GRP * 4)
 
-static inline float _limf(float x, float min, float max)
-{
-  return fmaxf(min, fminf(x, max));
-}
-
 static inline float _median3f(float x0, float x1, float x2)
 {
   return fmaxf(fminf(x0,x1), fminf(x2, fmaxf(x0,x1)));
@@ -230,14 +225,14 @@ static void lmmse_demosaic(
             float *hdiff = qix[0] + rr * LMMSE_GRP + cc;
             hdiff[0] = -0.25f * (cfa[ -2] + cfa[ 2]) + 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
             const float Y0 = v0 + 0.5f * hdiff[0];
-            hdiff[0] = (cfa[0] > 1.75f * Y0) ? _median3f(hdiff[0], cfa[ -1], cfa[ 1]) : _limf(hdiff[0], 0.0f, 1.0f);
+            hdiff[0] = (cfa[0] > 1.75f * Y0) ? _median3f(hdiff[0], cfa[ -1], cfa[ 1]) : CLAMPF(hdiff[0], 0.0f, 1.0f);
             hdiff[0] -= cfa[0];
 
             // vertical
             float *vdiff = qix[1] + rr * LMMSE_GRP + cc;
             vdiff[0] = -0.25f * (cfa[-w2] + cfa[w2]) + 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
             const float Y1 = v0 + 0.5f * vdiff[0];
-            vdiff[0] = (cfa[0] > 1.75f * Y1) ? _median3f(vdiff[0], cfa[-w1], cfa[w1]) : _limf(vdiff[0], 0.0f, 1.0f);
+            vdiff[0] = (cfa[0] > 1.75f * Y1) ? _median3f(vdiff[0], cfa[-w1], cfa[w1]) : CLAMPF(vdiff[0], 0.0f, 1.0f);
             vdiff[0] -= cfa[0];
           }
 
@@ -249,8 +244,8 @@ static void lmmse_demosaic(
             float *vdiff = qix[1] + rr * LMMSE_GRP + ccc;
             hdiff[0] = 0.25f * (cfa[ -2] + cfa[ 2]) - 0.5f * (cfa[ -1] + cfa[0] + cfa[ 1]);
             vdiff[0] = 0.25f * (cfa[-w2] + cfa[w2]) - 0.5f * (cfa[-w1] + cfa[0] + cfa[w1]);
-            hdiff[0] = _limf(hdiff[0], -1.0f, 0.0f) + cfa[0];
-            vdiff[0] = _limf(vdiff[0], -1.0f, 0.0f) + cfa[0];
+            hdiff[0] = CLAMPF(hdiff[0], -1.0f, 0.0f) + cfa[0];
+            vdiff[0] = CLAMPF(vdiff[0], -1.0f, 0.0f) + cfa[0];
           }
         }
 
