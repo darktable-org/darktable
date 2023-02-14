@@ -180,7 +180,8 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("affect color, brightness and contrast"),
+  return dt_iop_set_description(self, _("color grading tools using alpha masks to separate\n"
+                                        "shadows, mid-tones and highlights"),
                                       _("corrective or creative"),
                                       _("linear, RGB, scene-referred"),
                                       _("non-linear, RGB"),
