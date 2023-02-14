@@ -722,7 +722,8 @@ static void _process_lf(
   const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
-  const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
+  const float orig_w = roi_in->scale * piece->buf_in.width;
+  const float orig_h = roi_in->scale * piece->buf_in.height;
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
@@ -1179,7 +1180,8 @@ static int _distort_transform_lf(
   dt_iop_lens_data_t *d = (dt_iop_lens_data_t *)piece->data;
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
-  const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
+  const float orig_w = piece->buf_in.width;
+  const float orig_h = piece->buf_in.height;
   int modflags;
 
   const int used_lf_mask = (dt_image_is_monochrome(&self->dev->image_storage)) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
@@ -1218,7 +1220,8 @@ static int _distort_backtransform_lf(
 
   const int used_lf_mask = (dt_image_is_monochrome(&self->dev->image_storage)) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
-  const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
+  const float orig_w = piece->buf_in.width;
+  const float orig_h = piece->buf_in.height;
   int modflags;
   const lfModifier *modifier = _get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
 
@@ -1637,7 +1640,7 @@ static int _init_coeffs_md(
     const int nc = MAXKNOTS;
     for(int i = 0; i < nc; i++)
     {
-      const float r = (float) i / (float) (nc-1);
+      const float r = (float) i / (float) (nc);
       knots[i] = r;
       if(cor_rgb) cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = 1.0f;
       if(vig)     vig[i] = 1.0f;
@@ -1937,6 +1940,7 @@ static void _process_md(
 
   float *out = ((float *) ovoid);
   // Correct distortion and/or chromatic aberration
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(roi_in, roi_out, buf, d, out, interpolation) \
@@ -1947,16 +1951,17 @@ static void _process_md(
   {
     for(int x = 0; x < roi_out->width; x++)
     {
-      const size_t idx = 4 * (y * roi_out->width + x);
+      const size_t odx = 4 * (y * roi_out->width + x);
       const float cx = roi_out->x + x - w2;
       const float cy = roi_out->y + y - h2;
 
+      const float radius = r*sqrtf(cx*cx + cy*cy);
       for_each_channel(c)
       {
-        const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy));
+        const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, radius);
         const float xs = dr*cx + w2 - roi_in->x;
         const float ys = dr*cy + h2 - roi_in->y;
-        out[idx+c] = dt_interpolation_compute_sample(interpolation, buf + c, xs, ys, roi_in->width,
+        out[odx+c] = dt_interpolation_compute_sample(interpolation, buf + c, xs, ys, roi_in->width,
                                                  roi_in->height, 4, 4*roi_in->width);
       }
     }
@@ -2002,15 +2007,16 @@ static void _modify_roi_in_md(
     for(int j = 0; j < 2; j++)
     {
       const float cy = cys[j];
-      float dr = 0.0f;
       for_each_channel(c)
-        dr = fmaxf(dr, _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy)));
-      const float xs = dr*cx + w2;
-      const float ys = dr*cy + h2;
-      xm = fminf(xm, xs);
-      xM = fmaxf(xM, xs);
-      ym = fminf(ym, ys);
-      yM = fmaxf(yM, ys);
+      {
+        const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy));
+        const float xs = dr*cx + w2;
+        const float ys = dr*cy + h2;
+        xm = fminf(xm, xs);
+        xM = fmaxf(xM, xs);
+        ym = fminf(ym, ys);
+        yM = fmaxf(yM, ys);
+      }
     }
   }
 
@@ -2021,15 +2027,16 @@ static void _modify_roi_in_md(
     for(int i = 0; i < 2; i++)
     {
       const float cx = cxs[i];
-      float dr = 0.0f;
       for_each_channel(c)
-        dr = fmaxf(dr, _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy)));
-      const float xs = dr*cx + w2;
-      const float ys = dr*cy + h2;
-      xm = fminf(xm, xs);
-      xM = fmaxf(xM, xs);
-      ym = fminf(ym, ys);
-      yM = fmaxf(yM, ys);
+      {
+        const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy));
+        const float xs = dr*cx + w2;
+        const float ys = dr*cy + h2;
+        xm = fminf(xm, xs);
+        xM = fmaxf(xM, xs);
+        ym = fminf(ym, ys);
+        yM = fmaxf(yM, ys);
+      }
     }
   }
 
