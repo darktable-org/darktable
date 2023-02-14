@@ -4101,7 +4101,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("input")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(C_("section", "input")), FALSE, FALSE, 0);
 
   g->origin_spot = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request(g->origin_spot, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
@@ -4121,7 +4121,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("target")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(C_("section", "target")), TRUE, TRUE, 0);
 
   g->target_spot = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request(g->target_spot, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),

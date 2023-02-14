@@ -4220,7 +4220,7 @@ void gui_init(dt_iop_module_t *self)
   // Page RECONSTRUCT
   self->widget = dt_ui_notebook_page(g->notebook, N_("reconstruct"), NULL);
 
-  GtkWidget *label = dt_ui_section_label_new(_("highlights clipping"));
+  GtkWidget *label = dt_ui_section_label_new(C_("section", "highlights clipping"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
   g->enable_highlight_reconstruction = dt_bauhaus_toggle_from_params(self, "enable_highlight_reconstruction");
@@ -4252,7 +4252,7 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_add_class(g->show_highlight_mask, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
-  label = dt_ui_section_label_new(_("balance"));
+  label = dt_ui_section_label_new(C_("section", "balance"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
   g->reconstruct_structure_vs_texture = dt_bauhaus_slider_from_params(self, "reconstruct_structure_vs_texture");

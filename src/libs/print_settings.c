@@ -2249,7 +2249,7 @@ void gui_init(dt_lib_module_t *self)
   // create papers combo as filled when adding printers
   d->papers = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
-  label = dt_ui_section_label_new(_("printer"));
+  label = dt_ui_section_label_new(C_("section", "printer"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url("print_settings_printer"));
   d->printers = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -2344,7 +2344,7 @@ void gui_init(dt_lib_module_t *self)
 
   ////////////////////////// PAGE SETTINGS
 
-  label = dt_ui_section_label_new(_("page"));
+  label = dt_ui_section_label_new(C_("section", "page"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url("print_settings_page"));
 
@@ -2483,7 +2483,7 @@ void gui_init(dt_lib_module_t *self)
 
   // pack image dimension hbox here
 
-  label = dt_ui_section_label_new(_("image layout"));
+  label = dt_ui_section_label_new(C_("section", "image layout"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url("print_image_layout"));
 
@@ -2587,7 +2587,7 @@ void gui_init(dt_lib_module_t *self)
 
   ////////////////////////// PRINT SETTINGS
 
-  label = dt_ui_section_label_new(_("print settings"));
+  label = dt_ui_section_label_new(C_("section", "print settings"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url("print_settings"));
 
