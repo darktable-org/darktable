@@ -292,7 +292,7 @@ jobs:
       fail-fast: true
       matrix:
         btype:
-          - RelWithDebInfo
+          - Debug
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
         target:
@@ -300,15 +300,6 @@ jobs:
         generator:
           #- MSYS Makefiles
           - Ninja
-        include:
-          #- btype: Release
-          #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
-          #  eco: -DBINARY_PACKAGE_BUILD=ON
-          #  target: skiptest
-          - btype: Debug
-            compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
-            target: skiptest
-            generator: Ninja
     defaults:
       run:
         shell: msys2 {0}
