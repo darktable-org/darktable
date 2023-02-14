@@ -180,8 +180,8 @@ const char *aliases()
 
 const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("a color grading tool improved from ASC CDL\n"
-                                        "using masks to split shadows and highlights properly"),
+  return dt_iop_set_description(self, _("color grading tools using alpha masks to separate\n"
+                                        "shadows, mid-tones and highlights"),
                                       _("corrective or creative"),
                                       _("linear, RGB, scene-referred"),
                                       _("non-linear, RGB"),
