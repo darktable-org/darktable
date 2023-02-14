@@ -214,6 +214,9 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpoin
 // create a shortcutable entry field
 GtkWidget *dt_action_entry_new(dt_action_t *ac, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, const gchar *text);
 
+// find the action a widget is linked to
+dt_action_t *dt_action_widget(GtkWidget *widget);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

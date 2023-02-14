@@ -385,6 +385,11 @@ static const gchar *_action_find_effect_combo(dt_action_t *ac, const dt_action_e
   return NULL;
 }
 
+dt_action_t *dt_action_widget(GtkWidget *widget)
+{
+  return g_hash_table_lookup(darktable.control->widgets, widget);
+}
+
 static gboolean _is_kp_key(guint keycode)
 {
   return keycode >= GDK_KEY_KP_Space && keycode <= GDK_KEY_KP_Equal;
@@ -762,12 +767,12 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
   {
     if(g_object_get_data(G_OBJECT(widget), "scroll-resize-tooltip"))
       original_markup = dt_util_dstrcat(original_markup, "%s%s", original_markup ? "\n" : "", _("shift+alt+scroll to change height"));
-    action = g_hash_table_lookup(darktable.control->widgets, widget);
+    action = dt_action_widget(widget);
     if(!action)
     {
       widget = gtk_widget_get_parent(widget);
-      action = g_hash_table_lookup(darktable.control->widgets, widget);
-      show_element = -1;
+      action = dt_action_widget(widget);
+      show_element = -1; // for notebook tabs
     }
 
     if(darktable.control->mapping_widget == widget)
@@ -2227,7 +2232,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   dt_shortcuts_save(".edit", FALSE);
 
   GtkWidget *widget_or_parent = widget;
-  while(!(_selected_action = g_hash_table_lookup(darktable.control->widgets, widget_or_parent)) && widget_or_parent)
+  while(!(_selected_action = dt_action_widget(widget_or_parent)) && widget_or_parent)
     widget_or_parent = gtk_widget_get_parent(widget_or_parent);
   darktable.control->element = -1;
 
@@ -2838,7 +2843,7 @@ static dt_action_t _value_action = { .type = DT_ACTION_TYPE_FALLBACK,
 static void _lookup_mapping_widget()
 {
   if(_sc.action) return;
-  _sc.action = g_hash_table_lookup(darktable.control->widgets, darktable.control->mapping_widget);
+  _sc.action = dt_action_widget(darktable.control->mapping_widget);
   if(!_sc.action) return;
 
   _sc.instance = 0;
@@ -3525,7 +3530,7 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
        && s->effect == DT_ACTION_EFFECT_HOLD
        && s->action
        && s->action->type >= DT_ACTION_TYPE_WIDGET
-       && !g_hash_table_lookup(darktable.control->widgets, darktable.control->mapping_widget))
+       && !dt_action_widget(darktable.control->mapping_widget))
     {
       const dt_action_def_t *definition = _action_find_definition(s->action);
       if(definition && definition->process
@@ -3745,7 +3750,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     dt_shortcut_t s = { .action = _sc.action };
     gboolean middle_click = event->type == GDK_BUTTON_PRESS && event->button.button == GDK_BUTTON_MIDDLE;
     if((middle_click || event->type == GDK_SCROLL) &&
-       (s.action || (s.action = g_hash_table_lookup(darktable.control->widgets, darktable.control->mapping_widget))))
+       (s.action || (s.action = dt_action_widget(darktable.control->mapping_widget))))
     {
       int delta;
       if(middle_click || dt_gui_get_scroll_unit_delta(&event->scroll, &delta))
@@ -3945,7 +3950,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 
 static void _remove_widget_from_hashtable(GtkWidget *widget, gpointer user_data)
 {
-  dt_action_t *action = g_hash_table_lookup(darktable.control->widgets, widget);
+  dt_action_t *action = dt_action_widget(widget);
   if(action)
   {
     if(action->target == widget) action->target = NULL;
@@ -4279,7 +4284,7 @@ void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar 
     char *text = g_strdup_vprintf(msg, ap);
 
     if(!action)
-      action = g_hash_table_lookup(darktable.control->widgets, widget);
+      action = dt_action_widget(widget);
     if(action)
     {
       gchar *instance_name = "";
@@ -4330,7 +4335,7 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
   if(state != GDK_MODIFIER_MASK)
   {
     dt_shortcut_t s = { .action = &_value_action, .mods = _key_modifiers_clean(state) };
-    dt_action_t *wac = g_hash_table_lookup(darktable.control->widgets, widget);
+    dt_action_t *wac = dt_action_widget(widget);
     while(s.action)
     {
       GSequenceIter *speed_adjustment = g_sequence_lookup(darktable.control->shortcuts, &s, _shortcut_compare_func, NULL);
