@@ -295,10 +295,8 @@ jobs:
           - RelWithDebInfo
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
-          #- { compiler: LLVM, CC: clang, CXX: clang++ }
         target:
           - skiptest
-          - nofeatures
         generator:
           #- MSYS Makefiles
           - Ninja
