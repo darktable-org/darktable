@@ -970,7 +970,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
 
   gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_section_label_new(_("position / form")), FALSE, FALSE, 0);
+                     dt_ui_section_label_new(C_("section", "position / form")), FALSE, FALSE, 0);
 
   g->center_x = dt_bauhaus_slider_from_params(self, "center.x");
   g->center_y = dt_bauhaus_slider_from_params(self, "center.y");

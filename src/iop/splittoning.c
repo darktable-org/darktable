@@ -452,10 +452,15 @@ void gui_update(struct dt_iop_module_t *self)
   update_balance_slider_colors(g->balance_scale, p->shadow_hue, p->highlight_hue);
 }
 
-static inline void gui_init_section(struct dt_iop_module_t *self, char *section, GtkWidget *slider_box,
-                                    GtkWidget *hue, GtkWidget *saturation, GtkWidget **picker, gboolean top)
+static inline void gui_init_section(struct dt_iop_module_t *self,
+                                    const char *section,
+                                    GtkWidget *slider_box,
+                                    GtkWidget *hue,
+                                    GtkWidget *saturation,
+                                    GtkWidget **picker,
+                                    gboolean top)
 {
-  GtkWidget *label = dt_ui_section_label_new(_(section));
+  GtkWidget *label = dt_ui_section_label_new(Q_(section));
 
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
@@ -506,12 +511,20 @@ void gui_init(struct dt_iop_module_t *self)
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  gui_init_section(self, N_("shadows"), shadows_box, g->shadow_hue_gslider, g->shadow_sat_gslider, &g->shadow_colorpick, TRUE);
+  gui_init_section(self, NC_("section", "shadows"),
+                   shadows_box,
+                   g->shadow_hue_gslider,
+                   g->shadow_sat_gslider,
+                   &g->shadow_colorpick, TRUE);
 
-  gui_init_section(self, N_("highlights"), highlights_box, g->highlight_hue_gslider, g->highlight_sat_gslider, &g->highlight_colorpick, FALSE);
+  gui_init_section(self, NC_("section", "highlights"),
+                   highlights_box,
+                   g->highlight_hue_gslider,
+                   g->highlight_sat_gslider,
+                   &g->highlight_colorpick, FALSE);
 
   // Additional parameters
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "properties")), FALSE, FALSE, 0);
 
   g->balance_scale = dt_bauhaus_slider_from_params(self, N_("balance"));
   dt_bauhaus_slider_set_feedback(g->balance_scale, 0);
@@ -532,4 +545,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

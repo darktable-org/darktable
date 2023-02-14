@@ -754,7 +754,7 @@ void gui_init(dt_iop_module_t *self)
                                              "high values can lead to overshooting\n"
                                              "and edge bleeding."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("advanced parameters")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "advanced parameters")), TRUE, TRUE, 0);
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("correction mode to use.\n"
                                          "can help with multiple\n"
