@@ -1,0 +1,161 @@
+name: Report an issue with darktable
+description: Use this template if something is not working correctly or issues with darktable.
+#title: ""
+labels: [needs-triage]
+#assignees:
+#  -
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We appreciate you taking your time to report an issue with darktable. The more details you can provide, the most likely we will be able to assist you.
+
+        Before raising a bug/issue please check that it has not already been reported by searching [GitHub Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue).
+        Some common issues are addressed in the [FAQ](https://www.darktable.org/about/faq/). 
+        
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked [GitHub Issues](https://github.com/darktable-org/darktable/issues?q=is%3Aissue) and my problem is **not** described there.
+          required: true
+
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is. Try to be very factual in the description.
+      placeholder: |
+        What is the issue? What causes the bug?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: A clear sequence of steps to recreate the issue.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+        ...
+    validations:
+      required: true
+
+  - type: input
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: 'darktable should...'
+
+  - type: textarea
+    id: logfile
+    attributes:
+      label: Logfile | Screenshot | Screencast
+      description: |
+        A log or backtrace will help us investigate your issue. If available please attach below. You can also attach a screenshot or screencast or any other useful information.
+      placeholder: |
+        Drag and drop logfile or backtrace file here, if available.
+        Copying the contents is okay for short logs (< 20 lines), but please put them in code blocks:
+        ```
+        log here
+        ```
+        You can also use pastebin.com or similar
+  
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: |
+        - Which commit introduced the error? A bisect is much appreciated and can significantly simplify the developer's job.
+        - HowTo: https://github.com/darktable-org/darktable/wiki#finding-bug-causes and https://www.youtube.com/watch?v=D7JJnLFOn4A
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: Where did you install darktable from?
+      options:
+        - 'darktable.org'
+        - 'distro packaging'
+        - 'flatpak'
+        - 'OSB'
+        - 'self compiled'
+        - 'bought it'
+        - 'an online forum'
+    validations:
+     required: true
+
+  - type: input
+    id: darktable_versions
+    attributes:
+      label: darktable version
+      description: |
+        Please fill out the version of darktable (eg. 4.2.0+250~gee17c5dcc) that had the issue. 
+        You can obtain via clicking in the darktable logo or darktable --version in the command line.
+      placeholder: '4.2.0+250~gee17c5dcc'
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: OS
+    attributes:
+      label: What OS are you using?
+      options:
+        - 'Linux'
+        - 'Mac'
+        - 'Windows'
+    validations:
+      required: true
+
+  - type: input
+    id: OS_version
+    attributes:
+      label: What is the version of your OS?
+      description: Please fill out the distro or OS version from the previous dropdown
+      placeholder: Fedora 37, Windows 11 Pro, MacOS Ventura
+    validations:
+      required: true
+      
+  - type: textarea
+    id: system
+    attributes:
+      label: Describe your system?
+      description: Describe your general computer system (Gb of memory, Wayland or X11, GTK+, Intel or M1 or M2) that could be relevant to the issue.
+
+  - type: dropdown
+    id: GPU
+    attributes:
+      label: Are you using OpenCL GPU in darktable?
+      options:
+        - 'I dont know'
+        - 'No'
+        - 'Yes'
+
+  - type: input
+    id: GPU_driver
+    attributes:
+      label: If yes, what is the GPU card and driver?
+      description: Please fill out the details of the GPU card, memory size and driver version.
+
+  - type: textarea
+    id: additional_info
+    attributes:
+      label: Please provide additional context if applicable. You can attach files too, but might need to rename to .txt or .zip
+      description: |
+        - Can you reproduce with another darktable version(s)? **yes with version x-y-z / no**
+        - Can you reproduce with a RAW or Jpeg or both? **RAW-file-format/Jpeg/both**
+        - Are the steps above reproducible with a fresh edit (i.e. after discarding history)? **yes/no**
+        - If the issue is with the output image, attach an XMP file if (you'll have to change the extension to `.txt`)
+        - Is the issue still present using an empty/new config-dir (e.g. start darktable with --configdir "/tmp")? **yes/no**
+        - Do you use lua scripts?
+            - What lua scripts start automatically?
+            - What lua scripts were running when the bug occurred?
+
+  - type: markdown
+    attributes:
+      value: Thanks for filling out this form completely. It saves us a lot of time.
