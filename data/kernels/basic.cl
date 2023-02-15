@@ -395,7 +395,7 @@ highlights_dilatemask (global char *in, global char *out,
 }
 
 kernel void
-highlights_chroma (read_only image2d_t in, global char *mask, global float *accu,
+highlights_chroma (read_only image2d_t in, global char *mask, global double *accu,
                    const int width, const int height,
                    const int pwidth, const int psize, 
                    const int filters, global const unsigned char (*const xtrans)[6],
@@ -405,8 +405,8 @@ highlights_chroma (read_only image2d_t in, global char *mask, global float *accu
 
   if((row < 3) || (row > height - 3)) return;
 
-  float sum[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-  float cnt[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+  double sum[4] = {0.0, 0.0, 0.0, 0.0};
+  double cnt[4] = {0.0, 0.0, 0.0, 0.0};
 
   for(int col = 3; col < width-3; col++)
   {
@@ -417,8 +417,8 @@ highlights_chroma (read_only image2d_t in, global char *mask, global float *accu
     if(mask[px] && (inval > dark[color]) && (inval < clips[color]))
     {
       const float ref = _calc_refavg(in, xtrans, filters, row, col, width);
-      sum[color] += inval - ref;
-      cnt[color] += 1.0f;
+      sum[color] += (double)(inval - ref);
+      cnt[color] += 1.0;
     }
   }
   for(int c = 0; c < 3; c++)

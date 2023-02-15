@@ -446,7 +446,7 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   cl_mem dev_inmask = NULL;
   cl_mem dev_outmask = NULL;
   cl_mem dev_accu = NULL;
-  float *claccu = NULL;
+  double *claccu = NULL;
  
   const size_t iwidth = ROUNDUPDWD(roi_in->width, devid);
   const size_t iheight = ROUNDUPDHT(roi_in->height, devid);
@@ -491,9 +491,10 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
             CLARG(dev_inmask), CLARG(dev_outmask), CLARG(mwidth), CLARG(mheight), CLARG(msize));
     if(err != CL_SUCCESS) goto error;
 
-    dev_accu = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 6 * iheight);
+    dev_accu = dt_opencl_alloc_device_buffer(devid, sizeof(double) * 6 * iheight);
     if(dev_accu == NULL) goto error;
-    claccu = dt_calloc_align_float(6 * iheight);
+
+    claccu = (double*) dt_calloc_align(64, sizeof(double) * 6 * iheight);
     if(claccu == NULL) goto error;
 
     size_t sizes[] = { iheight, 1, 1};
@@ -506,21 +507,21 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     err = dt_opencl_enqueue_kernel_ndim_with_local(devid, gd->kernel_highlights_chroma, sizes, NULL, 1);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, 6 * iheight * sizeof(float), TRUE);
+    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, 6 * iheight * sizeof(double), TRUE);
     if(err != CL_SUCCESS) goto error;
 
     // collect row data and accumulate
-    dt_aligned_pixel_t sums = { 0.0f, 0.0f, 0.0f};
-    dt_aligned_pixel_t cnts = { 0.0f, 0.0f, 0.0f};
+    double sums[4] = { 0.0, 0.0, 0.0, 0.0};
+    int cnts[4] = { 0, 0, 0, 0};
     for(int grp = 3; grp < roi_in->height-3; grp++)
     {
       for(int c = 0; c < 3; c++)
       {
         sums[c] += claccu[grp*6 + c];
-        cnts[c] += claccu[grp*6 + 3 + c];
+        cnts[c] += (int)claccu[grp*6 + 3 + c];
       }
     }
-    for_each_channel(c) chrominance[c] = sums[c] / fmaxf(1.0f, cnts[c]);
+    for_each_channel(c) chrominance[c] = (float)(sums[c] / (double)MAX(1, cnts[c]));
 
     if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
     {
