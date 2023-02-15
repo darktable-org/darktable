@@ -466,11 +466,8 @@ static gboolean dt_bauhaus_popup_leave_notify(GtkWidget *widget, GdkEventCrossin
 
 static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  int delay = 0;
-  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
-
   if(darktable.bauhaus->current && (darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX)
-     && (event->button == 1) && (event->time >= darktable.bauhaus->opentime + delay) && !darktable.bauhaus->hiding)
+     && (event->button == 1) && dt_gui_long_click(event->time, darktable.bauhaus->opentime) && !darktable.bauhaus->hiding)
   {
     gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_ACTIVE, TRUE);
 
@@ -503,12 +500,10 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
     return TRUE;
   }
 
-  int delay = 0;
-  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
   if(event->button == 1)
   {
     if(darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX
-       && event->time < darktable.bauhaus->opentime + delay)
+       && !dt_gui_long_click(event->time, darktable.bauhaus->opentime))
     {
       // counts as double click, reset:
       const dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
