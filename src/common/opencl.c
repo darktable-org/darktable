@@ -380,6 +380,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].asyncmode = 0;
   cl->dev[dev].disabled = 0;
   cl->dev[dev].forced_headroom = 0;
+  cl->dev[dev].cacheline = 0;
   cl->dev[dev].tuneactive = 0;
   cl->dev[dev].runtime_error = 0;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
@@ -596,6 +597,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   dt_print_nts(DT_DEBUG_OPENCL, "   MAX IMAGE SIZE:           %zd x %zd\n", cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
   dt_print_nts(DT_DEBUG_OPENCL, "   MAX WORK GROUP SIZE:      %zu\n", infoint);
+  (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE, sizeof(infoint), &infoint, NULL);
+  dt_print_nts(DT_DEBUG_OPENCL, "   CACHELINE SIZE:           %zu\n", infoint);
+  cl->dev[dev].cacheline = (int)infoint;
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(infoint), &infoint, NULL);
   dt_print_nts(DT_DEBUG_OPENCL, "   MAX WORK ITEM DIMENSIONS: %zu\n", infoint);
 

@@ -194,11 +194,14 @@ typedef struct dt_opencl_device_t
   int disabled;
 
   // Some devices are known to be unused by other apps so there is no need to test for available memory at all.
-  int forced_headroom;
+  unsigned int forced_headroom;
 
   // As the benchmarks are not good enough to calculate tiled-gpu vs untiled-cpu we have a parameter exposed
   // in the cldevice conf key to balance this
-  float advantage;  
+  float advantage;
+
+  // size of the device cacheline in bytes
+  int cacheline;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
