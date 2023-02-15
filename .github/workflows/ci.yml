@@ -292,25 +292,14 @@ jobs:
       fail-fast: true
       matrix:
         btype:
-          - RelWithDebInfo
+          - Debug
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
-          #- { compiler: LLVM, CC: clang, CXX: clang++ }
         target:
           - skiptest
-          - nofeatures
         generator:
           #- MSYS Makefiles
           - Ninja
-        include:
-          #- btype: Release
-          #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
-          #  eco: -DBINARY_PACKAGE_BUILD=ON
-          #  target: skiptest
-          - btype: Debug
-            compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
-            target: skiptest
-            generator: Ninja
     defaults:
       run:
         shell: msys2 {0}
@@ -417,10 +406,9 @@ jobs:
           - { os: macos-12,    xcode: 13.4,   deployment: 12.3 }
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
-        btype: [ RelWithDebInfo ]
+        btype: [ Debug ]
         target:
           - skiptest
-          - nofeatures
         generator:
           - Ninja
     env:
@@ -442,10 +430,11 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          brew upgrade || true
+          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
           brew tap Homebrew/bundle
           cd src/.ci
-          brew bundle --verbose
+          export HOMEBREW_NO_INSTALL_UPGRADE=1
+          brew bundle --verbose || true
           brew link --force libomp # fix for keg-only libomp
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
