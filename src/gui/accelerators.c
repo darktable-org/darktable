@@ -3555,13 +3555,12 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
       }
     }
 
-    int delay = 0;
-    g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
+    gboolean double_press = !dt_gui_long_click(time, _last_time);
 
     if((id || key)
         && id == _sc.key_device
         && key == _sc.key
-        && time < _last_time + delay
+        && double_press
         && !(_sc.press & DT_SHORTCUT_TRIPLE))
     {
       _interrupt_delayed_release(FALSE);
@@ -3594,7 +3593,7 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
     break_stuck = _pressed_keys && time > _last_time + 2000;
 
     // allow extra time when pressing multiple keys "at same time"
-    if(!_pressed_keys || time < _last_time + delay || break_stuck)
+    if(!_pressed_keys || double_press || break_stuck)
       _last_time = time;
 
     _sc.key_device = id;
@@ -3873,10 +3872,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 
     // might just be an accidental move during a key press or button click
     // possibly different time sources from midi or other devices
-    int delay = 0;
-    g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
-
-    if(event->motion.time > _last_time && event->motion.time < _last_time + delay) break;
+    if(event->motion.time > _last_time && !dt_gui_long_click(event->motion.time, _last_time)) break;
 
     _sc.mods = _key_modifiers_clean(event->motion.state);
 

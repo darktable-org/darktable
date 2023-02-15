@@ -3404,6 +3404,13 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
                    G_CALLBACK(_collapse_expander_click), cs);
 }
 
+gboolean dt_gui_long_click(int second, int first)
+{
+  int delay = 0;
+  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
+  return second - first > delay;
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
