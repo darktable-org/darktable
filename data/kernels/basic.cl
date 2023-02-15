@@ -395,11 +395,19 @@ highlights_dilatemask (global char *in, global char *out,
 }
 
 kernel void
-highlights_chroma (read_only image2d_t in, global char *mask, global double *accu,
-                   const int width, const int height,
-                   const int pwidth, const int psize, 
-                   const int filters, global const unsigned char (*const xtrans)[6],
-                   global const float *clips, global const float *dark)
+highlights_chroma (
+        read_only image2d_t in,
+        global char *mask,
+        global double *accu,
+        const int width,
+        const int height,
+        const int pwidth,
+        const int psize, 
+        const int filters,
+        global const unsigned char (*const xtrans)[6],
+        global const float *clips,
+        global const float *dark,
+        const int aligner)
 {
   const int row = get_global_id(0);
 
@@ -423,8 +431,8 @@ highlights_chroma (read_only image2d_t in, global char *mask, global double *acc
   }
   for(int c = 0; c < 3; c++)
   {
-    accu[row*6 + c] = sum[c];
-    accu[row*6 + 3 + c] = cnt[c];
+    accu[row*aligner + c] = sum[c];
+    accu[row*aligner + 3 + c] = cnt[c];
   }
 }
 

@@ -211,7 +211,7 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
       {
         for_each_channel(c) img_oppchroma[c] = chrominance[c];
         img_opphash = opphash;
-        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
+        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache CPU] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
        }
     }
     dt_free_align(mask);
@@ -349,7 +349,7 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       {
         for_each_channel(c) img_oppchroma[c] = chrominance[c];
         img_opphash = opphash;
-        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
+        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache CPU] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
       }
     }
     dt_free_align(mask);
@@ -491,10 +491,13 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
             CLARG(dev_inmask), CLARG(dev_outmask), CLARG(mwidth), CLARG(mheight), CLARG(msize));
     if(err != CL_SUCCESS) goto error;
 
-    dev_accu = dt_opencl_alloc_device_buffer(devid, sizeof(double) * 6 * iheight);
+    const int cacheline = dt_round_size(6, MAX(2, darktable.opencl->dev[devid].cacheline / sizeof(double)));
+    const size_t linesize = sizeof(double) * cacheline * iheight;
+
+    dev_accu = dt_opencl_alloc_device_buffer(devid, linesize);
     if(dev_accu == NULL) goto error;
 
-    claccu = (double*) dt_calloc_align(64, sizeof(double) * 6 * iheight);
+    claccu = (double*) dt_calloc_align(64, linesize);
     if(claccu == NULL) goto error;
 
     size_t sizes[] = { iheight, 1, 1};
@@ -502,12 +505,12 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     dt_opencl_set_kernel_args(devid, gd->kernel_highlights_chroma, 0,
             CLARG(dev_in), CLARG(dev_outmask), CLARG(dev_accu),
             CLARG(roi_in->width), CLARG(roi_in->height), CLARG(mwidth), CLARG(msize),
-            CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips), CLARG(dev_dark)); 
+            CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips), CLARG(dev_dark), CLARG(cacheline)); 
 
     err = dt_opencl_enqueue_kernel_ndim_with_local(devid, gd->kernel_highlights_chroma, sizes, NULL, 1);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, 6 * iheight * sizeof(double), TRUE);
+    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, linesize, TRUE);
     if(err != CL_SUCCESS) goto error;
 
     // collect row data and accumulate
@@ -517,8 +520,8 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     {
       for(int c = 0; c < 3; c++)
       {
-        sums[c] += claccu[grp*6 + c];
-        cnts[c] += (int)claccu[grp*6 + 3 + c];
+        sums[c] += claccu[grp*cacheline + c];
+        cnts[c] += (int)claccu[grp*cacheline + 3 + c];
       }
     }
     for_each_channel(c) chrominance[c] = (float)(sums[c] / (double)MAX(1, cnts[c]));
@@ -527,7 +530,7 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     {
       for_each_channel(c) img_oppchroma[c] = chrominance[c];
       img_opphash = opphash;
-      dt_print(DT_DEBUG_PIPE, "[opposed chroma cache] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
+      dt_print(DT_DEBUG_PIPE, "[opposed chroma cache GPU] %f %f %f for opphash%22" PRIu64 "\n", chrominance[0], chrominance[1], chrominance[2], opphash);
     }
   }
 
