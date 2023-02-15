@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2018-2021 darktable developers.
+ *    Copyright (C) 2018-2023 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ static inline float clamp_range_f(const float x, const float low, const float hi
   return x > high ? high : (x < low ? low : x);
 }
 
-// test floats difference smaller than eps 
+// test floats difference smaller than eps
 static inline gboolean feqf(const float v1, const float v2, const float eps)
 {
   return (fabsf(v1 - v2) < eps);
@@ -84,7 +84,7 @@ static inline float sqrf(const float a)
 }
 
 // taken from rt code: calculate a * b + (1 - a) * c
-static inline float interpolatef(float a, float b, float c)
+static inline float interpolatef(const float a, const float b, const float c)
 {
   return a * (b - c) + c;
 }
@@ -103,7 +103,9 @@ static inline float Kahan_sum(const float m, float *const __restrict__ c, const 
 
 #ifdef __SSE2__
 // vectorized Kahan summation algorithm
-static inline __m128 Kahan_sum_sse(const __m128 m, __m128 *const __restrict__ c, const __m128 add)
+static inline __m128 Kahan_sum_sse(const __m128 m,
+                                   __m128 *const __restrict__ c,
+                                   const __m128 add)
 {
    const __m128 t1 = add - (*c);
    const __m128 t2 = m + t1;
@@ -112,18 +114,18 @@ static inline __m128 Kahan_sum_sse(const __m128 m, __m128 *const __restrict__ c,
 }
 #endif /* __SSE2__ */
 
-static inline float Log2(float x)
+static inline float Log2(const float x)
 {
   return (x > 0.0f) ? (logf(x) / DT_M_LN2f) : x;
 }
 
-static inline float Log2Thres(float x, float Thres)
+static inline float Log2Thres(const float x, const float Thres)
 {
   return logf(x > Thres ? x : Thres) / DT_M_LN2f;
 }
 
 // ensure that any changes here are synchronized with data/kernels/extended.cl
-static inline float fastlog2(float x)
+static inline float fastlog2(const float x)
 {
   union { float f; uint32_t i; } vx = { x };
   union { uint32_t i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
@@ -138,8 +140,7 @@ static inline float fastlog2(float x)
 }
 
 // ensure that any changes here are synchronized with data/kernels/extended.cl
-static inline float
-fastlog (float x)
+static inline float fastlog (const float x)
 {
   return DT_M_LN2f * fastlog2(x);
 }
@@ -149,13 +150,16 @@ fastlog (float x)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void mat3mulv(float *const __restrict__ dest, const float *const mat, const float *const __restrict__ v)
+static inline void mat3mulv(float *const __restrict__ dest,
+                            const float *const mat,
+                            const float *const __restrict__ v)
 {
   for(int k = 0; k < 3; k++)
   {
     float x = 0.0f;
     for(int i = 0; i < 3; i++)
       x += mat[3 * k + i] * v[i];
+
     dest[k] = x;
   }
 }
@@ -166,7 +170,9 @@ static inline void mat3mulv(float *const __restrict__ dest, const float *const m
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void mat3mul(float *const __restrict__ dest, const float *const __restrict__ m1, const float *const __restrict__ m2)
+static inline void mat3mul(float *const __restrict__ dest,
+                           const float *const __restrict__ m1,
+                           const float *const __restrict__ m2)
 {
   for(int k = 0; k < 3; k++)
   {
@@ -175,6 +181,7 @@ static inline void mat3mul(float *const __restrict__ dest, const float *const __
       float x = 0.0f;
       for(int j = 0; j < 3; j++)
         x += m1[3 * k + j] * m2[3 * j + i];
+
       dest[3 * k + i] = x;
     }
   }
@@ -186,7 +193,9 @@ static inline void mat3mul(float *const __restrict__ dest, const float *const __
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void mat3SSEmul(dt_colormatrix_t dest, const dt_colormatrix_t m1, const dt_colormatrix_t m2)
+static inline void mat3SSEmul(dt_colormatrix_t dest,
+                              const dt_colormatrix_t m1,
+                              const dt_colormatrix_t m2)
 {
   for(int k = 0; k < 3; k++)
   {
@@ -195,6 +204,7 @@ static inline void mat3SSEmul(dt_colormatrix_t dest, const dt_colormatrix_t m1, 
       float x = 0.0f;
       for(int j = 0; j < 3; j++)
         x += m1[k][j] * m2[j][i];
+
       dest[k][i] = x;
     }
   }
@@ -212,7 +222,8 @@ static inline void mul_mat_vec_2(const float *m, const float *p, float *o)
 #ifdef _OPENMP
 #pragma omp declare simd uniform(v_2) aligned(v_1, v_2:16)
 #endif
-static inline float scalar_product(const dt_aligned_pixel_t v_1, const dt_aligned_pixel_t v_2)
+static inline float scalar_product(const dt_aligned_pixel_t v_1,
+                                   const dt_aligned_pixel_t v_2)
 {
   // specialized 3×1 dot products 2 4×1 RGB-alpha pixels.
   // v_2 needs to be uniform along loop increments, e.g. independent from current pixel values
@@ -222,7 +233,8 @@ static inline float scalar_product(const dt_aligned_pixel_t v_1, const dt_aligne
 #ifdef _OPENMP
 #pragma omp simd aligned(v_1, v_2:16) reduction(+:acc)
 #endif
-  for(size_t c = 0; c < 3; c++) acc += v_1[c] * v_2[c];
+  for(size_t c = 0; c < 3; c++)
+    acc += v_1[c] * v_2[c];
 
   return acc;
 }
@@ -231,13 +243,16 @@ static inline float scalar_product(const dt_aligned_pixel_t v_1, const dt_aligne
 #ifdef _OPENMP
 #pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
 #endif
-static inline void dot_product(const dt_aligned_pixel_t v_in, const dt_colormatrix_t M, dt_aligned_pixel_t v_out)
+static inline void dot_product(const dt_aligned_pixel_t v_in,
+                               const dt_colormatrix_t M,
+                               dt_aligned_pixel_t v_out)
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
   #ifdef _OPENMP
   #pragma omp simd aligned(M:64) aligned(v_in, v_out:16)
   #endif
-  for(size_t i = 0; i < 3; ++i) v_out[i] = scalar_product(v_in, M[i]);
+  for(size_t i = 0; i < 3; ++i)
+    v_out[i] = scalar_product(v_in, M[i]);
 }
 
 
@@ -266,7 +281,8 @@ static inline void downscale_vector(dt_aligned_pixel_t vector, const float scali
 {
   // check zero or NaN
   const int valid = (scaling > NORM_MIN) && !isnan(scaling);
-  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + NORM_MIN) : vector[c] / NORM_MIN;
+  for(size_t c = 0; c < 3; c++)
+    vector[c] = (valid) ? vector[c] / (scaling + NORM_MIN) : vector[c] / NORM_MIN;
 }
 
 
@@ -276,7 +292,8 @@ static inline void downscale_vector(dt_aligned_pixel_t vector, const float scali
 static inline void upscale_vector(dt_aligned_pixel_t vector, const float scaling)
 {
   const int valid = (scaling > NORM_MIN) && !isnan(scaling);
-  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;
+  for(size_t c = 0; c < 3; c++)
+    vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;
 }
 
 
@@ -406,7 +423,7 @@ static inline float fast_mexp2f(const float x)
  * @param x Value to ceil
  * @return ceil value
  */
-static inline float ceil_fast(float x)
+static inline float ceil_fast(const float x)
 {
   if(x <= 0.f)
   {
@@ -422,7 +439,7 @@ static inline float ceil_fast(float x)
 /** Compute absolute value
  * @param t Vector of 4 floats
  * @return Vector of their absolute values
- */ static inline __m128 _mm_abs_ps(__m128 t)
+ */ static inline __m128 _mm_abs_ps(const __m128 t)
 {
   static const uint32_t signmask[4] __attribute__((aligned(64)))
   = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff };
@@ -466,7 +483,7 @@ static inline float sinf_fast(float t)
  * @param t Radian parameter
  * @return guess what
  */
-static inline __m128 sinf_fast_sse(__m128 t)
+static inline __m128 sinf_fast_sse(const __m128 t)
 {
   static const __m128 a
       = { 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI) };
@@ -495,4 +512,3 @@ static inline __m128 sinf_fast_sse(__m128 t)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
