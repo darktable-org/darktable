@@ -526,7 +526,10 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g,
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->description), _("description or further information"));
 
   g->autoinit
-      = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("make this preset auto set values depending on images")));
+      = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("reset all module parameters to their default values")));
+  gtk_widget_set_tooltip_text
+    (GTK_WIDGET(g->autoinit),
+     _("the parameters will be reset to their default values, which may be automatically set based on image metadata"));
   gtk_box_pack_start(box, GTK_WIDGET(g->autoinit), FALSE, FALSE, 0);
 
   g->autoapply
