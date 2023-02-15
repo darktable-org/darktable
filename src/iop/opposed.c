@@ -176,8 +176,8 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
           }
         }
 
-        dt_aligned_pixel_t cr_sum = {0.0f, 0.0f, 0.0f, 0.0f};
-        dt_aligned_pixel_t cr_cnt = {0.0f, 0.0f, 0.0f, 0.0f};
+        double cr_sum[4] = {0.0, 0.0, 0.0, 0.0};
+        int cr_cnt[4] = {0, 0, 0, 0};
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(input, roi_in, clips, clipdark, mask) \
@@ -195,13 +195,13 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
               const float inval = fmaxf(0.0f, input[idx+c]); 
               if((inval > clipdark[c]) && (inval < clips[c]) && (mask[(c+3) * msize + _raw_to_cmap(mwidth, row, col)]))
               {
-                cr_sum[c] += inval - _calc_linear_refavg(&input[idx], c);
-                cr_cnt[c] += 1.0f;
+                cr_sum[c] += (double)(inval - _calc_linear_refavg(&input[idx], c));
+                cr_cnt[c] += 1;
               }
             }
           }
         }
-        for_each_channel(c) chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
+        for_each_channel(c) chrominance[c] = (float)(cr_sum[c] / (double) MAX(1, cr_cnt[c]));
       }
 
       // we only have valid precalculated data if in fullpipe and complete (allow some rounding) image
@@ -316,9 +316,11 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
           }
         }
 
-        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections. */ 
-        dt_aligned_pixel_t cr_sum = {0.0f, 0.0f, 0.0f, 0.0f};
-        dt_aligned_pixel_t cr_cnt = {0.0f, 0.0f, 0.0f, 0.0f};
+        /* After having the surrounding mask for each color channel we can calculate the chrominance corrections.
+           We use doubles here for improved precision and less differences to OpenCL code
+         */ 
+        double cr_sum[4] = {0.0, 0.0, 0.0, 0.0};
+        int cr_cnt[4] = {0, 0, 0, 0};
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(input, roi_in, xtrans, clips, clipdark, mask) \
@@ -336,12 +338,12 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
             /* we only use the unclipped photosites very close the true clipped data to calculate the chrominance offset */
             if((inval < clips[color]) && (inval > clipdark[color]) && (mask[(color+3) * msize + _raw_to_cmap(mwidth, row, col)]))
             {
-              cr_sum[color] += inval - _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE);
-              cr_cnt[color] += 1.0f;
+              cr_sum[color] += (double)(inval - _calc_refavg(&input[idx], xtrans, filters, row, col, roi_in, TRUE));
+              cr_cnt[color] += 1;
             }
           }
         }
-        for_each_channel(c) chrominance[c] = cr_sum[c] / fmaxf(1.0f, cr_cnt[c]);
+        for_each_channel(c) chrominance[c] = (float)(cr_sum[c] / (double)MAX(1, cr_cnt[c]));
       }
       if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
       {
