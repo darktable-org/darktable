@@ -96,6 +96,7 @@ jobs:
             gdb \
             intltool \
             libatk1.0-dev \
+            libavif-dev \
             libcairo2-dev \
             libcolord-dev \
             libcolord-gtk-dev \
@@ -105,6 +106,7 @@ jobs:
             libexiv2-dev \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
+            libgmic-dev \
             libgphoto2-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
@@ -113,15 +115,17 @@ jobs:
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
-            liblua5.3-dev \
+            liblua5.4-dev \
             libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
+            libportmidi-dev \
             libpugixml-dev \
             librsvg2-dev \
             libsaxon-java \
+            libsdl2-dev \
             libsecret-1-dev \
             libsoup2.4-dev \
             libsqlite3-dev \
@@ -213,6 +217,7 @@ jobs:
             gdb \
             intltool \
             libatk1.0-dev \
+            libavif-dev \
             libcairo2-dev \
             libcolord-dev \
             libcolord-gtk-dev \
@@ -222,6 +227,7 @@ jobs:
             libexiv2-dev \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
+            libgmic-dev \
             libgphoto2-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
@@ -230,7 +236,7 @@ jobs:
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
-            liblua5.3-dev \
+            liblua5.4-dev \
             libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
