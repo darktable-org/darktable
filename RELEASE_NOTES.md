@@ -24,12 +24,13 @@ You are strongly advised to take a backup first.
 
 Since darktable 4.2.0:
 
-- Almost 137 commits to darktable+rawspeed
-- 85 pull requests handled
-- 17 issues closed
+- Almost 300 commits to darktable+rawspeed
+- 89 pull requests handled
+- 18 issues closed
 
 ## The Big Ones
 
+- N/A
 
 ## Other Changes
 
@@ -127,15 +128,25 @@ Since darktable 4.2.0:
 
 - N/A
 
-
 ## RawSpeed changes
 
+- Massive Fuji decompressor refactoring, up to -25% less wall time
+- Fuji GFX100(S): fix 16-bit sensor black/white levels
+- Fix decoding of compressed Fuji raws with large filesize
 
 ## Camera support, compared to 4.0
 
 ### Base Support
 
--
+- Canon EOS Kiss X10
+- Canon EOS Kiss X10i
+- Leica M9 (dng)
+- Nikon Z 30 (12bit-compressed, 14bit-compressed)
+- OM System OM-1
+- OM System OM-5
+- Panasonic DC-G95D (4:3)
+- Panasonic DC-G99D (4:3)
+- Ricoh GR IIIx (dng)
 
 ### Missing Compression Mode Support
 
@@ -145,10 +156,16 @@ Since darktable 4.2.0:
 
 ### White Balance Presets
 
--
+- Leica M9
+- Nikon Z 9
 
 ### Noise Profiles
 
+- Fujifilm GFX100S
+- Fujifilm X-H2
+- Fujifilm X-H2S
+- OM System OM-1
+- Sony ILCE-7SM3
 
 ### Suspended Support
 
