@@ -94,7 +94,6 @@ jobs:
             librsvg2-dev \
             libsaxon-java \
             libsecret-1-dev \
-            libsoup2.4-dev \
             libsqlite3-dev \
             libtiff5-dev \
             libwebp-dev \
@@ -204,7 +203,6 @@ jobs:
             mingw-w64-x86_64-openexr
             mingw-w64-x86_64-sqlite3
             mingw-w64-x86_64-libxslt
-            mingw-w64-x86_64-libsoup
             mingw-w64-x86_64-libavif
             mingw-w64-x86_64-libwebp
             mingw-w64-x86_64-libsecret

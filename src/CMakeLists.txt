@@ -316,16 +316,6 @@ include_directories(SYSTEM ${LIBXML2_INCLUDE_DIR})
 list(APPEND LIBS ${LIBXML2_LIBRARIES})
 add_definitions(${LIBXML2_DEFINITIONS})
 
-# used to launch a tiny http server, which could be used by OAuth services
-pkg_check_modules(LIBSOUP3 libsoup-3.0)
-if(LIBSOUP3_FOUND)
-  include_directories(SYSTEM ${LIBSOUP3_INCLUDE_DIRS})
-  list(APPEND LIBS ${LIBSOUP3_LIBRARIES})
-  add_definitions(${LIBSOUP3_DEFINITIONS})
-  add_definitions("-DHAVE_HTTP_SERVER")
-  list(APPEND SOURCES "common/http_server.c")
-endif(LIBSOUP3_FOUND)
-
 if(USE_CAMERA_SUPPORT)
   find_package(Gphoto2 2.5)
   if(Gphoto2_FOUND)
