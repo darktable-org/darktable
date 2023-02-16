@@ -335,7 +335,7 @@ highlights_initmask (read_only image2d_t in, global char *inmask,
 
   float val = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
   const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
-  const int idx = color*psize + mad24(row/3, pwidth, col/3);
+  const size_t idx = color*psize + mad24(row/3, pwidth, col/3);
 
   if((val >= clips[color]) && (inmask[idx] == 0))
   {
@@ -399,7 +399,7 @@ highlights_chroma (read_only image2d_t in, global char *mask, global float *accu
                    const int width, const int height,
                    const int pwidth, const int psize, 
                    const int filters, global const unsigned char (*const xtrans)[6],
-                   global const float *clips, global const float *dark)
+                   global const float *clips)
 {
   const int row = get_global_id(0);
 
@@ -410,11 +410,11 @@ highlights_chroma (read_only image2d_t in, global char *mask, global float *accu
 
   for(int col = 3; col < width-3; col++)
   {
-    const int idx = mad24(row, width, col);
+    const size_t idx = mad24(row, width, col);
     const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
     const float inval = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
-    const int px = color * psize + mad24(row/3, pwidth, col/3);
-    if(mask[px] && (inval > dark[color]) && (inval < clips[color]))
+    const size_t px = color * psize + mad24(row/3, pwidth, col/3);
+    if(mask[px] && (inval > 0.2f*clips[color]) && (inval < clips[color]))
     {
       const float ref = _calc_refavg(in, xtrans, filters, row, col, width);
       sum[color] += inval - ref;
@@ -423,8 +423,8 @@ highlights_chroma (read_only image2d_t in, global char *mask, global float *accu
   }
   for(int c = 0; c < 3; c++)
   {
-    accu[row*6 + c] = sum[c];
-    accu[row*6 + 3 + c] = cnt[c];
+    accu[row*8 + c] = sum[c];
+    accu[row*8 + 3 + c] = cnt[c];
   }
 }
 
