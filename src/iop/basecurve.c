@@ -422,7 +422,7 @@ static gboolean _match(const char *value, const char *pattern)
     k++;
   }
 
-  gboolean res = g_regex_match_simple(pat, value, 0, 0);
+  gboolean res = g_regex_match_simple(pat, value, G_REGEX_CASELESS, G_REGEX_MATCH_ANCHORED);
 
   g_free(pat);
 
