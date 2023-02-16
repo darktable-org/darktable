@@ -503,7 +503,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             for(int x = 0; x < w; x++, out += layers)
             {
               for(int c = 0; c < layers; c++)
-                out[c] = CLIP(in[x]) * 65535.0f + 0.5f;
+                out[c] = (uint16_t)roundf(CLIP(in[x]) * 65535.0f);
             }
 
             if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -523,7 +523,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             for(int x = 0; x < w; x++, out += layers)
             {
               for(int c = 0; c < layers; c++)
-                out[c] = CLIP(in[x]) * 255.0f + 0.5f;
+                out[c] = (uint8_t)roundf(CLIP(in[x]) * 255.0f);
             }
 
             if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
