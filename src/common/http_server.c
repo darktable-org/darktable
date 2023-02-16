@@ -23,15 +23,6 @@
 #include "common/darktable.h"
 #include "common/http_server.h"
 
-#ifndef SOUP_CHECK_VERSION
-// SOUP_CHECK_VERSION was introduced only in 2.42
-#define SOUP_CHECK_VERSION(x, y, z) false
-#endif
-
-#if !SOUP_CHECK_VERSION(2, 48, 0)
-#define OLD_API
-#endif
-
 typedef struct _connection_t
 {
   const char *id;
@@ -73,22 +64,21 @@ static const char reply[]
       "</body>\n"
       "</html>";
 
-static void _request_finished_callback(SoupServer *server, SoupMessage *message, SoupClientContext *client,
-                                       gpointer user_data)
+static void _request_finished_callback(SoupServer *server, SoupServerMessage *message, gpointer user_data)
 {
   dt_http_server_kill((dt_http_server_t *)user_data);
 }
 
 // this is always in the gui thread
-static void _new_connection(SoupServer *server, SoupMessage *msg, const char *path, GHashTable *query,
-                            SoupClientContext *client, gpointer user_data)
+static void _new_connection(SoupServer *server, SoupServerMessage *msg, const char *path, GHashTable *query,
+                            gpointer user_data)
 {
   _connection_t *params = (_connection_t *)user_data;
   gboolean res = TRUE;
 
-  if(msg->method != SOUP_METHOD_GET)
+  if(soup_server_message_get_method(msg) != SOUP_METHOD_GET)
   {
-    soup_message_set_status(msg, SOUP_STATUS_NOT_IMPLEMENTED);
+    soup_server_message_set_status(msg, SOUP_STATUS_NOT_IMPLEMENTED, NULL);
     goto end;
   }
 
@@ -107,8 +97,8 @@ static void _new_connection(SoupServer *server, SoupMessage *msg, const char *pa
   size_t resp_length = strlen(resp_body);
   g_free(page_title);
 
-  soup_message_set_status(msg, SOUP_STATUS_OK);
-  soup_message_set_response(msg, "text/html", SOUP_MEMORY_TAKE, resp_body, resp_length);
+  soup_server_message_set_status(msg, SOUP_STATUS_OK, NULL);
+  soup_server_message_set_response(msg, "text/html", SOUP_MEMORY_TAKE, resp_body, resp_length);
 
 end:
   if(res)
@@ -125,45 +115,9 @@ dt_http_server_t *dt_http_server_create(const int *ports, const int n_ports, con
   SoupServer *httpserver = NULL;
   int port = 0;
 
-#ifdef OLD_API
-  dt_print(DT_DEBUG_CONTROL, "[http server] using the old libsoup api\n");
+  dt_print(DT_DEBUG_CONTROL, "[http server] using libsoup3 api\n");
 
-  for(int i = 0; i < n_ports; i++)
-  {
-    port = ports[i];
-
-    SoupAddress *httpaddress = soup_address_new("127.0.0.1", port);
-
-    if(!httpaddress)
-    {
-      fprintf(stderr, "couldn't create libsoup httpaddress on port %d\n", port);
-      return NULL;
-    }
-
-    if(soup_address_resolve_sync(httpaddress, NULL) != SOUP_STATUS_OK)
-    {
-      fprintf(stderr, "error: can't resolve 127.0.0.1:%d\n", port);
-      return NULL;
-    }
-
-    httpserver = soup_server_new(SOUP_SERVER_SERVER_HEADER, "darktable internal server", "interface",
-                                 httpaddress, NULL);
-
-    if(httpserver) break;
-
-    g_object_unref(httpaddress);
-  }
-
-  if(httpserver == NULL)
-  {
-    fprintf(stderr, "error: couldn't create libsoup httpserver\n");
-    return NULL;
-  }
-
-#else
-  dt_print(DT_DEBUG_CONTROL, "[http server] using the new libsoup api\n");
-
-  httpserver = soup_server_new(SOUP_SERVER_SERVER_HEADER, "darktable internal server", NULL);
+  httpserver = soup_server_new("server-header", "darktable internal server", NULL);
   if(httpserver == NULL)
   {
     fprintf(stderr, "error: couldn't create libsoup httpserver\n");
@@ -184,8 +138,6 @@ dt_http_server_t *dt_http_server_create(const int *ports, const int n_ports, con
     return NULL;
   }
 
-#endif
-
   dt_http_server_t *server = (dt_http_server_t *)malloc(sizeof(dt_http_server_t));
   server->server = httpserver;
 
@@ -201,10 +153,6 @@ dt_http_server_t *dt_http_server_create(const int *ports, const int n_ports, con
   soup_server_add_handler(httpserver, path, _new_connection, params, free);
 
   g_free(path);
-
-#ifdef OLD_API
-  soup_server_run_async(httpserver);
-#endif
 
   dt_print(DT_DEBUG_CONTROL, "[http server] listening on %s\n", server->url);
 
