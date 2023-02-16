@@ -1574,7 +1574,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("logarithmic shaper")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "logarithmic shaper")), FALSE, FALSE, 0);
 
   // grey_point_source slider
   g->grey_point_source = dt_bauhaus_slider_new_with_range(self, 0.0, 100., 0, p->grey_point_source, 2);
@@ -1633,7 +1633,7 @@ void gui_init(dt_iop_module_t *self)
                                                 "works better for landscapes and evenly-lit pictures\nbut fails for high-keys and low-keys." ));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "filmic S curve")), FALSE, FALSE, 0);
 
   // contrast slider
   g->contrast = dt_bauhaus_slider_new_with_range(self, 0., 5., 0, p->contrast, 3);
@@ -1712,7 +1712,7 @@ void gui_init(dt_iop_module_t *self)
   // add collapsible section for those extra options that are generally not to be used
 
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  GtkWidget *destdisp = dt_ui_section_label_new(_("destination/display"));
+  GtkWidget *destdisp = dt_ui_section_label_new(C_("section", "destination/display"));
   g->extra_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
   GtkWidget *extra_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);

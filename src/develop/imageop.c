@@ -493,13 +493,13 @@ static void _gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   // we want the next module if any or the previous one
   GList *modules = module->dev->iop;
   dt_iop_module_t *next = NULL;
-  int find = 0;
+  gboolean find = FALSE;
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
     if(mod == module)
     {
-      find = 1;
+      find = TRUE;
       if(next) break;
     }
     else if(mod->instance == module->instance)
@@ -1540,7 +1540,7 @@ int dt_iop_load_module(dt_iop_module_t *module,
   return 0;
 }
 
-GList *dt_iop_load_modules_ext(dt_develop_t *dev, gboolean no_image)
+GList *dt_iop_load_modules_ext(dt_develop_t *dev, const gboolean no_image)
 {
   GList *res = NULL;
   dt_iop_module_t *module;

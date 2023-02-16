@@ -1126,7 +1126,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
   dt_bauhaus_slider_set_format(g->opacity, "%");
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("placement")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(C_("section", "placement")), TRUE, TRUE, 0);
 
   // rotate
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");

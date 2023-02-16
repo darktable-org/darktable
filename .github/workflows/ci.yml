@@ -96,6 +96,7 @@ jobs:
             gdb \
             intltool \
             libatk1.0-dev \
+            libavif-dev \
             libcairo2-dev \
             libcolord-dev \
             libcolord-gtk-dev \
@@ -105,6 +106,7 @@ jobs:
             libexiv2-dev \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
+            libgmic-dev \
             libgphoto2-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
@@ -113,17 +115,18 @@ jobs:
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
-            liblua5.3-dev \
+            liblua5.4-dev \
             libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
+            libportmidi-dev \
             libpugixml-dev \
             librsvg2-dev \
             libsaxon-java \
+            libsdl2-dev \
             libsecret-1-dev \
-            libsoup2.4-dev \
             libsqlite3-dev \
             libtiff5-dev \
             libwebp-dev \
@@ -213,6 +216,7 @@ jobs:
             gdb \
             intltool \
             libatk1.0-dev \
+            libavif-dev \
             libcairo2-dev \
             libcolord-dev \
             libcolord-gtk-dev \
@@ -222,6 +226,7 @@ jobs:
             libexiv2-dev \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
+            libgmic-dev \
             libgphoto2-dev \
             libgraphicsmagick1-dev \
             libgtk-3-dev \
@@ -230,7 +235,7 @@ jobs:
             libjson-glib-dev \
             liblcms2-dev \
             liblensfun-dev \
-            liblua5.3-dev \
+            liblua5.4-dev \
             libopenexr-dev \
             libopenjp2-7-dev \
             libosmgpsmap-1.0-dev \
@@ -242,7 +247,6 @@ jobs:
             libsaxon-java \
             libsdl2-dev \
             libsecret-1-dev \
-            libsoup2.4-dev \
             libsqlite3-dev \
             libtiff5-dev \
             libwebp-dev \
@@ -292,25 +296,14 @@ jobs:
       fail-fast: true
       matrix:
         btype:
-          - RelWithDebInfo
+          - Debug
         compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
-          #- { compiler: LLVM, CC: clang, CXX: clang++ }
         target:
           - skiptest
-          - nofeatures
         generator:
           #- MSYS Makefiles
           - Ninja
-        include:
-          #- btype: Release
-          #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
-          #  eco: -DBINARY_PACKAGE_BUILD=ON
-          #  target: skiptest
-          - btype: Debug
-            compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
-            target: skiptest
-            generator: Ninja
     defaults:
       run:
         shell: msys2 {0}
@@ -358,7 +351,6 @@ jobs:
             libjpeg-turbo:p
             libjxl:p
             libsecret:p
-            libsoup:p
             libwebp:p
             libxml2:p
             libxslt:p
@@ -417,10 +409,9 @@ jobs:
           - { os: macos-12,    xcode: 13.4,   deployment: 12.3 }
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
-        btype: [ RelWithDebInfo ]
+        btype: [ Debug ]
         target:
           - skiptest
-          - nofeatures
         generator:
           - Ninja
     env:
@@ -442,10 +433,11 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
-          brew upgrade || true
+          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
           brew tap Homebrew/bundle
           cd src/.ci
-          brew bundle --verbose
+          export HOMEBREW_NO_INSTALL_UPGRADE=1
+          brew bundle --verbose || true
           brew link --force libomp # fix for keg-only libomp
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it

@@ -415,7 +415,7 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *hbox;
 
   // Camera control
-  GtkWidget *label = dt_ui_section_label_new(_("camera control"));
+  GtkWidget *label = dt_ui_section_label_new(C_("section", "camera control"));
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(GTK_GRID(self->widget), label, lib->gui.rows++, 0, 2, 1);
 
@@ -484,7 +484,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   // Camera settings
-  label = dt_ui_section_label_new(_("properties"));
+  label = dt_ui_section_label_new(C_("section", "properties"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
 
   lib->gui.prop_start = lib->gui.rows -1;
@@ -492,7 +492,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   // user specified properties
-  label = dt_ui_section_label_new(_("additional properties"));
+  label = dt_ui_section_label_new(C_("section", "additional properties"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
 
   label = gtk_label_new(_("label"));

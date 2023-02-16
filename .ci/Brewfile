@@ -1,5 +1,5 @@
 #    This file is part of darktable.
-#    copyright (c) 2016 Roman Lebedev.
+#    Copyright (C) 2016-2023 darktable developers.
 #
 #    darktable is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 #    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 
 brew 'cmake'
+brew 'pkg-config'
 brew 'desktop-file-utils'
 brew 'exiv2'
 brew 'gettext'
@@ -34,7 +35,6 @@ brew 'libavif'
 brew 'libheif'
 brew 'librsvg'
 brew 'libsecret'
-brew 'libsoup@2'
 brew 'little-cms2'
 brew 'lua'
 brew 'libomp'

@@ -1063,7 +1063,7 @@ void gui_init(dt_lib_module_t *self)
   dt_action_insert_sorted(DT_ACTION(self), &darktable.control->actions_format);
   dt_action_insert_sorted(DT_ACTION(self), &darktable.control->actions_storage);
 
-  GtkWidget *label = dt_ui_section_label_new(_("storage options"));
+  GtkWidget *label = dt_ui_section_label_new(C_("section", "storage options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
   d->storage = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -1089,7 +1089,7 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_on_storage_list_changed), self);
   g_signal_connect(G_OBJECT(d->storage), "value-changed", G_CALLBACK(_storage_changed), (gpointer)d);
 
-  label = dt_ui_section_label_new(_("format options"));
+  label = dt_ui_section_label_new(C_("section", "format options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
   d->format = dt_bauhaus_combobox_new_action(DT_ACTION(self));
@@ -1110,7 +1110,7 @@ void gui_init(dt_lib_module_t *self)
     }
   }
 
-  label = dt_ui_section_label_new(_("global options"));
+  label = dt_ui_section_label_new(C_("section", "global options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->dimensions_type, self, NULL, N_("set size"),
