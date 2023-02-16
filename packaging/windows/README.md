@@ -25,7 +25,7 @@ How to make a darktable Windows installer (x64 only; Windows 8.1 will need to ha
 
 * Install required libraries and dependencies for darktable:
     ```bash
-    pacman -S --needed mingw-w64-ucrt-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libjxl,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+    pacman -S --needed mingw-w64-ucrt-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libavif,libheif,libjxl,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
     ```
 
 * Install optional libraries and dependencies:
@@ -169,7 +169,7 @@ as root. It's also enough to install a server setup without X.
                 mingw64-libtiff mingw64-libtiff-devel mingw64-liblcms2 \
                 mingw64-liblcms2-devel mingw64-libopenjpeg1 mingw64-libopenjpeg-devel \
                 mingw64-GraphicsMagick mingw64-GraphicsMagick-devel mingw64-libexpat \
-                mingw64-libexpat-devel mingw64-libsoup mingw64-libsoup-devel
+                mingw64-libexpat-devel
 
     # the jpeg headers installed by openSUSE contain some definitions that hurt us so we have to patch these.
     # this is super ugly and needs to be redone whenever the library is updated.

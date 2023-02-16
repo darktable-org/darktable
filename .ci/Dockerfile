@@ -98,7 +98,6 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     librsvg2-dev \
     libsaxon-java \
     libsecret-1-dev \
-    libsoup2.4-dev \
     libsqlite3-dev \
     libtiff5-dev \
     libwebp-dev \

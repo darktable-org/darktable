@@ -127,7 +127,6 @@ jobs:
             libsaxon-java \
             libsdl2-dev \
             libsecret-1-dev \
-            libsoup2.4-dev \
             libsqlite3-dev \
             libtiff5-dev \
             libwebp-dev \
@@ -248,7 +247,6 @@ jobs:
             libsaxon-java \
             libsdl2-dev \
             libsecret-1-dev \
-            libsoup2.4-dev \
             libsqlite3-dev \
             libtiff5-dev \
             libwebp-dev \
@@ -353,7 +351,6 @@ jobs:
             libjpeg-turbo:p
             libjxl:p
             libsecret:p
-            libsoup:p
             libwebp:p
             libxml2:p
             libxslt:p
