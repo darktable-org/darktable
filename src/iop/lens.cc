@@ -606,14 +606,18 @@ static lfModifier * _get_modifier(
     mods_done_tmp |= mod->EnableScaling(d->scale);
   if(mods_todo & LF_MODIFY_TCA)
   {
-    if(d->tca_override) mods_done_tmp |= mod->EnableTCACorrection(d->custom_tca);
-    else mods_done_tmp |= mod->EnableTCACorrection(d->lens, d->focal);
+    if(d->tca_override)
+      mods_done_tmp |= mod->EnableTCACorrection(d->custom_tca);
+    else
+      mods_done_tmp |= mod->EnableTCACorrection(d->lens, d->focal);
   }
   if(mods_todo & LF_MODIFY_VIGNETTING)
     mods_done_tmp |= mod->EnableVignettingCorrection(d->lens, d->focal, d->aperture, d->distance);
 #else
   mod = new lfModifier(d->lens, d->crop, w, h);
-  mods_done_tmp = mod->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance, d->scale, d->target_geom, mods_todo,
+  mods_done_tmp = mod->Initialize(d->lens, LF_PF_F32, d->focal,
+                                  d->aperture, d->distance, d->scale,
+                                  d->target_geom, mods_todo,
                                   (force_inverse) ? !d->inverse : d->inverse);
 #endif
 
@@ -728,16 +732,21 @@ static void _process_lf(
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
   int modflags;
-  const lfModifier *modifier = _get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
+  const lfModifier *modifier =
+    _get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, FALSE);
 
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
-  const struct dt_interpolation *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  const struct dt_interpolation *const interpolation =
+    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   if(d->inverse)
   {
     // reverse direction (useful for renderings)
-    if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+    if(modflags & (LF_MODIFY_TCA
+                   | LF_MODIFY_DISTORTION
+                   | LF_MODIFY_GEOMETRY
+                   | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
       const size_t bufsize = (size_t)roi_out->width * 2 * 3;
@@ -763,17 +772,23 @@ static void _process_lf(
         {
           for(int c = 0; c < 3; c++)
           {
-            if(d->do_nan_checks && (!isfinite(bufptr[c * 2]) || !isfinite(bufptr[c * 2 + 1])))
+            if(d->do_nan_checks
+               && (!isfinite(bufptr[c * 2])
+                   || !isfinite(bufptr[c * 2 + 1])))
             {
               out[c] = 0.0f;
               continue;
             }
 
             const float *const inptr = (const float *const)ivoid + (size_t)c;
-            const float pi0 = fmaxf(fminf(bufptr[c * 2] - roi_in->x, roi_in->width - 1.0f), 0.0f);
-            const float pi1 = fmaxf(fminf(bufptr[c * 2 + 1] - roi_in->y, roi_in->height - 1.0f), 0.0f);
-            out[c] = dt_interpolation_compute_sample(interpolation, inptr, pi0, pi1, roi_in->width,
-                                                     roi_in->height, ch, ch_width);
+            const float pi0 = fmaxf(fminf(bufptr[c * 2] - roi_in->x,
+                                          roi_in->width - 1.0f), 0.0f);
+            const float pi1 = fmaxf(fminf(bufptr[c * 2 + 1] - roi_in->y,
+                                          roi_in->height - 1.0f),
+                                    0.0f);
+            out[c] = dt_interpolation_compute_sample
+              (interpolation, inptr, pi0, pi1, roi_in->width,
+               roi_in->height, ch, ch_width);
           }
 
           if(raw_monochrome) out[0] = out[2] = out[1];
@@ -788,10 +803,15 @@ static void _process_lf(
 
             // take green channel distortion also for alpha channel
             const float *const inptr = (const float *const)ivoid + (size_t)3;
-            const float pi0 = fmaxf(fminf(bufptr[2] - roi_in->x, roi_in->width - 1.0f), 0.0f);
-            const float pi1 = fmaxf(fminf(bufptr[3] - roi_in->y, roi_in->height - 1.0f), 0.0f);
-            out[3] = dt_interpolation_compute_sample(interpolation, inptr, pi0, pi1, roi_in->width,
-                                                     roi_in->height, ch, ch_width);
+            const float pi0 = fmaxf(fminf(bufptr[2] - roi_in->x,
+                                          roi_in->width - 1.0f),
+                                    0.0f);
+            const float pi1 = fmaxf(fminf(bufptr[3] - roi_in->y,
+                                          roi_in->height - 1.0f),
+                                    0.0f);
+            out[3] = dt_interpolation_compute_sample
+              (interpolation, inptr, pi0, pi1, roi_in->width,
+               roi_in->height, ch, ch_width);
           }
         }
       }
@@ -1459,8 +1479,8 @@ static void _commit_params_lf(
   if(p->lens[0])
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-    const lfLens **lens
-        = dt_iop_lensfun_db->FindLenses(camera, NULL, p->lens, 0);
+    const lfLens **lens =
+      dt_iop_lensfun_db->FindLenses(camera, NULL, p->lens, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(lens)
     {
@@ -1531,7 +1551,8 @@ static void _commit_params_lf(
     int modflags;
     /* we use the modifier only to get which corrections will be applied, we have
      * to provide a size that won't be used so we use the image size */
-    _get_modifier(&modflags, self->dev->image_storage.width, self->dev->image_storage.height, d, used_lf_mask,
+    _get_modifier(&modflags, self->dev->image_storage.width,
+                  self->dev->image_storage.height, d, used_lf_mask,
                   FALSE);
 
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -1590,9 +1611,14 @@ static int _init_coeffs_md(
       knots[i] = (float) (i + 0.5) / (nc - 1);
 
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (p->cor_dist_ft * cd->sony.distortion[i] * powf(2, -14) + 1) * scale;
+      {
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] =
+          (p->cor_dist_ft * cd->sony.distortion[i] * powf(2, -14) + 1) * scale;
+      }
       else if(cor_rgb)
+      {
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = scale;
+      }
 
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_TCA)
       {
@@ -1610,13 +1636,14 @@ static int _init_coeffs_md(
   }
   else if(img->exif_correction_type == CORRECTION_TYPE_FUJI)
   {
-    int nc = cd->fuji.nc;
+    const int nc = cd->fuji.nc;
     for(int i = 0; i < nc; i++)
     {
       knots[i] = cd->fuji.cropf * cd->fuji.knots[i];
 
       if(cor_rgb && p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_DISTORTION)
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (p->cor_dist_ft * cd->fuji.distortion[i] / 100 + 1) * scale;
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] =
+          (p->cor_dist_ft * cd->fuji.distortion[i] / 100 + 1) * scale;
       else if(cor_rgb)
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = scale;
 
@@ -1646,12 +1673,16 @@ static int _init_coeffs_md(
       if(vig)     vig[i] = 1.0f;
 
       const float pw2 = powf(r, 2.0f), pw4 = powf(r, 4.0f), pw6 = powf(r, 6.0f);
-      if(cor_rgb && cd->dng.has_warp && p->modify_flags & (DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_TCA))
+      if(cor_rgb
+         && cd->dng.has_warp
+         && p->modify_flags & (DT_IOP_LENS_MODIFY_FLAG_DISTORTION | DT_IOP_LENS_MODIFY_FLAG_TCA))
       {
         // Convert the polynomial to a spline by evaluating it at each knot
         for(int c = 0; c < cd->dng.planes; c++)
         {
-          const float r_cor = cd->dng.cwarp[c][0] + cd->dng.cwarp[c][1]*pw2 + cd->dng.cwarp[c][2]*pw4 + cd->dng.cwarp[c][3]*pw6;
+          const float r_cor =
+            cd->dng.cwarp[c][0] + cd->dng.cwarp[c][1]*pw2
+            + cd->dng.cwarp[c][2]*pw4 + cd->dng.cwarp[c][3]*pw6;
           cor_rgb[c][i] = (p->cor_dist_ft * (r_cor - 1.0f) + 1.0f) * scale;
         }
 
@@ -1659,7 +1690,9 @@ static int _init_coeffs_md(
           cor_rgb[2][i] = cor_rgb[1][i] = cor_rgb[0][i];
       }
 
-      if(vig && cd->dng.has_vignette && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING))
+      if(vig
+         && cd->dng.has_vignette
+         && (p->modify_flags & DT_IOP_LENS_MODIFY_FLAG_VIGNETTING))
       {
         const float dvig = cd->dng.cvig[0]*pw2 + cd->dng.cvig[1]*pw4 + cd->dng.cvig[2]*pw6
                          + cd->dng.cvig[3]*powf(r, 8.0f) + cd->dng.cvig[4]*powf(r, 10.0f);
@@ -2211,7 +2244,8 @@ void commit_params(
 
   d->method = p->method;
   d->modify_flags = p->modify_flags;
-  if(dt_image_is_monochrome(&self->dev->image_storage)) d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
+  if(dt_image_is_monochrome(&self->dev->image_storage))
+    d->modify_flags &= ~DT_IOP_LENS_MODIFY_FLAG_TCA;
 
   // no OpenCL for LENS_METHOD_EMBEDDED_METADATA
   piece->process_cl_ready = (d->method == DT_IOP_LENS_METHOD_EMBEDDED_METADATA) ? 0 : 1;
@@ -2254,14 +2288,19 @@ void cleanup_pipe(
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_lens_global_data_t *gd
-      = (dt_iop_lens_global_data_t *)calloc(1, sizeof(dt_iop_lens_global_data_t));
+  dt_iop_lens_global_data_t *gd =
+    (dt_iop_lens_global_data_t *)calloc(1, sizeof(dt_iop_lens_global_data_t));
   module->data = gd;
-  gd->kernel_lens_distort_bilinear = dt_opencl_create_kernel(program, "lens_distort_bilinear");
-  gd->kernel_lens_distort_bicubic = dt_opencl_create_kernel(program, "lens_distort_bicubic");
-  gd->kernel_lens_distort_lanczos2 = dt_opencl_create_kernel(program, "lens_distort_lanczos2");
-  gd->kernel_lens_distort_lanczos3 = dt_opencl_create_kernel(program, "lens_distort_lanczos3");
-  gd->kernel_lens_vignette = dt_opencl_create_kernel(program, "lens_vignette");
+  gd->kernel_lens_distort_bilinear =
+    dt_opencl_create_kernel(program, "lens_distort_bilinear");
+  gd->kernel_lens_distort_bicubic =
+    dt_opencl_create_kernel(program, "lens_distort_bicubic");
+  gd->kernel_lens_distort_lanczos2 =
+    dt_opencl_create_kernel(program, "lens_distort_lanczos2");
+  gd->kernel_lens_distort_lanczos3 =
+    dt_opencl_create_kernel(program, "lens_distort_lanczos3");
+  gd->kernel_lens_vignette =
+    dt_opencl_create_kernel(program, "lens_vignette");
 
   lfDatabase *dt_iop_lensfun_db = new lfDatabase;
   gd->db = (lfDatabase *)dt_iop_lensfun_db;
@@ -2279,15 +2318,20 @@ void init_global(dt_iop_module_so_t *module)
     gchar *path = g_file_get_path(g_file_get_parent(file));
     g_object_unref(file);
 #ifdef LF_MAX_DATABASE_VERSION
-    gchar *sysdbpath = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), (char *)NULL);
+    gchar *sysdbpath = g_build_filename(path, "lensfun",
+                                        "version_" STR(LF_MAX_DATABASE_VERSION),
+                                        (char *)NULL);
 #endif
 
 #ifdef LF_0395
-    const long userdbts = dt_iop_lensfun_db->ReadTimestamp(dt_iop_lensfun_db->UserUpdatesLocation);
+    const long userdbts =
+      dt_iop_lensfun_db->ReadTimestamp(dt_iop_lensfun_db->UserUpdatesLocation);
     const long sysdbts = dt_iop_lensfun_db->ReadTimestamp(sysdbpath);
-    const char *dbpath = userdbts > sysdbts ? dt_iop_lensfun_db->UserUpdatesLocation : sysdbpath;
+    const char *dbpath =
+      userdbts > sysdbts ? dt_iop_lensfun_db->UserUpdatesLocation : sysdbpath;
     if(dt_iop_lensfun_db->Load(dbpath) != LF_NO_ERROR)
-      dt_print(DT_DEBUG_ALWAYS, "[iop_lens]: could not load lensfun database in `%s'!\n", dbpath);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[iop_lens]: could not load lensfun database in `%s'!\n", dbpath);
     else
       dt_iop_lensfun_db->Load(dt_iop_lensfun_db->UserLocation);
 #else
@@ -2297,12 +2341,15 @@ void init_global(dt_iop_module_so_t *module)
     dt_iop_lensfun_db->HomeDataDir = g_strdup(sysdbpath);
     if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[iop_lens]: could not load lensfun database in `%s'!\n", sysdbpath);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[iop_lens]: could not load lensfun database in `%s'!\n", sysdbpath);
 #endif
       g_free(dt_iop_lensfun_db->HomeDataDir);
       dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", (char *)NULL);
       if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
-        dt_print(DT_DEBUG_ALWAYS, "[iop_lens]: could not load lensfun database in `%s'!\n", dt_iop_lensfun_db->HomeDataDir);
+        dt_print(DT_DEBUG_ALWAYS,
+                 "[iop_lens]: could not load lensfun database in `%s'!\n",
+                 dt_iop_lensfun_db->HomeDataDir);
 #ifdef LF_MAX_DATABASE_VERSION
     }
 #endif
@@ -2337,14 +2384,12 @@ static char *_lens_sanitize(const char *orig_lens)
     }
     else
     {
-      char *new_lens = strdup(orig_lens);
-      return new_lens;
+      return strdup(orig_lens);
     }
   }
   else
   {
-    char *new_lens = strdup(orig_lens);
-    return new_lens;
+    return strdup(orig_lens);
   }
 }
 
