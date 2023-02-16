@@ -1547,16 +1547,23 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     (is_raw || is_mono) && (strcmp(workflow, "scene-referred (filmic)") == 0);
   const gboolean auto_apply_sigmoid =
     (is_raw || is_mono) && (strcmp(workflow, "scene-referred (sigmoid)") == 0);
-  const gboolean auto_apply_cat = has_matrix && is_modern_chroma;
+  const gboolean auto_apply_exposure =
+    auto_apply_filmic || auto_apply_sigmoid;
+  const gboolean auto_apply_basecurve =
+    (is_raw || is_mono) && (strcmp(workflow, "display-referred (legacy)") == 0);
+  const gboolean auto_apply_cat =
+    has_matrix && is_modern_chroma;
 
-  if(auto_apply_filmic || auto_apply_sigmoid || auto_apply_cat)
+  if(auto_apply_filmic || auto_apply_sigmoid || auto_apply_cat || auto_apply_basecurve)
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-      if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
+      if(((auto_apply_exposure && strcmp(module->op, "exposure") == 0)
+          || (auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
           || (auto_apply_sigmoid && strcmp(module->op, "sigmoid") == 0)
+          || (auto_apply_basecurve && strcmp(module->op, "basecurve") == 0)
           || (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
          && !dt_history_check_module_exists(imgid, module->op, FALSE)
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
@@ -1587,8 +1594,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "          AND ?8 BETWEEN exposure_min AND exposure_max"
            "          AND ?9 BETWEEN aperture_min AND aperture_max"
            "          AND ?10 BETWEEN focal_length_min AND focal_length_max"
-           "          AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0)))"
-           "        OR (name = ?13))"
+           "          AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
            "   AND operation NOT IN"
            "        ('ioporder', 'metadata', 'modulegroups', 'export', 'tagging', 'collect', '%s')"
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
@@ -1597,15 +1603,13 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // clang-format on
   // query for all modules at once:
   sqlite3_stmt *stmt;
-  const char *workflow_preset = (has_matrix || is_mono) && is_display_referred
-                                ? _("display-referred default")
-                                : ((has_matrix || is_mono) && is_scene_referred
-                                   ?_("scene-referred default")
-                                   :"\t\n");
+
   int iformat = 0;
-  if(dt_image_is_rawprepare_supported(image)) iformat |= FOR_RAW;
+  if(dt_image_is_rawprepare_supported(image))
+    iformat |= FOR_RAW;
   else iformat |= FOR_LDR;
-  if(dt_image_is_hdr(image)) iformat |= FOR_HDR;
+  if(dt_image_is_hdr(image))
+    iformat |= FOR_HDR;
 
   int excluded = 0;
   if(dt_image_monochrome_flags(image)) excluded |= FOR_NOT_MONO;
@@ -1625,7 +1629,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // 0: dontcare, 1: ldr, 2: raw plus monochrome & color
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 11, iformat);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, excluded);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, workflow_preset, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -1636,19 +1639,20 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   if(!dt_ioppr_has_iop_order_list(imgid))
   {
     // clang-format off
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT op_params"
-                                " FROM data.presets"
-                                " WHERE autoapply=1"
-                                "       AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
-                                "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
-                                "       AND ?8 BETWEEN exposure_min AND exposure_max"
-                                "       AND ?9 BETWEEN aperture_min AND aperture_max"
-                                "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
-                                "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
-                                "       AND operation = 'ioporder'"
-                                " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
-                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT op_params"
+       " FROM data.presets"
+       " WHERE autoapply=1"
+       "       AND ((?2 LIKE model AND ?3 LIKE maker) OR (?4 LIKE model AND ?5 LIKE maker))"
+       "       AND ?6 LIKE lens AND ?7 BETWEEN iso_min AND iso_max"
+       "       AND ?8 BETWEEN exposure_min AND exposure_max"
+       "       AND ?9 BETWEEN aperture_min AND aperture_max"
+       "       AND ?10 BETWEEN focal_length_min AND focal_length_max"
+       "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
+       "       AND operation = 'ioporder'"
+       " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
+       -1, &stmt, NULL);
     // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);

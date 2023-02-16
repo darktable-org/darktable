@@ -3362,7 +3362,7 @@
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
     <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic or sigmoid, color calibration and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve, white balance and the legacy module pipe order.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="general" restart="true">
+  <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
     <type>bool</type>
     <default>false</default>
