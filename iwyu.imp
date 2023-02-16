@@ -89,7 +89,6 @@
  { include: ["@<colord/.*>", "private", "<colord.h>", "public"] },
  { include: ["@<colord-gtk/.*>", "private", "<colord-gtk.h>", "public"] },
  { include: ["@<gphoto2/.*>", "private", "<gphoto2/gphoto2.h>", "public"] },
- { include: ["@<libsoup/.*>", "private", "<libsoup/soup.h>", "public"] },
  { include: ["@<magick/.*>", "private", "<magick/api.h>", "public"] },
  { include: ["@\"rawspeed/RawSpeed/.*\"", "private", "\"rawspeed/RawSpeed/RawSpeed-API.h\"", "public"] },
  { include: ["@<json-glib/.*>", "private", "<json-glib/json-glib.h>", "public"] },

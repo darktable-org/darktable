@@ -7,7 +7,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
     Install required dependencies:
-     $ sudo port install exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic-lib libheif portmidi libsdl2 libavif libjxl
+     $ sudo port install exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic-lib libheif portmidi libsdl2 libavif libjxl
     Clone darktable git repository (in this example into ~/src):
      $ mkdir ~/src
      $ cd ~/src

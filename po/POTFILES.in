@@ -108,7 +108,6 @@ src/common/exif.cc
 src/common/fast_guided_filter.h
 src/common/film.c
 src/common/history.c
-src/common/http_server.c
 src/common/image.c
 src/common/image.h
 src/common/imagebuf.c

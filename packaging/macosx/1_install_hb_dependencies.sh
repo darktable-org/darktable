@@ -46,7 +46,6 @@ hbDependencies="adwaita-icon-theme \
     libomp \
     librsvg \
     libsecret \
-    libsoup@2 \
     little-cms2 \
     llvm \
     lua \
