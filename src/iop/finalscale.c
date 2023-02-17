@@ -38,7 +38,7 @@ typedef dt_iop_finalscale_params_t dt_iop_finalscale_data_t;
 
 const char *name()
 {
-  return C_("modulename", "Final resampling");
+  return C_("modulename", "final resampling");
 }
 
 int flags()
@@ -159,9 +159,8 @@ void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(finalscale);
   self->widget = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(self->widget),_("This module is used to downscale images at export time. "
-                                                 "Moving it along the pipeline will have diffent effects on exported images. "
-                                                 "<a href='https://ansel.photos/en/doc/modules/processing-modules/finalscale/'>Learn more</a>"));
+  gtk_label_set_markup(GTK_LABEL(self->widget),_("this module is used to downscale images at export time. "
+                                                 "moving it along the pipeline will have diffent effects on exported images. "));
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   gtk_label_set_xalign (GTK_LABEL(self->widget), 0.0f);
   gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
