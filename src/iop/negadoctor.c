@@ -295,7 +295,7 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
 
       // Print density on paper : ((1 - 10^corrected_de + black) * exposure)^gamma rewritten for FMA
       const float print_linear = -(d->exposure * fast_exp10f(corrected_de) + d->black);
-      const float print_gamma = powf(fmaxf(print_linear, 0.0f), d->gamma); // note : this is always > 0
+      const float print_gamma = powf(fmaxf(print_linear, 0.0f), d->gamma); // note : this is always > 0
 
       // Compress highlights. from https://lists.gnu.org/archive/html/openexr-devel/2005-03/msg00009.html
       pix_out[c] =  (print_gamma > d->soft_clip) ? d->soft_clip + (1.0f - fast_expf(-(print_gamma - d->soft_clip) / d->soft_clip_comp)) * d->soft_clip_comp
@@ -408,7 +408,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 }
 
 
-/* Global GUI stuff */
+/* Global GUI stuff */
 
 static void setup_color_variables(dt_iop_negadoctor_gui_data_t *const g, const gint state)
 {
@@ -664,7 +664,7 @@ static void apply_auto_WB_low(dt_iop_module_t *self)
   for(int c = 0; c < 3; c++)
     RGB_min[c] = log10f(p->Dmin[c] / fmaxf(self->picked_color[c], THRESHOLD)) / p->D_max;
 
-  const float RGB_v_min = v_minf(RGB_min); // warning: can be negative
+  const float RGB_v_min = v_minf(RGB_min); // warning: can be negative
   for(int c = 0; c < 3; c++) p->wb_low[c] =  RGB_v_min / RGB_min[c];
 
   ++darktable.gui->reset;
@@ -1024,7 +1024,7 @@ void gui_update(dt_iop_module_t *const self)
   dt_iop_color_picker_reset(self, TRUE);
 
 
-  dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
+  dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
   dt_bauhaus_slider_set_default(g->exposure, log2f(p->exposure)); // otherwise always showes as "changed"
 
   // Update custom stuff

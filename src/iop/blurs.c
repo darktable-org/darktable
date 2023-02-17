@@ -211,7 +211,7 @@ static inline void create_motion_kernel(float *const restrict buffer,
   const float A = curvature / 2.f;
   const float B = 1.f;
   const float C = -A * offset * offset + B * offset;
-  // Note : C ensures the polynomial arc always goes through the central pixel
+  // Note : C ensures the polynomial arc always goes through the central pixel
   // so we don't shift pixels. This is meant to allow seamless connection
   // with unmasked areas when using masked blur.
 

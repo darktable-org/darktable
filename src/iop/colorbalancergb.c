@@ -42,11 +42,11 @@
 
 //#include <gtk/gtk.h>
 #include <stdlib.h>
-#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
+#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
 #define STEPS 92         // so we test 92×92×92 combinations of RGB in [0; 1] to build the gamut LUT
 
 // Filmlight Yrg puts red at 330°, while usual HSL wheels put it at 360/0°
-// so shift in GUI only it to not confuse people. User params are always degrees,
+// so shift in GUI only it to not confuse people. User params are always degrees,
 // pixel params are always radians.
 #define ANGLE_SHIFT -30.f
 #define DEG_TO_RAD(x) ((x + ANGLE_SHIFT) * M_PI / 180.f)
@@ -676,7 +676,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     Ych[2] = hue_rotation_matrix[0][0] * cos_h + hue_rotation_matrix[0][1] * sin_h;
     Ych[3] = hue_rotation_matrix[1][0] * cos_h + hue_rotation_matrix[1][1] * sin_h;
 
-    // Linear chroma : distance to achromatic at constant luminance in scene-referred
+    // Linear chroma : distance to achromatic at constant luminance in scene-referred
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
     const float vibrance = d->vibrance * (1.0f - powf(Ych[1], fabsf(d->vibrance)));
     const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
@@ -730,10 +730,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       // Convert to JCh
       float JC[2] = { Jab[0], dt_fast_hypotf(Jab[1], Jab[2]) };   // brightness/chroma vector
-      const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
+      const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
 
       // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
-      // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
+      // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
       // so we add the chroma projected along the orthogonal axis to get some control value
       const float T = atan2f(JC[1], JC[0]); // angle of the eigenvector over the hue plane
       const float sin_T = sinf(T);
@@ -838,7 +838,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_UCS_HCB_to_JCH(HCB, JCH);
 
       // Gamut mapping
-      const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING : this is M²
+      const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING : this is M²
       const float max_chroma = 15.932993652962535f * powf(JCH[0] * L_white, 0.6523997524738018f) * powf(max_colorfulness, 0.6007557017508491f) / L_white;
       const dt_aligned_pixel_t JCH_gamut_boundary = { JCH[0], max_chroma, JCH[2], 0.f };
       dt_aligned_pixel_t HSB_gamut_boundary;
@@ -1284,7 +1284,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           int index = (int)(H_round + 180);
           index += (index < 0) ? 360 : 0;
           index -= (index > 359) ? 360 : 0;
-          // Warning: we store M², the square of the colorfulness
+          // Warning: we store M², the square of the colorfulness
           dt_UCS_LUT[index] = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
         }
       }

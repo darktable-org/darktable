@@ -1218,9 +1218,9 @@ typedef enum diffuse_reconstruct_variant_t
 
 enum wavelets_scale_t
 {
-  ANY_SCALE   = 1 << 0, // any wavelets scale   : reconstruct += HF
-  FIRST_SCALE = 1 << 1, // first wavelets scale : reconstruct = 0
-  LAST_SCALE  = 1 << 2, // last wavelets scale  : reconstruct += residual
+  ANY_SCALE   = 1 << 0, // any wavelets scale   : reconstruct += HF
+  FIRST_SCALE = 1 << 1, // first wavelets scale : reconstruct = 0
+  LAST_SCALE  = 1 << 2, // last wavelets scale  : reconstruct += residual
 };
 
 
@@ -1369,7 +1369,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
           out[index + c] = fmaxf(out[index + c] + LF[index + c], 0.f);
       }
 
-      // Last step of RGB reconstruct : add noise
+      // Last step of RGB reconstruct : add noise
       if((scale & LAST_SCALE) && salt && alpha > 0.f)
       {
         // Init random number generator
@@ -1522,7 +1522,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
             out[index + c] /= (c != ALPHA && norm > 1e-4f) ? norm : 1.f;
         }
 
-        // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
+        // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
         // we need it to evaluate the gradient
         for_four_channels(c, aligned(out))
           out[index + c] = (c == ALPHA) ? out[index + ALPHA] : out[index + c] * out[index + ALPHA];
@@ -1864,7 +1864,7 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pi
 
   // Upsample
   dt_opencl_set_kernel_args(devid, gd->kernel_interpolate_bilinear, 0,
-    CLARG(ds_interpolated), CLARG(ds_width), CLARG(ds_height), CLARG(interpolated), CLARG(width), CLARG(height)); 
+    CLARG(ds_interpolated), CLARG(ds_width), CLARG(ds_height), CLARG(interpolated), CLARG(width), CLARG(height));
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_interpolate_bilinear, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -2033,7 +2033,7 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
   /* We require the correct (full-image-data) expansion with a defined scale for all pixelpipes for proper
      aligning and scaling in the demosiacer
-  */ 
+  */
   roi_in->x = 0;
   roi_in->y = 0;
   roi_in->width = piece->buf_in.width;
@@ -2238,7 +2238,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     piece->process_tiling_ready = 0;
 
   const gboolean fullpipe = piece->pipe->type & DT_DEV_PIXELPIPE_FULL;
- 
+
   // check for heavy computing here to possibly give an iop cache hint
   gboolean heavy = (((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256))
                   || (d->mode == DT_IOP_HIGHLIGHTS_SEGMENTS));
@@ -2250,7 +2250,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if((g->hlr_mask_mode == DT_HIGHLIGHTS_MASK_CLIPPED) && linear && fullpipe)
       piece->process_cl_ready = FALSE;
     // only give a heavy hint if we are not in masking mode
-    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF) 
+    if(g->hlr_mask_mode != DT_HIGHLIGHTS_MASK_OFF)
       heavy = FALSE;
   }
   self->cache_next_important = heavy;
@@ -2391,7 +2391,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->combine, FALSE);
   dt_bauhaus_widget_set_quad_active(g->strength, FALSE);
   g->hlr_mask_mode = DT_HIGHLIGHTS_MASK_OFF;
- 
+
   const int menu_size = dt_bauhaus_combobox_length(g->mode);
   const uint32_t filters = self->dev->image_storage.buf_dsc.filters;
   const gboolean bayer = (filters != 0) && (filters != 9u);
