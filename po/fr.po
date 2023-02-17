@@ -309,7 +309,7 @@ msgid ""
 "let the field empty otherwise"
 msgstr ""
 "Entrer une date/heure valide (format AAAA-MM-JJ[hh:mm:ss]) Si vous voulez "
-"surcharger la date/heure lors de l'expansion des variables : $(YEAR), "
+"surcharger la date/heure lors de l'expansion des variables : $(YEAR), "
 "$(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "Laisser vide sinon"
 
@@ -509,7 +509,7 @@ msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
-"Trois options disponibles : les miniatures, seulement le nombre d'images ou "
+"Trois options disponibles : les miniatures, seulement le nombre d'images ou "
 "rien"
 
 #: ../build/bin/conf_gen.h:1838
@@ -966,7 +966,7 @@ msgstr "Cacher les préréglages internes des modules utilitaires"
 #: ../build/bin/preferences_gen.h:8547
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "Double-clic pour réinitialiser à « %s »"
+msgstr "Double-clic pour réinitialiser à « %s »"
 
 #: ../build/bin/preferences_gen.h:3886 ../build/bin/preferences_gen.h:3922
 #: ../build/bin/preferences_gen.h:3958 ../build/bin/preferences_gen.h:3994
@@ -1127,8 +1127,8 @@ msgid ""
 msgstr ""
 "Les catégories des tailles permettent d'utiliser différentes informations en "
 "superposition et présentation graphique en fonction de la taille des "
-"miniatures, séparée par « | ». Par exemple, 120|400 défini trois catégories "
-"de miniature : ≤ 120px, 120px → 400px et > 400px"
+"miniatures, séparée par « | ». Par exemple, 120|400 défini trois catégories "
+"de miniature : ≤ 120px, 120px → 400px et > 400px"
 
 #: ../build/bin/preferences_gen.h:4365
 msgid "pattern for the thumbnail extended overlay text"
@@ -1157,10 +1157,10 @@ msgid ""
 "reading controls specified attribute, absolute/relative - pressure reading "
 "is taken directly as attribute value or multiplied with pre-defined setting."
 msgstr ""
-" • « Désactivé » - Pression ignorée\n"
-" • « Dureté/Opacité/Taille pinceau » - La pression contrôle l'attribut "
+" • « Désactivé » - Pression ignorée\n"
+" • « Dureté/Opacité/Taille pinceau » - La pression contrôle l'attribut "
 "spécifié\n"
-" • « Absolue/Relative » - La pression est directement utilisée comme valeur "
+" • « Absolue/Relative » - La pression est directement utilisée comme valeur "
 "de l'attribut ou multipliée avec la valeur pré-définie."
 
 #: ../build/bin/preferences_gen.h:4560
@@ -1214,7 +1214,7 @@ msgstr "Bordure autour de l'image dans la chambre noire"
 #: ../build/bin/preferences_gen.h:8672
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "Double-clic pour réinitialiser à « %d »"
+msgstr "Double-clic pour réinitialiser à « %d »"
 
 #: ../build/bin/preferences_gen.h:4801
 msgid ""
@@ -1236,12 +1236,12 @@ msgid ""
 "export."
 msgstr ""
 "Méthode d'interpolation pour les vues différentes de 1:1 dans la chambre "
-"noire :\n"
-" • « Bilinéaire » - Rapide mais peu net. • « Moyen » - Utilise RCD plus les "
-"modes d'interpolations spécifiés par l'option « Algorithme d'interpolation "
-"» (section traitement).\n"
-" • « Full » Utilise les réglages de l'exportation. Les capteurs X-Trans "
-"utilisent VNG plutôt que RCD en réglage « Moyen »."
+"noire :\n"
+" • « Bilinéaire » - Rapide mais peu net.\n • « Moyen » - Utilise RCD plus les "
+"modes d'interpolations spécifiés par l'option « Algorithme d'interpolation »"
+" (section traitement).\n"
+" • « Complète » Utilise les réglages de l'exportation. Les capteurs X-Trans "
+"utilisent VNG plutôt que RCD en réglage « Moyen »."
 
 #: ../build/bin/preferences_gen.h:4924
 msgid "reduce resolution of preview image"
@@ -1353,16 +1353,16 @@ msgid ""
 "glide - gradually hide individual buttons as needed"
 msgstr ""
 "Lorsque la souris n'est pas au dessus du module, les boutons d'instance "
-"multiples, de réinitialisation et préréglages peuvent être cachés :\n"
-" • « Toujours » - Toujours affichés,\n"
-" • « Actif » - Affichés lorsque la souris est au dessus du module,\n"
-" • « Atténué » - Les boutons sont atténués lorsque la souris est éloignée,\n"
-" • « Auto » - Cache les boutons lorsque le panneau est étroit,\n"
-" • « Estompé » - Les boutons sont atténués lorsque le panneau est étroit,\n"
-" • « Ajusté » - Cache tous les boutons si le nom du module n'a pas assez de "
+"multiples, de réinitialisation et préréglages peuvent être cachés :\n"
+" • « Toujours » - Toujours affichés,\n"
+" • « Actif » - Affichés lorsque la souris est au dessus du module,\n"
+" • « Atténué » - Les boutons sont atténués lorsque la souris est éloignée,\n"
+" • « Auto » - Cache les boutons lorsque le panneau est étroit,\n"
+" • « Estompé » - Les boutons sont atténués lorsque le panneau est étroit,\n"
+" • « Ajusté » - Cache tous les boutons si le nom du module n'a pas assez de "
 "place,\n"
-" • « Doux » - Atténue tous les boutons d'un module simultanément,\n"
-" • « Glisser » - Cache progressivement les boutons lorsque nécessaire"
+" • « Doux » - Atténue tous les boutons d'un module simultanément,\n"
+" • « Glisser » - Cache progressivement les boutons lorsque nécessaire."
 
 #: ../build/bin/preferences_gen.h:5404
 msgid "show mask indicator in module headers"
@@ -1462,11 +1462,11 @@ msgid ""
 "display-referred workflow is based on Lab modules and will auto-apply base "
 "curve, white balance and the legacy module pipe order."
 msgstr ""
-"Le flux de travail « Relatif à la scène » est basé sur des modules linéaires et "
-"activera automatiquement les modules « Filmique » ou « Sigmoid », « "
-"Calibration des couleurs » et « Exposition ».\n"
-"Le flux de travail « Relatif à l'affichage » est basé sur des modules Lab et "
-"activera automatiquement le module « Courbe de base » et l'ancien ordre des "
+"Le flux de travail « Relatif à la scène » est basé sur des modules linéaires et "
+"activera automatiquement les modules « Filmique » ou « Sigmoid », « "
+"Calibration des couleurs » et « Exposition ».\n"
+"Le flux de travail « Relatif à l'affichage » est basé sur des modules Lab et "
+"activera automatiquement le module « Courbe de base » et l'ancien ordre des "
 "modules."
 
 #: ../build/bin/preferences_gen.h:5789
@@ -1485,10 +1485,10 @@ msgid ""
 msgstr ""
 "Utilise la courbe de base spécifique au boîtier à la place de celle "
 "générique de la marque si disponible (nécessite un redémarrage).\n"
-"Cette option est utilisée uniquement lorsque l'option « Flux de travail par "
-"défaut » est positionnée à « Relatif à l'Affichage ».\n"
-"Pour ne pas utiliser de courbe de base par défaut, l'option « Flux de "
-"travail par défaut » doit être positionnée à « Aucun »"
+"Cette option est utilisée uniquement lorsque l'option « Flux de travail par "
+"défaut » est positionnée à « Relatif à l'Affichage ».\n"
+"Pour ne pas utiliser de courbe de base par défaut, l'option « Flux de "
+"travail par défaut » doit être positionnée à « Aucun »"
 
 #: ../build/bin/preferences_gen.h:5825
 msgid "detect monochrome previews"
@@ -1501,7 +1501,7 @@ msgid ""
 msgstr ""
 "Beaucoup d'images monochromes peuvent être identifiées via les EXIF ou les "
 "données des miniatures.\n"
-"Attention : cela réduit les performances lors de l'importation et la lecture "
+"Attention : cela réduit les performances lors de l'importation et la lecture "
 "des données EXIF"
 
 #: ../build/bin/preferences_gen.h:5861
@@ -1546,19 +1546,19 @@ msgid ""
 "recommended for general use!"
 msgstr ""
 "Définit le niveau de ressource que darktable peut prendre sur le système.\n"
-" • « Défaut » - Prend ~50% des ressources systèmes ce qui permet à darktable "
+" • « Défaut » - Prend ~50% des ressources systèmes ce qui permet à darktable "
 "d'être performant.\n"
-" • « Faibles » - Peut être utilisé si vous utilisez simultanément des "
+" • « Faibles » - Peut être utilisé si vous utilisez simultanément des "
 "applications prenant une part importante des ressources systèmes ou des "
 "applications OpenCL/GL comme des jeux ou hugin.\n"
-" • « Importantes » - La meilleure option si vous utilisez darktable "
+" • « Importantes » - La meilleure option si vous utilisez darktable "
 "exclusivement et que vous souhaitez lui allouer une part importante des "
 "ressources systèmes pour la performance.\n"
-" • « Sans-restriction » - Devrait être utilisé uniquement lors du "
+" • « Sans-restriction » - Devrait être utilisé uniquement lors du "
 "développement de très grandes images car darktable utilisera toutes les "
 "ressources systèmes et ainsi peut entraîner des lenteurs dûes à "
 "l'utilisation de la partition d'échange. à Utiliser avec prudence et non "
-"recommandé par défaut !"
+"recommandé par défaut !"
 
 #: ../build/bin/preferences_gen.h:5976
 msgid "prefer performance over quality"
@@ -1665,8 +1665,8 @@ msgid ""
 "(400MB as default), 'memory transfer' tries a faster memory access mode "
 "(pinned memory) used for tiling."
 msgstr ""
-"Permet d'optimiser les périphériques OpenCL lors de l'exécution. « Taille "
-"mémoire » utilise 400Mo de mémoire de marge, « Transfert mémoire » tente un "
+"Permet d'optimiser les périphériques OpenCL lors de l'exécution. « Taille "
+"mémoire » utilise 400Mo de mémoire de marge, « Transfert mémoire » tente un "
 "accès plus rapide à la mémoire (mémoire épinglée) utilisée pour le tuilage."
 
 #: ../build/bin/preferences_gen.h:6279
@@ -1779,7 +1779,7 @@ msgstr "Stockage à utiliser pour les mots de passe"
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr ""
-"Interface pour trousseau de mots de passe : automatique, aucun, libsecret, "
+"Interface pour trousseau de mots de passe : automatique, aucun, libsecret, "
 "kwallet"
 
 #: ../build/bin/preferences_gen.h:6776
@@ -1818,17 +1818,17 @@ msgid ""
 "on close - create snapshot every time darktable is closed"
 msgstr ""
 "Les sauvegardes sont effectuées juste avant de fermer darktable. Différentes "
-"options permettent de contrôler la fréquence des sauvergardes :\n"
-" • « Jamais » - Ne jamais faire de sauvegarde. Uniquement les sauvegardes "
+"options permettent de contrôler la fréquence des sauvergardes :\n"
+" • « Jamais » - Ne jamais faire de sauvegarde. Uniquement les sauvegardes "
 "obligatoires lors des montées de version de la base de données sont "
 "effectuées.\n"
-" • « Une fois par mois » - Fait une sauvegarde si un mois est passé depuis "
+" • « Une fois par mois » - Fait une sauvegarde si un mois est passé depuis "
 "la dernière sauvegarde\n"
-" • « Une fois par semaine » - Fait une sauvegarde si 7 jours sont passés "
+" • « Une fois par semaine » - Fait une sauvegarde si 7 jours sont passés "
 "depuis la dernière sauvegarde\n"
-" • « Une fois par jour » - Fait une sauvegarde si 24h sont passées depuis la "
+" • « Une fois par jour » - Fait une sauvegarde si 24h sont passées depuis la "
 "dernière sauvegarde\n"
-" • « À la fermeture » - Fait une sauvegarde à chaque fermeture de darktable"
+" • « À la fermeture » - Fait une sauvegarde à chaque fermeture de darktable"
 
 #: ../build/bin/preferences_gen.h:6920
 msgid "how many snapshots to keep"
@@ -1868,10 +1868,10 @@ msgstr ""
 "Les fichiers xmp contiennent les informations sur l'ensemble des étapes de "
 "développement pour permettre de réimporter parfaitement les images.\n"
 "\n"
-"En fonction du mode sélectionné, les fichiers XMP seront écrits :\n"
-" • « Jamais »\n"
-" • « À l'importation » - Immédiatement après l'importation de l'image\n"
-" • « Après édition » - Après toutes modifications sur l'image"
+"En fonction du mode sélectionné, les fichiers XMP seront écrits :\n"
+" • « Jamais »\n"
+" • « À l'importation » - Immédiatement après l'importation de l'image\n"
+" • « Après édition » - Après toutes modifications sur l'image"
 
 #: ../build/bin/preferences_gen.h:7038
 msgid "store XMP tags in compressed format"
@@ -2010,8 +2010,8 @@ msgstr ""
 "Fragments de nom de périphérique séparés par des virgules qui si "
 "correspondance charge le périphérique MIDI à la position données par le "
 "numéro d'ordre dans la liste ou si précédé de - permet de ne pas charger le "
-"périphérique. Ajouter le codage et le nombre de boutons comme par exemple « "
-"BeatStep:63:16 »"
+"périphérique. Ajouter le codage et le nombre de boutons comme par exemple « "
+"BeatStep:63:16 »"
 
 #. tags
 #: ../build/bin/preferences_gen.h:7553 ../src/develop/lightroom.c:1516
@@ -2034,7 +2034,7 @@ msgstr ""
 "Lors de le création des XMP les mots-clés hiérarchiques sont aussi ajoutés "
 "comme simple liste non hiérarchique pour les rendre visibles aux autres "
 "applications. Lorsque cette option est sélectionnée, darktable inclura "
-"seulement leur dernière partie et ignorera le reste : ainsi 'faune|insecte|"
+"seulement leur dernière partie et ignorera le reste : ainsi 'faune|insecte|"
 "syrphe' ajoutera uniquement 'syrphe'."
 
 #: ../build/bin/preferences_gen.h:7597
@@ -2138,7 +2138,7 @@ msgid ""
 "module"
 msgstr ""
 "Affiche une représentation plus lisible de la localisation dans le module "
-"« Informations de l'Image »."
+"« Informations de l'Image »."
 
 #: ../build/bin/preferences_gen.h:7890
 msgid "slideshow view"
@@ -2191,13 +2191,13 @@ msgstr "Nommage des fichiers pour la session d'importation"
 
 #: ../build/bin/preferences_gen.h:8154
 msgid "do not set the 'uncategorized' entry for tags"
-msgstr "Ne pas utiliser le groupe « sans catégorie » pour les tags"
+msgstr "Ne pas utiliser le groupe « sans catégorie » pour les tags"
 
 #: ../build/bin/preferences_gen.h:8168
 msgid ""
 "do not set the 'uncategorized' entry for tags which do not have children"
 msgstr ""
-"Ne pas utiliser le groupe « sans catégorie » pour les tags n'ayant pas "
+"Ne pas utiliser le groupe « sans catégorie » pour les tags n'ayant pas "
 "d'enfants"
 
 #: ../build/bin/preferences_gen.h:8190
@@ -2262,7 +2262,7 @@ msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
 "'folder', 'times' (e.g. 'capture date')"
 msgstr ""
-"Trier les collections suivantes en ordre descendant : 'pellicule' par "
+"Trier les collections suivantes en ordre descendant : 'pellicule' par "
 "dossier, 'dossier', 'heures' (e.G. 'Date de capture')"
 
 #: ../build/bin/preferences_gen.h:8536
@@ -2288,8 +2288,8 @@ msgid ""
 "associated tags, 99: 99% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
-"Niveau de confiance pour inclure un tag dans la liste des suggestions, 0 : "
-"tous les mots-clés associés, 99 : mots-clés correspondants à 99%, 100 : "
+"Niveau de confiance pour inclure un tag dans la liste des suggestions, 0 : "
+"tous les mots-clés associés, 99 : mots-clés correspondants à 99%, 100 : "
 "aucun mot-clé correspondant seulement les mots-clés récents (plus rapide)."
 
 #: ../build/bin/preferences_gen.h:8651
@@ -4864,13 +4864,13 @@ msgid ""
 "average dE: %.02f\n"
 "max dE: %.02f"
 msgstr ""
-"ΔE moyen : %.02f\n"
-"ΔE max : %.02f"
+"ΔE moyen : %.02f\n"
+"ΔE max : %.02f"
 
 #: ../src/cli/main.c:247
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
-"TODO : désolé, dû à des restrictions d'interfaces de programmation, il n'est "
+"TODO : désolé, dû à des restrictions d'interfaces de programmation, il n'est "
 "pas possible de régler le BPP"
 
 #: ../src/cli/main.c:259
@@ -4897,27 +4897,27 @@ msgstr "Extension trop longue pour --out-ext"
 #, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
 msgstr ""
-"Information: fichier en entré ou répertoire « %s » n'existe pas, ignore\n"
+"Information: fichier en entré ou répertoire « %s » n'existe pas, ignore\n"
 
 #: ../src/cli/main.c:353
 #, c-format
 msgid "incorrect ICC type for --icc-type: '%s'\n"
-msgstr "Type ICC invalide pour --icc-type « %s »\n"
+msgstr "Type ICC invalide pour --icc-type « %s »\n"
 
 #: ../src/cli/main.c:369
 #, c-format
 msgid "notice: ICC file '%s' doesn't exist, skipping\n"
-msgstr "Information: fichier ICC « %s » n'existe pas, ignore\n"
+msgstr "Information: fichier ICC « %s » n'existe pas, ignore\n"
 
 #: ../src/cli/main.c:378
 #, c-format
 msgid "incorrect ICC intent for --icc-intent: '%s'\n"
-msgstr "Intention ICC invalide pour --icc-intent « %s »\n"
+msgstr "Intention ICC invalide pour --icc-intent « %s »\n"
 
 #: ../src/cli/main.c:396
 #, c-format
 msgid "warning: unknown option '%s'\n"
-msgstr "Attention: option inconnue « %s »\n"
+msgstr "Attention: option inconnue « %s »\n"
 
 #: ../src/cli/main.c:454
 #, c-format
@@ -4933,7 +4933,7 @@ msgid ""
 "pattern"
 msgstr ""
 "Information: la destination de sortie est un répertoire, le patron de sortie "
-"« %s/$(FILE_NAME).%s » est utilisé"
+"« %s/$(FILE_NAME).%s » est utilisé"
 
 #. output file exists or there's output ext specified and it's same as file...
 #: ../src/cli/main.c:502
@@ -4944,12 +4944,12 @@ msgstr "Ficher de sortie existant, il va être renommé"
 #: ../src/cli/main.c:532
 #, c-format
 msgid "error: can't open folder %s"
-msgstr "Erreur : impossible d'ouvrir le répertoire « %s »"
+msgstr "Erreur : impossible d'ouvrir le répertoire « %s »"
 
 #: ../src/cli/main.c:549
 #, c-format
 msgid "error: can't open file %s"
-msgstr "Erreur : impossible d'ouvrir le fichier « %s »"
+msgstr "Erreur : impossible d'ouvrir le fichier « %s »"
 
 #: ../src/cli/main.c:566
 #, c-format
@@ -4959,7 +4959,7 @@ msgstr "Aucune image à exporter, annulation\n"
 #: ../src/cli/main.c:583
 #, c-format
 msgid "error: can't open XMP file %s"
-msgstr "Erreur : impossible d'ouvrir le fichier XMP « %s »"
+msgstr "Erreur : impossible d'ouvrir le fichier XMP « %s »"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
 #: ../src/cli/main.c:604
@@ -4970,7 +4970,7 @@ msgstr "Réinitialiser le développement"
 #: ../src/cli/main.c:616
 #, c-format
 msgid "too long output file extension: %s\n"
-msgstr "Extension de fichier de sortie trop longue : « %s »\n"
+msgstr "Extension de fichier de sortie trop longue : « %s »\n"
 
 #. no ext or empty ext, no point in wasting time
 #: ../src/cli/main.c:624
@@ -4995,7 +4995,7 @@ msgstr ""
 #: ../src/cli/main.c:689
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr "Extension inconnue « .%s »"
+msgstr "Extension inconnue « .%s »"
 
 #: ../src/cli/main.c:699
 msgid "failed to get parameters from format module, aborting export ..."
@@ -5010,7 +5010,7 @@ msgid ""
 "\n"
 "make sure your camera allows access and is not mounted otherwise"
 msgstr ""
-"Appareil photo « %s » sur le port « %s » erreur « %s »\n"
+"Appareil photo « %s » sur le port « %s » erreur « %s »\n"
 "\n"
 "assurez-vous que la l'appareil autorise l'accès et qu'il n'est pas monté "
 "sinon"
@@ -5021,7 +5021,7 @@ msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
 "application, no access to devices etc"
 msgstr ""
-"Échec d'initialisation de « %s » sur le port « %s », les causes probable "
+"Échec d'initialisation de « %s » sur le port « %s », les causes probable "
 "sont qu'il est bloqué par une autre application, ou permissions "
 "insuffisantes aux périphériques, etc"
 
@@ -5031,14 +5031,14 @@ msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
 "nor import"
 msgstr ""
-"« %s » Sur le port « %s » n'est pas utilisable car sans support pour la "
+"« %s » Sur le port « %s » n'est pas utilisable car sans support pour la "
 "capture ou de l'importation"
 
 #: ../src/common/camera_control.c:919
 #, c-format
 msgid "camera `%s' on port `%s' disconnected while mounted"
 msgstr ""
-"Appareil photo « %s » sur le port « %s » déconnecté lorsqu'il était monté"
+"Appareil photo « %s » sur le port « %s » déconnecté lorsqu'il était monté"
 
 #: ../src/common/camera_control.c:926
 #, c-format
@@ -5046,7 +5046,7 @@ msgid ""
 "camera `%s' on port `%s' needs to be remounted\n"
 "make sure it allows access and is not mounted otherwise"
 msgstr ""
-"Appareil photo « %s » sur le port « %s » doit être remonté\n"
+"Appareil photo « %s » sur le port « %s » doit être remonté\n"
 "assurez-vous que la l'appareil autorise l'accès et qu'il n'est pas monté "
 "sinon"
 
@@ -5572,7 +5572,7 @@ msgstr "Couleur non trouvée"
 #: ../src/common/colorlabels.c:305
 #, c-format
 msgid "colorlabels set to %s"
-msgstr "Labels de couleur positionnés à « %s »"
+msgstr "Labels de couleur positionnés à « %s »"
 
 #: ../src/common/colorlabels.c:307
 msgid "all colorlabels removed"
@@ -5608,7 +5608,7 @@ msgstr "Système (2ème fenêtre)"
 
 #: ../src/common/colorspaces.c:1422
 msgid "sRGB (e.g. JPG)"
-msgstr "sRVB (ex : JPG)"
+msgstr "sRVB (ex : JPG)"
 
 #: ../src/common/colorspaces.c:1426 ../src/libs/print_settings.c:1284
 msgid "sRGB (web-safe)"
@@ -5661,7 +5661,7 @@ msgstr "BRV (pour test)"
 msgid ""
 "profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
 msgstr ""
-"Profil de sortie « %s » non approprié pour l'histogramme, remplacé par sRVB !"
+"Profil de sortie « %s » non approprié pour l'histogramme, remplacé par sRVB !"
 
 #: ../src/common/colorspaces.c:1671
 msgid "embedded ICC profile"
@@ -5710,7 +5710,7 @@ msgstr "P3 HLG"
 #: ../src/common/cups_print.c:420
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
-msgstr "Fichier « %s » à imprimer non trouvé pour l'image %d sur « %s »"
+msgstr "Fichier « %s » à imprimer non trouvé pour l'image %d sur « %s »"
 
 #: ../src/common/cups_print.c:439
 msgid "failed to create temporary file for printing options"
@@ -5720,38 +5720,38 @@ msgstr ""
 #: ../src/common/cups_print.c:508
 #, c-format
 msgid "printing on `%s' cancelled"
-msgstr "Impression sur « %s » annulée"
+msgstr "Impression sur « %s » annulée"
 
 #: ../src/common/cups_print.c:572
 #, c-format
 msgid "error while printing `%s' on `%s'"
-msgstr "Erreur pendant l'impression de l'image « %s » sur « %s »"
+msgstr "Erreur pendant l'impression de l'image « %s » sur « %s »"
 
 #: ../src/common/cups_print.c:574
 #, c-format
 msgid "printing `%s' on `%s'"
-msgstr "Impression de l'image « %s » sur « %s »"
+msgstr "Impression de l'image « %s » sur « %s »"
 
 #: ../src/common/darktable.c:247
 #, c-format
 msgid "found strange path `%s'"
-msgstr "Chemin étrange « %s »"
+msgstr "Chemin étrange « %s »"
 
 #: ../src/common/darktable.c:262
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "Erreur de chargement du dossier « %s »"
+msgstr "Erreur de chargement du dossier « %s »"
 
 #: ../src/common/darktable.c:285
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "Le fichier « %s » possède un format inconnu !"
+msgstr "Le fichier « %s » possède un format inconnu !"
 
 #: ../src/common/darktable.c:298 ../src/control/jobs/control_jobs.c:2087
 #: ../src/control/jobs/control_jobs.c:2146
 #, c-format
 msgid "error loading file `%s'"
-msgstr "Erreur de chargement du fichier « %s »"
+msgstr "Erreur de chargement du fichier « %s »"
 
 #: ../src/common/darktable.c:1468
 msgid "configuration information"
@@ -5790,7 +5790,7 @@ msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
-"Vous ne trouverez plus « headroom » et autres maintenant, à la place dans "
+"Vous ne trouverez plus « headroom » et autres maintenant, à la place dans "
 "préférences / traitement utiliser:"
 
 #: ../src/common/darktable.c:1927
@@ -5814,20 +5814,20 @@ msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
-"À la place vous trouverez les données par périphérique dans « "
-"cldevice_v4_canonical-name ». Le contenu est :"
+"À la place vous trouverez les données par périphérique dans « "
+"cldevice_v4_canonical-name ». Le contenu est :"
 
 #: ../src/common/darktable.c:1940
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 msgstr ""
-"  « Avoid_atomics »  « micro_nap »  « pinned_memory'  « roundupwd »  « "
-"roundupht »  « eventhandles »  « async »  « disable »  « magic »"
+"  « Avoid_atomics »  « micro_nap »  « pinned_memory'  « roundupwd »  « "
+"roundupht »  « eventhandles »  « async »  « disable »  « magic »"
 
 #: ../src/common/darktable.c:1942
 msgid "you may tune as before except 'magic'"
-msgstr "Vous pouvez configurer comme avant sauf « magic »"
+msgstr "Vous pouvez configurer comme avant sauf « magic »"
 
 #: ../src/common/database.c:2755
 #, c-format
@@ -5862,7 +5862,7 @@ msgstr ""
 "\n"
 "Désolé, darktable ne peut se lancer (la base de données est verrouillée)\n"
 "\n"
-"Comment résoudre se problème ?\n"
+"Comment résoudre se problème ?\n"
 "\n"
 "1 - Si une autre instance de darktable est déjà ouverte,\n"
 "      cliquer annuler et soit vous utilisez cette instance ou vous la fermée "
@@ -5878,7 +5878,7 @@ msgstr ""
 "ne s'exécute,\n"
 "      cela veut probablement dire que la dernière exécution ne s'est pas "
 "terminée correctement. \n"
-"      Cliquez sur « Supprimer les verrous des bases de données » pour "
+"      Cliquez sur « Supprimer les verrous des bases de données » pour "
 "supprimer <i>data.db.lock</i> and <i>library.db.lock</i>. \n"
 "\n"
 "\n"
@@ -5910,7 +5910,7 @@ msgstr "Supprimer les verrous des bases de données"
 
 #: ../src/common/database.c:2783
 msgid "are you sure?"
-msgstr "Êtes-vous certain ?"
+msgstr "Êtes-vous certain ?"
 
 #: ../src/common/database.c:2784
 msgid ""
@@ -5918,7 +5918,7 @@ msgid ""
 "do you really want to delete the lock files?\n"
 msgstr ""
 "\n"
-"Voulez-vous réellement supprimer les fichiers verrous ?\n"
+"Voulez-vous réellement supprimer les fichiers verrous ?\n"
 
 #: ../src/common/database.c:2784 ../src/common/variables.c:602
 #: ../src/develop/imageop_gui.c:210 ../src/imageio/format/pdf.c:636
@@ -5975,7 +5975,7 @@ msgid ""
 "%d"
 msgstr ""
 "Le fichier de verrouillage de la base contient un numéro de process actif "
-"sur votre système : « %d »"
+"sur votre système : « %d »"
 
 #: ../src/common/database.c:2929
 #, c-format
@@ -5987,7 +5987,7 @@ msgstr "Le fichier de verrouillage de la base de données semble être vide"
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
 "Erreur lors de l'ouverture en lecture du fichier de verrouillage de la base "
-"de données : « %s »"
+"de données : « %s »"
 
 #. the database has to be upgraded, let's ask user
 #: ../src/common/database.c:2974
@@ -6030,7 +6030,7 @@ msgid ""
 "%s \n"
 msgstr ""
 "Réponse de quick_check:\n"
-"« %s »\n"
+"« %s »\n"
 "\n"
 
 #: ../src/common/database.c:3293 ../src/common/database.c:3311
@@ -6058,7 +6058,7 @@ msgstr ""
 "la base de données depuis une sauvegarde, essayer une restauration "
 "automatique\n"
 "depuis la sauvegarde la plus récente ou supprimer la base corrompues\n"
-"et redémarrer avec une nouvelle ?"
+"et redémarrer avec une nouvelle ?"
 
 #: ../src/common/database.c:3320 ../src/common/database.c:3500
 msgid ""
@@ -6068,7 +6068,7 @@ msgid ""
 msgstr ""
 "Voulez-vous quitter darktable maintenant pour restaurer manuellement\n"
 "la base de données depuis une sauvegarde ou supprimer la base corrompues\n"
-"et redémarrer avec une nouvelle ?"
+"et redémarrer avec une nouvelle ?"
 
 #: ../src/common/database.c:3327 ../src/common/database.c:3505
 #, c-format
@@ -6085,7 +6085,7 @@ msgstr ""
 "<span style=\"italic\">%s</span>\n"
 "\n"
 "la base de données semble corrompue.\n"
-"« %s%s »"
+"« %s%s »"
 
 #: ../src/common/eigf.h:288
 msgid ""
@@ -6098,12 +6098,12 @@ msgstr ""
 #: ../src/common/exif.cc:4685
 #, c-format
 msgid "cannot read XMP file '%s': '%s'"
-msgstr "Impossible de lire le fichier XMP « %s » : « %s »"
+msgstr "Impossible de lire le fichier XMP « %s » : « %s »"
 
 #: ../src/common/exif.cc:4737
 #, c-format
 msgid "cannot write XMP file '%s': '%s'"
-msgstr "Impossible d'écrire le fichier XMP « %s » : « %s »"
+msgstr "Impossible d'écrire le fichier XMP « %s » : « %s »"
 
 #: ../src/common/fast_guided_filter.h:316
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -6114,14 +6114,14 @@ msgstr ""
 #: ../src/common/film.c:344
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
-msgstr[0] "Êtes-vous sûr de vouloir supprimer ce répertoire vide ?"
-msgstr[1] "Êtes-vous sûr de vouloir supprimer ces répertoires vides ?"
+msgstr[0] "Êtes-vous sûr de vouloir supprimer ce répertoire vide ?"
+msgstr[1] "Êtes-vous sûr de vouloir supprimer ces répertoires vides ?"
 
 #: ../src/common/film.c:351
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
-msgstr[0] "Supprimer le répertoire vide ?"
-msgstr[1] "Supprimer les répertoires vides ?"
+msgstr[0] "Supprimer le répertoire vide ?"
+msgstr[1] "Supprimer les répertoires vides ?"
 
 #: ../src/common/film.c:370 ../src/gui/preferences.c:810
 #: ../src/gui/styles_dialog.c:545 ../src/libs/geotagging.c:830
@@ -6145,7 +6145,7 @@ msgstr ""
 #: ../src/common/http_server.c:95
 #, c-format
 msgid "darktable » %s"
-msgstr "darktable » %s"
+msgstr "darktable » %s"
 
 #: ../src/common/http_server.c:97
 msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
@@ -6187,32 +6187,32 @@ msgstr "Data/heure ré-appliquée à %d images"
 #: ../src/common/image.c:2138
 #, c-format
 msgid "cannot access local copy `%s'"
-msgstr "Accès à la copie locale « %s » impossible."
+msgstr "Accès à la copie locale « %s » impossible."
 
 #: ../src/common/image.c:2145
 #, c-format
 msgid "cannot write local copy `%s'"
-msgstr "Création de la copie locale « %s » impossible."
+msgstr "Création de la copie locale « %s » impossible."
 
 #: ../src/common/image.c:2152
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
-msgstr "Erreur lors du déplacement de la copie locale de « %s » → « %s »"
+msgstr "Erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
 #: ../src/common/image.c:2169
 #, c-format
 msgid "error moving `%s': file not found"
-msgstr "Erreur de déplacement « %s » : le fichier n'existe pas"
+msgstr "Erreur de déplacement « %s » : le fichier n'existe pas"
 
 #: ../src/common/image.c:2179
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
-msgstr "Erreur de déplacement « %s » → « %s » : le fichier existe"
+msgstr "Erreur de déplacement « %s » → « %s » : le fichier existe"
 
 #: ../src/common/image.c:2183
 #, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr "Erreur lors du déplacement « %s » → « %s »"
+msgstr "Erreur lors du déplacement « %s » → « %s »"
 
 #: ../src/common/image.c:2508
 msgid "cannot create local copy when the original file is not accessible."
@@ -6238,7 +6238,7 @@ msgstr[1] "%d copies locales ont été synchronisées"
 
 #: ../src/common/image.c:2966
 msgid "<b>WARNING</b>: camera is missing samples!"
-msgstr "<b>ATTENTION</b> : échantillons manquants pour le boîtier !"
+msgstr "<b>ATTENTION</b> : échantillons manquants pour le boîtier !"
 
 #: ../src/common/image.c:2967
 msgid ""
@@ -6254,7 +6254,7 @@ msgid ""
 "for `%s' `%s'\n"
 "in as many format/compression/bit depths as possible"
 msgstr ""
-"Pour « %s » « %s »\n"
+"Pour « %s » « %s »\n"
 "dans le plus de format/compression/profondeur de bit que possible"
 
 #: ../src/common/image.c:2971
@@ -6362,7 +6362,7 @@ msgstr ""
 msgid "requested session path not available. device not mounted?"
 msgstr ""
 "Le chemin demandé pour la session n'est pas accessible. L'appareil n'est pas "
-"monté ?"
+"monté ?"
 
 #: ../src/common/iop_order.c:59 ../src/libs/ioporder.c:198
 msgid "legacy"
@@ -6405,7 +6405,7 @@ msgstr "Numéro"
 #: ../src/common/mipmap_cache.c:1074 ../src/imageio/imageio.c:721
 #, c-format
 msgid "image `%s' is not available!"
-msgstr "Image « %s » non disponible!"
+msgstr "Image « %s » non disponible!"
 
 #: ../src/common/noiseprofiles.c:26
 msgid "generic poissonian"
@@ -6414,7 +6414,7 @@ msgstr "Distribution générique"
 #: ../src/common/noiseprofiles.c:61
 #, c-format
 msgid "noiseprofile file `%s' is not valid"
-msgstr "Le profil de gestion du bruit « %s » n'est pas valide"
+msgstr "Le profil de gestion du bruit « %s » n'est pas valide"
 
 #: ../src/common/opencl.c:1119
 msgid ""
@@ -6506,7 +6506,7 @@ msgstr "Image notée à 0 étoile"
 #: ../src/common/ratings.c:278
 #, c-format
 msgid "image rated to %s"
-msgstr "Image notée à « %s »"
+msgstr "Image notée à « %s »"
 
 #: ../src/common/ratings.c:305 ../src/libs/select.c:39
 #: ../src/views/lighttable.c:812
@@ -6552,7 +6552,7 @@ msgstr "Rejeter"
 #: ../src/common/styles.c:242
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "Le style « %s » existe déjà"
+msgstr "Le style « %s » existe déjà"
 
 #: ../src/common/styles.c:268 ../src/common/styles.c:1749
 #: ../src/libs/styles.c:54
@@ -6562,21 +6562,21 @@ msgstr "Styles"
 #: ../src/common/styles.c:542 ../src/gui/styles_dialog.c:238
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr "Le style « %s » a été créé"
+msgstr "Le style « %s » a été créé"
 
 #: ../src/common/styles.c:683 ../src/common/styles.c:713
 #: ../src/common/styles.c:752 ../src/dtgtk/culling.c:994
 msgid "no image selected!"
-msgstr "Aucune image sélectionnée !"
+msgstr "Aucune image sélectionnée !"
 
 #: ../src/common/styles.c:687
 #, c-format
 msgid "style %s successfully applied!"
-msgstr "Le style « %s » a été appliqué !"
+msgstr "Le style « %s » a été appliqué !"
 
 #: ../src/common/styles.c:703
 msgid "no images nor styles selected!"
-msgstr "Pas d'image ou de style sélectionné !"
+msgstr "Pas d'image ou de style sélectionné !"
 
 #: ../src/common/styles.c:708
 msgid "no styles selected!"
@@ -6585,39 +6585,39 @@ msgstr "Aucun style sélectionné!"
 #: ../src/common/styles.c:738
 msgid "style successfully applied!"
 msgid_plural "styles successfully applied!"
-msgstr[0] "Le style a été appliqué !"
-msgstr[1] "Les styles ont été appliqués !"
+msgstr[0] "Le style a été appliqué !"
+msgstr[1] "Les styles ont été appliqués !"
 
 #: ../src/common/styles.c:828
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
-msgstr "Module « %s » version non cohérente : %d != %d"
+msgstr "Module « %s » version non cohérente : %d != %d"
 
 #: ../src/common/styles.c:1104
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "Applique le style « %s » à l'image actuelle"
+msgstr "Applique le style « %s » à l'image actuelle"
 
 #: ../src/common/styles.c:1366
 #, c-format
 msgid "failed to overwrite style file for %s"
-msgstr "Impossible de remplacer le style « %s »"
+msgstr "Impossible de remplacer le style « %s »"
 
 #: ../src/common/styles.c:1372
 #, c-format
 msgid "style file for %s exists"
-msgstr "Le fichier du style « %s » existe"
+msgstr "Le fichier du style « %s » existe"
 
 #: ../src/common/styles.c:1640
 #, c-format
 msgid "style %s was successfully imported"
-msgstr "Le style « %s » a été importé"
+msgstr "Le style « %s » a été importé"
 
 #. Failed to open file, clean up.
 #: ../src/common/styles.c:1684
 #, c-format
 msgid "could not read file `%s'"
-msgstr "Impossible de lire le fichier « %s »"
+msgstr "Impossible de lire le fichier « %s »"
 
 #: ../src/common/utility.c:504
 msgid "above sea level"
@@ -6706,7 +6706,7 @@ msgstr "En cours..."
 #: ../src/control/crawler.c:401
 #, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
-msgstr "ERREUR : « %s » NON synchronisé XMP → DB"
+msgstr "ERREUR : « %s » NON synchronisé XMP → DB"
 
 #: ../src/control/crawler.c:402 ../src/control/crawler.c:456
 #: ../src/control/crawler.c:510
@@ -6714,18 +6714,18 @@ msgid ""
 "ERROR: cannot write the database. the destination may be full, offline or "
 "read-only."
 msgstr ""
-"ERREUR : impossible d'écrire la base de données. La destination est peut "
+"ERREUR : impossible d'écrire la base de données. La destination est peut "
 "être pleine, hors ligne ou en lecture seule."
 
 #: ../src/control/crawler.c:407
 #, c-format
 msgid "SUCCESS: %s synced XMP → DB"
-msgstr "SUCCES : « %s » synchronisé XMP → DB"
+msgstr "SUCCES : « %s » synchronisé XMP → DB"
 
 #: ../src/control/crawler.c:427
 #, c-format
 msgid "ERROR: %s NOT synced DB → XMP"
-msgstr "ERREUR : « %s » NON synchronisé DB → XMP"
+msgstr "ERREUR : « %s » NON synchronisé DB → XMP"
 
 #: ../src/control/crawler.c:428 ../src/control/crawler.c:473
 #: ../src/control/crawler.c:524
@@ -6734,58 +6734,58 @@ msgid ""
 "ERROR: cannot write %s \n"
 "the destination may be full, offline or read-only."
 msgstr ""
-"ERREUR : impossible d'écrire « %s »\n"
+"ERREUR : impossible d'écrire « %s »\n"
 "La destination est peut être pleine, hors ligne ou en lecture seule."
 
 #: ../src/control/crawler.c:433
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
-msgstr "SUCCES : « %s » synchronisé DB → XMP"
+msgstr "SUCCES : « %s » synchronisé DB → XMP"
 
 #: ../src/control/crawler.c:455
 #, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
-msgstr "ERREUR : « %s » NON synchronisé nouveau (XMP) → ancien (DB)"
+msgstr "ERREUR : « %s » NON synchronisé nouveau (XMP) → ancien (DB)"
 
 #: ../src/control/crawler.c:460
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
-msgstr "SUCCES : « %s » synchronisé nouveau (XMP) → ancien (DB)"
+msgstr "SUCCES : « %s » synchronisé nouveau (XMP) → ancien (DB)"
 
 #: ../src/control/crawler.c:472
 #, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
-msgstr "ERREUR : « %s » NON synchronisé nouveau (DB) → ancien (XMP)"
+msgstr "ERREUR : « %s » NON synchronisé nouveau (DB) → ancien (XMP)"
 
 #: ../src/control/crawler.c:477
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
-msgstr "SUCCES : « %s » synchronisé nouveau (DB) → ancien (XMP)"
+msgstr "SUCCES : « %s » synchronisé nouveau (DB) → ancien (XMP)"
 
 #: ../src/control/crawler.c:485 ../src/control/crawler.c:536
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
-msgstr "EXCEPTION : « %s » a un horodatage incohérent"
+msgstr "EXCEPTION : « %s » a un horodatage incohérent"
 
 #: ../src/control/crawler.c:509
 #, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
-msgstr "ERREUR : « %s » NON synchronisé ancien (XMP) → nouveau (DB)"
+msgstr "ERREUR : « %s » NON synchronisé ancien (XMP) → nouveau (DB)"
 
 #: ../src/control/crawler.c:514
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
-msgstr "SUCCES : « %s » synchronisé ancien (XMP) → nouveau (DB)"
+msgstr "SUCCES : « %s » synchronisé ancien (XMP) → nouveau (DB)"
 
 #: ../src/control/crawler.c:523
 #, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
-msgstr "ERREUR : « %s » NON synchronisé ancien (DB) → nouveau (XMP)"
+msgstr "ERREUR : « %s » NON synchronisé ancien (DB) → nouveau (XMP)"
 
 #: ../src/control/crawler.c:528
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
-msgstr "SUCCES : « %s » synchronisé ancien (DB) → nouveau (XMP)"
+msgstr "SUCCES : « %s » synchronisé ancien (DB) → nouveau (XMP)"
 
 #: ../src/control/crawler.c:607
 #, c-format
@@ -6841,7 +6841,7 @@ msgstr "Inverser"
 
 #: ../src/control/crawler.c:732
 msgid "on the selection:"
-msgstr "Sur la sélection :"
+msgstr "Sur la sélection :"
 
 #: ../src/control/crawler.c:733
 msgid "keep the XMP edit"
@@ -6872,7 +6872,7 @@ msgstr[1] "Capture de %d images"
 
 #: ../src/control/jobs/camera_jobs.c:114
 msgid "please set your camera to manual mode first!"
-msgstr "Merci de régler le boîtier en mode manuel !"
+msgstr "Merci de régler le boîtier en mode manuel !"
 
 #: ../src/control/jobs/camera_jobs.c:211
 msgid "capture images"
@@ -6882,8 +6882,8 @@ msgstr "Capturer des images"
 #, c-format
 msgid "%d/%d imported to %s"
 msgid_plural "%d/%d imported to %s"
-msgstr[0] "%d/%d importé vers « %s »"
-msgstr[1] "%d/%d importés vers « %s »"
+msgstr[0] "%d/%d importé vers « %s »"
+msgstr[1] "%d/%d importés vers « %s »"
 
 #: ../src/control/jobs/camera_jobs.c:298
 msgid "starting to import images from camera"
@@ -6911,7 +6911,7 @@ msgstr "Bracketing d'exposition marche uniquement sur les images raw."
 
 #: ../src/control/jobs/control_jobs.c:395
 msgid "images have to be of same size and orientation!"
-msgstr "Les images doivent avoir les mêmes taille et orientation !"
+msgstr "Les images doivent avoir les mêmes taille et orientation !"
 
 #: ../src/control/jobs/control_jobs.c:490
 #, c-format
@@ -6923,7 +6923,7 @@ msgstr[1] "Fusion de %d images"
 #: ../src/control/jobs/control_jobs.c:561
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "Image HDR « %s » écrite"
+msgstr "Image HDR « %s » écrite"
 
 #: ../src/control/jobs/control_jobs.c:593
 #, c-format
@@ -6963,12 +6963,12 @@ msgstr[1] "Suppression de %d images"
 #: ../src/control/jobs/control_jobs.c:856
 #, c-format
 msgid "could not send %s to trash%s%s"
-msgstr "Impossible de placer « %s » dans la poubelle%s%s"
+msgstr "Impossible de placer « %s » dans la poubelle%s%s"
 
 #: ../src/control/jobs/control_jobs.c:857
 #, c-format
 msgid "could not physically delete %s%s%s"
-msgstr "Impossible de supprimer du disque « %s%s%s »"
+msgstr "Impossible de supprimer du disque « %s%s%s »"
 
 #: ../src/control/jobs/control_jobs.c:867
 msgid "physically delete"
@@ -7078,13 +7078,13 @@ msgstr "Aucune image à exporter"
 #: ../src/control/jobs/control_jobs.c:1407
 #, c-format
 msgid "exporting %d / %d to %s"
-msgstr "Exportation %d / %d vers « %s »"
+msgstr "Exportation %d / %d vers « %s »"
 
 #: ../src/control/jobs/control_jobs.c:1428 ../src/views/darkroom.c:787
 #: ../src/views/print.c:342
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "Image « %s » non disponible actuellement"
+msgstr "Image « %s » non disponible actuellement"
 
 #: ../src/control/jobs/control_jobs.c:1520
 msgid "merge HDR image"
@@ -7109,11 +7109,11 @@ msgstr "Enlever les images"
 
 #: ../src/control/jobs/control_jobs.c:1567
 msgid "remove image?"
-msgstr "Enlever l'image ?"
+msgstr "Enlever l'image ?"
 
 #: ../src/control/jobs/control_jobs.c:1567
 msgid "remove images?"
-msgstr "Enlever les images ?"
+msgstr "Enlever les images ?"
 
 #: ../src/control/jobs/control_jobs.c:1568
 #, c-format
@@ -7125,10 +7125,10 @@ msgid_plural ""
 "(without deleting files on disk)?"
 msgstr[0] ""
 "Êtes-vous sûr de vouloir enlever %d image de darktable\n"
-"(sans supprimer le fichier du disque) ?"
+"(sans supprimer le fichier du disque) ?"
 msgstr[1] ""
 "Êtes-vous sûr de vouloir enlever %d images de darktable\n"
-"(sans supprimer les fichiers du disque) ?"
+"(sans supprimer les fichiers du disque) ?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1583
@@ -7139,11 +7139,11 @@ msgstr "Supprimer les images"
 #: ../src/control/jobs/control_jobs.c:1599
 #: ../src/control/jobs/control_jobs.c:1629
 msgid "delete image?"
-msgstr "Supprimer l'image ?"
+msgstr "Supprimer l'image ?"
 
 #: ../src/control/jobs/control_jobs.c:1599
 msgid "delete images?"
-msgstr "Supprimer les images ?"
+msgstr "Supprimer les images ?"
 
 #: ../src/control/jobs/control_jobs.c:1600
 #, c-format
@@ -7155,17 +7155,17 @@ msgid_plural ""
 "(using trash if possible)?"
 msgstr[0] ""
 "Êtes-vous sûr de vouloir supprimer définitivement %d image\n"
-"(en utilisant la poubelle si possible) ?"
+"(en utilisant la poubelle si possible) ?"
 msgstr[1] ""
 "Êtes-vous sûr de vouloir supprimer définitivement %d images\n"
-"(en utilisant la poubelle si possible) ?"
+"(en utilisant la poubelle si possible) ?"
 
 #: ../src/control/jobs/control_jobs.c:1602
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
-msgstr[0] "Êtes-vous sûr de vouloir supprimer définitivement %d image ?"
-msgstr[1] "Êtes-vous sûr de vouloir supprimer définitivement %d images ?"
+msgstr[0] "Êtes-vous sûr de vouloir supprimer définitivement %d image ?"
+msgstr[1] "Êtes-vous sûr de vouloir supprimer définitivement %d images ?"
 
 #: ../src/control/jobs/control_jobs.c:1630
 msgid ""
@@ -7173,12 +7173,12 @@ msgid ""
 "possible)?"
 msgstr ""
 "êTes-vous sûr de vouloir supprimer définitivement l'image sélectionnée (en "
-"utilisant la poubelle si possible) ?"
+"utilisant la poubelle si possible) ?"
 
 #: ../src/control/jobs/control_jobs.c:1631
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
-"Êtes-vous sûr de vouloir supprimer définitivement les images sélectionnées ?"
+"Êtes-vous sûr de vouloir supprimer définitivement les images sélectionnées ?"
 
 #: ../src/control/jobs/control_jobs.c:1646
 msgid "move images"
@@ -7192,8 +7192,8 @@ msgstr "_Sélectionner comme destination"
 #: ../src/control/jobs/control_jobs.c:1677
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "Déplacer l'image ?"
-msgstr[1] "Déplacer les images ?"
+msgstr[0] "Déplacer l'image ?"
+msgstr[1] "Déplacer les images ?"
 
 #: ../src/control/jobs/control_jobs.c:1678
 #, c-format
@@ -7204,10 +7204,10 @@ msgid_plural ""
 "do you really want to physically move %d images to %s?\n"
 "(all duplicates will be moved along)"
 msgstr[0] ""
-"Êtes-vous sûr de vouloir déplacer %d image vers « %s » ?\n"
+"Êtes-vous sûr de vouloir déplacer %d image vers « %s » ?\n"
 "(les clones seront également déplacés)"
 msgstr[1] ""
-"Êtes-vous sûr de vouloir déplacer %d images vers « %s » ?\n"
+"Êtes-vous sûr de vouloir déplacer %d images vers « %s » ?\n"
 "(les clones seront également déplacés)"
 
 #: ../src/control/jobs/control_jobs.c:1700
@@ -7217,15 +7217,15 @@ msgstr "Copier les images"
 #: ../src/control/jobs/control_jobs.c:1731
 msgid "copy image?"
 msgid_plural "copy images?"
-msgstr[0] "Copier l'image ?"
-msgstr[1] "Copier les images ?"
+msgstr[0] "Copier l'image ?"
+msgstr[1] "Copier les images ?"
 
 #: ../src/control/jobs/control_jobs.c:1732
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
-msgstr[0] "Êtes-vous sûr de vouloir copier %d image vers « %s » ?"
-msgstr[1] "Êtes-vous sûr de vouloir copier %d images vers « %s » ?"
+msgstr[0] "Êtes-vous sûr de vouloir copier %d image vers « %s » ?"
+msgstr[1] "Êtes-vous sûr de vouloir copier %d images vers « %s » ?"
 
 #: ../src/control/jobs/control_jobs.c:1750
 #: ../src/control/jobs/control_jobs.c:1758
@@ -7240,7 +7240,7 @@ msgstr "Rafraîchir EXIF"
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"Impossible d'obtenir les paramètres du module de stockage « %s », "
+"Impossible d'obtenir les paramètres du module de stockage « %s », "
 "exportation abandonnée."
 
 #: ../src/control/jobs/control_jobs.c:1845
@@ -7327,7 +7327,7 @@ msgstr "Aucun format d'image supporté n'a été trouvé"
 #: ../src/control/jobs/image_jobs.c:76
 #, c-format
 msgid "importing image %s"
-msgstr "Importation de l'image « %s »"
+msgstr "Importation de l'image « %s »"
 
 #: ../src/control/jobs/image_jobs.c:110
 msgid "import image"
@@ -7340,7 +7340,7 @@ msgstr "Erreur de fusion du masque de détail"
 #: ../src/develop/blend.c:459 ../src/develop/blend.c:845
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "Fusion ignorée dans le module « %s » : paramètres incompatibles"
+msgstr "Fusion ignorée dans le module « %s » : paramètres incompatibles"
 
 #: ../src/develop/blend.c:490 ../src/develop/blend.c:880
 msgid "could not allocate buffer for blending"
@@ -7797,12 +7797,12 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"Sélection faite sur l'image d'entrée du module :\n"
-" • Intervalle entre deux marqueurs internes (triangles pleins du haut) : "
+"Sélection faite sur l'image d'entrée du module :\n"
+" • Intervalle entre deux marqueurs internes (triangles pleins du haut) : "
 "Fusion totale\n"
 " • Intervalle à l’extérieur des marqueurs externes (triangles vides du "
-"bas) : Pas de fusion\n"
-" • Intervalle entre 2 marqueurs adjacents interne/externe : Fusion "
+"bas) : Pas de fusion\n"
+" • Intervalle entre 2 marqueurs adjacents interne/externe : Fusion "
 "progressive"
 
 #: ../src/develop/blend_gui.c:2039
@@ -7812,12 +7812,12 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"Sélection faite sur l'image de sortie du module avant fusion :\n"
-" • Intervalle entre deux marqueurs internes (triangles pleins du haut) : "
+"Sélection faite sur l'image de sortie du module avant fusion :\n"
+" • Intervalle entre deux marqueurs internes (triangles pleins du haut) : "
 "Fusion totale\n"
 " • Intervalle à l’extérieur des marqueurs externes (triangles vides du "
-"bas) : Pas de fusion\n"
-" • Intervalle entre 2 marqueurs adjacents interne/externe : Fusion "
+"bas) : Pas de fusion\n"
+" • Intervalle entre 2 marqueurs adjacents interne/externe : Fusion "
 "progressive"
 
 #: ../src/develop/blend_gui.c:2129
@@ -7856,7 +7856,7 @@ msgstr "Inverser les polarités de tous les canaux"
 
 #: ../src/develop/blend_gui.c:2181
 msgid "toggle polarity. best seen by enabling 'display mask'"
-msgstr "Inverse la polarité. Mieux vu en activant « Afficher le masque »"
+msgstr "Inverse la polarité. Mieux vu en activant « Afficher le masque »"
 
 #: ../src/develop/blend_gui.c:2208
 msgid ""
@@ -7866,9 +7866,9 @@ msgid ""
 "press 'm' to toggle mask view."
 msgstr ""
 "• Double-clic - Pour re-initialiser.\n"
-"• « a » - Pour changer le mode d'édition.\n"
-"• « c » - Pour afficher les données du canal.\n"
-"• « n » - Pour afficher le masque."
+"• « a » - Pour changer le mode d'édition.\n"
+"• « c » - Pour afficher les données du canal.\n"
+"• « n » - Pour afficher le masque."
 
 #: ../src/develop/blend_gui.c:2225 ../src/develop/blend_gui.c:3025
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2058
@@ -8193,7 +8193,7 @@ msgstr "Défaut pour relatif à la scène"
 #: ../src/develop/develop.c:2133
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s : Module « %s » version non cohérente : %d != %d"
+msgstr "%s : Module « %s » version non cohérente : %d != %d"
 
 #: ../src/develop/develop.c:2619
 msgid "module duplicate, can't move new instance after the base one\n"
@@ -8255,12 +8255,12 @@ msgstr "Masque dessiné + paramétrique"
 #: ../src/develop/imageop.c:2428
 #, c-format
 msgid "this module has a `%s'"
-msgstr "Ce module a un « %s »"
+msgstr "Ce module a un « %s »"
 
 #: ../src/develop/imageop.c:2433
 #, c-format
 msgid "taken from module %s"
-msgstr "Récupéré du module « %s »"
+msgstr "Récupéré du module « %s »"
 
 #: ../src/develop/imageop.c:2438
 msgid "click to display (module must be activated first)"
@@ -8375,13 +8375,13 @@ msgstr ""
 
 #: ../src/develop/lightroom.c:1083
 msgid "cannot find lightroom XMP!"
-msgstr "Impossible de trouver un XMP venant de Lightroom !"
+msgstr "Impossible de trouver un XMP venant de Lightroom !"
 
 #: ../src/develop/lightroom.c:1115 ../src/develop/lightroom.c:1137
 #: ../src/develop/lightroom.c:1157
 #, c-format
 msgid "`%s' is not a Lightroom XMP!"
-msgstr "« %s » N'est pas un XMP de Lightroom !"
+msgstr "« %s » N'est pas un XMP de Lightroom !"
 
 #: ../src/develop/lightroom.c:1556
 #, c-format
@@ -8393,7 +8393,7 @@ msgstr[1] "%s ont été importés"
 #: ../src/develop/masks/brush.c:1106 ../src/develop/masks/brush.c:1154
 #, c-format
 msgid "hardness: %3.2f%%"
-msgstr "Dureté : %3.2f%%"
+msgstr "Dureté : %3.2f%%"
 
 #: ../src/develop/masks/brush.c:1120 ../src/develop/masks/brush.c:1194
 #: ../src/develop/masks/circle.c:120 ../src/develop/masks/circle.c:167
@@ -8401,7 +8401,7 @@ msgstr "Dureté : %3.2f%%"
 #: ../src/develop/masks/path.c:1046
 #, c-format
 msgid "size: %3.2f%%"
-msgstr "Taille : %3.2f%%"
+msgstr "Taille : %3.2f%%"
 
 #: ../src/develop/masks/brush.c:2840
 msgid "[BRUSH] change size"
@@ -8426,19 +8426,19 @@ msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>taille</b> : molette, <b>dureté</b> : maj+molette\n"
-"<b>opacité</b> : ctrl+molette (%d%%)"
+"<b>taille</b> : molette, <b>dureté</b> : maj+molette\n"
+"<b>opacité</b> : ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/brush.c:2865
 msgid "<b>size</b>: scroll"
-msgstr "<b>taille</b> : défiler"
+msgstr "<b>taille</b> : défiler"
 
 #: ../src/develop/masks/circle.c:110 ../src/develop/masks/circle.c:154
 #: ../src/develop/masks/ellipse.c:452 ../src/develop/masks/ellipse.c:522
 #: ../src/develop/masks/path.c:993
 #, c-format
 msgid "feather size: %3.2f%%"
-msgstr "Adoucissement : %3.2f%%"
+msgstr "Adoucissement : %3.2f%%"
 
 #: ../src/develop/masks/circle.c:1346
 msgid "[CIRCLE] change size"
@@ -8463,13 +8463,13 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>taille</b> : molette, <b>taille d'adoucissement</b> : maj+molette\n"
-"<b>opacité</b> : ctrl+molette (%d%%)"
+"<b>taille</b> : molette, <b>taille d'adoucissement</b> : maj+molette\n"
+"<b>opacité</b> : ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:434 ../src/develop/masks/ellipse.c:507
 #, c-format
 msgid "rotation: %3.f°"
-msgstr "Rotation : %3.f°"
+msgstr "Rotation : %3.f°"
 
 #: ../src/develop/masks/ellipse.c:1929
 msgid "[ELLIPSE] change size"
@@ -8502,12 +8502,12 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>taille</b> : molette, <b>taille d'adoucissement</b> : maj+molette\n"
+"<b>taille</b> : molette, <b>taille d'adoucissement</b> : maj+molette\n"
 "<b>rotation</b>: ctrl+maj+molette, <b>opacité</b>: ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:1972
 msgid "<b>rotate</b>: ctrl+drag"
-msgstr "<b>tourner</b> : ctrl+déplacer"
+msgstr "<b>tourner</b> : ctrl+déplacer"
 
 #: ../src/develop/masks/ellipse.c:1975
 #, c-format
@@ -8516,19 +8516,19 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
 "ctrl+scroll (%d%%)"
 msgstr ""
-"<b>mode d'adoucissement</b> : maj+clic, <b>tourner</b> : ctrl+déplacer\n"
-"<b>taille</b> : molette, <b>taille d'adoucissement</b> : maj+molette, "
-"<b>opacité</b> : ctrl+molette (%d%%)"
+"<b>mode d'adoucissement</b> : maj+clic, <b>tourner</b> : ctrl+déplacer\n"
+"<b>taille</b> : molette, <b>taille d'adoucissement</b> : maj+molette, "
+"<b>opacité</b> : ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:101 ../src/develop/masks/gradient.c:140
 #, c-format
 msgid "compression: %3.2f%%"
-msgstr "Compression : %3.2f%%"
+msgstr "Compression : %3.2f%%"
 
 #: ../src/develop/masks/gradient.c:111 ../src/develop/masks/gradient.c:150
 #, c-format
 msgid "curvature: %3.2f%%"
-msgstr "Courbure : %3.2f%%"
+msgstr "Courbure : %3.2f%%"
 
 #: ../src/develop/masks/gradient.c:1417
 msgid "[GRADIENT on pivot] rotate shape"
@@ -8561,8 +8561,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>courbe</b> : molette, <b>compression</b> : maj+molette\n"
-"<b>orientation</b>: clic+déplacer, <b>opacité</b> : ctrl+molette (%d%%)"
+"<b>courbe</b> : molette, <b>compression</b> : maj+molette\n"
+"<b>orientation</b>: clic+déplacer, <b>opacité</b> : ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1445
 #, c-format
@@ -8570,12 +8570,12 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>courbe</b> : molette, <b>compression</b> : maj+molette\n"
-"<b>opacité</b> : ctrl+molette (%d%%)"
+"<b>courbe</b> : molette, <b>compression</b> : maj+molette\n"
+"<b>opacité</b> : ctrl+molette (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1448
 msgid "<b>rotate</b>: drag"
-msgstr "<b>tourner</b> : déplacer"
+msgstr "<b>tourner</b> : déplacer"
 
 #: ../src/develop/masks/masks.c:132
 msgid "[SHAPE] remove shape"
@@ -8584,12 +8584,12 @@ msgstr "[FORME] Supprimer la forme"
 #: ../src/develop/masks/masks.c:387
 #, c-format
 msgid "copy of %s"
-msgstr "Copie de « %s »"
+msgstr "Copie de « %s »"
 
 #: ../src/develop/masks/masks.c:917
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
-msgstr "%s : Version non cohérente du masque : %d != %d"
+msgstr "%s : Version non cohérente du masque : %d != %d"
 
 #: ../src/develop/masks/masks.c:1139 ../src/develop/masks/masks.c:1762
 #, c-format
@@ -8658,23 +8658,23 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : ctrl+clic\n"
-"<b>annuler</b> : clic droit"
+"<b>ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : ctrl+clic\n"
+"<b>annuler</b> : clic droit"
 
 #: ../src/develop/masks/path.c:3038
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : ctrl+clic\n"
-"<b>terminer le chemin</b> : clic droit"
+"<b>ajouter un nœud</b> : clic, <b>ajouter un nœud dur</b> : ctrl+clic\n"
+"<b>terminer le chemin</b> : clic droit"
 
 #: ../src/develop/masks/path.c:3041
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
-"<b>déplacer un nœud</b> : déplacer, <b>supprimer un nœud</b> : clic droit\n"
+"<b>déplacer un nœud</b> : déplacer, <b>supprimer un nœud</b> : clic droit\n"
 "<b>passer au mode doux ou dur</b>: ctrl+clic"
 
 #: ../src/develop/masks/path.c:3044
@@ -8682,16 +8682,16 @@ msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
-"<b>courbe du nœud</b> : déplacer\n"
-"<b>réinitialiser la courbe</b> : clic-droit"
+"<b>courbe du nœud</b> : déplacer\n"
+"<b>réinitialiser la courbe</b> : clic-droit"
 
 #: ../src/develop/masks/path.c:3046
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
 msgstr ""
-"<b>déplacer le segment</b> : déplacer\n"
-"<b>ajouter un nœud</b> : ctrl+clic"
+"<b>déplacer le segment</b> : déplacer\n"
+"<b>ajouter un nœud</b> : ctrl+clic"
 
 #: ../src/develop/pixelpipe_hb.c:479
 msgid "enabled as required"
@@ -8733,7 +8733,7 @@ msgstr ""
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
-"Tuilage impossible pour le module « %s ». La sortie est probablement "
+"Tuilage impossible pour le module « %s ». La sortie est probablement "
 "corrompue."
 
 #: ../src/dtgtk/culling.c:232
@@ -8773,7 +8773,7 @@ msgid ""
 "right-click to select from existing values"
 msgstr ""
 "Entrer la valeur minimale\n"
-"utiliser « min » si pas de borne\n"
+"utiliser « min » si pas de borne\n"
 "clic-droit pour sélectionner depuis les valeurs existantes"
 
 #: ../src/dtgtk/range.c:411
@@ -8783,7 +8783,7 @@ msgid ""
 "right-click to select from existing values"
 msgstr ""
 "Entrer la valeur maximal\n"
-"utiliser « max » si pas de borne\n"
+"utiliser « max » si pas de borne\n"
 "clic-droit pour sélectionner depuis les valeurs existantes"
 
 #: ../src/dtgtk/range.c:417
@@ -8804,8 +8804,8 @@ msgid ""
 msgstr ""
 "Entre la date minimale\n"
 "Sous la forme AAAA:MM:JJ hh:mm:ss.Sss (seulement l'année est obligatoire)\n"
-"Utiliser « min » si pas de bornes\n"
-"Utiliser le préfixe « - » pour une date relative\n"
+"Utiliser « min » si pas de bornes\n"
+"Utiliser le préfixe « - » pour une date relative\n"
 "Clic-Droit pour sélectionner depuis un calendrier ou les valeurs existantes"
 
 #: ../src/dtgtk/range.c:430
@@ -8819,9 +8819,9 @@ msgid ""
 msgstr ""
 "Entrer la date maximum\n"
 "Sous la forme AAAA:MM:JJ hh:mm:ss.Sss (seulement l'année est obligatoire)\n"
-"Utiliser « max » si pas de bornes\n"
-"Le mot-clé « maintenant » est supporté\n"
-"Utiliser le préfixe « - » pour une date relative\n"
+"Utiliser « max » si pas de bornes\n"
+"Le mot-clé « maintenant » est supporté\n"
+"Utiliser le préfixe « - » pour une date relative\n"
 "Clic-Droit pour sélectionner depuis un calendrier ou les valeurs existantes"
 
 #: ../src/dtgtk/range.c:439
@@ -8883,15 +8883,15 @@ msgstr ""
 
 #: ../src/dtgtk/range.c:973
 msgid "years: "
-msgstr "Années : "
+msgstr "Années : "
 
 #: ../src/dtgtk/range.c:981
 msgid "months: "
-msgstr "Mois : "
+msgstr "Mois : "
 
 #: ../src/dtgtk/range.c:989
 msgid "days: "
-msgstr "Jours : "
+msgstr "Jours : "
 
 #. the time section
 #: ../src/dtgtk/range.c:1001 ../src/libs/geotagging.c:1502
@@ -8900,7 +8900,7 @@ msgstr "Date/heure"
 
 #: ../src/dtgtk/range.c:1049
 msgid "current date: "
-msgstr "Date actuelle : "
+msgstr "Date actuelle : "
 
 #: ../src/dtgtk/range.c:1053 ../src/dtgtk/range.c:1787
 #: ../src/dtgtk/range.c:1838
@@ -8977,7 +8977,7 @@ msgstr "Si vous n'avez pas encore importé d'images"
 
 #: ../src/dtgtk/thumbtable.c:995
 msgid "you can do so in the import module"
-msgstr "Vous pouvez le faire dans le module « importer »"
+msgstr "Vous pouvez le faire dans le module « importer »"
 
 #: ../src/dtgtk/thumbtable.c:1003
 msgid "try to relax the filter settings in the top panel"
@@ -9030,7 +9030,7 @@ msgstr ""
 
 #: ../src/dtgtk/thumbtable.c:1264
 msgid "do you want to do that now?"
-msgstr "Voulez-vous faire cela maintenant ?"
+msgstr "Voulez-vous faire cela maintenant ?"
 
 #: ../src/dtgtk/thumbtable.c:1266
 msgid "cached thumbnails invalidation"
@@ -9081,22 +9081,22 @@ msgstr "Création des dossiers pour le cache\n"
 #: ../src/generate-cache/main.c:56
 #, c-format
 msgid "creating cache directory '%s'\n"
-msgstr "Création du dossier de cache « %s »\n"
+msgstr "Création du dossier de cache « %s »\n"
 
 #: ../src/generate-cache/main.c:59 ../src/lua/image.c:122
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "Impossible de créer le dossier « %s » !\n"
+msgstr "Impossible de créer le dossier « %s » !\n"
 
 #: ../src/generate-cache/main.c:83
 #, c-format
 msgid "warning: no images are matching the requested image id range\n"
-msgstr "Attention : aucune image sélectionnée pour l'étendue spécifiée\n"
+msgstr "Attention : aucune image sélectionnée pour l'étendue spécifiée\n"
 
 #: ../src/generate-cache/main.c:86
 #, c-format
 msgid "warning: did you want to swap these boundaries?\n"
-msgstr "Attention : vouliez-vous vraiment inverser ces valeurs ?\n"
+msgstr "Attention : vouliez-vous vraiment inverser ces valeurs ?\n"
 
 #: ../src/generate-cache/main.c:227
 #, c-format
@@ -9106,7 +9106,7 @@ msgid ""
 "need to enable disk backend for thumbnail cache\n"
 "no thumbnails to be generated, done.\n"
 msgstr ""
-"Attention : l'utilisation du disque pour les miniatures est désactivé "
+"Attention : l'utilisation du disque pour les miniatures est désactivé "
 "(cache_disk_backend)\n"
 "si vous voulez pré-générer les miniatures pour que darktable puisse les "
 "utiliser, vous devez activer l'utilisation du cache disque\n"
@@ -9121,7 +9121,7 @@ msgid ""
 "need to enable disk backend for full preview cache\n"
 "no full previews to be generated, done.\n"
 msgstr ""
-"Attention : l'utilisation du disque pour les prévisualisations est désactivé "
+"Attention : l'utilisation du disque pour les prévisualisations est désactivé "
 "(cache_disk_backend_full)\n"
 "si vous voulez pré-générer les prévisualisations pour que darktable puisse "
 "les utiliser, vous devez activer l'utilisation du cache disque\n"
@@ -9130,7 +9130,7 @@ msgstr ""
 #: ../src/generate-cache/main.c:248
 #, c-format
 msgid "error: ensure that min_mip <= max_mip\n"
-msgstr "Erreur : s'assurer que min_mip <= max_mip\n"
+msgstr "Erreur : s'assurer que min_mip <= max_mip\n"
 
 #: ../src/generate-cache/main.c:253
 #, c-format
@@ -9465,7 +9465,7 @@ msgstr "Un raccourci pour le mouvement existe avec un effet simple"
 #: ../src/gui/accelerators.c:1100
 msgid "create separate shortcuts for up and down move?"
 msgstr ""
-"Créer des raccourcis différents pour les mouvements monter et descendre ?"
+"Créer des raccourcis différents pour les mouvements monter et descendre ?"
 
 #: ../src/gui/accelerators.c:1123
 #, c-format
@@ -9478,7 +9478,7 @@ msgstr "Le raccourci existe avec des paramètres différents"
 
 #: ../src/gui/accelerators.c:1133
 msgid "reset the settings of the shortcut?"
-msgstr "Réinitialiser les paramètres du raccourci ?"
+msgstr "Réinitialiser les paramètres du raccourci ?"
 
 #: ../src/gui/accelerators.c:1144
 msgid "shortcut already exists"
@@ -9486,7 +9486,7 @@ msgstr "Le raccourci existe déjà"
 
 #: ../src/gui/accelerators.c:1145
 msgid "remove the shortcut?"
-msgstr "Supprimer le raccourci ?"
+msgstr "Supprimer le raccourci ?"
 
 #: ../src/gui/accelerators.c:1177
 msgid "clashing shortcuts exist"
@@ -9494,7 +9494,7 @@ msgstr "Raccourcis conflictuels existent"
 
 #: ../src/gui/accelerators.c:1178
 msgid "remove these existing shortcuts?"
-msgstr "Éliminer ces raccourcis existants ?"
+msgstr "Éliminer ces raccourcis existants ?"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
@@ -9547,7 +9547,7 @@ msgstr "Suppression raccourci"
 
 #: ../src/gui/accelerators.c:1561
 msgid "remove the selected shortcut?"
-msgstr "Supprimer le raccourci sélectionné ?"
+msgstr "Supprimer le raccourci sélectionné ?"
 
 #: ../src/gui/accelerators.c:1961
 msgid "restore shortcuts"
@@ -9572,7 +9572,7 @@ msgid ""
 "  - as at startup\n"
 "  - as when opening this dialog\n"
 msgstr ""
-"Restaurer les raccourcis avec les valeurs :\n"
+"Restaurer les raccourcis avec les valeurs :\n"
 " • Par défaut\n"
 " • Comme au démarrage\n"
 " • Avant l'ouverture de ce dialogue\n"
@@ -9754,12 +9754,12 @@ msgstr "Repli à déplacer"
 #: ../src/gui/accelerators.c:3225
 #, c-format
 msgid "%s not assigned"
-msgstr "« %s » Non assigné"
+msgstr "« %s » Non assigné"
 
 #: ../src/gui/accelerators.c:3380
 #, c-format
 msgid "%s assigned to %s"
-msgstr "« %s » Est assigné à « %s »"
+msgstr "« %s » Est assigné à « %s »"
 
 #: ../src/gui/gtk.c:172 ../src/views/darkroom.c:4594
 msgid "darktable - darkroom preview"
@@ -10374,7 +10374,7 @@ msgid ""
 msgstr ""
 "Metadonnées à appliquer par défaut\n"
 " • Double-Clic sur un label pour effacer l'entée correspondante\n"
-" • Double-Clic sur « Préréglage » pour effacer toutes les entrées"
+" • Double-Clic sur « Préréglage » pour effacer toutes les entrées"
 
 #: ../src/gui/import_metadata.c:430
 msgid "from XMP"
@@ -10389,8 +10389,8 @@ msgid ""
 msgstr ""
 "Les meta-données sélectionnées sont importées depuis l'image et remplace les "
 "valeurs par défaut\n"
-"Cette option est aussi utilisée par « Vérifie les fichiers XMP modifiés au "
-"démarrage » et l'action « Charger un XMP »\n"
+"Cette option est aussi utilisée par « Vérifie les fichiers XMP modifiés au "
+"démarrage » et l'action « Charger un XMP »\n"
 "ATTENTION: les méta-données non sélectionnées seront supprimées lorsque le "
 "fichier XMP est mis à jour."
 
@@ -10537,7 +10537,7 @@ msgstr "Exporter..."
 #: ../src/gui/preferences.c:1020
 #, c-format
 msgid "failed to import preset %s"
-msgstr "Échec d'importation du préréglage « %s »"
+msgstr "Échec d'importation du préréglage « %s »"
 
 #: ../src/gui/preferences.c:1031
 msgid "select preset(s) to import"
@@ -10579,18 +10579,18 @@ msgstr "Monochrome"
 #: ../src/gui/presets.c:175
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
-msgstr "Le préréglage « %s » est protégé, impossible à supprimer !"
+msgstr "Le préréglage « %s » est protégé, impossible à supprimer !"
 
 #: ../src/gui/presets.c:181 ../src/gui/presets.c:445 ../src/libs/lib.c:229
 #: ../src/libs/modulegroups.c:3696
 msgid "delete preset?"
-msgstr "Supprimer ce préréglage ?"
+msgstr "Supprimer ce préréglage ?"
 
 #: ../src/gui/presets.c:182 ../src/gui/presets.c:446 ../src/libs/lib.c:230
 #: ../src/libs/modulegroups.c:3697
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "Voulez-vous réellement supprimer le préréglage « %s » ?"
+msgstr "Voulez-vous réellement supprimer le préréglage « %s » ?"
 
 #. add new preset
 #. create a shortcut for the new entry
@@ -10616,7 +10616,7 @@ msgstr "Préréglage sans nom"
 #. destroying dialog, to permit other name
 #: ../src/gui/presets.c:262
 msgid "overwrite preset?"
-msgstr "Remplacer ce préréglage ?"
+msgstr "Remplacer ce préréglage ?"
 
 #: ../src/gui/presets.c:263
 #, c-format
@@ -10624,8 +10624,8 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"Le préréglage « %s » existe déjà.\n"
-"Voulez-vous le remplacer ?"
+"Le préréglage « %s » existe déjà.\n"
+"Voulez-vous le remplacer ?"
 
 #: ../src/gui/presets.c:406 ../src/imageio/storage/disk.c:123
 #: ../src/imageio/storage/gallery.c:110 ../src/imageio/storage/latex.c:109
@@ -10635,12 +10635,12 @@ msgstr "_Sélectionner comme destination de sortie"
 #: ../src/gui/presets.c:414
 #, c-format
 msgid "preset %s was successfully exported"
-msgstr "Le préreglage « %s » a été exporté"
+msgstr "Le préreglage « %s » a été exporté"
 
 #: ../src/gui/presets.c:540
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "Éditer « %s » pour le module « %s »"
+msgstr "Éditer « %s » pour le module « %s »"
 
 #: ../src/gui/presets.c:543
 msgid "_export..."
@@ -10677,17 +10677,17 @@ msgstr ""
 #: ../src/gui/presets.c:609
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
-msgstr "Nom du modèle (utiliser « % » comme joker)"
+msgstr "Nom du modèle (utiliser « % » comme joker)"
 
 #: ../src/gui/presets.c:617
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
-msgstr "Nom du fabricant (utiliser « % » comme joker)"
+msgstr "Nom du fabricant (utiliser « % » comme joker)"
 
 #: ../src/gui/presets.c:625
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
-msgstr "Nom de l'objectif (utiliser « % » comme joker)"
+msgstr "Nom de l'objectif (utiliser « % » comme joker)"
 
 #: ../src/gui/presets.c:635
 msgid "minimum ISO value"
@@ -10738,16 +10738,16 @@ msgstr "et"
 #: ../src/gui/presets.c:899
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
-msgstr "Le préréglage « %s » est protégé, impossible à éditer !"
+msgstr "Le préréglage « %s » est protégé, impossible à éditer !"
 
 #: ../src/gui/presets.c:923 ../src/libs/lib.c:156
 msgid "update preset?"
-msgstr "Mettre à jour le préréglage ?"
+msgstr "Mettre à jour le préréglage ?"
 
 #: ../src/gui/presets.c:923 ../src/libs/lib.c:157
 #, c-format
 msgid "do you really want to update the preset `%s'?"
-msgstr "Voulez-vous réellement mettre à jour le préréglage « %s » ?"
+msgstr "Voulez-vous réellement mettre à jour le préréglage « %s » ?"
 
 #: ../src/gui/presets.c:1029
 msgid "(first)"
@@ -10763,7 +10763,7 @@ msgid ""
 "preset %s\n"
 "%s"
 msgstr ""
-"Préréglage « %s »\n"
+"Préréglage « %s »\n"
 "%s"
 
 #: ../src/gui/presets.c:1062
@@ -10789,7 +10789,7 @@ msgstr "(Défaut)"
 
 #: ../src/gui/presets.c:1583
 msgid "disabled: wrong module version"
-msgstr "Désactivé : version du module non cohérente"
+msgstr "Désactivé : version du module non cohérente"
 
 #: ../src/gui/presets.c:1608 ../src/libs/lib.c:504
 msgid "edit this preset.."
@@ -10810,7 +10810,7 @@ msgstr "Mettre à jour le préréglage"
 #: ../src/gui/styles_dialog.c:220 ../src/libs/styles.c:438
 #: ../src/libs/styles.c:621
 msgid "overwrite style?"
-msgstr "Remplacer le style ?"
+msgstr "Remplacer le style ?"
 
 #: ../src/gui/styles_dialog.c:221
 #, c-format
@@ -10818,8 +10818,8 @@ msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"Le style « %s » existe déjà.\n"
-"Voulez-vous le remplacer ?"
+"Le style « %s » existe déjà.\n"
+"Voulez-vous le remplacer ?"
 
 #: ../src/gui/styles_dialog.c:250 ../src/gui/styles_dialog.c:322
 msgid "please give style a name"
@@ -10832,7 +10832,7 @@ msgstr "Style sans nom"
 #: ../src/gui/styles_dialog.c:311
 #, c-format
 msgid "style %s was successfully saved"
-msgstr "Le style « %s » a été sauvegardé"
+msgstr "Le style « %s » a été sauvegardé"
 
 #: ../src/gui/styles_dialog.c:504
 msgid "edit style"
@@ -10873,7 +10873,7 @@ msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
 msgstr ""
-"Échec de l'allocation de mémoire pour « %s », merci de diminuer le nombre de "
+"Échec de l'allocation de mémoire pour « %s », merci de diminuer le nombre de "
 "fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
 #: ../src/imageio/imageio.c:738
@@ -10890,7 +10890,7 @@ msgstr "L'image"
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
-"Impossible de trouver le style « %s » à appliquer pendant l'exportation."
+"Impossible de trouver le style « %s » à appliquer pendant l'exportation."
 
 #: ../src/imageio/format/avif.c:89 ../src/imageio/format/jxl.c:556
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:554
@@ -11010,7 +11010,7 @@ msgid ""
 "the global options below do not apply!"
 msgstr ""
 "Effectue une copie conforme des fichiers.\n"
-"Les options ci-dessous ne s'appliquent pas !"
+"Les options ci-dessous ne s'appliquent pas !"
 
 #: ../src/imageio/format/exr.cc:219
 msgid "the selected output profile doesn't work well with exr"
@@ -11137,9 +11137,9 @@ msgid ""
 "100 = lossless (integer bit depth only)"
 msgstr ""
 "La qualité de l'image exportée\n"
-" • « 0-29 » - Avec beaucoup de pertes\n"
-" • « 30-99 » - Comparable à la qualité JPEG\n"
-" • « 100 » - Sans perte (profondeur de bit entier uniquement)"
+" • « 0-29 » - Avec beaucoup de pertes\n"
+" • « 30-99 » - Comparable à la qualité JPEG\n"
+" • « 100 » - Sans perte (profondeur de bit entier uniquement)"
 
 #: ../src/imageio/format/jxl.c:589
 msgid "encoding color profile"
@@ -11202,7 +11202,7 @@ msgstr "Taille des bords non valide, 0 est utilisé"
 #: ../src/imageio/storage/gallery.c:370 ../src/imageio/storage/piwigo.c:1137
 #, c-format
 msgid "could not export to file `%s'!"
-msgstr "Impossible d'exporter le fichier « %s » !"
+msgstr "Impossible d'exporter le fichier « %s » !"
 
 #: ../src/imageio/format/pdf.c:409
 msgid "PDF"
@@ -11225,9 +11225,9 @@ msgid ""
 "example: 210 mm x 2.97 cm"
 msgstr ""
 "Taille du papier du PDF\n"
-"Soit une valeur depuis la liste ou « <largeur> [unité] X <hauteur> <unité> "
+"Soit une valeur depuis la liste ou « <largeur> [unité] X <hauteur> <unité> "
 "»\n"
-"exemple : 210 mm x 2.97 cm"
+"exemple : 210 mm x 2.97 cm"
 
 #. orientation
 #: ../src/imageio/format/pdf.c:600
@@ -11262,7 +11262,7 @@ msgid ""
 "examples: 10 mm, 1 inch"
 msgstr ""
 "Espace vide autour du pdf\n"
-"Format : taille + unité\n"
+"Format : taille + unité\n"
 "Exemples: 10 mm, 1 pouce"
 
 #. dpi
@@ -11326,8 +11326,8 @@ msgid ""
 "deflate -- smaller files but slower"
 msgstr ""
 "Méthode utilisé pour la compression des images\n"
-" • « Non-compressée » - Rapide mais taille importante\n"
-" • « Compressée » - Taille réduite mais plus lent"
+" • « Non-compressée » - Rapide mais taille importante\n"
+" • « Compressée » - Taille réduite mais plus lent"
 
 #: ../src/imageio/format/pdf.c:682 ../src/imageio/format/tiff.c:886
 msgid "deflate"
@@ -11344,9 +11344,9 @@ msgid ""
 "draft -- images are replaced with boxes\n"
 "debug -- only show the outlines and bounding boxes"
 msgstr ""
-" • « Normal » - Affiche les images dans le PDF\n"
-" • « Épreuve » - Les images sont remplacées par des boîtes\n"
-" • « Débogage » - Montre uniquement le contours des emplacements."
+" • « Normal » - Affiche les images dans le PDF\n"
+" • « Épreuve » - Les images sont remplacées par des boîtes\n"
+" • « Débogage » - Montre uniquement le contours des emplacements."
 
 #: ../src/imageio/format/pdf.c:693 ../src/views/lighttable.c:668
 msgid "normal"
@@ -11419,9 +11419,9 @@ msgid ""
 "for lossless, 0 is the fastest but gives larger files compared\n"
 "to the slowest 100."
 msgstr ""
-"Pour « Avec perte », 0 donne la plus petite taille et 100 la meilleurs "
+"Pour « Avec perte », 0 donne la plus petite taille et 100 la meilleurs "
 "qualité.\n"
-"Pour « Sans perte », 0 est le plus rapide mais donne des fichiers plus gros\n"
+"Pour « Sans perte », 0 est le plus rapide mais donne des fichiers plus gros\n"
 "en comparaison au mode lent 100."
 
 #: ../src/imageio/format/webp.c:407
@@ -11435,10 +11435,10 @@ msgid ""
 "photo: outdoor photograph, with natural lighting\n"
 "graphic: discrete tone image (graph, map-tile etc)"
 msgstr ""
-"Description de l'image pour l'encodeur :\n"
-" • « Image » - Photographie d'intérieur, portrait\n"
-" • « Photo » - Photographie d'extérieur, avec lumière naturelle\n"
-" • « Graphique » - Image avec des couleurs uniformes (schéma, etc)"
+"Description de l'image pour l'encodeur :\n"
+" • « Image » - Photographie d'intérieur, portrait\n"
+" • « Photo » - Photographie d'extérieur, avec lumière naturelle\n"
+" • « Graphique » - Image avec des couleurs uniformes (schéma, etc)"
 
 #: ../src/imageio/format/webp.c:413
 msgid "picture"
@@ -11469,7 +11469,7 @@ msgid ""
 msgstr ""
 "Chemin des images exportées\n"
 "Les variables supportent les substitutions comme le shell bash\n"
-"taper « $( » pour activer la completion et voir la liste des variables"
+"taper « $( » pour activer la completion et voir la liste des variables"
 
 #: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/piwigo.c:1029
 msgid "on conflict"
@@ -11494,27 +11494,27 @@ msgstr "Sauter"
 #: ../src/imageio/storage/latex.c:252
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "Impossible de créer le répertoire « %s » !"
+msgstr "Impossible de créer le répertoire « %s » !"
 
 #: ../src/imageio/storage/disk.c:272
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "Impossible d'écrire dans le répertoire « %s » !"
+msgstr "Impossible d'écrire dans le répertoire « %s » !"
 
 #: ../src/imageio/storage/disk.c:302
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
-msgstr[0] "%d/%d, « %s » sauté"
-msgstr[1] "%d/%d, « %s » sauté"
+msgstr[0] "%d/%d, « %s » sauté"
+msgstr[1] "%d/%d, « %s » sauté"
 
 #: ../src/imageio/storage/disk.c:321 ../src/imageio/storage/email.c:144
 #: ../src/imageio/storage/gallery.c:378 ../src/imageio/storage/latex.c:340
 #, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
-msgstr[0] "%d/%d exportée vers « %s »"
-msgstr[1] "%d/%d exportées vers « %s »"
+msgstr[0] "%d/%d exportée vers « %s »"
+msgstr[1] "%d/%d exportées vers « %s »"
 
 #: ../src/imageio/storage/disk.c:380
 msgid ""
@@ -11523,10 +11523,10 @@ msgid ""
 "\n"
 "do you really want to continue?"
 msgstr ""
-"L'exportation est en mode « écraser », ce mode écrasera toutes\n"
+"L'exportation est en mode « écraser », ce mode écrasera toutes\n"
 "les images existantes du même nom.\n"
 "\n"
-"Voulez-vous vraiment continuer ?"
+"Voulez-vous vraiment continuer ?"
 
 #: ../src/imageio/storage/email.c:52
 msgid "send as email"
@@ -11538,7 +11538,7 @@ msgstr "Images exportées depuis darktable"
 
 #: ../src/imageio/storage/email.c:251
 msgid "could not launch email client!"
-msgstr "Impossible de lancer le client de messagerie !"
+msgstr "Impossible de lancer le client de messagerie !"
 
 #: ../src/imageio/storage/gallery.c:73
 msgid "website gallery"
@@ -11683,7 +11683,7 @@ msgstr "Impossible de créer un nouvel album piwigo!"
 
 #: ../src/imageio/storage/piwigo.c:1174
 msgid "could not update to piwigo!"
-msgstr "Impossible de mettre à jour sur piwigo !"
+msgstr "Impossible de mettre à jour sur piwigo !"
 
 #: ../src/imageio/storage/piwigo.c:1188
 msgid "could not upload to piwigo!"
@@ -11834,7 +11834,7 @@ msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
 msgstr ""
-"Modèle d'objectif pour la correction de perspective : générique ou fonction "
+"Modèle d'objectif pour la correction de perspective : générique ou fonction "
 "de la longueur focale"
 
 #: ../src/iop/ashift.c:5788
@@ -11871,9 +11871,9 @@ msgid ""
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
-"Correction automatique des distorsions verticales de perspective :\n"
-" • « Ctrl+Clic » - Pour la correction de rotation seulement\n"
-" • « Maj+Clic » - Pour la correction de distorsion uniquement"
+"Correction automatique des distorsions verticales de perspective :\n"
+" • « Ctrl+Clic » - Pour la correction de rotation seulement\n"
+" • « Maj+Clic » - Pour la correction de distorsion uniquement"
 
 #: ../src/iop/ashift.c:5799
 msgid ""
@@ -11881,9 +11881,9 @@ msgid ""
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
-"Correction automatique des distorsions horizontales de perspective :\n"
-" • « Ctrl+Clic » -  Pour la correction de rotation seulement\n"
-" • « Maj+Clic » - Pour la correction de distorsion uniquement"
+"Correction automatique des distorsions horizontales de perspective :\n"
+" • « Ctrl+Clic » -  Pour la correction de rotation seulement\n"
+" • « Maj+Clic » - Pour la correction de distorsion uniquement"
 
 #: ../src/iop/ashift.c:5802
 msgid ""
@@ -11895,10 +11895,10 @@ msgid ""
 msgstr ""
 "Correction automatique des distorsions verticales et horizontales de "
 "perspective ; ajuste la rotation, l'alignement de l'objectif dans les deux "
-"directions et l'inclinaison :\n"
-" • « Ctrl+Clic » - Pour la correction de rotation seulement\n"
-" • « Maj+Clic » - Pour la correction de distorsion uniquement\n"
-" • « Ctrl+Maj-Clic » - Pour uniquement la correction de rotation et "
+"directions et l'inclinaison :\n"
+" • « Ctrl+Clic » - Pour la correction de rotation seulement\n"
+" • « Maj+Clic » - Pour la correction de distorsion uniquement\n"
+" • « Ctrl+Maj-Clic » - Pour uniquement la correction de rotation et "
 "d'alignement d'objectif"
 
 #: ../src/iop/ashift.c:5808
@@ -11908,10 +11908,10 @@ msgid ""
 "shift+click for an additional detail enhancement\n"
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
-"Analyse automatiquement les lignes de structure dans l'image :\n"
-" • « Ctrl+Clic » - Pour une amélioration des bords accrue\n"
-" • « Maj+Clic » - Pour une amélioration des détails accrue\n"
-" • « Ctrl+Maj+Clic » - Pour une combinaison des deux méthodes"
+"Analyse automatiquement les lignes de structure dans l'image :\n"
+" • « Ctrl+Clic » - Pour une amélioration des bords accrue\n"
+" • « Maj+Clic » - Pour une amélioration des détails accrue\n"
+" • « Ctrl+Maj+Clic » - Pour une combinaison des deux méthodes"
 
 #: ../src/iop/ashift.c:5812
 msgid "manually define perspective rectangle"
@@ -12017,39 +12017,39 @@ msgstr "Clarté"
 
 #: ../src/iop/atrous.c:853
 msgid "deblur: large blur, strength 3"
-msgstr "Défloutage : large, force 3"
+msgstr "Défloutage : large, force 3"
 
 #: ../src/iop/atrous.c:870
 msgid "deblur: medium blur, strength 3"
-msgstr "Défloutage : moyen, force 3"
+msgstr "Défloutage : moyen, force 3"
 
 #: ../src/iop/atrous.c:886
 msgid "deblur: fine blur, strength 3"
-msgstr "Défloutage : fin, force 3"
+msgstr "Défloutage : fin, force 3"
 
 #: ../src/iop/atrous.c:904
 msgid "deblur: large blur, strength 2"
-msgstr "Défloutage : large, force 2"
+msgstr "Défloutage : large, force 2"
 
 #: ../src/iop/atrous.c:921
 msgid "deblur: medium blur, strength 2"
-msgstr "Défloutage : moyen, force 2"
+msgstr "Défloutage : moyen, force 2"
 
 #: ../src/iop/atrous.c:937
 msgid "deblur: fine blur, strength 2"
-msgstr "Défloutage : fin, force 2"
+msgstr "Défloutage : fin, force 2"
 
 #: ../src/iop/atrous.c:955
 msgid "deblur: large blur, strength 1"
-msgstr "Défloutage : large, force 1"
+msgstr "Défloutage : large, force 1"
 
 #: ../src/iop/atrous.c:972
 msgid "deblur: medium blur, strength 1"
-msgstr "Défloutage : moyen, force 1"
+msgstr "Défloutage : moyen, force 1"
 
 #: ../src/iop/atrous.c:988
 msgid "deblur: fine blur, strength 1"
-msgstr "Défloutage : fine, force 1"
+msgstr "Défloutage : fine, force 1"
 
 #: ../src/iop/atrous.c:1305 ../src/iop/atrous.c:1541
 #: ../src/iop/denoiseprofile.c:3209 ../src/iop/rawdenoise.c:739
@@ -12282,7 +12282,7 @@ msgstr "Relatif à l'affichage, non-linéaire, RVB"
 
 #: ../src/iop/basecurve.c:1977
 msgid "abscissa: input, ordinate: output. works on RGB channels"
-msgstr "Abscisse : entrée, ordonnée : sortie. Fonctionne sur les canaux RVB"
+msgstr "Abscisse : entrée, ordonnée : sortie. Fonctionne sur les canaux RVB"
 
 #: ../src/iop/basecurve.c:1983 ../src/iop/basicadj.c:612
 #: ../src/iop/rgbcurve.c:1422 ../src/iop/rgblevels.c:1069
@@ -12310,15 +12310,15 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:1994
 msgid "how many stops to shift the individual exposures apart"
-msgstr "Nombre de « Stop » de décalage entre les différents expositions"
+msgstr "Nombre de « Stop » de décalage entre les différents expositions"
 
 #: ../src/iop/basecurve.c:2003
 msgid ""
 "whether to shift exposure up or down (-1: reduce highlight, +1: reduce "
 "shadows)"
 msgstr ""
-"Pour décaler l'exposition positivement ou négativement (-1 : réduire les "
-"hautes lumières, +1 : réduire les ombres)"
+"Pour décaler l'exposition positivement ou négativement (-1 : réduire les "
+"hautes lumières, +1 : réduire les ombres)"
 
 #: ../src/iop/basecurve.c:2008 ../src/iop/tonecurve.c:1185
 msgid "scale for graph"
@@ -12743,7 +12743,7 @@ msgstr "Sélectionne la couleur du cadre"
 msgid "pick frame line color from image"
 msgstr "Choisir la couleur du cadre interne dans l'image"
 
-#. make sure you put all your translatable strings into _() !
+#. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:72
 msgid "raw chromatic aberrations"
 msgstr "Aberrations chromatiques RAW"
@@ -12920,7 +12920,7 @@ msgid ""
 "this module is deprecated. please use the color calibration module instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons d'utiliser le module "
-"« Calibration des couleurs »."
+"« Calibration des couleurs »."
 
 #: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:230
 msgid ""
@@ -13035,27 +13035,27 @@ msgstr "Linéaire, RVB ou XYZ"
 
 #: ../src/iop/channelmixerrgb.c:368
 msgid "B&W: luminance-based"
-msgstr "N&B : basée sur luminance"
+msgstr "N&B : basée sur luminance"
 
 #: ../src/iop/channelmixerrgb.c:397
 msgid "B&W: ILFORD HP5+"
-msgstr "N&B : ILFORD HP5+"
+msgstr "N&B : ILFORD HP5+"
 
 #: ../src/iop/channelmixerrgb.c:406
 msgid "B&W: ILFORD DELTA 100"
-msgstr "N&B : ILFORD DELTA 100"
+msgstr "N&B : ILFORD DELTA 100"
 
 #: ../src/iop/channelmixerrgb.c:416
 msgid "B&W: ILFORD DELTA 400 - 3200"
-msgstr "N&B : ILFORD DELTA 400 - 3200"
+msgstr "N&B : ILFORD DELTA 400 - 3200"
 
 #: ../src/iop/channelmixerrgb.c:425
 msgid "B&W: ILFORD FP4+"
-msgstr "N&B : ILFORD FP4+"
+msgstr "N&B : ILFORD FP4+"
 
 #: ../src/iop/channelmixerrgb.c:434
 msgid "B&W: Fuji Acros 100"
-msgstr "N&B : Fuji Acros 100"
+msgstr "N&B : Fuji Acros 100"
 
 #: ../src/iop/channelmixerrgb.c:451
 msgid "basic channel mixer"
@@ -13114,21 +13114,21 @@ msgid ""
 "black offset: \t%+.4f"
 msgstr ""
 "\n"
-"<b>Rapport de qualité du profil : %s</b>\n"
-"ΔE en entrée : \tMoy. %.2f   \tMax. %.2f\n"
-"ΔE BdB : \t\tmoy. %.2f   \tMax. %.2f\n"
-"ΔE en sortie : \tMoy. %.2f   \tMax. %.2f\n"
+"<b>Rapport de qualité du profil : %s</b>\n"
+"ΔE en entrée : \tMoy. %.2f   \tMax. %.2f\n"
+"ΔE BdB : \t\tmoy. %.2f   \tMax. %.2f\n"
+"ΔE en sortie : \tMoy. %.2f   \tMax. %.2f\n"
 "\n"
 "<b>Données du profil</b>\n"
-"Illuminant :  \t%.0f K \t%s \n"
-"Matrice dans l'espace d'adaptation :\n"
+"Illuminant :  \t%.0f K \t%s \n"
+"Matrice dans l'espace d'adaptation :\n"
 "<tt>%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f</tt>\n"
 "\n"
 "<b>Valeurs de normalisation</b>\n"
-"Compensation d'exposition : \t%+.2f IL\n"
-"Décalage du noir : \t\t\t%+.4f"
+"Compensation d'exposition : \t%+.2f IL\n"
+"Décalage du noir : \t\t\t%+.4f"
 
 #: ../src/iop/channelmixerrgb.c:1820
 #, c-format
@@ -13142,14 +13142,14 @@ msgid ""
 "black offset: \t%+.4f"
 msgstr ""
 "\n"
-"<b>Rapport de qualité du profil : %s</b>\n"
-"ΔE en sortie : \tmoy. %.2f   \tMax. %.2f\n"
+"<b>Rapport de qualité du profil : %s</b>\n"
+"ΔE en sortie : \tmoy. %.2f   \tMax. %.2f\n"
 "\n"
 "<b>Valeurs de normalisation</b>\n"
-"Compensation d'exposition : \t%+.2f IL\n"
-"Décalage du noir : \t\t\t%+.4f"
+"Compensation d'exposition : \t%+.2f IL\n"
+"Décalage du noir : \t\t\t%+.4f"
 
-#. our second biggest problem : another channelmixerrgb instance is doing CAT
+#. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
 #: ../src/iop/channelmixerrgb.c:1843
 msgid "double CAT applied"
@@ -13167,7 +13167,7 @@ msgstr ""
 "Cela peut entraîner des incohérences, sauf si utilisées\n"
 "avec des masques et en connaissance de cause."
 
-#. our first and biggest problem : white balance module is being clever with WB coeffs
+#. our first and biggest problem : white balance module is being clever with WB coeffs
 #: ../src/iop/channelmixerrgb.c:1854
 msgid "white balance module error"
 msgstr "Erreur module balance des blancs"
@@ -13190,12 +13190,12 @@ msgstr "Détection automatique de la balance des blancs terminée"
 
 #: ../src/iop/channelmixerrgb.c:2069
 msgid "channelmixerrgb works only on RGB input"
-msgstr "« Calibration des couleurs » travaille uniquement avec une entrée RVB"
+msgstr "« Calibration des couleurs » travaille uniquement avec une entrée RVB"
 
 #: ../src/iop/channelmixerrgb.c:3314
 #, c-format
 msgid "CCT: %.0f K (daylight)"
-msgstr "CCT : %.0f K (lumière du jour)"
+msgstr "CCT : %.0f K (lumière du jour)"
 
 #: ../src/iop/channelmixerrgb.c:3316
 msgid ""
@@ -13211,7 +13211,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:3322
 #, c-format
 msgid "CCT: %.0f K (black body)"
-msgstr "CCT : %.0f K (corps noir)"
+msgstr "CCT : %.0f K (corps noir)"
 
 #: ../src/iop/channelmixerrgb.c:3324
 msgid ""
@@ -13228,7 +13228,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:3330
 #, c-format
 msgid "CCT: %.0f K (invalid)"
-msgstr "CCT : %.0f K (invalide)"
+msgstr "CCT : %.0f K (invalide)"
 
 #: ../src/iop/channelmixerrgb.c:3332
 msgid ""
@@ -13247,7 +13247,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:3339
 #, c-format
 msgid "CCT: undefined"
-msgstr "CCT : non défini"
+msgstr "CCT : non défini"
 
 #: ../src/iop/channelmixerrgb.c:3341
 msgid ""
@@ -13271,7 +13271,7 @@ msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
 msgstr ""
-"Calibration des couleurs : la somme des paramètres du canal gris est à zéro, "
+"Calibration des couleurs : la somme des paramètres du canal gris est à zéro, "
 "la normalisation va être désactivée."
 
 #. Write report in GUI
@@ -13282,9 +13282,9 @@ msgid ""
 "h: \t%.1f °\n"
 "c: \t%.1f"
 msgstr ""
-"L : \t%.1f %%\n"
-"H : \t%.1f °\n"
-"C : \t%.1f"
+"L : \t%.1f %%\n"
+"H : \t%.1f °\n"
+"C : \t%.1f"
 
 #: ../src/iop/channelmixerrgb.c:4004 ../src/iop/clipping.c:2086
 #: ../src/iop/colorbalancergb.c:1841 ../src/iop/filmicrgb.c:4163
@@ -13318,7 +13318,7 @@ msgid ""
 "• none disables any adaptation and uses pipeline working RGB."
 msgstr ""
 "Choisir la méthode pour adapter l'illuminant\n"
-"et l'espace couleur dans lequel le module travaille :\n"
+"et l'espace couleur dans lequel le module travaille :\n"
 "• Bradford linéaire (1985) est cohérent avec un traitement ICC v4.\n"
 "• CAT16 (2016) est plus robuste et précis\n"
 "• Bradford non-linéaire (1985) est le Bradford originel,\n"
@@ -13389,9 +13389,9 @@ msgid ""
 "\"measure\" simply shows how an input color is mapped by the CAT\n"
 "and can be used to sample a target."
 msgstr ""
-" • « Correction » - Ajuste automatiquement l'illuminant\n"
+" • « Correction » - Ajuste automatiquement l'illuminant\n"
 "tel que la couleur de l'entrée est mappée sur la cible.\n"
-" • « Mesure » - Montre simplement comment une couleur d'entrée est mappé par le "
+" • « Mesure » - Montre simplement comment une couleur d'entrée est mappé par le "
 "CAT\n"
 "et peut être utilisé pour échantillonner la cible."
 
@@ -13430,9 +13430,9 @@ msgid ""
 "h: \tN/A\n"
 "c: \tN/A"
 msgstr ""
-"L : \tN/A \n"
-"h : \tN/A\n"
-"c : \tN/A"
+"L : \tN/A \n"
+"h : \tN/A\n"
+"c : \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1100
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
@@ -13631,7 +13631,7 @@ msgid ""
 "this module is deprecated. better use new local contrast module instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons plutôt d'utiliser le module "
-"« Contraste local »."
+"« Contraste local »."
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:437
 msgid "amount"
@@ -13651,7 +13651,7 @@ msgid ""
 "and perspective modules instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons d'utiliser les modules "
-"« Recadrer », « Orientation » et/ou « Rotation et Perspective » à la place."
+"« Recadrer », « Orientation » et/ou « Rotation et Perspective » à la place."
 
 #: ../src/iop/clipping.c:309
 msgid "crop and rotate"
@@ -13672,7 +13672,7 @@ msgstr "Image"
 
 #: ../src/iop/clipping.c:1697 ../src/iop/crop.c:759
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr "Format de dimension non reconnu. Il devrait être « nombre:nombre »"
+msgstr "Format de dimension non reconnu. Il devrait être « nombre:nombre »"
 
 #: ../src/iop/clipping.c:1713 ../src/iop/crop.c:775
 msgid "invalid ratio format. it should be a positive number"
@@ -13787,7 +13787,7 @@ msgstr "3:1, panorama"
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
-"Format de dimension non reconnu « %s ». Il devrait être « nombre:nombre »"
+"Format de dimension non reconnu « %s ». Il devrait être « nombre:nombre »"
 
 #: ../src/iop/clipping.c:2228 ../src/iop/crop.c:1159
 msgid ""
@@ -13797,7 +13797,7 @@ msgid ""
 "decimal format"
 msgstr ""
 "Fixe les proportions\n"
-"La liste est triée : du carré aux formats les plus allongés\n"
+"La liste est triée : du carré aux formats les plus allongés\n"
 "pour entrer une proportion personnalisée, ouvrir la liste et taper la "
 "proportion au format x:y ou en décimal"
 
@@ -13823,32 +13823,32 @@ msgstr "La marge basse ne peut pas dépasser la marge haute"
 
 #: ../src/iop/clipping.c:3018
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
-msgstr "<b>Finaliser</b> : Double-Clic, <b>Redresser</b> : Glisser-Droit"
+msgstr "<b>Finaliser</b> : Double-Clic, <b>Redresser</b> : Glisser-Droit"
 
 #: ../src/iop/clipping.c:3022
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>Redimensionner</b> : glisser, <b>Conserver les proportions</b> : "
+"<b>Redimensionner</b> : glisser, <b>Conserver les proportions</b> : "
 "Maj+Glisser\n"
-"<b>Redresser</b> : Glisser-Droit"
+"<b>Redresser</b> : Glisser-Droit"
 
 #: ../src/iop/clipping.c:3065
 msgid "<b>move control point</b>: drag"
-msgstr "<b>Déplacer point de contrôle</b> : Glisser"
+msgstr "<b>Déplacer point de contrôle</b> : Glisser"
 
 #: ../src/iop/clipping.c:3070
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click ꝏ"
-msgstr "<b>Déplacer les lignes</b> : Glisser, <b>Symétrie</b> : Clic ꝏ"
+msgstr "<b>Déplacer les lignes</b> : Glisser, <b>Symétrie</b> : Clic ꝏ"
 
 #: ../src/iop/clipping.c:3075
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click ꝏ\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
-"<b>Appliquer</b> : Clic <tt>ok</tt>, <b>Symétrie</b> : clic ꝏ\n"
-"<b>Déplacer ligne/point de contrôle</b> : Glisser"
+"<b>Appliquer</b> : Clic <tt>ok</tt>, <b>Symétrie</b> : clic ꝏ\n"
+"<b>Déplacer ligne/point de contrôle</b> : Glisser"
 
 #: ../src/iop/clipping.c:3082
 msgid ""
@@ -13856,9 +13856,9 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
-"<b>Déplacer</b> : Glisser, <b>Déplacer verticalement</b> : Maj+Glisser, "
-"<b>Déplacer horizontalement</b> : Ctrl+Glisser\n"
-"<b>Redresser</b> : Glisser-Droit, <b>Finaliser</b> : Double-Clic"
+"<b>Déplacer</b> : Glisser, <b>Déplacer verticalement</b> : Maj+Glisser, "
+"<b>Déplacer horizontalement</b> : Ctrl+Glisser\n"
+"<b>Redresser</b> : Glisser-Droit, <b>Finaliser</b> : Double-Clic"
 
 #: ../src/iop/clipping.c:3339 ../src/iop/crop.c:1653
 #, c-format
@@ -13873,8 +13873,8 @@ msgstr "[%s Sur bords] Recadrer avec ratio"
 #: ../src/iop/colisa.c:79
 msgid "this module is deprecated. please use colorbalance RGB module instead."
 msgstr ""
-"Ce module est déprécié. Nous vous recommandons d'utiliser le module « Balance "
-"Couleur RVB »."
+"Ce module est déprécié. Nous vous recommandons d'utiliser le module « Balance "
+"Couleur RVB »."
 
 #: ../src/iop/colisa.c:84
 msgid "contrast brightness saturation"
@@ -13979,17 +13979,17 @@ msgstr "Gain"
 #: ../src/iop/colorbalance.c:1712
 msgctxt "section"
 msgid "shadows: lift / offset"
-msgstr "Ombres : Lift / Offset"
+msgstr "Ombres : Lift / Offset"
 
 #: ../src/iop/colorbalance.c:1713
 msgctxt "section"
 msgid "mid-tones: gamma / power"
-msgstr "Tons moyens : Gamma / Puissance"
+msgstr "Tons moyens : Gamma / Puissance"
 
 #: ../src/iop/colorbalance.c:1714
 msgctxt "section"
 msgid "highlights: gain / slope"
-msgstr "Hautes lumières : Gain / Slope"
+msgstr "Hautes lumières : Gain / Slope"
 
 #: ../src/iop/colorbalance.c:1738
 msgid "shadows / mid-tones / highlights"
@@ -14124,15 +14124,15 @@ msgstr "Ajoute couleur de base (originel)"
 
 #: ../src/iop/colorbalancergb.c:451
 msgid "basic colorfulness: natural skin"
-msgstr "Couleurs de base : peau naturelle"
+msgstr "Couleurs de base : peau naturelle"
 
 #: ../src/iop/colorbalancergb.c:457
 msgid "basic colorfulness: vibrant colors"
-msgstr "Couleurs de base : couleurs vibrantes"
+msgstr "Couleurs de base : couleurs vibrantes"
 
 #: ../src/iop/colorbalancergb.c:463
 msgid "basic colorfulness: standard"
-msgstr "Couleurs de base : standard"
+msgstr "Couleurs de base : standard"
 
 #: ../src/iop/colorbalancergb.c:905
 msgid "colorbalance works only on RGB input"
@@ -14599,8 +14599,8 @@ msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"Utiliser la ligne pour un virage partiel. Point blanc : hautes lumières, "
-"point noir : ombres. Défiler à la souris pour changer la saturation."
+"Utiliser la ligne pour un virage partiel. Point blanc : hautes lumières, "
+"point noir : ombres. Défiler à la souris pour changer la saturation."
 
 #: ../src/iop/colorcorrection.c:276
 msgid "set the global saturation"
@@ -14633,21 +14633,21 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr ""
-"Impossible d'extraire la matrice depuis l'espace « %s », il sera remplacé "
+"Impossible d'extraire la matrice depuis l'espace « %s », il sera remplacé "
 "par Rec2020 RVB!"
 
 #: ../src/iop/colorin.c:1533
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "Matrice couleur « %s » non trouvée!"
+msgstr "Matrice couleur « %s » non trouvée!"
 
 #: ../src/iop/colorin.c:1568
 msgid "input profile could not be generated!"
-msgstr "Impossible de générer le profil d'entrée !"
+msgstr "Impossible de générer le profil d'entrée !"
 
 #: ../src/iop/colorin.c:1651
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
-msgstr "Profil d'entrée non supporté, remplacé par linéaire RVB Rec709 !"
+msgstr "Profil d'entrée non supporté, remplacé par linéaire RVB Rec709 !"
 
 #: ../src/iop/colorin.c:2041
 msgid "input profile"
@@ -14661,7 +14661,7 @@ msgstr "Profil de travail"
 #: ../src/iop/colorout.c:881
 #, c-format
 msgid "ICC profiles in %s or %s"
-msgstr "Profils ICC dans « %s » ou « %s »"
+msgstr "Profils ICC dans « %s » ou « %s »"
 
 #: ../src/iop/colorin.c:2074
 msgid "confine Lab values to gamut of RGB color space"
@@ -14704,11 +14704,11 @@ msgstr ""
 
 #: ../src/iop/colormapping.c:1026
 msgid "source clusters:"
-msgstr "Groupes sources :"
+msgstr "Groupes sources :"
 
 #: ../src/iop/colormapping.c:1032
 msgid "target clusters:"
-msgstr "Groupes cibles :"
+msgstr "Groupes cibles :"
 
 #: ../src/iop/colormapping.c:1041
 msgid "acquire as source"
@@ -14737,8 +14737,8 @@ msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
 msgstr ""
-"Mappage des groupes. Faible valeur : fonction de la proximité des couleurs, "
-"Haute Valeur : fonction de la dominante des couleurs"
+"Mappage des groupes. Faible valeur : fonction de la proximité des couleurs, "
+"Haute Valeur : fonction de la dominante des couleurs"
 
 #: ../src/iop/colormapping.c:1062
 msgid "level of histogram equalization"
@@ -14763,15 +14763,15 @@ msgstr "Relatif à l'affichage, non-linéaire, RVB"
 
 #: ../src/iop/colorout.c:664
 msgid "missing output profile has been replaced by sRGB!"
-msgstr "Profil de sortie non trouvé, remplacé par sRVB !"
+msgstr "Profil de sortie non trouvé, remplacé par sRVB !"
 
 #: ../src/iop/colorout.c:686
 msgid "missing softproof profile has been replaced by sRGB!"
-msgstr "Profil d'épreuvage non trouvé, remplacé par sRVB !"
+msgstr "Profil d'épreuvage non trouvé, remplacé par sRVB !"
 
 #: ../src/iop/colorout.c:729
 msgid "unsupported output profile has been replaced by sRGB!"
-msgstr "Profil de sortie non supporté, remplacé par sRVB !"
+msgstr "Profil de sortie non supporté, remplacé par sRVB !"
 
 #: ../src/iop/colorout.c:855
 msgid "output intent"
@@ -14828,7 +14828,7 @@ msgstr "Résultat incohérent"
 
 #: ../src/iop/colorreconstruction.c:670
 msgid "module `color reconstruction' failed"
-msgstr "Échec du module  « correction de perspective »"
+msgstr "Échec du module  « correction de perspective »"
 
 #: ../src/iop/colorreconstruction.c:1241
 msgid "spatial"
@@ -14879,7 +14879,7 @@ msgstr "Transfert de couleurs"
 msgid "this module is deprecated. better use color mapping module instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons plutôt d'utiliser le module "
-"« Mappage des Couleurs »."
+"« Mappage des Couleurs »."
 
 #: ../src/iop/colortransfer.c:129
 msgctxt "accel"
@@ -15017,12 +15017,12 @@ msgid ""
 "exp)"
 msgstr ""
 "Changer la méthode si des oscillations ou des points de rebroussement "
-"apparaissent dans la courbe :\n"
-" • « Spline cubique » - Donne des courbes plus douces mais produit des "
+"apparaissent dans la courbe :\n"
+" • « Spline cubique » - Donne des courbes plus douces mais produit des "
 "oscillations quand les points sont proches\n"
-" • « Centripète » - Permet d'éviter les points de rebroussement et les "
+" • « Centripète » - Permet d'éviter les points de rebroussement et les "
 "oscillations avec les points proches mais est moins doux\n"
-" • « Monotone » - Donne une meilleure précision sur les fonctions "
+" • « Monotone » - Donne une meilleure précision sur les fonctions "
 "mathématiques analytiques (log, gamma, exp). "
 
 #: ../src/iop/crop.c:129
@@ -15048,15 +15048,15 @@ msgstr "Valider les changements"
 #: ../src/iop/crop.c:1538
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>retailler</b> : glisser, <b>conserver les proportions</b> : maj+glisser"
+"<b>retailler</b> : glisser, <b>conserver les proportions</b> : maj+glisser"
 
 #: ../src/iop/crop.c:1545
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
 msgstr ""
-"<b>déplacer</b> : glisser, <b>déplacer verticalement</b> : maj+glisser, "
-"<b>déplacer horizontalement</b> : ctrl+glisser"
+"<b>déplacer</b> : glisser, <b>déplacer verticalement</b> : maj+glisser, "
+"<b>déplacer horizontalement</b> : ctrl+glisser"
 
 #: ../src/iop/defringe.c:70
 msgid "defringe"
@@ -15072,7 +15072,7 @@ msgid ""
 "instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons d'utiliser le module "
-"« Aberration Chromatique »."
+"« Aberration Chromatique »."
 
 #: ../src/iop/defringe.c:417
 msgid ""
@@ -15085,14 +15085,14 @@ msgid ""
 "more desaturation where required\n"
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
-"Méthode pour la protection des couleurs :\n"
-" • « Moyenne globale » - Rapide, peut afficher une mauvaise pré-"
+"Méthode pour la protection des couleurs :\n"
+" • « Moyenne globale » - Rapide, peut afficher une mauvaise pré-"
 "visualisation avec un zoom important, peut quelque fois protéger trop ou pas "
 "assez comparé à la moyenne locale,\n"
-" • « Moyenne locale » - Lent, peut mieux protéger la saturation que la "
+" • « Moyenne locale » - Lent, peut mieux protéger la saturation que la "
 "moyenne globale en utilisant les pixels adjacents comme référence, ainsi il "
 "peut permettre plus de désaturation ou c'est nécessaire,\n"
-" • « Statique » - Rapide, utilise seulement le seuil comme limite statique."
+" • « Statique » - Rapide, utilise seulement le seuil comme limite statique."
 
 #: ../src/iop/defringe.c:424
 msgid "radius for detecting fringe"
@@ -15121,7 +15121,7 @@ msgstr "[Dual dématriçage opencl] Problème interne"
 #: ../src/iop/demosaic.c:5331
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "Matrice couleur « %s » non trouvée pour une image de bayer!"
+msgstr "Matrice couleur « %s » non trouvée pour une image de bayer!"
 
 #: ../src/iop/demosaic.c:5463
 msgid ""
@@ -15232,7 +15232,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3432
 msgid "variance red: "
-msgstr "Variance rouge : "
+msgstr "Variance rouge : "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3435
@@ -15241,7 +15241,7 @@ msgstr "La variance calculée sur le canal rouge"
 
 #: ../src/iop/denoiseprofile.c:3440
 msgid "variance green: "
-msgstr "Variance vert : "
+msgstr "Variance vert : "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3443
@@ -15250,7 +15250,7 @@ msgstr "La variance calculée sur le canal vert"
 
 #: ../src/iop/denoiseprofile.c:3448
 msgid "variance blue: "
-msgstr "Variance bleu : "
+msgstr "Variance bleu : "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3451
@@ -15326,9 +15326,9 @@ msgid ""
 "wavelets work best for `color' blending"
 msgstr ""
 "Méthode utilisée pour la réduction du bruit. \n"
-"« Moyennes non-locales » fonctionne mieux pour le mode de fusion « "
-"luminosité ». \n"
-"« Ondelettes » fonctionne mieux pour le mode de fusion « Couleur »"
+"« Moyennes non-locales » fonctionne mieux pour le mode de fusion « "
+"luminosité ». \n"
+"« Ondelettes » fonctionne mieux pour le mode de fusion « Couleur »"
 
 #: ../src/iop/denoiseprofile.c:3515
 msgid ""
@@ -15362,7 +15362,7 @@ msgid ""
 "increase for better denoising performance, but watch the long runtimes! "
 "large radii can be very slow. you have been warned"
 msgstr ""
-"À utiliser avec prudence : taille du rayon de recherche, augmenter pour une "
+"À utiliser avec prudence : taille du rayon de recherche, augmenter pour une "
 "meilleure suppression du bruit au détriment de la performance qui peut très "
 "vite devenir très pénalisante."
 
@@ -15458,15 +15458,15 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:233
 msgid "lens deblur: soft"
-msgstr "Correction de flou d'objectif : léger"
+msgstr "Correction de flou d'objectif : léger"
 
 #: ../src/iop/diffuse.c:238
 msgid "lens deblur: medium"
-msgstr "Correction de flou d'objectif : moyen"
+msgstr "Correction de flou d'objectif : moyen"
 
 #: ../src/iop/diffuse.c:243
 msgid "lens deblur: hard"
-msgstr "Correction de flou d'objectif : fort"
+msgstr "Correction de flou d'objectif : fort"
 
 #: ../src/iop/diffuse.c:262
 msgid "dehaze"
@@ -15474,15 +15474,15 @@ msgstr "Suppression de la brume"
 
 #: ../src/iop/diffuse.c:283
 msgid "denoise: fine"
-msgstr "Débruitage : léger"
+msgstr "Débruitage : léger"
 
 #: ../src/iop/diffuse.c:292
 msgid "denoise: medium"
-msgstr "Débruitage : moyen"
+msgstr "Débruitage : moyen"
 
 #: ../src/iop/diffuse.c:301
 msgid "denoise: coarse"
-msgstr "Débruitage : fort"
+msgstr "Débruitage : fort"
 
 #: ../src/iop/diffuse.c:357
 msgid "sharpen demosaicing (no AA filter)"
@@ -15802,7 +15802,7 @@ msgid ""
 "this module is deprecated. better use contrast equalizer module instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons plutôt d'utiliser le module "
-"« Égaliseur de Contraste »."
+"« Égaliseur de Contraste »."
 
 #: ../src/iop/equalizer.c:306
 msgid "sharpen (strong)"
@@ -15849,7 +15849,7 @@ msgstr "Défauts de magic lantern"
 #: ../src/iop/rawoverexposed.c:254
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "Échec de l'obtention du cache pour l'image « %s »"
+msgstr "Échec de l'obtention du cache pour l'image « %s »"
 
 #: ../src/iop/exposure.c:552
 #, no-c-format
@@ -15860,7 +15860,7 @@ msgstr "Compenser exposition boîtier (%+.1f IL)"
 #: ../src/iop/exposure.c:725
 #, c-format
 msgid "L : \t%.1f %%"
-msgstr "L : \t%.1f %%"
+msgstr "L : \t%.1f %%"
 
 #: ../src/iop/exposure.c:853 ../src/libs/history.c:872
 #, c-format
@@ -15890,7 +15890,7 @@ msgstr ""
 
 #: ../src/iop/exposure.c:1040
 msgid "computed EC: "
-msgstr "CE calculée : "
+msgstr "CE calculée : "
 
 #. This gets filled in by process
 #: ../src/iop/exposure.c:1042
@@ -15935,15 +15935,15 @@ msgid ""
 "compensation\n"
 "and can be used to define a target."
 msgstr ""
-" • « Correction » - Ajuste l'exposition automatiquement\n"
+" • « Correction » - Ajuste l'exposition automatiquement\n"
 "tel que la luminosité de l'entrée est mappé sur la cible.\n"
-" • « Mesure » - Montre simplement comment une couleur d'entrée est mappé par la "
+" • « Mesure » - Montre simplement comment une couleur d'entrée est mappé par la "
 "compensation d'exposition\n"
 "et peut être utilisé pour définir la cible."
 
 #: ../src/iop/exposure.c:1098
 msgid "L : \tN/A"
-msgstr "L : \tN/A"
+msgstr "L : \tN/A"
 
 #: ../src/iop/exposure.c:1113
 msgid "the desired target exposure after mapping"
@@ -15953,7 +15953,7 @@ msgstr "La cible recherchée après le mappage de l'exposition"
 msgid "this module is deprecated. better use filmic rgb module instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons plutôt d'utiliser le module "
-"« Filmique RVB »."
+"« Filmique RVB »."
 
 #: ../src/iop/filmic.c:306
 msgid "09 EV (low-key)"
@@ -16038,7 +16038,7 @@ msgid ""
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
 "Élargir ou rétrécir la plage dynamique calculée.\n"
-"Ceci est utile avec l'utilisation des « Niveaux automatiques »."
+"Ceci est utile avec l'utilisation des « Niveaux automatiques »."
 
 #: ../src/iop/filmic.c:1628 ../src/iop/filmicrgb.c:4211
 #: ../src/iop/profile_gamma.c:658
@@ -16327,9 +16327,9 @@ msgid ""
 "double-click: reset to look view."
 msgstr ""
 "Cycle sur les différentes vues.\n"
-"Clic gauche : pour la vue suivante.\n"
-"Clic droit : pour la vue précédente.\n"
-"Double-clic : pour réinitialiser la vue."
+"Clic gauche : pour la vue suivante.\n"
+"Clic droit : pour la vue précédente.\n"
+"Double-clic : pour réinitialiser la vue."
 
 #: ../src/iop/filmicrgb.c:4175
 #, no-c-format
@@ -16689,8 +16689,8 @@ msgstr "Mappage global tonalités"
 #: ../src/iop/globaltonemap.c:105
 msgid "this module is deprecated. please use the filmic rgb module instead."
 msgstr ""
-"Ce module est déprécié. Nous vous recommandons d'utiliser le module « Filmique "
-"RVB »."
+"Ce module est déprécié. Nous vous recommandons d'utiliser le module « Filmique "
+"RVB »."
 
 #: ../src/iop/globaltonemap.c:627 ../src/libs/filters/colors.c:259
 msgid "operator"
@@ -16782,7 +16782,7 @@ msgid ""
 "hardness of graduation:\n"
 "0% = soft, 100% = hard"
 msgstr ""
-"Dureté du dégradé :\n"
+"Dureté du dégradé :\n"
 "0% = doux, 100% = dur"
 
 #: ../src/iop/graduatednd.c:1119
@@ -16887,7 +16887,7 @@ msgid ""
 "inpaint opposed."
 msgstr ""
 "Reconstruction hautes lumières: modes non disponibles pour ce type d'image. "
-"Repli sur « peinture opposée »"
+"Repli sur « peinture opposée »"
 
 #: ../src/iop/highlights.c:2543
 msgid "highlight reconstruction method"
@@ -16904,8 +16904,8 @@ msgid ""
 msgstr ""
 "Ajuste le seuil de troncature pour éviter les hautes lumières magenta\n"
 "l’icône masque permet de montrer les zones tronquées\n"
-"vous pouvez l'utiliser pour régler les modes  « laplacien »,  « peinture "
-"opposée »,  « segmentation »,\n"
+"vous pouvez l'utiliser pour régler les modes  « laplacien »,  « peinture "
+"opposée »,  « segmentation »,\n"
 "surtout si le point blanc de la caméra est incorrect."
 
 #: ../src/iop/highlights.c:2559
@@ -16926,7 +16926,7 @@ msgid ""
 msgstr ""
 "Sélectionner après l'analyse de la segmentation.\n"
 "Augmenter pour favoriser les candidats trouvés dans l'analyse de "
-"segmentation, diminuer pour la signification opposée « inpainting ».\n"
+"segmentation, diminuer pour la signification opposée « inpainting ».\n"
 "Le bouton masque montre les segments qui sont considérés comme bon candidats."
 
 #: ../src/iop/highlights.c:2578
@@ -17058,7 +17058,7 @@ msgstr ""
 #: ../src/iop/invert.c:95 ../src/iop/invert.c:520
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "Matrice couleur « %s » non trouvée pour une image de bayer"
+msgstr "Matrice couleur « %s » non trouvée pour une image de bayer"
 
 #: ../src/iop/invert.c:111
 msgid "invert"
@@ -17067,7 +17067,7 @@ msgstr "Inverser"
 #: ../src/iop/invert.c:116
 msgid "this module is deprecated. please use the negadoctor module instead."
 msgstr ""
-"Ce module est déprécié. Nous vous recommandons d'utiliser « Docteur néga »."
+"Ce module est déprécié. Nous vous recommandons d'utiliser « Docteur néga »."
 
 #: ../src/iop/invert.c:121
 msgid "invert film negatives"
@@ -17123,10 +17123,10 @@ msgid ""
 "mount:\t\t%s\n"
 "crop factor:\t%.1f"
 msgstr ""
-"Fabricant :\t\t%s\n"
-"Modèle :\t\t%s%s\n"
-"Monture :\t\t%s\n"
-"Conv. Focale :\t%.1f"
+"Fabricant :\t\t%s\n"
+"Modèle :\t\t%s%s\n"
+"Monture :\t\t%s\n"
+"Conv. Focale :\t%.1f"
 
 #: ../src/iop/lens.cc:2891
 #, c-format
@@ -17139,13 +17139,13 @@ msgid ""
 "type:\t\t%s\n"
 "mounts:\t%s"
 msgstr ""
-"Fabricant :\t\t%s\n"
-"Modèle :\t\t%s\n"
-"Focale(s) :\t\t%s\n"
-"Ouverture :\t\t%s\n"
-"Conv. Focale :\t%.1f\n"
-"Type :\t\t\t%s\n"
-"Montures :\t\t%s"
+"Fabricant :\t\t%s\n"
+"Modèle :\t\t%s\n"
+"Focale(s) :\t\t%s\n"
+"Ouverture :\t\t%s\n"
+"Conv. Focale :\t%.1f\n"
+"Type :\t\t\t%s\n"
+"Montures :\t\t%s"
 
 #: ../src/iop/lens.cc:2937
 msgid "focal length (mm)"
@@ -17180,7 +17180,7 @@ msgstr ""
 "Vous pouvez sélectionner l'objectif manuellement\n"
 "vous pouvez aussi vouloir vérifier que la base de données des objectifs est "
 "à jour\n"
-"en exécutant « lensfun_update_data »"
+"en exécutant « lensfun_update_data »"
 
 #: ../src/iop/lens.cc:3288
 msgid "distortion & TCA"
@@ -17302,7 +17302,7 @@ msgstr "Sélectionne les types de correction à effectuer"
 
 #: ../src/iop/lens.cc:3470
 msgid "corrections done: "
-msgstr "Corrections effectuées : "
+msgstr "Corrections effectuées : "
 
 #: ../src/iop/lens.cc:3472
 msgid "which corrections have actually been done"
@@ -17310,7 +17310,7 @@ msgstr "Corrections réellement effectuées"
 
 #: ../src/iop/levels.c:109
 msgid "this module is deprecated. please use the RGB levels module instead."
-msgstr "Ce module est déprécié. Nous vous recommandons d'utiliser « Niveau RVB »."
+msgstr "Ce module est déprécié. Nous vous recommandons d'utiliser « Niveau RVB »."
 
 #: ../src/iop/levels.c:114 ../src/iop/levels.c:620 ../src/iop/rgblevels.c:981
 #: ../src/iop/rgblevels.c:1011
@@ -17416,11 +17416,11 @@ msgstr ""
 
 #: ../src/iop/liquify.c:3593
 msgid "warps|nodes count:"
-msgstr "Nb formes|points :"
+msgstr "Nb formes|points :"
 
 #: ../src/iop/liquify.c:3601
 msgid "edit, add and delete nodes"
-msgstr "Outil point : éditer, ajouter et supprimer des points"
+msgstr "Outil point : éditer, ajouter et supprimer des points"
 
 #: ../src/iop/liquify.c:3605 ../src/iop/liquify.c:3609
 #: ../src/iop/liquify.c:3613 ../src/iop/retouch.c:2200
@@ -17460,17 +17460,17 @@ msgid ""
 "ctrl+click: add node - right click: remove path\n"
 "ctrl+alt+click: toggle line/curve"
 msgstr ""
-"Ctrl+clic : ajouter un point - clic droit: supprimer un chemin\n"
-"ctrl+alt+clic : changer ligne/courbe"
+"Ctrl+clic : ajouter un point - clic droit: supprimer un chemin\n"
+"ctrl+alt+clic : changer ligne/courbe"
 
 #: ../src/iop/liquify.c:3620
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-"Clic et déplacer pour positionner - Clic : montre/cache les contrôles "
+"Clic et déplacer pour positionner - Clic : montre/cache les contrôles "
 "d'adoucissement\n"
-"Ctrl+Clic : automatique, parabolique, lissé, symétrique - Clic-Droit pour "
+"Ctrl+Clic : automatique, parabolique, lissé, symétrique - Clic-Droit pour "
 "supprimer"
 
 #: ../src/iop/liquify.c:3623 ../src/iop/liquify.c:3624
@@ -17495,7 +17495,7 @@ msgid ""
 "ctrl+click: linear, grow, and shrink"
 msgstr ""
 "Déplacer pour ajuster la force du point\n"
-"Ctrl+Clic : linéaire, augmente et diminue"
+"Ctrl+Clic : linéaire, augmente et diminue"
 
 #: ../src/iop/lmmse_demosaic.c:150
 msgid "[lmmse_demosaic] too small area"
@@ -17621,7 +17621,7 @@ msgstr "Erreur - impossible d'allouer la mémoire pour le gmz LUT"
 #: ../src/iop/lut3d.c:493
 #, c-format
 msgid "invalid png file %s"
-msgstr "Fichier PNG non valide « %s »"
+msgstr "Fichier PNG non valide « %s »"
 
 #: ../src/iop/lut3d.c:501
 #, c-format
@@ -17649,7 +17649,7 @@ msgstr "Erreur - Impossible d'allouer la mémoire pour le PNG LUT"
 #: ../src/iop/lut3d.c:557
 #, c-format
 msgid "error - could not read png image %s"
-msgstr "Erreur - Impossible de lire l'image PNG « %s »"
+msgstr "Erreur - Impossible de lire l'image PNG « %s »"
 
 #: ../src/iop/lut3d.c:567
 msgid "error - allocating buffer for png LUT"
@@ -17658,7 +17658,7 @@ msgstr "Erreur - Impossible d'allouer la mémoire pour le PNG LUT"
 #: ../src/iop/lut3d.c:742
 #, c-format
 msgid "error - invalid cube file: %s"
-msgstr "Erreur : Fichier cube invalide « %s »"
+msgstr "Erreur : Fichier cube invalide « %s »"
 
 #: ../src/iop/lut3d.c:756
 msgid "DOMAIN MIN <> 0.0 is not supported"
@@ -17698,7 +17698,7 @@ msgstr "Attention - LUT cube a %d valeurs hors de la plage [0,1]"
 #: ../src/iop/lut3d.c:871
 #, c-format
 msgid "error - invalid 3dl file: %s"
-msgstr "Erreur : Fichier 3DL invalide « %s »"
+msgstr "Erreur : Fichier 3DL invalide « %s »"
 
 #: ../src/iop/lut3d.c:892
 #, c-format
@@ -17755,7 +17755,7 @@ msgid ""
 "the LUT file"
 msgstr ""
 "Sélectionner un fichier PNG (haldclut), Cube, 3DL ou gmz (LUT compressée)\n"
-"ATTENTION : le répertoire lut doit être positionné depuis les préférences "
+"ATTENTION : le répertoire lut doit être positionné depuis les préférences "
 "(section traitement) avant de choisir un fichier lut"
 
 #: ../src/iop/lut3d.c:1666
@@ -17764,7 +17764,7 @@ msgid ""
 "set in preferences/processing before choosing the LUT file"
 msgstr ""
 "Sélectionner fichier PNG (haldclut), Cube, ou 3DL\n"
-"ATTENTION : le répertoire lut doit être positionné depuis les préférences "
+"ATTENTION : le répertoire lut doit être positionné depuis les préférences "
 "avant de choisir un fichier LUT."
 
 #: ../src/iop/lut3d.c:1678
@@ -18207,7 +18207,7 @@ msgid ""
 "touch with great care!"
 msgstr ""
 "Défini les informations techniques du capteur.\n"
-"Vous ne devriez pas changer les valeurs !"
+"Vous ne devriez pas changer les valeurs !"
 
 #: ../src/iop/rawprepare.c:168
 msgid "passthrough"
@@ -18294,7 +18294,7 @@ msgid ""
 "this module is deprecated. please use the tone equalizer module instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons d'utiliser le module "
-"« Égaliseur de ton »."
+"« Égaliseur de ton »."
 
 #: ../src/iop/relight.c:260
 msgid "the fill-light in EV"
@@ -18395,7 +18395,7 @@ msgstr "Montre et édite les formes en mode restreint"
 
 #: ../src/iop/retouch.c:2219
 msgid "algorithms:"
-msgstr "Algorithmes :"
+msgstr "Algorithmes :"
 
 #: ../src/iop/retouch.c:2222 ../src/iop/retouch.c:2226
 #: ../src/iop/retouch.c:2230 ../src/iop/retouch.c:2234
@@ -18434,15 +18434,15 @@ msgstr "Maj+Clic pour changer l'outil par défaut"
 
 #: ../src/iop/retouch.c:2258
 msgid "scales:"
-msgstr "Échelles :"
+msgstr "Échelles :"
 
 #: ../src/iop/retouch.c:2263
 msgid "current:"
-msgstr "Actuelle :"
+msgstr "Actuelle :"
 
 #: ../src/iop/retouch.c:2268
 msgid "merge from:"
-msgstr "Fusion depuis :"
+msgstr "Fusion depuis :"
 
 #: ../src/iop/retouch.c:2276
 msgid ""
@@ -18494,7 +18494,7 @@ msgstr "Niveaux automatiques"
 
 #: ../src/iop/retouch.c:2362
 msgid "shape selected:"
-msgstr "Forme sélectionnée :"
+msgstr "Forme sélectionnée :"
 
 #: ../src/iop/retouch.c:2367
 msgid ""
@@ -18510,7 +18510,7 @@ msgstr "Efface les détails ou rempli avec la couleur choisie"
 
 #: ../src/iop/retouch.c:2381
 msgid "fill color: "
-msgstr "Couleur : "
+msgstr "Couleur : "
 
 #: ../src/iop/retouch.c:2386 ../src/iop/retouch.c:2387
 msgid "select fill color"
@@ -18651,7 +18651,7 @@ msgid ""
 msgstr ""
 "Module interne pour spécifier dans informations techniques du capteur.\n"
 "\n"
-"Vous ne devriez pas changer les valeurs !"
+"Vous ne devriez pas changer les valeurs !"
 
 #: ../src/iop/rotatepixels.c:366
 msgid "automatic pixel rotation"
@@ -18940,7 +18940,7 @@ msgstr "Correction des tâches"
 
 #: ../src/iop/spots.c:61
 msgid "this module is deprecated. please use the retouch module instead."
-msgstr "Ce module est déprécié. Nous vous recommandons d'utiliser « Retouche »."
+msgstr "Ce module est déprécié. Nous vous recommandons d'utiliser « Retouche »."
 
 #: ../src/iop/spots.c:66
 msgid "remove sensor dust spots"
@@ -18953,12 +18953,12 @@ msgstr "Géométrique, RAW"
 #: ../src/iop/spots.c:220
 msgid "spot module is limited to 64 shapes. please add a new instance!"
 msgstr ""
-"Le module « Correction des tâches » est limité à 64 formes, merci d'utiliser une "
-"nouvelle instance !"
+"Le module « Correction des tâches » est limité à 64 formes, merci d'utiliser une "
+"nouvelle instance !"
 
 #: ../src/iop/spots.c:806
 msgid "number of strokes:"
-msgstr "Nombre de corrections :"
+msgstr "Nombre de corrections :"
 
 #: ../src/iop/spots.c:808
 msgid ""
@@ -18985,7 +18985,7 @@ msgstr ""
 "Mettre à l'échelle les canaux RVB bruts pour équilibrer les blancs et aider "
 "au dématriçage"
 
-#. our second biggest problem : another module is doing CAT elsewhere in the pipe
+#. our second biggest problem : another module is doing CAT elsewhere in the pipe
 #: ../src/iop/temperature.c:1047
 msgid "white balance applied twice"
 msgstr "Balance des blancs appliquée deux fois"
@@ -19005,12 +19005,12 @@ msgstr ""
 #: ../src/iop/temperature.c:1319
 #, c-format
 msgid "`%s' color matrix not found for image"
-msgstr "Matrice couleur « %s » non trouvée pour l'image"
+msgstr "Matrice couleur « %s » non trouvée pour l'image"
 
 #: ../src/iop/temperature.c:1348
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
-msgstr "Impossible de récupérer la balance des blancs du boîtier pour « %s » !"
+msgstr "Impossible de récupérer la balance des blancs du boîtier pour « %s » !"
 
 #: ../src/iop/temperature.c:1496
 msgctxt "white balance"
@@ -19203,51 +19203,51 @@ msgstr "Simple courbe des tonalités"
 
 #: ../src/iop/toneequal.c:438
 msgid "mask blending: all purposes"
-msgstr "Fusion masque : Tout usages"
+msgstr "Fusion masque : Tout usages"
 
 #: ../src/iop/toneequal.c:444
 msgid "mask blending: people with backlight"
-msgstr "Fusion masque : Sujets en contre-jour"
+msgstr "Fusion masque : Sujets en contre-jour"
 
 #: ../src/iop/toneequal.c:460
 msgid "compress shadows/highlights (eigf): strong"
-msgstr "Compresser ombres/hautes-lumières (Eigf) : Fort"
+msgstr "Compresser ombres/hautes-lumières (Eigf) : Fort"
 
 #: ../src/iop/toneequal.c:464
 msgid "compress shadows/highlights (gf): strong"
-msgstr "Compresser ombres/hautes-lumières (Gf) : Fort"
+msgstr "Compresser ombres/hautes-lumières (Gf) : Fort"
 
 #: ../src/iop/toneequal.c:472
 msgid "compress shadows/highlights (eigf): medium"
-msgstr "Compresser ombres/hautes-lumières (Eigf) : Moyen"
+msgstr "Compresser ombres/hautes-lumières (Eigf) : Moyen"
 
 #: ../src/iop/toneequal.c:476
 msgid "compress shadows/highlights (gf): medium"
-msgstr "Compresser ombres/hautes-lumières (Gf) : Moyen"
+msgstr "Compresser ombres/hautes-lumières (Gf) : Moyen"
 
 #: ../src/iop/toneequal.c:484
 msgid "compress shadows/highlights (eigf): soft"
-msgstr "Compresser ombres/hautes-lumières (EIGF) : Léger"
+msgstr "Compresser ombres/hautes-lumières (EIGF) : Léger"
 
 #: ../src/iop/toneequal.c:488
 msgid "compress shadows/highlights (gf): soft"
-msgstr "Compresser ombres/hautes-lumières (GF) : Léger"
+msgstr "Compresser ombres/hautes-lumières (GF) : Léger"
 
 #: ../src/iop/toneequal.c:494
 msgid "contrast tone curve: soft"
-msgstr "Courbe des tons contrastée : Léger"
+msgstr "Courbe des tons contrastée : Léger"
 
 #: ../src/iop/toneequal.c:498
 msgid "contrast tone curve: medium"
-msgstr "Courbe des tons contrastée : Moyen"
+msgstr "Courbe des tons contrastée : Moyen"
 
 #: ../src/iop/toneequal.c:502
 msgid "contrast tone curve: strong"
-msgstr "Courbe des tons contrastée : Fort"
+msgstr "Courbe des tons contrastée : Fort"
 
 #: ../src/iop/toneequal.c:524
 msgid "relight: fill-in"
-msgstr "Rééclairer : lumière de remplissage"
+msgstr "Rééclairer : lumière de remplissage"
 
 #: ../src/iop/toneequal.c:576
 msgid ""
@@ -19417,17 +19417,17 @@ msgid ""
 "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided "
 "filter' methods"
 msgstr ""
-"• « Non » - Affecte le contraste global et local (sûr si seulement du "
+"• « Non » - Affecte le contraste global et local (sûr si seulement du "
 "contraste est ajouté),\n"
-"• « Filtre Guidé » - Affecte seulement le contraste global et essaie de "
+"• « Filtre Guidé » - Affecte seulement le contraste global et essaie de "
 "préserver le contraste local,\n"
-"• « Moyenne Filtre Guidé » - Une moyenne géométrique des méthodes « Non » "
-"et  « Filtre Guidé »,\n"
-"• « EIGF » - (Filtre Guidé Indépendant de l'Exposition) Un filtre guidé qui "
+"• « Moyenne Filtre Guidé » - Une moyenne géométrique des méthodes « Non » "
+"et  « Filtre Guidé »,\n"
+"• « EIGF » - (Filtre Guidé Indépendant de l'Exposition) Un filtre guidé qui "
 "est indépendant de l'exposition, il adouci les ombres et les hautes-lumières "
 "de la même façon (contrairement au filtre guidé qui adouci plus les hautes-"
 "lumières),\n"
-"• « Moyenne EIGF » - Une moyenne géométrique des méthodes « non » et « EIGF "
+"• « Moyenne EIGF » - Une moyenne géométrique des méthodes « non » et « EIGF "
 "»."
 
 #: ../src/iop/toneequal.c:3189
@@ -19445,7 +19445,7 @@ msgid ""
 "preview much slower if denoise profiled is used."
 msgstr ""
 "Diamètre du flou en pourcentage du plus grand coté de l'image.\n"
-"Attention : une grande valeur peut ralentir conséquemment la\n"
+"Attention : une grande valeur peut ralentir conséquemment la\n"
 "prévisualisation si le module de réduction du bruit par profil est utilisé."
 
 #: ../src/iop/toneequal.c:3201
@@ -19456,7 +19456,7 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
-"Précision du raffinement :\n"
+"Précision du raffinement :\n"
 "Les grandes valeurs forcent le masque à suivre les bords plus précisément\n"
 "mais peuvent alors annuler l'adoucissement\n"
 "Les petites valeurs donnent des gradients plus progressifs et un meilleur "
@@ -19529,7 +19529,7 @@ msgid ""
 "module instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons d'utiliser le module "
-"« Égaliseur de ton » ou « Contraste local »."
+"« Égaliseur de ton » ou « Contraste local »."
 
 #: ../src/iop/velvia.c:79
 msgid "velvia"
@@ -19556,7 +19556,7 @@ msgid ""
 "balance rgb module instead."
 msgstr ""
 "Ce module est déprécié. Nous vous recommandons plutôt d'utiliser le contrôle "
-"vibrance du module « Balance de Couleur RVB »."
+"vibrance du module « Balance de Couleur RVB »."
 
 #: ../src/iop/vibrance.c:93
 msgid ""
@@ -19667,7 +19667,7 @@ msgstr "Fichier"
 #: ../src/iop/watermark.c:1074
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
-msgstr "Filigranes SVG dans « %s/watermarks » ou « %s/watermarks »"
+msgstr "Filigranes SVG dans « %s/watermarks » ou « %s/watermarks »"
 
 #. Simple text
 #: ../src/iop/watermark.c:1084 ../src/iop/watermark.c:1085
@@ -19679,7 +19679,7 @@ msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
 msgstr ""
-"Texte, variable :\n"
+"Texte, variable :\n"
 "$(WATERMARK_TEXT)"
 
 #: ../src/iop/watermark.c:1088
@@ -19698,7 +19698,7 @@ msgid ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 msgstr ""
-"Police de caractère, variables :\n"
+"Police de caractère, variables :\n"
 "$(WATERMARK_FONT_FAMILY)\n"
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
@@ -19708,7 +19708,7 @@ msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
 msgstr ""
-"Couleur du filigrane, variable :\n"
+"Couleur du filigrane, variable :\n"
 "$(WATERMARK_COLOR)"
 
 #: ../src/iop/watermark.c:1115
@@ -19856,7 +19856,7 @@ msgid ""
 "with other words, 3 steps is 1EV exposure step between brackets"
 msgstr ""
 "Pas d'exposition, le pas étant configurable par le boîtier et habituellement "
-"de 3 pas par « Stop »\n"
+"de 3 pas par « Stop »\n"
 "autrement dit, 3 pas correspondent à 1 IL entre expositions"
 
 #. user specified properties
@@ -19936,8 +19936,8 @@ msgid ""
 "rejected images: -1"
 msgstr ""
 "Utiliser <, <=, >, >=, <>, =, [;] Comme opérateurs\n"
-"Étoiles : 0-5\n"
-"Images rejetées : -1"
+"Étoiles : 0-5\n"
+"Images rejetées : -1"
 
 #: ../src/libs/collect.c:2150
 msgid ""
@@ -19945,13 +19945,13 @@ msgid ""
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
 msgstr ""
 "Utiliser <, <=, >, >=, <>, =, [;] Comme opérateurs\n"
-"Entrer les dates sous la forme : AAAA:MM:JJ hh:mm:ss.Sss (uniquement l'année "
+"Entrer les dates sous la forme : AAAA:MM:JJ hh:mm:ss.Sss (uniquement l'année "
 "est obligatoire)"
 
 #: ../src/libs/collect.c:2157
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
-msgstr "Utiliser « % » en caractère joker et « , » pour séparer les valeurs"
+msgstr "Utiliser « % » en caractère joker et « , » pour séparer les valeurs"
 
 #: ../src/libs/collect.c:2163
 #, no-c-format
@@ -19961,11 +19961,11 @@ msgid ""
 "shift+click to include only the current hierarchy (no suffix)\n"
 "ctrl+click to include only sub-hierarchies (suffix `|%')"
 msgstr ""
-"Utiliser « % » comme joker\n"
-"Clic pour inclure la hiérarchie courante et les sous-hiérarchies (suffixe « "
-"* »)\n"
+"Utiliser « % » comme joker\n"
+"Clic pour inclure la hiérarchie courante et les sous-hiérarchies (suffixe « "
+"* »)\n"
 "Maj+Clic pour inclure seulement la hiérarchie courante (no suffixe)\n"
-"Ctrl+Clic pour inclure les sous-hiérarchies seulement (suffixe « |% »)"
+"Ctrl+Clic pour inclure les sous-hiérarchies seulement (suffixe « |% »)"
 
 #: ../src/libs/collect.c:2175
 #, no-c-format
@@ -19975,11 +19975,11 @@ msgid ""
 "shift+click to include only the current location (no suffix)\n"
 "ctrl+click to include only sub-locations (suffix `|%')"
 msgstr ""
-"Utiliser « % » comme joker\n"
-"Clic pour inclure l'emplacement courant et les sous-emplacements (suffixe « "
-"* »)\n"
+"Utiliser « % » comme joker\n"
+"Clic pour inclure l'emplacement courant et les sous-emplacements (suffixe « "
+"* »)\n"
 "Maj+Clic pour inclure seulement l'emplacement courant (no suffixe)\n"
-"Ctrl+Clic pour inclure les sous-emplacements seulement (suffixe « |% »)"
+"Ctrl+Clic pour inclure les sous-emplacements seulement (suffixe « |% »)"
 
 #: ../src/libs/collect.c:2187
 #, no-c-format
@@ -19989,15 +19989,15 @@ msgid ""
 "shift+click to include only the current folder (no suffix)\n"
 "ctrl+click to include only sub-folders (suffix `|%')"
 msgstr ""
-"Utiliser « % » comme joker\n"
-"Clic pour inclure le dossier courant et les sous-dossiers (suffixe « * »)\n"
+"Utiliser « % » comme joker\n"
+"Clic pour inclure le dossier courant et les sous-dossiers (suffixe « * »)\n"
 "Maj+Clic pour inclure seulement le dossier courant (no suffixe)\n"
-"Ctrl+Clic pour inclure les sous-dossiers seulement (suffixe « |% »)"
+"Ctrl+Clic pour inclure les sous-dossiers seulement (suffixe « |% »)"
 
 #: ../src/libs/collect.c:2198
 #, no-c-format
 msgid "use `%' as wildcard"
-msgstr "Utilisez « % » en caractère joker"
+msgstr "Utilisez « % » en caractère joker"
 
 #: ../src/libs/collect.c:2257 ../src/libs/collect.c:2271
 #: ../src/libs/collect.c:2895
@@ -20022,15 +20022,15 @@ msgstr "Exclure des images"
 
 #: ../src/libs/collect.c:2918
 msgid "change to: and"
-msgstr "Changer en « et »"
+msgstr "Changer en « et »"
 
 #: ../src/libs/collect.c:2923
 msgid "change to: or"
-msgstr "Changer en « ou »"
+msgstr "Changer en « ou »"
 
 #: ../src/libs/collect.c:2928
 msgid "change to: except"
-msgstr "Changer en « sauf »"
+msgstr "Changer en « sauf »"
 
 #. the different categories
 #: ../src/libs/collect.c:2954 ../src/libs/filtering.c:835
@@ -20193,7 +20193,7 @@ msgstr "Fichiers XMP"
 #: ../src/libs/copy_history.c:154
 #, c-format
 msgid "error loading file '%s'"
-msgstr "Erreur de chargement du fichier « %s »"
+msgstr "Erreur de chargement du fichier « %s »"
 
 #: ../src/libs/copy_history.c:191
 #, c-format
@@ -20204,16 +20204,16 @@ msgstr[1] "Pas de compression de l'historique de %d images"
 
 #: ../src/libs/copy_history.c:228
 msgid "delete images' history?"
-msgstr "Supprimer l'historique des images ?"
+msgstr "Supprimer l'historique des images ?"
 
 #: ../src/libs/copy_history.c:229
 #, c-format
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
 msgstr[0] ""
-"Êtes-vous sûr de vouloir supprimer l'historique de %d image sélectionnée  ?"
+"Êtes-vous sûr de vouloir supprimer l'historique de %d image sélectionnée  ?"
 msgstr[1] ""
-"Êtes-vous sûr de vouloir supprimer l'historique de %d images sélectionnées  ?"
+"Êtes-vous sûr de vouloir supprimer l'historique de %d images sélectionnées  ?"
 
 #: ../src/libs/copy_history.c:328
 msgid "selective copy..."
@@ -20456,7 +20456,7 @@ msgstr "Paramètres d'image"
 #: ../src/libs/export.c:1233 ../src/libs/print_settings.c:2634
 #, c-format
 msgid "output ICC profiles in %s or %s"
-msgstr "Profils ICC de sortie dans « %s » ou « %s »"
+msgstr "Profils ICC de sortie dans « %s » ou « %s »"
 
 #: ../src/libs/export.c:1242
 msgid ""
@@ -20475,19 +20475,19 @@ msgid ""
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
-" • « Perceptif » - Permet de faire passer progressivement les couleurs hors "
+" • « Perceptif » - Permet de faire passer progressivement les couleurs hors "
 "gamut dans le gamut, en préservant les dégradés, mais en affectant les "
 "couleurs dans le gamut au cours du processus. Notez que le rendu perceptif "
 "est souvent une LUT propriétaire qui dépend de l'espace de destination.\n"
 "\n"
-" • « Colorimétrie relative » - Conserve la luminance tout en réduisant le "
+" • « Colorimétrie relative » - Conserve la luminance tout en réduisant le "
 "moins possible la saturation jusqu'à ce que les couleurs s'intègrent dans le "
 "gamut.\n"
 "\n"
-" • « Saturation » - Conçu pour présenter des logos commerciaux accrocheurs "
+" • « Saturation » - Conçu pour présenter des logos commerciaux accrocheurs "
 "en préservant la saturation. (Non adapté à la photographie).\n"
 "\n"
-"• « Colorimétrie absolue » - Adapter le point blanc de l'image au point "
+"• « Colorimétrie absolue » - Adapter le point blanc de l'image au point "
 "blanc du support de destination et ne rien faire d'autre. Principalement "
 "utilisé lors de l'épreuvage des couleurs. (Non adapté à la photographie)."
 
@@ -20664,15 +20664,15 @@ msgid ""
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
 "Liste des métadonnées calculées\n"
-"Cliquer sur le bouton « + » pour sélectionner et ajouter une métadonnée\n"
+"Cliquer sur le bouton « + » pour sélectionner et ajouter une métadonnée\n"
 "Si la formule est vide, la métadonnée correspondante est supprimée du "
 "fichier exporté\n"
-"Si la formule est « = », le métadonnée est exportée même si l'export des "
+"Si la formule est « = », le métadonnée est exportée même si l'export des "
 "métadonnées est désactivé\n"
 "Sinon la métadonnée correspondante est calculée et incluse dans le fichier "
 "exporté\n"
 "Cliquer sur une cellule pour éditer.\n"
-"Taper « $( » pour activer la complétion et voir la liste des variables"
+"Taper « $( » pour activer la complétion et voir la liste des variables"
 
 #: ../src/libs/export_metadata.c:440
 msgid "add an output metadata tag"
@@ -20897,8 +20897,8 @@ msgid ""
 "or (∪): images with at least one of the selected color labels"
 msgstr ""
 "Filtrer par label de couleur\n"
-"« et » (∩): les images ayant tous les labels de couleur sélectionnés\n"
-"« ou » (∪): les images ayant ou moins un des labels de couleur sélectionnés"
+"« et » (∩): les images ayant tous les labels de couleur sélectionnés\n"
+"« ou » (∪): les images ayant ou moins un des labels de couleur sélectionnés"
 
 #: ../src/libs/filters/filename.c:365
 msgid ""
@@ -20908,7 +20908,7 @@ msgid ""
 "right-click to get existing filenames"
 msgstr ""
 "Entrer le nom de fichier à chercher.\n"
-"Les valeurs multiples peuvent être séparées par « , »\n"
+"Les valeurs multiples peuvent être séparées par « , »\n"
 "\n"
 "clic-droit pour lister les noms de fichier existants"
 
@@ -20925,8 +20925,8 @@ msgid ""
 "right-click to get existing extensions"
 msgstr ""
 "Entre l'extension à rechercher en commençant par un point.\n"
-"Les valeurs multiples peuvent être séparées par « , »\n"
-"Mots-clés supportés : « RAW », « NOT RAW », « LDR », « HDR »\n"
+"Les valeurs multiples peuvent être séparées par « , »\n"
+"Mots-clés supportés : « RAW », « NOT RAW », « LDR », « HDR »\n"
 "\n"
 "Clic-Droit pour lister les extensions existantes"
 
@@ -21079,7 +21079,7 @@ msgid ""
 msgstr ""
 "Filtrer par texte sur les métadonnées, mots-clés, nom de fichier et nom des "
 "images\n"
-"« % » est le caractère joker\n"
+"« % » est le caractère joker\n"
 "Par défaut un caractère joker est ajouté automatiquement au début et à la "
 "fin du mot recherché\n"
 "Un guillemet au début ou à la fin permet de désactiver le joker "
@@ -21223,7 +21223,7 @@ msgid ""
 "zone\n"
 "- more detailed time information hovering the row"
 msgstr ""
-"Liste des segments de piste dans le fichier GPX, pour chaque segment :\n"
+"Liste des segments de piste dans le fichier GPX, pour chaque segment :\n"
 " • La date et l'heure de début en heure locale (LT)\n"
 " • Le nombre de points de suivi\n"
 " • Le nombre d'images à géolocaliser en fonction de la date, de l'heure, du "
@@ -21477,19 +21477,19 @@ msgstr "Modification d'un masque dessiné"
 
 #: ../src/libs/history.c:921
 msgid "parametric output mask:"
-msgstr "Sortie masque paramétrique :"
+msgstr "Sortie masque paramétrique :"
 
 #: ../src/libs/history.c:921
 msgid "parametric input mask:"
-msgstr "Entrée masque paramétrique :"
+msgstr "Entrée masque paramétrique :"
 
 #: ../src/libs/history.c:1217
 msgid "delete image's history?"
-msgstr "Supprimer l'historique de l'images ?"
+msgstr "Supprimer l'historique de l'images ?"
 
 #: ../src/libs/history.c:1218
 msgid "do you really want to clear history of current image?"
-msgstr "êTes-vous sûr de vouloir supprimer l'historique de l image courante  ?"
+msgstr "êTes-vous sûr de vouloir supprimer l'historique de l image courante  ?"
 
 #: ../src/libs/image.c:72
 msgid "selected image[s]"
@@ -21667,7 +21667,7 @@ msgstr "Cloner l'image vierge"
 #: ../src/libs/import.c:264
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
-msgstr "Appareil « %s » connecté sur le port « %s »."
+msgstr "Appareil « %s » connecté sur le port « %s »."
 
 #: ../src/libs/import.c:274 ../src/libs/import.c:335 ../src/libs/import.c:1684
 msgid "copy & import from camera"
@@ -21765,8 +21765,8 @@ msgstr "Modifié"
 #: ../src/libs/import.c:1559
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
-"La « date/heure de modification » du fichier peut être différente de « date/"
-"heure exif »"
+"La « date/heure de modification » du fichier peut être différente de « date/"
+"heure exif »"
 
 #: ../src/libs/import.c:1571
 msgid "show/hide thumbnails"
@@ -22016,7 +22016,7 @@ msgstr "Nouvel emplacement"
 #: ../src/libs/map_locations.c:588
 #, c-format
 msgid "location name '%s' already exists"
-msgstr "L'emplacement « %s » existe déjà"
+msgstr "L'emplacement « %s » existe déjà"
 
 #: ../src/libs/map_locations.c:779
 msgid "edit location"
@@ -22056,13 +22056,13 @@ msgid ""
 "right-click for other actions: delete location and go to collection"
 msgstr ""
 "Liste des emplacements utilisateur,\n"
-"Clic pour montrer ou cacher un emplacement sur la carte :\n"
+"Clic pour montrer ou cacher un emplacement sur la carte :\n"
 " • Utiliser la molette pour changer la taille\n"
 " • <Maj> ou <Ctrl> Pour modifier la largeur ou la hauteur\n"
 " • Cliquer+Déplacer Dans la forme pour changer sa position\n"
 " • Ctrl+Clic Pour déplacer une image à l'intérieur de son emplacement\n"
-"Ctrl+Clic pour éditer le nom d'un emplacement :\n"
-" • Un trait-vertical « | » permet de créer un nom hiérarchique\n"
+"Ctrl+Clic pour éditer le nom d'un emplacement :\n"
+" • Un trait-vertical « | » permet de créer un nom hiérarchique\n"
 " • Pour supprimer un groupe d'emplacements effacer son nom\n"
 " • Presser Enter pour valider le nouveau nom, Échap pour annuler l'édition\n"
 "Clic-droit pour les autres actions: Effacer un emplacement et aller dans la "
@@ -22138,19 +22138,19 @@ msgstr "Inverser la forme"
 
 #: ../src/libs/masks.c:1106
 msgid "mode: union"
-msgstr "Mode : union"
+msgstr "Mode : union"
 
 #: ../src/libs/masks.c:1109
 msgid "mode: intersection"
-msgstr "Mode : intersection"
+msgstr "Mode : intersection"
 
 #: ../src/libs/masks.c:1112
 msgid "mode: difference"
-msgstr "Mode : différence"
+msgstr "Mode : différence"
 
 #: ../src/libs/masks.c:1115
 msgid "mode: exclusion"
-msgstr "Mode : exclusion"
+msgstr "Mode : exclusion"
 
 #: ../src/libs/masks.c:1129
 msgid "cleanup unused shapes"
@@ -22402,7 +22402,7 @@ msgstr[1] "L'image a %d étoiles"
 #: ../src/libs/metadata_view.c:440
 #, c-format
 msgid "loader: %s"
-msgstr "Chargement : %s"
+msgstr "Chargement : %s"
 
 #: ../src/libs/metadata_view.c:631
 msgid "<various values>"
@@ -22469,11 +22469,11 @@ msgstr "Préférences des collections récentes"
 
 #: ../src/libs/modulegroups.c:42 ../src/libs/modulegroups.c:1770
 msgid "workflow: scene-referred"
-msgstr "Flux de travail : Relatif à la scène"
+msgstr "Flux de travail : Relatif à la scène"
 
 #: ../src/libs/modulegroups.c:45
 msgid "modules: deprecated"
-msgstr "Modules : Dépréciés"
+msgstr "Modules : Dépréciés"
 
 #: ../src/libs/modulegroups.c:48
 msgid "last modified layout"
@@ -22506,7 +22506,7 @@ msgstr ""
 #: ../src/libs/modulegroups.c:636
 #, c-format
 msgid "go to the full version of the %s module"
-msgstr "Aller au module complet « %s »"
+msgstr "Aller au module complet « %s »"
 
 #: ../src/libs/modulegroups.c:1558 ../src/libs/modulegroups.c:1643
 #: ../src/libs/modulegroups.c:1679 ../src/libs/modulegroups.c:1729
@@ -22540,7 +22540,7 @@ msgstr "Effet"
 
 #: ../src/libs/modulegroups.c:1637
 msgid "modules: all"
-msgstr "Modules : Tous"
+msgstr "Modules : Tous"
 
 #: ../src/libs/modulegroups.c:1658
 msgctxt "modulegroup"
@@ -22554,11 +22554,11 @@ msgstr "Effets"
 
 #: ../src/libs/modulegroups.c:1674
 msgid "workflow: beginner"
-msgstr "Flux de travail : Débutant"
+msgstr "Flux de travail : Débutant"
 
 #: ../src/libs/modulegroups.c:1723
 msgid "workflow: display-referred"
-msgstr "Flux de travail : Relatif à l'affichage"
+msgstr "Flux de travail : Relatif à l'affichage"
 
 #: ../src/libs/modulegroups.c:1774
 msgid "search only"
@@ -22591,7 +22591,7 @@ msgstr "Supprimer ce contrôle"
 msgid "remove this module"
 msgstr "Supprimer ce module"
 
-#. does it belong to recommended modules ?
+#. does it belong to recommended modules ?
 #: ../src/libs/modulegroups.c:2311
 msgid "base"
 msgstr "Base"
@@ -22779,15 +22779,15 @@ msgstr "Renommer ce préréglage"
 
 #: ../src/libs/modulegroups.c:3465
 msgid "new preset name:"
-msgstr "Nom préréglage :"
+msgstr "Nom préréglage :"
 
 #: ../src/libs/modulegroups.c:3466
 msgid "a preset with this name already exists!"
-msgstr "Un préréglage avec ce nom existe déjà !"
+msgstr "Un préréglage avec ce nom existe déjà !"
 
 #: ../src/libs/modulegroups.c:3799
 msgid "preset: "
-msgstr "Préréglage : "
+msgstr "Préréglage : "
 
 #: ../src/libs/modulegroups.c:3806
 msgid "remove the preset"
@@ -22888,12 +22888,12 @@ msgstr "Paramètres d'impression"
 #: ../src/libs/print_settings.c:335 ../src/libs/print_settings.c:712
 #, c-format
 msgid "processing `%s' for `%s'"
-msgstr "Lancement de l'impression de « %s » sur « %s »"
+msgstr "Lancement de l'impression de « %s » sur « %s »"
 
 #: ../src/libs/print_settings.c:363
 #, c-format
 msgid "cannot open printer profile `%s'"
-msgstr "Impossible d'ouvrir le profil d'impression « %s »"
+msgstr "Impossible d'ouvrir le profil d'impression « %s »"
 
 #: ../src/libs/print_settings.c:372
 #, c-format
@@ -22903,7 +22903,7 @@ msgstr "Erreur de récupération du profil de sortie pour l'image %d"
 #: ../src/libs/print_settings.c:381
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "Impossible d'appliquer le profil d'impression « %s » !"
+msgstr "Impossible d'appliquer le profil d'impression « %s » !"
 
 #: ../src/libs/print_settings.c:534
 msgid "failed to create temporary pdf for printing"
@@ -22957,7 +22957,7 @@ msgstr "Gestion couleur par l'imprimante"
 #: ../src/libs/print_settings.c:2314
 #, c-format
 msgid "printer ICC profiles in %s or %s"
-msgstr "Profils ICC d'imprimante dans « %s » ou « %s »"
+msgstr "Profils ICC d'imprimante dans « %s » ou « %s »"
 
 #: ../src/libs/print_settings.c:2333
 msgid "black point compensation"
@@ -22999,7 +22999,7 @@ msgid ""
 " a too large value may result in poor print quality"
 msgstr ""
 "Facteur d'agrandissement de l'image par rapport à la résolution (DPI) de "
-"l'imprimante :\n"
+"l'imprimante :\n"
 " < 1 signifie que l'image est réduite (meilleure qualité)\n"
 " > 1 signifie que l'image est agrandie\n"
 "une valeur trop grande peut donner une qualité d'impression médiocre"
@@ -23185,7 +23185,7 @@ msgstr "** %s"
 #: ../src/libs/snapshots.c:504
 #, c-format
 msgid "** %s '%s'"
-msgstr "** %s « %s »"
+msgstr "** %s « %s »"
 
 #: ../src/libs/snapshots.c:504
 msgid "this snapshot was taken from"
@@ -23212,14 +23212,14 @@ msgstr "Basculer le dernier instantané"
 msgid "remove style?"
 msgid_plural "remove styles?"
 msgstr[0] "Enlever un style?"
-msgstr[1] "Enlever les styles ?"
+msgstr[1] "Enlever les styles ?"
 
 #: ../src/libs/styles.c:328
 #, c-format
 msgid "do you really want to remove %d style?"
 msgid_plural "do you really want to remove %d styles?"
-msgstr[0] "Voulez-vous réellement enlever %d style ?"
-msgstr[1] "Voulez-vous réellement enlever %d styles ?"
+msgstr[0] "Voulez-vous réellement enlever %d style ?"
+msgstr[1] "Voulez-vous réellement enlever %d styles ?"
 
 #: ../src/libs/styles.c:445 ../src/libs/styles.c:628
 #, c-format
@@ -23227,8 +23227,8 @@ msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite existing style?\n"
 msgstr ""
-"Le style « %s » existe déjà.\n"
-"Voulez-vous le remplacer ?\n"
+"Le style « %s » existe déjà.\n"
+"Voulez-vous le remplacer ?\n"
 
 #: ../src/libs/styles.c:447 ../src/libs/styles.c:630
 msgid "apply this option to all existing styles"
@@ -23237,7 +23237,7 @@ msgstr "Appliquer ce choix à tous les styles"
 #: ../src/libs/styles.c:510
 #, c-format
 msgid "style %s was successfully exported"
-msgstr "Le style « %s » a été exporté"
+msgstr "Le style « %s » a été exporté"
 
 #: ../src/libs/styles.c:527
 msgid "select style"
@@ -23317,13 +23317,13 @@ msgstr "Détacher le mot-clé"
 
 #: ../src/libs/tagging.c:1479
 msgid "delete tag?"
-msgstr "Supprimer le mot-clé ?"
+msgstr "Supprimer le mot-clé ?"
 
 #: ../src/libs/tagging.c:1486 ../src/libs/tagging.c:1574
 #: ../src/libs/tagging.c:1785 ../src/libs/tagging.c:2059
 #, c-format
 msgid "selected: %s"
-msgstr "Sélectionné : « %s »"
+msgstr "Sélectionné : « %s »"
 
 #: ../src/libs/tagging.c:1493
 #, c-format
@@ -23334,17 +23334,17 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"Voulez-vous réellement supprimer le mot-clé « %s » ?\n"
-"Ce mot-clé est assigné à %d image !"
+"Voulez-vous réellement supprimer le mot-clé « %s » ?\n"
+"Ce mot-clé est assigné à %d image !"
 msgstr[1] ""
-"Voulez-vous réellement supprimer le mot-clé « %s » ?\n"
-"Ce mot-clé est assigné à %d images !"
+"Voulez-vous réellement supprimer le mot-clé « %s » ?\n"
+"Ce mot-clé est assigné à %d images !"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #: ../src/libs/tagging.c:1527
 #, c-format
 msgid "tag %s removed"
-msgstr "Mot-clé « %s » supprimé"
+msgstr "Mot-clé « %s » supprimé"
 
 #: ../src/libs/tagging.c:1567
 msgid "delete node?"
@@ -23376,12 +23376,12 @@ msgstr "Créer un mot-clé"
 
 #: ../src/libs/tagging.c:1658 ../src/libs/tagging.c:1805
 msgid "name: "
-msgstr "Nom : "
+msgstr "Nom : "
 
 #: ../src/libs/tagging.c:1670
 #, c-format
 msgid "add to: \"%s\" "
-msgstr "Ajouter à : « %s » "
+msgstr "Ajouter à : « %s » "
 
 #: ../src/libs/tagging.c:1676 ../src/libs/tagging.c:1820
 msgid "category"
@@ -23389,7 +23389,7 @@ msgstr "Catégorie"
 
 #: ../src/libs/tagging.c:1685 ../src/libs/tagging.c:1829
 msgid "synonyms: "
-msgstr "Synonymes : "
+msgstr "Synonymes : "
 
 #: ../src/libs/tagging.c:1702 ../src/libs/tagging.c:1851
 #: ../src/libs/tagging.c:2093
@@ -23438,7 +23438,7 @@ msgstr "'|' Mal placé, un mot-clé vide est interdit, annulation"
 #: ../src/libs/tagging.c:2191
 #, c-format
 msgid "tag %s created"
-msgstr "Mot-clé « %s » créé"
+msgstr "Mot-clé « %s » créé"
 
 #: ../src/libs/tagging.c:2217
 msgid "attach tag"
@@ -23496,7 +23496,7 @@ msgstr "Erreur lors de l'import de mots-clés"
 #: ../src/libs/tagging.c:2499
 #, c-format
 msgid "%zd tags imported"
-msgstr "« %zd » Mots-clés importés"
+msgstr "« %zd » Mots-clés importés"
 
 #: ../src/libs/tagging.c:2520
 msgid "select file to export to"
@@ -23509,7 +23509,7 @@ msgstr "Erreur lors de l'export de mots-clés"
 #: ../src/libs/tagging.c:2536
 #, c-format
 msgid "%zd tags exported"
-msgstr "« %zd » Mots-clés exportés"
+msgstr "« %zd » Mots-clés exportés"
 
 #: ../src/libs/tagging.c:2960
 msgid "drop to root"
@@ -23687,7 +23687,7 @@ msgid "translator-credits"
 msgstr ""
 "Pascal Obry\n"
 "\n"
-"Versions précédentes :\n"
+"Versions précédentes :\n"
 "Olivier Tribout\n"
 "Sébastien Delcoigne\n"
 "Nicolas Carlier"
@@ -23981,12 +23981,12 @@ msgstr "Montrer les préférences globales"
 #. ask the user if darktable.org may be accessed
 #: ../src/libs/tools/global_toolbox.c:643
 msgid "access the online usermanual?"
-msgstr "Accéder au manuel utilisateur en ligne ?"
+msgstr "Accéder au manuel utilisateur en ligne ?"
 
 #: ../src/libs/tools/global_toolbox.c:644
 #, c-format
 msgid "do you want to access `%s'?"
-msgstr "Voulez-vous accéder à « %s » ?"
+msgstr "Voulez-vous accéder à « %s » ?"
 
 #: ../src/libs/tools/global_toolbox.c:713
 msgid "help url opened in web browser"
@@ -24126,7 +24126,7 @@ msgstr "Changer de vue"
 #: ../src/lua/preferences.c:710 ../src/lua/preferences.c:774
 #, c-format
 msgid "double-click to reset to `%s'"
-msgstr "Double-clic pour réinitialiser à « %s »"
+msgstr "Double-clic pour réinitialiser à « %s »"
 
 #: ../src/lua/preferences.c:680
 msgid "select file"
@@ -24135,12 +24135,12 @@ msgstr "Sélectionner un fichier"
 #: ../src/lua/preferences.c:733
 #, c-format
 msgid "double-click to reset to `%d'"
-msgstr "Double-clic pour réinitialiser à « %d »"
+msgstr "Double-clic pour réinitialiser à « %d »"
 
 #: ../src/lua/preferences.c:760
 #, c-format
 msgid "double-click to reset to `%f'"
-msgstr "Double-clic pour réinitialiser à « %f »"
+msgstr "Double-clic pour réinitialiser à « %f »"
 
 #: ../src/lua/preferences.c:836
 msgid "lua options"
@@ -24159,7 +24159,7 @@ msgid ""
 "an issue\n"
 "at https://github.com/darktable-org/darktable"
 msgstr ""
-"darktable n'a pas réussi à charger « %s », retour vers la table lumineuse.\n"
+"darktable n'a pas réussi à charger « %s », retour vers la table lumineuse.\n"
 "\n"
 "Vérifiez que l'appareil photo est supporté par darktable\n"
 "(la liste des appareils supportés est ici https://www.darktable.org/"
@@ -24172,7 +24172,7 @@ msgstr ""
 #, c-format
 msgctxt "darkroom"
 msgid "loading `%s' ..."
-msgstr "Chargement « %s » ..."
+msgstr "Chargement « %s » ..."
 
 #: ../src/views/darkroom.c:736 ../src/views/darkroom.c:2444
 msgid "gamut check"
@@ -24182,10 +24182,10 @@ msgstr "Vérification de gamut"
 msgid "soft proof"
 msgstr "Épreuvage"
 
-#. fail :(
+#. fail :(
 #: ../src/views/darkroom.c:774 ../src/views/print.c:329
 msgid "no image to open!"
-msgstr "Aucune image à ouvrir !"
+msgstr "Aucune image à ouvrir !"
 
 #: ../src/views/darkroom.c:1310
 msgid "no userdefined presets for favorite modules were found"
@@ -24257,7 +24257,7 @@ msgid ""
 "will only be used if mode = mark with solid color"
 msgstr ""
 "Sélectionner la couleur pour marquer les sur-expositions.\n"
-"Utiliser uniquement si le mode est « marquer avec une couleur unie »"
+"Utiliser uniquement si le mode est « marquer avec une couleur unie »"
 
 #: ../src/views/darkroom.c:2345
 msgctxt "solidcolor"
@@ -24423,22 +24423,22 @@ msgstr "Profil de l'histogramme"
 #: ../src/views/darkroom.c:2559 ../src/views/lighttable.c:1274
 #, c-format
 msgid "display ICC profiles in %s or %s"
-msgstr "Profils ICC d'affichage dans « %s » ou « %s »"
+msgstr "Profils ICC d'affichage dans « %s » ou « %s »"
 
 #: ../src/views/darkroom.c:2562 ../src/views/lighttable.c:1277
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
-msgstr "Profils ICC d'affichage secondaire dans « %s » ou « %s »"
+msgstr "Profils ICC d'affichage secondaire dans « %s » ou « %s »"
 
 #: ../src/views/darkroom.c:2565
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
-msgstr "Profils ICC d'épreuvage dans « %s » ou « %s »"
+msgstr "Profils ICC d'épreuvage dans « %s » ou « %s »"
 
 #: ../src/views/darkroom.c:2568
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
-msgstr "Profils ICC pour l'histogramme et la pipette dans « %s » ou « %s »"
+msgstr "Profils ICC pour l'histogramme et la pipette dans « %s » ou « %s »"
 
 #: ../src/views/darkroom.c:2604
 msgid ""
@@ -24537,15 +24537,15 @@ msgstr "Changer la précision des raccourcis clavier des réglettes"
 
 #: ../src/views/darkroom.c:3942
 msgid "keyboard shortcut slider precision: fine"
-msgstr "Précision raccourcis clavier des réglettes : fine"
+msgstr "Précision raccourcis clavier des réglettes : fine"
 
 #: ../src/views/darkroom.c:3944
 msgid "keyboard shortcut slider precision: normal"
-msgstr "Précision raccourcis clavier des réglettes : standard"
+msgstr "Précision raccourcis clavier des réglettes : standard"
 
 #: ../src/views/darkroom.c:3946
 msgid "keyboard shortcut slider precision: coarse"
-msgstr "Précision raccourcis clavier des réglettes : grossière"
+msgstr "Précision raccourcis clavier des réglettes : grossière"
 
 #: ../src/views/darkroom.c:3962
 msgid "switch to lighttable"
@@ -24788,7 +24788,7 @@ msgstr "Passer à l'image précédente"
 #: ../src/views/tethering.c:157
 #, c-format
 msgid "new session initiated '%s'"
-msgstr "Nouvelle session initiée « %s »"
+msgstr "Nouvelle session initiée « %s »"
 
 #: ../src/views/tethering.c:448
 msgid "no camera with tethering support available for use..."
@@ -24843,7 +24843,7 @@ msgstr "Actions souris"
 #~ msgstr ""
 #~ "La correction des AC supporte seulement les capteurs Bayer RGB standards"
 
-# Dans le module aberrations chromatiques raw :
+# Dans le module aberrations chromatiques raw :
 # À des niveaux de zoom élevés darktable sautera le module dans le pipeline graphique, et un message “sauté en zoomant” apparaîtra en haut du module. Cette limitation ne s’applique qu’au travail interactif et non à l’exportation finale.
 #  et non "sauter en zoomant "
 #~ msgid "bypassed while zooming in"
@@ -24909,7 +24909,7 @@ msgstr "Actions souris"
 
 #, c-format
 #~ msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
-#~ msgstr "Profil de travail %s non supporté, remplacé par Rec 2020 RVB !\n"
+#~ msgstr "Profil de travail %s non supporté, remplacé par Rec 2020 RVB !\n"
 
 #~ msgid "a4"
 #~ msgstr "A4"
@@ -24990,7 +24990,7 @@ msgstr "Actions souris"
 #~ "l'adaptation chromatique"
 
 #~ msgid "modules: default"
-#~ msgstr "Modules : défaut"
+#~ msgstr "Modules : défaut"
 
 #~ msgctxt "modulegroup"
 #~ msgid "technical"
@@ -25010,7 +25010,7 @@ msgstr "Actions souris"
 
 #, c-format
 #~ msgid "double click to reset to `%f'"
-#~ msgstr "Double-cliquer pour réinitialiser à « %f »"
+#~ msgstr "Double-cliquer pour réinitialiser à « %f »"
 
 #~ msgid ""
 #~ "restore default shortcuts\n"
@@ -25022,7 +25022,7 @@ msgstr "Actions souris"
 #~ " soit comme lors de l'ouverture du dialogue de configuration\n"
 
 #~ msgid "no image selected !"
-#~ msgstr "Aucune image sélectionnée !"
+#~ msgstr "Aucune image sélectionnée !"
 
 #~ msgid "demosaicing method"
 #~ msgstr "Méthode de dématriçage"
@@ -25093,13 +25093,13 @@ msgstr "Actions souris"
 #~ "données est lancée"
 
 #~ msgid "click later to be asked on next startup"
-#~ msgstr "Sélectionner « plus tard » pour redemander au prochain démarrage"
+#~ msgstr "Sélectionner « plus tard » pour redemander au prochain démarrage"
 
 #~ msgid "click later to be asked when closing darktable"
-#~ msgstr "Sélectionner « plus tard » pour redemander à la fermeture"
+#~ msgstr "Sélectionner « plus tard » pour redemander à la fermeture"
 
 #~ msgid "click later to be asked next time when closing darktable"
-#~ msgstr "Sélectionner « plus tard » pour redemander à la prochaine fermeture"
+#~ msgstr "Sélectionner « plus tard » pour redemander à la prochaine fermeture"
 
 #, c-format
 #~ msgid ""
@@ -25187,7 +25187,7 @@ msgstr "Actions souris"
 
 #, c-format
 #~ msgid "error: can't open xmp file %s"
-#~ msgstr "Erreur : impossible d'ouvrir le fichier « %s »"
+#~ msgstr "Erreur : impossible d'ouvrir le fichier « %s »"
 
 #~ msgid "[BRUSH creation] change size"
 #~ msgstr "[PINCEAU] Changer taille"
@@ -25396,9 +25396,9 @@ msgstr "Actions souris"
 #~ "would have on the scene"
 #~ msgstr ""
 #~ "Indication visuelle des ajustements de la température.\n"
-#~ "« Couleur de l'illuminant » représente la couleur de la source de la "
+#~ "« Couleur de l'illuminant » représente la couleur de la source de la "
 #~ "lumière\n"
-#~ "« effet d'émulation » représente l'effet que l'ajustement aurait sur la "
+#~ "« effet d'émulation » représente l'effet que l'ajustement aurait sur la "
 #~ "scène"
 
 #~ msgid "color balance slider block layout"
@@ -25563,7 +25563,7 @@ msgstr "Actions souris"
 #~ "see tag: darktable|problem|history-compress"
 #~ msgstr[0] ""
 #~ "l'historique d'1 image n'est pas compressé\n"
-#~ "voir mot-clé : darktable|problem|history-compress"
+#~ "voir mot-clé : darktable|problem|history-compress"
 #~ msgstr[1] ""
 #~ "les historiques de %d images ne sont pas compressés\n"
 #~ "voir mot-clé: darktable|problem|history-compress"
@@ -25594,12 +25594,12 @@ msgstr "Actions souris"
 #, c-format
 #~ msgctxt "accel"
 #~ msgid "styles/apply %s"
-#~ msgstr "Styles/appliquer « %s »"
+#~ msgstr "Styles/appliquer « %s »"
 
 #, c-format
 #~ msgctxt "accel"
 #~ msgid "apply %s"
-#~ msgstr "Appliquer « %s »"
+#~ msgstr "Appliquer « %s »"
 
 #~ msgctxt "accel"
 #~ msgid "rating"
@@ -26207,7 +26207,7 @@ msgstr "Actions souris"
 #~ "ctrl+molette souris pour redimensionner la fenêtre"
 
 #~ msgid "<b>commit</b>: double click"
-#~ msgstr "<b>finaliser</b> : double-clic"
+#~ msgstr "<b>finaliser</b> : double-clic"
 
 #~ msgid "max radius"
 #~ msgstr "Rayon max"
@@ -26216,7 +26216,7 @@ msgstr "Actions souris"
 #~ msgstr "Version du générateur de spline"
 
 #~ msgid "denoise: hard (slow)"
-#~ msgstr "Réduction du bruit : fort (lent)"
+#~ msgstr "Réduction du bruit : fort (lent)"
 
 #~ msgid "scopes settings"
 #~ msgstr "Paramètres des scopes"
@@ -26242,8 +26242,8 @@ msgstr "Actions souris"
 #~ "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
 #~ "<b>opacity</b>: ctrl+scroll (%d%%)"
 #~ msgstr ""
-#~ "<b>dureté</b> : molette, <b>taille</b> : maj+molette\n"
-#~ "<b>opacité</b> : ctrl+molette (%d%%)"
+#~ "<b>dureté</b> : molette, <b>taille</b> : maj+molette\n"
+#~ "<b>opacité</b> : ctrl+molette (%d%%)"
 
 #~ msgid "modules order"
 #~ msgstr "Ordre des modules"
@@ -26269,7 +26269,7 @@ msgstr "Actions souris"
 
 #, c-format
 #~ msgid "no fallback for %s (%s)"
-#~ msgstr "Pas de repli pour « %s » (%s)"
+#~ msgstr "Pas de repli pour « %s » (%s)"
 
 #~ msgctxt "accel"
 #~ msgid "switch views/lighttable ↔ darkroom"
@@ -26384,7 +26384,7 @@ msgstr "Actions souris"
 #~ "are you sure you want to restore the default keybindings?  this will "
 #~ "erase any modifications you have made."
 #~ msgstr ""
-#~ "êTes-vous sûr de vouloir rétablir les réglages par défaut ? cela va "
+#~ "êTes-vous sûr de vouloir rétablir les réglages par défaut ? cela va "
 #~ "effacer les modifications que vous avez faites."
 
 #~ msgid "lightness offset"
@@ -26406,7 +26406,7 @@ msgstr "Actions souris"
 #~ msgstr "Seulement touche + ctrl/maj/alt supporté pour ce raccourci"
 
 #~ msgid "overwrite existing shortcut?"
-#~ msgstr "Redéfinir le raccourci ?"
+#~ msgstr "Redéfinir le raccourci ?"
 
 #~ msgid "only one shortcut allowed"
 #~ msgstr "Un seul raccourci accepté"
@@ -26490,9 +26490,9 @@ msgstr "Actions souris"
 #~ "use `|%' to include all sub-hierarchies (ctrl-click)\n"
 #~ "use `*' to include hierarchy and sub-hierarchies (shift-click)"
 #~ msgstr ""
-#~ "Utiliser « % » en caractère joker\n"
-#~ "utiliser « |% » pour inclure toutes les sous-hiérarchies (ctrl-clic)\n"
-#~ "utiliser « * » pour inclure la hiérarchie et les sous-hiérarchies (maj-"
+#~ "Utiliser « % » en caractère joker\n"
+#~ "utiliser « |% » pour inclure toutes les sous-hiérarchies (ctrl-clic)\n"
+#~ "utiliser « * » pour inclure la hiérarchie et les sous-hiérarchies (maj-"
 #~ "clic)"
 
 #, no-c-format
@@ -26501,9 +26501,9 @@ msgstr "Actions souris"
 #~ "use `|%' to include all sub-locations (ctrl-click)\n"
 #~ "use `*' to include locations and sub-locations (shift-click)"
 #~ msgstr ""
-#~ "Utiliser « % » en caractère joker\n"
-#~ "utiliser « |% » pour inclure toutes les sous-locations (ctrl-clic)\n"
-#~ "utiliser « * » pour inclure la hiérarchie et les sous-locations "
+#~ "Utiliser « % » en caractère joker\n"
+#~ "utiliser « |% » pour inclure toutes les sous-locations (ctrl-clic)\n"
+#~ "utiliser « * » pour inclure la hiérarchie et les sous-locations "
 #~ "(majuscule-clic)"
 
 #~ msgid "set view to waveform"
@@ -26523,7 +26523,7 @@ msgstr "Actions souris"
 
 #, c-format
 #~ msgid "edit `%s'"
-#~ msgstr "Modifier « %s »"
+#~ msgstr "Modifier « %s »"
 
 #~ msgid "global"
 #~ msgstr "Global"
@@ -26718,15 +26718,15 @@ msgstr "Actions souris"
 
 #, c-format
 #~ msgid "%s %s / %s: %s"
-#~ msgstr "%s %s / %s : %s"
+#~ msgstr "%s %s / %s : %s"
 
 #, c-format
 #~ msgid "%s / %s: %s"
-#~ msgstr "%s / %s : %s"
+#~ msgstr "%s / %s : %s"
 
 #, c-format
 #~ msgid "%s: %s"
-#~ msgstr "%s : %s"
+#~ msgstr "%s : %s"
 
 #, c-format
 #~ msgid "%s / %s"
@@ -26750,17 +26750,17 @@ msgstr "Actions souris"
 #~ msgid ""
 #~ "%s accel is already mapped to\n"
 #~ "%s.\n"
-#~ "do you want to replace it ?"
+#~ "do you want to replace it ?"
 #~ msgstr ""
-#~ "Le raccourci « %s » est déjà enregistré pour\n"
-#~ "« %s »\n"
-#~ "voulez-vous le remplacer ?"
+#~ "Le raccourci « %s » est déjà enregistré pour\n"
+#~ "« %s »\n"
+#~ "voulez-vous le remplacer ?"
 
 #~ msgid "accel conflict"
 #~ msgstr "Conflit de raccourci"
 
 #~ msgid "B&W : Ilford Delta 100"
-#~ msgstr "N&B : Ilford Delta 100"
+#~ msgstr "N&B : Ilford Delta 100"
 
 #~ msgid "rotate"
 #~ msgstr "Rotation"
@@ -26846,7 +26846,7 @@ msgstr "Actions souris"
 #~ msgstr ""
 #~ "Si une valeur strictement positive est entrée, elle est utilisée comme "
 #~ "quantité de mémoire minimale (en Mo) que le tuilage doit utiliser pour la "
-#~ "mémoire-tampon. Surcharge « host_memory_limit ». (Nécessite un "
+#~ "mémoire-tampon. Surcharge « host_memory_limit ». (Nécessite un "
 #~ "redémarrage)."
 
 #~ msgid "middle grey luminance"
@@ -26893,7 +26893,7 @@ msgstr "Actions souris"
 #~ "essayer de choisir le répertoire racine qui contient toutes ou la plupart "
 #~ "de vos photographies (dans les sous-répertoires)\n"
 #~ "pour éviter de changer régulièrement le répertoire racine\n"
-#~ "e.G. Utiliser le répertoire « images » ou « home »."
+#~ "e.G. Utiliser le répertoire « images » ou « home »."
 
 #~ msgctxt "blendmode"
 #~ msgid "multiply reverse"
@@ -26948,7 +26948,7 @@ msgstr "Actions souris"
 
 #, c-format
 #~ msgid "preset %s was successfully saved"
-#~ msgstr "Le préréglage « %s » a été sauvegardé"
+#~ msgstr "Le préréglage « %s » a été sauvegardé"
 
 #~ msgid "_save..."
 #~ msgstr "_Enregistrer..."
@@ -26960,7 +26960,7 @@ msgstr "Actions souris"
 #~ msgid "type your query, use `%' as wildcard"
 #~ msgstr ""
 #~ "Saisissez votre requête,\n"
-#~ "utilisez « % » en caractère joker"
+#~ "utilisez « % » en caractère joker"
 
 #, c-format
 #~ msgid ""
@@ -26981,7 +26981,7 @@ msgstr "Actions souris"
 #~ "\n"
 #~ " 1 - Search in your environment if another darktable occurrence is "
 #~ "active. If so, use it or close it. \n"
-#~ "     The lock indicates that the process number of this occurrence is : "
+#~ "     The lock indicates that the process number of this occurrence is : "
 #~ "<i><b>%d</b></i>\n"
 #~ "\n"
 #~ " 2 - If you can't find this other occurrence, try closing your session "
@@ -27012,7 +27012,7 @@ msgstr "Actions souris"
 #~ "fichiers est verrouillé.\n"
 #~ "\n"
 #~ "La présence d'un fichier de verrouillage est principalement du à l'une de "
-#~ "ces causes :\n"
+#~ "ces causes :\n"
 #~ "\n"
 #~ "-Une autre occurrence de darktable est déjà ouverte et utilise cette base "
 #~ "de données.\n"
@@ -27020,12 +27020,12 @@ msgstr "Actions souris"
 #~ "- Une précédente version de darktable a terminé anormalement et n'a donc "
 #~ "pas été fermée proprement la base de données.\n"
 #~ "\n"
-#~ "Comment résoudre ce problème ?\n"
+#~ "Comment résoudre ce problème ?\n"
 #~ "\n"
 #~ "1 - Vérifier dans votre environnent si une autre occurrence de darktable "
 #~ "est active. Si c'est le cas, utilisez la ou quittez la. \n"
 #~ "   Le verrouillage indique que le numéro de processus de cette occurrence "
-#~ "est : <i><b>%d</b></i>\n"
+#~ "est : <i><b>%d</b></i>\n"
 #~ "\n"
 #~ "2 - Si vous ne trouvez pas d'autre occurrence, quittez votre session "
 #~ "actuelle ou redémarrez votre ordinateur.\n"
@@ -27040,9 +27040,9 @@ msgstr "Actions souris"
 #~ "Lock</i> respectivement. Le système d'ouverture signale\n"
 #~ "   la présence du fichier <i><b>%s</b></i> dans le répertoire <i><b>%s</"
 #~ "b></i> .\n"
-#~ "   (Chemin complet : <i><b>%s</b></i>).\n"
+#~ "   (Chemin complet : <i><b>%s</b></i>).\n"
 #~ "\n"
-#~ "   <u>Attention !</u> Ne supprimez pas ces fichiers sans avoir vérifié au "
+#~ "   <u>Attention !</u> Ne supprimez pas ces fichiers sans avoir vérifié au "
 #~ "préalable qu'il n'y a pas d'autres occurrences de darktable,\n"
 #~ "   sinon vous risquez de corrompre irrémédiablement la base de données.\n"
 #~ "\n"
@@ -27057,21 +27057,21 @@ msgstr "Actions souris"
 #~ "<b>compression</b>: shift+scroll\n"
 #~ "<b>opacity</b>: ctrl+scroll (%d%%)"
 #~ msgstr ""
-#~ "<b>compression</b> : maj+molette\n"
-#~ "<b>opacité</b> : ctrl+molette (%d%%)"
+#~ "<b>compression</b> : maj+molette\n"
+#~ "<b>opacité</b> : ctrl+molette (%d%%)"
 
 #, c-format
 #~ msgid "do you really want to send %d image to trash?"
 #~ msgid_plural "do you really want to send %d images to trash?"
-#~ msgstr[0] "êtes-vous sûr de vouloir déplacer vers la poubelle %d image ?"
-#~ msgstr[1] "êtes-vous sûr de vouloir déplacer vers la poubelle %d images ?"
+#~ msgstr[0] "êtes-vous sûr de vouloir déplacer vers la poubelle %d image ?"
+#~ msgstr[1] "êtes-vous sûr de vouloir déplacer vers la poubelle %d images ?"
 
 #~ msgid "trash images?"
-#~ msgstr "Mise à la poubelle ?"
+#~ msgstr "Mise à la poubelle ?"
 
 #~ msgid "do you really want to send selected image to trash?"
 #~ msgstr ""
-#~ "êTes-vous sûr de vouloir déplacer l'image sélectionnée vers la poubelle ?"
+#~ "êTes-vous sûr de vouloir déplacer l'image sélectionnée vers la poubelle ?"
 
 #~ msgid "bypassed"
 #~ msgstr "Contourner"
@@ -27153,7 +27153,7 @@ msgstr "Actions souris"
 #~ "$(HOUR), $(MINUTE), $(SECONDS)"
 #~ msgstr ""
 #~ "Cochez si vous souhaitez surcharger les paramètres de temps avec les "
-#~ "variables :\n"
+#~ "variables :\n"
 #~ "$(YEAR), $(MONTH), $(DAY),\n"
 #~ "$(HOUR), $(MINUTE), $(SECONDS)"
 
@@ -27190,7 +27190,7 @@ msgstr "Actions souris"
 #~ msgstr "Importer un dossier"
 
 #~ msgid "file has unknown format!"
-#~ msgstr "Le fichier possède un format inconnu !"
+#~ msgstr "Le fichier possède un format inconnu !"
 
 #~ msgid "import folder"
 #~ msgstr "Importer un dossier"
@@ -27206,7 +27206,7 @@ msgstr "Actions souris"
 
 #, c-format
 #~ msgid "tag: %s "
-#~ msgstr "Mot-clé : « %s » "
+#~ msgstr "Mot-clé : « %s » "
 
 #~ msgid "delete path"
 #~ msgstr "Supprimer le chemin"
@@ -27431,14 +27431,14 @@ msgstr "Actions souris"
 #~ "format: hh:mm:ss"
 #~ msgstr ""
 #~ "Entrer l'heure affichée sur les images sélectionnées\n"
-#~ "format : hh:mm:ss"
+#~ "format : hh:mm:ss"
 
 #~ msgid ""
 #~ "time offset\n"
 #~ "format: [+-]?[[hh:]mm:]ss"
 #~ msgstr ""
 #~ "Décalage horaire\n"
-#~ "format : [+-]?[[Hh:]Mm:]Ss"
+#~ "format : [+-]?[[Hh:]Mm:]Ss"
 
 #~ msgid "calculate the time offset from an image"
 #~ msgstr "Calcule le décalage horaire d'une image"
@@ -27629,13 +27629,13 @@ msgstr "Actions souris"
 #~ "redémarrage)"
 
 #~ msgid "deblur: large blur, strength 4"
-#~ msgstr "Défloutage : large, force 4"
+#~ msgstr "Défloutage : large, force 4"
 
 #~ msgid "compress shadows/highlights (eigf) : very strong"
-#~ msgstr "Compresser ombres/hautes-lumières 'eigf) : très fort"
+#~ msgstr "Compresser ombres/hautes-lumières 'eigf) : très fort"
 
 #~ msgid "compress shadows/highlights (gf) : very strong"
-#~ msgstr "Compresser ombres/hautes-lumières (gf) : très fort"
+#~ msgstr "Compresser ombres/hautes-lumières (gf) : très fort"
 
 #~ msgid "tagged%"
 #~ msgstr "Positionnée%"
@@ -28274,13 +28274,13 @@ msgstr "Actions souris"
 #~ msgstr "Blanc"
 
 #~ msgid "point tool: draw points"
-#~ msgstr "Outil point : placer des points"
+#~ msgstr "Outil point : placer des points"
 
 #~ msgid "line tool: draw lines"
-#~ msgstr "Outil ligne : dessiner des lignes"
+#~ msgstr "Outil ligne : dessiner des lignes"
 
 #~ msgid "curve tool: draw curves"
-#~ msgstr "Outil courbe : dessiner des courbes"
+#~ msgstr "Outil courbe : dessiner des courbes"
 
 #~ msgctxt "accel"
 #~ msgid "point tool"
@@ -28621,7 +28621,7 @@ msgstr "Actions souris"
 #~ msgstr "Taille max"
 
 #~ msgid "mask blending : landscapes"
-#~ msgstr "Fusion masque : paysages"
+#~ msgstr "Fusion masque : paysages"
 
 #~ msgid ""
 #~ "'no' affects global and local contrast (safe if you only add contrast)\n"
@@ -28707,8 +28707,8 @@ msgstr "Actions souris"
 
 #~ msgid "show only your favourite modules (selected in `more modules' below)"
 #~ msgstr ""
-#~ "Affiche uniquement les modules favoris (sélectionner dans « plus de "
-#~ "modules » ci-dessous)"
+#~ "Affiche uniquement les modules favoris (sélectionner dans « plus de "
+#~ "modules » ci-dessous)"
 
 #~ msgid "tone group"
 #~ msgstr "Modules de tonalité"
@@ -28723,40 +28723,40 @@ msgstr "Actions souris"
 #~ msgstr "Groupe d'effets"
 
 #~ msgid "subset: no module"
-#~ msgstr "Groupe : aucun module"
+#~ msgstr "Groupe : aucun module"
 
 #~ msgid "subset: all modules"
-#~ msgstr "Groupe : tous les modules"
+#~ msgstr "Groupe : tous les modules"
 
 #~ msgid "subset: default modules"
-#~ msgstr "Groupe : modules par défaut"
+#~ msgstr "Groupe : modules par défaut"
 
 #~ msgid "workspace: all-purpose"
-#~ msgstr "Atelier : générique"
+#~ msgstr "Atelier : générique"
 
 #~ msgid "workspace: landscape & HDR"
-#~ msgstr "Atelier : paysage & HDR"
+#~ msgstr "Atelier : paysage & HDR"
 
 #~ msgid "workspace: architecture & streets"
-#~ msgstr "Atelier : architecture & rues"
+#~ msgstr "Atelier : architecture & rues"
 
 #~ msgid "workspace: portrait & beauty"
-#~ msgstr "Atelier : portrait & beauté"
+#~ msgstr "Atelier : portrait & beauté"
 
 #~ msgid "workspace: lowlight & high ISO"
-#~ msgstr "Atelier : basse lumière & hauts ISO"
+#~ msgstr "Atelier : basse lumière & hauts ISO"
 
 #~ msgid "subset: creative modules only"
-#~ msgstr "Groupe : modules créatifs"
+#~ msgstr "Groupe : modules créatifs"
 
 #~ msgid "subset: technical modules only"
-#~ msgstr "Groupe : modules techniques"
+#~ msgstr "Groupe : modules techniques"
 
 #~ msgid ""
 #~ "unknown signal name: '%s'. use 'ALL' to enable debug for all or use full "
 #~ "signal name\n"
 #~ msgstr ""
-#~ "Signal « %s » non reconnu. Utiliser 'ALL' pour activer le mode debug pour "
+#~ "Signal « %s » non reconnu. Utiliser 'ALL' pour activer le mode debug pour "
 #~ "tous les signaux ou utiliser le nom complet du signal .\n"
 #~ "\n"
 
@@ -28771,12 +28771,12 @@ msgstr "Actions souris"
 #~ msgstr ""
 #~ "Une erreur est survenue lors de l'ouverture de la base de données depuis\n"
 #~ "\n"
-#~ "<span style=\"italic\">« %s »</span>\n"
+#~ "<span style=\"italic\">« %s »</span>\n"
 #~ "\n"
 #~ "il semble que la base de données soit corrompue.\n"
 #~ "Voulez vous quitter darktable maintenant et restaurer manuellement\n"
 #~ "la base de données depuis une sauvegarde ou re-démarrer avec une nouvelle "
-#~ "base de données ?"
+#~ "base de données ?"
 
 #~ msgid "only draw images on map that are currently collected and filtered"
 #~ msgstr ""
@@ -28878,7 +28878,7 @@ msgstr "Actions souris"
 
 #~ msgid "error: output file is a directory. please specify file name"
 #~ msgstr ""
-#~ "Erreur : le fichier de sortie est un répertoire, merci de spécifier un "
+#~ "Erreur : le fichier de sortie est un répertoire, merci de spécifier un "
 #~ "nom de fichier"
 
 #~ msgid ""
@@ -28954,7 +28954,7 @@ msgstr "Actions souris"
 #~ msgstr "D max"
 
 #~ msgid "# shapes:"
-#~ msgstr "# Formes :"
+#~ msgstr "# Formes :"
 
 #~ msgid ""
 #~ "use the per-camera basecurve by default instead of the generic "
@@ -29211,20 +29211,20 @@ msgstr "Actions souris"
 #~ msgid "do you really want to send %d selected image to trash?"
 #~ msgid_plural "do you really want to send %d selected images to trash?"
 #~ msgstr[0] ""
-#~ "êtes-vous sûr de vouloir déplacer l'image sélectionnée vers la poubelle ?"
+#~ "êtes-vous sûr de vouloir déplacer l'image sélectionnée vers la poubelle ?"
 #~ msgstr[1] ""
 #~ "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers la "
-#~ "poubelle ?"
+#~ "poubelle ?"
 
 #~ msgid "do you really want to physically delete %d selected image from disk?"
 #~ msgid_plural ""
 #~ "do you really want to physically delete %d selected images from disk?"
 #~ msgstr[0] ""
 #~ "êtes-vous sûr de vouloir supprimer du disque définitivement %d image "
-#~ "sélectionnée ?"
+#~ "sélectionnée ?"
 #~ msgstr[1] ""
 #~ "êtes-vous sûr de vouloir supprimer du disque définitivement les %d images "
-#~ "sélectionnées ?"
+#~ "sélectionnées ?"
 
 #~ msgid "pick GUI color from image"
 #~ msgstr "Choisit une couleur dans l'image"
@@ -29415,13 +29415,13 @@ msgstr "Actions souris"
 #~ "have to login into your facebook account there and authorize darktable to "
 #~ "upload photos before continuing."
 #~ msgstr ""
-#~ "éTape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans "
+#~ "éTape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans "
 #~ "votre navigateur. Connectez-vous à votre compte facebook et autorisez "
 #~ "darktable à charger des fichiers pour continuer."
 
 #~ msgid ""
 #~ "step 2: paste your browser URL and click the OK button once you are done."
-#~ msgstr "éTape 2 : coller l'URL du navigateur cliquez sur OK"
+#~ msgstr "éTape 2 : coller l'URL du navigateur cliquez sur OK"
 
 #~ msgid "facebook authentication"
 #~ msgstr "Authentification facebook"
@@ -29433,7 +29433,7 @@ msgstr "Actions souris"
 #~ msgstr "Entrer l'URL de validation"
 
 #~ msgid "the given URL is not valid, it should look like: "
-#~ msgstr "L'URL donnée n'est pas valide, elle devrait ressembler à :"
+#~ msgstr "L'URL donnée n'est pas valide, elle devrait ressembler à :"
 
 #~ msgid "authentication successful"
 #~ msgstr "Authentification avec succès"
@@ -29493,12 +29493,12 @@ msgstr "Actions souris"
 #~ "have to login into your flickr account there and authorize darktable to "
 #~ "upload photos before continuing."
 #~ msgstr ""
-#~ "éTape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans "
+#~ "éTape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans "
 #~ "votre navigateur. Connectez-vous à votre compte flickr et autorisez "
 #~ "darktable à charger des fichiers pour continuer."
 
 #~ msgid "step 2: click the OK button once you are done."
-#~ msgstr "éTape 2 : cliquez sur \"OK\""
+#~ msgstr "éTape 2 : cliquez sur \"OK\""
 
 #~ msgid "flickr authentication"
 #~ msgstr "Authentification flickr"
@@ -29537,7 +29537,7 @@ msgstr "Actions souris"
 #~ "have to login into your google account there and authorize darktable to "
 #~ "upload photos before continuing."
 #~ msgstr ""
-#~ "éTape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans "
+#~ "éTape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans "
 #~ "votre navigateur. Connectez-vous à votre compte google et autorisez "
 #~ "darktable à charger des fichiers pour continuer."
 
@@ -29545,7 +29545,7 @@ msgstr "Actions souris"
 #~ "step 2: paste the verification code shown to you in the browser and click "
 #~ "the OK button once you are done."
 #~ msgstr ""
-#~ "éTape 2 : coller le code de vérification affiché par le navigateur et "
+#~ "éTape 2 : coller le code de vérification affiché par le navigateur et "
 #~ "cliquer \"OK\""
 
 #~ msgid "google authentication"
@@ -29575,7 +29575,7 @@ msgstr "Actions souris"
 #~ msgstr "Luma (utiliser sur la 2nd instance)"
 
 #~ msgid "invalid png header from %s"
-#~ msgstr "Entête png non valide pour « %s »"
+#~ msgstr "Entête png non valide pour « %s »"
 
 #~ msgid "select a png (haldclut) or a cube file"
 #~ msgstr "Sélectionner un png (hald clut) ou un fichier cube"
@@ -29692,31 +29692,31 @@ msgstr "Actions souris"
 #~ msgstr "13 IL (extérieur)"
 
 #~ msgid "-8 EV : blacks"
-#~ msgstr "-8 IL : noirs"
+#~ msgstr "-8 IL : noirs"
 
 #~ msgid "-7 EV : deep shadows"
-#~ msgstr "-7 IL : ombres profondes"
+#~ msgstr "-7 IL : ombres profondes"
 
 #~ msgid "-6 EV : shadows"
-#~ msgstr "-6 IL : ombres"
+#~ msgstr "-6 IL : ombres"
 
 #~ msgid "-5 EV : light shadows"
-#~ msgstr "-5 IL : ombres légères"
+#~ msgstr "-5 IL : ombres légères"
 
 #~ msgid "-4 EV : midtones"
-#~ msgstr "-4 IL : tons moyens"
+#~ msgstr "-4 IL : tons moyens"
 
 #~ msgid "-3 EV : dark highlights"
-#~ msgstr "-3 IL : ombres profondes"
+#~ msgstr "-3 IL : ombres profondes"
 
 #~ msgid "-2 EV : highlights"
-#~ msgstr "-2 IL : hautes lumières"
+#~ msgstr "-2 IL : hautes lumières"
 
 #~ msgid "-1 EV : whites"
-#~ msgstr "-1 IL : blancs"
+#~ msgstr "-1 IL : blancs"
 
 #~ msgid "+0 EV : speculars"
-#~ msgstr "+0 IL : spéculaires"
+#~ msgstr "+0 IL : spéculaires"
 
 #~ msgid "max rgb"
 #~ msgstr "Max RVB"
@@ -30026,7 +30026,7 @@ msgstr "Actions souris"
 
 #, fuzzy
 #~ msgid "processing `%s' for `%s'.."
-#~ msgstr "Impression de l'image « %s » sur « %s »"
+#~ msgstr "Impression de l'image « %s » sur « %s »"
 
 #~ msgid "No"
 #~ msgstr "Non"
@@ -30035,7 +30035,7 @@ msgstr "Actions souris"
 #~ msgstr "Oui"
 
 #~ msgid "prepare printing image %d on `%s'"
-#~ msgstr "Préparation de l'impression de l'image %d sur « %s »"
+#~ msgstr "Préparation de l'impression de l'image %d sur « %s »"
 
 #~ msgid "ICC profiles in %s/color/out or %s/color/out"
 #~ msgstr "Profils ICC dans %s/color/out ou %s/color/out"
@@ -30057,79 +30057,79 @@ msgstr "Actions souris"
 #~ msgstr "Désactiver les outils"
 
 #~ msgid "dark skin :A0"
-#~ msgstr "Peau sombre :A0"
+#~ msgstr "Peau sombre :A0"
 
 #~ msgid "light skin :A1"
-#~ msgstr "Peau claire :A1"
+#~ msgstr "Peau claire :A1"
 
 #~ msgid "blue sky :A2"
-#~ msgstr "Bleu ciel :A2"
+#~ msgstr "Bleu ciel :A2"
 
 #~ msgid "foliage :A3"
-#~ msgstr "Feuillage :A3"
+#~ msgstr "Feuillage :A3"
 
 #~ msgid "blue flower :A4"
-#~ msgstr "Bleu fleur :A4"
+#~ msgstr "Bleu fleur :A4"
 
 #~ msgid "bluish green :A5"
-#~ msgstr "Vert bleu :A5"
+#~ msgstr "Vert bleu :A5"
 
 #~ msgid "purple red :B1"
-#~ msgstr "Violet rouge :B1"
+#~ msgstr "Violet rouge :B1"
 
 #~ msgid "moderate red :B2"
-#~ msgstr "Rouge moyen :B2"
+#~ msgstr "Rouge moyen :B2"
 
 #~ msgid "purple :B3"
-#~ msgstr "Violet :B3"
+#~ msgstr "Violet :B3"
 
 #~ msgid "orange yellow :B5"
-#~ msgstr "Orange jaune :B5"
+#~ msgstr "Orange jaune :B5"
 
 #~ msgid "blue :C0"
-#~ msgstr "Bleu :C0"
+#~ msgstr "Bleu :C0"
 
 #~ msgid "green :C1"
-#~ msgstr "Vert :C1"
+#~ msgstr "Vert :C1"
 
 #~ msgid "red :C2"
-#~ msgstr "Rouge :C2"
+#~ msgstr "Rouge :C2"
 
 #~ msgid "yellow :C3"
-#~ msgstr "Jaune :C3"
+#~ msgstr "Jaune :C3"
 
 #~ msgid "magenta :C4"
-#~ msgstr "Magenta :C4"
+#~ msgstr "Magenta :C4"
 
 #~ msgid "cyan :C5"
-#~ msgstr "Cyan :C5"
+#~ msgstr "Cyan :C5"
 
 #~ msgid "white :D0"
-#~ msgstr "Blanc :D0"
+#~ msgstr "Blanc :D0"
 
 #~ msgid "neutral 8 :D1"
-#~ msgstr "Neutre 8 :D1"
+#~ msgstr "Neutre 8 :D1"
 
 #~ msgid "neutral 65 :D2"
-#~ msgstr "Neutre 65 :D2"
+#~ msgstr "Neutre 65 :D2"
 
 #~ msgid "neutral 5 :D3"
-#~ msgstr "Neutre 5 :D3"
+#~ msgstr "Neutre 5 :D3"
 
 #~ msgid "neutral 35 :D4"
-#~ msgstr "Neutre 35 :D4"
+#~ msgstr "Neutre 35 :D4"
 
 #~ msgid "black :D5"
-#~ msgstr "Noir :D5"
+#~ msgstr "Noir :D5"
 
 #~ msgid "select patch `%s' (altered patches are marked with an outline)"
 #~ msgstr ""
-#~ "Sélectionne le patch « %s » (les patchs modifiés sont marqués d'un "
+#~ "Sélectionne le patch « %s » (les patchs modifiés sont marqués d'un "
 #~ "contour)"
 
 #~ msgid "[init_f] `%s' color matrix not found for 4bayer image!\n"
 #~ msgstr ""
-#~ "[Init_f] Matrice couleur « %s » non trouvée pour une image de bayer!\n"
+#~ "[Init_f] Matrice couleur « %s » non trouvée pour une image de bayer!\n"
 
 #~ msgctxt "accel"
 #~ msgid "apply style from popup menu"
@@ -30143,12 +30143,12 @@ msgstr "Actions souris"
 
 #~ msgid "[colorspaces] `%s' color matrix not found for 4bayer image!\n"
 #~ msgstr ""
-#~ "[Colorspaces] Matrice couleur « %s » non trouvée pour une image de "
+#~ "[Colorspaces] Matrice couleur « %s » non trouvée pour une image de "
 #~ "bayer!\n"
 
 #~ msgid "[temperature] `%s' color matrix not found for 4bayer image!\n"
 #~ msgstr ""
-#~ "[Temperature] Matrice couleur « %s » non trouvée pour une image de "
+#~ "[Temperature] Matrice couleur « %s » non trouvée pour une image de "
 #~ "bayer!\n"
 
 #~ msgctxt "preferences"
@@ -30194,7 +30194,7 @@ msgstr "Actions souris"
 #~ msgstr "Toujours essayer d'utiliser LittleCMS2"
 
 #~ msgid "ERROR : invalid temporary directory : %s\n"
-#~ msgstr "ERREUR : répertoire temporaire invalide : %s\n"
+#~ msgstr "ERREUR : répertoire temporaire invalide : %s\n"
 
 #~ msgid "_Close"
 #~ msgstr "_Fermer"
@@ -30321,7 +30321,7 @@ msgstr "Actions souris"
 #~ "off - no compression in memory, JPG on disk. low quality - DXT1 (fast). "
 #~ "high quality - DXT1, same memory as low quality variant but slower."
 #~ msgstr ""
-#~ "Off : pas de compression en mémoire, JPG sur le disque ; basse qualité - "
+#~ "Off : pas de compression en mémoire, JPG sur le disque ; basse qualité - "
 #~ "DXT1 (rapide) ;  haute qualité - DXT1, même consommation mémoire mais "
 #~ "plus lent"
 
@@ -30370,7 +30370,7 @@ msgstr "Actions souris"
 #~ msgstr "Netteté des bords pour chaque taille"
 
 #~ msgid "double click to reset to `%"
-#~ msgstr "Double-clic pour réinitialiser « %d »XXXXXXXXX"
+#~ msgstr "Double-clic pour réinitialiser « %d »XXXXXXXXX"
 
 #~ msgid "double click to reset to `%<PRId64>'"
 #~ msgstr "Double-clic pour réinitialiser '%<PRId64>'"
@@ -30474,7 +30474,7 @@ msgstr "Actions souris"
 #~ msgstr "Structure du dossier"
 
 #~ msgid "above settings expands to:"
-#~ msgstr "Les réglages ci-dessus se détaillent en :"
+#~ msgstr "Les réglages ci-dessus se détaillent en :"
 
 #~ msgid "please set the basedirectory settings before importing"
 #~ msgstr "Merci de renseigner les paramètres de dossier avant l'importation"
@@ -30493,7 +30493,7 @@ msgstr "Actions souris"
 #~ msgstr ""
 #~ "Chemin des images exportées\n"
 #~ "⚠\t$(SEQUENCE) est obligatoire\n"
-#~ "variables reconnues :"
+#~ "variables reconnues :"
 
 #~ msgid "failed to create session path %s."
 #~ msgstr "Impossible de créer le chemin de session %s"
@@ -30585,7 +30585,7 @@ msgstr "Actions souris"
 #~ "have to login into your picasa account there and authorize darktable to "
 #~ "upload photos before continuing."
 #~ msgstr ""
-#~ "éTape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans "
+#~ "éTape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans "
 #~ "votre navigateur. Connectez-vous à votre compte picasa et autorisez "
 #~ "darktable à charger des fichiers pour continuer."
 
@@ -30619,7 +30619,7 @@ msgstr "Actions souris"
 #~ msgstr "Tiff 8/16 bits"
 
 #~ msgid "url:"
-#~ msgstr "Url :"
+#~ msgstr "Url :"
 
 #~ msgid "b/w"
 #~ msgstr "N/b"
@@ -30852,7 +30852,7 @@ msgstr "Actions souris"
 #~ "darktable."
 
 #~ msgid "SIMD extensions found: "
-#~ msgstr "Extensions SIMD trouvées :"
+#~ msgstr "Extensions SIMD trouvées :"
 
 #~ msgid ""
 #~ "darktable is very cpu intensive and uses SSE2 SIMD instructions for heavy "
@@ -30994,7 +30994,7 @@ msgstr "Actions souris"
 #~ "$(HOME) - home folder\n"
 #~ "$(DESKTOP) - desktop folder"
 #~ msgstr ""
-#~ "Entrer le chemin vers lequel créer la galerie :\n"
+#~ "Entrer le chemin vers lequel créer la galerie :\n"
 #~ "$(ROLL_NAME) - dossier de l'image originelle\n"
 #~ "$(FILE_FOLDER) - chemin  du dossier de l'image originelle\n"
 #~ "$(FILE_NAME) - nom de base de l'image originelle\n"
@@ -31074,7 +31074,7 @@ msgstr "Actions souris"
 #~ "$(HOME) - home folder\n"
 #~ "$(DESKTOP) - desktop folder"
 #~ msgstr ""
-#~ "Entrer le chemin vers lequel exporter les images :\n"
+#~ "Entrer le chemin vers lequel exporter les images :\n"
 #~ "$(ROLL_NAME) - dossier de l'image originelle\n"
 #~ "$(FILE_FOLDER) - chemin  du dossier de l'image originelle\n"
 #~ "$(FILE_NAME) - nom de base de l'image originelle\n"
@@ -31099,7 +31099,7 @@ msgstr "Actions souris"
 #~ "$(DESKTOP) - dossier du bureau"
 
 #~ msgid "could not attach xmp data to file `%s'!"
-#~ msgstr "Impossible de sauver le fichier attaché xmp du fichier %s !"
+#~ msgstr "Impossible de sauver le fichier attaché xmp du fichier %s !"
 
 #~ msgid "black / white"
 #~ msgstr "Noir / blanc"
@@ -31267,7 +31267,7 @@ msgstr "Actions souris"
 #~ "abscissa: input, ordinate: output \n"
 #~ "works on L channel"
 #~ msgstr ""
-#~ "Abscisse : entrée, ordonnée : sortie \n"
+#~ "Abscisse : entrée, ordonnée : sortie \n"
 #~ "fonctionne sur le canal L"
 
 #~ msgid "how many threads to use in background"
