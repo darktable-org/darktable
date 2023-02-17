@@ -2507,42 +2507,80 @@ void init(dt_iop_module_t *module)
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)module->gui_data;
+  dt_iop_denoiseprofile_params_t *d = module->default_params;
+
+  d->radius = 1.0f;
+  d->nbhood = 7.0f;
+  d->strength = 1.0f;
+  d->shadows = 1.0f;
+  d->bias = 0.0f;
+  d->scattering = 0.0f;
+  d->central_pixel_weight = 0.1f;
+  d->overshooting = 1.0f;
+  d->mode = MODE_WAVELETS;
+  d->wb_adaptive_anscombe = TRUE;
+  d->fix_anscombe_and_nlmeans_norm = TRUE;
+  d->use_new_vst = TRUE;
+  d->wavelet_color_mode = MODE_Y0U0V0;
+
+  GList *profiles = dt_noiseprofile_get_matching(&module->dev->image_storage);
+  const int iso = module->dev->image_storage.exif_iso;
+
+  // default to generic poissonian
+  dt_noiseprofile_t interpolated = dt_noiseprofile_generic;
+
+  char name[512];
+
+  g_strlcpy(name, _(interpolated.name), sizeof(name));
+
+  dt_noiseprofile_t *last = NULL;
+  for(GList *iter = profiles; iter; iter = g_list_next(iter))
+  {
+    dt_noiseprofile_t *current = (dt_noiseprofile_t *)iter->data;
+
+    if(current->iso == iso)
+    {
+      interpolated = *current;
+      // signal later autodetection in commit_params:
+      interpolated.a[0] = -1.0f;
+      snprintf(name, sizeof(name), _("found match for ISO %d"), iso);
+      break;
+    }
+    if(last && last->iso < iso && current->iso > iso)
+    {
+      interpolated.iso = iso;
+      dt_noiseprofile_interpolate(last, current, &interpolated);
+      // signal later autodetection in commit_params:
+      interpolated.a[0] = -1.0f;
+      snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"),
+               last->iso, current->iso);
+      break;
+    }
+    last = current;
+  }
+
+  const float a = interpolated.a[1];
+
+  d->radius = infer_radius_from_profile(a);
+  d->scattering = infer_scattering_from_profile(a);
+  d->shadows = infer_shadows_from_profile(a);
+  d->bias = infer_bias_from_profile(a);
+
+  for(int k = 0; k < 3; k++)
+  {
+    d->a[k] = interpolated.a[k];
+    d->b[k] = interpolated.b[k];
+  }
+
   if(g)
   {
     dt_bauhaus_combobox_clear(g->profile);
 
     // get matching profiles:
-    char name[512];
-    if(g->profiles) g_list_free_full(g->profiles, dt_noiseprofile_free);
-    g->profiles = dt_noiseprofile_get_matching(&module->dev->image_storage);
-    g->interpolated = dt_noiseprofile_generic; // default to generic poissonian
-    g_strlcpy(name, _(g->interpolated.name), sizeof(name));
-
-    const int iso = module->dev->image_storage.exif_iso;
-    dt_noiseprofile_t *last = NULL;
-    for(GList *iter = g->profiles; iter; iter = g_list_next(iter))
-    {
-      dt_noiseprofile_t *current = (dt_noiseprofile_t *)iter->data;
-
-      if(current->iso == iso)
-      {
-        g->interpolated = *current;
-        // signal later autodetection in commit_params:
-        g->interpolated.a[0] = -1.0f;
-        snprintf(name, sizeof(name), _("found match for ISO %d"), iso);
-        break;
-      }
-      if(last && last->iso < iso && current->iso > iso)
-      {
-        g->interpolated.iso = iso;
-        dt_noiseprofile_interpolate(last, current, &g->interpolated);
-        // signal later autodetection in commit_params:
-        g->interpolated.a[0] = -1.0f;
-        snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"), last->iso, current->iso);
-        break;
-      }
-      last = current;
-    }
+    if(g->profiles)
+      g_list_free_full(g->profiles, dt_noiseprofile_free);
+    g->profiles = profiles;
+    g->interpolated = interpolated;
 
     dt_bauhaus_combobox_add(g->profile, name);
     for(GList *iter = g->profiles; iter; iter = g_list_next(iter))
@@ -2550,27 +2588,9 @@ void reload_defaults(dt_iop_module_t *module)
       dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
       dt_bauhaus_combobox_add(g->profile, profile->name);
     }
+    dt_bauhaus_combobox_set(g->profile, 0);
 
-    // set defaults depending on the profile
-    // all these formulas were "guessed" and are completely empirical
-    const float a = g->interpolated.a[1];
-    dt_iop_denoiseprofile_params_t *d = module->default_params;
-
-    d->radius = infer_radius_from_profile(a);
-    d->scattering = infer_scattering_from_profile(a);
-    d->shadows = infer_shadows_from_profile(a);
-    d->bias = infer_bias_from_profile(a);
-
-    dt_bauhaus_slider_set_default(g->radius, d->radius);
-    dt_bauhaus_slider_set_default(g->scattering, d->scattering);
-    dt_bauhaus_slider_set_default(g->shadows, d->shadows);
-    dt_bauhaus_slider_set_default(g->bias, d->bias);
-
-    for(int k = 0; k < 3; k++)
-    {
-      d->a[k] = g->interpolated.a[k];
-      d->b[k] = g->interpolated.b[k];
-    }
+    gui_update(module);
   }
 }
 
