@@ -2749,17 +2749,6 @@ gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
   return label;
 }
 
-gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
-{
-  gchar *label;
-  /* create a history button and add to box */
-  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_markup_escape_text(module->name(), -1);
-  else
-    label = g_markup_printf_escaped("%s <span size=\"smaller\">%s</span>", module->name(), module->multi_name);
-  return label;
-}
-
 int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)
 {
   return dt_dev_distort_transform_plus(dev, dev->preview_pipe, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, points, points_count);
