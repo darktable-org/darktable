@@ -22,6 +22,7 @@ brew upgrade
 # Define homebrew dependencies
 hbDependencies="adwaita-icon-theme \
     cmake \
+    pkg-config \
     cmocka \
     curl \
     desktop-file-utils \
