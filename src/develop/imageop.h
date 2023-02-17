@@ -543,9 +543,6 @@ static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t 
 #define IOP_GUI_FREE \
   dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){dt_free_align(self->gui_data);} self->gui_data = NULL
 
-/* return a warning message, prefixed by the special character ⚠ */
-char *dt_iop_warning_message(const char *message);
-
 /** check whether we have the required number of channels in the input
  ** data; if not, copy the input buffer to the output buffer, set the
  ** module's trouble message, and return FALSE */
