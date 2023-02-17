@@ -1115,19 +1115,8 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
   return dt_dev_modulegroups_test(module->dev, group, module);
 }
 
-static void _iop_panel_label(dt_iop_module_t *module)
+static void _iop_panel_name(dt_iop_module_t *module)
 {
-  // IOP module name
-
-  GtkLabel *lab = GTK_LABEL(module->label);
-  const char *module_name = module->name();
-  gtk_label_set_text(lab, module_name);
-
-  gtk_label_set_ellipsize(lab,
-                          !module->multi_name[0]
-                          ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
-  g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
-
   // IOP instance name if any
 
   GtkLabel *iname = GTK_LABEL(module->instance_name);
@@ -1161,7 +1150,7 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
     return;
 
   // set panel name to display correct multi-instance
-  _iop_panel_label(module);
+  _iop_panel_name(module);
   dt_iop_gui_set_enable_button(module);
 }
 
@@ -2652,8 +2641,11 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   /* add module label & instance name */
   hw[IOP_MODULE_LABEL] = gtk_event_box_new();
   GtkWidget *lab = hw[IOP_MODULE_LABEL];
-  module->label = gtk_label_new("");
+  module->label = gtk_label_new(module->name());
   gtk_widget_set_name(module->label, "iop-panel-label");
+  gtk_label_set_ellipsize(GTK_LABEL(module->label), PANGO_ELLIPSIZE_END);
+  g_object_set(G_OBJECT(module->label), "xalign", 0.0, (gchar *)0);
+
   gtk_container_add(GTK_CONTAINER(lab), module->label);
 
   module->instance_name = gtk_label_new("");
