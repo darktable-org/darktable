@@ -2577,7 +2577,8 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_combobox_clear(g->profile);
 
     // get matching profiles:
-    if(g->profiles) g_list_free_full(g->profiles, dt_noiseprofile_free);
+    if(g->profiles)
+      g_list_free_full(g->profiles, dt_noiseprofile_free);
     g->profiles = profiles;
     g->interpolated = interpolated;
 
@@ -2589,10 +2590,7 @@ void reload_defaults(dt_iop_module_t *module)
     }
     dt_bauhaus_combobox_set(g->profile, 0);
 
-    dt_bauhaus_slider_set_default(g->radius, d->radius);
-    dt_bauhaus_slider_set_default(g->scattering, d->scattering);
-    dt_bauhaus_slider_set_default(g->shadows, d->shadows);
-    dt_bauhaus_slider_set_default(g->bias, d->bias);
+    gui_update(module);
   }
 }
 
