@@ -159,7 +159,7 @@ void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(finalscale);
   self->widget = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(self->widget),_("this module is used to downscale images at export time. "
+  gtk_label_set_markup(GTK_LABEL(self->widget),_("this module is used to downscale images with high quality resampling mode at export time. "
                                                  "moving it along the pipeline will have diffent effects on exported images. "));
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   gtk_label_set_xalign (GTK_LABEL(self->widget), 0.0f);
