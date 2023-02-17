@@ -63,7 +63,8 @@
 // of the image.
 #define DT_IOP_DENOISE_PROFILE_P_FULCRUM 0.05f
 
-typedef enum dt_iop_denoiseprofile_mode_t {
+typedef enum dt_iop_denoiseprofile_mode_t
+{
   MODE_NLMEANS = 0,
   MODE_WAVELETS = 1,
   MODE_VARIANCE = 2,
@@ -71,7 +72,8 @@ typedef enum dt_iop_denoiseprofile_mode_t {
   MODE_WAVELETS_AUTO = 4
 } dt_iop_denoiseprofile_mode_t;
 
-typedef enum dt_iop_denoiseprofile_wavelet_mode_t {
+typedef enum dt_iop_denoiseprofile_wavelet_mode_t
+{
   MODE_RGB = 0,    // $DESCRIPTION: "RGB"
   MODE_Y0U0V0 = 1  // $DESCRIPTION: "Y0U0V0"
 } dt_iop_denoiseprofile_wavelet_mode_t;
