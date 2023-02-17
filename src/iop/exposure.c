@@ -1036,7 +1036,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
   if(mode == DT_SPOT_MODE_CORRECT)
     _auto_set_exposure(self, darktable.develop->pipe);
-  // else : just record new values and do nothing
+  // else : just record new values and do nothing
 }
 
 void gui_reset(struct dt_iop_module_t *self)
@@ -1142,7 +1142,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->Lch_origin = gtk_label_new(_("L : \tN/A"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->Lch_origin),
-                              _("these LCh coordinates are computed from CIE Lab 1976 coordinates"));
+                              _("these LCh coordinates are computed from CIE Lab 1976 coordinates"));
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->Lch_origin), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), FALSE, FALSE, DT_BAUHAUS_SPACE);

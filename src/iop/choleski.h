@@ -374,7 +374,7 @@ static inline int pseudo_solve(float *const restrict A,
   if(m < n)
   {
     valid = 0;
-    fprintf(stdout, "Pseudo solve: cannot cast %zu × %zu matrice\n", m, n);
+    fprintf(stdout, "Pseudo solve: cannot cast %zu × %zu matrice\n", m, n);
     return valid;
   }
 
