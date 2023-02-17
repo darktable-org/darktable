@@ -50,6 +50,7 @@ typedef enum dt_iop_module_header_icons_t
   IOP_MODULE_SWITCH = 0,
   IOP_MODULE_ICON,
   IOP_MODULE_LABEL,
+  IOP_MODULE_INSTANCE_NAME,
   IOP_MODULE_INSTANCE,
   IOP_MODULE_RESET,
   IOP_MODULE_PRESETS,
@@ -267,6 +268,8 @@ typedef struct dt_iop_module_t
   GtkDarktableToggleButton *off;
   /** this is the module header, contains label and buttons */
   GtkWidget *header;
+  GtkWidget *label;
+  GtkWidget *instance_name;
   /** this is the module mask indicator, inside header */
   GtkWidget *mask_indicator;
   /** expander containing the widget and flag to store expanded state */
