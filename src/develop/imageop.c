@@ -82,7 +82,8 @@ typedef struct dt_iop_gui_simple_callback_t
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   memcpy(module->params, module->default_params, module->params_size);
-  dt_develop_blend_colorspace_t cst = dt_develop_blend_default_module_blend_colorspace(module);
+  dt_develop_blend_colorspace_t cst =
+    dt_develop_blend_default_module_blend_colorspace(module);
   dt_develop_blend_init_blend_parameters(module->default_blendop_params, cst);
   dt_iop_commit_blend_params(module, module->default_blendop_params);
   dt_iop_gui_blending_reload_defaults(module);
@@ -244,6 +245,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
   module->gui_data = NULL;
 
   dt_introspection_field_t *i = module->so->get_introspection_linear();
+
   while(i->header.type != DT_INTROSPECTION_TYPE_NONE)
   {
     switch(i->header.type)
@@ -292,7 +294,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
         else
         {
           element_size /= sizeof(int);
-          size_t num_ints = i->header.size / sizeof(int);
+          const size_t num_ints = i->header.size / sizeof(int);
 
           int *p = (int *)((uint8_t *)module->default_params + i->header.offset);
           for(size_t c = element_size; c < num_ints; c++, p++)
@@ -385,15 +387,16 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   }
   module->histogram_cst = IOP_CS_NONE;
   module->histogram = NULL;
-  module->histogram_max[0] = module->histogram_max[1] = module->histogram_max[2] = module->histogram_max[3]
-      = 0;
+  module->histogram_max[0] = module->histogram_max[1] =
+    module->histogram_max[2] = module->histogram_max[3] = 0;
   module->histogram_middle_grey = FALSE;
   module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   module->suppress_mask = 0;
   module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
   module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
-  module->raster_mask.source.masks = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
+  module->raster_mask.source.masks =
+    g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
   module->raster_mask.sink.source = NULL;
   module->raster_mask.sink.id = 0;
 
@@ -435,13 +438,15 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module,
   /* initialize blendop params and default values */
   module->blend_params = calloc(1, sizeof(dt_develop_blend_params_t));
   module->default_blendop_params = calloc(1, sizeof(dt_develop_blend_params_t));
-  dt_develop_blend_colorspace_t cst = dt_develop_blend_default_module_blend_colorspace(module);
+  dt_develop_blend_colorspace_t cst =
+    dt_develop_blend_default_module_blend_colorspace(module);
   dt_develop_blend_init_blend_parameters(module->default_blendop_params, cst);
   dt_iop_commit_blend_params(module, module->default_blendop_params);
 
   if(module->params_size == 0)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
     return 1; // empty params hurt us in many places, just add a dummy value
   }
   module->enabled = module->default_enabled; // apply (possibly new) default.
@@ -1067,7 +1072,8 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
 
   char tooltip[512];
   gchar *module_label = dt_history_item_get_name(module);
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
+  snprintf(tooltip, sizeof(tooltip),
+           module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(togglebutton), tooltip);
@@ -1086,9 +1092,11 @@ gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module)
   if(!(module->flags() & IOP_FLAGS_HIDDEN))
   {
     if(!module->gui_init)
-      g_debug("Module '%s' is not hidden and lacks implementation of gui_init()...", module->op);
+      g_debug("Module '%s' is not hidden and lacks implementation of gui_init()...",
+              module->op);
     else if(!module->gui_cleanup)
-      g_debug("Module '%s' is not hidden and lacks implementation of gui_cleanup()...", module->op);
+      g_debug("Module '%s' is not hidden and lacks implementation of gui_cleanup()...",
+              module->op);
     else
       is_hidden = FALSE;
   }
