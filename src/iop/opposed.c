@@ -203,7 +203,7 @@ static void _process_linear_opposed(
         }
       }
       for(int c=0; c<3; c++)
-        chrominance[c] = (cnts[c] > 50) ? sums[c] / cnts[c] : 0.0f;
+        chrominance[c] = (cnts[c] > 50.0f) ? sums[c] / cnts[c] : 0.0f;
 
       // we only have valid precalculated data if in fullpipe and complete (allow some rounding) image
       if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
@@ -354,7 +354,7 @@ static float *_process_opposed(
         }
       }
       for(int c=0; c<3; c++)
-        chrominance[c] = (cnts[c] > 50) ? sums[c] / cnts[c] : 0.0f;
+        chrominance[c] = (cnts[c] > 50.0f) ? sums[c] / cnts[c] : 0.0f;
 
       if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
       {
@@ -461,9 +461,7 @@ static cl_int process_opposed_cl(
   cl_mem dev_inmask = NULL;
   cl_mem dev_outmask = NULL;
   cl_mem dev_accu = NULL;
-  float *claccu = NULL;
 
-  const size_t iheight = ROUNDUPDHT(roi_in->height, devid);
   const size_t owidth = ROUNDUPDWD(roi_out->width, devid);
   const size_t oheight = ROUNDUPDHT(roi_out->height, devid);
 
@@ -514,16 +512,15 @@ static cl_int process_opposed_cl(
             CLARG(msize));
     if(err != CL_SUCCESS) goto error;
 
-    claccu = dt_calloc_align_float(8 * iheight);
-    if(claccu == NULL) goto error;
+    float claccu[6] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 
-    dev_accu = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 8 * iheight);
+    dev_accu = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 6);
     if(dev_accu == NULL) goto error;
 
-    err = dt_opencl_write_buffer_to_device(devid, claccu, dev_accu, 0, 8 * iheight * sizeof(float), TRUE);
+    err = dt_opencl_write_buffer_to_device(devid, claccu, dev_accu, 0, 6 * sizeof(float), TRUE);
     if(err != CL_SUCCESS) goto error;
 
-    size_t sizes[] = { iheight, 1, 1};
+    size_t sizes[] = { ROUNDUPDHT(roi_in->height, devid), 1, 1};
 
     dt_opencl_set_kernel_args(devid, gd->kernel_highlights_chroma, 0,
             CLARG(dev_in),
@@ -536,26 +533,14 @@ static cl_int process_opposed_cl(
             CLARG(filters),
             CLARG(dev_xtrans),
             CLARG(dev_clips)); 
-
     err = dt_opencl_enqueue_kernel_ndim_with_local(devid, gd->kernel_highlights_chroma, sizes, NULL, 1);
     if(err != CL_SUCCESS) goto error;
 
-    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, 8 * iheight * sizeof(float), TRUE);
+    err = dt_opencl_read_buffer_from_device(devid, claccu, dev_accu, 0, 6 * sizeof(float), TRUE);
     if(err != CL_SUCCESS) goto error;
 
-    // collect row data and accumulate
-    dt_aligned_pixel_t sums = { 0.0f, 0.0f, 0.0f, 0.0f};
-    dt_aligned_pixel_t cnts = { 0.0f, 0.0f, 0.0f, 0.0f};
-    for(int grp = 3; grp < roi_in->height-3; grp++)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        sums[c] += claccu[grp*8 + c];
-        cnts[c] += claccu[grp*8 + 3 + c];
-      }
-    }
     for(int c=0; c<3; c++)
-      chrominance[c] = (cnts[c] > 50) ? sums[c] / cnts[c] : 0.0f;
+      chrominance[c] = (claccu[2*c+1] > 50.0f) ? claccu[2*c] / claccu[2*c+1] : 0.0f;
 
     if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
     {
@@ -563,7 +548,7 @@ static cl_int process_opposed_cl(
         img_oppchroma[c] = chrominance[c];
       img_opphash = opphash;
       dt_print(DT_DEBUG_PIPE, "[opposed chroma cache GPU] red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for opphash%22" PRIu64 "\n",
-        chrominance[0], cnts[0], chrominance[1], cnts[1], chrominance[2], cnts[2], opphash);
+        chrominance[0], claccu[1], chrominance[1], claccu[3], chrominance[2], claccu[5], opphash);
     }
   }
 
@@ -591,7 +576,6 @@ static cl_int process_opposed_cl(
   dt_opencl_release_mem_object(dev_inmask);
   dt_opencl_release_mem_object(dev_outmask);
   dt_opencl_release_mem_object(dev_accu);
-  dt_free_align(claccu);
   return CL_SUCCESS;
 
   error:
@@ -604,7 +588,6 @@ static cl_int process_opposed_cl(
   dt_opencl_release_mem_object(dev_inmask);
   dt_opencl_release_mem_object(dev_outmask);
   dt_opencl_release_mem_object(dev_accu);
-  dt_free_align(claccu);
   return err;
 }
 #endif

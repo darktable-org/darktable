@@ -346,7 +346,7 @@ kernel void highlights_initmask(
   if((mcol >= mwidth) || (mrow >= mheight))
     return;
 
-  if((mcol < 1) || (mrow < 1) || (mcol > mwidth-2) || (mrow > mheight-2))
+  if((mcol < 1) || (mrow < 1) || (mcol > mwidth -2) || (mrow > mheight-2))
   {
     for(int c = 0; c < 3; c++)
       inmask[c*msize + mad24(mrow, mwidth, mcol)] = 0;
@@ -422,21 +422,47 @@ kernel void highlights_dilatemask(
          in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
 }
 
+void atomic_add_f(global float *val, const float delta)
+{
+  union
+  {
+    float f;
+    unsigned int i;
+  }
+  old_val;
+  union
+  {
+    float f;
+    unsigned int i;
+  }
+  new_val;
+  global volatile unsigned int *ival = (global volatile unsigned int *)val;
+  do
+  {
+    // the following is equivalent to old_val.f = *val. however, as according to the opencl standard
+    // we can not rely on global buffer val to be consistently cached (relaxed memory consistency) we 
+    // access it via a slower but consistent atomic operation.
+    old_val.i = atomic_add(ival, 0);
+    new_val.f = old_val.f + delta;
+  }
+  while (atomic_cmpxchg (ival, old_val.i, new_val.i) != old_val.i);
+}
+
 kernel void highlights_chroma(
         read_only image2d_t in,
         global char *mask,
         global float *accu,
         const int width,
         const int height,
-        const int pwidth,
-        const int psize, 
+        const int mwidth,
+        const int msize, 
         const unsigned int filters,
         global const unsigned char (*const xtrans)[6],
         global const float *clips)
 {
   const int row = get_global_id(0);
 
-  if((row < 3) || (row > height - 3)) return;
+  if((row < 3) || (row > height - 4)) return;
 
   float sum[4] = {0.0f, 0.0f, 0.0f, 0.0f};
   float cnt[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -446,7 +472,7 @@ kernel void highlights_chroma(
     const size_t idx = mad24(row, width, col);
     const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
     const float inval = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
-    const size_t px = color * psize + mad24(row/3, pwidth, col/3);
+    const size_t px = color * msize + mad24(row/3, mwidth, col/3);
     if(mask[px] && (inval > 0.2f*clips[color]) && (inval < clips[color]))
     {
       const float ref = _calc_refavg(in, xtrans, filters, row, col, width);
@@ -454,10 +480,21 @@ kernel void highlights_chroma(
       cnt[color] += 1.0f;
     }
   }
-  for(int c = 0; c < 3; c++)
+
+  if(cnt[0] > 0.0f)
   {
-    accu[row*8 + c] = sum[c];
-    accu[row*8 + 3 + c] = cnt[c];
+    atomic_add_f(&accu[0], sum[0]);
+    atomic_add_f(&accu[1], cnt[0]);
+  }
+  if(cnt[1] > 0.0f)
+  {
+    atomic_add_f(&accu[2], sum[1]);
+    atomic_add_f(&accu[3], cnt[1]);
+  }
+  if(cnt[2] > 0.0f)
+  {
+    atomic_add_f(&accu[4], sum[2]);
+    atomic_add_f(&accu[5], cnt[2]);
   }
 }
 
