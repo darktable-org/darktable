@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2015-2021 darktable developers.
+    Copyright (C) 2015-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,12 +49,16 @@ int default_group()
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+int default_colorspace(dt_iop_module_t *self,
+                       dt_dev_pixelpipe_t *pipe,
+                       dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RGB;
 }
 
-void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
+void modify_roi_in(dt_iop_module_t *self,
+                   dt_dev_pixelpipe_iop_t *piece,
+                   const dt_iop_roi_t *const roi_out,
                    dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
@@ -75,30 +79,43 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
   roi_in->scale = 1.0f;
 }
 
-void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void distort_mask(struct dt_iop_module_t *self,
+                  struct dt_dev_pixelpipe_iop_t *piece,
+                  const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
-  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
-  dt_interpolation_resample_roi_1c(itor, out, roi_out, roi_out->width * sizeof(float), in, roi_in,
-                                   roi_in->width * sizeof(float));
+  const struct dt_interpolation *itor =
+    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
+  dt_interpolation_resample_roi_1c(itor,
+                                   out, roi_out, roi_out->width * sizeof(float),
+                                   in, roi_in, roi_in->width * sizeof(float));
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   if(roi_out->scale > 1.0f) // trust cl code for 1:1 copy here or downscale
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_finalscale] upscaling not yet supported by opencl code\n");
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_finalscale] upscaling not yet supported by opencl code\n");
     return FALSE;
   }
 
   const int devid = piece->pipe->devid;
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO, "clip_and_zoom_roi CL", piece->pipe, self->so->op, roi_in, roi_out, "device=%i\n", devid);
-  cl_int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO,
+                "clip_and_zoom_roi CL",
+                piece->pipe, self->so->op, roi_in, roi_out, "device=%i\n", devid);
+  const cl_int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_finalscale] couldn't `dt_iop_clip_and_zoom_roi_cl`: %s\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_finalscale] couldn't `dt_iop_clip_and_zoom_roi_cl`: %s\n",
+             cl_errstr(err));
     return FALSE;
   }
 
@@ -106,25 +123,35 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 }
 #endif
 
-void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid, void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
-  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO, "clip_and_zoom_roi", piece->pipe, self->so->op, roi_in, roi_out, "\n");
+  dt_print_pipe(DT_DEBUG_PIPE | DT_DEBUG_IMAGEIO,
+                "clip_and_zoom_roi", piece->pipe, self->so->op, roi_in, roi_out, "\n");
   dt_iop_clip_and_zoom_roi(ovoid, ivoid, roi_out, roi_in, roi_out->width, roi_in->width);
 }
 
-void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+void commit_params(dt_iop_module_t *self,
+                   dt_iop_params_t *params,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   if(piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) piece->enabled = 0;
 }
 
-void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_finalscale_data_t));
 }
 
-void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -153,4 +180,3 @@ void cleanup(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
