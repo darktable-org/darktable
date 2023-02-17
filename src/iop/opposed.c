@@ -101,8 +101,13 @@ static inline char _mask_dilated(const char *in, const size_t w1)
 
 
 // A slightly modified version for sraws
-static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const input, float *const output,
-                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const gboolean quality)
+static void _process_linear_opposed(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        const float *const input, float *const output,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out,
+        const gboolean quality)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   const float clipval = 0.987f * d->clip;
@@ -237,9 +242,15 @@ static void _process_linear_opposed(struct dt_iop_module_t *self, dt_dev_pixelpi
   }
 }
 
-static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const input, float *const output,
-                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         const gboolean keep, const gboolean quality)
+static float *_process_opposed(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        const float *const input,
+        float *const output,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out,
+        const gboolean keep,
+        const gboolean quality)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
@@ -272,20 +283,26 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clips, input, roi_in, xtrans, mask) \
-  dt_omp_sharedconst(filters, msize, mwidth) \
+  dt_omp_sharedconst(filters, msize, mwidth, mheight) \
   schedule(static) collapse(2)
 #endif
-      for(size_t row = 1; row < roi_in->height -1; row++)
+      for(int mrow = 1; mrow < mheight-1; mrow++)
       {
-        for(size_t col = 1; col < roi_in->width -1; col++)
+        for(int mcol = 1; mcol < mwidth-1; mcol++)
         {
-          const size_t idx = row * roi_in->width + col;
-          const size_t mdx = _raw_to_cmap(mwidth, row, col); 
-          const int color = (filters == 9u) ? FCxtrans(row, col, roi_in, xtrans) : FC(row, col, filters);
-          if((fmaxf(0.0f, input[idx]) >= clips[color]) && (mask[color*msize + mdx] == 0))
+          char mbuff[4] = { 0, 0, 0, 0 };
+          const size_t grp = 3 * (mrow * roi_in->width + mcol);
+          for(int y = -1; y < 1; y++)
           {
-            mask[color * msize + _raw_to_cmap(mwidth, row, col)] |= 1;
+            for(int x = -1; x < 1; x++)
+            {
+              const size_t idx = grp + y * roi_in->width + x;
+              const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+y, roi_in, xtrans) : FC(mrow+y, mcol+x, filters);
+              mbuff[color] += (fmaxf(0.0f, input[idx]) >= clips[color]) ? 1 : 0;
+            }
           }
+          for(int c = 0; c < 3; c++)
+            mask[c * msize + mrow * mwidth + mcol] = (mbuff[c]) ? 1 : 0;
         }
       }
       /* We want to use the photosites closely around clipped data to be taken into account.
@@ -415,9 +432,13 @@ static float *_process_opposed(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 }
 
 #ifdef HAVE_OPENCL
-static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                         cl_mem dev_in, cl_mem dev_out,
-                                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static cl_int process_opposed_cl(
+        struct dt_iop_module_t *self,
+        dt_dev_pixelpipe_iop_t *piece,
+        cl_mem dev_in,
+        cl_mem dev_out,
+        const dt_iop_roi_t *const roi_in,
+        const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   const dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
@@ -441,8 +462,7 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   cl_mem dev_outmask = NULL;
   cl_mem dev_accu = NULL;
   float *claccu = NULL;
- 
-  const size_t iwidth = ROUNDUPDWD(roi_in->width, devid);
+
   const size_t iheight = ROUNDUPDHT(roi_in->height, devid);
   const size_t owidth = ROUNDUPDWD(roi_out->width, devid);
   const size_t oheight = ROUNDUPDHT(roi_out->height, devid);
@@ -475,13 +495,23 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     dev_outmask =  dt_opencl_alloc_device_buffer(devid, sizeof(char) * 3 * msize);
     if(dev_outmask == NULL) goto error;
 
-    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_initmask, iwidth, iheight,
-            CLARG(dev_in), CLARG(dev_inmask), CLARG(roi_in->width), CLARG(roi_in->height), CLARG(msize), CLARG(mwidth),
-            CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips));
+    err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_initmask, mwidth, mheight,
+            CLARG(dev_in),
+            CLARG(dev_inmask),
+            CLARG(msize),
+            CLARG(mwidth),
+            CLARG(mheight),
+            CLARG(filters),
+            CLARG(dev_xtrans),
+            CLARG(dev_clips));
     if(err != CL_SUCCESS) goto error;
 
     err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_dilatemask, mwidth, mheight,
-            CLARG(dev_inmask), CLARG(dev_outmask), CLARG(mwidth), CLARG(mheight), CLARG(msize));
+            CLARG(dev_inmask),
+            CLARG(dev_outmask),
+            CLARG(mwidth),
+            CLARG(mheight),
+            CLARG(msize));
     if(err != CL_SUCCESS) goto error;
 
     claccu = dt_calloc_align_float(8 * iheight);
@@ -496,9 +526,16 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
     size_t sizes[] = { iheight, 1, 1};
 
     dt_opencl_set_kernel_args(devid, gd->kernel_highlights_chroma, 0,
-            CLARG(dev_in), CLARG(dev_outmask), CLARG(dev_accu),
-            CLARG(roi_in->width), CLARG(roi_in->height), CLARG(mwidth), CLARG(msize),
-            CLARG(filters), CLARG(dev_xtrans), CLARG(dev_clips)); 
+            CLARG(dev_in),
+            CLARG(dev_outmask),
+            CLARG(dev_accu),
+            CLARG(roi_in->width),
+            CLARG(roi_in->height),
+            CLARG(mwidth),
+            CLARG(msize),
+            CLARG(filters),
+            CLARG(dev_xtrans),
+            CLARG(dev_clips)); 
 
     err = dt_opencl_enqueue_kernel_ndim_with_local(devid, gd->kernel_highlights_chroma, sizes, NULL, 1);
     if(err != CL_SUCCESS) goto error;
@@ -534,10 +571,18 @@ static cl_int process_opposed_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   if(dev_chrominance == NULL) goto error;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_highlights_opposed, owidth, oheight,
-          CLARG(dev_in), CLARG(dev_out),
-          CLARG(roi_out->width), CLARG(roi_out->height), CLARG(roi_in->width), CLARG(roi_in->height),
-          CLARG(roi_out->x), CLARG(roi_out->y), CLARG(filters), CLARG(dev_xtrans),
-          CLARG(dev_clips), CLARG(dev_chrominance));
+          CLARG(dev_in),
+          CLARG(dev_out),
+          CLARG(roi_out->width),
+          CLARG(roi_out->height),
+          CLARG(roi_in->width),
+          CLARG(roi_in->height),
+          CLARG(roi_out->x),
+          CLARG(roi_out->y),
+          CLARG(filters),
+          CLARG(dev_xtrans),
+          CLARG(dev_clips),
+          CLARG(dev_chrominance));
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_clips);

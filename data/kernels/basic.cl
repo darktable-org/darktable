@@ -3,6 +3,7 @@
     copyright (c) 2009--2013 johannes hanika.
     copyright (c) 2014 Ulrich Pegelow.
     copyright (c) 2014 LebedevRI.
+    Copyright (C) 2022-23 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -301,7 +302,13 @@ highlights_false_color (read_only image2d_t in, write_only image2d_t out, const 
   write_imagef (out, (int2)(x, y), oval);
 }
 
-static inline float _calc_refavg(read_only image2d_t in, global const unsigned char (*const xtrans)[6], const unsigned int filters, int row, int col, int width)
+static inline float _calc_refavg(
+        read_only image2d_t in,
+        global const unsigned char (*const xtrans)[6],
+        const unsigned int filters,
+        int row,
+        int col,
+        int width)
 {
   const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
   float mean[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -323,29 +330,50 @@ static inline float _calc_refavg(read_only image2d_t in, global const unsigned c
   return pow(croot_refavg[color], 3.0f);
 }
 
-kernel void
-highlights_initmask (read_only image2d_t in, global char *inmask, 
-                    const int width, const int height, const int psize, const int pwidth,
-                    const unsigned int filters, global const unsigned char (*const xtrans)[6],
-                    global const float *clips)
+kernel void highlights_initmask(
+        read_only image2d_t in,
+        global char *inmask, 
+        const int msize,
+        const int mwidth,
+        const int mheight,
+        const unsigned int filters,
+        global const unsigned char (*const xtrans)[6],
+        global const float *clips)
 {
-  const int col = get_global_id(0);
-  const int row = get_global_id(1);
-  if((col < 1) || (row < 1) || (col > width-2) || (row > height-2)) return;
+  const int mcol = get_global_id(0);
+  const int mrow = get_global_id(1);
 
-  float val = fmax(0.0f, read_imagef(in, sampleri, (int2)(col, row)).x);
-  const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
-  const size_t idx = color*psize + mad24(row/3, pwidth, col/3);
+  if((mcol >= mwidth) || (mrow >= mheight))
+    return;
 
-  if((val >= clips[color]) && (inmask[idx] == 0))
+  if((mcol < 1) || (mrow < 1) || (mcol > mwidth-2) || (mrow > mheight-2))
   {
-    inmask[idx] = inmask[idx] | 1;
+    for(int c = 0; c < 3; c++)
+      inmask[c*msize + mad24(mrow, mwidth, mcol)] = 0;
+    return;
   }
+
+  char mbuff[4] = { 0, 0, 0, 0 };
+  for(int y = -1; y < 1; y++)
+  {
+    for(int x = -1; x < 1; x++)
+    {
+      const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+y, xtrans) : FC(mrow+y, mcol+x, filters);
+      const float val = fmax(0.0f, read_imagef(in, sampleri, (int2)(3 * mcol + x, 3 * mrow + y)).x);
+      mbuff[color] += (val >= clips[color]) ? 1 : 0;
+    }
+  }
+
+  for(int c = 0; c < 3; c++)
+    inmask[c*msize + mad24(mrow, mwidth, mcol)] = (mbuff[c]) ? 1 : 0;
 }
 
-kernel void
-highlights_dilatemask (global char *in, global char *out, 
-                    const int w1, const int height, const int psize)
+kernel void highlights_dilatemask(
+        global char *in,
+        global char *out, 
+        const int w1,
+        const int height,
+        const int psize)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
@@ -394,12 +422,17 @@ highlights_dilatemask (global char *in, global char *out,
          in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
 }
 
-kernel void
-highlights_chroma (read_only image2d_t in, global char *mask, global float *accu,
-                   const int width, const int height,
-                   const int pwidth, const int psize, 
-                   const int filters, global const unsigned char (*const xtrans)[6],
-                   global const float *clips)
+kernel void highlights_chroma(
+        read_only image2d_t in,
+        global char *mask,
+        global float *accu,
+        const int width,
+        const int height,
+        const int pwidth,
+        const int psize, 
+        const unsigned int filters,
+        global const unsigned char (*const xtrans)[6],
+        global const float *clips)
 {
   const int row = get_global_id(0);
 
@@ -428,12 +461,19 @@ highlights_chroma (read_only image2d_t in, global char *mask, global float *accu
   }
 }
 
-kernel void
-highlights_opposed (read_only image2d_t in, write_only image2d_t out,
-                    const int owidth, const int oheight, const int iwidth, const int iheight,
-                    const int dx, const int dy,
-                    const int filters, global const unsigned char (*const xtrans)[6],
-                    global const float *clips, global const float *chroma)
+kernel void highlights_opposed(
+        read_only image2d_t in,
+        write_only image2d_t out,
+        const int owidth,
+        const int oheight,
+        const int iwidth,
+        const int iheight,
+        const int dx,
+        const int dy,
+        const unsigned int filters,
+        global const unsigned char (*const xtrans)[6],
+        global const float *clips,
+        global const float *chroma)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
