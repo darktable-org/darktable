@@ -17067,7 +17067,7 @@ msgstr "Inverser"
 #: ../src/iop/invert.c:116
 msgid "this module is deprecated. please use the negadoctor module instead."
 msgstr ""
-"Ce module est déprécié. Nous vous recommandons d'utiliser « Docteur négatif »."
+"Ce module est déprécié. Nous vous recommandons d'utiliser « Docteur néga »."
 
 #: ../src/iop/invert.c:121
 msgid "invert film negatives"
@@ -17830,7 +17830,7 @@ msgstr "Conserver les hautes lumières"
 
 #: ../src/iop/negadoctor.c:145
 msgid "negadoctor"
-msgstr "Docteur négatif"
+msgstr "Docteur néga"
 
 #: ../src/iop/negadoctor.c:150
 msgid "film|invert|negative|scan"
