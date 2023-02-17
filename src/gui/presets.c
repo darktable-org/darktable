@@ -1021,13 +1021,6 @@ void dt_gui_presets_apply_adjacent_preset(dt_iop_module_t *module, int direction
   g_free(name);
 }
 
-
-static void _menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
-{
-  gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
-  dt_gui_presets_apply_preset(name, module);
-}
-
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
 {
   dt_image_t *image = &module->dev->image_storage;
@@ -1099,20 +1092,42 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
   return applied;
 }
 
-static gboolean _menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventButton *event,
-                                                 dt_iop_module_t *module)
+static gboolean _menuitem_button_preset(GtkMenuItem *menuitem, GdkEventButton *event,
+                                        dt_iop_module_t *module)
 {
+  static guint click_time = 0;
+  if(event->type == GDK_BUTTON_PRESS)
+    click_time = event->time;
+
+  gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+
   if(event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
   {
-    _menuitem_pick_preset(menuitem, module);
-  }
-  else if(event->button == 3)
-  {
-    dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
-    if(new_module) _menuitem_pick_preset(menuitem, new_module);
+    if(event->type == GDK_BUTTON_PRESS)
+    {
+      GtkContainer *menu = GTK_CONTAINER(gtk_widget_get_parent(GTK_WIDGET(menuitem)));
+      for(GList *c = gtk_container_get_children(menu); c; c = g_list_delete_link(c, c))
+        if(GTK_IS_CHECK_MENU_ITEM(c->data))
+          gtk_check_menu_item_set_active(c->data, c->data == menuitem);
 
-    if(dt_conf_get_bool("darkroom/ui/rename_new_instance"))
-      dt_iop_gui_rename_module(new_module);
+      dt_gui_presets_apply_preset(name, module);
+    }
+  }
+  else if(event->button == 3 && event->type == GDK_BUTTON_RELEASE)
+  {
+    if(dt_gui_long_click(event->time, click_time))
+    {
+      dt_shortcut_copy_lua((dt_action_t*)module, name);
+      return TRUE;
+    }
+    else
+    {
+      dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
+      if(new_module) dt_gui_presets_apply_preset(name, new_module);
+
+      if(dt_conf_get_bool("darkroom/ui/rename_new_instance"))
+        dt_iop_gui_rename_module(new_module);
+    }
   }
 
   if(dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
@@ -1121,7 +1136,24 @@ static gboolean _menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEvent
     dt_iop_connect_accels_multi(module->so);
   }
 
-  return FALSE;
+  return dt_gui_long_click(event->time, click_time); // keep menu open on long click
+}
+
+// need to catch "activate" signal as well to handle keyboard
+static void _menuitem_activate_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  if(gtk_get_current_event()->type == GDK_KEY_PRESS)
+    dt_gui_presets_apply_preset(g_object_get_data(G_OBJECT(menuitem), "dt-preset-name"), module);
+}
+
+static void _menuitem_connect_preset(GtkWidget *mi, const gchar *name, dt_iop_module_t *iop)
+{
+  g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
+  g_object_set_data(G_OBJECT(mi), "dt-preset-module", iop);
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_activate_preset), iop);
+  g_signal_connect(G_OBJECT(mi), "button-press-event", G_CALLBACK(_menuitem_button_preset), iop);
+  g_signal_connect(G_OBJECT(mi), "button-release-event", G_CALLBACK(_menuitem_button_preset), iop);
+  gtk_widget_set_has_tooltip(mi, TRUE);
 }
 
 /* quick presets list
@@ -1355,12 +1387,11 @@ void dt_gui_favorite_presets_menu_show()
         gchar *txt = g_strdup_printf("ꬹ%s|%sꬹ", iop->so->op, name);
         if(config && strstr(config, txt))
         {
-          GtkMenuItem *mi = (GtkMenuItem *)gtk_menu_item_new_with_label(name);
+          GtkWidget *mi = gtk_menu_item_new_with_label(name);
           gchar *tt = g_markup_printf_escaped("<b>%s %s</b> %s", iop->name(), iop->multi_name, name);
           gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), tt);
           g_free(tt);
-          g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
-          g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_pick_preset), iop);
+          _menuitem_connect_preset(mi, name, iop);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(mi));
         }
         g_free(txt);
@@ -1542,15 +1573,11 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op,
     }
     else
     {
-      g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
+      gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
       if(module)
-      {
-        g_signal_connect(G_OBJECT(mi), "button-release-event", G_CALLBACK(_menuitem_button_released_preset),
-                         module);
-      }
+        _menuitem_connect_preset(mi, name, module);
       else if(pick_callback)
         g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), callback_data);
-      gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
     }
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt++;

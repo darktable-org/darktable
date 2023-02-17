@@ -384,11 +384,25 @@ void dt_lib_presets_update(const gchar *preset, const gchar *module_name, int mo
   sqlite3_finalize(stmt);
 }
 
-static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
+static void _menuitem_activate_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
-  // apply preset via set_params
-  const char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
-  dt_lib_presets_apply(pn, minfo->plugin_name, minfo->version);
+  if(gtk_get_current_event()->type != GDK_KEY_PRESS) return;
+
+  char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+  dt_lib_presets_apply(name, minfo->plugin_name, minfo->version);
+}
+
+static gboolean _menuitem_button_preset(GtkMenuItem *menuitem, GdkEventButton *event,
+                                        dt_lib_module_info_t *minfo)
+{
+  char *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+
+  if(event->button == 1)
+    dt_lib_presets_apply(name, minfo->plugin_name, minfo->version);
+  else
+    dt_shortcut_copy_lua((dt_action_t*)minfo->module, name);
+
+  return FALSE;
 }
 
 static void free_module_info(GtkWidget *widget, gpointer user_data)
@@ -477,8 +491,12 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       mi = gtk_menu_item_new_with_label((const char *)name);
     }
     g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), minfo);
+    g_object_set_data(G_OBJECT(mi), "dt-preset-module", minfo->module);
+
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_activate_preset), minfo);
+    g_signal_connect(G_OBJECT(mi), "button-press-event", G_CALLBACK(_menuitem_button_preset), minfo);
     gtk_widget_set_tooltip_text(mi, (const char *)sqlite3_column_text(stmt, 3));
+    gtk_widget_set_has_tooltip(mi, TRUE);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     cnt++;
   }
