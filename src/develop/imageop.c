@@ -1117,23 +1117,42 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 
 static void _iop_panel_label(dt_iop_module_t *module)
 {
-  GtkWidget *lab = dt_gui_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
-  lab = gtk_bin_get_child(GTK_BIN(lab));
-  gtk_widget_set_name(lab, "iop-panel-label");
-  char *module_name = dt_history_item_get_name_html(module);
+  // IOP module name
 
-  if((module->has_trouble && module->enabled))
+  GtkLabel *lab = GTK_LABEL(module->label);
+  const char *module_name = module->name();
+  gtk_label_set_text(lab, module_name);
+
+  gtk_label_set_ellipsize(lab,
+                          !module->multi_name[0]
+                          ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
+  g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
+
+  // IOP instance name if any
+
+  GtkLabel *iname = GTK_LABEL(module->instance_name);
+
+  if(module->has_trouble && module->enabled)
   {
-    char *saved_old_name = module_name;
-    module_name = dt_iop_warning_message(module_name);
-    g_free(saved_old_name);
+    gtk_label_set_text(iname, "⚠");
+    gtk_widget_set_name(GTK_WIDGET(iname), "iop-module-name-error");
+  }
+  else
+  {
+    if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
+    {
+      gtk_label_set_text(iname, "");
+      gtk_widget_set_name(GTK_WIDGET(iname), "");
+    }
+    else
+    {
+      gtk_label_set_text(iname, module->multi_name);
+      gtk_widget_set_name(GTK_WIDGET(iname), "iop-module-name");
+    }
   }
 
-  gtk_label_set_markup(GTK_LABEL(lab), module_name);
-  g_free(module_name);
-
-  gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
-  g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
+  gtk_label_set_ellipsize(iname, PANGO_ELLIPSIZE_MIDDLE);
+  g_object_set(G_OBJECT(iname), "xalign", 0.0, (gchar *)0);
 }
 
 void dt_iop_gui_update_header(dt_iop_module_t *module)
@@ -2630,10 +2649,17 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_ICON]), "dt_icon");
   gtk_widget_set_valign(GTK_WIDGET(hw[IOP_MODULE_ICON]), GTK_ALIGN_CENTER);
 
-  /* add module label */
+  /* add module label & instance name */
   hw[IOP_MODULE_LABEL] = gtk_event_box_new();
   GtkWidget *lab = hw[IOP_MODULE_LABEL];
-  gtk_container_add(GTK_CONTAINER(lab), gtk_label_new(""));
+  module->label = gtk_label_new("");
+  gtk_widget_set_name(module->label, "iop-panel-label");
+  gtk_container_add(GTK_CONTAINER(lab), module->label);
+
+  module->instance_name = gtk_label_new("");
+  hw[IOP_MODULE_INSTANCE_NAME] = module->instance_name;
+  gtk_widget_set_name(module->instance_name, "iop-module-name");
+
   if((module->flags() & IOP_FLAGS_DEPRECATED) && module->deprecated_msg())
     gtk_widget_set_tooltip_text(lab, module->deprecated_msg());
   else
@@ -2703,9 +2729,9 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), !module->hide_enable_button);
 
   /* reorder header, for now, iop are always in the right panel */
-  for(int i = 0; i <= IOP_MODULE_LABEL; i++)
+  for(int i = 0; i <= IOP_MODULE_INSTANCE_NAME; i++)
     if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
-  for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
+  for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_INSTANCE_NAME; i--)
     if(hw[i]) gtk_box_pack_end(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
   for(int i = 0; i < IOP_MODULE_LAST; i++)
     if(hw[i]) dt_action_define(&module->so->actions, NULL, NULL, hw[i], NULL);
