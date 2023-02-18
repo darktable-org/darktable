@@ -296,7 +296,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float *buf2 = tmp;
 
   // clear the output buffer, which will be accumulating all of the detail scales
-  memset(out, 0, sizeof(float) * 4 * width * height);
+  dt_iop_image_fill(out, 0.0f, width, height, 4);
 
   // now do the wavelet decomposition, immediately synthesizing the detail scale into the final output so
   // that we don't need to store it past the current scale's iteration
