@@ -1159,15 +1159,18 @@ void dt_iop_gui_set_enable_button_icon(GtkWidget *w, dt_iop_module_t *module)
   // set on/off icon
   if(module->default_enabled && module->hide_enable_button)
   {
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w), dtgtk_cairo_paint_switch_on, 0, module);
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
+                                 dtgtk_cairo_paint_switch_on, 0, module);
   }
   else if(!module->default_enabled && module->hide_enable_button)
   {
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w), dtgtk_cairo_paint_switch_off, 0, module);
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
+                                 dtgtk_cairo_paint_switch_off, 0, module);
   }
   else
   {
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w), dtgtk_cairo_paint_switch, 0, module);
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
+                                 dtgtk_cairo_paint_switch, 0, module);
   }
 }
 
@@ -1230,10 +1233,12 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
     if(module->dev)
     {
       module->reload_defaults(module);
-      dt_print(DT_DEBUG_PARAMS, "[dt_iop_reload_defaults] defaults reloaded for %s\n", module->op);
+      dt_print(DT_DEBUG_PARAMS,
+               "[dt_iop_reload_defaults] defaults reloaded for %s\n", module->op);
     }
     else
-      dt_print(DT_DEBUG_PARAMS, "[dt_iop_reload_defaults] should not be called without image.\n");
+      dt_print(DT_DEBUG_PARAMS,
+               "[dt_iop_reload_defaults] should not be called without image.\n");
   }
   dt_iop_load_default_params(module);
   if(darktable.gui) --darktable.gui->reset;
@@ -1301,10 +1306,12 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       }
       else
       {
-        dt_print(DT_DEBUG_ALWAYS, "[imageop_init_presets] WARNING: Could not find versioning information for '%s' "
-                        "preset '%s'\nUntil some is found, the preset will be unavailable.\n(To make it "
-                        "return, please load an image that uses the preset.)\n",
-                module_so->op, name);
+        dt_print
+          (DT_DEBUG_ALWAYS,
+           "[imageop_init_presets] WARNING: Could not find versioning information for '%s' "
+           "preset '%s'\nUntil some is found, the preset will be unavailable.\n(To make it "
+           "return, please load an image that uses the preset.)\n",
+           module_so->op, name);
         sqlite3_finalize(stmt2);
         continue;
       }
@@ -1313,7 +1320,8 @@ static void _init_presets(dt_iop_module_so_t *module_so)
 
       // we found an old params version.  Update the database with it.
 
-      dt_print(DT_DEBUG_ALWAYS, "[imageop_init_presets] found version %d for '%s' preset '%s'\n",
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageop_init_presets] found version %d for '%s' preset '%s'\n",
         old_params_version, module_so->op, name);
 
       DT_DEBUG_SQLITE3_PREPARE_V2
@@ -1351,7 +1359,8 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       {
         // convert the old params to new
         const int legacy_ret =
-          module->legacy_params(module, old_params, old_params_version, new_params, module_version);
+          module->legacy_params(module, old_params, old_params_version,
+                                new_params, module_version);
 
         if(legacy_ret == 1)
         {
@@ -1367,7 +1376,9 @@ static void _init_presets(dt_iop_module_so_t *module_so)
       else
         auto_init = TRUE;
 
-      dt_print(DT_DEBUG_ALWAYS, "[imageop_init_presets] updating '%s' preset '%s' from version %d to version %d\nto:'%s'",
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageop_init_presets] updating '%s' preset '%s'"
+               " from version %d to version %d\nto:'%s'",
               module_so->op, name, old_params_version, module_version,
               dt_exif_xmp_encode(new_params, new_params_size, NULL));
 
@@ -1398,8 +1409,9 @@ static void _init_presets(dt_iop_module_so_t *module_so)
     }
     else if(module_version > old_params_version)
     {
-      dt_print(DT_DEBUG_ALWAYS, "[imageop_init_presets] Can't upgrade '%s' preset '%s' from version %d to %d, no "
-                      "legacy_params() implemented \n",
+      dt_print(DT_DEBUG_ALWAYS,
+               "[imageop_init_presets] Can't upgrade '%s' preset '%s' "
+               "from version %d to %d, no legacy_params() implemented \n",
               module_so->op, name, old_params_version, module_version);
     }
 
@@ -1659,7 +1671,8 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
   memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
   if(blendop_params->blend_cst == DEVELOP_BLEND_CS_NONE)
   {
-    module->blend_params->blend_cst = dt_develop_blend_default_module_blend_colorspace(module);
+    module->blend_params->blend_cst =
+      dt_develop_blend_default_module_blend_colorspace(module);
   }
   dt_iop_set_mask_mode(module, blendop_params->mask_mode);
 
@@ -1672,7 +1685,8 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
       {
         if(m->multi_priority == blendop_params->raster_mask_instance)
         {
-          g_hash_table_insert(m->raster_mask.source.users, module, GINT_TO_POINTER(blendop_params->raster_mask_id));
+          g_hash_table_insert(m->raster_mask.source.users,
+                              module, GINT_TO_POINTER(blendop_params->raster_mask_id));
           module->raster_mask.sink.source = m;
           module->raster_mask.sink.id = blendop_params->raster_mask_id;
           return;
@@ -1722,20 +1736,25 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
       if(!memchr(p, '\0', field->Array.count))
       {
         if(report)
-          dt_print(DT_DEBUG_ALWAYS, "validation check failed in _iop_validate_params for type \"%s\"; string not null terminated.\n",
-                          field->header.type_name);
+          dt_print(DT_DEBUG_ALWAYS,
+                   "validation check failed in _iop_validate_params"
+                   " for type \"%s\"; string not null terminated.\n",
+                   field->header.type_name);
         all_ok = FALSE;
       }
     }
     else
     {
-      for(int i = 0, item_offset = 0; i < field->Array.count; i++, item_offset += field->Array.field->header.size)
+      for(int i = 0, item_offset = 0;
+          i < field->Array.count;
+          i++, item_offset += field->Array.field->header.size)
       {
         if(!_iop_validate_params(field->Array.field, (uint8_t *)params + item_offset, report))
         {
           if(report)
-            dt_print(DT_DEBUG_ALWAYS, "validation check failed in _iop_validate_params for type \"%s\", for array element \"%d\"\n",
-                            field->header.type_name, i);
+            dt_print(DT_DEBUG_ALWAYS, "validation check failed in"
+                     " _iop_validate_params for type \"%s\", for array element \"%d\"\n",
+                     field->header.type_name, i);
           all_ok = FALSE;
           break;
         }
@@ -1743,16 +1762,19 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-    all_ok = isnan(*(float*)p) || ((*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max));
+    all_ok = isnan(*(float*)p)
+      || ((*(float*)p >= field->Float.Min && *(float*)p <= field->Float.Max));
     break;
   case DT_INTROSPECTION_TYPE_INT:
     all_ok = (*(int*)p >= field->Int.Min && *(int*)p <= field->Int.Max);
     break;
   case DT_INTROSPECTION_TYPE_UINT:
-    all_ok = (*(unsigned int*)p >= field->UInt.Min && *(unsigned int*)p <= field->UInt.Max);
+    all_ok = (*(unsigned int*)p >= field->UInt.Min
+              && *(unsigned int*)p <= field->UInt.Max);
     break;
   case DT_INTROSPECTION_TYPE_USHORT:
-    all_ok = (*(unsigned short int*)p >= field->UShort.Min && *(unsigned short int*)p <= field->UShort.Max);
+    all_ok = (*(unsigned short int*)p >= field->UShort.Min
+              && *(unsigned short int*)p <= field->UShort.Max);
     break;
   case DT_INTROSPECTION_TYPE_INT8:
     all_ok = (*(uint8_t*)p >= field->Int8.Min && *(uint8_t*)p <= field->Int8.Max);
@@ -1784,15 +1806,20 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     // TODO: special case float2
     break;
   default:
-    dt_print(DT_DEBUG_ALWAYS, "unsupported introspection type \"%s\" encountered in _iop_validate_params (field %s)\n",
-                    field->header.type_name, field->header.name);
+    dt_print(DT_DEBUG_ALWAYS,
+             "unsupported introspection type \"%s\" encountered"
+             " in _iop_validate_params (field %s)\n",
+             field->header.type_name, field->header.name);
     all_ok = FALSE;
     break;
   }
 
   if(!all_ok && report)
-    dt_print(DT_DEBUG_ALWAYS, "validation check failed in _iop_validate_params for type \"%s\"%s%s\n",
-                    field->header.type_name, (*field->header.name ? ", field: " : ""), field->header.name);
+    dt_print(DT_DEBUG_ALWAYS,
+             "validation check failed in _iop_validate_params for type \"%s\"%s%s\n",
+             field->header.type_name,
+             *field->header.name ? ", field: " : "",
+             field->header.name);
 
   return all_ok;
 }
@@ -1905,11 +1932,12 @@ void dt_iop_commit_params(dt_iop_module_t *module,
 
     free(str);
 
-    dt_print(DT_DEBUG_PARAMS, "[dt_iop_commit_params] [%s] committed for %s with hash %lu\n",
-      dt_dev_pixelpipe_type_to_str(pipe->type), module->op, (long unsigned int)piece->hash);
+    dt_print(DT_DEBUG_PARAMS,
+             "[dt_iop_commit_params] [%s] committed for %s with hash %lu\n",
+             dt_dev_pixelpipe_type_to_str(pipe->type),
+             module->op,
+             (long unsigned int)piece->hash);
   }
-  // printf("commit params hash += module %s: %lu, enabled = %d\n", piece->module->op, piece->hash,
-  // piece->enabled);
 }
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
@@ -1935,7 +1963,8 @@ void dt_iop_gui_update(dt_iop_module_t *module)
         {
           GtkWidget *label_widget =
             dt_gui_container_first_child(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
-          if(!g_strcmp0(gtk_widget_get_name(label_widget), "iop-plugin-warning")) gtk_widget_destroy(label_widget);
+          if(!g_strcmp0(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
+            gtk_widget_destroy(label_widget);
           module->has_trouble = FALSE;
         }
         module->gui_update(module);
@@ -1974,7 +2003,8 @@ static void _gui_reset_callback(GtkButton *button,
     // if a drawn mask is set, remove it from the list
     if(module->blend_params->mask_id > 0)
     {
-      dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
+      dt_masks_form_t *grp =
+        dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
       if(grp) dt_masks_form_remove(module, NULL, grp);
     }
     /* reset to default params */
@@ -2025,9 +2055,11 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     dt_iop_color_picker_reset(out_focus_module, TRUE);
 
-    gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(out_focus_module), GTK_STATE_FLAG_NORMAL, TRUE);
+    gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(out_focus_module),
+                               GTK_STATE_FLAG_NORMAL, TRUE);
 
-    if(out_focus_module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
+    if(out_focus_module->operation_tags_filter())
+      dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_iop_connect_accels_multi(out_focus_module->so);
 
@@ -2051,7 +2083,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   /* set the focus on module */
   if(module)
   {
-    gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module), GTK_STATE_FLAG_SELECTED, TRUE);
+    gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module),
+                               GTK_STATE_FLAG_SELECTED, TRUE);
 
     if(module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
@@ -2063,7 +2096,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     gtk_widget_queue_draw(module->expander);
 
     // we also add the focus css class
-    GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
+    GtkWidget *iop_w =
+      gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
     dt_gui_add_class(iop_w, "dt_module_focus");
 
     // update last preset name to get the update preset entry
@@ -2074,7 +2108,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   }
 
   /* update sticky accels window */
-  if(darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
+  if(darktable.view_manager->accels_window.window
+     && darktable.view_manager->accels_window.sticky)
     dt_view_accels_refresh(darktable.view_manager);
 
   // update guides button state
@@ -2203,7 +2238,8 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w,
   {
     if(dt_modifier_is(e->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
-      GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
+      GtkBox *container =
+        dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
       g_object_set_data(G_OBJECT(container), "source_data", user_data);
       return FALSE;
     }
@@ -2390,7 +2426,8 @@ gboolean dt_iop_show_hide_header_buttons(dt_iop_module_t *module,
       GtkWidget *space = gtk_drawing_area_new();
       gtk_box_pack_end(GTK_BOX(header), space, TRUE, TRUE, 0);
       gtk_widget_show(space);
-      g_signal_connect(G_OBJECT(space), "size-allocate", G_CALLBACK(_header_size_callback), header);
+      g_signal_connect(G_OBJECT(space), "size-allocate",
+                       G_CALLBACK(_header_size_callback), header);
     }
   }
 
@@ -2705,7 +2742,8 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_iop_gui_set_enable_button_icon(hw[IOP_MODULE_SWITCH], module);
 
   gchar *module_label = dt_history_item_get_name(module);
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
+  snprintf(tooltip, sizeof(tooltip),
+           module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), tooltip);
@@ -2715,7 +2753,8 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "button-press-event",
                    G_CALLBACK(_gui_off_button_press), module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "enter-notify-event",
-                   G_CALLBACK(_header_enter_notify_callback), GINT_TO_POINTER(DT_ACTION_ELEMENT_ENABLE));
+                   G_CALLBACK(_header_enter_notify_callback),
+                   GINT_TO_POINTER(DT_ACTION_ELEMENT_ENABLE));
 
   module->off = DTGTK_TOGGLEBUTTON(hw[IOP_MODULE_SWITCH]);
   gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), !module->hide_enable_button);
@@ -2781,10 +2820,20 @@ GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
 
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 {
-  if(pipe != dev->preview_pipe && pipe != dev->preview2_pipe) sched_yield();
-  if(pipe != dev->preview_pipe && pipe != dev->preview2_pipe && pipe->changed == DT_DEV_PIPE_ZOOMED) return 1;
-  if((pipe->changed != DT_DEV_PIPE_UNCHANGED && pipe->changed != DT_DEV_PIPE_ZOOMED) || dev->gui_leaving)
+  if(pipe != dev->preview_pipe
+     && pipe != dev->preview2_pipe)
+    sched_yield();
+
+  if(pipe != dev->preview_pipe
+     && pipe != dev->preview2_pipe
+     && pipe->changed == DT_DEV_PIPE_ZOOMED)
     return 1;
+
+  if((pipe->changed != DT_DEV_PIPE_UNCHANGED
+      && pipe->changed != DT_DEV_PIPE_ZOOMED)
+     || dev->gui_leaving)
+    return 1;
+
   return 0;
 }
 
@@ -2857,7 +2906,8 @@ static void _show_module_callback(dt_iop_module_t *module)
     dt_dev_modulegroups_set(darktable.develop, current_group);
   }
 
-  dt_iop_gui_set_expanded(module, !module->expanded, dt_conf_get_bool("darkroom/ui/single_module"));
+  dt_iop_gui_set_expanded(module, !module->expanded,
+                          dt_conf_get_bool("darkroom/ui/single_module"));
   if(module->expanded)
   {
     dt_iop_request_focus(module);
@@ -2888,13 +2938,16 @@ void dt_iop_set_darktable_iop_table()
   for(GList *iop = darktable.iop; iop; iop = g_list_next(iop))
   {
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)iop->data;
-    module_list = dt_util_dstrcat(module_list, "(\"%s\",\"%s\"),", module->op, module->name());
+    module_list = dt_util_dstrcat(module_list, "(\"%s\",\"%s\"),",
+                                  module->op, module->name());
   }
 
   if(module_list)
   {
     module_list[strlen(module_list) - 1] = '\0';
-    gchar *query = g_strdup_printf("INSERT INTO memory.darktable_iop_names (operation, name) VALUES %s", module_list);
+    gchar *query =
+      g_strdup_printf("INSERT INTO memory.darktable_iop_names (operation, name)"
+                      " VALUES %s", module_list);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -3124,7 +3177,8 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
         const int score = (mod->expanded ? prefer_expanded : 0)
                         + (mod->enabled ? prefer_enabled : 0)
                         + (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
-                           || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED ? prefer_unmasked : 0);
+                           || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED
+                                ? prefer_unmasked : 0);
 
         if(score + prefer_first > best_score)
         {
@@ -3138,7 +3192,8 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
   return accel_mod;
 }
 
-/** adds keyboard accels to the first module in the pipe to handle where there are multiple instances */
+/** adds keyboard accels to the first module in the pipe to handle
+ * where there are multiple instances */
 void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 {
   if(darktable.develop->gui_attached)
@@ -3156,7 +3211,7 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
   }
 }
 
-void dt_iop_connect_accels_all()
+void dt_iop_connect_accels_all(void)
 {
   for(const GList *iop_mods = g_list_last(darktable.develop->iop);
       iop_mods;
@@ -3240,7 +3295,8 @@ void dt_iop_refresh_center(dt_iop_module_t *module)
     const uint64_t hash =
       dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->pipe->cache, hash);
-    dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
+    //ensure that commit_params gets called to pick up any GUI changes
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate(dev);
     dt_control_queue_redraw_center();
   }
@@ -3256,7 +3312,8 @@ void dt_iop_refresh_preview(dt_iop_module_t *module)
     const uint64_t hash =
       dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview_pipe->cache, hash);
-    dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
+    //ensure that commit_params gets called to pick up any GUI changes
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
   }
@@ -3272,7 +3329,8 @@ void dt_iop_refresh_preview2(dt_iop_module_t *module)
     const uint64_t hash =
       dt_dev_pixelpipe_cache_basichash_prior(dev->pipe->image.id, dev->preview2_pipe, module);
     dt_dev_pixelpipe_cache_flush_all_but(&dev->preview2_pipe->cache, hash);
-    dev->pipe->changed |= DT_DEV_PIPE_SYNCH; //ensure that commit_params gets called to pick up any GUI changes
+    //ensure that commit_params gets called to pick up any GUI changes
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
   }
