@@ -285,10 +285,16 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-kernel void
-highlights_false_color (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                    const int rx, const int ry, const int filters, global const unsigned char (*const xtrans)[6],
-                    global const float *clips)
+kernel void highlights_false_color(
+        read_only image2d_t in,
+        write_only image2d_t out,
+        const int width,
+        const int height,
+        const int rx,
+        const int ry,
+        const unsigned int filters,
+        global const unsigned char (*const xtrans)[6],
+        global const float *clips)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -310,7 +316,6 @@ static inline float _calc_refavg(
         int col,
         int width)
 {
-  const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
   float mean[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
   float cnt[4]  = { 0.0f, 0.0f, 0.0f, 0.0f };
   for(int dy = -1; dy < 2; dy++)
@@ -324,9 +329,10 @@ static inline float _calc_refavg(
     }
   }
   for(int c = 0; c < 3; c++)
-    mean[c] = pow(mean[c] / cnt[c], 1.0f / 3.0f);
+    mean[c] = pow(mean[c] / fmax(1.0f, cnt[c]), 1.0f / 3.0f);
 
-  float croot_refavg[4]  = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1]), 0.0f};
+  const float croot_refavg[4]  = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1]), 0.0f};
+  const int color = (filters == 9u) ? FCxtrans(row, col, xtrans) : FC(row, col, filters);
   return pow(croot_refavg[color], 3.0f);
 }
 
@@ -346,44 +352,58 @@ kernel void highlights_initmask(
   if((mcol >= mwidth) || (mrow >= mheight))
     return;
 
+  const size_t mdx = mad24(mrow, mwidth, mcol);
+
   if((mcol < 1) || (mrow < 1) || (mcol > mwidth -2) || (mrow > mheight-2))
   {
     for(int c = 0; c < 3; c++)
-      inmask[c*msize + mad24(mrow, mwidth, mcol)] = 0;
+      inmask[c*msize + mdx] = 0;
     return;
   }
 
   char mbuff[4] = { 0, 0, 0, 0 };
-  for(int y = -1; y < 1; y++)
+  for(int y = -1; y < 2; y++)
   {
-    for(int x = -1; x < 1; x++)
+    for(int x = -1; x < 2; x++)
     {
-      const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+y, xtrans) : FC(mrow+y, mcol+x, filters);
+      const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+x, xtrans) : FC(mrow+y, mcol+x, filters);
       const float val = fmax(0.0f, read_imagef(in, sampleri, (int2)(3 * mcol + x, 3 * mrow + y)).x);
       mbuff[color] += (val >= clips[color]) ? 1 : 0;
     }
   }
 
   for(int c = 0; c < 3; c++)
-    inmask[c*msize + mad24(mrow, mwidth, mcol)] = (mbuff[c]) ? 1 : 0;
+    inmask[c*msize + mdx] = (mbuff[c] != 0) ? 1 : 0;
 }
 
 kernel void highlights_dilatemask(
         global char *in,
         global char *out, 
-        const int w1,
-        const int height,
-        const int psize)
+        const int mwidth,
+        const int mheight,
+        const int msize)
 {
   const int col = get_global_id(0);
   const int row = get_global_id(1);
-  if((col < 3) || (row < 3) || (col > w1-4) || (row > height-4)) return;
 
-  const int w2 = 2 * w1;
-  const int w3 = 3 * w1;
+  if((col >= mwidth) || (row >= mheight))
+    return;
 
-  int i = mad24(row, w1, col);
-  out[i] = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+  const int w1 = mwidth;
+  const int w2 = 2 * mwidth;
+  const int w3 = 3 * mwidth;
+  const int moff = mad24(row, w1, col);
+
+  if((col < 3) || (row < 3) || (col > mwidth - 4) || (row > mheight - 4))
+  {
+    out[moff] = 0;
+    out[moff + msize] = 0;
+    out[moff + 2*msize] = 0;
+    return;
+  }
+
+  int i = moff;
+  out[i] = (in[i-w1-1] | in[i-w1] | in[i-w1+1] |
          in[i-1]    | in[i]    | in[i+1] |
          in[i+w1-1] | in[i+w1] | in[i+w1+1] |
          in[i-w2-1] | in[i-w2] | in[i-w2+1] |
@@ -393,10 +413,10 @@ kernel void highlights_dilatemask(
          in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
          in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
          in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
-         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2]) ? 1 : 0;
 
-  i = psize + mad24(row, w1, col);
-  out[i] = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+  i = msize + moff;
+  out[i] = (in[i-w1-1] | in[i-w1] | in[i-w1+1] |
          in[i-1]    | in[i]    | in[i+1] |
          in[i+w1-1] | in[i+w1] | in[i+w1+1] |
          in[i-w2-1] | in[i-w2] | in[i-w2+1] |
@@ -406,10 +426,10 @@ kernel void highlights_dilatemask(
          in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
          in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
          in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
-         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2]) ? 1 : 0;
 
-  i = 2*psize + mad24(row, w1, col);
-  out[i] = in[i-w1-1] | in[i-w1] | in[i-w1+1] |
+  i = 2*msize + moff;
+  out[i] = (in[i-w1-1] | in[i-w1] | in[i-w1+1] |
          in[i-1]    | in[i]    | in[i+1] |
          in[i+w1-1] | in[i+w1] | in[i+w1+1] |
          in[i-w2-1] | in[i-w2] | in[i-w2+1] |
@@ -419,7 +439,7 @@ kernel void highlights_dilatemask(
          in[i-w2-3] | in[i-w2-2] | in[i-w2+2] | in[i-w2+3] |
          in[i-w1-3] | in[i-w1+3] | in[i-3] | in[i+3] | in[i+w1-3] | in[i+w1+3] |
          in[i+w2-3] | in[i+w2-2] | in[i+w2+2] | in[i+w2+3] |
-         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2];
+         in[i+w3-2] | in[i+w3-1] | in[i+w3] | in[i+w3+1] | in[i+w3+2]) ? 1 : 0;
 }
 
 void atomic_add_f(global float *val, const float delta)
