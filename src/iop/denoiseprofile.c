@@ -1357,7 +1357,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float *restrict buf2 = tmp;
 
   // clear the output buffer, which will be accumulating all of the detail scales
-  memset(out, 0, sizeof(float) * 4 * npixels);
+  dt_iop_image_fill(out, 0.0f, width, height, 4);
 
   for(int scale = 0; scale < max_scale; scale++)
   {
