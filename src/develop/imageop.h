@@ -559,6 +559,65 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
 
+#if defined(__SSE__)
+#include <xmmintrin.h> // needed for _mm_stream_ps
+#else
+#include <stdatomic.h>
+#endif
+// copy the RGB channels of a pixel using nontemporal stores if
+// possible; includes the 'alpha' channel as well if faster due to
+// vectorization, but subsequent code should ignore the value of the
+// alpha unless explicitly set afterwards (since it might not have
+// been copied).  NOTE: nontemporal stores will actually be *slower*
+// if we immediately access the pixel again.  This function should
+// only be used when processing an entire image before doing anything
+// else with the destination buffer.
+static inline void copy_pixel_nontemporal(
+	float *const __restrict__ out,
+        const float *const __restrict__ in)
+{
+#if defined(__SSE__)
+  _mm_stream_ps(out, *((__m128*)in));
+#elif (__clang__+0 > 7) && (__clang__+0 < 10)
+  for_each_channel(k,aligned(in,out:16)) __builtin_nontemporal_store(in[k],out[k]);
+#else
+  for_each_channel(k,aligned(in,out:16) dt_omp_nontemporal(out)) out[k] = in[k];
+#endif
+}
+
+// after writing data using copy_pixel_nontemporal, it is necessary to
+// ensure that the writes have completed before attempting reads from
+// a different core.  This function produces the required memmory
+// fence to ensure proper visibility
+static inline void dt_sfence()
+{
+#if defined(__SSE__)
+  _mm_sfence();
+#else
+  // the following generates an MFENCE instruction on x86/x64.  We
+  // only really need SFENCE, which is less expensive, but none of the
+  // other memory orders generate *any* fence instructions on x64.
+#ifdef __cplusplus
+  std::atomic_thread_fence(std::memory_order_seq_cst);
+#else
+  atomic_thread_fence(memory_order_seq_cst);
+#endif
+#endif
+}
+
+// if the copy_pixel_nontemporal() writes were inside an OpenMP
+// parallel loop, the OpenMP parallelization will have performed a
+// memory fence before resuming single-threaded operation, so a
+// dt_sfence would be superfluous.  But if compiled without OpenMP
+// parallelization, we should play it safe and emit a memory fence.
+// This function should be used right after a parallelized for loop,
+// where it will produce a barrier only if needed.
+#ifdef _OPENMPx
+#define dt_omploop_sfence()
+#else
+#define dt_omploop_sfence() dt_sfence()
+#endif
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

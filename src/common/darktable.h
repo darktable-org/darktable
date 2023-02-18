@@ -583,28 +583,13 @@ static inline float *dt_calloc_perthread_float(const size_t n, size_t* padded_si
 // a hint to vectorize a loop.  Uncomment the following line if such a combination is the compilation target.
 //#define DT_NO_SIMD_HINTS
 
-#if defined(__SSE__)
-#include <xmmintrin.h> // needed for _mm_stream_ps
-#endif
-// copy the RGB channels of a pixel using nontemporal stores if possible; includes the 'alpha' channel as well
-// if faster due to vectorization, but subsequent code should ignore the value of the alpha unless explicitly
-// set afterwards (since it might not have been copied).  NOTE: nontemporal stores will actually be *slower*
-// if we immediately access the pixel again.  This function should only be used when processing an entire
-// image before doing anything else with the destination buffer.
-static inline void copy_pixel_nontemporal(float *const __restrict__ out, const float *const __restrict__ in)
-{
-#if defined(__SSE__)
-  _mm_stream_ps(out, *((__m128*)in));
-#elif (__clang__+0 > 7) && (__clang__+0 < 10)
-  for_each_channel(k,aligned(in,out:16)) __builtin_nontemporal_store(in[k],out[k]);
-#else
-  for_each_channel(k,aligned(in,out:16) dt_omp_nontemporal(out)) out[k] = in[k];
-#endif
-}
-
 // copy the RGB channels of a pixel; includes the 'alpha' channel as well if faster due to vectorization, but
 // subsequent code should ignore the value of the alpha unless explicitly set afterwards (since it might not have
 // been copied)
+
+// When writing sequentially to an output buffer, consider using
+// copy_pixel_nontemporal (defined in develop/imageop.h) to avoid the overhead
+// of loading the cache lines from RAM before then completely overwriting them
 static inline void copy_pixel(float *const __restrict__ out, const float *const __restrict__ in)
 {
   for_each_channel(k,aligned(in,out:16)) out[k] = in[k];
