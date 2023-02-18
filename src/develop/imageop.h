@@ -612,7 +612,7 @@ static inline void dt_sfence()
 // parallelization, we should play it safe and emit a memory fence.
 // This function should be used right after a parallelized for loop,
 // where it will produce a barrier only if needed.
-#ifdef _OPENMPx
+#ifdef _OPENMP
 #define dt_omploop_sfence()
 #else
 #define dt_omploop_sfence() dt_sfence()
