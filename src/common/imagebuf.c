@@ -231,12 +231,18 @@ void dt_iop_image_fill(float *const buf, const float fill_value, const size_t wi
     // determine the number of 4-float vectors to be processed by each thread
     const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, fill_value, nfloats, nthreads, chunksize) schedule(static) num_threads(nthreads)
+  dt_omp_firstprivate(buf, fill_value, nfloats, nthreads, chunksize) \
+  schedule(static) num_threads(nthreads)
     for(size_t chunk = 0; chunk < nthreads; chunk++)
     {
-#pragma omp simd aligned(buf:16)
-      for(size_t k = 4 * chunk * chunksize; k < MIN(4*(chunk+1)*chunksize, nfloats); k++)
-        buf[k] = fill_value;
+      size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);
+      size_t limit4 = limit & ~3;
+      dt_aligned_pixel_t pix = { fill_value, fill_value,fill_value, fill_value };
+      for(size_t k = 4 * chunk * chunksize; k < limit4; k += 4)
+        copy_pixel_nontemporal(buf + k, pix);
+      // handle any leftover pixels in the final slice
+      for(size_t k  = 0; k < (limit & 3); k++)
+        buf[k + limit4] = fill_value;
     }
     return;
   }
