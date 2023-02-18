@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "common/math.h"
 #include "common/opencl.h"
 #include "common/rgb_norms.h"
@@ -1108,7 +1109,7 @@ static inline void gauss_blur(
 {
   const float w[5] = { 1.f / 16.f, 4.f / 16.f, 6.f / 16.f, 4.f / 16.f, 1.f / 16.f };
   float *tmp = dt_alloc_align_float((size_t)4 * wd * ht);
-  memset(tmp, 0, sizeof(float) * 4 * wd * ht);
+  dt_iop_image_fill(tmp, 0.0f, wd, ht, 4);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, input, w, wd) \
@@ -1118,19 +1119,22 @@ static inline void gauss_blur(
   for(int j=0;j<ht;j++)
   { // horizontal pass
     // left borders
-    for(int i=0;i<2;i++) for(int c=0;c<4;c++)
+    for(int i=0;i<2;i++)
       for(int ii=-2;ii<=2;ii++)
-        tmp[4*(j*wd+i)+c] += input[4*(j*wd+MAX(-i-ii,i+ii))+c] * w[ii+2];
+        for_four_channels(c)
+          tmp[4*(j*wd+i)+c] += input[4*(j*wd+MAX(-i-ii,i+ii))+c] * w[ii+2];
     // most pixels
-    for(int i=2;i<wd-2;i++) for(int c=0;c<4;c++)
+    for(int i=2;i<wd-2;i++)
       for(int ii=-2;ii<=2;ii++)
-        tmp[4*(j*wd+i)+c] += input[4*(j*wd+i+ii)+c] * w[ii+2];
+        for_four_channels(c)
+          tmp[4*(j*wd+i)+c] += input[4*(j*wd+i+ii)+c] * w[ii+2];
     // right borders
-    for(int i=wd-2;i<wd;i++) for(int c=0;c<4;c++)
+    for(int i=wd-2;i<wd;i++)
       for(int ii=-2;ii<=2;ii++)
-        tmp[4*(j*wd+i)+c] += input[4*(j*wd+MIN(i+ii, wd-(i+ii-wd+1) ))+c] * w[ii+2];
+        for_four_channels(c)
+          tmp[4*(j*wd+i)+c] += input[4*(j*wd+MIN(i+ii, wd-(i+ii-wd+1) ))+c] * w[ii+2];
   }
-  memset(output, 0, sizeof(float) * 4 * wd * ht);
+  dt_iop_image_fill(output, 0.0f, wd, ht, 4);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, output, w, wd) \
@@ -1139,15 +1143,18 @@ static inline void gauss_blur(
 #endif
   for(int i=0;i<wd;i++)
   { // vertical pass
-    for(int j=0;j<2;j++) for(int c=0;c<4;c++)
+    for(int j=0;j<2;j++)
       for(int jj=-2;jj<=2;jj++)
-        output[4*(j*wd+i)+c] += tmp[4*(MAX(-j-jj,j+jj)*wd+i)+c] * w[jj+2];
-    for(int j=2;j<ht-2;j++) for(int c=0;c<4;c++)
+        for_four_channels(c)
+          output[4*(j*wd+i)+c] += tmp[4*(MAX(-j-jj,j+jj)*wd+i)+c] * w[jj+2];
+    for(int j=2;j<ht-2;j++)
       for(int jj=-2;jj<=2;jj++)
-        output[4*(j*wd+i)+c] += tmp[4*((j+jj)*wd+i)+c] * w[jj+2];
-    for(int j=ht-2;j<ht;j++) for(int c=0;c<4;c++)
+        for_four_channels(c)
+          output[4*(j*wd+i)+c] += tmp[4*((j+jj)*wd+i)+c] * w[jj+2];
+    for(int j=ht-2;j<ht;j++)
       for(int jj=-2;jj<=2;jj++)
-        output[4*(j*wd+i)+c] += tmp[4*(MIN(j+jj, ht-(j+jj-ht+1))*wd+i)+c] * w[jj+2];
+        for_four_channels(c)
+          output[4*(j*wd+i)+c] += tmp[4*(MIN(j+jj, ht-(j+jj-ht+1))*wd+i)+c] * w[jj+2];
   }
   dt_free_align(tmp);
 }
@@ -1160,7 +1167,7 @@ static inline void gauss_expand(
 {
   const size_t cw = (wd-1)/2+1;
   // fill numbers in even pixels, zero odd ones
-  memset(fine, 0, sizeof(float) * 4 * wd * ht);
+  dt_iop_image_fill(fine, 0.0f, wd, ht, 4);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(cw, fine, ht, input, wd) \
@@ -1169,7 +1176,7 @@ static inline void gauss_expand(
 #endif
   for(int j=0;j<ht;j+=2)
     for(int i=0;i<wd;i+=2)
-      for(int c=0;c<4;c++)
+      for_four_channels(c)
         fine[4*(j*wd+i)+c] = 4.0f * input[4*(j/2*cw + i/2)+c];
 
   // convolve with same kernel weights mul by 4:
@@ -1192,8 +1199,10 @@ static inline void gauss_reduce(
 
   float *blurred = dt_alloc_align_float((size_t)4 * wd * ht);
   gauss_blur(input, blurred, wd, ht);
-  for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
-    for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
+  for(size_t j=0;j<ch;j++)
+    for(size_t i=0;i<cw;i++)
+      for_four_channels(c)
+        coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
   dt_free_align(blurred);
 
   if(detail)
@@ -1227,7 +1236,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     // coarsest step is some % of image width.
     col[k]  = dt_alloc_align_float((size_t)4 * w * h);
     comb[k] = dt_alloc_align_float((size_t)4 * w * h);
-    memset(comb[k], 0, sizeof(float) * 4 * w * h);
+    dt_iop_image_fill(comb[k],  0.0f, w, h, 4);
     w = (w - 1) / 2 + 1;
     h = (h - 1) / 2 + 1;
     step *= 2;
