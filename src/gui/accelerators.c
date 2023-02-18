@@ -376,7 +376,13 @@ static const gchar *_action_find_effect_combo(dt_action_t *ac, const dt_action_e
     dt_introspection_type_enum_tuple_t *values
       = g_hash_table_lookup(darktable.control->combo_introspection, ac);
     if(values)
-      return values[ef - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1].description;
+    {
+      values += ef - DT_ACTION_EFFECT_COMBO_SEPARATOR - 1;
+      if(values->description)
+        return values->description;
+      else
+        return values->name; // if not set up by introspection but for example in blend_gui
+    }
     else
     {
       gchar **strings
@@ -730,10 +736,11 @@ GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v)
 
 static gboolean _find_relative_instance(dt_action_t *action, GtkWidget *widget, int *instance)
 {
-  while(action && action->type != DT_ACTION_TYPE_IOP) action = action->owner;
+  dt_action_t *owner = action;
+  while(owner && owner->type != DT_ACTION_TYPE_IOP) owner = owner->owner;
 
-  dt_iop_module_so_t *module = (dt_iop_module_so_t *)action;
-  if(!module || (module->flags() & IOP_FLAGS_ONE_INSTANCE)) return FALSE;
+  dt_iop_module_so_t *module = (dt_iop_module_so_t *)owner;
+  if(!owner || owner == &darktable.control->actions_focus || (module->flags() & IOP_FLAGS_ONE_INSTANCE)) return FALSE;
 
   if(!widget || action->target == widget) return TRUE;
 
@@ -741,7 +748,7 @@ static gboolean _find_relative_instance(dt_action_t *action, GtkWidget *widget, 
 
   dt_iop_module_t *preferred = dt_iop_get_module_preferred_instance(module);
 
-  if(expander != preferred->expander)
+  if(preferred && expander != preferred->expander)
   {
     int current_instance = 0;
     for(GList *iop_mods = darktable.develop->iop;
@@ -767,15 +774,15 @@ static gboolean _find_relative_instance(dt_action_t *action, GtkWidget *widget, 
 
 static gchar *_shortcut_lua_command(GtkWidget *widget, dt_shortcut_t *s, gchar *preset_name)
 {
-  gchar instance_string[5] = ""; // longest is ", -9"
-  if(_find_relative_instance(s->action, widget, &s->instance))
-    g_snprintf(instance_string, sizeof(instance_string), ", %d", s->instance);
-
   const dt_action_element_def_t *elements = _action_find_elements(s->action);
 
   if(!s->action || s->action->owner == &darktable.control->actions_fallbacks
      || !(elements || s->action->type == DT_ACTION_TYPE_COMMAND || s->action->type == DT_ACTION_TYPE_PRESET))
     return NULL;
+
+  gchar instance_string[5] = ""; // longest is ", -9"
+  if(_find_relative_instance(s->action, widget, &s->instance))
+    g_snprintf(instance_string, sizeof(instance_string), ", %d", s->instance);
 
   for(int c = 0; c < s->element; c++) if(!elements[c].name) s->element = c - 1;
 
@@ -1564,9 +1571,10 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
       while(values->name)
       {
         gtk_list_store_insert_with_values(store, NULL, -1,
-                                          DT_ACTION_EFFECT_COLUMN_NAME, Q_((values++)->description),
+                                          DT_ACTION_EFFECT_COLUMN_NAME, values->description ? Q_(values->description) : Q_(values->name),
                                           DT_ACTION_EFFECT_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
                                           -1);
+        values++;
       }
     }
     else
@@ -2669,7 +2677,7 @@ static gboolean _find_combo_effect(const gchar **effects, const gchar *token, dt
       = g_hash_table_lookup(darktable.control->combo_introspection, ac);
     if(values)
     {
-      while((entry = values[++effect].description))
+      while((entry = (values[++effect].description ? values[effect].description : values[effect].name)))
         if(!g_ascii_strcasecmp(token + 5, NQ_(entry))) break;
     }
     else
