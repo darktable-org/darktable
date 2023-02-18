@@ -988,13 +988,6 @@ static void _event_key_swap(dt_iop_module_t *self)
   dt_control_queue_redraw_center();
 }
 
-static void _event_commit_clicked(GtkButton *button, dt_iop_module_t *self)
-{
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
-  _commit_box(self, g, p);
-}
-
 static void _event_aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 {
   _event_key_swap(self);
@@ -1162,9 +1155,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0, NULL);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(_event_aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(box_enabled), g->aspect_presets, TRUE, TRUE, 0);
-
-  GtkWidget *commit = dt_action_button_new((dt_lib_module_t *)self, N_("commit"), _event_commit_clicked, self, _("commit changes"), GDK_KEY_Return, 0);
-  gtk_box_pack_end(GTK_BOX(box_enabled), commit, TRUE, TRUE, 0);
 
   // we put margins values under an expander
   dt_gui_new_collapsible_section
