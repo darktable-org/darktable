@@ -180,6 +180,7 @@ jobs:
         generator:
           #- MSYS Makefiles
           - Ninja
+        eco: [-DDONT_USE_INTERNAL_LIBRAW=ON]
     defaults:
       run:
         shell: msys2 {0}
@@ -228,6 +229,7 @@ jobs:
             libheif:p
             libjpeg-turbo:p
             libjxl:p
+            libraw:p
             libsecret:p
             libtiff:p
             libwebp:p
