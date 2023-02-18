@@ -26,6 +26,7 @@
 #include "develop/blend.h"
 #include "gui/presets.h"
 #include "dtgtk/expander.h"
+#include "bauhaus/bauhaus.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -777,6 +778,30 @@ static gchar *_shortcut_lua_command(GtkWidget *widget, dt_shortcut_t *s, gchar *
     return NULL;
 
   for(int c = 0; c < s->element; c++) if(!elements[c].name) s->element = c - 1;
+
+  if(DT_IS_BAUHAUS_WIDGET(widget) && s->element == DT_ACTION_ELEMENT_DEFAULT)
+  {
+    if(DT_BAUHAUS_WIDGET(widget)->type == DT_BAUHAUS_COMBOBOX)
+    {
+      int value = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
+      dt_introspection_type_enum_tuple_t *values
+        = g_hash_table_lookup(darktable.control->combo_introspection, s->action);
+      for(int i = 0; values && values->name; values++, i++)
+      {
+        if(values->value == value)
+        {
+          value = i;
+          break;
+        }
+      }
+      s->effect = DT_ACTION_EFFECT_COMBO_SEPARATOR + 1 + value;
+    }
+    else
+    {
+      s->effect = DT_ACTION_EFFECT_SET;
+      s->speed = dt_bauhaus_slider_get(widget);
+    }
+  }
 
   const gchar *cef = elements ? _action_find_effect_combo(s->action, &elements[s->element], s->effect) : NULL;
   const gchar *el = elements ? elements[s->element].name : NULL;
