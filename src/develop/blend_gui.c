@@ -42,7 +42,7 @@
 
 #define NEUTRAL_GRAY 0.5
 
-const dt_develop_name_value_t dt_develop_blend_mode_names[]
+const dt_introspection_type_enum_tuple_t dt_develop_blend_mode_names[]
     = { { NC_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2 },
         { NC_("blendmode", "normal bounded"), DEVELOP_BLEND_BOUNDED },
         { NC_("blendmode", "lighten"), DEVELOP_BLEND_LIGHTEN },
@@ -82,48 +82,48 @@ const dt_develop_name_value_t dt_develop_blend_mode_names[]
         { NC_("blendmode", "difference (deprecated)"), DEVELOP_BLEND_DIFFERENCE },
         { NC_("blendmode", "subtract inverse (deprecated)"), DEVELOP_BLEND_SUBTRACT_INVERSE },
         { NC_("blendmode", "divide inverse (deprecated)"), DEVELOP_BLEND_DIVIDE_INVERSE },
-        { "", 0 } };
+        { } };
 
-const dt_develop_name_value_t dt_develop_blend_mode_flag_names[]
+const dt_introspection_type_enum_tuple_t dt_develop_blend_mode_flag_names[]
     = { { NC_("blendoperation", "normal"), 0 },
         { NC_("blendoperation", "reverse"), DEVELOP_BLEND_REVERSE },
-        { "", 0 } };
+        { } };
 
-const dt_develop_name_value_t dt_develop_blend_colorspace_names[]
+const dt_introspection_type_enum_tuple_t dt_develop_blend_colorspace_names[]
     = { { N_("default"), DEVELOP_BLEND_CS_NONE },
         { N_("RAW"), DEVELOP_BLEND_CS_RAW },
         { N_("Lab"), DEVELOP_BLEND_CS_LAB },
         { N_("RGB (display)"), DEVELOP_BLEND_CS_RGB_DISPLAY },
         { N_("RGB (scene)"), DEVELOP_BLEND_CS_RGB_SCENE },
-        { "", 0 } };
+        { } };
 
-const dt_develop_name_value_t dt_develop_mask_mode_names[]
+const dt_introspection_type_enum_tuple_t dt_develop_mask_mode_names[]
     = { { N_("off"), DEVELOP_MASK_DISABLED },
         { N_("uniformly"), DEVELOP_MASK_ENABLED },
         { N_("drawn mask"), DEVELOP_MASK_MASK | DEVELOP_MASK_ENABLED },
         { N_("parametric mask"), DEVELOP_MASK_CONDITIONAL | DEVELOP_MASK_ENABLED },
         { N_("raster mask"), DEVELOP_MASK_RASTER | DEVELOP_MASK_ENABLED },
         { N_("drawn & parametric mask"), DEVELOP_MASK_MASK_CONDITIONAL | DEVELOP_MASK_ENABLED },
-        { "", 0 } };
+        { } };
 
-const dt_develop_name_value_t dt_develop_combine_masks_names[]
+const dt_introspection_type_enum_tuple_t dt_develop_combine_masks_names[]
     = { { N_("exclusive"), DEVELOP_COMBINE_NORM_EXCL },
         { N_("inclusive"), DEVELOP_COMBINE_NORM_INCL },
         { N_("exclusive & inverted"), DEVELOP_COMBINE_INV_EXCL },
         { N_("inclusive & inverted"), DEVELOP_COMBINE_INV_INCL },
-        { "", 0 } };
+        { } };
 
-const dt_develop_name_value_t dt_develop_feathering_guide_names[]
+const dt_introspection_type_enum_tuple_t dt_develop_feathering_guide_names[]
     = { { N_("output before blur"), DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR },
         { N_("input before blur"), DEVELOP_MASK_GUIDE_IN_BEFORE_BLUR },
         { N_("output after blur"), DEVELOP_MASK_GUIDE_OUT_AFTER_BLUR },
         { N_("input after blur"), DEVELOP_MASK_GUIDE_IN_AFTER_BLUR },
-        { "", 0 } };
+        { } };
 
-const dt_develop_name_value_t dt_develop_invert_mask_names[]
+const dt_introspection_type_enum_tuple_t dt_develop_invert_mask_names[]
     = { { N_("off"), DEVELOP_COMBINE_NORM },
         { N_("on"), DEVELOP_COMBINE_INV },
-        { "", 0 } };
+        { } };
 
 const dt_iop_gui_blendif_colorstop_t _gradient_L[]
     = { { 0.0f,   { 0, 0, 0, 1.0 } },
@@ -2530,7 +2530,7 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
 
 static gboolean _add_blendmode_combo(GtkWidget *combobox, dt_develop_blend_mode_t mode)
 {
-  for(const dt_develop_name_value_t *bm = dt_develop_blend_mode_names; *bm->name; bm++)
+  for(const dt_introspection_type_enum_tuple_t *bm = dt_develop_blend_mode_names; *bm->name; bm++)
   {
     if(bm->value == mode)
     {
@@ -2544,15 +2544,17 @@ static gboolean _add_blendmode_combo(GtkWidget *combobox, dt_develop_blend_mode_
 }
 
 static GtkWidget *_combobox_new_from_list(dt_iop_module_t *module, const gchar *label,
-                                          const dt_develop_name_value_t *list, uint32_t *field, const gchar *tooltip)
+                                          const dt_introspection_type_enum_tuple_t *list,
+                                          uint32_t *field, const gchar *tooltip)
 {
   GtkWidget *combo = dt_bauhaus_combobox_new(module);
 
   if(field)
     dt_bauhaus_widget_set_field(combo, field, DT_INTROSPECTION_TYPE_ENUM);
-  dt_bauhaus_widget_set_label(combo, N_("blend"), label);
+  dt_action_t *ac = dt_bauhaus_widget_set_label(combo, N_("blend"), label);
+  if(ac) g_hash_table_insert(darktable.control->combo_introspection, ac, (gpointer)list);
   gtk_widget_set_tooltip_text(combo, tooltip);
-  for(; *list->name; list++)
+  for(; list->name; list++)
     dt_bauhaus_combobox_add_full(combo, _(list->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                  GUINT_TO_POINTER(list->value), NULL, TRUE);
 
@@ -3004,7 +3006,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     GtkWidget *blend_modes_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->blend_modes_combo, N_("blend"), N_("blend mode"));
+    dt_action_t * ac = dt_bauhaus_widget_set_label(bd->blend_modes_combo, N_("blend"), N_("blend mode"));
+    if(ac) g_hash_table_insert(darktable.control->combo_introspection, ac, (gpointer)&dt_develop_blend_mode_names);
     gtk_widget_set_tooltip_text(bd->blend_modes_combo, _("choose blending mode"));
 
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
