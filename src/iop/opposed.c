@@ -38,7 +38,7 @@
    Again the algorithm has been developed in collaboration by @garagecoder and @Iain from gmic team and @jenshannoschwalm from dt.
 */
 
-static uint64_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
+static uint64_t _opposed_parhash(dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_buffer_dsc_t *dsc = &piece->pipe->dsc;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
@@ -58,7 +58,14 @@ static uint64_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
   for(size_t ip = 0; ip < sizeof(d->clip); ip++)
     hash = ((hash << 5) + hash) ^ pstr[ip];
 
-  pstr = (char *) &piece->pipe->image.id;
+  return hash;
+}
+
+static uint64_t _opposed_hash(dt_dev_pixelpipe_iop_t *piece)
+{
+  uint64_t hash = _opposed_parhash(piece);
+
+  char *pstr = (char *) &piece->pipe->image.id;
   for(size_t ip = 0; ip < sizeof(piece->pipe->image.id); ip++)
     hash = ((hash << 5) + hash) ^ pstr[ip];
 
@@ -213,8 +220,8 @@ static void _process_linear_opposed(
         for(int c=0; c<3; c++)
           img_oppchroma[c] = chrominance[c];
         img_opphash = opphash;
-        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache CPU] red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for opphash%22" PRIu64 "\n",
-          chrominance[0], cnts[0], chrominance[1], cnts[1], chrominance[2], cnts[2], opphash);
+        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache CPU] red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for hash%22" PRIu64 "\n",
+          chrominance[0], cnts[0], chrominance[1], cnts[1], chrominance[2], cnts[2], _opposed_parhash(piece));
       }
     }
     dt_free_align(mask);
@@ -361,8 +368,8 @@ static float *_process_opposed(
         for(int c=0; c<3; c++)
           img_oppchroma[c] = chrominance[c];
         img_opphash = opphash;
-        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache CPU] red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for opphash%22" PRIu64 "\n",
-          chrominance[0], cnts[0], chrominance[1], cnts[1], chrominance[2], cnts[2], opphash);
+        dt_print(DT_DEBUG_PIPE, "[opposed chroma cache CPU] red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for hash%22" PRIu64 "\n",
+          chrominance[0], cnts[0], chrominance[1], cnts[1], chrominance[2], cnts[2], _opposed_parhash(piece));
       }
     }
     dt_free_align(mask);
@@ -547,8 +554,8 @@ static cl_int process_opposed_cl(
       for(int c=0; c<3; c++)
         img_oppchroma[c] = chrominance[c];
       img_opphash = opphash;
-      dt_print(DT_DEBUG_PIPE, "[opposed chroma cache GPU] red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for opphash%22" PRIu64 "\n",
-        chrominance[0], claccu[1], chrominance[1], claccu[3], chrominance[2], claccu[5], opphash);
+      dt_print(DT_DEBUG_PIPE, "[opposed chroma cache GPU] red: %8.6f (%.0f), green: %8.6f (%.0f), blue: %8.6f (%.0f) for hash%22" PRIu64 "\n",
+        chrominance[0], claccu[1], chrominance[1], claccu[3], chrominance[2], claccu[5], _opposed_parhash(piece));
     }
   }
 
