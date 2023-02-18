@@ -141,7 +141,8 @@ static inline void _bin_Lab_LCh(const dt_dev_histogram_collection_params_t *cons
 
   for(int i = 0; i < roi->width - roi->crop_right - roi->crop_x; i++)
   {
-    dt_aligned_pixel_t LCh, b;
+    dt_aligned_pixel_t LCh = { 0.0f, 0.0f, 0.0f };
+    dt_aligned_pixel_t b;
     dt_Lab_2_LCH(in + i*4, LCh);
     for_each_channel(k,aligned(LCh,b,scale:16))
       b[k] = scale[k] * LCh[k];
