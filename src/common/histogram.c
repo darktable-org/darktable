@@ -210,7 +210,8 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
                          const dt_iop_colorspace_type_t cst,
                          const dt_iop_colorspace_type_t cst_to,
                          const void *pixel,
-                         uint32_t **histogram, uint32_t *histogram_max,
+                         uint32_t **histogram,
+                         uint32_t *histogram_max,
                          const gboolean compensate_middle_grey,
                          const dt_iop_order_iccprofile_info_t *const profile_info)
 {
