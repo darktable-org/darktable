@@ -1135,7 +1135,9 @@ static void _iop_panel_name(dt_iop_module_t *module)
     }
     else
     {
-      gtk_label_set_text(iname, module->multi_name);
+      gchar *name = g_strdup_printf("• %s", module->multi_name);
+      gtk_label_set_text(iname, name);
+      g_free(name);
       gtk_widget_set_name(GTK_WIDGET(iname), "iop-module-name");
     }
   }
