@@ -231,7 +231,6 @@ static inline void gauss_reduce(
 
   // this is the scalar (non-simd) code:
   const float w[5] = { 1.f/16.f, 4.f/16.f, 6.f/16.f, 4.f/16.f, 1.f/16.f };
-  memset(coarse, 0, sizeof(float)*cw*ch);
   // direct 5x5 stencil only on required pixels:
 #ifdef _OPENMP
   // DON'T parallelize the very smallest levels of the pyramid, as the threading overhead
@@ -244,9 +243,11 @@ static inline void gauss_reduce(
   for(int j=1;j<ch-1;j++)
     for(int i=1;i<cw-1;i++)
     {
+      float sum = 0.0f;
       for(int jj=-2;jj<=2;jj++)
         for(int ii=-2;ii<=2;ii++)
-          coarse[j*cw+i] += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
+          sum += input[(2*j+jj)*wd+2*i+ii] * w[ii+2] * w[jj+2];
+      coarse[j*cw+i] = sum;
     }
   ll_fill_boundary1(coarse, cw, ch);
 }
