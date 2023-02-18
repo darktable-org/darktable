@@ -595,6 +595,20 @@ dialog .sidebar row:selected:hover label,
   font-size: 1.1em;
 }
 
+#iop-module-name
+{
+  font-weight: lighter;
+  font-size: 0.8em;
+}
+
+#iop-module-name-error
+{
+  font-weight: bold;
+  font-size: 1.1em;
+  padding-left: 0.5em;
+  color: red;
+}
+
 .dt_module_focus #iop-panel-label/* set focus mode */
 {
   color: shade(@plugin_label_color, 1.2);

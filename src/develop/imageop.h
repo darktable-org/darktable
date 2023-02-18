@@ -50,6 +50,7 @@ typedef enum dt_iop_module_header_icons_t
   IOP_MODULE_SWITCH = 0,
   IOP_MODULE_ICON,
   IOP_MODULE_LABEL,
+  IOP_MODULE_INSTANCE_NAME,
   IOP_MODULE_INSTANCE,
   IOP_MODULE_RESET,
   IOP_MODULE_PRESETS,
@@ -267,6 +268,8 @@ typedef struct dt_iop_module_t
   GtkDarktableToggleButton *off;
   /** this is the module header, contains label and buttons */
   GtkWidget *header;
+  GtkWidget *label;
+  GtkWidget *instance_name;
   /** this is the module mask indicator, inside header */
   GtkWidget *mask_indicator;
   /** expander containing the widget and flag to store expanded state */
@@ -539,9 +542,6 @@ static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t 
 
 #define IOP_GUI_FREE \
   dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){dt_free_align(self->gui_data);} self->gui_data = NULL
-
-/* return a warning message, prefixed by the special character ⚠ */
-char *dt_iop_warning_message(const char *message);
 
 /** check whether we have the required number of channels in the input
  ** data; if not, copy the input buffer to the output buffer, set the
