@@ -90,13 +90,13 @@ static inline char _mask_dilated(const char *in, const size_t w1)
 
   const size_t w2 = 2*w1;
   const size_t w3 = 3*w1;
-  return  in[-w3-2] | in[-w3-1] | in[-w3]   | in[-w3+1] | in[-w3+2] |
+  return (in[-w3-2] | in[-w3-1] | in[-w3]   | in[-w3+1] | in[-w3+2] |
           in[-w2-3] | in[-w2-2] | in[-w2-1] | in[-w2]   | in[-w2+1] | in[-w2+2] | in[-w2+3] |
           in[-w1-3] | in[-w1-2] | in[-w1+2] | in[-w1+3] |
           in[-3]    | in[-2]    | in[2]     | in[3]     |
           in[w1-3]  | in[w1-2]  | in[w1+2]  | in[w1+3]  |
           in[w2-3]  | in[w2-2]  | in[w2-1]  | in[w2]    | in[w2+1]  | in[w2+2]  | in[w2+3] |
-          in[w3-2]  | in[w3-1]  | in[w3]    | in[w3+1]  | in[w3+2];
+          in[w3-2]  | in[w3-1]  | in[w3]    | in[w3+1]  | in[w3+2]) ? 1 : 0;
 }
 
 
@@ -292,12 +292,12 @@ static float *_process_opposed(
         {
           char mbuff[4] = { 0, 0, 0, 0 };
           const size_t grp = 3 * (mrow * roi_in->width + mcol);
-          for(int y = -1; y < 1; y++)
+          for(int y = -1; y < 2; y++)
           {
-            for(int x = -1; x < 1; x++)
+            for(int x = -1; x < 2; x++)
             {
               const size_t idx = grp + y * roi_in->width + x;
-              const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+y, roi_in, xtrans) : FC(mrow+y, mcol+x, filters);
+              const int color = (filters == 9u) ? FCxtrans(mrow+y, mcol+x, roi_in, xtrans) : FC(mrow+y, mcol+x, filters);
               mbuff[color] += (fmaxf(0.0f, input[idx]) >= clips[color]) ? 1 : 0;
             }
           }
