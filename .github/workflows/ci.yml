@@ -42,8 +42,8 @@ permissions:
 
 jobs:
 
-  Linux-minimal:
-    name: Linux-minimal.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+  Linux:
+    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -52,127 +52,6 @@ jobs:
           - { label: ubuntu-latest, code: latest }
         compiler:
           - { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
-          - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
-        btype:
-          - Debug
-          #- RelWithDebInfo
-          #- Release
-        target:
-          - skiptest
-          #- nofeatures
-          #- nofeatures_nosse
-        generator:
-          #- Unix Makefiles
-          - Ninja
-    env:
-      CC: ${{ matrix.compiler.CC }}
-      CXX: ${{ matrix.compiler.CXX }}
-      SRC_DIR: ${{ github.workspace }}/src
-      BUILD_DIR: ${{ github.workspace }}/build
-      INSTALL_PREFIX: ${{ github.workspace }}/install
-      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: ${{ matrix.generator }}
-      TARGET: ${{ matrix.target }}
-      DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
-    steps:
-      - name: Install compiler ${{ matrix.compiler.compiler }}
-        run: |
-          # Remove azure mirror because it is unreliable and sometimes unpredictably leads to failed CI
-          sudo sed -i 's/azure\.//' /etc/apt/sources.list
-          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo add-apt-repository -y universe
-          sudo add-apt-repository -y multiverse
-          sudo apt-get update
-          sudo apt-get -y install \
-            ${{ matrix.compiler.packages }}
-      - name: Install Base Dependencies
-        run: |
-          sudo apt-get -y install \
-            build-essential \
-            appstream-util \
-            desktop-file-utils \
-            gettext \
-            git \
-            gdb \
-            intltool \
-            libatk1.0-dev \
-            libavif-dev \
-            libcairo2-dev \
-            libcolord-dev \
-            libcolord-gtk-dev \
-            libcmocka-dev \
-            libcups2-dev \
-            libcurl4-gnutls-dev \
-            libexiv2-dev \
-            libgdk-pixbuf2.0-dev \
-            libglib2.0-dev \
-            libgmic-dev \
-            libgphoto2-dev \
-            libgraphicsmagick1-dev \
-            libgtk-3-dev \
-            libheif-dev \
-            libjpeg-dev \
-            libjson-glib-dev \
-            liblcms2-dev \
-            liblensfun-dev \
-            liblua5.4-dev \
-            libopenexr-dev \
-            libopenjp2-7-dev \
-            libosmgpsmap-1.0-dev \
-            libpango1.0-dev \
-            libpng-dev \
-            libportmidi-dev \
-            libpugixml-dev \
-            librsvg2-dev \
-            libsaxon-java \
-            libsdl2-dev \
-            libsecret-1-dev \
-            libsqlite3-dev \
-            libtiff5-dev \
-            libwebp-dev \
-            libx11-dev \
-            libxml2-dev \
-            libxml2-utils \
-            ninja-build \
-            perl \
-            po4a \
-            python3-jsonschema \
-            xsltproc \
-            zlib1g-dev;
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          path: src
-      - name: Build and Install
-        run: |
-          cmake -E make_directory "${BUILD_DIR}";
-          cmake -E make_directory "${INSTALL_PREFIX}";
-          ./src/.ci/ci-script.sh;
-      - name: Check if it runs
-        if: ${{ matrix.target != 'usermanual' }}
-        run: |
-          ${INSTALL_PREFIX}/bin/darktable --version || true
-          ${INSTALL_PREFIX}/bin/darktable-cli \
-                 --width 2048 --height 2048 \
-                 --hq true --apply-custom-presets false \
-                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
-                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
-                 output.png \
-                 --core --disable-opencl --conf host_memory_limit=8192 \
-                 --conf worker_threads=4 -t 4 \
-                 --conf plugins/lighttable/export/force_lcms2=FALSE \
-                 --conf plugins/lighttable/export/iccintent=0
-
-  Linux:
-    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
-    needs: Linux-minimal
-    runs-on: ${{ matrix.os.label }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os:
-          - { label: ubuntu-latest, code: latest }
-        compiler:
           - { compiler: GNU11,  CC: gcc-11,   CXX: g++-11,     packages: gcc-11 g++-11 }
           - { compiler: GNU12,  CC: gcc-12,   CXX: g++-12,     packages: gcc-12 g++-12 }
           - { compiler: LLVM14, CC: clang-14, CXX: clang++-14, packages: clang-14 libomp-14-dev libclang-common-14-dev llvm-14-dev clang++-14 libc++-14-dev libc++1-14 libc++abi1-14 lld-14}
@@ -290,7 +169,6 @@ jobs:
 
   Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
-    needs: Linux-minimal
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -398,7 +276,6 @@ jobs:
 
   macOS:
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.generator }}
-    needs: Linux-minimal
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
