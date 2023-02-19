@@ -183,6 +183,7 @@ void gui_init(dt_lib_module_t *self)
   DT_BAUHAUS_WIDGET(d->zoom)->show_label = FALSE;
   gtk_widget_set_halign(d->zoom, GTK_ALIGN_END);
   gtk_widget_set_valign(d->zoom, GTK_ALIGN_END);
+  gtk_widget_set_name(d->zoom, "nav-zoom");
 
   self->widget = gtk_overlay_new();
   gtk_container_add(GTK_CONTAINER(self->widget), thumbnail);

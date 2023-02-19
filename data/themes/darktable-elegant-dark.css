@@ -85,7 +85,6 @@
 @define-color graph_bg @grey_25;
 @define-color graph_border @grey_20;
 @define-color graph_fg @grey_90;
-@define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_20;
 @define-color inset_histogram alpha(@grey_80, 0.50);
 
