@@ -109,7 +109,8 @@ int dt_dwt_first_scale_visible(dwt_params_t *p)
 
 static void dwt_get_image_layer(float *const layer, dwt_params_t *const p)
 {
-  if(p->image != layer) memcpy(p->image, layer, sizeof(float) * p->width * p->height * p->ch);
+  if(p->image != layer)
+    dt_iop_image_copy_by_size(p->image, layer, p->width, p->height, p->ch);
 }
 
 // first, "vertical" pass of wavelet decomposition

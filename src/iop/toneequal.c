@@ -939,7 +939,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(!sanity_check(self))
   {
     // if module just got disabled by sanity checks, due to pipe position, just pass input through
-    dt_simd_memcpy(in, out, num_elem * ch);
+    dt_iop_image_copy_by_size(out, in, width, height, ch);
     return;
   }
 
