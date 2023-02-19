@@ -804,6 +804,12 @@ void dt_image_update_final_size(const int32_t imgid)
   {
     imgtmp->final_width = ww;
     imgtmp->final_height = hh;
+    if (ww != 0 && hh != 0)
+    {
+      imgtmp->crop_right = ww;
+      imgtmp->crop_bottom = hh;
+    }
+
     dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
