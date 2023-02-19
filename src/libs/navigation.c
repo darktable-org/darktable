@@ -89,7 +89,27 @@ int position(const dt_lib_module_t *self)
 static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_control_queue_redraw_widget(gtk_bin_get_child(GTK_BIN(self->widget)));
+  dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
+
+  dt_develop_t *dev = darktable.develop;
+
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
+  const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+
+  gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
+                  : zoom == DT_ZOOM_FILL ? g_strdup(_("fill"))
+                  : 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0)
+                    == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0) ? g_strdup(_("small"))
+                  : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
+  ++darktable.gui->reset;
+  dt_bauhaus_combobox_set(d->zoom, -1);
+  if(!dt_bauhaus_combobox_set_from_text(d->zoom, zoomline))
+    dt_bauhaus_combobox_set_text(d->zoom, zoomline);
+  --darktable.gui->reset;
+  g_free(zoomline);
+
+  gtk_widget_queue_draw(gtk_bin_get_child(GTK_BIN(self->widget)));
 }
 
 
@@ -185,9 +205,6 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
-
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
@@ -261,18 +278,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
       cairo_stroke(cr);
     }
     cairo_restore(cr);
-
-    gchar *zoomline = zoom == DT_ZOOM_FIT ? g_strdup(_("fit"))
-                    : zoom == DT_ZOOM_FILL ? g_strdup(_("fill"))
-                    : 0.5 * dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0)
-                      == dt_dev_get_zoom_scale(dev, DT_ZOOM_FREE, 1.0, 0) ? g_strdup(_("small"))
-                    : g_strdup_printf("%.0f%%", cur_scale * 100 * darktable.gui->ppd);
-    ++darktable.gui->reset;
-    dt_bauhaus_combobox_set(d->zoom, -1);
-    if(!dt_bauhaus_combobox_set_from_text(d->zoom, zoomline))
-      dt_bauhaus_combobox_set_text(d->zoom, zoomline);
-    --darktable.gui->reset;
-    g_free(zoomline);
 
     dt_pthread_mutex_unlock(mutex);
   }
@@ -432,7 +437,8 @@ static void _zoom_changed(GtkWidget *widget, gpointer user_data)
   dt_control_set_dev_zoom_x(zoom_x);
   dt_control_set_dev_zoom_y(zoom_y);
   dt_dev_invalidate(dev);
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
+  dt_control_navigation_redraw();
 }
 
 static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEvent *event,
