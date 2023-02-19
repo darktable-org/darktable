@@ -34,10 +34,6 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 DT_MODULE_INTROSPECTION(2, dt_iop_colorcontrast_params_t)
 
 typedef struct dt_iop_colorcontrast_params1_t
@@ -144,8 +140,10 @@ static inline void clamped_scaling(float *const restrict out, const float *const
                                    const dt_aligned_pixel_t slope, const dt_aligned_pixel_t offset,
                                    const dt_aligned_pixel_t low, const dt_aligned_pixel_t high)
 {
-  for_each_channel(c,dt_omp_nontemporal(out))
-    out[c] = CLAMPS(in[c] * slope[c] + offset[c], low[c], high[c]);
+  dt_aligned_pixel_t res;
+  for_each_channel(c)
+    res[c] = CLAMPS(in[c] * slope[c] + offset[c], low[c], high[c]);
+  copy_pixel_nontemporal(out, res);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -179,10 +177,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
-      for_each_channel(c,dt_omp_nontemporal(out))
+      dt_aligned_pixel_t res;
+      for_each_channel(c)
       {
-        out[k + c] = (in[k + c] * slope[c]) + offset[c];
+        res[c] = (in[k + c] * slope[c]) + offset[c];
       }
+      copy_pixel_nontemporal(out + k, res);
     }
   }
   else
@@ -202,59 +202,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 }
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
-                  void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-
-  // get our data struct:
-  const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
-
-  // how many colors in our buffer?
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
-                                         ivoid, ovoid, roi_in, roi_out))
-    return; // image has been copied through to output and module's trouble flag has been updated
-
-  const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
-  const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);
-  const __m128 min = _mm_set_ps(-INFINITY, -128.0f, -128.0f, -INFINITY);
-  const __m128 max = _mm_set_ps(INFINITY, 128.0f, 128.0f, INFINITY);
-
-  const float *const restrict in = (float*)ivoid;
-  float *const restrict out = (float*)ovoid;
-
-  // iterate over all output pixels (same coordinates as input)
-  const int npixels = roi_out->height * roi_out->width;
-  if(d->unbound)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, offset, npixels, scale) \
-  schedule(static)
-#endif
-    for(int j = 0; j < 4 * npixels; j += 4)
-    {
-      _mm_stream_ps(out + j, offset + scale * _mm_load_ps(in + j));
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, max, min, offset, npixels, scale) \
-  schedule(static)
-#endif
-    for(int j = 0; j < 4 * npixels; j += 4)
-    {
-      _mm_stream_ps(out + j, _mm_min_ps(max, _mm_max_ps(min, offset + scale * _mm_load_ps(in + j))));
-    }
-  }
-  _mm_sfence();
-}
-#endif
-
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
