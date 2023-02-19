@@ -415,13 +415,7 @@ static inline void set_pixels(float *buf, const dt_aligned_pixel_t color, const 
 {
   for(int i = 0; i < npixels; i++)
   {
-#ifdef _OPENMP
-#pragma omp simd aligned(buf, color : 16)
-#endif
-    for(int c = 0; c < 4; c++)
-    {
-      buf[4*i+c] = color[c];
-    }
+    copy_pixel_nontemporal(buf + 4*i,  color);
   }
 }
 
@@ -430,13 +424,7 @@ static inline void copy_pixels(float *out, const float *const in, const int npix
 {
   for(int i = 0; i < npixels; i++)
   {
-#ifdef _OPENMP
-#pragma omp simd aligned(in, out : 16)
-#endif
-    for(int c = 0; c < 4; c++)
-    {
-      out[4*i+c] = in[4*i+c];
-    }
+    copy_pixel_nontemporal(out + 4*i, in + 4*i);
   }
 }
 
@@ -495,7 +483,8 @@ void copy_image_with_border(float *out, const float *const in, const struct bord
       }
     }
   }
-
+  // ensure that all streaming writes complete before we attempt to read from the output buffer
+  dt_omploop_sfence();
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
