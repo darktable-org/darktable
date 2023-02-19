@@ -1,7 +1,7 @@
 /* -*- Mode: c; c-basic-offset: 2; -*- */
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2023 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -110,13 +110,18 @@ int default_group()
   return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+int default_colorspace(dt_iop_module_t *self,
+                       dt_dev_pixelpipe_t *pipe,
+                       dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void *new_params,
+                  const int new_version)
 {
   if(old_version == 1 && new_version == 2)
   {
@@ -136,9 +141,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in,out:64) aligned(slope,offset,low,high)
 #endif
-static inline void clamped_scaling(float *const restrict out, const float *const restrict in,
-                                   const dt_aligned_pixel_t slope, const dt_aligned_pixel_t offset,
-                                   const dt_aligned_pixel_t low, const dt_aligned_pixel_t high)
+static inline void clamped_scaling(float *const restrict out,
+                                   const float *const restrict in,
+                                   const dt_aligned_pixel_t slope,
+                                   const dt_aligned_pixel_t offset,
+                                   const dt_aligned_pixel_t low,
+                                   const dt_aligned_pixel_t high)
 {
   dt_aligned_pixel_t res;
   for_each_channel(c)
@@ -146,18 +154,25 @@ static inline void clamped_scaling(float *const restrict out, const float *const
   copy_pixel_nontemporal(out, res);
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const ivoid,
+             void *const ovoid,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
 
   // get our data struct:
-  const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
+  const dt_iop_colorcontrast_params_t *const d =
+    (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
-                                         ivoid, ovoid, roi_in, roi_out))
-    return; // image has been copied through to output and module's trouble flag has been updated
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self,
+                                        piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's
+            // trouble flag has been updated
 
   const float *const restrict in = DT_IS_ALIGNED((const float *const)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const)ovoid);
@@ -195,20 +210,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #endif
     for(size_t k = 0; k < npixels; k ++)
     {
-      // the inner per-pixel loop needs to be declared in a separate vectorizable function to convince the
-      // compiler that it doesn't need to check for overlap or misalignment of the buffers for *every* pixel,
-      // which actually makes the code slower than not vectorizing....
+      // the inner per-pixel loop needs to be declared in a separate
+      // vectorizable function to convince the compiler that it
+      // doesn't need to check for overlap or misalignment of the
+      // buffers for *every* pixel, which actually makes the code
+      // slower than not vectorizing....
       clamped_scaling(out + 4*k, in + 4*k, slope, offset, lowlimit, highlimit);
     }
   }
 }
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorcontrast_data_t *data = (dt_iop_colorcontrast_data_t *)piece->data;
-  dt_iop_colorcontrast_global_data_t *gd = (dt_iop_colorcontrast_global_data_t *)self->global_data;
+  dt_iop_colorcontrast_global_data_t *gd =
+    (dt_iop_colorcontrast_global_data_t *)self->global_data;
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
@@ -220,13 +242,16 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int unbound = data->unbound;
 
   err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcontrast, width, height,
-    CLARG(dev_in), CLARG(dev_out), CLARG(width), CLARG(height), CLARG(scale), CLARG(offset), CLARG(unbound));
+                                         CLARG(dev_in), CLARG(dev_out),
+                                         CLARG(width), CLARG(height),
+                                         CLARG(scale), CLARG(offset), CLARG(unbound));
 
   if(err != CL_SUCCESS) goto error;
   return TRUE;
 
 error:
-  dt_print(DT_DEBUG_OPENCL, "[opencl_colorcontrast] couldn't enqueue kernel! %s\n", cl_errstr(err));
+  dt_print(DT_DEBUG_OPENCL,
+           "[opencl_colorcontrast] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -243,7 +268,8 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  dt_iop_colorcontrast_global_data_t *gd = (dt_iop_colorcontrast_global_data_t *)module->data;
+  dt_iop_colorcontrast_global_data_t *gd =
+    (dt_iop_colorcontrast_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_colorcontrast);
   free(module->data);
   module->data = NULL;
@@ -251,7 +277,9 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+void commit_params(struct dt_iop_module_t *self,
+                   dt_iop_params_t *params,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)params;
@@ -263,12 +291,16 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->unbound = p->unbound;
 }
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colorcontrast_data_t));
 }
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -287,10 +319,17 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorcontrast_gui_data_t *g = IOP_GUI_ALLOC(colorcontrast);
 
   g->a_scale = dt_bauhaus_slider_from_params(self, "a_steepness");
-  gtk_widget_set_tooltip_text(g->a_scale, _("steepness of the a* curve in Lab\nlower values desaturate greens and magenta while higher saturate them"));
+  gtk_widget_set_tooltip_text
+    (g->a_scale,
+     _("steepness of the a* curve in Lab\nlower values desaturate"
+       " greens and magenta while higher saturate them"));
 
   g->b_scale = dt_bauhaus_slider_from_params(self, "b_steepness");
-  gtk_widget_set_tooltip_text(g->b_scale, _("steepness of the b* curve in Lab\nlower values desaturate blues and yellows while higher saturate them"));
+  gtk_widget_set_tooltip_text
+    (g->b_scale,
+
+     _("steepness of the b* curve in Lab\nlower values desaturate"
+       " blues and yellows while higher saturate them"));
 }
 
 // clang-format off
@@ -298,4 +337,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
