@@ -262,12 +262,12 @@ static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_
   static const dt_aligned_pixel_t offset = { 0.0f, 16.0f, 0.0f, 0.0f };
   static const dt_aligned_pixel_t coeff = { 1.0f/500.0f, 1.0f/116.0f, -1.0f/200.0f, 0.0f };
   static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
-  dt_aligned_pixel_t f = { Lab[1], Lab[0] + 16.0f, Lab[2], 0.0f };
+  dt_aligned_pixel_t scaled;
   for_each_channel(c,aligned(Lab,coeff,f))
-    f[c] = (f[c] + offset[c]) * coeff[c];
+    scaled[c] = (f[c] + offset[c]) * coeff[c];
   dt_aligned_pixel_t inv;
   for_each_channel(c)
-    inv[c] = lab_f_inv(f[c] + f[1] * add_coeff[c]);
+    inv[c] = lab_f_inv(scaled[c] + scaled[1] * add_coeff[c]);
   for_each_channel(c,aligned(d50,f,add_coeff,XYZ))
     XYZ[c] = d50[c] * inv[c];
 }
@@ -278,19 +278,21 @@ static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_
 #endif
 static inline void dt_Lab_to_linearRGB(
 	const dt_aligned_pixel_t Lab,
-        const dt_colormatrix_t cmatrix,
+        const dt_aligned_pixel_t cmatrix_row0,
+        const dt_aligned_pixel_t cmatrix_row1,
+        const dt_aligned_pixel_t cmatrix_row2,
         dt_aligned_pixel_t RGB)
 {
   // we need to duplicate the code from dt_Lab_to_XYZ and
   // dt_apply_transposed_color_matrix here in order to make the
   // compiler optimize away memory accesses for intermediates
-  static const dt_aligned_pixel_t coeff = { 500.0f, 116.0f, -200.0f, 1.0f };
+  static const dt_aligned_pixel_t coeff = { 1.0f/500.0f, 1.0f/116.0f, -1.0f/200.0f, 1.0f };
   static const dt_aligned_pixel_t add = { 0.0f, 16.0f, 0.0f, 0.0f };
   static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
   const dt_aligned_pixel_t f = { Lab[1], Lab[0], Lab[2], Lab[3] };
   dt_aligned_pixel_t scaled;
   for_each_channel(c,aligned(Lab,coeff,f))
-    scaled[c] = (f[c] + add[c]) / coeff[c];
+    scaled[c] = (f[c] + add[c]) * coeff[c];
   dt_aligned_pixel_t inv;
   for_each_channel(c)
     inv[c] = lab_f_inv(scaled[c] + scaled[1] * add_coeff[c]);
@@ -299,7 +301,7 @@ static inline void dt_Lab_to_linearRGB(
     XYZ[c] = d50[c] * inv[c];
   // the following loop is dt_apply_transposed_color_matrix(XYZ, cmatrix, RGB);
   for_each_channel(r)
-    RGB[r] = cmatrix[0][r] * XYZ[0] + cmatrix[1][r] * XYZ[1] + cmatrix[2][r] * XYZ[2];
+    RGB[r] = cmatrix_row0[r] * XYZ[0] + cmatrix_row1[r] * XYZ[1] + cmatrix_row2[r] * XYZ[2];
 }
 
 #ifdef _OPENMP
