@@ -279,6 +279,21 @@ static float lerp_lut(const float *const lut, const float v)
 }
 #endif
 
+// call only if sure that v<1.0
+static float _lerp_lut(const float *const lut, const float v)
+{
+  const float z = MAX(v,0.0f);  // clip away negatives
+  const float ft = z * (LUT_SAMPLES - 1);
+  // because v<1.0, ft must be less than (LUT_SAMPLES-1), so truncating
+  // will set t <= (LUT_SAMPLES-2) and thus we don't need to clamp it
+  // to avoid an array overrun
+  const int t = (int)ft;
+  const float f = ft - t;
+  const float l1 = lut[t];
+  const float l2 = lut[t + 1];
+  return l1 * (1.0f - f) + l2 * f;
+}
+
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -338,9 +353,9 @@ error:
 }
 #endif
 
-static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                              const void *const ivoid, void *const ovoid,
-                                              const dt_iop_roi_t *const roi_in,
+static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self,
+                                              dt_dev_pixelpipe_iop_t *piece,
+                                              void *const ovoid,
                                               const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
@@ -363,7 +378,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
       {
         for(int c = 0; c < 3; c++)
         {
-          out[k + c] = (out[k + c] < 1.0f) ? lerp_lut(d->lut[c], out[k + c])
+          out[k + c] = (out[k + c] < 1.0f) ? _lerp_lut(d->lut[c], out[k + c])
                                            : dt_iop_eval_exp(d->unbounded_coeffs[c], out[k + c]);
         }
       }
@@ -381,13 +396,139 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
         {
           if(d->lut[c][0] >= 0.0f)
           {
-            out[k + c] = (out[k + c] < 1.0f) ? lerp_lut(d->lut[c], out[k + c])
+            out[k + c] = (out[k + c] < 1.0f) ? _lerp_lut(d->lut[c], out[k + c])
                                              : dt_iop_eval_exp(d->unbounded_coeffs[c], out[k + c]);
           }
         }
       }
     }
   }
+}
+
+static void _transform_cmatrix_linear(const dt_iop_colorout_data_t *const d,
+                               float *restrict out,
+                               const float *restrict in,
+                               const size_t npixels)
+{
+  dt_colormatrix_t cmatrix;
+  transpose_3xSSE(d->cmatrix, cmatrix);
+  dt_aligned_pixel_t cmatrix_0, cmatrix_1, cmatrix_2;
+  copy_pixel(cmatrix_0,cmatrix[0]);
+  copy_pixel(cmatrix_1,cmatrix[1]);
+  copy_pixel(cmatrix_2,cmatrix[2]);
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, npixels, cmatrix_0, cmatrix_1, cmatrix_2, d)       \
+  schedule(simd:static)
+  for(size_t k = 0; k < npixels; k++)
+  {
+    // oddly, calling dt_Lab_to_linearRGB instead of doing the
+    // matrix multiplication here is about 10% slower even though it
+    // generates virtually the same instructions and fewer memory
+    // loads.
+    dt_aligned_pixel_t XYZ;
+    dt_Lab_to_XYZ(in + 4*k, XYZ);
+    dt_aligned_pixel_t rgb;
+    for_each_channel(r)
+      rgb[r] = cmatrix_0[r] * XYZ[0] + cmatrix_1[r] * XYZ[1] + cmatrix_2[r] * XYZ[2];
+    copy_pixel_nontemporal(out + 4*k, rgb);
+  }
+  dt_omploop_sfence();
+}
+
+static void _transform_cmatrix_tonecurve(const dt_iop_colorout_data_t *const d,
+                                         float *restrict out,
+                                         const float *restrict in,
+                                         const size_t npixels)
+{
+  dt_colormatrix_t cmatrix;
+  transpose_3xSSE(d->cmatrix, cmatrix);
+  dt_aligned_pixel_t cmatrix_0, cmatrix_1, cmatrix_2;
+  copy_pixel(cmatrix_0,cmatrix[0]);
+  copy_pixel(cmatrix_1,cmatrix[1]);
+  copy_pixel(cmatrix_2,cmatrix[2]);
+  const float *const lut = &d->lut[0][0];
+  const float *coeffs = &d->unbounded_coeffs[0][0];
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, npixels, cmatrix_0, cmatrix_1, cmatrix_2, lut, coeffs) \
+  schedule(simd:static)
+#endif
+  for(size_t k = 0; k < npixels; k++)
+  {
+    dt_aligned_pixel_t rgb; // using an aligned temporary variable lets the compiler optimize away interm. writes
+    dt_Lab_to_linearRGB(in + 4*k, cmatrix_0, cmatrix_1, cmatrix_2, rgb);
+    if(lut[0] >= 0.0f)
+    {
+      rgb[0] = (rgb[0] < 1.0f) ? _lerp_lut(lut, rgb[0])
+        : dt_iop_eval_exp(coeffs, rgb[0]);
+    }
+    if(lut[LUT_SAMPLES] >= 0.0f)
+    {
+      rgb[1] = (rgb[1] < 1.0f) ? _lerp_lut(lut+LUT_SAMPLES, rgb[1])
+        : dt_iop_eval_exp(coeffs+3, rgb[1]);
+    }
+    if(lut[2*LUT_SAMPLES] >= 0.0f)
+    {
+      rgb[2] = (rgb[2] < 1.0f) ? _lerp_lut(lut+2*LUT_SAMPLES, rgb[2])
+        : dt_iop_eval_exp(coeffs+6, rgb[2]);
+    }
+    copy_pixel_nontemporal(out + 4*k, rgb);
+  }
+  dt_omploop_sfence();
+}
+
+static int _transform_cmatrix(const dt_iop_colorout_data_t *const d,
+                               float *restrict out,
+                               const float *restrict in,
+                               const size_t npixels)
+{
+  const gboolean is_linear = (d->lut[0][0] < 0.0f) || (d->lut[1][0] < 0.0f) || (d->lut[2][0] < 0.0f);
+//  const gboolean all_nonlin = (d->lut[0][0] >= 0.0f) || (d->lut[1][0] >= 0.0f) || (d->lut[2][0] >= 0.0f);
+  if(is_linear || 1) //TODO: integrate tonecurve in same pass as color matrix without major speed penalty
+  {
+    _transform_cmatrix_linear(d, out, in, npixels);
+  }
+  else
+  {
+    _transform_cmatrix_tonecurve(d, out, in, npixels);
+  }
+  return is_linear != 0; // not done if nonlinear, need to apply tonecurve
+}
+
+static void _transform_lcms(const dt_iop_colorout_data_t *const d,
+                            float *restrict out,
+                            const float *restrict in,
+                            const size_t npixels)
+{
+  const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
+  // figure out the number of pixels each thread needs to process
+  // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+  const size_t nthreads = dt_get_num_threads();
+  const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
+#pragma omp parallel for default(none)                                  \
+    dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d, gamutcheck) \
+    schedule(static)
+  for(size_t chunk = 0; chunk < nthreads; chunk++)
+  {
+    size_t start = chunksize * dt_get_thread_num();
+    size_t count = MIN(start + chunksize, npixels) - start;
+    float *const outp = out + 4 * start;
+
+    cmsDoTransform(d->xform, in + 4*start, outp, count);
+
+    if(gamutcheck)
+    {
+      static const dt_aligned_pixel_t cyan = { 0.0f, 1.0f, 1.0f, 0.0f };
+      for(int j = 0; j < count; j++)
+      {
+        if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || out[4*j+2] < 0.0f)
+        {
+          copy_pixel_nontemporal(outp + 4*j, cyan);
+        }
+      }
+    }
+  }
+  dt_omploop_sfence();
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -397,8 +538,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          ivoid, ovoid, roi_in, roi_out))
     return;
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-  const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
-  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  const size_t width = roi_out->width;
+  const size_t height = roi_out->height;
+  const size_t npixels = width * height;
   float *const restrict out = (float *)ovoid;
 
   if(d->type == DT_COLORSPACE_LAB)
@@ -407,80 +549,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else if(!isnan(d->cmatrix[0][0]))
   {
-    const float *const restrict in = (const float *const)ivoid;
-    dt_colormatrix_t cmatrix;
-    transpose_3xSSE(d->cmatrix, cmatrix);
-
-    const gboolean is_linear = (d->lut[0][0] < 0.0f) || (d->lut[1][0] < 0.0f) || (d->lut[2][0] < 0.0f);
-
-// fprintf(stderr,"Using cmatrix codepath\n");
-// convert to rgb using matrix
-    if(is_linear)
-    {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels, cmatrix, d)    \
-    schedule(static)
-#endif
-      for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
-      {
-        dt_aligned_pixel_t rgb;
-        dt_Lab_to_linearRGB(in + k, cmatrix, rgb);
-        copy_pixel_nontemporal(out + k, rgb);
-      }
-    }
-    else
-    {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels, cmatrix, d)    \
-    schedule(static)
-#endif
-      for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
-      {
-        dt_aligned_pixel_t rgb; // using an aligned temporary variable lets the compiler optimize away interm. writes
-        dt_Lab_to_linearRGB(in + k, cmatrix, rgb);
-        for(int c = 0; c < 3; c++)
-        {
-          if(d->lut[c][0] >= 0.0f)
-          {
-            rgb[c] = (rgb[c] < 1.0f) ? lerp_lut(d->lut[c], rgb[c])
-                                     : dt_iop_eval_exp(d->unbounded_coeffs[c], rgb[c]);
-          }
-        }
-        copy_pixel_nontemporal(out + k, rgb);
-      }
-      dt_omploop_sfence();
-    }
+    if (!_transform_cmatrix(d, out, (float*)ivoid, npixels))
+      process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
   }
   else
   {
-// fprintf(stderr,"Using xform codepath\n");
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(d, gamutcheck, ivoid, out, roi_out) \
-    schedule(static)
-#endif
-    for(int k = 0; k < roi_out->height; k++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)4 * k * roi_out->width;
-      float *const restrict outp = out + (size_t)4 * k * roi_out->width;
-
-      cmsDoTransform(d->xform, in, outp, roi_out->width);
-
-      if(gamutcheck)
-      {
-        for(int j = 0; j < roi_out->width; j++)
-        {
-          if(outp[4*j+0] < 0.0f || outp[4*j+1] < 0.0f || out[4*j+2] < 0.0f)
-          {
-            outp[4*j+0] = 0.0f;
-            outp[4*j+1] = 1.0f;
-            outp[4*j+2] = 1.0f;
-          }
-        }
-      }
-    }
+    _transform_lcms(d, out, (float*)ivoid, npixels);
   }
 }
 
@@ -490,7 +564,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
-  const int gamutcheck = (d->mode == DT_PROFILE_GAMUTCHECK);
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
   float *const restrict out = (float *)ovoid;
 
@@ -521,41 +594,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
     _mm_sfence();
 
-    process_fastpath_apply_tonecurves(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_fastpath_apply_tonecurves(self, piece, ovoid, roi_out);
   }
   else
   {
-    // fprintf(stderr,"Using xform codepath\n");
-    const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, d, ivoid, gamutcheck, outofgamutpixel, out, roi_out) \
-    schedule(static)
-#endif
-    for(int k = 0; k < roi_out->height; k++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-      float *outp = out + (size_t)ch * k * roi_out->width;
-
-      cmsDoTransform(d->xform, in, outp, roi_out->width);
-
-      if(gamutcheck)
-      {
-        for(int j = 0; j < roi_out->width; j++)
-        {
-          const __m128 pixel = _mm_load_ps(outp + 4*j);
-          __m128 ingamut = _mm_cmplt_ps(pixel, _mm_set_ps(-FLT_MAX, 0.0f, 0.0f, 0.0f));
-
-          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
-          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
-
-          const __m128 result
-              = _mm_or_ps(_mm_and_ps(ingamut, outofgamutpixel), _mm_andnot_ps(ingamut, pixel));
-          _mm_stream_ps(outp + 4*j, result);
-        }
-      }
-    }
-    _mm_sfence();
+    _transform_lcms(d, out, (float*)ivoid, npixels);
   }
 }
 #endif
