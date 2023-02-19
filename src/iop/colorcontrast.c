@@ -231,7 +231,6 @@ int process_cl(struct dt_iop_module_t *self,
   dt_iop_colorcontrast_data_t *data = (dt_iop_colorcontrast_data_t *)piece->data;
   dt_iop_colorcontrast_global_data_t *gd =
     (dt_iop_colorcontrast_global_data_t *)self->global_data;
-  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -241,10 +240,11 @@ int process_cl(struct dt_iop_module_t *self,
   const float offset[4] = { 0.0f, data->a_offset, data->b_offset, 0.0f };
   const int unbound = data->unbound;
 
-  err = dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcontrast, width, height,
-                                         CLARG(dev_in), CLARG(dev_out),
-                                         CLARG(width), CLARG(height),
-                                         CLARG(scale), CLARG(offset), CLARG(unbound));
+  const cl_int err =
+    dt_opencl_enqueue_kernel_2d_args(devid, gd->kernel_colorcontrast, width, height,
+                                     CLARG(dev_in), CLARG(dev_out),
+                                     CLARG(width), CLARG(height),
+                                     CLARG(scale), CLARG(offset), CLARG(unbound));
 
   if(err != CL_SUCCESS) goto error;
   return TRUE;
