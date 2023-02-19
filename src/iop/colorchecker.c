@@ -370,78 +370,19 @@ void init_presets(dt_iop_module_so_t *self)
   free(velvia_params);
 }
 
-// fast logarithms stolen from paul mineiro http://fastapprox.googlecode.com/svn/trunk/fastapprox/src/fastonebigheader.h
-#if 0//def __SSE2__
-#include <xmmintrin.h>
-
-typedef __m128 v4sf;
-typedef __m128i v4si;
-
-#define v4si_to_v4sf _mm_cvtepi32_ps
-#define v4sf_to_v4si _mm_cvttps_epi32
-
-#define v4sfl(x) ((const v4sf) { (x), (x), (x), (x) })
-#define v2dil(x) ((const v4si) { (x), (x) })
-#define v4sil(x) v2dil((((unsigned long long) (x)) << 32) | (x))
-static inline v4sf
-vfastlog2 (v4sf x)
-{
-  union { v4sf f; v4si i; } vx = { x };
-  union { v4si i; v4sf f; } mx; mx.i = (vx.i & v4sil (0x007FFFFF)) | v4sil (0x3f000000);
-  v4sf y = v4si_to_v4sf (vx.i);
-  y *= v4sfl (1.1920928955078125e-7f);
-
-  const v4sf c_124_22551499 = v4sfl (124.22551499f);
-  const v4sf c_1_498030302 = v4sfl (1.498030302f);
-  const v4sf c_1_725877999 = v4sfl (1.72587999f);
-  const v4sf c_0_3520087068 = v4sfl (0.3520887068f);
-
-  return y - c_124_22551499
-    - c_1_498030302 * mx.f
-    - c_1_725877999 / (c_0_3520087068 + mx.f);
-}
-
-static inline v4sf
-vfastlog (v4sf x)
-{
-  const v4sf c_0_69314718 = v4sfl (0.69314718f);
-  return c_0_69314718 * vfastlog2 (x);
-}
-
 // thinplate spline kernel \phi(r) = 2 r^2 ln(r)
-static inline v4sf kerneldist4(const float *x, const float *y)
-{
-  const float r2 =
-      (x[0]-y[0])*(x[0]-y[0])+
-      (x[1]-y[1])*(x[1]-y[1])+
-      (x[2]-y[2])*(x[2]-y[2]);
-  return r2 * fastlog(MAX(1e-8f,r2));
-}
+#if defined(_OPENMP)
+#pragma omp declare simd aligned(x, y)
 #endif
-
-// static inline float
-// fasterlog(float x)
-// {
-//   union { float f; uint32_t i; } vx = { x };
-//   float y = vx.i;
-//   y *= 8.2629582881927490e-8f;
-//   return y - 87.989971088f;
-// }
-
-// thinplate spline kernel \phi(r) = 2 r^2 ln(r)
-#if defined(_OPENMP) && defined(OPENMP_SIMD_)
-#pragma omp declare SIMD()
-#endif
-static inline float kernel(const float *x, const float *y)
+static inline float kernel(const dt_aligned_pixel_t x, const dt_aligned_pixel_t y)
 {
-  // return r*r*logf(MAX(1e-8f,r));
-  // well damnit, this speedup thing unfortunately shows severe artifacts.
-  // return r*r*fasterlog(MAX(1e-8f,r));
-  // this one seems to be a lot better, let's see how it goes:
-  const float r2 =
-      (x[0]-y[0])*(x[0]-y[0])+
-      (x[1]-y[1])*(x[1]-y[1])+
-      (x[2]-y[2])*(x[2]-y[2]);
+  dt_aligned_pixel_t diff2;
+  for_each_channel(c)
+  {
+    diff2[c] = (x[c] - y[c]);
+    diff2[c] *= diff2[c];
+  }
+  const float r2 = diff2[0] + diff2[1] + diff2[2];
   return r2*fastlog(MAX(1e-8f,r2));
 }
 
@@ -454,94 +395,76 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const dt_iop_colorchecker_data_t *const data = (dt_iop_colorchecker_data_t *)piece->data;
   const size_t npixels = (size_t)roi_out->height * (size_t)roi_out->width;
+  float *const restrict out = (float*)DT_IS_ALIGNED(ovoid);
+
+  // convert patch data from struct of arrays to array of structs so we can vectorize operations
+  const int num_patches = data->num_patches;
+  dt_aligned_pixel_t *sources = dt_alloc_align(64, sizeof(dt_aligned_pixel_t) * num_patches);
+  for(int i = 0; i < num_patches; i++)
+  {
+    sources[i][0] = data->source_Lab[3 * i];
+    sources[i][1] = data->source_Lab[3 * i + 1];
+    sources[i][2] = data->source_Lab[3 * i + 2];
+    sources[i][3] = 0.0f;
+  }
+  dt_aligned_pixel_t *patches = dt_alloc_align(64, sizeof(dt_aligned_pixel_t) * (num_patches + 1));
+  for(int i = 0; i <= num_patches; i++)
+  {
+    patches[i][0] = data->coeff_L[i];
+    patches[i][1] = data->coeff_a[i];
+    patches[i][2] = data->coeff_b[i];
+    patches[i][3] = 0.0f;
+  }
+  const dt_aligned_pixel_t polynomial_L =
+    { data->coeff_L[num_patches+1], data->coeff_L[num_patches+2], data->coeff_L[num_patches+3], 0.0f };
+  const dt_aligned_pixel_t polynomial_a =
+    { data->coeff_a[num_patches+1], data->coeff_a[num_patches+2], data->coeff_a[num_patches+3], 0.0f };
+  const dt_aligned_pixel_t polynomial_b =
+    { data->coeff_b[num_patches+1], data->coeff_b[num_patches+2], data->coeff_b[num_patches+3], 0.0f };
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, data, ivoid, ovoid) \
+  dt_omp_firstprivate(npixels, num_patches, patches, sources, polynomial_L, \
+                      polynomial_a, polynomial_b, ivoid, out)         \
   schedule(static)
 #endif
   for(int k=0; k < npixels; k++)
   {
-    const float *const in = ((float *)ivoid) + 4*k;
-    dt_aligned_pixel_t res = { data->coeff_L[data->num_patches],
-      			       data->coeff_a[data->num_patches],
-                               data->coeff_b[data->num_patches] };
+    dt_aligned_pixel_t inpx;
+    copy_pixel(inpx, ((float *)ivoid) + 4*k);
+
     // polynomial part:
-    res[0] += data->coeff_L[data->num_patches+1] * in[0] +
-      data->coeff_L[data->num_patches+2] * in[1] +
-      data->coeff_L[data->num_patches+3] * in[2];
-    res[1] += data->coeff_a[data->num_patches+1] * in[0] +
-      data->coeff_a[data->num_patches+2] * in[1] +
-      data->coeff_a[data->num_patches+3] * in[2];
-    res[2] += data->coeff_b[data->num_patches+1] * in[0] +
-      data->coeff_b[data->num_patches+2] * in[1] +
-      data->coeff_b[data->num_patches+3] * in[2];
-    for(int p=0; p < data->num_patches; p++)
-    { // rbf from thin plate spline
-      const float phi = kernel(in, data->source_Lab + 3*p);
-      res[0] += data->coeff_L[p] * phi;
-      res[1] += data->coeff_a[p] * phi;
-      res[2] += data->coeff_b[p] * phi;
+    dt_aligned_pixel_t poly_L, poly_a, poly_b;
+    for_each_channel(c)
+    {
+      poly_L[c] = (polynomial_L[c] * inpx[c]);
+      poly_a[c] = (polynomial_a[c] * inpx[c]);
+      poly_b[c] = (polynomial_b[c] * inpx[c]);
     }
-    float *const out = ((float *)ovoid) + 4*k;
-    copy_pixel_nontemporal(out, res);
+    dt_aligned_pixel_t sums = { poly_L[0] + poly_L[1] + poly_L[2],
+      				poly_a[0] + poly_a[1] + poly_a[2],
+                                poly_b[0] + poly_b[1] + poly_b[2],
+                                0.0f };
+    dt_aligned_pixel_t res;
+    for_each_channel(c)
+      res[c] = patches[num_patches][c] + sums[c];
+    for(int p=0; p < num_patches; p++)
+    {
+      // rbf from thin plate spline
+      const float phi = kernel(inpx, sources[p]);
+      for_each_channel(c)
+        res[c] += patches[p][c] * phi;
+    }
+    copy_pixel_nontemporal(out + 4*k, res);
   }
   dt_omploop_sfence();
+  dt_free_align(patches);
+  dt_free_align(sources);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
-#if 0 // TODO:
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_colorchecker_data_t *const data = (dt_iop_colorchecker_data_t *)piece->data;
-  const int ch = piece->colors;
-  // TODO: swizzle this so we can eval the distance of one point
-  // TODO: to four patches at the same time
-  v4sf source_Lab[data->num_patches];
-  for(int i=0;i<data->num_patches;i++)
-    source_Lab[i] = _mm_set_ps(1.0,
-        data->source_Lab[3*i+0],
-        data->source_Lab[3*i+1],
-        data->source_Lab[3*i+2]);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) collapse(2)
-#endif
-  for(int j=0;j<roi_out->height;j++)
-  {
-    for(int i=0;i<roi_out->width;i++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)ch * (j * roi_in->width + i);
-      float *out = ((float *)ovoid) + (size_t)ch * (j * roi_in->width + i);
-      // TODO: do this part in SSE (maybe need to store coeff_L in _mm128 on data struct)
-      out[0] = data->coeff_L[data->num_patches];
-      out[1] = data->coeff_a[data->num_patches];
-      out[2] = data->coeff_b[data->num_patches];
-      // polynomial part:
-      out[0] += data->coeff_L[data->num_patches+1] * in[0] +
-                data->coeff_L[data->num_patches+2] * in[1] +
-                data->coeff_L[data->num_patches+3] * in[2];
-      out[1] += data->coeff_a[data->num_patches+1] * in[0] +
-                data->coeff_a[data->num_patches+2] * in[1] +
-                data->coeff_a[data->num_patches+3] * in[2];
-      out[2] += data->coeff_b[data->num_patches+1] * in[0] +
-                data->coeff_b[data->num_patches+2] * in[1] +
-                data->coeff_b[data->num_patches+3] * in[2];
-      for(int k=0;k<data->num_patches;k+=4)
-      { // rbf from thin plate spline
-        const v4sf phi = kerneldist4(in, source_Lab[k]);
-        // TODO: add up 4x output channels
-        out[0] += data->coeff_L[k] * phi[0];
-        out[1] += data->coeff_a[k] * phi[0];
-        out[2] += data->coeff_b[k] * phi[0];
-      }
-    }
-  }
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-}
-#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
