@@ -294,32 +294,65 @@ void init_presets(dt_iop_module_so_t *self)
              "gz11eJxjYGBgkGAAgRNODGiAEV0AJ2iwh+CRxQcA5qIZBA==", 8);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd simdlen(4)
+#endif
 static inline float CDL(float x, float slope, float offset, float power)
 {
   float out;
   out = slope * x + offset;
-  out = (out <= 0.0f) ? 0.0f : powf(out, power);
+//  out = (out <= 0.0f) ? 0.0f : powf(out, power);
+  out = powf(MAX(out, 0.0f), power);
   return out;
 }
+
+#if defined(_OPENMP) && !defined(_WIN32)
+#pragma omp declare simd
+extern float powf(const float x, const float y);
+#endif
+
+static inline void apply_CDL(
+	dt_aligned_pixel_t x,
+        const dt_aligned_pixel_t slope,
+        const dt_aligned_pixel_t offset,
+        const dt_aligned_pixel_t power)
+{
+  dt_aligned_pixel_t res;
+  for_each_channel(c)
+    res[c] = MAX(slope[c] * x[c] + offset[c], 0.0f);
+#ifdef __SSE__
+  _mm_store_ps(x, _mm_pow_ps(_mm_load_ps(res), _mm_load_ps(power)));
+#else
+  for_each_channel(c)
+    x[c] = powf(res[c], power[c]);
+#endif
+}
+                        
 
 // see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
-  const int ch = piece->colors;
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return;
 
+  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
   // these are RGB values!
   const dt_aligned_pixel_t gain = { d->gain[CHANNEL_RED] * d->gain[CHANNEL_FACTOR],
                                     d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
                                     d->gain[CHANNEL_BLUE] * d->gain[CHANNEL_FACTOR] };
   const float contrast = (d->contrast != 0.0f) ? 1.0f / d->contrast : 1000000.0f,
               grey = d->grey / 100.0f;
+  const float saturation = d->saturation;
+  const float saturation_out = d->saturation_out;
 
   // For neutral parameters, skip the computations doing x^1 or (x-a)*1 + a to save time
   const int run_contrast = (d->contrast == 1.0f) ? 0 : 1;
   const int run_saturation = (d->saturation == 1.0f) ? 0: 1;
   const int run_saturation_out = (d->saturation_out == 1.0f) ? 0: 1;
+
+  float *const out = (float*)ovoid;
 
   switch(d->mode)
   {
@@ -338,15 +371,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(ch, gain, gamma_inv, lift, ivoid, ovoid, roi_in, \
+      dt_omp_firstprivate(gain, gamma_inv, lift, ivoid, out, roi_in, \
                           roi_out) \
-      shared(d) \
       schedule(static)
 #endif
-      for(size_t k = 0; k < (size_t)ch * roi_in->width * roi_out->height; k += ch)
+      for(size_t k = 0; k < (size_t)4 * roi_in->width * roi_out->height; k += 4)
       {
         float *in = ((float *)ivoid) + k;
-        float *out = ((float *)ovoid) + k;
 
         // transform the pixel to sRGB:
         // Lab -> XYZ
@@ -358,11 +389,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         dt_XYZ_to_sRGB(XYZ, rgb);
 
         // do the calculation in RGB space
-        for(int c = 0; c < 3; c++)
+        for_each_channel(c)
         {
-          // lift gamma gain
+          // lift gamma gain - apply lift and gain
           rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
-          rgb[c] = (rgb[c] < 0.0f) ? 0.0f : powf(rgb[c], gamma_inv[c]);
+        }
+        for_each_channel(c)
+        {
+          // lift gamma gain - apply gamma
+          rgb[c] = powf(MAX(rgb[c], 0.0f), gamma_inv[c]);
         }
 
         // transform the result back to Lab
@@ -370,8 +405,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         dt_sRGB_to_XYZ(rgb, XYZ);
 
         // XYZ -> Lab
-        dt_XYZ_to_Lab(XYZ, out);
+        dt_aligned_pixel_t res;
+        dt_XYZ_to_Lab(XYZ, res);
+        copy_pixel_nontemporal(out + k, res);
       }
+      dt_omploop_sfence();
       break;
     }
     case LIFT_GAMMA_GAIN:
@@ -383,22 +421,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                               gamma = { d->gamma[CHANNEL_RED] * d->gamma[CHANNEL_FACTOR],
                                         d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
                                         d->gamma[CHANNEL_BLUE] * d->gamma[CHANNEL_FACTOR] },
-                          gamma_inv = { (gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
-                                        (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
-                                        (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0 };
+                          gamma_inv = { 2.2f * ((gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0),
+                                        2.2f * ((gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0),
+                                        2.2f * ((gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0) };
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(ch, contrast, gain, gamma_inv, grey, ivoid, lift, \
-                          ovoid, roi_in, roi_out, run_contrast, \
-                          run_saturation, run_saturation_out) \
-      shared(d) \
+      dt_omp_firstprivate(contrast, gain, gamma_inv, grey, ivoid, lift, \
+                          out, roi_in, roi_out, run_contrast, \
+                          saturation, run_saturation, saturation_out, run_saturation_out) \
       schedule(static)
 #endif
-      for(size_t k = 0; k < (size_t)ch * roi_in->width * roi_out->height; k += ch)
+      for(size_t k = 0; k < (size_t)4 * roi_in->width * roi_out->height; k += 4)
       {
         float *in = ((float *)ivoid) + k;
-        float *out = ((float *)ovoid) + k;
 
         // transform the pixel to sRGB:
         // Lab -> XYZ
@@ -409,40 +445,54 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         dt_aligned_pixel_t rgb = { 0.0f };
         dt_XYZ_to_prophotorgb(XYZ, rgb);
 
-        float luma = XYZ[1]; // the Y channel is the relative luminance
-
         // do the calculation in RGB space
-        for(int c = 0; c < 3; c++)
+        if(run_saturation)
         {
+          const float luma = XYZ[1]; // the Y channel is the relative luminance
           // main saturation input
-          if(run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
-
-          // RGB gamma correction
-          rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c], 1.0f/2.2f);
-
-          // lift gamma gain
-          rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
-          rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c], gamma_inv[c] * 2.2f);
+          for_each_channel(c)
+            rgb[c] = luma + saturation * (rgb[c] - luma);
         }
-
+        for_each_channel(c)
+        {
+          // RGB gamma correction
+          rgb[c] = powf(MAX(rgb[c], 0.0f), 1.0f/2.2f);
+        }
+        for_each_channel(c)
+        {
+          // lift gamma gain - apply lift and gain
+          rgb[c] = ((( rgb[c]  - 1.0f) * lift[c]) + 1.0f) * gain[c];
+        }
+        for_each_channel(c)
+        {
+          // lift gamma gain - apply gamma
+          rgb[c] = powf(MAX(rgb[c], 0.0f), gamma_inv[c]);
+        }
         // main saturation output
         if(run_saturation_out)
         {
           dt_prophotorgb_to_XYZ(rgb, XYZ);
-          luma = XYZ[1];
-          for(int c = 0; c < 3; c++) rgb[c] = luma + d->saturation_out * (rgb[c] - luma);
+          const float luma = XYZ[1];
+          for_each_channel(c)
+            rgb[c] = luma + saturation_out * (rgb[c] - luma);
         }
 
         // fulcrum contrat
-        if(run_contrast) for(int c = 0; c < 3; c++) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
-
+        if(run_contrast)
+        {
+          for_each_channel(c)
+            rgb[c] = powf(MAX(rgb[c], 0.0f) / grey, contrast) * grey;
+        }
         // transform the result back to Lab
         // sRGB -> XYZ
         dt_prophotorgb_to_XYZ(rgb, XYZ);
 
         // XYZ -> Lab
-        dt_XYZ_to_Lab(XYZ, out);
+        dt_aligned_pixel_t res;
+        dt_XYZ_to_Lab(XYZ, res);
+        copy_pixel_nontemporal(out + k, res);
       }
+      dt_omploop_sfence();
       break;
    }
     case SLOPE_OFFSET_POWER:
@@ -458,16 +508,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(ch, contrast, gain, gamma, grey, ivoid, lift, ovoid, \
-                          roi_in, roi_out, run_contrast, run_saturation, \
-                          run_saturation_out) \
-      shared(d) \
+      dt_omp_firstprivate(contrast, gain, gamma, grey, ivoid, lift, out, \
+                          roi_in, roi_out, run_contrast, saturation, run_saturation, \
+                          saturation_out, run_saturation_out)            \
       schedule(static)
 #endif
-      for(size_t k = 0; k < (size_t)ch * roi_in->width * roi_out->height; k += ch)
+      for(size_t k = 0; k < (size_t)4 * roi_in->width * roi_out->height; k += 4)
       {
         float *in = ((float *)ivoid) + k;
-        float *out = ((float *)ovoid) + k;
 
         // transform the pixel to RGB:
         // Lab -> XYZ
@@ -481,33 +529,40 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         float luma = XYZ[1]; // the Y channel is the RGB luminance
 
         // do the calculation in RGB space
-        for(int c = 0; c < 3; c++)
+        if(run_saturation)
         {
           // main saturation input
-          if(run_saturation) rgb[c] = luma + d->saturation * (rgb[c] - luma);
-
-          // channel CDL
-          rgb[c] = CDL(rgb[c], gain[c], lift[c], gamma[c]);
+          for_each_channel(c)
+            rgb[c] = luma + saturation * (rgb[c] - luma);
         }
+        apply_CDL(rgb, gain, lift, gamma);
 
         // main saturation output
         if(run_saturation_out)
         {
           dt_prophotorgb_to_XYZ(rgb, XYZ);
           luma = XYZ[1];
-          for(int c = 0; c < 3; c++) rgb[c] = luma + d->saturation_out * (rgb[c] - luma);
+          for_each_channel(c)
+            rgb[c] = luma + saturation_out * (rgb[c] - luma);
         }
 
         // fulcrum contrat
-        if(run_contrast) for(int c = 0; c < 3; c++) rgb[c] = (rgb[c] <= 0.0f) ? 0.0f : powf(rgb[c] / grey, contrast) * grey;
+        if(run_contrast)
+        {
+          for_each_channel(c)
+            rgb[c] = powf(MAX(rgb[c], 0.0f) / grey, contrast) * grey;
+        }
 
         // transform the result back to Lab
         // sRGB -> XYZ
         dt_prophotorgb_to_XYZ(rgb , XYZ);
 
         // XYZ -> Lab
-        dt_XYZ_to_Lab(XYZ, out);
+        dt_aligned_pixel_t res;
+        dt_XYZ_to_Lab(XYZ, res);
+        copy_pixel_nontemporal(out + k, res);
       }
+      dt_omploop_sfence();
       break;
     }
   }
@@ -943,15 +998,15 @@ static void apply_autogrey(dt_iop_module_t *self)
           (p->lift[CHANNEL_GREEN] + p->lift[CHANNEL_FACTOR] - 2.0f),
           (p->lift[CHANNEL_BLUE] + p->lift[CHANNEL_FACTOR] - 2.0f) },
       gamma
-      = { p->gamma[CHANNEL_RED] * p->gamma[CHANNEL_FACTOR],
-          p->gamma[CHANNEL_GREEN] * p->gamma[CHANNEL_FACTOR],
-          p->gamma[CHANNEL_BLUE] * p->gamma[CHANNEL_FACTOR] },
+      = { 2.0f - p->gamma[CHANNEL_RED] * p->gamma[CHANNEL_FACTOR],
+          2.0f - p->gamma[CHANNEL_GREEN] * p->gamma[CHANNEL_FACTOR],
+          2.0f - p->gamma[CHANNEL_BLUE] * p->gamma[CHANNEL_FACTOR] },
       gain = { p->gain[CHANNEL_RED] * p->gain[CHANNEL_FACTOR], p->gain[CHANNEL_GREEN] * p->gain[CHANNEL_FACTOR],
                p->gain[CHANNEL_BLUE] * p->gain[CHANNEL_FACTOR] };
 
-  for(int c = 0; c < 3; c++)
+  apply_CDL(rgb, gain, lift, gamma);
+  for_each_channel(c)
   {
-    rgb[c] = CDL(rgb[c], gain[c], lift[c], 2.0f - gamma[c]);
     rgb[c] = CLAMP(rgb[c], 0.0f, 1.0f);
   }
 
@@ -989,7 +1044,8 @@ static void apply_lift_neutralize(dt_iop_module_t *self)
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   // Get the parameter
-  for(int c = 0; c < 3; ++c) RGB[c] = powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - RGB[c] * p->gain[c+1];
+  for(int c = 0; c < 3; ++c)
+    RGB[c] = powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - RGB[c] * p->gain[c+1];
 
   p->lift[CHANNEL_RED] = RGB[0] + 1.0f;
   p->lift[CHANNEL_GREEN] = RGB[1] + 1.0f;
@@ -1067,7 +1123,8 @@ static void apply_gain_neutralize(dt_iop_module_t *self)
   dt_XYZ_to_prophotorgb((const float *)XYZ, RGB);
 
   // Get the parameter
-  for(int c = 0; c < 3; ++c) RGB[c] = (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
+  for(int c = 0; c < 3; ++c)
+    RGB[c] = (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
 
   p->gain[CHANNEL_RED] = RGB[0];
   p->gain[CHANNEL_GREEN] = RGB[1];
@@ -1235,11 +1292,14 @@ static void apply_autocolor(dt_iop_module_t *self)
   for(int runs = 0 ; runs < 1000 ; ++runs)
   {
     // compute RGB slope/gain (powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - p->lift[c+1] + 1.0f) / MAX(RGB[c], 0.000001f);
-    for(int c = 0; c < 3; ++c) RGB_gain[c] = CLAMP((powf(greys[GAIN], 1.0f / (2.0f - RGB_gamma[c])) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.75f, 1.25f);
+    for(int c = 0; c < 3; ++c)
+      RGB_gain[c] = CLAMP((powf(greys[GAIN], 1.0f / (2.0f - RGB_gamma[c])) - RGB_lift[c]) / MAX(samples_gain[c], 0.000001f), 0.75f, 1.25f);
     // compute RGB offset/lift powf(XYZ[1], 1.0f/(2.0f - p->gamma[c+1])) - RGB[c] * p->gain[c+1];
-    for(int c = 0; c < 3; ++c) RGB_lift[c] = CLAMP(powf(greys[LIFT], 1.0f / (2.0f - RGB_gamma[c])) - samples_lift[c] * RGB_gain[c], -0.025f, 0.025f);
+    for(int c = 0; c < 3; ++c)
+      RGB_lift[c] = CLAMP(powf(greys[LIFT], 1.0f / (2.0f - RGB_gamma[c])) - samples_lift[c] * RGB_gain[c], -0.025f, 0.025f);
     // compute  power/gamma 2.0f - logf(0.1842f) / logf(MAX(p->gain[CHANNEL_FACTOR] * XYZ[1] + p->lift[CHANNEL_FACTOR] - 1.0f, 0.000001f));
-    for(int c = 0; c < 3; ++c) RGB_gamma[c] = 2.0f - CLAMP(logf(MAX(greys[GAMMA], 0.000001f)) / logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)), 0.75f, 1.25f);
+    for(int c = 0; c < 3; ++c)
+      RGB_gamma[c] = 2.0f - CLAMP(logf(MAX(greys[GAMMA], 0.000001f)) / logf(MAX(RGB_gain[c] * samples_gamma[c] + RGB_lift[c], 0.000001f)), 0.75f, 1.25f);
   }
 
   // save
