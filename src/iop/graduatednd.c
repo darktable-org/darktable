@@ -900,6 +900,8 @@ void process(struct dt_iop_module_t *self,
         length += length_inc;
       }
     }
+    // ensure that the nontemporal writes have finished before continuing
+    dt_omploop_sfence();
   }
   else
   {
@@ -954,6 +956,8 @@ void process(struct dt_iop_module_t *self,
         length += length_inc;
       }
     }
+    // ensure that the nontemporal writes have finished before continuing
+    dt_omploop_sfence();
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
