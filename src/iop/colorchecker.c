@@ -448,46 +448,48 @@ static inline float kernel(const float *x, const float *y)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if(!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                        ivoid, ovoid, roi_in, roi_out))
+    return;
+
   const dt_iop_colorchecker_data_t *const data = (dt_iop_colorchecker_data_t *)piece->data;
-  const int ch = piece->colors;
+  const size_t npixels = (size_t)roi_out->height * (size_t)roi_out->width;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, data, ivoid, ovoid, roi_in, roi_out) \
-  schedule(static) \
-  collapse(2)
+  dt_omp_firstprivate(npixels, data, ivoid, ovoid) \
+  schedule(static)
 #endif
-  for(int j=0;j<roi_out->height;j++)
+  for(int k=0; k < npixels; k++)
   {
-    for(int i=0;i<roi_out->width;i++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)ch * (j * roi_in->width + i);
-      float *out = ((float *)ovoid) + (size_t)ch * (j * roi_in->width + i);
-      out[0] = data->coeff_L[data->num_patches];
-      out[1] = data->coeff_a[data->num_patches];
-      out[2] = data->coeff_b[data->num_patches];
-      // polynomial part:
-      out[0] += data->coeff_L[data->num_patches+1] * in[0] +
-                data->coeff_L[data->num_patches+2] * in[1] +
-                data->coeff_L[data->num_patches+3] * in[2];
-      out[1] += data->coeff_a[data->num_patches+1] * in[0] +
-                data->coeff_a[data->num_patches+2] * in[1] +
-                data->coeff_a[data->num_patches+3] * in[2];
-      out[2] += data->coeff_b[data->num_patches+1] * in[0] +
-                data->coeff_b[data->num_patches+2] * in[1] +
-                data->coeff_b[data->num_patches+3] * in[2];
-#if defined(_OPENMP) && defined(OPENMP_SIMD_) // <== nice try, i don't think this does anything here
-#pragma omp SIMD()
-#endif
-      for(int k=0;k<data->num_patches;k++)
-      { // rbf from thin plate spline
-        const float phi = kernel(in, data->source_Lab + 3*k);
-        out[0] += data->coeff_L[k] * phi;
-        out[1] += data->coeff_a[k] * phi;
-        out[2] += data->coeff_b[k] * phi;
-      }
+    const float *const in = ((float *)ivoid) + 4*k;
+    dt_aligned_pixel_t res = { data->coeff_L[data->num_patches],
+      			       data->coeff_a[data->num_patches],
+                               data->coeff_b[data->num_patches] };
+    // polynomial part:
+    res[0] += data->coeff_L[data->num_patches+1] * in[0] +
+      data->coeff_L[data->num_patches+2] * in[1] +
+      data->coeff_L[data->num_patches+3] * in[2];
+    res[1] += data->coeff_a[data->num_patches+1] * in[0] +
+      data->coeff_a[data->num_patches+2] * in[1] +
+      data->coeff_a[data->num_patches+3] * in[2];
+    res[2] += data->coeff_b[data->num_patches+1] * in[0] +
+      data->coeff_b[data->num_patches+2] * in[1] +
+      data->coeff_b[data->num_patches+3] * in[2];
+    for(int p=0; p < data->num_patches; p++)
+    { // rbf from thin plate spline
+      const float phi = kernel(in, data->source_Lab + 3*p);
+      res[0] += data->coeff_L[p] * phi;
+      res[1] += data->coeff_a[p] * phi;
+      res[2] += data->coeff_b[p] * phi;
     }
+    float *const out = ((float *)ovoid) + 4*k;
+    copy_pixel_nontemporal(out, res);
   }
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  dt_omploop_sfence();
+
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if 0 // TODO:
