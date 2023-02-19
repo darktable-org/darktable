@@ -411,24 +411,47 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_colormatrix_t cmatrix;
     transpose_3xSSE(d->cmatrix, cmatrix);
 
+    const gboolean is_linear = (d->lut[0][0] < 0.0f) || (d->lut[1][0] < 0.0f) || (d->lut[2][0] < 0.0f);
+
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
+    if(is_linear)
+    {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, npixels) \
-    shared(cmatrix) \
+    dt_omp_firstprivate(in, out, npixels, cmatrix, d)    \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
-    {
-      dt_aligned_pixel_t xyz;
-      dt_Lab_to_XYZ(in + k, xyz);
-      dt_aligned_pixel_t rgb; // using an aligned temporary variable lets the compiler optimize away interm. writes
-      dt_apply_transposed_color_matrix(xyz, cmatrix, rgb);
-      copy_pixel(out + k, rgb);
+      for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
+      {
+        dt_aligned_pixel_t rgb;
+        dt_Lab_to_linearRGB(in + k, cmatrix, rgb);
+        copy_pixel_nontemporal(out + k, rgb);
+      }
     }
-
-    process_fastpath_apply_tonecurves(self, piece, in, out, roi_in, roi_out);
+    else
+    {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, out, npixels, cmatrix, d)    \
+    schedule(static)
+#endif
+      for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
+      {
+        dt_aligned_pixel_t rgb; // using an aligned temporary variable lets the compiler optimize away interm. writes
+        dt_Lab_to_linearRGB(in + k, cmatrix, rgb);
+        for(int c = 0; c < 3; c++)
+        {
+          if(d->lut[c][0] >= 0.0f)
+          {
+            rgb[c] = (rgb[c] < 1.0f) ? lerp_lut(d->lut[c], rgb[c])
+                                     : dt_iop_eval_exp(d->unbounded_coeffs[c], rgb[c]);
+          }
+        }
+        copy_pixel_nontemporal(out + k, rgb);
+      }
+      dt_omploop_sfence();
+    }
   }
   else
   {
