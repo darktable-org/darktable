@@ -1467,6 +1467,19 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
   background-color: @graph_bg;
 }
 
+#nav-zoom
+{
+  background-color: alpha(@darkroom_bg_color, 0.25);
+  color: @graph_fg_active;
+  border-top-left-radius: 0.21em;
+  margin: 0;
+}
+
+#nav-zoom:hover
+{
+  background-color: alpha(@darkroom_bg_color, 0.5);
+}
+
 /* search boxes (background color is set on collect module part above ; to be the same as other filters in quick filter bar) */
 #right .search  /* set only search box margin in modules panel */
 {
