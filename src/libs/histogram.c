@@ -1572,7 +1572,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
     if(prior_highlight != d->highlight)
     {
-      dt_control_queue_redraw_widget(widget);
+      gtk_widget_queue_draw(widget);
       if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
       {
         // FIXME: should really use named cursors, and differentiate between "grab" and "grabbing"
@@ -1714,7 +1714,7 @@ static gboolean _drawable_leave_notify_callback(GtkWidget *widget, GdkEventCross
   {
     d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
     dt_control_change_cursor(GDK_LEFT_PTR);
-    dt_control_queue_redraw_widget(widget);
+    gtk_widget_queue_draw(widget);
   }
   // event should bubble up to the eventbox
   return FALSE;
@@ -1841,7 +1841,7 @@ static void _scope_type_changed(dt_lib_histogram_t *d)
   if(d->waveform_bins)
   {
     // waveform and RGB parade both work on the same underlying data
-    dt_control_queue_redraw_widget(d->scope_draw);
+    gtk_widget_queue_draw(d->scope_draw);
   }
   else
   {
@@ -1885,7 +1885,7 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
                          dt_lib_histogram_scale_names[d->histogram_scale]);
       _histogram_scale_update(d);
       // no need to reprocess data
-      dt_control_queue_redraw_widget(d->scope_draw);
+      gtk_widget_queue_draw(d->scope_draw);
       return;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
     case DT_LIB_HISTOGRAM_SCOPE_PARADE:
@@ -1932,21 +1932,21 @@ static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->red = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   dt_conf_set_bool("plugins/darkroom/histogram/show_red", d->red);
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
 }
 
 static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->green = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   dt_conf_set_bool("plugins/darkroom/histogram/show_green", d->green);
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
 }
 
 static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->blue = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
   dt_conf_set_bool("plugins/darkroom/histogram/show_blue", d->blue);
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
 }
 
 static void _color_harmony_changed(dt_lib_histogram_t *d)
@@ -1957,7 +1957,7 @@ static void _color_harmony_changed(dt_lib_histogram_t *d)
                   d->harmony_width);
   dt_conf_set_int("plugins/darkroom/histogram/vectorscope/harmony_rotation",
                   d->harmony_rotation);
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
 }
 
 static gboolean _color_harmony_clicked(GtkWidget *button, GdkEventButton *event, dt_lib_histogram_t *d)
@@ -1999,7 +1999,7 @@ static gboolean _color_harmony_enter_notify_callback(GtkWidget *widget, GdkEvent
     }
   d->color_harmony_old = d->color_harmony;
   d->color_harmony = pos + 1;
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
   return TRUE;
 }
 
@@ -2008,7 +2008,7 @@ static gboolean _color_harmony_leave_notify_callback(GtkWidget *widget, GdkEvent
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->color_harmony = d->color_harmony_old;
-  dt_control_queue_redraw_widget(d->scope_draw);
+  gtk_widget_queue_draw(d->scope_draw);
   return TRUE;
 }
 
