@@ -27,6 +27,10 @@
 
 #define DEVELOP_BLEND_VERSION (11)
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef enum dt_develop_blend_colorspace_t
 {
   DEVELOP_BLEND_CS_NONE = 0,
@@ -476,6 +480,10 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
                                 cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in,
                                 const struct dt_iop_roi_t *roi_out);
 #endif
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

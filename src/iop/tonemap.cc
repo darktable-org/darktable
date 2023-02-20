@@ -26,8 +26,6 @@
 
 #define __STDC_FORMAT_MACROS
 
-extern "C" {
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -46,7 +44,6 @@ extern "C" {
 #include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
-}
 
 #include "iop/Permutohedral.h"
 

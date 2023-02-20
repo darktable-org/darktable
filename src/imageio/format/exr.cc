@@ -29,7 +29,6 @@
 #include <OpenEXR/ImfThreading.h>
 #include <OpenEXR/ImfOutputFile.h>
 
-extern "C" {
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
@@ -39,7 +38,6 @@ extern "C" {
 #include "imageio/imageio_exr.h"
 #include "imageio/imageio_module.h"
 #include "imageio/format/imageio_format_api.h"
-}
 #include "imageio/imageio_exr.hh"
 
 #ifdef __cplusplus

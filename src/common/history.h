@@ -23,6 +23,10 @@
 #include <sqlite3.h>
 #include "develop/imageop.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct dt_develop_t;
 struct dt_iop_module_t;
 
@@ -157,6 +161,10 @@ void dt_history_hash_write(const int32_t imgid, dt_history_hash_values_t *hash);
 
 /** read hash values from db */
 void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
