@@ -151,10 +151,21 @@ void dt_iop_image_copy(float *const __restrict__ out, const float *const __restr
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
     const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
+    // determine the number of 4-float vectors to be processed by each thread
+    const size_t chunksize = (((nfloats + nthreads - 1) / nthreads) + 3) / 4;
 #pragma omp parallel for simd aligned(in, out : 16) default(none) \
-    dt_omp_firstprivate(in, out, nfloats) schedule(simd:static) num_threads(nthreads)
-    for(size_t k = 0; k < nfloats; k++)
-      out[k] = in[k];
+    dt_omp_firstprivate(in, out, nfloats, chunksize, nthreads) \
+    schedule(simd:static) num_threads(nthreads)
+    for(size_t chunk = 0; chunk < nthreads; chunk++)
+    {
+      const size_t limit = MIN(4*(chunk+1)*chunksize, nfloats);
+      const size_t limit4 = limit & ~3;
+      for(size_t k = 4 * chunk * chunksize; k < limit4; k += 4)
+        copy_pixel_nontemporal(out + k, in + k);
+      // handle any leftover pixels in the final slice
+      for(size_t k = 0; k < (limit & 3); k++)
+        out[k + limit4] = in[k + limit4];
+    }
     return;
   }
 #endif // _OPENMP
