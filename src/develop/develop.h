@@ -29,6 +29,10 @@
 #include "control/settings.h"
 #include "develop/imageop.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct dt_iop_module_t;
 
 typedef struct dt_dev_history_item_t
@@ -556,6 +560,10 @@ void dt_dev_image_ext(
   int border_size,
   gboolean iso_12646,
   int32_t snapshot_id);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

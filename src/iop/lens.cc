@@ -16,8 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-extern "C" {
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -45,8 +43,6 @@ extern "C" {
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-}
-
 #include <lensfun.h>
 
 #define MAXKNOTS 16

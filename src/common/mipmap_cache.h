@@ -22,6 +22,10 @@
 #include "common/colorspaces.h"
 #include "common/image.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 // sizes stored in the mipmap cache, set to fixed values in mipmap_cache.c
 typedef enum dt_mipmap_size_t {
   DT_MIPMAP_0 = 0,
@@ -167,6 +171,11 @@ void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint3
 
 // return the mipmap corresponding to text value saved in prefs
 dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -32,6 +32,10 @@
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct dt_imageio_jpeg_t
 {
   int width, height;
@@ -69,6 +73,10 @@ dt_colorspaces_color_profile_type_t dt_imageio_jpeg_read_color_space(dt_imageio_
 
 /** utility function to read and open jpeg from imagio.c */
 dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

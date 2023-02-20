@@ -25,6 +25,10 @@
 #include <xmmintrin.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /** Available interpolations */
 enum dt_interpolation_type
 {
@@ -201,6 +205,10 @@ void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor, float
                                       const dt_iop_roi_t *const roi_out, const int32_t out_stride,
                                       const float *const in, const dt_iop_roi_t *const roi_in,
                                       const int32_t in_stride);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

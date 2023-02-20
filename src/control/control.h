@@ -38,6 +38,10 @@
 #include <shobjidl.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct dt_lib_backgroundjob_element_t;
 
 typedef GdkCursorType dt_cursor_t;
@@ -280,6 +284,10 @@ static inline int32_t dt_ctl_get_num_procs()
 #endif
 #endif
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -28,6 +28,10 @@
 #include <glib.h>
 #include <inttypes.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
 {
@@ -537,6 +541,10 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage);
 char *dt_image_camera_missing_sample_message(const struct dt_image_t *img,
                                              const gboolean logmsg);
 void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

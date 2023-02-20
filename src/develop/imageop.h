@@ -23,20 +23,35 @@
 #include <sched.h>
 #include <stdint.h>
 
-/** region of interest */
+#include "common/darktable.h"
+#include "common/introspection.h"
+#include "common/opencl.h"
+#include "common/action.h"
+#include "control/settings.h"
+
+/** region of interest, needed by pixelpipe.h */
 typedef struct dt_iop_roi_t
 {
   int x, y, width, height;
   float scale;
 } dt_iop_roi_t;
 
-#include "common/darktable.h"
-#include "common/introspection.h"
-#include "common/opencl.h"
-#include "common/action.h"
-#include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
+
+#if defined(__SSE__)
+#include <xmmintrin.h> // needed for _mm_stream_ps
+#else
+#ifdef __cplusplus
+#include <atomic>
+#else
+#include <stdatomic.h>
+#endif
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
@@ -559,11 +574,6 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
 
-#if defined(__SSE__)
-#include <xmmintrin.h> // needed for _mm_stream_ps
-#else
-#include <stdatomic.h>
-#endif
 // copy the RGB channels of a pixel using nontemporal stores if
 // possible; includes the 'alpha' channel as well if faster due to
 // vectorization, but subsequent code should ignore the value of the
@@ -617,6 +627,10 @@ static inline void dt_sfence()
 #else
 #define dt_omploop_sfence() dt_sfence()
 #endif
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

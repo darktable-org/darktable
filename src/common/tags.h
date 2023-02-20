@@ -22,6 +22,10 @@
 #include <sqlite3.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct dt_tag_t
 {
   guint id;
@@ -208,6 +212,10 @@ uint32_t dt_tag_get_tag_id_by_name(const char * const name);
 
 /** init the darktable tags table */
 void dt_set_darktable_tags();
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

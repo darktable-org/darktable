@@ -20,6 +20,10 @@
 
 #include <glib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct dt_database_t;
 
 /** allocates and initializes database */
@@ -56,6 +60,10 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename);
 void dt_database_start_transaction(const struct dt_database_t *db);
 void dt_database_release_transaction(const struct dt_database_t *db);
 void dt_database_rollback_transaction(const struct dt_database_t *db);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

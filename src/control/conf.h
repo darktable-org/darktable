@@ -28,6 +28,10 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef enum dt_confgen_type_t
 {
   DT_INT,
@@ -126,6 +130,10 @@ const char *dt_confgen_get_tooltip(const char *name);
 
 gboolean dt_conf_is_default(const char *name);
 gchar* dt_conf_expand_default_dir(const char *dir);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

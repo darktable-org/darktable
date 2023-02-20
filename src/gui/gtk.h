@@ -24,6 +24,10 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 0
 
 #define DT_GUI_THUMBSIZE_REDUCE 0.7f
@@ -459,6 +463,10 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
 
 // routine to hide the collapsible section
 void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -38,6 +38,10 @@
 // FIXME: kill this pls.
 #define FILTERS_ARE_4BAYER(filters) (FILTERS_ARE_CYGM(filters) || FILTERS_ARE_RGBE(filters))
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef enum dt_imageio_levels_t
 {
   IMAGEIO_INT8 = 0x0,
@@ -175,6 +179,10 @@ cairo_surface_t *dt_imageio_preview(const int32_t imgid,
                                     const size_t height,
                                     const int history_end,
                                     const char *style_name);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
