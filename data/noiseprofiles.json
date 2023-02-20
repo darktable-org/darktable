@@ -104,7 +104,7 @@
         },
         {
           "comment": "powershot sx160 is contributed by Hartmut Knaack",
-          "model": "Canon PowerShot SX160 IS",
+          "model": "PowerShot SX160 IS",
           "profiles": [
             {"name": "PowerShot SX160 IS iso 10", "iso": 10, "a": [6.13564671872318e-05, 3.16569792663845e-05, 6.32877232090504e-05], "b": [-3.57903548276181e-07, -1.96705229391002e-07, -9.45083084011429e-07]},
             {"name": "PowerShot SX160 IS iso 25", "iso": 25, "a": [6.08757507407639e-05, 3.18255212058667e-05, 6.23745433853364e-05], "b": [-2.96641572388365e-07, -2.97632636883505e-07, -1.00017471784684e-06]},
