@@ -125,9 +125,9 @@ jobs:
           path: ${{ env.BUILD_DIR }}/darktable-*.exe
           retention-days: 2
 
-  macOS:
+  MacOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Nightly darktable.${{ github.sha }}.macosx
+    name: Nightly darktable.${{ github.sha }}.MacOS
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
