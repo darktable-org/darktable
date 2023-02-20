@@ -127,7 +127,7 @@ jobs:
 
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Nightly darktable.${{ github.sha }}.macosx
+    name: Nightly darktable.${{ github.sha }}.macOS
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
