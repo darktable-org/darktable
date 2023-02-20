@@ -360,11 +360,10 @@ static void _get_crawler_entry_from_model(GtkTreeModel *model,
 {
   gtk_tree_model_get(model, iter,
                      DT_CONTROL_CRAWLER_COL_IMAGE_PATH, &entry->image_path,
-                     DT_CONTROL_CRAWLER_COL_ID, &entry->id,
-                     DT_CONTROL_CRAWLER_COL_XMP_PATH, &entry->xmp_path,
-                     DT_CONTROL_CRAWLER_COL_TS_DB_INT, &entry->timestamp_db,
-                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT,
-                     &entry->timestamp_xmp, -1);
+                     DT_CONTROL_CRAWLER_COL_ID,         &entry->id,
+                     DT_CONTROL_CRAWLER_COL_XMP_PATH,   &entry->xmp_path,
+                     DT_CONTROL_CRAWLER_COL_TS_DB_INT,  &entry->timestamp_db,
+                     DT_CONTROL_CRAWLER_COL_TS_XMP_INT, &entry->timestamp_xmp, -1);
 }
 
 
