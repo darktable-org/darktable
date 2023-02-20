@@ -24,6 +24,10 @@
 #include "libs/lib.h"
 #include "views/view.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 GtkWidget *dt_shortcuts_prefs(GtkWidget *widget);
 GHashTable *dt_shortcut_category_lists(dt_view_type_flags_t v);
 
@@ -209,6 +213,10 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpoin
 
 // create a shortcutable entry field
 GtkWidget *dt_action_entry_new(dt_action_t *ac, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, const gchar *text);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

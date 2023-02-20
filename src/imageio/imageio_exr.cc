@@ -34,7 +34,6 @@
 #include <OpenEXR/ImfThreading.h>
 #include <OpenEXR/ImfTiledInputFile.h>
 
-extern "C" {
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -44,7 +43,6 @@ extern "C" {
 #include "develop/develop.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_exr.h"
-}
 #include "imageio/imageio_exr.hh"
 
 dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)

@@ -18,7 +18,6 @@
 
 #define __STDC_FORMAT_MACROS
 
-extern "C" {
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -33,7 +32,6 @@ extern "C" {
 #include <zlib.h>
 
 #include "control/control.h"
-}
 
 #include <array>
 #include <cassert>
@@ -56,7 +54,6 @@ extern "C" {
 
 using namespace std;
 
-extern "C" {
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -77,7 +74,6 @@ extern "C" {
 #include "develop/masks.h"
 #include "imageio/imageio_common.h"
 #include "imageio/imageio_jpeg.h"
-}
 
 #define DT_XMP_EXIF_VERSION 5
 

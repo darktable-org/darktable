@@ -22,10 +22,16 @@
 #include <xmmintrin.h>
 #endif
 
-extern "C" {
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 
+extern "C" {
 // otherwise the name will be mangled and the linker won't be able to see the function ...
 void amaze_demosaic_RT(
     dt_dev_pixelpipe_iop_t *piece,
@@ -35,12 +41,6 @@ void amaze_demosaic_RT(
     const dt_iop_roi_t *const roi_out,
     const int filters);
 }
-
-#include <algorithm>
-#include <cmath>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
 
 static __inline float clampnan(const float x, const float m, const float M)
 {
