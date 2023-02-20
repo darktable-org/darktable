@@ -570,6 +570,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
   {
     // WRITE DB in XMP
     error = dt_image_write_sidecar_file(entry.id);
+    _set_modification_time(entry.xmp_path, entry.timestamp_db);
     if(error)
     {
       _log_synchronization(gui,
