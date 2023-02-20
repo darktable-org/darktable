@@ -1,9 +1,9 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2013 johannes hanika.
+    copyright (c) 2009-2013 johannes hanika.
     copyright (c) 2014 Ulrich Pegelow.
     copyright (c) 2014 LebedevRI.
-    Copyright (C) 2022-23 darktable developers.
+    Copyright (C) 2022-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -341,7 +341,7 @@ static float _calc_refavg(
 
 kernel void highlights_initmask(
         read_only image2d_t in,
-        global char *inmask, 
+        global char *inmask,
         const int msize,
         const int mwidth,
         const int mheight,
@@ -381,7 +381,7 @@ kernel void highlights_initmask(
 
 kernel void highlights_dilatemask(
         global char *in,
-        global char *out, 
+        global char *out,
         const int msize,
         const int mwidth,
         const int mheight)
@@ -452,7 +452,7 @@ kernel void highlights_chroma(
         global float *accu,
         const int width,
         const int height,
-        const int msize, 
+        const int msize,
         const int mwidth,
         const unsigned int filters,
         global const unsigned char (*const xtrans)[6],
@@ -514,7 +514,7 @@ kernel void highlights_opposed(
   if((icol >= 0) && (icol < iwidth) && (irow >= 0) && (irow < iheight))
   {
     val = fmax(0.0f, read_imagef(in, samplerA, (int2)(icol, irow)).x);
- 
+
     if((icol > 0) && (icol < iwidth-1) && (irow > 0) && (irow < iheight-1))
     {
       const int color = (filters == 9u) ? FCxtrans(irow, icol, xtrans) : FC(irow, icol, filters);
