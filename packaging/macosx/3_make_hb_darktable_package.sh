@@ -274,10 +274,10 @@ cp open.desktop "$dtResourcesDir"/share/applications/
 # Sign app bundle
 if [ -n "$CODECERT" ]; then
     # Use certificate if one has been provided
-    find ${dtPackageDir}/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" \{} \;
-    codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" ${dtPackageDir}/darktable.app
+    find ${dtWorkingDir}/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" \{} \;
+    codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" ${dtWorkingDir}
 else
     # Use ad-hoc signing and preserve metadata
-    find ${dtPackageDir}/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - \{} \;
-    codesign --deep --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - ${dtPackageDir}/darktable.app
+    find ${dtWorkingDir}/Contents/Resources/lib -type f -exec codesign --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - \{} \;
+    codesign --deep --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - ${dtWorkingDir}
 fi
