@@ -11,7 +11,7 @@ permissions:
 jobs:
   Win64:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Nightly darktable.${{ github.sha }}.win64
+    name: Nightly darktable win64
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -127,7 +127,7 @@ jobs:
 
   macOS:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Nightly darktable.${{ github.sha }}.macOS
+    name: Nightly darktable macOS
     runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: true
