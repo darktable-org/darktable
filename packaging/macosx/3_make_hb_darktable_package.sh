@@ -184,7 +184,7 @@ gtk-icon-theme-name = Adwaita
 cp "$buildDir"/bin/darktable{,-chart,-cli,-cltest,-generate-cache,-rs-identify} "$dtExecDir"/
 
 # Add darktable tools if existent
-if [[ -d libexec/darktable/tools ]]; then
+if [[ -d "$buildDir"/libexec/darktable/tools ]]; then
     cp "$buildDir"/libexec/darktable/tools/* "$dtExecDir"/
 fi
 
