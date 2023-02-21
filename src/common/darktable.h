@@ -124,6 +124,19 @@ typedef unsigned int u_int;
 
 #endif /* _OPENMP */
 
+#ifndef _RELEASE
+#include "common/poison.h"
+#endif
+
+#include "common/usermanual_url.h"
+
+// for signal debugging symbols
+#include "control/signal.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
@@ -143,21 +156,12 @@ typedef unsigned int u_int;
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
 #define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
-#ifndef _RELEASE
-#include "common/poison.h"
-#endif
-
-#include "common/usermanual_url.h"
-
-// for signal debugging symbols
-#include "control/signal.h"
-
 #define DT_MODULE_VERSION 23 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 12
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 13
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -696,6 +700,10 @@ static inline const gchar *NQ_(const gchar *String)
   const gchar *context_end = strchr(String, '|');
   return context_end ? context_end + 1 : String;
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

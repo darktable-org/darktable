@@ -1942,6 +1942,12 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
+  else if(old < 13)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("your OpenCL compiler settings for all devices have been reset to default."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
+  }
 
   #undef INFO_HEADER
 }

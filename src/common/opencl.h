@@ -52,17 +52,26 @@
 #include <CL/cl.h>
 // #pragma GCC diagnostic
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define ROUNDUP(a, n) ((a) % (n) == 0 ? (a) : ((a) / (n)+1) * (n))
 
 // use per device roundups here
 #define ROUNDUPDWD(a, b) dt_opencl_dev_roundup_width(a, b)
 #define ROUNDUPDHT(a, b) dt_opencl_dev_roundup_height(a, b)
 
-#define DT_OPENCL_DEFAULT_COMPILE_INTEL ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE_INTEL ("")
 #define DT_OPENCL_DEFAULT_COMPILE_AMD ("-cl-fast-relaxed-math")
 #define DT_OPENCL_DEFAULT_COMPILE_NVIDIA ("-cl-fast-relaxed-math")
-#define DT_OPENCL_DEFAULT_COMPILE ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE ("")
 #define DT_CLDEVICE_HEAD ("cldevice_v4_")
+
+// version for current darktable cl kernels
+// this is reflected in the kernel directory and allows to
+// enforce a new kernel compilation cycle
+#define DT_OPENCL_KERNELS 1
 
 typedef enum dt_opencl_memory_t
 {
@@ -525,9 +534,18 @@ int dt_opencl_avoid_atomics(const int devid);
 int dt_opencl_micro_nap(const int devid);
 gboolean dt_opencl_use_pinned_memory(const int devid);
 
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 #else
 #include "control/conf.h"
 #include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct dt_opencl_t
 {
   int inited;
@@ -669,6 +687,11 @@ static inline int dt_opencl_events_flush(const int devid, const int reset)
 static inline void dt_opencl_events_profiling(const int devid, const int aggregated)
 {
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif /* __cplusplus */
+
 #endif
 
 // clang-format off

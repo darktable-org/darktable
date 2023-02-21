@@ -598,6 +598,7 @@ dialog .sidebar row:selected:hover label,
 #iop-module-name
 {
   font-weight: lighter;
+  font-family: sans-serif;
   font-size: 0.8em;
 }
 
