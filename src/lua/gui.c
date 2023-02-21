@@ -160,7 +160,8 @@ static int _mimic_cb(lua_State *L)
     if(!strcmp(def->name, ac_type)) break;
   }
 
-  dt_action_define(&darktable.control->actions_lua, NULL, ac_name, NULL, def);
+  lua_getglobal(L, "script_manager_running_script");
+  dt_action_define(&darktable.control->actions_lua, lua_tolstring(L,-1,NULL), ac_name, NULL, def);
 
 mimic_end:
   lua_pop(L, 1);
