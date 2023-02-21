@@ -11,7 +11,7 @@ permissions:
 jobs:
   Win64:
     if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
-    name: Nightly darktable.${{ github.sha }}.win64
+    name: Nightly darktable win64
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -118,10 +118,96 @@ jobs:
         run: |
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
+      - name: Get version info
+        run: |      
+          cd ${SRC_DIR}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
+          [[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v3
         with:
-          name: darktable.${{ github.sha }}.win64.zip
-          path: ${{ env.BUILD_DIR }}/darktable-*.exe
+          name: darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
           retention-days: 2
+
+  macOS:
+    if: github.repository == 'darktable-org/darktable' || github.event_name == 'workflow_dispatch'
+    name: Nightly darktable macOS
+    runs-on: ${{ matrix.build.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        build:
+          - { os: macos-11, xcode: 12.5.1, deployment: 11.3 }
+        compiler:
+          - { compiler: XCode,   CC: cc, CXX: c++ }
+        btype: [ Release ]
+        eco: [-DBINARY_PACKAGE_BUILD=ON -DBUILD_CURVE_TOOLS=ON -DBUILD_NOISE_TOOLS=ON]
+        target:
+          - skiptest
+        generator:
+          - Ninja
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.build.deployment }}
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/src/build
+      INSTALL_PREFIX: ${{ github.workspace }}/src/build/macosx
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      GENERATOR: ${{ matrix.generator }}
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+          path: src
+      - name: Install Base Dependencies
+        run: |
+          brew update > /dev/null || true
+          # brew upgrade || true        # no need for a very time-consuming upgrade of ALL packages
+          brew tap Homebrew/bundle
+          cd src/.ci
+          export HOMEBREW_NO_INSTALL_UPGRADE=1
+          brew bundle --verbose || true
+          brew link --force libomp # fix for keg-only libomp
+      - name: Build and Install
+          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
+        run: |
+          cmake -E make_directory "${BUILD_DIR}";
+          cmake -E make_directory "${INSTALL_PREFIX}";
+          ./src/.ci/ci-script.sh;
+      - name: Check if it runs
+        run: |
+          ${INSTALL_PREFIX}/bin/darktable --version || true
+          ${INSTALL_PREFIX}/bin/darktable-cli \
+                 --width 2048 --height 2048 \
+                 --hq true --apply-custom-presets false \
+                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
+                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 output.png \
+                 --core --disable-opencl --conf host_memory_limit=8192 \
+                 --conf worker_threads=4 -t 4 \
+                 --conf plugins/lighttable/export/force_lcms2=FALSE \
+                 --conf plugins/lighttable/export/iccintent=0 || true # OpenMP builds crash for most configs
+      - name: Build macOS package
+        run: |
+          ./src/packaging/macosx/3_make_hb_darktable_package.sh
+      - name: Create DMG file
+        run: |
+          ./src/packaging/macosx/4_make_hb_darktable_dmg.sh
+      - name: Get version info
+        run: |      
+          cd ${{ env.SRC_DIR }}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
+      - name: Package upload
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: darktable-${{ env.VERSION }}.dmg
+          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
+          retention-days: 2
+
