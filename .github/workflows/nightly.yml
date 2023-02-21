@@ -192,7 +192,7 @@ jobs:
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0 || true # OpenMP builds crash for most configs
-      - name: Build macosx package
+      - name: Build macOS package
         run: |
           ./src/packaging/macosx/3_make_hb_darktable_package.sh
       - name: Create DMG file
