@@ -63,6 +63,7 @@ const gchar *shortcut_category_label[]
       N_("fallbacks"),
       N_("speed") };
 #define NUM_CATEGORIES G_N_ELEMENTS(shortcut_category_label)
+
 typedef struct dt_device_key_t
 {
   dt_input_device_t key_device;
@@ -961,12 +962,12 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
   const gchar *element_name = NULL;
   if(def)
   {
-    for(int i = 0; i <= darktable.control->element; i++)
+    for(int i = 0; i <= lua_shortcut.element; i++)
     {
       element_name = def->elements[i].name;
       if(!element_name) break;
     }
-    if(element_name && (darktable.control->element || !has_fallbacks) && show_element == 0)
+    if(element_name && (lua_shortcut.element || !has_fallbacks) && show_element == 0)
       description = g_markup_escape_text(_(element_name), -1);
   }
 
