@@ -16,6 +16,7 @@
 
 brew 'cmake'
 brew 'pkg-config'
+brew 'adwaita-icon-theme'
 brew 'desktop-file-utils'
 brew 'exiv2'
 brew 'gettext'
