@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    Copyright (C) 2017-2021 darktable developers.
+ *    Copyright (C) 2017-2023 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -810,13 +810,6 @@ static inline float dt_camera_rgb_luminance(const dt_aligned_pixel_t rgb)
 static inline void dt_XYZ_D50_2_XYZ_D65(const dt_aligned_pixel_t XYZ_D50, dt_aligned_pixel_t XYZ_D65)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-#if 0
-  static const dt_colormatrix_t M = {
-      {  0.9555766f, -0.0230393f,  0.0631636f, 0.0f },
-      { -0.0282895f,  1.0099416f,  0.0210077f, 0.0f },
-      {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f },
-  };
-#endif
   static const dt_colormatrix_t M_transposed = {
       {  0.9555766f, -0.0282895f,  0.0122982f, 0.0f },
       { -0.0230393f,  1.0099416f, -0.0204830f, 0.0f },
@@ -833,13 +826,6 @@ static inline void dt_XYZ_D50_2_XYZ_D65(const dt_aligned_pixel_t XYZ_D50, dt_ali
 static inline void dt_XYZ_D65_2_XYZ_D50(const dt_aligned_pixel_t XYZ_D65, dt_aligned_pixel_t XYZ_D50)
 {
   // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
-#if 0
-  static const dt_colormatrix_t M = {
-      {  1.0478112f,  0.0228866f, -0.0501270f, 0.0f },
-      {  0.0295424f,  0.9904844f, -0.0170491f, 0.0f },
-      { -0.0092345f,  0.0150436f,  0.7521316f, 0.0f },
-  };
-#endif
   static const dt_colormatrix_t M_transposed = {
       {  1.0478112f,  0.0295424f, -0.0092345f, 0.0f },
       {  0.0228866f,  0.9904844f,  0.0150436f, 0.0f },
@@ -877,13 +863,6 @@ static inline void dt_XYZ_2_JzAzBz(const dt_aligned_pixel_t XYZ_D65, dt_aligned_
       { -0.2015100f, 1.120649f, 0.0531008f, 0.0f },
       { -0.0166008f, 0.264800f, 0.6684799f, 0.0f },
   };
-#if 0
-  static const dt_colormatrix_t A = {
-      { 0.5f,       0.5f,       0.0f,      0.0f },
-      { 3.524000f, -4.066708f,  0.542708f, 0.0f },
-      { 0.199076f,  1.096799f, -1.295875f, 0.0f },
-  };
-#endif
   static const dt_colormatrix_t A_transposed = {
       { 0.5f,       3.524000f,  0.199076f, 0.0f },
       { 0.5f,      -4.066708f,  1.096799f, 0.0f },
