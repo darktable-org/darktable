@@ -1341,14 +1341,6 @@ error:
   return FALSE;
 }
 
-// XYZ -> sRGB matrix
-static void XYZ_to_sRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
-{
-  sRGB[0] =  3.1338561f * XYZ[0] - 1.6168667f * XYZ[1] - 0.4906146f * XYZ[2];
-  sRGB[1] = -0.9787684f * XYZ[0] + 1.9161415f * XYZ[1] + 0.0334540f * XYZ[2];
-  sRGB[2] =  0.0719453f * XYZ[0] - 0.2289914f * XYZ[1] + 1.4052427f * XYZ[2];
-}
-
 // detail enhancement via bilateral grid (function arguments in and out may represent identical buffers)
 static int detail_enhance(const float *const in, float *const out, const int width, const int height)
 {
@@ -1399,7 +1391,7 @@ static int detail_enhance(const float *const in, float *const out, const int wid
   {
     dt_aligned_pixel_t XYZ;
     dt_Lab_to_XYZ(out + index, XYZ);
-    XYZ_to_sRGB(XYZ, out + index);
+    dt_XYZ_to_linearRGB(XYZ, out + index);
   }
 
   return success;
