@@ -119,8 +119,8 @@ jobs:
           cmake --build "${BUILD_DIR}" --target package
       - name: Get version info
         run: |      
-          cd ${{ env.SRC_DIR }}
-          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
+          cd ${SRC_DIR}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-${MSYSTEM_CARCH}" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v3
