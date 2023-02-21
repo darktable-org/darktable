@@ -125,8 +125,8 @@ jobs:
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v3
         with:
-          name: darktable-${{ env.VERSION }}.zip
-          path: ${{ env.BUILD_DIR }}/darktable-*.exe
+          name: darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
+          path: ${{ env.BUILD_DIR }}/darktable-${{ env.VERSION }}-${{ env.SYSTEM }}.exe
           retention-days: 2
 
   macOS:
