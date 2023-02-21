@@ -1092,7 +1092,8 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
   return applied;
 }
 
-static gboolean _menuitem_button_preset(GtkMenuItem *menuitem, GdkEventButton *event,
+static gboolean _menuitem_button_preset(GtkMenuItem *menuitem,
+                                        GdkEventButton *event,
                                         dt_iop_module_t *module)
 {
   static guint click_time = 0;

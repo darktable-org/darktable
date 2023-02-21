@@ -3404,7 +3404,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
                    G_CALLBACK(_collapse_expander_click), cs);
 }
 
-gboolean dt_gui_long_click(int second, int first)
+gboolean dt_gui_long_click(const int second, const int first)
 {
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);

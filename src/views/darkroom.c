@@ -1316,7 +1316,8 @@ static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem, gc
     dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
 }
 
-static gboolean _darkroom_ui_apply_style_button_callback(GtkMenuItem *menuitem, GdkEventButton *event,
+static gboolean _darkroom_ui_apply_style_button_callback(GtkMenuItem *menuitem,
+                                                         GdkEventButton *event,
                                                          gchar *name)
 {
   if(event->button == 1)
