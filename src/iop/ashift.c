@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2016-2022 darktable developers.
+  Copyright (C) 2016-2023 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1349,14 +1349,6 @@ static void XYZ_to_sRGB(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t sRGB)
   sRGB[2] =  0.0719453f * XYZ[0] - 0.2289914f * XYZ[1] + 1.4052427f * XYZ[2];
 }
 
-// sRGB -> XYZ matrix
-static void sRGB_to_XYZ(const dt_aligned_pixel_t sRGB, dt_aligned_pixel_t XYZ)
-{
-  XYZ[0] = 0.4360747f * sRGB[0] + 0.3850649f * sRGB[1] + 0.1430804f * sRGB[2];
-  XYZ[1] = 0.2225045f * sRGB[0] + 0.7168786f * sRGB[1] + 0.0606169f * sRGB[2];
-  XYZ[2] = 0.0139322f * sRGB[0] + 0.0971045f * sRGB[1] + 0.7141733f * sRGB[2];
-}
-
 // detail enhancement via bilateral grid (function arguments in and out may represent identical buffers)
 static int detail_enhance(const float *const in, float *const out, const int width, const int height)
 {
@@ -1379,7 +1371,7 @@ static int detail_enhance(const float *const in, float *const out, const int wid
   for(size_t index = 0; index < 4*npixels; index += 4)
   {
     dt_aligned_pixel_t XYZ;
-    sRGB_to_XYZ(in + index, XYZ);
+    dt_Rec709_to_XYZ_D50(in + index, XYZ);  // convert linear sRBG to XYZ
     dt_XYZ_to_Lab(XYZ, out + index);
   }
 
