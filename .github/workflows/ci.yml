@@ -202,21 +202,23 @@ jobs:
             base-devel
             git
             intltool
+            po4a
           pacboy: >-
             cc:p
             cmake:p
             cmocka:p
-            gcc-libs:p
             ninja:p
             nsis:p
-            omp:p
+            python-jsonschema:p
             dbus-glib:p
             drmingw:p
             exiv2:p
+            gcc-libs:p
             gettext:p
             gmic:p
             graphicsmagick:p
             gtk3:p
+            icu:p
             iso-codes:p
             lcms2:p
             lensfun:p
@@ -227,19 +229,18 @@ jobs:
             libjpeg-turbo:p
             libjxl:p
             libsecret:p
+            libtiff:p
             libwebp:p
             libxml2:p
             libxslt:p
             lua:p
+            omp:p
             openexr:p
             openjpeg2:p
             osm-gps-map:p
             portmidi:p
             pugixml:p
-            python3:p
-            python3-jsonschema:p
-            python3-setuptools:p
-            python3-six:p
+            SDL2:p
             sqlite3:p
             zlib:p
           update: true
