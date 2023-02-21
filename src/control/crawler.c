@@ -58,6 +58,13 @@ typedef struct dt_control_crawler_result_t
   char *image_path, *xmp_path;
 } dt_control_crawler_result_t;
 
+static void _free_crawler_result(dt_control_crawler_result_t *entry)
+{
+  g_free(entry->image_path);
+  g_free(entry->xmp_path);
+  entry->image_path = entry->xmp_path = NULL;
+}
+
 static void _set_modification_time(char *filename,
                                    const time_t timestamp)
 {
@@ -427,8 +434,7 @@ static void sync_xmp_to_db(GtkTreeModel *model,
     _log_synchronization(gui, _("SUCCESS: %s synced XMP → DB"), entry.image_path);
   }
 
-  g_free(entry.xmp_path);
-  g_free(entry.image_path);
+  _free_crawler_result(&entry);
 }
 
 
@@ -458,8 +464,7 @@ static void sync_db_to_xmp(GtkTreeModel *model,
     _log_synchronization(gui, _("SUCCESS: %s synced DB → XMP"), entry.image_path);
   }
 
-  g_free(entry.xmp_path);
-  g_free(entry.image_path);
+  _free_crawler_result(&entry);
 }
 
 static void sync_newest_to_oldest(GtkTreeModel *model,
@@ -529,8 +534,7 @@ static void sync_newest_to_oldest(GtkTreeModel *model,
 
   if(!error) _append_row_to_remove(model, path, &gui->rows_to_remove);
 
-  g_free(entry.xmp_path);
-  g_free(entry.image_path);
+  _free_crawler_result(&entry);
 }
 
 
@@ -599,8 +603,7 @@ static void sync_oldest_to_newest(GtkTreeModel *model,
   if(!error)
     _append_row_to_remove(model, path, &gui->rows_to_remove);
 
-  g_free(entry.xmp_path);
-  g_free(entry.image_path);
+  _free_crawler_result(&entry);
 }
 
 // overwrite database with xmp
@@ -722,8 +725,7 @@ void dt_control_crawler_show_image_list(GList *images)
                                       : _("database"),
        DT_CONTROL_CRAWLER_COL_TIME_DELTA, timestamp_delta,
        -1);
-    g_free(item->image_path);
-    g_free(item->xmp_path);
+    _free_crawler_result(item);
     g_free(timestamp_delta);
   }
   g_list_free_full(images, g_free);
