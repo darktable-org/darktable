@@ -117,11 +117,15 @@ jobs:
         run: |
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
+      - name: Get version info
+        run: |      
+          cd ${{ env.SRC_DIR }}
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v3
         with:
-          name: darktable.${{ github.sha }}.win64.zip
+          name: darktable-${{ env.VERSION }}.zip
           path: ${{ env.BUILD_DIR }}/darktable-*.exe
           retention-days: 2
 
@@ -196,12 +200,12 @@ jobs:
       - name: Get version info
         run: |      
           cd ${{ env.SRC_DIR }}
-          echo "DMG=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
+          echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)" >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v3
         with:
-          name: darktable-${{ env.DMG }}.dmg
-          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.DMG }}.dmg
+          name: darktable-${{ env.VERSION }}.dmg
+          path: ${{ env.INSTALL_PREFIX }}/darktable-${{ env.VERSION }}.dmg
           retention-days: 2
 
