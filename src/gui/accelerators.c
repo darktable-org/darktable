@@ -1043,8 +1043,7 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
   dt_view_type_flags_t vws = 0;
 
   dt_action_t *owner = action;
-  while(owner && owner->type >= DT_ACTION_TYPE_SECTION)
-    owner = owner->owner;
+  while(owner && owner->type >= DT_ACTION_TYPE_SECTION) owner = owner->owner;
 
   if(owner)
 
@@ -1385,6 +1384,10 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
   {
     const dt_action_element_def_t *elements = NULL;
     dt_shortcut_t *s = g_sequence_get(data_ptr);
+
+    dt_action_t *owner = s->action;
+    while(owner && owner->type >= DT_ACTION_TYPE_SECTION) owner = owner->owner;
+
     switch(field)
     {
     case SHORTCUT_VIEW_DESCRIPTION:
@@ -1395,7 +1398,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
         field_text = _action_full_label(s->action);
       break;
     case SHORTCUT_VIEW_ELEMENT:
-      if(s->action->owner == &darktable.control->actions_lua || _shortcut_is_speed(s)) break;
+      if(owner == &darktable.control->actions_lua || _shortcut_is_speed(s)) break;
       elements = _action_find_elements(s->action);
       if(elements && elements->name)
       {
@@ -1406,7 +1409,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
       }
       break;
     case SHORTCUT_VIEW_EFFECT:
-      if(s->action->owner == &darktable.control->actions_lua || _shortcut_is_speed(s)) break;
+      if(owner == &darktable.control->actions_lua || _shortcut_is_speed(s)) break;
       elements = _action_find_elements(s->action);
       if(elements)
       {
@@ -1435,7 +1438,7 @@ static void _fill_shortcut_fields(GtkTreeViewColumn *column, GtkCellRenderer *ce
       break;
     case SHORTCUT_VIEW_INSTANCE:
       if(_shortcut_is_speed(s)) break;
-      for(dt_action_t *owner = s->action; owner; owner = owner->owner)
+      for(; owner; owner = owner->owner)
       {
         if(owner->type == DT_ACTION_TYPE_IOP)
         {
