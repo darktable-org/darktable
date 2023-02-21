@@ -5,11 +5,11 @@ set(CPACK_PACKAGE_CONTACT "https://www.darktable.org/")
 set(CPACK_PACKAGE_VENDOR "the darktable project")
 
 set(CPACK_SOURCE_IGNORE_FILES
-   "/.gitignore"
-   "${CMAKE_BINARY_DIR}/"
-   "/.git/"
-   "/.deps/"
-   "/.build/"
+    "/.gitignore"
+    "${CMAKE_BINARY_DIR}/"
+    "/.git/"
+    "/.deps/"
+    "/.build/"
 )
 set(CPACK_PACKAGE_EXECUTABLES darktable)
 set(CPACK_SOURCE_GENERATOR "TGZ")
@@ -40,15 +40,15 @@ if(UNIX)
 		set(CPACK_GENERATOR "RPM")
 		set(CPACK_RPM_PACKAGE_ARCHITECTURE ${CPACK_PACKAGE_ARCHITECTURE})
 		set(CPACK_RPM_PACKAGE_RELEASE "1")
-
 	endif("${LSB_DISTRIB}" MATCHES "Fedora|Mandriva")
-
-
-
 endif(UNIX)
 
 # Set package peoperties for Windows
 if(WIN32)
+  # CPack currently sets this to "win64" regardless of architecture
+  if (CMAKE_SYSTEM_PROCESSOR MATCHES "ARM64")
+    set(CPACK_SYSTEM_NAME woa64)
+  endif()
   set(CPACK_GENERATOR "NSIS")
   set(CPACK_PACKAGE_EXECUTABLES "darktable" "darktable")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
@@ -87,7 +87,6 @@ if(WIN32)
       DeleteRegKey HKLM 'SOFTWARE\\\\Classes\\\\.${EXTENSION}\\\\OpenWithList\\\\darktable.exe'
     ")
   endforeach(EXTENSION)
-  
 endif(WIN32)
 
 include(CPack)
