@@ -2054,6 +2054,16 @@ static void _modify_roi_in_md(
         ym = fminf(ym, ys);
         yM = fmaxf(yM, ys);
       }
+      // Also scan roi for vignetting
+      {
+        const float dr = _interpolate_linear_spline(d->knots, d->vig, d->nc, r*sqrtf(cx*cx + cy*cy));
+        const float xs = dr*cx + w2;
+        const float ys = dr*cy + h2;
+        xm = fminf(xm, xs);
+        xM = fmaxf(xM, xs);
+        ym = fminf(ym, ys);
+        yM = fmaxf(yM, ys);
+      }
     }
   }
 
@@ -2067,6 +2077,16 @@ static void _modify_roi_in_md(
       for_three_channels(c)
       {
         const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy));
+        const float xs = dr*cx + w2;
+        const float ys = dr*cy + h2;
+        xm = fminf(xm, xs);
+        xM = fmaxf(xM, xs);
+        ym = fminf(ym, ys);
+        yM = fmaxf(yM, ys);
+      }
+      // Also scan roi for vignetting
+      {
+        const float dr = _interpolate_linear_spline(d->knots, d->vig, d->nc, r*sqrtf(cx*cx + cy*cy));
         const float xs = dr*cx + w2;
         const float ys = dr*cy + h2;
         xm = fminf(xm, xs);
