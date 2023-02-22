@@ -2552,11 +2552,8 @@ static GtkWidget *_combobox_new_from_list(dt_iop_module_t *module, const gchar *
   if(field)
     dt_bauhaus_widget_set_field(combo, field, DT_INTROSPECTION_TYPE_ENUM);
   dt_action_t *ac = dt_bauhaus_widget_set_label(combo, N_("blend"), label);
-  if(ac) g_hash_table_insert(darktable.control->combo_introspection, ac, (gpointer)list);
   gtk_widget_set_tooltip_text(combo, tooltip);
-  for(; list->name; list++)
-    dt_bauhaus_combobox_add_full(combo, _(list->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
-                                 GUINT_TO_POINTER(list->value), NULL, TRUE);
+  dt_bauhaus_combobox_add_introspection(combo, ac, list, list[0].value, -1);
 
   return combo;
 }
@@ -3007,7 +3004,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
     dt_action_t * ac = dt_bauhaus_widget_set_label(bd->blend_modes_combo, N_("blend"), N_("blend mode"));
-    if(ac) g_hash_table_insert(darktable.control->combo_introspection, ac, (gpointer)&dt_develop_blend_mode_names);
+    dt_bauhaus_combobox_add_introspection(bd->blend_modes_combo, ac, dt_develop_blend_mode_names, -1, -1);
     gtk_widget_set_tooltip_text(bd->blend_modes_combo, _("choose blending mode"));
 
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
@@ -3038,13 +3035,13 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     module->fusion_slider = bd->opacity_slider;
     gtk_widget_set_tooltip_text(bd->opacity_slider, _("set the opacity of the blending"));
 
-    bd->masks_combine_combo = _combobox_new_from_list(module, _("combine masks"), dt_develop_combine_masks_names, NULL,
+    bd->masks_combine_combo = _combobox_new_from_list(module, N_("combine masks"), dt_develop_combine_masks_names, NULL,
                                                       _("how to combine individual drawn mask and different channels of parametric mask"));
     g_signal_connect(G_OBJECT(bd->masks_combine_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_combine_callback), bd);
     dt_gui_add_help_link(GTK_WIDGET(bd->masks_combine_combo), dt_get_help_url("masks_combined"));
 
-    bd->masks_invert_combo = _combobox_new_from_list(module, _("invert mask"), dt_develop_invert_mask_names, NULL,
+    bd->masks_invert_combo = _combobox_new_from_list(module, N_("invert mask"), dt_develop_invert_mask_names, NULL,
                                                      _("apply mask in normal or inverted mode"));
     g_signal_connect(G_OBJECT(bd->masks_invert_combo), "value-changed",
                      G_CALLBACK(_blendop_masks_invert_callback), bd);
@@ -3057,7 +3054,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                                                       "\nnegative values select flat areas"));
     g_signal_connect(G_OBJECT(bd->details_slider), "value-changed", G_CALLBACK(_blendop_blendif_details_callback), bd);
 
-    bd->masks_feathering_guide_combo = _combobox_new_from_list(module, _("feathering guide"), dt_develop_feathering_guide_names,
+    bd->masks_feathering_guide_combo = _combobox_new_from_list(module, N_("feathering guide"), dt_develop_feathering_guide_names,
                                                                &module->blend_params->feathering_guide,
                                                                _("choose to guide mask by input or output image and"
                                                                  "\nchoose to apply feathering before or after mask blur"));

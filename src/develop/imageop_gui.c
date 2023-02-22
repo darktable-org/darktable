@@ -212,17 +212,12 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_ENUM)
     {
-      for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values; iter && iter->name; iter++)
-      {
-        // we do not want to support a context as it break all translations see #5498
-        // dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "introspection description", iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
-        if(*iter->description)
-          dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
-      }
+      dt_bauhaus_combobox_add_introspection(combobox,
+                                            action,
+                                            f->Enum.values,
+                                            f->Enum.values[0].value,
+                                            f->Enum.values[f->Enum.entries - 1].value);
       dt_bauhaus_combobox_set_default(combobox, *(int*)((uint8_t *)d + f->header.offset));
-
-      if(action && f->Enum.values)
-        g_hash_table_insert(darktable.control->combo_introspection, action, f->Enum.values);
     }
   }
   else

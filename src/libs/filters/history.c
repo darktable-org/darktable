@@ -150,7 +150,7 @@ static void _history_widget_init(dt_lib_filtering_rule_t *rule, const dt_collect
   history->rule = rule;
 
   history->combo
-      = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("history filter"), _("filter on history state"), 0,
+      = dt_bauhaus_combobox_new_full(DT_ACTION(self), N_("rules"), N_("history"), _("filter on history state"), 0,
                                      (GtkCallback)_history_changed, history, _history_names);
   DT_BAUHAUS_WIDGET(history->combo)->show_label = FALSE;
 
