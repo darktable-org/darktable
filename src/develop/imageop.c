@@ -306,8 +306,10 @@ void dt_iop_default_init(dt_iop_module_t *module)
       // ignore STRUCT; nothing to do
       break;
     default:
-      dt_print(DT_DEBUG_PARAMS, "in `%s' unsupported introspection type \"%s\" encountered in dt_iop_default_init (field %s)\n",
-        module->op, i->header.type_name, i->header.field_name);
+      dt_print(DT_DEBUG_PARAMS,
+               "in `%s' unsupported introspection type \"%s\" encountered"
+               " in dt_iop_default_init (field %s)\n",
+               module->op, i->header.type_name, i->header.field_name);
       break;
     }
 
@@ -328,7 +330,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
   if(!module->modify_roi_out) module->modify_roi_out = _iop_modify_roi_out;
 
   #ifdef HAVE_OPENCL
-  if(!module->process_tiling_cl) module->process_tiling_cl = darktable.opencl->inited ? default_process_tiling_cl : NULL;
+  if(!module->process_tiling_cl)
+    module->process_tiling_cl = darktable.opencl->inited ? default_process_tiling_cl : NULL;
   if(!darktable.opencl->inited) module->process_cl = NULL;
   #endif // HAVE_OPENCL
 
@@ -353,7 +356,9 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *module_name)
         goto api_h_error;
     }
     else
-      dt_print(DT_DEBUG_ALWAYS, "[iop_load_module] failed to initialize introspection for operation `%s'\n", module_name);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[iop_load_module] failed to initialize introspection for operation `%s'\n",
+               module_name);
   }
 
   if(module->init_global) module->init_global(module);
@@ -967,7 +972,8 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
 
   if(event && event->button == 3)
   {
-    if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE)) _gui_copy_callback(button, user_data);
+    if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
+      _gui_copy_callback(button, user_data);
     return TRUE;
   }
   else if(event && event->button == 2)
@@ -1013,9 +1019,11 @@ static gboolean _gui_multiinstance_callback(GtkButton *button,
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_gui_rename_callback), module);
   gtk_menu_shell_append(menu, item);
 
-  g_signal_connect(G_OBJECT(menu), "deactivate", G_CALLBACK(_header_menu_deactivate_callback), module);
+  g_signal_connect(G_OBJECT(menu), "deactivate",
+                   G_CALLBACK(_header_menu_deactivate_callback), module);
 
-  dt_gui_menu_popup(GTK_MENU(menu), GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
+  dt_gui_menu_popup(GTK_MENU(menu), GTK_WIDGET(button),
+                    GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 
   // make sure the button is deactivated now that the menu is opened
   if(button) dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
@@ -1037,7 +1045,8 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
-  const gboolean basics = (dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_BASICS);
+  const gboolean basics =
+    (dt_dev_modulegroups_get_activated(module->dev) == DT_MODULEGROUP_BASICS);
 
   if(!darktable.gui->reset)
   {
@@ -1046,7 +1055,8 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
       module->enabled = 1;
 
       if(!basics && dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
-        dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+        dt_iop_gui_set_expanded(module, TRUE,
+                                dt_conf_get_bool("darkroom/ui/single_module"));
 
       dt_dev_add_history_item(module->dev, module, FALSE);
     }
@@ -1229,9 +1239,11 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
   if(darktable.gui) ++darktable.gui->reset;
   if(module->reload_defaults)
   {
-    // report if reload_defaults was called unnecessarily => this should be considered a bug
-    // the whole point of reload_defaults is to update defaults _based on current image_
-    // any required initialisation should go in init (and not be performed repeatedly here)
+    // report if reload_defaults was called unnecessarily => this
+    // should be considered a bug the whole point of reload_defaults
+    // is to update defaults _based on current image_ any required
+    // initialisation should go in init (and not be performed
+    // repeatedly here)
     if(module->dev)
     {
       module->reload_defaults(module);

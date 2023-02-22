@@ -3219,7 +3219,7 @@ int dt_gui_container_num_children(GtkContainer *container)
 {
   g_return_val_if_fail(GTK_IS_CONTAINER(container), FALSE);
   GList *children = gtk_container_get_children(container);
-  int num_children = g_list_length(children);
+  const int num_children = g_list_length(children);
   g_list_free(children);
   return num_children;
 }

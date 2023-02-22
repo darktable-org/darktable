@@ -139,13 +139,18 @@ char *dt_history_get_items_as_string(int32_t imgid);
 char *dt_history_item_as_string(const char *name, gboolean enabled);
 
 /* check if a module exists in the history of corresponding image */
-gboolean dt_history_check_module_exists(int32_t imgid, const char *operation, gboolean enabled);
+gboolean dt_history_check_module_exists(int32_t imgid,
+                                        const char *operation,
+                                        const gboolean enabled);
 
 /* check if a module exists in the history of corresponding image */
-gboolean dt_history_check_module_exists_list(GList *hist, const char *operation, gboolean enabled);
+gboolean dt_history_check_module_exists_list(GList *hist,
+                                             const char *operation,
+                                             const gboolean enabled);
 
 /** calculate history hash and save it to database*/
-void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_hash_t type);
+void dt_history_hash_write_from_history(const int32_t imgid,
+                                        const dt_history_hash_t type);
 
 /** return the hash history status */
 dt_history_hash_t dt_history_hash_get_status(const int32_t imgid);

@@ -1309,7 +1309,9 @@ int dt_history_compress_on_list(const GList *imgs)
   return uncompressed;
 }
 
-gboolean dt_history_check_module_exists(int32_t imgid, const char *operation, gboolean enabled)
+gboolean dt_history_check_module_exists(int32_t imgid,
+                                        const char *operation,
+                                        const gboolean enabled)
 {
   gboolean result = FALSE;
   sqlite3_stmt *stmt;
