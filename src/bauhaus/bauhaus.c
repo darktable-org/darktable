@@ -1278,6 +1278,28 @@ void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const 
     dt_bauhaus_combobox_add_full(widget, Q_(*(texts++)), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(item++), NULL, TRUE);
 }
 
+gboolean dt_bauhaus_combobox_add_introspection(GtkWidget *widget,
+                                               dt_action_t *action,
+                                               const dt_introspection_type_enum_tuple_t *list,
+                                               const int start,
+                                               const int end)
+{
+  dt_introspection_type_enum_tuple_t *item = (dt_introspection_type_enum_tuple_t *)list;
+
+  if(action)
+    g_hash_table_insert(darktable.control->combo_introspection, action, (gpointer)list);
+
+  while(item->name && item->value != start) item++;
+  for(; item->name; item++)
+  {
+    dt_bauhaus_combobox_add_full(widget, Q_(item->description ? item->description : item->name),
+                                 DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GUINT_TO_POINTER(item->value), NULL, TRUE);
+    if(item->value == end) return TRUE;
+  }
+  return FALSE;
+}
+
+
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
 {
   dt_bauhaus_combobox_add_full(widget, text, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, NULL, NULL, TRUE);

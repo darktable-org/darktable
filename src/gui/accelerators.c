@@ -1568,13 +1568,12 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
       // insert empty/separator row
       gtk_list_store_insert_with_values(store, NULL, -1, DT_ACTION_EFFECT_COLUMN_SEPARATOR, TRUE, -1);
 
-      while(values->name)
+      for(; values->name; values++)
       {
         gtk_list_store_insert_with_values(store, NULL, -1,
-                                          DT_ACTION_EFFECT_COLUMN_NAME, values->description ? Q_(values->description) : Q_(values->name),
+                                          DT_ACTION_EFFECT_COLUMN_NAME, Q_(values->description ? values->description : values->name),
                                           DT_ACTION_EFFECT_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
                                           -1);
-        values++;
       }
     }
     else
