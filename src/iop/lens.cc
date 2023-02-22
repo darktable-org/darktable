@@ -1962,7 +1962,7 @@ static void _process_md(
         const float sf = _interpolate_linear_spline(d->knots, d->vig, d->nc, r*sqrtf(cx*cx + cy*cy));
 
         for_each_channel(c)
-          buf[idx + c] /= sf*sf;
+          buf[idx + c] /= (sf != 0.0f) ? sf*sf : 1.0f;
       }
     }
   }
@@ -1985,12 +1985,20 @@ static void _process_md(
       const float cy = roi_out->y + y - h2;
 
       const float radius = r*sqrtf(cx*cx + cy*cy);
-      for_each_channel(c)
+      for_three_channels(c)
       {
         const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, radius);
         const float xs = dr*cx + w2 - roi_in->x;
         const float ys = dr*cy + h2 - roi_in->y;
         out[odx+c] = dt_interpolation_compute_sample(interpolation, buf + c, xs, ys, roi_in->width,
+                                                 roi_in->height, 4, 4*roi_in->width);
+      }
+      // use green data for alpha channel
+      {
+        const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[1], d->nc, radius);
+        const float xs = dr*cx + w2 - roi_in->x;
+        const float ys = dr*cy + h2 - roi_in->y;
+        out[odx+3] = dt_interpolation_compute_sample(interpolation, buf + 3, xs, ys, roi_in->width,
                                                  roi_in->height, 4, 4*roi_in->width);
       }
     }
@@ -2036,7 +2044,7 @@ static void _modify_roi_in_md(
     for(int j = 0; j < 2; j++)
     {
       const float cy = cys[j];
-      for_each_channel(c)
+      for_three_channels(c)
       {
         const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy));
         const float xs = dr*cx + w2;
@@ -2056,7 +2064,7 @@ static void _modify_roi_in_md(
     for(int i = 0; i < 2; i++)
     {
       const float cx = cxs[i];
-      for_each_channel(c)
+      for_three_channels(c)
       {
         const float dr = _interpolate_linear_spline(d->knots, d->cor_rgb[c], d->nc, r*sqrtf(cx*cx + cy*cy));
         const float xs = dr*cx + w2;
