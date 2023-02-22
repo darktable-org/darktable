@@ -191,11 +191,17 @@ static void _calc_plane_candidates(const float *plane, const float *refavg, dt_i
   }
 }
 
-static inline float _calc_refavg(const float *in, const uint8_t(*const xtrans)[6], const uint32_t filters, const int row, const int col, const dt_iop_roi_t *const roi, const gboolean linear)
+static inline float _calc_refavg(const float *in,
+                                 const uint8_t(*const xtrans)[6],
+                                 const uint32_t filters,
+                                 const int row,
+                                 const int col,
+                                 const dt_iop_roi_t *const roi,
+                                 const gboolean linear)
 {
   const int color = (filters == 9u) ? FCxtrans(row, col, roi, xtrans) : FC(row, col, filters);
-  dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
   for(int dy = -1; dy < 2; dy++)
   {
     for(int dx = -1; dx < 2; dx++)
@@ -207,7 +213,7 @@ static inline float _calc_refavg(const float *in, const uint8_t(*const xtrans)[6
     }
   }
   for_each_channel(c)
-    mean[c] = powf(mean[c] / cnt[c], 1.0f / HL_POWERF);
+    mean[c] = (cnt[c] > 0.0f) ? powf(mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
 
   const dt_aligned_pixel_t croot_refavg = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   return (linear) ? powf(croot_refavg[color], HL_POWERF) : croot_refavg[color];
@@ -493,12 +499,12 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
         }
 
         for_each_channel(c)
-          mean[c] = powf(mean[c] / cnt[c], 1.0f / HL_POWERF);
+          mean[c] = (cnt[c] > 0.0f) ? powf(mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
         const dt_aligned_pixel_t cube_refavg = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
 
         const size_t o = _raw_to_plane(pwidth, row, col);
         int allclipped = 0;
-        for(int c = 0; c < 3; c++)
+        for_three_channels(c)
         {
           plane[c][o] = mean[c];
           refavg[c][o] = cube_refavg[c];
