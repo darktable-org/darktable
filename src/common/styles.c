@@ -450,7 +450,7 @@ void dt_styles_update(const char *name,
   if(g_strcmp0(name, newname))
   {
     dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
-                                        (gchar **)(const gchar *[]){"styles", name, NULL}, FALSE);
+                                        (gchar *[]){"styles", (gchar *)name, NULL}, FALSE);
     dt_action_rename(old, newname);
   }
 
@@ -1126,7 +1126,7 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
     sqlite3_finalize(stmt);
 
     dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
-                                        (gchar **)(const gchar *[]){"styles", name, NULL}, FALSE);
+                                        (gchar *[]){"styles", (gchar *)name, NULL}, FALSE);
     dt_action_rename(old, NULL);
 
     if(raise)

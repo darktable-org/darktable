@@ -702,7 +702,7 @@ static inline void _loop_switch(const float *const restrict in,
     for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++)
       temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
 
-    /* WE START IN PIPELINE RGB */
+    /* WE START IN PIPELINE RGB */
 
     switch(kind)
     {
@@ -802,7 +802,7 @@ static inline void _loop_switch(const float *const restrict in,
       }
     }
 
-    /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
+    /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
     // Gamut mapping happens in XYZ space no matter what
     _gamut_mapping(temp_one, gamut, clip, temp_two);
@@ -828,7 +828,7 @@ static inline void _loop_switch(const float *const restrict in,
       }
     }
 
-    /* FROM HERE WE ARE IN LMS, XYZ OR PIPELINE RGB depending on user
+    /* FROM HERE WE ARE IN LMS, XYZ OR PIPELINE RGB depending on user
        param - DATA IS IN temp_one */
 
     // Clip in LMS
@@ -876,7 +876,7 @@ static inline void _loop_switch(const float *const restrict in,
         }
       }
 
-      /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
+      /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
       // Clip in XYZ
       if(clip) for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
@@ -1144,7 +1144,7 @@ static void _check_if_close_to_daylight(const float x,
    * If so, we enable the daylight GUI for better ergonomics
    * Otherwise, we default to direct x, y control for better accuracy
    *
-   * Note : The use of CCT is discouraged if dE > 5 % in CIE 1960 Yuv space
+   * Note : The use of CCT is discouraged if dE > 5 % in CIE 1960 Yuv space
    *        reference : https://onlinelibrary.wiley.com/doi/abs/10.1002/9780470175637.ch3
    */
 
@@ -1231,7 +1231,7 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
 
     // Compute delta E 2000 to make your computer heat
     // ref: https://en.wikipedia.org/wiki/Color_difference#CIEDE2000
-    // note : it will only be luck if I didn't mess-up the computation somewhere
+    // note : it will only be luck if I didn't mess-up the computation somewhere
     const float DL = Lab_ref[0] - Lab_test[0];
     const float L_avg = (Lab_ref[0] + Lab_test[0]) / 2.f;
     const float C_ref = dt_fast_hypotf(Lab_ref[1], Lab_ref[2]);
@@ -1255,7 +1255,7 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
     if(C_ref_prime == 0.f) h_ref_prime = 0.f;
     if(C_test_prime == 0.f) h_test_prime = 0.f;
 
-    // Get the hue angles from [-pi ; pi] back to [0 ; 2 pi],
+    // Get the hue angles from [-pi ; pi] back to [0 ; 2 pi],
     // again, to comply with specifications
     if(h_ref_prime < 0.f) h_ref_prime = 2.f * M_PI - h_ref_prime;
     if(h_test_prime < 0.f) h_test_prime = 2.f * M_PI - h_test_prime;
@@ -1410,7 +1410,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
           {
             patches[k * 4 + c] += in[(j * width + i) * 4 + c];
 
-            // Debug : inpaint a black square in the preview to ensure the coordanites of
+            // Debug : inpaint a black square in the preview to ensure the coordanites of
             // overlay drawings and actual pixel processing match
             // out[(j * width + i) * 4 + c] = 0.f;
           }
@@ -1702,19 +1702,19 @@ void extract_color_checker(const float *const restrict in,
       w = sqrtf(1.f - hypotf(reference[1] / 128.f, reference[2] / 128.f));
     else if(g->optimization == DT_SOLVE_OPTIMIZE_SKIN)
     {
-      // average skin hue angle is 1.0 rad, hue range is [0.75 ; 1.25]
+      // average skin hue angle is 1.0 rad, hue range is [0.75 ; 1.25]
       const float ref_hue = 1.f;
       GET_WEIGHT;
     }
     else if(g->optimization == DT_SOLVE_OPTIMIZE_FOLIAGE)
     {
-      // average foliage hue angle is 2.23 rad, hue range is [1.94 ; 2.44]
+      // average foliage hue angle is 2.23 rad, hue range is [1.94 ; 2.44]
       const float ref_hue = 2.23f;
       GET_WEIGHT;
     }
     else if(g->optimization == DT_SOLVE_OPTIMIZE_SKY)
     {
-      // average sky/water hue angle is -1.93 rad, hue range is [-1.64 ; -2.41]
+      // average sky/water hue angle is -1.93 rad, hue range is [-1.64 ; -2.41]
       const float ref_hue = -1.93f;
       GET_WEIGHT;
     }
@@ -2548,7 +2548,7 @@ void gui_post_expose(struct dt_iop_module_t *self,
   cairo_line_to(cr, right.x, right.y);
   cairo_stroke(cr);
 
-  /* For debug : display center of the image and center of the ideal target
+  /* For debug : display center of the image and center of the ideal target
   point_t new_target_center = apply_homography(target_center, g->homography);
   cairo_set_source_rgba(cr, 1., 1., 1., 1.);
   cairo_arc(cr, new_target_center.x, new_target_center.y, 7., 0, 2. * M_PI);
@@ -3084,7 +3084,7 @@ static void _update_illuminants(dt_iop_module_t *self)
  * However, it's not a great GUI since x and y are not perceptually
  * scaled. So the `g->illum_x` and `g->illum_y` actually display
  * respectively hue and chroma, in LCh color space, which is designed
- * for illuminants and preceptually spaced. This gives UI controls
+ * for illuminants and preceptually spaced. This gives UI controls
  * which effect feels more even to the user.
  *
  * But that makes things a bit tricky, API-wise, since a set of (x, y)
@@ -3726,7 +3726,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
   if(mode == DT_SPOT_MODE_CORRECT)
     _auto_set_illuminant(self, darktable.develop->pipe);
-  // else : just record new values and do nothing
+  // else : just record new values and do nothing
 }
 
 
@@ -3895,14 +3895,14 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   dot_product(RGB, work_profile->matrix_in, XYZ);
   dt_XYZ_to_sRGB(XYZ, g->spot_RGB);
 
-  // Convert to Lch for GUI feedback (input)
+  // Convert to Lch for GUI feedback (input)
   dt_aligned_pixel_t Lab;
   dt_aligned_pixel_t Lch;
   dt_XYZ_to_Lab(XYZ, Lab);
   dt_Lab_2_LCH(Lab, Lch);
 
   // Write report in GUI
-  gchar *str = g_strdup_printf(_("L: \t%.1f %%\nh: \t%.1f °\nc: \t%.1f"),
+  gchar *str = g_strdup_printf(_("L: \t%.1f %%\nh: \t%.1f °\nc: \t%.1f"),
                                Lch[0], Lch[2] * 360.f, Lch[1]);
   ++darktable.gui->reset;
   gtk_label_set_text(GTK_LABEL(g->Lch_origin), str);
@@ -4037,7 +4037,7 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
       float MIX_INV_3x3[9];
       matrice_pseudoinverse((float (*)[3])MIX_3x3, (float (*)[3])MIX_INV_3x3, 3);
 
-      // Transpose and repack the inverse to SSE matrix because the inversion transposes too
+      // Transpose and repack the inverse to SSE matrix because the inversion transposes too
       dt_colormatrix_t MIX_INV;
       transpose_3x3_to_3xSSE(MIX_INV_3x3, MIX_INV);
 
@@ -4283,7 +4283,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->Lch_origin = gtk_label_new(_("L: \tN/A\nh: \tN/A\nc: \tN/A"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->Lch_origin),
-                              _("these LCh coordinates are computed from CIE Lab 1976 coordinates"));
+                              _("these LCh coordinates are computed from CIE Lab 1976 coordinates"));
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->Lch_origin), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), FALSE, FALSE, DT_BAUHAUS_SPACE);

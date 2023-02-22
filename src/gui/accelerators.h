@@ -41,7 +41,8 @@ void dt_shortcuts_select_view(dt_view_type_flags_t view);
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data);
 gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
-                                      GtkTooltip *tooltip, gpointer user_data);
+                                      GtkTooltip *tooltip, GtkWidget *vbox);
+void dt_shortcut_copy_lua(dt_action_t *action, gchar *preset_name);
 
 float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float size);
 
@@ -213,6 +214,9 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpoin
 
 // create a shortcutable entry field
 GtkWidget *dt_action_entry_new(dt_action_t *ac, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, const gchar *text);
+
+// find the action a widget is linked to
+dt_action_t *dt_action_widget(GtkWidget *widget);
 
 #ifdef __cplusplus
 } // extern "C"

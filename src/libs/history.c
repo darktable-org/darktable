@@ -851,7 +851,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
       if((hitem->blend_params->field) != (old_blend->field))                                     \
       {                                                                                          \
         const char *old_str = NULL, *new_str = NULL;                                             \
-        for(const dt_develop_name_value_t *i = list; *i->name; i++)                              \
+        for(const dt_introspection_type_enum_tuple_t *i = list; i->name; i++)                    \
         {                                                                                        \
           if(i->value == (old_blend->field)) old_str = i->name;                                  \
           if(i->value == (hitem->blend_params->field)) new_str = i->name;                        \

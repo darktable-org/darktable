@@ -274,19 +274,13 @@ typedef struct dt_iop_gui_blendif_filter_t
   GtkBox *box;
 } dt_iop_gui_blendif_filter_t;
 
-typedef struct dt_iop_blend_name_value_t
-{
-  char name[40];
-  int value;
-} dt_develop_name_value_t;
-
-extern const dt_develop_name_value_t dt_develop_blend_colorspace_names[];
-extern const dt_develop_name_value_t dt_develop_blend_mode_names[];
-extern const dt_develop_name_value_t dt_develop_blend_mode_flag_names[];
-extern const dt_develop_name_value_t dt_develop_mask_mode_names[];
-extern const dt_develop_name_value_t dt_develop_combine_masks_names[];
-extern const dt_develop_name_value_t dt_develop_feathering_guide_names[];
-extern const dt_develop_name_value_t dt_develop_invert_mask_names[];
+extern const dt_introspection_type_enum_tuple_t dt_develop_blend_colorspace_names[];
+extern const dt_introspection_type_enum_tuple_t dt_develop_blend_mode_names[];
+extern const dt_introspection_type_enum_tuple_t dt_develop_blend_mode_flag_names[];
+extern const dt_introspection_type_enum_tuple_t dt_develop_mask_mode_names[];
+extern const dt_introspection_type_enum_tuple_t dt_develop_combine_masks_names[];
+extern const dt_introspection_type_enum_tuple_t dt_develop_feathering_guide_names[];
+extern const dt_introspection_type_enum_tuple_t dt_develop_invert_mask_names[];
 
 #define DEVELOP_MASKS_NB_SHAPES 5
 

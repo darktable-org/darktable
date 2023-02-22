@@ -927,7 +927,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
       char name[64];
       sprintf(name, "scale-input-%i", s);
       dt_dump_pfm(name, buffer_in, width, height, DT_DUMP_PFM_RGB, "diffuse");
- 
+
       sprintf(name, "scale-blur-%i", s);
       dt_dump_pfm(name, buffer_out, width, height, DT_DUMP_PFM_RGB, "diffuse");
     }
@@ -950,7 +950,7 @@ static inline gint wavelets_process(const float *const restrict in, float *const
     const float strength = data->sharpness * norm + 1.f;
 
     /* debug
-    fprintf(stdout, "PDE solve : scale %i : mult = %i ; current rad = %.0f ; real rad = %.0f ; norm = %f ; strength = %f\n", s,
+    fprintf(stdout, "PDE solve : scale %i : mult = %i ; current rad = %.0f ; real rad = %.0f ; norm = %f ; strength = %f\n", s,
             1 << s, current_radius, real_radius, norm, strength);
     */
 

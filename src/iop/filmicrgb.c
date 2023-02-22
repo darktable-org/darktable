@@ -1116,7 +1116,7 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
     const float *const restrict TT_c = __builtin_assume_aligned(texture + k, 16);
 
     // synthesize the max of all RGB channels texture as a flat texture term for the whole pixel
-    // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other
+    // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other
     // channels
     const float grey_texture = fmaxabsf(fmaxabsf(TT_c[0], TT_c[1]), TT_c[2]);
 
@@ -1166,7 +1166,7 @@ inline static void wavelets_reconstruct_ratios(const float *const restrict HF, c
  * The ratios represent the chromaticity in image and contain low frequencies in the absence of noise or
  * aberrations, so, here, we favor them instead.
  *
- * Consequences : 
+ * Consequences :
  *  1. use min of interpolated channels details instead of max, to get smoother details
  *  4. use the max of low frequency channels instead of min, to favor achromatic solution.
  *
@@ -1189,7 +1189,7 @@ inline static void wavelets_reconstruct_ratios(const float *const restrict HF, c
     const float *const restrict TT_c = __builtin_assume_aligned(texture + k, 16);
 
     // synthesize the max of all RGB channels texture as a flat texture term for the whole pixel
-    // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other
+    // this is useful if only 1 or 2 channels are clipped, so we transfer the valid/sharpest texture on the other
     // channels
     const float grey_texture = fmaxabsf(fmaxabsf(TT_c[0], TT_c[1]), TT_c[2]);
 
@@ -1223,7 +1223,7 @@ static inline void init_reconstruct(const float *const restrict in, const float 
                                     float *const restrict reconstructed, const size_t width, const size_t height)
 {
 // init the reconstructed buffer with non-clipped and partially clipped pixels
-// Note : it's a simple multiplied alpha blending where mask = alpha weight
+// Note : it's a simple multiplied alpha blending where mask = alpha weight
 #ifdef _OPENMP
 #pragma omp parallel for default(none) dt_omp_firstprivate(in, mask, reconstructed, width, height) \
   schedule(static)
@@ -1322,7 +1322,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
     float *restrict LF;                 // output buffer for the current scale
     float *restrict HF_RGB_temp;        // temp buffer for HF_RBG terms before blurring
 
-    // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
+    // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
     if(s == 0)
     {
       detail = in;
@@ -1589,7 +1589,7 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in, float *co
 
 static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, dt_aligned_pixel_t Ych_final, const float saturation)
 {
-  // Note : Ych is normalized trough the LMS conversion,
+  // Note : Ych is normalized trough the LMS conversion,
   // meaning c is actually a saturation (saturation ~= chroma / brightness).
   // So copy-pasting c and h from a different Y is equivalent to
   // tonemapping with a norm, which is equivalent to doing exposure compensation :
@@ -2101,7 +2101,7 @@ static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem re
     cl_mem detail;
     cl_mem LF;
 
-    // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
+    // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
     if(s == 0)
     {
       detail = in;
@@ -3221,7 +3221,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  // write the graph legend at GUI default size
+  // write the graph legend at GUI default size
   pango_font_description_set_size(desc, font_size);
   pango_layout_set_font_description(layout, desc);
   if(g->gui_mode == DT_FILMIC_GUI_LOOK)
@@ -3648,7 +3648,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     // draw the dynamic range of display
     // if white = 100%, assume -11.69 EV because of uint8 output + sRGB OETF.
     // for uint10 output, white should be set to 400%, so anything above 100% increases DR
-    // FIXME : if darktable becomes HDR-10bits compatible (for output), this needs to be updated
+    // FIXME : if darktable becomes HDR-10bits compatible (for output), this needs to be updated
     const float display_DR = 12.f + log2f(p->white_point_target / 100.f);
 
     const float y_display = g->allocation.height / 3.f + g->line_height;
@@ -3727,7 +3727,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     const float max_DR = ceilf(fmaxf(display_HL_EV, scene_HL_EV)) + ceilf(fmaxf(display_LL_EV, scene_LL_EV));
     const float EV = (column_right) / max_DR;
 
-    // all greys are aligned vertically in GUI since they are the fulcrum of the transform
+    // all greys are aligned vertically in GUI since they are the fulcrum of the transform
     // so, get their coordinates
     const float grey_EV = fmaxf(ceilf(display_HL_EV), ceilf(scene_HL_EV));
     const float grey_x = g->allocation.width - (grey_EV)*EV - darktable.bauhaus->quad_width;
