@@ -872,10 +872,10 @@ int dt_dev_write_history_item(const int imgid,
 static void _dev_add_history_item_ext(
         dt_develop_t *dev,
         dt_iop_module_t *module,
-        gboolean enable,
-        gboolean new_item,
-        gboolean no_image,
-        gboolean include_masks)
+        const gboolean enable,
+        const gboolean new_item,
+        const gboolean no_image,
+        const gboolean include_masks)
 {
   int kept_module = 0;
   GList *history = g_list_nth(dev->history, dev->history_end);
@@ -1030,7 +1030,7 @@ const dt_dev_history_item_t *dt_dev_get_history_item(dt_develop_t *dev, const ch
 void dt_dev_add_history_item_ext(
         dt_develop_t *dev,
         dt_iop_module_t *module,
-        gboolean enable,
+        const gboolean enable,
         const int no_image)
 {
   _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
@@ -1039,8 +1039,8 @@ void dt_dev_add_history_item_ext(
 void _dev_add_history_item(
         dt_develop_t *dev,
         dt_iop_module_t *module,
-        gboolean enable,
-        gboolean new_item)
+        const gboolean enable,
+        const gboolean new_item)
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
@@ -1261,7 +1261,8 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, const int32_t cnt)
     module->enabled = module->default_enabled;
 
     if(module->multi_priority == 0)
-      module->iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
+      module->iop_order =
+        dt_ioppr_get_iop_order(dev->iop_order_list, module->op, module->multi_priority);
     else
     {
       module->iop_order = INT_MAX;
@@ -2022,19 +2023,24 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
     if(!(has_module_name && is_valid_id))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[dev_read_history_ext] database history for image id=%d `%s' seems to be corrupted!\n",
-              imgid, dev->image_storage.filename);
+      dt_print(DT_DEBUG_ALWAYS,
+               "[dev_read_history_ext] database history for image"
+               " id=%d `%s' seems to be corrupted!\n",
+               imgid, dev->image_storage.filename);
       continue;
     }
 
     const int iop_order =
       dt_ioppr_get_iop_order(dev->iop_order_list, module_name, multi_priority);
 
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
+    dt_dev_history_item_t *hist =
+      (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
     hist->module = NULL;
 
-    // Find a .so file that matches our history entry, aka a module to run the params stored in DB
+    // Find a .so file that matches our history entry, aka a module to
+    // run the params stored in DB
     dt_iop_module_t *find_op = NULL;
+
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
@@ -2052,7 +2058,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
         }
         else if(multi_priority > 0)
         {
-          // we just say that we find the name, so we just have to add new instance of this module
+          // we just say that we find the name, so we just have to add
+          // new instance of this module
           find_op = module;
         }
       }
@@ -2079,8 +2086,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     if(!hist->module)
     {
       dt_print(DT_DEBUG_ALWAYS,
-          "[dev_read_history] the module `%s' requested by image id=%d `%s' is not installed on this computer!\n",
-          module_name, imgid, dev->image_storage.filename);
+               "[dev_read_history] the module `%s' requested by image"
+               " id=%d `%s' is not installed on this computer!\n",
+               module_name, imgid, dev->image_storage.filename);
       free(hist);
       continue;
     }

@@ -730,7 +730,7 @@ static void _gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 }
 
-dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
+dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, const gboolean copy_params)
 {
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);
@@ -3083,7 +3083,7 @@ void dt_iop_gui_set_state(dt_iop_module_t *module, dt_iop_module_state_t state)
   dt_iop_so_gui_set_state(module->so, state);
 }
 
-void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority)
+void dt_iop_update_multi_priority(dt_iop_module_t *module, const int new_priority)
 {
   GHashTableIter iter;
   gpointer key, value;
@@ -3369,7 +3369,7 @@ static gboolean _postponed_history_update(gpointer data)
 
 /** queue a delayed call of the add_history function after user
     interaction, to capture parameter updates (but not too often). */
-void dt_iop_queue_history_update(dt_iop_module_t *module, gboolean extend_prior)
+void dt_iop_queue_history_update(dt_iop_module_t *module, const gboolean extend_prior)
 {
   if(module->timeout_handle && extend_prior)
   {
