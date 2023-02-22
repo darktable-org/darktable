@@ -372,6 +372,11 @@ void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def);
 int dt_bauhaus_combobox_get_default(GtkWidget *widget);
 void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidget *w, struct dt_iop_module_t **module));
 void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const char **texts);
+gboolean dt_bauhaus_combobox_add_introspection(GtkWidget *widget,
+                                               dt_action_t *action,
+                                               const dt_introspection_type_enum_tuple_t *list,
+                                               const int start,
+                                               const int end);
 void dt_bauhaus_combobox_entry_set_sensitive(GtkWidget *widget, int pos, gboolean sensitive);
 void dt_bauhaus_combobox_set_entries_ellipsis(GtkWidget *widget, PangoEllipsizeMode ellipis);
 PangoEllipsizeMode dt_bauhaus_combobox_get_entries_ellipsis(GtkWidget *widget);

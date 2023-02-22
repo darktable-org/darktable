@@ -2040,6 +2040,15 @@ static void _presets_popup_callback(GtkButton *button, dt_iop_module_t *module)
                     GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
+static gboolean _presets_scroll_callback(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *module)
+{
+  int delta_y = 0;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    dt_gui_presets_apply_adjacent_preset(module, delta_y);
+
+  return TRUE;
+}
+
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   dt_iop_module_t *out_focus_module = darktable.develop->gui_module;
@@ -2572,7 +2581,7 @@ gboolean _iop_tooltip_callback(GtkWidget *widget,
 
   if(!des) return FALSE;
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(10));
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
@@ -2616,15 +2625,7 @@ gboolean _iop_tooltip_callback(GtkWidget *widget,
 
   gtk_box_pack_start(GTK_BOX(vbox), grid, FALSE, FALSE, 0);
 
-  gtk_widget_show_all(vbox);
-  gtk_tooltip_set_custom(tooltip, vbox);
-
-  //  Record the vbox into the widget to be able to retrieve it
-  //  for adding the shortcut (see accelerators.c).
-
-  g_object_set_data(G_OBJECT(widget), "iopdes", vbox);
-
-  return FALSE;
+  return dt_shortcut_tooltip_callback(widget, x, y, keyboard_mode, tooltip, vbox);
 }
 
 void dt_iop_gui_set_expander(dt_iop_module_t *module)
@@ -2694,10 +2695,8 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   if((module->flags() & IOP_FLAGS_DEPRECATED) && module->deprecated_msg())
     gtk_widget_set_tooltip_text(lab, module->deprecated_msg());
   else
-  {
-    gtk_widget_set_name(lab, "iop_description");
     g_signal_connect(lab, "query-tooltip", G_CALLBACK(_iop_tooltip_callback), module);
-  }
+
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_LABEL]), "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
@@ -2737,6 +2736,9 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "enter-notify-event",
                    G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "scroll-event",
+                   G_CALLBACK(_presets_scroll_callback), module);
+  gtk_widget_add_events(hw[IOP_MODULE_PRESETS], darktable.gui->scroll_mask);
 
   /* add enabled button */
   hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, module);

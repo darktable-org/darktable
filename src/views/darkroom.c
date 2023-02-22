@@ -1301,7 +1301,7 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
   /* create favorites menu and popup */
   dt_gui_favorite_presets_menu_show();
 
-  /* if we got any styles, lets popup menu for selection */
+  /* if we got any favorite presets, lets popup menu for selection */
   if(darktable.gui->presets_popup_menu)
   {
     dt_gui_menu_popup(darktable.gui->presets_popup_menu, w, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST);
@@ -1310,9 +1310,22 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
     dt_control_log(_("no userdefined presets for favorite modules were found"));
 }
 
-static void _darkroom_ui_apply_style_activate_callback(const gchar *name)
+static void _darkroom_ui_apply_style_activate_callback(GtkMenuItem *menuitem, gchar *name)
 {
-  dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+  if(gtk_get_current_event()->type == GDK_KEY_PRESS)
+    dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+}
+
+static gboolean _darkroom_ui_apply_style_button_callback(GtkMenuItem *menuitem,
+                                                         GdkEventButton *event,
+                                                         gchar *name)
+{
+  if(event->button == 1)
+    dt_styles_apply_to_dev(name, darktable.develop->image_storage.id);
+  else
+    dt_shortcut_copy_lua(NULL, name);
+
+  return FALSE;
 }
 
 gboolean _styles_tooltip_callback(GtkWidget* self,
@@ -1332,11 +1345,10 @@ gboolean _styles_tooltip_callback(GtkWidget* self,
   dt_dev_write_history(dev);
 
   GtkWidget *ht = dt_gui_style_content_dialog(name, imgid);
-  gtk_widget_show_all(ht);
 
-  gtk_tooltip_set_custom(tooltip, ht);
+  g_object_set_data_full(G_OBJECT(self), "dt-preset-name", g_strdup(name), g_free);
 
-  return TRUE;
+  return dt_shortcut_tooltip_callback(self, x, y, keyboard_mode, tooltip, ht);
 }
 
 static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
@@ -1420,7 +1432,12 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       g_signal_connect_data(G_OBJECT(mi), "activate",
                             G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
-                            g_strdup(style->name), (GClosureNotify)g_free, G_CONNECT_SWAPPED);
+                            g_strdup(style->name), (GClosureNotify)g_free, 0);
+
+      g_signal_connect_data(G_OBJECT(mi), "button-press-event",
+                            G_CALLBACK(_darkroom_ui_apply_style_button_callback),
+                            g_strdup(style->name), (GClosureNotify)g_free, 0);
+
       gtk_widget_show(mi);
 
       g_strfreev(split);
