@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-23 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -219,7 +219,11 @@ static inline float _calc_refavg(const float *in,
   return (linear) ? powf(croot_refavg[color], HL_POWERF) : croot_refavg[color];
 }
 
-static void _initial_gradients(const size_t w, const size_t height, float *luminance, float *distance, float *gradient)
+static void _initial_gradients(const size_t w,
+                               const size_t height,
+                               float *luminance,
+                               float *distance,
+                               float *gradient)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -249,7 +253,11 @@ static void _initial_gradients(const size_t w, const size_t height, float *lumin
   }
 }
 
-static float _segment_maxdistance(const int width, const int height, float *distance, dt_iop_segmentation_t *seg, const int id)
+static float _segment_maxdistance(const int width,
+                                  const int height,
+                                  float *distance,
+                                  dt_iop_segmentation_t *seg,
+                                  const int id)
 {
   const int xmin = MAX(seg->xmin[id]-2, HL_BORDER);
   const int xmax = MIN(seg->xmax[id]+3, width - HL_BORDER);
@@ -288,13 +296,26 @@ static float _segment_attenuation(dt_iop_segmentation_t *seg, const int id, cons
   }
 }
 
-static float _segment_correction(dt_iop_segmentation_t *seg, const int id, const int mode, const int seg_border)
+static float _segment_correction(dt_iop_segmentation_t *seg,
+                                 const int id,
+                                 const int mode,
+                                 const int seg_border)
 {
   const float correction = _segment_attenuation(seg, id, mode);
   return correction - 0.1f * (float)seg_border;
 }
 
-static void _calc_distance_ring(const int width, const int xmin, const int xmax, const int ymin, const int ymax, float *gradient, float *distance, const float attenuate, const float dist, dt_iop_segmentation_t *seg, const int id)
+static void _calc_distance_ring(const int width,
+                                const int xmin,
+                                const int xmax,
+                                const int ymin,
+                                const int ymax,
+                                float *gradient,
+                                float *distance,
+                                const float attenuate,
+                                const float dist,
+                                dt_iop_segmentation_t *seg,
+                                const int id)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -332,7 +353,15 @@ static void _calc_distance_ring(const int width, const int xmin, const int xmax,
   }
 }
 
-static void _segment_gradients(const int width, const int height, float *distance, float *gradient, float *tmp, const int mode, dt_iop_segmentation_t *seg, const int id, const int seg_border)
+static void _segment_gradients(const int width,
+                               const int height,
+                               float *distance,
+                               float *gradient,
+                               float *tmp,
+                               const int mode,
+                               dt_iop_segmentation_t *seg,
+                               const int id,
+                               const int seg_border)
 {
   const int xmin = MAX(seg->xmin[id]-1, HL_BORDER);
   const int xmax = MIN(seg->xmax[id]+2, width - HL_BORDER);
@@ -395,7 +424,12 @@ static void _segment_gradients(const int width, const int height, float *distanc
   }
 }
 
-static void _add_poisson_noise(const int width, const int height, float *lum, dt_iop_segmentation_t *seg, const int id, const float noise_level)
+static void _add_poisson_noise(const int width,
+                               const int height,
+                               float *lum,
+                               dt_iop_segmentation_t *seg,
+                               const int id,
+                               const float noise_level)
 {
   const int xmin = MAX(seg->xmin[id], HL_BORDER);
   const int xmax = MIN(seg->xmax[id]+1, width - HL_BORDER);
@@ -425,9 +459,14 @@ static inline size_t _raw_to_plane(const int width, const int row, const int col
   return (HL_BORDER + (row / 3)) * width + (col / 3) + HL_BORDER;
 }
 
-static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *const input, float *const output,
-                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         dt_iop_highlights_data_t *data, const int vmode, float *tmpout)
+static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
+                                  const float *const input,
+                                  float *const output,
+                                  const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi_out,
+                                  dt_iop_highlights_data_t *data,
+                                  const int vmode,
+                                  float *tmpout)
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
