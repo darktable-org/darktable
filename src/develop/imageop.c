@@ -893,7 +893,9 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
   {
     gtk_widget_show(module->instance_name);
 
-    g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_rename_module_key_press), module);
+    g_signal_handlers_disconnect_by_func(entry,
+                                         G_CALLBACK(_rename_module_key_press),
+                                         module);
     gtk_widget_destroy(entry);
     dt_iop_show_hide_header_buttons(module, NULL, TRUE, FALSE); // after removing entry
     dt_iop_gui_update_header(module);
