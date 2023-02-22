@@ -1121,6 +1121,10 @@ static void _iop_panel_name(dt_iop_module_t *module)
 {
   // IOP instance name if any
 
+  // do not mess with panel name if we are not on the top of the history
+  if(darktable.develop->history_end < g_list_length(darktable.develop->history))
+    return;
+
   GtkLabel *iname = GTK_LABEL(module->instance_name);
   gchar *new_label = NULL;
   gchar *multi_name = NULL;
