@@ -2451,15 +2451,6 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
   *zoom_y = zoom2_y;
 }
 
-void dt_dev_get_history_item_label(dt_dev_history_item_t *hist,
-                                   char *label,
-                                   const int cnt)
-{
-  gchar *module_label = dt_history_item_get_name(hist->module);
-  g_snprintf(label, cnt, "%s (%s)", module_label, hist->enabled ? _("on") : _("off"));
-  g_free(module_label);
-}
-
 int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid)
 {
   return (dev->image_storage.id == imgid) ? 1 : 0;
