@@ -179,6 +179,8 @@ void gui_cleanup(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_lib_history_change_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_lib_history_will_change_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_lib_history_module_remove_callback), self);
   g_free(self->data);
   self->data = NULL;
@@ -1103,6 +1105,19 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget,
   return show_tooltip;
 }
 
+static gchar *_lib_history_button_label(const dt_dev_history_item_t *item)
+{
+  gchar *label = NULL;
+  if(!item)
+    label = g_strdup("");
+  else if(!item->multi_name[0] || strcmp(item->multi_name, "0") == 0)
+    label = g_strdup(item->module->name());
+  else
+    label = g_strdup_printf("%s • %s", item->module->name(), item->multi_name);
+
+  return label;
+}
+
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -1161,11 +1176,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
       history = g_list_next(history))
   {
     const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
-    gchar *label;
-    if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
-      label = g_strdup(hitem->module->name());
-    else
-      label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
+    gchar *label = _lib_history_button_label(hitem);
 
     const gboolean selected = (num == darktable.develop->history_end - 1);
     widget =
