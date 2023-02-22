@@ -122,7 +122,7 @@ jobs:
         run: |      
           cd ${SRC_DIR}
           echo "VERSION=$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')" >> $GITHUB_ENV
-          [[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64" >> $GITHUB_ENV
+          ([[ ${MSYSTEM_CARCH} == x86_64 ]] && echo "SYSTEM=win64" || echo "SYSTEM=woa64") >> $GITHUB_ENV
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         uses: actions/upload-artifact@v3
@@ -156,6 +156,7 @@ jobs:
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/src/build
       INSTALL_PREFIX: ${{ github.workspace }}/src/build/macosx
+      ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
