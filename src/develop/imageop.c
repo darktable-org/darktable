@@ -860,12 +860,6 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
 
        const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
 
-      // restore saved 1st character of instance name (without it the
-      // same name wouls still produce unnecessary copy + add history
-      // item)
-      module->multi_name[0] = module->multi_name[sizeof(module->multi_name) - 1];
-      module->multi_name[sizeof(module->multi_name) - 1] = 0;
-
       if(g_strcmp0(module->multi_name, name) != 0)
       {
         g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
@@ -892,15 +886,13 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
   }
   else if(event->keyval == GDK_KEY_Escape)
   {
-    // restore saved 1st character of instance name
-    module->multi_name[0] = module->multi_name[sizeof(module->multi_name) - 1];
-    module->multi_name[sizeof(module->multi_name) - 1] = 0;
-
     ended = 1;
   }
 
   if(ended)
   {
+    gtk_widget_show(module->instance_name);
+
     g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_rename_module_key_press), module);
     gtk_widget_destroy(entry);
     dt_iop_show_hide_header_buttons(module, NULL, TRUE, FALSE); // after removing entry
@@ -940,10 +932,8 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_entry_set_max_length(GTK_ENTRY(entry), sizeof(module->multi_name) - 1);
   gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
 
-  // remove instance name but save 1st character in case of escape
-  module->multi_name[sizeof(module->multi_name) - 1] = module->multi_name[0];
-  module->multi_name[0] = 0;
-  dt_iop_gui_update_header(module);
+  //  hide module instance name as we need the space for the entry
+  gtk_widget_hide(module->instance_name);
 
   gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
   g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), module);
