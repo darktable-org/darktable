@@ -89,12 +89,12 @@ const dt_introspection_type_enum_tuple_t dt_develop_blend_mode_names[]
         { NC_("blendmode", "subtract inverse (deprecated)"), DEVELOP_BLEND_SUBTRACT_INVERSE },
         { NC_("blendmode", "divide inverse (deprecated)"), DEVELOP_BLEND_DIVIDE_INVERSE },
         { NC_("blendmode", "Lab L-channel (deprecated)"), DEVELOP_BLEND_LAB_L },
-        { } };
+        { NULL } };
 
 const dt_introspection_type_enum_tuple_t dt_develop_blend_mode_flag_names[]
     = { { NC_("blendoperation", "normal"), 0 },
         { NC_("blendoperation", "reverse"), DEVELOP_BLEND_REVERSE },
-        { } };
+        { NULL } };
 
 const dt_introspection_type_enum_tuple_t dt_develop_blend_colorspace_names[]
     = { { N_("default"), DEVELOP_BLEND_CS_NONE },
@@ -102,7 +102,7 @@ const dt_introspection_type_enum_tuple_t dt_develop_blend_colorspace_names[]
         { N_("Lab"), DEVELOP_BLEND_CS_LAB },
         { N_("RGB (display)"), DEVELOP_BLEND_CS_RGB_DISPLAY },
         { N_("RGB (scene)"), DEVELOP_BLEND_CS_RGB_SCENE },
-        { } };
+        { NULL } };
 
 const dt_introspection_type_enum_tuple_t dt_develop_mask_mode_names[]
     = { { N_("off"), DEVELOP_MASK_DISABLED },
@@ -111,26 +111,26 @@ const dt_introspection_type_enum_tuple_t dt_develop_mask_mode_names[]
         { N_("parametric mask"), DEVELOP_MASK_CONDITIONAL | DEVELOP_MASK_ENABLED },
         { N_("raster mask"), DEVELOP_MASK_RASTER | DEVELOP_MASK_ENABLED },
         { N_("drawn & parametric mask"), DEVELOP_MASK_MASK_CONDITIONAL | DEVELOP_MASK_ENABLED },
-        { } };
+        { NULL } };
 
 const dt_introspection_type_enum_tuple_t dt_develop_combine_masks_names[]
     = { { N_("exclusive"), DEVELOP_COMBINE_NORM_EXCL },
         { N_("inclusive"), DEVELOP_COMBINE_NORM_INCL },
         { N_("exclusive & inverted"), DEVELOP_COMBINE_INV_EXCL },
         { N_("inclusive & inverted"), DEVELOP_COMBINE_INV_INCL },
-        { } };
+        { NULL } };
 
 const dt_introspection_type_enum_tuple_t dt_develop_feathering_guide_names[]
     = { { N_("output before blur"), DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR },
         { N_("input before blur"), DEVELOP_MASK_GUIDE_IN_BEFORE_BLUR },
         { N_("output after blur"), DEVELOP_MASK_GUIDE_OUT_AFTER_BLUR },
         { N_("input after blur"), DEVELOP_MASK_GUIDE_IN_AFTER_BLUR },
-        { } };
+        { NULL } };
 
 const dt_introspection_type_enum_tuple_t dt_develop_invert_mask_names[]
     = { { N_("off"), DEVELOP_COMBINE_NORM },
         { N_("on"), DEVELOP_COMBINE_INV },
-        { } };
+        { NULL } };
 
 const dt_iop_gui_blendif_colorstop_t _gradient_L[]
     = { { 0.0f,   { 0, 0, 0, 1.0 } },
@@ -3129,4 +3129,3 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
