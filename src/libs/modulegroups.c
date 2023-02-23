@@ -1738,6 +1738,7 @@ void init_presets(dt_lib_module_t *self)
   AM("exposure");
   AM("temperature");
   AM("bilat");
+  AM("highlights");
 
   SMG(C_("modulegroup", "color"), "color");
   AM("channelmixerrgb");
@@ -1806,6 +1807,7 @@ void init_presets(dt_lib_module_t *self)
 static gchar *_presets_get_minimal(dt_lib_module_t *self)
 {
   const gboolean is_scene_referred = dt_is_scene_referred();
+  const gboolean wf_filmic = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred (filmic)");
 
   // all modules
   gchar *tx = NULL;
@@ -1816,7 +1818,12 @@ static gchar *_presets_get_minimal(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "base"), "basic");
   if(is_scene_referred)
-    AM("filmicrgb");
+  {
+    if(wf_filmic)
+      AM("filmicrgb");
+    else
+      AM("sigmoid");
+  }
   else
     AM("basecurve");
   AM("exposure");
