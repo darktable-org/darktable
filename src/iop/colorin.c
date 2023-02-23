@@ -1274,119 +1274,12 @@ static void process_sse2_cmatrix(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   }
 }
 
-static void process_sse2_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                  const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                  const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int ch = piece->colors;
-
-// use general lcms2 fallback
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
-  schedule(static)
-#endif
-  for(int k = 0; k < roi_out->height; k++)
-  {
-    const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-    float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-
-    float *camptr = (float *)out;
-    for(int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
-    {
-      apply_blue_mapping(in, camptr);
-    }
-
-    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-    if(!d->nrgb)
-    {
-      cmsDoTransform(d->xform_cam_Lab, out, out, roi_out->width);
-    }
-    else
-    {
-      cmsDoTransform(d->xform_cam_nrgb, out, out, roi_out->width);
-
-      float *rgbptr = (float *)out;
-      for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
-      {
-        const __m128 min = _mm_setzero_ps();
-        const __m128 max = _mm_set1_ps(1.0f);
-        const __m128 val = _mm_load_ps(rgbptr);
-        const __m128 result = _mm_max_ps(_mm_min_ps(val, max), min);
-        _mm_store_ps(rgbptr, result);
-      }
-      _mm_sfence();
-
-      cmsDoTransform(d->xform_nrgb_Lab, out, out, roi_out->width);
-    }
-  }
-}
-
-
-static void process_sse2_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                      const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                                      const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int ch = piece->colors;
-
-// use general lcms2 fallback
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
-  schedule(static)
-#endif
-  for(int k = 0; k < roi_out->height; k++)
-  {
-    const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-    float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-
-    // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-    if(!d->nrgb)
-    {
-      cmsDoTransform(d->xform_cam_Lab, in, out, roi_out->width);
-    }
-    else
-    {
-      cmsDoTransform(d->xform_cam_nrgb, in, out, roi_out->width);
-
-      float *rgbptr = (float *)out;
-      for(int j = 0; j < roi_out->width; j++, rgbptr += 4)
-      {
-        const __m128 min = _mm_setzero_ps();
-        const __m128 max = _mm_set1_ps(1.0f);
-        const __m128 val = _mm_load_ps(rgbptr);
-        const __m128 result = _mm_max_ps(_mm_min_ps(val, max), min);
-        _mm_store_ps(rgbptr, result);
-      }
-      _mm_sfence();
-
-      cmsDoTransform(d->xform_nrgb_Lab, out, out, roi_out->width);
-    }
-  }
-}
-
-static void process_sse2_lcms2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                               const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
-                               const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const int blue_mapping = d->blue_mapping && dt_image_is_matrix_correction_supported(&piece->pipe->image);
-
-  // use general lcms2 fallback
-  if(blue_mapping)
-  {
-    process_sse2_lcms2_bm(self, piece, ivoid, ovoid, roi_in, roi_out);
-  }
-  else
-  {
-    process_sse2_lcms2_proper(self, piece, ivoid, ovoid, roi_in, roi_out);
-  }
-}
-
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(struct dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  const void *const ivoid,
+                  void *const ovoid,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
 
@@ -1400,10 +1293,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
   else
   {
-    process_sse2_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
+    process_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
