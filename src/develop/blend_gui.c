@@ -44,51 +44,44 @@
 
 const dt_introspection_type_enum_tuple_t dt_develop_blend_mode_names[]
     = { { NC_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2 },
-        { NC_("blendmode", "average"), DEVELOP_BLEND_AVERAGE },
-        { NC_("blendmode", "difference"), DEVELOP_BLEND_DIFFERENCE2 },
-
         { NC_("blendmode", "normal bounded"), DEVELOP_BLEND_BOUNDED },
         { NC_("blendmode", "lighten"), DEVELOP_BLEND_LIGHTEN },
         { NC_("blendmode", "darken"), DEVELOP_BLEND_DARKEN },
-        { NC_("blendmode", "screen"), DEVELOP_BLEND_SCREEN },
-
         { NC_("blendmode", "multiply"), DEVELOP_BLEND_MULTIPLY },
-        { NC_("blendmode", "divide"), DEVELOP_BLEND_DIVIDE },
+        { NC_("blendmode", "average"), DEVELOP_BLEND_AVERAGE },
         { NC_("blendmode", "addition"), DEVELOP_BLEND_ADD },
         { NC_("blendmode", "subtract"), DEVELOP_BLEND_SUBTRACT },
-        { NC_("blendmode", "geometric mean"), DEVELOP_BLEND_GEOMETRIC_MEAN },
-        { NC_("blendmode", "harmonic mean"), DEVELOP_BLEND_HARMONIC_MEAN },
-
+        { NC_("blendmode", "difference"), DEVELOP_BLEND_DIFFERENCE2 },
+        { NC_("blendmode", "screen"), DEVELOP_BLEND_SCREEN },
         { NC_("blendmode", "overlay"), DEVELOP_BLEND_OVERLAY },
         { NC_("blendmode", "softlight"), DEVELOP_BLEND_SOFTLIGHT },
         { NC_("blendmode", "hardlight"), DEVELOP_BLEND_HARDLIGHT },
         { NC_("blendmode", "vividlight"), DEVELOP_BLEND_VIVIDLIGHT },
         { NC_("blendmode", "linearlight"), DEVELOP_BLEND_LINEARLIGHT },
         { NC_("blendmode", "pinlight"), DEVELOP_BLEND_PINLIGHT },
-
         { NC_("blendmode", "lightness"), DEVELOP_BLEND_LIGHTNESS },
         { NC_("blendmode", "chromaticity"), DEVELOP_BLEND_CHROMATICITY },
-
-        { NC_("blendmode", "Lab lightness"), DEVELOP_BLEND_LAB_LIGHTNESS },
-        { NC_("blendmode", "Lab a-channel"), DEVELOP_BLEND_LAB_A },
-        { NC_("blendmode", "Lab b-channel"), DEVELOP_BLEND_LAB_B },
-        { NC_("blendmode", "Lab color"), DEVELOP_BLEND_LAB_COLOR },
-
-        { NC_("blendmode", "RGB red channel"), DEVELOP_BLEND_RGB_R },
-        { NC_("blendmode", "RGB green channel"), DEVELOP_BLEND_RGB_G },
-        { NC_("blendmode", "RGB blue channel"), DEVELOP_BLEND_RGB_B },
-        { NC_("blendmode", "HSV value"), DEVELOP_BLEND_HSV_VALUE },
-        { NC_("blendmode", "HSV color"), DEVELOP_BLEND_HSV_COLOR },
-
         { NC_("blendmode", "hue"), DEVELOP_BLEND_HUE },
         { NC_("blendmode", "color"), DEVELOP_BLEND_COLOR },
         { NC_("blendmode", "coloradjustment"), DEVELOP_BLEND_COLORADJUST },
+        { NC_("blendmode", "Lab lightness"), DEVELOP_BLEND_LAB_LIGHTNESS },
+        { NC_("blendmode", "Lab color"), DEVELOP_BLEND_LAB_COLOR },
+        { NC_("blendmode", "Lab L-channel"), DEVELOP_BLEND_LAB_L },
+        { NC_("blendmode", "Lab a-channel"), DEVELOP_BLEND_LAB_A },
+        { NC_("blendmode", "Lab b-channel"), DEVELOP_BLEND_LAB_B },
+        { NC_("blendmode", "HSV value"), DEVELOP_BLEND_HSV_VALUE },
+        { NC_("blendmode", "HSV color"), DEVELOP_BLEND_HSV_COLOR },
+        { NC_("blendmode", "RGB red channel"), DEVELOP_BLEND_RGB_R },
+        { NC_("blendmode", "RGB green channel"), DEVELOP_BLEND_RGB_G },
+        { NC_("blendmode", "RGB blue channel"), DEVELOP_BLEND_RGB_B },
+        { NC_("blendmode", "divide"), DEVELOP_BLEND_DIVIDE },
+        { NC_("blendmode", "geometric mean"), DEVELOP_BLEND_GEOMETRIC_MEAN },
+        { NC_("blendmode", "harmonic mean"), DEVELOP_BLEND_HARMONIC_MEAN },
 
         /** deprecated blend modes: make them available as legacy history stacks might want them */
         { NC_("blendmode", "difference (deprecated)"), DEVELOP_BLEND_DIFFERENCE },
         { NC_("blendmode", "subtract inverse (deprecated)"), DEVELOP_BLEND_SUBTRACT_INVERSE },
         { NC_("blendmode", "divide inverse (deprecated)"), DEVELOP_BLEND_DIVIDE_INVERSE },
-        { NC_("blendmode", "Lab L-channel (deprecated)"), DEVELOP_BLEND_LAB_L },
         { } };
 
 const dt_introspection_type_enum_tuple_t dt_develop_blend_mode_flag_names[]
@@ -2535,15 +2528,19 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
 }
 
 
-static gboolean _add_blendmode_combo(GtkWidget *combobox,
-                                     dt_develop_blend_mode_t start,
-                                     dt_develop_blend_mode_t end)
+static gboolean _add_blendmode_combo(GtkWidget *combobox, dt_develop_blend_mode_t mode)
 {
-  return dt_bauhaus_combobox_add_introspection(combobox,
-                                               NULL,
-                                               dt_develop_blend_mode_names,
-                                               start,
-                                               end);
+  for(const dt_introspection_type_enum_tuple_t *bm = dt_develop_blend_mode_names; *bm->name; bm++)
+  {
+    if(bm->value == mode)
+    {
+      dt_bauhaus_combobox_add_full(combobox, Q_(bm->name), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GUINT_TO_POINTER(bm->value), NULL, TRUE);
+
+      return TRUE;
+    }
+  }
+
+  return FALSE;
 }
 
 static GtkWidget *_combobox_new_from_list(dt_iop_module_t *module, const gchar *label,
@@ -2632,42 +2629,74 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
        || bd->csp == DEVELOP_BLEND_CS_RGB_DISPLAY
        || bd->csp == DEVELOP_BLEND_CS_RAW )
     {
-      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("normal & difference"));
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_NORMAL2, DEVELOP_BLEND_DIFFERENCE2);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_BOUNDED, DEVELOP_BLEND_BOUNDED);
-      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("lighten"));
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTEN, DEVELOP_BLEND_LIGHTEN);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_ADD, DEVELOP_BLEND_ADD);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SCREEN, DEVELOP_BLEND_SCREEN);
-      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("darken"));
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DARKEN, DEVELOP_BLEND_DARKEN);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBTRACT, DEVELOP_BLEND_SUBTRACT);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_MULTIPLY, DEVELOP_BLEND_MULTIPLY);
-      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("contrast enhancing"));
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_OVERLAY, DEVELOP_BLEND_PINLIGHT);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("normal & difference modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_NORMAL2);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_BOUNDED);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_AVERAGE);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIFFERENCE2);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("lighten modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTEN);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_ADD);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SCREEN);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("darken modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DARKEN);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBTRACT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_MULTIPLY);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("contrast enhancing modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_OVERLAY);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SOFTLIGHT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HARDLIGHT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_VIVIDLIGHT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LINEARLIGHT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_PINLIGHT);
 
-      if(bd->csp == DEVELOP_BLEND_CS_LAB || bd->csp == DEVELOP_BLEND_CS_RGB_DISPLAY)
+      if(bd->csp == DEVELOP_BLEND_CS_LAB)
       {
-        dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("color channel"));
-        if(bd->csp == DEVELOP_BLEND_CS_LAB)
-          _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_LIGHTNESS, DEVELOP_BLEND_LAB_COLOR);
-        else
-          _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_R, DEVELOP_BLEND_HSV_COLOR);
-        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HUE, DEVELOP_BLEND_COLORADJUST);
-
-        dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("chromaticity & lightness"));
-        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS, DEVELOP_BLEND_CHROMATICITY);
+        dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("color channel modes"));
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_LIGHTNESS);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_A);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_B);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_COLOR);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMATICITY);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HUE);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLOR);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLORADJUST);
+      }
+      else if(bd->csp == DEVELOP_BLEND_CS_RGB_DISPLAY)
+      {
+        dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("color channel modes"));
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_R);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_G);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_B);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HSV_VALUE);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMATICITY);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HSV_COLOR);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HUE);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLOR);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLORADJUST);
       }
     }
     else if(bd->csp == DEVELOP_BLEND_CS_RGB_SCENE)
     {
-      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("normal & arithmetic"));
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_NORMAL2, DEVELOP_BLEND_DIFFERENCE2);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_MULTIPLY, DEVELOP_BLEND_HARMONIC_MEAN);
-      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("color channel"));
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_R, DEVELOP_BLEND_RGB_B);
-      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("chromaticity & lightness"));
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS, DEVELOP_BLEND_CHROMATICITY);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("normal & arithmetic modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_NORMAL2);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_MULTIPLY);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIVIDE);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_ADD);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBTRACT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIFFERENCE2);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_AVERAGE);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_GEOMETRIC_MEAN);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HARMONIC_MEAN);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("color channel modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_R);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_G);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_B);
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("chromaticity & lightness modes"));
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMATICITY);
     }
     bd->blend_modes_csp = bd->csp;
   }
@@ -2676,8 +2705,8 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   if(!dt_bauhaus_combobox_set_from_value(bd->blend_modes_combo, blend_mode))
   {
     // add deprecated blend mode
-    dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("deprecated"));
-    if(!_add_blendmode_combo(bd->blend_modes_combo, blend_mode, blend_mode))
+    dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("deprecated modes"));
+    if(!_add_blendmode_combo(bd->blend_modes_combo, blend_mode))
     {
       // should never happen: unknown blend mode
       dt_control_log("unknown blend mode '%d' in module '%s'", blend_mode, module->op);
