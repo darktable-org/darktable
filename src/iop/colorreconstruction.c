@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2015-2021 darktable developers.
+  Copyright (C) 2015-2023 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -200,11 +200,7 @@ static inline float hue_conversion(const float HSL_Hue)
   dt_aligned_pixel_t Lab = { 0 };
 
   hsl2rgb(rgb, HSL_Hue, 1.0f, 0.5f);
-
-  XYZ[0] = (rgb[0] * 0.4360747f) + (rgb[1] * 0.3850649f) + (rgb[2] * 0.1430804f);
-  XYZ[1] = (rgb[0] * 0.2225045f) + (rgb[1] * 0.7168786f) + (rgb[2] * 0.0606169f);
-  XYZ[2] = (rgb[0] * 0.0139322f) + (rgb[1] * 0.0971045f) + (rgb[2] * 0.7141733f);
-
+  dt_Rec709_to_XYZ_D50(rgb, XYZ);
   dt_XYZ_to_Lab(XYZ, Lab);
 
   // Hue from LCH color space in [-pi, +pi] interval
