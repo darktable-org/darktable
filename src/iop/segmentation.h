@@ -39,7 +39,7 @@ typedef struct dt_pos_t
 typedef struct dt_iop_segmentation_t
 {
   int *data;      // holding segment id's for every location
-  int *size;      // size of each segment      
+  int *size;      // size of each segment
   int *xmin;      // bounding rectangle for each segment
   int *xmax;
   int *ymin;
@@ -202,7 +202,12 @@ static inline int _test_dilate(const int *img, const size_t i, const size_t w1, 
   return retval;
 }
 
-static inline void _dilating(const int *img, int *o, const int w1, const int height, const int border, const int radius)
+static inline void _dilating(const int *img,
+                             int *o,
+                             const int w1,
+                             const int height,
+                             const int border,
+                             const int radius)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -326,7 +331,12 @@ static inline int _test_erode(const int *img, const size_t i, const size_t w1, c
   return retval;
 }
 
-static inline void _eroding(const int *img, int *o, const int w1, const int height, const int border, const int radius)
+static inline void _eroding(const int *img,
+                            int *o,
+                            const int w1,
+                            const int height,
+                            const int border,
+                            const int radius)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -341,9 +351,13 @@ static inline void _eroding(const int *img, int *o, const int w1, const int heig
   }
 }
 
-static inline void _intimage_borderfill(int *d, const int width, const int height, const int val, const int border)
+static inline void _intimage_borderfill(int *d,
+                                        const int width,
+                                        const int height,
+                                        const int val,
+                                        const int border)
 {
-  for(size_t i = 0; i < border * width; i++)                            
+  for(size_t i = 0; i < border * width; i++)
     d[i] = val;
   for(size_t i = (height - border - 1) * width; i < width*height; i++)
     d[i] = val;
@@ -356,7 +370,13 @@ static inline void _intimage_borderfill(int *d, const int width, const int heigh
   }
 }
 
-static gboolean _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, const int w, const int h, const int id, dt_ff_stack_t *stack)
+static gboolean _floodfill_segmentize(int yin,
+                                      int xin,
+                                      dt_iop_segmentation_t *seg,
+                                      const int w,
+                                      const int h,
+                                      const int id,
+                                      dt_ff_stack_t *stack)
 {
   if(id >= seg->slots - 2) return FALSE;
 
@@ -413,7 +433,7 @@ static gboolean _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *s
           d[rp] = DT_SEG_ID_MASK + id;
         }
       }
-      
+
       if(yDown < h-border && d[yDown*w+x] == 1)
       {
         _push_stack(x, yDown, stack); firstXDown = lastXDown = TRUE;
@@ -432,7 +452,7 @@ static gboolean _floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *s
           d[rp] = DT_SEG_ID_MASK + id;
         }
       }
-      
+
       int xr = x + 1;
       while(xr < w-border && d[y*w+xr] == 1)
       {
@@ -674,7 +694,11 @@ void dt_segments_transform_closing(dt_iop_segmentation_t *seg, const int radius)
   _eroding(seg->tmp, img, width, height, border, radius);
 }
 
-void dt_segmentation_init_struct(dt_iop_segmentation_t *seg, const int width, const int height, const int border, const int wanted_slots)
+void dt_segmentation_init_struct(dt_iop_segmentation_t *seg,
+                                 const int width,
+                                 const int height,
+                                 const int border,
+                                 const int wanted_slots)
 {
   const int slots = MIN(wanted_slots, DT_SEG_ID_MASK - 2);
   if(slots != wanted_slots)
