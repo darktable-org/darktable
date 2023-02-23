@@ -630,7 +630,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   float *restrict tmp       = plane[HL_RGB_PLANES + 4];
 
   const gboolean do_recovery = (recovery_mode != DT_RECOVERY_MODE_OFF) && has_allclipped && (strength > 0.0f);
-  if(do_recovery || (vmode != DT_HIGHLIGHTS_MASK_OFF))
+  const gboolean do_masking = (vmode != DT_HIGHLIGHTS_MASK_OFF) && fullpipe;
+
+  if(do_recovery || do_masking)
   {
     dt_segments_transform_closing(&isegments[3], seg_border);
     dt_iop_image_fill(gradient, fminf(1.0f, 5.0f * strength), pwidth, pheight, 1);
@@ -714,7 +716,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clips, output, tmpout, roi_in, roi_out, xtrans, isegments, gradient) \
-  dt_omp_sharedconst(filters, pwidth, vmode, strength, fullpipe) \
+  dt_omp_sharedconst(filters, pwidth, vmode, strength, do_masking) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = 0; row < roi_out->height; row++)
@@ -728,9 +730,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
       if((inrow < roi_in->height) && (incol < roi_in->width))
       {
         output[odx] = tmpout[idx];
-        if((vmode != DT_HIGHLIGHTS_MASK_OFF) && fullpipe)
+        if(do_masking)
         {
-          output[odx] *= 0.1f;
+          output[odx] = 0.1f * fmaxf(0.0f, output[odx]);
           const gboolean inrefs = (inrow > 0) && (incol > 0) && (inrow < roi_in->height-1) && (incol < roi_in->width-1);
           if(inrefs)
           {
@@ -741,9 +743,12 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
             const gboolean goodseg = isegment && (isegments[color].val1[pid] != 0.0f);
             const int allid = _get_segment_id(&isegments[3], ppos);
             const gboolean allseg = ((allid > 1) && (allid < isegments[3].nr));
-            if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment)         output[odx] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.6f;
-            else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg) output[odx] = (ppos == isegments[color].ref[pid]) ? 1.0f : 0.6f;
-            else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)     output[odx] += strength * gradient[ppos];
+            if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment)
+              output[odx] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.6f;
+            else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg)
+              output[odx] = (ppos == isegments[color].ref[pid]) ? 1.0f : 0.6f;
+            else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)
+              output[odx] += strength * gradient[ppos];
           }
         }
       }
@@ -751,7 +756,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
   }
 
   dt_print(DT_DEBUG_PERF, "[segmentation report %12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed.\n",
-      dt_dev_pixelpipe_type_to_str(piece->pipe->type),     
+      dt_dev_pixelpipe_type_to_str(piece->pipe->type),
       (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr -2, isegments[1].nr-2, isegments[2].nr-2, isegments[3].nr-2,
       segmentation_limit-2);
 
