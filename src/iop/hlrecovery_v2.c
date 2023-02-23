@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2022 darktable developers.
+    Copyright (C) 2022-23 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -191,11 +191,17 @@ static void _calc_plane_candidates(const float *plane, const float *refavg, dt_i
   }
 }
 
-static inline float _calc_refavg(const float *in, const uint8_t(*const xtrans)[6], const uint32_t filters, const int row, const int col, const dt_iop_roi_t *const roi, const gboolean linear)
+static inline float _calc_refavg(const float *in,
+                                 const uint8_t(*const xtrans)[6],
+                                 const uint32_t filters,
+                                 const int row,
+                                 const int col,
+                                 const dt_iop_roi_t *const roi,
+                                 const gboolean linear)
 {
   const int color = (filters == 9u) ? FCxtrans(row, col, roi, xtrans) : FC(row, col, filters);
-  dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f };
-  dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t mean = { 0.0f, 0.0f, 0.0f, 0.0f };
+  dt_aligned_pixel_t cnt = { 0.0f, 0.0f, 0.0f, 0.0f };
   for(int dy = -1; dy < 2; dy++)
   {
     for(int dx = -1; dx < 2; dx++)
@@ -207,13 +213,17 @@ static inline float _calc_refavg(const float *in, const uint8_t(*const xtrans)[6
     }
   }
   for_each_channel(c)
-    mean[c] = powf(mean[c] / cnt[c], 1.0f / HL_POWERF);
+    mean[c] = (cnt[c] > 0.0f) ? powf(mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
 
   const dt_aligned_pixel_t croot_refavg = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
   return (linear) ? powf(croot_refavg[color], HL_POWERF) : croot_refavg[color];
 }
 
-static void _initial_gradients(const size_t w, const size_t height, float *luminance, float *distance, float *gradient)
+static void _initial_gradients(const size_t w,
+                               const size_t height,
+                               float *luminance,
+                               float *distance,
+                               float *gradient)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -243,7 +253,11 @@ static void _initial_gradients(const size_t w, const size_t height, float *lumin
   }
 }
 
-static float _segment_maxdistance(const int width, const int height, float *distance, dt_iop_segmentation_t *seg, const int id)
+static float _segment_maxdistance(const int width,
+                                  const int height,
+                                  float *distance,
+                                  dt_iop_segmentation_t *seg,
+                                  const int id)
 {
   const int xmin = MAX(seg->xmin[id]-2, HL_BORDER);
   const int xmax = MIN(seg->xmax[id]+3, width - HL_BORDER);
@@ -282,13 +296,26 @@ static float _segment_attenuation(dt_iop_segmentation_t *seg, const int id, cons
   }
 }
 
-static float _segment_correction(dt_iop_segmentation_t *seg, const int id, const int mode, const int seg_border)
+static float _segment_correction(dt_iop_segmentation_t *seg,
+                                 const int id,
+                                 const int mode,
+                                 const int seg_border)
 {
   const float correction = _segment_attenuation(seg, id, mode);
   return correction - 0.1f * (float)seg_border;
 }
 
-static void _calc_distance_ring(const int width, const int xmin, const int xmax, const int ymin, const int ymax, float *gradient, float *distance, const float attenuate, const float dist, dt_iop_segmentation_t *seg, const int id)
+static void _calc_distance_ring(const int width,
+                                const int xmin,
+                                const int xmax,
+                                const int ymin,
+                                const int ymax,
+                                float *gradient,
+                                float *distance,
+                                const float attenuate,
+                                const float dist,
+                                dt_iop_segmentation_t *seg,
+                                const int id)
 {
 #ifdef _OPENMP
   #pragma omp parallel for default(none) \
@@ -326,7 +353,15 @@ static void _calc_distance_ring(const int width, const int xmin, const int xmax,
   }
 }
 
-static void _segment_gradients(const int width, const int height, float *distance, float *gradient, float *tmp, const int mode, dt_iop_segmentation_t *seg, const int id, const int seg_border)
+static void _segment_gradients(const int width,
+                               const int height,
+                               float *distance,
+                               float *gradient,
+                               float *tmp,
+                               const int mode,
+                               dt_iop_segmentation_t *seg,
+                               const int id,
+                               const int seg_border)
 {
   const int xmin = MAX(seg->xmin[id]-1, HL_BORDER);
   const int xmax = MIN(seg->xmax[id]+2, width - HL_BORDER);
@@ -389,7 +424,12 @@ static void _segment_gradients(const int width, const int height, float *distanc
   }
 }
 
-static void _add_poisson_noise(const int width, const int height, float *lum, dt_iop_segmentation_t *seg, const int id, const float noise_level)
+static void _add_poisson_noise(const int width,
+                               const int height,
+                               float *lum,
+                               dt_iop_segmentation_t *seg,
+                               const int id,
+                               const float noise_level)
 {
   const int xmin = MAX(seg->xmin[id], HL_BORDER);
   const int xmax = MIN(seg->xmax[id]+1, width - HL_BORDER);
@@ -419,9 +459,14 @@ static inline size_t _raw_to_plane(const int width, const int row, const int col
   return (HL_BORDER + (row / 3)) * width + (col / 3) + HL_BORDER;
 }
 
-static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *const input, float *const output,
-                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         dt_iop_highlights_data_t *data, const int vmode, float *tmpout)
+static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece,
+                                  const float *const input,
+                                  float *const output,
+                                  const dt_iop_roi_t *const roi_in,
+                                  const dt_iop_roi_t *const roi_out,
+                                  dt_iop_highlights_data_t *data,
+                                  const int vmode,
+                                  float *tmpout)
 {
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const uint32_t filters = piece->pipe->dsc.filters;
@@ -493,12 +538,12 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
         }
 
         for_each_channel(c)
-          mean[c] = powf(mean[c] / cnt[c], 1.0f / HL_POWERF);
+          mean[c] = (cnt[c] > 0.0f) ? powf(mean[c] / cnt[c], 1.0f / HL_POWERF) : 0.0f;
         const dt_aligned_pixel_t cube_refavg = { 0.5f * (mean[1] + mean[2]), 0.5f * (mean[0] + mean[2]), 0.5f * (mean[0] + mean[1])};
 
         const size_t o = _raw_to_plane(pwidth, row, col);
         int allclipped = 0;
-        for(int c = 0; c < 3; c++)
+        for_three_channels(c)
         {
           plane[c][o] = mean[c];
           refavg[c][o] = cube_refavg[c];
@@ -585,7 +630,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
   float *restrict tmp       = plane[HL_RGB_PLANES + 4];
 
   const gboolean do_recovery = (recovery_mode != DT_RECOVERY_MODE_OFF) && has_allclipped && (strength > 0.0f);
-  if(do_recovery || (vmode != DT_HIGHLIGHTS_MASK_OFF))
+  const gboolean do_masking = (vmode != DT_HIGHLIGHTS_MASK_OFF) && fullpipe;
+
+  if(do_recovery || do_masking)
   {
     dt_segments_transform_closing(&isegments[3], seg_border);
     dt_iop_image_fill(gradient, fminf(1.0f, 5.0f * strength), pwidth, pheight, 1);
@@ -669,7 +716,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(clips, output, tmpout, roi_in, roi_out, xtrans, isegments, gradient) \
-  dt_omp_sharedconst(filters, pwidth, vmode, strength, fullpipe) \
+  dt_omp_sharedconst(filters, pwidth, vmode, strength, do_masking) \
   schedule(static) collapse(2)
 #endif
   for(size_t row = 0; row < roi_out->height; row++)
@@ -683,9 +730,9 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
       if((inrow < roi_in->height) && (incol < roi_in->width))
       {
         output[odx] = tmpout[idx];
-        if((vmode != DT_HIGHLIGHTS_MASK_OFF) && fullpipe)
+        if(do_masking)
         {
-          output[odx] *= 0.1f;
+          output[odx] = 0.1f * fmaxf(0.0f, output[odx]);
           const gboolean inrefs = (inrow > 0) && (incol > 0) && (inrow < roi_in->height-1) && (incol < roi_in->width-1);
           if(inrefs)
           {
@@ -696,9 +743,12 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
             const gboolean goodseg = isegment && (isegments[color].val1[pid] != 0.0f);
             const int allid = _get_segment_id(&isegments[3], ppos);
             const gboolean allseg = ((allid > 1) && (allid < isegments[3].nr));
-            if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment)         output[odx] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.6f;
-            else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg) output[odx] = (ppos == isegments[color].ref[pid]) ? 1.0f : 0.6f;
-            else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)     output[odx] += strength * gradient[ppos];
+            if((vmode == DT_HIGHLIGHTS_MASK_COMBINE) && isegment)
+              output[odx] = (isegments[color].data[ppos] & DT_SEG_ID_MASK) ? 1.0f : 0.6f;
+            else if((vmode == DT_HIGHLIGHTS_MASK_CANDIDATING) && goodseg)
+              output[odx] = (ppos == isegments[color].ref[pid]) ? 1.0f : 0.6f;
+            else if((vmode == DT_HIGHLIGHTS_MASK_STRENGTH) && allseg)
+              output[odx] += strength * gradient[ppos];
           }
         }
       }
@@ -706,7 +756,7 @@ static void _process_segmentation(dt_dev_pixelpipe_iop_t *piece, const float *co
   }
 
   dt_print(DT_DEBUG_PERF, "[segmentation report %12s] %5.1fMpix, segments: %3i red, %3i green, %3i blue, %3i all, %4i allowed.\n",
-      dt_dev_pixelpipe_type_to_str(piece->pipe->type),     
+      dt_dev_pixelpipe_type_to_str(piece->pipe->type),
       (float) (roi_in->width * roi_in->height) / 1.0e6f, isegments[0].nr -2, isegments[1].nr-2, isegments[2].nr-2, isegments[3].nr-2,
       segmentation_limit-2);
 
