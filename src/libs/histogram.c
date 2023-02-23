@@ -1287,7 +1287,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       // scale conservatively to 100% of width:
       pango_layout_set_text(layout, _("analogous complementary"), -1);
       pango_layout_get_pixel_extents(layout, NULL, &ink);
-      pango_font_description_set_absolute_size(desc, width * 0.9 / ink.width * PANGO_SCALE);
+      pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
       pango_layout_set_font_description(layout, desc);
 
       gchar *text = g_strdup_printf("%d°\n%s", d->harmony_rotation, _(hm.name));
