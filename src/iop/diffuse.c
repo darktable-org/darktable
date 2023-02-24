@@ -1059,17 +1059,30 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     return;
   }
 
+  uint8_t *const restrict mask = dt_alloc_align(64, sizeof(uint8_t) * width * height);
+
   float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
   float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
-  float *const restrict temp1 = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
-  float *const restrict temp2 = dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
+  float *restrict temp1, *restrict temp2;
+  // temp buffer for blurs. We will need to cycle between them for memory efficiency
+  float *restrict LF_odd, *restrict LF_even;
 
   float *restrict temp_in = NULL;
   float *restrict temp_out = NULL;
 
-  uint8_t *const restrict mask = dt_alloc_align(64, sizeof(uint8_t) * roi_out->width * roi_out->height);
-
+  if(!mask ||
+     !dt_iop_alloc_image_buffers(self, roi_in, roi_out,
+                                 4 | DT_IMGSZ_OUTPUT, &temp1,
+                                 4 | DT_IMGSZ_OUTPUT, &temp2,
+                                 4 | DT_IMGSZ_OUTPUT, &LF_odd,
+                                 4 | DT_IMGSZ_OUTPUT, &LF_even,
+                                 0, NULL))
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[diffuse] out of memory, skipping\n");
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    return;
+  }
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
 
@@ -1088,10 +1101,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     HF[s] = dt_alloc_align_float(width * height * 4);
     if(!HF[s]) out_of_memory = TRUE;
   }
-
-  // temp buffer for blurs. We will need to cycle between them for memory efficiency
-  float *const restrict LF_odd = dt_alloc_align_float(width * height * 4);
-  float *const restrict LF_even = dt_alloc_align_float(width * height * 4);
 
   // PAUSE !
   // check that all buffers exist before processing,
