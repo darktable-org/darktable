@@ -271,8 +271,10 @@ static void _color_picker_work_1ch(const float *const pixel,
     pick[DT_PICK_MEAN][c] = weights[c] ? (acc[c] / (float)weights[c]) : 0.0f;
 }
 
-void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
-                            const dt_iop_roi_t *roi, const int *const box,
+void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc,
+                            const float *const pixel,
+                            const dt_iop_roi_t *roi,
+                            const int *const box,
                             const gboolean denoise,
                             lib_colorpicker_stats pick,
                             const dt_iop_colorspace_type_t image_cst,
@@ -291,13 +293,20 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
       // Denoise the image
       size_t padded_size;
       denoised = dt_alloc_align_float(4 * roi->width * roi->height);
-      float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * roi->width, &padded_size); //TODO: alloc in caller
+      if(denoised)
+      {
+        float *const tempbuf = dt_alloc_perthread_float(4 * roi->width, &padded_size); //TODO: alloc in caller
 
-      // blur without clipping negatives because Lab a and b channels can be legitimately negative
-      // FIXME: this blurs whole image even when just a bit is sampled in the case of CPU path
-      blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
-      dt_free_align(tempbuf);
-      source = denoised;
+        // blur without clipping negatives because Lab a and b channels can be
+        // legitimately negative
+        // FIXME: this blurs whole image even when just a bit is sampled in the
+        // case of CPU path
+        blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
+        dt_free_align(tempbuf);
+        source = denoised;
+      }
+      else
+        dt_print(DT_DEBUG_ALWAYS,"[color picker] unable to alloc working memory, denoising skipped\n");
     }
 
     // 4-channel raw images are monochrome, can be read as RGB
