@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2020 darktable developers.
+    Copyright (C) 2012-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "common/imagebuf.h"
 #include "common/locallaplacian.h"
 #include "common/locallaplaciancl.h"
 #include "develop/imageop.h"
@@ -315,10 +316,18 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   if(d->mode == s_mode_bilateral)
   {
     dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
-    dt_bilateral_splat(b, (float *)i);
-    dt_bilateral_blur(b);
-    dt_bilateral_slice(b, (float *)i, (float *)o, d->detail);
-    dt_bilateral_free(b);
+    if (b)
+    {
+      dt_bilateral_splat(b, (float *)i);
+      dt_bilateral_blur(b);
+      dt_bilateral_slice(b, (float *)i, (float *)o, d->detail);
+      dt_bilateral_free(b);
+    }
+    else
+    {
+      // dt_bilateral_init will have spit out an error message.  Now just copy the input to output
+      dt_iop_image_copy_by_size(o, i, roi_out->width, roi_out->height, piece->colors);
+    }
   }
   else // s_mode_local_laplacian
   {
@@ -345,10 +354,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(d->mode == s_mode_bilateral)
   {
     dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
-    dt_bilateral_splat(b, (float *)i);
-    dt_bilateral_blur(b);
-    dt_bilateral_slice(b, (float *)i, (float *)o, d->detail);
-    dt_bilateral_free(b);
+    if (b)
+    {
+      dt_bilateral_splat(b, (float *)i);
+      dt_bilateral_blur(b);
+      dt_bilateral_slice(b, (float *)i, (float *)o, d->detail);
+      dt_bilateral_free(b);
+    }
+    else
+    {
+      // dt_bilateral_init will have spit out an error message.  Now just copy the input to output
+      dt_iop_image_copy_by_size(o, i, roi_out->width, roi_out->height, piece->colors);
+    }
   }
   else // s_mode_local_laplacian
   {
