@@ -21,6 +21,7 @@
 #endif
 #include "control/conf.h"
 #include "control/control.h"
+#include "common/imagebuf.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
@@ -483,8 +484,9 @@ void modify_roi_in(struct dt_iop_module_t *self,
   const float scheight = piece->buf_in.height * roi_in->scale;
   roi_in->x = CLAMP(roix, 0, scwidth - 1);
   roi_in->y = CLAMP(roiy, 0, scheight - 1);
-  roi_in->width = CLAMP(roir - roi_in->x, 1, scwidth + .5f - roi_in->x);
-  roi_in->height = CLAMP(roib - roi_in->y, 1, scheight + .5f - roi_in->y);
+  // we want to stay in the range of available data
+  roi_in->width = CLAMP(roir - roi_in->x, 1, scwidth - roi_in->x);
+  roi_in->height = CLAMP(roib - roi_in->y, 1, scheight - roi_in->y);
 }
 
 static void masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece,
@@ -569,19 +571,7 @@ void _process(struct dt_iop_module_t *self,
   dt_develop_blend_params_t *bp = self->blend_params;
 
 // we don't modify most of the image:
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, in, out, roi_in, roi_out) \
-  schedule(static)
-#endif
-  for(int k = 0; k < roi_out->height; k++)
-  {
-    float *outb = out + (size_t)ch * k * roi_out->width;
-    const float *inb = in
-                       + (size_t)ch * roi_in->width * (k + roi_out->y - roi_in->y)
-                       + ch * (roi_out->x - roi_in->x);
-    memcpy(outb, inb, sizeof(float) * roi_out->width * ch);
-  }
+  dt_iop_copy_image_roi(out, in, ch, roi_in, roi_out, 0);
 
   // iterate through all forms
   dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);

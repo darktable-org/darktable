@@ -173,9 +173,9 @@ void dt_iop_image_copy(float *const __restrict__ out, const float *const __restr
   memcpy(out, in, nfloats * sizeof(float));
 }
 
-// Copy an image buffer, specifying the regions of interest.  The output RoI may be larger than the input RoI,
-// in which case the result is optionally padded with zeros.  If the output RoI is smaller than the input RoI,
-// only a portion of the input buffer will be copied.
+// Copy an image buffer, specifying the regions of interest.
+// The output RoI may be larger than the input RoI, in which case the result is optionally padded with zeros.
+// If the output RoI is smaller than the input RoI, only a portion of the input buffer will be copied.
 void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __restrict__ in, const size_t ch,
                            const dt_iop_roi_t *const __restrict__ roi_in,
                            const dt_iop_roi_t *const __restrict__ roi_out, const int zero_pad)
@@ -193,9 +193,21 @@ void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __r
   }
   else if(roi_in->width >= roi_out->width && roi_in->height >= roi_out->height)
   {
-    // copy only a portion of the input
-    fprintf(stderr,"copy_image_roi with smaller output not yet implemented\n");
-    //TODO
+    const size_t dy = roi_out->y - roi_in->y;
+    const size_t dx = ch * roi_out->x - roi_in->x;
+    const size_t lwidth = sizeof(float) * roi_out->width * ch;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out, roi_in, roi_out) \
+  dt_omp_sharedconst(dx, dy, lwidth) \
+  schedule(static)
+#endif
+    for(size_t row = 0; row < roi_out->height; row++)
+    {
+      float *o = out + ch * row * roi_out->width;
+      const float *i = in + ch * roi_in->width * (row + dy) + dx;
+      memcpy(o, i, lwidth);
+    }
   }
   else
   {
