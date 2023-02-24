@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1198,12 +1198,21 @@ static inline void gauss_reduce(
   const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
   float *blurred = dt_alloc_align_float((size_t)4 * wd * ht);
-  gauss_blur(input, blurred, wd, ht);
+  if(blurred)
+  {
+    gauss_blur(input, blurred, wd, ht);
+  }
+  else
+  {
+    blurred = (float*)input;
+    dt_print(DT_DEBUG_ALWAYS,"[basecurve] gauss_reduce out of memory, skipping blurring\n");
+  }
   for(size_t j=0;j<ch;j++)
     for(size_t i=0;i<cw;i++)
       for_four_channels(c)
         coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
-  dt_free_align(blurred);
+  if(blurred != input)
+    dt_free_align(blurred);
 
   if(detail)
   {
@@ -1215,19 +1224,24 @@ static inline void gauss_reduce(
   }
 }
 
-void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                    void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_fusion(struct dt_iop_module_t *self,
+                    dt_dev_pixelpipe_iop_t *piece,
+                    const void *const ivoid,
+                    void *const ovoid,
+                    const dt_iop_roi_t *const roi_in,
+                    const dt_iop_roi_t *const roi_out)
 {
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
+  const dt_iop_order_iccprofile_info_t *const work_profile
+    = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   // allocate temporary buffer for wavelet transform + blending
   const int wd = roi_in->width, ht = roi_in->height;
   int num_levels = 8;
-  float **col = malloc(sizeof(float *) * num_levels);
-  float **comb = malloc(sizeof(float *) * num_levels);
+  float **col = calloc(sizeof(float *),num_levels);
+  float **comb = calloc(sizeof(float *),num_levels);
   int w = wd, h = ht;
   const int rad = MIN(wd, (int)ceilf(256 * roi_in->scale / piece->iscale));
   int step = 1;
@@ -1236,6 +1250,12 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     // coarsest step is some % of image width.
     col[k]  = dt_alloc_align_float((size_t)4 * w * h);
     comb[k] = dt_alloc_align_float((size_t)4 * w * h);
+    if(!col[k] || !comb[k])
+    {
+      dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+      dt_print(DT_DEBUG_ALWAYS,"[basecurve] process_fusion out of memory, skipping\n");
+      goto cleanup;
+    }
     dt_iop_image_fill(comb[k],  0.0f, w, h, 4);
     w = (w - 1) / 2 + 1;
     h = (h - 1) / 2 + 1;
@@ -1387,6 +1407,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
 
   // free temp buffers
+cleanup:
   for(int k = 0; k < num_levels; k++)
   {
     dt_free_align(col[k]);
