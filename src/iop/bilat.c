@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -116,14 +117,18 @@ int default_group()
   return IOP_GROUP_TONE | IOP_GROUP_EFFECTS;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+int default_colorspace(dt_iop_module_t *self,
+                       dt_dev_pixelpipe_t *pipe,
+                       dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_LAB;
 }
 
-int legacy_params(
-    dt_iop_module_t *self, const void *const old_params, const int old_version,
-    void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self,
+                  const void *const old_params,
+                  const int old_version,
+                  void *new_params,
+                  const int new_version)
 {
   if(old_version == 2 && new_version == 3)
   {
@@ -176,8 +181,12 @@ void init_presets(dt_iop_module_so_t *self)
 
 
 #ifdef HAVE_OPENCL
-int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+int process_cl(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_iop_t *piece,
+               cl_mem dev_in,
+               cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in,
+               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
 
@@ -191,7 +200,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     cl_int err = -666;
 
     dt_bilateral_cl_t *b
-      = dt_bilateral_init_cl(piece->pipe->devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
+      = dt_bilateral_init_cl(piece->pipe->devid, roi_in->width, roi_in->height,
+                             sigma_s, sigma_r);
     if(!b) goto error;
     err = dt_bilateral_splat_cl(b, dev_in);
     if(err != CL_SUCCESS) goto error;
@@ -203,12 +213,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return TRUE;
 error:
     dt_bilateral_free_cl(b);
-    dt_print(DT_DEBUG_OPENCL, "[opencl_bilateral] couldn't enqueue kernel! %s\n", cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_bilateral] couldn't enqueue kernel! %s\n", cl_errstr(err));
     return FALSE;
   }
   else // mode == s_mode_local_laplacian
   {
-    dt_local_laplacian_cl_t *b = dt_local_laplacian_init_cl(piece->pipe->devid, roi_in->width, roi_in->height,
+    dt_local_laplacian_cl_t *b =
+      dt_local_laplacian_init_cl(piece->pipe->devid, roi_in->width, roi_in->height,
         d->midtone, d->sigma_s, d->sigma_r, d->detail);
     if(!b) goto error_ll;
     if(dt_local_laplacian_cl(b, dev_in, dev_out) != CL_SUCCESS) goto error_ll;
@@ -222,8 +234,10 @@ error_ll:
 #endif
 
 
-void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+void tiling_callback(struct dt_iop_module_t *self,
+                     struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in,
+                     const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
@@ -270,7 +284,9 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+void commit_params(struct dt_iop_module_t *self,
+                   dt_iop_params_t *p1,
+                   dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)p1;
@@ -279,20 +295,25 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 #ifdef HAVE_OPENCL
   if(d->mode == s_mode_bilateral)
-    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
+    piece->process_cl_ready =
+      (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
 #endif
   if(d->mode == s_mode_local_laplacian)
     piece->process_tiling_ready = 0; // can't deal with tiles, sorry.
 }
 
 
-void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self,
+               dt_dev_pixelpipe_t *pipe,
+               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_bilat_data_t));
 }
 
 
-void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self,
+                  dt_dev_pixelpipe_t *pipe,
+                  dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -300,8 +321,11 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 
 #if defined(__SSE2__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(struct dt_iop_module_t *self,
+                  dt_dev_pixelpipe_iop_t *piece,
+                  const void *const i, void *const o,
+                  const dt_iop_roi_t *const roi_in,
+                  const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -316,7 +340,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   if(d->mode == s_mode_bilateral)
   {
     dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
-    if (b)
+    if(b)
     {
       dt_bilateral_splat(b, (float *)i);
       dt_bilateral_blur(b);
@@ -331,15 +355,20 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
   else // s_mode_local_laplacian
   {
-    local_laplacian_sse2(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail, 0);
+    local_laplacian_sse2(i, o, roi_in->width, roi_in->height,
+                         d->midtone, d->sigma_s, d->sigma_r, d->detail, 0);
   }
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self,
+             dt_dev_pixelpipe_iop_t *piece,
+             const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in,
+             const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -354,7 +383,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(d->mode == s_mode_bilateral)
   {
     dt_bilateral_t *b = dt_bilateral_init(roi_in->width, roi_in->height, sigma_s, sigma_r);
-    if (b)
+    if(b)
     {
       dt_bilateral_splat(b, (float *)i);
       dt_bilateral_blur(b);
@@ -369,10 +398,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else // s_mode_local_laplacian
   {
-    local_laplacian(i, o, roi_in->width, roi_in->height, d->midtone, d->sigma_s, d->sigma_r, d->detail, 0);
+    local_laplacian(i, o, roi_in->width, roi_in->height,
+                    d->midtone, d->sigma_s, d->sigma_r, d->detail, 0);
   }
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(i, o, roi_in->width, roi_in->height);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -442,7 +473,11 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_bilat_gui_data_t *g = IOP_GUI_ALLOC(bilat);
 
   g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
-  gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
+  gtk_widget_set_tooltip_text
+    (g->mode,
+     _("the filter used for local contrast enhancement."
+       " bilateral is faster but can lead to artifacts around"
+       " edges for extreme settings."));
 
   g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));
   dt_bauhaus_slider_set_offset(g->detail, 100);
@@ -460,27 +495,37 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_default(g->spatial, 50.0);
   dt_bauhaus_slider_set_digits(g->spatial, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, N_("coarseness"));
-  gtk_widget_set_tooltip_text(g->spatial, _("feature size of local details (spatial sigma of bilateral filter)"));
+  gtk_widget_set_tooltip_text
+    (g->spatial,
+     _("feature size of local details (spatial sigma of bilateral filter)"));
 
   dt_bauhaus_slider_set_hard_min(g->range, 1.0);
   dt_bauhaus_slider_set_default(g->range, 20.0);
   dt_bauhaus_slider_set_digits(g->range, 0);
   dt_bauhaus_widget_set_label(g->range, NULL, N_("contrast"));
-  gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
+  gtk_widget_set_tooltip_text
+    (g->range,
+     _("L difference to detect edges (range sigma of bilateral filter)"));
 
   dt_bauhaus_widget_set_label(g->highlights, NULL, N_("highlights"));
   dt_bauhaus_slider_set_hard_max(g->highlights, 2.0);
   dt_bauhaus_slider_set_format(g->highlights, "%");
-  gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
+  gtk_widget_set_tooltip_text(g->highlights,
+                              _("changes the local contrast of highlights"));
 
   dt_bauhaus_widget_set_label(g->shadows, NULL, N_("shadows"));
   dt_bauhaus_slider_set_hard_max(g->shadows, 2.0);
   dt_bauhaus_slider_set_format(g->shadows, "%");
-  gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
+  gtk_widget_set_tooltip_text(g->shadows,
+                              _("changes the local contrast of shadows"));
 
   g->midtone = dt_bauhaus_slider_from_params(self, "midtone");
   dt_bauhaus_slider_set_digits(g->midtone, 3);
-  gtk_widget_set_tooltip_text(g->midtone, _("defines what counts as mid-tones. lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
+  gtk_widget_set_tooltip_text
+    (g->midtone,
+     _("defines what counts as mid-tones. lower for better dynamic range compression"
+       " (reduce shadow and highlight contrast),"
+       " increase for more powerful local contrast"));
 
   // work around multi-instance issue which calls show all a fair bit:
   g_object_set(G_OBJECT(g->highlights), "no-show-all", TRUE, NULL);
@@ -496,4 +541,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
