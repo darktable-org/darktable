@@ -266,6 +266,12 @@ void process(
   float *Gtmp = NULL;
 
   float *out = dt_alloc_align_float(roi_in->width * roi_in->height);
+  if(!out)
+  {
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, 0);
+    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+    return;
+  }
   dt_iop_image_copy(out, input, roi_in->width * roi_in->height);
 
   if(run_fast) goto writeout;
@@ -297,7 +303,11 @@ void process(
     redfactor = dt_calloc_align_float(buffsize);
     bluefactor = dt_calloc_align_float(buffsize);
     oldraw = dt_calloc_align_float(buffsize * 2);
-
+    if(!redfactor || !bluefactor || !oldraw)
+    {
+      dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+      goto writeout;
+    }
     // copy raw values before ca correction
 #ifdef _OPENMP
         #pragma omp parallel for
@@ -319,6 +329,11 @@ void process(
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
   RawDataTmp = dt_alloc_align_float(height * width / 2 + 4);
 
+  if(!Gtmp || !RawDataTmp)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[cacorrect] out of memory, skipping\n");
+    goto writeout;
+  }
   const int border = 8;
   const int border2 = 16;
 
