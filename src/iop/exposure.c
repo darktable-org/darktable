@@ -1102,10 +1102,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode_stack), TRUE, TRUE, 0);
 
   g->black = dt_bauhaus_slider_from_params(self, "black");
-  gtk_widget_set_tooltip_text(g->black, _("adjust the black level to unclip negative RGB values.\n"
-                                          "you should never use it to add more density in blacks!\n"
-                                          "if poorly set, it will clip near-black colors out of gamut\n"
-                                          "by pushing RGB values into negatives."));
+  gtk_widget_set_tooltip_text
+    (g->black,
+     _("adjust the black level to unclip negative RGB values.\n"
+       "you should never use it to add more density in blacks!\n"
+       "if poorly set, it will clip near-black colors out of gamut\n"
+       "by pushing RGB values into negatives."));
   dt_bauhaus_slider_set_digits(g->black, 4);
   dt_bauhaus_slider_set_soft_range(g->black, -0.1, 0.1);
 
