@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2017-2020 darktable developers.
+    Copyright (C) 2017-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -151,8 +151,13 @@ static void dwt_decompose_vert(float *const restrict out, const float *const res
 
 // second, horizontal pass of wavelet decomposition; generates 'coarse' into the output buffer and overwrites
 //   the input buffer with 'details'
-static void dwt_decompose_horiz(float *const restrict out, float *const restrict in, float *const temp,
-                                const size_t height, const size_t width, const size_t lev)
+static void dwt_decompose_horiz(
+    float *const restrict out,
+    float *const restrict in,
+    float *const temp,
+    const size_t height,
+    const size_t width,
+    const size_t lev)
 {
   const int hscale = MIN(1 << lev, width);  //(int because we need a signed difference below)
 #ifdef _OPENMP
@@ -211,8 +216,12 @@ static void dwt_decompose_horiz(float *const restrict out, float *const restrict
 }
 
 // split input into 'coarse' and 'details'; put 'details' back into the input buffer
-static void dwt_decompose_layer(float *const restrict out, float *const restrict in, float *const temp, const int lev,
-                                const dwt_params_t *const p)
+static void dwt_decompose_layer(
+    float *const restrict out,
+    float *const restrict in,
+    float *const temp,
+    const int lev,
+    const dwt_params_t *const p)
 {
   dwt_decompose_vert(out, in, p->height, p->width, lev);
   dwt_decompose_horiz(out, in, temp, p->height, p->width, lev);
@@ -220,50 +229,43 @@ static void dwt_decompose_layer(float *const restrict out, float *const restrict
 }
 
 /* actual decomposing algorithm */
-static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_func layer_func)
+static void dwt_wavelet_decompose(float *img,
+                                  dwt_params_t *const p,
+                                  _dwt_layer_func layer_func)
 {
-  float *temp = NULL;
-  float *layers = NULL;
+  assert(p->ch == 4);
+
+  float *temp = NULL;		// scratch buffer for decomposition
+  float *layers = NULL;		// buffer to reconstruct the image
   float *merged_layers = NULL;
   float *buffer[2] = { 0, 0 };
-  int bcontinue = 1;
-  const size_t size = (size_t)p->width * p->height * p->ch;
-
-  assert(p->ch == 4);
 
   if(layer_func) layer_func(img, p, 0);
 
-  if(p->scales <= 0) goto cleanup;
+  if(p->scales <= 0)
+    return;
 
   /* image buffers */
   buffer[0] = img;
-  /* temporary storage */
-  buffer[1] = dt_alloc_align_float(size);
-  // buffer to reconstruct the image
-  layers = dt_alloc_align_float((size_t)4 * p->width * p->height);
-  // scratch buffer for decomposition
-  temp = dt_alloc_align_float(dt_get_num_threads() * 4 * p->width);
 
-  if(buffer[1] == NULL || layers == NULL || temp == NULL)
+  /* allocate temporary storage */
+  dt_iop_roi_t roi = { .x = 0, .y = 0, .height = p->height, .width = p->width };
+  const int do_merge = p->merge_from_scale > 0;
+  if (!dt_iop_alloc_image_buffers(NULL, &roi, &roi,
+                                  4 | DT_IMGSZ_INPUT, &buffer[1],
+                                  4 | DT_IMGSZ_INPUT | DT_IMGSZ_CLEARBUF, &layers,
+                                  4 | DT_IMGSZ_WIDTH | DT_IMGSZ_PERTHREAD, &temp,
+                                  do_merge ? 4 | DT_IMGSZ_INPUT | DT_IMGSZ_CLEARBUF : 0, &merged_layers,
+                                  0, NULL))
   {
-    printf("not enough memory for wavelet decomposition");
-    goto cleanup;
-  }
-  dt_iop_image_fill(layers,0.0f,p->width,p->height,p->ch);
-
-  if(p->merge_from_scale > 0)
-  {
-    merged_layers = dt_alloc_align_float((size_t)p->width * p->height * p->ch);
-    if(merged_layers == NULL)
-    {
-      printf("not enough memory for wavelet decomposition");
-      goto cleanup;
-    }
-    dt_iop_image_fill(merged_layers,0.0f,p->width,p->height,p->ch);
+    dt_print(DT_DEBUG_ALWAYS,
+             "[dwt] unable to alloc working memory, skipping wavelet decomposition\n");
+    return;
   }
 
   // iterate over wavelet scales
   unsigned int hpass = 0;
+  int bcontinue = 1;
   for(unsigned int lev = 0; lev < p->scales && bcontinue; lev++)
   {
     unsigned int lpass = (1 - (lev & 1));
@@ -346,11 +348,11 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
     }
   }
 
-cleanup:
-  if(temp) dt_free_align(temp);
-  if(layers) dt_free_align(layers);
-  if(merged_layers) dt_free_align(merged_layers);
-  if(buffer[1]) dt_free_align(buffer[1]);
+  dt_free_align(temp);
+  dt_free_align(layers);
+  dt_free_align(buffer[1]);
+  if(merged_layers)
+    dt_free_align(merged_layers);
 }
 
 /* this function prepares for decomposing, which is done in the function dwt_wavelet_decompose() */
