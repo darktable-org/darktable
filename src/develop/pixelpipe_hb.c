@@ -2590,15 +2590,22 @@ float *dt_dev_get_raster_mask(
             {
               float *transformed_mask = dt_alloc_align_float((size_t)module->processed_roi_out.width
                                                               * module->processed_roi_out.height);
-              module->module->distort_mask(module->module,
-                                          module,
-                                          raster_mask,
-                                          transformed_mask,
-                                          &module->processed_roi_in,
-                                          &module->processed_roi_out);
-              if(*free_mask) dt_free_align(raster_mask);
-              *free_mask = TRUE;
-              raster_mask = transformed_mask;
+              if(transformed_mask)
+              {
+                module->module->distort_mask(module->module,
+                                             module,
+                                             raster_mask,
+                                             transformed_mask,
+                                             &module->processed_roi_in,
+                                             &module->processed_roi_out);
+                if(*free_mask) dt_free_align(raster_mask);
+                *free_mask = TRUE;
+                raster_mask = transformed_mask;
+              }
+              else
+              {
+                dt_print(DT_DEBUG_ALWAYS,"skipped transforming mask due to lack of memory\n");
+              }
             }
             else if(!module->module->distort_mask &&
                     (module->processed_roi_in.width != module->processed_roi_out.width ||
