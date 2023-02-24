@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2016-2021 darktable developers.
+    Copyright (C) 2016-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -569,13 +569,41 @@ void local_laplacian_internal(
     padded[0] = ll_pad_input(input, wd, ht, max_supp, &w, &h, 0);
 
   // allocate pyramid pointers for padded input
+  gboolean success = TRUE;
   for(int l=1;l<=last_level;l++)
+  {
     padded[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
+    if (!padded[l])
+    {
+      success = FALSE;
+      break;
+    }
+  }
 
   // allocate pyramid pointers for output
   float *output[max_levels] = {0};
   for(int l=0;l<=last_level;l++)
+  {
     output[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
+    if (!output[l])
+    {
+      success = FALSE;
+      break;
+    }
+  }
+
+  if(!success)
+  {
+    // we can't jump to cleanup from here because it would reference a
+    // variable which hasn't been initialized yet because it is
+    // declared below.  So just free whatever we've allocated and return.
+    for(int l = 0; l <= last_level; l++)
+    {
+      dt_free_align(padded[l]);
+      dt_free_align(output[l]);
+    }
+    return;
+  }
 
   // create gauss pyramid of padded input, write coarse directly to output
 #if defined(__SSE2__)
@@ -600,9 +628,14 @@ void local_laplacian_internal(
 
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
-  for(int k=0;k<num_gamma;k++) for(int l=0;l<=last_level;l++)
-    buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
-
+  for(int k=0;k<num_gamma;k++)
+    for(int l=0;l<=last_level;l++)
+    {
+      buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
+      if(!buf[k][l])
+        goto cleanup;
+    }
+  
   // the paper says remapping only level 3 not 0 does the trick, too
   // (but i really like the additional octave of sharpness we get,
   // willing to pay the cost).
@@ -738,6 +771,7 @@ void local_laplacian_internal(
     for(int l=0;l<num_levels;l++) b->output[l] = output[l];
   }
   // free all buffers except the ones passed out for preview rendering
+cleanup:
   for(int l=0;l<max_levels;l++)
   {
     if(!b || b->mode != 1 || l)   dt_free_align(padded[l]);
