@@ -860,12 +860,6 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
 
        const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
 
-      // restore saved 1st character of instance name (without it the
-      // same name wouls still produce unnecessary copy + add history
-      // item)
-      module->multi_name[0] = module->multi_name[sizeof(module->multi_name) - 1];
-      module->multi_name[sizeof(module->multi_name) - 1] = 0;
-
       if(g_strcmp0(module->multi_name, name) != 0)
       {
         g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
@@ -892,16 +886,16 @@ static gboolean _rename_module_key_press(GtkWidget *entry,
   }
   else if(event->keyval == GDK_KEY_Escape)
   {
-    // restore saved 1st character of instance name
-    module->multi_name[0] = module->multi_name[sizeof(module->multi_name) - 1];
-    module->multi_name[sizeof(module->multi_name) - 1] = 0;
-
     ended = 1;
   }
 
   if(ended)
   {
-    g_signal_handlers_disconnect_by_func(entry, G_CALLBACK(_rename_module_key_press), module);
+    gtk_widget_show(module->instance_name);
+
+    g_signal_handlers_disconnect_by_func(entry,
+                                         G_CALLBACK(_rename_module_key_press),
+                                         module);
     gtk_widget_destroy(entry);
     dt_iop_show_hide_header_buttons(module, NULL, TRUE, FALSE); // after removing entry
     dt_iop_gui_update_header(module);
@@ -940,10 +934,8 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module)
   gtk_entry_set_max_length(GTK_ENTRY(entry), sizeof(module->multi_name) - 1);
   gtk_entry_set_text(GTK_ENTRY(entry), module->multi_name);
 
-  // remove instance name but save 1st character in case of escape
-  module->multi_name[sizeof(module->multi_name) - 1] = module->multi_name[0];
-  module->multi_name[0] = 0;
-  dt_iop_gui_update_header(module);
+  //  hide module instance name as we need the space for the entry
+  gtk_widget_hide(module->instance_name);
 
   gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
   g_signal_connect(entry, "key-press-event", G_CALLBACK(_rename_module_key_press), module);
@@ -1083,7 +1075,7 @@ static void _gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
   char tooltip[512];
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip),
-           module->enabled ? _("%s is switched on") : _("%s is switched off"),
+           module->enabled ? _("'%s' is switched on") : _("'%s' is switched off"),
            module_label);
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(togglebutton), tooltip);
@@ -1129,31 +1121,60 @@ static void _iop_panel_name(dt_iop_module_t *module)
 {
   // IOP instance name if any
 
+  // do not mess with panel name if we are not on the top of the history
+  if(darktable.develop->history_end < g_list_length(darktable.develop->history))
+    return;
+
   GtkLabel *iname = GTK_LABEL(module->instance_name);
+  gchar *new_label = NULL;
+  gchar *multi_name = NULL;
+  gboolean changed = FALSE;
 
   if(module->has_trouble && module->enabled)
   {
-    gtk_label_set_text(iname, "⚠");
+    new_label = g_strdup("⚠");
+    multi_name = g_strdup("⚠");
     gtk_widget_set_name(GTK_WIDGET(iname), "iop-module-name-error");
   }
   else
   {
     if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
     {
-      gtk_label_set_text(iname, "");
+      new_label = g_strdup("");
+      multi_name = g_strdup("");
       gtk_widget_set_name(GTK_WIDGET(iname), "");
     }
     else
     {
-      gchar *name = g_strdup_printf("• %s", module->multi_name);
-      gtk_label_set_text(iname, name);
-      g_free(name);
+      new_label = g_strdup_printf("• %s", module->multi_name);
+      multi_name = g_strdup(module->multi_name);
       gtk_widget_set_name(GTK_WIDGET(iname), "iop-module-name");
     }
   }
 
-  gtk_label_set_ellipsize(iname, PANGO_ELLIPSIZE_MIDDLE);
-  g_object_set(G_OBJECT(iname), "xalign", 0.0, (gchar *)0);
+  gtk_label_set_text(iname, new_label);
+
+  // update corresponding history (last entry with same multi_priority)
+
+  for(const GList *history = g_list_last(darktable.develop->history);
+      history;
+      history = g_list_previous(history))
+  {
+    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+    if(hitem->module == module
+       && hitem->module->multi_priority == module->multi_priority)
+    {
+      changed = strcmp(hitem->multi_name, multi_name);
+      g_strlcpy(hitem->multi_name, multi_name, sizeof(hitem->multi_name));
+      break;
+    }
+  }
+
+  g_free(multi_name);
+  g_free(new_label);
+
+  if(changed)
+    dt_dev_add_history_item(darktable.develop, module, FALSE);
 }
 
 void dt_iop_gui_update_header(dt_iop_module_t *module)
@@ -2759,7 +2780,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
 
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip),
-           module->enabled ? _("%s is switched on") : _("%s is switched off"),
+           module->enabled ? _("'%s' is switched on") : _("'%s' is switched off"),
            module_label);
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), tooltip);

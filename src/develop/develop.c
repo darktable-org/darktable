@@ -32,6 +32,7 @@
 #include "common/mipmap_cache.h"
 #include "common/opencl.h"
 #include "common/tags.h"
+#include "common/presets.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -1462,16 +1463,28 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
 {
   sqlite3_stmt *stmt;
 
+  // we make sure that the multi-name is updated if possible with the
+  // actual preset name if any is defined for the default parameters.
+
+  char *preset_name = dt_presets_get_name
+    (module->op,
+     module->default_params, module->params_size, TRUE,
+     module->blend_params, sizeof(dt_develop_blend_params_t));
+
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
-    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '', 0)",
+    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, ?5, 0)",
     -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->op, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->default_params, module->params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->default_params, module->params_size,
+                             SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, preset_name ? preset_name : "", -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  g_free(preset_name);
 
   dt_print(DT_DEBUG_PARAMS, "[dev_insert_module] `%s' inserted to history\n", module->op);
 }
@@ -2438,15 +2451,6 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev,
   *zoom_y = zoom2_y;
 }
 
-void dt_dev_get_history_item_label(dt_dev_history_item_t *hist,
-                                   char *label,
-                                   const int cnt)
-{
-  gchar *module_label = dt_history_item_get_name(hist->module);
-  g_snprintf(label, cnt, "%s (%s)", module_label, hist->enabled ? _("on") : _("off"));
-  g_free(module_label);
-}
-
 int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid)
 {
   return (dev->image_storage.id == imgid) ? 1 : 0;
@@ -2826,7 +2830,7 @@ gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
     label = g_strdup(module->name());
   else
-    label = g_strdup_printf("%s %s", module->name(), module->multi_name);
+    label = g_strdup_printf("%s • %s", module->name(), module->multi_name);
   return label;
 }
 
