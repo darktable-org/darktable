@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-24 21:48+0100\n"
+"POT-Creation-Date: 2023-02-24 22:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3041,7 +3041,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:1972 ../src/iop/channelmixer.c:618
 #: ../src/iop/channelmixerrgb.c:4305 ../src/iop/colorchecker.c:1349
 #: ../src/iop/colorize.c:349 ../src/iop/colorzones.c:2401
-#: ../src/iop/exposure.c:1165
+#: ../src/iop/exposure.c:1175
 msgid "lightness"
 msgstr ""
 
@@ -12480,7 +12480,7 @@ msgstr ""
 msgid "mapping"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4249 ../src/iop/exposure.c:1120
+#: ../src/iop/channelmixerrgb.c:4249 ../src/iop/exposure.c:1130
 msgid "spot mode"
 msgstr ""
 
@@ -12492,11 +12492,11 @@ msgid ""
 "and can be used to sample a target."
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4255 ../src/iop/exposure.c:1126
+#: ../src/iop/channelmixerrgb.c:4255 ../src/iop/exposure.c:1136
 msgid "correction"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4256 ../src/iop/exposure.c:1127
+#: ../src/iop/channelmixerrgb.c:4256 ../src/iop/exposure.c:1137
 msgid "measure"
 msgstr ""
 
@@ -12510,12 +12510,12 @@ msgid ""
 "if disabled, only the CAT is considered."
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4273 ../src/iop/exposure.c:1133
+#: ../src/iop/channelmixerrgb.c:4273 ../src/iop/exposure.c:1143
 msgctxt "section"
 msgid "input"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4279 ../src/iop/exposure.c:1139
+#: ../src/iop/channelmixerrgb.c:4279 ../src/iop/exposure.c:1149
 msgid "the input color that should be mapped to the target"
 msgstr ""
 
@@ -12526,11 +12526,11 @@ msgid ""
 "c: \tN/A"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4286 ../src/iop/exposure.c:1146
+#: ../src/iop/channelmixerrgb.c:4286 ../src/iop/exposure.c:1156
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4293 ../src/iop/exposure.c:1153
+#: ../src/iop/channelmixerrgb.c:4293 ../src/iop/exposure.c:1163
 msgctxt "section"
 msgid "target"
 msgstr ""
@@ -14682,7 +14682,7 @@ msgstr ""
 msgid "what exposure correction has actually been used"
 msgstr ""
 
-#: ../src/iop/exposure.c:1105
+#: ../src/iop/exposure.c:1107
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -14690,33 +14690,33 @@ msgid ""
 "by pushing RGB values into negatives."
 msgstr ""
 
-#: ../src/iop/exposure.c:1115
+#: ../src/iop/exposure.c:1117
 msgid "spot exposure mapping"
 msgstr ""
 
-#: ../src/iop/exposure.c:1118
+#: ../src/iop/exposure.c:1122
 msgid ""
-"define a target brightness, in terms of exposure, for a selected region of "
-"the image (the control sample), which you then match against the same target "
-"brightness in other images. the control sample can either be a critical part "
-"of your subject or a non-moving and consistently-lit surface over your "
-"series of images."
+"define a target brightness, in terms of exposure,\n"
+" for a selected region of the image (the control sample),\n"
+" which you then match against the same target brightness\n"
+" in other images. the control sample can either\n"
+" be a critical part of your subject or a non-moving and\n"
+" consistently-lit surface over your series of images."
 msgstr ""
 
-#: ../src/iop/exposure.c:1121
+#: ../src/iop/exposure.c:1131
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
-"\"measure\" simply shows how an input color is mapped by the exposure "
-"compensation\n"
-"and can be used to define a target."
+"\"measure\" simply shows how an input color is mapped by\n"
+" the exposure compensation and can be used to define a target."
 msgstr ""
 
-#: ../src/iop/exposure.c:1144
+#: ../src/iop/exposure.c:1154
 msgid "L : \tN/A"
 msgstr ""
 
-#: ../src/iop/exposure.c:1159
+#: ../src/iop/exposure.c:1169
 msgid "the desired target exposure after mapping"
 msgstr ""
 
