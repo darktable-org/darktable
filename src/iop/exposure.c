@@ -403,6 +403,8 @@ static void _compute_correction(dt_iop_module_t *self,
   *correction = p->deflicker_target_level - ev;
 }
 
+static gboolean _show_computed(gpointer user_data);
+
 static void _process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t*)self->gui_data;
@@ -434,6 +436,8 @@ static void _process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
       dt_iop_gui_enter_critical_section(self);
       g->deflicker_computed_exposure = exposure;
       dt_iop_gui_leave_critical_section(self);
+
+      g_idle_add(_show_computed, self);
     }
   }
 
@@ -886,10 +890,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 }
 
 
-static gboolean _draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+static gboolean _show_computed(gpointer user_data)
 {
-  if(darktable.gui->reset) return FALSE;
-
+  dt_iop_module_t *self = user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   dt_iop_gui_enter_critical_section(self);
@@ -897,16 +900,14 @@ static gboolean _draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   {
     gchar *str = g_strdup_printf(_("%.2f EV"), g->deflicker_computed_exposure);
 
-    ++darktable.gui->reset;
     gtk_label_set_text(g->deflicker_used_EC, str);
-    --darktable.gui->reset;
 
     g_free(str);
   }
   dt_iop_gui_leave_critical_section(self);
-  return FALSE;
-}
 
+  return G_SOURCE_REMOVE;
+}
 
 static gboolean _target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
@@ -1171,8 +1172,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_draw), self);
-
   /* register hooks with current dev so that  histogram
      can interact with this module.
   */
@@ -1193,6 +1192,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_free_align(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
+
+  g_idle_remove_by_data(self);
 
   IOP_GUI_FREE;
 }
