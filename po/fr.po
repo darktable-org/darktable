@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-24 21:48+0100\n"
-"PO-Revision-Date: 2023-02-24 21:56+0100\n"
+"POT-Creation-Date: 2023-02-24 22:56+0100\n"
+"PO-Revision-Date: 2023-02-24 22:57+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3314,7 +3314,7 @@ msgstr "Mode"
 #: ../src/develop/blend_gui.c:1972 ../src/iop/channelmixer.c:618
 #: ../src/iop/channelmixerrgb.c:4305 ../src/iop/colorchecker.c:1349
 #: ../src/iop/colorize.c:349 ../src/iop/colorzones.c:2401
-#: ../src/iop/exposure.c:1165
+#: ../src/iop/exposure.c:1175
 msgid "lightness"
 msgstr "Clarté"
 
@@ -13378,7 +13378,7 @@ msgstr ""
 msgid "mapping"
 msgstr "Mappage"
 
-#: ../src/iop/channelmixerrgb.c:4249 ../src/iop/exposure.c:1120
+#: ../src/iop/channelmixerrgb.c:4249 ../src/iop/exposure.c:1130
 msgid "spot mode"
 msgstr "Mode ponctuel"
 
@@ -13395,11 +13395,11 @@ msgstr ""
 "le CAT\n"
 "et peut être utilisé pour échantillonner la cible."
 
-#: ../src/iop/channelmixerrgb.c:4255 ../src/iop/exposure.c:1126
+#: ../src/iop/channelmixerrgb.c:4255 ../src/iop/exposure.c:1136
 msgid "correction"
 msgstr "Correction"
 
-#: ../src/iop/channelmixerrgb.c:4256 ../src/iop/exposure.c:1127
+#: ../src/iop/channelmixerrgb.c:4256 ../src/iop/exposure.c:1137
 msgid "measure"
 msgstr "Mesure"
 
@@ -13415,12 +13415,12 @@ msgstr ""
 "Calcule la cible en utilisant le mixeur de canaux en compte.\n"
 "Si désactivé, seulement le CAT est considéré."
 
-#: ../src/iop/channelmixerrgb.c:4273 ../src/iop/exposure.c:1133
+#: ../src/iop/channelmixerrgb.c:4273 ../src/iop/exposure.c:1143
 msgctxt "section"
 msgid "input"
 msgstr "Entrée"
 
-#: ../src/iop/channelmixerrgb.c:4279 ../src/iop/exposure.c:1139
+#: ../src/iop/channelmixerrgb.c:4279 ../src/iop/exposure.c:1149
 msgid "the input color that should be mapped to the target"
 msgstr "La couleur d'entrée à mapper sur la cible"
 
@@ -13434,11 +13434,11 @@ msgstr ""
 "h : \tN/A\n"
 "c : \tN/A"
 
-#: ../src/iop/channelmixerrgb.c:4286 ../src/iop/exposure.c:1146
+#: ../src/iop/channelmixerrgb.c:4286 ../src/iop/exposure.c:1156
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr "Ces coordonnés LCh sont calculés depuis les coordonnés CIE Lab 1976"
 
-#: ../src/iop/channelmixerrgb.c:4293 ../src/iop/exposure.c:1153
+#: ../src/iop/channelmixerrgb.c:4293 ../src/iop/exposure.c:1163
 msgctxt "section"
 msgid "target"
 msgstr "Cible"
@@ -15897,7 +15897,7 @@ msgstr "CE calculée : "
 msgid "what exposure correction has actually been used"
 msgstr "La correction d'exposition réellement utilisée"
 
-#: ../src/iop/exposure.c:1105
+#: ../src/iop/exposure.c:1107
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -15909,43 +15909,45 @@ msgstr ""
 "si mal ajusté, les couleurs très sombres hors gamut seront tronquées\n"
 "en poussant les valeurs RVB négativement."
 
-#: ../src/iop/exposure.c:1115
+#: ../src/iop/exposure.c:1117
 msgid "spot exposure mapping"
 msgstr "Mappage de l'exposition"
 
-#: ../src/iop/exposure.c:1118
+#: ../src/iop/exposure.c:1122
 msgid ""
-"define a target brightness, in terms of exposure, for a selected region of "
-"the image (the control sample), which you then match against the same target "
-"brightness in other images. the control sample can either be a critical part "
-"of your subject or a non-moving and consistently-lit surface over your "
-"series of images."
+"define a target brightness, in terms of exposure,\n"
+" for a selected region of the image (the control sample),\n"
+" which you then match against the same target brightness\n"
+" in other images. the control sample can either\n"
+" be a critical part of your subject or a non-moving and\n"
+" consistently-lit surface over your series of images."
 msgstr ""
-"Définir une luminosité cible, en termes d'exposition, pour une région "
-"sélectionnée de l'image (l'échantillon de contrôle), qui est comparée "
-"ensuite à la même luminosité cible dans d'autres images. L'échantillon de "
-"contrôle peut être soit une partie essentielle de votre sujet, soit une "
-"surface immobile et éclairée de manière constante sur votre série d'images."
+"Définir une luminosité cible, en termes d'exposition,\n"
+"pour une région sélectionnée de l'image (l'échantillon de contrôle),\n"
+"qui est comparée ensuite à la même luminosité cible dans d'autres images.\n"
+"L'échantillon de contrôle peut être soit une partie essentielle de votre "
+"sujet,\n"
+"soit une surface immobile et éclairée de manière constante sur votre série "
+"d'images."
 
-#: ../src/iop/exposure.c:1121
+#: ../src/iop/exposure.c:1131
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
-"\"measure\" simply shows how an input color is mapped by the exposure "
-"compensation\n"
-"and can be used to define a target."
+"\"measure\" simply shows how an input color is mapped by\n"
+" the exposure compensation and can be used to define a target."
 msgstr ""
 " • « Correction » - Ajuste l'exposition automatiquement\n"
 "tel que la luminosité de l'entrée est mappé sur la cible.\n"
-" • « Mesure » - Montre simplement comment une couleur d'entrée est mappé par "
-"la compensation d'exposition\n"
-"et peut être utilisé pour définir la cible."
+" • « Mesure » - Montre simplement comment une couleur d'entrée est mappé "
+"par\n"
+" la compensation d'exposition et peut être utilisé pour définir la cible."
 
-#: ../src/iop/exposure.c:1144
+#: ../src/iop/exposure.c:1154
 msgid "L : \tN/A"
 msgstr "L : \tN/A"
 
-#: ../src/iop/exposure.c:1159
+#: ../src/iop/exposure.c:1169
 msgid "the desired target exposure after mapping"
 msgstr "La cible recherchée après le mappage de l'exposition"
 
