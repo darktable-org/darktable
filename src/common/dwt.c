@@ -155,6 +155,7 @@ static void dwt_decompose_horiz(
     float *const restrict out,
     float *const restrict in,
     float *const temp,
+    size_t padded_size,
     const size_t height,
     const size_t width,
     const size_t lev)
@@ -162,8 +163,7 @@ static void dwt_decompose_horiz(
   const int hscale = MIN(1 << lev, width);  //(int because we need a signed difference below)
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, hscale) \
-  dt_omp_sharedconst(in, out, temp) \
+  dt_omp_firstprivate(height, width, hscale, in, out, temp, padded_size)    \
   schedule(static)
 #endif
   for(int row = 0; row < height ; row++)
@@ -174,7 +174,7 @@ static void dwt_decompose_horiz(
     // final sum and split the original input into 'coarse' and 'details' by subtracting the scaled sum from
     // the original input.
     const size_t rowindex = (size_t)4 * (row * width);
-    float* const restrict temprow = temp + width * dt_get_thread_num() * 4;
+    float* const restrict temprow = dt_get_perthread(temp,padded_size);
     float* const restrict details = in + rowindex;
     float* const restrict coarse = out + rowindex;
 
@@ -220,11 +220,12 @@ static void dwt_decompose_layer(
     float *const restrict out,
     float *const restrict in,
     float *const temp,
+    size_t padded_size,
     const int lev,
     const dwt_params_t *const p)
 {
   dwt_decompose_vert(out, in, p->height, p->width, lev);
-  dwt_decompose_horiz(out, in, temp, p->height, p->width, lev);
+  dwt_decompose_horiz(out, in, temp, padded_size, p->height, p->width, lev);
   return;
 }
 
@@ -250,12 +251,13 @@ static void dwt_wavelet_decompose(float *img,
 
   /* allocate temporary storage */
   dt_iop_roi_t roi = { .x = 0, .y = 0, .height = p->height, .width = p->width };
+  size_t padded_size;
   const int do_merge = p->merge_from_scale > 0;
   if (!dt_iop_alloc_image_buffers(NULL, &roi, &roi,
                                   4 | DT_IMGSZ_INPUT, &buffer[1],
                                   4 | DT_IMGSZ_INPUT | DT_IMGSZ_CLEARBUF, &layers,
-                                  4 | DT_IMGSZ_WIDTH | DT_IMGSZ_PERTHREAD, &temp,
-                                  do_merge ? 4 | DT_IMGSZ_INPUT | DT_IMGSZ_CLEARBUF : 0, &merged_layers,
+                                  4 | DT_IMGSZ_WIDTH | DT_IMGSZ_PERTHREAD, &temp, &padded_size,
+                                  (do_merge ? 4 | DT_IMGSZ_INPUT | DT_IMGSZ_CLEARBUF : 0), &merged_layers,
                                   0, NULL))
   {
     dt_print(DT_DEBUG_ALWAYS,
@@ -270,7 +272,7 @@ static void dwt_wavelet_decompose(float *img,
   {
     unsigned int lpass = (1 - (lev & 1));
 
-    dwt_decompose_layer(buffer[lpass], buffer[hpass], temp, lev, p);
+    dwt_decompose_layer(buffer[lpass], buffer[hpass], temp, padded_size, lev, p);
 
     // no merge scales or we didn't reach the merge scale from yet
     if(p->merge_from_scale == 0 || p->merge_from_scale > lev + 1)
@@ -386,8 +388,12 @@ void dwt_decompose(dwt_params_t *p, _dwt_layer_func layer_func)
 }
 
 // first, "vertical" pass of wavelet decomposition
-static void dwt_denoise_vert_1ch(float *const restrict out, const float *const restrict in,
-                                 const size_t height, const size_t width, const size_t lev)
+static void dwt_denoise_vert_1ch(
+    float *const restrict out,
+    const float *const restrict in,
+    const size_t height,
+    const size_t width,
+    const size_t lev)
 {
   const int vscale = MIN(1 << lev, height);
 #ifdef _OPENMP
@@ -422,9 +428,15 @@ static void dwt_denoise_vert_1ch(float *const restrict out, const float *const r
 
 // second, horizontal pass of wavelet decomposition; generates 'coarse' into the output buffer and overwrites
 //   the input buffer with 'details'
-static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restrict in,
-                                  float *const restrict accum, const size_t height, const size_t width,
-                                  const size_t lev, const float thold, const int last)
+static void dwt_denoise_horiz_1ch(
+    float *const restrict out,
+    float *const restrict in,
+    float *const restrict accum,
+    const size_t height,
+    const size_t width,
+    const size_t lev,
+    const float thold,
+    const int last)
 {
   const int hscale = MIN(1 << lev, width);
 #ifdef _OPENMP
@@ -507,9 +519,18 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
  * recomposing the result from just the portion of each scale which exceeds the magnitude of the given
  * threshold for that scale.
  */
-void dwt_denoise(float *const img, const int width, const int height, const int bands, const float *const noise)
+void dwt_denoise(float *const img,
+                 const int width,
+                 const int height,
+                 const int bands,
+                 const float *const noise)
 {
   float *const details = dt_alloc_align_float((size_t)2 * width * height);
+  if(!details)
+  {
+    dt_print(DT_DEBUG_ALWAYS,"[dwt_denoise] unable to alloc working memory, skipping denoise\n");
+    return;
+  }
   float *const interm = details + width * height;	// temporary storage for use during each pass
 
   // zero the accumulator
@@ -519,11 +540,14 @@ void dwt_denoise(float *const img, const int width, const int height, const int 
   {
     const int last = (lev+1) == bands;
 
-    // "vertical" pass, averages pixels with those 'scale' rows above and below and puts result in 'interm'
+    // "vertical" pass, averages pixels with those 'scale' rows above
+    // and below and puts result in 'interm'
     dwt_denoise_vert_1ch(interm, img, height, width, lev);
-    // horizontal filtering pass, averages pixels in 'interm' with those 'scale' rows to the left and right
-    // accumulates the portion of the detail scale that is above the noise threshold into 'details'; this
-    // will be added to the residue left in 'img' on the last iteration
+    // horizontal filtering pass, averages pixels in 'interm' with
+    // those 'scale' rows to the left and right
+    // accumulates the portion of the detail scale that is above the
+    // noise threshold into 'details'; this will be added to the
+    // residue left in 'img' on the last iteration
     dwt_denoise_horiz_1ch(interm, img, details, height, width, lev, noise[lev], last);
   }
   dt_free_align(details);
