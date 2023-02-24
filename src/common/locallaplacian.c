@@ -569,7 +569,7 @@ void local_laplacian_internal(
     padded[0] = ll_pad_input(input, wd, ht, max_supp, &w, &h, 0);
 
   // allocate pyramid pointers for padded input
-  gboolean success = TRUE;
+  gboolean success = padded[0] != NULL;
   for(int l=1;l<=last_level;l++)
   {
     padded[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
@@ -602,6 +602,10 @@ void local_laplacian_internal(
       dt_free_align(padded[l]);
       dt_free_align(output[l]);
     }
+    // copy the input buffer to the output so that we at least get a
+    // valid result
+    for(size_t k = 0; k < (size_t)4 * wd * ht; k++)
+      out[k] = input[k];
     return;
   }
 
@@ -633,7 +637,13 @@ void local_laplacian_internal(
     {
       buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
       if(!buf[k][l])
+      {
+        // copy the input buffer to the output so that we at least get a
+        // valid result
+        for(size_t p = 0; p < (size_t)4 * wd * ht; p++)
+          out[p] = input[p];
         goto cleanup;
+      }
     }
   
   // the paper says remapping only level 3 not 0 does the trick, too
