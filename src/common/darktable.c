@@ -605,10 +605,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   char *lua_command = NULL;
 #endif
 
-  darktable.num_openmp_threads = 1;
-#ifdef _OPENMP
-  darktable.num_openmp_threads = omp_get_num_procs();
-#endif
+  darktable.num_openmp_threads = dt_get_num_procs();
+
   darktable.unmuted = 0;
   GSList *config_override = NULL;
   for(int k = 1; k < argc; k++)
@@ -944,8 +942,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       else if((argv[k][1] == 't' && argc > k + 1) || (!strcmp(argv[k], "--threads") && argc > k + 1))
       {
-        darktable.num_openmp_threads = CLAMP(atol(argv[k + 1]), 1, 100);
-        dt_print(DT_DEBUG_ALWAYS, "[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
+        const int possible = dt_get_num_procs();
+        const int desired = atol(argv[k + 1]);
+        darktable.num_openmp_threads = CLAMP(desired, 1, possible);
+        if(desired > possible)
+          dt_print(DT_DEBUG_ALWAYS, "[dt_init --threads] requested %d ompthreads restricted to %d\n",
+            desired, possible);
+        dt_print(DT_DEBUG_ALWAYS, "[dt_init --threads] using %d threads for openmp parallel sections\n",
+          darktable.num_openmp_threads);
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -1841,7 +1845,7 @@ size_t dt_get_singlebuffer_mem()
 
 void dt_configure_runtime_performance(const int old, char *info)
 {
-  const size_t threads = dt_get_num_threads();
+  const size_t threads = dt_get_num_procs();
   const size_t mem = darktable.dtresources.total_memory / 1024lu / 1024lu;
   const size_t bits = CHAR_BIT * sizeof(void *);
   const gboolean sufficient = mem >= 4096 && threads >= 2;
