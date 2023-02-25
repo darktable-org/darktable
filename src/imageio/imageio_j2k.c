@@ -164,7 +164,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   // opj_set_info_handler(d_codec, error_callback, stderr);
 
   /* Decode JPEG-2000 with using multiple threads */
-  if(!opj_codec_set_threads(d_codec, darktable.num_openmp_threads))
+  if(!opj_codec_set_threads(d_codec, dt_get_num_threads()))
   {
     /* This may not seem like a critical error but failure to initialise the treads
      is a symptom of major resource exhaustion, bail out as quickly as possible */

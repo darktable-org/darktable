@@ -605,10 +605,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   char *lua_command = NULL;
 #endif
 
-  darktable.num_openmp_threads = 1;
-#ifdef _OPENMP
-  darktable.num_openmp_threads = omp_get_num_procs();
-#endif
+  darktable.num_openmp_threads = dt_get_num_procs();
+
   darktable.unmuted = 0;
   GSList *config_override = NULL;
   for(int k = 1; k < argc; k++)
@@ -944,7 +942,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       else if((argv[k][1] == 't' && argc > k + 1) || (!strcmp(argv[k], "--threads") && argc > k + 1))
       {
-        const int possible = dt_get_num_threads(); // either 1 or current omp_get_num_procs()
+        const int possible = dt_get_num_procs();
         const int desired = atol(argv[k + 1]);
         darktable.num_openmp_threads = CLAMP(desired, 1, possible);
         if(desired > possible)
