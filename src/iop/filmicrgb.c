@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2019-2022 darktable developers.
+   Copyright (C) 2019-2023 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1971,15 +1971,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   {
     // init the blown areas with noise to create particles
     float *const restrict inpainted =  dt_alloc_align_float((size_t)roi_out->width * roi_out->height * 4);
-    inpaint_noise(in, mask, inpainted, data->noise_level / scale, data->reconstruct_threshold, data->noise_distribution,
-                  roi_out->width, roi_out->height);
-
-    // diffuse particles with wavelets reconstruction
-    // PASS 1 on RGB channels
-    const gint success_1 = reconstruct_highlights(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, ch, data, piece, roi_in, roi_out);
+    gint success_1 = FALSE;
     gint success_2 = TRUE;
+    if(inpainted)
+    {
+      inpaint_noise(in, mask, inpainted, data->noise_level / scale, data->reconstruct_threshold,
+                    data->noise_distribution, roi_out->width, roi_out->height);
 
-    dt_free_align(inpainted);
+      // diffuse particles with wavelets reconstruction
+      // PASS 1 on RGB channels
+      success_1 = reconstruct_highlights(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB,
+                                         ch, data, piece, roi_in, roi_out);
+      dt_free_align(inpainted);
+    }
 
     if(data->high_quality_reconstruction > 0 && success_1)
     {
