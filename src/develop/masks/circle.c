@@ -1002,7 +1002,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(h, w) \
   dt_omp_sharedconst(points, pos_x, pos_y) \
-  schedule(static) if(h*w > 50000) num_threads(MIN(darktable.num_openmp_threads,(h*w)/20000))
+  schedule(static) if(h*w > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000))
 #endif
   for(int i = 0; i < h; i++)
   {
@@ -1059,7 +1059,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
 #pragma omp parallel for default(none)  \
   dt_omp_firstprivate(h, w) \
   dt_omp_sharedconst(border2, total2, centerx, centery, points, points_y, ptbuffer) \
-  schedule(simd:static) if(h*w > 50000) num_threads(MIN(darktable.num_openmp_threads,(h*w)/20000))
+  schedule(simd:static) if(h*w > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000))
 #endif
   for(int i = 0 ; i < h*w; i++)
   {
@@ -1274,7 +1274,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(bbh, bbw, centerx, centery, border2, total2) \
   dt_omp_sharedconst(points) \
-  schedule(static) collapse(2) if(bbh*bbw > 50000) num_threads(MIN(darktable.num_openmp_threads,(h*w)/20000))
+  schedule(static) collapse(2) if(bbh*bbw > 50000) num_threads(MIN(dt_get_num_threads(), (h*w)/20000))
 #else
 #pragma omp parallel for shared(points)
 #endif

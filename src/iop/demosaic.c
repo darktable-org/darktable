@@ -5037,7 +5037,7 @@ void tiling_callback(
     else
       tiling->factor += smooth;                        // + smooth
     tiling->maxbuf = 1.0f;
-    tiling->overhead = sizeof(float) * RCD_TILESIZE * RCD_TILESIZE * 8 * MAX(1, darktable.num_openmp_threads);
+    tiling->overhead = sizeof(float) * RCD_TILESIZE * RCD_TILESIZE * 8 * dt_get_num_threads();
     tiling->xalign = 2;
     tiling->yalign = 2;
     tiling->overlap = 10;
@@ -5053,7 +5053,7 @@ void tiling_callback(
     else
       tiling->factor += smooth;                        // + smooth
     tiling->maxbuf = 1.0f;
-    tiling->overhead = sizeof(float) * LMMSE_GRP * LMMSE_GRP * 6 * MAX(1, darktable.num_openmp_threads);
+    tiling->overhead = sizeof(float) * LMMSE_GRP * LMMSE_GRP * 6 * dt_get_num_threads();
     tiling->xalign = 2;
     tiling->yalign = 2;
     tiling->overlap = 10;

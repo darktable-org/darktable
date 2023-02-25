@@ -503,7 +503,7 @@ static int32_t dt_control_get_threadid_res()
 static void *dt_control_work_res(void *ptr)
 {
 #ifdef _OPENMP // need to do this in every thread
-  omp_set_num_threads(darktable.num_openmp_threads);
+  omp_set_num_threads(dt_get_num_threads());
 #endif
   worker_thread_parameters_t *params = (worker_thread_parameters_t *)ptr;
   dt_control_t *s = params->self;
@@ -548,7 +548,7 @@ static void *dt_control_worker_kicker(void *ptr)
 static void *dt_control_work(void *ptr)
 {
 #ifdef _OPENMP // need to do this in every thread
-  omp_set_num_threads(darktable.num_openmp_threads);
+  omp_set_num_threads(dt_get_num_threads());
 #endif
   worker_thread_parameters_t *params = (worker_thread_parameters_t *)ptr;
   dt_control_t *control = params->self;

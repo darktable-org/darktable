@@ -521,7 +521,6 @@ gboolean dt_supported_image(const gchar *filename);
 static inline size_t dt_get_num_threads()
 {
 #ifdef _OPENMP
-  // we can safely assume omp_get_num_procs is > 0
   return (size_t)CLAMP(omp_get_num_procs(), 1, darktable.num_openmp_threads);
 #else
   return 1;

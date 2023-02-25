@@ -2881,7 +2881,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(xxmin, xxmax, yymin, yymax, width) \
-  shared(buffer) schedule(static) num_threads(MIN(8,darktable.num_openmp_threads))
+  shared(buffer) schedule(static) num_threads(MIN(8, dt_get_num_threads()))
 #else
 #pragma omp parallel for shared(buffer)
 #endif
