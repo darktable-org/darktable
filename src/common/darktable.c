@@ -944,8 +944,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       }
       else if((argv[k][1] == 't' && argc > k + 1) || (!strcmp(argv[k], "--threads") && argc > k + 1))
       {
-        darktable.num_openmp_threads = CLAMP(atol(argv[k + 1]), 1, 100);
-        dt_print(DT_DEBUG_ALWAYS, "[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
+        const int possible = dt_get_num_threads(); // either 1 or current omp_get_num_procs()
+        const int desired = atol(argv[k + 1]);
+        darktable.num_openmp_threads = CLAMP(desired, 1, possible);
+        if(desired > possible)
+          dt_print(DT_DEBUG_ALWAYS, "[dt_init --threads] requested %d ompthreads restricted to %d\n",
+            desired, possible);
+        dt_print(DT_DEBUG_ALWAYS, "[dt_init --threads] using %d threads for openmp parallel sections\n",
+          darktable.num_openmp_threads);
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
