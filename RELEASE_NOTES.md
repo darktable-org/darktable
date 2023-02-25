@@ -33,11 +33,22 @@ Since darktable 4.0:
 The following is a summary of the main features added to darktable
 4.4. Most of these features are described more fully in the user manual.
 
-- ???
+- Allows for multiple presets to be defined and applied automatically
+  on matching images. Each preset after the first one will create a
+  new module instance just on top of the current module (so it applies
+  after).
+
+  To better view which module instance corresponds to which preset the
+  module label is set to the preset name. This preset name will be
+  changed if some parameters on the module are changed (and so does
+  not correspong to the preset anymore). If the module label is hand
+  edited it will be kept.
 
 ## Other Changes
 
-- ???
+- Do not invalidate snapshot anymore when the history is changed
+  (compressed or reset). All snapshot are now stored with their full
+  history and can be reconstruct properly.
 
 ## Bug Fixes
 
@@ -45,7 +56,58 @@ The following is a summary of the main features added to darktable
 
 ## Lua
 
-- ???
+### A action support for Lua
+
+- The lua call to dt.gui.action has become more flexible, with most
+  parameters optional, so you can read the focused status of a module
+  doing just dt.gui.action("iop/filmicrgb", "focus").
+
+- tooltips show these compacter lua commands in mapping mode (only
+  adding the last parameter, instance, if the module supports
+  multi-instance) and have been added to presets and styles menus as
+  well.
+
+- Lua commands can be copied to the clipboard, using ctrl+v in the
+  shortcuts dialog, both from a selected action or shortcut, or long
+  right click when in mapping mode (over a widget) or in the
+  presets/styles menus.
+
+- The shown/copied lua command for a slider or combobox will set the
+  value it currently has.
+
+- A bug with shortcuts (and dt.gui.action) to set the active item in a
+  combobox with varying content has been fixed and now it is also
+  possible to directly set the values of the combos for the focused
+  module's blending mode etc. (by setting the shortcuts effect).
+
+- Added section headers to the sort by drop-down (files, times, etc).
+
+- Shortcuts assigned to presets or styles will be shown when hovering
+  over them in their menu.
+
+- Long left clicking a preset will keep the menu open so you can
+  quickly switch between several to see the effect without having to
+  repeatedly click the preset button to reopen the menu. You can also
+  scroll over the preset button to switch to previous/next presets
+  (like you already could via shortcuts).
+
+- A shortcut can now be directed to a lua script that mimics a
+  standard slider, dropdown or button, but dynamically selects the
+  real widget(s) that receive(s) it, based on for example which module
+  is focused or enabled. The advantage is that all fallbacks work as
+  normal, so you can assign a midi knob to it and turning it (holding
+  shift/ctrl to speed up/down) or pressing it to reset work regardless
+  of which widget receives it. Basically this is a much more flexible
+  alternative to the fake widgets under processing
+  modules/<focused>. This allows owners of for example an x-touch mini
+  to use their scarce rotors in different, fully configurable, ways
+  while working in different modules (which can also be focused using
+  midi buttons which will then light up). Such configurations could be
+  shared using https://github.com/darktable-org/lua-scripts.
+
+- Support shortcuts to sliders/combos created in lua, either via
+  visual mapping mode or in the shortcuts dialog under the lua
+  category. Elements and effects are not supported.
 
 ## Notes
 
