@@ -41,22 +41,109 @@ The following is a summary of the main features added to darktable
   To better view which module instance corresponds to which preset the
   module label is set to the preset name. This preset name will be
   changed if some parameters on the module are changed (and so does
-  not correspong to the preset anymore). If the module label is hand
+  not correspond to the preset anymore). If the module label is hand
   edited it will be kept.
 
+- Rework the module default parameters and make them usable
+  in copy/paste, presets and styles.
+
+  Many modules have default parameters based on image metadata or
+  current workflow:
+
+  - Exposure: use a specific default in scene referred workflow,
+  - Denoise profile: is camera and ISO specific,
+  - Lens correction: is camera and lens specific,
+  - Base curve: is camera sensor specific,
+  - White balance: is metadata specific,
+  - Orientation: is metadata specific,
+  - Color calibration: is metadata specific.
+
+  For all those modules it is now possible to paste parameters and
+  ensure that proper default metadata based will be used. This is
+  achieved by selecting the "Reset" corresponding column in the
+  preset and style dialog.
+
+  For presets a new option can be selected in the dialog for the
+  preset to be using the module's default parameters on which it is
+  applied. The option is named "Reset all module parameters to their
+  default values"
+
+  This new generic feature has permitted to clean-up some hacks to try
+  to do the same kind support at the module levels and which was
+  anyway limited.
+
+- Rework the workflow setting, we now have the choice between:
+
+  - Scene-refrerred (Filmic)
+  - Scene-referred (Sigmoid)
+  - Display-referred (Legacy)
+  - None
+
+  The chromatic adaptation preference has been removed and is implied
+  by the workflow. The Color calibration module is used when in
+  Scene-referred and While balance otherwise.
+
+  Finally, using None workflow and the two new features above
+  (multiple presets support and reset to default parameters metadata
+  based) one can create any other kind of workflow. For example it is
+  possible to use Sigmoid with the White balance module.
+
 ## Other Changes
+
+- Add OpenCL support to the Sigmoid module.
 
 - Do not invalidate snapshot anymore when the history is changed
   (compressed or reset). All snapshot are now stored with their full
   history and can be reconstruct properly.
 
+- Module "Levels" has been deprecated, use "Levels RGB" instead.
+
+- Module "Contrast Brightness Saturation" has been deprecated, use
+  "Color Balance RGB" instead.
+
+- Convert the zoom widget on the navigation window to a standard
+  drop-down for better fitting the darktable style.
+
+- Lower the ISO 12646 border size still staying in the recommended
+  size.
+
+- Rework the preset dialog filter to better show the relation between
+  the raw, non-raw and the three formats HDR, monochrome and
+  color. This avoids confusions and creating presets that are actually
+  not applied.
+
+- The default module group has been removed. It is better to use one
+  of the scene-referred group.
+
+- Add support for loading QOI images.
+
+- Redesign the export and thumbnails generation.
+
+  Some hacks have been accumulated to try to have exact size of the
+  exported pictures. All this has been redesigned and simplified to have
+  a better export size.
+
 ## Bug Fixes
 
-- ???
+- Remove the commit button from the crop module has it was not used
+  anymore.
+
+- Fix the reset of modules with specific default parameters to ensure
+  that the modules will be set back in the same state as it was when
+  first importing the image. This fix is related with the rework of
+  auto apply module default parameters in the section above.
+
+- Properly transform XMP regions from metadata to ensure they match
+  the image. The XMP regions may come from the camera face recognition
+  for example.
+
+- Fix some rounding issues in the calculation of the borders in the
+  border module. This creates borders on opposite sides with the same
+  size.
 
 ## Lua
 
-### A action support for Lua
+### Add action support for Lua
 
 - The lua call to dt.gui.action has become more flexible, with most
   parameters optional, so you can read the focused status of a module
@@ -108,6 +195,10 @@ The following is a summary of the main features added to darktable
 - Support shortcuts to sliders/combos created in lua, either via
   visual mapping mode or in the shortcuts dialog under the lua
   category. Elements and effects are not supported.
+
+### Others
+
+- Add image orientation retrieval support.
 
 ## Notes
 
