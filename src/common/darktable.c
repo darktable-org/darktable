@@ -1845,7 +1845,7 @@ size_t dt_get_singlebuffer_mem()
 
 void dt_configure_runtime_performance(const int old, char *info)
 {
-  const size_t threads = dt_get_num_threads();
+  const size_t threads = dt_get_num_procs();
   const size_t mem = darktable.dtresources.total_memory / 1024lu / 1024lu;
   const size_t bits = CHAR_BIT * sizeof(void *);
   const gboolean sufficient = mem >= 4096 && threads >= 2;
