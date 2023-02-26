@@ -19223,15 +19223,15 @@ msgstr "Compresser ombres/hautes-lumières (GF) : Fort"
 
 #: ../src/iop/toneequal.c:472
 msgid "compress shadows/highlights (eigf): medium"
-msgstr "Compresser ombres/hautes-lumières (Eigf) : Moyen"
+msgstr "Compresser ombres/hautes-lumières (EIGF) : Moyen"
 
 #: ../src/iop/toneequal.c:476
 msgid "compress shadows/highlights (gf): medium"
-msgstr "Compresser ombres/hautes-lumières (Gf) : Moyen"
+msgstr "Compresser ombres/hautes-lumières (GF) : Moyen"
 
 #: ../src/iop/toneequal.c:484
 msgid "compress shadows/highlights (eigf): soft"
-msgstr "Compresser ombres/hautes-lumières (GF) : Léger"
+msgstr "Compresser ombres/hautes-lumières (EIGF) : Léger"
 
 #: ../src/iop/toneequal.c:488
 msgid "compress shadows/highlights (gf): soft"
