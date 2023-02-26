@@ -159,7 +159,7 @@ static void _channel_display_false_color(const float *const restrict in,
         // colors with "a" exceeding the range [-56,56] range will
         // yield colors not representable in sRGB
         const float value = fminf(fmaxf(in[j + 1] * 256.0f - 128.0f, -56.0f), 56.0f);
-        const dt_aligned_pixel_t lab = { 79.0f - value * (11.0f / 56.0f), value, 0.0f };
+        const dt_aligned_pixel_t lab = { 79.0f - value * (11.0f / 56.0f), value, 0.0f, 0.0f };
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
@@ -177,7 +177,7 @@ static void _channel_display_false_color(const float *const restrict in,
         // colors with "b" exceeding the range [-65,65] range will
         // yield colors not representable in sRGB
         const float value = fminf(fmaxf(in[j + 1] * 256.0f - 128.0f, -65.0f), 65.0f);
-        const dt_aligned_pixel_t lab = { 60.0f + value * (2.0f / 65.0f), 0.0f, value };
+        const dt_aligned_pixel_t lab = { 60.0f + value * (2.0f / 65.0f), 0.0f, value, 0.0f };
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
@@ -244,6 +244,7 @@ static void _channel_display_false_color(const float *const restrict in,
         dt_aligned_pixel_t lch = { 65.0f, 37.0f, in[j + 1], 0.0f };
         dt_aligned_pixel_t lab, xyz, pixel;
         dt_LCH_2_Lab(lch, lab);
+        lab[3] = 0.0f;
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
