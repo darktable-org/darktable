@@ -503,11 +503,8 @@ void process(struct dt_iop_module_t *self,
   {
     out[k] = (in[k] - black) * scale;
   }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
-
-  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
+  for(int k = 0; k < 3; k++)
+    piece->pipe->dsc.processed_maximum[k] *= d->scale;
 }
 
 

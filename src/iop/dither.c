@@ -359,9 +359,6 @@ static void process_floyd_steinberg(
       _clipnan_pixel(out + 4 * j, in + 4 * j);
       _nearest_color(out + 4 * j, err, graymode, f, rf);
     }
-
-    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
     return;
   }
 
@@ -497,10 +494,6 @@ static void process_floyd_steinberg(
     // lower right pixel
     _nearest_color(outrow + 4 * (width - 1), err, graymode, f, rf);  // quantize the last pixel, no neighbors left
   }
-
-  // copy alpha channel if needed
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 static void process_random(
@@ -554,8 +547,6 @@ static void process_random(
     }
   }
   free_tea_states(tea_states);
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
 
 
