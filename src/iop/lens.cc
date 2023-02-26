@@ -643,7 +643,6 @@ static float _get_autoscale_lf(
                 iht = img->height - img->crop_y - img->crop_bottom;
 
       // create dummy modifier
-#if defined(__GNUC__) && (__GNUC__ > 7)
       const dt_iop_lens_data_t d =
         {
          .modify_flags = p->modify_flags,
@@ -657,23 +656,6 @@ static float _get_autoscale_lf(
          .target_geom  = _lenstype_to_lensfun_lenstype(p->target_geom),
          .custom_tca   = { .Model = LF_TCA_MODEL_NONE }
         };
-#else
-      // prior to GCC 8.x the / .custom_tca   = { .Model = ??? } / was not supported:
-      //    sorry, unimplemented: non-trivial designated initializers not supported
-      // ?? This code can be removed when GCC-7 is not used anymore.
-
-      dt_iop_lens_data_t d;
-      d.modify_flags     = p->modify_flags;
-      d.lens             = (lfLens *)lenslist[0];
-      d.inverse          = p->inverse;
-      d.scale            = 1.0f;
-      d.crop             = p->crop;
-      d.focal            = p->focal;
-      d.aperture         = p->aperture;
-      d.distance         = p->distance;
-      d.target_geom      = _lenstype_to_lensfun_lenstype(p->target_geom);
-      d.custom_tca.Model = LF_TCA_MODEL_NONE;
-#endif
 
       lfModifier *modifier = _get_modifier(NULL, iwd, iht, &d, LF_MODIFY_ALL, FALSE);
 
