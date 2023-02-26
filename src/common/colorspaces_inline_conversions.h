@@ -208,6 +208,7 @@ static inline float lab_f(const float x)
 
 /** uses D50 white point. */
 static const dt_aligned_pixel_t d50 = { 0.9642f, 1.0f, 0.8249f };
+static const dt_aligned_pixel_t d50_inv = { 1.0f/0.9642f, 1.0f, 1.0f/0.8249f };
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Lab, XYZ:16) uniform(Lab, XYZ)
@@ -216,10 +217,29 @@ static inline void dt_XYZ_to_Lab(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_
 {
   dt_aligned_pixel_t f;
   for_each_channel(i)
-    f[i] = lab_f(XYZ[i] / d50[i]);
-  Lab[0] = 116.0f * f[1] - 16.0f;
-  Lab[1] = 500.0f * (f[0] - f[1]);
-  Lab[2] = 200.0f * (f[1] - f[2]);
+    f[i] = lab_f(XYZ[i] * d50_inv[i]);
+//  Lab[0] = 116.0f * f[1] - 16.0f;
+//  Lab[1] = 500.0f * (f[0] - f[1]);
+//  Lab[2] = -200.0f * (f[2] - f[1]);
+  static const dt_aligned_pixel_t coeff = { 116.0f, 500.0f, -200.0f, 0.0f };
+  static const dt_aligned_pixel_t offset = { 16.0f, 0.0f, 0.0f, 0.0f };
+  static const dt_aligned_pixel_t zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+  // compiler uses permute instruction if we copy ALL elements
+  // unused fourth element will be zeroed by the multiplication
+  const dt_aligned_pixel_t tmp1 = { f[1], f[0], f[2], f[3] };
+#if defined(__GNUC__) && !defined(__clang__)
+  // convince the compiler to use shuffle/permute instructions instead
+  // of building the result in RAM
+  typedef float v4sf __attribute__((vector_size(16)));
+  typedef int v4si __attribute__((vector_size(16)));
+  const v4si mask = { 5, 1, 1, 5 }; // zero[0], f[1], f[1], zero[0]
+  dt_aligned_pixel_t tmp2;
+  *((v4sf*)tmp2) =  __builtin_shuffle(*((v4sf*)f), *((v4sf*)zero), mask);
+#else
+  const dt_aligned_pixel_t tmp2 = { zero[0], f[1], f[1], zero[0] };
+#endif
+  for_each_channel(c)
+    Lab[c] = (coeff[c] * (tmp1[c] - tmp2[c])) - offset[c];
 }
 
 #ifdef _OPENMP
@@ -238,11 +258,12 @@ static inline float lab_f_inv(const float x)
 #endif
 static inline void dt_Lab_to_XYZ(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t XYZ)
 {
-  dt_aligned_pixel_t f = { Lab[1], Lab[0] + 16.0f, -Lab[2], 0.0f };
-  static const dt_aligned_pixel_t coeff = { 500.0f, 116.0f, 200.0f, 1.0f };
+  dt_aligned_pixel_t f = { Lab[1], Lab[0], Lab[2], Lab[3] };
+  static const dt_aligned_pixel_t offset = { 0.0f, 16.0f, 0.0f, 0.0f };
+  static const dt_aligned_pixel_t coeff = { 1.0f/500.0f, 1.0f/116.0f, -1.0f/200.0f, 0.0f };
   static const dt_aligned_pixel_t add_coeff = { 1.0f, 0.0f, 1.0f, 0.0f };
   for_each_channel(c,aligned(Lab,coeff,f))
-    f[c] /= coeff[c];
+    f[c] = (f[c] + offset[c]) * coeff[c];
   for_each_channel(c,aligned(d50,f,add_coeff,XYZ))
     XYZ[c] = d50[c] * lab_f_inv(f[c] + f[1] * add_coeff[c]);
 }
