@@ -51,7 +51,7 @@ inline int dt_atomic_exch_int(dt_atomic_int *var, int value) { return atomic_exc
 inline int dt_atomic_CAS_int(dt_atomic_int *var, int *expected, int value)
 { return atomic_compare_exchange_strong(var,expected,value); }
 
-#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNU_MINOR__ >= 8))
+#elif defined(__GNUC__)
 // we don't have or aren't supposed to use C11 atomics, but the compiler is a recent-enough version of GCC
 // that we can use GNU intrinsics corresponding to the C11 atomics
 
