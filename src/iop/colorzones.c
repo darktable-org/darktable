@@ -964,7 +964,7 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
   const float clip2 = clip * clip * clip;                                                                         \
   Lab[1] *= Lab[0] / L0 * clip2;                                                                                  \
   Lab[2] *= Lab[0] / L0 * clip2;                                                                                  \
-                                                                                                                  \
+  Lab[3] = 0.0f;                                                                                                  \
   dt_aligned_pixel_t xyz;                                                                                         \
   dt_aligned_pixel_t rgb;                                                                                         \
   dt_Lab_to_XYZ(Lab, xyz);                                                                                        \
