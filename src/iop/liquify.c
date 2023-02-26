@@ -403,8 +403,8 @@ static void node_gc(dt_iop_liquify_params_t *p)
       k++;
   }
   //  invalidate all nodes beyond the last moved one
-  for(k=last+1; k<MAX_NODES; k++)
-    p->nodes[k].header.type = DT_LIQUIFY_PATH_INVALIDATED;
+  for(int l=last+1; l<MAX_NODES; k++)
+    p->nodes[l].header.type = DT_LIQUIFY_PATH_INVALIDATED;
 }
 
 static void node_delete(dt_iop_liquify_params_t *p, dt_liquify_path_data_t *this)
