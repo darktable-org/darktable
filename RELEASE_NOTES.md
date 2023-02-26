@@ -154,6 +154,7 @@ The following is a summary of the main features added to darktable
   - Dithering
   - Graduated Density
   - Input Color Profile
+  - Color Look up Table
 
 - Improve Highlights reconstruction "inpaint opposed" performance by
   providing an OpenCL implementation and using internal caching in
