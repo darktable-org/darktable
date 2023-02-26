@@ -307,8 +307,8 @@ void dt_iop_default_init(dt_iop_module_t *module)
       break;
     default:
       dt_print(DT_DEBUG_PARAMS,
-               "in `%s' unsupported introspection type \"%s\" encountered"
-               " in dt_iop_default_init (field %s)\n",
+               "[dt_iop_default_init] in `%s' unsupported introspection type \"%s\" encountered"
+               " in (field %s)\n",
                module->op, i->header.type_name, i->header.field_name);
       break;
     }
@@ -1355,7 +1355,7 @@ static void _init_presets(dt_iop_module_so_t *module_so)
 
       // we found an old params version.  Update the database with it.
 
-      dt_print(DT_DEBUG_ALWAYS,
+      dt_print(DT_DEBUG_PARAMS,
                "[imageop_init_presets] found version %d for '%s' preset '%s'\n",
         old_params_version, module_so->op, name);
 
@@ -1736,7 +1736,8 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module,
 
 gboolean _iop_validate_params(dt_introspection_field_t *field,
                               gpointer params,
-                              const gboolean report)
+                              const gboolean report,
+                              const char *name)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)((uint8_t *)params + field->header.offset);
 
@@ -1749,7 +1750,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     {
       dt_introspection_field_t *entry = field->Struct.fields[i];
 
-      all_ok &= _iop_validate_params(entry, params, report);
+      all_ok &= _iop_validate_params(entry, params, report, name);
     }
     break;
   case DT_INTROSPECTION_TYPE_UNION:
@@ -1758,7 +1759,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     {
       dt_introspection_field_t *entry = field->Union.fields[i];
 
-      if(_iop_validate_params(entry, params, report && i == 0))
+      if(_iop_validate_params(entry, params, report && i == 0, name))
       {
         all_ok = TRUE;
         break;
@@ -1772,9 +1773,9 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
       {
         if(report)
           dt_print(DT_DEBUG_ALWAYS,
-                   "validation check failed in _iop_validate_params"
-                   " for type \"%s\"; string not null terminated.\n",
-                   field->header.type_name);
+                   "[iop_validate_params] `%s' failed for not null terminated type string"
+                   " \"%s\";\n",
+                   name, field->header.type_name);
         all_ok = FALSE;
       }
     }
@@ -1784,12 +1785,12 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
           i < field->Array.count;
           i++, item_offset += field->Array.field->header.size)
       {
-        if(!_iop_validate_params(field->Array.field, (uint8_t *)params + item_offset, report))
+        if(!_iop_validate_params(field->Array.field, (uint8_t *)params + item_offset, report, name))
         {
           if(report)
-            dt_print(DT_DEBUG_ALWAYS, "validation check failed in"
-                     " _iop_validate_params for type \"%s\", for array element \"%d\"\n",
-                     field->header.type_name, i);
+            dt_print(DT_DEBUG_ALWAYS, "[iop_validate_params] `%s' failed"
+                     " for type \"%s\", for array element \"%d\"\n",
+                     name, field->header.type_name, i);
           all_ok = FALSE;
           break;
         }
@@ -1842,17 +1843,17 @@ gboolean _iop_validate_params(dt_introspection_field_t *field,
     break;
   default:
     dt_print(DT_DEBUG_ALWAYS,
-             "unsupported introspection type \"%s\" encountered"
-             " in _iop_validate_params (field %s)\n",
-             field->header.type_name, field->header.name);
+             "[iop_validate_params] `%s' unsupported introspection type \"%s\" encountered,"
+             " (field %s)\n",
+             name, field->header.type_name, field->header.name);
     all_ok = FALSE;
     break;
   }
 
   if(!all_ok && report)
     dt_print(DT_DEBUG_ALWAYS,
-             "validation check failed in _iop_validate_params for type \"%s\"%s%s\n",
-             field->header.type_name,
+             "[iop_validate_params] `%s' failed for type \"%s\"%s%s\n",
+             name, field->header.type_name,
              *field->header.name ? ", field: " : "",
              field->header.name);
 
@@ -1916,8 +1917,7 @@ void dt_iop_commit_params(dt_iop_module_t *module,
     piece->process_tiling_ready = 1;
 
   if(darktable.unmuted & DT_DEBUG_PARAMS && module->so->get_introspection())
-    _iop_validate_params(module->so->get_introspection()->field, params, TRUE);
-
+    _iop_validate_params(module->so->get_introspection()->field, params, TRUE, module->so->op);
   module->commit_params(module, params, pipe, piece);
 
   // adjust the label to match presets if possible or otherwise the default
@@ -2374,7 +2374,7 @@ static void _header_size_callback(GtkWidget *widget,
         }
         else
         {
-          dt_print(DT_DEBUG_ALWAYS, "unknown darkroom/ui/hide_header_buttons option %s\n", config);
+          dt_print(DT_DEBUG_ALWAYS, "[header size callback] unknown darkroom/ui/hide_header_buttons option %s\n", config);
         }
       }
     }
