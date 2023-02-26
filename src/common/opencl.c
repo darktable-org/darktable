@@ -806,7 +806,7 @@ static int dt_opencl_device_init(
       int loaded_cached;
       char md5sum[33];
       if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, includemd5, &loaded_cached)
-         && dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached) != CL_SUCCESS)
+         && dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached))
       {
         dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] failed to compile program `%s'!\n", programname);
         fclose(f);
@@ -1841,13 +1841,13 @@ static FILE *fopen_stat(const char *filename, struct stat *st)
   FILE *f = g_fopen(filename, "rb");
   if(!f)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_fopen_stat] could not open file `%s'!\n", filename);
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_fopen_stat] could not open file `%s'!\n", filename);
     return NULL;
   }
   int fd = fileno(f);
   if(fstat(fd, st) < 0)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_fopen_stat] could not stat file `%s'!\n", filename);
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_fopen_stat] could not stat file `%s'!\n", filename);
     return NULL;
   }
   return f;
@@ -2060,15 +2060,12 @@ int dt_opencl_load_program(
     g_unlink(dup);
 #endif //!defined(_WIN32)
 
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE,
-             "[opencl_load_program] could not load cached binary program, trying to compile source\n");
-
     cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(
         cl->dev[dev].context, 1, (const char **)&file, &filesize, &err);
     free(file);
     if((err != CL_SUCCESS) || (cl->dev[dev].program[prog] == NULL))
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%s)\n",
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_load_source] could not create program from file `%s'! (%s)\n",
                filename, cl_errstr(err));
       return 0;
     }
@@ -2088,23 +2085,21 @@ int dt_opencl_load_program(
   return 1;
 }
 
-int dt_opencl_build_program(
+gboolean _opencl_build_program(
         const int dev,
         const int prog,
         const char *binname,
         const char *cachedir,
         char *md5sum,
-        int loaded_cached)
+        int loaded_cached,
+        const gboolean final)
 {
-  if(prog < 0 || prog >= DT_OPENCL_MAX_PROGRAMS) return -1;
   dt_opencl_t *cl = darktable.opencl;
   cl_program program = cl->dev[dev].program[prog];
   cl_int err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &(cl->dev[dev].devid), cl->dev[dev].options, 0, 0);
 
-  if(err != CL_SUCCESS)
+  if((err != CL_SUCCESS) && final)
     dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] could not build program: %s\n", cl_errstr(err));
-  else
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "[opencl_build_program] successfully built program\n");
 
   cl_build_status build_status;
   (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_STATUS,
@@ -2126,14 +2121,14 @@ int dt_opencl_build_program(
       build_log[ret_val_size] = '\0';
 
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "BUILD LOG:\n");
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "%s\n", build_log);
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_VERBOSE, "%s\n\n", build_log);
 
       free(build_log);
     }
   }
 
   if(err != CL_SUCCESS)
-    return err;
+    return TRUE;
   else
   {
     if(!loaded_cached)
@@ -2146,7 +2141,7 @@ int dt_opencl_build_program(
       if(err != CL_SUCCESS)
       {
         dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_NUM_DEVICES failed: %s\n", cl_errstr(err));
-        return CL_SUCCESS;
+        return TRUE;
       }
 
       cl_device_id *devices = malloc(sizeof(cl_device_id) * numdev);
@@ -2156,7 +2151,7 @@ int dt_opencl_build_program(
       {
         dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_DEVICES failed: %s\n", cl_errstr(err));
         free(devices);
-        return CL_SUCCESS;
+        return TRUE;
       }
 
       size_t *binary_sizes = malloc(sizeof(size_t) * numdev);
@@ -2167,7 +2162,7 @@ int dt_opencl_build_program(
         dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARY_SIZES failed: %s\n", cl_errstr(err));
         free(binary_sizes);
         free(devices);
-        return CL_SUCCESS;
+        return TRUE;
       }
 
       unsigned char **binaries = malloc(sizeof(unsigned char *) * numdev);
@@ -2180,7 +2175,10 @@ int dt_opencl_build_program(
         goto ret;
       }
 
+      err = DT_OPENCL_DEFAULT_ERROR;
+
       for(int i = 0; i < numdev; i++)
+      {
         if(cl->dev[dev].devid == devices[i])
         {
           // save opencl compiled binary as md5sum-named file
@@ -2210,6 +2208,8 @@ int dt_opencl_build_program(
 #endif //!defined(_WIN32)
           if(chdir(cwd) != 0) goto ret;
         }
+        err = CL_SUCCESS;
+      }
 
     ret:
       for(int i = 0; i < numdev; i++) free(binaries[i]);
@@ -2217,8 +2217,37 @@ int dt_opencl_build_program(
       free(binary_sizes);
       free(devices);
     }
-    return CL_SUCCESS;
+    return (err != CL_SUCCESS);
   }
+}
+
+gboolean dt_opencl_build_program(
+        const int dev,
+        const int prog,
+        const char *binname,
+        const char *cachedir,
+        char *md5sum,
+        int loaded_cached)
+{
+  if(prog < 0 || prog > DT_OPENCL_MAX_PROGRAMS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_build_program] out of kernel program range %d [max=%d]\n",
+      prog, DT_OPENCL_MAX_PROGRAMS);
+    return TRUE;
+  }
+
+  for(int runs = 0; runs < 5; runs++)
+  {
+    if(_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached, (runs == 4)) == 0)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program `%s', %d runs.\n",
+        binname, runs+1);
+      return FALSE;
+    }
+  }
+
+  dt_print(DT_DEBUG_OPENCL, "[dt_opencl_build_program] failed to build program `%s'\n", binname);
+  return TRUE;
 }
 
 int dt_opencl_create_kernel(const int prog, const char *name)
