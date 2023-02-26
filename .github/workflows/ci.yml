@@ -158,12 +158,6 @@ jobs:
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
-      - name: Run Integration test suite
-        #integration test can get "stuck" plus there are couple of errors here, so it needs to be addressed first
-        if: ${{ false }}
-        run: |
-          cd "${SRC_DIR}/src/tests/integration/"
-          ./run.sh --no-opencl --no-deltae --fast-fail
 
   Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
