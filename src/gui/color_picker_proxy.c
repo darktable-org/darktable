@@ -320,6 +320,15 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance, gpointe
     // called. Hence the UI will always update once the picker data
     // updates. But I'm not clear how this is guaranteed to be so.
   }
+
+  // we need to fire an event to let lua scripts know that 
+  // all pixelpipe processing is complete.
+#ifdef USE_LUA
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "const char*", "pixelpipe-processing-complete",
+       LUA_ASYNC_DONE);
+#endif
 }
 
 void dt_iop_color_picker_init(void)
