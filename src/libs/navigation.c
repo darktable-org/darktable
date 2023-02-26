@@ -189,6 +189,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(self->widget), thumbnail);
   gtk_overlay_add_overlay(GTK_OVERLAY(self->widget), d->zoom);
   dt_gui_add_class(self->widget, "dt_plugin_ui_main");
+  gtk_widget_show_all(self->widget);
 
   darktable.lib->proxy.navigation.module = self;
 }
