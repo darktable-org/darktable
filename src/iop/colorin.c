@@ -765,6 +765,28 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self,
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, out: 64)
+#endif
+static void _cmatrix_fastpath_simple(float *out,
+                                     const float *in,
+                                     size_t npixels,
+                                     const dt_colormatrix_t cmatrix)
+{
+  dt_colormatrix_t transposed;
+  transpose_3xSSE(cmatrix, transposed);
+
+  // this function is called from inside a parallel for loop, so no need for further parallelization
+  for(size_t k = 0; k < npixels; k++)
+  {
+    dt_aligned_pixel_t xyz = { 0.0f, 0.0f, 0.0f, 0.0f };
+    dt_apply_transposed_color_matrix(in + 4*k, transposed, xyz);
+    dt_aligned_pixel_t res;
+    dt_XYZ_to_Lab(xyz, res);
+    copy_pixel_nontemporal(out + 4*k, res);
+  }
+}
+
 static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self,
                                             dt_dev_pixelpipe_iop_t *piece,
                                             const void *const ivoid,
@@ -775,26 +797,28 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self,
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   assert(piece->colors == 4);
 
-  dt_colormatrix_t cmatrix;
-  transpose_3xSSE(d->cmatrix, cmatrix);
-
-// fprintf(stderr, "Using cmatrix codepath\n");
-// only color matrix. use our optimized fast path!
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict  out = (float*)ovoid;
+  
 #ifdef _OPENMP
+  // figure out the number of pixels each thread needs to process
+  // round up to a multiple of 4 pixels so that each chunk starts aligned(64)
+  const size_t nthreads = dt_get_num_threads();
+  const size_t chunksize = 4 * (((npixels / nthreads) + 3) / 4);
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, ovoid, roi_out)    \
-  shared(cmatrix) \
+  dt_omp_firstprivate(in, out, npixels, chunksize, nthreads, d)  \
   schedule(static)
-#endif
-  for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t chunk = 0; chunk < nthreads; chunk++)
   {
-    float *in = (float *)ivoid + (size_t)4 * k;
-    float *out = (float *)ovoid + (size_t)4 * k;
-
-    dt_aligned_pixel_t _xyz = { 0.0f, 0.0f, 0.0f, 0.0f };
-    dt_apply_transposed_color_matrix(in, cmatrix, _xyz);
-    dt_XYZ_to_Lab(_xyz, out);
+    size_t start = chunksize * dt_get_thread_num();
+    size_t end = MIN(start + chunksize, npixels);
+    _cmatrix_fastpath_simple(out + 4*start, in + 4*start, end-start, d->cmatrix);
   }
+  dt_omploop_sfence();
+#else
+  _cmatrix_fastpath_simple(out, in, npixels, d->cmatrix);
+#endif
 }
 
 static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self,
