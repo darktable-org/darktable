@@ -39,7 +39,7 @@
 #if defined(__SSE__)
 #define DT_PREFETCH(addr) _mm_prefetch(addr, _MM_HINT_T2)
 #define PREFETCH_NTA(addr) _mm_prefetch(addr, _MM_HINT_NTA)
-#elif defined(__GNUC__) && __GNUC__ > 7
+#elif defined(__GNUC__)
 #define DT_PREFETCH(addr) __builtin_prefetch(addr,1,1)
 #define PREFETCH_NTA(addr) __builtin_prefetch(addr,1,0)
 #else
