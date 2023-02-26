@@ -1110,11 +1110,10 @@ void dt_bauhaus_widget_press_quad(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->quad_toggle)
-  {
     w->quad_paint_flags ^= CPF_ACTIVE;
-  }
   else
     w->quad_paint_flags |= CPF_ACTIVE;
+  gtk_widget_queue_draw(GTK_WIDGET(w));
 
   g_signal_emit_by_name(G_OBJECT(w), "quad-pressed");
 }
@@ -3328,9 +3327,14 @@ static void _action_process_button(GtkWidget *widget, dt_action_effect_t effect)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(effect != (w->quad_paint_flags & CPF_ACTIVE ? DT_ACTION_EFFECT_ON : DT_ACTION_EFFECT_OFF))
+  {
     dt_bauhaus_widget_press_quad(widget);
+    dt_bauhaus_widget_release_quad(widget);
+  }
 
-  gchar *text = w->quad_paint_flags & CPF_ACTIVE ? _("button on") : _("button off");
+  gchar *text = w->quad_toggle
+              ? w->quad_paint_flags & CPF_ACTIVE ? _("button on") : _("button off")
+              : _("button pressed")  ;
   dt_action_widget_toast(w->module, widget, text);
 
   gtk_widget_queue_draw(widget);
