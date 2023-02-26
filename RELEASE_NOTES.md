@@ -107,6 +107,12 @@ The following is a summary of the main features added to darktable
 
 ## Other Changes
 
+- Add global <kbd>right-click</kbd> and drad to fix image
+  rotation. This can now be used at any moment in darkroom as long as
+  the currently focused module is not using this shortcut. This allows
+  for fast rotation correction without having to open the Rotation and
+  Perspective module.
+
 - Add OpenCL support to the Sigmoid module.
 
 - Do not invalidate snapshot anymore when the history is changed
@@ -170,6 +176,12 @@ The following is a summary of the main features added to darktable
   - Allows finetuning of scale,
   - Add an auto-scale button.
   - Improve overall module performance of about 8%.
+
+- Add OpenMP support to XCF export for better performances.
+
+- Add support for writing metadata to XCF format.
+
+- Add OpenMP support to the RGBE loader for better performances.
 
 ## Bug Fixes
 
