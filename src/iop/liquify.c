@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2014-2021 darktable developers.
+    Copyright (C) 2014-2023 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,8 +43,6 @@
 
 // this is the version of the modules parameters, and includes version information about compile-time dt
 DT_MODULE_INTROSPECTION(1, dt_iop_liquify_params_t)
-
-#pragma GCC diagnostic ignored "-Wshadow"
 
 #define MAX_NODES 100 // max of nodes in one instance
 
@@ -405,8 +403,8 @@ static void node_gc(dt_iop_liquify_params_t *p)
       k++;
   }
   //  invalidate all nodes beyond the last moved one
-  for(int k=last+1; k<MAX_NODES; k++)
-    p->nodes[k].header.type = DT_LIQUIFY_PATH_INVALIDATED;
+  for(int l=last+1; l<MAX_NODES; l++)
+    p->nodes[l].header.type = DT_LIQUIFY_PATH_INVALIDATED;
 }
 
 static void node_delete(dt_iop_liquify_params_t *p, dt_liquify_path_data_t *this)
@@ -833,11 +831,16 @@ static float complex point_at_arc_length(const float complex points[], const int
 static float *build_lookup_table(const int distance, const float control1, const float control2)
 {
   float complex *clookup = dt_alloc_align(64, sizeof(float complex) * (distance + 2));
-
+  float *lookup = dt_alloc_align_float((size_t)(distance + 2));
+  if (!clookup || !lookup)
+  {
+    dt_free_align(clookup);
+    dt_free_align(lookup);
+    return NULL;
+  }
   interpolate_cubic_bezier(I, control1 + I, control2, 1.0, clookup, distance + 2);
 
   // reparameterize bezier by x and keep only y values
-  float *lookup = dt_alloc_align_float((size_t)(distance + 2));
   float *ptr = lookup;
   float complex *cptr = clookup + 1;
   const float complex *cptr_end = cptr + distance;
@@ -916,7 +919,13 @@ static void build_round_stamp(float complex **pstamp,
   // lookup table: map of distance from center point => warp
   const int table_size = iradius * LOOKUP_OVERSAMPLE;
   const float *const restrict lookup_table = build_lookup_table(table_size, warp->control1, warp->control2);
-
+  if(!stamp || !lookup_table)
+  {
+    *pstamp = stamp;
+    dt_free_align((void*)lookup_table);
+    dt_print(DT_DEBUG_ALWAYS,"[liquify] out of memory, round stamp skipped\n");
+    return;
+  }
   // points into buffer at the center of the circle
   float complex *const center = stamp + 2 * iradius * iradius + 2 * iradius;
 
@@ -2299,8 +2308,8 @@ void _hit_paths(dt_iop_module_t *module,
       }
       else if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT)
       {
-        const float complex p = warp->point - warp->strength;
-        CHECK_HIT_PT(warp->strength + (float)DT_PIXEL_APPLY_DPI(5) * (p / cabsf(p)));
+        const float complex wp = warp->point - warp->strength;
+        CHECK_HIT_PT(warp->strength + (float)DT_PIXEL_APPLY_DPI(5) * (wp / cabsf(wp)));
       }
 
       if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
@@ -2535,8 +2544,8 @@ static void smooth_paths_linsys(dt_iop_liquify_params_t *params)
     {
       const dt_liquify_path_data_t *d = (dt_liquify_path_data_t *) node;
       const dt_liquify_path_data_t *p = node_prev(params, node);
-      const dt_liquify_path_data_t *n = node_next(params, node);
-      const dt_liquify_path_data_t *nn = n ? node_next(params, n) : NULL;
+      const dt_liquify_path_data_t *nx = node_next(params, node);
+      const dt_liquify_path_data_t *nn = nx ? node_next(params, nx) : NULL;
 
       pt[idx] = node->warp.point;
       if(d->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
@@ -2546,10 +2555,10 @@ static void smooth_paths_linsys(dt_iop_liquify_params_t *params)
       }
 
       const int autosmooth      = d->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH;
-      const int next_autosmooth = n   &&  n->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH;
+      const int next_autosmooth = nx  &&  nx->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH;
       const int firstseg        = !p  ||  d->header.type != DT_LIQUIFY_PATH_CURVE_TO_V1;
       const int lastseg         = !nn ||  nn->header.type != DT_LIQUIFY_PATH_CURVE_TO_V1;
-      const int lineseg         = n   &&  n->header.type == DT_LIQUIFY_PATH_LINE_TO_V1;
+      const int lineseg         = nx  &&  nx->header.type == DT_LIQUIFY_PATH_LINE_TO_V1;
 
       // Program the linear system with equations:
       //
