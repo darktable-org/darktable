@@ -127,7 +127,7 @@ static gboolean _ignore_image(const gchar *filename)
   ext++;
 
   if(dt_conf_key_not_empty("libraw_extensions"))
-    extensions_whitelist = g_strjoin(" ", always_by_libraw, dt_conf_get_string_const("libraw_extensions"), NULL);
+    extensions_whitelist = g_strjoin(" ", always_by_libraw, dt_conf_get_string_const("libraw_extensions"), (char *)NULL);
   else
     extensions_whitelist = g_strdup(always_by_libraw);
 
