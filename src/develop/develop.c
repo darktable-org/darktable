@@ -663,7 +663,9 @@ restart:
 
 static inline void _dt_dev_load_pipeline_defaults(dt_develop_t *dev)
 {
-  for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
+  for(const GList *modules = g_list_last(dev->iop);
+      modules;
+      modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_iop_reload_defaults(module);
@@ -1914,7 +1916,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   dt_dev_undo_start_record(dev);
 
-  int auto_apply_modules = 0;
+  int auto_apply_modules_count = 0;
   gboolean first_run = FALSE;
   gboolean legacy_params = FALSE;
 
@@ -1923,30 +1925,40 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
   if(!no_image)
   {
     // cleanup
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                          "DELETE FROM memory.history", NULL, NULL, NULL);
 
     dt_print(DT_DEBUG_PARAMS, "[dt_dev_read_history_ext] temporary history deleted\n");
 
-    // make sure all modules default params are loaded to init history
+    // Make sure all modules default params are loaded to init
+    // history. This is important as some modules have specific
+    // defaults based on metadata.
+
     _dt_dev_load_pipeline_defaults(dev);
 
-    // prepend all default modules to memory.history
+    // Prepend all default modules to memory.history
+
     _dev_add_default_modules(dev, imgid);
-    const int default_modules = _dev_get_module_nb_records();
+    const int default_modules_count = _dev_get_module_nb_records();
 
-    // maybe add auto-presets to memory.history
+    // Maybe add auto-presets to memory.history
     first_run = _dev_auto_apply_presets(dev);
-    auto_apply_modules = _dev_get_module_nb_records() - default_modules;
+    auto_apply_modules_count = _dev_get_module_nb_records() - default_modules_count;
 
-    dt_print(DT_DEBUG_PARAMS, "[dt_dev_read_history_ext] temporary history initialised with default params and presets\n");
+    dt_print(DT_DEBUG_PARAMS,
+             "[dt_dev_read_history_ext] temporary history initialised with"
+             " default params and presets\n");
 
-    // now merge memory.history into main.history
+    // Now merge memory.history into main.history
+
     _dev_merge_history(dev, imgid);
 
-    dt_print(DT_DEBUG_PARAMS, "[dt_dev_read_history_ext] temporary history merged with image history\n");
+    dt_print(DT_DEBUG_PARAMS,
+             "[dt_dev_read_history_ext] temporary history merged with image history\n");
 
     //  first time we are loading the image, try to import lightroom .xmp if any
-    if(dev->image_loading && first_run) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
+    if(dev->image_loading && first_run)
+      dt_lightroom_import(dev->image_storage.id, dev, TRUE);
 
     // if a snapshot move all auto-presets into the history_snapshot table
 
@@ -2273,7 +2285,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     // if altered doesn't mask it
     if(!(hash_status & DT_HISTORY_HASH_CURRENT))
     {
-      flags = flags | (auto_apply_modules ? DT_HISTORY_HASH_AUTO : DT_HISTORY_HASH_BASIC);
+      flags = flags
+        | (auto_apply_modules_count
+           ? DT_HISTORY_HASH_AUTO
+           : DT_HISTORY_HASH_BASIC);
     }
     dt_history_hash_write_from_history(imgid, flags);
     // As we have a proper history right now and this is first_run we

@@ -150,13 +150,19 @@ int legacy_params(dt_iop_module_t *self,
 static inline void _temp_params_from_array(dt_iop_temperature_params_t *p,
                                            const double a[4])
 {
-  p->red = a[0]; p->green = a[1]; p->blue = a[2]; p->g2 = a[3];
+  p->red = a[0];
+  p->green = a[1];
+  p->blue = a[2];
+  p->g2 = a[3];
 }
 
 static inline void _temp_array_from_params(double a[4],
                                            const dt_iop_temperature_params_t *p)
 {
-  a[0] = p->red; a[1] = p->green; a[2] = p->blue; a[3] = p->g2;
+  a[0] = p->red;
+  a[1] = p->green;
+  a[2] = p->blue;
+  a[3] = p->g2;
 }
 
 static int ignore_missing_wb(dt_image_t *img)
@@ -696,7 +702,8 @@ void commit_params(struct dt_iop_module_t *self,
   d->coeffs[3] = p->g2;
 
   // 4Bayer images not implemented in OpenCL yet
-  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+    piece->process_cl_ready = 0;
 
   if(g)
   {
@@ -1289,7 +1296,8 @@ void gui_update(struct dt_iop_module_t *self)
 
           // we have a gap!
 
-          // we do not know what finetuning value was set, we need to bruteforce to find it
+          // we do not know what finetuning value was set, we need to
+          // bruteforce to find it
           for(int tune = dt_wb_preset(i - 1)->tuning + 1;
               !found && (tune < dt_wb_preset(i)->tuning);
               tune++)
@@ -1585,7 +1593,6 @@ void reload_defaults(dt_iop_module_t *module)
           break;
         }
       }
-
     }
 
     // Store EXIF WB coeffs
@@ -1693,9 +1700,9 @@ static gboolean btn_toggled(GtkWidget *togglebutton,
 
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t*)self->gui_data;
 
-  int preset = togglebutton == g->btn_asshot ? DT_IOP_TEMP_AS_SHOT :
-               togglebutton == g->btn_d65 ? DT_IOP_TEMP_D65 :
-               togglebutton == g->btn_user ? DT_IOP_TEMP_USER : 0;
+  const int preset = togglebutton == g->btn_asshot ? DT_IOP_TEMP_AS_SHOT :
+                     togglebutton == g->btn_d65 ? DT_IOP_TEMP_D65 :
+                     togglebutton == g->btn_user ? DT_IOP_TEMP_USER : 0;
 
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton)))
   {
@@ -1722,7 +1729,9 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_asshot),
                                pos == DT_IOP_TEMP_AS_SHOT);
-  if(pos != DT_IOP_TEMP_SPOT) dt_iop_color_picker_reset(self, TRUE);
+  if(pos != DT_IOP_TEMP_SPOT)
+    dt_iop_color_picker_reset(self, TRUE);
+
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_user),
                                pos == DT_IOP_TEMP_USER);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->btn_d65),
