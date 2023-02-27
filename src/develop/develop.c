@@ -1555,11 +1555,13 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
             // it is important to recover temperature in this case
             // (modern chroma and not module present as we need to
             // have the pre 3.0 default parameters used.
+            const gchar *current_workflow =
+              dt_conf_get_string_const("plugins/darkroom/workflow");
 
             dt_conf_set_string("plugins/darkroom/workflow", "display-referred (legacy)");
             dt_iop_reload_defaults(module);
             _dev_insert_module(dev, module, imgid);
-            dt_conf_set_string("plugins/darkroom/workflow", "scene-referred (filmic)");
+            dt_conf_set_string("plugins/darkroom/workflow", current_workflow);
             dt_iop_reload_defaults(module);
           }
         }
