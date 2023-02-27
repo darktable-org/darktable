@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -293,17 +294,33 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   // numcomps == 4 : rgb, alpha -> rgb. put alpha into the mix?
 
   // first try: ignore alpha.
+
+  const size_t npixels = (size_t)img->width * img->height;
+
   if(image->numcomps < 3) // 1, 2 => grayscale
   {
-    for(size_t i = 0; i < (size_t)img->width * img->height; i++)
-      buf[i * 4 + 0] = buf[i * 4 + 1] = buf[i * 4 + 2] = (float)(image->comps[0].data[i] + signed_offsets[0])
-                                                         / float_divs[0];
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npixels, float_divs, signed_offsets, image) \
+  shared(buf)
+#endif
+    for(size_t index = 0; index < npixels; index++)
+      buf[index * 4] = buf[index * 4 + 1] = buf[index * 4 + 2] =
+      (float)(image->comps[0].data[index] + signed_offsets[0]) / float_divs[0];
   }
   else // 3, 4 => rgb
   {
-    for(size_t i = 0; i < (size_t)img->width * img->height; i++)
-      for(int k = 0; k < 3; k++)
-        buf[i * 4 + k] = (float)(image->comps[k].data[i] + signed_offsets[k]) / float_divs[k];
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npixels, float_divs, signed_offsets, image) \
+  shared(buf)
+#endif
+    for(size_t index = 0; index < npixels; index++)
+    {
+      buf[index * 4]     = (float)(image->comps[0].data[index] + signed_offsets[0]) / float_divs[0];
+      buf[index * 4 + 1] = (float)(image->comps[1].data[index] + signed_offsets[1]) / float_divs[1];
+      buf[index * 4 + 2] = (float)(image->comps[2].data[index] + signed_offsets[2]) / float_divs[2];
+    }
   }
 
   img->buf_dsc.cst = IOP_CS_RGB; // j2k is always RGB
