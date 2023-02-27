@@ -1232,7 +1232,7 @@ static gboolean checker_button_press(
     }
     if(new_color_valid)
     {
-      if(p->num_patches < 24 && (patch < 0 || patch >= p->num_patches))
+      if(p->num_patches < MAX_PATCHES && (patch < 0 || patch >= p->num_patches))
       {
         p->num_patches = MIN(MAX_PATCHES, p->num_patches + 1);
         patch = p->num_patches - 1;
