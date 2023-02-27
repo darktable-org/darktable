@@ -147,8 +147,8 @@ typedef enum dt_iop_toneequalizer_filter_t
   DT_TONEEQ_NONE = 0,   // $DESCRIPTION: "no"
   DT_TONEEQ_AVG_GUIDED, // $DESCRIPTION: "averaged guided filter"
   DT_TONEEQ_GUIDED,     // $DESCRIPTION: "guided filter"
-  DT_TONEEQ_AVG_EIGF,   // $DESCRIPTION: "averaged eigf"
-  DT_TONEEQ_EIGF        // $DESCRIPTION: "eigf"
+  DT_TONEEQ_AVG_EIGF,   // $DESCRIPTION: "averaged EIGF"
+  DT_TONEEQ_EIGF        // $DESCRIPTION: "EIGF"
 } dt_iop_toneequalizer_filter_t;
 
 
@@ -457,11 +457,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.details = DT_TONEEQ_EIGF;
   p.feathering = 20.0f;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf): strong"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (EIGF): strong"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf): strong"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (GF): strong"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
@@ -469,11 +469,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.feathering = 7.0f;
   p.iterations = 3;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf): medium"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (EIGF): medium"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf): medium"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (GF): medium"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
@@ -481,11 +481,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.feathering = 1.0f;
   p.iterations = 1;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf): soft"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (EIGF): soft"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf): soft"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (GF): soft"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // build the 1D contrast curves that revert the local compression of contrast above
@@ -3181,8 +3181,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->details, _("'no' affects global and local contrast (safe if you only add contrast)\n"
                                             "'guided filter' only affects global contrast and tries to preserve local contrast\n"
                                             "'averaged guided filter' is a geometric mean of 'no' and 'guided filter' methods\n"
-                                            "'eigf' (exposure-independent guided filter) is a guided filter that is exposure-independent, it smooths shadows and highlights the same way (contrary to guided filter which smooths less the highlights)\n"
-                                            "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided filter' methods"));
+                                            "'EIGF' (exposure-independent guided filter) is a guided filter that is exposure-independent, it smooths shadows and highlights the same way (contrary to guided filter which smooths less the highlights)\n"
+                                            "'averaged EIGF' is a geometric mean of 'no' and 'exposure-independent guided filter' methods"));
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
   dt_bauhaus_slider_set_soft_max(g->iterations, 5);
