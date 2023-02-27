@@ -2234,7 +2234,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     }
 
     // make sure that always-on modules are always on. duh.
-    if(hist->module->default_enabled == 1 && hist->module->hide_enable_button == 1)
+    if(hist->module->default_enabled == 1
+       && hist->module->hide_enable_button == 1)
       hist->enabled = 1;
 
     dev->history = g_list_append(dev->history, hist);
