@@ -1215,16 +1215,13 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     found = TRUE;
   }
-  else
+  // is this a "D65 white balance"?
+  else if(feqf(p->red, (float)g->daylight_wb[0], DT_COEFF_EPS)
+          && feqf(p->green, (float)g->daylight_wb[1], DT_COEFF_EPS)
+          && feqf(p->blue, (float)g->daylight_wb[2], DT_COEFF_EPS))
   {
-    // is this a "D65 white balance"?
-    if(feqf(p->red, (float)g->daylight_wb[0], DT_COEFF_EPS)
-      && feqf(p->green, (float)g->daylight_wb[1], DT_COEFF_EPS)
-      && feqf(p->blue, (float)g->daylight_wb[2], DT_COEFF_EPS))
-    {
-      dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
-      found = TRUE;
-    }
+    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
+    found = TRUE;
   }
 
   if(!found)
