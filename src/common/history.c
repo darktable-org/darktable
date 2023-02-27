@@ -1309,7 +1309,7 @@ int dt_history_compress_on_list(const GList *imgs)
   return uncompressed;
 }
 
-gboolean dt_history_check_module_exists(int32_t imgid,
+gboolean dt_history_check_module_exists(const int32_t imgid,
                                         const char *operation,
                                         const gboolean enabled)
 {
@@ -1321,7 +1321,7 @@ gboolean dt_history_check_module_exists(int32_t imgid,
     dt_database_get(darktable.db),
     "SELECT imgid"
     " FROM main.history"
-    " WHERE imgid= ?1 AND operation = ?2 AND enabled in (1, ?3)",
+    " WHERE imgid= ?1 AND operation = ?2 AND enabled IN (1, ?3)",
     -1, &stmt, NULL);
   // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
