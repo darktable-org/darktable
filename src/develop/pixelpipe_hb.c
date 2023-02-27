@@ -1083,12 +1083,12 @@ static int pixelpipe_process_on_CPU(
     dt_print_pipe(DT_DEBUG_PIPE, "process TILE", piece->pipe, module->so->op, roi_in, roi_out, "\n");
 
     if(pfm_dump)
-      dt_dump_pipe_pfm(module->so->op, input, roi_in->width, roi_in->height, in_bpp / 4, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+      dt_dump_pipe_pfm(module->so->op, input, roi_in->width, roi_in->height, in_bpp, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
 
     if(pfm_dump)
-      dt_dump_pipe_pfm(module->so->op, *output, roi_out->width, roi_out->height, bpp / 4, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+      dt_dump_pipe_pfm(module->so->op, *output, roi_out->width, roi_out->height, bpp, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
@@ -1102,7 +1102,7 @@ static int pixelpipe_process_on_CPU(
     dt_print_pipe(DT_DEBUG_PIPE, "pixelpipe_process_on_CPU", piece->pipe, module->so->op, roi_in, roi_out, "\n");
 
     if(pfm_dump)
-      dt_dump_pipe_pfm(module->so->op, input, roi_in->width, roi_in->height, in_bpp / 4, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+      dt_dump_pipe_pfm(module->so->op, input, roi_in->width, roi_in->height, in_bpp, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
     // this code section is for simplistic benchmarking via --bench-module
     if((piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT)) && darktable.bench_module)
@@ -1145,7 +1145,7 @@ static int pixelpipe_process_on_CPU(
     module->process(module, piece, input, *output, roi_in, roi_out);
 
     if(pfm_dump)
-      dt_dump_pipe_pfm(module->so->op, *output, roi_out->width, roi_out->height, bpp / 4, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+      dt_dump_pipe_pfm(module->so->op, *output, roi_out->width, roi_out->height, bpp, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
 
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
@@ -1717,7 +1717,14 @@ static int dt_dev_pixelpipe_process_rec(
               darktable.unmuted = old_muted;
             }
           }
+          const gboolean pfm_dump = darktable.dump_pfm_pipe && (piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT));
+          if(pfm_dump)
+            dt_opencl_dump_pipe_pfm(module->so->op, pipe->devid, cl_mem_input, TRUE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
           success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+          if(success_opencl && pfm_dump)
+            dt_opencl_dump_pipe_pfm(module->so->op, pipe->devid, *cl_mem_output, FALSE, dt_dev_pixelpipe_type_to_str(piece->pipe->type));
+
           pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
           pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
 

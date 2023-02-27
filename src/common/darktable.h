@@ -282,14 +282,6 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_COMMON         = DT_DEBUG_OPENCL | DT_DEBUG_DEV | DT_DEBUG_MASKS | DT_DEBUG_PARAMS | DT_DEBUG_IMAGEIO | DT_DEBUG_PIPE,
 } dt_debug_thread_t;
 
-typedef enum dt_dump_pfm_t
-{
-  DT_DUMP_PFM_MASK        = 0,
-  DT_DUMP_PFM_RGB         = 1,
-  DT_DUMP_PFM_LAST        = 1,
-} dt_dump_pfm_t;
-
-
 typedef struct dt_codepath_t
 {
   unsigned int SSE2 : 1;
@@ -387,7 +379,9 @@ void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...) __attribute__(
 int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();
-void dt_dump_pfm(const char *filename, const void* data, const int width, const int height, dt_dump_pfm_t mode, const char *modname);
+
+void dt_dump_pfm_file(const char *pipe, const void *data, const int width, const int height, const int bpp, const char *modname, const char *head, const gboolean input, const gboolean output);
+void dt_dump_pfm(const char *filename, const void* data, const int width, const int height, const int bpp, const char *modname);
 void dt_dump_pipe_pfm(const char *mod, const void* data, const int width, const int height, const int bpp, const gboolean input, const char *pipe);
 
 void *dt_alloc_align(size_t alignment, size_t size);
