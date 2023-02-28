@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-02-28 18:22+0100\n"
-"PO-Revision-Date: 2023-02-28 18:25+0100\n"
+"PO-Revision-Date: 2023-02-28 18:26+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4611,7 +4611,7 @@ msgstr "Moyenne EIGF"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:375
 msgid "EIGF"
-msgstr ""
+msgstr "EIGF"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:379
 msgid "RGB average"
