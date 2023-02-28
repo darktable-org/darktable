@@ -293,6 +293,7 @@ static void _bt_add_shape(GtkWidget *widget, GdkEventButton *event, gpointer sha
   if(event->button == 1)
   {
     _tree_add_shape(NULL, shape);
+
     if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
     {
       darktable.develop->form_gui->creation_continuous = TRUE;

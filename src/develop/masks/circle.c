@@ -38,7 +38,8 @@ static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t
 
   if(!gui) return;
 
-  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+  dt_masks_form_gui_points_t *gpt =
+    (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
   // we first check if we are inside the source form
@@ -177,15 +178,23 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
   return 0;
 }
 
-static int _circle_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy,
-                                         double pressure, int which, int type, uint32_t state,
-                                         dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
+static int _circle_events_button_pressed(struct dt_iop_module_t *module,
+                                         float pzx, float pzy,
+                                         const double pressure,
+                                         const int which,
+                                         const int type,
+                                         const uint32_t state,
+                                         dt_masks_form_t *form,
+                                         const int parentid,
+                                         dt_masks_form_gui_t *gui,
+                                         const int index)
 {
   if(!gui) return 0;
 
   if(!gui->creation)
   {
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    dt_masks_form_gui_points_t *gpt =
+      (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
 
     if(gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -320,7 +329,10 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
     }
     //spot and retouch manage creation_continuous in their own way
-    if(crea_module && gui->creation_continuous && strcmp(crea_module->so->op, "spots") != 0 && strcmp(crea_module->so->op, "retouch") != 0)
+    if(crea_module
+       && gui->creation_continuous
+       && strcmp(crea_module->so->op, "spots") != 0
+       && strcmp(crea_module->so->op, "retouch") != 0)
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)crea_module->blend_data;
       for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
@@ -553,9 +565,11 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
     // see if we are close to the anchor points
     gui->point_selected = -1;
     gui->point_border_selected = -1;
+
     if(gui->form_selected)
     {
-      dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+      dt_masks_form_gui_points_t *gpt =
+        (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
       // prefer border point over shape itself in case of near overlap for ease of pickup
       if(x - gpt->border[2] > -as && x - gpt->border[2] < as &&
@@ -719,15 +733,19 @@ static int _circle_get_points(dt_develop_t *dev, float x, float y, float radius,
   return 0;
 }
 
-static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_gui_t *gui, int index,
-                                       int num_points)
+static void _circle_events_post_expose(cairo_t *cr,
+                                       const float zoom_scale,
+                                       dt_masks_form_gui_t *gui,
+                                       const int index,
+                                       const int num_points)
 {
   (void)num_points; // unused arg, keep compiler from complaining
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
   const int len = sizeof(dashed) / sizeof(dashed[0]);
-  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+  dt_masks_form_gui_points_t *gpt =
+    (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
   // add a preview when creating a circle
   // in creation mode
@@ -1456,4 +1474,3 @@ const dt_masks_functions_t dt_masks_functions_circle = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

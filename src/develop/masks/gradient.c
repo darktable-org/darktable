@@ -306,7 +306,8 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
   if(gui->form_dragging && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we get the gradient
-    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
+    dt_masks_point_gradient_t *gradient =
+      (dt_masks_point_gradient_t *)((form->points)->data);
 
     // we end the form dragging
     gui->form_dragging = FALSE;
@@ -332,7 +333,8 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
   else if(gui->form_rotating && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we get the gradient
-    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
+    dt_masks_point_gradient_t *gradient =
+      (dt_masks_point_gradient_t *)((form->points)->data);
 
     // we end the form rotating
     gui->form_rotating = FALSE;
@@ -343,7 +345,8 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     const float y = pzy * ht;
 
     // we need the reference point
-    dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+    dt_masks_form_gui_points_t *gpt =
+      (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
     const float xref = gpt->points[0];
     const float yref = gpt->points[1];
@@ -377,7 +380,8 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
   else if(gui->gradient_toggling)
   {
     // we get the gradient
-    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
+    dt_masks_point_gradient_t *gradient =
+      (dt_masks_point_gradient_t *)((form->points)->data);
 
     // we end the gradient toggling
     gui->gradient_toggling = FALSE;
@@ -1528,4 +1532,3 @@ const dt_masks_functions_t dt_masks_functions_gradient = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
