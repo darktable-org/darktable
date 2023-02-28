@@ -429,7 +429,8 @@ void dt_dump_pfm_file(
         const char *modname,
         const char *head,
         const gboolean input,
-        const gboolean output)
+        const gboolean output,
+        const gboolean cpu)
 {
   static int written = 0;
 
@@ -445,20 +446,18 @@ void dt_dump_pfm_file(
   }
 
   char fname[PATH_MAX]= { 0 };
-  snprintf(fname, sizeof (fname), "%s/%04d_%s_%s%s%s.%s",
+  snprintf(fname, sizeof (fname), "%s/%04d_%s_%s_%s%s%s.%s",
      path,
      written,
      modname,
-     (input) ? "in_" : "",
-     (output) ? "out_" : "",
+     cpu ? "cpu" : "GPU", 
+     input ? "in_" : "",
+     output ? "out_" : "",
      (bpp != 16) ? "M" : "C",
      (bpp==2) ? "ppm" : "pfm");
 
-  if(!((width>0) && (height>0) && (width<50000) && (height<50000) && data))
-  {
-    dt_print(DT_DEBUG_ALWAYS, "%20s '%s' invalid data at%p\n", head, fname, data); 
+  if((width<1) || (height<1) || !data)
     return;
-  }
 
   FILE *f = g_fopen(fname, "wb");
   if(f == NULL)
@@ -498,7 +497,7 @@ void dt_dump_pfm(
   if(!modname) return;
   if(!dt_str_commasubstring(darktable.dump_pfm_module, modname)) return; 
 
-  dt_dump_pfm_file(modname, data, width, height, bpp, filename, "[dt_dump_pfm]", FALSE, FALSE);
+  dt_dump_pfm_file(modname, data, width, height, bpp, filename, "[dt_dump_pfm]", FALSE, FALSE, TRUE);
 }
 
 void dt_dump_pipe_pfm(
@@ -514,7 +513,7 @@ void dt_dump_pipe_pfm(
   if(!mod) return;
   if(!dt_str_commasubstring(darktable.dump_pfm_pipe, mod)) return; 
 
-  dt_dump_pfm_file(pipe, data, width, height, bpp, mod, "[dt_dump_pipe_pfm]", input, !input);
+  dt_dump_pfm_file(pipe, data, width, height, bpp, mod, "[dt_dump_pipe_pfm]", input, !input, TRUE);
 }
 
 
