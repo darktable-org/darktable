@@ -1100,7 +1100,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
     }
     else
     {
-      dt_iop_module_t *crea_module = gui->creation_module;
       // we delete last point (the one we are currently dragging)
       dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_last(form->points)->data;
       form->points = g_list_remove(form->points, point);
@@ -1111,7 +1110,9 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       _path_init_ctrl_points(form);
 
       // we save the form and quit creation mode
+      dt_iop_module_t *crea_module = gui->creation_module;
       dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
+
       if(crea_module)
       {
         dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
@@ -1124,13 +1125,10 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         else if(!gui->creation_continuous)
           dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
         dt_masks_iop_update(crea_module);
-        dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
-        gui->creation_module = NULL;
       }
-      else
-      {
-        dt_dev_masks_selection_change(darktable.develop, NULL, form->formid);
-      }
+
+      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
+      gui->creation_module = NULL;
 
       if(gui->creation_continuous)
       {

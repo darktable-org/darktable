@@ -239,7 +239,6 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
   }
   else
   {
-    dt_iop_module_t *crea_module = gui->creation_module;
     // we create the circle
     dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
 
@@ -264,6 +263,8 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
     circle->radius = dt_conf_get_float(DT_MASKS_CONF(form->type, circle, size));
     circle->border = dt_conf_get_float(DT_MASKS_CONF(form->type, circle, border));
     form->points = g_list_append(form->points, circle);
+
+    dt_iop_module_t *crea_module = gui->creation_module;
     dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
 
     if(crea_module)
@@ -279,14 +280,10 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
       else if(!gui->creation_continuous)
         dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
-      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
-      gui->creation_module = NULL;
     }
-    else
-    {
-      // we select the new form
-      dt_dev_masks_selection_change(darktable.develop, NULL, form->formid);
-    }
+
+    dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
+    gui->creation_module = NULL;
 
     // if we draw a clone circle, we start now the source dragging
     if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
