@@ -3019,7 +3019,7 @@ void dt_opencl_dump_pipe_pfm(const char* mod,
   {
     const cl_int err = dt_opencl_read_host_from_device(devid, data, img, width, height, element_size);
     if(err == CL_SUCCESS)
-      dt_dump_pfm_file(pipe, data, width, height, element_size, mod, "[dt_opencl_dump_pipe_pfm]", input, !input);
+      dt_dump_pfm_file(pipe, data, width, height, element_size, mod, "[dt_opencl_dump_pipe_pfm]", input, !input, FALSE);
 
     dt_free_align(data);
   }

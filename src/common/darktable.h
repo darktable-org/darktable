@@ -380,7 +380,7 @@ int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();
 
-void dt_dump_pfm_file(const char *pipe, const void *data, const int width, const int height, const int bpp, const char *modname, const char *head, const gboolean input, const gboolean output);
+void dt_dump_pfm_file(const char *pipe, const void *data, const int width, const int height, const int bpp, const char *modname, const char *head, const gboolean input, const gboolean output, const gboolean cpu);
 void dt_dump_pfm(const char *filename, const void* data, const int width, const int height, const int bpp, const char *modname);
 void dt_dump_pipe_pfm(const char *mod, const void* data, const int width, const int height, const int bpp, const gboolean input, const char *pipe);
 
