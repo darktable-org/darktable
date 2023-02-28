@@ -622,10 +622,12 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
     return 1;
   }
   else if(which == 1
-          && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK) || dt_modifier_is(state, GDK_SHIFT_MASK)))
+          && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
+              || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
-    if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
+    if(form->type & DT_MASKS_CLONE)
+      dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
 
     return 1;
   }
@@ -669,7 +671,9 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
       dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
       // and we switch in edit mode to show all the forms
       // spots and retouch have their own handling of creation_continuous
-      if(gui->creation_continuous && ( strcmp(crea_module->so->op, "spots") == 0 || strcmp(crea_module->so->op, "retouch") == 0))
+      if(gui->creation_continuous
+         && (strcmp(crea_module->so->op, "spots") == 0
+             || strcmp(crea_module->so->op, "retouch") == 0))
         dt_masks_set_edit_mode_single_form(crea_module, form->formid, DT_MASKS_EDIT_FULL);
       else if(!gui->creation_continuous)
         dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
@@ -714,7 +718,10 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
       dt_masks_select_form(module, dt_masks_get_from_id(darktable.develop, form->formid));
     }
     //spot and retouch manage creation_continuous in their own way
-    if(crea_module && gui->creation_continuous && strcmp(crea_module->so->op, "spots") != 0 && strcmp(crea_module->so->op, "retouch") != 0)
+    if(crea_module
+       && gui->creation_continuous
+       && strcmp(crea_module->so->op, "spots") != 0
+       && strcmp(crea_module->so->op, "retouch") != 0)
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)crea_module->blend_data;
       for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
@@ -2089,4 +2096,3 @@ const dt_masks_functions_t dt_masks_functions_ellipse = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
