@@ -631,7 +631,6 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
   }
   else
   {
-    dt_iop_module_t *crea_module = gui->creation_module;
     // we create the ellipse
     dt_masks_point_ellipse_t *ellipse
         = (dt_masks_point_ellipse_t *)(malloc(sizeof(dt_masks_point_ellipse_t)));
@@ -659,6 +658,9 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
     ellipse->rotation = dt_conf_get_float(DT_MASKS_CONF(form->type, ellipse, rotation));
     ellipse->flags = dt_conf_get_int(DT_MASKS_CONF(form->type, ellipse, flags));
     form->points = g_list_append(form->points, ellipse);
+
+    dt_iop_module_t *crea_module = gui->creation_module;
+
     dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
 
     if(crea_module)
@@ -672,14 +674,10 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
       else if(!gui->creation_continuous)
         dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
-      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
-      gui->creation_module = NULL;
     }
-    else
-    {
-      // we select the new form
-      dt_dev_masks_selection_change(darktable.develop, NULL, form->formid);
-    }
+
+    dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
+    gui->creation_module = NULL;
 
     // if we draw a clone ellipse, we start now the source dragging
     if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))

@@ -408,7 +408,6 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
 
-    dt_iop_module_t *crea_module = gui->creation_module;
     // we create the gradient
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
@@ -423,6 +422,8 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     form->source[0] = form->source[1] = 0.0f;
 
     form->points = g_list_append(form->points, gradient);
+
+    dt_iop_module_t *crea_module = gui->creation_module;
     dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
 
     if(crea_module)
@@ -432,14 +433,10 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
       // and we switch in edit mode to show all the forms
       dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
-      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
-      gui->creation_module = NULL;
     }
-    else
-    {
-      // we select the new form
-      dt_dev_masks_selection_change(darktable.develop, NULL, form->formid);
-    }
+
+    dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid);
+    gui->creation_module = NULL;
 
     if(crea_module && gui->creation_continuous)
     {
