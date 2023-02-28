@@ -182,14 +182,15 @@ public:
    *  kd_: the dimensionality of the position vectors on the hyperplane.
    *  vd_: the dimensionality of the value vectors
    */
-  HashTablePermutohedral()
+  HashTablePermutohedral(size_t num_entries = 0)
   {
-    capacity = 1 << 15;
-    capacity_bits = 0x7fff;
+    capacity = 0;
+    capacity_bits = 1;
+    alloc_entries = 0;
     filled = 0;
-    entries = new Entry[capacity];
-    keys = new Key[maxFill()];
-    values = new Value[maxFill()]{ 0 };
+    entries = nullptr;
+    keys = nullptr;
+    values = nullptr;
   }
 
   HashTablePermutohedral(const HashTablePermutohedral &) = delete;
@@ -211,7 +212,7 @@ public:
 
   size_t maxFill() const
   {
-    return capacity / 2;
+    return alloc_entries;
   }
 
   // Returns a pointer to the keys array.
@@ -274,12 +275,49 @@ public:
   /* Grows the size of the hash table */
   void grow(int order = 1)
   {
+    if(order > 0)
+    {
+      auto_grow++;
+      growExact(capacity << (order-1));
+    }
+  }
+
+  /* initialize the hash table so that it can hold exactly num_entries without resizing */
+  void setSize(size_t num_entries)
+  {
+    capacity = 1 << 15;
+    capacity_bits = 0x7fff;
+    if(num_entries == 0)
+      num_entries = capacity/2;
+    else
+    {
+      while (capacity < 2*num_entries)
+      {
+      capacity <<= 1;
+      capacity_bits = (capacity_bits << 1) | 1;
+      }
+    }
+    alloc_entries = num_entries;
+    filled = 0;
+    entries = new Entry[capacity];
+    keys = new Key[maxFill()];
+    values = new Value[maxFill()]{ 0 };
+    init_alloc = total_alloc = capacity * sizeof(Entry) + maxFill() * sizeof(Key) + maxFill() * sizeof(Value);
+  }
+   
+  /* grow the size of the hash table so that it can hold exactly num_entries
+   * without requiring resizing.  The actual index array will be rounded up
+   * to the next higher power of two.
+   */
+  void growExact(size_t num_entries)
+  {
     size_t oldCapacity = capacity;
-    while(order-- > 0)
+    while(capacity < num_entries * 2)
     {
       capacity *= 2;
       capacity_bits = (capacity_bits << 1) | 1;
     }
+    alloc_entries = num_entries;
 
     // Migrate the value vectors.
     Value *newValues = new Value[maxFill()];
@@ -308,8 +346,9 @@ public:
     }
     delete[] entries;
     entries = newEntries;
+    total_alloc = capacity * sizeof(Entry) + maxFill() * sizeof(Key) + maxFill() * sizeof(Value);
   }
-
+   
 private:
   // Private struct for the hash table entries.
   struct Entry
@@ -320,8 +359,12 @@ private:
   Key *keys;
   Value *values;
   Entry *entries;
-  size_t capacity, filled;
+  size_t capacity, filled, alloc_entries;
   unsigned long capacity_bits;
+public:
+  size_t init_alloc { 0 };
+  size_t total_alloc { 0 };
+  size_t auto_grow { 0 };
 };
 
 
@@ -346,7 +389,7 @@ public:
    *    vd_ : dimensionality of value vectors
    * nData_ : number of points in the input
    */
-  PermutohedralLattice(size_t nData_, int nThreads_ = 1) : nData(nData_), nThreads(nThreads_)
+  PermutohedralLattice(size_t nData_, int nThreads_ = 1, size_t grid_points = ~0L) : nData(nData_), nThreads(nThreads_)
   {
     // Allocate storage for various arrays
     float *scaleFactorTmp = new float[D];
@@ -386,7 +429,14 @@ public:
     }
     scaleFactor = scaleFactorTmp;
 
+    size_t effective_MP = estimatedHashEntries(grid_points, nData);
+    size_t points = ((D+1) * nData) < effective_MP ? ((D+1) * nData) : effective_MP;
+
     hashTables = new HashTable[nThreads];
+    for(int i = 0; i < nThreads; i++)
+    {
+       hashTables[i].setSize(points / nThreads);
+    }
   }
 
   PermutohedralLattice(const PermutohedralLattice &) = delete;
@@ -400,6 +450,36 @@ public:
   }
 
   PermutohedralLattice &operator=(const PermutohedralLattice &) = delete;
+
+  /* compute the expected number of hash table entries we will need */
+  static size_t estimatedHashEntries(size_t grid_points, size_t num_pixels)
+  {
+    // as the number of grid points increases, the number which
+    // actually occur in the image becomes an ever-smaller
+    // percentage.  Scale the grid points to take account of this.
+    // Empirically, it appears that the number of actually-used
+    // points roughly doubles for every order of magnitude increase
+    // in total grid points.
+    double points_per_MP = MAX(0.1, grid_points / (float)num_pixels);
+    double base_factor = 50.0; // absolute scaling factor
+    double scaled = pow(1.8,log10(points_per_MP/base_factor));
+    size_t eff_pixels = (size_t)(scaled * num_pixels);
+    return ((D+1) * num_pixels) < eff_pixels ? ((D+1) * num_pixels) : eff_pixels;
+  }
+
+  /* compute the expected bytes of storage needed */
+  static size_t estimatedBytes(size_t grid_points, size_t num_pixels)
+  {
+     size_t hash_entries = estimatedHashEntries(grid_points, num_pixels);
+     size_t round_up = 1;
+     while (round_up < 2*hash_entries) round_up <<= 1;
+     // we need to store not only the Key, Value, and Entry arrays, we
+     // also need an additional copy of the Value array while blurring
+     // and storage for the remapping array while merging
+     size_t mergesize = hash_entries * 2 * (sizeof(Value)+sizeof(Key)) + round_up * sizeof(int);
+     size_t blursize = hash_entries * (2*sizeof(Value)+sizeof(Key)) + (hash_entries+round_up) * sizeof(int);
+     return MAX(mergesize, blursize);
+  }
 
   /* Performs splatting with given position and value vectors */
   void splat(float *position, float *value, size_t replay_index, int thread_index = 0) const
@@ -518,23 +598,31 @@ public:
      * won't waste much space if we simply grow the destination table enough to hold the sum of the
      * entries in the individual tables
      */
+    size_t alloc_entries = hashTables[0].maxFill();
+    size_t total_bytes = 0;
+    size_t total_grows = hashTables[0].auto_grow;
+    size_t init_bytes = hashTables[0].init_alloc;
     size_t total_entries = hashTables[0].size();
-    for(int i = 1; i < nThreads; i++) total_entries += hashTables[i].size();
-    int order = 0;
-    while(total_entries > hashTables[0].maxFill())
+    for(int i = 1; i < nThreads; i++)
     {
-      order++;
-      total_entries /= 2;
+       alloc_entries += hashTables[i].maxFill();
+       total_entries += hashTables[i].size();
+       init_bytes += hashTables[i].init_alloc;
+       total_bytes += hashTables[i].total_alloc;
+       total_grows += hashTables[i].auto_grow;
     }
-    if(order > 0) hashTables[0].grow(order);
+    hashTables[0].growExact(total_entries);
+    total_bytes += hashTables[0].total_alloc;
     /* Merge the multiple hash tables into one, creating an offset remap table. */
     int **offset_remap = new int *[nThreads];
+    size_t remap_bytes = 0;
     for(int i = 1; i < nThreads; i++)
     {
       const Key *oldKeys = hashTables[i].getKeys();
       const Value *oldVals = hashTables[i].getValues();
       const int filled = hashTables[i].size();
       offset_remap[i] = new int[filled];
+      remap_bytes += filled * sizeof(int);
       for(int j = 0; j < filled; j++)
       {
         Value *val = hashTables[0].lookup(oldKeys[j], true);
@@ -542,9 +630,24 @@ public:
         offset_remap[i][j] = val - hashTables[0].getValues();
       }
     }
+    if(darktable.unmuted & DT_DEBUG_MEMORY)
+    {
+       float fill_factor = 100.0f * total_entries / alloc_entries;
+       std::cerr << "[permutohedral] hash tables " << total_bytes << " bytes (" << init_bytes
+		 << " initially), " << total_entries << " entries" << std::endl
+		 << "[permutohedral] tables grew " << total_grows << " times, replay using "
+		 << (sizeof(ReplayEntry)*nData) << " bytes for " << nData << " pixels" << std::endl
+		 << "[permutohedral] fill factor " << fill_factor << "%, remap using "
+		 << remap_bytes << " bytes," << std::endl;
+    }
 
     /* Rewrite the offsets in the replay structure from the above generated table. */
-    for(int i = 0; i < nData; i++)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) if(nData >= 100000) \
+   dt_omp_firstprivate(nData, replay, offset_remap) \
+   schedule(static)
+#endif
+    for(size_t i = 0; i < nData; i++)
     {
       if(replay[i].table > 0)
       {
@@ -581,12 +684,19 @@ public:
     const Value *hashTableBase = oldValue;
     const Key *keyBase = hashTables[0].getKeys();
     const Value zero{ 0 };
+    const Value *const zeroPtr = &zero;
+
+    if (darktable.unmuted & DT_DEBUG_MEMORY)
+       std::cerr << "[permutohedral] blur using " << (sizeof(Value)*hashTables[0].size())
+		 << " bytes for newValue"<<std::endl;
 
     // For each of d+1 axes,
     for(int j = 0; j <= D; j++)
     {
 #ifdef _OPENMP
-#pragma omp parallel for shared(j, oldValue, newValue)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(j, oldValue, newValue, hashTableBase, hashTables, keyBase, zeroPtr) \
+    schedule(static)
 #endif
       // For each vertex in the lattice,
       for(int i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
@@ -599,10 +709,10 @@ public:
         const Value *oldVal = oldValue + i;
 
         const Value *vm1 = hashTables[0].lookup(neighbor1, false); // look up first neighbor
-        vm1 = vm1 ? vm1 - hashTableBase + oldValue : &zero;
+        vm1 = vm1 ? vm1 - hashTableBase + oldValue : zeroPtr;
 
         const Value *vp1 = hashTables[0].lookup(neighbor2, false); // look up second neighbor
-        vp1 = vp1 ? vp1 - hashTableBase + oldValue : &zero;
+        vp1 = vp1 ? vp1 - hashTableBase + oldValue : zeroPtr;
 
         // Mix values of the three vertices
         newValue[i].mix(vm1, oldVal, vp1);
@@ -624,7 +734,7 @@ public:
   }
 
 private:
-  int nData;
+  size_t nData;
   int nThreads;
   const float *scaleFactor;
   const int *canonical;
