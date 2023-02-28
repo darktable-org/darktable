@@ -420,95 +420,89 @@ void check_resourcelevel(const char *key, int *fractions, const int level)
   }
 }
 
-void _dump_pfm_file(
-        const char *name,
-        const void* in,
+void dt_dump_pfm_file(
+        const char *pipe,
+        const void* data,
         const int width,
         const int height,
-        const dt_dump_pfm_t mode,
+        const int bpp,
         const char *modname,
+        const char *head,
         const gboolean input,
-        const gboolean output)
+        const gboolean output,
+        const gboolean cpu)
 {
   static int written = 0;
 
-  if(mode > DT_DUMP_PFM_LAST)
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] undefined mode %i\n", mode);
-    return;
-  }
-
-  if((width < 1) || (height < 1) || (height > 20000) || (width > 20000))
-  {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] bad dimensions %dx%d\n", width, height);
-    return;
-  }
-
-  const size_t colors = (mode == DT_DUMP_PFM_MASK) ? 1 : 3;
-  const size_t p = (mode == DT_DUMP_PFM_MASK) ? 1 : 4;
-
-  char counts[32]= { 0 };
-  snprintf(counts, sizeof(counts), "%04d_", written);
-
   char path[PATH_MAX]= { 0 };
-  snprintf(path, sizeof(path), "%s/%s", darktable.tmp_directory, modname);
+  snprintf(path, sizeof(path), "%s/%s", darktable.tmp_directory, pipe);
   if(!dt_util_test_writable_dir(path))
   {
     if(g_mkdir(path, 0750))
     {
-      dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] can't create directory '%s'\n", path);
+      dt_print(DT_DEBUG_ALWAYS, "%20s can't create directory '%s'\n", head, path);
       return;
     }
   }
 
   char fname[PATH_MAX]= { 0 };
-  snprintf(fname, sizeof (fname), "%s/%s%s%s%s%s.pfm",
-     path, counts, (input) ? "in_" : "", (output) ? "out_" : "",
-     name, (p == 1) ? "_M" : "_C");
+  snprintf(fname, sizeof (fname), "%s/%04d_%s_%s_%s%s%s.%s",
+     path,
+     written,
+     modname,
+     cpu ? "cpu" : "GPU", 
+     input ? "in_" : "",
+     output ? "out_" : "",
+     (bpp != 16) ? "M" : "C",
+     (bpp==2) ? "ppm" : "pfm");
+
+  if((width<1) || (height<1) || !data)
+    return;
 
   FILE *f = g_fopen(fname, "wb");
   if(f == NULL)
   {
-    dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] can't write file '%s' in wb mode\n", fname); 
+    dt_print(DT_DEBUG_ALWAYS, "%20s can't write file '%s' in wb mode\n", head, fname); 
     return;
   }
 
-  if((mode == DT_DUMP_PFM_MASK) || (mode == DT_DUMP_PFM_RGB))
+  if(bpp==2)
+    fprintf(f, "P5\n%d %d\n", width, height);
+  else
+    fprintf(f, "P%s\n%d %d\n-1.0\n", (bpp != 16) ? "f" : "F", width, height);
+
+  for(int row = height - 1; row >= 0; row--)
   {
-    fprintf(f, "P%s\n%d %d\n-1.0\n", (p == 1) ? "f" : "F", width, height);
-    const float *data = in;
-    for(int row = height - 1; row >= 0; row--)
+    for(int col = 0; col < width; col++)
     {
-      for(int col = 0; col < width; col++)
-      {
-        const size_t blk = (row * width + col) * p;
-        fwrite(data + blk, colors, sizeof(float), f);
-      }
+      const size_t blk = (row * width + col) * bpp;
+      fwrite(data + blk, (bpp==16) ? 12 : bpp, 1, f);
     }
   }
-  dt_print(DT_DEBUG_ALWAYS, "[dt_dump_pfm] '%s' size size %dx%d\n", fname, width, height);
+
+  dt_print(DT_DEBUG_ALWAYS, "%20s %s,  %dx%d, bpp=%d\n", head, fname, width, height, bpp);
   fclose(f);
   written += 1;
 }
 
 void dt_dump_pfm(
         const char *filename,
-        const void* in,
+        const void *data,
         const int width,
         const int height,
-        const dt_dump_pfm_t mode,
+        const int bpp,
         const char *modname)
 {
   if(!darktable.dump_pfm_module) return;
   if(!modname) return;
   if(!dt_str_commasubstring(darktable.dump_pfm_module, modname)) return; 
 
-  _dump_pfm_file(filename, in, width, height, mode, modname, FALSE, FALSE);
+  dt_dump_pfm_file(modname, data, width, height, bpp, filename, "[dt_dump_pfm]", FALSE, FALSE, TRUE);
 }
 
 void dt_dump_pipe_pfm(
-        const char* mod,
-        const void* data,
+        const char *mod,
+        const void *data,
         const int width,
         const int height,
         const int bpp,
@@ -519,7 +513,7 @@ void dt_dump_pipe_pfm(
   if(!mod) return;
   if(!dt_str_commasubstring(darktable.dump_pfm_pipe, mod)) return; 
 
-  _dump_pfm_file(pipe, data, width, height, (bpp == 4) ? DT_DUMP_PFM_RGB : DT_DUMP_PFM_MASK, mod, input, !input);
+  dt_dump_pfm_file(pipe, data, width, height, bpp, mod, "[dt_dump_pipe_pfm]", input, !input, TRUE);
 }
 
 

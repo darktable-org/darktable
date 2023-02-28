@@ -358,7 +358,7 @@ static inline float *ll_pad_input(
   }
   if((b && b->mode == 2) && (darktable.dump_pfm_module))
   {
-    dt_dump_pfm("padded", out, *wd2, *ht2, DT_DUMP_PFM_RGB, "locallaplacian");
+    dt_dump_pfm("padded", out, *wd2, *ht2, 4 * sizeof(float), "locallaplacian");
   }
   return out;
 }
@@ -684,8 +684,11 @@ void local_laplacian_internal(
     const int pw = dl(w,last_level), ph = dl(h,last_level);
     const int pw0 = dl(b->pwd, pl0), ph0 = dl(b->pht, pl0);
     const int pw1 = dl(b->pwd, pl1), ph1 = dl(b->pht, pl1);
-    dt_dump_pfm("coarse", b->output[pl0], pw0, ph0, DT_DUMP_PFM_RGB, "locallaplacian");
-    dt_dump_pfm("oldcoarse", output[last_level], pw, ph, DT_DUMP_PFM_RGB, "locallaplacian");
+    if(darktable.dump_pfm_module)
+    {
+      dt_dump_pfm("coarse", b->output[pl0], pw0, ph0,  4 * sizeof(float), "locallaplacian");
+      dt_dump_pfm("oldcoarse", output[last_level], pw, ph,  4 * sizeof(float), "locallaplacian");
+    }
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) collapse(2) default(shared)
 #endif
@@ -723,7 +726,8 @@ void local_laplacian_internal(
 #endif
       output[last_level][j*pw+i] = weight * c1 + (1.0f-weight) * c0;
     }
-    dt_dump_pfm("newcoarse", output[last_level], pw, ph, DT_DUMP_PFM_RGB, "locallaplacian");
+    if(darktable.dump_pfm_module)
+      dt_dump_pfm("newcoarse", output[last_level], pw, ph,  4 * sizeof(float), "locallaplacian");
   }
 
   // assemble output pyramid coarse to fine

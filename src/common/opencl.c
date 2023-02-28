@@ -2576,7 +2576,7 @@ int dt_opencl_write_host_to_device_rowpitch_non_blocking(
   const size_t region[] = { width, height, 1 };
   // non-blocking.
 
-  cl_int err = dt_opencl_write_host_to_device_raw(devid, host, device, origin, region, rowpitch, CL_FALSE);
+  const cl_int err = dt_opencl_write_host_to_device_raw(devid, host, device, origin, region, rowpitch, CL_FALSE);
   _check_clmem_err(devid, err); 
   return err;
 }
@@ -2595,7 +2595,7 @@ int dt_opencl_write_host_to_device_raw(
 
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Write Image (from host to device)]");
 
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteImage)(darktable.opencl->dev[devid].cmd_queue,
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteImage)(darktable.opencl->dev[devid].cmd_queue,
                                                                     device, blocking ? CL_TRUE : CL_FALSE, origin, region,
                                                                     rowpitch, 0, host, 0, NULL, eventp);
   _check_clmem_err(devid, err); 
@@ -2614,7 +2614,7 @@ int dt_opencl_enqueue_copy_image(
     return -1;
 
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image (on device)]");
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(
       darktable.opencl->dev[devid].cmd_queue, src, dst, orig_src, orig_dst, region, 0, NULL, eventp);
 
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image] could not copy image on device %d: %s\n", devid, cl_errstr(err));
@@ -2634,7 +2634,7 @@ int dt_opencl_enqueue_copy_image_to_buffer(
     return -1;
 
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image to Buffer (on device)]");
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImageToBuffer)(
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImageToBuffer)(
       darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer, origin, region, offset, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
@@ -2655,7 +2655,7 @@ int dt_opencl_enqueue_copy_buffer_to_image(
     return -1;
 
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Buffer to Image (on device)]");
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)(
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)(
       darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset, origin, region, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
@@ -2676,7 +2676,7 @@ int dt_opencl_enqueue_copy_buffer_to_buffer(
     return -1;
 
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Buffer to Buffer (on device)]");
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
                                                                    src_buffer, dst_buffer, srcoffset,
                                                                    dstoffset, size, 0, NULL, eventp);
   if(err != CL_SUCCESS)
@@ -2947,7 +2947,7 @@ size_t dt_opencl_get_mem_object_size(cl_mem mem)
   size_t size;
   if(mem == NULL) return 0;
 
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetMemObjectInfo)(mem, CL_MEM_SIZE, sizeof(size), &size, NULL);
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetMemObjectInfo)(mem, CL_MEM_SIZE, sizeof(size), &size, NULL);
 
   return (err == CL_SUCCESS) ? size : 0;
 }
@@ -2957,7 +2957,7 @@ int dt_opencl_get_mem_context_id(cl_mem mem)
   cl_context context;
   if(mem == NULL) return -1;
 
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetMemObjectInfo)(mem, CL_MEM_CONTEXT, sizeof(context), &context, NULL);
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetMemObjectInfo)(mem, CL_MEM_CONTEXT, sizeof(context), &context, NULL);
   if(err != CL_SUCCESS)
     return -1;
 
@@ -2975,7 +2975,7 @@ int dt_opencl_get_image_width(cl_mem mem)
   size_t size;
   if(mem == NULL) return 0;
 
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetImageInfo)(mem, CL_IMAGE_WIDTH, sizeof(size), &size, NULL);
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetImageInfo)(mem, CL_IMAGE_WIDTH, sizeof(size), &size, NULL);
   if(size > INT_MAX) size = 0;
 
   return (err == CL_SUCCESS) ? (int)size : 0;
@@ -2986,7 +2986,7 @@ int dt_opencl_get_image_height(cl_mem mem)
   size_t size;
   if(mem == NULL) return 0;
 
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetImageInfo)(mem, CL_IMAGE_HEIGHT, sizeof(size), &size, NULL);
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetImageInfo)(mem, CL_IMAGE_HEIGHT, sizeof(size), &size, NULL);
   if(size > INT_MAX) size = 0;
 
   return (err == CL_SUCCESS) ? (int)size : 0;
@@ -2997,11 +2997,32 @@ int dt_opencl_get_image_element_size(cl_mem mem)
   size_t size;
   if(mem == NULL) return 0;
 
-  cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetImageInfo)(mem, CL_IMAGE_ELEMENT_SIZE, sizeof(size), &size,
+  const cl_int err = (darktable.opencl->dlocl->symbols->dt_clGetImageInfo)(mem, CL_IMAGE_ELEMENT_SIZE, sizeof(size), &size,
                                                               NULL);
   if(size > INT_MAX) size = 0;
 
   return (err == CL_SUCCESS) ? (int)size : 0;
+}
+
+void dt_opencl_dump_pipe_pfm(const char* mod,
+                             const int devid,
+                             cl_mem img,
+                             const gboolean input,
+                             const char *pipe)
+{
+  if(!darktable.opencl->inited || devid < 0) return;
+  const int width = dt_opencl_get_image_width(img);
+  const int height = dt_opencl_get_image_height(img);
+  const int element_size = dt_opencl_get_image_element_size(img);
+  float *data = dt_alloc_align(64, (size_t)width * height * element_size);
+  if(data)
+  {
+    const cl_int err = dt_opencl_read_host_from_device(devid, data, img, width, height, element_size);
+    if(err == CL_SUCCESS)
+      dt_dump_pfm_file(pipe, data, width, height, element_size, mod, "[dt_opencl_dump_pipe_pfm]", input, !input, FALSE);
+
+    dt_free_align(data);
+  }
 }
 
 void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action)
