@@ -1555,11 +1555,13 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
             // it is important to recover temperature in this case
             // (modern chroma and not module present as we need to
             // have the pre 3.0 default parameters used.
+            const gchar *current_workflow =
+              dt_conf_get_string_const("plugins/darkroom/workflow");
 
             dt_conf_set_string("plugins/darkroom/workflow", "display-referred (legacy)");
             dt_iop_reload_defaults(module);
             _dev_insert_module(dev, module, imgid);
-            dt_conf_set_string("plugins/darkroom/workflow", "scene-referred (filmic)");
+            dt_conf_set_string("plugins/darkroom/workflow", current_workflow);
             dt_iop_reload_defaults(module);
           }
         }
@@ -2023,6 +2025,13 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
 
   dev->history_end = 0;
 
+  // Specific handling for None workflow (interdependency)
+
+  const gboolean is_workflow_none = dt_conf_is_equal("plugins/darkroom/workflow", "none");
+
+  dt_iop_module_t *channelmixerrgb = NULL;
+  dt_iop_module_t *temperature = NULL;
+
   // Strip rows from DB lookup. One row == One module in history
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -2116,6 +2125,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
                module_name, imgid, dev->image_storage.filename);
       free(hist);
       continue;
+    }
+
+    if(is_workflow_none && hist->module->enabled)
+    {
+      if(!strcmp(hist->module->op, "temperature"))     temperature = hist->module;
+      if(!strcmp(hist->module->op, "channelmixerrgb")) channelmixerrgb = hist->module;
     }
 
     // module has no user params and won't bother us in GUI - exit early, we are done
@@ -2232,13 +2247,24 @@ void dt_dev_read_history_ext(dt_develop_t *dev,
     }
 
     // make sure that always-on modules are always on. duh.
-    if(hist->module->default_enabled == 1 && hist->module->hide_enable_button == 1)
+    if(hist->module->default_enabled == 1
+       && hist->module->hide_enable_button == 1)
       hist->enabled = 1;
 
     dev->history = g_list_append(dev->history, hist);
     dev->history_end++;
   }
   sqlite3_finalize(stmt);
+
+  // Both modules are actives and found on the history stack, let's
+  // again reload the defaults to ensure the whiteblance is properly
+  // set depending on the CAT handling.
+  if(temperature && channelmixerrgb)
+  {
+    dt_print(DT_DEBUG_PARAMS,
+             "[dt_dev_read_history_ext] reset defaults for workflow none\n");
+    temperature->reload_defaults(temperature);
+  }
 
   dt_ioppr_resync_modules_order(dev);
 
