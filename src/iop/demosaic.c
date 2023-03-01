@@ -353,7 +353,7 @@ static void pre_median_b(
         for(int i = 0; i < 8; i++)
           for(int ii = i + 1; ii < 9; ii++)
             if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-        pixo[0] = (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]);
+        pixo[0] = fmaxf(0.0f, (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]));
         // pixo[0] = med[(cnt-1)/2];
         pixo += 2;
         pixi += 2;
@@ -2225,9 +2225,9 @@ static void lin_interpolate(
       for(int c = 0; c < colors; c++)
       {
         if(c != f && count[c] != 0)
-          out[4 * (row * roi_out->width + col) + c] = sum[c] / count[c];
+          out[4 * (row * roi_out->width + col) + c] = fmaxf(0.0f, sum[c] / count[c]);
         else
-          out[4 * (row * roi_out->width + col) + c] = in[row * roi_in->width + col];
+          out[4 * (row * roi_out->width + col) + c] = fmaxf(0.0f, in[row * roi_in->width + col]);
       }
     }
 
@@ -2292,7 +2292,7 @@ static void lin_interpolate(
       for(int i = *ip++; i--; ip += 3) sum[ip[2]] += buf_in[ip[0]] * ip[1];
       // for each interpolated color, load it into the pixel
       for(int i = colors; --i; ip += 2) buf[*ip] = sum[ip[0]] / ip[1];
-      buf[*ip] = *buf_in;
+      buf[*ip] = fmaxf(0.0f, *buf_in);
       buf += 4;
       buf_in++;
     }
@@ -2623,10 +2623,10 @@ static void demosaic_ppg(
       for(int c = 0; c < 3; c++)
       {
         if(c != f && sum[c + 4] > 0.0f)
-          out[4 * ((size_t)j * roi_out->width + i) + c] = sum[c] / sum[c + 4];
+          out[4 * ((size_t)j * roi_out->width + i) + c] = fmaxf(0.0f, sum[c] / sum[c + 4]);
         else
           out[4 * ((size_t)j * roi_out->width + i) + c]
-              = in[((size_t)j + roi_out->y) * roi_in->width + i + roi_out->x];
+              = fmaxf(0.0f, in[((size_t)j + roi_out->y) * roi_in->width + i + roi_out->x]);
       }
     }
   const int median = thrs > 0.0f;
@@ -2697,9 +2697,10 @@ static void demosaic_ppg(
         color[1] = pc;
 
       color[3] = 0.0f;
-      // write using MOVNTPS (write combine omitting caches)
-      // _mm_stream_ps(buf, col);
-      memcpy(buf, color, sizeof(float) * 4);
+
+      for_each_channel(k,aligned(buf,color:16)
+        dt_omp_nontemporal(buf)) buf[k] = fmaxf(0.0f, color[k]);
+
       buf += 4;
       buf_in++;
     }
@@ -2779,8 +2780,10 @@ static void demosaic_ppg(
             color[0] = (guess1 + guess2) * .25f;
         }
       }
-      // _mm_stream_ps(buf, col);
-      memcpy(buf, color, sizeof(float) * 4);
+
+      for_each_channel(k,aligned(buf,color:16)
+        dt_omp_nontemporal(buf)) buf[k] = fmaxf(0.0f, color[k]);
+
       buf += 4;
     }
   }
