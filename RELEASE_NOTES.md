@@ -184,36 +184,16 @@ The following is a summary of the main features added to darktable
 
 - Add OpenMP support to the RGBE loader for better performances.
 
-## Bug Fixes
+- Added section headers to the sort by drop-down (files, times, etc).
 
-- Remove the commit button from the crop module has it was not used
-  anymore.
+- Shortcuts assigned to presets or styles will be shown when hovering
+  over them in their menu.
 
-- Fix the reset of modules with specific default parameters to ensure
-  that the modules will be set back in the same state as it was when
-  first importing the image. This fix is related with the rework of
-  auto apply module default parameters in the section above.
-
-- Properly transform XMP regions from metadata to ensure they match
-  the image. The XMP regions may come from the camera face recognition
-  for example.
-
-- Fix some rounding issues in the calculation of the borders in the
-  border module. This creates borders on opposite sides with the same
-  size.
-
-- Code maintenance and bugfixes for writing dng files as used in
-  "Create HDR"
-
-- Pixelpipe cache safety and performance improvements. This makes
-  better hit when looking in the cache and so allow for better
-  performances.
-
-- Fix "--threads n" restricts OMP threads to specified number (does
-  not allow for more threads than available on the host.
-
-- Raw chromatic aberration module always works on full image data
-  so quality is immune to scaling in darkroom mode.
+- Long left clicking a preset will keep the menu open so you can
+  quickly switch between several to see the effect without having to
+  repeatedly click the preset button to reopen the menu. You can also
+  scroll over the preset button to switch to previous/next presets
+  (like you already could via shortcuts).
 
 - When the crop module receives focus and switches to an uncropped
   view of the image, the crop areas around the edges of the image
@@ -248,21 +228,41 @@ The following is a summary of the main features added to darktable
   been reworked in order to make the zoom steps more perceptually
   uniform for all the image sizes.
 
+## Bug Fixes
+
+- Remove the commit button from the crop module has it was not used
+  anymore.
+
+- Fix the reset of modules with specific default parameters to ensure
+  that the modules will be set back in the same state as it was when
+  first importing the image. This fix is related with the rework of
+  auto apply module default parameters in the section above.
+
+- Properly transform XMP regions from metadata to ensure they match
+  the image. The XMP regions may come from the camera face recognition
+  for example.
+
+- Fix some rounding issues in the calculation of the borders in the
+  border module. This creates borders on opposite sides with the same
+  size.
+
+- Code maintenance and bugfixes for writing dng files as used in
+  "Create HDR"
+
+- Pixelpipe cache safety and performance improvements. This makes
+  better hit when looking in the cache and so allow for better
+  performances.
+
+- Fix "--threads n" restricts OMP threads to specified number (does
+  not allow for more threads than available on the host.
+
+- Raw chromatic aberration module always works on full image data
+  so quality is immune to scaling in darkroom mode.
+
 - A bug with shortcuts (and dt.gui.action) to set the active item in a
   combobox with varying content has been fixed and now it is also
   possible to directly set the values of the combos for the focused
   module's blending mode etc. (by setting the shortcuts effect).
-
-- Added section headers to the sort by drop-down (files, times, etc).
-
-- Shortcuts assigned to presets or styles will be shown when hovering
-  over them in their menu.
-
-- Long left clicking a preset will keep the menu open so you can
-  quickly switch between several to see the effect without having to
-  repeatedly click the preset button to reopen the menu. You can also
-  scroll over the preset button to switch to previous/next presets
-  (like you already could via shortcuts).
 
 ## Lua
 
