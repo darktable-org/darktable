@@ -23505,9 +23505,6 @@ msgstr "Mausaktionen"
 #~ msgid "commit changes"
 #~ msgstr "Änderungen übernehmen"
 
-#~ msgid "compress shadows/highlights (eigf): soft"
-#~ msgstr "komprimiert Schatten/Spitzlichter (eigf): gering"
-
 #~ msgid "grouping filter"
 #~ msgstr "Gruppierungsfilter"
 
