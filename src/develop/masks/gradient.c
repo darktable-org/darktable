@@ -303,7 +303,9 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     return 1;
   }
 
-  if(gui->form_dragging && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  if(gui->form_dragging
+     && form->points
+     && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we get the gradient
     dt_masks_point_gradient_t *gradient =
@@ -330,7 +332,9 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
 
     return 1;
   }
-  else if(gui->form_rotating && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if(gui->form_rotating
+          && form->points
+          && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we get the gradient
     dt_masks_point_gradient_t *gradient =
