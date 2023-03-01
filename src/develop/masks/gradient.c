@@ -633,9 +633,9 @@ static int _gradient_get_points(dt_develop_t *dev, float x, float y, float rotat
   (*points)[4] = x2;
   (*points)[5] = y2;
 
-  const int nthreads = omp_get_max_threads();
+  const int nthreads = dt_get_num_threads();
   size_t c_padded_size;
-  uint32_t *pts_count = dt_calloc_perthread(nthreads, sizeof(uint32_t), &c_padded_size);
+  uint32_t *pts_count = dt_calloc_perthread(1, sizeof(uint32_t), &c_padded_size);
   float *const restrict pts = dt_alloc_align_float((size_t)2 * count * nthreads);
 
   // we set the line point
@@ -644,7 +644,7 @@ static int _gradient_get_points(dt_develop_t *dev, float x, float y, float rotat
 
 //  gboolean in_frame = FALSE;
 #ifdef _OPENMP
-#pragma omp parallel for default(none)                                                                       \
+#pragma omp parallel for default(none) num_threads(nthreads)            \
     dt_omp_firstprivate(nthreads, pts, pts_count, count, cosv, sinv, xstart, xdelta, curvature, scale, x, y, wd,  \
                         ht, c_padded_size, points) schedule(static) if(count > 100)
 #endif
@@ -661,8 +661,8 @@ static int _gradient_get_points(dt_develop_t *dev, float x, float y, float rotat
     // this is to avoid that modules like lens correction fail on out of range coordinates
     if(!(xiii < -wd || xiii > 2 * wd || yiii < -ht || yiii > 2 * ht))
     {
-      const int thread = omp_get_thread_num();
-      uint32_t *tcount = dt_get_perthread(pts_count, c_padded_size);
+      const int thread = dt_get_thread_num();
+      uint32_t *tcount = dt_get_bythread(pts_count, c_padded_size, thread);
       pts[(thread * count) + *tcount * 2]     = xiii;
       pts[(thread * count) + *tcount * 2 + 1] = yiii;
       (*tcount)++;
