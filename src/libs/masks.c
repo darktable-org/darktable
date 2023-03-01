@@ -283,6 +283,8 @@ static void _tree_add_shape(GtkButton *button, gpointer shape)
   dt_masks_change_form_gui(spot);
   darktable.develop->form_gui->creation_module = module;
   darktable.develop->form_gui->group_selected = 0;
+  // the new form must be editable
+  darktable.develop->form_gui->edit_mode = DT_MASKS_EDIT_FULL;
   dt_control_queue_redraw_center();
 }
 
