@@ -1215,16 +1215,13 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     found = TRUE;
   }
-  else
+  // is this a "D65 white balance"?
+  else if(feqf(p->red, (float)g->daylight_wb[0], DT_COEFF_EPS)
+          && feqf(p->green, (float)g->daylight_wb[1], DT_COEFF_EPS)
+          && feqf(p->blue, (float)g->daylight_wb[2], DT_COEFF_EPS))
   {
-    // is this a "D65 white balance"?
-    if(feqf(p->red, (float)g->daylight_wb[0], DT_COEFF_EPS)
-      && feqf(p->green, (float)g->daylight_wb[1], DT_COEFF_EPS)
-      && feqf(p->blue, (float)g->daylight_wb[2], DT_COEFF_EPS))
-    {
-      dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
-      found = TRUE;
-    }
+    dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_D65);
+    found = TRUE;
   }
 
   if(!found)
@@ -1512,7 +1509,23 @@ void reload_defaults(dt_iop_module_t *module)
     dt_image_is_matrix_correction_supported(&module->dev->image_storage);
   const gboolean true_monochrome =
     dt_image_monochrome_flags(&module->dev->image_storage) & DT_IMAGE_MONOCHROME;
-  const gboolean is_modern = dt_is_scene_referred();
+
+  gboolean another_cat_defined = FALSE;
+  const gboolean is_workflow_none = dt_conf_is_equal("plugins/darkroom/workflow", "none");
+
+  // check if with workflow set to None we still have another CAT
+  // defined. That is an auto-applied preset for the Color Calibration
+  // module.
+  if(is_workflow_none)
+  {
+    another_cat_defined =
+      dt_history_check_module_exists(module->dev->image_storage.id,
+                                     "channelmixerrgb", TRUE);
+  }
+
+  const gboolean is_modern =
+    dt_is_scene_referred()
+    || (is_workflow_none && another_cat_defined);
 
   module->default_enabled = 0;
   module->hide_enable_button = true_monochrome;

@@ -3793,7 +3793,8 @@ void reload_defaults(dt_iop_module_t *module)
   d->illuminant = module->get_f("illuminant")->Enum.Default;
   d->adaptation = module->get_f("adaptation")->Enum.Default;
 
-  const gboolean is_modern = dt_is_scene_referred();
+  const gboolean is_workflow_none = dt_conf_is_equal("plugins/darkroom/workflow", "none");
+  const gboolean is_modern = dt_is_scene_referred() || is_workflow_none;
 
   // note that if there is already an instance of this module with an
   // adaptation set we default to RGB (none) in this instance.

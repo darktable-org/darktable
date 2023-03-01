@@ -2965,7 +2965,7 @@ static void _enable_module_callback(dt_iop_module_t *module)
   //cannot toggle module if there's no enable button
   if(module->hide_enable_button) return;
 
-  gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
 }
 
