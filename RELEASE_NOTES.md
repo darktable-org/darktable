@@ -215,6 +215,55 @@ The following is a summary of the main features added to darktable
 - Raw chromatic aberration module always works on full image data
   so quality is immune to scaling in darkroom mode.
 
+- When the crop module receives focus and switches to an uncropped
+  view of the image, the crop areas around the edges of the image
+  briefly light up to indicate that they are now draggable.
+
+- The crop module, which shows the full image to facilitate making
+  adjustments, will not trigger an unnecessary recalculation until the
+  module loses focus (for example by switching to another module or by
+  collapsing the crop module itself) at which point the new crop will
+  be used to resize. If shortcuts are used to make changes to the crop
+  without focusing the module, they will still be implemented
+  immediately.
+
+- The height of resizeable widgets and lists can now be changed by
+  dragging their bottom. The previous method to achieve this, by
+  scrolling while holding the control key, has been changed to
+  shift+alt+scroll (and a note has been added to all tooltips
+  consistently). This frees up <kbd>ctrl+scroll</kbd> to fine-tune
+  changes in RGB Levels or the histogram (to change exposure or black
+  level). In the navigator ctrl+scroll will adjust zoom level without
+  bounds, like it would do over the central area.
+
+- The histogram gui has been reworked. Control buttons have been
+  splitted in two groups: on the left side, a series of buttons to
+  switch among histogram modes (histogram, waveform, rbg parade,
+  vectorscope). On the right side, the buttons that control the aspect
+  of each mode (RGB Channels, Orientation, Vectorscope type). For the
+  RYB vectorscope, a series of buttons have been added to visualize
+  guide lines for the most common color harmonies.
+
+- The central image internal scroll zoom logic in the darkroom has
+  been reworked in order to make the zoom steps more perceptually
+  uniform for all the image sizes.
+
+- A bug with shortcuts (and dt.gui.action) to set the active item in a
+  combobox with varying content has been fixed and now it is also
+  possible to directly set the values of the combos for the focused
+  module's blending mode etc. (by setting the shortcuts effect).
+
+- Added section headers to the sort by drop-down (files, times, etc).
+
+- Shortcuts assigned to presets or styles will be shown when hovering
+  over them in their menu.
+
+- Long left clicking a preset will keep the menu open so you can
+  quickly switch between several to see the effect without having to
+  repeatedly click the preset button to reopen the menu. You can also
+  scroll over the preset button to switch to previous/next presets
+  (like you already could via shortcuts).
+
 ## Lua
 
 ### Add action support for Lua
@@ -235,22 +284,6 @@ The following is a summary of the main features added to darktable
 
 - The shown/copied lua command for a slider or combobox will set the
   value it currently has.
-
-- A bug with shortcuts (and dt.gui.action) to set the active item in a
-  combobox with varying content has been fixed and now it is also
-  possible to directly set the values of the combos for the focused
-  module's blending mode etc. (by setting the shortcuts effect).
-
-- Added section headers to the sort by drop-down (files, times, etc).
-
-- Shortcuts assigned to presets or styles will be shown when hovering
-  over them in their menu.
-
-- Long left clicking a preset will keep the menu open so you can
-  quickly switch between several to see the effect without having to
-  repeatedly click the preset button to reopen the menu. You can also
-  scroll over the preset button to switch to previous/next presets
-  (like you already could via shortcuts).
 
 - A shortcut can now be directed to a lua script that mimics a
   standard slider, dropdown or button, but dynamically selects the
