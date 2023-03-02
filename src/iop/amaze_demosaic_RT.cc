@@ -26,17 +26,9 @@
 
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "common/math.h"
 
 extern "C" {
-// otherwise the name will be mangled and the linker won't be able to see the function ...
-void amaze_demosaic_RT(
-    dt_dev_pixelpipe_iop_t *piece,
-    const float *const in,
-    float *out,
-    const dt_iop_roi_t *const roi_in,
-    const dt_iop_roi_t *const roi_out,
-    const int filters);
-}
 
 static inline float _clampnan(const float x, const float m, const float M)
 {
@@ -101,16 +93,8 @@ static inline float _xdivf(float d, int n)
  * begin raw therapee code, hg checkout of march 03, 2016 branch master.
  *==================================================================================*/
 
-
-template <typename _Tp> static inline const _Tp LIM(const _Tp a, const _Tp b, const _Tp c)
-{
-  return std::max(b, std::min(a, c));
-}
-
-template <typename _Tp> static inline const _Tp ULIM(const _Tp a, const _Tp b, const _Tp c)
-{
-  return ((b < c) ? LIM(a, b, c) : LIM(a, c, b));
-}
+#define LIM(x, min, max) MAX(min, MIN(x, max))
+#define ULIM(x, y, z) ((y) < (z) ? LIM(x, y, z) : LIM(x, z, y))
 
 
 ////////////////////////////////////////////////////////////////
@@ -1375,7 +1359,7 @@ void amaze_demosaic_RT(dt_dev_pixelpipe_iop_t *piece, const float *const in,
 /*==================================================================================
  * end of raw therapee code
  *==================================================================================*/
-
+}
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
