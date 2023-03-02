@@ -237,6 +237,12 @@ The following is a summary of the main features added to darktable
 - Improve display of the range rating widget. It should be more
   readable with a better contrast and a rework of some icons.
 
+- In lighttable, link "hold" and "sticky" preview shortcuts to the
+  same action (previously there were two "toggle sticky preview mode"
+  actions, one with and one without focus detection). Focus detection
+  is selected via an element, hold or toggle via an effect. All mapped
+  shortcuts are shown in the tooltip of the preview layout button.
+
 ## Bug Fixes
 
 - Remove the commit button from the crop module has it was not used
