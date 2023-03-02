@@ -785,7 +785,8 @@ static gchar *_shortcut_lua_command(GtkWidget *widget, dt_shortcut_t *s, gchar *
   if(_find_relative_instance(s->action, widget, &s->instance))
     g_snprintf(instance_string, sizeof(instance_string), ", %d", s->instance);
 
-  for(int c = 0; c < s->element; c++) if(!elements[c].name) s->element = c - 1;
+  int elem = 0;
+  while(elements && elements[0].name && elem < s->element && elements[elem + 1].name) elem++;
 
   if(DT_IS_BAUHAUS_WIDGET(widget) && s->element == DT_ACTION_ELEMENT_DEFAULT)
   {
@@ -811,9 +812,9 @@ static gchar *_shortcut_lua_command(GtkWidget *widget, dt_shortcut_t *s, gchar *
     }
   }
 
-  const gchar *cef = elements ? _action_find_effect_combo(s->action, &elements[s->element], s->effect) : NULL;
-  const gchar *el = elements ? elements[s->element].name : NULL;
-  const gchar **ef = elements && s->effect >= 0 ? elements[s->element].effects : NULL;
+  const gchar *cef = elements ? _action_find_effect_combo(s->action, &elements[elem], s->effect) : NULL;
+  const gchar *el = elements ? elements[elem].name : NULL;
+  const gchar **ef = elements && s->effect >= 0 ? elements[elem].effects : NULL;
   const gchar *quo = elements ? "\", \"" : "";
 
   return g_strdup_printf("dt.gui.action(\"%s%s%s%s%s%s\", %.3f%s)\n",
@@ -825,6 +826,7 @@ static gchar *_shortcut_lua_command(GtkWidget *widget, dt_shortcut_t *s, gchar *
 void _shortcut_copy_lua(GtkWidget *widget, dt_shortcut_t *shortcut, gchar *preset_name)
 {
   gchar *lua_command = _shortcut_lua_command(widget, shortcut, preset_name);
+  if(!lua_command) return;
   gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), lua_command, -1);
   dt_control_log(_("lua script command copied to clipboard:\n\n<tt>%s</tt>"), lua_command);
   g_free(lua_command);
@@ -938,9 +940,11 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
       show_element = -1; // for notebook tabs
     }
 
+    if(darktable.control->element > 0)
+      lua_shortcut.element = darktable.control->element;
+
     if(darktable.control->mapping_widget == widget)
     {
-      lua_shortcut.element = darktable.control->element;
 
       const int add_remove_qap = darktable.develop
         ? dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE)
@@ -967,7 +971,10 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
       element_name = def->elements[i].name;
       if(!element_name) break;
     }
-    if(element_name && (lua_shortcut.element || !has_fallbacks) && show_element == 0)
+    if(element_name
+       && (lua_shortcut.element || !has_fallbacks)
+       && show_element == 0
+       && darktable.control->element != -1)
       description = g_markup_escape_text(_(element_name), -1);
   }
 
@@ -984,7 +991,8 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     {
       num_shortcuts++;
       gchar *sc_escaped = g_markup_escape_text(_shortcut_description(s), -1);
-      gchar *ac_escaped = g_markup_escape_text(_action_description(s, show_element > 0 ? 1 : 0), -1);
+      const int components = (show_element > 0 || s->element != darktable.control->element) ? 1 : 0;
+      gchar *ac_escaped = g_markup_escape_text(_action_description(s, components), -1);
       description = dt_util_dstrcat(description, "%s<b><big>%s</big></b><i>%s</i>",
                                                  description ? "\n" : "",
                                                  sc_escaped, ac_escaped);
@@ -3003,7 +3011,7 @@ static void _lookup_mapping_widget()
 
   _sc.element = 0;
   const dt_action_def_t *def = _action_find_definition(_sc.action);
-  if(def && def->elements && def->elements[0].name)
+  if(def && def->elements && def->elements[0].name && darktable.control->element > 0)
     _sc.element = darktable.control->element;
 }
 
@@ -4162,6 +4170,12 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
   return owner;
 }
 
+static gboolean _reset_element_on_leave(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  darktable.control->element = -1;
+  return FALSE;
+}
+
 dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def)
 {
   if(owner->type == DT_ACTION_TYPE_IOP_INSTANCE)
@@ -4205,6 +4219,7 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
       g_hash_table_insert(darktable.control->widgets, widget, ac);
 
       gtk_widget_set_has_tooltip(widget, TRUE);
+      g_signal_connect(G_OBJECT(widget), "leave-notify-event", G_CALLBACK(_reset_element_on_leave), NULL);
       g_signal_connect(G_OBJECT(widget), "destroy", G_CALLBACK(_remove_widget_from_hashtable), NULL);
     }
   }
